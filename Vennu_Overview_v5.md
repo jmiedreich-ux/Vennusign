@@ -81,6 +81,35 @@ Everything needed before Phase 02 begins. Azure at dev scale costs under $20/mo.
 
 The foundation every other phase depends on. Get the API, SignalR hub, and display player boot sequence working end-to-end before building any UI. A save in the admin should appear on a test TV within 200ms before Phase 03 begins.
 
+### Current Checkpoint
+
+- Initial projects, repositories, migrations, and data-access abstractions are in place
+- Phase 02 is not complete yet; the next work remains the first API slice, heartbeat flow, and SignalR scaffolding
+
+### Next Phase 02 Steps
+
+- Build these first endpoints:
+  - `POST /api/venues`
+  - `POST /api/screens`
+  - `POST /api/screens/pairing-code`
+  - `GET /api/screens/pairing/{code}/status`
+  - `POST /api/screens/pairing/{code}/claim`
+- Add DTOs and validation for those endpoints
+- Add screen key generation using format `sc-{6 chars}`
+- Add `POST /api/display/{screenId}/heartbeat`
+- Add initial `SignalR` hub scaffolding once the screen-registration and pairing flow is working end-to-end
+
+### Azure SQL During Local Development
+
+- Run the app locally against an Azure SQL **dev** database, not production
+- Use secrets or environment variables for the actual connection string
+- Keep schema updates in DbUp scripts only
+- Maintain separate databases for:
+  - shared development
+  - automated testing
+  - production
+- Expect cloud latency during local development and validate timeout/retry behavior accordingly
+
 ### Data Models
 
 | Entity | Key Fields | Notes |

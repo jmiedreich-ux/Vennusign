@@ -88,6 +88,64 @@ Everything needed before writing product code. Azure at dev scale costs under $2
 
 The foundation every other phase builds on. Build the .NET 8 API, RepoDb repositories, DbUp migrations, and SignalR hub before any UI. A content save should appear on a test TV within 200ms before Phase 03 begins — validate this end-to-end with two browser tabs.
 
+### Current Phase 02 Checkpoint
+
+- Initial solution structure is in place under `src`
+- `Vennu.Api` is wired to run the database migrator on startup
+- `Vennu.Data` contains the current DbUp migrations, models, and repository interfaces/implementations for:
+  - `Venue`
+  - `Screen`
+  - `ScreenPairingCode`
+- `Vennu.DataAccess` has been modernized into a generic provider layer based on RepoDb and async-friendly contracts
+- The next work should stay focused on Phase 02 backend completion before moving into Phase 03 feature/tier work
+
+### Next Phase 02 Implementation Steps
+
+- Build the first core API endpoints:
+  - `POST /api/venues`
+  - `POST /api/screens`
+  - `POST /api/screens/pairing-code`
+  - `GET /api/screens/pairing/{code}/status`
+  - `POST /api/screens/pairing/{code}/claim`
+- Add request/response DTOs for the Phase 02 endpoints
+- Add validation for venue creation, screen registration, and pairing-code claim flows
+- Add screen key generation using format `sc-{6 random chars}`
+- Add heartbeat endpoint and status update flow:
+  - `POST /api/display/{screenId}/heartbeat`
+  - update `LastSeen`
+  - set `Status`
+- Add initial SignalR hub scaffolding immediately after the core screen endpoints are working end-to-end
+- Validate the Phase 02 vertical slice using two browser tabs:
+  - one acting as the admin/client caller
+  - one acting as the display/screen client
+
+### Azure SQL Local Development Notes
+
+- Local development should target an Azure SQL **development** database, not production
+- Use a separate environment per purpose:
+  - shared dev database for team integration
+  - optional per-developer database for isolated work
+  - separate test database for automated/integration testing
+- Keep secrets out of source control:
+  - store the connection string in user secrets or environment variables
+  - keep only the logical connection-string name in app configuration
+- Recommended configuration pattern:
+  - `appsettings.json` contains the logical `ConnectionString` name usage
+  - `appsettings.Development.json` may contain non-secret local settings only
+  - the actual Azure SQL connection string lives in user secrets or environment variables
+- Developer access requirements:
+  - allow developer IPs through Azure SQL firewall rules, or use VPN/private networking
+  - prefer Microsoft Entra authentication where practical; otherwise use a dedicated SQL login stored as a secret
+- Development expectations when using Azure SQL:
+  - expect higher latency than local SQL Server
+  - ensure connection resiliency and sensible command timeouts
+  - apply schema changes through DbUp scripts only to prevent schema drift
+  - seed test/dev data through scripts or dedicated seed helpers rather than manual edits
+- Before Phase 02 endpoint work continues, confirm the team has:
+  - a dev Azure SQL database
+  - a test Azure SQL database
+  - a local secret-management workflow documented for every developer
+
 ### Data Models
 
 Core entities only — feature flag and tier entities come in Phase 03. All PKs use `UNIQUEIDENTIFIER` with `NEWID()` default.
