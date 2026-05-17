@@ -37,6 +37,7 @@
     <PackageReference Include="RepoDb" Version="1.13.1" />
     <PackageReference Include="RepoDb.SqlServer" Version="1.13.1" />
     <PackageReference Include="RepoDb.SqlServer.BulkOperations" Version="1.13.1" />
+    <PackageReference Include="Serilog" Version="2.10.0" />
   </ItemGroup>
 
   <ItemGroup>

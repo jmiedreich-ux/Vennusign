@@ -3,6 +3,44 @@ Where are we in the project?
 	2. We are curerntly in phase 2 which can be reference in the doc Vennu_overview.pdf and Vennue_Roadmap.pdf.
 
 
+Current Structure / Decisions:
+	1. Vennu.Api = API and startup wiring.
+	2. Vennu.Data = Vennu-specific data layer, DbUp migrations, models, repository interfaces, repository implementations.
+	3. Vennu.DataAccess = provider layer only. This project should stay generic so the provider can be swapped later.
+	4. src/display = Vite + React + TypeScript display SPA. It should stay in the repo, but should NOT be added to the Visual Studio solution as a Website project.
+
+Current Phase 02 Progress:
+	1. Created initial project structure under src.
+	2. Wired Program.cs to run DatabaseMigrator before app startup.
+	3. Added initial SQL scripts:
+		- 001_create_venues.sql
+		- 002_create_screens.sql
+		- 003_create_screen_pairing_codes.sql
+	4. Added initial models:
+		- Venue
+		- Screen
+		- ScreenPairingCode
+	5. Added initial repository interfaces and implementations for the above entities.
+	6. Moved Vennu-specific repository code out of Vennu.DataAccess and into Vennu.Data.
+
+Known Issue / Cleanup:
+	1. The current solution build can fail if display is included as a Visual Studio Website project.
+	2. display should be removed from the solution if it was added as a Website project.
+	3. Run the display app separately with npm from src/display.
+
+What is next?
+	1. Build the first API endpoints for Phase 02:
+		- POST /api/venues
+		- POST /api/screens
+		- POST /api/screens/pairing-code
+		- GET /api/screens/pairing/{code}/status
+		- POST /api/screens/pairing/{code}/claim
+	2. Add request/response DTOs and validation.
+	3. Add screen key generation logic using format sc-{6 chars}.
+	4. Add heartbeat endpoint and status update flow.
+	5. Add SignalR hub scaffolding after the core screen endpoints are in place.
+
+
 Coding Rules:	
 	1. Follow the coding standards and guidelines established for the project.
 	2. Write clean, maintainable, and well-documented code.

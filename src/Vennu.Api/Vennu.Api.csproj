@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Vennu.Data\Vennu.Data.csproj" />
-    <ProjectReference Include="..\DataAcess.sql\Vennu.DataAccess.csproj" />
   </ItemGroup>
 
 </Project>
