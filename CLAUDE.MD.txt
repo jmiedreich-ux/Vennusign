@@ -1,0 +1,13 @@
+Where are we in the project? 
+	1. We are in the early stages of development, focusing on defining the core features and architecture of the project. 
+	2. We are curerntly in phase 2 which can be reference in the doc Vennu_overview.pdf and Vennue_Roadmap.pdf.
+
+
+Coding Rules:	
+	1. Follow the coding standards and guidelines established for the project.
+	2. Write clean, maintainable, and well-documented code.
+	3. Use meaningful variable and function names to enhance readability.
+	4. Implement error handling and input validation where necessary.
+	5. Ensure that the code is modular and reusable to promote scalability.
+	6. Conduct regular code reviews to maintain code quality and consistency across the team.
+	7. Keep constructor definiations on one line, and avoid using multiple lines for constructors.

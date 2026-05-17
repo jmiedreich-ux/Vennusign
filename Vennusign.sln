@@ -1,9 +1,66 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.37216.2 d17.14
+VisualStudioVersion = 17.14.37216.2
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		CLAUDE.MD.txt = CLAUDE.MD.txt
+		CONTRIBUTING.md = CONTRIBUTING.md
+		Vennu_Overview_v5.md = Vennu_Overview_v5.md
+		Vennu_Roadmap_v5.md = Vennu_Roadmap_v5.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vennu.Data", "src\Vennu.Data\Vennu.Data.csproj", "{5AEF62B8-C7C2-27B9-13C5-510BAE1E0136}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vennu.Api", "src\Vennu.Api\Vennu.Api.csproj", "{75817480-43B1-831E-66A1-EBE21B1B88D2}"
+EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "display", "src\display\", "{6F56CBA8-1147-F874-2BD6-320466E8F7AD}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.8"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_59341"
+		Debug.AspNetCompiler.PhysicalPath = "src\display\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_59341\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_59341"
+		Release.AspNetCompiler.PhysicalPath = "src\display\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_59341\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "59341"
+		SlnRelativePath = "src\display\"
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vennu.DataAccess", "src\DataAcess.sql\Vennu.DataAccess.csproj", "{0A1814F2-12A9-D9B6-7C31-495020A090C7}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5AEF62B8-C7C2-27B9-13C5-510BAE1E0136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AEF62B8-C7C2-27B9-13C5-510BAE1E0136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AEF62B8-C7C2-27B9-13C5-510BAE1E0136}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AEF62B8-C7C2-27B9-13C5-510BAE1E0136}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75817480-43B1-831E-66A1-EBE21B1B88D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75817480-43B1-831E-66A1-EBE21B1B88D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75817480-43B1-831E-66A1-EBE21B1B88D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75817480-43B1-831E-66A1-EBE21B1B88D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F56CBA8-1147-F874-2BD6-320466E8F7AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F56CBA8-1147-F874-2BD6-320466E8F7AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F56CBA8-1147-F874-2BD6-320466E8F7AD}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F56CBA8-1147-F874-2BD6-320466E8F7AD}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{0A1814F2-12A9-D9B6-7C31-495020A090C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A1814F2-12A9-D9B6-7C31-495020A090C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A1814F2-12A9-D9B6-7C31-495020A090C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A1814F2-12A9-D9B6-7C31-495020A090C7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection

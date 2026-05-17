@@ -1,0 +1,24 @@
+CREATE TABLE dbo.Screens
+(
+    Id UNIQUEIDENTIFIER NOT NULL CONSTRAINT PK_Screens PRIMARY KEY DEFAULT NEWID(),
+    VenueId UNIQUEIDENTIFIER NULL,
+    ScreenKey NVARCHAR(9) NOT NULL,
+    Name NVARCHAR(200) NOT NULL,
+    Location NVARCHAR(200) NULL,
+    WallGroup NVARCHAR(100) NULL,
+    WallPosition INT NULL,
+    LastSeen DATETIME2(7) NULL,
+    Status NVARCHAR(30) NOT NULL CONSTRAINT DF_Screens_Status DEFAULT 'Offline',
+    Platform NVARCHAR(50) NULL,
+    AppVersion NVARCHAR(50) NULL,
+    CreatedUtc DATETIME2(7) NOT NULL CONSTRAINT DF_Screens_CreatedUtc DEFAULT SYSUTCDATETIME(),
+    UpdatedUtc DATETIME2(7) NOT NULL CONSTRAINT DF_Screens_UpdatedUtc DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_Screens_Venues FOREIGN KEY (VenueId) REFERENCES dbo.Venues (Id)
+);
+GO
+
+CREATE UNIQUE INDEX UX_Screens_ScreenKey ON dbo.Screens (ScreenKey);
+GO
+
+CREATE INDEX IX_Screens_VenueId ON dbo.Screens (VenueId);
+GO
