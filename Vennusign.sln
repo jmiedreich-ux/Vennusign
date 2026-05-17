@@ -5,8 +5,8 @@ VisualStudioVersion = 17.14.37216.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
 	ProjectSection(SolutionItems) = preProject
-		CLAUDE.MD.txt = CLAUDE.MD.txt
 		CONTRIBUTING.md = CONTRIBUTING.md
+		CLAUDE.md = CLAUDE.md
 		Vennu_Overview_v5.md = Vennu_Overview_v5.md
 		Vennu_Roadmap_v5.md = Vennu_Roadmap_v5.md
 	EndProjectSection
