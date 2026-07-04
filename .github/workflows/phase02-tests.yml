@@ -5,7 +5,7 @@ on:
   pull_request:
   push:
     branches:
-      - main
+      - master
 
 permissions:
   contents: read
@@ -26,10 +26,10 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Restore
-        run: dotnet restore /home/runner/work/Vennusign/Vennusign/Vennusign.sln
+        run: dotnet restore ${{ github.workspace }}/Vennusign.sln
 
       - name: Build
-        run: dotnet build /home/runner/work/Vennusign/Vennusign/Vennusign.sln --configuration Release --no-restore
+        run: dotnet build ${{ github.workspace }}/Vennusign.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test /home/runner/work/Vennusign/Vennusign/Vennusign.sln --configuration Release --no-build
+        run: dotnet test ${{ github.workspace }}/Vennusign.sln --configuration Release --no-build
