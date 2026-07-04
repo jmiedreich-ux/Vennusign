@@ -6,6 +6,7 @@ namespace Vennu.DataAccess.Tests;
 public class ScreenPairingCodeRepositoryTests
 {
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task ClaimAsync_ReturnsFalse_WhenCodeIsExpired()
     {
         var pairingCode = new ScreenPairingCode
@@ -28,6 +29,7 @@ public class ScreenPairingCodeRepositoryTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task ClaimAsync_ClaimsActiveCode()
     {
         var pairingCode = new ScreenPairingCode

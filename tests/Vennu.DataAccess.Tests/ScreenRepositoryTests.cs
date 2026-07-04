@@ -6,6 +6,7 @@ namespace Vennu.DataAccess.Tests;
 public class ScreenRepositoryTests
 {
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task AssignVenueAsync_UpdatesExistingScreen()
     {
         var screen = new Screen
@@ -36,6 +37,7 @@ public class ScreenRepositoryTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task GetByVenueIdAsync_ReturnsScreensFromQuery()
     {
         var screens = new[]
