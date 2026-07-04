@@ -1,6 +1,71 @@
 @Vennu.Api_HostAddress = http://localhost:5192
+@venueId = 00000000-0000-0000-0000-000000000000
+@screenId = 00000000-0000-0000-0000-000000000000
+@pairingCode = 000000
 
-GET {{Vennu.Api_HostAddress}}/weatherforecast/
+GET {{Vennu.Api_HostAddress}}/
 Accept: application/json
+
+###
+
+POST {{Vennu.Api_HostAddress}}/api/venues
+Content-Type: application/json
+
+{
+  "name": "Main Venue",
+  "timezone": "UTC",
+  "type": "Bar",
+  "primaryLanguage": "en",
+  "secondaryLanguage": "es"
+}
+
+###
+
+POST {{Vennu.Api_HostAddress}}/api/screens
+Content-Type: application/json
+
+{
+  "name": "Front TV",
+  "location": "Main Floor",
+  "platform": "Web",
+  "appVersion": "0.1.0"
+}
+
+###
+
+POST {{Vennu.Api_HostAddress}}/api/screens/pairing-code
+Content-Type: application/json
+
+{
+  "screenId": "{{screenId}}"
+}
+
+###
+
+GET {{Vennu.Api_HostAddress}}/api/screens/pairing/{{pairingCode}}/status
+Accept: application/json
+
+###
+
+POST {{Vennu.Api_HostAddress}}/api/screens/pairing/{{pairingCode}}/claim
+Content-Type: application/json
+
+{
+  "venueId": "{{venueId}}"
+}
+
+###
+
+GET {{Vennu.Api_HostAddress}}/api/display/{{screenId}}/content
+Accept: application/json
+
+###
+
+POST {{Vennu.Api_HostAddress}}/api/display/{{screenId}}/heartbeat
+Content-Type: application/json
+
+{
+  "status": "Online"
+}
 
 ###
