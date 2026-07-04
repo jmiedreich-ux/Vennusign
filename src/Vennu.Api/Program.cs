@@ -1,5 +1,6 @@
 using Vennu.Data;
 using Vennu.Data.Extensions;
+using Vennu.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapControllers();
+app.MapHub<VennuHub>("/hubs/vennu");
 app.MapGet("/", () => Results.Ok(new { status = "ok", service = "Vennu.Api" }));
 
 app.Run();
