@@ -70,7 +70,14 @@ jobs:
         if: env.VENU_TEST_AZURE_SQL_CONNECTION_STRING != ''
         run: |
           echo "=== Running Integration Tests ==="
-          dotnet test ${{ github.workspace }}/Vennusign.sln \
+          dotnet test ${{ github.workspace }}/tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj \
+            --configuration Release \
+            --no-build \
+            --filter "Category=Integration" \
+            --logger "console;verbosity=normal" \
+            --logger "trx;LogFileName=integration-test-results.trx" \
+            -- RunConfiguration.TestSessionTimeout=300000
+          dotnet test ${{ github.workspace }}/tests/Vennu.Data.IntegrationTests/Vennu.Data.IntegrationTests.csproj \
             --configuration Release \
             --no-build \
             --filter "Category=Integration" \
