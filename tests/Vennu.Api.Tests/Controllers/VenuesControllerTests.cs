@@ -4,6 +4,7 @@ using Vennu.Api.Tests.TestDoubles;
 
 namespace Vennu.Api.Tests.Controllers;
 
+[Trait("Category", "Unit")]
 public class VenuesControllerTests
 {
     [Fact]

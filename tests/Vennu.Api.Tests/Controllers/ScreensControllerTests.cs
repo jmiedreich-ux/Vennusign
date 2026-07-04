@@ -7,6 +7,7 @@ using Vennu.Data.Repositories;
 
 namespace Vennu.Api.Tests.Controllers;
 
+[Trait("Category", "Unit")]
 public class ScreensControllerTests
 {
     [Fact]

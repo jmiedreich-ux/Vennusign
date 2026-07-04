@@ -10,6 +10,7 @@ using Vennu.DataAccess;
 
 namespace Vennu.Api.Tests.Integration;
 
+[Trait("Category", "Integration")]
 public class AzureSqlPhase02IntegrationTests
 {
     private const string AzureSqlConnectionStringVariable = "VENU_TEST_AZURE_SQL_CONNECTION_STRING";

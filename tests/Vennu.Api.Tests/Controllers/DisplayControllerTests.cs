@@ -5,6 +5,7 @@ using Vennu.Data.Models;
 
 namespace Vennu.Api.Tests.Controllers;
 
+[Trait("Category", "Unit")]
 public class DisplayControllerTests
 {
     [Fact]

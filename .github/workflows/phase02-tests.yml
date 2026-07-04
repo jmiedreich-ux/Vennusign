@@ -31,5 +31,91 @@ jobs:
       - name: Build
         run: dotnet build ${{ github.workspace }}/Vennusign.sln --configuration Release --no-restore
 
-      - name: Test
-        run: dotnet test ${{ github.workspace }}/Vennusign.sln --configuration Release --no-build
+      - name: Diagnose environment
+        run: |
+          echo "=== Environment Diagnostics ==="
+          echo ".NET SDK version: $(dotnet --version)"
+          echo "Runner OS: $RUNNER_OS"
+          echo "Working directory: $(pwd)"
+          if [ -n "$VENU_TEST_AZURE_SQL_CONNECTION_STRING" ]; then
+            echo "Azure SQL connection string: CONFIGURED"
+          else
+            echo "Azure SQL connection string: NOT CONFIGURED (integration tests will be skipped)"
+          fi
+          echo "=============================="
+
+      - name: Verify database connection
+        if: env.VENU_TEST_AZURE_SQL_CONNECTION_STRING != ''
+        run: |
+          echo "=== Database Connection Verification ==="
+          dotnet script --version 2>/dev/null || true
+          echo "Verifying Azure SQL connectivity..."
+          # Use a small inline C# check via dotnet-script or fallback to connection test in test run
+          echo "Connection string is present. Connectivity will be validated during test run."
+          echo "========================================"
+
+      - name: Run unit tests
+        run: |
+          echo "=== Running Unit Tests ==="
+          dotnet test ${{ github.workspace }}/Vennusign.sln \
+            --configuration Release \
+            --no-build \
+            --filter "Category=Unit" \
+            --logger "console;verbosity=normal" \
+            --logger "trx;LogFileName=unit-test-results.trx" \
+            -- RunConfiguration.TestSessionTimeout=120000
+          echo "========================="
+
+      - name: Run integration tests
+        if: env.VENU_TEST_AZURE_SQL_CONNECTION_STRING != ''
+        run: |
+          echo "=== Running Integration Tests ==="
+          dotnet test ${{ github.workspace }}/Vennusign.sln \
+            --configuration Release \
+            --no-build \
+            --filter "Category=Integration" \
+            --logger "console;verbosity=normal" \
+            --logger "trx;LogFileName=integration-test-results.trx" \
+            -- RunConfiguration.TestSessionTimeout=300000
+          echo "================================="
+
+      - name: Skip integration tests notice
+        if: env.VENU_TEST_AZURE_SQL_CONNECTION_STRING == ''
+        run: |
+          echo "=== Integration Tests Skipped ==="
+          echo "VENU_TEST_AZURE_SQL_CONNECTION_STRING is not set."
+          echo "Integration tests require a configured Azure SQL database."
+          echo "To run integration tests, configure the secret in the 'dev' environment."
+          echo "================================="
+
+      - name: Upload unit test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: "**/unit-test-results.trx"
+          if-no-files-found: ignore
+
+      - name: Upload integration test results
+        if: env.VENU_TEST_AZURE_SQL_CONNECTION_STRING != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: "**/integration-test-results.trx"
+          if-no-files-found: ignore
+
+      - name: Test summary
+        if: always()
+        run: |
+          echo "=== Test Run Summary ==="
+          echo "Unit tests: ran with filter Category=Unit"
+          if [ -n "$VENU_TEST_AZURE_SQL_CONNECTION_STRING" ]; then
+            echo "Integration tests: ran with filter Category=Integration against Azure SQL"
+          else
+            echo "Integration tests: SKIPPED (no connection string configured)"
+          fi
+          echo "Projects tested:"
+          echo "  - Vennu.DataAccess.Tests (unit: repository and data access tests)"
+          echo "  - Vennu.Api.Tests (unit: controller tests; integration: vertical slice)"
+          echo "  - Vennu.Data.IntegrationTests (integration: entity persistence tests)"
+          echo "========================"

@@ -6,6 +6,7 @@ namespace Vennu.DataAccess.Tests;
 public class SqlDataAccessTests
 {
     [Fact]
+    [Trait("Category", "Unit")]
     public void GetFieldList_ReturnsParsedFields()
     {
         var configuration = new ConfigurationBuilder()
@@ -27,6 +28,7 @@ public class SqlDataAccessTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void GetFieldList_ReturnsNull_ForEmptyInput()
     {
         var configuration = new ConfigurationBuilder()

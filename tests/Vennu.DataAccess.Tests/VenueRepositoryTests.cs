@@ -6,6 +6,7 @@ namespace Vennu.DataAccess.Tests;
 public class VenueRepositoryTests
 {
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task CreateAsync_AssignsIdentityAndTimestamps()
     {
         var dataAccess = new FakeSqlDataAccess();
@@ -25,6 +26,7 @@ public class VenueRepositoryTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task GetAllAsync_ReturnsProjectedResults()
     {
         var expectedVenues = new[]
