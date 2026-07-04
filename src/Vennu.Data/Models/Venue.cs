@@ -1,5 +1,8 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Vennu.Data.Models;
 
+[Table("Venues")]
 public class Venue
 {
     public Guid Id { get; set; }

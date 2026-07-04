@@ -1,5 +1,8 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Vennu.Data.Models;
 
+[Table("ScreenPairingCodes")]
 public class ScreenPairingCode
 {
     public string Code { get; set; } = string.Empty;

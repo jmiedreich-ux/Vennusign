@@ -1,5 +1,8 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Vennu.Data.Models;
 
+[Table("Screens")]
 public class Screen
 {
     public Guid Id { get; set; }
