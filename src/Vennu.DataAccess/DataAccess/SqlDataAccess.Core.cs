@@ -13,6 +13,8 @@ public partial class SqlDataAccess : ISqlDataAccess
     private const int DefaultCommandTimeoutSeconds = 180;
     private const int DynamicQueryTimeoutSeconds = 60;
     private const string DefaultConnectionStringName = "ConnectionString";
+    private static readonly object TableMappingLock = new();
+    private static bool tableMappingsConfigured;
 
     private readonly IConfiguration configuration;
     private readonly ILogger logger;
@@ -30,18 +32,28 @@ public partial class SqlDataAccess : ISqlDataAccess
 
     private static void ConfigureTableMappings()
     {
-        // Map singular entity names to plural table names in the database
-        FluentMapper
-            .Entity<Venue>()
-            .Table("dbo.Venues");
+        lock (TableMappingLock)
+        {
+            if (tableMappingsConfigured)
+            {
+                return;
+            }
 
-        FluentMapper
-            .Entity<Screen>()
-            .Table("dbo.Screens");
+            // Map singular entity names to plural table names in the database
+            FluentMapper
+                .Entity<Venue>()
+                .Table("dbo.Venues", true);
 
-        FluentMapper
-            .Entity<ScreenPairingCode>()
-            .Table("dbo.ScreenPairingCodes");
+            FluentMapper
+                .Entity<Screen>()
+                .Table("dbo.Screens", true);
+
+            FluentMapper
+                .Entity<ScreenPairingCode>()
+                .Table("dbo.ScreenPairingCodes", true);
+
+            tableMappingsConfigured = true;
+        }
     }
 
     protected TResult Execute<TResult>(string operationName, Func<SqlConnection, TResult> operation, object? parameters = null)

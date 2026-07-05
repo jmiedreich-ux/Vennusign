@@ -24,6 +24,18 @@ Current Phase 02 Progress:
 	5. Added initial repository interfaces and implementations for the above entities.
 	6. Moved Vennu-specific repository code out of `Vennu.DataAccess` and into `Vennu.Data`.
 	7. Modernized `Vennu.DataAccess` into a generic RepoDb-based provider with async-friendly contracts.
+	8. Built the initial Phase 02 API endpoint slice:
+		- `POST /api/venues`
+		- `POST /api/screens`
+		- `POST /api/screens/pairing-code`
+		- `GET /api/screens/pairing/{code}/status`
+		- `POST /api/screens/pairing/{code}/claim`
+		- `GET /api/display/{screenId}/content`
+		- `POST /api/display/{screenId}/heartbeat`
+	9. Added request/response DTOs and controller-level validation for the initial API slice.
+	10. Added screen key and pairing code generation through `IdentifierGenerator`.
+	11. Added initial SignalR hub scaffolding in `VennuHub` and mapped it at `/hubs/vennu`.
+	12. Added unit and E2E coverage for the API pairing flow, heartbeat flow, and display content endpoint.
 
 Known Issue / Cleanup:
 	1. The current solution build can fail if `display` is included as a Visual Studio Website project.
@@ -39,17 +51,17 @@ Azure SQL Local Development Notes:
 	6. Prefer Microsoft Entra auth where practical; otherwise use a dedicated SQL login stored as a secret.
 
 What is next?
-	1. Build the first API endpoints for Phase 02:
-		- `POST /api/venues`
-		- `POST /api/screens`
-		- `POST /api/screens/pairing-code`
-		- `GET /api/screens/pairing/{code}/status`
-		- `POST /api/screens/pairing/{code}/claim`
-	2. Add request/response DTOs and validation.
-	3. Add screen key generation logic using format `sc-{6 chars}`.
-	4. Add heartbeat endpoint and status update flow using `POST /api/display/{screenId}/heartbeat`.
-	5. Add SignalR hub scaffolding after the core screen endpoints are in place.
-	6. Validate the first end-to-end Phase 02 slice with two browser tabs before moving to Phase 03.
+	1. See `NEXT_STEPS.md` for the active handoff plan.
+	2. Finish the Phase 02 vertical slice by building or completing the display SPA boot flow:
+		- Fetch `GET /api/display/{screenId}/content`.
+		- Connect to `/hubs/vennu`.
+		- Call `JoinScreen(screenId)`.
+		- Start `POST /api/display/{screenId}/heartbeat` on a 30-second interval.
+		- Render a minimal display screen from the API response.
+	3. Add a backend notification abstraction around `IHubContext<VennuHub>` for future content/theme/item pushes.
+	4. Add a `HeartbeatMonitor` hosted service to mark screens offline when `LastSeen` is older than 90 seconds.
+	5. Validate the true Phase 02 milestone with two browser tabs: one display client and one admin/API caller.
+	6. Only after the display + real-time slice is validated, begin Phase 03 feature flags and tiers.
 
 
 Coding Rules:	

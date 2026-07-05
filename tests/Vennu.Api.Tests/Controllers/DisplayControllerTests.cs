@@ -1,7 +1,7 @@
 using Vennu.Api.Contracts.Display;
 using Vennu.Api.Controllers;
 using Vennu.Api.Tests.TestDoubles;
-using Vennu.Data.Models;
+using Vennu.Core.Models;
 
 namespace Vennu.Api.Tests.Controllers;
 

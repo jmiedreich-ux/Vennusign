@@ -84,20 +84,30 @@ The foundation every other phase depends on. Get the API, SignalR hub, and displ
 ### Current Checkpoint
 
 - Initial projects, repositories, migrations, and data-access abstractions are in place
-- Phase 02 is not complete yet; the next work remains the first API slice, heartbeat flow, and SignalR scaffolding
-
-### Next Phase 02 Steps
-
-- Build these first endpoints:
+- The initial Phase 02 backend API slice is implemented:
   - `POST /api/venues`
   - `POST /api/screens`
   - `POST /api/screens/pairing-code`
   - `GET /api/screens/pairing/{code}/status`
   - `POST /api/screens/pairing/{code}/claim`
-- Add DTOs and validation for those endpoints
-- Add screen key generation using format `sc-{6 chars}`
-- Add `POST /api/display/{screenId}/heartbeat`
-- Add initial `SignalR` hub scaffolding once the screen-registration and pairing flow is working end-to-end
+  - `GET /api/display/{screenId}/content`
+  - `POST /api/display/{screenId}/heartbeat`
+- Request/response DTOs, validation, screen key generation, pairing code generation, and initial API tests are in place
+- `VennuHub` is scaffolded and mapped at `/hubs/vennu`
+- Phase 02 is not complete until the display boot flow and real-time SignalR validation work end-to-end
+
+### Next Phase 02 Steps
+
+- Build or complete the display SPA boot sequence:
+  - Fetch `GET /api/display/{screenId}/content`
+  - Connect to `/hubs/vennu`
+  - Call `JoinScreen(screenId)`
+  - Start a 30-second heartbeat loop using `POST /api/display/{screenId}/heartbeat`
+  - Render a minimal board from the content response
+- Add client handlers for `ContentUpdated`, `ThemeUpdated`, `ItemAvailabilityChanged`, and `SyncTick`
+- Add a backend notification abstraction around `IHubContext<VennuHub>` for screen and venue group pushes
+- Add `HeartbeatMonitor` to mark screens offline when no heartbeat has been received for 90 seconds
+- Validate the Phase 02 vertical slice with two browser tabs before moving to Phase 03
 
 ### Azure SQL During Local Development
 

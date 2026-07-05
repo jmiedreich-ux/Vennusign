@@ -10,10 +10,13 @@ builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddVennuData();
 
-var connectionString = builder.Configuration.GetConnectionString("VennuDatabase")
-    ?? throw new InvalidOperationException("Connection string 'VennuDatabase' is required.");
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    var connectionString = builder.Configuration.GetConnectionString("VennuDatabase")
+        ?? throw new InvalidOperationException("Connection string 'VennuDatabase' is required.");
 
-Vennu.Data.DatabaseMigrator.Run(connectionString);
+    Vennu.Data.DatabaseMigrator.Run(connectionString);
+}
 
 var app = builder.Build();
 
@@ -29,3 +32,5 @@ app.MapHub<VennuHub>("/hubs/vennu");
 app.MapGet("/", () => Results.Ok(new { status = "ok", service = "Vennu.Api" }));
 
 app.Run();
+
+public partial class Program;

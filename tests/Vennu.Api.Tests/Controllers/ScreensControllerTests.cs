@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 using Vennu.Api.Contracts.Screens;
 using Vennu.Api.Controllers;
 using Vennu.Api.Tests.TestDoubles;
-using Vennu.Data.Models;
+using Vennu.Core.Models;
 using Vennu.Data.Repositories;
 
 namespace Vennu.Api.Tests.Controllers;

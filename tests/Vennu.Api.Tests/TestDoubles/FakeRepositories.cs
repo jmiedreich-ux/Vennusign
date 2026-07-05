@@ -1,4 +1,4 @@
-using Vennu.Data.Models;
+using Vennu.Core.Models;
 using Vennu.Data.Repositories;
 
 namespace Vennu.Api.Tests.TestDoubles;

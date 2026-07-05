@@ -97,24 +97,30 @@ The foundation every other phase builds on. Build the .NET 8 API, RepoDb reposit
   - `Screen`
   - `ScreenPairingCode`
 - `Vennu.DataAccess` has been modernized into a generic provider layer based on RepoDb and async-friendly contracts
-- The next work should stay focused on Phase 02 backend completion before moving into Phase 03 feature/tier work
-
-### Next Phase 02 Implementation Steps
-
-- Build the first core API endpoints:
+- The initial Phase 02 backend API slice is implemented and covered by unit/E2E tests:
   - `POST /api/venues`
   - `POST /api/screens`
   - `POST /api/screens/pairing-code`
   - `GET /api/screens/pairing/{code}/status`
   - `POST /api/screens/pairing/{code}/claim`
-- Add request/response DTOs for the Phase 02 endpoints
-- Add validation for venue creation, screen registration, and pairing-code claim flows
-- Add screen key generation using format `sc-{6 random chars}`
-- Add heartbeat endpoint and status update flow:
+  - `GET /api/display/{screenId}/content`
   - `POST /api/display/{screenId}/heartbeat`
-  - update `LastSeen`
-  - set `Status`
-- Add initial SignalR hub scaffolding immediately after the core screen endpoints are working end-to-end
+- Request/response DTOs, controller-level validation, screen key generation, and pairing code generation are in place
+- `VennuHub` is scaffolded and mapped at `/hubs/vennu`
+- The next work should stay focused on completing the display boot and real-time validation slice before moving into Phase 03 feature/tier work
+
+### Next Phase 02 Implementation Steps
+
+- Build or complete the display SPA boot sequence:
+  - read `screenId` from the route
+  - fetch `GET /api/display/{screenId}/content`
+  - connect to `/hubs/vennu`
+  - call `JoinScreen(screenId)`
+  - start a 30-second heartbeat loop using `POST /api/display/{screenId}/heartbeat`
+  - render a minimal display board from the API response
+- Add SignalR client handlers for `ContentUpdated`, `ThemeUpdated`, `ItemAvailabilityChanged`, and `SyncTick`
+- Add a backend notification abstraction around `IHubContext<VennuHub>` so future controllers/services can push to `screen:{screenId}` and `venue:{venueId}` groups
+- Add `HeartbeatMonitor` to mark screens `Offline` when `LastSeen` is older than 90 seconds
 - Validate the Phase 02 vertical slice using two browser tabs:
   - one acting as the admin/client caller
   - one acting as the display/screen client
