@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Vennu.Api.Contracts.Venues;
-using Vennu.Data.Models;
+using Vennu.Core.Models;
 using Vennu.Data.Repositories;
 
 namespace Vennu.Api.Controllers;
