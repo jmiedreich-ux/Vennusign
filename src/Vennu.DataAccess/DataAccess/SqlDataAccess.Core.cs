@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using RepoDb;
 using Serilog;
 using Serilog.Events;
+using Vennu.Data.Models;
 
 namespace Vennu.DataAccess;
 
@@ -22,6 +23,28 @@ public partial class SqlDataAccess : ISqlDataAccess
         logger = Log.ForContext<SqlDataAccess>();
 
         GlobalConfiguration.Setup().UseSqlServer();
+        
+        // Configure RepoDb table mappings for plural table names
+        ConfigureTableMappings();
+    }
+
+    private static void ConfigureTableMappings()
+    {
+        // Map singular entity names to plural table names
+        FluentMapper
+            .Entity<Venue>()
+            .Table("dbo.Venues")
+            .Build();
+
+        FluentMapper
+            .Entity<Screen>()
+            .Table("dbo.Screens")
+            .Build();
+
+        FluentMapper
+            .Entity<ScreenPairingCode>()
+            .Table("dbo.ScreenPairingCodes")
+            .Build();
     }
 
     protected TResult Execute<TResult>(string operationName, Func<SqlConnection, TResult> operation, object? parameters = null)
