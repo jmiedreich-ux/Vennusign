@@ -1,5 +1,5 @@
 using Vennu.DataAccess;
-using Vennu.Data.Models;
+using Vennu.Core.Models;
 
 namespace Vennu.Data.Repositories;
 
