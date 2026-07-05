@@ -1,7 +1,11 @@
+using RepoDb.Attributes;
+
 namespace Vennu.Data.Models;
 
+[Map("ScreenPairingCodes")]
 public class ScreenPairingCode
 {
+    [Primary]
     public string Code { get; set; } = string.Empty;
 
     public Guid? VenueId { get; set; }

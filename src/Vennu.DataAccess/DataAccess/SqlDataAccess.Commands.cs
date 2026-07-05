@@ -134,12 +134,12 @@ public partial class SqlDataAccess
     }
 
     public int Insert<T>(T entity) where T : class =>
-        Execute(nameof(Insert), connection => (int)DbConnectionExtension.Insert(connection, entity), entity);
+        Execute(nameof(Insert), connection => NormalizeInsertResult(DbConnectionExtension.Insert(connection, entity)), entity);
 
     public Task<int> InsertAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class =>
         ExecuteAsync<int>(
             nameof(InsertAsync),
-            async (connection, token) => (int)await DbConnectionExtension.InsertAsync(connection, entity, cancellationToken: token).ConfigureAwait(false),
+            async (connection, token) => NormalizeInsertResult(await DbConnectionExtension.InsertAsync(connection, entity, cancellationToken: token).ConfigureAwait(false)),
             entity,
             cancellationToken);
 
@@ -207,4 +207,6 @@ public partial class SqlDataAccess
             (connection, token) => DbConnectionExtension.DeleteAllAsync(connection, tableName, cancellationToken: token),
             tableName,
             cancellationToken);
+
+    private static int NormalizeInsertResult(object? result) => result is int i ? i : result is null or DBNull ? 0 : 1;
 }
