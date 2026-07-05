@@ -33,18 +33,15 @@ public partial class SqlDataAccess : ISqlDataAccess
         // Map singular entity names to plural table names in the database
         FluentMapper
             .Entity<Venue>()
-            .Table("dbo.Venues")
-            .Build();
+            .Table("dbo.Venues");
 
         FluentMapper
             .Entity<Screen>()
-            .Table("dbo.Screens")
-            .Build();
+            .Table("dbo.Screens");
 
         FluentMapper
             .Entity<ScreenPairingCode>()
-            .Table("dbo.ScreenPairingCodes")
-            .Build();
+            .Table("dbo.ScreenPairingCodes");
     }
 
     protected TResult Execute<TResult>(string operationName, Func<SqlConnection, TResult> operation, object? parameters = null)
