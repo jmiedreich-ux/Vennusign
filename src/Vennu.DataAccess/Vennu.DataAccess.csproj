@@ -7,15 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.5" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.11" />
     <PackageReference Include="RepoDb.SqlServer" Version="1.13.14" />
     <PackageReference Include="Serilog" Version="4.2.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..
-Vennu.Core.Models\Vennu.Core.Models.csproj" />
+    <ProjectReference Include="..\Vennu.Core.Models\Vennu.Core.Models.csproj" />
   </ItemGroup>
 
 </Project>
