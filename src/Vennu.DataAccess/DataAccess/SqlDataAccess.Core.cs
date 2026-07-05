@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using RepoDb;
 using Serilog;
 using Serilog.Events;
-using Vennu.Data.Models;
 
 namespace Vennu.DataAccess;
 
@@ -31,18 +30,19 @@ public partial class SqlDataAccess : ISqlDataAccess
     private static void ConfigureTableMappings()
     {
         // Map singular entity names to plural table names
+        // Using string-based table names to avoid circular dependency on Vennu.Data
         FluentMapper
-            .Entity<Venue>()
+            .Entity<dynamic>()
             .Table("dbo.Venues")
             .Build();
 
         FluentMapper
-            .Entity<Screen>()
+            .Entity<dynamic>()
             .Table("dbo.Screens")
             .Build();
 
         FluentMapper
-            .Entity<ScreenPairingCode>()
+            .Entity<dynamic>()
             .Table("dbo.ScreenPairingCodes")
             .Build();
     }
