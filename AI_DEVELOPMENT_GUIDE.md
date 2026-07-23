@@ -2,16 +2,23 @@
 
 ## Purpose
 
-Vennu is a venue display platform. The active milestone is completion of Phase 02: a screen can boot, fetch content, connect to SignalR, send heartbeats, and receive real-time updates.
+Vennu is a venue display platform. The active milestone is completion of Phase 02: a screen can boot, fetch content, connect to SignalR, send heartbeats, receive real-time updates, and transition offline when heartbeats stop.
 
-## Read First
+`AGENTS.md` is the authoritative operating policy for AI development. This guide provides the concise implementation context used after mandatory session startup.
 
-1. `PROJECT_STATUS.md`
-2. The active file under `docs/work-packages/`
-3. `NEXT_STEPS.md`
-4. `Vennu_Roadmap_v5.md` only when broader context is required
+## Mandatory Read Order
 
-Do not reload the full roadmap when the active work package provides enough context.
+1. `AGENTS.md`
+2. `ai/handoffs/current.md`
+3. `PROJECT_STATUS.md`
+4. `tracker/assignments.json`
+5. The active file under `docs/work-packages/`
+6. This guide
+7. `NEXT_STEPS.md` only when the package requires additional Phase 02 context
+8. `Vennu_Roadmap_v5.md` only when broader product context is required
+9. Linked GitHub issue, branch, pull request, and CI state
+
+Repository and GitHub state are the source of truth. Do not reload the full roadmap when the active work package provides enough context.
 
 ## Architecture Boundaries
 
@@ -26,24 +33,54 @@ Do not reload the full roadmap when the active work package provides enough cont
 
 ## Work-Package Rules
 
+- Every implementation change must map to one documented work package.
+- Check and claim the package in `tracker/assignments.json` before modifying code.
 - Implement one work package at a time.
+- Use branch format `wp/<id>-<short-name>` and begin commit messages with the work-package ID.
+- Use one integration branch and pull request per package unless inseparable work is explicitly documented.
 - Do not refactor unrelated code.
 - Do not begin dependent packages before their dependency is complete.
 - Preserve public contracts unless the package explicitly authorizes a contract change.
 - Prefer the smallest change that satisfies the acceptance criteria.
 - Add or update tests in the same package as the behavior.
-- Update `PROJECT_STATUS.md` when a package starts or completes.
+- Delete package and lane branches after merge unless a documented exception requires retention.
+
+## Multi-Agent Efficiency
+
+- Default to sequential execution when file ownership cannot be divided cleanly.
+- Parallel work requires an orchestrator and explicit writable, read-only, and prohibited paths for every lane.
+- No two agents may modify the same file concurrently.
+- Shared contracts, project files, dependency injection, migrations, package configuration, shared fixtures, trackers, and handoffs remain orchestrator-owned.
+- Contract-dependent lanes may begin only after the orchestrator freezes and integrates the contract.
+- Lane agents stop rather than edit outside scope.
+- Only the orchestrator integrates branches, resolves conflicts, updates shared tracking, and decides readiness.
 
 ## Required Completion Report
 
-For every completed package, report:
+For every completed package, record:
 
 1. Files changed
 2. Behavior implemented
 3. Tests added or updated
 4. Validation commands executed
-5. Results
+5. Results and CI state
 6. Remaining risks or blockers
+7. Branch, commit, issue, and pull request
+8. One exact next action
+9. What the next agent must not redo or reverse
+
+## Documentation Consistency Gate
+
+A work package is not complete until all applicable records agree:
+
+- The active work-package document
+- `PROJECT_STATUS.md`
+- `tracker/assignments.json`
+- `ai/handoffs/current.md`
+- A dated archive under `ai/handoffs/archive/`
+- Relevant architecture, API, database, or operational documentation
+
+No repository record may continue to identify a completed package as Not Started, In Progress, Review, or the next action.
 
 ## Definition of Done
 
@@ -53,7 +90,10 @@ A work package is complete only when:
 - Required tests exist and pass.
 - The repository builds for the affected projects.
 - No unrelated behavior was changed.
-- Documentation and `PROJECT_STATUS.md` reflect the result.
+- Validation and CI state are recorded.
+- Documentation and tracking records are synchronized.
+- The pull request is merged.
+- The package branch is deleted unless retention is documented.
 
 ## Validation
 
@@ -63,7 +103,17 @@ Run the narrowest relevant tests during development. Before marking a package co
 ./scripts/validate.ps1
 ```
 
-Use `-SkipDisplay` or `-SkipIntegration` only when the package does not affect those areas, and record the skipped checks in the completion report.
+Use `-SkipDisplay` or `-SkipIntegration` only when the package does not affect those areas, and record the skipped checks and reason in the handoff.
+
+## Code Quality
+
+- Follow repository formatting and analyzer configuration.
+- Enable nullable reference types and implicit usings unless a documented project exception exists.
+- Treat enforced compiler, analyzer, and code-style warnings as errors when repository configuration supports it.
+- Use asynchronous APIs and pass `CancellationToken` through I/O paths.
+- Validate configuration at startup.
+- Do not add dependencies without documenting why.
+- Do not commit credentials, tokens, connection strings, or local secret files.
 
 ## Prohibited Assumptions
 
@@ -71,3 +121,4 @@ Use `-SkipDisplay` or `-SkipIntegration` only when the package does not affect t
 - Inspect existing implementations before adding parallel abstractions.
 - Do not replace working code solely for style consistency.
 - Do not start Phase 03 until WP-02.14 is complete.
+- Do not use chat history as the sole authority when repository state differs.
