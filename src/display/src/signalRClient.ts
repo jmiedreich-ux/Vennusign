@@ -1,8 +1,8 @@
 import {
   HubConnectionBuilder,
-  LogLevel,
-  type HubConnection
+  LogLevel
 } from '@microsoft/signalr';
+import { startDisplayConnection } from './displayConnection.mjs';
 import {
   displayRealtimeEvents,
   type DisplayRealtimeEventName
@@ -23,17 +23,11 @@ function buildHubUrl(apiBaseUrl: string) {
   return `${apiBaseUrl.replace(/\/$/, '')}/hubs/vennu`;
 }
 
-async function joinScreen(connection: HubConnection, screenId: string) {
-  await connection.invoke('JoinScreen', screenId);
-}
-
 export async function connectDisplayRealtime(
   apiBaseUrl: string,
   screenId: string,
   handlers: DisplayRealtimeHandlers
 ): Promise<DisplayRealtimeConnection> {
-  handlers.onConnectionStateChanged('connecting');
-
   const connection = new HubConnectionBuilder()
     .withUrl(buildHubUrl(apiBaseUrl))
     .withAutomaticReconnect()
@@ -55,26 +49,9 @@ export async function connectDisplayRealtime(
     handlers.onEvent(displayRealtimeEvents.syncTick, serverTimeMs)
   );
 
-  connection.onreconnecting(() => handlers.onConnectionStateChanged('reconnecting'));
-  connection.onreconnected(async () => {
-    try {
-      await joinScreen(connection, screenId);
-      handlers.onConnectionStateChanged('connected');
-    } catch {
-      handlers.onConnectionStateChanged('degraded');
-    }
-  });
-  connection.onclose(() => handlers.onConnectionStateChanged('degraded'));
-
-  try {
-    await connection.start();
-    await joinScreen(connection, screenId);
-    handlers.onConnectionStateChanged('connected');
-  } catch {
-    handlers.onConnectionStateChanged('degraded');
-  }
-
-  return {
-    stop: () => connection.stop()
-  };
+  return startDisplayConnection(
+    connection,
+    screenId,
+    handlers.onConnectionStateChanged
+  );
 }
