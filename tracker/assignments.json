@@ -1,8 +1,21 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-23T13:10:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-02.09",
+  "updatedUtc": "2026-07-24T21:20:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-02.09",
+      "branch": "wp/02.09-display-boot-flow",
+      "orchestrator": "ChatGPT",
+      "status": "Complete Pending Review",
+      "ownedPaths": [
+        "src/display/**",
+        "docs/work-packages/WP-02.09-display-boot-flow.md",
+        "PROJECT_STATUS.md",
+        "ai/handoffs/current.md"
+      ]
+    }
+  ],
+  "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

@@ -2,39 +2,36 @@
 
 ## Work Package
 
-- ID: WP-02.08
-- Status: Complete pending merge of PR #7
+- ID: WP-02.09
+- Status: Complete pending review and merge
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/02.08-display-foundation`
-- Pull request: #7
-- CI state: Existing `phase02-tests` run passed before the clean branch rebuild; GitHub did not trigger a fresh run for connector-authored commits.
+- Branch: `wp/02.09-display-boot-flow`
+- Pull request: Pending creation
+- CI state: Pending draft PR workflow
 
 ## Completed This Session
 
-- Added `/display/{screenId}` routing and screen ID exposure.
-- Added centralized API and SignalR endpoint configuration.
-- Added a top-level React error boundary.
-- Documented standalone display setup and commands.
-- Completed ChatGPT code and scope review.
-- Rebuilt the branch cleanly from current `master` to remove merge conflicts.
-- Synchronized project status, work package, and assignment tracking.
+- Claimed WP-02.09 in the assignment registry.
+- Added the display content loader for `GET /api/display/{screenId}/content`.
+- Added deterministic loading, not-found, API-error, and ready states.
+- Rendered the minimum board using the existing backend response contract only.
+- Added focused dependency-free Node frontend tests.
+- Synchronized the work package and project status documentation.
 
 ## Validation
 
-- Existing workflow evidence: .NET restore, Release build, unit tests, and integration tests passed.
-- Residual risk: the latest display production build has not received a fresh GitHub Actions run because connector-authored events were suppressed.
-
-## Review Decision
-
-- APPROVE, subject to the recorded connector-trigger limitation.
+- Frontend tests cover URL construction, one-request success, 404, server error, and network error.
+- Full display build, relevant API tests, and `validate.ps1 -SkipIntegration` remain for PR CI.
 
 ## Exact Next Action
 
-- Merge PR #7, then claim `wp/02.09-display-boot-flow`.
+- Review CI and the complete PR diff, then merge WP-02.09.
+- After merge, claim `wp/02.10-signalr-display-connection`.
 
 ## Do Not Redo or Reverse
 
-- Do not move content fetching, SignalR group handling, event processing, or heartbeat behavior into WP-02.08.
+- Do not add SignalR connections, event handling, or heartbeat scheduling to WP-02.09.
+- Do not redesign or expand the display content API contract.
