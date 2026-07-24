@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-24T23:40:00Z",
+  "updatedUtc": "2026-07-25T00:05:00Z",
   "activeAssignments": [
     {
       "workPackage": "WP-02.10",
       "branch": "wp/02.10-signalr-display-connection",
       "orchestrator": "ChatGPT",
-      "status": "In Progress",
+      "status": "Complete Pending Review",
       "ownedPaths": [
         "src/display/**",
         "docs/work-packages/WP-02.10-signalr-display-connection.md",
