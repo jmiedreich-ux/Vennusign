@@ -5,6 +5,7 @@ import {
   loadDisplayContent,
   type DisplayContent
 } from './displayContent.mjs';
+import { startDisplayHeartbeat } from './displayHeartbeat.mjs';
 import { applyRealtimeEvent } from './displayRealtime.mjs';
 import {
   connectDisplayRealtime,
@@ -12,7 +13,7 @@ import {
   type DisplayRealtimeConnection
 } from './signalRClient';
 
- type DisplayPageProps = {
+type DisplayPageProps = {
   screenId: string;
 };
 
@@ -29,6 +30,7 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
   useEffect(() => {
     const abortController = new AbortController();
     let realtimeConnection: DisplayRealtimeConnection | undefined;
+    let heartbeat: { stop: () => void } | undefined;
     let disposed = false;
 
     setState({ kind: 'loading' });
@@ -45,6 +47,7 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
         }
 
         setState({ kind: 'ready', content });
+        heartbeat = startDisplayHeartbeat(displayConfig.apiBaseUrl, screenId);
 
         realtimeConnection = await connectDisplayRealtime(
           displayConfig.apiBaseUrl,
@@ -88,6 +91,7 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
     return () => {
       disposed = true;
       abortController.abort();
+      heartbeat?.stop();
       void realtimeConnection?.stop();
     };
   }, [screenId]);
