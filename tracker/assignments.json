@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-24T21:20:00Z",
+  "updatedUtc": "2026-07-24T23:40:00Z",
   "activeAssignments": [
     {
-      "workPackage": "WP-02.09",
-      "branch": "wp/02.09-display-boot-flow",
+      "workPackage": "WP-02.10",
+      "branch": "wp/02.10-signalr-display-connection",
       "orchestrator": "ChatGPT",
-      "status": "Complete Pending Review",
+      "status": "In Progress",
       "ownedPaths": [
         "src/display/**",
-        "docs/work-packages/WP-02.09-display-boot-flow.md",
+        "docs/work-packages/WP-02.10-signalr-display-connection.md",
         "PROJECT_STATUS.md",
         "ai/handoffs/current.md"
       ]
