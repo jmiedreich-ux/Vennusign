@@ -18,35 +18,37 @@ A screen can boot, fetch content, connect to SignalR, send heartbeats, receive r
 - SignalR hub scaffolding at `/hubs/vennu`
 - Initial unit, integration, and E2E coverage for backend flows
 - WP-02.08 — Display Application Foundation
-- WP-02.09 — Display Boot Flow (pending PR review and merge)
+- WP-02.09 — Display Boot Flow
 
 ## Active Work Package
 
-**WP-02.09 — Display Boot Flow**
+**WP-02.10 — SignalR Display Connection**
 
 Status: Complete pending review and merge.
 
 ## Remaining Phase 02 Packages
 
-1. WP-02.10 — SignalR Display Connection
-2. WP-02.11 — Display Heartbeat
-3. WP-02.12 — Backend Notification Abstraction
-4. WP-02.13 — Offline Heartbeat Monitor
-5. WP-02.14 — Phase 02 Vertical-Slice Validation
+1. WP-02.11 — Display Heartbeat
+2. WP-02.12 — Backend Notification Abstraction
+3. WP-02.13 — Offline Heartbeat Monitor
+4. WP-02.14 — Phase 02 Vertical-Slice Validation
 
-## WP-02.09 Completion Evidence
+## WP-02.10 Completion Evidence
 
 Implemented:
 
-- Fetch display content once from `GET /api/display/{screenId}/content`.
-- Deterministic loading, not-found, API-error, and ready states.
-- Minimal board rendering using only the established API response contract.
-- Focused frontend tests for URL construction, success, 404, server failure, and network failure.
+- SignalR connection to `/hubs/vennu` after display content loads.
+- `JoinScreen(screenId)` on initial connection and reconnection.
+- Automatic reconnect configuration.
+- Deterministic handlers for `ContentUpdated`, `ThemeUpdated`, `ItemAvailabilityChanged`, and `SyncTick`.
+- Controlled connecting, connected, reconnecting, and degraded states.
+- Local display state updates without a full page reload.
+- Focused lifecycle and event-handler tests.
 
 Validation:
 
-- Node test command added without introducing another package dependency.
-- Display production build and repository validation are delegated to PR CI.
+- Dependency-free Node tests cover event state changes and SignalR lifecycle orchestration.
+- Display production build, backend SignalR tests, and repository validation are delegated to PR CI.
 
 ## Blockers
 
@@ -54,7 +56,7 @@ None currently recorded.
 
 ## Next Action
 
-Review and merge the WP-02.09 draft PR, then claim `WP-02.10 — SignalR Display Connection`.
+Review and merge the WP-02.10 draft PR, then claim `WP-02.11 — Display Heartbeat`.
 
 ## Phase Gate
 

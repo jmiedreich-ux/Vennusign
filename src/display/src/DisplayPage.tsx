@@ -5,8 +5,14 @@ import {
   loadDisplayContent,
   type DisplayContent
 } from './displayContent.mjs';
+import { applyRealtimeEvent } from './displayRealtime.mjs';
+import {
+  connectDisplayRealtime,
+  type DisplayConnectionState,
+  type DisplayRealtimeConnection
+} from './signalRClient';
 
-type DisplayPageProps = {
+ type DisplayPageProps = {
   screenId: string;
 };
 
@@ -18,20 +24,56 @@ type DisplayState =
 
 export default function DisplayPage({ screenId }: DisplayPageProps) {
   const [state, setState] = useState<DisplayState>({ kind: 'loading' });
+  const [connectionState, setConnectionState] = useState<DisplayConnectionState>('connecting');
 
   useEffect(() => {
     const abortController = new AbortController();
+    let realtimeConnection: DisplayRealtimeConnection | undefined;
+    let disposed = false;
 
     setState({ kind: 'loading' });
+    setConnectionState('connecting');
 
     loadDisplayContent(
       displayConfig.apiBaseUrl,
       screenId,
       (input, init) => fetch(input, { ...init, signal: abortController.signal })
     )
-      .then((content) => setState({ kind: 'ready', content }))
+      .then(async (content) => {
+        if (disposed) {
+          return;
+        }
+
+        setState({ kind: 'ready', content });
+
+        realtimeConnection = await connectDisplayRealtime(
+          displayConfig.apiBaseUrl,
+          screenId,
+          {
+            onConnectionStateChanged: (nextConnectionState) => {
+              if (!disposed) {
+                setConnectionState(nextConnectionState);
+              }
+            },
+            onEvent: (eventName, ...args) => {
+              if (disposed) {
+                return;
+              }
+
+              setState((currentState) =>
+                currentState.kind === 'ready'
+                  ? {
+                      kind: 'ready',
+                      content: applyRealtimeEvent(currentState.content, eventName, ...args)
+                    }
+                  : currentState
+              );
+            }
+          }
+        );
+      })
       .catch((error: unknown) => {
-        if (abortController.signal.aborted) {
+        if (abortController.signal.aborted || disposed) {
           return;
         }
 
@@ -43,7 +85,11 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
         setState({ kind: 'api-error', message: 'The display content could not be loaded.' });
       });
 
-    return () => abortController.abort();
+    return () => {
+      disposed = true;
+      abortController.abort();
+      void realtimeConnection?.stop();
+    };
   }, [screenId]);
 
   if (state.kind === 'loading') {
@@ -80,6 +126,7 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
       <header>
         <h1>{content.screenName}</h1>
         <p>{content.status}</p>
+        <p aria-live="polite">Real-time connection: {connectionState}</p>
       </header>
       <dl>
         <dt>Screen key</dt>

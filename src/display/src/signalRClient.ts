@@ -1,0 +1,57 @@
+import {
+  HubConnectionBuilder,
+  LogLevel
+} from '@microsoft/signalr';
+import { startDisplayConnection } from './displayConnection.mjs';
+import {
+  displayRealtimeEvents,
+  type DisplayRealtimeEventName
+} from './signalRTypes';
+
+export type DisplayConnectionState = 'connecting' | 'connected' | 'reconnecting' | 'degraded';
+
+export type DisplayRealtimeHandlers = {
+  onConnectionStateChanged: (state: DisplayConnectionState) => void;
+  onEvent: (eventName: DisplayRealtimeEventName, ...args: unknown[]) => void;
+};
+
+export type DisplayRealtimeConnection = {
+  stop: () => Promise<void>;
+};
+
+function buildHubUrl(apiBaseUrl: string) {
+  return `${apiBaseUrl.replace(/\/$/, '')}/hubs/vennu`;
+}
+
+export async function connectDisplayRealtime(
+  apiBaseUrl: string,
+  screenId: string,
+  handlers: DisplayRealtimeHandlers
+): Promise<DisplayRealtimeConnection> {
+  const connection = new HubConnectionBuilder()
+    .withUrl(buildHubUrl(apiBaseUrl))
+    .withAutomaticReconnect()
+    .configureLogging(LogLevel.Warning)
+    .build();
+
+  connection.on(displayRealtimeEvents.contentUpdated, (payload: unknown) =>
+    handlers.onEvent(displayRealtimeEvents.contentUpdated, payload)
+  );
+  connection.on(displayRealtimeEvents.themeUpdated, (theme: unknown) =>
+    handlers.onEvent(displayRealtimeEvents.themeUpdated, theme)
+  );
+  connection.on(
+    displayRealtimeEvents.itemAvailabilityChanged,
+    (itemId: string, available: boolean) =>
+      handlers.onEvent(displayRealtimeEvents.itemAvailabilityChanged, itemId, available)
+  );
+  connection.on(displayRealtimeEvents.syncTick, (serverTimeMs: number) =>
+    handlers.onEvent(displayRealtimeEvents.syncTick, serverTimeMs)
+  );
+
+  return startDisplayConnection(
+    connection,
+    screenId,
+    handlers.onConnectionStateChanged
+  );
+}
