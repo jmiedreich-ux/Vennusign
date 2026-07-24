@@ -18,34 +18,35 @@ A screen can boot, fetch content, connect to SignalR, send heartbeats, receive r
 - SignalR hub scaffolding at `/hubs/vennu`
 - Initial unit, integration, and E2E coverage for backend flows
 - WP-02.08 — Display Application Foundation
+- WP-02.09 — Display Boot Flow (pending PR review and merge)
 
 ## Active Work Package
 
-None. WP-02.09 is next.
+**WP-02.09 — Display Boot Flow**
+
+Status: Complete pending review and merge.
 
 ## Remaining Phase 02 Packages
 
-1. WP-02.09 — Display Boot Flow
-2. WP-02.10 — SignalR Display Connection
-3. WP-02.11 — Display Heartbeat
-4. WP-02.12 — Backend Notification Abstraction
-5. WP-02.13 — Offline Heartbeat Monitor
-6. WP-02.14 — Phase 02 Vertical-Slice Validation
+1. WP-02.10 — SignalR Display Connection
+2. WP-02.11 — Display Heartbeat
+3. WP-02.12 — Backend Notification Abstraction
+4. WP-02.13 — Offline Heartbeat Monitor
+5. WP-02.14 — Phase 02 Vertical-Slice Validation
 
-## WP-02.08 Completion Evidence
+## WP-02.09 Completion Evidence
 
 Implemented:
 
-- `/display/{screenId}` route parsing and page exposure
-- Centralized API and SignalR endpoint configuration
-- Top-level application error boundary
-- Independent display install, build, preview, and run documentation
+- Fetch display content once from `GET /api/display/{screenId}/content`.
+- Deterministic loading, not-found, API-error, and ready states.
+- Minimal board rendering using only the established API response contract.
+- Focused frontend tests for URL construction, success, 404, server failure, and network failure.
 
-Validation and review:
+Validation:
 
-- Existing `phase02-tests` run passed .NET restore, Release build, unit tests, and integration tests before the branch rebuild.
-- Full PR diff, scope, architecture, configuration, and documentation review completed.
-- GitHub suppressed fresh Actions runs for connector-authored commits; this remains a documented residual validation limitation.
+- Node test command added without introducing another package dependency.
+- Display production build and repository validation are delegated to PR CI.
 
 ## Blockers
 
@@ -53,7 +54,7 @@ None currently recorded.
 
 ## Next Action
 
-Claim and implement `docs/work-packages/WP-02.09-display-boot-flow.md` after PR #7 is merged.
+Review and merge the WP-02.09 draft PR, then claim `WP-02.10 — SignalR Display Connection`.
 
 ## Phase Gate
 
