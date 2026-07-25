@@ -1,16 +1,18 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-25T01:30:00Z",
+  "updatedUtc": "2026-07-25T01:45:00Z",
   "activeAssignments": [
     {
-      "workPackage": "WP-02.12",
-      "branch": "wp/02.12-backend-notification-abstraction",
+      "workPackage": "WP-02.13",
+      "branch": "wp/02.13-offline-heartbeat-monitor",
       "orchestrator": "ChatGPT",
       "status": "Complete Pending Review",
       "ownedPaths": [
         "src/Vennu.Api/**",
+        "src/Vennu.Data/**",
         "tests/Vennu.Api.Tests/**",
-        "docs/work-packages/WP-02.12-backend-notification-abstraction.md",
+        "tests/Vennu.DataAccess.Tests/**",
+        "docs/work-packages/WP-02.13-offline-heartbeat-monitor.md",
         "PROJECT_STATUS.md",
         "ai/handoffs/current.md"
       ]
