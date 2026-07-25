@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-25T00:05:00Z",
+  "updatedUtc": "2026-07-25T00:20:00Z",
   "activeAssignments": [
     {
-      "workPackage": "WP-02.10",
-      "branch": "wp/02.10-signalr-display-connection",
+      "workPackage": "WP-02.11",
+      "branch": "wp/02.11-display-heartbeat",
       "orchestrator": "ChatGPT",
       "status": "Complete Pending Review",
       "ownedPaths": [
         "src/display/**",
-        "docs/work-packages/WP-02.10-signalr-display-connection.md",
+        "docs/work-packages/WP-02.11-display-heartbeat.md",
         "PROJECT_STATUS.md",
         "ai/handoffs/current.md"
       ]
