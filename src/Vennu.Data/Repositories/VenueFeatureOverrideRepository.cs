@@ -11,16 +11,15 @@ public class VenueFeatureOverrideRepository : IVenueFeatureOverrideRepository
 
     public async Task<IReadOnlyCollection<VenueFeatureOverride>> GetActiveByVenueAsync(Guid venueId, DateTime utcNow, CancellationToken cancellationToken = default)
     {
-        const string sql = """
-            SELECT VenueId, FeatureId, Enabled, Reason, ExpiresAt, CreatedByAdminId, CreatedUtc
-            FROM dbo.VenueFeatureOverrides
-            WHERE VenueId = @VenueId AND (ExpiresAt IS NULL OR ExpiresAt > @UtcNow)
-            """;
+        var overrides = await dataAccess.QueryAsync<VenueFeatureOverride, object>(
+            "dbo.VenueFeatureOverrides",
+            new { VenueId = venueId },
+            cancellationToken).ConfigureAwait(false);
 
-        return (await dataAccess.QueryAsync<VenueFeatureOverride>(sql, new { VenueId = venueId, UtcNow = utcNow }, cancellationToken).ConfigureAwait(false)).ToArray();
+        return overrides.Where(item => item.ExpiresAt is null || item.ExpiresAt > utcNow).ToArray();
     }
 
-    public Task UpsertAsync(VenueFeatureOverride featureOverride, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(VenueFeatureOverride featureOverride, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(featureOverride);
         if (string.IsNullOrWhiteSpace(featureOverride.Reason))
@@ -28,22 +27,10 @@ public class VenueFeatureOverrideRepository : IVenueFeatureOverrideRepository
             throw new ArgumentException("An override reason is required.", nameof(featureOverride));
         }
 
-        const string sql = """
-            MERGE dbo.VenueFeatureOverrides AS target
-            USING (SELECT @VenueId AS VenueId, @FeatureId AS FeatureId) AS source
-               ON target.VenueId = source.VenueId AND target.FeatureId = source.FeatureId
-            WHEN MATCHED THEN UPDATE SET Enabled = @Enabled, Reason = @Reason, ExpiresAt = @ExpiresAt, CreatedByAdminId = @CreatedByAdminId, CreatedUtc = @CreatedUtc
-            WHEN NOT MATCHED THEN INSERT (VenueId, FeatureId, Enabled, Reason, ExpiresAt, CreatedByAdminId, CreatedUtc)
-                VALUES (@VenueId, @FeatureId, @Enabled, @Reason, @ExpiresAt, @CreatedByAdminId, @CreatedUtc);
-            """;
-
         featureOverride.CreatedUtc = featureOverride.CreatedUtc == default ? DateTime.UtcNow : featureOverride.CreatedUtc;
-        return dataAccess.ExecuteAsync(sql, featureOverride, cancellationToken);
-    }
-
-    public Task DeleteAsync(Guid venueId, Guid featureId, CancellationToken cancellationToken = default)
-    {
-        const string sql = "DELETE FROM dbo.VenueFeatureOverrides WHERE VenueId = @VenueId AND FeatureId = @FeatureId";
-        return dataAccess.ExecuteAsync(sql, new { VenueId = venueId, FeatureId = featureId }, cancellationToken);
+        await dataAccess.MergeAllAsync(
+            new[] { featureOverride },
+            "dbo.VenueFeatureOverrides",
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 }
