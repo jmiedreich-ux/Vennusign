@@ -20,35 +20,33 @@ A screen can boot, fetch content, connect to SignalR, send heartbeats, receive r
 - WP-02.08 — Display Application Foundation
 - WP-02.09 — Display Boot Flow
 - WP-02.10 — SignalR Display Connection
+- WP-02.11 — Display Heartbeat
 
 ## Active Work Package
 
-**WP-02.11 — Display Heartbeat**
+**WP-02.12 — Backend Notification Abstraction**
 
 Status: Complete pending review and merge.
 
 ## Remaining Phase 02 Packages
 
-1. WP-02.12 — Backend Notification Abstraction
-2. WP-02.13 — Offline Heartbeat Monitor
-3. WP-02.14 — Phase 02 Vertical-Slice Validation
+1. WP-02.13 — Offline Heartbeat Monitor
+2. WP-02.14 — Phase 02 Vertical-Slice Validation
 
-## WP-02.11 Completion Evidence
+## WP-02.12 Completion Evidence
 
 Implemented:
 
-- Immediate heartbeat after successful display boot.
-- `POST /api/display/{screenId}/heartbeat` every 30 seconds.
-- Existing `{ status: "Online" }` API request contract.
-- A single guarded loop that prevents overlapping requests.
-- Temporary failure handling without crashing the display.
-- Timer and in-flight request cleanup during teardown.
-- Controlled-timer frontend tests.
+- `IScreenUpdateNotifier` application abstraction.
+- SignalR-backed implementation using `IHubContext<VennuHub>`.
+- Screen and venue routing with existing group conventions.
+- Content, theme, item availability, and synchronization notifications.
+- Dependency injection registration.
+- Unit tests for every notifier method and routed payload.
 
 Validation:
 
-- Focused Node tests cover URL construction, request contract, interval cadence, overlap prevention, and teardown.
-- Display production build, existing heartbeat API tests, and repository validation are delegated to PR CI.
+- API tests, solution build, and repository validation are delegated to PR CI.
 
 ## Blockers
 
@@ -56,7 +54,7 @@ None currently recorded.
 
 ## Next Action
 
-Review and merge the WP-02.11 draft PR, then claim `WP-02.12 — Backend Notification Abstraction`.
+Review and merge the WP-02.12 draft PR, then claim `WP-02.13 — Offline Heartbeat Monitor`.
 
 ## Phase Gate
 
