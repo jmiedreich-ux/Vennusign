@@ -1,0 +1,15 @@
+namespace Vennu.Core.Models;
+
+public class SubscriptionTier
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int MaxScreens { get; set; }
+    public bool IsPublic { get; set; } = true;
+    public bool IsActive { get; set; } = true;
+    public string? StripeProductId { get; set; }
+    public DateTime CreatedUtc { get; set; }
+    public DateTime UpdatedUtc { get; set; }
+}
