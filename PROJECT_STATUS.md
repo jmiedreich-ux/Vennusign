@@ -22,41 +22,31 @@ A screen can boot, fetch content, connect to SignalR, send heartbeats, receive r
 - WP-02.10 — SignalR Display Connection
 - WP-02.11 — Display Heartbeat
 - WP-02.12 — Backend Notification Abstraction
+- WP-02.13 — Offline Heartbeat Monitor
 
 ## Active Work Package
 
-**WP-02.13 — Offline Heartbeat Monitor**
+**WP-02.14 — Phase 02 Vertical-Slice Validation**
 
-Status: Complete pending review and merge.
+Status: Complete pending PR CI, review, and merge.
 
-## Remaining Phase 02 Packages
+## Phase 02 Validation Evidence
 
-1. WP-02.14 — Phase 02 Vertical-Slice Validation
-
-## WP-02.13 Completion Evidence
-
-Implemented:
-
-- Repository transition for stale online screens.
-- 90-second stale threshold.
-- Configurable background check interval with a 30-second default.
-- Hosted heartbeat monitor registered through dependency injection.
-- Exact-boundary behavior that keeps a screen online at the cutoff.
-- Empty-result, repeated-execution, and cancellation handling.
-- Repository and hosted-service unit tests.
-
-Validation:
-
-- Repository tests, hosted-service tests, integration tests, solution build, and `validate.ps1 -SkipDisplay` are delegated to PR CI.
+- HTTP E2E coverage creates a venue and screen, creates and claims a pairing code, loads paired display content, and records online heartbeat state.
+- The Phase 02 vertical-slice test proves a stale heartbeat transitions the screen from `Online` to `Offline`.
+- WP-02.10 display tests prove screen group membership, reconnection, and event handling.
+- WP-02.12 notifier tests prove screen and venue group routing for all four verified SignalR events.
+- The two-context browser procedure and accepted execution limitation are recorded in `docs/validation/phase-02-vertical-slice.md`.
+- The full `./scripts/validate.ps1` suite is delegated to PR CI.
 
 ## Blockers
 
 None currently recorded.
 
-## Next Action
+## Next Phase
 
-Review and merge the WP-02.13 draft PR, then begin `WP-02.14 — Phase 02 Vertical-Slice Validation`.
+**Phase 03 — Tier System & Feature Flags**
 
-## Phase Gate
+First package: **WP-03.01 — Feature and Tier Core Models**.
 
-Do not begin Phase 03 until WP-02.14 is complete and its success criteria are recorded.
+Do not begin WP-03.01 until WP-02.14 CI succeeds and the PR is merged.

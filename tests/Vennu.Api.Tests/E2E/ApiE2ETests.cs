@@ -267,6 +267,24 @@ internal sealed class InMemoryScreenRepository : IScreenRepository
         screen.Status = status;
         return Task.FromResult(true);
     }
+
+    public Task<int> MarkStaleOnlineScreensOfflineAsync(DateTime cutoffUtc, CancellationToken cancellationToken = default)
+    {
+        var updatedUtc = DateTime.UtcNow;
+        var staleScreens = store.Screens.Values
+            .Where(screen => string.Equals(screen.Status, "Online", StringComparison.Ordinal)
+                && screen.LastSeen.HasValue
+                && screen.LastSeen.Value < cutoffUtc)
+            .ToArray();
+
+        foreach (var screen in staleScreens)
+        {
+            screen.Status = "Offline";
+            screen.UpdatedUtc = updatedUtc;
+        }
+
+        return Task.FromResult(staleScreens.Length);
+    }
 }
 
 internal sealed class InMemoryScreenPairingCodeRepository : IScreenPairingCodeRepository
