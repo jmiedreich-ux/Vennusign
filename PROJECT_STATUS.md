@@ -21,32 +21,33 @@ A screen can boot, fetch content, connect to SignalR, send heartbeats, receive r
 - WP-02.09 — Display Boot Flow
 - WP-02.10 — SignalR Display Connection
 - WP-02.11 — Display Heartbeat
+- WP-02.12 — Backend Notification Abstraction
 
 ## Active Work Package
 
-**WP-02.12 — Backend Notification Abstraction**
+**WP-02.13 — Offline Heartbeat Monitor**
 
 Status: Complete pending review and merge.
 
 ## Remaining Phase 02 Packages
 
-1. WP-02.13 — Offline Heartbeat Monitor
-2. WP-02.14 — Phase 02 Vertical-Slice Validation
+1. WP-02.14 — Phase 02 Vertical-Slice Validation
 
-## WP-02.12 Completion Evidence
+## WP-02.13 Completion Evidence
 
 Implemented:
 
-- `IScreenUpdateNotifier` application abstraction.
-- SignalR-backed implementation using `IHubContext<VennuHub>`.
-- Screen and venue routing with existing group conventions.
-- Content, theme, item availability, and synchronization notifications.
-- Dependency injection registration.
-- Unit tests for every notifier method and routed payload.
+- Repository transition for stale online screens.
+- 90-second stale threshold.
+- Configurable background check interval with a 30-second default.
+- Hosted heartbeat monitor registered through dependency injection.
+- Exact-boundary behavior that keeps a screen online at the cutoff.
+- Empty-result, repeated-execution, and cancellation handling.
+- Repository and hosted-service unit tests.
 
 Validation:
 
-- API tests, solution build, and repository validation are delegated to PR CI.
+- Repository tests, hosted-service tests, integration tests, solution build, and `validate.ps1 -SkipDisplay` are delegated to PR CI.
 
 ## Blockers
 
@@ -54,7 +55,7 @@ None currently recorded.
 
 ## Next Action
 
-Review and merge the WP-02.12 draft PR, then claim `WP-02.13 — Offline Heartbeat Monitor`.
+Review and merge the WP-02.13 draft PR, then begin `WP-02.14 — Phase 02 Vertical-Slice Validation`.
 
 ## Phase Gate
 

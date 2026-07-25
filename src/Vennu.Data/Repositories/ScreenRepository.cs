@@ -72,4 +72,28 @@ public class ScreenRepository : IScreenRepository
         screen.UpdatedUtc = DateTime.UtcNow;
         return await dataAccess.UpdateAsync(screen, cancellationToken).ConfigureAwait(false) > 0;
     }
+
+    public async Task<int> MarkStaleOnlineScreensOfflineAsync(DateTime cutoffUtc, CancellationToken cancellationToken = default)
+    {
+        var screens = await dataAccess.QueryAllAsync<Screen>(cancellationToken).ConfigureAwait(false);
+        var staleScreens = screens
+            .Where(screen => string.Equals(screen.Status, "Online", StringComparison.OrdinalIgnoreCase)
+                && (!screen.LastSeen.HasValue || screen.LastSeen.Value < cutoffUtc))
+            .ToArray();
+
+        if (staleScreens.Length == 0)
+        {
+            return 0;
+        }
+
+        var updatedUtc = DateTime.UtcNow;
+        foreach (var screen in staleScreens)
+        {
+            screen.Status = "Offline";
+            screen.UpdatedUtc = updatedUtc;
+        }
+
+        await dataAccess.UpdateAllAsync(staleScreens, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return staleScreens.Length;
+    }
 }
