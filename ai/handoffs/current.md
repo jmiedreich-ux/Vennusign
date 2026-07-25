@@ -2,39 +2,38 @@
 
 ## Work Package
 
-- ID: WP-02.10
+- ID: WP-02.12
 - Status: Complete pending review and merge
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/02.10-signalr-display-connection`
+- Branch: `wp/02.12-backend-notification-abstraction`
 - Pull request: Pending creation
 - CI state: Pending draft PR workflow
 
 ## Completed This Session
 
-- Merged WP-02.09.
-- Claimed WP-02.10 in the assignment registry.
-- Added the display SignalR connection at `/hubs/vennu`.
-- Added `JoinScreen(screenId)` on initial connection and reconnection.
-- Added automatic reconnect and controlled degraded state handling.
-- Added handlers for `ContentUpdated`, `ThemeUpdated`, `ItemAvailabilityChanged`, and `SyncTick`.
-- Added focused lifecycle and event-state tests.
-- Synchronized the work package and project status documentation.
+- Merged WP-02.11.
+- Added `IScreenUpdateNotifier`.
+- Added the SignalR-backed notifier implementation.
+- Added screen and venue routing for all four Phase 02 events.
+- Registered the notifier through dependency injection.
+- Added dependency-free SignalR routing tests for every notifier method.
+- Synchronized work-package, project-status, assignment, and handoff records.
 
 ## Validation
 
-- Node tests cover event state changes, initial screen group membership, reconnect group restoration, and degraded startup.
-- Full display build, relevant backend tests, and `validate.ps1 -SkipIntegration` remain for PR CI.
+- Unit tests verify group names, event names, and argument order.
+- API test execution, solution build, and `validate.ps1 -SkipDisplay -SkipIntegration` remain for PR CI.
 
 ## Exact Next Action
 
-- Review CI and the complete PR diff, then merge WP-02.10.
-- After merge, claim `wp/02.11-display-heartbeat`.
+- Review CI and the complete PR diff, then merge WP-02.12.
+- After merge, claim `wp/02.13-offline-heartbeat-monitor`.
 
 ## Do Not Redo or Reverse
 
-- Do not add heartbeat scheduling to WP-02.10.
-- Do not add the backend notification abstraction to WP-02.10.
-- Do not redesign the four existing SignalR event names or payload contracts.
+- Do not expose `IHubContext<VennuHub>` directly to controllers or application services.
+- Do not rename the four verified SignalR events.
+- Do not add offline detection behavior to WP-02.12.
