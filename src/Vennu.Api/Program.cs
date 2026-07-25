@@ -1,6 +1,7 @@
 using Vennu.Data;
 using Vennu.Data.Extensions;
 using Vennu.Api.Hubs;
+using Vennu.Api.Notifications;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier>();
 builder.Services.AddVennuData();
 
 if (!builder.Environment.IsEnvironment("Testing"))
