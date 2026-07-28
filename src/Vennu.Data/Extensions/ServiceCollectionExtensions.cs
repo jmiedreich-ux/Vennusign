@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStripeSubscriptionEventHandler, StripeSubscriptionEventHandler>();
         services.AddScoped<IVenueDirectoryService, VenueDirectoryService>();
         services.AddScoped<IVenueSupportDetailService, VenueSupportDetailService>();
+        services.AddScoped<ITierManagementService, TierManagementService>();
         return services;
     }
 }

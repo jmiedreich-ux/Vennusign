@@ -100,13 +100,25 @@ internal sealed class FakeVenueSubscriptionRepository : IVenueSubscriptionReposi
 
 internal sealed class FakeSubscriptionTierRepository : ISubscriptionTierRepository
 {
-    public IReadOnlyCollection<SubscriptionTier> Items { get; init; } = [];
+    public IReadOnlyCollection<SubscriptionTier> Items { get; set; } = [];
 
     public Task<IReadOnlyCollection<SubscriptionTier>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult(Items);
+    public Task<SubscriptionTier?> GetByIdAsync(Guid tierId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Items.FirstOrDefault(item => item.Id == tierId));
     public Task<SubscriptionTier?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) =>
         Task.FromResult(Items.FirstOrDefault(item => item.Slug == slug));
     public Task<IReadOnlyCollection<TierFeature>> GetFeaturesAsync(Guid tierId, CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyCollection<TierFeature>>([]);
+    public Task<bool> CreateAsync(SubscriptionTier tier, CancellationToken cancellationToken = default)
+    {
+        Items = [.. Items, tier];
+        return Task.FromResult(true);
+    }
+    public Task<bool> UpdateAsync(SubscriptionTier tier, CancellationToken cancellationToken = default)
+    {
+        Items = [.. Items.Where(item => item.Id != tier.Id), tier];
+        return Task.FromResult(true);
+    }
 }
 
 internal sealed class FakeVenueFeatureOverrideRepository : IVenueFeatureOverrideRepository
