@@ -93,6 +93,9 @@ public class FeatureResolutionServiceTests
 
     private sealed class SubscriptionRepositoryFake(VenueSubscription? subscription) : IVenueSubscriptionRepository
     {
+        public Task<IReadOnlyCollection<VenueSubscription>> GetAllAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyCollection<VenueSubscription>>(subscription is null ? Array.Empty<VenueSubscription>() : new[] { subscription });
+
         public Task<VenueSubscription?> GetByVenueIdAsync(Guid venueId, CancellationToken cancellationToken = default) => Task.FromResult(subscription);
         public Task<bool> SaveAsync(VenueSubscription value, CancellationToken cancellationToken = default) => Task.FromResult(true);
     }
