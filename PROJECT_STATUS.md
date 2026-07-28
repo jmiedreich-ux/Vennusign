@@ -33,6 +33,7 @@ Status: Implementation complete; blocked pending authoritative integration valid
 ## Blockers
 
 - GitHub Actions integration tests cannot authenticate to the configured Azure SQL test database. Run `30331559584` reports `Login failed for user 'sqladmin'` for the `VENU_TEST_AZURE_SQL_CONNECTION_STRING` secret in the `dev` environment.
+- A fresh failed-jobs retry on 2026-07-28 (job `90191758018`) reproduced the same login failure after restore, Release build, display production build, and all unit tests passed.
 - PR #17 must not merge until that credential is repaired and the full required workflow passes against the final head commit.
 
 ## Next Package
