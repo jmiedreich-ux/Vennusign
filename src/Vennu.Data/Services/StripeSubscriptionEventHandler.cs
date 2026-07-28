@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Vennu.Core.Models;
 using Vennu.Data.Repositories;
 
@@ -124,6 +126,7 @@ public sealed class StripeSubscriptionEventHandler : IStripeSubscriptionEventHan
         if (isNewSubscription)
         {
             await RecordAsync(
+                stripeEvent.EventId,
                 subscription.VenueId,
                 "signup",
                 $"New {tier.Name} subscription",
@@ -137,6 +140,7 @@ public sealed class StripeSubscriptionEventHandler : IStripeSubscriptionEventHan
                 : await billingCatalogRepository.GetByIdAsync(previousTierId.Value, cancellationToken).ConfigureAwait(false);
             var eventType = previousTier is not null && tier.Price < previousTier.Price ? "downgrade" : "upgrade";
             await RecordAsync(
+                stripeEvent.EventId,
                 subscription.VenueId,
                 eventType,
                 $"{(eventType == "upgrade" ? "Upgraded" : "Downgraded")} to {tier.Name}",
@@ -171,6 +175,7 @@ public sealed class StripeSubscriptionEventHandler : IStripeSubscriptionEventHan
         subscription.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
         await SaveAndInvalidateAsync(subscription, cancellationToken).ConfigureAwait(false);
         await RecordAsync(
+            stripeEvent.EventId,
             subscription.VenueId,
             "churn",
             "Subscription canceled",
@@ -202,6 +207,7 @@ public sealed class StripeSubscriptionEventHandler : IStripeSubscriptionEventHan
     }
 
     private Task RecordAsync(
+        string sourceEventId,
         Guid venueId,
         string eventType,
         string summary,
@@ -210,13 +216,19 @@ public sealed class StripeSubscriptionEventHandler : IStripeSubscriptionEventHan
         operationalEventRepository.AddAsync(
             new OperationalEvent
             {
-                Id = Guid.NewGuid(),
+                Id = CreateOperationalEventId(sourceEventId),
                 VenueId = venueId,
                 EventType = eventType,
                 Summary = summary,
                 OccurredUtc = occurredUtc
             },
             cancellationToken);
+
+    private static Guid CreateOperationalEventId(string sourceEventId)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(sourceEventId));
+        return new Guid(hash.AsSpan(0, 16));
+    }
 
     private static bool IsSupported(string eventType) =>
         eventType is SubscriptionCreated or CustomerSubscriptionCreated or CustomerSubscriptionUpdated or InvoicePaid or CustomerSubscriptionDeleted;
