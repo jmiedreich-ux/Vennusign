@@ -26,18 +26,29 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
+      - name: Restore
+        shell: bash
+        run: |
+          set +e
+          dotnet restore ${{ github.workspace }}/Vennusign.sln > restore.log 2>&1
+          status=$?
+          if [ $status -ne 0 ]; then
+            echo "=== Restore Errors ==="
+            grep -E "(error|NU[0-9]{4}|MSB[0-9]{4})" restore.log || tail -n 80 restore.log
+            echo "======================"
+            exit $status
+          fi
+          cat restore.log
+
+      - name: Build
+        run: dotnet build ${{ github.workspace }}/Vennusign.sln --configuration Release --no-restore
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
           cache: npm
           cache-dependency-path: src/display/package-lock.json
-
-      - name: Restore
-        run: dotnet restore ${{ github.workspace }}/Vennusign.sln
-
-      - name: Build
-        run: dotnet build ${{ github.workspace }}/Vennusign.sln --configuration Release --no-restore
 
       - name: Install display dependencies
         working-directory: src/display
