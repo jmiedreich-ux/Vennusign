@@ -36,6 +36,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFeatureMatrixRepository, FeatureMatrixRepository>();
         services.AddScoped<IFeatureMatrixService, FeatureMatrixService>();
         services.AddScoped<IVenueFeatureOverrideManagementService, VenueFeatureOverrideManagementService>();
+        services.AddScoped<IVenueTierSwitchService, VenueTierSwitchService>();
         services.AddScoped<IOperationalDashboardService, OperationalDashboardService>();
         services.AddScoped<IOperationalEventFeedService, OperationalEventFeedService>();
         services.AddScoped<IRevenueSnapshotService, RevenueSnapshotService>();
