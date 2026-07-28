@@ -1,25 +1,23 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-28T15:30:00Z",
+  "updatedUtc": "2026-07-28T16:30:00Z",
   "activeAssignments": [
     {
-      "workPackage": "WP-03.06",
-      "branch": "wp/03.06-stripe-event-idempotency",
+      "workPackage": "WP-03.07",
+      "branch": "wp/03.07-stripe-subscription-events",
       "orchestrator": "ChatGPT",
       "status": "Complete Pending Review",
       "ownedPaths": [
-        "src/Vennu.Core.Models/ProcessedStripeEvent.cs",
-        "src/Vennu.Data/Repositories/*ProcessedStripeEvent*",
-        "src/Vennu.Data/Services/*StripeEventIdempotency*",
-        "src/Vennu.Data/Scripts/008_create_processed_stripe_events.sql",
-        "tests/Vennu.DataAccess.Tests/*StripeEvent*Tests.cs",
-        "docs/work-packages/WP-03.06-stripe-event-idempotency.md",
+        "src/Vennu.Data/Repositories/*VenueSubscription*",
+        "src/Vennu.Data/Services/*StripeSubscriptionEvent*",
+        "tests/Vennu.DataAccess.Tests/StripeSubscriptionEventHandlerTests.cs",
+        "docs/work-packages/WP-03.07-stripe-subscription-events.md",
         "PROJECT_STATUS.md",
         "ai/handoffs/current.md"
       ]
     }
   ],
-  "nextAvailableWorkPackage": "WP-03.07",
+  "nextAvailableWorkPackage": "WP-04.01",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

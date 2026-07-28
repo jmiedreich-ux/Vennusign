@@ -97,6 +97,8 @@ public class FeatureResolutionServiceTests
             Task.FromResult<IReadOnlyCollection<VenueSubscription>>(subscription is null ? Array.Empty<VenueSubscription>() : new[] { subscription });
 
         public Task<VenueSubscription?> GetByVenueIdAsync(Guid venueId, CancellationToken cancellationToken = default) => Task.FromResult(subscription);
+        public Task<VenueSubscription?> GetByStripeSubscriptionIdAsync(string stripeSubscriptionId, CancellationToken cancellationToken = default) =>
+            Task.FromResult(subscription?.StripeSubscriptionId == stripeSubscriptionId ? subscription : null);
         public Task<bool> SaveAsync(VenueSubscription value, CancellationToken cancellationToken = default) => Task.FromResult(true);
     }
 

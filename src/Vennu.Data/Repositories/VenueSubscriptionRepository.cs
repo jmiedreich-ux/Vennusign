@@ -15,6 +15,16 @@ public sealed class VenueSubscriptionRepository : IVenueSubscriptionRepository
     public Task<VenueSubscription?> GetByVenueIdAsync(Guid venueId, CancellationToken cancellationToken = default) =>
         dataAccess.QueryAsync<VenueSubscription>(new { VenueId = venueId }, cancellationToken);
 
+    public Task<VenueSubscription?> GetByStripeSubscriptionIdAsync(
+        string stripeSubscriptionId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(stripeSubscriptionId);
+        return dataAccess.QueryAsync<VenueSubscription>(
+            new { StripeSubscriptionId = stripeSubscriptionId },
+            cancellationToken);
+    }
+
     public async Task<bool> SaveAsync(VenueSubscription subscription, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(subscription);

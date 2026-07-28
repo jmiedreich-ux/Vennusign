@@ -2,36 +2,37 @@
 
 ## Work Package
 
-- ID: WP-03.06
+- ID: WP-03.07
 - Status: Complete pending final CI, ChatGPT review, and merge
 - Execution mode: Sequential automation
 
 ## Git State
 
-- Branch: `wp/03.06-stripe-event-idempotency`
-- Issue: #22
-- Pull request: #23
+- Branch: `wp/03.07-stripe-subscription-events`
+- Issue: #24
+- Pull request: Pending
 
 ## Delivered
 
-- Persistent Stripe event claim and completion state.
-- Atomic duplicate rejection with stale-processing lease recovery.
-- Retryable failed-event state and bounded failure details.
-- Execute-once service, table mapping, migration, dependency injection, and unit tests.
+- Transport-neutral Stripe subscription event contract and handler.
+- Idempotent handling for subscription creation, updates, paid invoices, and deletion.
+- Tier lookup by configured Stripe price ID.
+- Venue/subscription identity safeguards and feature-cache invalidation.
+- Focused unit coverage for supported transitions and duplicate rejection.
 
 ## Validation
 
 - Local .NET validation unavailable because the runtime does not contain the .NET SDK.
 - Integration-type tests intentionally skipped under standing owner instruction.
-- GitHub Actions run `30370951033` passed restore, Release build, display production build, and unit tests against head `7e0b56fdc5ece7da9715eed5c22179b480595988`.
-- Fresh CI is required against this final documentation commit.
+- GitHub Actions must pass restore, Release build, display production build, and unit tests against the final head.
 
 ## Exact Next Action
 
-Publish WP-03.06, inspect required non-integration CI, record ChatGPT approval, and merge if all required checks pass.
+Publish WP-03.07, inspect required non-integration CI, record ChatGPT approval, and merge if all required checks pass. Then mark Phase 03 complete without starting Phase 04.
 
 ## Do Not Redo or Reverse
 
-- Do not mark an event processed before its handler succeeds.
-- Do not make failed or stale processing claims permanently unretryable.
-- Do not begin WP-03.07 before WP-03.06 merges.
+- Do not bypass the persistent Stripe event idempotency service.
+- Do not allow a Stripe subscription ID to move silently between venues.
+- Do not add the HTTP webhook endpoint, signature verification, or Stripe SDK in WP-03.07.
+- Do not begin Phase 04 before WP-03.07 merges.
