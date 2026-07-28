@@ -1,0 +1,27 @@
+export const DISPLAY_HEARTBEAT_INTERVAL_MS: number;
+
+export type DisplayHeartbeatOptions = {
+  fetchImpl?: typeof fetch;
+  setIntervalImpl?: typeof setInterval;
+  clearIntervalImpl?: typeof clearInterval;
+  intervalMs?: number;
+};
+
+export type DisplayHeartbeat = {
+  stop: () => void;
+};
+
+export function buildDisplayHeartbeatUrl(apiBaseUrl: string, screenId: string): string;
+
+export function sendDisplayHeartbeat(
+  apiBaseUrl: string,
+  screenId: string,
+  fetchImpl?: typeof fetch,
+  signal?: AbortSignal
+): Promise<unknown>;
+
+export function startDisplayHeartbeat(
+  apiBaseUrl: string,
+  screenId: string,
+  options?: DisplayHeartbeatOptions
+): DisplayHeartbeat;
