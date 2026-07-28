@@ -18,17 +18,18 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 - WP-03.04 — Usage Metering
 - WP-03.05 — Stripe Billing Catalog
 - WP-03.06 — Stripe Event Idempotency
+- WP-03.07 — Stripe Subscription Event Handling
 
 ## Active Work Package
 
-None pending WP-03.06 pull-request validation, review, and merge.
+None. WP-03.07 is complete.
 
-## WP-03.06 Progress
+## WP-03.07 Progress
 
-- Added persistent Stripe event processing state.
-- Added atomic duplicate rejection and stale-claim recovery.
-- Added retryable failure handling and execute-once orchestration.
-- Added focused unit coverage.
+- Added transport-neutral subscription lifecycle event handling.
+- Added tier resolution from configured Stripe price IDs.
+- Added subscription identity consistency checks and cache invalidation.
+- Added idempotent processing and focused unit coverage for all supported transitions.
 
 ## Standing Validation Exception
 
@@ -37,6 +38,6 @@ None pending WP-03.06 pull-request validation, review, and merge.
 
 ## Next Package
 
-**WP-03.07 — Stripe Subscription Event Handling**
+**WP-03.08 — Stripe Webhook Endpoint**
 
-WP-03.07 is the next unfinished package after WP-03.06 merges.
+WP-03.08 is the next unfinished package. It must add verified webhook transport without reimplementing the lifecycle or idempotency logic completed in WP-03.06 and WP-03.07.

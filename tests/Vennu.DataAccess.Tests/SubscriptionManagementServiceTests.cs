@@ -107,6 +107,11 @@ public class SubscriptionManagementServiceTests
         public Task<VenueSubscription?> GetByVenueIdAsync(Guid venueId, CancellationToken cancellationToken = default) =>
             Task.FromResult(Items.SingleOrDefault(item => item.VenueId == venueId));
 
+        public Task<VenueSubscription?> GetByStripeSubscriptionIdAsync(
+            string stripeSubscriptionId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(Items.SingleOrDefault(item => item.StripeSubscriptionId == stripeSubscriptionId));
+
         public Task<bool> SaveAsync(VenueSubscription subscription, CancellationToken cancellationToken = default)
         {
             var existing = Items.FindIndex(item => item.VenueId == subscription.VenueId);

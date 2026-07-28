@@ -6,5 +6,6 @@ public interface IVenueSubscriptionRepository
 {
     Task<IReadOnlyCollection<VenueSubscription>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<VenueSubscription?> GetByVenueIdAsync(Guid venueId, CancellationToken cancellationToken = default);
+    Task<VenueSubscription?> GetByStripeSubscriptionIdAsync(string stripeSubscriptionId, CancellationToken cancellationToken = default);
     Task<bool> SaveAsync(VenueSubscription subscription, CancellationToken cancellationToken = default);
 }
