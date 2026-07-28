@@ -123,10 +123,21 @@ internal sealed class FakeSubscriptionTierRepository : ISubscriptionTierReposito
 
 internal sealed class FakeVenueFeatureOverrideRepository : IVenueFeatureOverrideRepository
 {
-    public IReadOnlyCollection<VenueFeatureOverride> Items { get; init; } = [];
+    public IReadOnlyCollection<VenueFeatureOverride> Items { get; set; } = [];
 
     public Task<IReadOnlyCollection<VenueFeatureOverride>> GetActiveByVenueAsync(Guid venueId, DateTime utcNow, CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyCollection<VenueFeatureOverride>>(Items.Where(item =>
             item.VenueId == venueId && (!item.ExpiresAt.HasValue || item.ExpiresAt > utcNow)).ToArray());
-    public Task UpsertAsync(VenueFeatureOverride featureOverride, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task UpsertAsync(VenueFeatureOverride featureOverride, CancellationToken cancellationToken = default)
+    {
+        Items = [.. Items.Where(item => item.VenueId != featureOverride.VenueId || item.FeatureId != featureOverride.FeatureId), featureOverride];
+        return Task.CompletedTask;
+    }
+    public Task<bool> RemoveAsync(Guid venueId, Guid featureId, CancellationToken cancellationToken = default)
+    {
+        var updated = Items.Where(item => item.VenueId != venueId || item.FeatureId != featureId).ToArray();
+        var removed = updated.Length != Items.Count;
+        Items = updated;
+        return Task.FromResult(removed);
+    }
 }

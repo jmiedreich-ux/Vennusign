@@ -24,10 +24,11 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 - WP-04.02 — Venue Directory
 - WP-04.03 — Venue Detail & Support View
 - WP-04.04 — Tier Management
+- WP-04.05 — Feature Matrix
 
 ## Active Work Package
 
-WP-04.05 — Feature Matrix is implemented, validated, and awaiting final review and merge in PR #37.
+WP-04.06 — Venue Feature Overrides is implemented and awaiting PR validation and merge.
 
 ## Phase 03 Result
 
@@ -44,4 +45,4 @@ WP-04.05 — Feature Matrix is implemented, validated, and awaiting final review
 
 ## Next Action
 
-Review and merge **WP-04.05 — Feature Matrix**, then define the next bounded Phase 04 package.
+Validate and merge **WP-04.06 — Venue Feature Overrides**, then define the next bounded Phase 04 package.

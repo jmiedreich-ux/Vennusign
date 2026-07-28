@@ -5,6 +5,12 @@ namespace Vennu.Data.Repositories;
 
 public class VenueFeatureOverrideRepository : IVenueFeatureOverrideRepository
 {
+    private const string RemoveSql = """
+        DELETE FROM dbo.VenueFeatureOverrides
+        WHERE VenueId = @VenueId AND FeatureId = @FeatureId;
+        SELECT CONVERT(BIT, CASE WHEN @@ROWCOUNT > 0 THEN 1 ELSE 0 END) AS Removed;
+        """;
+
     private readonly ISqlDataAccess dataAccess;
 
     public VenueFeatureOverrideRepository(ISqlDataAccess dataAccess) => this.dataAccess = dataAccess;
@@ -32,5 +38,16 @@ public class VenueFeatureOverrideRepository : IVenueFeatureOverrideRepository
             new[] { featureOverride },
             "dbo.VenueFeatureOverrides",
             cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<bool> RemoveAsync(Guid venueId, Guid featureId, CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<RemovalResult, object>(
+            RemoveSql,
+            new { VenueId = venueId, FeatureId = featureId },
+            cancellationToken).ConfigureAwait(false)).Single().Removed;
+
+    public sealed class RemovalResult
+    {
+        public bool Removed { get; set; }
     }
 }

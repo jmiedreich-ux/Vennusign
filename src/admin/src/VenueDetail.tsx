@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { loadVenueSupportDetail, type VenueSupportDetail } from "./api";
+import { useEffect, useState, type FormEvent } from "react";
+import { loadFeatureMatrix, loadVenueSupportDetail, removeVenueFeatureOverride, saveVenueFeatureOverride, type FeatureMatrixSnapshot, type VenueSupportDetail } from "./api";
 import type { AdminConfiguration } from "./config";
 
 type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; onBack: () => void };
@@ -8,19 +8,49 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
   const [detail, setDetail] = useState<VenueSupportDetail>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
+  const [matrix, setMatrix] = useState<FeatureMatrixSnapshot>();
+  const [featureId, setFeatureId] = useState("");
+  const [enabled, setEnabled] = useState(true);
+  const [reason, setReason] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [version, setVersion] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
     setError(undefined);
-    loadVenueSupportDetail(configuration, apiKey, venueId, controller.signal)
-      .then(value => value ? setDetail(value) : setError("Venue not found."))
+    Promise.all([
+      loadVenueSupportDetail(configuration, apiKey, venueId, controller.signal),
+      loadFeatureMatrix(configuration, apiKey)
+    ])
+      .then(([value, featureMatrix]) => {
+        if (value) { setDetail(value); setMatrix(featureMatrix); setFeatureId(current => current || featureMatrix.features[0]?.id || ""); }
+        else setError("Venue not found.");
+      })
       .catch(reason => {
         if (!(reason instanceof DOMException && reason.name === "AbortError")) setError("Venue detail could not be loaded.");
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
-  }, [apiKey, configuration, venueId]);
+  }, [apiKey, configuration, venueId, version]);
+
+  const saveOverride = async (event: FormEvent) => {
+    event.preventDefault(); setSaving(true); setError(undefined);
+    try {
+      await saveVenueFeatureOverride(configuration, apiKey, venueId, featureId, {
+        enabled, reason, expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined
+      });
+      setReason(""); setExpiresAt(""); setVersion(value => value + 1);
+    } catch { setError("The feature override could not be saved."); }
+    finally { setSaving(false); }
+  };
+  const removeOverride = async (id: string) => {
+    setSaving(true); setError(undefined);
+    try { await removeVenueFeatureOverride(configuration, apiKey, venueId, id); setVersion(value => value + 1); }
+    catch { setError("The feature override could not be removed."); }
+    finally { setSaving(false); }
+  };
 
   if (loading) return <p className="state">Loading venue detail…</p>;
   if (error || !detail) return <section><button className="back" onClick={onBack}>← Back to venues</button><p className="state error">{error}</p></section>;
@@ -35,6 +65,8 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
     </div>
     <article><h3>Screens ({detail.screens.length})</h3>{detail.screens.length ? <ul className="support-list">{detail.screens.map(screen => <li key={screen.id}><strong>{screen.name}</strong><span>{screen.location ?? "No location"} · {screen.status} · {screen.lastSeen ? new Date(screen.lastSeen).toLocaleString() : "Never seen"}</span></li>)}</ul> : <p>No screens assigned.</p>}</article>
     <article><h3>Effective features</h3><ul className="support-list">{features.map(feature => <li key={feature.key}><strong>{feature.key}</strong><span>{feature.enabled ? "Enabled" : "Disabled"} · {feature.source}{feature.limitValue ? ` · limit ${feature.limitValue}` : ""}</span></li>)}</ul></article>
-    <article><h3>Active overrides ({detail.activeOverrides.length})</h3>{detail.activeOverrides.length ? <ul className="support-list">{detail.activeOverrides.map(item => <li key={item.featureId}><strong>{item.enabled ? "Unlock" : "Block"}</strong><span>{item.reason}{item.expiresAt ? ` · expires ${new Date(item.expiresAt).toLocaleString()}` : ""}</span></li>)}</ul> : <p>No active overrides.</p>}</article>
+    <article className="override-panel"><div><h3>Active overrides ({detail.activeOverrides.length})</h3>{detail.activeOverrides.length ? <ul className="support-list">{detail.activeOverrides.map(item => <li key={item.featureId}><strong>{matrix?.features.find(feature => feature.id === item.featureId)?.label ?? item.featureId}</strong><span>{item.enabled ? "Unlock" : "Block"} · {item.reason}{item.expiresAt ? ` · expires ${new Date(item.expiresAt).toLocaleString()}` : ""}<button disabled={saving} onClick={() => removeOverride(item.featureId)}>Remove</button></span></li>)}</ul> : <p>No active overrides.</p>}</div>
+      <form onSubmit={saveOverride}><h3>Add or replace override</h3><label>Feature<select required value={featureId} onChange={event => setFeatureId(event.target.value)}>{matrix?.features.map(feature => <option key={feature.id} value={feature.id}>{feature.label}</option>)}</select></label><div className="override-choice"><label><input type="radio" checked={enabled} onChange={() => setEnabled(true)} /> Unlock</label><label><input type="radio" checked={!enabled} onChange={() => setEnabled(false)} /> Block</label></div><label>Reason<textarea required maxLength={500} value={reason} onChange={event => setReason(event.target.value)} /></label><label>Expires (optional)<input type="datetime-local" value={expiresAt} onChange={event => setExpiresAt(event.target.value)} /></label><button disabled={saving || !featureId} type="submit">Save override</button></form>
+    </article>
   </section>;
 }

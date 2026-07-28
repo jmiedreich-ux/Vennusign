@@ -109,5 +109,6 @@ public class FeatureResolutionServiceTests
     {
         public Task<IReadOnlyCollection<VenueFeatureOverride>> GetActiveByVenueAsync(Guid venueId, DateTime utcNow, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyCollection<VenueFeatureOverride>>(featureOverride is null ? Array.Empty<VenueFeatureOverride>() : new[] { featureOverride });
         public Task UpsertAsync(VenueFeatureOverride value, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<bool> RemoveAsync(Guid venueId, Guid featureId, CancellationToken cancellationToken = default) => Task.FromResult(false);
     }
 }
