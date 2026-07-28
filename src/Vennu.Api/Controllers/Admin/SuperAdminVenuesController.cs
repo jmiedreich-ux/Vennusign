@@ -15,15 +15,44 @@ public sealed class SuperAdminVenuesController : ControllerBase
     private readonly IVenueDirectoryService venueDirectoryService;
     private readonly IVenueSupportDetailService venueSupportDetailService;
     private readonly IVenueFeatureOverrideManagementService overrideManagementService;
+    private readonly IVenueTierSwitchService tierSwitchService;
 
     public SuperAdminVenuesController(
         IVenueDirectoryService venueDirectoryService,
         IVenueSupportDetailService venueSupportDetailService,
-        IVenueFeatureOverrideManagementService overrideManagementService)
+        IVenueFeatureOverrideManagementService overrideManagementService,
+        IVenueTierSwitchService tierSwitchService)
     {
         this.venueDirectoryService = venueDirectoryService;
         this.venueSupportDetailService = venueSupportDetailService;
         this.overrideManagementService = overrideManagementService;
+        this.tierSwitchService = tierSwitchService;
+    }
+
+    [HttpPut("{venueId:guid}/tier")]
+    public async Task<ActionResult<VenueSubscription>> SwitchTier(
+        Guid venueId,
+        VenueTierSwitchRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await tierSwitchService
+                .SwitchAsync(venueId, request.TargetTierId, cancellationToken)
+                .ConfigureAwait(false));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new ProblemDetails { Title = "Tier switch failed", Detail = exception.Message });
+        }
     }
 
     [HttpGet]
