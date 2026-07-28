@@ -85,36 +85,3 @@ internal sealed class FakeScreenPairingCodeRepository : IScreenPairingCodeReposi
     public Task<bool> ClaimAsync(string code, Guid venueId, CancellationToken cancellationToken = default) =>
         ClaimAsyncHandler is not null ? ClaimAsyncHandler(code, venueId, cancellationToken) : Task.FromResult(true);
 }
-
-internal sealed class FakeVenueSubscriptionRepository : IVenueSubscriptionRepository
-{
-    public IReadOnlyCollection<VenueSubscription> Items { get; init; } = [];
-
-    public Task<IReadOnlyCollection<VenueSubscription>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult(Items);
-    public Task<VenueSubscription?> GetByVenueIdAsync(Guid venueId, CancellationToken cancellationToken = default) =>
-        Task.FromResult(Items.FirstOrDefault(item => item.VenueId == venueId));
-    public Task<VenueSubscription?> GetByStripeSubscriptionIdAsync(string stripeSubscriptionId, CancellationToken cancellationToken = default) =>
-        Task.FromResult(Items.FirstOrDefault(item => item.StripeSubscriptionId == stripeSubscriptionId));
-    public Task<bool> SaveAsync(VenueSubscription subscription, CancellationToken cancellationToken = default) => Task.FromResult(true);
-}
-
-internal sealed class FakeSubscriptionTierRepository : ISubscriptionTierRepository
-{
-    public IReadOnlyCollection<SubscriptionTier> Items { get; init; } = [];
-
-    public Task<IReadOnlyCollection<SubscriptionTier>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult(Items);
-    public Task<SubscriptionTier?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) =>
-        Task.FromResult(Items.FirstOrDefault(item => item.Slug == slug));
-    public Task<IReadOnlyCollection<TierFeature>> GetFeaturesAsync(Guid tierId, CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyCollection<TierFeature>>([]);
-}
-
-internal sealed class FakeVenueFeatureOverrideRepository : IVenueFeatureOverrideRepository
-{
-    public IReadOnlyCollection<VenueFeatureOverride> Items { get; init; } = [];
-
-    public Task<IReadOnlyCollection<VenueFeatureOverride>> GetActiveByVenueAsync(Guid venueId, DateTime utcNow, CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyCollection<VenueFeatureOverride>>(Items.Where(item =>
-            item.VenueId == venueId && (!item.ExpiresAt.HasValue || item.ExpiresAt > utcNow)).ToArray());
-    public Task UpsertAsync(VenueFeatureOverride featureOverride, CancellationToken cancellationToken = default) => Task.CompletedTask;
-}
