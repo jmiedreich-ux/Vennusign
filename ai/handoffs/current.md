@@ -10,7 +10,7 @@
 
 - Branch: `wp/03.04-usage-metering`
 - Issue: #18
-- Pull request: Pending creation
+- Pull request: #19
 
 ## Delivered
 
@@ -24,7 +24,8 @@
 
 - Local .NET validation unavailable because the runtime does not contain the .NET SDK.
 - Integration-type tests intentionally skipped for every AWP under owner instruction.
-- GitHub Actions must validate restore, Release build, display production build, and unit tests against the PR head.
+- GitHub Actions run `30369647031` passed restore, Release build, display production build, and unit tests against initial head `80e83837bb590cc44852f182fee9a9db603daa65`.
+- Final review added explicit RepoDb mappings for all Phase 03 plural table names; fresh CI is required against the resulting final head.
 
 ## Exact Next Action
 

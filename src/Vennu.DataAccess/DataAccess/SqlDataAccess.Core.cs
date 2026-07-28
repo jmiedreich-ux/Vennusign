@@ -52,6 +52,30 @@ public partial class SqlDataAccess : ISqlDataAccess
                 .Entity<ScreenPairingCode>()
                 .Table("dbo.ScreenPairingCodes", true);
 
+            FluentMapper
+                .Entity<Feature>()
+                .Table("dbo.Features", true);
+
+            FluentMapper
+                .Entity<SubscriptionTier>()
+                .Table("dbo.SubscriptionTiers", true);
+
+            FluentMapper
+                .Entity<TierFeature>()
+                .Table("dbo.TierFeatures", true);
+
+            FluentMapper
+                .Entity<VenueSubscription>()
+                .Table("dbo.VenueSubscriptions", true);
+
+            FluentMapper
+                .Entity<VenueFeatureOverride>()
+                .Table("dbo.VenueFeatureOverrides", true);
+
+            FluentMapper
+                .Entity<FeatureUsage>()
+                .Table("dbo.FeatureUsages", true);
+
             tableMappingsConfigured = true;
         }
     }
