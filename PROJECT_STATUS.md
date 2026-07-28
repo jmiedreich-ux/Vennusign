@@ -15,31 +15,26 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 - WP-03.01 — Feature and Tier Core Models
 - WP-03.02 — Feature Resolution Engine
 - WP-03.03 — Subscription Management
+- WP-03.04 — Usage Metering
 
 ## Active Work Package
 
-None.
+None pending WP-03.04 pull-request validation, review, and merge.
 
-WP-03.03 is complete under its owner-approved, branch-scoped integration-validation exception.
+## WP-03.04 Progress
 
-## WP-03.03 Progress
+- Added monthly feature-usage persistence.
+- Added atomic consumption with limit enforcement.
+- Added usage snapshots with used, limit, and remaining capacity.
+- Added unit coverage for limited, unlimited, disabled, invalid-limit, and exhausted-capacity behavior.
 
-- Added 14-day trial creation without Stripe.
-- Added tier and lifecycle status transitions.
-- Added deterministic trial expiration.
-- Added feature-cache invalidation after subscription changes.
-- Added unit tests for subscription lifecycle behavior.
-- Repaired pre-existing package restore, display TypeScript declaration, and migration-discovery validation failures.
+## Standing Validation Exception
 
-## Validation Exception
-
-- GitHub Actions integration tests cannot authenticate to the configured Azure SQL test database. Run `30331559584` reports `Login failed for user 'sqladmin'` for the `VENU_TEST_AZURE_SQL_CONNECTION_STRING` secret in the `dev` environment.
-- A fresh failed-jobs retry on 2026-07-28 (job `90191758018`) reproduced the same login failure after restore, Release build, display production build, and all unit tests passed.
-- The repository owner approved treating Azure SQL integration results as advisory for WP-03.03 only. Restore, Release build, display production build, and unit tests remained required.
-- The exception is restricted to branch `wp/03.03-subscription-management`; WP-03.04 and later packages retain blocking integration validation.
+- Integration-type tests are skipped for every AWP under the repository owner's standing instruction.
+- Restore, Release build, display production build, unit tests, and applicable non-integration validation remain required.
 
 ## Next Package
 
-**WP-03.04 — Usage Metering**
+**WP-03.05 — Stripe Billing Catalog**
 
-WP-03.04 is the next unfinished package.
+WP-03.05 is the next unfinished package after WP-03.04 merges.

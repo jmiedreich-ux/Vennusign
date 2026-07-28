@@ -19,8 +19,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISubscriptionTierRepository, SubscriptionTierRepository>();
         services.AddScoped<IVenueSubscriptionRepository, VenueSubscriptionRepository>();
         services.AddScoped<IVenueFeatureOverrideRepository, VenueFeatureOverrideRepository>();
+        services.AddScoped<IFeatureUsageRepository, FeatureUsageRepository>();
         services.AddScoped<IFeatureResolutionService, FeatureResolutionService>();
         services.AddScoped<ISubscriptionManagementService, SubscriptionManagementService>();
+        services.AddScoped<IUsageMeteringService, UsageMeteringService>();
         return services;
     }
 }
