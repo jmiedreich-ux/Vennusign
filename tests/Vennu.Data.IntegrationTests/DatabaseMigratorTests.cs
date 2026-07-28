@@ -18,7 +18,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.006_create_feature_usages.sql",
                 "Vennu.Data.Scripts.007_add_stripe_billing_catalog.sql",
                 "Vennu.Data.Scripts.008_create_processed_stripe_events.sql",
-                "Vennu.Data.Scripts.009_create_feature_matrix_audit.sql"
+                "Vennu.Data.Scripts.009_create_feature_matrix_audit.sql",
+                "Vennu.Data.Scripts.010_create_operational_events.sql"
             ],
             scriptNames);
     }
