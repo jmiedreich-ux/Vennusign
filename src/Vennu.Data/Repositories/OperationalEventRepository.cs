@@ -19,6 +19,16 @@ public sealed class OperationalEventRepository(ISqlDataAccess dataAccess) : IOpe
     public async Task AddAsync(OperationalEvent operationalEvent, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(operationalEvent);
+        if (operationalEvent.EventType.Length is < 1 or > 50)
+        {
+            throw new ArgumentException("Operational event type must contain 1 to 50 characters.", nameof(operationalEvent));
+        }
+
+        if (operationalEvent.Summary.Length is < 1 or > 1000)
+        {
+            throw new ArgumentException("Operational event summary must contain 1 to 1000 characters.", nameof(operationalEvent));
+        }
+
         await dataAccess.MergeAllAsync(
             new[] { operationalEvent },
             "dbo.OperationalEvents",
