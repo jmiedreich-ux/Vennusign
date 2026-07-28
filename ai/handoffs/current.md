@@ -21,12 +21,12 @@
 - Admin production build passed locally.
 - Display tests: 15 passed; 2 pre-existing heartbeat microtask timing assertions failed under the local Node runtime.
 - .NET validation unavailable locally because the SDK is not installed.
-- GitHub Actions validation pending.
+- GitHub Actions run 151 passed restore, Release build, admin/display production builds, application unit tests, and non-integration migration-resource validation against head `7c9f23c87dbff5560e437e46c11b0b29fe7e7abd`.
 - Integration-type tests intentionally skipped under the standing repository-owner instruction.
 
 ## Exact Next Action
 
-Inspect the rerun of authoritative GitHub Actions for PR #46, complete ChatGPT review, and merge only when required non-integration checks pass.
+Complete ChatGPT review of PR #46 at the validated head and merge if approved.
 
 ## Do Not Redo or Reverse
 
