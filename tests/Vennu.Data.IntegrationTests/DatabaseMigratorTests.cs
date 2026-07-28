@@ -12,7 +12,9 @@ public class DatabaseMigratorTests
             [
                 "Vennu.Data.Scripts.001_create_venues.sql",
                 "Vennu.Data.Scripts.002_create_screens.sql",
-                "Vennu.Data.Scripts.003_create_screen_pairing_codes.sql"
+                "Vennu.Data.Scripts.003_create_screen_pairing_codes.sql",
+                "Vennu.Data.Scripts.004_create_feature_tier_core.sql",
+                "Vennu.Data.Scripts.005_create_venue_feature_overrides.sql"
             ],
             scriptNames);
     }
