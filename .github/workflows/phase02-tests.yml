@@ -46,7 +46,7 @@ jobs:
         with:
           name: restore-log
           path: restore.log
-          if-no-files-found: error
+          if-no-files-found: ignore
 
       - name: Build
         run: dotnet build ${{ github.workspace }}/Vennusign.sln --configuration Release --no-restore
@@ -64,7 +64,26 @@ jobs:
 
       - name: Build display
         working-directory: src/display
-        run: npm run build
+        shell: bash
+        run: |
+          set +e
+          npm run build > display-build.log 2>&1
+          status=$?
+          if [ $status -ne 0 ]; then
+            echo "=== Display Build Errors ==="
+            tail -n 100 display-build.log
+            echo "============================"
+            exit $status
+          fi
+          cat display-build.log
+
+      - name: Upload display build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: display-build-log
+          path: src/display/display-build.log
+          if-no-files-found: ignore
 
       - name: Diagnose environment
         run: |
