@@ -76,6 +76,10 @@ public partial class SqlDataAccess : ISqlDataAccess
                 .Entity<FeatureUsage>()
                 .Table("dbo.FeatureUsages", true);
 
+            FluentMapper
+                .Entity<ProcessedStripeEvent>()
+                .Table("dbo.ProcessedStripeEvents", true);
+
             tableMappingsConfigured = true;
         }
     }
