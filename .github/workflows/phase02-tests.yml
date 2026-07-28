@@ -56,7 +56,17 @@ jobs:
         with:
           node-version: 22.x
           cache: npm
-          cache-dependency-path: src/display/package-lock.json
+          cache-dependency-path: |
+            src/display/package-lock.json
+            src/admin/package-lock.json
+
+      - name: Install admin dependencies
+        working-directory: src/admin
+        run: npm ci
+
+      - name: Build admin
+        working-directory: src/admin
+        run: npm run build
 
       - name: Install display dependencies
         working-directory: src/display
@@ -132,6 +142,7 @@ jobs:
         run: |
           echo "=== Test Run Summary ==="
           echo "Display app: dependencies installed and production build executed"
+          echo "Super Admin app: dependencies installed and production build executed"
           echo "Unit tests: ran with filter Category=Unit"
           echo "Integration tests: SKIPPED by standing repository-owner instruction"
           echo "Projects tested:"

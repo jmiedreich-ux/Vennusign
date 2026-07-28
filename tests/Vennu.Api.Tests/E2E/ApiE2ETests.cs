@@ -165,6 +165,7 @@ public sealed class VennuApiFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        builder.UseSetting("SuperAdmin:ApiKey", "test-admin-key");
 
         builder.ConfigureServices(services =>
         {

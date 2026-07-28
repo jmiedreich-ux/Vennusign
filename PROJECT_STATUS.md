@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 03 — Tier System & Feature Flags: Complete**
+**Phase 04 — Super Admin CRM: In Progress**
 
 ## Milestone
 
@@ -20,10 +20,11 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 - WP-03.06 — Stripe Event Idempotency
 - WP-03.07 — Stripe Subscription Event Handling
 - WP-03.08 — Stripe Webhook Endpoint
+- WP-04.01 — Super Admin CRM Foundation
 
 ## Active Work Package
 
-None. Phase 03 is complete.
+None. WP-04.01 is awaiting PR validation and merge.
 
 ## Phase 03 Result
 
@@ -40,4 +41,4 @@ None. Phase 03 is complete.
 
 ## Next Action
 
-Define **WP-04.01 — Super Admin CRM Foundation** from the Phase 04 roadmap before implementation. Do not begin Phase 04 coding until its bounded package, acceptance criteria, architecture boundaries, and validation plan are documented and claimed.
+After WP-04.01 merges, define and claim **WP-04.02 — Venue Directory**.
