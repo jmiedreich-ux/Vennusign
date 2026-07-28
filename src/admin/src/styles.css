@@ -92,3 +92,11 @@ td small { display: block; color: #7a8b84; margin-top: 3px; }
 .audit-panel h3 { margin-top: 0; }.audit-panel ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 24px; }
 .audit-panel li { display: grid; gap: 3px; border-top: 1px solid #edf1ee; padding-top: 10px; }.audit-panel li span, .audit-panel time, .audit-panel p { color: #667970; font-size: .82rem; }
 @media (max-width: 760px) { .matrix-toolbar { display: grid; align-items: start; }.matrix-toolbar > div:last-child { justify-content: start; }.audit-panel ul { grid-template-columns: 1fr; } }
+.override-panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); gap: 24px; align-items: start; }
+.override-panel form { display: grid; gap: 11px; border-left: 1px solid #edf1ee; padding-left: 24px; }
+.override-panel form h3 { margin-bottom: 2px; }.override-panel form > label { display: grid; gap: 5px; color: #60736b; font-size: .8rem; font-weight: 700; }
+.override-panel select, .override-panel textarea, .override-panel input[type="datetime-local"] { width: 100%; border: 1px solid #ccd8d1; border-radius: 10px; padding: 9px 11px; background: white; }
+.override-panel textarea { min-height: 76px; resize: vertical; }.override-choice { display: flex; gap: 16px; }.override-choice label { display: flex; align-items: center; gap: 5px; }
+.override-panel form > button, .override-panel li button { border: 0; border-radius: 9px; padding: 8px 11px; cursor: pointer; }
+.override-panel form > button { color: white; background: #194d3b; }.override-panel li button { margin-left: 8px; color: #8a2929; background: #f9dddd; }
+@media (max-width: 900px) { .override-panel { grid-template-columns: 1fr; }.override-panel form { border-left: 0; border-top: 1px solid #edf1ee; padding: 20px 0 0; } }

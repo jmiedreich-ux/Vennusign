@@ -113,3 +113,31 @@ export async function loadFeatureMatrix(configuration: AdminConfiguration, apiKe
 export async function saveFeatureMatrix(configuration: AdminConfiguration, apiKey: string, changes: FeatureMatrixChange[]): Promise<{ changedCount: number }> {
   return (await featureRequest(configuration, apiKey, { method: "PUT", body: JSON.stringify({ changes }) })).json() as Promise<{ changedCount: number }>;
 }
+
+export async function saveVenueFeatureOverride(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  featureId: string,
+  request: { enabled: boolean; reason: string; expiresAt?: string }
+): Promise<void> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}/overrides/${featureId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey },
+    body: JSON.stringify(request)
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to save the venue feature override.");
+}
+
+export async function removeVenueFeatureOverride(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  featureId: string
+): Promise<void> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}/overrides/${featureId}`, {
+    method: "DELETE",
+    headers: { "X-Vennu-Admin-Key": apiKey }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to remove the venue feature override.");
+}

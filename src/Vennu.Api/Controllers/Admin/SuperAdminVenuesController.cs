@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vennu.Api.Admin;
+using Vennu.Api.Contracts.Admin;
+using Vennu.Core.Models;
 using Vennu.Data.Services;
 
 namespace Vennu.Api.Controllers.Admin;
@@ -12,13 +14,16 @@ public sealed class SuperAdminVenuesController : ControllerBase
 {
     private readonly IVenueDirectoryService venueDirectoryService;
     private readonly IVenueSupportDetailService venueSupportDetailService;
+    private readonly IVenueFeatureOverrideManagementService overrideManagementService;
 
     public SuperAdminVenuesController(
         IVenueDirectoryService venueDirectoryService,
-        IVenueSupportDetailService venueSupportDetailService)
+        IVenueSupportDetailService venueSupportDetailService,
+        IVenueFeatureOverrideManagementService overrideManagementService)
     {
         this.venueDirectoryService = venueDirectoryService;
         this.venueSupportDetailService = venueSupportDetailService;
+        this.overrideManagementService = overrideManagementService;
     }
 
     [HttpGet]
@@ -46,5 +51,37 @@ public sealed class SuperAdminVenuesController : ControllerBase
     {
         var detail = await venueSupportDetailService.GetAsync(venueId, cancellationToken).ConfigureAwait(false);
         return detail is null ? NotFound() : Ok(detail);
+    }
+
+    [HttpPut("{venueId:guid}/overrides/{featureId:guid}")]
+    public async Task<ActionResult<VenueFeatureOverride>> SetOverride(
+        Guid venueId,
+        Guid featureId,
+        VenueFeatureOverrideUpdateRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var featureOverride = await overrideManagementService.SetAsync(
+                venueId,
+                featureId,
+                new VenueFeatureOverrideRequest(request.Enabled, request.Reason, request.ExpiresAt),
+                cancellationToken).ConfigureAwait(false);
+            return featureOverride is null ? NotFound() : Ok(featureOverride);
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+    }
+
+    [HttpDelete("{venueId:guid}/overrides/{featureId:guid}")]
+    public async Task<IActionResult> RemoveOverride(
+        Guid venueId,
+        Guid featureId,
+        CancellationToken cancellationToken)
+    {
+        var removed = await overrideManagementService.RemoveAsync(venueId, featureId, cancellationToken).ConfigureAwait(false);
+        return removed is null ? NotFound() : NoContent();
     }
 }

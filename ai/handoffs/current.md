@@ -2,35 +2,32 @@
 
 ## Work Package
 
-- ID: WP-04.05
-- Status: Complete pending final review and merge
-- Branch: `wp/04.05-feature-matrix`
-- Issue: #36
-- Pull request: #37
+- ID: WP-04.06
+- Status: Complete pending CI, review, and merge
+- Branch: `wp/04.06-venue-feature-overrides`
+- Issue: #38
+- Pull request: pending
 
 ## Completed
 
-- Added the protected feature-by-tier matrix read and bulk-update API.
-- Added active-feature category grouping and all-tier cell state.
-- Added a single-transaction SQL update path and per-cell audit trail.
-- Added affected-venue feature-cache invalidation after effective changes.
-- Added a responsive editor with amber dirty cells, Enable All, Clear All, Discard, Save, and recent audit history.
-- Added service unit tests and embedded migration-resource validation.
+- Added protected set and remove endpoints for venue feature overrides.
+- Validated known venue, active feature, required reason, 500-character limit, and optional future expiry.
+- Added immediate effective-feature cache invalidation after successful persistence.
+- Added responsive support controls to add, replace, and remove unlock/block overrides.
+- Added focused non-integration service tests.
 
 ## Validation
 
-- Admin `npm ci`: passed locally.
-- Admin production build: passed locally.
-- GitHub Actions `phase02-tests` run 133 passed on implementation head `a8a931d7ae36b29e9cbf86cfd09545f878479855`.
-- Restore, .NET Release build, admin production build, display production build, unit tests, and migration inventory validation passed.
+- Admin production build passed locally.
+- .NET Release build and unit tests require GitHub Actions because the local SDK is unavailable.
 - Integration-type tests intentionally skipped under the standing repository-owner instruction.
 
 ## Exact Next Action
 
-Wait for the documentation-only head CI, review and merge PR #37, then define the next bounded Phase 04 work package.
+Publish WP-04.06, wait for authoritative non-integration CI, review and merge it, then define the next bounded Phase 04 package.
 
 ## Do Not Redo or Reverse
 
-- Do not split matrix cell writes into independent non-transactional operations.
-- Do not remove per-effective-change audit records.
-- Do not add feature creation, venue overrides, tier switching, or Stripe calls to WP-04.05.
+- Do not permit an override without a support reason.
+- Do not delay cache invalidation after successful override mutation.
+- Do not add tier switching, Stripe calls, feature creation, or bulk override behavior to WP-04.06.
