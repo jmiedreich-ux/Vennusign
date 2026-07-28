@@ -37,6 +37,8 @@ GitHub Actions run `30331559584` against `12b4bf1c8888082103d8413641f17b2f0c1993
 
 The failure affects all Azure SQL integration suites and is external to the implementation.
 
+A failed-jobs retry on 2026-07-28 validated current PR head `8ff2eceaf4217df0cd18701d73eb8fda90a8b713`. Job `90191758018` passed restore, Release build, display production build, and all unit tests, then reproduced `Login failed for user 'sqladmin'` across every Azure SQL integration suite. Supplemental local validation could not run in the automation workspace because the .NET SDK is not installed; GitHub Actions remains the authoritative environment.
+
 ## Blocker
 
 Repair or replace the `VENU_TEST_AZURE_SQL_CONNECTION_STRING` secret in the GitHub `dev` environment, or restore the corresponding Azure SQL login. PR #17 cannot be approved or merged until the full workflow passes against its final head.
