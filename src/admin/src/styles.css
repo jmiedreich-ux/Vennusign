@@ -34,3 +34,15 @@ header h1 { font-size: clamp(2rem, 4vw, 3.4rem); margin: 0; letter-spacing: -.05
 .placeholder h2 { font-size: 1.8rem; margin-top: 70px; }
 .placeholder p:last-child { color: #64766f; max-width: 520px; }
 @media (max-width: 760px) { .shell { grid-template-columns: 1fr; } aside { position: static; } nav { grid-template-columns: repeat(2, 1fr); } .identity { display: none; } .shell > main { padding-top: 28px; } .environment { display: none; } }
+.directory { margin-top: 38px; }
+.directory-toolbar { display: grid; grid-template-columns: minmax(220px, 1fr) 180px 180px; gap: 10px; margin-bottom: 18px; }
+.directory-toolbar input, .directory-toolbar select { border: 1px solid #ccd8d1; border-radius: 12px; padding: 11px 13px; background: white; }
+.table-wrap { overflow-x: auto; border: 1px solid #dbe3de; border-radius: 18px; background: white; }
+table { width: 100%; border-collapse: collapse; min-width: 850px; }
+th, td { padding: 15px 17px; text-align: left; border-bottom: 1px solid #edf1ee; font-size: .9rem; }
+th { color: #61756c; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; }
+td small { display: block; color: #7a8b84; margin-top: 3px; }
+.health { display: inline-block; border-radius: 999px; padding: 5px 9px; background: #edf0ee; text-transform: capitalize; font-size: .75rem; font-weight: 750; }
+.health.online { color: #18603f; background: #dff4e8; } .health.degraded { color: #7d5911; background: #fff0c8; } .health.offline { color: #8a2929; background: #f9dddd; }
+.state { padding: 60px 24px; text-align: center; border: 1px solid #dbe3de; border-radius: 18px; background: white; color: #60736b; }.state.error { color: #8a2929; }
+@media (max-width: 760px) { .directory-toolbar { grid-template-columns: 1fr; } }
