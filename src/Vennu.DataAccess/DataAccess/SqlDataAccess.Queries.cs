@@ -74,6 +74,22 @@ public partial class SqlDataAccess
             new { sql, parameters },
             cancellationToken);
 
+    public Task<IEnumerable<T>> ExecuteSqlQueryAsync<T, TParameters>(
+        string sql,
+        TParameters parameters,
+        CancellationToken cancellationToken = default) where T : class =>
+        ExecuteAsync<IEnumerable<T>>(
+            nameof(ExecuteSqlQueryAsync),
+            async (connection, token) => (await DbConnectionExtension.ExecuteQueryAsync<T>(
+                connection,
+                sql,
+                parameters,
+                commandType: CommandType.Text,
+                commandTimeout: DefaultCommandTimeoutSeconds,
+                cancellationToken: token).ConfigureAwait(false)).ToList(),
+            new { sql, parameters },
+            cancellationToken);
+
     public IEnumerable<T> ExecuteSQLQuery<T, TParameters>(string sql, TParameters parameters) where T : class =>
         Execute(nameof(ExecuteSQLQuery), connection => DbConnectionExtension.ExecuteQuery<T>(connection, sql, parameters).ToList(), new { sql, parameters });
 

@@ -19,4 +19,9 @@ public interface ISqlQueryDataAccess
     Task<IEnumerable<T>> QueryAsync<T, TParameters>(TParameters parameters, CancellationToken cancellationToken = default) where T : class;
 
     Task<IEnumerable<T>> QueryAllAsync<T>(CancellationToken cancellationToken = default) where T : class;
+
+    Task<IEnumerable<T>> ExecuteSqlQueryAsync<T, TParameters>(
+        string sql,
+        TParameters parameters,
+        CancellationToken cancellationToken = default) where T : class;
 }

@@ -11,6 +11,8 @@ internal sealed class FakeSqlDataAccess : ISqlDataAccess
 
     public Func<Type, IEnumerable<object>>? QueryAllHandler { get; set; }
 
+    public Func<string, object, IEnumerable<object>>? ExecuteSqlQueryHandler { get; set; }
+
     public CancellationToken? LastCancellationToken { get; private set; }
 
     public List<object> InsertedEntities { get; } = [];
@@ -82,6 +84,15 @@ internal sealed class FakeSqlDataAccess : ISqlDataAccess
     {
         LastCancellationToken = cancellationToken;
         return Task.FromResult(QueryAll<T>());
+    }
+
+    public Task<IEnumerable<T>> ExecuteSqlQueryAsync<T, TParameters>(
+        string sql,
+        TParameters parameters,
+        CancellationToken cancellationToken = default) where T : class
+    {
+        LastCancellationToken = cancellationToken;
+        return Task.FromResult((ExecuteSqlQueryHandler?.Invoke(sql, parameters!) ?? []).Cast<T>());
     }
 
     public int Update<T>(T entity) where T : class

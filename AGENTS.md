@@ -43,8 +43,8 @@ Repository and GitHub state are the source of truth. Chat history is supporting 
 - Local builds and tests are optional developer-productivity checks; they do not replace required GitHub Actions validation.
 - Every implementation PR must run all required workflows and checks for the affected areas before ChatGPT may approve it.
 - Required checks must complete successfully against the exact PR head commit being reviewed.
-- Missing, skipped, cancelled, stale, or failing required checks block approval unless the work package explicitly documents why a check is not applicable and ChatGPT accepts that exception during review.
-- Owner-approved exception: for WP-03.03 only, Azure SQL integration tests are advisory because the configured external credential is rejected. Restore, Release build, display production build, and unit tests remain required. This exception expires when WP-03.03 merges and must not be carried into later packages.
+- Missing, skipped, cancelled, stale, or failing required non-integration checks block approval unless the work package explicitly documents why a check is not applicable and ChatGPT accepts that exception during review.
+- Owner-approved standing exception: skip all integration-type tests for every work package, including Azure SQL and tests requiring external services, credentials, hosted infrastructure, containers, or cross-system integration. Their omission or failure is never a completion or merge blocker. Restore, Release build, display production build, unit tests, static analysis, and applicable non-integration migration validation remain required.
 - If a required workflow does not exist for an affected area, creating or extending the workflow is part of the work package before approval.
 - GitHub Actions logs, job results, artifacts, and combined commit status are the source of truth for validation evidence.
 - A successful local run may be recorded as supplemental evidence, but approval still requires passing required GitHub checks.
@@ -95,7 +95,7 @@ If any applicable record is stale, the package remains incomplete even when code
 
 Before ending a development session:
 
-- Run or trigger the validation appropriate to the change.
+- Run or trigger the applicable non-integration validation appropriate to the change.
 - Ensure required GitHub Actions workflows have run against the current PR head.
 - Update the active work package and all applicable tracking files.
 - Replace `ai/handoffs/current.md` using `ai/handoffs/template.md`.
@@ -120,9 +120,9 @@ Before ending a development session:
 
 ## Testing and Validation
 
-- Add or update tests with every behavioral change.
+- Add or update non-integration tests with every behavioral change.
 - Prefer unit tests for business rules and mapping.
-- Use integration tests for repository, API, SignalR, and provider behavior.
+- Do not run integration-type tests under the standing repository-owner exception.
 - Run the narrowest relevant tests during development when a local checkout is available.
 - Before completion, ensure the required GitHub Actions workflows execute the authoritative validation for the affected areas.
 - `./scripts/validate.ps1` remains the standard local validation entry point and should be used when available, but local execution does not replace required GitHub Actions checks.
