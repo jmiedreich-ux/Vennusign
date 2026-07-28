@@ -14,7 +14,7 @@ export type VenueDirectoryItem = {
 export type VenueSupportDetail = {
   venue: { id: string; name: string; timezone: string; type: string; primaryLanguage: string; secondaryLanguage?: string };
   subscription?: { status: string; stripeSubscriptionId?: string; trialEndsAt?: string; currentPeriodEnd?: string };
-  tier?: { name: string; slug: string; maxScreens: number; isPublic: boolean; isActive: boolean };
+  tier?: { id: string; name: string; slug: string; maxScreens: number; isPublic: boolean; isActive: boolean };
   screens: Array<{ id: string; name: string; location?: string; status: string; lastSeen?: string; platform?: string; appVersion?: string }>;
   features: Record<string, { key: string; enabled: boolean; limitValue?: string; source: string }>;
   activeOverrides: Array<{ featureId: string; enabled: boolean; reason: string; expiresAt?: string }>;
@@ -156,6 +156,20 @@ export async function removeVenueFeatureOverride(
     headers: { "X-Vennu-Admin-Key": apiKey }
   });
   if (!response.ok) throw new AdminApiError(response.status, "Unable to remove the venue feature override.");
+}
+
+export async function switchVenueTier(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  targetTierId: string
+): Promise<void> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}/tier`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey },
+    body: JSON.stringify({ targetTierId })
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to switch the venue tier.");
 }
 
 export async function loadOperationalDashboard(configuration: AdminConfiguration, apiKey: string): Promise<OperationalDashboard> {
