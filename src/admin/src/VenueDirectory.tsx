@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { loadVenueDirectory, type VenueDirectoryItem, type VenueDirectoryQuery } from "./api";
 import type { AdminConfiguration } from "./config";
 
-type Props = { configuration: AdminConfiguration; apiKey: string };
+type Props = { configuration: AdminConfiguration; apiKey: string; onSelectVenue: (venueId: string) => void };
 
-export default function VenueDirectory({ configuration, apiKey }: Props) {
+export default function VenueDirectory({ configuration, apiKey, onSelectVenue }: Props) {
   const [query, setQuery] = useState<VenueDirectoryQuery>({});
   const [venues, setVenues] = useState<VenueDirectoryItem[]>([]);
   const [error, setError] = useState<string>();
@@ -39,8 +39,7 @@ export default function VenueDirectory({ configuration, apiKey }: Props) {
     </div>
     {loading ? <p className="state">Loading venues…</p> : error ? <p className="state error">{error}</p> : venues.length === 0 ? <p className="state">No venues match these filters.</p> :
       <div className="table-wrap"><table><thead><tr><th>Venue</th><th>Tier</th><th>Status</th><th>Screens</th><th>Last active</th><th>Overrides</th><th>Health</th></tr></thead><tbody>
-        {venues.map(venue => <tr key={venue.venueId}><td><strong>{venue.name}</strong><small>{venue.type}</small></td><td>{venue.tierName ?? "—"}</td><td>{venue.subscriptionStatus}</td><td>{venue.screenCount}</td><td>{venue.lastActiveUtc ? new Date(venue.lastActiveUtc).toLocaleString() : "Never"}</td><td>{venue.overrideCount}</td><td><span className={`health ${venue.health}`}>{venue.health.replace("_", " ")}</span></td></tr>)}
+        {venues.map(venue => <tr key={venue.venueId}><td><button className="venue-link" onClick={() => onSelectVenue(venue.venueId)}><strong>{venue.name}</strong><small>{venue.type}</small></button></td><td>{venue.tierName ?? "—"}</td><td>{venue.subscriptionStatus}</td><td>{venue.screenCount}</td><td>{venue.lastActiveUtc ? new Date(venue.lastActiveUtc).toLocaleString() : "Never"}</td><td>{venue.overrideCount}</td><td><span className={`health ${venue.health}`}>{venue.health.replace("_", " ")}</span></td></tr>)}
       </tbody></table></div>}
   </section>;
 }
-

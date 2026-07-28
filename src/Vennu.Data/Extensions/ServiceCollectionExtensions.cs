@@ -30,6 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStripeEventIdempotencyService, StripeEventIdempotencyService>();
         services.AddScoped<IStripeSubscriptionEventHandler, StripeSubscriptionEventHandler>();
         services.AddScoped<IVenueDirectoryService, VenueDirectoryService>();
+        services.AddScoped<IVenueSupportDetailService, VenueSupportDetailService>();
         return services;
     }
 }

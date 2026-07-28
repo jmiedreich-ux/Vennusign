@@ -3,6 +3,7 @@ import { AdminApiError, loadSession, type AdminSession } from "./api";
 import { loadAdminConfiguration } from "./config";
 import "./styles.css";
 import VenueDirectory from "./VenueDirectory";
+import VenueDetail from "./VenueDetail";
 
 const routes = [
   { path: "dashboard", label: "Dashboard", description: "Revenue and operational health" },
@@ -17,6 +18,7 @@ function currentRoute() {
 }
 
 export default function App() {
+  const [selectedVenueId, setSelectedVenueId] = useState<string>();
   const configuration = useMemo(loadAdminConfiguration, []);
   const [apiKey, setApiKey] = useState(() => sessionStorage.getItem("vennu.admin.key") ?? "");
   const [session, setSession] = useState<AdminSession>();
@@ -72,7 +74,9 @@ export default function App() {
       <main>
         <header><div><p>Internal operations</p><h1>{route.label}</h1></div><span className="environment">Live workspace</span></header>
         {route.path === "venues"
-          ? <VenueDirectory configuration={configuration} apiKey={apiKey} />
+          ? selectedVenueId
+            ? <VenueDetail configuration={configuration} apiKey={apiKey} venueId={selectedVenueId} onBack={() => setSelectedVenueId(undefined)} />
+            : <VenueDirectory configuration={configuration} apiKey={apiKey} onSelectVenue={setSelectedVenueId} />
           : <section className="placeholder"><p>{route.description}</p><h2>{route.label} workspace</h2><p>This bounded workspace is ready for its Phase 04 capability package.</p></section>}
       </main>
     </div>

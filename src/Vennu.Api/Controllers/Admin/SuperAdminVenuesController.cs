@@ -11,9 +11,15 @@ namespace Vennu.Api.Controllers.Admin;
 public sealed class SuperAdminVenuesController : ControllerBase
 {
     private readonly IVenueDirectoryService venueDirectoryService;
+    private readonly IVenueSupportDetailService venueSupportDetailService;
 
-    public SuperAdminVenuesController(IVenueDirectoryService venueDirectoryService) =>
+    public SuperAdminVenuesController(
+        IVenueDirectoryService venueDirectoryService,
+        IVenueSupportDetailService venueSupportDetailService)
+    {
         this.venueDirectoryService = venueDirectoryService;
+        this.venueSupportDetailService = venueSupportDetailService;
+    }
 
     [HttpGet]
     [ProducesResponseType<IReadOnlyCollection<VenueDirectoryItem>>(StatusCodes.Status200OK)]
@@ -30,5 +36,15 @@ public sealed class SuperAdminVenuesController : ControllerBase
             .ConfigureAwait(false);
         return Ok(venues);
     }
-}
 
+    [HttpGet("{venueId:guid}")]
+    [ProducesResponseType<VenueSupportDetail>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<VenueSupportDetail>> GetById(
+        Guid venueId,
+        CancellationToken cancellationToken)
+    {
+        var detail = await venueSupportDetailService.GetAsync(venueId, cancellationToken).ConfigureAwait(false);
+        return detail is null ? NotFound() : Ok(detail);
+    }
+}

@@ -25,7 +25,7 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 
 ## Active Work Package
 
-None. WP-04.02 is awaiting PR validation and merge.
+WP-04.03 — Venue Detail & Support View is awaiting PR validation and merge.
 
 ## Phase 03 Result
 
@@ -42,4 +42,4 @@ None. WP-04.02 is awaiting PR validation and merge.
 
 ## Next Action
 
-After WP-04.02 merges, define and claim **WP-04.03 — Venue Detail & Support View**.
+Validate and merge **WP-04.03 — Venue Detail & Support View**, then define WP-04.04 — Tier Management.

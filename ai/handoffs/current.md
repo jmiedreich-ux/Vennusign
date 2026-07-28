@@ -2,34 +2,33 @@
 
 ## Work Package
 
-- ID: WP-04.02
+- ID: WP-04.03
 - Status: Complete pending CI, review, and merge
-- Branch: `wp/04.02-venue-directory`
-- Issue: #30
-- Pull request: #31
+- Branch: `wp/04.03-venue-detail`
+- Issue: #32
+- Pull request: pending
 
 ## Completed
 
-- Added protected venue-directory composition from existing repository boundaries.
-- Added composable name, tier, subscription-status, and health filters.
-- Added deterministic health and last-activity derivation.
-- Added the responsive Venue Directory admin workspace.
-- MRR remains deferred until Stripe revenue semantics are defined.
+- Added protected venue support-detail composition from existing repository and feature-resolution boundaries.
+- Added venue profile, subscription, tier, screen, feature, and active-override support context.
+- Added directory-to-detail navigation with responsive loading, error, not-found, and empty states.
+- Added focused non-integration service tests.
 
 ## Validation
 
 - Admin production build required locally and in GitHub Actions.
 - Local admin production build: passed.
-- GitHub Actions `phase02-tests` run `30398899453`: passed restore, Release build, both frontend builds, and unit tests against `5fd5242798819b11f6a6d3b19a4507f01eaaaba5`.
-- Final documentation synchronization requires fresh CI.
+- .NET SDK is unavailable locally; Release build and unit tests require GitHub Actions.
+- GitHub Actions: pending.
 - Integration-type tests intentionally skipped.
 
 ## Exact Next Action
 
-Validate, review, and merge WP-04.02, then define WP-04.03 — Venue Detail & Support View.
+Publish, validate, review, and merge WP-04.03, then define WP-04.04 — Tier Management.
 
 ## Do Not Redo or Reverse
 
-- Do not infer MRR from tier list price.
-- Do not move venue-specific composition into generic `Vennu.DataAccess`.
-- Do not add venue mutation behavior to this read-only package.
+- Do not expose the configured admin API key in frontend configuration or responses.
+- Do not add mutation behavior to this read-only package.
+- Do not bypass the existing feature-resolution service.
