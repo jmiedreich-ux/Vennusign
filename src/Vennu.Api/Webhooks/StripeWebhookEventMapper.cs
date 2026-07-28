@@ -42,7 +42,7 @@ public static class StripeWebhookEventMapper
 
         var item = activeItems[0];
         var priceId = Required(item.Price?.Id, "Stripe subscription item price ID is required.");
-        var currentPeriodEnd = item.CurrentPeriodEnd <= DateTime.UnixEpoch
+        DateTime? currentPeriodEnd = item.CurrentPeriodEnd <= DateTime.UnixEpoch
             ? null
             : item.CurrentPeriodEnd.ToUniversalTime();
 
