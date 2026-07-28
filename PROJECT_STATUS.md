@@ -28,10 +28,11 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 - WP-04.06 — Venue Feature Overrides
 - WP-04.07 — Operational Dashboard
 - WP-04.08 — Live Stripe Revenue Snapshot
+- WP-04.09 — Recent Commercial Events
 
 ## Active Work Package
 
-**WP-04.09 — Recent Commercial Events**
+None. WP-04.09 is complete and merged.
 
 ## Phase 03 Result
 
@@ -48,11 +49,10 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-04.09**, then continue with WP-04.10.
+Claim and complete **WP-04.10 — Venue Tier Switching**.
 
 ## Remaining Phase 04 Work Packages
 
-- WP-04.09 — Recent Commercial Events
 - WP-04.10 — Venue Tier Switching
 - WP-04.11 — Revenue Trend Snapshots
 - WP-04.12 — Phase 04 Validation and Closure
