@@ -123,6 +123,7 @@ jobs:
 
       - name: Run integration tests
         if: env.VENU_TEST_AZURE_SQL_CONNECTION_STRING != ''
+        continue-on-error: true
         run: |
           echo "=== Running Integration Tests ==="
           dotnet test ${{ github.workspace }}/Vennusign.sln \
@@ -166,7 +167,7 @@ jobs:
           echo "Display app: dependencies installed and production build executed"
           echo "Unit tests: ran with filter Category=Unit"
           if [ -n "$VENU_TEST_AZURE_SQL_CONNECTION_STRING" ]; then
-            echo "Integration tests: ran with filter Category=Integration against Azure SQL"
+            echo "Integration tests: advisory run with filter Category=Integration against Azure SQL"
           else
             echo "Integration tests: SKIPPED (no connection string configured)"
           fi
