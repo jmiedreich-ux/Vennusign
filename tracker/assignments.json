@@ -5,8 +5,10 @@
     {
       "workPackage": "WP-04.09",
       "branch": "wp/04.09-recent-commercial-events",
+      "issue": 45,
+      "pullRequest": 46,
       "owner": "Codex automation",
-      "status": "In Progress"
+      "status": "Review"
     }
   ],
   "nextAvailableWorkPackage": "WP-04.10",
