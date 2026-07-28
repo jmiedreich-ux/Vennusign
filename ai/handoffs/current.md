@@ -26,6 +26,7 @@
 
 - Local `npm run build` in `src/admin`: passed.
 - JSON parsing and `git diff --check`: passed.
+- First GitHub Actions run `30398140261`: Release build and both frontend builds passed; unit tests exposed missing Stripe test-factory configuration, which was corrected on the package branch.
 - .NET validation: deferred to GitHub Actions because no .NET SDK is available locally.
 - Integration-type tests: intentionally skipped under the standing owner exception.
 

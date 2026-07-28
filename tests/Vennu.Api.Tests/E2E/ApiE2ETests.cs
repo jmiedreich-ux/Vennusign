@@ -166,6 +166,7 @@ public sealed class VennuApiFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting("SuperAdmin:ApiKey", "test-admin-key");
+        builder.UseSetting("Stripe:Webhook:SigningSecret", "whsec_test");
 
         builder.ConfigureServices(services =>
         {
