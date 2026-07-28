@@ -34,9 +34,9 @@ public sealed class OperationalEventRepository(ISqlDataAccess dataAccess) : IOpe
             throw new ArgumentOutOfRangeException(nameof(limit), "Recent-event limit must be between 1 and 100.");
         }
 
-        return await dataAccess.ExecuteSqlQueryAsync<OperationalEvent, object>(
+        return (await dataAccess.ExecuteSqlQueryAsync<OperationalEvent, object>(
             RecentSql,
             new { Limit = limit },
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false)).ToArray();
     }
 }
