@@ -6,7 +6,7 @@
 - Status: Review
 - Branch: `wp/04.09-recent-commercial-events`
 - Issue: #45
-- Pull request: pending
+- Pull request: #46
 
 ## Completed
 
@@ -26,7 +26,7 @@
 
 ## Exact Next Action
 
-Push the branch, open the WP-04.09 pull request, inspect authoritative GitHub Actions, complete ChatGPT review, and merge only when required non-integration checks pass.
+Inspect the rerun of authoritative GitHub Actions for PR #46, complete ChatGPT review, and merge only when required non-integration checks pass.
 
 ## Do Not Redo or Reverse
 
