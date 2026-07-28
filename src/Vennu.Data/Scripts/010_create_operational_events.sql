@@ -3,7 +3,7 @@ CREATE TABLE dbo.OperationalEvents
     Id UNIQUEIDENTIFIER NOT NULL,
     VenueId UNIQUEIDENTIFIER NOT NULL,
     EventType NVARCHAR(50) NOT NULL,
-    Summary NVARCHAR(500) NOT NULL,
+    Summary NVARCHAR(1000) NOT NULL,
     OccurredUtc DATETIME2 NOT NULL,
     CONSTRAINT PK_OperationalEvents PRIMARY KEY (Id),
     CONSTRAINT FK_OperationalEvents_Venues
