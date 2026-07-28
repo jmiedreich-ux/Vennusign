@@ -1,17 +1,27 @@
 import { useEffect, useState } from "react";
-import { loadOperationalDashboard, type OperationalDashboard as Dashboard } from "./api";
+import {
+  loadOperationalDashboard,
+  loadRevenueSnapshot,
+  type OperationalDashboard as Dashboard,
+  type RevenueSnapshot
+} from "./api";
 import type { AdminConfiguration } from "./config";
 
 type Props = { configuration: AdminConfiguration; apiKey: string };
 
 export default function OperationalDashboard({ configuration, apiKey }: Props) {
   const [dashboard, setDashboard] = useState<Dashboard>();
+  const [revenue, setRevenue] = useState<RevenueSnapshot>();
+  const [revenueError, setRevenueError] = useState<string>();
   const [error, setError] = useState<string>();
 
   useEffect(() => {
     loadOperationalDashboard(configuration, apiKey)
       .then(setDashboard)
       .catch(() => setError("The operational dashboard could not be loaded."));
+    loadRevenueSnapshot(configuration, apiKey)
+      .then(setRevenue)
+      .catch(() => setRevenueError("Live Stripe revenue is unavailable. Verify the protected Stripe revenue configuration."));
   }, [apiKey, configuration]);
 
   if (error) return <p className="state error">{error}</p>;
@@ -26,7 +36,18 @@ export default function OperationalDashboard({ configuration, apiKey }: Props) {
     ["Screens offline", dashboard.offlineScreens]
   ] as const;
 
+  const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: revenue?.currency ?? "USD" });
+
   return <section className="operational-dashboard">
+    {revenueError
+      ? <p className="state error">{revenueError}</p>
+      : revenue
+        ? <article className="revenue-panel">
+          <div><p>Live Stripe revenue</p><h2>{currency.format(revenue.mrr)} MRR</h2><span>{currency.format(revenue.arr)} ARR · {currency.format(revenue.averageRevenuePerActiveSubscription)} average</span></div>
+          <div className="tier-revenue">{revenue.tiers.map(tier => <div key={tier.tierId}><span>{tier.tierName}</span><strong>{currency.format(tier.mrr)}</strong></div>)}</div>
+          {revenue.unmatchedPriceIds.length ? <p className="revenue-warning">{currency.format(revenue.unmatchedMrr)} uses unmapped Stripe prices: {revenue.unmatchedPriceIds.join(", ")}</p> : null}
+        </article>
+        : <p className="state">Loading live Stripe revenue…</p>}
     <div className="metric-grid">{metrics.map(([label, value]) => <article key={label}><span>{label}</span><strong>{value}</strong></article>)}</div>
     <article className="screen-map"><div><p>Fleet health</p><h2>Screen health map</h2><span>{dashboard.onlineScreens} online · {dashboard.offlineScreens} offline</span></div>
       {dashboard.screens.length ? <div className="screen-dots">{dashboard.screens.map(screen => <div className="screen-health-item" key={screen.screenId} title={`${screen.venueName} · ${screen.screenName} · ${screen.status} · ${screen.lastSeen ? new Date(screen.lastSeen).toLocaleString() : "never seen"}`}><span className={screen.status} /><div><strong>{screen.screenName}</strong><small>{screen.venueName}{screen.location ? ` · ${screen.location}` : ""}</small></div></div>)}</div> : <p className="empty">No screens have been registered.</p>}

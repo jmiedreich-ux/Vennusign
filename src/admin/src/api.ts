@@ -43,6 +43,11 @@ export type OperationalDashboard = {
     location?: string; status: "online" | "offline"; lastSeen?: string;
   }>;
 };
+export type RevenueSnapshot = {
+  currency: string; mrr: number; arr: number; averageRevenuePerActiveSubscription: number;
+  activeSubscriptions: number; unmatchedMrr: number; unmatchedPriceIds: string[];
+  tiers: Array<{ tierId: string; tierName: string; mrr: number }>;
+};
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -156,4 +161,12 @@ export async function loadOperationalDashboard(configuration: AdminConfiguration
   });
   if (!response.ok) throw new AdminApiError(response.status, "Unable to load the operational dashboard.");
   return response.json() as Promise<OperationalDashboard>;
+}
+
+export async function loadRevenueSnapshot(configuration: AdminConfiguration, apiKey: string): Promise<RevenueSnapshot> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/dashboard/revenue`, {
+    headers: { "X-Vennu-Admin-Key": apiKey }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to load live Stripe revenue.");
+  return response.json() as Promise<RevenueSnapshot>;
 }
