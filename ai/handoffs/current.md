@@ -2,19 +2,19 @@
 
 ## Work Package
 
-- ID: WP-04.06
+- ID: WP-04.07
 - Status: Complete pending CI, review, and merge
-- Branch: `wp/04.06-venue-feature-overrides`
-- Issue: #38
+- Branch: `wp/04.07-operational-dashboard`
+- Issue: #40
 - Pull request: pending
 
 ## Completed
 
-- Added protected set and remove endpoints for venue feature overrides.
-- Validated known venue, active feature, required reason, 500-character limit, and optional future expiry.
-- Added immediate effective-feature cache invalidation after successful persistence.
-- Added responsive support controls to add, replace, and remove unlock/block overrides.
-- Added focused non-integration service tests.
+- Added a protected operational dashboard endpoint.
+- Added persisted total, active, trialing, and canceled-last-30-days venue/subscription metrics.
+- Added online/offline screen totals and every screen's venue, name, location, status, and last-seen context.
+- Added responsive metric cards and an all-screen health map.
+- Added focused non-integration aggregation tests.
 
 ## Validation
 
@@ -24,10 +24,10 @@
 
 ## Exact Next Action
 
-Publish WP-04.06, wait for authoritative non-integration CI, review and merge it, then define the next bounded Phase 04 package.
+Publish WP-04.07, wait for authoritative non-integration CI, review and merge it, then define the next bounded Phase 04 package.
 
 ## Do Not Redo or Reverse
 
-- Do not permit an override without a support reason.
-- Do not delay cache invalidation after successful override mutation.
-- Do not add tier switching, Stripe calls, feature creation, or bulk override behavior to WP-04.06.
+- Do not classify any non-online screen state as online.
+- Do not omit unassigned screens from fleet health.
+- Do not add Stripe revenue queries, historical trend persistence, or tier switching to WP-04.07.

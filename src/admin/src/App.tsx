@@ -6,6 +6,7 @@ import VenueDirectory from "./VenueDirectory";
 import VenueDetail from "./VenueDetail";
 import TierManagement from "./TierManagement";
 import FeatureMatrix from "./FeatureMatrix";
+import OperationalDashboard from "./OperationalDashboard";
 
 const routes = [
   { path: "dashboard", label: "Dashboard", description: "Revenue and operational health" },
@@ -75,7 +76,9 @@ export default function App() {
       </aside>
       <main>
         <header><div><p>Internal operations</p><h1>{route.label}</h1></div><span className="environment">Live workspace</span></header>
-        {route.path === "venues"
+        {route.path === "dashboard"
+          ? <OperationalDashboard configuration={configuration} apiKey={apiKey} />
+          : route.path === "venues"
           ? selectedVenueId
             ? <VenueDetail configuration={configuration} apiKey={apiKey} venueId={selectedVenueId} onBack={() => setSelectedVenueId(undefined)} />
             : <VenueDirectory configuration={configuration} apiKey={apiKey} onSelectVenue={setSelectedVenueId} />
@@ -83,7 +86,7 @@ export default function App() {
             ? <TierManagement configuration={configuration} apiKey={apiKey} />
           : route.path === "features"
             ? <FeatureMatrix configuration={configuration} apiKey={apiKey} />
-          : <section className="placeholder"><p>{route.description}</p><h2>{route.label} workspace</h2><p>This bounded workspace is ready for its Phase 04 capability package.</p></section>}
+          : null}
       </main>
     </div>
   );

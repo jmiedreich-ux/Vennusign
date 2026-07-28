@@ -51,6 +51,9 @@ public class ScreenRepository : IScreenRepository
         return dataAccess.QueryAsync<Screen>(new { ScreenKey = screenKey }, cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<Screen>> GetAllAsync(CancellationToken cancellationToken = default) =>
+        (await dataAccess.QueryAllAsync<Screen>(cancellationToken).ConfigureAwait(false)).ToArray();
+
     public async Task<IReadOnlyCollection<Screen>> GetByVenueIdAsync(Guid venueId, CancellationToken cancellationToken = default)
     {
         IReadOnlyCollection<Screen> screens = (await dataAccess.QueryAsync<Screen, object>(new { VenueId = venueId }, cancellationToken).ConfigureAwait(false)).ToArray();

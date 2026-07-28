@@ -25,10 +25,11 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 - WP-04.03 — Venue Detail & Support View
 - WP-04.04 — Tier Management
 - WP-04.05 — Feature Matrix
+- WP-04.06 — Venue Feature Overrides
 
 ## Active Work Package
 
-WP-04.06 — Venue Feature Overrides is implemented and awaiting PR validation and merge.
+WP-04.07 — Operational Dashboard is implemented and awaiting PR validation and merge.
 
 ## Phase 03 Result
 
@@ -45,4 +46,4 @@ WP-04.06 — Venue Feature Overrides is implemented and awaiting PR validation a
 
 ## Next Action
 
-Validate and merge **WP-04.06 — Venue Feature Overrides**, then define the next bounded Phase 04 package.
+Validate and merge **WP-04.07 — Operational Dashboard**, then define the next bounded Phase 04 package.

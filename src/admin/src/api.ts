@@ -35,6 +35,14 @@ export type FeatureMatrixSnapshot = {
   }>;
 };
 export type FeatureMatrixChange = { tierId: string; featureId: string; enabled: boolean };
+export type OperationalDashboard = {
+  totalVenues: number; activeVenues: number; trialingVenues: number; canceledLast30Days: number;
+  onlineScreens: number; offlineScreens: number;
+  screens: Array<{
+    screenId: string; venueId?: string; venueName: string; screenName: string;
+    location?: string; status: "online" | "offline"; lastSeen?: string;
+  }>;
+};
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -140,4 +148,12 @@ export async function removeVenueFeatureOverride(
     headers: { "X-Vennu-Admin-Key": apiKey }
   });
   if (!response.ok) throw new AdminApiError(response.status, "Unable to remove the venue feature override.");
+}
+
+export async function loadOperationalDashboard(configuration: AdminConfiguration, apiKey: string): Promise<OperationalDashboard> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/dashboard`, {
+    headers: { "X-Vennu-Admin-Key": apiKey }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to load the operational dashboard.");
+  return response.json() as Promise<OperationalDashboard>;
 }
