@@ -3,6 +3,7 @@ using Vennu.Data.Extensions;
 using Vennu.Api.Hubs;
 using Vennu.Api.Notifications;
 using Vennu.Api.BackgroundServices;
+using Vennu.Api.Webhooks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,19 @@ builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier>();
 builder.Services.Configure<HeartbeatMonitorOptions>(builder.Configuration.GetSection(HeartbeatMonitorOptions.SectionName));
+builder.Services
+    .AddOptions<StripeWebhookOptions>()
+    .Bind(builder.Configuration.GetSection(StripeWebhookOptions.SectionName))
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.SigningSecret) &&
+            options.SigningSecret.StartsWith("whsec_", StringComparison.Ordinal),
+        "Stripe webhook signing secret must be configured.")
+    .Validate(
+        options => options.ToleranceSeconds is > 0 and <= 3600,
+        "Stripe webhook signature tolerance must be between 1 and 3600 seconds.")
+    .ValidateOnStart();
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<IStripeWebhookEventVerifier, StripeWebhookEventVerifier>();
 builder.Services.AddHostedService<HeartbeatMonitor>();
 builder.Services.AddVennuData();
 

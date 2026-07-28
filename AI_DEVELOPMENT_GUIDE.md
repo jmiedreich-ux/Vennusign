@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Vennu is a venue display platform. The active milestone is completion of Phase 02: a screen can boot, fetch content, connect to SignalR, send heartbeats, receive real-time updates, and transition offline when heartbeats stop.
+Vennu is a venue display platform. Phases 02 and 03 are complete: the display real-time foundation and monetization infrastructure are live in the codebase. The next milestone is Phase 04 — Super Admin CRM, beginning only after its first bounded work package is documented.
 
 `AGENTS.md` is the authoritative operating policy for AI development. This guide provides the concise implementation context used after mandatory session startup.
 
@@ -14,7 +14,7 @@ Vennu is a venue display platform. The active milestone is completion of Phase 0
 4. `tracker/assignments.json`
 5. The active file under `docs/work-packages/`
 6. This guide
-7. `NEXT_STEPS.md` only when the package requires additional Phase 02 context
+7. `NEXT_STEPS.md` only when the package requires historical Phase 02 context
 8. `Vennu_Roadmap_v5.md` only when broader product context is required
 9. Linked GitHub issue, branch, pull request, and CI state
 
@@ -120,5 +120,5 @@ Use `-SkipDisplay` or `-SkipIntegration` only when the package does not affect t
 - Do not invent database columns, repository contracts, routes, event names, or payload shapes.
 - Inspect existing implementations before adding parallel abstractions.
 - Do not replace working code solely for style consistency.
-- Do not start Phase 03 until WP-02.14 is complete.
+- Do not start Phase 04 implementation until its first bounded work package is documented and claimed.
 - Do not use chat history as the sole authority when repository state differs.
