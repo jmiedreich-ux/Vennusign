@@ -40,6 +40,14 @@ jobs:
           fi
           cat restore.log
 
+      - name: Upload restore diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: restore-log
+          path: restore.log
+          if-no-files-found: error
+
       - name: Build
         run: dotnet build ${{ github.workspace }}/Vennusign.sln --configuration Release --no-restore
 
