@@ -6,7 +6,7 @@
 - Status: Complete pending CI, review, and merge
 - Branch: `wp/04.02-venue-directory`
 - Issue: #30
-- Pull request: pending
+- Pull request: #31
 
 ## Completed
 
@@ -19,7 +19,9 @@
 ## Validation
 
 - Admin production build required locally and in GitHub Actions.
-- .NET Release build and unit tests require GitHub Actions because no local .NET SDK is available.
+- Local admin production build: passed.
+- GitHub Actions `phase02-tests` run `30398899453`: passed restore, Release build, both frontend builds, and unit tests against `5fd5242798819b11f6a6d3b19a4507f01eaaaba5`.
+- Final documentation synchronization requires fresh CI.
 - Integration-type tests intentionally skipped.
 
 ## Exact Next Action
