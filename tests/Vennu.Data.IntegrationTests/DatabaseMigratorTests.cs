@@ -15,7 +15,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.003_create_screen_pairing_codes.sql",
                 "Vennu.Data.Scripts.004_create_feature_tier_core.sql",
                 "Vennu.Data.Scripts.005_create_venue_feature_overrides.sql",
-                "Vennu.Data.Scripts.006_create_feature_usages.sql"
+                "Vennu.Data.Scripts.006_create_feature_usages.sql",
+                "Vennu.Data.Scripts.007_add_stripe_billing_catalog.sql"
             ],
             scriptNames);
     }

@@ -2,37 +2,35 @@
 
 ## Work Package
 
-- ID: WP-03.04
+- ID: WP-03.05
 - Status: Complete pending PR validation, ChatGPT review, and merge
 - Execution mode: Sequential automation
 
 ## Git State
 
-- Branch: `wp/03.04-usage-metering`
-- Issue: #18
-- Pull request: #19
+- Branch: `wp/03.05-stripe-billing-catalog`
+- Issue: #20
+- Pull request: Pending creation
 
 ## Delivered
 
-- Monthly feature-usage persistence by venue, feature, and UTC period.
-- Atomic consumption with tier-limit enforcement.
-- Usage snapshots reporting used, limit, and remaining capacity.
-- Dependency-injection registration and focused unit tests.
-- Repository-wide workflow policy implementing the owner's standing integration-test skip.
+- Persistent Stripe product, monthly price, and annual price IDs per tier.
+- Unique filtered indexes and cross-tier identifier conflict detection.
+- Public billing-catalog projection with annual two-month-free pricing.
+- Repository lookup/configuration contract, dependency injection, and unit tests.
 
 ## Validation
 
 - Local .NET validation unavailable because the runtime does not contain the .NET SDK.
-- Integration-type tests intentionally skipped for every AWP under owner instruction.
-- GitHub Actions run `30369647031` passed restore, Release build, display production build, and unit tests against initial head `80e83837bb590cc44852f182fee9a9db603daa65`.
-- Final review added explicit RepoDb mappings for all Phase 03 plural table names; fresh CI is required against the resulting final head.
+- Integration-type tests intentionally skipped under standing owner instruction.
+- GitHub Actions must validate restore, Release build, display production build, and unit tests against the PR head.
 
 ## Exact Next Action
 
-Publish WP-03.04, inspect required non-integration CI, record ChatGPT approval, and merge if all required checks pass.
+Publish WP-03.05, inspect required non-integration CI, record ChatGPT approval, and merge if all required checks pass.
 
 ## Do Not Redo or Reverse
 
-- Do not replace atomic usage consumption with a read-then-write sequence.
-- Do not re-enable integration-type tests in the work-package workflow.
-- Do not begin WP-03.05 before WP-03.04 merges.
+- Do not collapse monthly and annual Stripe price IDs into the product ID.
+- Do not calculate annual pricing as twelve months; the roadmap requires two months free.
+- Do not begin WP-03.06 before WP-03.05 merges.
