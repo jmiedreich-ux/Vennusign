@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-28T05:27:00Z",
+  "updatedUtc": "2026-07-28T05:53:00Z",
   "activeAssignments": [
     {
       "workPackage": "WP-03.03",
       "branch": "wp/03.03-subscription-management",
       "orchestrator": "ChatGPT",
       "status": "Blocked Pending CI Credential Repair",
-      "blocker": "The dev environment VENU_TEST_AZURE_SQL_CONNECTION_STRING is rejected by Azure SQL with Login failed for user 'sqladmin'.",
+      "blocker": "The dev environment VENU_TEST_AZURE_SQL_CONNECTION_STRING is rejected by Azure SQL with Login failed for user 'sqladmin'; failed-jobs retry 90191758018 reproduced the failure on 2026-07-28.",
       "ownedPaths": [
         "src/Vennu.Data/Services/**",
         "src/Vennu.Data/Repositories/IVenueSubscriptionRepository.cs",
