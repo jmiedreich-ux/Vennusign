@@ -31,6 +31,7 @@ internal sealed class FakeScreenRepository : IScreenRepository
     public Func<Guid, Guid, CancellationToken, Task<bool>>? AssignVenueAsyncHandler { get; set; }
     public Func<Guid, CancellationToken, Task<Screen?>>? GetByIdAsyncHandler { get; set; }
     public Func<string, CancellationToken, Task<Screen?>>? GetByScreenKeyAsyncHandler { get; set; }
+    public Func<CancellationToken, Task<IReadOnlyCollection<Screen>>>? GetAllAsyncHandler { get; set; }
     public Func<Guid, CancellationToken, Task<IReadOnlyCollection<Screen>>>? GetByVenueIdAsyncHandler { get; set; }
     public Func<Guid, DateTime, string, CancellationToken, Task<bool>>? UpdateHeartbeatAsyncHandler { get; set; }
     public Func<DateTime, CancellationToken, Task<int>>? MarkStaleOnlineScreensOfflineAsyncHandler { get; set; }
@@ -52,6 +53,9 @@ internal sealed class FakeScreenRepository : IScreenRepository
 
     public Task<Screen?> GetByScreenKeyAsync(string screenKey, CancellationToken cancellationToken = default) =>
         GetByScreenKeyAsyncHandler is not null ? GetByScreenKeyAsyncHandler(screenKey, cancellationToken) : Task.FromResult<Screen?>(null);
+
+    public Task<IReadOnlyCollection<Screen>> GetAllAsync(CancellationToken cancellationToken = default) =>
+        GetAllAsyncHandler is not null ? GetAllAsyncHandler(cancellationToken) : Task.FromResult<IReadOnlyCollection<Screen>>([]);
 
     public Task<IReadOnlyCollection<Screen>> GetByVenueIdAsync(Guid venueId, CancellationToken cancellationToken = default) =>
         GetByVenueIdAsyncHandler is not null ? GetByVenueIdAsyncHandler(venueId, cancellationToken) : Task.FromResult<IReadOnlyCollection<Screen>>([]);

@@ -252,6 +252,9 @@ internal sealed class InMemoryScreenRepository : IScreenRepository
         return Task.FromResult(screen);
     }
 
+    public Task<IReadOnlyCollection<Screen>> GetAllAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyCollection<Screen>>(store.Screens.Values.ToArray());
+
     public Task<IReadOnlyCollection<Screen>> GetByVenueIdAsync(Guid venueId, CancellationToken cancellationToken = default)
     {
         IReadOnlyCollection<Screen> screens = store.Screens.Values.Where(screen => screen.VenueId == venueId).ToArray();

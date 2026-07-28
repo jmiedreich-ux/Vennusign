@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-28T22:34:00Z",
+  "updatedUtc": "2026-07-28T22:41:00Z",
   "activeAssignments": [
     {
-      "workPackage": "WP-04.06",
-      "branch": "wp/04.06-venue-feature-overrides",
-      "issue": 38,
+      "workPackage": "WP-04.07",
+      "branch": "wp/04.07-operational-dashboard",
+      "issue": 40,
       "status": "Review"
     }
   ],
-  "nextAvailableWorkPackage": "WP-04.07",
+  "nextAvailableWorkPackage": "WP-04.08",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

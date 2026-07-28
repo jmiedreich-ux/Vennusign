@@ -35,6 +35,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFeatureMatrixRepository, FeatureMatrixRepository>();
         services.AddScoped<IFeatureMatrixService, FeatureMatrixService>();
         services.AddScoped<IVenueFeatureOverrideManagementService, VenueFeatureOverrideManagementService>();
+        services.AddScoped<IOperationalDashboardService, OperationalDashboardService>();
         return services;
     }
 }
