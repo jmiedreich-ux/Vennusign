@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 03 — Tier System & Feature Flags — Complete**
+**Phase 03 — Tier System & Feature Flags**
 
 ## Milestone
 
@@ -22,7 +22,7 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 
 ## Active Work Package
 
-None. Phase 03 is complete through WP-03.07.
+None. WP-03.07 is complete.
 
 ## WP-03.07 Progress
 
@@ -38,6 +38,6 @@ None. Phase 03 is complete through WP-03.07.
 
 ## Next Package
 
-**WP-04.01 — Super Admin CRM Foundation (scope required)**
+**WP-03.08 — Stripe Webhook Endpoint**
 
-WP-03.07 completes Phase 03. The next development run must document the Phase 04 package boundary before implementation.
+WP-03.08 is the next unfinished package. It must add verified webhook transport without reimplementing the lifecycle or idempotency logic completed in WP-03.06 and WP-03.07.
