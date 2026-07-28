@@ -6,7 +6,7 @@
 - Status: Review
 - Branch: `wp/04.10-venue-tier-switching`
 - Issue: #48
-- Pull request: pending
+- Pull request: #49
 
 ## Completed
 
