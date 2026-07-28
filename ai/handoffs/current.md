@@ -3,7 +3,7 @@
 ## Work Package
 
 - ID: WP-03.03
-- Status: In review under owner-approved validation exception
+- Status: Complete under owner-approved validation exception
 - Execution mode: Sequential
 
 ## Git State
@@ -12,7 +12,7 @@
 - Issue: #16
 - Pull request: #17
 - Current PR head: resolve from PR #17 immediately before validation or review
-- CI state: Awaiting required non-integration checks under the WP-03.03-only exception
+- CI state: Required non-integration checks passed; final branch-scoped exception check pending
 
 ## Completed This Session
 
@@ -44,13 +44,15 @@ After publishing the blocker records, required workflow run `30333132057` valida
 
 On 2026-07-28, the repository owner approved treating Azure SQL integration failures as advisory for WP-03.03 only. Restore, Release build, display production build, and unit tests remain mandatory. The workflow still runs and publishes the integration failures for visibility. This exception expires when WP-03.03 merges.
 
+Workflow run `30333839381` against head `b2008850c858be094c7c77b7ae6fcc2dc63398b5` passed restore, Release build, display production build, and unit tests. Azure SQL integration results remained advisory. Final review tightened the exception to the WP-03.03 branch so later packages retain blocking integration validation.
+
 ## Exact Next Action
 
-- Run `phase02-tests` on PR #17 with the documented exception.
-- If required non-integration checks pass, perform ChatGPT review, record approval, merge PR #17, and then begin WP-03.04.
+- Merge PR #17 after final CI and ChatGPT approval.
+- Begin WP-03.04 from refreshed `master`.
 
 ## Do Not Redo or Reverse
 
 - Do not remove the subscription lifecycle service or its tests.
 - Do not revert the package-version alignment, display declarations, migration test update, or CI diagnostic improvements.
-- Do not begin WP-03.04 while WP-03.03 remains unmerged.
+- Do not broaden the WP-03.03 integration exception to later branches.
