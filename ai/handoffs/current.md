@@ -3,14 +3,14 @@
 ## Work Package
 
 - ID: WP-03.06
-- Status: Complete pending PR validation, ChatGPT review, and merge
+- Status: Complete pending final CI, ChatGPT review, and merge
 - Execution mode: Sequential automation
 
 ## Git State
 
 - Branch: `wp/03.06-stripe-event-idempotency`
 - Issue: #22
-- Pull request: Pending creation
+- Pull request: #23
 
 ## Delivered
 
@@ -23,7 +23,8 @@
 
 - Local .NET validation unavailable because the runtime does not contain the .NET SDK.
 - Integration-type tests intentionally skipped under standing owner instruction.
-- GitHub Actions must validate restore, Release build, display production build, and unit tests.
+- GitHub Actions run `30370951033` passed restore, Release build, display production build, and unit tests against head `7e0b56fdc5ece7da9715eed5c22179b480595988`.
+- Fresh CI is required against this final documentation commit.
 
 ## Exact Next Action
 
