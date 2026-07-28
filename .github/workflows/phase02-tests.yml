@@ -123,7 +123,7 @@ jobs:
 
       - name: Run integration tests
         if: env.VENU_TEST_AZURE_SQL_CONNECTION_STRING != ''
-        continue-on-error: true
+        continue-on-error: ${{ github.head_ref == 'wp/03.03-subscription-management' }}
         run: |
           echo "=== Running Integration Tests ==="
           dotnet test ${{ github.workspace }}/Vennusign.sln \
