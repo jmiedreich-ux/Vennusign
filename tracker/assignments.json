@@ -1,22 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-28T16:30:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-03.07",
-      "branch": "wp/03.07-stripe-subscription-events",
-      "orchestrator": "ChatGPT",
-      "status": "Complete Pending Review",
-      "ownedPaths": [
-        "src/Vennu.Data/Repositories/*VenueSubscription*",
-        "src/Vennu.Data/Services/*StripeSubscriptionEvent*",
-        "tests/Vennu.DataAccess.Tests/StripeSubscriptionEventHandlerTests.cs",
-        "docs/work-packages/WP-03.07-stripe-subscription-events.md",
-        "PROJECT_STATUS.md",
-        "ai/handoffs/current.md"
-      ]
-    }
-  ],
+  "updatedUtc": "2026-07-28T16:45:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-04.01",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

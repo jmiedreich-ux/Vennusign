@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 03 — Tier System & Feature Flags**
+**Phase 03 — Tier System & Feature Flags — Complete**
 
 ## Milestone
 
@@ -22,7 +22,7 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 
 ## Active Work Package
 
-WP-03.07 is complete pending pull-request validation, review, and merge.
+None. Phase 03 is complete through WP-03.07.
 
 ## WP-03.07 Progress
 
@@ -38,6 +38,6 @@ WP-03.07 is complete pending pull-request validation, review, and merge.
 
 ## Next Package
 
-**WP-04.01 — Super Admin CRM Foundation**
+**WP-04.01 — Super Admin CRM Foundation (scope required)**
 
-WP-03.07 completes Phase 03. Do not begin WP-04.01 until WP-03.07 merges and the Phase 04 package boundary is documented.
+WP-03.07 completes Phase 03. The next development run must document the Phase 04 package boundary before implementation.
