@@ -11,6 +11,14 @@ export type VenueDirectoryItem = {
   subscriptionStatus: string; screenCount: number; lastActiveUtc?: string;
   overrideCount: number; health: string;
 };
+export type VenueSupportDetail = {
+  venue: { id: string; name: string; timezone: string; type: string; primaryLanguage: string; secondaryLanguage?: string };
+  subscription?: { status: string; stripeSubscriptionId?: string; trialEndsAt?: string; currentPeriodEnd?: string };
+  tier?: { name: string; slug: string; maxScreens: number; isPublic: boolean; isActive: boolean };
+  screens: Array<{ id: string; name: string; location?: string; status: string; lastSeen?: string; platform?: string; appVersion?: string }>;
+  features: Record<string, { key: string; enabled: boolean; limitValue?: string; source: string }>;
+  activeOverrides: Array<{ featureId: string; enabled: boolean; reason: string; expiresAt?: string }>;
+};
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -43,4 +51,14 @@ export async function loadVenueDirectory(configuration: AdminConfiguration, apiK
   });
   if (!response.ok) throw new AdminApiError(response.status, "Unable to load venue directory.");
   return response.json() as Promise<VenueDirectoryItem[]>;
+}
+
+export async function loadVenueSupportDetail(configuration: AdminConfiguration, apiKey: string, venueId: string, signal?: AbortSignal): Promise<VenueSupportDetail | undefined> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}`, {
+    headers: { "X-Vennu-Admin-Key": apiKey },
+    signal
+  });
+  if (response.status === 404) return undefined;
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to load venue support detail.");
+  return response.json() as Promise<VenueSupportDetail>;
 }

@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-28T21:02:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-04.03",
+  "updatedUtc": "2026-07-28T21:10:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-04.03",
+      "branch": "wp/04.03-venue-detail",
+      "issue": 32,
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-04.04",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
