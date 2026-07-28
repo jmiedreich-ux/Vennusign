@@ -6,6 +6,7 @@ using Vennu.Api.BackgroundServices;
 using Vennu.Api.Webhooks;
 using Vennu.Api.Admin;
 using Vennu.Api.Billing;
+using Vennu.Data.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
