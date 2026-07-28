@@ -1,32 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-28T06:10:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-03.03",
-      "branch": "wp/03.03-subscription-management",
-      "orchestrator": "ChatGPT",
-      "status": "In Review",
-      "blocker": null,
-      "ownedPaths": [
-        "src/Vennu.Data/Services/**",
-        "src/Vennu.Data/Repositories/IVenueSubscriptionRepository.cs",
-        "src/Vennu.Data/Repositories/VenueSubscriptionRepository.cs",
-        "src/Vennu.Data/Extensions/ServiceCollectionExtensions.cs",
-        "src/Vennu.Data/Vennu.Data.csproj",
-        "src/Vennu.DataAccess/Vennu.DataAccess.csproj",
-        "src/display/src/*.d.mts",
-        ".github/workflows/phase02-tests.yml",
-        "tests/Vennu.DataAccess.Tests/SubscriptionManagementServiceTests.cs",
-        "tests/Vennu.Data.IntegrationTests/DatabaseMigratorTests.cs",
-        "docs/work-packages/WP-03.03-subscription-management.md",
-        "PROJECT_STATUS.md",
-        "tracker/assignments.json",
-        "ai/handoffs/current.md",
-        "ai/handoffs/archive/**"
-      ]
-    }
-  ],
+  "updatedUtc": "2026-07-28T06:15:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-03.04",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
