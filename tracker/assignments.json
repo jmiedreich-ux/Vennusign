@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-28T21:16:00Z",
+  "updatedUtc": "2026-07-28T22:18:00Z",
   "activeAssignments": [
     {
-      "workPackage": "WP-04.04",
-      "branch": "wp/04.04-tier-management",
-      "issue": 34,
+      "workPackage": "WP-04.05",
+      "branch": "wp/04.05-feature-matrix",
+      "issue": 36,
       "status": "Review"
     }
   ],
-  "nextAvailableWorkPackage": "WP-04.05",
+  "nextAvailableWorkPackage": "WP-04.06",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

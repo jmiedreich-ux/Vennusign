@@ -80,6 +80,10 @@ public partial class SqlDataAccess : ISqlDataAccess
                 .Entity<ProcessedStripeEvent>()
                 .Table("dbo.ProcessedStripeEvents", true);
 
+            FluentMapper
+                .Entity<FeatureMatrixAuditEntry>()
+                .Table("dbo.FeatureMatrixAudit", true);
+
             tableMappingsConfigured = true;
         }
     }
