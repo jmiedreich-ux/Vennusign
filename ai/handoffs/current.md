@@ -3,10 +3,10 @@
 ## Work Package
 
 - ID: WP-04.08
-- Status: Complete pending CI, review, and merge
+- Status: Complete and merged
 - Branch: `wp/04.08-live-stripe-revenue`
 - Issue: #42
-- Pull request: pending
+- Pull request: #43
 
 ## Completed
 
@@ -19,12 +19,12 @@
 ## Validation
 
 - Admin production build passed locally.
-- .NET Release build and unit tests require GitHub Actions because the local SDK is unavailable.
+- GitHub Actions run 142 passed restore, .NET Release build, admin/display production builds, and unit tests.
 - Integration-type tests intentionally skipped under the standing repository-owner instruction.
 
 ## Exact Next Action
 
-Run the admin production build, publish WP-04.08, wait for authoritative non-integration CI, review and merge it, then stop after the four-AWP queue.
+Define and claim WP-04.09, the next bounded Phase 04 package. The four-AWP queue for this run is complete.
 
 ## Do Not Redo or Reverse
 

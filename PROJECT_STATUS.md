@@ -27,10 +27,11 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 - WP-04.05 — Feature Matrix
 - WP-04.06 — Venue Feature Overrides
 - WP-04.07 — Operational Dashboard
+- WP-04.08 — Live Stripe Revenue Snapshot
 
 ## Active Work Package
 
-WP-04.08 — Live Stripe Revenue Snapshot is implemented and awaiting PR validation and merge.
+None. The four-AWP automation queue completed after WP-04.08.
 
 ## Phase 03 Result
 
@@ -47,4 +48,4 @@ WP-04.08 — Live Stripe Revenue Snapshot is implemented and awaiting PR validat
 
 ## Next Action
 
-Validate and merge **WP-04.08 — Live Stripe Revenue Snapshot**, then define the next bounded Phase 04 package.
+Define and claim **WP-04.09**, the next bounded Phase 04 package, before implementation.

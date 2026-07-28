@@ -1,14 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-28T22:49:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-04.08",
-      "branch": "wp/04.08-live-stripe-revenue",
-      "issue": 42,
-      "status": "Review"
-    }
-  ],
+  "updatedUtc": "2026-07-28T22:56:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-04.09",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
