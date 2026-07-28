@@ -5,6 +5,8 @@ using Vennu.Api.Notifications;
 using Vennu.Api.BackgroundServices;
 using Vennu.Api.Webhooks;
 using Vennu.Api.Admin;
+using Vennu.Api.Billing;
+using Vennu.Data.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +43,8 @@ builder.Services
     .ValidateOnStart();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<IStripeWebhookEventVerifier, StripeWebhookEventVerifier>();
+builder.Services.Configure<StripeRevenueOptions>(builder.Configuration.GetSection(StripeRevenueOptions.SectionName));
+builder.Services.AddScoped<IStripeRevenueSource, StripeRevenueSource>();
 builder.Services.AddHostedService<HeartbeatMonitor>();
 builder.Services.AddVennuData();
 

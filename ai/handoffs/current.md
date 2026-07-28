@@ -2,19 +2,19 @@
 
 ## Work Package
 
-- ID: WP-04.07
+- ID: WP-04.08
 - Status: Complete pending CI, review, and merge
-- Branch: `wp/04.07-operational-dashboard`
-- Issue: #40
+- Branch: `wp/04.08-live-stripe-revenue`
+- Issue: #42
 - Pull request: pending
 
 ## Completed
 
-- Added a protected operational dashboard endpoint.
-- Added persisted total, active, trialing, and canceled-last-30-days venue/subscription metrics.
-- Added online/offline screen totals and every screen's venue, name, location, status, and last-seen context.
-- Added responsive metric cards and an all-screen health map.
-- Added focused non-integration aggregation tests.
+- Added a paginated Stripe active-subscription revenue source.
+- Added deterministic USD MRR, ARR, average revenue, per-tier, and unmatched-price aggregation.
+- Added a protected live revenue endpoint and responsive dashboard panel.
+- Added focused non-integration aggregation and missing-configuration tests.
+- Documented least-privilege secret-key configuration and supported price semantics.
 
 ## Validation
 
@@ -24,10 +24,10 @@
 
 ## Exact Next Action
 
-Publish WP-04.07, wait for authoritative non-integration CI, review and merge it, then define the next bounded Phase 04 package.
+Run the admin production build, publish WP-04.08, wait for authoritative non-integration CI, review and merge it, then stop after the four-AWP queue.
 
 ## Do Not Redo or Reverse
 
-- Do not classify any non-online screen state as online.
-- Do not omit unassigned screens from fleet health.
-- Do not add Stripe revenue queries, historical trend persistence, or tier switching to WP-04.07.
+- Do not compute revenue from local tier prices.
+- Do not hide unmatched Stripe prices or silently combine currencies.
+- Do not add historical snapshots, recent events, or subscription mutations to WP-04.08.

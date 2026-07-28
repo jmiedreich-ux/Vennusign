@@ -101,6 +101,11 @@ td small { display: block; color: #7a8b84; margin-top: 3px; }
 .override-panel form > button { color: white; background: #194d3b; }.override-panel li button { margin-left: 8px; color: #8a2929; background: #f9dddd; }
 @media (max-width: 900px) { .override-panel { grid-template-columns: 1fr; }.override-panel form { border-left: 0; border-top: 1px solid #edf1ee; padding: 20px 0 0; } }
 .operational-dashboard { margin-top: 30px; display: grid; gap: 20px; }
+.revenue-panel { display: grid; grid-template-columns: minmax(240px, 1fr) 2fr; gap: 24px; border-radius: 20px; color: white; background: #163f32; padding: 24px; }
+.revenue-panel p, .revenue-panel h2 { margin: 0; }.revenue-panel h2 { margin: 6px 0; font-size: 2rem; }.revenue-panel > div:first-child > p { color: #8fe0bd; font-size: .75rem; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
+.revenue-panel > div:first-child > span { color: #bed7cd; }.tier-revenue { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.tier-revenue div { display: grid; gap: 5px; border-radius: 12px; background: #205642; padding: 12px; }.tier-revenue span { color: #b9d8cb; font-size: .8rem; }.tier-revenue strong { font-size: 1.1rem; }
+.revenue-warning { grid-column: 1 / -1; color: #ffdc8a; font-size: .82rem; overflow-wrap: anywhere; }
 .metric-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .metric-grid article { display: grid; gap: 12px; border: 1px solid #dbe3de; border-radius: 16px; background: white; padding: 18px; }
 .metric-grid span { color: #667970; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }.metric-grid strong { font-size: 2.2rem; }
@@ -110,4 +115,4 @@ td small { display: block; color: #7a8b84; margin-top: 3px; }
 .screen-health-item { display: flex; align-items: center; gap: 10px; border: 1px solid #edf1ee; border-radius: 12px; padding: 11px; }.screen-health-item > span { width: 12px; height: 12px; border-radius: 50%; background: #bf3b3b; box-shadow: 0 0 0 4px #f9dddd; }
 .screen-health-item > span.online { background: #27a66a; box-shadow: 0 0 0 4px #dff4e8; }.screen-health-item div { min-width: 0; display: grid; }.screen-health-item strong, .screen-health-item small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .screen-health-item small { color: #71827b; margin-top: 3px; }
-@media (max-width: 760px) { .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .revenue-panel { grid-template-columns: 1fr; }.metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
