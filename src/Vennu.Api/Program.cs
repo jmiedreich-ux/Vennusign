@@ -4,10 +4,25 @@ using Vennu.Api.Hubs;
 using Vennu.Api.Notifications;
 using Vennu.Api.BackgroundServices;
 using Vennu.Api.Webhooks;
+using Vennu.Api.Admin;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services
+    .AddAuthentication(SuperAdminAuthenticationDefaults.AuthenticationScheme)
+    .AddScheme<SuperAdminAuthenticationOptions, SuperAdminAuthenticationHandler>(
+        SuperAdminAuthenticationDefaults.AuthenticationScheme,
+        options => builder.Configuration.GetSection(SuperAdminAuthenticationOptions.SectionName).Bind(options));
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(
+        SuperAdminAuthenticationDefaults.AuthorizationPolicy,
+        policy => policy
+            .AddAuthenticationSchemes(SuperAdminAuthenticationDefaults.AuthenticationScheme)
+            .RequireAuthenticatedUser()
+            .RequireRole("SuperAdmin"));
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
@@ -46,6 +61,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 app.MapHub<VennuHub>("/hubs/vennu");
 app.MapGet("/", () => Results.Ok(new { status = "ok", service = "Vennu.Api" }));
