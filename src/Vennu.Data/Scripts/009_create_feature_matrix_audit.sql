@@ -36,57 +36,57 @@ BEGIN
     IF NULLIF(LTRIM(RTRIM(@AdminId)), '') IS NULL
         THROW 50002, 'Admin identifier is required.', 1;
 
-    CREATE TABLE #RequestedChanges
-    (
-        TierId UNIQUEIDENTIFIER NOT NULL,
-        FeatureId UNIQUEIDENTIFIER NOT NULL,
-        Enabled BIT NOT NULL,
-        PRIMARY KEY (TierId, FeatureId)
-    );
-
-    INSERT #RequestedChanges (TierId, FeatureId, Enabled)
-    SELECT TierId, FeatureId, Enabled
-    FROM OPENJSON(@ChangesJson)
-    WITH
-    (
-        TierId UNIQUEIDENTIFIER '$.tierId',
-        FeatureId UNIQUEIDENTIFIER '$.featureId',
-        Enabled BIT '$.enabled'
-    );
-
-    IF EXISTS
-    (
-        SELECT 1
-        FROM #RequestedChanges AS requested
-        LEFT JOIN dbo.SubscriptionTiers AS tier ON tier.Id = requested.TierId
-        LEFT JOIN dbo.Features AS feature ON feature.Id = requested.FeatureId AND feature.IsActive = 1
-        WHERE tier.Id IS NULL OR feature.Id IS NULL
-    )
-        THROW 50003, 'Feature matrix changes contain an unknown tier or inactive feature.', 1;
-
-    CREATE TABLE #EffectiveChanges
-    (
-        TierId UNIQUEIDENTIFIER NOT NULL,
-        FeatureId UNIQUEIDENTIFIER NOT NULL,
-        PreviousEnabled BIT NOT NULL,
-        NewEnabled BIT NOT NULL,
-        PRIMARY KEY (TierId, FeatureId)
-    );
-
-    INSERT #EffectiveChanges (TierId, FeatureId, PreviousEnabled, NewEnabled)
-    SELECT
-        requested.TierId,
-        requested.FeatureId,
-        CONVERT(BIT, CASE WHEN currentValue.TierId IS NULL THEN 0 ELSE 1 END),
-        requested.Enabled
-    FROM #RequestedChanges AS requested
-    LEFT JOIN dbo.TierFeatures AS currentValue
-        ON currentValue.TierId = requested.TierId
-       AND currentValue.FeatureId = requested.FeatureId
-    WHERE (CASE WHEN currentValue.TierId IS NULL THEN 0 ELSE 1 END) <> requested.Enabled;
-
     BEGIN TRY
         BEGIN TRANSACTION;
+
+        CREATE TABLE #RequestedChanges
+        (
+            TierId UNIQUEIDENTIFIER NOT NULL,
+            FeatureId UNIQUEIDENTIFIER NOT NULL,
+            Enabled BIT NOT NULL,
+            PRIMARY KEY (TierId, FeatureId)
+        );
+
+        INSERT #RequestedChanges (TierId, FeatureId, Enabled)
+        SELECT TierId, FeatureId, Enabled
+        FROM OPENJSON(@ChangesJson)
+        WITH
+        (
+            TierId UNIQUEIDENTIFIER '$.tierId',
+            FeatureId UNIQUEIDENTIFIER '$.featureId',
+            Enabled BIT '$.enabled'
+        );
+
+        IF EXISTS
+        (
+            SELECT 1
+            FROM #RequestedChanges AS requested
+            LEFT JOIN dbo.SubscriptionTiers AS tier ON tier.Id = requested.TierId
+            LEFT JOIN dbo.Features AS feature ON feature.Id = requested.FeatureId AND feature.IsActive = 1
+            WHERE tier.Id IS NULL OR feature.Id IS NULL
+        )
+            THROW 50003, 'Feature matrix changes contain an unknown tier or inactive feature.', 1;
+
+        CREATE TABLE #EffectiveChanges
+        (
+            TierId UNIQUEIDENTIFIER NOT NULL,
+            FeatureId UNIQUEIDENTIFIER NOT NULL,
+            PreviousEnabled BIT NOT NULL,
+            NewEnabled BIT NOT NULL,
+            PRIMARY KEY (TierId, FeatureId)
+        );
+
+        INSERT #EffectiveChanges (TierId, FeatureId, PreviousEnabled, NewEnabled)
+        SELECT
+            requested.TierId,
+            requested.FeatureId,
+            CONVERT(BIT, CASE WHEN currentValue.TierId IS NULL THEN 0 ELSE 1 END),
+            requested.Enabled
+        FROM #RequestedChanges AS requested
+        LEFT JOIN dbo.TierFeatures AS currentValue WITH (UPDLOCK, HOLDLOCK)
+            ON currentValue.TierId = requested.TierId
+           AND currentValue.FeatureId = requested.FeatureId
+        WHERE (CASE WHEN currentValue.TierId IS NULL THEN 0 ELSE 1 END) <> requested.Enabled;
 
         INSERT dbo.FeatureMatrixAudit
             (Id, TierId, FeatureId, AdminId, PreviousEnabled, NewEnabled, ChangedUtc)
