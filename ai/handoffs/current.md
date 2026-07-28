@@ -2,52 +2,34 @@
 
 ## Work Package
 
-- ID: WP-04.01
-- Status: Complete pending authoritative CI, review, and merge
-- Execution mode: Sequential
+- ID: WP-04.02
+- Status: Complete pending CI, review, and merge
+- Branch: `wp/04.02-venue-directory`
+- Issue: #30
+- Pull request: #31
 
-## Git State
+## Completed
 
-- Branch: `wp/04.01-super-admin-crm-foundation`
-- Issue: #28
-- Pull request: #29
-- CI state: run `30398325500` passed against `12fd23d0c0fbf03f8488bcc956d84fff2eaa2f92`; final security correction requires fresh CI
-- Review: initial review found build-time secret exposure; corrected by session-entry flow, final decision pending fresh CI
-
-## Completed This Session
-
-- Added constant-time API-key authentication and a protected `SuperAdmin` authorization policy.
-- Added a protected session bootstrap endpoint.
-- Added an independent responsive React/Vite Super Admin shell with Dashboard, Venues, Tiers, and Features navigation.
-- Extended GitHub Actions to build the admin app while continuing to skip all integration-type tests.
-- Added unit-level HTTP coverage for valid and missing admin credentials.
+- Added protected venue-directory composition from existing repository boundaries.
+- Added composable name, tier, subscription-status, and health filters.
+- Added deterministic health and last-activity derivation.
+- Added the responsive Venue Directory admin workspace.
+- MRR remains deferred until Stripe revenue semantics are defined.
 
 ## Validation
 
-- Local `npm run build` in `src/admin`: passed.
-- JSON parsing and `git diff --check`: passed.
-- First GitHub Actions run `30398140261`: Release build and both frontend builds passed; unit tests exposed missing Stripe test-factory configuration, which was corrected on the package branch.
-- GitHub Actions run `30398325500`: passed all required non-integration checks against `12fd23d0c0fbf03f8488bcc956d84fff2eaa2f92`.
-- .NET validation: deferred to GitHub Actions because no .NET SDK is available locally.
-- Integration-type tests: intentionally skipped under the standing owner exception.
-
-## Remaining Work
-
-- Run required GitHub Actions against the final head.
-- Record ChatGPT approval and merge the PR.
-- Define and claim WP-04.02.
-
-## Risks
-
-- The API-key scheme is an initial internal authorization boundary. The key is entered at session start, retained only in browser session storage, and must be distributed through a protected operations channel. Production must terminate TLS.
-- No venue, tier, feature, or dashboard data behavior is included in this foundation package.
+- Admin production build required locally and in GitHub Actions.
+- Local admin production build: passed.
+- GitHub Actions `phase02-tests` run `30398899453`: passed restore, Release build, both frontend builds, and unit tests against `5fd5242798819b11f6a6d3b19a4507f01eaaaba5`.
+- Final documentation synchronization requires fresh CI.
+- Integration-type tests intentionally skipped.
 
 ## Exact Next Action
 
-Validate, review, and merge WP-04.01, then create WP-04.02 — Venue Directory.
+Validate, review, and merge WP-04.02, then define WP-04.03 — Venue Detail & Support View.
 
 ## Do Not Redo or Reverse
 
-- Do not expose the configured admin key in API responses or committed frontend environment files.
-- Do not combine the admin SPA with the independently deployed display SPA.
-- Do not add Venue Directory behavior to WP-04.01.
+- Do not infer MRR from tier list price.
+- Do not move venue-specific composition into generic `Vennu.DataAccess`.
+- Do not add venue mutation behavior to this read-only package.
