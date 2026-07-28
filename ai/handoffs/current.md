@@ -3,10 +3,10 @@
 ## Work Package
 
 - ID: WP-04.05
-- Status: Complete pending CI, review, and merge
+- Status: Complete pending final review and merge
 - Branch: `wp/04.05-feature-matrix`
 - Issue: #36
-- Pull request: pending
+- Pull request: #37
 
 ## Completed
 
@@ -21,12 +21,13 @@
 
 - Admin `npm ci`: passed locally.
 - Admin production build: passed locally.
-- .NET Release build and unit tests require GitHub Actions because the local SDK is unavailable.
+- GitHub Actions `phase02-tests` run 133 passed on implementation head `a8a931d7ae36b29e9cbf86cfd09545f878479855`.
+- Restore, .NET Release build, admin production build, display production build, unit tests, and migration inventory validation passed.
 - Integration-type tests intentionally skipped under the standing repository-owner instruction.
 
 ## Exact Next Action
 
-Publish WP-04.05, wait for authoritative non-integration CI, review and merge it, then define the next bounded Phase 04 work package.
+Wait for the documentation-only head CI, review and merge PR #37, then define the next bounded Phase 04 work package.
 
 ## Do Not Redo or Reverse
 
