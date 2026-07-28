@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Vennu.Core.Models;
 using Vennu.Data.Repositories;
 
@@ -21,6 +23,7 @@ public sealed class StripeSubscriptionEventHandler : IStripeSubscriptionEventHan
     private readonly IStripeEventIdempotencyService idempotencyService;
     private readonly IBillingCatalogRepository billingCatalogRepository;
     private readonly IVenueSubscriptionRepository subscriptionRepository;
+    private readonly IOperationalEventRepository operationalEventRepository;
     private readonly IFeatureResolutionService featureResolutionService;
     private readonly TimeProvider timeProvider;
 
@@ -28,12 +31,14 @@ public sealed class StripeSubscriptionEventHandler : IStripeSubscriptionEventHan
         IStripeEventIdempotencyService idempotencyService,
         IBillingCatalogRepository billingCatalogRepository,
         IVenueSubscriptionRepository subscriptionRepository,
+        IOperationalEventRepository operationalEventRepository,
         IFeatureResolutionService featureResolutionService,
         TimeProvider timeProvider)
     {
         this.idempotencyService = idempotencyService;
         this.billingCatalogRepository = billingCatalogRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.operationalEventRepository = operationalEventRepository;
         this.featureResolutionService = featureResolutionService;
         this.timeProvider = timeProvider;
     }
@@ -90,6 +95,8 @@ public sealed class StripeSubscriptionEventHandler : IStripeSubscriptionEventHan
             stripeEvent.VenueId.Value,
             cancellationToken).ConfigureAwait(false);
         var subscription = existingByStripe ?? existingByVenue;
+        var isNewSubscription = subscription is null;
+        var previousTierId = subscription?.TierId;
 
         if (existingByStripe is not null && existingByStripe.VenueId != stripeEvent.VenueId.Value)
         {
@@ -115,6 +122,31 @@ public sealed class StripeSubscriptionEventHandler : IStripeSubscriptionEventHan
         subscription.CurrentPeriodEnd = stripeEvent.CurrentPeriodEnd ?? subscription.CurrentPeriodEnd;
         subscription.UpdatedUtc = utcNow;
         await SaveAndInvalidateAsync(subscription, cancellationToken).ConfigureAwait(false);
+
+        if (isNewSubscription)
+        {
+            await RecordAsync(
+                stripeEvent.EventId,
+                subscription.VenueId,
+                "signup",
+                $"New {tier.Name} subscription",
+                utcNow,
+                cancellationToken).ConfigureAwait(false);
+        }
+        else if (previousTierId != tier.Id)
+        {
+            var previousTier = previousTierId is null
+                ? null
+                : await billingCatalogRepository.GetByIdAsync(previousTierId.Value, cancellationToken).ConfigureAwait(false);
+            var eventType = previousTier is not null && tier.Price < previousTier.Price ? "downgrade" : "upgrade";
+            await RecordAsync(
+                stripeEvent.EventId,
+                subscription.VenueId,
+                eventType,
+                $"{(eventType == "upgrade" ? "Upgraded" : "Downgraded")} to {tier.Name}",
+                utcNow,
+                cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private async Task ApplyInvoicePaidAsync(
@@ -142,6 +174,13 @@ public sealed class StripeSubscriptionEventHandler : IStripeSubscriptionEventHan
         subscription.Status = "canceled";
         subscription.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
         await SaveAndInvalidateAsync(subscription, cancellationToken).ConfigureAwait(false);
+        await RecordAsync(
+            stripeEvent.EventId,
+            subscription.VenueId,
+            "churn",
+            "Subscription canceled",
+            subscription.UpdatedUtc,
+            cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<VenueSubscription> GetRequiredSubscriptionAsync(
@@ -165,6 +204,30 @@ public sealed class StripeSubscriptionEventHandler : IStripeSubscriptionEventHan
         }
 
         featureResolutionService.Invalidate(subscription.VenueId);
+    }
+
+    private Task RecordAsync(
+        string sourceEventId,
+        Guid venueId,
+        string eventType,
+        string summary,
+        DateTime occurredUtc,
+        CancellationToken cancellationToken) =>
+        operationalEventRepository.AddAsync(
+            new OperationalEvent
+            {
+                Id = CreateOperationalEventId(sourceEventId),
+                VenueId = venueId,
+                EventType = eventType,
+                Summary = summary,
+                OccurredUtc = occurredUtc
+            },
+            cancellationToken);
+
+    private static Guid CreateOperationalEventId(string sourceEventId)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(sourceEventId));
+        return new Guid(hash.AsSpan(0, 16));
     }
 
     private static bool IsSupported(string eventType) =>

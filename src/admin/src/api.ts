@@ -48,6 +48,9 @@ export type RevenueSnapshot = {
   activeSubscriptions: number; unmatchedMrr: number; unmatchedPriceIds: string[];
   tiers: Array<{ tierId: string; tierName: string; mrr: number }>;
 };
+export type OperationalEvent = {
+  id: string; venueId: string; venueName: string; eventType: string; summary: string; occurredUtc: string;
+};
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -169,4 +172,12 @@ export async function loadRevenueSnapshot(configuration: AdminConfiguration, api
   });
   if (!response.ok) throw new AdminApiError(response.status, "Unable to load live Stripe revenue.");
   return response.json() as Promise<RevenueSnapshot>;
+}
+
+export async function loadOperationalEvents(configuration: AdminConfiguration, apiKey: string): Promise<OperationalEvent[]> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/dashboard/events?limit=20`, {
+    headers: { "X-Vennu-Admin-Key": apiKey }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to load recent commercial events.");
+  return response.json() as Promise<OperationalEvent[]>;
 }

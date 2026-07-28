@@ -16,7 +16,8 @@ public class StripeSubscriptionEventHandlerTests
         var tier = Tier("price_pro");
         var subscriptions = new SubscriptionRepositoryFake();
         var features = new FeatureResolutionFake();
-        var handler = CreateHandler(tier, subscriptions, features);
+        var events = new OperationalEventRepositoryFake();
+        var handler = CreateHandler(tier, subscriptions, features, events: events);
 
         var applied = await handler.HandleAsync(new StripeSubscriptionEvent(
             "evt_created",
@@ -34,6 +35,7 @@ public class StripeSubscriptionEventHandlerTests
         Assert.Equal("sub_1", subscription.StripeSubscriptionId);
         Assert.Equal("trialing", subscription.Status);
         Assert.Equal(venueId, Assert.Single(features.InvalidatedVenueIds));
+        Assert.Equal("signup", Assert.Single(events.Items).EventType);
     }
 
     [Fact]
@@ -50,7 +52,8 @@ public class StripeSubscriptionEventHandlerTests
             Status = "active"
         };
         var subscriptions = new SubscriptionRepositoryFake(existing);
-        var handler = CreateHandler(tier, subscriptions, new FeatureResolutionFake());
+        var events = new OperationalEventRepositoryFake();
+        var handler = CreateHandler(tier, subscriptions, new FeatureResolutionFake(), events: events);
 
         await handler.HandleAsync(new StripeSubscriptionEvent(
             "evt_updated",
@@ -62,6 +65,7 @@ public class StripeSubscriptionEventHandlerTests
 
         Assert.Equal(tier.Id, existing.TierId);
         Assert.Equal("past_due", existing.Status);
+        Assert.Equal("upgrade", Assert.Single(events.Items).EventType);
     }
 
     [Fact]
@@ -90,10 +94,12 @@ public class StripeSubscriptionEventHandlerTests
     {
         var existing = Subscription("sub_1", "active");
         var features = new FeatureResolutionFake();
+        var events = new OperationalEventRepositoryFake();
         var handler = CreateHandler(
             Tier("price_pro"),
             new SubscriptionRepositoryFake(existing),
-            features);
+            features,
+            events: events);
 
         await handler.HandleAsync(new StripeSubscriptionEvent(
             "evt_deleted",
@@ -102,6 +108,7 @@ public class StripeSubscriptionEventHandlerTests
 
         Assert.Equal("canceled", existing.Status);
         Assert.Equal(existing.VenueId, Assert.Single(features.InvalidatedVenueIds));
+        Assert.Equal("churn", Assert.Single(events.Items).EventType);
     }
 
     [Fact]
@@ -146,11 +153,13 @@ public class StripeSubscriptionEventHandlerTests
         SubscriptionTier tier,
         SubscriptionRepositoryFake subscriptions,
         FeatureResolutionFake features,
-        IdempotencyFake? idempotency = null) =>
+        IdempotencyFake? idempotency = null,
+        OperationalEventRepositoryFake? events = null) =>
         new(
             idempotency ?? new IdempotencyFake(),
             new BillingCatalogRepositoryFake(tier),
             subscriptions,
+            events ?? new OperationalEventRepositoryFake(),
             features,
             new FixedTimeProvider(UtcNow));
 
@@ -262,5 +271,21 @@ public class StripeSubscriptionEventHandlerTests
             Task.FromResult<IReadOnlyDictionary<string, FeatureEntitlement>>(new Dictionary<string, FeatureEntitlement>());
 
         public void Invalidate(Guid venueId) => InvalidatedVenueIds.Add(venueId);
+    }
+
+    private sealed class OperationalEventRepositoryFake : IOperationalEventRepository
+    {
+        public List<OperationalEvent> Items { get; } = [];
+
+        public Task AddAsync(OperationalEvent operationalEvent, CancellationToken cancellationToken = default)
+        {
+            Items.Add(operationalEvent);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyCollection<OperationalEvent>> GetRecentAsync(
+            int limit,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyCollection<OperationalEvent>>(Items.Take(limit).ToArray());
     }
 }

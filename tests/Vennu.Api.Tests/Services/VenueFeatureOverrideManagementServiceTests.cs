@@ -16,7 +16,8 @@ public sealed class VenueFeatureOverrideManagementServiceTests
     {
         var repository = new FakeVenueFeatureOverrideRepository();
         var resolver = new FeatureResolutionFake();
-        var service = CreateService(repository, resolver);
+        var events = new OperationalEventRepositoryFake();
+        var service = CreateService(repository, resolver, events: events);
 
         var result = await service.SetAsync(
             venueId,
@@ -27,6 +28,7 @@ public sealed class VenueFeatureOverrideManagementServiceTests
         Assert.Equal("Support unlock", result.Reason);
         Assert.Same(result, Assert.Single(repository.Items));
         Assert.Equal(venueId, Assert.Single(resolver.InvalidatedVenueIds));
+        Assert.Equal("override_applied", Assert.Single(events.Items).EventType);
     }
 
     [Theory]
@@ -75,19 +77,22 @@ public sealed class VenueFeatureOverrideManagementServiceTests
             Items = [new VenueFeatureOverride { VenueId = venueId, FeatureId = featureId, Reason = "Support" }]
         };
         var resolver = new FeatureResolutionFake();
-        var service = CreateService(repository, resolver);
+        var events = new OperationalEventRepositoryFake();
+        var service = CreateService(repository, resolver, events: events);
 
         var removed = await service.RemoveAsync(venueId, featureId);
 
         Assert.True(removed is true);
         Assert.Empty(repository.Items);
         Assert.Equal(venueId, Assert.Single(resolver.InvalidatedVenueIds));
+        Assert.Equal("override_removed", Assert.Single(events.Items).EventType);
     }
 
     private VenueFeatureOverrideManagementService CreateService(
         FakeVenueFeatureOverrideRepository repository,
         FeatureResolutionFake resolver,
-        bool featureActive = true) =>
+        bool featureActive = true,
+        OperationalEventRepositoryFake? events = null) =>
         new(
             new FakeVenueRepository
             {
@@ -95,6 +100,7 @@ public sealed class VenueFeatureOverrideManagementServiceTests
             },
             new FeatureRepositoryFake([new Feature { Id = featureId, IsActive = featureActive }]),
             repository,
+            events ?? new OperationalEventRepositoryFake(),
             resolver,
             new FixedTimeProvider());
 
@@ -116,5 +122,20 @@ public sealed class VenueFeatureOverrideManagementServiceTests
     private sealed class FixedTimeProvider : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => new(2026, 7, 28, 22, 30, 0, TimeSpan.Zero);
+    }
+
+    private sealed class OperationalEventRepositoryFake : IOperationalEventRepository
+    {
+        public List<OperationalEvent> Items { get; } = [];
+        public Task AddAsync(OperationalEvent operationalEvent, CancellationToken cancellationToken = default)
+        {
+            Items.Add(operationalEvent);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyCollection<OperationalEvent>> GetRecentAsync(
+            int limit,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyCollection<OperationalEvent>>(Items.Take(limit).ToArray());
     }
 }

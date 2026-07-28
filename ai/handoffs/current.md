@@ -2,32 +2,34 @@
 
 ## Work Package
 
-- ID: WP-04.08
-- Status: Complete and merged
-- Branch: `wp/04.08-live-stripe-revenue`
-- Issue: #42
-- Pull request: #43
+- ID: WP-04.09
+- Status: Review
+- Branch: `wp/04.09-recent-commercial-events`
+- Issue: #45
+- Pull request: #46
 
 ## Completed
 
-- Added a paginated Stripe active-subscription revenue source.
-- Added deterministic USD MRR, ARR, average revenue, per-tier, and unmatched-price aggregation.
-- Added a protected live revenue endpoint and responsive dashboard panel.
-- Added focused non-integration aggregation and missing-configuration tests.
-- Documented least-privilege secret-key configuration and supported price semantics.
+- Defined the remaining Phase 04 work-package sequence through WP-04.12.
+- Added normalized operational-event persistence for signup, upgrade, downgrade, churn, and override mutations.
+- Added a bounded reverse-chronological event feed with venue context.
+- Added a protected dashboard endpoint and responsive Super Admin event feed.
+- Added focused non-integration event recording and feed tests.
 
 ## Validation
 
 - Admin production build passed locally.
-- GitHub Actions run 142 passed restore, .NET Release build, admin/display production builds, and unit tests.
+- Display tests: 15 passed; 2 pre-existing heartbeat microtask timing assertions failed under the local Node runtime.
+- .NET validation unavailable locally because the SDK is not installed.
+- GitHub Actions run 151 passed restore, Release build, admin/display production builds, application unit tests, and non-integration migration-resource validation against head `7c9f23c87dbff5560e437e46c11b0b29fe7e7abd`.
 - Integration-type tests intentionally skipped under the standing repository-owner instruction.
 
 ## Exact Next Action
 
-Define and claim WP-04.09, the next bounded Phase 04 package. The four-AWP queue for this run is complete.
+Complete ChatGPT review of PR #46 at the validated head and merge if approved.
 
 ## Do Not Redo or Reverse
 
-- Do not compute revenue from local tier prices.
-- Do not hide unmatched Stripe prices or silently combine currencies.
-- Do not add historical snapshots, recent events, or subscription mutations to WP-04.08.
+- Do not replace normalized operational events with raw Stripe payload storage.
+- Do not expose Stripe event payloads or secrets in the dashboard feed.
+- Do not start WP-04.10 before WP-04.09 is merged.

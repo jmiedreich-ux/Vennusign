@@ -31,7 +31,7 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 
 ## Active Work Package
 
-None. The four-AWP automation queue completed after WP-04.08.
+**WP-04.09 — Recent Commercial Events**
 
 ## Phase 03 Result
 
@@ -48,4 +48,11 @@ None. The four-AWP automation queue completed after WP-04.08.
 
 ## Next Action
 
-Define and claim **WP-04.09**, the next bounded Phase 04 package, before implementation.
+Complete, validate, review, and merge **WP-04.09**, then continue with WP-04.10.
+
+## Remaining Phase 04 Work Packages
+
+- WP-04.09 — Recent Commercial Events
+- WP-04.10 — Venue Tier Switching
+- WP-04.11 — Revenue Trend Snapshots
+- WP-04.12 — Phase 04 Validation and Closure

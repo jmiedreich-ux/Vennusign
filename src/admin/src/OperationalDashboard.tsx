@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import {
   loadOperationalDashboard,
+  loadOperationalEvents,
   loadRevenueSnapshot,
+  type OperationalEvent,
   type OperationalDashboard as Dashboard,
   type RevenueSnapshot
 } from "./api";
@@ -12,6 +14,7 @@ type Props = { configuration: AdminConfiguration; apiKey: string };
 export default function OperationalDashboard({ configuration, apiKey }: Props) {
   const [dashboard, setDashboard] = useState<Dashboard>();
   const [revenue, setRevenue] = useState<RevenueSnapshot>();
+  const [events, setEvents] = useState<OperationalEvent[]>([]);
   const [revenueError, setRevenueError] = useState<string>();
   const [error, setError] = useState<string>();
 
@@ -22,6 +25,9 @@ export default function OperationalDashboard({ configuration, apiKey }: Props) {
     loadRevenueSnapshot(configuration, apiKey)
       .then(setRevenue)
       .catch(() => setRevenueError("Live Stripe revenue is unavailable. Verify the protected Stripe revenue configuration."));
+    loadOperationalEvents(configuration, apiKey)
+      .then(setEvents)
+      .catch(() => setEvents([]));
   }, [apiKey, configuration]);
 
   if (error) return <p className="state error">{error}</p>;
@@ -51,6 +57,11 @@ export default function OperationalDashboard({ configuration, apiKey }: Props) {
     <div className="metric-grid">{metrics.map(([label, value]) => <article key={label}><span>{label}</span><strong>{value}</strong></article>)}</div>
     <article className="screen-map"><div><p>Fleet health</p><h2>Screen health map</h2><span>{dashboard.onlineScreens} online · {dashboard.offlineScreens} offline</span></div>
       {dashboard.screens.length ? <div className="screen-dots">{dashboard.screens.map(screen => <div className="screen-health-item" key={screen.screenId} title={`${screen.venueName} · ${screen.screenName} · ${screen.status} · ${screen.lastSeen ? new Date(screen.lastSeen).toLocaleString() : "never seen"}`}><span className={screen.status} /><div><strong>{screen.screenName}</strong><small>{screen.venueName}{screen.location ? ` · ${screen.location}` : ""}</small></div></div>)}</div> : <p className="empty">No screens have been registered.</p>}
+    </article>
+    <article className="event-feed"><div><p>Commercial activity</p><h2>Recent events</h2></div>
+      {events.length
+        ? <ol>{events.map(item => <li key={item.id}><span className={`event-type ${item.eventType}`}>{item.eventType.replace("_", " ")}</span><div><strong>{item.venueName}</strong><p>{item.summary}</p><small>{new Date(item.occurredUtc).toLocaleString()}</small></div></li>)}</ol>
+        : <p className="empty">No commercial events have been recorded.</p>}
     </article>
   </section>;
 }

@@ -7,6 +7,7 @@ public sealed class VenueFeatureOverrideManagementService(
     IVenueRepository venueRepository,
     IFeatureRepository featureRepository,
     IVenueFeatureOverrideRepository overrideRepository,
+    IOperationalEventRepository operationalEventRepository,
     IFeatureResolutionService featureResolutionService,
     TimeProvider timeProvider) : IVenueFeatureOverrideManagementService
 {
@@ -39,6 +40,16 @@ public sealed class VenueFeatureOverrideManagementService(
         };
         await overrideRepository.UpsertAsync(featureOverride, cancellationToken).ConfigureAwait(false);
         featureResolutionService.Invalidate(venueId);
+        await operationalEventRepository.AddAsync(
+            new OperationalEvent
+            {
+                Id = Guid.NewGuid(),
+                VenueId = venueId,
+                EventType = "override_applied",
+                Summary = $"{(request.Enabled ? "Unlocked" : "Blocked")} feature {featureId}: {reason}",
+                OccurredUtc = utcNow
+            },
+            cancellationToken).ConfigureAwait(false);
         return featureOverride;
     }
 
@@ -46,7 +57,20 @@ public sealed class VenueFeatureOverrideManagementService(
     {
         if (!await TargetsExistAsync(venueId, featureId, cancellationToken).ConfigureAwait(false)) return null;
         var removed = await overrideRepository.RemoveAsync(venueId, featureId, cancellationToken).ConfigureAwait(false);
-        if (removed) featureResolutionService.Invalidate(venueId);
+        if (removed)
+        {
+            featureResolutionService.Invalidate(venueId);
+            await operationalEventRepository.AddAsync(
+                new OperationalEvent
+                {
+                    Id = Guid.NewGuid(),
+                    VenueId = venueId,
+                    EventType = "override_removed",
+                    Summary = $"Removed feature override {featureId}",
+                    OccurredUtc = timeProvider.GetUtcNow().UtcDateTime
+                },
+                cancellationToken).ConfigureAwait(false);
+        }
         return removed;
     }
 
