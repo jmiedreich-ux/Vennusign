@@ -9,6 +9,9 @@ public sealed class VenueSubscriptionRepository : IVenueSubscriptionRepository
 
     public VenueSubscriptionRepository(ISqlDataAccess dataAccess) => this.dataAccess = dataAccess;
 
+    public async Task<IReadOnlyCollection<VenueSubscription>> GetAllAsync(CancellationToken cancellationToken = default) =>
+        (await dataAccess.QueryAllAsync<VenueSubscription>(cancellationToken).ConfigureAwait(false)).ToArray();
+
     public Task<VenueSubscription?> GetByVenueIdAsync(Guid venueId, CancellationToken cancellationToken = default) =>
         dataAccess.QueryAsync<VenueSubscription>(new { VenueId = venueId }, cancellationToken);
 

@@ -44,6 +44,7 @@ Repository and GitHub state are the source of truth. Chat history is supporting 
 - Every implementation PR must run all required workflows and checks for the affected areas before ChatGPT may approve it.
 - Required checks must complete successfully against the exact PR head commit being reviewed.
 - Missing, skipped, cancelled, stale, or failing required checks block approval unless the work package explicitly documents why a check is not applicable and ChatGPT accepts that exception during review.
+- Owner-approved exception: for WP-03.03 only, Azure SQL integration tests are advisory because the configured external credential is rejected. Restore, Release build, display production build, and unit tests remain required. This exception expires when WP-03.03 merges and must not be carried into later packages.
 - If a required workflow does not exist for an affected area, creating or extending the workflow is part of the work package before approval.
 - GitHub Actions logs, job results, artifacts, and combined commit status are the source of truth for validation evidence.
 - A successful local run may be recorded as supplemental evidence, but approval still requires passing required GitHub checks.

@@ -2,41 +2,57 @@
 
 ## Work Package
 
-- ID: WP-02.14
-- Status: Complete pending PR CI, review, and merge
+- ID: WP-03.03
+- Status: Complete under owner-approved validation exception
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/02.14-phase-02-vertical-slice-validation`
-- Pull request: Pending creation
-- CI state: Pending draft PR workflow
+- Branch: `wp/03.03-subscription-management`
+- Issue: #16
+- Pull request: #17
+- Current PR head: resolve from PR #17 immediately before validation or review
+- CI state: Required non-integration checks passed; final branch-scoped exception check pending
 
 ## Completed This Session
 
-- Merged WP-02.13.
-- Restored the E2E in-memory repository contract after the stale-screen repository method was added.
-- Added a vertical-slice E2E test for pairing, content, online heartbeat state, and stale-offline transition.
-- Recorded the automated validation matrix.
-- Documented the two-context admin/display browser procedure and accepted execution limitation.
-- Updated the Phase 02 gate and identified `WP-03.01 — Feature and Tier Core Models` as the first Phase 03 package.
-- Synchronized work-package, project-status, assignment, and handoff records.
+- Implemented subscription trial creation, tier changes, lifecycle status changes, and trial expiration.
+- Added feature-resolution cache invalidation after subscription writes.
+- Added focused unit tests.
+- Repaired pre-existing NuGet restore failures by aligning package versions.
+- Repaired pre-existing display TypeScript declaration failures.
+- Repaired the stale migration-discovery unit test.
+- Improved CI diagnostics for restore, display build, and integration-test failures.
 
 ## Validation
 
-- Existing tests cover display boot, SignalR connection and event handling, heartbeat cadence, notifier group routing, and offline monitor boundaries.
-- New E2E coverage proves the combined HTTP pairing/content/heartbeat/offline lifecycle.
-- Full solution, test, display, and integration validation remains for `./scripts/validate.ps1` in PR CI.
-- Interactive two-browser validation is documented for execution in a running development environment.
+GitHub Actions run `30331559584` against `12b4bf1c8888082103d8413641f17b2f0c1993ad` completed with:
+
+- Restore: passed
+- Release build: passed
+- Display production build: passed
+- Unit tests: passed
+- Integration tests: failed because Azure SQL rejected the configured login with `Login failed for user 'sqladmin'`
+
+The failure affects all Azure SQL integration suites and is external to the implementation.
+
+A failed-jobs retry on 2026-07-28 validated current PR head `8ff2eceaf4217df0cd18701d73eb8fda90a8b713`. Job `90191758018` passed restore, Release build, display production build, and all unit tests, then reproduced `Login failed for user 'sqladmin'` across every Azure SQL integration suite. Supplemental local validation could not run in the automation workspace because the .NET SDK is not installed; GitHub Actions remains the authoritative environment.
+
+After publishing the blocker records, required workflow run `30333132057` validated documentation head `03cbd4a29846f72020fd66193be0ebbec1f67a5e`. Job `90192330047` again passed restore, Release build, display production build, and all unit tests, then failed every Azure SQL integration suite with the same rejected `sqladmin` login.
+
+## Validation Exception
+
+On 2026-07-28, the repository owner approved treating Azure SQL integration failures as advisory for WP-03.03 only. Restore, Release build, display production build, and unit tests remain mandatory. The workflow still runs and publishes the integration failures for visibility. This exception expires when WP-03.03 merges.
+
+Workflow run `30333839381` against head `b2008850c858be094c7c77b7ae6fcc2dc63398b5` passed restore, Release build, display production build, and unit tests. Azure SQL integration results remained advisory. Final review tightened the exception to the WP-03.03 branch so later packages retain blocking integration validation.
 
 ## Exact Next Action
 
-- Open the WP-02.14 draft PR and review CI.
-- Merge only after the full validation suite succeeds.
-- After merge, begin `WP-03.01 — Feature and Tier Core Models`.
+- Merge PR #17 after final CI and ChatGPT approval.
+- Begin WP-03.04 from refreshed `master`.
 
 ## Do Not Redo or Reverse
 
-- Do not begin Phase 03 before WP-02.14 is merged.
-- Do not replace the verified SignalR event names or group conventions.
-- Do not claim the interactive browser procedure was executed from the connected GitHub environment.
+- Do not remove the subscription lifecycle service or its tests.
+- Do not revert the package-version alignment, display declarations, migration test update, or CI diagnostic improvements.
+- Do not broaden the WP-03.03 integration exception to later branches.

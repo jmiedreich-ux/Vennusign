@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVenueSubscriptionRepository, VenueSubscriptionRepository>();
         services.AddScoped<IVenueFeatureOverrideRepository, VenueFeatureOverrideRepository>();
         services.AddScoped<IFeatureResolutionService, FeatureResolutionService>();
+        services.AddScoped<ISubscriptionManagementService, SubscriptionManagementService>();
         return services;
     }
 }
