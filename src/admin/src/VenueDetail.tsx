@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { loadFeatureMatrix, loadVenueSupportDetail, removeVenueFeatureOverride, saveVenueFeatureOverride, type FeatureMatrixSnapshot, type VenueSupportDetail } from "./api";
+import { loadFeatureMatrix, loadVenueSupportDetail, removeVenueFeatureOverride, saveVenueFeatureOverride, switchVenueTier, type FeatureMatrixSnapshot, type VenueSupportDetail } from "./api";
 import type { AdminConfiguration } from "./config";
 
 type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; onBack: () => void };
@@ -15,6 +15,7 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
   const [expiresAt, setExpiresAt] = useState("");
   const [saving, setSaving] = useState(false);
   const [version, setVersion] = useState(0);
+  const [targetTierId, setTargetTierId] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -25,7 +26,7 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
       loadFeatureMatrix(configuration, apiKey)
     ])
       .then(([value, featureMatrix]) => {
-        if (value) { setDetail(value); setMatrix(featureMatrix); setFeatureId(current => current || featureMatrix.features[0]?.id || ""); }
+        if (value) { setDetail(value); setMatrix(featureMatrix); setFeatureId(current => current || featureMatrix.features[0]?.id || ""); setTargetTierId(value.tier?.id ?? ""); }
         else setError("Venue not found.");
       })
       .catch(reason => {
@@ -51,6 +52,12 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
     catch { setError("The feature override could not be removed."); }
     finally { setSaving(false); }
   };
+  const saveTier = async (event: FormEvent) => {
+    event.preventDefault(); setSaving(true); setError(undefined);
+    try { await switchVenueTier(configuration, apiKey, venueId, targetTierId); setVersion(value => value + 1); }
+    catch { setError("The venue tier could not be switched."); }
+    finally { setSaving(false); }
+  };
 
   if (loading) return <p className="state">Loading venue detail…</p>;
   if (error || !detail) return <section><button className="back" onClick={onBack}>← Back to venues</button><p className="state error">{error}</p></section>;
@@ -61,7 +68,7 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
     <div className="detail-heading"><div><p>{detail.venue.type}</p><h2>{detail.venue.name}</h2></div><span className="health">{detail.subscription?.status ?? "unsubscribed"}</span></div>
     <div className="detail-grid">
       <article><h3>Profile</h3><dl><dt>Timezone</dt><dd>{detail.venue.timezone}</dd><dt>Languages</dt><dd>{[detail.venue.primaryLanguage, detail.venue.secondaryLanguage].filter(Boolean).join(", ")}</dd></dl></article>
-      <article><h3>Subscription</h3><dl><dt>Tier</dt><dd>{detail.tier?.name ?? "None"}</dd><dt>Screen limit</dt><dd>{detail.tier?.maxScreens ?? "—"}</dd><dt>Period end</dt><dd>{detail.subscription?.currentPeriodEnd ? new Date(detail.subscription.currentPeriodEnd).toLocaleDateString() : "—"}</dd></dl></article>
+      <article><h3>Subscription</h3><dl><dt>Tier</dt><dd>{detail.tier?.name ?? "None"}</dd><dt>Screen limit</dt><dd>{detail.tier?.maxScreens ?? "—"}</dd><dt>Period end</dt><dd>{detail.subscription?.currentPeriodEnd ? new Date(detail.subscription.currentPeriodEnd).toLocaleDateString() : "—"}</dd></dl>{detail.subscription ? <form className="tier-switch" onSubmit={saveTier}><label>Switch tier<select value={targetTierId} onChange={event => setTargetTierId(event.target.value)}>{matrix?.tiers.filter(tier => tier.isActive).map(tier => <option key={tier.id} value={tier.id}>{tier.name}</option>)}</select></label><button disabled={saving || !targetTierId || targetTierId === detail.tier?.id} type="submit">Update Stripe subscription</button></form> : null}</article>
     </div>
     <article><h3>Screens ({detail.screens.length})</h3>{detail.screens.length ? <ul className="support-list">{detail.screens.map(screen => <li key={screen.id}><strong>{screen.name}</strong><span>{screen.location ?? "No location"} · {screen.status} · {screen.lastSeen ? new Date(screen.lastSeen).toLocaleString() : "Never seen"}</span></li>)}</ul> : <p>No screens assigned.</p>}</article>
     <article><h3>Effective features</h3><ul className="support-list">{features.map(feature => <li key={feature.key}><strong>{feature.key}</strong><span>{feature.enabled ? "Enabled" : "Disabled"} · {feature.source}{feature.limitValue ? ` · limit ${feature.limitValue}` : ""}</span></li>)}</ul></article>
