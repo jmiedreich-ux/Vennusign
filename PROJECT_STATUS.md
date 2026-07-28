@@ -23,10 +23,11 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 - WP-04.01 — Super Admin CRM Foundation
 - WP-04.02 — Venue Directory
 - WP-04.03 — Venue Detail & Support View
+- WP-04.04 — Tier Management
 
 ## Active Work Package
 
-WP-04.04 — Tier Management is awaiting PR validation and merge.
+WP-04.05 — Feature Matrix is implemented, validated, and awaiting final review and merge in PR #37.
 
 ## Phase 03 Result
 
@@ -43,4 +44,4 @@ WP-04.04 — Tier Management is awaiting PR validation and merge.
 
 ## Next Action
 
-Validate and merge **WP-04.04 — Tier Management**, then define WP-04.05 — Feature Matrix.
+Review and merge **WP-04.05 — Feature Matrix**, then define the next bounded Phase 04 package.

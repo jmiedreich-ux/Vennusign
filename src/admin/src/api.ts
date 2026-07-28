@@ -25,6 +25,16 @@ export type SubscriptionTier = {
   stripeMonthlyPriceId?: string; stripeAnnualPriceId?: string;
 };
 export type TierManagementRequest = Omit<SubscriptionTier, "id">;
+export type FeatureMatrixSnapshot = {
+  tiers: SubscriptionTier[];
+  features: Array<{ id: string; key: string; label: string; category: string; isActive: boolean }>;
+  enabledFeatures: Array<{ tierId: string; featureId: string; limitValue?: string }>;
+  recentAudit: Array<{
+    id: string; tierId: string; featureId: string; adminId: string;
+    previousEnabled: boolean; newEnabled: boolean; changedUtc: string;
+  }>;
+};
+export type FeatureMatrixChange = { tierId: string; featureId: string; enabled: boolean };
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -88,4 +98,18 @@ export async function cloneTier(configuration: AdminConfiguration, apiKey: strin
 }
 export async function archiveTier(configuration: AdminConfiguration, apiKey: string, tierId: string): Promise<void> {
   await tierRequest(configuration, apiKey, `/${tierId}/archive`, { method: "POST" });
+}
+
+async function featureRequest(configuration: AdminConfiguration, apiKey: string, init?: RequestInit) {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/features`, {
+    ...init, headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to manage the feature matrix.");
+  return response;
+}
+export async function loadFeatureMatrix(configuration: AdminConfiguration, apiKey: string): Promise<FeatureMatrixSnapshot> {
+  return (await featureRequest(configuration, apiKey)).json() as Promise<FeatureMatrixSnapshot>;
+}
+export async function saveFeatureMatrix(configuration: AdminConfiguration, apiKey: string, changes: FeatureMatrixChange[]): Promise<{ changedCount: number }> {
+  return (await featureRequest(configuration, apiKey, { method: "PUT", body: JSON.stringify({ changes }) })).json() as Promise<{ changedCount: number }>;
 }
