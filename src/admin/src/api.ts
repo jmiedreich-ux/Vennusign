@@ -19,6 +19,12 @@ export type VenueSupportDetail = {
   features: Record<string, { key: string; enabled: boolean; limitValue?: string; source: string }>;
   activeOverrides: Array<{ featureId: string; enabled: boolean; reason: string; expiresAt?: string }>;
 };
+export type SubscriptionTier = {
+  id: string; name: string; slug: string; price: number; maxScreens: number;
+  isPublic: boolean; isActive: boolean; stripeProductId?: string;
+  stripeMonthlyPriceId?: string; stripeAnnualPriceId?: string;
+};
+export type TierManagementRequest = Omit<SubscriptionTier, "id">;
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -61,4 +67,25 @@ export async function loadVenueSupportDetail(configuration: AdminConfiguration, 
   if (response.status === 404) return undefined;
   if (!response.ok) throw new AdminApiError(response.status, "Unable to load venue support detail.");
   return response.json() as Promise<VenueSupportDetail>;
+}
+
+async function tierRequest(configuration: AdminConfiguration, apiKey: string, path = "", init?: RequestInit) {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/tiers${path}`, {
+    ...init, headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to manage subscription tiers.");
+  return response;
+}
+
+export async function loadTiers(configuration: AdminConfiguration, apiKey: string): Promise<SubscriptionTier[]> {
+  return (await tierRequest(configuration, apiKey)).json() as Promise<SubscriptionTier[]>;
+}
+export async function saveTier(configuration: AdminConfiguration, apiKey: string, request: TierManagementRequest, tierId?: string): Promise<SubscriptionTier> {
+  return (await tierRequest(configuration, apiKey, tierId ? `/${tierId}` : "", { method: tierId ? "PUT" : "POST", body: JSON.stringify(request) })).json() as Promise<SubscriptionTier>;
+}
+export async function cloneTier(configuration: AdminConfiguration, apiKey: string, tierId: string): Promise<SubscriptionTier> {
+  return (await tierRequest(configuration, apiKey, `/${tierId}/clone`, { method: "POST" })).json() as Promise<SubscriptionTier>;
+}
+export async function archiveTier(configuration: AdminConfiguration, apiKey: string, tierId: string): Promise<void> {
+  await tierRequest(configuration, apiKey, `/${tierId}/archive`, { method: "POST" });
 }

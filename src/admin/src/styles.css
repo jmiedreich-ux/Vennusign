@@ -60,3 +60,13 @@ td small { display: block; color: #7a8b84; margin-top: 3px; }
 .support-list li { display: flex; justify-content: space-between; gap: 18px; border-top: 1px solid #edf1ee; padding-top: 10px; }
 .support-list span { color: #667970; text-align: right; }
 @media (max-width: 760px) { .detail-grid { grid-template-columns: 1fr; }.support-list li { display: grid; }.support-list span { text-align: left; } }
+.tier-management { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 24px; margin-top: 30px; align-items: start; }
+.tier-form { display: grid; gap: 12px; border: 1px solid #dbe3de; border-radius: 18px; background: white; padding: 20px; }
+.tier-form p, .tier-form h2 { margin: 0; }.tier-form label { display: grid; gap: 5px; color: #60736b; font-size: .8rem; font-weight: 700; }
+.tier-form input { border: 1px solid #ccd8d1; border-radius: 10px; padding: 9px 11px; }
+.checks { display: flex; gap: 18px; }.checks label { display: flex; align-items: center; }
+.form-actions, .tier-actions { display: flex; gap: 8px; }.form-actions button, .tier-actions button { border: 1px solid #c7d6cf; border-radius: 9px; background: #eff4f1; padding: 8px 11px; cursor: pointer; }
+.form-actions button[type="submit"] { background: #194d3b; color: white; }
+.tier-cards { display: grid; gap: 12px; }.tier-cards article { display: flex; justify-content: space-between; gap: 15px; border: 1px solid #dbe3de; border-radius: 16px; background: white; padding: 18px; }
+.tier-cards h3 { margin: 8px 0 3px; }.tier-cards p { margin: 0; color: #667970; }
+@media (max-width: 900px) { .tier-management { grid-template-columns: 1fr; }.tier-cards article { display: grid; } }

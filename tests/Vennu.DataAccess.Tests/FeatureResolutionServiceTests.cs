@@ -87,8 +87,11 @@ public class FeatureResolutionServiceTests
     private sealed class TierRepositoryFake(TierFeature? tierFeature) : ISubscriptionTierRepository
     {
         public Task<IReadOnlyCollection<SubscriptionTier>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyCollection<SubscriptionTier>>(Array.Empty<SubscriptionTier>());
+        public Task<SubscriptionTier?> GetByIdAsync(Guid tierId, CancellationToken cancellationToken = default) => Task.FromResult<SubscriptionTier?>(null);
         public Task<SubscriptionTier?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) => Task.FromResult<SubscriptionTier?>(null);
         public Task<IReadOnlyCollection<TierFeature>> GetFeaturesAsync(Guid tierId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyCollection<TierFeature>>(tierFeature is null ? Array.Empty<TierFeature>() : new[] { tierFeature });
+        public Task<bool> CreateAsync(SubscriptionTier tier, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<bool> UpdateAsync(SubscriptionTier tier, CancellationToken cancellationToken = default) => Task.FromResult(true);
     }
 
     private sealed class SubscriptionRepositoryFake(VenueSubscription? subscription) : IVenueSubscriptionRepository

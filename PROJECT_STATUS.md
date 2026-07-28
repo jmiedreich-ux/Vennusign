@@ -22,10 +22,11 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 - WP-03.08 — Stripe Webhook Endpoint
 - WP-04.01 — Super Admin CRM Foundation
 - WP-04.02 — Venue Directory
+- WP-04.03 — Venue Detail & Support View
 
 ## Active Work Package
 
-WP-04.03 — Venue Detail & Support View is awaiting PR validation and merge.
+WP-04.04 — Tier Management is awaiting PR validation and merge.
 
 ## Phase 03 Result
 
@@ -42,4 +43,4 @@ WP-04.03 — Venue Detail & Support View is awaiting PR validation and merge.
 
 ## Next Action
 
-Validate and merge **WP-04.03 — Venue Detail & Support View**, then define WP-04.04 — Tier Management.
+Validate and merge **WP-04.04 — Tier Management**, then define WP-04.05 — Feature Matrix.

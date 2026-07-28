@@ -31,6 +31,12 @@ public sealed class SubscriptionTierRepository : ISubscriptionTierRepository, IB
     public Task<SubscriptionTier?> GetByIdAsync(Guid tierId, CancellationToken cancellationToken = default) =>
         dataAccess.QueryAsync<SubscriptionTier>(new { Id = tierId }, cancellationToken);
 
+    public async Task<bool> CreateAsync(SubscriptionTier tier, CancellationToken cancellationToken = default) =>
+        await dataAccess.InsertAsync(tier, cancellationToken).ConfigureAwait(false) > 0;
+
+    public async Task<bool> UpdateAsync(SubscriptionTier tier, CancellationToken cancellationToken = default) =>
+        await dataAccess.UpdateAsync(tier, cancellationToken).ConfigureAwait(false) > 0;
+
     public Task<SubscriptionTier?> GetByStripeProductIdAsync(string productId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(productId);
