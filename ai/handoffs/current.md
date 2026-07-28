@@ -10,9 +10,9 @@
 
 - Branch: `wp/04.01-super-admin-crm-foundation`
 - Issue: #28
-- Pull request: Pending creation
-- CI state: Pending
-- Review: Pending
+- Pull request: #29
+- CI state: run `30398325500` passed against `12fd23d0c0fbf03f8488bcc956d84fff2eaa2f92`; final security correction requires fresh CI
+- Review: initial review found build-time secret exposure; corrected by session-entry flow, final decision pending fresh CI
 
 ## Completed This Session
 
@@ -27,6 +27,7 @@
 - Local `npm run build` in `src/admin`: passed.
 - JSON parsing and `git diff --check`: passed.
 - First GitHub Actions run `30398140261`: Release build and both frontend builds passed; unit tests exposed missing Stripe test-factory configuration, which was corrected on the package branch.
+- GitHub Actions run `30398325500`: passed all required non-integration checks against `12fd23d0c0fbf03f8488bcc956d84fff2eaa2f92`.
 - .NET validation: deferred to GitHub Actions because no .NET SDK is available locally.
 - Integration-type tests: intentionally skipped under the standing owner exception.
 
@@ -38,7 +39,7 @@
 
 ## Risks
 
-- The API-key scheme is an initial internal authorization boundary. Production deployment must provide the secret through protected configuration and terminate TLS.
+- The API-key scheme is an initial internal authorization boundary. The key is entered at session start, retained only in browser session storage, and must be distributed through a protected operations channel. Production must terminate TLS.
 - No venue, tier, feature, or dashboard data behavior is included in this foundation package.
 
 ## Exact Next Action

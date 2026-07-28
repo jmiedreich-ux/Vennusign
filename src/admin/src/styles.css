@@ -6,6 +6,9 @@ button, input { font: inherit; }
 .access-card { width: min(430px, calc(100% - 32px)); padding: 36px; border-radius: 24px; background: white; box-shadow: 0 20px 70px #163c2a1a; }
 .access-card span, header p { color: #267252; font-size: .75rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
 .access-card h1 { font-size: 2rem; margin: 12px 0; }
+.access-card label { display: block; margin: 26px 0 8px; font-weight: 700; }
+.access-card input { width: 100%; border: 1px solid #cbd6d0; border-radius: 12px; padding: 12px 14px; }
+.access-card button { width: 100%; margin-top: 14px; border: 0; border-radius: 12px; padding: 12px 14px; background: #173f30; color: white; font-weight: 750; cursor: pointer; }
 .loading { color: #466158; }
 .shell { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
 aside { color: #e9f4ee; background: #10271f; padding: 28px 18px; display: flex; flex-direction: column; }
@@ -18,6 +21,7 @@ nav a { color: inherit; text-decoration: none; display: grid; padding: 14px; bor
 nav a:hover, nav a.active { background: #1e3e32; }
 nav small { font-size: .72rem; }
 .identity { margin-top: auto; padding: 20px 10px 0; border-top: 1px solid #2d493e; }
+.identity { width: 100%; color: inherit; text-align: left; background: transparent; border-right: 0; border-bottom: 0; border-left: 0; cursor: pointer; }
 .identity > span { width: 36px; height: 36px; border-radius: 50%; background: #315344; color: #d5f26c; }
 .identity small { font-size: .72rem; }
 .shell > main { padding: 44px clamp(24px, 5vw, 72px); }
@@ -30,4 +34,3 @@ header h1 { font-size: clamp(2rem, 4vw, 3.4rem); margin: 0; letter-spacing: -.05
 .placeholder h2 { font-size: 1.8rem; margin-top: 70px; }
 .placeholder p:last-child { color: #64766f; max-width: 520px; }
 @media (max-width: 760px) { .shell { grid-template-columns: 1fr; } aside { position: static; } nav { grid-template-columns: repeat(2, 1fr); } .identity { display: none; } .shell > main { padding-top: 28px; } .environment { display: none; } }
-

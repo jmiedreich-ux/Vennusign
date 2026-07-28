@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { AdminApiError, loadSession, type AdminSession } from "./api";
 import { loadAdminConfiguration } from "./config";
 import "./styles.css";
@@ -17,20 +17,24 @@ function currentRoute() {
 
 export default function App() {
   const configuration = useMemo(loadAdminConfiguration, []);
+  const [apiKey, setApiKey] = useState(() => sessionStorage.getItem("vennu.admin.key") ?? "");
   const [session, setSession] = useState<AdminSession>();
   const [route, setRoute] = useState(currentRoute);
   const [error, setError] = useState<string>();
 
   useEffect(() => {
     const controller = new AbortController();
-    loadSession(configuration, controller.signal)
+    if (!apiKey) return () => controller.abort();
+    loadSession(configuration, apiKey, controller.signal)
       .then(setSession)
       .catch((reason: unknown) => {
+        sessionStorage.removeItem("vennu.admin.key");
+        setApiKey("");
         if (reason instanceof AdminApiError) setError(reason.message);
         else if (!(reason instanceof DOMException && reason.name === "AbortError")) setError("The admin API is unavailable.");
       });
     return () => controller.abort();
-  }, [configuration]);
+  }, [apiKey, configuration]);
 
   useEffect(() => {
     const onHashChange = () => setRoute(currentRoute());
@@ -38,8 +42,18 @@ export default function App() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  if (error) {
-    return <main className="centered"><section className="access-card"><span>Vennu Internal</span><h1>Access unavailable</h1><p>{error}</p></section></main>;
+  const authorize = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const suppliedKey = String(data.get("adminKey") ?? "").trim();
+    if (!suppliedKey) return;
+    setError(undefined);
+    sessionStorage.setItem("vennu.admin.key", suppliedKey);
+    setApiKey(suppliedKey);
+  };
+
+  if (!apiKey || error) {
+    return <main className="centered"><form className="access-card" onSubmit={authorize}><span>Vennu Internal</span><h1>Super Admin access</h1><p>{error ?? "Enter the access key supplied through the protected operations channel."}</p><label htmlFor="adminKey">Access key</label><input id="adminKey" name="adminKey" type="password" autoComplete="current-password" required /><button type="submit">Open workspace</button></form></main>;
   }
   if (!session) {
     return <main className="centered"><p className="loading">Opening secure workspace…</p></main>;
@@ -52,7 +66,7 @@ export default function App() {
         <nav aria-label="Super Admin">
           {routes.map(item => <a className={route.path === item.path ? "active" : ""} href={`#/${item.path}`} key={item.path}><strong>{item.label}</strong><small>{item.description}</small></a>)}
         </nav>
-        <div className="identity"><span>{session.displayName.slice(0, 1)}</span><div><strong>{session.displayName}</strong><small>Internal operations</small></div></div>
+        <button className="identity" type="button" onClick={() => { sessionStorage.removeItem("vennu.admin.key"); setSession(undefined); setApiKey(""); }}><span>{session.displayName.slice(0, 1)}</span><div><strong>{session.displayName}</strong><small>Sign out</small></div></button>
       </aside>
       <main>
         <header><div><p>Internal operations</p><h1>{route.label}</h1></div><span className="environment">Live workspace</span></header>
@@ -61,4 +75,3 @@ export default function App() {
     </div>
   );
 }
-

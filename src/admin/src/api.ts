@@ -11,13 +11,13 @@ export class AdminApiError extends Error {
   }
 }
 
-export async function loadSession(configuration: AdminConfiguration, signal?: AbortSignal): Promise<AdminSession> {
-  if (!configuration.apiKey) {
+export async function loadSession(configuration: AdminConfiguration, apiKey: string, signal?: AbortSignal): Promise<AdminSession> {
+  if (!apiKey) {
     throw new AdminApiError(401, "Super Admin access has not been configured.");
   }
 
   const response = await fetch(`${configuration.apiBaseUrl}/api/admin/session`, {
-    headers: { "X-Vennu-Admin-Key": configuration.apiKey },
+    headers: { "X-Vennu-Admin-Key": apiKey },
     signal
   });
   if (!response.ok) {
@@ -26,4 +26,3 @@ export async function loadSession(configuration: AdminConfiguration, signal?: Ab
 
   return response.json() as Promise<AdminSession>;
 }
-
