@@ -3,7 +3,7 @@
 ## Work Package
 
 - ID: WP-03.03
-- Status: Blocked pending CI credential repair
+- Status: In review under owner-approved validation exception
 - Execution mode: Sequential
 
 ## Git State
@@ -12,7 +12,7 @@
 - Issue: #16
 - Pull request: #17
 - Current PR head: resolve from PR #17 immediately before validation or review
-- CI state: Required integration validation blocked by invalid Azure SQL credentials
+- CI state: Awaiting required non-integration checks under the WP-03.03-only exception
 
 ## Completed This Session
 
@@ -40,15 +40,14 @@ A failed-jobs retry on 2026-07-28 validated current PR head `8ff2eceaf4217df0cd1
 
 After publishing the blocker records, required workflow run `30333132057` validated documentation head `03cbd4a29846f72020fd66193be0ebbec1f67a5e`. Job `90192330047` again passed restore, Release build, display production build, and all unit tests, then failed every Azure SQL integration suite with the same rejected `sqladmin` login.
 
-## Blocker
+## Validation Exception
 
-Repair or replace the `VENU_TEST_AZURE_SQL_CONNECTION_STRING` secret in the GitHub `dev` environment, or restore the corresponding Azure SQL login. PR #17 cannot be approved or merged until the full workflow passes against its final head.
+On 2026-07-28, the repository owner approved treating Azure SQL integration failures as advisory for WP-03.03 only. Restore, Release build, display production build, and unit tests remain mandatory. The workflow still runs and publishes the integration failures for visibility. This exception expires when WP-03.03 merges.
 
 ## Exact Next Action
 
-- Repair the Azure SQL CI credential.
-- Re-run `phase02-tests` on PR #17.
-- If all checks pass, perform ChatGPT review, record approval, merge PR #17, and then begin WP-03.04.
+- Run `phase02-tests` on PR #17 with the documented exception.
+- If required non-integration checks pass, perform ChatGPT review, record approval, merge PR #17, and then begin WP-03.04.
 
 ## Do Not Redo or Reverse
 
