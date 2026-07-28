@@ -1,26 +1,26 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-28T14:30:00Z",
+  "updatedUtc": "2026-07-28T15:00:00Z",
   "activeAssignments": [
     {
-      "workPackage": "WP-03.04",
-      "branch": "wp/03.04-usage-metering",
+      "workPackage": "WP-03.05",
+      "branch": "wp/03.05-stripe-billing-catalog",
       "orchestrator": "ChatGPT",
       "status": "Complete Pending Review",
       "ownedPaths": [
-        "src/Vennu.Core.Models/FeatureUsage.cs",
-        "src/Vennu.Data/Repositories/FeatureUsageRepository.cs",
-        "src/Vennu.Data/Repositories/IFeatureUsageRepository.cs",
-        "src/Vennu.Data/Services/**Usage**",
-        "src/Vennu.Data/Scripts/006_create_feature_usages.sql",
-        "tests/Vennu.DataAccess.Tests/UsageMeteringServiceTests.cs",
-        "docs/work-packages/WP-03.04-usage-metering.md",
+        "src/Vennu.Core.Models/SubscriptionTier.cs",
+        "src/Vennu.Data/Repositories/IBillingCatalogRepository.cs",
+        "src/Vennu.Data/Repositories/SubscriptionTierRepository.cs",
+        "src/Vennu.Data/Services/**BillingCatalog**",
+        "src/Vennu.Data/Scripts/007_add_stripe_billing_catalog.sql",
+        "tests/Vennu.DataAccess.Tests/BillingCatalogServiceTests.cs",
+        "docs/work-packages/WP-03.05-stripe-billing-catalog.md",
         "PROJECT_STATUS.md",
         "ai/handoffs/current.md"
       ]
     }
   ],
-  "nextAvailableWorkPackage": "WP-03.05",
+  "nextAvailableWorkPackage": "WP-03.06",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

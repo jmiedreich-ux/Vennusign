@@ -16,17 +16,18 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 - WP-03.02 — Feature Resolution Engine
 - WP-03.03 — Subscription Management
 - WP-03.04 — Usage Metering
+- WP-03.05 — Stripe Billing Catalog
 
 ## Active Work Package
 
-None pending WP-03.04 pull-request validation, review, and merge.
+None pending WP-03.05 pull-request validation, review, and merge.
 
-## WP-03.04 Progress
+## WP-03.05 Progress
 
-- Added monthly feature-usage persistence.
-- Added atomic consumption with limit enforcement.
-- Added usage snapshots with used, limit, and remaining capacity.
-- Added unit coverage for limited, unlimited, disabled, invalid-limit, and exhausted-capacity behavior.
+- Added persistent Stripe product, monthly price, and annual price identifiers.
+- Added validated cross-tier uniqueness checks and repository lookups.
+- Added active public billing-catalog projection with annual two-month-free pricing.
+- Added focused unit coverage.
 
 ## Standing Validation Exception
 
@@ -35,6 +36,6 @@ None pending WP-03.04 pull-request validation, review, and merge.
 
 ## Next Package
 
-**WP-03.05 — Stripe Billing Catalog**
+**WP-03.06 — Stripe Event Idempotency**
 
-WP-03.05 is the next unfinished package after WP-03.04 merges.
+WP-03.06 is the next unfinished package after WP-03.05 merges.

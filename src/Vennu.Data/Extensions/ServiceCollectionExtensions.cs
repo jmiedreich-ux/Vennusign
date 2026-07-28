@@ -16,13 +16,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IScreenRepository, ScreenRepository>();
         services.AddScoped<IScreenPairingCodeRepository, ScreenPairingCodeRepository>();
         services.AddScoped<IFeatureRepository, FeatureRepository>();
-        services.AddScoped<ISubscriptionTierRepository, SubscriptionTierRepository>();
+        services.AddScoped<SubscriptionTierRepository>();
+        services.AddScoped<ISubscriptionTierRepository>(provider => provider.GetRequiredService<SubscriptionTierRepository>());
+        services.AddScoped<IBillingCatalogRepository>(provider => provider.GetRequiredService<SubscriptionTierRepository>());
         services.AddScoped<IVenueSubscriptionRepository, VenueSubscriptionRepository>();
         services.AddScoped<IVenueFeatureOverrideRepository, VenueFeatureOverrideRepository>();
         services.AddScoped<IFeatureUsageRepository, FeatureUsageRepository>();
         services.AddScoped<IFeatureResolutionService, FeatureResolutionService>();
         services.AddScoped<ISubscriptionManagementService, SubscriptionManagementService>();
         services.AddScoped<IUsageMeteringService, UsageMeteringService>();
+        services.AddScoped<IBillingCatalogService, BillingCatalogService>();
         return services;
     }
 }

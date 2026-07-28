@@ -10,6 +10,8 @@ public class SubscriptionTier
     public bool IsPublic { get; set; } = true;
     public bool IsActive { get; set; } = true;
     public string? StripeProductId { get; set; }
+    public string? StripeMonthlyPriceId { get; set; }
+    public string? StripeAnnualPriceId { get; set; }
     public DateTime CreatedUtc { get; set; }
     public DateTime UpdatedUtc { get; set; }
 }
