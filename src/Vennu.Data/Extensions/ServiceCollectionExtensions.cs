@@ -26,6 +26,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISubscriptionManagementService, SubscriptionManagementService>();
         services.AddScoped<IUsageMeteringService, UsageMeteringService>();
         services.AddScoped<IBillingCatalogService, BillingCatalogService>();
+        services.AddScoped<IProcessedStripeEventRepository, ProcessedStripeEventRepository>();
+        services.AddScoped<IStripeEventIdempotencyService, StripeEventIdempotencyService>();
         return services;
     }
 }
