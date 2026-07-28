@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-28T20:23:35Z",
-  "activeAssignments": [
-    {
-      "workPackageId": "WP-03.08",
-      "branch": "wp/03.08-stripe-webhook-endpoint",
-      "issue": 26,
-      "status": "In Progress",
-      "claimedUtc": "2026-07-28T20:23:35Z"
-    }
-  ],
+  "updatedUtc": "2026-07-28T20:32:20Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
