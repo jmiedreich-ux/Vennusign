@@ -3,10 +3,10 @@
 ## Work Package
 
 - ID: WP-05.02
-- Status: Complete pending CI, review, and merge
+- Status: Complete pending final exact-head CI, review, and merge
 - Branch: `wp/05.02-menu-section-management`
 - Issue: #59
-- Pull request: pending
+- Pull request: #60
 
 ## Completed
 
@@ -20,12 +20,12 @@
 ## Validation
 
 - Local admin production build and 6 frontend tests passed.
-- GitHub Actions is authoritative for Release build, frontend builds/tests, and unit tests.
+- GitHub Actions run 179 passed Release build, frontend builds/tests, and unit tests on implementation head `ab8ba527`; fresh CI is required for the evidence commit.
 - Integration-type tests intentionally skipped.
 
 ## Exact Next Action
 
-Publish WP-05.02, wait for exact-head GitHub Actions, review, approve, and merge before WP-05.03.
+Publish the evidence commit, wait for exact-head GitHub Actions, review, approve, and merge PR #60 before WP-05.03.
 
 ## Do Not Redo or Reverse
 
