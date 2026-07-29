@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const component = await readFile(new URL("../src/MenuSectionsEditor.tsx", import.meta.url), "utf8");
+const items = await readFile(new URL("../src/MenuItemsEditor.tsx", import.meta.url), "utf8");
 const api = await readFile(new URL("../src/api.ts", import.meta.url), "utf8");
 
 test("section journeys remain venue scoped", () => {
@@ -10,6 +11,13 @@ test("section journeys remain venue scoped", () => {
   assert.match(component, /createMenuSection/);
   assert.match(component, /updateMenuSection/);
   assert.match(component, /reorderMenuSections/);
+});
+
+test("inline item editing uses venue scoped create and update contracts", () => {
+  assert.match(items, /createMenuItem/);
+  assert.match(items, /updateMenuItem/);
+  assert.match(items, /onBlur=\{\(\) => save\(item\)\}/);
+  assert.ok(api.includes("/sections/${sectionId}/items"));
 });
 
 test("collapsed state persists per venue", () => {

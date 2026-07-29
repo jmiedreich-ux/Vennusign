@@ -14,6 +14,8 @@ public interface IMenuRepository
 
     Task<bool> UpdateSectionAsync(MenuSection section, CancellationToken cancellationToken = default);
 
+    Task<bool> UpdateItemAsync(MenuItem item, CancellationToken cancellationToken = default);
+
     Task<int> ReorderSectionsAsync(
         Guid venueId,
         Guid menuId,

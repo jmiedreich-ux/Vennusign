@@ -108,6 +108,7 @@ public sealed class MenuSectionManagementServiceTests
             UpdatedSection = section;
             return Task.FromResult(true);
         }
+        public Task<bool> UpdateItemAsync(MenuItem item, CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task<int> ReorderSectionsAsync(Guid venueId, Guid menuId, IReadOnlyCollection<Guid> sectionIds, DateTime updatedUtc, CancellationToken cancellationToken = default)
         {
             ReorderedSectionIds = sectionIds;

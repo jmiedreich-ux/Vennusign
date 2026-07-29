@@ -7,6 +7,7 @@ using Vennu.Api.Webhooks;
 using Vennu.Api.Admin;
 using Vennu.Api.Billing;
 using Vennu.Data.Services;
+using Vennu.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier>();
+builder.Services.AddScoped<IMenuItemManagementService, MenuItemManagementService>();
 builder.Services.Configure<HeartbeatMonitorOptions>(builder.Configuration.GetSection(HeartbeatMonitorOptions.SectionName));
 builder.Services
     .AddOptions<StripeWebhookOptions>()
