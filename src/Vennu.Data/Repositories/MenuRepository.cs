@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Vennu.Core.Models;
 using Vennu.DataAccess;
 
@@ -36,6 +37,70 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
         ORDER BY LanguageCode, Id;
         """;
 
+    private const string ReorderSectionsSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        DECLARE @Requested TABLE
+        (
+            Id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+            SortOrder INT NOT NULL UNIQUE
+        );
+
+        INSERT INTO @Requested (Id, SortOrder)
+        SELECT Id, SortOrder
+        FROM OPENJSON(@SectionsJson)
+        WITH (Id UNIQUEIDENTIFIER '$.id', SortOrder INT '$.sortOrder');
+
+        DECLARE @ExpectedCount INT =
+        (
+            SELECT COUNT(*)
+            FROM dbo.MenuSections
+            WHERE VenueId = @VenueId AND MenuId = @MenuId
+        );
+
+        IF @ExpectedCount <> (SELECT COUNT(*) FROM @Requested)
+           OR EXISTS
+           (
+               SELECT 1 FROM @Requested
+               WHERE SortOrder < 0 OR SortOrder >= @ExpectedCount
+           )
+           OR EXISTS
+           (
+               SELECT 1
+               FROM @Requested requested
+               LEFT JOIN dbo.MenuSections section
+                 ON section.Id = requested.Id
+                AND section.VenueId = @VenueId
+                AND section.MenuId = @MenuId
+               WHERE section.Id IS NULL
+           )
+        BEGIN
+            THROW 51000, 'Section order must contain every venue menu section exactly once.', 1;
+        END;
+
+        DECLARE @Offset INT =
+        (
+            SELECT ISNULL(MAX(SortOrder), 0) + @ExpectedCount + 1
+            FROM dbo.MenuSections
+            WHERE VenueId = @VenueId AND MenuId = @MenuId
+        );
+
+        UPDATE dbo.MenuSections
+        SET SortOrder = SortOrder + @Offset
+        WHERE VenueId = @VenueId AND MenuId = @MenuId;
+
+        UPDATE section
+        SET SortOrder = requested.SortOrder,
+            UpdatedUtc = @UpdatedUtc
+        FROM dbo.MenuSections section
+        INNER JOIN @Requested requested ON requested.Id = section.Id
+        WHERE section.VenueId = @VenueId AND section.MenuId = @MenuId;
+
+        COMMIT TRANSACTION;
+        SELECT @ExpectedCount AS ChangedCount;
+        """;
+
     public Task<Guid> CreateMenuAsync(Menu menu, CancellationToken cancellationToken = default) =>
         InsertAsync(menu, cancellationToken);
 
@@ -47,6 +112,38 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
 
     public Task<Guid> CreateTranslationAsync(MenuItemTranslation translation, CancellationToken cancellationToken = default) =>
         InsertAsync(translation, cancellationToken);
+
+    public async Task<bool> UpdateSectionAsync(
+        MenuSection section,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(section);
+        return await dataAccess.UpdateAsync(section, cancellationToken).ConfigureAwait(false) > 0;
+    }
+
+    public async Task<int> ReorderSectionsAsync(
+        Guid venueId,
+        Guid menuId,
+        IReadOnlyCollection<Guid> sectionIds,
+        DateTime updatedUtc,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(sectionIds);
+        var sectionsJson = JsonSerializer.Serialize(
+            sectionIds.Select((id, sortOrder) => new { id, sortOrder }),
+            JsonSerializerOptions.Web);
+        var result = (await dataAccess.ExecuteSqlQueryAsync<SectionOrderResult, object>(
+            ReorderSectionsSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                MenuId = RequireId(menuId, nameof(menuId)),
+                SectionsJson = sectionsJson,
+                UpdatedUtc = updatedUtc
+            },
+            cancellationToken).ConfigureAwait(false)).Single();
+        return result.ChangedCount;
+    }
 
     public async Task<IReadOnlyCollection<Menu>> GetMenusAsync(
         Guid venueId,
@@ -129,5 +226,10 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
         {
             property.SetValue(entity, value);
         }
+    }
+
+    public sealed class SectionOrderResult
+    {
+        public int ChangedCount { get; set; }
     }
 }

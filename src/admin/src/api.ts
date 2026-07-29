@@ -55,6 +55,16 @@ export type RevenueTrend = {
 export type OperationalEvent = {
   id: string; venueId: string; venueName: string; eventType: string; summary: string; occurredUtc: string;
 };
+export type MenuSection = {
+  id: string; venueId: string; menuId: string; name: string;
+  sortOrder: number; isActive: boolean; createdUtc: string; updatedUtc: string;
+};
+export type MenuEditorSnapshot = {
+  menus: Array<{
+    menu: { id: string; venueId: string; name: string; isActive: boolean };
+    sections: MenuSection[];
+  }>;
+};
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -210,4 +220,26 @@ export async function loadOperationalEvents(configuration: AdminConfiguration, a
   });
   if (!response.ok) throw new AdminApiError(response.status, "Unable to load recent commercial events.");
   return response.json() as Promise<OperationalEvent[]>;
+}
+
+async function menuRequest(configuration: AdminConfiguration, apiKey: string, venueId: string, path = "", init?: RequestInit) {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}/menus${path}`, {
+    ...init,
+    headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to manage menu sections.");
+  return response;
+}
+
+export async function loadMenuEditor(configuration: AdminConfiguration, apiKey: string, venueId: string): Promise<MenuEditorSnapshot> {
+  return (await menuRequest(configuration, apiKey, venueId)).json() as Promise<MenuEditorSnapshot>;
+}
+export async function createMenuSection(configuration: AdminConfiguration, apiKey: string, venueId: string, menuId: string, name: string): Promise<MenuSection> {
+  return (await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections`, { method: "POST", body: JSON.stringify({ name }) })).json() as Promise<MenuSection>;
+}
+export async function updateMenuSection(configuration: AdminConfiguration, apiKey: string, venueId: string, section: MenuSection): Promise<MenuSection> {
+  return (await menuRequest(configuration, apiKey, venueId, `/sections/${section.id}`, { method: "PUT", body: JSON.stringify({ name: section.name, isActive: section.isActive }) })).json() as Promise<MenuSection>;
+}
+export async function reorderMenuSections(configuration: AdminConfiguration, apiKey: string, venueId: string, menuId: string, sectionIds: string[]): Promise<void> {
+  await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections/order`, { method: "PUT", body: JSON.stringify({ sectionIds }) });
 }

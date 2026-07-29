@@ -12,6 +12,15 @@ public interface IMenuRepository
 
     Task<Guid> CreateTranslationAsync(MenuItemTranslation translation, CancellationToken cancellationToken = default);
 
+    Task<bool> UpdateSectionAsync(MenuSection section, CancellationToken cancellationToken = default);
+
+    Task<int> ReorderSectionsAsync(
+        Guid venueId,
+        Guid menuId,
+        IReadOnlyCollection<Guid> sectionIds,
+        DateTime updatedUtc,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyCollection<Menu>> GetMenusAsync(Guid venueId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyCollection<MenuSection>> GetSectionsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);

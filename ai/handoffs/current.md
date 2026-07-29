@@ -2,50 +2,34 @@
 
 ## Work Package
 
-- ID: WP-05.01
-- Status: In progress; implementation ready for authoritative CI validation
-- Branch: `wp/05.01-menu-domain-persistence`
-- Issue: #57
-- Pull request: Pending creation from the published branch
+- ID: WP-05.02
+- Status: Complete pending final exact-head CI, review, and merge
+- Branch: `wp/05.02-menu-section-management`
+- Issue: #59
+- Pull request: #60
 
 ## Completed
 
-- Claimed WP-05.01 in the tracker and project status.
-- Added Menu, MenuSection, MenuItem, and MenuItemTranslation domain models.
-- Added a venue-scoped menu repository contract and implementation with deterministic ordering.
-- Added migration 012 with composite venue ownership foreign keys, ordering constraints, price and quantity checks, translation uniqueness, and supporting indexes.
-- Registered the repository and added focused repository and migration-resource unit tests.
+- Corrected the merged WP-05.01 completion records.
+- Added venue-scoped menu/section read composition.
+- Added section create, rename, visibility, and atomic ordering operations.
+- Added protected endpoints and responsive section journeys.
+- Persisted expand/collapse state per venue.
+- Added focused service and frontend contract tests.
 
 ## Validation
 
-- `git diff --check` passed.
-- Local .NET build and unit tests could not run because the environment does not provide `dotnet`.
-- Local GitHub CLI is unavailable, so publication uses the authenticated Git remote and connected GitHub integration.
-- GitHub Actions is the authoritative build and test environment for this package.
-- Integration-type tests were intentionally skipped under the standing repository-owner instruction.
-
-## Changed Files
-
-- `PROJECT_STATUS.md`
-- `tracker/assignments.json`
-- `docs/work-packages/WP-05.01-menu-domain-persistence.md`
-- `src/Vennu.Core.Models/Menu*.cs`
-- `src/Vennu.Data/Repositories/IMenuRepository.cs`
-- `src/Vennu.Data/Repositories/MenuRepository.cs`
-- `src/Vennu.Data/Extensions/ServiceCollectionExtensions.cs`
-- `src/Vennu.Data/Scripts/012_create_menu_domain.sql`
-- `tests/Vennu.DataAccess.Tests/MenuRepositoryTests.cs`
-- `tests/Vennu.Api.Tests/MigrationResourceTests.cs`
-- `ai/handoffs/current.md`
-- `ai/handoffs/archive/2026-07-29-wp-05.01-publication-blocked.md`
+- Local admin production build and 6 frontend tests passed.
+- GitHub Actions run 179 passed Release build, frontend builds/tests, and unit tests on implementation head `ab8ba527`; fresh CI is required for the evidence commit.
+- Integration-type tests intentionally skipped.
 
 ## Exact Next Action
 
-Publish the branch, open a draft PR linked to #57, then inspect and address all required non-integration GitHub Actions results.
+Publish the evidence commit, wait for exact-head GitHub Actions, review, approve, and merge PR #60 before WP-05.03.
 
 ## Do Not Redo or Reverse
 
-- Do not recreate issue #57.
-- Do not discard the prepared WP-05.01 implementation.
+- Do not recreate issue #59.
+- Do not weaken venue ownership or full-list reorder validation.
+- Do not begin item editing before WP-05.02 merges.
 - Do not run integration-type tests.
-- Do not begin WP-05.02 before WP-05.01 passes required CI, receives ChatGPT approval, and merges.
