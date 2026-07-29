@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-29T00:04:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-04.10",
-      "branch": "wp/04.10-venue-tier-switching",
-      "issue": 48,
-      "owner": "Codex automation",
-      "status": "Review"
-    }
-  ],
+  "updatedUtc": "2026-07-29T00:03:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-04.11",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

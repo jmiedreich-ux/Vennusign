@@ -3,7 +3,7 @@
 ## Work Package
 
 - ID: WP-04.10
-- Status: Review
+- Status: Complete and merged
 - Branch: `wp/04.10-venue-tier-switching`
 - Issue: #48
 - Pull request: #49
@@ -19,12 +19,14 @@
 
 - Admin production build passed locally.
 - `git diff --check` passed.
-- .NET validation is deferred to GitHub Actions because the SDK is not installed locally.
+- GitHub Actions run 158 passed restore, Release build, admin/display production builds, application unit tests, and non-integration migration-resource validation against reviewed head `8590a76dda3f49417b5ed09661b9ece7eb4e2dcf`.
+- ChatGPT approval was recorded against that exact head.
+- PR #49 merged as `a8d036cfeafd406fccecb7d433b8a3a0ba2811e3`.
 - Integration-type tests intentionally skipped under the standing repository-owner instruction.
 
 ## Exact Next Action
 
-Publish the branch, run the required non-integration GitHub workflow, review the exact green head, merge WP-04.10, then claim WP-04.11.
+Claim WP-04.11, create its issue and branch, then implement revenue trend snapshots in the documented bounds.
 
 ## Do Not Redo or Reverse
 
