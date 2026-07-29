@@ -2,15 +2,16 @@
 
 ## Current Phase
 
-**Phase 04 — Super Admin CRM: In Progress**
+**Phase 05 — Admin CMS Core Editing: Ready**
 
 ## Milestone
 
-Monetization infrastructure supports persistent subscription tiers, effective feature resolution, venue overrides, usage limits, and later Stripe synchronization.
+The internal Super Admin CRM is complete; the next milestone is the first venue managing its board.
 
 ## Completed
 
 - Phase 02 — Core Backend and Real-Time Engine
+- Phase 04 — Super Admin CRM
 - WP-02.08 through WP-02.14
 - WP-03.01 — Feature and Tier Core Models
 - WP-03.02 — Feature Resolution Engine
@@ -31,18 +32,17 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 - WP-04.09 — Recent Commercial Events
 - WP-04.10 — Venue Tier Switching
 - WP-04.11 — Revenue Trend Snapshots
+- WP-04.12 — Phase 04 Validation and Closure
 
 ## Active Work Package
 
-None. WP-04.11 is complete and merged.
+**WP-04.12 — Phase 04 Validation and Closure (Review)**
 
-## Phase 03 Result
+## Phase 04 Result
 
-- Added persistent feature, tier, subscription, override, usage, billing-catalog, and Stripe event state.
-- Added cached feature resolution, subscription management, and atomic usage metering.
-- Added Stripe product/price mapping and persistent event idempotency.
-- Added transport-neutral subscription lifecycle processing.
-- Added a signature-verified Stripe webhook endpoint for subscription and invoice events.
+- Delivered protected venue support, tier management, feature matrix, overrides, operational health, and commercial events.
+- Added live Stripe USD revenue, safe venue tier switching, and persisted monthly revenue trends.
+- Added repeatable authorization and critical UI journey validation.
 
 ## Standing Validation Exception
 
@@ -51,8 +51,8 @@ None. WP-04.11 is complete and merged.
 
 ## Next Action
 
-Claim and complete **WP-04.12 — Phase 04 Validation and Closure**.
+After WP-04.12 merges, claim **WP-05.01 — Menu Domain and Persistence Foundation**.
 
-## Remaining Phase 04 Work Packages
+## Phase 05 Work Packages
 
-- WP-04.12 — Phase 04 Validation and Closure
+- WP-05.01 through WP-05.10 are defined in `docs/phase-plans/phase-05-admin-cms-core-editing.md`.
