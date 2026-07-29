@@ -14,7 +14,12 @@ public sealed class MenuSectionManagementService(
         var sections = await Task.WhenAll(menus.Select(async menu => new MenuEditorMenu(
             menu,
             await repository.GetSectionsAsync(venueId, menu.Id, cancellationToken).ConfigureAwait(false))));
-        return new MenuEditorSnapshot(sections);
+        var itemGroups = await Task.WhenAll(sections
+            .SelectMany(menu => menu.Sections)
+            .Select(async section => new MenuEditorItemGroup(
+                section.Id,
+                await repository.GetItemsAsync(venueId, section.Id, cancellationToken).ConfigureAwait(false))));
+        return new MenuEditorSnapshot(sections, itemGroups);
     }
 
     public async Task<MenuSection> CreateAsync(

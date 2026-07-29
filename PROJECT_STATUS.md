@@ -39,7 +39,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-05.03 — Inline Menu Item Editing and Sync** is the next package in roadmap order.
+**WP-05.03 — Inline Menu Item Editing and Sync** is active on `wp/05.03-inline-menu-item-sync` (issue #62).
 
 ## Phase 04 Result
 
@@ -54,7 +54,7 @@ None. **WP-05.03 — Inline Menu Item Editing and Sync** is the next package in 
 
 ## Next Action
 
-Claim and implement **WP-05.03 — Inline Menu Item Editing and Sync**.
+Validate, review, and merge **WP-05.03 — Inline Menu Item Editing and Sync**.
 
 ## Phase 05 Work Packages
 

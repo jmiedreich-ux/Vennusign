@@ -2,34 +2,34 @@
 
 ## Work Package
 
-- ID: WP-05.02
-- Status: Complete and merged
-- Branch: `wp/05.02-menu-section-management`
-- Issue: #59
-- Pull request: #60
-- Merge commit: `d1cf097`
+- ID: WP-05.03
+- Status: Complete pending GitHub Actions, review, and merge
+- Branch: `wp/05.03-inline-menu-item-sync`
+- Issue: #62
 
 ## Completed
 
-- Corrected the merged WP-05.01 completion records.
-- Added venue-scoped menu/section read composition.
-- Added section create, rename, visibility, and atomic ordering operations.
-- Added protected endpoints and responsive section journeys.
-- Persisted expand/collapse state per venue.
+- Extended the menu editor read model with ordered item groups.
+- Added venue/menu/section-scoped item creation and updates.
+- Added normalized item text and bounded base/happy-hour price validation.
+- Published venue content updates through the existing notification abstraction after successful writes.
+- Added responsive inline item creation and editing.
 - Added focused service and frontend contract tests.
 
 ## Validation
 
-- Local admin production build and 6 frontend tests passed.
-- GitHub Actions run 180 passed Release build, frontend builds/tests, and unit tests on reviewed head `5995c25`.
-- Integration-type tests intentionally skipped.
+- Local admin production build and 7 frontend tests passed.
+- Tracker JSON and `git diff --check` passed.
+- GitHub Actions is required on the exact reviewed head.
+- Integration-type tests are intentionally skipped.
 
 ## Exact Next Action
 
-Claim and implement WP-05.03 — Inline Menu Item Editing and Sync.
+Publish the branch and PR, then wait for exact-head GitHub Actions before review and merge.
 
 ## Do Not Redo or Reverse
 
-- Do not recreate issue #59.
-- Do not weaken venue ownership or full-list reorder validation.
+- Do not recreate issue #62.
+- Do not move availability, quantity, tags, or bestseller scope forward from WP-05.04.
+- Do not bypass the existing notification abstraction.
 - Do not run integration-type tests.

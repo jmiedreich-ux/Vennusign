@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { createMenuSection, loadMenuEditor, reorderMenuSections, updateMenuSection, type MenuEditorSnapshot, type MenuSection } from "./api";
 import type { AdminConfiguration } from "./config";
+import MenuItemsEditor from "./MenuItemsEditor";
 
 type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string };
 
@@ -46,6 +47,7 @@ export default function MenuSectionsEditor({ configuration, apiKey, venueId }: P
     finally { setBusy(false); }
   };
   const rename = (sectionId: string, name: string) => setSnapshot(current => current ? {
+    ...current,
     menus: current.menus.map(menu => ({ ...menu, sections: menu.sections.map(section => section.id === sectionId ? { ...section, name } : section) }))
   } : current);
 
@@ -63,7 +65,17 @@ export default function MenuSectionsEditor({ configuration, apiKey, venueId }: P
         <button disabled={busy || index === 0} onClick={() => move(index, -1)}>↑</button><button disabled={busy || index === firstMenu.sections.length - 1} onClick={() => move(index, 1)}>↓</button>
         <button className="activation" disabled={busy} onClick={() => save(section, { isActive: !section.isActive })}>{section.isActive ? "Active" : "Hidden"}</button>
       </div>
-      {!collapsed[section.id] ? <p className="section-empty">Items will appear here in WP-05.03.</p> : null}
+      {!collapsed[section.id] ? <MenuItemsEditor
+        configuration={configuration}
+        apiKey={apiKey}
+        venueId={venueId}
+        menuId={firstMenu.menu.id}
+        sectionId={section.id}
+        items={snapshot.itemGroups.find(group => group.sectionId === section.id)?.items ?? []}
+        disabled={busy}
+        onChanged={refresh}
+        onError={() => setError("The menu item could not be saved.")}
+      /> : null}
     </section>)}</div>
   </article>;
 }

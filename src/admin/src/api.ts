@@ -59,11 +59,20 @@ export type MenuSection = {
   id: string; venueId: string; menuId: string; name: string;
   sortOrder: number; isActive: boolean; createdUtc: string; updatedUtc: string;
 };
+export type MenuItem = {
+  id: string; venueId: string; menuSectionId: string; name: string;
+  description?: string; price: number; happyHourPrice?: number;
+  sortOrder: number; isAvailable: boolean; createdUtc: string; updatedUtc: string;
+};
+export type MenuItemWrite = {
+  name: string; description?: string; price: number; happyHourPrice?: number;
+};
 export type MenuEditorSnapshot = {
   menus: Array<{
     menu: { id: string; venueId: string; name: string; isActive: boolean };
     sections: MenuSection[];
   }>;
+  itemGroups: Array<{ sectionId: string; items: MenuItem[] }>;
 };
 
 export class AdminApiError extends Error {
@@ -227,7 +236,7 @@ async function menuRequest(configuration: AdminConfiguration, apiKey: string, ve
     ...init,
     headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
   });
-  if (!response.ok) throw new AdminApiError(response.status, "Unable to manage menu sections.");
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to manage menu content.");
   return response;
 }
 
@@ -242,4 +251,29 @@ export async function updateMenuSection(configuration: AdminConfiguration, apiKe
 }
 export async function reorderMenuSections(configuration: AdminConfiguration, apiKey: string, venueId: string, menuId: string, sectionIds: string[]): Promise<void> {
   await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections/order`, { method: "PUT", body: JSON.stringify({ sectionIds }) });
+}
+export async function createMenuItem(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  menuId: string,
+  sectionId: string,
+  item: MenuItemWrite
+): Promise<MenuItem> {
+  return (await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections/${sectionId}/items`, {
+    method: "POST", body: JSON.stringify(item)
+  })).json() as Promise<MenuItem>;
+}
+export async function updateMenuItem(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  menuId: string,
+  sectionId: string,
+  itemId: string,
+  item: MenuItemWrite
+): Promise<MenuItem> {
+  return (await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections/${sectionId}/items/${itemId}`, {
+    method: "PUT", body: JSON.stringify(item)
+  })).json() as Promise<MenuItem>;
 }

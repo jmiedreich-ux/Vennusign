@@ -121,6 +121,14 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
         return await dataAccess.UpdateAsync(section, cancellationToken).ConfigureAwait(false) > 0;
     }
 
+    public async Task<bool> UpdateItemAsync(
+        MenuItem item,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        return await dataAccess.UpdateAsync(item, cancellationToken).ConfigureAwait(false) > 0;
+    }
+
     public async Task<int> ReorderSectionsAsync(
         Guid venueId,
         Guid menuId,
