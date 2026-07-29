@@ -48,6 +48,10 @@ export type RevenueSnapshot = {
   activeSubscriptions: number; unmatchedMrr: number; unmatchedPriceIds: string[];
   tiers: Array<{ tierId: string; tierName: string; mrr: number }>;
 };
+export type RevenueTrend = {
+  currency: string;
+  points: Array<{ monthUtc: string; mrr: number; activeSubscriptions: number; mrrChangePercent: number | null }>;
+};
 export type OperationalEvent = {
   id: string; venueId: string; venueName: string; eventType: string; summary: string; occurredUtc: string;
 };
@@ -186,6 +190,18 @@ export async function loadRevenueSnapshot(configuration: AdminConfiguration, api
   });
   if (!response.ok) throw new AdminApiError(response.status, "Unable to load live Stripe revenue.");
   return response.json() as Promise<RevenueSnapshot>;
+}
+
+export async function loadRevenueTrend(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  months = 12
+): Promise<RevenueTrend> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/dashboard/revenue/trend?months=${months}`, {
+    headers: { "X-Vennu-Admin-Key": apiKey }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to load the revenue trend.");
+  return response.json() as Promise<RevenueTrend>;
 }
 
 export async function loadOperationalEvents(configuration: AdminConfiguration, apiKey: string): Promise<OperationalEvent[]> {
