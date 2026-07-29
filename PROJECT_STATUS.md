@@ -33,7 +33,7 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 
 ## Active Work Package
 
-None. WP-04.10 is complete and merged.
+**WP-04.11 — Revenue Trend Snapshots (Review)**
 
 ## Phase 03 Result
 
@@ -50,7 +50,7 @@ None. WP-04.10 is complete and merged.
 
 ## Next Action
 
-Claim and complete **WP-04.11 — Revenue Trend Snapshots**.
+Validate, review, and merge **WP-04.11 — Revenue Trend Snapshots**.
 
 ## Remaining Phase 04 Work Packages
 
