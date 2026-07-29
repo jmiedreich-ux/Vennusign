@@ -76,6 +76,11 @@ export type MenuEditorSnapshot = {
   itemGroups: Array<{ sectionId: string; items: MenuItem[] }>;
   capabilities: { happyHour: boolean; allergenBadges: boolean; quickUpdate: boolean };
 };
+export type ManagedScreen = {
+  id: string; name: string; location?: string; status: string;
+  lastSeen?: string; registrationUrl: string;
+};
+export type ManagedScreenWrite = { name: string; location?: string };
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -322,4 +327,45 @@ export async function updateQuickAvailability(
   await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections/${sectionId}/items/${itemId}/quick-availability`, {
     method: "PUT", body: JSON.stringify({ isAvailable })
   });
+}
+
+async function screenRequest(configuration: AdminConfiguration, apiKey: string, venueId: string, path = "", init?: RequestInit) {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}/screens${path}`, {
+    ...init,
+    headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to manage venue screens.");
+  return response;
+}
+
+export async function loadManagedScreens(configuration: AdminConfiguration, apiKey: string, venueId: string): Promise<ManagedScreen[]> {
+  return (await screenRequest(configuration, apiKey, venueId)).json() as Promise<ManagedScreen[]>;
+}
+
+export async function createManagedScreen(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  request: ManagedScreenWrite
+): Promise<ManagedScreen> {
+  return (await screenRequest(configuration, apiKey, venueId, "", { method: "POST", body: JSON.stringify(request) })).json() as Promise<ManagedScreen>;
+}
+
+export async function updateManagedScreen(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  screenId: string,
+  request: ManagedScreenWrite
+): Promise<ManagedScreen> {
+  return (await screenRequest(configuration, apiKey, venueId, `/${screenId}`, { method: "PUT", body: JSON.stringify(request) })).json() as Promise<ManagedScreen>;
+}
+
+export async function pushManagedScreen(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  screenId: string
+): Promise<void> {
+  await screenRequest(configuration, apiKey, venueId, `/${screenId}/push`, { method: "POST" });
 }

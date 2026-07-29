@@ -261,6 +261,17 @@ internal sealed class InMemoryScreenRepository : IScreenRepository
         return Task.FromResult(screens);
     }
 
+    public Task<bool> UpdateAsync(Screen screen, CancellationToken cancellationToken = default)
+    {
+        if (!store.Screens.ContainsKey(screen.Id))
+        {
+            return Task.FromResult(false);
+        }
+
+        store.Screens[screen.Id] = screen;
+        return Task.FromResult(true);
+    }
+
     public Task<bool> UpdateHeartbeatAsync(Guid screenId, DateTime lastSeenUtc, string status, CancellationToken cancellationToken = default)
     {
         if (!store.Screens.TryGetValue(screenId, out var screen))
