@@ -3,9 +3,11 @@ import {
   loadOperationalDashboard,
   loadOperationalEvents,
   loadRevenueSnapshot,
+  loadRevenueTrend,
   type OperationalEvent,
   type OperationalDashboard as Dashboard,
-  type RevenueSnapshot
+  type RevenueSnapshot,
+  type RevenueTrend
 } from "./api";
 import type { AdminConfiguration } from "./config";
 
@@ -14,8 +16,10 @@ type Props = { configuration: AdminConfiguration; apiKey: string };
 export default function OperationalDashboard({ configuration, apiKey }: Props) {
   const [dashboard, setDashboard] = useState<Dashboard>();
   const [revenue, setRevenue] = useState<RevenueSnapshot>();
+  const [revenueTrend, setRevenueTrend] = useState<RevenueTrend>();
   const [events, setEvents] = useState<OperationalEvent[]>([]);
   const [revenueError, setRevenueError] = useState<string>();
+  const [trendError, setTrendError] = useState<string>();
   const [error, setError] = useState<string>();
 
   useEffect(() => {
@@ -23,7 +27,12 @@ export default function OperationalDashboard({ configuration, apiKey }: Props) {
       .then(setDashboard)
       .catch(() => setError("The operational dashboard could not be loaded."));
     loadRevenueSnapshot(configuration, apiKey)
-      .then(setRevenue)
+      .then(value => {
+        setRevenue(value);
+        loadRevenueTrend(configuration, apiKey)
+          .then(setRevenueTrend)
+          .catch(() => setTrendError("Revenue history is temporarily unavailable."));
+      })
       .catch(() => setRevenueError("Live Stripe revenue is unavailable. Verify the protected Stripe revenue configuration."));
     loadOperationalEvents(configuration, apiKey)
       .then(setEvents)
@@ -43,6 +52,7 @@ export default function OperationalDashboard({ configuration, apiKey }: Props) {
   ] as const;
 
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: revenue?.currency ?? "USD" });
+  const trendMaximum = Math.max(...(revenueTrend?.points.map(point => point.mrr) ?? [0]), 1);
 
   return <section className="operational-dashboard">
     {revenueError
@@ -54,6 +64,18 @@ export default function OperationalDashboard({ configuration, apiKey }: Props) {
           {revenue.unmatchedPriceIds.length ? <p className="revenue-warning">{currency.format(revenue.unmatchedMrr)} uses unmapped Stripe prices: {revenue.unmatchedPriceIds.join(", ")}</p> : null}
         </article>
         : <p className="state">Loading live Stripe revenue…</p>}
+    {revenueTrend?.points.length
+      ? <article className="revenue-trend">
+        <div><p>Revenue history</p><h2>Monthly MRR trend</h2><span>Latest persisted daily snapshot in each UTC month</span></div>
+        <div className="trend-chart">{revenueTrend.points.map(point => <div className="trend-point" key={point.monthUtc}>
+          <span>{point.mrrChangePercent == null ? "No prior month" : `${point.mrrChangePercent >= 0 ? "+" : ""}${point.mrrChangePercent}%`}</span>
+          <div style={{ height: `${Math.max(8, point.mrr / trendMaximum * 100)}%` }} title={`${currency.format(point.mrr)} MRR · ${point.activeSubscriptions} active subscriptions`} />
+          <strong>{new Date(point.monthUtc).toLocaleDateString("en-US", { month: "short", year: "2-digit", timeZone: "UTC" })}</strong>
+        </div>)}</div>
+      </article>
+      : trendError
+        ? <p className="state error">{trendError}</p>
+        : null}
     <div className="metric-grid">{metrics.map(([label, value]) => <article key={label}><span>{label}</span><strong>{value}</strong></article>)}</div>
     <article className="screen-map"><div><p>Fleet health</p><h2>Screen health map</h2><span>{dashboard.onlineScreens} online · {dashboard.offlineScreens} offline</span></div>
       {dashboard.screens.length ? <div className="screen-dots">{dashboard.screens.map(screen => <div className="screen-health-item" key={screen.screenId} title={`${screen.venueName} · ${screen.screenName} · ${screen.status} · ${screen.lastSeen ? new Date(screen.lastSeen).toLocaleString() : "never seen"}`}><span className={screen.status} /><div><strong>{screen.screenName}</strong><small>{screen.venueName}{screen.location ? ` · ${screen.location}` : ""}</small></div></div>)}</div> : <p className="empty">No screens have been registered.</p>}
