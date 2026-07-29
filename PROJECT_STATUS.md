@@ -11,8 +11,8 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 ## Completed
 
 - Phase 02 — Core Backend and Real-Time Engine
-- Phase 04 — Super Admin CRM
 - WP-02.08 through WP-02.14
+- Phase 03 — Tier System and Feature Flags
 - WP-03.01 — Feature and Tier Core Models
 - WP-03.02 — Feature Resolution Engine
 - WP-03.03 — Subscription Management
@@ -21,6 +21,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-03.06 — Stripe Event Idempotency
 - WP-03.07 — Stripe Subscription Event Handling
 - WP-03.08 — Stripe Webhook Endpoint
+- Phase 04 — Super Admin CRM
 - WP-04.01 — Super Admin CRM Foundation
 - WP-04.02 — Venue Directory
 - WP-04.03 — Venue Detail & Support View
