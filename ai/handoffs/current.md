@@ -2,33 +2,33 @@
 
 ## Work Package
 
-- ID: WP-04.11
-- Status: Complete and merged
-- Branch: `wp/04.11-revenue-trends`
-- Issue: #51
-- Pull request: #52
+- ID: WP-04.12
+- Status: Review
+- Branch: `wp/04.12-phase-04-validation`
+- Issue: #54
+- Pull request: pending
 
 ## Completed
 
-- Added one persisted USD revenue snapshot per UTC day, captured from the established live Stripe aggregation.
-- Added a bounded latest-snapshot-per-month trend with deterministic, gap-aware MRR percentage changes.
-- Added a protected trend API and responsive dashboard visualization.
-- Added focused unit coverage, migration-resource coverage, and operating guidance.
+- Added a complete unauthorized-route matrix for every Phase 04 Super Admin endpoint.
+- Added repeatable admin journey contracts and made admin/display frontend tests required CI steps.
+- Stabilized display heartbeat test timing; local admin tests passed 4/4 and display tests passed 17/17.
+- Added the Phase 04 capability map, residual risks, Phase 05 work-package sequence, and bounded WP-05.01 definition.
 
 ## Validation
 
-- Admin production build and `git diff --check` passed locally.
-- GitHub Actions run 164 passed restore, Release build, admin/display production builds, application unit tests, and non-integration migration-resource validation against reviewed head `6274cbe3fc5e703b75bd3a78faecdb5f828e498c`.
-- ChatGPT approval was recorded against that exact head.
-- PR #52 merged as `e30ce58cee463c5d1584a1e38745396baf16174f`.
+- Admin tests and production build passed locally.
+- Display tests and production build passed locally.
+- `git diff --check` passed.
+- .NET validation is deferred to GitHub Actions because the SDK is not installed locally.
 - Integration-type tests intentionally skipped under the standing repository-owner instruction.
 
 ## Exact Next Action
 
-Claim WP-04.12, create its issue and branch, then validate and close Phase 04 in the documented bounds.
+Publish, validate, review, and merge WP-04.12. The next run must start with WP-05.01 — Menu Domain and Persistence Foundation.
 
 ## Do Not Redo or Reverse
 
-- Preserve one idempotent row per UTC day.
-- Keep missing or zero prior-month percentage changes explicit as `null`.
-- Do not add forecasting, non-USD aggregation, or an external analytics platform.
+- Keep admin and display frontend tests required in CI.
+- Preserve the explicit Phase 04 residual-risk record.
+- Do not begin Menu Editor UI work before WP-05.01 establishes the menu domain.
