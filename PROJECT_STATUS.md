@@ -39,10 +39,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-05.03 — Inline Menu Item Editing and Sync
 - WP-05.04 — Availability, Quantity, and Menu Badges
 - WP-05.05 — Tier-Aware Venue Admin Patterns
+- WP-05.06 — Quick Update Mode
 
 ## Active Work Package
 
-**WP-05.06 — Quick Update Mode** is in progress on `wp/05.06-quick-update-mode` (issue #71).
+None. **WP-05.07 — Screen Management Core** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -57,7 +58,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate, review, and merge **WP-05.06 — Quick Update Mode**.
+Claim and implement **WP-05.07 — Screen Management Core**.
 
 ## Phase 05 Work Packages
 
