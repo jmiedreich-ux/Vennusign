@@ -62,7 +62,7 @@ export type MenuSection = {
 export type MenuItem = {
   id: string; venueId: string; menuSectionId: string; name: string;
   description?: string; price: number; happyHourPrice?: number;
-  sortOrder: number; isAvailable: boolean; quantityAvailable?: number;
+  sortOrder: number; isAvailable: boolean; availabilityResetUtc?: string; quantityAvailable?: number;
   tags?: string; isPopular: boolean; createdUtc: string; updatedUtc: string;
 };
 export type MenuItemWrite = {
@@ -70,11 +70,11 @@ export type MenuItemWrite = {
 };
 export type MenuEditorSnapshot = {
   menus: Array<{
-    menu: { id: string; venueId: string; name: string; isActive: boolean };
+    menu: { id: string; venueId: string; name: string; isActive: boolean; dailySpecial?: string };
     sections: MenuSection[];
   }>;
   itemGroups: Array<{ sectionId: string; items: MenuItem[] }>;
-  capabilities: { happyHour: boolean; allergenBadges: boolean };
+  capabilities: { happyHour: boolean; allergenBadges: boolean; quickUpdate: boolean };
 };
 
 export class AdminApiError extends Error {
@@ -296,4 +296,30 @@ export async function updateMenuItemPresentation(
       isPopular: item.isPopular
     })
   })).json() as Promise<MenuItem>;
+}
+
+export async function updateQuickDailySpecial(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  menuId: string,
+  dailySpecial?: string
+): Promise<void> {
+  await menuRequest(configuration, apiKey, venueId, `/${menuId}/quick-update/daily-special`, {
+    method: "PUT", body: JSON.stringify({ dailySpecial })
+  });
+}
+
+export async function updateQuickAvailability(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  menuId: string,
+  sectionId: string,
+  itemId: string,
+  isAvailable: boolean
+): Promise<void> {
+  await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections/${sectionId}/items/${itemId}/quick-availability`, {
+    method: "PUT", body: JSON.stringify({ isAvailable })
+  });
 }

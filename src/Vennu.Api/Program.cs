@@ -31,6 +31,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier>();
 builder.Services.AddScoped<IMenuItemManagementService, MenuItemManagementService>();
+builder.Services.AddScoped<IQuickUpdateService, QuickUpdateService>();
 builder.Services.Configure<HeartbeatMonitorOptions>(builder.Configuration.GetSection(HeartbeatMonitorOptions.SectionName));
 builder.Services
     .AddOptions<StripeWebhookOptions>()
@@ -53,6 +54,7 @@ builder.Services.AddVennuData();
 
 if (!builder.Environment.IsEnvironment("Testing"))
 {
+    builder.Services.AddHostedService<QuickAvailabilityResetService>();
     var connectionString = builder.Configuration.GetConnectionString("VennuDatabase")
         ?? throw new InvalidOperationException("Connection string 'VennuDatabase' is required.");
 

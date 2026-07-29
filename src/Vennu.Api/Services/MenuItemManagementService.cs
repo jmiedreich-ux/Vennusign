@@ -127,6 +127,10 @@ public sealed class MenuItemManagementService(
             cancellationToken).ConfigureAwait(false);
         var availabilityChanged = item.IsAvailable != isAvailable;
         item.IsAvailable = isAvailable;
+        if (isAvailable)
+        {
+            item.AvailabilityResetUtc = null;
+        }
         item.QuantityAvailable = quantityAvailable;
         item.Tags = normalizedTags;
         item.IsPopular = isPopular;

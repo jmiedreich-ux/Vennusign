@@ -21,7 +21,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.009_create_feature_matrix_audit.sql",
                 "Vennu.Data.Scripts.010_create_operational_events.sql",
                 "Vennu.Data.Scripts.011_create_revenue_daily_snapshots.sql",
-                "Vennu.Data.Scripts.012_create_menu_domain.sql"
+                "Vennu.Data.Scripts.012_create_menu_domain.sql",
+                "Vennu.Data.Scripts.013_add_quick_update.sql"
             ],
             scriptNames);
     }

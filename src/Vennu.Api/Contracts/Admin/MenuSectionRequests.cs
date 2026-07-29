@@ -17,3 +17,7 @@ public sealed record MenuItemPresentationRequest(
     int? QuantityAvailable,
     IReadOnlyCollection<string>? Tags,
     bool IsPopular);
+
+public sealed record QuickDailySpecialRequest(string? DailySpecial);
+
+public sealed record QuickAvailabilityRequest(bool IsAvailable);

@@ -11,4 +11,4 @@ public sealed record MenuEditorMenu(Menu Menu, IReadOnlyCollection<MenuSection> 
 
 public sealed record MenuEditorItemGroup(Guid SectionId, IReadOnlyCollection<MenuItem> Items);
 
-public sealed record MenuEditorCapabilities(bool HappyHour, bool AllergenBadges);
+public sealed record MenuEditorCapabilities(bool HappyHour, bool AllergenBadges, bool QuickUpdate);

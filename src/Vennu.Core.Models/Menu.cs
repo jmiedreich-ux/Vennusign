@@ -10,6 +10,8 @@ public sealed class Menu
 
     public bool IsActive { get; set; } = true;
 
+    public string? DailySpecial { get; set; }
+
     public DateTime CreatedUtc { get; set; }
 
     public DateTime UpdatedUtc { get; set; }

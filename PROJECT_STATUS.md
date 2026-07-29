@@ -42,7 +42,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-05.06 — Quick Update Mode** is the next package in roadmap order.
+**WP-05.06 — Quick Update Mode** is in progress on `wp/05.06-quick-update-mode` (issue #71).
 
 ## Phase 04 Result
 
@@ -57,7 +57,7 @@ None. **WP-05.06 — Quick Update Mode** is the next package in roadmap order.
 
 ## Next Action
 
-Claim and implement **WP-05.06 — Quick Update Mode**.
+Validate, review, and merge **WP-05.06 — Quick Update Mode**.
 
 ## Phase 05 Work Packages
 

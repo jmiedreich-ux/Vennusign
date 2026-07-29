@@ -7,7 +7,7 @@ namespace Vennu.Data.Repositories;
 public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
 {
     private const string MenusSql = """
-        SELECT Id, VenueId, Name, IsActive, CreatedUtc, UpdatedUtc
+        SELECT Id, VenueId, Name, IsActive, DailySpecial, CreatedUtc, UpdatedUtc
         FROM dbo.Menus
         WHERE VenueId = @VenueId
         ORDER BY Name, Id;
@@ -22,11 +22,22 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
 
     private const string ItemsSql = """
         SELECT Id, VenueId, MenuSectionId, Name, Description, Price, HappyHourPrice,
-               IsAvailable, QuantityAvailable, Tags, ImageUrl, IsPopular, SortOrder,
+               IsAvailable, AvailabilityResetUtc, QuantityAvailable, Tags, ImageUrl, IsPopular, SortOrder,
                CreatedUtc, UpdatedUtc
         FROM dbo.MenuItems
         WHERE VenueId = @VenueId AND MenuSectionId = @MenuSectionId
         ORDER BY SortOrder, Id;
+        """;
+
+    private const string RestoreExpiredAvailabilitySql = """
+        UPDATE dbo.MenuItems
+        SET IsAvailable = 1,
+            AvailabilityResetUtc = NULL,
+            UpdatedUtc = @UtcNow
+        OUTPUT inserted.VenueId, inserted.Id AS ItemId
+        WHERE IsAvailable = 0
+          AND AvailabilityResetUtc IS NOT NULL
+          AND AvailabilityResetUtc <= @UtcNow;
         """;
 
     private const string TranslationsSql = """
@@ -128,6 +139,22 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
         ArgumentNullException.ThrowIfNull(item);
         return await dataAccess.UpdateAsync(item, cancellationToken).ConfigureAwait(false) > 0;
     }
+
+    public async Task<bool> UpdateMenuAsync(
+        Menu menu,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(menu);
+        return await dataAccess.UpdateAsync(menu, cancellationToken).ConfigureAwait(false) > 0;
+    }
+
+    public async Task<IReadOnlyCollection<RestoredMenuItem>> RestoreExpiredAvailabilityAsync(
+        DateTime utcNow,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<RestoredMenuItem, object>(
+            RestoreExpiredAvailabilitySql,
+            new { UtcNow = utcNow },
+            cancellationToken).ConfigureAwait(false)).ToArray();
 
     public async Task<int> ReorderSectionsAsync(
         Guid venueId,
