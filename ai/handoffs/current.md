@@ -3,7 +3,7 @@
 ## Work Package
 
 - ID: WP-04.12
-- Status: Review
+- Status: Complete and merged
 - Branch: `wp/04.12-phase-04-validation`
 - Issue: #54
 - Pull request: #55
@@ -20,12 +20,14 @@
 - Admin tests and production build passed locally.
 - Display tests and production build passed locally.
 - `git diff --check` passed.
-- .NET validation is deferred to GitHub Actions because the SDK is not installed locally.
+- GitHub Actions run 171 passed restore, Release build, admin/display production builds, admin/display frontend tests, application unit tests, and non-integration migration-resource validation against reviewed head `a467cea68e963da41f09413b31621696ce0de4b1`.
+- ChatGPT approval was recorded against that exact head.
+- PR #55 merged as `94842bc65e96c5c75d34c56d054768337c97472e`.
 - Integration-type tests intentionally skipped under the standing repository-owner instruction.
 
 ## Exact Next Action
 
-Publish, validate, review, and merge WP-04.12. The next run must start with WP-05.01 — Menu Domain and Persistence Foundation.
+Start the next run with WP-05.01 — Menu Domain and Persistence Foundation.
 
 ## Do Not Redo or Reverse
 
