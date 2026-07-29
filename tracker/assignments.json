@@ -1,14 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-29T23:36:00Z",
-  "activeAssignments": [
-    {
-      "workPackageId": "WP-05.06",
-      "branch": "wp/05.06-quick-update-mode",
-      "issue": 71,
-      "owner": "ChatGPT automation"
-    }
-  ],
+  "updatedUtc": "2026-07-29T23:46:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-05.07",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
