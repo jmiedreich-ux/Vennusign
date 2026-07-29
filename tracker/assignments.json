@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-29T00:31:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-05.01",
+  "updatedUtc": "2026-07-29T14:21:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-05.01",
+      "orchestrator": "ChatGPT Codex",
+      "branch": "wp/05.01-menu-domain-persistence",
+      "issue": 57,
+      "claimedUtc": "2026-07-29T14:21:00Z"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-05.02",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

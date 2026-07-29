@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 05 — Admin CMS Core Editing: Ready**
+**Phase 05 — Admin CMS Core Editing: Active**
 
 ## Milestone
 
@@ -37,7 +37,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. Phase 04 is complete and WP-05.01 is ready.
+**WP-05.01 — Menu Domain and Persistence Foundation** is in progress on `wp/05.01-menu-domain-persistence` (issue #57).
 
 ## Phase 04 Result
 
@@ -52,7 +52,7 @@ None. Phase 04 is complete and WP-05.01 is ready.
 
 ## Next Action
 
-Claim **WP-05.01 — Menu Domain and Persistence Foundation**.
+Complete and validate **WP-05.01 — Menu Domain and Persistence Foundation**.
 
 ## Phase 05 Work Packages
 
