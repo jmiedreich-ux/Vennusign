@@ -6,7 +6,7 @@
 - Status: Review
 - Branch: `wp/04.12-phase-04-validation`
 - Issue: #54
-- Pull request: pending
+- Pull request: #55
 
 ## Completed
 
