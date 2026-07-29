@@ -36,10 +36,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-04.12 — Phase 04 Validation and Closure
 - WP-05.01 — Menu Domain and Persistence Foundation
 - WP-05.02 — Menu Editor Read Model and Section Management
+- WP-05.03 — Inline Menu Item Editing and Sync
 
 ## Active Work Package
 
-**WP-05.03 — Inline Menu Item Editing and Sync** is active on `wp/05.03-inline-menu-item-sync` (issue #62).
+None. **WP-05.04 — Availability, Quantity, and Menu Badges** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -54,7 +55,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate, review, and merge **WP-05.03 — Inline Menu Item Editing and Sync**.
+Claim and implement **WP-05.04 — Availability, Quantity, and Menu Badges**.
 
 ## Phase 05 Work Packages
 

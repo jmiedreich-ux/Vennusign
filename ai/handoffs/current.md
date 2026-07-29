@@ -3,9 +3,11 @@
 ## Work Package
 
 - ID: WP-05.03
-- Status: Complete pending GitHub Actions, review, and merge
+- Status: Complete and merged
 - Branch: `wp/05.03-inline-menu-item-sync`
 - Issue: #62
+- Pull request: #63
+- Merge commit: `abae727`
 
 ## Completed
 
@@ -20,12 +22,12 @@
 
 - Local admin production build and 7 frontend tests passed.
 - Tracker JSON and `git diff --check` passed.
-- GitHub Actions is required on the exact reviewed head.
+- GitHub Actions run 184 passed the Release build, frontend builds/tests, and unit tests on reviewed head `70ec816`.
 - Integration-type tests are intentionally skipped.
 
 ## Exact Next Action
 
-Publish the branch and PR, then wait for exact-head GitHub Actions before review and merge.
+Claim and implement WP-05.04 — Availability, Quantity, and Menu Badges.
 
 ## Do Not Redo or Reverse
 
