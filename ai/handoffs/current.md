@@ -2,35 +2,50 @@
 
 ## Work Package
 
-- ID: WP-04.12
-- Status: Complete and merged
-- Branch: `wp/04.12-phase-04-validation`
-- Issue: #54
-- Pull request: #55
+- ID: WP-05.01
+- Status: In progress; implementation ready for authoritative CI validation
+- Branch: `wp/05.01-menu-domain-persistence`
+- Issue: #57
+- Pull request: Pending creation from the published branch
 
 ## Completed
 
-- Added a complete unauthorized-route matrix for every Phase 04 Super Admin endpoint.
-- Added repeatable admin journey contracts and made admin/display frontend tests required CI steps.
-- Stabilized display heartbeat test timing; local admin tests passed 4/4 and display tests passed 17/17.
-- Added the Phase 04 capability map, residual risks, Phase 05 work-package sequence, and bounded WP-05.01 definition.
+- Claimed WP-05.01 in the tracker and project status.
+- Added Menu, MenuSection, MenuItem, and MenuItemTranslation domain models.
+- Added a venue-scoped menu repository contract and implementation with deterministic ordering.
+- Added migration 012 with composite venue ownership foreign keys, ordering constraints, price and quantity checks, translation uniqueness, and supporting indexes.
+- Registered the repository and added focused repository and migration-resource unit tests.
 
 ## Validation
 
-- Admin tests and production build passed locally.
-- Display tests and production build passed locally.
 - `git diff --check` passed.
-- GitHub Actions run 171 passed restore, Release build, admin/display production builds, admin/display frontend tests, application unit tests, and non-integration migration-resource validation against reviewed head `a467cea68e963da41f09413b31621696ce0de4b1`.
-- ChatGPT approval was recorded against that exact head.
-- PR #55 merged as `94842bc65e96c5c75d34c56d054768337c97472e`.
-- Integration-type tests intentionally skipped under the standing repository-owner instruction.
+- Local .NET build and unit tests could not run because the environment does not provide `dotnet`.
+- Local GitHub CLI is unavailable, so publication uses the authenticated Git remote and connected GitHub integration.
+- GitHub Actions is the authoritative build and test environment for this package.
+- Integration-type tests were intentionally skipped under the standing repository-owner instruction.
+
+## Changed Files
+
+- `PROJECT_STATUS.md`
+- `tracker/assignments.json`
+- `docs/work-packages/WP-05.01-menu-domain-persistence.md`
+- `src/Vennu.Core.Models/Menu*.cs`
+- `src/Vennu.Data/Repositories/IMenuRepository.cs`
+- `src/Vennu.Data/Repositories/MenuRepository.cs`
+- `src/Vennu.Data/Extensions/ServiceCollectionExtensions.cs`
+- `src/Vennu.Data/Scripts/012_create_menu_domain.sql`
+- `tests/Vennu.DataAccess.Tests/MenuRepositoryTests.cs`
+- `tests/Vennu.Api.Tests/MigrationResourceTests.cs`
+- `ai/handoffs/current.md`
+- `ai/handoffs/archive/2026-07-29-wp-05.01-publication-blocked.md`
 
 ## Exact Next Action
 
-Start the next run with WP-05.01 — Menu Domain and Persistence Foundation.
+Publish the branch, open a draft PR linked to #57, then inspect and address all required non-integration GitHub Actions results.
 
 ## Do Not Redo or Reverse
 
-- Keep admin and display frontend tests required in CI.
-- Preserve the explicit Phase 04 residual-risk record.
-- Do not begin Menu Editor UI work before WP-05.01 establishes the menu domain.
+- Do not recreate issue #57.
+- Do not discard the prepared WP-05.01 implementation.
+- Do not run integration-type tests.
+- Do not begin WP-05.02 before WP-05.01 passes required CI, receives ChatGPT approval, and merges.
