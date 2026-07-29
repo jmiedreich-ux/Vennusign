@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { createMenuSection, loadMenuEditor, reorderMenuSections, updateMenuSection, type MenuEditorSnapshot, type MenuSection } from "./api";
 import type { AdminConfiguration } from "./config";
 import MenuItemsEditor from "./MenuItemsEditor";
+import QuickUpdateMode from "./QuickUpdateMode";
 
 type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string };
 
@@ -59,6 +60,7 @@ export default function MenuSectionsEditor({ configuration, apiKey, venueId }: P
     <div className="menu-editor-heading"><div><p>Venue menu</p><h3>{firstMenu.menu.name}</h3></div><span>{firstMenu.sections.length} sections</span></div>
     {error ? <p className="state error">{error}</p> : null}
     {tierPrompt ? <aside className="tier-prompt" role="status"><div><strong>{tierPrompt.title}</strong><p>{tierPrompt.message}</p></div><button aria-label="Dismiss tier prompt" onClick={() => setTierPrompt(undefined)}>×</button></aside> : null}
+    <QuickUpdateMode configuration={configuration} apiKey={apiKey} venueId={venueId} snapshot={snapshot} onChanged={refresh} />
     <form className="section-create" onSubmit={create}><input aria-label="New section name" maxLength={120} required value={newName} onChange={event => setNewName(event.target.value)} placeholder="Add a section" /><button disabled={busy}>Add section</button></form>
     <div className="menu-sections">{firstMenu.sections.map((section, index) => <section className={section.isActive ? "" : "inactive"} key={section.id}>
       <div className="section-row">

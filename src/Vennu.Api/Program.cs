@@ -31,6 +31,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier>();
 builder.Services.AddScoped<IMenuItemManagementService, MenuItemManagementService>();
+builder.Services.AddScoped<IQuickUpdateService, QuickUpdateService>();
 builder.Services.Configure<HeartbeatMonitorOptions>(builder.Configuration.GetSection(HeartbeatMonitorOptions.SectionName));
 builder.Services
     .AddOptions<StripeWebhookOptions>()
@@ -49,6 +50,7 @@ builder.Services.Configure<StripeRevenueOptions>(builder.Configuration.GetSectio
 builder.Services.AddScoped<IStripeRevenueSource, StripeRevenueSource>();
 builder.Services.AddScoped<IStripeSubscriptionTierUpdater, StripeSubscriptionTierUpdater>();
 builder.Services.AddHostedService<HeartbeatMonitor>();
+builder.Services.AddHostedService<QuickAvailabilityResetService>();
 builder.Services.AddVennuData();
 
 if (!builder.Environment.IsEnvironment("Testing"))

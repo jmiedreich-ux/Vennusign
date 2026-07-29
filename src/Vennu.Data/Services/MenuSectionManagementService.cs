@@ -22,7 +22,8 @@ public sealed class MenuSectionManagementService(
                 await repository.GetItemsAsync(venueId, section.Id, cancellationToken).ConfigureAwait(false))));
         var happyHour = await featureResolution.HasFeatureAsync(venueId, "happy_hour", cancellationToken).ConfigureAwait(false);
         var allergenBadges = await featureResolution.HasFeatureAsync(venueId, "allergen_badges", cancellationToken).ConfigureAwait(false);
-        return new MenuEditorSnapshot(sections, itemGroups, new MenuEditorCapabilities(happyHour, allergenBadges));
+        var quickUpdate = await featureResolution.HasFeatureAsync(venueId, "quick_update", cancellationToken).ConfigureAwait(false);
+        return new MenuEditorSnapshot(sections, itemGroups, new MenuEditorCapabilities(happyHour, allergenBadges, quickUpdate));
     }
 
     public async Task<MenuSection> CreateAsync(

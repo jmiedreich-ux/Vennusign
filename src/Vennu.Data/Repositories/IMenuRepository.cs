@@ -16,6 +16,12 @@ public interface IMenuRepository
 
     Task<bool> UpdateItemAsync(MenuItem item, CancellationToken cancellationToken = default);
 
+    Task<bool> UpdateMenuAsync(Menu menu, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyCollection<RestoredMenuItem>> RestoreExpiredAvailabilityAsync(
+        DateTime utcNow,
+        CancellationToken cancellationToken = default);
+
     Task<int> ReorderSectionsAsync(
         Guid venueId,
         Guid menuId,
@@ -30,4 +36,11 @@ public interface IMenuRepository
     Task<IReadOnlyCollection<MenuItem>> GetItemsAsync(Guid venueId, Guid sectionId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyCollection<MenuItemTranslation>> GetTranslationsAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken = default);
+}
+
+public sealed class RestoredMenuItem
+{
+    public Guid VenueId { get; set; }
+
+    public Guid ItemId { get; set; }
 }

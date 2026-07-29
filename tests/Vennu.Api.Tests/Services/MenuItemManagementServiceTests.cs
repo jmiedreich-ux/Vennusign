@@ -188,6 +188,9 @@ public sealed class MenuItemManagementServiceTests
             UpdatedItem = item;
             return Task.FromResult(true);
         }
+        public Task<bool> UpdateMenuAsync(Menu menu, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<IReadOnlyCollection<RestoredMenuItem>> RestoreExpiredAvailabilityAsync(DateTime utcNow, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyCollection<RestoredMenuItem>>([]);
         public Task<int> ReorderSectionsAsync(Guid venueId, Guid menuId, IReadOnlyCollection<Guid> sectionIds, DateTime updatedUtc, CancellationToken cancellationToken = default) =>
             Task.FromResult(sectionIds.Count);
         public Task<IReadOnlyCollection<Menu>> GetMenusAsync(Guid venueId, CancellationToken cancellationToken = default) =>

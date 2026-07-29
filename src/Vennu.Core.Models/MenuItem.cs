@@ -18,6 +18,8 @@ public sealed class MenuItem
 
     public bool IsAvailable { get; set; } = true;
 
+    public DateTime? AvailabilityResetUtc { get; set; }
+
     public int? QuantityAvailable { get; set; }
 
     public string? Tags { get; set; }

@@ -5,6 +5,7 @@ import test from "node:test";
 const component = await readFile(new URL("../src/MenuSectionsEditor.tsx", import.meta.url), "utf8");
 const items = await readFile(new URL("../src/MenuItemsEditor.tsx", import.meta.url), "utf8");
 const api = await readFile(new URL("../src/api.ts", import.meta.url), "utf8");
+const quick = await readFile(new URL("../src/QuickUpdateMode.tsx", import.meta.url), "utf8");
 
 test("section journeys remain venue scoped", () => {
   assert.ok(api.includes("api/admin/venues/${venueId}/menus"));
@@ -39,4 +40,14 @@ test("tier-aware controls stay visible and use one dismissible prompt", () => {
 test("collapsed state persists per venue", () => {
   assert.ok(component.includes("localStorage.getItem(storageKey)"));
   assert.ok(component.includes("localStorage.setItem(storageKey"));
+});
+
+test("quick update provides daily special and one-scroll availability controls", () => {
+  assert.match(quick, /Daily special/);
+  assert.match(quick, /updateQuickDailySpecial/);
+  assert.match(quick, /updateQuickAvailability/);
+  assert.match(quick, /snapshot\.capabilities\.quickUpdate/);
+  assert.match(quick, /quick-items/);
+  assert.ok(api.includes("/quick-update/daily-special"));
+  assert.ok(api.includes("/quick-availability"));
 });

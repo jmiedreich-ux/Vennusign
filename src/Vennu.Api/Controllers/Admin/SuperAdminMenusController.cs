@@ -13,7 +13,8 @@ namespace Vennu.Api.Controllers.Admin;
 [Authorize(Policy = SuperAdminAuthenticationDefaults.AuthorizationPolicy)]
 public sealed class SuperAdminMenusController(
     IMenuSectionManagementService sectionService,
-    IMenuItemManagementService itemService) : ControllerBase
+    IMenuItemManagementService itemService,
+    IQuickUpdateService quickUpdateService) : ControllerBase
 {
     [HttpGet]
     public Task<MenuEditorSnapshot> Get(Guid venueId, CancellationToken cancellationToken) =>
@@ -38,6 +39,58 @@ public sealed class SuperAdminMenusController(
         catch (ArgumentException exception)
         {
             return ValidationProblem(exception.Message);
+        }
+    }
+
+    [HttpPut("{menuId:guid}/quick-update/daily-special")]
+    public async Task<ActionResult<Menu>> UpdateDailySpecial(
+        Guid venueId,
+        Guid menuId,
+        QuickDailySpecialRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var menu = await quickUpdateService.UpdateDailySpecialAsync(
+                venueId,
+                menuId,
+                request.DailySpecial,
+                cancellationToken).ConfigureAwait(false);
+            return menu is null ? NotFound() : Ok(menu);
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+    }
+
+    [HttpPut("{menuId:guid}/sections/{sectionId:guid}/items/{itemId:guid}/quick-availability")]
+    public async Task<ActionResult<MenuItem>> UpdateQuickAvailability(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid itemId,
+        QuickAvailabilityRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var item = await quickUpdateService.SetAvailabilityAsync(
+                venueId,
+                menuId,
+                sectionId,
+                itemId,
+                request.IsAvailable,
+                cancellationToken).ConfigureAwait(false);
+            return item is null ? NotFound() : Ok(item);
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
         }
     }
 

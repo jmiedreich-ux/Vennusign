@@ -2,36 +2,34 @@
 
 ## Work Package
 
-- ID: WP-05.05
-- Status: Complete and merged
-- Branch: `wp/05.05-tier-aware-menu-patterns`
-- Issue: #68
-- Pull request: #69
-- Merge commit: `8434640`
+- ID: WP-05.06
+- Status: Implementation prepared for authoritative validation
+- Branch: `wp/05.06-quick-update-mode`
+- Issue: #71
+- Pull request: Pending
 
 ## Completed
 
-- Added effective `happy_hour` and `allergen_badges` capabilities to the menu read model.
-- Applied feature resolution to gated mutation changes while preserving existing downgraded values.
-- Kept gated fields visible with tier badges and preview actions.
-- Added a single dismissible prompt state for the menu editor screen.
-- Added focused capability, mutation-gate, and frontend tests.
+- Added effective `quick_update` capability resolution.
+- Added daily-special persistence and venue-scoped notification.
+- Added quick availability toggles with venue-local midnight reset timestamps.
+- Added the bounded reset worker and mobile one-scroll Quick Update UI.
+- Added migration, unit, migration-resource, and frontend contract coverage.
 
 ## Validation
 
-- Local admin production build and 9 frontend tests passed.
-- Tracker JSON and `git diff --check` passed.
-- GitHub Actions run 193 passed the Release build, frontend builds/tests, and unit tests on reviewed head `e072777`.
-- Run 192 exposed a missing namespace import, which was corrected before the passing run.
+- Admin frontend contract tests: 10 passed.
+- `git diff --check` passed.
+- The local production build could not run because dependencies were unavailable; GitHub Actions remains authoritative.
 - Integration-type tests are intentionally skipped.
 
 ## Exact Next Action
 
-Claim and implement WP-05.06 — Quick Update Mode.
+Publish the implementation, run required GitHub Actions checks, review the exact head, and merge WP-05.06 before beginning WP-05.07.
 
 ## Do Not Redo or Reverse
 
-- Do not recreate issue #68.
-- Do not infer features from tier names or hide gated controls.
-- Do not move quick update mode into this package.
+- Do not recreate issue #71 or the quick-update branch.
+- Do not replace the bounded midnight reset with the Phase 08 scheduling engine.
+- Do not infer Quick Update access from tier names.
 - Do not run integration-type tests.
