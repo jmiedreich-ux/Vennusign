@@ -37,7 +37,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-**WP-04.12 — Phase 04 Validation and Closure (Review)**
+None. Phase 04 is complete and WP-05.01 is ready.
 
 ## Phase 04 Result
 
@@ -52,7 +52,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-After WP-04.12 merges, claim **WP-05.01 — Menu Domain and Persistence Foundation**.
+Claim **WP-05.01 — Menu Domain and Persistence Foundation**.
 
 ## Phase 05 Work Packages
 
