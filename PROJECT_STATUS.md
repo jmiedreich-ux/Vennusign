@@ -38,10 +38,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-05.02 — Menu Editor Read Model and Section Management
 - WP-05.03 — Inline Menu Item Editing and Sync
 - WP-05.04 — Availability, Quantity, and Menu Badges
+- WP-05.05 — Tier-Aware Venue Admin Patterns
 
 ## Active Work Package
 
-**WP-05.05 — Tier-Aware Venue Admin Patterns** is active on `wp/05.05-tier-aware-menu-patterns` (issue #68).
+None. **WP-05.06 — Quick Update Mode** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -56,7 +57,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate, review, and merge **WP-05.05 — Tier-Aware Venue Admin Patterns**.
+Claim and implement **WP-05.06 — Quick Update Mode**.
 
 ## Phase 05 Work Packages
 
