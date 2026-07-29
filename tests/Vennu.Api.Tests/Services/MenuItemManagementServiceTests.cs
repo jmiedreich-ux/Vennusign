@@ -81,6 +81,42 @@ public sealed class MenuItemManagementServiceTests
         Assert.Equal(0, notifier.ContentNotificationCount);
     }
 
+    [Fact]
+    public async Task UpdatePresentationAsync_NormalizesBadgesAndPublishesAvailability()
+    {
+        var venueId = Guid.NewGuid();
+        var menuId = Guid.NewGuid();
+        var sectionId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var repository = new FakeMenuRepository
+        {
+            Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Main" }],
+            Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Food" }],
+            Items = [new MenuItem { Id = itemId, VenueId = venueId, MenuSectionId = sectionId, Name = "Burger", IsAvailable = true }]
+        };
+        var notifier = new RecordingNotifier();
+        var service = new MenuItemManagementService(repository, notifier, new FixedTimeProvider());
+
+        var result = await service.UpdatePresentationAsync(
+            venueId,
+            menuId,
+            sectionId,
+            itemId,
+            false,
+            4,
+            [" vegan ", "Vegan", "contains nuts"],
+            true);
+
+        Assert.NotNull(result);
+        Assert.False(result.IsAvailable);
+        Assert.Equal(4, result.QuantityAvailable);
+        Assert.Equal("vegan,contains nuts", result.Tags);
+        Assert.True(result.IsPopular);
+        Assert.Equal(itemId, repository.UpdatedItem?.Id);
+        Assert.Equal(1, notifier.AvailabilityNotificationCount);
+        Assert.Equal(1, notifier.ContentNotificationCount);
+    }
+
     private sealed class FixedTimeProvider : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => new(2026, 7, 29, 22, 30, 0, TimeSpan.Zero);
@@ -123,6 +159,7 @@ public sealed class MenuItemManagementServiceTests
     private sealed class RecordingNotifier : IScreenUpdateNotifier
     {
         public int ContentNotificationCount { get; private set; }
+        public int AvailabilityNotificationCount { get; private set; }
         public Guid? VenueId { get; private set; }
 
         public Task NotifyVenueContentUpdatedAsync(Guid venueId, object payload, CancellationToken cancellationToken = default)
@@ -136,7 +173,11 @@ public sealed class MenuItemManagementServiceTests
         public Task NotifyScreenThemeUpdatedAsync(Guid screenId, object theme, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyVenueThemeUpdatedAsync(Guid venueId, object theme, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyScreenItemAvailabilityChangedAsync(Guid screenId, string itemId, bool available, CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task NotifyVenueItemAvailabilityChangedAsync(Guid venueId, string itemId, bool available, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyVenueItemAvailabilityChangedAsync(Guid venueId, string itemId, bool available, CancellationToken cancellationToken = default)
+        {
+            AvailabilityNotificationCount++;
+            return Task.CompletedTask;
+        }
         public Task NotifyScreenSyncTickAsync(Guid screenId, long serverTimeMs, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyVenueSyncTickAsync(Guid venueId, long serverTimeMs, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }

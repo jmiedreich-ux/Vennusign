@@ -11,3 +11,9 @@ public sealed record MenuItemWriteRequest(
     string? Description,
     decimal Price,
     decimal? HappyHourPrice);
+
+public sealed record MenuItemPresentationRequest(
+    bool IsAvailable,
+    int? QuantityAvailable,
+    IReadOnlyCollection<string>? Tags,
+    bool IsPopular);

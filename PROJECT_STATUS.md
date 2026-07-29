@@ -40,7 +40,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-05.04 — Availability, Quantity, and Menu Badges** is the next package in roadmap order.
+**WP-05.04 — Availability, Quantity, and Menu Badges** is active on `wp/05.04-availability-menu-badges` (issue #65).
 
 ## Phase 04 Result
 
@@ -55,7 +55,7 @@ None. **WP-05.04 — Availability, Quantity, and Menu Badges** is the next packa
 
 ## Next Action
 
-Claim and implement **WP-05.04 — Availability, Quantity, and Menu Badges**.
+Validate, review, and merge **WP-05.04 — Availability, Quantity, and Menu Badges**.
 
 ## Phase 05 Work Packages
 

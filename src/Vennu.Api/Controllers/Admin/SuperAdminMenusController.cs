@@ -140,4 +140,33 @@ public sealed class SuperAdminMenusController(
             return ValidationProblem(exception.Message);
         }
     }
+
+    [HttpPut("{menuId:guid}/sections/{sectionId:guid}/items/{itemId:guid}/presentation")]
+    public async Task<ActionResult<MenuItem>> UpdateItemPresentation(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid itemId,
+        MenuItemPresentationRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var item = await itemService.UpdatePresentationAsync(
+                venueId,
+                menuId,
+                sectionId,
+                itemId,
+                request.IsAvailable,
+                request.QuantityAvailable,
+                request.Tags,
+                request.IsPopular,
+                cancellationToken).ConfigureAwait(false);
+            return item is null ? NotFound() : Ok(item);
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+    }
 }
