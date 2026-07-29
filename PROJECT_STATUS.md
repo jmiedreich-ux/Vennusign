@@ -35,10 +35,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-04.11 — Revenue Trend Snapshots
 - WP-04.12 — Phase 04 Validation and Closure
 - WP-05.01 — Menu Domain and Persistence Foundation
+- WP-05.02 — Menu Editor Read Model and Section Management
 
 ## Active Work Package
 
-**WP-05.02 — Menu Editor Read Model and Section Management** is in review on `wp/05.02-menu-section-management` (issue #59).
+None. **WP-05.03 — Inline Menu Item Editing and Sync** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -53,7 +54,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate, review, and merge **WP-05.02 — Menu Editor Read Model and Section Management**.
+Claim and implement **WP-05.03 — Inline Menu Item Editing and Sync**.
 
 ## Phase 05 Work Packages
 
