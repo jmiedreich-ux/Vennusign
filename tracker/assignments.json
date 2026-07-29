@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-29T22:48:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-05.04",
-      "orchestrator": "ChatGPT Codex",
-      "branch": "wp/05.04-availability-menu-badges",
-      "issue": 65,
-      "claimedUtc": "2026-07-29T22:40:00Z"
-    }
-  ],
+  "updatedUtc": "2026-07-29T22:52:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-05.05",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
