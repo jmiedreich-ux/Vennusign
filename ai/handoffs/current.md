@@ -2,36 +2,32 @@
 
 ## Work Package
 
-- ID: WP-04.09
-- Status: Complete and merged
-- Branch: `wp/04.09-recent-commercial-events`
-- Issue: #45
-- Pull request: #46
+- ID: WP-04.10
+- Status: Review
+- Branch: `wp/04.10-venue-tier-switching`
+- Issue: #48
+- Pull request: #49
 
 ## Completed
 
-- Defined the remaining Phase 04 work-package sequence through WP-04.12.
-- Added normalized operational-event persistence for signup, upgrade, downgrade, churn, and override mutations.
-- Added a bounded reverse-chronological event feed with venue context.
-- Added a protected dashboard endpoint and responsive Super Admin event feed.
-- Added focused non-integration event recording and feed tests.
+- Added Stripe subscription-item tier switching while preserving the current billing interval and applying prorations.
+- Added local tier synchronization, entitlement-cache invalidation, normalized upgrade/downgrade events, and compensating restoration.
+- Added a protected Super Admin endpoint and responsive tier controls to the venue support view.
+- Added focused unit tests and Stripe tier-switching operating guidance.
 
 ## Validation
 
 - Admin production build passed locally.
-- Display tests: 15 passed; 2 pre-existing heartbeat microtask timing assertions failed under the local Node runtime.
-- .NET validation unavailable locally because the SDK is not installed.
-- GitHub Actions run 152 passed restore, Release build, admin/display production builds, application unit tests, and non-integration migration-resource validation against reviewed head `cb8822d3019d8857b0141a6fcd079afd22100b67`.
-- ChatGPT approval was recorded against that exact head.
-- PR #46 merged as `cd44900c744574c7e071c049864e429c68166f84`.
+- `git diff --check` passed.
+- .NET validation is deferred to GitHub Actions because the SDK is not installed locally.
 - Integration-type tests intentionally skipped under the standing repository-owner instruction.
 
 ## Exact Next Action
 
-Claim WP-04.10, create its issue and branch, then implement venue tier switching in the documented bounds.
+Publish the branch, run the required non-integration GitHub workflow, review the exact green head, merge WP-04.10, then claim WP-04.11.
 
 ## Do Not Redo or Reverse
 
-- Do not replace normalized operational events with raw Stripe payload storage.
-- Do not expose Stripe event payloads or secrets in the dashboard feed.
-- Do not duplicate or rewrite the WP-04.09 event feed while implementing WP-04.10.
+- Preserve the Stripe-first ordering and compensating restoration.
+- Preserve the current Stripe billing interval during a tier switch.
+- Do not add checkout, customer portal, cancellation, or proration-preview scope.

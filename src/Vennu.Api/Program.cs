@@ -45,6 +45,7 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<IStripeWebhookEventVerifier, StripeWebhookEventVerifier>();
 builder.Services.Configure<StripeRevenueOptions>(builder.Configuration.GetSection(StripeRevenueOptions.SectionName));
 builder.Services.AddScoped<IStripeRevenueSource, StripeRevenueSource>();
+builder.Services.AddScoped<IStripeSubscriptionTierUpdater, StripeSubscriptionTierUpdater>();
 builder.Services.AddHostedService<HeartbeatMonitor>();
 builder.Services.AddVennuData();
 

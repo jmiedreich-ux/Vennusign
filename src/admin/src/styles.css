@@ -56,6 +56,7 @@ td small { display: block; color: #7a8b84; margin-top: 3px; }
 .venue-detail article { border: 1px solid #dbe3de; border-radius: 18px; background: white; padding: 20px; }
 .venue-detail article h3 { margin-top: 0; }.venue-detail dl { display: grid; grid-template-columns: 120px 1fr; gap: 8px; }
 .venue-detail dt { color: #6b7d75; }.venue-detail dd { margin: 0; font-weight: 650; }
+.tier-switch { display: grid; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1px solid #edf1ee; }.tier-switch label { display: grid; gap: 5px; color: #60736b; font-size: .8rem; font-weight: 700; }.tier-switch select { border: 1px solid #ccd8d1; border-radius: 10px; padding: 9px 11px; background: white; }.tier-switch button { border: 0; border-radius: 9px; padding: 9px 11px; color: white; background: #194d3b; cursor: pointer; }.tier-switch button:disabled { cursor: not-allowed; opacity: .5; }
 .support-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
 .support-list li { display: flex; justify-content: space-between; gap: 18px; border-top: 1px solid #edf1ee; padding-top: 10px; }
 .support-list span { color: #667970; text-align: right; }

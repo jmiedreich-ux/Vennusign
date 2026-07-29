@@ -32,7 +32,7 @@ Monetization infrastructure supports persistent subscription tiers, effective fe
 
 ## Active Work Package
 
-None. WP-04.09 is complete and merged.
+**WP-04.10 — Venue Tier Switching (Review)**
 
 ## Phase 03 Result
 
@@ -49,7 +49,7 @@ None. WP-04.09 is complete and merged.
 
 ## Next Action
 
-Claim and complete **WP-04.10 — Venue Tier Switching**.
+Validate, review, and merge **WP-04.10 — Venue Tier Switching**.
 
 ## Remaining Phase 04 Work Packages
 
