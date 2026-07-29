@@ -68,6 +68,10 @@ jobs:
         working-directory: src/admin
         run: npm run build
 
+      - name: Test admin
+        working-directory: src/admin
+        run: npm test
+
       - name: Install display dependencies
         working-directory: src/display
         run: npm ci
@@ -86,6 +90,10 @@ jobs:
             exit $status
           fi
           cat display-build.log
+
+      - name: Test display
+        working-directory: src/display
+        run: npm test
 
       - name: Upload display build diagnostics
         if: failure()
@@ -141,8 +149,8 @@ jobs:
         if: always()
         run: |
           echo "=== Test Run Summary ==="
-          echo "Display app: dependencies installed and production build executed"
-          echo "Super Admin app: dependencies installed and production build executed"
+          echo "Display app: dependencies installed, production build, and frontend tests executed"
+          echo "Super Admin app: dependencies installed, production build, and frontend tests executed"
           echo "Unit tests: ran with filter Category=Unit"
           echo "Integration tests: SKIPPED by standing repository-owner instruction"
           echo "Projects tested:"
