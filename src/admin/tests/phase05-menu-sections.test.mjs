@@ -1,0 +1,18 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
+
+const component = await readFile(new URL("../src/MenuSectionsEditor.tsx", import.meta.url), "utf8");
+const api = await readFile(new URL("../src/api.ts", import.meta.url), "utf8");
+
+test("section journeys remain venue scoped", () => {
+  assert.ok(api.includes("api/admin/venues/${venueId}/menus"));
+  assert.match(component, /createMenuSection/);
+  assert.match(component, /updateMenuSection/);
+  assert.match(component, /reorderMenuSections/);
+});
+
+test("collapsed state persists per venue", () => {
+  assert.ok(component.includes("localStorage.getItem(storageKey)"));
+  assert.ok(component.includes("localStorage.setItem(storageKey"));
+});

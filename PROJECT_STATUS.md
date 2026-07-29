@@ -34,10 +34,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-04.10 — Venue Tier Switching
 - WP-04.11 — Revenue Trend Snapshots
 - WP-04.12 — Phase 04 Validation and Closure
+- WP-05.01 — Menu Domain and Persistence Foundation
 
 ## Active Work Package
 
-**WP-05.01 — Menu Domain and Persistence Foundation** is in progress on `wp/05.01-menu-domain-persistence` (issue #57).
+**WP-05.02 — Menu Editor Read Model and Section Management** is in review on `wp/05.02-menu-section-management` (issue #59).
 
 ## Phase 04 Result
 
@@ -52,7 +53,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete and validate **WP-05.01 — Menu Domain and Persistence Foundation**.
+Validate, review, and merge **WP-05.02 — Menu Editor Read Model and Section Management**.
 
 ## Phase 05 Work Packages
 
