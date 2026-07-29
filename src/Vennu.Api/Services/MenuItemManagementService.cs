@@ -76,6 +76,55 @@ public sealed class MenuItemManagementService(
         return item;
     }
 
+    public async Task<MenuItem?> UpdatePresentationAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid itemId,
+        bool isAvailable,
+        int? quantityAvailable,
+        IReadOnlyCollection<string>? tags,
+        bool isPopular,
+        CancellationToken cancellationToken = default)
+    {
+        RequireId(itemId, nameof(itemId));
+        if (quantityAvailable < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(quantityAvailable), "Quantity cannot be negative.");
+        }
+        var normalizedTags = NormalizeTags(tags);
+        if (!await SectionExistsAsync(venueId, menuId, sectionId, cancellationToken).ConfigureAwait(false))
+        {
+            return null;
+        }
+
+        var items = await repository.GetItemsAsync(venueId, sectionId, cancellationToken).ConfigureAwait(false);
+        var item = items.SingleOrDefault(existing => existing.Id == itemId);
+        if (item is null)
+        {
+            return null;
+        }
+
+        var availabilityChanged = item.IsAvailable != isAvailable;
+        item.IsAvailable = isAvailable;
+        item.QuantityAvailable = quantityAvailable;
+        item.Tags = normalizedTags;
+        item.IsPopular = isPopular;
+        item.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
+        await repository.UpdateItemAsync(item, cancellationToken).ConfigureAwait(false);
+
+        if (availabilityChanged)
+        {
+            await notifier.NotifyVenueItemAvailabilityChangedAsync(
+                venueId,
+                item.Id.ToString(),
+                item.IsAvailable,
+                cancellationToken).ConfigureAwait(false);
+        }
+        await NotifyAsync(venueId, menuId, sectionId, item.Id, "presentation-updated", cancellationToken).ConfigureAwait(false);
+        return item;
+    }
+
     private async Task RequireSectionAsync(
         Guid venueId,
         Guid menuId,
@@ -151,6 +200,29 @@ public sealed class MenuItemManagementService(
 
     private static decimal? ValidateOptionalPrice(decimal? price, string parameterName) =>
         price is null ? null : ValidatePrice(price.Value, parameterName);
+
+    private static string? NormalizeTags(IReadOnlyCollection<string>? tags)
+    {
+        if (tags is null || tags.Count == 0)
+        {
+            return null;
+        }
+        var normalized = tags
+            .Select(tag => tag?.Trim() ?? string.Empty)
+            .Where(tag => tag.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (normalized.Length > 12 || normalized.Any(tag => tag.Length > 40))
+        {
+            throw new ArgumentException("Use at most 12 tags of 40 characters each.", nameof(tags));
+        }
+        var value = string.Join(',', normalized);
+        if (value.Length > 500)
+        {
+            throw new ArgumentException("Combined tags cannot exceed 500 characters.", nameof(tags));
+        }
+        return value.Length == 0 ? null : value;
+    }
 
     private static void RequireId(Guid value, string parameterName)
     {

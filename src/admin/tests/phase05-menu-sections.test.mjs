@@ -20,6 +20,14 @@ test("inline item editing uses venue scoped create and update contracts", () => 
   assert.ok(api.includes("/sections/${sectionId}/items"));
 });
 
+test("availability quantity and badges use the presentation contract", () => {
+  assert.match(items, /updateMenuItemPresentation/);
+  assert.match(items, /Quantity available/);
+  assert.match(items, /Dietary \/ allergen tags/);
+  assert.match(items, /Bestseller/);
+  assert.ok(api.includes("/presentation"));
+});
+
 test("collapsed state persists per venue", () => {
   assert.ok(component.includes("localStorage.getItem(storageKey)"));
   assert.ok(component.includes("localStorage.setItem(storageKey"));

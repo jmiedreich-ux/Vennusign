@@ -62,7 +62,8 @@ export type MenuSection = {
 export type MenuItem = {
   id: string; venueId: string; menuSectionId: string; name: string;
   description?: string; price: number; happyHourPrice?: number;
-  sortOrder: number; isAvailable: boolean; createdUtc: string; updatedUtc: string;
+  sortOrder: number; isAvailable: boolean; quantityAvailable?: number;
+  tags?: string; isPopular: boolean; createdUtc: string; updatedUtc: string;
 };
 export type MenuItemWrite = {
   name: string; description?: string; price: number; happyHourPrice?: number;
@@ -275,5 +276,23 @@ export async function updateMenuItem(
 ): Promise<MenuItem> {
   return (await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections/${sectionId}/items/${itemId}`, {
     method: "PUT", body: JSON.stringify(item)
+  })).json() as Promise<MenuItem>;
+}
+export async function updateMenuItemPresentation(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  menuId: string,
+  sectionId: string,
+  item: MenuItem
+): Promise<MenuItem> {
+  return (await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections/${sectionId}/items/${item.id}/presentation`, {
+    method: "PUT",
+    body: JSON.stringify({
+      isAvailable: item.isAvailable,
+      quantityAvailable: item.quantityAvailable,
+      tags: item.tags?.split(",").map(tag => tag.trim()).filter(Boolean) ?? [],
+      isPopular: item.isPopular
+    })
   })).json() as Promise<MenuItem>;
 }

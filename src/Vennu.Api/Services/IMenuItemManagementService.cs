@@ -24,4 +24,15 @@ public interface IMenuItemManagementService
         decimal price,
         decimal? happyHourPrice,
         CancellationToken cancellationToken = default);
+
+    Task<MenuItem?> UpdatePresentationAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid itemId,
+        bool isAvailable,
+        int? quantityAvailable,
+        IReadOnlyCollection<string>? tags,
+        bool isPopular,
+        CancellationToken cancellationToken = default);
 }
