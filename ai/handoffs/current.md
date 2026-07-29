@@ -6,7 +6,7 @@
 - Status: Review
 - Branch: `wp/04.11-revenue-trends`
 - Issue: #51
-- Pull request: pending
+- Pull request: #52
 
 ## Completed
 
