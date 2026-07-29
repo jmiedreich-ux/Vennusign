@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBillingCatalogService, BillingCatalogService>();
         services.AddScoped<IProcessedStripeEventRepository, ProcessedStripeEventRepository>();
         services.AddScoped<IOperationalEventRepository, OperationalEventRepository>();
+        services.AddScoped<IRevenueDailySnapshotRepository, RevenueDailySnapshotRepository>();
         services.AddScoped<IStripeEventIdempotencyService, StripeEventIdempotencyService>();
         services.AddScoped<IStripeSubscriptionEventHandler, StripeSubscriptionEventHandler>();
         services.AddScoped<IVenueDirectoryService, VenueDirectoryService>();
@@ -40,6 +41,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOperationalDashboardService, OperationalDashboardService>();
         services.AddScoped<IOperationalEventFeedService, OperationalEventFeedService>();
         services.AddScoped<IRevenueSnapshotService, RevenueSnapshotService>();
+        services.AddScoped<IRevenueTrendService, RevenueTrendService>();
         return services;
     }
 }

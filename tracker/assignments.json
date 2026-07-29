@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-29T00:03:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-04.11",
+  "updatedUtc": "2026-07-29T00:14:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-04.11",
+      "branch": "wp/04.11-revenue-trends",
+      "issue": 51,
+      "owner": "Codex automation",
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-04.12",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
