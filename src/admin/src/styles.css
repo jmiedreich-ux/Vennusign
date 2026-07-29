@@ -107,6 +107,7 @@ td small { display: block; color: #7a8b84; margin-top: 3px; }
 .revenue-panel > div:first-child > span { color: #bed7cd; }.tier-revenue { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
 .tier-revenue div { display: grid; gap: 5px; border-radius: 12px; background: #205642; padding: 12px; }.tier-revenue span { color: #b9d8cb; font-size: .8rem; }.tier-revenue strong { font-size: 1.1rem; }
 .revenue-warning { grid-column: 1 / -1; color: #ffdc8a; font-size: .82rem; overflow-wrap: anywhere; }
+.revenue-trend { display: grid; grid-template-columns: minmax(210px, .7fr) 2fr; gap: 24px; border: 1px solid #dbe3de; border-radius: 20px; background: white; padding: 22px; }.revenue-trend p, .revenue-trend h2 { margin: 0; }.revenue-trend p { color: #19704f; font-size: .75rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }.revenue-trend h2 { margin: 5px 0; }.revenue-trend > div:first-child span { color: #6b7d75; font-size: .85rem; }.trend-chart { display: flex; align-items: end; gap: 8px; min-height: 190px; overflow-x: auto; padding-top: 28px; }.trend-point { display: grid; grid-template-rows: 24px 140px 22px; align-items: end; min-width: 54px; flex: 1; text-align: center; }.trend-point > span { align-self: start; color: #60736b; font-size: .7rem; white-space: nowrap; }.trend-point > div { width: 70%; justify-self: center; border-radius: 7px 7px 2px 2px; background: linear-gradient(180deg, #53b98d, #19704f); }.trend-point strong { color: #4c6259; font-size: .72rem; }
 .metric-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .metric-grid article { display: grid; gap: 12px; border: 1px solid #dbe3de; border-radius: 16px; background: white; padding: 18px; }
 .metric-grid span { color: #667970; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }.metric-grid strong { font-size: 2.2rem; }
@@ -123,4 +124,4 @@ td small { display: block; color: #7a8b84; margin-top: 3px; }
 .event-feed li p, .event-feed li small { color: #667970; margin-top: .2rem; }
 .event-type { background: #1d2b46; border-radius: 999px; color: #dbeafe; font-size: .72rem; font-weight: 700; letter-spacing: .04em; padding: .35rem .6rem; text-align: center; text-transform: uppercase; }
 .event-type.churn, .event-type.downgrade, .event-type.override_removed { background: #4a1d2a; color: #fecdd3; }
-@media (max-width: 760px) { .revenue-panel { grid-template-columns: 1fr; }.metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .revenue-panel, .revenue-trend { grid-template-columns: 1fr; }.metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.trend-chart { min-height: 170px; } }
