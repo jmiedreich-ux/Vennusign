@@ -20,6 +20,7 @@
 
 - Admin frontend contract tests: 10 passed.
 - `git diff --check` passed.
+- GitHub Actions run 197 exposed the reset worker starting in the in-memory API test host; registration is now excluded from the `Testing` environment.
 - The local production build could not run because dependencies were unavailable; GitHub Actions remains authoritative.
 - Integration-type tests are intentionally skipped.
 

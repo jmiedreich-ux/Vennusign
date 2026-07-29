@@ -50,11 +50,11 @@ builder.Services.Configure<StripeRevenueOptions>(builder.Configuration.GetSectio
 builder.Services.AddScoped<IStripeRevenueSource, StripeRevenueSource>();
 builder.Services.AddScoped<IStripeSubscriptionTierUpdater, StripeSubscriptionTierUpdater>();
 builder.Services.AddHostedService<HeartbeatMonitor>();
-builder.Services.AddHostedService<QuickAvailabilityResetService>();
 builder.Services.AddVennuData();
 
 if (!builder.Environment.IsEnvironment("Testing"))
 {
+    builder.Services.AddHostedService<QuickAvailabilityResetService>();
     var connectionString = builder.Configuration.GetConnectionString("VennuDatabase")
         ?? throw new InvalidOperationException("Connection string 'VennuDatabase' is required.");
 
