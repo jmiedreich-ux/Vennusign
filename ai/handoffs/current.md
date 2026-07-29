@@ -3,9 +3,11 @@
 ## Work Package
 
 - ID: WP-05.05
-- Status: Complete pending GitHub Actions, review, and merge
+- Status: Complete and merged
 - Branch: `wp/05.05-tier-aware-menu-patterns`
 - Issue: #68
+- Pull request: #69
+- Merge commit: `8434640`
 
 ## Completed
 
@@ -19,12 +21,13 @@
 
 - Local admin production build and 9 frontend tests passed.
 - Tracker JSON and `git diff --check` passed.
-- GitHub Actions is required on the exact reviewed head.
+- GitHub Actions run 193 passed the Release build, frontend builds/tests, and unit tests on reviewed head `e072777`.
+- Run 192 exposed a missing namespace import, which was corrected before the passing run.
 - Integration-type tests are intentionally skipped.
 
 ## Exact Next Action
 
-Publish the branch and PR, then wait for exact-head GitHub Actions before review and merge.
+Claim and implement WP-05.06 — Quick Update Mode.
 
 ## Do Not Redo or Reverse
 
