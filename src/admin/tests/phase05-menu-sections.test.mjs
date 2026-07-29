@@ -28,6 +28,14 @@ test("availability quantity and badges use the presentation contract", () => {
   assert.ok(api.includes("/presentation"));
 });
 
+test("tier-aware controls stay visible and use one dismissible prompt", () => {
+  assert.match(component, /tierPrompt \?/);
+  assert.match(component, /Dismiss tier prompt/);
+  assert.match(items, /capabilities\.happyHour/);
+  assert.match(items, /capabilities\.allergenBadges/);
+  assert.match(items, /feature-preview/);
+});
+
 test("collapsed state persists per venue", () => {
   assert.ok(component.includes("localStorage.getItem(storageKey)"));
   assert.ok(component.includes("localStorage.setItem(storageKey"));
