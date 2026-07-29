@@ -7,6 +7,7 @@ namespace Vennu.Api.Services;
 public sealed class MenuItemManagementService(
     IMenuRepository repository,
     IScreenUpdateNotifier notifier,
+    IFeatureResolutionService featureResolution,
     TimeProvider timeProvider) : IMenuItemManagementService
 {
     public async Task<MenuItem> CreateAsync(
@@ -20,6 +21,12 @@ public sealed class MenuItemManagementService(
         CancellationToken cancellationToken = default)
     {
         await RequireSectionAsync(venueId, menuId, sectionId, cancellationToken).ConfigureAwait(false);
+        await RequireFeatureChangeAsync(
+            venueId,
+            "happy_hour",
+            happyHourPrice is not null,
+            "Happy-hour pricing",
+            cancellationToken).ConfigureAwait(false);
         var items = await repository.GetItemsAsync(venueId, sectionId, cancellationToken).ConfigureAwait(false);
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var item = new MenuItem
@@ -66,6 +73,12 @@ public sealed class MenuItemManagementService(
             return null;
         }
 
+        await RequireFeatureChangeAsync(
+            venueId,
+            "happy_hour",
+            item.HappyHourPrice != happyHourPrice,
+            "Happy-hour pricing",
+            cancellationToken).ConfigureAwait(false);
         item.Name = NormalizeName(name);
         item.Description = NormalizeDescription(description);
         item.Price = ValidatePrice(price, nameof(price));
@@ -105,6 +118,12 @@ public sealed class MenuItemManagementService(
             return null;
         }
 
+        await RequireFeatureChangeAsync(
+            venueId,
+            "allergen_badges",
+            !string.Equals(item.Tags, normalizedTags, StringComparison.Ordinal),
+            "Dietary and allergen badges",
+            cancellationToken).ConfigureAwait(false);
         var availabilityChanged = item.IsAvailable != isAvailable;
         item.IsAvailable = isAvailable;
         item.QuantityAvailable = quantityAvailable;
@@ -167,6 +186,20 @@ public sealed class MenuItemManagementService(
             venueId,
             new { change, menuId, sectionId, itemId },
             cancellationToken);
+
+    private async Task RequireFeatureChangeAsync(
+        Guid venueId,
+        string featureKey,
+        bool isChanging,
+        string label,
+        CancellationToken cancellationToken)
+    {
+        if (isChanging &&
+            !await featureResolution.HasFeatureAsync(venueId, featureKey, cancellationToken).ConfigureAwait(false))
+        {
+            throw new ArgumentException($"{label} requires the corresponding venue feature.");
+        }
+    }
 
     private static string NormalizeName(string name)
     {

@@ -2,6 +2,7 @@ using Vennu.Api.Notifications;
 using Vennu.Api.Services;
 using Vennu.Core.Models;
 using Vennu.Data.Repositories;
+using Vennu.Data.Services;
 
 namespace Vennu.Api.Tests.Services;
 
@@ -21,7 +22,7 @@ public sealed class MenuItemManagementServiceTests
             Items = [new MenuItem { Id = Guid.NewGuid(), VenueId = venueId, MenuSectionId = sectionId, Name = "Soup", SortOrder = 2 }]
         };
         var notifier = new RecordingNotifier();
-        var service = new MenuItemManagementService(repository, notifier, new FixedTimeProvider());
+        var service = new MenuItemManagementService(repository, notifier, new FakeFeatureResolutionService(), new FixedTimeProvider());
 
         var created = await service.CreateAsync(venueId, menuId, sectionId, "  Burger  ", "  House special  ", 12.345m, null);
 
@@ -43,7 +44,7 @@ public sealed class MenuItemManagementServiceTests
             Menus = [new Menu { Id = Guid.NewGuid(), VenueId = venueId, Name = "Other" }]
         };
         var notifier = new RecordingNotifier();
-        var service = new MenuItemManagementService(repository, notifier, new FixedTimeProvider());
+        var service = new MenuItemManagementService(repository, notifier, new FakeFeatureResolutionService(), new FixedTimeProvider());
 
         var result = await service.UpdateAsync(
             venueId,
@@ -72,7 +73,7 @@ public sealed class MenuItemManagementServiceTests
             Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Food" }]
         };
         var notifier = new RecordingNotifier();
-        var service = new MenuItemManagementService(repository, notifier, new FixedTimeProvider());
+        var service = new MenuItemManagementService(repository, notifier, new FakeFeatureResolutionService(), new FixedTimeProvider());
 
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
             () => service.CreateAsync(venueId, menuId, sectionId, "Burger", null, -1, null));
@@ -95,7 +96,11 @@ public sealed class MenuItemManagementServiceTests
             Items = [new MenuItem { Id = itemId, VenueId = venueId, MenuSectionId = sectionId, Name = "Burger", IsAvailable = true }]
         };
         var notifier = new RecordingNotifier();
-        var service = new MenuItemManagementService(repository, notifier, new FixedTimeProvider());
+        var service = new MenuItemManagementService(
+            repository,
+            notifier,
+            new FakeFeatureResolutionService("allergen_badges"),
+            new FixedTimeProvider());
 
         var result = await service.UpdatePresentationAsync(
             venueId,
@@ -117,9 +122,48 @@ public sealed class MenuItemManagementServiceTests
         Assert.Equal(1, notifier.ContentNotificationCount);
     }
 
+    [Fact]
+    public async Task UpdateAsync_BlocksHappyHourChangesWithoutEffectiveFeature()
+    {
+        var venueId = Guid.NewGuid();
+        var menuId = Guid.NewGuid();
+        var sectionId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var repository = new FakeMenuRepository
+        {
+            Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Main" }],
+            Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Food" }],
+            Items = [new MenuItem { Id = itemId, VenueId = venueId, MenuSectionId = sectionId, Name = "Burger", Price = 10 }]
+        };
+        var service = new MenuItemManagementService(
+            repository,
+            new RecordingNotifier(),
+            new FakeFeatureResolutionService(),
+            new FixedTimeProvider());
+
+        var error = await Assert.ThrowsAsync<ArgumentException>(
+            () => service.UpdateAsync(venueId, menuId, sectionId, itemId, "Burger", null, 10, 8));
+
+        Assert.Contains("Happy-hour pricing", error.Message);
+        Assert.Null(repository.UpdatedItem);
+    }
+
     private sealed class FixedTimeProvider : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => new(2026, 7, 29, 22, 30, 0, TimeSpan.Zero);
+    }
+
+    private sealed class FakeFeatureResolutionService(params string[] enabledFeatures) : IFeatureResolutionService
+    {
+        private readonly HashSet<string> enabled = new(enabledFeatures, StringComparer.OrdinalIgnoreCase);
+
+        public Task<bool> HasFeatureAsync(Guid venueId, string featureKey, CancellationToken cancellationToken = default) =>
+            Task.FromResult(enabled.Contains(featureKey));
+        public Task<FeatureEntitlement?> GetFeatureAsync(Guid venueId, string featureKey, CancellationToken cancellationToken = default) =>
+            Task.FromResult<FeatureEntitlement?>(enabled.Contains(featureKey) ? new(featureKey, true, null, "test") : null);
+        public Task<IReadOnlyDictionary<string, FeatureEntitlement>> GetFeatureSetAsync(Guid venueId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyDictionary<string, FeatureEntitlement>>(enabled.ToDictionary(key => key, key => new FeatureEntitlement(key, true, null, "test")));
+        public void Invalidate(Guid venueId) { }
     }
 
     private sealed class FakeMenuRepository : IMenuRepository

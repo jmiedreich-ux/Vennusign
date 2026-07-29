@@ -2,35 +2,33 @@
 
 ## Work Package
 
-- ID: WP-05.04
-- Status: Complete and merged
-- Branch: `wp/05.04-availability-menu-badges`
-- Issue: #65
-- Pull request: #66
-- Merge commit: `36dd84d`
+- ID: WP-05.05
+- Status: Complete pending GitHub Actions, review, and merge
+- Branch: `wp/05.05-tier-aware-menu-patterns`
+- Issue: #68
 
 ## Completed
 
-- Added venue-scoped availability, optional quantity, tags, and bestseller updates.
-- Normalized and bounded comma-separated menu badges.
-- Reused `ItemAvailabilityChanged` when availability changes.
-- Reused venue content updates for quantity and badge content.
-- Added responsive controls, visible badges, and focused tests.
+- Added effective `happy_hour` and `allergen_badges` capabilities to the menu read model.
+- Applied feature resolution to gated mutation changes while preserving existing downgraded values.
+- Kept gated fields visible with tier badges and preview actions.
+- Added a single dismissible prompt state for the menu editor screen.
+- Added focused capability, mutation-gate, and frontend tests.
 
 ## Validation
 
-- Local admin production build and 8 frontend tests passed.
+- Local admin production build and 9 frontend tests passed.
 - Tracker JSON and `git diff --check` passed.
-- GitHub Actions run 188 passed the Release build, frontend builds/tests, and unit tests on reviewed head `acf0717`.
+- GitHub Actions is required on the exact reviewed head.
 - Integration-type tests are intentionally skipped.
 
 ## Exact Next Action
 
-Claim and implement WP-05.05 — Tier-Aware Venue Admin Patterns.
+Publish the branch and PR, then wait for exact-head GitHub Actions before review and merge.
 
 ## Do Not Redo or Reverse
 
-- Do not recreate issue #65.
-- Do not move tier prompts or quick update mode forward.
-- Do not replace the established availability/content notification contracts.
+- Do not recreate issue #68.
+- Do not infer features from tier names or hide gated controls.
+- Do not move quick update mode into this package.
 - Do not run integration-type tests.

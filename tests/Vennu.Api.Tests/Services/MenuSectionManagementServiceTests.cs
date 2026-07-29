@@ -17,7 +17,7 @@ public sealed class MenuSectionManagementServiceTests
             Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Main" }],
             Sections = [new MenuSection { Id = Guid.NewGuid(), VenueId = venueId, MenuId = menuId, Name = "Food", SortOrder = 0 }]
         };
-        var service = new MenuSectionManagementService(repository, new FixedTimeProvider());
+        var service = new MenuSectionManagementService(repository, new FakeFeatureResolutionService(), new FixedTimeProvider());
 
         var created = await service.CreateAsync(venueId, menuId, "  Drinks  ");
 
@@ -33,7 +33,7 @@ public sealed class MenuSectionManagementServiceTests
         {
             Menus = [new Menu { Id = Guid.NewGuid(), VenueId = Guid.NewGuid(), Name = "Other" }]
         };
-        var service = new MenuSectionManagementService(repository, new FixedTimeProvider());
+        var service = new MenuSectionManagementService(repository, new FakeFeatureResolutionService(), new FixedTimeProvider());
 
         var result = await service.UpdateAsync(Guid.NewGuid(), Guid.NewGuid(), "Changed", false);
 
@@ -51,7 +51,7 @@ public sealed class MenuSectionManagementServiceTests
         {
             Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Food" }]
         };
-        var service = new MenuSectionManagementService(repository, new FixedTimeProvider());
+        var service = new MenuSectionManagementService(repository, new FakeFeatureResolutionService(), new FixedTimeProvider());
 
         var error = await Assert.ThrowsAsync<ArgumentException>(
             () => service.ReorderAsync(venueId, menuId, [Guid.NewGuid()]));
@@ -74,7 +74,7 @@ public sealed class MenuSectionManagementServiceTests
                 new MenuSection { Id = second, VenueId = venueId, MenuId = menuId, Name = "Second" }
             ]
         };
-        var service = new MenuSectionManagementService(repository, new FixedTimeProvider());
+        var service = new MenuSectionManagementService(repository, new FakeFeatureResolutionService(), new FixedTimeProvider());
 
         var changed = await service.ReorderAsync(venueId, menuId, [second, first]);
 
@@ -82,9 +82,35 @@ public sealed class MenuSectionManagementServiceTests
         Assert.Equal(new[] { second, first }, repository.ReorderedSectionIds);
     }
 
+    [Fact]
+    public async Task GetAsync_UsesEffectiveFeatureResolutionForCapabilities()
+    {
+        var service = new MenuSectionManagementService(
+            new FakeMenuRepository(),
+            new FakeFeatureResolutionService("happy_hour"),
+            new FixedTimeProvider());
+
+        var snapshot = await service.GetAsync(Guid.NewGuid());
+
+        Assert.True(snapshot.Capabilities.HappyHour);
+        Assert.False(snapshot.Capabilities.AllergenBadges);
+    }
+
     private sealed class FixedTimeProvider : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => new(2026, 7, 29, 22, 20, 0, TimeSpan.Zero);
+    }
+
+    private sealed class FakeFeatureResolutionService(params string[] enabledFeatures) : IFeatureResolutionService
+    {
+        private readonly HashSet<string> enabled = new(enabledFeatures, StringComparer.OrdinalIgnoreCase);
+
+        public Task<bool> HasFeatureAsync(Guid venueId, string featureKey, CancellationToken cancellationToken = default) => Task.FromResult(enabled.Contains(featureKey));
+        public Task<FeatureEntitlement?> GetFeatureAsync(Guid venueId, string featureKey, CancellationToken cancellationToken = default) =>
+            Task.FromResult<FeatureEntitlement?>(enabled.Contains(featureKey) ? new(featureKey, true, null, "test") : null);
+        public Task<IReadOnlyDictionary<string, FeatureEntitlement>> GetFeatureSetAsync(Guid venueId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyDictionary<string, FeatureEntitlement>>(enabled.ToDictionary(key => key, key => new FeatureEntitlement(key, true, null, "test")));
+        public void Invalidate(Guid venueId) { }
     }
 
     private sealed class FakeMenuRepository : IMenuRepository

@@ -41,7 +41,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-05.05 — Tier-Aware Venue Admin Patterns** is the next package in roadmap order.
+**WP-05.05 — Tier-Aware Venue Admin Patterns** is active on `wp/05.05-tier-aware-menu-patterns` (issue #68).
 
 ## Phase 04 Result
 
@@ -56,7 +56,7 @@ None. **WP-05.05 — Tier-Aware Venue Admin Patterns** is the next package in ro
 
 ## Next Action
 
-Claim and implement **WP-05.05 — Tier-Aware Venue Admin Patterns**.
+Validate, review, and merge **WP-05.05 — Tier-Aware Venue Admin Patterns**.
 
 ## Phase 05 Work Packages
 

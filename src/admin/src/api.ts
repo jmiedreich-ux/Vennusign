@@ -74,6 +74,7 @@ export type MenuEditorSnapshot = {
     sections: MenuSection[];
   }>;
   itemGroups: Array<{ sectionId: string; items: MenuItem[] }>;
+  capabilities: { happyHour: boolean; allergenBadges: boolean };
 };
 
 export class AdminApiError extends Error {

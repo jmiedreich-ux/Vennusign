@@ -5,6 +5,7 @@ namespace Vennu.Data.Services;
 
 public sealed class MenuSectionManagementService(
     IMenuRepository repository,
+    IFeatureResolutionService featureResolution,
     TimeProvider timeProvider) : IMenuSectionManagementService
 {
     public async Task<MenuEditorSnapshot> GetAsync(Guid venueId, CancellationToken cancellationToken = default)
@@ -19,7 +20,9 @@ public sealed class MenuSectionManagementService(
             .Select(async section => new MenuEditorItemGroup(
                 section.Id,
                 await repository.GetItemsAsync(venueId, section.Id, cancellationToken).ConfigureAwait(false))));
-        return new MenuEditorSnapshot(sections, itemGroups);
+        var happyHour = await featureResolution.HasFeatureAsync(venueId, "happy_hour", cancellationToken).ConfigureAwait(false);
+        var allergenBadges = await featureResolution.HasFeatureAsync(venueId, "allergen_badges", cancellationToken).ConfigureAwait(false);
+        return new MenuEditorSnapshot(sections, itemGroups, new MenuEditorCapabilities(happyHour, allergenBadges));
     }
 
     public async Task<MenuSection> CreateAsync(

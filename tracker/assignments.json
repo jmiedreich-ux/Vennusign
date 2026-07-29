@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-29T22:52:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-05.05",
+  "updatedUtc": "2026-07-29T22:58:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-05.05",
+      "orchestrator": "ChatGPT Codex",
+      "branch": "wp/05.05-tier-aware-menu-patterns",
+      "issue": 68,
+      "claimedUtc": "2026-07-29T22:48:00Z"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-05.06",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

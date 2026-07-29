@@ -9,15 +9,17 @@ type Props = {
   menuId: string;
   sectionId: string;
   items: MenuItem[];
+  capabilities: { happyHour: boolean; allergenBadges: boolean };
   disabled: boolean;
   onChanged: () => Promise<void>;
   onError: () => void;
+  onTierPrompt: (title: string, message: string) => void;
 };
 
 const emptyItem: MenuItemWrite = { name: "", description: "", price: 0 };
 
 export default function MenuItemsEditor({
-  configuration, apiKey, venueId, menuId, sectionId, items, disabled, onChanged, onError
+  configuration, apiKey, venueId, menuId, sectionId, items, capabilities, disabled, onChanged, onError, onTierPrompt
 }: Props) {
   const [drafts, setDrafts] = useState<MenuItem[]>(items);
   const [newItem, setNewItem] = useState<MenuItemWrite>(emptyItem);
@@ -72,9 +74,9 @@ export default function MenuItemsEditor({
         onChange={event => patch(item.id, { description: event.target.value })} onBlur={() => save(item)} />
       <label>Price<input aria-label="Item price" disabled={saving || disabled} min="0" max="999999.99" step="0.01" type="number" value={item.price}
         onChange={event => patch(item.id, { price: Number(event.target.value) })} onBlur={() => save(item)} /></label>
-      <label>Happy hour<input aria-label="Happy hour price" disabled={saving || disabled} min="0" max="999999.99" step="0.01" type="number"
+      <label>Happy hour <span className="feature-badge">Tier feature</span><input aria-label="Happy hour price" disabled={saving || disabled || !capabilities.happyHour} min="0" max="999999.99" step="0.01" type="number"
         value={item.happyHourPrice ?? ""} onChange={event => patch(item.id, { happyHourPrice: event.target.value === "" ? undefined : Number(event.target.value) })}
-        onBlur={() => save(item)} /></label>
+        onBlur={() => save(item)} />{!capabilities.happyHour ? <button className="feature-preview" onClick={() => onTierPrompt("Happy-hour pricing", "Preview promotional pricing beside each standard menu price. Enable Happy Hour for this venue to edit it.")}>Preview</button> : null}</label>
       </div>
       <div className="menu-item-presentation">
         <button className={item.isAvailable ? "available" : ""} disabled={saving || disabled}
@@ -84,9 +86,9 @@ export default function MenuItemsEditor({
         <label>Quantity<input aria-label="Quantity available" disabled={saving || disabled} min="0" step="1" type="number"
           value={item.quantityAvailable ?? ""} onChange={event => patch(item.id, { quantityAvailable: event.target.value === "" ? undefined : Number(event.target.value) })}
           onBlur={() => savePresentation(item)} /></label>
-        <label className="tag-field">Dietary / allergen tags<input aria-label="Menu item tags" disabled={saving || disabled} maxLength={500}
+        <label className="tag-field">Dietary / allergen tags <span className="feature-badge">Tier feature</span><input aria-label="Menu item tags" disabled={saving || disabled || !capabilities.allergenBadges} maxLength={500}
           placeholder="vegan, gluten-free, contains nuts" value={item.tags ?? ""} onChange={event => patch(item.id, { tags: event.target.value })}
-          onBlur={() => savePresentation(item)} /></label>
+          onBlur={() => savePresentation(item)} />{!capabilities.allergenBadges ? <button className="feature-preview" onClick={() => onTierPrompt("Dietary and allergen badges", "Preview clear dietary and allergen labels on menu items. Enable Allergen Badges for this venue to edit them.")}>Preview</button> : null}</label>
         <label className="popular-check"><input checked={item.isPopular} disabled={saving || disabled} type="checkbox"
           onChange={event => { const changed = { ...item, isPopular: event.target.checked }; patch(item.id, changed); void savePresentation(changed); }} /> Bestseller</label>
       </div>
