@@ -7,6 +7,8 @@ import {
   startDisplayHeartbeat
 } from '../src/displayHeartbeat.mjs';
 
+const settleHeartbeat = () => new Promise((resolve) => setImmediate(resolve));
+
 test('builds the heartbeat URL and sends the existing Online contract', async () => {
   let request;
   const fetchImpl = async (input, init) => {
@@ -43,12 +45,12 @@ test('starts with one immediate heartbeat and one 30-second loop', async () => {
     clearIntervalImpl: () => {}
   });
 
-  await Promise.resolve();
+  await settleHeartbeat();
   assert.equal(sends, 1);
   assert.equal(scheduled.intervalMs, DISPLAY_HEARTBEAT_INTERVAL_MS);
 
   scheduled.callback();
-  await Promise.resolve();
+  await settleHeartbeat();
   assert.equal(sends, 2);
 
   heartbeat.stop();
@@ -78,8 +80,7 @@ test('does not overlap slow heartbeat requests', async () => {
   assert.equal(sends, 1);
 
   resolveRequest();
-  await Promise.resolve();
-  await Promise.resolve();
+  await settleHeartbeat();
 
   scheduled();
   assert.equal(sends, 2);
@@ -104,10 +105,10 @@ test('teardown clears the timer and prevents future sends', async () => {
     }
   });
 
-  await Promise.resolve();
+  await settleHeartbeat();
   heartbeat.stop();
   scheduled();
-  await Promise.resolve();
+  await settleHeartbeat();
 
   assert.equal(clearedTimer, 99);
   assert.equal(sends, 1);
