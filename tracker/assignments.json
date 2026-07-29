@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-29T22:20:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-05.02",
-      "orchestrator": "ChatGPT Codex",
-      "branch": "wp/05.02-menu-section-management",
-      "issue": 59,
-      "claimedUtc": "2026-07-29T22:15:00Z"
-    }
-  ],
+  "updatedUtc": "2026-07-29T22:24:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-05.03",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
