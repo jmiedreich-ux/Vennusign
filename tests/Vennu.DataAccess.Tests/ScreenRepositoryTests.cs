@@ -57,6 +57,23 @@ public class ScreenRepositoryTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    public async Task UpdateAsync_PersistsScreenAndRefreshesTimestamp()
+    {
+        var originalTimestamp = new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc);
+        var screen = new Screen { Id = Guid.NewGuid(), ScreenKey = "sc-test1", Name = "Patio", UpdatedUtc = originalTimestamp };
+        var dataAccess = new FakeSqlDataAccess { UpdateResult = 1 };
+        var sut = new ScreenRepository(dataAccess);
+
+        var updated = await sut.UpdateAsync(screen);
+
+        Assert.True(updated);
+        Assert.True(screen.UpdatedUtc > originalTimestamp);
+        Assert.Single(dataAccess.UpdatedEntities);
+        Assert.Same(screen, dataAccess.UpdatedEntities[0]);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
     public async Task MarkStaleOnlineScreensOfflineAsync_OnlyUpdatesScreensOlderThanCutoff()
     {
         var cutoff = new DateTime(2026, 7, 25, 1, 0, 0, DateTimeKind.Utc);

@@ -10,6 +10,7 @@ public interface IScreenRepository
     Task<Screen?> GetByScreenKeyAsync(string screenKey, CancellationToken cancellationToken = default);
     Task<IReadOnlyCollection<Screen>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyCollection<Screen>> GetByVenueIdAsync(Guid venueId, CancellationToken cancellationToken = default);
+    Task<bool> UpdateAsync(Screen screen, CancellationToken cancellationToken = default);
     Task<bool> UpdateHeartbeatAsync(Guid screenId, DateTime lastSeenUtc, string status, CancellationToken cancellationToken = default);
     Task<int> MarkStaleOnlineScreensOfflineAsync(DateTime cutoffUtc, CancellationToken cancellationToken = default);
 }

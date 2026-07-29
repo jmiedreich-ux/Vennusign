@@ -6,6 +6,7 @@ const component = await readFile(new URL("../src/MenuSectionsEditor.tsx", import
 const items = await readFile(new URL("../src/MenuItemsEditor.tsx", import.meta.url), "utf8");
 const api = await readFile(new URL("../src/api.ts", import.meta.url), "utf8");
 const quick = await readFile(new URL("../src/QuickUpdateMode.tsx", import.meta.url), "utf8");
+const screens = await readFile(new URL("../src/ScreenManagement.tsx", import.meta.url), "utf8");
 
 test("section journeys remain venue scoped", () => {
   assert.ok(api.includes("api/admin/venues/${venueId}/menus"));
@@ -50,4 +51,13 @@ test("quick update provides daily special and one-scroll availability controls",
   assert.match(quick, /quick-items/);
   assert.ok(api.includes("/quick-update/daily-special"));
   assert.ok(api.includes("/quick-availability"));
+});
+
+test("screen management supports registration health editing and manual push", () => {
+  assert.match(screens, /Open registration URL/);
+  assert.match(screens, /Last seen/);
+  assert.match(screens, /updateManagedScreen/);
+  assert.match(screens, /pushManagedScreen/);
+  assert.ok(api.includes("api/admin/venues/${venueId}/screens"));
+  assert.ok(api.includes("/${screenId}/push"));
 });

@@ -32,6 +32,7 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier>();
 builder.Services.AddScoped<IMenuItemManagementService, MenuItemManagementService>();
 builder.Services.AddScoped<IQuickUpdateService, QuickUpdateService>();
+builder.Services.AddScoped<IScreenManagementService, ScreenManagementService>();
 builder.Services.Configure<HeartbeatMonitorOptions>(builder.Configuration.GetSection(HeartbeatMonitorOptions.SectionName));
 builder.Services
     .AddOptions<StripeWebhookOptions>()

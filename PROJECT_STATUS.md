@@ -43,7 +43,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-05.07 — Screen Management Core** is the next package in roadmap order.
+**WP-05.07 — Screen Management Core** is in review on issue #74.
 
 ## Phase 04 Result
 
@@ -58,7 +58,7 @@ None. **WP-05.07 — Screen Management Core** is the next package in roadmap ord
 
 ## Next Action
 
-Claim and implement **WP-05.07 — Screen Management Core**.
+Validate and merge **WP-05.07 — Screen Management Core**, then claim WP-05.08.
 
 ## Phase 05 Work Packages
 

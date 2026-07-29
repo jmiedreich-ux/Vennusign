@@ -2,38 +2,31 @@
 
 ## Work Package
 
-- ID: WP-05.06
-- Status: Complete and merged
-- Branch: `wp/05.06-quick-update-mode`
-- Issue: #71
-- Pull request: #72
-- Merge commit: `e29d86f`
+- ID: WP-05.07
+- Status: In review
+- Branch: `wp/05.07-screen-management-core`
+- Issue: #74
+- Pull request: pending
 
 ## Completed
 
-- Added effective `quick_update` capability resolution.
-- Added daily-special persistence and venue-scoped notification.
-- Added quick availability toggles with venue-local midnight reset timestamps.
-- Added the bounded reset worker and mobile one-scroll Quick Update UI.
-- Added migration, unit, migration-resource, and frontend contract coverage.
+- Added venue-owned screen creation and existing display-route registration URLs.
+- Added deterministic health listing plus rename and location editing.
+- Added single-screen manual content push through the notification abstraction.
+- Added responsive screen-management UI and focused non-integration coverage.
 
 ## Validation
 
-- Admin frontend contract tests: 10 passed.
-- `git diff --check` passed.
-- GitHub Actions run 197 exposed the reset worker starting in the in-memory API test host; registration is now excluded from the `Testing` environment.
-- Run 198 then exposed the pure migration-inventory unit test's stale 001–012 expectation; migration 013 is now included.
-- GitHub Actions run 199 passed restore, Release build, admin/display production builds, frontend tests, unit-category tests, and non-integration migration validation on reviewed head `eb3c400`.
-- ChatGPT approval was recorded and PR #72 merged as `e29d86f`.
+- Local admin frontend contract validation pending.
+- GitHub Actions validation pending.
 - Integration-type tests are intentionally skipped.
 
 ## Exact Next Action
 
-Claim and implement WP-05.07 — Screen Management Core.
+Publish, validate, review, and merge WP-05.07, then claim WP-05.08.
 
 ## Do Not Redo or Reverse
 
-- Do not recreate issue #71 or the quick-update branch.
-- Do not replace the bounded midnight reset with the Phase 08 scheduling engine.
-- Do not infer Quick Update access from tier names.
+- Do not change the existing pairing workflow.
+- Do not add bulk targeting, overflow previews, or video-wall configuration before WP-05.08/WP-05.09.
 - Do not run integration-type tests.

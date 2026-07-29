@@ -60,6 +60,13 @@ public class ScreenRepository : IScreenRepository
         return screens;
     }
 
+    public async Task<bool> UpdateAsync(Screen screen, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(screen);
+        screen.UpdatedUtc = DateTime.UtcNow;
+        return await dataAccess.UpdateAsync(screen, cancellationToken).ConfigureAwait(false) > 0;
+    }
+
     public async Task<bool> UpdateHeartbeatAsync(Guid screenId, DateTime lastSeenUtc, string status, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(status);
