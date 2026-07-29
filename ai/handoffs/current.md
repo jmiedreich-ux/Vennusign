@@ -3,9 +3,11 @@
 ## Work Package
 
 - ID: WP-05.04
-- Status: Complete pending GitHub Actions, review, and merge
+- Status: Complete and merged
 - Branch: `wp/05.04-availability-menu-badges`
 - Issue: #65
+- Pull request: #66
+- Merge commit: `36dd84d`
 
 ## Completed
 
@@ -19,12 +21,12 @@
 
 - Local admin production build and 8 frontend tests passed.
 - Tracker JSON and `git diff --check` passed.
-- GitHub Actions is required on the exact reviewed head.
+- GitHub Actions run 188 passed the Release build, frontend builds/tests, and unit tests on reviewed head `acf0717`.
 - Integration-type tests are intentionally skipped.
 
 ## Exact Next Action
 
-Publish the branch and PR, then wait for exact-head GitHub Actions before review and merge.
+Claim and implement WP-05.05 — Tier-Aware Venue Admin Patterns.
 
 ## Do Not Redo or Reverse
 
