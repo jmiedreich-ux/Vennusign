@@ -9,6 +9,7 @@ public sealed class ScreenLayoutTests
     [InlineData("photo_grid", "photo_grid")]
     [InlineData(" Classic-Diner ", "classic_diner")]
     [InlineData(" Neon Chalkboard ", "neon_chalkboard")]
+    [InlineData(" Split Layout ", "split_layout")]
     public void Normalize_ReturnsSupportedStableKey(string input, string expected) =>
         Assert.Equal(expected, ScreenLayout.Normalize(input));
 
