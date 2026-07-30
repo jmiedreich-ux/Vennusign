@@ -1,15 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T06:32:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-08.03",
-      "branch": "wp/08.03-meal-period-administration",
-      "issue": 154,
-      "status": "In Progress"
-    }
-  ],
-  "nextAvailableWorkPackage": "WP-08.03",
+  "updatedUtc": "2026-07-30T06:38:00Z",
+  "activeAssignments": [],
+  "nextAvailableWorkPackage": "WP-08.04",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
