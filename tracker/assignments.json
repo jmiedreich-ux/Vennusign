@@ -1,14 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T02:12:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-06.06",
-      "branch": "wp/06.06-classic-diner-pricing",
-      "issue": 103,
-      "status": "Review"
-    }
-  ],
+  "updatedUtc": "2026-07-30T02:16:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-06.07",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

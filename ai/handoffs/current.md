@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-06.06
-- Status: In review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/06.06-classic-diner-pricing`
-- Latest reviewed commit: Pending
+- Latest reviewed commit: `95a61ad`
 - Issue: #103
-- Pull request: Pending
-- Merge commit: Pending
-- CI state: Pending
+- Pull request: #104
+- Merge commit: `0804e41`
+- CI state: GitHub Actions run #259 passed
 
 ## Completed This Session
 
@@ -29,7 +29,7 @@
 
 ## Validation
 
-- Results: display build and 32/32 tests passed; authoritative GitHub Actions pending.
+- Results: display build and 32/32 tests passed; Actions run #259 passed on reviewed head `95a61ad`.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
@@ -38,7 +38,7 @@
 
 ## Exact Next Action
 
-Publish, validate, review, and merge WP-06.06.
+Claim and implement WP-06.07.
 
 ## Do Not Redo or Reverse
 
