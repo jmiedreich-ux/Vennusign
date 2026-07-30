@@ -11,6 +11,10 @@ namespace Vennu.Api.Controllers.Admin;
 [Authorize(Policy = SuperAdminAuthenticationDefaults.AuthorizationPolicy)]
 public sealed class SuperAdminThemesController(IVenueThemeService service) : ControllerBase
 {
+    [HttpGet("presets")]
+    public ActionResult<IReadOnlyCollection<VenueThemePresetResponse>> GetPresets() =>
+        Ok(VenueThemePresets.GetAll());
+
     [HttpGet]
     public async Task<ActionResult<VenueThemeResponse>> Get(
         Guid venueId,
@@ -40,6 +44,46 @@ public sealed class SuperAdminThemesController(IVenueThemeService service) : Con
                 request.AccentColor,
                 request.FontFamily,
                 cancellationToken).ConfigureAwait(false));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+    }
+
+    [HttpPut("advanced")]
+    public async Task<ActionResult<VenueThemeResponse>> UpdateAdvanced(
+        Guid venueId,
+        VenueAdvancedThemeUpdateRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await service.UpdateAdvancedAsync(venueId, request, cancellationToken).ConfigureAwait(false));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+    }
+
+    [HttpPut("presets/{presetKey}")]
+    public async Task<ActionResult<VenueThemeResponse>> ApplyPreset(
+        Guid venueId,
+        string presetKey,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await service.ApplyPresetAsync(venueId, presetKey, cancellationToken).ConfigureAwait(false));
         }
         catch (KeyNotFoundException)
         {
