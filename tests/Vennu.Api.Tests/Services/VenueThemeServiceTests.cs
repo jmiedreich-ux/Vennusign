@@ -34,7 +34,12 @@ public sealed class VenueThemeServiceTests
 
         Assert.Equal("#AABBCC", result.BackgroundColor);
         Assert.Equal("Georgia", result.FontFamily);
-        Assert.Equal(result, await service.GetAsync(venueId));
+        var persisted = await service.GetAsync(venueId);
+        Assert.Equal(result.BackgroundColor, persisted.BackgroundColor);
+        Assert.Equal(result.AccentColor, persisted.AccentColor);
+        Assert.Equal(result.FontFamily, persisted.FontFamily);
+        Assert.Equal(result.PresetKey, persisted.PresetKey);
+        Assert.Equal(result.SectionColors, persisted.SectionColors);
     }
 
     [Fact]
