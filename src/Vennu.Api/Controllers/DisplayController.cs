@@ -119,7 +119,7 @@ public class DisplayController : ControllerBase
             TitleFont = theme?.TitleFont ?? "Righteous",
             ItemFont = theme?.ItemFont ?? "Caveat"
         };
-        if (response.Layout is "classic_chalkboard" or "tap_strips")
+        if (response.Layout is "classic_chalkboard" or "tap_strips" or "digital_tap_board")
         {
             if (tapListRepository is not null)
             {

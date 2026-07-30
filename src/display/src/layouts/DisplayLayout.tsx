@@ -10,6 +10,7 @@ import HappyHourBanner from './HappyHourBanner';
 import PromotionBanner from './PromotionBanner';
 import ClassicChalkboardLayout from './ClassicChalkboardLayout';
 import TapStripsLayout from './TapStripsLayout';
+import DigitalTapBoardLayout from './DigitalTapBoardLayout';
 import './classicDiner.css';
 import './dailySpecialHero.css';
 import './neonChalkboard.css';
@@ -19,6 +20,7 @@ import './happyHour.css';
 import './promotion.css';
 import './classicChalkboard.css';
 import './tapStrips.css';
+import './digitalTapBoard.css';
 
 export type DisplayLayoutProps = {
   content: DisplayContent;
@@ -150,6 +152,11 @@ const layoutRegistry = createLayoutRegistry<ComponentType<DisplayLayoutProps>>([
     key: 'tap_strips',
     label: 'Tap Strips',
     renderer: TapStripsLayout
+  },
+  {
+    key: 'digital_tap_board',
+    label: 'Digital Tap Board',
+    renderer: DigitalTapBoardLayout
   }
 ]);
 

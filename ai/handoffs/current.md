@@ -2,44 +2,45 @@
 
 ## Work Package
 
-- ID: WP-09.06
-- Status: Complete and merged
+- ID: WP-09.07
+- Status: In Review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/09.06-tap-strips-polish`
-- Issue: #193
-- Pull request: #194
-- Latest reviewed commit: `a216587`
-- Merge commit: `8a1e99b`
-- CI state: GitHub Actions run #430 passed
+- Branch: `wp/09.07-digital-tap-board-core`
+- Issue: #196
+- Pull request: pending
+- Latest reviewed commit: pending
+- Merge commit: pending
+- CI state: pending GitHub Actions
 
 ## Completed This Session
 
-- Added tier-aware Tap Strips selection and exact player-backed preview.
-- Added twelve-item TV capacity and exact overflow guidance.
-- Added bounded sequential strip draw-in with reduced-motion fallback.
-- Added focused admin/display recovery source tests.
+- Added the additive `digital_tap_board` screen layout and migration 031.
+- Added the two-column wood board with six deterministic beer cards.
+- Added glass-color SVGs, beer details, price, numbering, and unavailable state.
+- Added focused API, migration, registry, and display source tests.
 
 ## Decisions
 
-- Tap Strips colors continue to use existing TapItem controls.
-- Motion remains CSS-only and does not alter player recovery.
+- Digital Tap Board reuses TapItem and the shared player lifecycle.
+- Multi-page rotation and Now Brewing behavior remain in WP-09.08.
 
 ## Validation
 
-- Results: restore, Release build, admin/display production builds/tests, and required non-integration tests passed in Actions run #430.
+- Results: pending GitHub Actions.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-09.07 — Digital Tap Board Core.
+- WP-09.08 — Digital Tap Overflow and Brewing States.
 
 ## Exact Next Action
 
-Claim and implement WP-09.07 — Digital Tap Board Core.
+Merge WP-09.07 after exact-head Actions and review, then implement WP-09.08.
 
 ## Do Not Redo or Reverse
 
-- Do not add Digital Tap Board or pairing behavior.
+- Do not add overflow/rotation/Now Brewing behavior assigned to WP-09.08.
+- Do not add pairing behavior.

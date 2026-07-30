@@ -163,6 +163,7 @@ public class DisplayControllerTests
     [Theory]
     [InlineData("classic_chalkboard")]
     [InlineData("tap_strips")]
+    [InlineData("digital_tap_board")]
     public async Task GetContent_ReturnsTapLayoutData_WithoutAnActiveMenu(string layout)
     {
         var venueId = Guid.NewGuid();

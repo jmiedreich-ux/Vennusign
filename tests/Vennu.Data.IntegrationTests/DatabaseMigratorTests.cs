@@ -39,7 +39,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.027_create_date_range_promotions.sql",
                 "Vennu.Data.Scripts.028_create_tap_domain.sql",
                 "Vennu.Data.Scripts.029_add_classic_chalkboard_layout.sql",
-                "Vennu.Data.Scripts.030_add_tap_strips_layout.sql"
+                "Vennu.Data.Scripts.030_add_tap_strips_layout.sql",
+                "Vennu.Data.Scripts.031_add_digital_tap_board_layout.sql"
             ],
             scriptNames);
     }

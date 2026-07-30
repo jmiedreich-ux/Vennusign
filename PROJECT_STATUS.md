@@ -87,7 +87,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-09.07 — Digital Tap Board Core** is the next package in roadmap order.
+**WP-09.07 — Digital Tap Board Core: In Review**
 
 ## Phase 04 Result
 
@@ -128,7 +128,7 @@ None. **WP-09.07 — Digital Tap Board Core** is the next package in roadmap ord
 
 ## Next Action
 
-Claim and implement **WP-09.07 — Digital Tap Board Core**.
+Validate and merge **WP-09.07 — Digital Tap Board Core**. Then begin WP-09.08.
 
 ## Phase 05 Work Packages
 
