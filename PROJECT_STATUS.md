@@ -61,7 +61,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-07.03 — Neon Chalkboard Core Layout** is the next package in roadmap order.
+**WP-07.03 — Neon Chalkboard Core Layout** is in progress.
 
 ## Phase 04 Result
 
@@ -90,7 +90,7 @@ None. **WP-07.03 — Neon Chalkboard Core Layout** is the next package in roadma
 
 ## Next Action
 
-Claim and implement **WP-07.03 — Neon Chalkboard Core Layout**.
+Complete, validate, review, and merge **WP-07.03 — Neon Chalkboard Core Layout**.
 
 ## Phase 05 Work Packages
 

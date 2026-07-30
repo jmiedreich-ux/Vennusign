@@ -1,7 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T04:03:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-07-30T04:08:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-07.03",
+      "branch": "wp/07.03-neon-chalkboard",
+      "issue": 124,
+      "status": "In Progress"
+    }
+  ],
   "nextAvailableWorkPackage": "WP-07.03",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
