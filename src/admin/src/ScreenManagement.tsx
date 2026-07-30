@@ -10,6 +10,7 @@ import {
   type ScreenOverflowPreview
 } from "./api";
 import type { AdminConfiguration } from "./config";
+import VideoWallBuilder from "./VideoWallBuilder";
 
 type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string };
 
@@ -123,6 +124,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId }: Pro
         <li className={item.visible ? "" : "overflow"} key={item.itemId}>
           <span>{item.itemName}</span><small>{item.sectionName} · {item.visible ? "Visible" : "Overflow"}</small>
         </li>)}</ol> : <p>No available menu items to preview.</p>}
-    </section>
+      </section>
+    <VideoWallBuilder configuration={configuration} apiKey={apiKey} venueId={venueId} screens={screens} />
   </article>;
 }

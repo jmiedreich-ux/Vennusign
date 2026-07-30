@@ -85,6 +85,11 @@ export type ScreenOverflowPreview = {
   capacity: number; totalItems: number; visibleItems: number; overflowItems: number;
   items: Array<{ itemId: string; sectionName: string; itemName: string; visible: boolean }>;
 };
+export type VideoWallGroup = {
+  name: string; layout: string;
+  screens: Array<{ id: string; name: string; position: number }>;
+};
+export type VideoWallSnapshot = { enabled: boolean; groups: VideoWallGroup[] };
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -389,4 +394,23 @@ export async function loadScreenOverflow(
   capacity: number
 ): Promise<ScreenOverflowPreview> {
   return (await screenRequest(configuration, apiKey, venueId, `/overflow?capacity=${capacity}`)).json() as Promise<ScreenOverflowPreview>;
+}
+
+export async function loadVideoWalls(configuration: AdminConfiguration, apiKey: string, venueId: string): Promise<VideoWallSnapshot> {
+  return (await screenRequest(configuration, apiKey, venueId, "/video-walls")).json() as Promise<VideoWallSnapshot>;
+}
+
+export async function saveVideoWall(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  request: { name: string; layout: string; screenIds: string[] }
+): Promise<VideoWallGroup> {
+  return (await screenRequest(configuration, apiKey, venueId, "/video-walls", {
+    method: "PUT", body: JSON.stringify(request)
+  })).json() as Promise<VideoWallGroup>;
+}
+
+export async function removeVideoWall(configuration: AdminConfiguration, apiKey: string, venueId: string, name: string): Promise<void> {
+  await screenRequest(configuration, apiKey, venueId, `/video-walls/${encodeURIComponent(name)}`, { method: "DELETE" });
 }

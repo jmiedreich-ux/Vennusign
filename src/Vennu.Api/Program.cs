@@ -34,6 +34,7 @@ builder.Services.AddScoped<IMenuItemManagementService, MenuItemManagementService
 builder.Services.AddScoped<IQuickUpdateService, QuickUpdateService>();
 builder.Services.AddScoped<IScreenManagementService, ScreenManagementService>();
 builder.Services.AddScoped<IScreenTargetingService, ScreenTargetingService>();
+builder.Services.AddScoped<IVideoWallService, VideoWallService>();
 builder.Services.Configure<HeartbeatMonitorOptions>(builder.Configuration.GetSection(HeartbeatMonitorOptions.SectionName));
 builder.Services
     .AddOptions<StripeWebhookOptions>()

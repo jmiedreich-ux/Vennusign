@@ -11,7 +11,8 @@ namespace Vennu.Api.Controllers.Admin;
 [Authorize(Policy = SuperAdminAuthenticationDefaults.AuthorizationPolicy)]
 public sealed class SuperAdminScreensController(
     IScreenManagementService screenService,
-    IScreenTargetingService targetingService) : ControllerBase
+    IScreenTargetingService targetingService,
+    IVideoWallService videoWallService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyCollection<ScreenManagementItem>>> Get(
@@ -109,6 +110,64 @@ public sealed class SuperAdminScreensController(
         catch (KeyNotFoundException)
         {
             return NotFound();
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+    }
+
+    [HttpGet("video-walls")]
+    public async Task<ActionResult<VideoWallSnapshot>> GetVideoWalls(
+        Guid venueId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await videoWallService.GetAsync(venueId, cancellationToken).ConfigureAwait(false));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
+
+    [HttpPut("video-walls")]
+    public async Task<ActionResult<VideoWallGroup>> SaveVideoWall(
+        Guid venueId,
+        VideoWallSaveRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await videoWallService.SaveAsync(
+                venueId,
+                request.Name,
+                request.Layout,
+                request.ScreenIds,
+                cancellationToken).ConfigureAwait(false));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+    }
+
+    [HttpDelete("video-walls/{name}")]
+    public async Task<IActionResult> RemoveVideoWall(
+        Guid venueId,
+        string name,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await videoWallService.RemoveAsync(venueId, name, cancellationToken).ConfigureAwait(false)
+                ? NoContent()
+                : NotFound();
         }
         catch (ArgumentException exception)
         {
