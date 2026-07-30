@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-09.02
-- Status: Ready for review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/09.02-tap-list-administration`
 - Issue: #181
-- Pull request: pending
-- Latest reviewed commit: pending
-- Merge commit: pending
-- CI state: pending
+- Pull request: #182
+- Latest reviewed commit: `9a7172b`
+- Merge commit: `7cca378`
+- CI state: GitHub Actions run #412 passed
 
 ## Completed This Session
 
@@ -28,16 +28,16 @@
 
 ## Validation
 
-- Results: local frontend tests pending; GitHub Actions is authoritative.
+- Results: restore, Release build, admin/display production builds/tests, and required non-integration tests passed in Actions run #412.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Publish, validate, review, and merge WP-09.02.
+- WP-09.03 — Classic Chalkboard Drinks Core.
 
 ## Exact Next Action
 
-Publish WP-09.02 and wait for authoritative non-integration Actions checks.
+Claim and implement WP-09.03.
 
 ## Do Not Redo or Reverse
 

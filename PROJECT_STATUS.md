@@ -79,10 +79,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-08.10 — Phase 08 Validation and Closure
 - Phase 08 — Scheduling Engine
 - WP-09.01 — Tap Domain and Persistence
+- WP-09.02 — Tap List Administration and Availability
 
 ## Active Work Package
 
-**WP-09.02 — Tap List Administration and Availability** is ready for review on `wp/09.02-tap-list-administration` (issue #181).
+None. **WP-09.03 — Classic Chalkboard Drinks Core** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -123,7 +124,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Publish **WP-09.02**, validate it in GitHub Actions, review, and merge it.
+Claim and implement **WP-09.03 — Classic Chalkboard Drinks Core**.
 
 ## Phase 05 Work Packages
 
