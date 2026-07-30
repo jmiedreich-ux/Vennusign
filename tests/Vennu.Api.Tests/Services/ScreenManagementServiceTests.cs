@@ -22,6 +22,7 @@ public sealed class ScreenManagementServiceTests
         Assert.Equal($"/display/{created.Id}", created.RegistrationUrl);
         Assert.Equal(venueId, screens.LastCreatedScreen?.VenueId);
         Assert.Equal("3x2", screens.LastCreatedScreen?.PhotoGridDensity);
+        Assert.Equal("photo_grid", screens.LastCreatedScreen?.DisplayLayout);
         Assert.Matches("^sc-[a-z0-9]{6}$", screens.LastCreatedScreen?.ScreenKey);
     }
 
@@ -56,7 +57,7 @@ public sealed class ScreenManagementServiceTests
         var notifier = new RecordingNotifier();
         var service = CreateService(venueId, screens, notifier);
 
-        var updated = await service.UpdateAsync(venueId, Guid.NewGuid(), "Renamed", null, "3x2");
+        var updated = await service.UpdateAsync(venueId, Guid.NewGuid(), "Renamed", null, "3x2", "photo_grid");
         var pushed = await service.PushAsync(venueId, Guid.NewGuid());
 
         Assert.Null(updated);
@@ -77,12 +78,33 @@ public sealed class ScreenManagementServiceTests
         };
         var service = CreateService(venueId, screens, new RecordingNotifier());
 
-        var updated = await service.UpdateAsync(venueId, screenId, "Bar", null, " 4X2 ");
+        var updated = await service.UpdateAsync(venueId, screenId, "Bar", null, " 4X2 ", null);
 
         Assert.Equal("4x2", updated?.PhotoGridDensity);
         Assert.Equal("4x2", screens.LastUpdatedScreen?.PhotoGridDensity);
         await Assert.ThrowsAsync<ArgumentException>(
-            () => service.UpdateAsync(venueId, screenId, "Bar", null, "5x2"));
+            () => service.UpdateAsync(venueId, screenId, "Bar", null, "5x2", null));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_PersistsSupportedDisplayLayout()
+    {
+        var venueId = Guid.NewGuid();
+        var screenId = Guid.NewGuid();
+        var screens = new FakeScreenRepository
+        {
+            GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(
+                new Screen { Id = screenId, VenueId = venueId, Name = "Bar" })
+        };
+        var service = CreateService(venueId, screens, new RecordingNotifier());
+
+        var updated = await service.UpdateAsync(
+            venueId, screenId, "Bar", null, null, " Classic-Diner ");
+
+        Assert.Equal("classic_diner", updated?.DisplayLayout);
+        Assert.Equal("classic_diner", screens.LastUpdatedScreen?.DisplayLayout);
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => service.UpdateAsync(venueId, screenId, "Bar", null, null, "neon"));
     }
 
     [Fact]

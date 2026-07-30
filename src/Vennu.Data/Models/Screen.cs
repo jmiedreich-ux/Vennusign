@@ -18,6 +18,8 @@ public class Screen
 
     public string PhotoGridDensity { get; set; } = "3x2";
 
+    public string DisplayLayout { get; set; } = "photo_grid";
+
     public DateTime? LastSeen { get; set; }
 
     public string Status { get; set; } = "Offline";

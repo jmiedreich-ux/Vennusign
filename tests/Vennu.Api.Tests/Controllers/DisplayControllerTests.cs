@@ -22,6 +22,41 @@ public class DisplayControllerTests
     }
 
     [Fact]
+    public async Task GetContent_ReturnsAllSectionsForClassicDiner()
+    {
+        var venueId = Guid.NewGuid();
+        var menuId = Guid.NewGuid();
+        var sectionId = Guid.NewGuid();
+        var screen = new Screen
+        {
+            Id = Guid.NewGuid(), VenueId = venueId, DisplayLayout = "classic_diner"
+        };
+        var screenRepository = new FakeScreenRepository
+        {
+            GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(screen)
+        };
+        var menuRepository = new FakeMenuRepository
+        {
+            Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Dinner", IsActive = true }],
+            Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Mains", IsActive = true }],
+            Items = Enumerable.Range(1, 8).Select(index => new MenuItem
+            {
+                Id = Guid.NewGuid(), VenueId = venueId, MenuSectionId = sectionId,
+                Name = $"Item {index}", SortOrder = index
+            }).ToArray()
+        };
+        var sut = new DisplayController(screenRepository, new FakeVenueRepository(), menuRepository);
+
+        var result = await sut.GetContent(screen.Id, CancellationToken.None);
+
+        var response = Assert.IsType<DisplayContentResponse>(
+            Assert.IsType<OkObjectResult>(result.Result).Value);
+        Assert.Equal("classic_diner", response.Layout);
+        Assert.Equal(8, Assert.Single(response.Sections).Items.Count);
+        Assert.Equal(0, response.PhotoGridOverflowItems);
+    }
+
+    [Fact]
     public async Task GetContent_SlicesVideoWallByPriorScreenCapacity_AndBoundsOverflow()
     {
         var venueId = Guid.NewGuid();
