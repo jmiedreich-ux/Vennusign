@@ -12,3 +12,10 @@ test("screen management persists all Photo Grid density modes", () => {
   assert.match(screenSource, /photoGridDensity: screen\.photoGridDensity/);
   assert.match(apiSource, /photoGridDensity: "2x2" \| "3x2" \| "4x2" \| "3x3"/);
 });
+
+test("screen management persists Photo Grid and Classic Diner layout selection", () => {
+  assert.match(screenSource, /value="photo_grid"/);
+  assert.match(screenSource, /value="classic_diner"/);
+  assert.match(screenSource, /displayLayout: screen\.displayLayout/);
+  assert.match(apiSource, /displayLayout: "photo_grid" \| "classic_diner"/);
+});
