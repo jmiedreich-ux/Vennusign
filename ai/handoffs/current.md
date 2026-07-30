@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-06.04
-- Status: In review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/06.04-photo-grid-density-overflow`
-- Latest reviewed commit: Pending
+- Latest reviewed commit: `4fda3c7`
 - Issue: #97
-- Pull request: Pending
-- Merge commit: Pending
-- CI state: Pending
+- Pull request: #98
+- Merge commit: `4760005`
+- CI state: GitHub Actions run #251 passed
 
 ## Completed This Session
 
@@ -29,7 +29,7 @@
 
 ## Validation
 
-- Results: admin build and 18/18 tests passed; display build and 28/28 tests passed; authoritative GitHub Actions validation pending.
+- Results: admin build and 18/18 tests passed; display build and 28/28 tests passed; Actions run #251 passed on reviewed head `4fda3c7`.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
@@ -38,7 +38,7 @@
 
 ## Exact Next Action
 
-Publish WP-06.04, validate its exact head in GitHub Actions, review, and merge it.
+Claim and implement WP-06.05.
 
 ## Do Not Redo or Reverse
 
