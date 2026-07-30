@@ -88,7 +88,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-09.08 — Digital Tap Overflow and Brewing States** is the next package in roadmap order.
+**WP-09.08 — Digital Tap Overflow and Brewing States: In Review**
 
 ## Phase 04 Result
 
@@ -129,7 +129,7 @@ None. **WP-09.08 — Digital Tap Overflow and Brewing States** is the next packa
 
 ## Next Action
 
-Claim and implement **WP-09.08 — Digital Tap Overflow and Brewing States**.
+Validate and merge **WP-09.08 — Digital Tap Overflow and Brewing States**. Then begin WP-09.09.
 
 ## Phase 05 Work Packages
 

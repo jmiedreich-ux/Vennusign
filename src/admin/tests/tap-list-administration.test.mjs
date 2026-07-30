@@ -38,3 +38,13 @@ test("Tap Strips administration exposes exact preview colors and TV overflow gui
   assert.match(component, /Name color/);
   assert.match(component, /overflow/);
 });
+
+test("Digital Tap Board is tier visible and uses the exact player-backed preview", async () => {
+  const [screen, api] = await Promise.all([
+    readFile(new URL("../src/ScreenManagement.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/api.ts", import.meta.url), "utf8")
+  ]);
+  assert.match(screen, /value="digital_tap_board"/);
+  assert.match(screen, /Digital Tap Board.*TV preview/);
+  assert.match(api, /\| "digital_tap_board"/);
+});
