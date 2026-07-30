@@ -36,7 +36,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.024_create_happy_hour_schedules.sql",
                 "Vennu.Data.Scripts.025_create_playlist_slides.sql",
                 "Vennu.Data.Scripts.026_create_emergency_broadcasts.sql",
-                "Vennu.Data.Scripts.027_create_date_range_promotions.sql"
+                "Vennu.Data.Scripts.027_create_date_range_promotions.sql",
+                "Vennu.Data.Scripts.028_create_tap_domain.sql"
             ],
             scriptNames);
     }

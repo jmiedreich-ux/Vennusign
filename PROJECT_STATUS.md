@@ -81,7 +81,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-09.01 — Tap Domain and Persistence** is the next package in roadmap order.
+**WP-09.01 — Tap Domain and Persistence** is ready for review on `wp/09.01-tap-domain-persistence` (issue #178).
 
 ## Phase 04 Result
 
@@ -122,7 +122,7 @@ None. **WP-09.01 — Tap Domain and Persistence** is the next package in roadmap
 
 ## Next Action
 
-Claim and implement **WP-09.01 — Tap Domain and Persistence**.
+Publish **WP-09.01**, validate it in GitHub Actions, review, and merge it.
 
 ## Phase 05 Work Packages
 

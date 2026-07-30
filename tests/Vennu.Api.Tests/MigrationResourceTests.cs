@@ -130,4 +130,13 @@ public sealed class MigrationResourceTests
         Assert.Contains(scripts, name => name.EndsWith(".Scripts.027_create_date_range_promotions.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
+
+    [Fact]
+    public void TapDomainMigration_IsEmbeddedInOrder()
+    {
+        var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
+
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.028_create_tap_domain.sql", StringComparison.Ordinal));
+        Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
+    }
 }

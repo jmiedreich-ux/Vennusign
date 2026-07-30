@@ -2,44 +2,44 @@
 
 ## Work Package
 
-- ID: WP-08.10
-- Status: Complete and merged
+- ID: WP-09.01
+- Status: Ready for review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/08.10-phase-08-validation-closure`
-- Issue: #175
-- Pull request: #176
-- Latest reviewed commit: `1e489ef`
-- Merge commit: `a0c68d6`
-- CI state: GitHub Actions run #404 passed
+- Branch: `wp/09.01-tap-domain-persistence`
+- Issue: #178
+- Pull request: pending
+- Latest reviewed commit: pending
+- Merge commit: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added consolidated Phase 08 admin and player critical journeys.
-- Added the acceptance matrix for scheduling, precedence, realtime, offline, and recovery.
-- Kept the package validation-only with no new feature behavior.
+- Added separate venue-scoped tap category and tap item models.
+- Added ordered migration 028 with composite ownership and bounded values.
+- Added repository contracts, dependency registration, and focused unit coverage.
 
 ## Decisions
 
-- Phase 08 is closed with authoritative validation evidence.
-- Phase 09 is decomposed into ten bounded sequential packages from the approved roadmap.
+- TapItem remains separate from MenuItem.
+- Nullable category ownership allows category-priced and direct tap-board styles.
 
 ## Validation
 
-- Results: restore, Release build, admin/display production builds/tests, and required non-integration tests passed in Actions run #404.
+- Results: GitHub Actions validation pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-09.01 — Tap Domain and Persistence.
+- Publish, validate, review, and merge WP-09.01.
 
 ## Exact Next Action
 
-Claim and implement WP-09.01 from the Phase 09 plan.
+Publish WP-09.01 and wait for authoritative non-integration Actions checks.
 
 ## Do Not Redo or Reverse
 
-- Do not reopen Phase 08 scheduling behavior.
-- Keep TapItem separate from MenuItem and begin with persistence only.
+- Do not add tap administration or display layout behavior.
+- Do not merge tap data into the generic menu domain.
