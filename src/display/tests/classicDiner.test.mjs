@@ -21,7 +21,7 @@ test('renders venue menu sections ordered item copy and pricing', () => {
 
 test('uses warm high-contrast two and three column TV-safe styling', () => {
   assert.match(styleSource, /background: var\(--vennu-background, #f6edda\)/);
-  assert.match(styleSource, /color: #241b12/);
+  assert.match(styleSource, /color: var\(--vennu-foreground, #241b12\)/);
   assert.match(styleSource, /column-count: 2/);
   assert.match(styleSource, /@media \(min-width: 1600px\)/);
   assert.match(styleSource, /column-count: 3/);
