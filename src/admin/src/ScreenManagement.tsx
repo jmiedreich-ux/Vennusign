@@ -50,7 +50,8 @@ export default function ScreenManagement({ configuration, apiKey, venueId }: Pro
     try {
       await updateManagedScreen(configuration, apiKey, venueId, screen.id, {
         name: screen.name,
-        location: screen.location
+        location: screen.location,
+        photoGridDensity: screen.photoGridDensity
       });
       await refresh();
     } catch { setError("The screen details could not be saved."); }
@@ -97,6 +98,21 @@ export default function ScreenManagement({ configuration, apiKey, venueId }: Pro
         </div>
         <label>Name<input maxLength={200} value={screen.name} onChange={event => patch(screen.id, { name: event.target.value })} onBlur={() => save(screen)} /></label>
         <label>Location<input maxLength={200} value={screen.location ?? ""} onChange={event => patch(screen.id, { location: event.target.value || undefined })} onBlur={() => save(screen)} /></label>
+        <label>Photo Grid density
+          <select
+            value={screen.photoGridDensity}
+            onChange={event => {
+              const updated = { ...screen, photoGridDensity: event.target.value as ManagedScreen["photoGridDensity"] };
+              patch(screen.id, { photoGridDensity: updated.photoGridDensity });
+              void save(updated);
+            }}
+          >
+            <option value="2x2">2 × 2 · 4 items</option>
+            <option value="3x2">3 × 2 · 6 items</option>
+            <option value="4x2">4 × 2 · 8 items</option>
+            <option value="3x3">3 × 3 · 9 items</option>
+          </select>
+        </label>
         <div className="screen-actions">
           <a href={screen.registrationUrl} target="_blank" rel="noreferrer">Open registration URL</a>
           <button disabled={busyId === screen.id} onClick={() => push(screen)}>Push content</button>
