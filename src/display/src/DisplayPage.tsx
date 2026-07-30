@@ -17,6 +17,7 @@ import {
 } from './signalRClient';
 import { DisplayLayout } from './layouts/DisplayLayout';
 import PlaylistRotation from './PlaylistRotation';
+import EmergencyBroadcastOverlay from './EmergencyBroadcastOverlay';
 
 type DisplayPageProps = {
   screenId: string;
@@ -192,7 +193,9 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
       {state.source === 'cache' && (
         <p aria-live="polite">Offline — showing the last saved menu.</p>
       )}
-      <PlaylistRotation content={content}><DisplayLayout content={content} /></PlaylistRotation>
+      <EmergencyBroadcastOverlay content={content}>
+        <PlaylistRotation content={content}><DisplayLayout content={content} /></PlaylistRotation>
+      </EmergencyBroadcastOverlay>
     </>
   );
 }

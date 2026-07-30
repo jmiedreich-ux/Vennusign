@@ -23,6 +23,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IHappyHourService, HappyHourService>();
         services.AddScoped<IPlaylistSlideRepository, PlaylistSlideRepository>();
         services.AddScoped<IPlaylistAdministrationService, PlaylistAdministrationService>();
+        services.AddScoped<IEmergencyBroadcastRepository, EmergencyBroadcastRepository>();
+        services.AddScoped<IEmergencyBroadcastService, EmergencyBroadcastService>();
         services.AddScoped<IMenuSectionManagementService, MenuSectionManagementService>();
         services.AddScoped<IScreenRepository, ScreenRepository>();
         services.AddScoped<IScreenPairingCodeRepository, ScreenPairingCodeRepository>();

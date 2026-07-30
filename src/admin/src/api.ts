@@ -152,6 +152,10 @@ export type PlaylistSlide = {
   isEnabled: boolean; sortOrder: number;
 };
 export type PlaylistSlideWrite = Omit<PlaylistSlide, "id" | "venueId" | "screenId" | "sortOrder">;
+export type EmergencyBroadcast = {
+  id: string; venueId: string; screenId?: string; title: string; message: string; mediaUrl?: string;
+  startsUtc: string; expiresUtc: string; isActive: boolean;
+};
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -221,6 +225,24 @@ export async function reorderPlaylist(configuration: AdminConfiguration, apiKey:
 }
 export async function deletePlaylistSlide(configuration: AdminConfiguration, apiKey: string, venueId: string, screenId: string, slideId: string) {
   await playlistRequest(configuration, apiKey, venueId, screenId, `/${slideId}`, { method: "DELETE" });
+}
+async function broadcastRequest(configuration: AdminConfiguration, apiKey: string, venueId: string, path = "", init?: RequestInit) {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}/emergency-broadcasts${path}`, {
+    ...init, headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to manage emergency broadcast.");
+  return response;
+}
+export async function loadEmergencyBroadcasts(configuration: AdminConfiguration, apiKey: string, venueId: string): Promise<EmergencyBroadcast[]> {
+  return (await broadcastRequest(configuration, apiKey, venueId)).json() as Promise<EmergencyBroadcast[]>;
+}
+export async function createEmergencyBroadcast(configuration: AdminConfiguration, apiKey: string, venueId: string, value: {
+  screenId?: string; title: string; message: string; mediaUrl?: string; durationMinutes: number;
+}): Promise<EmergencyBroadcast> {
+  return (await broadcastRequest(configuration, apiKey, venueId, "", { method: "POST", body: JSON.stringify(value) })).json() as Promise<EmergencyBroadcast>;
+}
+export async function cancelEmergencyBroadcast(configuration: AdminConfiguration, apiKey: string, venueId: string, id: string) {
+  await broadcastRequest(configuration, apiKey, venueId, `/${id}`, { method: "DELETE" });
 }
 
 export async function loadSession(configuration: AdminConfiguration, apiKey: string, signal?: AbortSignal): Promise<AdminSession> {

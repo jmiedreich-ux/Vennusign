@@ -20,6 +20,9 @@ export type DisplayContent = {
     id: string; slideType: 'menu' | 'image' | 'message'; title?: string | null;
     body?: string | null; mediaUrl?: string | null; dwellSeconds: number;
   }>;
+  emergencyBroadcast?: {
+    id: string; title: string; message: string; mediaUrl?: string | null; expiresUtc: string;
+  } | null;
   theme?: {
     backgroundColor: string;
     accentColor: string;
