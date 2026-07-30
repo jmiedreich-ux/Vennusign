@@ -9,6 +9,8 @@ export type DisplayContent = {
   venueName?: string | null;
   menuName?: string | null;
   isHappyHour?: boolean;
+  photoGridDensity?: '2x2' | '3x2' | '4x2' | '3x3';
+  photoGridOverflowItems?: number;
   sections?: DisplayMenuSection[];
 };
 
