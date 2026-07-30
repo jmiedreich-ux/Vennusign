@@ -20,8 +20,8 @@ test('renders venue menu sections ordered item copy and pricing', () => {
 });
 
 test('uses warm high-contrast two and three column TV-safe styling', () => {
-  assert.match(styleSource, /background: #f6edda/);
-  assert.match(styleSource, /color: #241b12/);
+  assert.match(styleSource, /background: var\(--vennu-background, #f6edda\)/);
+  assert.match(styleSource, /color: var\(--vennu-foreground, #241b12\)/);
   assert.match(styleSource, /column-count: 2/);
   assert.match(styleSource, /@media \(min-width: 1600px\)/);
   assert.match(styleSource, /column-count: 3/);
@@ -34,5 +34,5 @@ test('renders dot leaders category bars and the existing daily special contract'
   assert.match(layoutSource, /classic-diner__leader/);
   assert.match(styleSource, /border-bottom: 0\.13em dotted/);
   assert.match(styleSource, /font-variant-numeric: tabular-nums/);
-  assert.match(styleSource, /\.classic-diner__section h2[\s\S]*background: #7b241c/);
+  assert.match(styleSource, /\.classic-diner__section h2[\s\S]*background: var\(--vennu-accent, #7b241c\)/);
 });

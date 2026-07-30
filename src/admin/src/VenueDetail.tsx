@@ -3,6 +3,7 @@ import { loadFeatureMatrix, loadVenueSupportDetail, removeVenueFeatureOverride, 
 import type { AdminConfiguration } from "./config";
 import MenuSectionsEditor from "./MenuSectionsEditor";
 import ScreenManagement from "./ScreenManagement";
+import ThemeBuilder from "./ThemeBuilder";
 
 type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; onBack: () => void };
 
@@ -73,6 +74,7 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
       <article><h3>Subscription</h3><dl><dt>Tier</dt><dd>{detail.tier?.name ?? "None"}</dd><dt>Screen limit</dt><dd>{detail.tier?.maxScreens ?? "—"}</dd><dt>Period end</dt><dd>{detail.subscription?.currentPeriodEnd ? new Date(detail.subscription.currentPeriodEnd).toLocaleDateString() : "—"}</dd></dl>{detail.subscription ? <form className="tier-switch" onSubmit={saveTier}><label>Switch tier<select value={targetTierId} onChange={event => setTargetTierId(event.target.value)}>{matrix?.tiers.filter(tier => tier.isActive).map(tier => <option key={tier.id} value={tier.id}>{tier.name}</option>)}</select></label><button disabled={saving || !targetTierId || targetTierId === detail.tier?.id} type="submit">Update Stripe subscription</button></form> : null}</article>
     </div>
     <ScreenManagement configuration={configuration} apiKey={apiKey} venueId={venueId} />
+    <ThemeBuilder configuration={configuration} apiKey={apiKey} venueId={venueId} />
     <MenuSectionsEditor configuration={configuration} apiKey={apiKey} venueId={venueId} />
     <article><h3>Effective features</h3><ul className="support-list">{features.map(feature => <li key={feature.key}><strong>{feature.key}</strong><span>{feature.enabled ? "Enabled" : "Disabled"} · {feature.source}{feature.limitValue ? ` · limit ${feature.limitValue}` : ""}</span></li>)}</ul></article>
     <article className="override-panel"><div><h3>Active overrides ({detail.activeOverrides.length})</h3>{detail.activeOverrides.length ? <ul className="support-list">{detail.activeOverrides.map(item => <li key={item.featureId}><strong>{matrix?.features.find(feature => feature.id === item.featureId)?.label ?? item.featureId}</strong><span>{item.enabled ? "Unlock" : "Block"} · {item.reason}{item.expiresAt ? ` · expires ${new Date(item.expiresAt).toLocaleString()}` : ""}<button disabled={saving} onClick={() => removeOverride(item.featureId)}>Remove</button></span></li>)}</ul> : <p>No active overrides.</p>}</div>

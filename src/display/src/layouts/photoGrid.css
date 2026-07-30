@@ -1,7 +1,7 @@
 :root {
   color: #fff;
-  background: #111315;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  background: var(--vennu-background, #111315);
+  font-family: var(--vennu-font-family, Inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 * {
@@ -15,9 +15,10 @@ body {
 .photo-grid {
   min-height: 100vh;
   padding: clamp(1.5rem, 3vw, 4rem);
+  color: var(--vennu-foreground, #fff);
   background:
     radial-gradient(circle at top right, rgb(255 183 77 / 14%), transparent 35%),
-    #111315;
+    var(--vennu-background, #111315);
 }
 
 .photo-grid__header {
@@ -41,7 +42,7 @@ body {
 }
 
 .photo-grid__venue {
-  color: #ffb74d;
+  color: var(--vennu-accent, #ffb74d);
   font-size: clamp(1rem, 2vw, 1.75rem);
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -54,7 +55,7 @@ body {
 
 .photo-grid__section h2 {
   margin-bottom: 1rem;
-  color: #ffcf87;
+  color: var(--vennu-accent, #ffcf87);
   font-size: clamp(1.4rem, 2.5vw, 2.5rem);
 }
 
@@ -146,7 +147,7 @@ body {
 }
 
 .photo-grid__card data {
-  color: #ffb74d;
+  color: var(--vennu-accent, #ffb74d);
 }
 
 .photo-grid__happy-hour-price {
@@ -184,7 +185,7 @@ body {
 }
 
 .photo-grid__badge--quantity {
-  color: #ffcf87;
+  color: var(--vennu-accent, #ffcf87);
 }
 
 .photo-grid__sold-out {
@@ -203,7 +204,7 @@ body {
 
 .photo-grid__overflow {
   margin-top: 1.25rem;
-  color: #ffcf87;
+  color: var(--vennu-accent, #ffcf87);
   font-size: clamp(1rem, 1.5vw, 1.4rem);
   font-weight: 750;
   text-align: right;

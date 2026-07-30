@@ -55,7 +55,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-06.08 — Basic Theme Builder and Live Preview** is the next package in roadmap order.
+**WP-06.08 — Basic Theme Builder and Live Preview** is in progress.
 
 ## Phase 04 Result
 
@@ -77,7 +77,7 @@ None. **WP-06.08 — Basic Theme Builder and Live Preview** is the next package 
 
 ## Next Action
 
-Claim and implement **WP-06.08 — Basic Theme Builder and Live Preview**.
+Complete and merge **WP-06.08 — Basic Theme Builder and Live Preview**.
 
 ## Phase 05 Work Packages
 

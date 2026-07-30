@@ -2,13 +2,15 @@ using System.Text.RegularExpressions;
 using Vennu.Api.Contracts.Admin;
 using Vennu.Core.Models;
 using Vennu.Data.Repositories;
+using Vennu.Api.Notifications;
 
 namespace Vennu.Api.Services;
 
 public sealed partial class VenueThemeService(
     IVenueRepository venueRepository,
     IVenueThemeRepository themeRepository,
-    TimeProvider timeProvider) : IVenueThemeService
+    TimeProvider timeProvider,
+    IScreenUpdateNotifier? notifier = null) : IVenueThemeService
 {
     private static readonly IReadOnlyDictionary<string, string> ApprovedFonts =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -45,7 +47,12 @@ public sealed partial class VenueThemeService(
             UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime
         };
         await themeRepository.UpsertAsync(theme, cancellationToken).ConfigureAwait(false);
-        return ToResponse(theme);
+        var response = ToResponse(theme);
+        if (notifier is not null)
+        {
+            await notifier.NotifyVenueThemeUpdatedAsync(venueId, response, cancellationToken).ConfigureAwait(false);
+        }
+        return response;
     }
 
     private async Task RequireVenueAsync(Guid venueId, CancellationToken cancellationToken)

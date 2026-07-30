@@ -28,7 +28,18 @@ public class DisplayContentResponse
 
     public int PhotoGridOverflowItems { get; set; }
 
+    public DisplayThemeResponse Theme { get; set; } = new();
+
     public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];
+}
+
+public sealed class DisplayThemeResponse
+{
+    public string BackgroundColor { get; set; } = "#111315";
+
+    public string AccentColor { get; set; } = "#FFB74D";
+
+    public string FontFamily { get; set; } = "Inter";
 }
 
 public sealed class DisplayMenuSectionResponse

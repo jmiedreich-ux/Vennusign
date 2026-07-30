@@ -97,6 +97,13 @@ export type VideoWallGroup = {
   screens: Array<{ id: string; name: string; position: number }>;
 };
 export type VideoWallSnapshot = { enabled: boolean; groups: VideoWallGroup[] };
+export type VenueTheme = {
+  venueId: string;
+  backgroundColor: string;
+  accentColor: string;
+  fontFamily: "Inter" | "Georgia" | "Arial";
+  updatedUtc: string;
+};
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -420,4 +427,29 @@ export async function saveVideoWall(
 
 export async function removeVideoWall(configuration: AdminConfiguration, apiKey: string, venueId: string, name: string): Promise<void> {
   await screenRequest(configuration, apiKey, venueId, `/video-walls/${encodeURIComponent(name)}`, { method: "DELETE" });
+}
+
+async function themeRequest(configuration: AdminConfiguration, apiKey: string, venueId: string, init?: RequestInit) {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}/theme`, {
+    ...init,
+    headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to manage the venue theme.");
+  return response;
+}
+
+export async function loadVenueTheme(configuration: AdminConfiguration, apiKey: string, venueId: string): Promise<VenueTheme> {
+  return (await themeRequest(configuration, apiKey, venueId)).json() as Promise<VenueTheme>;
+}
+
+export async function saveVenueTheme(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  theme: Pick<VenueTheme, "backgroundColor" | "accentColor" | "fontFamily">
+): Promise<VenueTheme> {
+  return (await themeRequest(configuration, apiKey, venueId, {
+    method: "PUT",
+    body: JSON.stringify(theme)
+  })).json() as Promise<VenueTheme>;
 }
