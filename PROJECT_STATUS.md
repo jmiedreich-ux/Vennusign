@@ -80,10 +80,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - Phase 08 — Scheduling Engine
 - WP-09.01 — Tap Domain and Persistence
 - WP-09.02 — Tap List Administration and Availability
+- WP-09.03 — Classic Chalkboard Drinks Core
 
 ## Active Work Package
 
-**WP-09.03 — Classic Chalkboard Drinks Core** is ready for review on `wp/09.03-classic-chalkboard-core` (issue #184).
+None. **WP-09.04 — Classic Chalkboard Administration and TV Polish** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -124,7 +125,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Publish WP-09.03, validate the exact head in GitHub Actions, review, and merge it.
+Claim and implement **WP-09.04 — Classic Chalkboard Administration and TV Polish**.
 
 ## Phase 05 Work Packages
 

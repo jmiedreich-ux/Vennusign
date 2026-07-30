@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-09.03
-- Status: Ready for review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/09.03-classic-chalkboard-core`
 - Issue: #184
-- Pull request: pending
-- Latest reviewed commit: pending
-- Merge commit: pending
-- CI state: pending GitHub Actions
+- Pull request: #185
+- Latest reviewed commit: `3e7b8d1`
+- Merge commit: `4cfbd0f`
+- CI state: GitHub Actions run #416 passed
 
 ## Completed This Session
 
@@ -29,16 +29,16 @@
 
 ## Validation
 
-- Results: local source tests and GitHub Actions pending.
+- Results: restore, Release build, admin/display production builds/tests, and required non-integration tests passed in Actions run #416.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Publish, validate, review, and merge WP-09.03.
+- WP-09.04 — Classic Chalkboard Administration and TV Polish.
 
 ## Exact Next Action
 
-Publish the branch and PR, then wait for the exact-head GitHub Actions result.
+Add layout selection/preview, category-price administration, chalk illustration polish, TV-safe scaling, and recovery validation.
 
 ## Do Not Redo or Reverse
 

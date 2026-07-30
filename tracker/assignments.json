@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T23:05:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-09.03",
-      "owner": "Codex",
-      "issue": 184,
-      "branch": "wp/09.03-classic-chalkboard-core",
-      "status": "Ready for review"
-    }
-  ],
+  "updatedUtc": "2026-07-30T23:04:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-09.04",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
