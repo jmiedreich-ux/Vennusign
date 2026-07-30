@@ -22,6 +22,10 @@ public class DisplayContentResponse
 
     public bool IsHappyHour { get; set; }
 
+    public string PhotoGridDensity { get; set; } = "3x2";
+
+    public int PhotoGridOverflowItems { get; set; }
+
     public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];
 }
 

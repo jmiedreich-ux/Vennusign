@@ -62,7 +62,7 @@ public sealed class SuperAdminScreensController(
         try
         {
             var screen = await screenService
-                .UpdateAsync(venueId, screenId, request.Name, request.Location, cancellationToken)
+                .UpdateAsync(venueId, screenId, request.Name, request.Location, request.PhotoGridDensity, cancellationToken)
                 .ConfigureAwait(false);
             return screen is null ? NotFound() : Ok(screen);
         }

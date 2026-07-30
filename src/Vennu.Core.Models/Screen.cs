@@ -16,6 +16,8 @@ public class Screen
 
     public int? WallPosition { get; set; }
 
+    public string PhotoGridDensity { get; set; } = "3x2";
+
     public DateTime? LastSeen { get; set; }
 
     public string Status { get; set; } = "Offline";

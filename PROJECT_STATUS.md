@@ -51,7 +51,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-06.04 — Photo Grid Density and Multi-Screen Overflow** is the next package in roadmap order.
+**WP-06.04 — Photo Grid Density and Multi-Screen Overflow** is in review.
 
 ## Phase 04 Result
 
@@ -73,7 +73,7 @@ None. **WP-06.04 — Photo Grid Density and Multi-Screen Overflow** is the next 
 
 ## Next Action
 
-Claim and implement **WP-06.04 — Photo Grid Density and Multi-Screen Overflow**.
+Validate, review, and merge **WP-06.04 — Photo Grid Density and Multi-Screen Overflow**.
 
 ## Phase 05 Work Packages
 

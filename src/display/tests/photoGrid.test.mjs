@@ -19,8 +19,10 @@ test('renders venue, menu, sections, item copy, image, and price contracts', () 
   assert.match(layoutSource, /photo-grid__placeholder/);
 });
 
-test('uses a responsive card grid and bounded food-photo crop', () => {
-  assert.match(styleSource, /grid-template-columns: repeat\(auto-fit/);
+test('uses supported density grids and bounded food-photo crop', () => {
+  for (const density of ['2x2', '3x2', '4x2', '3x3']) {
+    assert.match(styleSource, new RegExp(`photo-grid--density-${density}`));
+  }
   assert.match(styleSource, /aspect-ratio: 16 \/ 10/);
   assert.match(styleSource, /object-fit: cover/);
 });
@@ -34,4 +36,10 @@ test('renders merchandising states only from display content', () => {
   assert.match(layoutSource, /photo-grid__badge/);
   assert.match(layoutSource, /<s>/);
   assert.match(layoutSource, /limitedQuantityThreshold = 5/);
+});
+
+test('renders the payload density and bounded overflow count', () => {
+  assert.match(layoutSource, /content\.photoGridDensity/);
+  assert.match(layoutSource, /content\.photoGridOverflowItems/);
+  assert.match(layoutSource, /photo-grid__overflow/);
 });
