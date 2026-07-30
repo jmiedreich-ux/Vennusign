@@ -25,7 +25,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.013_add_quick_update.sql",
                 "Vennu.Data.Scripts.014_add_video_wall_feature.sql",
                 "Vennu.Data.Scripts.015_add_photo_grid_density.sql",
-                "Vennu.Data.Scripts.016_add_screen_display_layout.sql"
+                "Vennu.Data.Scripts.016_add_screen_display_layout.sql",
+                "Vennu.Data.Scripts.017_create_venue_themes.sql"
             ],
             scriptNames);
     }
