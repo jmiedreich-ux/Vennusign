@@ -2,45 +2,42 @@
 
 ## Work Package
 
-- ID: WP-06.06
-- Status: Complete and merged
+- ID: WP-06.07
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/06.06-classic-diner-pricing`
-- Latest reviewed commit: `95a61ad`
-- Issue: #103
-- Pull request: #104
-- Merge commit: `0804e41`
-- CI state: GitHub Actions run #259 passed
+- Branch: `wp/06.07-basic-theme-domain`
+- Issue: #106
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added existing daily-special content to the display contract.
-- Added aligned regular/happy-hour pricing and dot leaders.
-- Added category bars, the full-width special banner, and focused non-integration tests.
+- Added venue-scoped theme domain and persistence.
+- Added deterministic defaults and validated admin read/update operations.
+- Added focused non-integration tests.
 
 ## Decisions
 
-- Daily special is sourced from the Phase 5 active-menu field.
-- Price selection remains payload-driven and does not evaluate schedules.
-- WP-06.07 theme persistence remains separate.
+- Colors use normalized uppercase `#RRGGBB`.
+- Approved fonts are Inter, Georgia, and Arial.
+- Builder, preview, and screen notifications remain in WP-06.08.
 
 ## Validation
 
-- Results: display build and 32/32 tests passed; Actions run #259 passed on reviewed head `95a61ad`.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-06.07 — Basic Theme Domain and Persistence.
+- WP-06.08 — Basic Theme Builder and Live Preview.
 
 ## Exact Next Action
 
-Claim and implement WP-06.07.
+Validate, review, and merge WP-06.07.
 
 ## Do Not Redo or Reverse
 
-- Do not add scheduling evaluation or new persistence to WP-06.06.
-- Do not fold theme domain/builder work into this package.
+- Do not add the visual builder, live preview, or push behavior to WP-06.07.
