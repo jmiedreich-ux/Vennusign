@@ -12,6 +12,11 @@ export type DisplayContent = {
   isHappyHour?: boolean;
   photoGridDensity?: '2x2' | '3x2' | '4x2' | '3x3';
   photoGridOverflowItems?: number;
+  theme?: {
+    backgroundColor: string;
+    accentColor: string;
+    fontFamily: 'Inter' | 'Georgia' | 'Arial';
+  };
   sections?: DisplayMenuSection[];
 };
 
