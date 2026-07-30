@@ -2,45 +2,45 @@
 
 ## Work Package
 
-- ID: WP-06.04
-- Status: Complete and merged
+- ID: WP-06.05
+- Status: In review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/06.04-photo-grid-density-overflow`
-- Latest reviewed commit: `4fda3c7`
-- Issue: #97
-- Pull request: #98
-- Merge commit: `4760005`
-- CI state: GitHub Actions run #251 passed
+- Branch: `wp/06.05-classic-diner-core`
+- Latest reviewed commit: Pending
+- Issue: #100
+- Pull request: Pending
+- Merge commit: Pending
+- CI state: Pending
 
 ## Completed This Session
 
-- Added persisted and validated per-screen Photo Grid density selection.
-- Added stable mixed-density video-wall slicing and final-screen overflow reporting.
-- Added density-specific player grids, admin selection, and focused non-integration tests.
+- Added persisted and validated per-screen layout selection.
+- Added the registry-backed warm-cream Classic Diner layout.
+- Added complete ordered section rendering, responsive columns, and focused non-integration tests.
 
 ## Decisions
 
-- The 3x2 density is the migration and runtime default.
-- Mixed-density wall offsets equal the sum of preceding screen capacities.
-- Sold-out items remain in the display slice so WP-06.03 merchandising behavior is preserved.
+- Existing screens default to Photo Grid.
+- Classic Diner receives the complete ordered menu and does not use Photo Grid capacity slicing.
+- Pricing and daily-special presentation remain in WP-06.06.
 
 ## Validation
 
-- Results: admin build and 18/18 tests passed; display build and 28/28 tests passed; Actions run #251 passed on reviewed head `4fda3c7`.
+- Results: admin build and 19/19 tests passed; display build and 31/31 tests passed; authoritative GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-06.05 — Classic Diner Core Layout.
+- WP-06.06 — Classic Diner Pricing and Daily Special.
 
 ## Exact Next Action
 
-Claim and implement WP-06.05.
+Publish, validate, review, and merge WP-06.05.
 
 ## Do Not Redo or Reverse
 
-- Do not remove sold-out items from display capacity.
-- Do not fold Classic Diner, themes, scheduling, or POS behavior into WP-06.04.
+- Do not fold pricing, dot leaders, daily specials, or themes into WP-06.05.
+- Do not replace the additive registry or alter player boot.
