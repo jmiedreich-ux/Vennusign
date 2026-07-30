@@ -4,9 +4,11 @@ import { createLayoutRegistry } from '../layoutRegistry.mjs';
 import ClassicDinerLayout from './ClassicDinerLayout';
 import NeonChalkboardLayout from './NeonChalkboardLayout';
 import PhotoGridLayout from './PhotoGridLayout';
+import SplitLayout from './SplitLayout';
 import './classicDiner.css';
 import './neonChalkboard.css';
 import './photoGrid.css';
+import './splitLayout.css';
 
 export type DisplayLayoutProps = {
   content: DisplayContent;
@@ -116,6 +118,11 @@ const layoutRegistry = createLayoutRegistry<ComponentType<DisplayLayoutProps>>([
     key: 'neon_chalkboard',
     label: 'Neon Chalkboard',
     renderer: NeonChalkboardLayout
+  },
+  {
+    key: 'split_layout',
+    label: 'Split Layout',
+    renderer: SplitLayout
   }
 ]);
 
