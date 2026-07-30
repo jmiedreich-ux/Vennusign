@@ -2,13 +2,18 @@ namespace Vennu.Api.Contracts.Admin;
 
 public sealed record ScreenCreateRequest(string Name, string? Location);
 
-public sealed record ScreenUpdateRequest(string Name, string? Location, string? PhotoGridDensity);
+public sealed record ScreenUpdateRequest(
+    string Name,
+    string? Location,
+    string? PhotoGridDensity,
+    string? DisplayLayout);
 
 public sealed record ScreenManagementItem(
     Guid Id,
     string Name,
     string? Location,
     string PhotoGridDensity,
+    string DisplayLayout,
     string Status,
     DateTime? LastSeen,
     string RegistrationUrl);
