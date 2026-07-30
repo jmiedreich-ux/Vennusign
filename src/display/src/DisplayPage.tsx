@@ -106,14 +106,14 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
       } else if (result.source === 'network') {
         await startLiveServices();
       } else {
-        setConnectionState('disconnected');
+        setConnectionState('degraded');
       }
     };
 
     const recoverOnline = () => {
       loadAndActivate().catch(() => {
         if (!disposed) {
-          setConnectionState('disconnected');
+          setConnectionState('degraded');
         }
       });
     };
