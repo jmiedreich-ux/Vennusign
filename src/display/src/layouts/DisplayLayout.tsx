@@ -2,10 +2,12 @@ import type { ComponentType, CSSProperties, ReactNode } from 'react';
 import type { DisplayContent } from '../displayContent.mjs';
 import { createLayoutRegistry } from '../layoutRegistry.mjs';
 import ClassicDinerLayout from './ClassicDinerLayout';
+import DailySpecialHeroLayout from './DailySpecialHeroLayout';
 import NeonChalkboardLayout from './NeonChalkboardLayout';
 import PhotoGridLayout from './PhotoGridLayout';
 import SplitLayout from './SplitLayout';
 import './classicDiner.css';
+import './dailySpecialHero.css';
 import './neonChalkboard.css';
 import './photoGrid.css';
 import './splitLayout.css';
@@ -123,6 +125,11 @@ const layoutRegistry = createLayoutRegistry<ComponentType<DisplayLayoutProps>>([
     key: 'split_layout',
     label: 'Split Layout',
     renderer: SplitLayout
+  },
+  {
+    key: 'daily_special_hero',
+    label: 'Daily Special Hero',
+    renderer: DailySpecialHeroLayout
   }
 ]);
 
