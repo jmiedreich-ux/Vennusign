@@ -3,15 +3,17 @@
 ## Work Package
 
 - ID: WP-07.07
-- Status: In progress
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/07.07-split-layout-admin`
 - Issue: #136
-- Pull request: pending
-- CI state: pending
+- Pull request: #137
+- Latest reviewed commit: `dbda3ba`
+- Merge commit: `af4101c`
+- CI state: GitHub Actions run #328 passed
 
 ## Completed This Session
 
@@ -26,17 +28,18 @@
 
 ## Validation
 
-- Results: GitHub Actions pending.
+- Results: solution build, admin build/tests, 56 display tests, and non-integration unit tests passed in Actions run #328.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Validate, review, and merge WP-07.07.
+- WP-07.08 — Daily Special Hero Core.
 
 ## Exact Next Action
 
-Publish WP-07.07 and validate its exact PR head in GitHub Actions.
+Claim and implement WP-07.08.
 
 ## Do Not Redo or Reverse
 
-- Do not add Daily Special Hero, rotation, or scheduling behavior.
+- Do not redo Split Layout administration or TV polish.
+- Do not add WP-07.09 rotation or administration behavior to WP-07.08.
