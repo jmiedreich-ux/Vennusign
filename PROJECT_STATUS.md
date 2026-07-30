@@ -62,7 +62,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-07.04 — Neon Motion, Texture, and Accessibility** is the next package in roadmap order.
+**WP-07.04 — Neon Motion, Texture, and Accessibility** is in progress.
 
 ## Phase 04 Result
 
@@ -91,7 +91,7 @@ None. **WP-07.04 — Neon Motion, Texture, and Accessibility** is the next packa
 
 ## Next Action
 
-Claim and implement **WP-07.04 — Neon Motion, Texture, and Accessibility**.
+Complete, validate, review, and merge **WP-07.04 — Neon Motion, Texture, and Accessibility**.
 
 ## Phase 05 Work Packages
 
