@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-09.04
-- Status: In Review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/09.04-classic-chalkboard-polish`
 - Issue: #187
-- Pull request: pending
-- Latest reviewed commit: pending
-- Merge commit: pending
-- CI state: pending GitHub Actions
+- Pull request: #188
+- Latest reviewed commit: `514d7a4`
+- Merge commit: `397bc8a`
+- CI state: GitHub Actions run #420 passed
 
 ## Completed This Session
 
@@ -29,7 +29,7 @@
 
 ## Validation
 
-- Results: pending GitHub Actions.
+- Results: restore, Release build, admin/display production builds/tests, and required non-integration tests passed in Actions run #420.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
@@ -38,7 +38,7 @@
 
 ## Exact Next Action
 
-Merge WP-09.04 after exact-head Actions and review, then implement WP-09.05.
+Claim and implement WP-09.05 — Tap Strips Core.
 
 ## Do Not Redo or Reverse
 
