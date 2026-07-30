@@ -53,10 +53,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-06.06 — Classic Diner Pricing and Daily Special
 - WP-06.07 — Basic Theme Domain and Persistence
 - WP-06.08 — Basic Theme Builder and Live Preview
+- WP-06.09 — Player Media Caching and Offline Resilience
 
 ## Active Work Package
 
-**WP-06.09 — Player Media Caching and Offline Resilience** is in progress.
+None. **WP-06.10 — Phase 06 Validation and Closure** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -78,7 +79,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-06.09 — Player Media Caching and Offline Resilience**.
+Claim and implement **WP-06.10 — Phase 06 Validation and Closure**.
 
 ## Phase 05 Work Packages
 
