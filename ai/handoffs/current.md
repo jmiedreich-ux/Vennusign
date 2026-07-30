@@ -3,58 +3,54 @@
 ## Work Package
 
 - ID: WP-06.01
-- Status: In review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/06.01-display-layout-registry`
-- Latest commit: Pending publication
+- Latest reviewed commit: `c84264b`
 - Issue: #88
-- Pull request: Pending
-- CI state: Pending GitHub Actions
+- Pull request: #89
+- Merge commit: `0deff29`
+- CI state: GitHub Actions run #236 passed
 
 ## Completed This Session
 
 - Added the typed, normalized display-layout registry contract.
-- Added deterministic default fallback, duplicate protection, and a required-fallback guard.
-- Routed ready content through a shared display frame and registered default renderer.
-- Added focused registry tests without changing display boot, heartbeat, or SignalR behavior.
+- Added deterministic fallback behavior, duplicate protection, and the shared display frame.
+- Preserved the existing display boot, heartbeat, SignalR event, and pairing flows.
 
 ## Files Changed
 
-- `src/display/src/layoutRegistry.mjs`
-- `src/display/src/layoutRegistry.d.mts`
-- `src/display/src/layouts/DisplayLayout.tsx`
-- `src/display/src/DisplayPage.tsx`
-- `src/display/tests/layoutRegistry.test.mjs`
-- WP, project status, tracker, and handoff records
+- Display layout registry, renderer, page wiring, and focused frontend tests.
+- WP, project status, tracker, and handoff records.
 
 ## Decisions
 
 - Layout keys normalize to lowercase snake case.
-- Unknown layouts retain their requested key in frame metadata but render the registered `default` layout.
-- The registry remains additive; WP-06.02 can register Photo Grid without changing player boot.
+- Missing and unknown layout keys are observable fallbacks to `default`.
+- New layouts remain additive through the registry.
 
 ## Validation
 
 - Commands: display production build, display frontend tests, `git diff --check`
-- Results: Pending
-- Skipped checks and reason: all integration-type tests are skipped under the standing owner instruction.
+- Results: local build passed; 23/23 display tests passed; GitHub Actions `phase02-tests` run #236 passed on reviewed head `c84264b`.
+- Skipped checks and reason: all integration-type tests were skipped under the standing owner instruction.
 
 ## Remaining Work
 
-- Publish the branch and PR, obtain authoritative GitHub Actions results, complete ChatGPT review, and merge.
+- WP-06.02 — Photo Grid Core Layout.
 
 ## Known Risks or Blockers
 
-- None.
+- Cross-system and hosted-infrastructure behavior remains unexercised by instruction.
 
 ## Exact Next Action
 
-Validate and merge WP-06.01, then begin WP-06.02 — Photo Grid Core Layout.
+Claim and implement WP-06.02 — Photo Grid Core Layout.
 
 ## Do Not Redo or Reverse
 
-- Do not change the existing boot, heartbeat, SignalR event, or pairing flows.
-- Do not add Photo Grid implementation to WP-06.01.
+- Do not replace the additive layout registry or change player boot behavior.
+- Do not fold merchandising states or density/overflow into WP-06.02.
