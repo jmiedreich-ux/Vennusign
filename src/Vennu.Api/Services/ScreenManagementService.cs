@@ -38,6 +38,7 @@ public sealed class ScreenManagementService(
             ScreenKey = await GenerateUniqueScreenKeyAsync(cancellationToken).ConfigureAwait(false),
             Name = NormalizeRequired(name, nameof(name)),
             Location = NormalizeOptional(location, nameof(location)),
+            PhotoGridDensity = PhotoGridDensity.Default,
             Status = "Offline",
             CreatedUtc = timeProvider.GetUtcNow().UtcDateTime,
             UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime
@@ -51,6 +52,7 @@ public sealed class ScreenManagementService(
         Guid screenId,
         string name,
         string? location,
+        string? photoGridDensity,
         CancellationToken cancellationToken = default)
     {
         var screen = await GetOwnedScreenAsync(venueId, screenId, cancellationToken).ConfigureAwait(false);
@@ -61,6 +63,7 @@ public sealed class ScreenManagementService(
 
         screen.Name = NormalizeRequired(name, nameof(name));
         screen.Location = NormalizeOptional(location, nameof(location));
+        screen.PhotoGridDensity = PhotoGridDensity.Normalize(photoGridDensity ?? screen.PhotoGridDensity);
         screen.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
         return await screenRepository.UpdateAsync(screen, cancellationToken).ConfigureAwait(false)
             ? ToItem(screen)
@@ -130,5 +133,5 @@ public sealed class ScreenManagementService(
     }
 
     private static ScreenManagementItem ToItem(Screen screen) =>
-        new(screen.Id, screen.Name, screen.Location, screen.Status, screen.LastSeen, $"/display/{screen.Id}");
+        new(screen.Id, screen.Name, screen.Location, PhotoGridDensity.Normalize(screen.PhotoGridDensity), screen.Status, screen.LastSeen, $"/display/{screen.Id}");
 }
