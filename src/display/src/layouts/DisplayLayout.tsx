@@ -7,12 +7,14 @@ import NeonChalkboardLayout from './NeonChalkboardLayout';
 import PhotoGridLayout from './PhotoGridLayout';
 import SplitLayout from './SplitLayout';
 import HappyHourBanner from './HappyHourBanner';
+import PromotionBanner from './PromotionBanner';
 import './classicDiner.css';
 import './dailySpecialHero.css';
 import './neonChalkboard.css';
 import './photoGrid.css';
 import './splitLayout.css';
 import './happyHour.css';
+import './promotion.css';
 
 export type DisplayLayoutProps = {
   content: DisplayContent;
@@ -79,6 +81,7 @@ export function DisplayFrame({ children, content, layoutKey, requestedLayoutKey,
       style={style}
     >
       <HappyHourBanner content={content} />
+      <PromotionBanner content={content} />
       {children}
     </main>
   );

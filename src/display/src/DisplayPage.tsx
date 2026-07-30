@@ -9,7 +9,7 @@ import {
   loadDisplayContentResilient
 } from './displayCache.mjs';
 import { startDisplayHeartbeat } from './displayHeartbeat.mjs';
-import { applyRealtimeEvent } from './displayRealtime.mjs';
+import { applyRealtimeEvent, requiresContentReload } from './displayRealtime.mjs';
 import {
   connectDisplayRealtime,
   type DisplayConnectionState,
@@ -77,6 +77,10 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
           },
           onEvent: (eventName, ...args) => {
             if (disposed) {
+              return;
+            }
+            if (requiresContentReload(eventName, args[0])) {
+              void loadAndActivate();
               return;
             }
 

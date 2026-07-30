@@ -5,6 +5,8 @@ export const displayRealtimeEvents: Readonly<{
   syncTick: 'SyncTick';
 }>;
 
+export function requiresContentReload(eventName: string, payload: unknown): boolean;
+
 export function applyRealtimeEvent<T>(
   content: T,
   eventName: string,

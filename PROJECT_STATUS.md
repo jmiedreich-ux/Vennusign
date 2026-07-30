@@ -78,7 +78,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-08.09 — Date-Range Promotions** is the next package in roadmap order.
+**WP-08.09 — Date-Range Promotions** is ready for review on `wp/08.09-date-range-promotions` (issue #172).
 
 ## Phase 04 Result
 
@@ -113,7 +113,7 @@ None. **WP-08.09 — Date-Range Promotions** is the next package in roadmap orde
 
 ## Next Action
 
-Claim and implement **WP-08.09 — Date-Range Promotions**.
+Publish **WP-08.09 — Date-Range Promotions**, validate it in GitHub Actions, review, and merge it.
 
 ## Phase 05 Work Packages
 

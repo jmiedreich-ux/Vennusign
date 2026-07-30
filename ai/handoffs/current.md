@@ -2,44 +2,44 @@
 
 ## Work Package
 
-- ID: WP-08.08
-- Status: Complete and merged
+- ID: WP-08.09
+- Status: Ready for review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/08.08-emergency-broadcast`
-- Issue: #169
-- Pull request: #170
-- Latest reviewed commit: `fb0abf1`
-- Merge commit: `aa19c83`
-- CI state: GitHub Actions runs #395 and #396 passed
+- Branch: `wp/08.09-date-range-promotions`
+- Issue: #172
+- Pull request: pending
+- Latest reviewed commit: pending
+- Merge commit: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added scoped emergency broadcast domain, persistence, active selection, and protected API.
-- Added tier-visible venue-wide/screen-targeted activation and cancellation.
-- Added realtime full-screen preemption with authoritative expiry recovery.
+- Added venue-local inclusive promotion ranges with deterministic overlap precedence.
+- Added protected tier-visible administration, layout targeting, and promotion content.
+- Added transition-only evaluation and authoritative player reloads.
 
 ## Decisions
 
-- Screen targets must belong to the venue.
-- Targeted broadcasts win over venue-wide broadcasts; cancelled and expired rows are ignored.
+- Higher promotion priority wins; ties use latest start, creation time, then identifier.
+- Emergency broadcasts continue to preempt promotions.
 
 ## Validation
 
-- Results: Release build, admin/display production builds and tests, migration inventory, and required non-integration tests passed in Actions runs #395 and #396.
+- Results: local frontend and static checks pending; GitHub Actions is authoritative.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-08.09 — Date-Range Promotions.
+- Publish, validate, review, and merge WP-08.09.
 
 ## Exact Next Action
 
-Claim and implement WP-08.09.
+Publish WP-08.09 and wait for authoritative non-integration Actions checks.
 
 ## Do Not Redo or Reverse
 
-- Do not redo WP-08.08 broadcast targeting, realtime, or expiry behavior.
-- WP-08.09 should add bounded promotion precedence without changing broadcast precedence.
+- Do not change emergency-broadcast precedence.
+- Do not implement Phase 09 tap-list behavior.

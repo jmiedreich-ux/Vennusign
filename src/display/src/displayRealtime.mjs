@@ -5,6 +5,12 @@ export const displayRealtimeEvents = Object.freeze({
   syncTick: 'SyncTick'
 });
 
+export function requiresContentReload(eventName, payload) {
+  return eventName === displayRealtimeEvents.contentUpdated
+    && ['date-range-promotions', 'date-range-promotion-transition', 'scheduled-content-transition']
+      .includes(payload?.change);
+}
+
 export function applyRealtimeEvent(content, eventName, ...args) {
   switch (eventName) {
     case displayRealtimeEvents.contentUpdated:

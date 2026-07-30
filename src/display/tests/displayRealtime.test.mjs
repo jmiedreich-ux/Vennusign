@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   applyRealtimeEvent,
-  displayRealtimeEvents
+  displayRealtimeEvents,
+  requiresContentReload
 } from '../src/displayRealtime.mjs';
 
 const initialContent = {
@@ -18,6 +19,13 @@ test('ContentUpdated replaces the complete display payload', () => {
     applyRealtimeEvent(initialContent, displayRealtimeEvents.contentUpdated, replacement),
     replacement
   );
+});
+
+test('schedule and promotion transitions request an authoritative content reload', () => {
+  assert.equal(requiresContentReload(displayRealtimeEvents.contentUpdated, { change: 'date-range-promotion-transition' }), true);
+  assert.equal(requiresContentReload(displayRealtimeEvents.contentUpdated, { change: 'date-range-promotions' }), true);
+  assert.equal(requiresContentReload(displayRealtimeEvents.contentUpdated, { change: 'scheduled-content-transition' }), true);
+  assert.equal(requiresContentReload(displayRealtimeEvents.contentUpdated, { change: 'happy-hour-transition' }), false);
 });
 
 test('happy-hour transition patches authoritative state without replacing content', () => {
