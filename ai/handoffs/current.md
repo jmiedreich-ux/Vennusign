@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-06.03
-- Status: In review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/06.03-photo-grid-merchandising`
-- Latest reviewed commit: Pending
+- Latest reviewed commit: `b671179`
 - Issue: #94
-- Pull request: Pending
-- Merge commit: Pending
-- CI state: Pending
+- Pull request: #95
+- Merge commit: `2538ed8`
+- CI state: GitHub Actions run #246 passed
 
 ## Completed This Session
 
@@ -29,7 +29,7 @@
 
 ## Validation
 
-- Results: display build passed; 27/27 display tests passed; authoritative GitHub Actions validation pending.
+- Results: display build passed; 27/27 display tests passed; Actions run #246 passed on reviewed head `b671179`.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
@@ -38,7 +38,7 @@
 
 ## Exact Next Action
 
-Publish WP-06.03, validate its exact head in GitHub Actions, review, and merge it before claiming WP-06.04.
+Claim and implement WP-06.04.
 
 ## Do Not Redo or Reverse
 
