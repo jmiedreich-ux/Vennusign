@@ -1,5 +1,7 @@
 import type { DisplayLayoutProps } from './DisplayLayout';
 
+const limitedQuantityThreshold = 5;
+
 export default function PhotoGridLayout({ content }: DisplayLayoutProps) {
   const sections = content.sections ?? [];
 
@@ -68,7 +70,10 @@ function isSoldOut(item: PhotoGridItem) {
 }
 
 function isLimited(item: PhotoGridItem) {
-  return item.isAvailable && item.quantityAvailable !== null && item.quantityAvailable > 0;
+  return item.isAvailable
+    && item.quantityAvailable !== null
+    && item.quantityAvailable > 0
+    && item.quantityAvailable <= limitedQuantityThreshold;
 }
 
 function formatPrice(price: number) {
