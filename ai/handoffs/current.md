@@ -3,15 +3,17 @@
 ## Work Package
 
 - ID: WP-07.06
-- Status: In progress
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/07.06-split-layout-core`
 - Issue: #133
-- Pull request: pending
-- CI state: pending
+- Pull request: #134
+- Latest reviewed commit: `fff54f6`
+- Merge commit: `07c68e5`
+- CI state: GitHub Actions run #319 passed
 
 ## Completed This Session
 
@@ -26,16 +28,16 @@
 
 ## Validation
 
-- Results: GitHub Actions pending.
+- Results: solution build, admin build/tests, 55 display tests, and non-integration unit tests passed in Actions run #319.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Validate, review, and merge WP-07.06.
+- WP-07.07 — Split Layout Administration and TV Polish.
 
 ## Exact Next Action
 
-Publish WP-07.06 and validate its exact PR head in GitHub Actions.
+Claim and implement WP-07.07.
 
 ## Do Not Redo or Reverse
 
