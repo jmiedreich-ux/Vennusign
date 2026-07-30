@@ -54,7 +54,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-06.07 — Basic Theme Domain and Persistence** is the next package in roadmap order.
+**WP-06.07 — Basic Theme Domain and Persistence** is in progress.
 
 ## Phase 04 Result
 
@@ -76,7 +76,7 @@ None. **WP-06.07 — Basic Theme Domain and Persistence** is the next package in
 
 ## Next Action
 
-Claim and implement **WP-06.07 — Basic Theme Domain and Persistence**.
+Complete and merge **WP-06.07 — Basic Theme Domain and Persistence**.
 
 ## Phase 05 Work Packages
 
