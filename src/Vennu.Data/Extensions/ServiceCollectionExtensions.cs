@@ -18,6 +18,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMealPeriodRepository, MealPeriodRepository>();
         services.AddSingleton<IMealPeriodScheduleResolver, MealPeriodScheduleResolver>();
         services.AddScoped<IMealPeriodAdministrationService, MealPeriodAdministrationService>();
+        services.AddScoped<IHappyHourScheduleRepository, HappyHourScheduleRepository>();
+        services.AddSingleton<IHappyHourScheduleResolver, HappyHourScheduleResolver>();
+        services.AddScoped<IHappyHourService, HappyHourService>();
         services.AddScoped<IMenuSectionManagementService, MenuSectionManagementService>();
         services.AddScoped<IScreenRepository, ScreenRepository>();
         services.AddScoped<IScreenPairingCodeRepository, ScreenPairingCodeRepository>();

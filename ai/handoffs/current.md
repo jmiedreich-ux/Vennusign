@@ -2,44 +2,42 @@
 
 ## Work Package
 
-- ID: WP-08.04
-- Status: Complete and merged
+- ID: WP-08.05
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/08.04-scheduled-content-activation`
-- Issue: #157
-- Pull request: #158
-- Latest reviewed commit: `4859db2`
-- Merge commit: `ed35304`
-- CI state: GitHub Actions run #371 passed
+- Branch: `wp/08.05-happy-hour-scheduling`
+- Issue: #160
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added persisted meal-period layout, menu-filter, and theme targets.
-- Added transition-only UTC evaluator and venue content notifications.
-- Added admin target controls and focused non-integration tests.
+- Added a Pro-tier happy-hour schedule and manual override modes.
+- Added pure regular/overnight venue-timezone resolution.
+- Added authoritative display state and transition-only evaluation.
 
 ## Decisions
 
-- Evaluator cadence is 60 seconds.
-- Initial active state and later state changes publish; repeated ticks do not.
+- Automatic mode uses UTC plus venue IANA timezone.
+- Force-on and force-off take precedence without rewriting the schedule.
 
 ## Validation
 
-- Results: Release build, admin/display production builds and tests, and 230 non-integration unit tests passed in Actions run #371.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-08.05 — Happy Hour Scheduling and Manual Override.
+- Validate, review, and merge WP-08.05.
 
 ## Exact Next Action
 
-Claim and implement WP-08.05.
+Publish WP-08.05 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not redo WP-08.04 activation targets or evaluator.
-- WP-08.05 must preserve automatic mode while adding explicit force-on and force-off.
+- Do not add WP-08.06 administration UI or countdown/banner behavior.
+- Do not merge without fresh Actions success and ChatGPT approval.

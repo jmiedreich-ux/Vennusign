@@ -60,6 +60,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
 {
     builder.Services.AddHostedService<QuickAvailabilityResetService>();
     builder.Services.AddHostedService<ScheduledContentActivationService>();
+    builder.Services.AddHostedService<HappyHourEvaluatorService>();
     var connectionString = builder.Configuration.GetConnectionString("VennuDatabase")
         ?? throw new InvalidOperationException("Connection string 'VennuDatabase' is required.");
 

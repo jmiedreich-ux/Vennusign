@@ -1,7 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T07:16:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-07-30T07:19:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-08.05",
+      "branch": "wp/08.05-happy-hour-scheduling",
+      "issue": 160,
+      "status": "In Progress"
+    }
+  ],
   "nextAvailableWorkPackage": "WP-08.05",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
