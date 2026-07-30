@@ -2,43 +2,41 @@
 
 ## Work Package
 
-- ID: WP-07.04
-- Status: Complete and merged
+- ID: WP-07.05
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/07.04-neon-motion`
-- Issue: #127
-- Pull request: #128
-- Latest reviewed commit: `96a8ddf`
-- Merge commit: `9357111`
-- CI state: GitHub Actions run #307 passed
+- Branch: `wp/07.05-noto-font-preload`
+- Issue: #130
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added irregular title flicker and theme-intensity glow breathing.
-- Added staggered chalk draw-in, chalk grain, and scanlines.
-- Added a complete reduced-motion static override.
+- Added approved Noto SC, KR, JP, and Arabic delivery.
+- Added bounded regular/bold Font Loading API preloads.
+- Extended the versioned media cache to font and stylesheet responses.
 
 ## Decisions
 
-- Motion remains scoped to Neon Chalkboard CSS.
-- Player lifecycle, realtime, and cache paths remain unchanged.
+- Font delivery prepares later multilingual work without translation behavior.
+- Font and style requests keep the media cache's network-first recovery model.
 
 ## Validation
 
-- Results: solution build, admin build/tests, 49 display tests, and non-integration unit tests passed in Actions run #307.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-07.05 — Noto Font Preloading.
+- Validate, review, and merge WP-07.05.
 
 ## Exact Next Action
 
-Claim and implement WP-07.05.
+Publish WP-07.05 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not add WP-07.05 font assets or later layout behavior.
+- Do not add Phase 13 translation UI or WP-07.06 Split Layout behavior.
