@@ -118,6 +118,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
             <option disabled={!allLayoutsEnabled} value="neon_chalkboard">Neon Chalkboard · Pro</option>
             <option disabled={!allLayoutsEnabled} value="split_layout">Split Layout · Pro</option>
             <option disabled={!allLayoutsEnabled} value="daily_special_hero">Daily Special Hero · Pro</option>
+            <option disabled={!allLayoutsEnabled} value="classic_chalkboard">Classic Chalkboard Drinks · Pro</option>
           </select>
         </label>
         {screen.displayLayout === "photo_grid" ? <label>Photo Grid density
@@ -168,14 +169,16 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
           <a href={screen.registrationUrl} target="_blank" rel="noreferrer">Open registration URL</a>
           <button disabled={busyId === screen.id} onClick={() => push(screen)}>Push content</button>
         </div>
-        {screen.displayLayout === "split_layout" || screen.displayLayout === "daily_special_hero" ? <div className="split-layout-preview">
+        {["split_layout", "daily_special_hero", "classic_chalkboard"].includes(screen.displayLayout) ? <div className="split-layout-preview">
           <div><strong>Exact TV preview</strong><span>Uses this screen’s saved menu, theme, and layout settings.</span></div>
           <iframe
             key={`${screen.id}-${screen.displayLayout}-${screen.splitRatio}-${screen.heroDwellSeconds}-${previewRevision}`}
             src={`${configuration.displayBaseUrl}/display/${screen.id}`}
             title={screen.displayLayout === "split_layout"
               ? `${screen.name} Split Layout TV preview`
-              : `${screen.name} Daily Special Hero TV preview`}
+              : screen.displayLayout === "daily_special_hero"
+                ? `${screen.name} Daily Special Hero TV preview`
+                : `${screen.name} Classic Chalkboard TV preview`}
           />
         </div> : null}
       </section>)}</div> : <p>No screens assigned.</p>}
