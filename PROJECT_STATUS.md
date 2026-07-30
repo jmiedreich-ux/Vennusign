@@ -59,7 +59,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-07.01 — Advanced Theme Domain and Preset Foundation** is the next package in roadmap order.
+**WP-07.01 — Advanced Theme Domain and Preset Foundation** is in progress.
 
 ## Phase 04 Result
 
@@ -88,7 +88,7 @@ None. **WP-07.01 — Advanced Theme Domain and Preset Foundation** is the next p
 
 ## Next Action
 
-Claim and implement **WP-07.01 — Advanced Theme Domain and Preset Foundation**.
+Complete, validate, review, and merge **WP-07.01 — Advanced Theme Domain and Preset Foundation**.
 
 ## Phase 05 Work Packages
 
