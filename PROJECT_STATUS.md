@@ -83,10 +83,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-09.03 — Classic Chalkboard Drinks Core
 - WP-09.04 — Classic Chalkboard Administration and TV Polish
 - WP-09.05 — Tap Strips Core
+- WP-09.06 — Tap Strips Administration and Motion Polish
 
 ## Active Work Package
 
-**WP-09.06 — Tap Strips Administration and Motion Polish: In Review**
+None. **WP-09.07 — Digital Tap Board Core** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -127,7 +128,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate and merge **WP-09.06 — Tap Strips Administration and Motion Polish**. Then begin WP-09.07.
+Claim and implement **WP-09.07 — Digital Tap Board Core**.
 
 ## Phase 05 Work Packages
 
