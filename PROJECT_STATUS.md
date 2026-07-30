@@ -44,7 +44,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-05.08 — Screen Targeting and Overflow Visualization** is the next package in roadmap order.
+**WP-05.08 — Screen Targeting and Overflow Visualization** is in review on issue #77.
 
 ## Phase 04 Result
 
@@ -59,7 +59,7 @@ None. **WP-05.08 — Screen Targeting and Overflow Visualization** is the next p
 
 ## Next Action
 
-Claim and implement **WP-05.08 — Screen Targeting and Overflow Visualization**.
+Validate and merge **WP-05.08 — Screen Targeting and Overflow Visualization**, then claim WP-05.09.
 
 ## Phase 05 Work Packages
 

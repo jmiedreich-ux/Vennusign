@@ -61,3 +61,12 @@ test("screen management supports registration health editing and manual push", (
   assert.ok(api.includes("api/admin/venues/${venueId}/screens"));
   assert.ok(api.includes("/${screenId}/push"));
 });
+
+test("screen targeting supports send-to-all and deterministic overflow guidance", () => {
+  assert.match(screens, /Push to all screens/);
+  assert.match(screens, /pushAllManagedScreens/);
+  assert.match(screens, /Overflow preview/);
+  assert.match(screens, /overflowItems/);
+  assert.ok(api.includes("/push-all"));
+  assert.ok(api.includes("/overflow?capacity=${capacity}"));
+});

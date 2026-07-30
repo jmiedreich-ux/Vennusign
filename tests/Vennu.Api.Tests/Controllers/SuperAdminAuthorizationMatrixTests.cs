@@ -28,6 +28,8 @@ public sealed class SuperAdminAuthorizationMatrixTests : IClassFixture<VennuApiF
             { "POST", $"/api/admin/venues/{Guid.NewGuid()}/screens" },
             { "PUT", $"/api/admin/venues/{Guid.NewGuid()}/screens/{Guid.NewGuid()}" },
             { "POST", $"/api/admin/venues/{Guid.NewGuid()}/screens/{Guid.NewGuid()}/push" },
+            { "POST", $"/api/admin/venues/{Guid.NewGuid()}/screens/push-all" },
+            { "GET", $"/api/admin/venues/{Guid.NewGuid()}/screens/overflow?capacity=6" },
             { "GET", "/api/admin/tiers" },
             { "POST", "/api/admin/tiers" },
             { "PUT", $"/api/admin/tiers/{Guid.NewGuid()}" },

@@ -9,7 +9,9 @@ namespace Vennu.Api.Controllers.Admin;
 [ApiController]
 [Route("api/admin/venues/{venueId:guid}/screens")]
 [Authorize(Policy = SuperAdminAuthenticationDefaults.AuthorizationPolicy)]
-public sealed class SuperAdminScreensController(IScreenManagementService screenService) : ControllerBase
+public sealed class SuperAdminScreensController(
+    IScreenManagementService screenService,
+    IScreenTargetingService targetingService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyCollection<ScreenManagementItem>>> Get(
@@ -77,4 +79,40 @@ public sealed class SuperAdminScreensController(IScreenManagementService screenS
         await screenService.PushAsync(venueId, screenId, cancellationToken).ConfigureAwait(false)
             ? NoContent()
             : NotFound();
+
+    [HttpPost("push-all")]
+    public async Task<ActionResult<ScreenPushAllResult>> PushAll(
+        Guid venueId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var count = await targetingService.PushAllAsync(venueId, cancellationToken).ConfigureAwait(false);
+            return Ok(new ScreenPushAllResult(count));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
+
+    [HttpGet("overflow")]
+    public async Task<ActionResult<ScreenOverflowPreview>> GetOverflow(
+        Guid venueId,
+        [FromQuery] int capacity,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await targetingService.GetOverflowAsync(venueId, capacity, cancellationToken).ConfigureAwait(false));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+    }
 }
