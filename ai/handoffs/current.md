@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-08.10
-- Status: Ready for review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/08.10-phase-08-validation-closure`
 - Issue: #175
-- Pull request: pending
-- Latest reviewed commit: pending
-- Merge commit: pending
-- CI state: pending
+- Pull request: #176
+- Latest reviewed commit: `1e489ef`
+- Merge commit: `a0c68d6`
+- CI state: GitHub Actions run #404 passed
 
 ## Completed This Session
 
@@ -23,23 +23,23 @@
 
 ## Decisions
 
-- Phase closure requires the exact PR head to pass authoritative non-integration Actions.
-- Phase 09 implementation remains out of this package.
+- Phase 08 is closed with authoritative validation evidence.
+- Phase 09 is decomposed into ten bounded sequential packages from the approved roadmap.
 
 ## Validation
 
-- Results: focused local frontend tests pending; GitHub Actions is authoritative.
+- Results: restore, Release build, admin/display production builds/tests, and required non-integration tests passed in Actions run #404.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Publish, validate, review, and merge WP-08.10.
+- WP-09.01 — Tap Domain and Persistence.
 
 ## Exact Next Action
 
-Publish WP-08.10 and wait for authoritative non-integration Actions checks.
+Claim and implement WP-09.01 from the Phase 09 plan.
 
 ## Do Not Redo or Reverse
 
-- Do not add scheduling behavior in the closure package.
-- Do not start Phase 09 until WP-08.10 is merged.
+- Do not reopen Phase 08 scheduling behavior.
+- Keep TapItem separate from MenuItem and begin with persistence only.

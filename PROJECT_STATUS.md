@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 08 — Scheduling Engine: Active**
+**Phase 09 — Tap List Boards — Breweries & Bars: Active**
 
 ## Milestone
 
@@ -76,10 +76,12 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-08.07 — Playlist Domain and Player Rotation
 - WP-08.08 — Emergency Broadcast
 - WP-08.09 — Date-Range Promotions
+- WP-08.10 — Phase 08 Validation and Closure
+- Phase 08 — Scheduling Engine
 
 ## Active Work Package
 
-**WP-08.10 — Phase 08 Validation and Closure** is ready for review on `wp/08.10-phase-08-validation-closure` (issue #175).
+None. **WP-09.01 — Tap Domain and Persistence** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -107,6 +109,12 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - Added accessible motion, multilingual Noto delivery, exact previews, and bounded hero rotation.
 - Added repeatable tier, layout, pricing, realtime, and offline critical-journey validation.
 
+## Phase 08 Result
+
+- Delivered venue-local meal periods, happy hour, screen playlists, emergency broadcasts, and date-range promotions.
+- Added transition-only evaluation, deterministic precedence, and authoritative realtime player refresh.
+- Added repeatable timezone, DST, scheduling, tier, realtime, offline, precedence, and recovery validation.
+
 ## Standing Validation Exception
 
 - Integration-type tests are skipped for every AWP under the repository owner's standing instruction.
@@ -114,7 +122,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Publish **WP-08.10**, validate it in GitHub Actions, review, and merge it.
+Claim and implement **WP-09.01 — Tap Domain and Persistence**.
 
 ## Phase 05 Work Packages
 
@@ -131,3 +139,7 @@ Publish **WP-08.10**, validate it in GitHub Actions, review, and merge it.
 ## Phase 08 Work Packages
 
 - WP-08.01 through WP-08.10 are defined in `docs/phase-plans/phase-08-scheduling-engine.md`.
+
+## Phase 09 Work Packages
+
+- WP-09.01 through WP-09.10 are defined in `docs/phase-plans/phase-09-tap-list-boards.md`.
