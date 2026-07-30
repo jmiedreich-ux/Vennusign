@@ -1,10 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
 import {
   createManagedScreen,
+  loadScreenOverflow,
   loadManagedScreens,
+  pushAllManagedScreens,
   pushManagedScreen,
   updateManagedScreen,
-  type ManagedScreen
+  type ManagedScreen,
+  type ScreenOverflowPreview
 } from "./api";
 import type { AdminConfiguration } from "./config";
 
@@ -17,9 +20,16 @@ export default function ScreenManagement({ configuration, apiKey, venueId }: Pro
   const [busyId, setBusyId] = useState<string>();
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
+  const [capacity, setCapacity] = useState(6);
+  const [overflow, setOverflow] = useState<ScreenOverflowPreview>();
 
   const refresh = () => loadManagedScreens(configuration, apiKey, venueId).then(setScreens);
   useEffect(() => { refresh().catch(() => setError("Screens could not be loaded.")); }, [apiKey, configuration, venueId]);
+  useEffect(() => {
+    loadScreenOverflow(configuration, apiKey, venueId, capacity)
+      .then(setOverflow)
+      .catch(() => setError("The layout preview could not be loaded."));
+  }, [apiKey, capacity, configuration, venueId]);
 
   const create = async (event: FormEvent) => {
     event.preventDefault();
@@ -55,10 +65,21 @@ export default function ScreenManagement({ configuration, apiKey, venueId }: Pro
     finally { setBusyId(undefined); }
   };
 
+  const pushAll = async () => {
+    setBusyId("all"); setError(undefined); setNotice(undefined);
+    try {
+      const result = await pushAllManagedScreens(configuration, apiKey, venueId);
+      setNotice(result.screenCount
+        ? `Content pushed to all ${result.screenCount} screens.`
+        : "No assigned screens to push.");
+    } catch { setError("Content could not be pushed to all screens."); }
+    finally { setBusyId(undefined); }
+  };
+
   return <article className="screen-management">
     <div className="screen-management-heading">
       <div><p>Display fleet</p><h3>Screens ({screens.length})</h3></div>
-      <span>Health and registration</span>
+      <button className="push-all" disabled={busyId === "all"} onClick={pushAll}>Push to all screens</button>
     </div>
     {error ? <p className="state error">{error}</p> : null}
     {notice ? <p className="screen-notice" role="status">{notice}</p> : null}
@@ -80,5 +101,28 @@ export default function ScreenManagement({ configuration, apiKey, venueId }: Pro
           <button disabled={busyId === screen.id} onClick={() => push(screen)}>Push content</button>
         </div>
       </section>)}</div> : <p>No screens assigned.</p>}
+    <section className="overflow-preview">
+      <div>
+        <p>Layout capacity</p>
+        <h4>Overflow preview</h4>
+        <span>Deterministic menu order shows exactly which items fit.</span>
+      </div>
+      <label>Layout
+        <select value={capacity} onChange={event => setCapacity(Number(event.target.value))}>
+          <option value={4}>2 × 2 · 4 items</option>
+          <option value={6}>3 × 2 · 6 items</option>
+          <option value={8}>4 × 2 · 8 items</option>
+          <option value={9}>3 × 3 · 9 items</option>
+        </select>
+      </label>
+      <div className="overflow-counts">
+        <strong>{overflow?.visibleItems ?? 0}<small>Visible</small></strong>
+        <strong className={(overflow?.overflowItems ?? 0) > 0 ? "warning" : ""}>{overflow?.overflowItems ?? 0}<small>Overflow</small></strong>
+      </div>
+      {overflow?.items.length ? <ol>{overflow.items.map(item =>
+        <li className={item.visible ? "" : "overflow"} key={item.itemId}>
+          <span>{item.itemName}</span><small>{item.sectionName} · {item.visible ? "Visible" : "Overflow"}</small>
+        </li>)}</ol> : <p>No available menu items to preview.</p>}
+    </section>
   </article>;
 }

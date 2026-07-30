@@ -11,3 +11,14 @@ public sealed record ScreenManagementItem(
     string Status,
     DateTime? LastSeen,
     string RegistrationUrl);
+
+public sealed record ScreenPushAllResult(int ScreenCount);
+
+public sealed record ScreenOverflowItem(Guid ItemId, string SectionName, string ItemName, bool Visible);
+
+public sealed record ScreenOverflowPreview(
+    int Capacity,
+    int TotalItems,
+    int VisibleItems,
+    int OverflowItems,
+    IReadOnlyCollection<ScreenOverflowItem> Items);

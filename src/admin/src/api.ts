@@ -81,6 +81,10 @@ export type ManagedScreen = {
   lastSeen?: string; registrationUrl: string;
 };
 export type ManagedScreenWrite = { name: string; location?: string };
+export type ScreenOverflowPreview = {
+  capacity: number; totalItems: number; visibleItems: number; overflowItems: number;
+  items: Array<{ itemId: string; sectionName: string; itemName: string; visible: boolean }>;
+};
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -368,4 +372,21 @@ export async function pushManagedScreen(
   screenId: string
 ): Promise<void> {
   await screenRequest(configuration, apiKey, venueId, `/${screenId}/push`, { method: "POST" });
+}
+
+export async function pushAllManagedScreens(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string
+): Promise<{ screenCount: number }> {
+  return (await screenRequest(configuration, apiKey, venueId, "/push-all", { method: "POST" })).json() as Promise<{ screenCount: number }>;
+}
+
+export async function loadScreenOverflow(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  capacity: number
+): Promise<ScreenOverflowPreview> {
+  return (await screenRequest(configuration, apiKey, venueId, `/overflow?capacity=${capacity}`)).json() as Promise<ScreenOverflowPreview>;
 }
