@@ -2,43 +2,41 @@
 
 ## Work Package
 
-- ID: WP-06.10
-- Status: Complete and merged
+- ID: WP-07.01
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/06.10-phase-06-validation`
-- Issue: #115
-- Pull request: #116
-- Latest reviewed commit: `92b9f3e`
-- Merge commit: `2095731`
-- CI state: GitHub Actions run #282 passed
+- Branch: `wp/07.01-advanced-theme-domain`
+- Issue: #118
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added the Phase 06 validation matrix.
-- Added composed layout, theme, realtime, overflow, and offline journey tests.
-- Recorded integration exclusions and residual production risks.
+- Added migration 018 and advanced venue theme values.
+- Added five deterministic preset definitions and protected update operations.
+- Added validation for colors, section bounds, glow intensity, and font sets.
 
 ## Decisions
 
-- Closure validation composes existing bounded behavior without extending the product scope.
-- Browser/network and Azure SQL integration remain explicitly excluded.
+- Basic and advanced theme updates preserve each other's values.
+- Preset application is server-authoritative and venue-scoped.
 
 ## Validation
 
-- Results: solution build, 21 admin tests, 45 display tests, and non-integration unit tests passed in Actions run #282.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-07.01 — Advanced Theme Domain and Preset Foundation.
+- Validate, review, and merge WP-07.01.
 
 ## Exact Next Action
 
-Claim and implement WP-07.01.
+Publish WP-07.01 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not add Phase 07 layouts or advanced theme controls to the closure package.
+- Do not add WP-07.02 admin controls or WP-07.03 player rendering.
