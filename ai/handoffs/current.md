@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-08.09
-- Status: Ready for review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/08.09-date-range-promotions`
 - Issue: #172
-- Pull request: pending
-- Latest reviewed commit: pending
-- Merge commit: pending
-- CI state: pending
+- Pull request: #173
+- Latest reviewed commit: `146a014`
+- Merge commit: `852defa`
+- CI state: GitHub Actions run #400 passed
 
 ## Completed This Session
 
@@ -28,16 +28,16 @@
 
 ## Validation
 
-- Results: local frontend and static checks pending; GitHub Actions is authoritative.
+- Results: restore, Release build, admin/display production builds and tests, migration inventory, and required non-integration tests passed in Actions run #400.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Publish, validate, review, and merge WP-08.09.
+- WP-08.10 — Phase 08 Validation and Closure.
 
 ## Exact Next Action
 
-Publish WP-08.09 and wait for authoritative non-integration Actions checks.
+Claim and complete WP-08.10.
 
 ## Do Not Redo or Reverse
 

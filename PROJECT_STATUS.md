@@ -75,10 +75,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-08.06 — Happy Hour Administration and Display
 - WP-08.07 — Playlist Domain and Player Rotation
 - WP-08.08 — Emergency Broadcast
+- WP-08.09 — Date-Range Promotions
 
 ## Active Work Package
 
-**WP-08.09 — Date-Range Promotions** is ready for review on `wp/08.09-date-range-promotions` (issue #172).
+None. **WP-08.10 — Phase 08 Validation and Closure** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -113,7 +114,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Publish **WP-08.09 — Date-Range Promotions**, validate it in GitHub Actions, review, and merge it.
+Claim and complete **WP-08.10 — Phase 08 Validation and Closure**.
 
 ## Phase 05 Work Packages
 
