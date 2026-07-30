@@ -59,10 +59,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-07.01 — Advanced Theme Domain and Preset Foundation
 - WP-07.02 — Full Theme Builder Controls and Preview
 - WP-07.03 — Neon Chalkboard Core Layout
+- WP-07.04 — Neon Motion, Texture, and Accessibility
 
 ## Active Work Package
 
-**WP-07.04 — Neon Motion, Texture, and Accessibility** is in progress.
+None. **WP-07.05 — Noto Font Preloading** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -91,7 +92,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-07.04 — Neon Motion, Texture, and Accessibility**.
+Claim and implement **WP-07.05 — Noto Font Preloading**.
 
 ## Phase 05 Work Packages
 
