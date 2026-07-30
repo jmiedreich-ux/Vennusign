@@ -13,8 +13,15 @@ public class DisplayController : ControllerBase
     private readonly IScreenRepository screenRepository;
     private readonly IVenueRepository venueRepository;
     private readonly IMenuRepository menuRepository;
+    private readonly IVenueThemeRepository? themeRepository;
 
-    public DisplayController(IScreenRepository screenRepository, IVenueRepository venueRepository, IMenuRepository menuRepository) => (this.screenRepository, this.venueRepository, this.menuRepository) = (screenRepository, venueRepository, menuRepository);
+    public DisplayController(
+        IScreenRepository screenRepository,
+        IVenueRepository venueRepository,
+        IMenuRepository menuRepository,
+        IVenueThemeRepository? themeRepository = null) =>
+        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository) =
+        (screenRepository, venueRepository, menuRepository, themeRepository);
 
     [HttpGet("{screenId:guid}/content")]
     [ProducesResponseType<DisplayContentResponse>(StatusCodes.Status200OK)]
@@ -46,6 +53,15 @@ public class DisplayController : ControllerBase
 
         var venueId = screen.VenueId.Value;
         var venue = await venueRepository.GetByIdAsync(venueId, cancellationToken);
+        var theme = themeRepository is null
+            ? null
+            : await themeRepository.GetByVenueIdAsync(venueId, cancellationToken);
+        response.Theme = new DisplayThemeResponse
+        {
+            BackgroundColor = theme?.BackgroundColor ?? "#111315",
+            AccentColor = theme?.AccentColor ?? "#FFB74D",
+            FontFamily = theme?.FontFamily ?? "Inter"
+        };
         var menu = (await menuRepository.GetMenusAsync(venueId, cancellationToken))
             .FirstOrDefault(candidate => candidate.IsActive);
 
