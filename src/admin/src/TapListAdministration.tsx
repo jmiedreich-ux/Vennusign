@@ -40,6 +40,8 @@ export default function TapListAdministration({ configuration, apiKey, venueId, 
   };
   const patchItem = (id: string, value: Partial<TapItem>) =>
     setData(current => ({ ...current, items: current.items.map(row => row.id === id ? { ...row, ...value } : row) }));
+  const patchCategory = (id: string, value: Partial<TapCategory>) =>
+    setData(current => ({ ...current, categories: current.categories.map(row => row.id === id ? { ...row, ...value } : row) }));
 
   return <article className="tap-list-admin">
     <div className="promotion-heading"><div><p>Breweries & bars</p><h3>Tap list</h3></div><span>{data.items.length} taps</span></div>
@@ -47,7 +49,13 @@ export default function TapListAdministration({ configuration, apiKey, venueId, 
     {error ? <p className="state error">{error}</p> : null}
     <section><h4>Categories</h4>
       <form onSubmit={addCategory}><input required disabled={!enabled} maxLength={120} placeholder="Import Beer" value={category.name} onChange={event => setCategory(value => ({ ...value, name: event.target.value }))} /><input disabled={!enabled} min={0} step=".01" type="number" placeholder="Category price" value={category.categoryPrice ?? ""} onChange={event => setCategory(value => ({ ...value, categoryPrice: event.target.value ? Number(event.target.value) : undefined }))} /><button disabled={!enabled || busy}>Add category</button></form>
-      <ul>{data.categories.map((row, index) => <li key={row.id}><strong>{row.name}</strong><span>{row.categoryPrice == null ? "Per-item pricing" : `$${row.categoryPrice.toFixed(2)}`}</span><button disabled={!enabled || busy || index === 0} onClick={() => move("categories", row.id, -1)}>↑</button><button disabled={!enabled || busy || index === data.categories.length - 1} onClick={() => move("categories", row.id, 1)}>↓</button><button disabled={!enabled || busy} onClick={() => run(() => deleteTapCategory(configuration, apiKey, venueId, row.id))}>Delete</button></li>)}</ul>
+      <ul>{data.categories.map((row, index) => <li key={row.id}>
+        <input aria-label={`${row.name} category name`} disabled={!enabled} maxLength={120} value={row.name} onChange={event => patchCategory(row.id, { name: event.target.value })} />
+        <input aria-label={`${row.name} category price`} disabled={!enabled} min={0} step=".01" type="number" placeholder="Per-item pricing" value={row.categoryPrice ?? ""} onChange={event => patchCategory(row.id, { categoryPrice: event.target.value ? Number(event.target.value) : undefined })} />
+        <label><input disabled={!enabled} type="checkbox" checked={row.isActive} onChange={event => patchCategory(row.id, { isActive: event.target.checked })} />Active</label>
+        <button disabled={!enabled || busy} onClick={() => run(() => saveTapCategory(configuration, apiKey, venueId, row, row.id))}>Save</button>
+        <button disabled={!enabled || busy || index === 0} onClick={() => move("categories", row.id, -1)}>↑</button><button disabled={!enabled || busy || index === data.categories.length - 1} onClick={() => move("categories", row.id, 1)}>↓</button><button disabled={!enabled || busy} onClick={() => run(() => deleteTapCategory(configuration, apiKey, venueId, row.id))}>Delete</button>
+      </li>)}</ul>
     </section>
     <section><h4>Tap items</h4>
       <form className="tap-item-form" onSubmit={addItem}>

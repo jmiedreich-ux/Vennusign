@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T23:04:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-09.04",
+  "updatedUtc": "2026-07-30T23:31:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-09.04",
+      "orchestrator": "ChatGPT",
+      "branch": "wp/09.04-classic-chalkboard-polish",
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-09.05",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

@@ -93,7 +93,7 @@ export type MenuEditorSnapshot = {
 export type ManagedScreen = {
   id: string; name: string; location?: string; status: string;
   photoGridDensity: "2x2" | "3x2" | "4x2" | "3x3";
-  displayLayout: "photo_grid" | "classic_diner" | "neon_chalkboard" | "split_layout" | "daily_special_hero";
+  displayLayout: "photo_grid" | "classic_diner" | "neon_chalkboard" | "split_layout" | "daily_special_hero" | "classic_chalkboard";
   splitRatio: "40_60" | "50_50";
   heroDwellSeconds: number;
   lastSeen?: string; registrationUrl: string;

@@ -2,45 +2,44 @@
 
 ## Work Package
 
-- ID: WP-09.03
-- Status: Complete and merged
+- ID: WP-09.04
+- Status: In Review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/09.03-classic-chalkboard-core`
-- Issue: #184
-- Pull request: #185
-- Latest reviewed commit: `3e7b8d1`
-- Merge commit: `4cfbd0f`
-- CI state: GitHub Actions run #416 passed
+- Branch: `wp/09.04-classic-chalkboard-polish`
+- Issue: #187
+- Pull request: pending
+- Latest reviewed commit: pending
+- Merge commit: pending
+- CI state: pending GitHub Actions
 
 ## Completed This Session
 
-- Added the additive `classic_chalkboard` layout and ordered migration 029.
-- Added venue-scoped tap categories and items to the established display payload.
-- Added the Drinks board with category/per-item pricing, two-column lists, and unavailable treatment.
-- Added focused API, layout-registry, migration, and display source tests.
+- Added tier-aware Classic Chalkboard screen selection and exact player-backed preview.
+- Added editable category names, prices, and active state.
+- Added TV-safe chalk illustration polish and reduced-motion behavior.
+- Added focused admin and display source tests.
 
 ## Decisions
 
-- The tap layout reuses the existing display endpoint, schedule/promotion resolution, themes, realtime, and offline cache path.
-- Tap payload retrieval occurs only for `classic_chalkboard` and does not require an active menu.
+- Classic Chalkboard continues to reuse the established display, realtime, and offline cache path.
+- Decorative polish is CSS/markup only and does not add a competing player lifecycle.
 
 ## Validation
 
-- Results: restore, Release build, admin/display production builds/tests, and required non-integration tests passed in Actions run #416.
+- Results: pending GitHub Actions.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-09.04 — Classic Chalkboard Administration and TV Polish.
+- WP-09.05 — Tap Strips Core.
 
 ## Exact Next Action
 
-Add layout selection/preview, category-price administration, chalk illustration polish, TV-safe scaling, and recovery validation.
+Merge WP-09.04 after exact-head Actions and review, then implement WP-09.05.
 
 ## Do Not Redo or Reverse
 
-- Do not add admin layout selection/preview or chalk illustration polish assigned to WP-09.04.
 - Do not add Tap Strips, Digital Tap Board, or pairing behavior.

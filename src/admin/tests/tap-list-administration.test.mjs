@@ -14,5 +14,17 @@ test("tap administration is venue scoped tier visible and exact reorderable", ()
   assert.match(component, /reorderTapRows/);
   assert.match(component, /Now brewing/);
   assert.match(component, /Glass color/);
+  assert.match(component, /category price/);
+  assert.match(component, /patchCategory/);
   assert.match(venue, /features\.all_layouts/);
+});
+
+test("screen management exposes the Classic Chalkboard exact player preview", async () => {
+  const [screen, api] = await Promise.all([
+    readFile(new URL("../src/ScreenManagement.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/api.ts", import.meta.url), "utf8")
+  ]);
+  assert.match(screen, /value="classic_chalkboard"/);
+  assert.match(screen, /Classic Chalkboard.*TV preview/);
+  assert.match(api, /\| "classic_chalkboard"/);
 });

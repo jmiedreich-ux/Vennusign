@@ -22,3 +22,10 @@ test('renders category pricing two-column drinks and unavailable treatment', () 
   assert.match(css, /columns: 2/);
   assert.match(css, /li\.unavailable/);
 });
+
+test('keeps chalk polish TV safe accessible and recoverable through the shared player path', () => {
+  assert.match(layout, /aria-hidden="true"/);
+  assert.match(css, /overflow: hidden/);
+  assert.match(css, /prefers-reduced-motion: no-preference/);
+  assert.doesNotMatch(layout, /fetch\(|localStorage|HubConnection/);
+});

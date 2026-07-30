@@ -19,7 +19,11 @@ export default function ClassicChalkboardLayout({ content }: { content: DisplayC
   ].filter(section => section.items.length > 0);
 
   return <section className="classic-chalkboard">
-    <header><p>{content.venueName}</p><h1>Drinks</h1></header>
+    <header>
+      <span aria-hidden="true" className="chalk-illustration chalk-illustration-left">◖</span>
+      <div><p>{content.venueName}</p><h1>Drinks</h1></div>
+      <span aria-hidden="true" className="chalk-illustration chalk-illustration-right">◗</span>
+    </header>
     <div className="chalkboard-categories">{sections.map(section => <article key={section.id}>
       <div className="chalkboard-category-heading">
         <h2>{section.name}</h2>
