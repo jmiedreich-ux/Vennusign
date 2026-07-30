@@ -2,8 +2,8 @@
   min-height: 100vh;
   padding: clamp(2rem, 4vw, 5rem);
   color: #241b12;
-  background: #f6edda;
-  font-family: Georgia, "Times New Roman", serif;
+  background: var(--vennu-background, #f6edda);
+  font-family: var(--vennu-font-family, Georgia), "Times New Roman", serif;
 }
 
 .classic-diner__header {
@@ -12,7 +12,7 @@
   justify-content: space-between;
   gap: 2rem;
   padding-bottom: 1.25rem;
-  border-bottom: 0.3rem double #7b241c;
+  border-bottom: 0.3rem double var(--vennu-accent, #7b241c);
 }
 
 .classic-diner__header p,
@@ -24,7 +24,7 @@
 }
 
 .classic-diner__header p {
-  color: #7b241c;
+  color: var(--vennu-accent, #7b241c);
   font-size: clamp(1rem, 1.8vw, 1.7rem);
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -45,7 +45,7 @@
   margin-top: 1.25rem;
   padding: 0.8rem 1.25rem;
   color: #f6edda;
-  background: #7b241c;
+  background: var(--vennu-accent, #7b241c);
   text-align: center;
 }
 
@@ -76,7 +76,7 @@
   margin-bottom: 1rem;
   padding: 0.35rem 0.6rem;
   color: #f6edda;
-  background: #7b241c;
+  background: var(--vennu-accent, #7b241c);
   font-size: clamp(1.5rem, 2.4vw, 2.6rem);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -113,7 +113,7 @@
 }
 
 .classic-diner__item-line data {
-  color: #7b241c;
+  color: var(--vennu-accent, #7b241c);
   font-size: clamp(1.1rem, 1.6vw, 1.7rem);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -132,7 +132,7 @@
 }
 
 .classic-diner__section .is-sold-out span {
-  color: #7b241c;
+  color: var(--vennu-accent, #7b241c);
   font-weight: 800;
   text-transform: uppercase;
 }
