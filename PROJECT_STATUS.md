@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 06 — Display Layouts — Restaurants & Cafes: Active**
+**Phase 07 — Display Layouts — Bars: Active**
 
 ## Milestone
 
@@ -54,10 +54,12 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-06.07 — Basic Theme Domain and Persistence
 - WP-06.08 — Basic Theme Builder and Live Preview
 - WP-06.09 — Player Media Caching and Offline Resilience
+- WP-06.10 — Phase 06 Validation and Closure
+- Phase 06 — Display Layouts — Restaurants & Cafes
 
 ## Active Work Package
 
-**WP-06.10 — Phase 06 Validation and Closure** is in progress.
+None. **WP-07.01 — Advanced Theme Domain and Preset Foundation** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -72,6 +74,13 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - Added screen registration, health, one/all targeting, deterministic overflow guidance, and supported video walls.
 - Added repeatable protected-route, service, repository, worker, migration, and frontend validation.
 
+## Phase 06 Result
+
+- Delivered Photo Grid and Classic Diner layouts through the additive player registry.
+- Added multi-screen density/overflow, merchandising, pricing, daily-special, and basic-theme behavior.
+- Added versioned offline content/media caching with safe invalidation and online recovery.
+- Added repeatable layout, theme, realtime, overflow, and offline critical-journey validation.
+
 ## Standing Validation Exception
 
 - Integration-type tests are skipped for every AWP under the repository owner's standing instruction.
@@ -79,7 +88,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-06.10 — Phase 06 Validation and Closure**.
+Claim and implement **WP-07.01 — Advanced Theme Domain and Preset Foundation**.
 
 ## Phase 05 Work Packages
 
@@ -88,3 +97,7 @@ Complete, validate, review, and merge **WP-06.10 — Phase 06 Validation and Clo
 ## Phase 06 Work Packages
 
 - WP-06.01 through WP-06.10 are defined in `docs/phase-plans/phase-06-display-layouts-restaurants-cafes.md`.
+
+## Phase 07 Work Packages
+
+- WP-07.01 through WP-07.10 are defined in `docs/phase-plans/phase-07-display-layouts-bars.md`.
