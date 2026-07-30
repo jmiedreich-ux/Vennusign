@@ -3,54 +3,44 @@
 ## Work Package
 
 - ID: WP-06.02
-- Status: In review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/06.02-photo-grid-core`
-- Latest commit: Pending publication
+- Latest reviewed commit: `6cf14b3`
 - Issue: #91
-- Pull request: Pending
-- CI state: Pending GitHub Actions
+- Pull request: #92
+- Merge commit: `0467132`
+- CI state: GitHub Actions run #241 passed
 
 ## Completed This Session
 
-- Added venue and active-menu content to the display payload.
-- Added the registered responsive Photo Grid renderer with lazy CDN images and placeholders.
-- Added focused controller and frontend contract tests.
-
-## Files Changed
-
-- Display API content contract/controller and test doubles/tests.
-- Photo Grid layout, styling, display types, registry wiring, and frontend tests.
-- WP, project status, tracker, and handoff records.
+- Extended display content with venue and active-menu card data.
+- Added the registered responsive Photo Grid renderer.
+- Added focused API and frontend tests.
 
 ## Decisions
 
-- A venue-linked screen with an active menu selects `photo_grid`; unlinked or empty screens retain `default`.
-- Existing repository ordering is the source of truth for sections and items.
-- Merchandising state remains reserved for WP-06.03.
+- Active menu content selects `photo_grid`.
+- Existing repository ordering remains authoritative.
+- Merchandising states remain in WP-06.03.
 
 ## Validation
 
-- Commands: display build/tests, unit-category tests, `git diff --check`
-- Results: Pending
-- Skipped checks and reason: all integration-type tests are skipped under the standing owner instruction.
+- Results: display build passed; 26/26 display tests passed; Actions run #241 passed on reviewed head `6cf14b3`.
+- Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Publish, validate, review, and merge WP-06.02.
-
-## Known Risks or Blockers
-
-- None.
+- WP-06.03 — Photo Grid Merchandising States.
 
 ## Exact Next Action
 
-Validate and merge WP-06.02, then begin WP-06.03 — Photo Grid Merchandising States.
+Claim and implement WP-06.03.
 
 ## Do Not Redo or Reverse
 
 - Do not replace the additive registry or change player boot.
-- Do not add merchandising states or density/overflow to this package.
+- Do not fold density/overflow into WP-06.03.
