@@ -78,9 +78,10 @@ export type MenuEditorSnapshot = {
 };
 export type ManagedScreen = {
   id: string; name: string; location?: string; status: string;
+  photoGridDensity: "2x2" | "3x2" | "4x2" | "3x3";
   lastSeen?: string; registrationUrl: string;
 };
-export type ManagedScreenWrite = { name: string; location?: string };
+export type ManagedScreenWrite = { name: string; location?: string; photoGridDensity?: ManagedScreen["photoGridDensity"] };
 export type ScreenOverflowPreview = {
   capacity: number; totalItems: number; visibleItems: number; overflowItems: number;
   items: Array<{ itemId: string; sectionName: string; itemName: string; visible: boolean }>;
