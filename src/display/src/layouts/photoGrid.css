@@ -15,6 +15,7 @@ body {
 .photo-grid {
   min-height: 100vh;
   padding: clamp(1.5rem, 3vw, 4rem);
+  color: var(--vennu-foreground, #fff);
   background:
     radial-gradient(circle at top right, rgb(255 183 77 / 14%), transparent 35%),
     var(--vennu-background, #111315);
