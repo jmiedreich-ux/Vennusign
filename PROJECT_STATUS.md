@@ -50,7 +50,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-06.03 — Photo Grid Merchandising States** is the next package in roadmap order.
+**WP-06.03 — Photo Grid Merchandising States** is in review.
 
 ## Phase 04 Result
 
@@ -72,7 +72,7 @@ None. **WP-06.03 — Photo Grid Merchandising States** is the next package in ro
 
 ## Next Action
 
-Claim and implement **WP-06.03 — Photo Grid Merchandising States**.
+Validate, review, and merge **WP-06.03 — Photo Grid Merchandising States** before beginning WP-06.04.
 
 ## Phase 05 Work Packages
 
