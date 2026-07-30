@@ -60,8 +60,11 @@ public class DisplayController : ControllerBase
         var venue = await venueRepository.GetByIdAsync(venueId, cancellationToken);
         if (happyHourService is not null)
         {
-            response.IsHappyHour = (await happyHourService.GetAsync(
-                venueId, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false)).State.IsActive;
+            var happyHour = (await happyHourService.GetAsync(
+                venueId, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false)).State;
+            response.IsHappyHour = happyHour.IsActive;
+            response.HappyHourEndsAtUtc = happyHour.EndsAtUtc;
+            response.HappyHourMode = happyHour.Mode;
         }
         var theme = themeRepository is null
             ? null

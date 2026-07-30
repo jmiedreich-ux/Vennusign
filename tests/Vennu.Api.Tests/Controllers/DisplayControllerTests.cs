@@ -3,12 +3,29 @@ using Vennu.Api.Controllers;
 using Vennu.Api.Tests.TestDoubles;
 using Vennu.Core.Models;
 using Vennu.Data.Repositories;
+using Vennu.Data.Services;
 
 namespace Vennu.Api.Tests.Controllers;
 
 [Trait("Category", "Unit")]
 public class DisplayControllerTests
 {
+    [Fact]
+    public async Task GetContent_IncludesAuthoritativeHappyHourState()
+    {
+        var venueId = Guid.NewGuid();
+        var screen = new Screen { Id = Guid.NewGuid(), VenueId = venueId };
+        var screens = new FakeScreenRepository { GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(screen) };
+        var happyHour = new HappyHourFake();
+        var sut = new DisplayController(screens, new FakeVenueRepository(), new FakeMenuRepository(), null, happyHour);
+
+        var result = await sut.GetContent(screen.Id, CancellationToken.None);
+
+        var response = Assert.IsType<DisplayContentResponse>(Assert.IsType<OkObjectResult>(result.Result).Value);
+        Assert.True(response.IsHappyHour);
+        Assert.Equal(HappyHourOverrideMode.Automatic, response.HappyHourMode);
+        Assert.NotNull(response.HappyHourEndsAtUtc);
+    }
     [Fact]
     public async Task GetContent_ReturnsNotFound_WhenScreenDoesNotExist()
     {
@@ -19,6 +36,14 @@ public class DisplayControllerTests
 
         var notFound = Assert.IsType<NotFoundObjectResult>(result.Result);
         Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
+    }
+
+    private sealed class HappyHourFake : IHappyHourService
+    {
+        public Task<HappyHourSnapshot> GetAsync(Guid venueId, DateTimeOffset utcNow, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new HappyHourSnapshot(null, new HappyHourResolution(true, utcNow, utcNow.AddHours(1), HappyHourOverrideMode.Automatic), true));
+        public Task<HappyHourSnapshot> UpdateAsync(Guid venueId, TimeSpan startLocalTime, TimeSpan endLocalTime, int activeDaysMask, bool isEnabled, string overrideMode, DateTimeOffset utcNow, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
     }
 
     [Fact]

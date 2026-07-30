@@ -24,6 +24,10 @@ public class DisplayContentResponse
 
     public bool IsHappyHour { get; set; }
 
+    public DateTimeOffset? HappyHourEndsAtUtc { get; set; }
+
+    public string HappyHourMode { get; set; } = "automatic";
+
     public string PhotoGridDensity { get; set; } = "3x2";
 
     public int PhotoGridOverflowItems { get; set; }

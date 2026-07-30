@@ -2,44 +2,42 @@
 
 ## Work Package
 
-- ID: WP-08.05
-- Status: Complete and merged
+- ID: WP-08.06
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/08.05-happy-hour-scheduling`
-- Issue: #160
-- Pull request: #161
-- Latest reviewed commit: `0451916`
-- Merge commit: `def9221`
-- CI state: GitHub Actions run #377 passed
+- Branch: `wp/08.06-happy-hour-admin-display`
+- Issue: #163
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added a Pro-tier happy-hour schedule and manual override modes.
-- Added pure regular/overnight venue-timezone resolution.
-- Added authoritative display state and transition-only evaluation.
+- Added tier-aware happy-hour administration.
+- Added authoritative player banner and countdown.
+- Added safe realtime state patching and focused frontend/API tests.
 
 ## Decisions
 
-- Automatic mode uses UTC plus venue IANA timezone.
-- Force-on and force-off take precedence without rewriting the schedule.
+- UI remains visible and soft locked without entitlement.
+- Countdown uses authoritative UTC end time.
 
 ## Validation
 
-- Results: Release build, admin/display production builds and tests, and required non-integration tests passed in Actions run #377.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-08.06 — Happy Hour Administration and Display.
+- Validate, review, and merge WP-08.06.
 
 ## Exact Next Action
 
-Claim and implement WP-08.06.
+Publish WP-08.06 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not redo WP-08.05 schedule, resolver, or manual modes.
-- WP-08.06 should consume the authoritative happy-hour state and add tier-aware controls.
+- Do not change WP-08.05 resolver or persistence semantics.
+- Do not add playlists, broadcasts, or promotions.

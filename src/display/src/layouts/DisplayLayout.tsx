@@ -6,11 +6,13 @@ import DailySpecialHeroLayout from './DailySpecialHeroLayout';
 import NeonChalkboardLayout from './NeonChalkboardLayout';
 import PhotoGridLayout from './PhotoGridLayout';
 import SplitLayout from './SplitLayout';
+import HappyHourBanner from './HappyHourBanner';
 import './classicDiner.css';
 import './dailySpecialHero.css';
 import './neonChalkboard.css';
 import './photoGrid.css';
 import './splitLayout.css';
+import './happyHour.css';
 
 export type DisplayLayoutProps = {
   content: DisplayContent;
@@ -76,6 +78,7 @@ export function DisplayFrame({ children, content, layoutKey, requestedLayoutKey,
       data-layout-fallback={usedFallback ? 'true' : 'false'}
       style={style}
     >
+      <HappyHourBanner content={content} />
       {children}
     </main>
   );

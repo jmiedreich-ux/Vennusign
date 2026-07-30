@@ -10,6 +10,8 @@ export type DisplayContent = {
   menuName?: string | null;
   dailySpecial?: string | null;
   isHappyHour?: boolean;
+  happyHourEndsAtUtc?: string | null;
+  happyHourMode?: 'automatic' | 'force_on' | 'force_off';
   photoGridDensity?: '2x2' | '3x2' | '4x2' | '3x3';
   photoGridOverflowItems?: number;
   splitRatio?: '40_60' | '50_50';
