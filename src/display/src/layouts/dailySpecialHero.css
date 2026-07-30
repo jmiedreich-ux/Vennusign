@@ -1,0 +1,161 @@
+.daily-special-hero {
+  position: relative;
+  display: grid;
+  grid-template: auto 1fr auto / minmax(0, 1fr);
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  color: #fff;
+  background: var(--vennu-background, #111315);
+  font-family: var(--vennu-font-family, Inter), sans-serif;
+}
+
+.daily-special-hero__media,
+.daily-special-hero__scrim {
+  position: absolute;
+  inset: 0;
+}
+
+.daily-special-hero__media img,
+.daily-special-hero__fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.daily-special-hero__fallback {
+  background:
+    radial-gradient(circle at 72% 22%, color-mix(in srgb, var(--vennu-accent) 75%, transparent), transparent 38%),
+    linear-gradient(135deg, var(--vennu-background), #050505);
+}
+
+.daily-special-hero__scrim {
+  background:
+    linear-gradient(to right, rgb(0 0 0 / 88%) 0%, rgb(0 0 0 / 44%) 58%, rgb(0 0 0 / 68%) 100%),
+    linear-gradient(to top, rgb(0 0 0 / 78%), transparent 48%);
+}
+
+.daily-special-hero header,
+.daily-special-hero__featured,
+.daily-special-hero__secondary {
+  position: relative;
+  z-index: 1;
+}
+
+.daily-special-hero header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: clamp(2rem, 4vw, 4rem) clamp(2rem, 5vw, 6rem);
+}
+
+.daily-special-hero header p,
+.daily-special-hero header strong,
+.daily-special-hero__featured h1,
+.daily-special-hero__featured p,
+.daily-special-hero__secondary p {
+  margin: 0;
+}
+
+.daily-special-hero header p {
+  color: var(--vennu-accent, #ffb74d);
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.daily-special-hero header strong {
+  font-size: clamp(1rem, 1.8vw, 1.8rem);
+}
+
+.daily-special-hero__featured {
+  align-self: end;
+  max-width: min(70vw, 68rem);
+  padding: 0 clamp(2rem, 5vw, 6rem) clamp(2rem, 4vw, 4rem);
+}
+
+.daily-special-hero__badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  color: var(--vennu-accent-foreground, #111315);
+  background: var(--vennu-accent, #ffb74d);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.daily-special-hero__featured h1 {
+  margin-top: 0.8rem;
+  font-size: clamp(3.2rem, 8vw, 8.5rem);
+  line-height: 0.88;
+  text-wrap: balance;
+}
+
+.daily-special-hero__featured p {
+  max-width: 50rem;
+  margin-top: 1rem;
+  font-size: clamp(1.1rem, 1.7vw, 1.8rem);
+  line-height: 1.35;
+}
+
+.daily-special-hero__featured data {
+  display: block;
+  margin-top: 1rem;
+  color: var(--vennu-accent, #ffb74d);
+  font-size: clamp(2rem, 4vw, 4rem);
+  font-weight: 900;
+}
+
+.daily-special-hero__secondary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 0 clamp(2rem, 5vw, 6rem) clamp(2rem, 4vw, 4rem);
+}
+
+.daily-special-hero__secondary article {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+  border-top: 0.15rem solid var(--vennu-accent, #ffb74d);
+  padding: 0.8rem;
+  background: rgb(0 0 0 / 56%);
+}
+
+.daily-special-hero__secondary strong {
+  font-size: clamp(1rem, 1.5vw, 1.5rem);
+}
+
+.daily-special-hero__secondary p {
+  margin-top: 0.25rem;
+  opacity: 0.78;
+  font-size: 0.85em;
+}
+
+.daily-special-hero__secondary data {
+  color: var(--vennu-accent, #ffb74d);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+@media (max-aspect-ratio: 4 / 3) {
+  .daily-special-hero__featured {
+    max-width: 100%;
+  }
+
+  .daily-special-hero__featured h1 {
+    font-size: clamp(2.8rem, 10vw, 6rem);
+  }
+
+  .daily-special-hero__secondary {
+    grid-template-columns: 1fr;
+  }
+
+  .daily-special-hero__secondary article:nth-child(n + 3) {
+    display: none;
+  }
+}
