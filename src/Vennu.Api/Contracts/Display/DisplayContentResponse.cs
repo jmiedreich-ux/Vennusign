@@ -42,6 +42,10 @@ public class DisplayContentResponse
 
     public DisplayPromotionResponse? Promotion { get; set; }
 
+    public IReadOnlyCollection<Vennu.Core.Models.TapCategory> TapCategories { get; set; } = [];
+
+    public IReadOnlyCollection<Vennu.Core.Models.TapItem> TapItems { get; set; } = [];
+
     public DisplayThemeResponse Theme { get; set; } = new();
 
     public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];

@@ -2,44 +2,45 @@
 
 ## Work Package
 
-- ID: WP-09.02
-- Status: Complete and merged
+- ID: WP-09.03
+- Status: Ready for review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/09.02-tap-list-administration`
-- Issue: #181
-- Pull request: #182
-- Latest reviewed commit: `9a7172b`
-- Merge commit: `7cca378`
-- CI state: GitHub Actions run #412 passed
+- Branch: `wp/09.03-classic-chalkboard-core`
+- Issue: #184
+- Pull request: pending
+- Latest reviewed commit: pending
+- Merge commit: pending
+- CI state: pending GitHub Actions
 
 ## Completed This Session
 
-- Added protected venue-scoped tap category/item CRUD and exact reorder APIs.
-- Added bounded validation, category ownership, availability, and coming-soon controls.
-- Added tier-visible All Layouts soft locking and venue notification wiring.
+- Added the additive `classic_chalkboard` layout and ordered migration 029.
+- Added venue-scoped tap categories and items to the established display payload.
+- Added the Drinks board with category/per-item pricing, two-column lists, and unavailable treatment.
+- Added focused API, layout-registry, migration, and display source tests.
 
 ## Decisions
 
-- Category deletion is rejected while venue items reference it.
-- Reorder requests must contain every venue row exactly once.
+- The tap layout reuses the existing display endpoint, schedule/promotion resolution, themes, realtime, and offline cache path.
+- Tap payload retrieval occurs only for `classic_chalkboard` and does not require an active menu.
 
 ## Validation
 
-- Results: restore, Release build, admin/display production builds/tests, and required non-integration tests passed in Actions run #412.
+- Results: local source tests and GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-09.03 — Classic Chalkboard Drinks Core.
+- Publish, validate, review, and merge WP-09.03.
 
 ## Exact Next Action
 
-Claim and implement WP-09.03.
+Publish the branch and PR, then wait for the exact-head GitHub Actions result.
 
 ## Do Not Redo or Reverse
 
-- Do not add a tap-board display layout.
-- Do not change pairing behavior.
+- Do not add admin layout selection/preview or chalk illustration polish assigned to WP-09.04.
+- Do not add Tap Strips, Digital Tap Board, or pairing behavior.

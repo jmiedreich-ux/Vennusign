@@ -8,6 +8,7 @@ import PhotoGridLayout from './PhotoGridLayout';
 import SplitLayout from './SplitLayout';
 import HappyHourBanner from './HappyHourBanner';
 import PromotionBanner from './PromotionBanner';
+import ClassicChalkboardLayout from './ClassicChalkboardLayout';
 import './classicDiner.css';
 import './dailySpecialHero.css';
 import './neonChalkboard.css';
@@ -15,6 +16,7 @@ import './photoGrid.css';
 import './splitLayout.css';
 import './happyHour.css';
 import './promotion.css';
+import './classicChalkboard.css';
 
 export type DisplayLayoutProps = {
   content: DisplayContent;
@@ -136,6 +138,11 @@ const layoutRegistry = createLayoutRegistry<ComponentType<DisplayLayoutProps>>([
     key: 'daily_special_hero',
     label: 'Daily Special Hero',
     renderer: DailySpecialHeroLayout
+  },
+  {
+    key: 'classic_chalkboard',
+    label: 'Classic Chalkboard Drinks',
+    renderer: ClassicChalkboardLayout
   }
 ]);
 
