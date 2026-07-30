@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Vennu.Api.Contracts.Display;
+using Vennu.Api.Services;
+using Vennu.Core.Models;
 using Vennu.Data.Repositories;
 
 namespace Vennu.Api.Controllers;
@@ -81,8 +83,75 @@ public class DisplayController : ControllerBase
         }
 
         response.Layout = "photo_grid";
-        response.Sections = displaySections;
+        var wallScreens = await ResolveWallScreensAsync(screen, venueId, cancellationToken);
+        var screenIndex = Array.FindIndex(wallScreens, candidate => candidate.Id == screen.Id);
+        screenIndex = screenIndex < 0 ? 0 : screenIndex;
+        var itemOffset = wallScreens
+            .Take(screenIndex)
+            .Sum(candidate => PhotoGridDensity.Capacity(candidate.PhotoGridDensity));
+        var screenCapacity = PhotoGridDensity.Capacity(screen.PhotoGridDensity);
+        var wallCapacity = wallScreens.Sum(candidate => PhotoGridDensity.Capacity(candidate.PhotoGridDensity));
+        var totalItems = displaySections.Sum(section => section.Items.Count);
+
+        response.PhotoGridDensity = PhotoGridDensity.Normalize(screen.PhotoGridDensity);
+        response.PhotoGridOverflowItems = screenIndex == wallScreens.Length - 1
+            ? Math.Max(0, totalItems - wallCapacity)
+            : 0;
+        response.Sections = SliceSections(displaySections, itemOffset, screenCapacity);
         return Ok(response);
+    }
+
+    private async Task<Screen[]> ResolveWallScreensAsync(
+        Screen screen,
+        Guid venueId,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(screen.WallGroup))
+        {
+            return [screen];
+        }
+
+        var wallScreens = (await screenRepository.GetByVenueIdAsync(venueId, cancellationToken))
+            .Where(candidate => string.Equals(candidate.WallGroup, screen.WallGroup, StringComparison.Ordinal))
+            .OrderBy(candidate => candidate.WallPosition ?? int.MaxValue)
+            .ThenBy(candidate => candidate.Id)
+            .ToArray();
+        return wallScreens.Any(candidate => candidate.Id == screen.Id)
+            ? wallScreens
+            : [screen];
+    }
+
+    private static IReadOnlyCollection<DisplayMenuSectionResponse> SliceSections(
+        IReadOnlyCollection<DisplayMenuSectionResponse> sections,
+        int itemOffset,
+        int capacity)
+    {
+        var remainingOffset = itemOffset;
+        var remainingCapacity = capacity;
+        var result = new List<DisplayMenuSectionResponse>();
+        foreach (var section in sections)
+        {
+            if (remainingCapacity == 0)
+            {
+                break;
+            }
+
+            var available = section.Items.Skip(remainingOffset).Take(remainingCapacity).ToArray();
+            remainingOffset = Math.Max(0, remainingOffset - section.Items.Count);
+            if (available.Length == 0)
+            {
+                continue;
+            }
+
+            result.Add(new DisplayMenuSectionResponse
+            {
+                Id = section.Id,
+                Name = section.Name,
+                Items = available
+            });
+            remainingCapacity -= available.Length;
+        }
+        return result;
     }
 
     private static IReadOnlyCollection<string> ParseTags(string? tags) =>
