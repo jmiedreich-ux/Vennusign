@@ -28,6 +28,8 @@ public class DisplayContentResponse
 
     public int PhotoGridOverflowItems { get; set; }
 
+    public string SplitRatio { get; set; } = "40_60";
+
     public DisplayThemeResponse Theme { get; set; } = new();
 
     public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];
