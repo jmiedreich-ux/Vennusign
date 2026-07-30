@@ -1,7 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T05:18:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-07-30T05:47:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-07.09",
+      "branch": "wp/07.09-hero-rotation-admin",
+      "issue": 142,
+      "status": "In Progress"
+    }
+  ],
   "nextAvailableWorkPackage": "WP-07.09",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
