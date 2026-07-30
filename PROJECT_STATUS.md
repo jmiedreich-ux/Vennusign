@@ -71,10 +71,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-08.02 — Venue Timezone Schedule Resolver
 - WP-08.03 — Meal Period Administration
 - WP-08.04 — Scheduled Content Activation
+- WP-08.05 — Happy Hour Scheduling and Manual Override
 
 ## Active Work Package
 
-**WP-08.05 — Happy Hour Scheduling and Manual Override** is in progress.
+None. **WP-08.06 — Happy Hour Administration and Display** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -109,7 +110,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-08.05 — Happy Hour Scheduling and Manual Override**.
+Claim and implement **WP-08.06 — Happy Hour Administration and Display**.
 
 ## Phase 05 Work Packages
 
