@@ -71,7 +71,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-08.02 — Venue Timezone Schedule Resolver** is the next package in roadmap order.
+**WP-08.02 — Venue Timezone Schedule Resolver** is in progress.
 
 ## Phase 04 Result
 
@@ -106,7 +106,7 @@ None. **WP-08.02 — Venue Timezone Schedule Resolver** is the next package in r
 
 ## Next Action
 
-Claim and implement **WP-08.02 — Venue Timezone Schedule Resolver**.
+Complete, validate, review, and merge **WP-08.02 — Venue Timezone Schedule Resolver**.
 
 ## Phase 05 Work Packages
 
