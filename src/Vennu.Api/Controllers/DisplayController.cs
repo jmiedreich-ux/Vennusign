@@ -3,6 +3,7 @@ using Vennu.Api.Contracts.Display;
 using Vennu.Api.Services;
 using Vennu.Core.Models;
 using Vennu.Data.Repositories;
+using Vennu.Data.Services;
 
 namespace Vennu.Api.Controllers;
 
@@ -14,14 +15,18 @@ public class DisplayController : ControllerBase
     private readonly IVenueRepository venueRepository;
     private readonly IMenuRepository menuRepository;
     private readonly IVenueThemeRepository? themeRepository;
+    private readonly IHappyHourService? happyHourService;
+    private readonly TimeProvider timeProvider;
 
     public DisplayController(
         IScreenRepository screenRepository,
         IVenueRepository venueRepository,
         IMenuRepository menuRepository,
-        IVenueThemeRepository? themeRepository = null) =>
-        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository) =
-        (screenRepository, venueRepository, menuRepository, themeRepository);
+        IVenueThemeRepository? themeRepository = null,
+        IHappyHourService? happyHourService = null,
+        TimeProvider? timeProvider = null) =>
+        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.timeProvider) =
+        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, timeProvider ?? TimeProvider.System);
 
     [HttpGet("{screenId:guid}/content")]
     [ProducesResponseType<DisplayContentResponse>(StatusCodes.Status200OK)]
@@ -53,6 +58,11 @@ public class DisplayController : ControllerBase
 
         var venueId = screen.VenueId.Value;
         var venue = await venueRepository.GetByIdAsync(venueId, cancellationToken);
+        if (happyHourService is not null)
+        {
+            response.IsHappyHour = (await happyHourService.GetAsync(
+                venueId, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false)).State.IsActive;
+        }
         var theme = themeRepository is null
             ? null
             : await themeRepository.GetByVenueIdAsync(venueId, cancellationToken);
