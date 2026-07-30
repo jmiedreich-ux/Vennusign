@@ -23,6 +23,7 @@ public sealed class ScreenManagementServiceTests
         Assert.Equal(venueId, screens.LastCreatedScreen?.VenueId);
         Assert.Equal("3x2", screens.LastCreatedScreen?.PhotoGridDensity);
         Assert.Equal("photo_grid", screens.LastCreatedScreen?.DisplayLayout);
+        Assert.Equal("40_60", screens.LastCreatedScreen?.SplitRatio);
         Assert.Matches("^sc-[a-z0-9]{6}$", screens.LastCreatedScreen?.ScreenKey);
     }
 
@@ -105,6 +106,28 @@ public sealed class ScreenManagementServiceTests
         Assert.Equal("classic_diner", screens.LastUpdatedScreen?.DisplayLayout);
         await Assert.ThrowsAsync<ArgumentException>(
             () => service.UpdateAsync(venueId, screenId, "Bar", null, null, "neon"));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_PersistsSupportedSplitLayoutRatio()
+    {
+        var venueId = Guid.NewGuid();
+        var screenId = Guid.NewGuid();
+        var screens = new FakeScreenRepository
+        {
+            GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(
+                new Screen { Id = screenId, VenueId = venueId, Name = "Bar" })
+        };
+        var service = CreateService(venueId, screens, new RecordingNotifier());
+
+        var updated = await service.UpdateAsync(
+            venueId, screenId, "Bar", null, null, " Split Layout ", "50/50");
+
+        Assert.Equal("split_layout", updated?.DisplayLayout);
+        Assert.Equal("50_50", updated?.SplitRatio);
+        Assert.Equal("50_50", screens.LastUpdatedScreen?.SplitRatio);
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => service.UpdateAsync(venueId, screenId, "Bar", null, null, "split_layout", "70_30"));
     }
 
     [Fact]
