@@ -74,10 +74,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-08.05 — Happy Hour Scheduling and Manual Override
 - WP-08.06 — Happy Hour Administration and Display
 - WP-08.07 — Playlist Domain and Player Rotation
+- WP-08.08 — Emergency Broadcast
 
 ## Active Work Package
 
-**WP-08.08 — Emergency Broadcast** is in progress.
+None. **WP-08.09 — Date-Range Promotions** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -112,7 +113,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-08.08 — Emergency Broadcast**.
+Claim and implement **WP-08.09 — Date-Range Promotions**.
 
 ## Phase 05 Work Packages
 
