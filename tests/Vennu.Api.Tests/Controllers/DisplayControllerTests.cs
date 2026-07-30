@@ -149,7 +149,15 @@ public class DisplayControllerTests
             VenueId = venueId,
             BackgroundColor = "#102030",
             AccentColor = "#ABCDEF",
-            FontFamily = "Georgia"
+            FontFamily = "Georgia",
+            PresetKey = "violet_lounge",
+            TitleColor = "#F5E9FF",
+            GlowColor = "#A855F7",
+            BoardBackgroundColor = "#12091C",
+            SectionColors = "#C084FC,#F472B6",
+            GlowIntensity = 1.15m,
+            TitleFont = "Pacifico",
+            ItemFont = "Kalam"
         });
         var sut = new DisplayController(
             screenRepository,
@@ -164,6 +172,12 @@ public class DisplayControllerTests
         Assert.Equal("#102030", response.Theme.BackgroundColor);
         Assert.Equal("#ABCDEF", response.Theme.AccentColor);
         Assert.Equal("Georgia", response.Theme.FontFamily);
+        Assert.Equal("violet_lounge", response.Theme.PresetKey);
+        Assert.Equal("#A855F7", response.Theme.GlowColor);
+        Assert.Equal(["#C084FC", "#F472B6"], response.Theme.SectionColors);
+        Assert.Equal(1.15m, response.Theme.GlowIntensity);
+        Assert.Equal("Pacifico", response.Theme.TitleFont);
+        Assert.Equal("Kalam", response.Theme.ItemFont);
     }
 
     [Fact]

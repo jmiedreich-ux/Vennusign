@@ -32,7 +32,15 @@ export function DisplayFrame({ children, content, layoutKey, requestedLayoutKey,
   const theme = content.theme ?? {
     backgroundColor: '#111315',
     accentColor: '#FFB74D',
-    fontFamily: 'Inter'
+    fontFamily: 'Inter',
+    presetKey: 'bar_classic',
+    titleColor: '#F8F5E9',
+    glowColor: '#00E5FF',
+    boardBackgroundColor: '#071013',
+    sectionColors: ['#00E5FF', '#FF2BD6', '#FFE66D', '#7CFF6B'],
+    glowIntensity: 1,
+    titleFont: 'Righteous',
+    itemFont: 'Caveat'
   };
   const style = {
     '--vennu-background': theme.backgroundColor,
@@ -40,6 +48,16 @@ export function DisplayFrame({ children, content, layoutKey, requestedLayoutKey,
     '--vennu-font-family': theme.fontFamily,
     '--vennu-foreground': contrastColor(theme.backgroundColor),
     '--vennu-accent-foreground': contrastColor(theme.accentColor),
+    '--vennu-title-color': theme.titleColor,
+    '--vennu-glow-color': theme.glowColor,
+    '--vennu-board-background': theme.boardBackgroundColor,
+    '--vennu-section-color-1': theme.sectionColors[0] ?? theme.glowColor,
+    '--vennu-section-color-2': theme.sectionColors[1] ?? theme.glowColor,
+    '--vennu-section-color-3': theme.sectionColors[2] ?? theme.glowColor,
+    '--vennu-section-color-4': theme.sectionColors[3] ?? theme.glowColor,
+    '--vennu-glow-intensity': theme.glowIntensity,
+    '--vennu-title-font': theme.titleFont,
+    '--vennu-item-font': theme.itemFont,
     fontFamily: theme.fontFamily
   } as CSSProperties;
   return (

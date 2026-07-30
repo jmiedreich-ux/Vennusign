@@ -60,7 +60,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-07.02 — Full Theme Builder Controls and Preview** is the next package in roadmap order.
+**WP-07.02 — Full Theme Builder Controls and Preview** is in progress.
 
 ## Phase 04 Result
 
@@ -89,7 +89,7 @@ None. **WP-07.02 — Full Theme Builder Controls and Preview** is the next packa
 
 ## Next Action
 
-Claim and implement **WP-07.02 — Full Theme Builder Controls and Preview**.
+Complete, validate, review, and merge **WP-07.02 — Full Theme Builder Controls and Preview**.
 
 ## Phase 05 Work Packages
 

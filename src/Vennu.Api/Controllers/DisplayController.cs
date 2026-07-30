@@ -60,7 +60,16 @@ public class DisplayController : ControllerBase
         {
             BackgroundColor = theme?.BackgroundColor ?? "#111315",
             AccentColor = theme?.AccentColor ?? "#FFB74D",
-            FontFamily = theme?.FontFamily ?? "Inter"
+            FontFamily = theme?.FontFamily ?? "Inter",
+            PresetKey = theme?.PresetKey ?? "bar_classic",
+            TitleColor = theme?.TitleColor ?? "#F8F5E9",
+            GlowColor = theme?.GlowColor ?? "#00E5FF",
+            BoardBackgroundColor = theme?.BoardBackgroundColor ?? "#071013",
+            SectionColors = (theme?.SectionColors ?? "#00E5FF,#FF2BD6,#FFE66D,#7CFF6B")
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+            GlowIntensity = theme?.GlowIntensity ?? 1.00m,
+            TitleFont = theme?.TitleFont ?? "Righteous",
+            ItemFont = theme?.ItemFont ?? "Caveat"
         };
         var menu = (await menuRepository.GetMenusAsync(venueId, cancellationToken))
             .FirstOrDefault(candidate => candidate.IsActive);

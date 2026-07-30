@@ -37,7 +37,15 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
       ? {
           backgroundColor: preview.get('background') ?? '#111315',
           accentColor: preview.get('accent') ?? '#FFB74D',
-          fontFamily: preview.get('font') ?? 'Inter'
+          fontFamily: preview.get('font') ?? 'Inter',
+          presetKey: preview.get('preset') ?? 'custom',
+          titleColor: preview.get('title') ?? '#F8F5E9',
+          glowColor: preview.get('glow') ?? '#00E5FF',
+          boardBackgroundColor: preview.get('board') ?? '#071013',
+          sectionColors: (preview.get('sections') ?? '#00E5FF,#FF2BD6,#FFE66D,#7CFF6B').split(','),
+          glowIntensity: Number(preview.get('intensity') ?? '1'),
+          titleFont: preview.get('titleFont') ?? 'Righteous',
+          itemFont: preview.get('itemFont') ?? 'Caveat'
         } as DisplayContent['theme']
       : undefined;
     const abortController = new AbortController();
