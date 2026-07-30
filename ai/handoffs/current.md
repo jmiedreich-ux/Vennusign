@@ -2,44 +2,41 @@
 
 ## Work Package
 
-- ID: WP-06.09
-- Status: Complete and merged
+- ID: WP-06.10
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/06.09-player-media-cache`
-- Issue: #112
-- Pull request: #113
-- Latest reviewed commit: `9848aff`
-- Merge commit: `23bde9b`
-- CI state: GitHub Actions run #276 passed
+- Branch: `wp/06.10-phase-06-validation`
+- Issue: #115
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added versioned per-screen display content caching and transient-failure fallback.
-- Added versioned service-worker image caching with old-version cleanup.
-- Added online recovery behavior and focused display tests.
+- Added the Phase 06 validation matrix.
+- Added composed layout, theme, realtime, overflow, and offline journey tests.
+- Recorded integration exclusions and residual production risks.
 
 ## Decisions
 
-- A 404 never revives cached content.
-- Cached content is bounded by screen identity, version, validity, and age.
-- Image loading is network-first so recovery refreshes the cache naturally.
+- Closure validation composes existing bounded behavior without extending the product scope.
+- Browser/network and Azure SQL integration remain explicitly excluded.
 
 ## Validation
 
-- Results: solution build, 21 admin tests, 40 display tests, and non-integration unit tests passed in Actions run #276.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-06.10 — Phase 06 Validation and Closure.
+- Validate, review, and merge WP-06.10.
 
 ## Exact Next Action
 
-Claim and implement WP-06.10.
+Publish WP-06.10 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not add an installable PWA shell, scheduling, POS, or Phase 07 behavior.
+- Do not add Phase 07 layouts or advanced theme controls to the closure package.
