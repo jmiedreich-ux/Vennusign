@@ -12,9 +12,9 @@ import {
 import type { AdminConfiguration } from "./config";
 import VideoWallBuilder from "./VideoWallBuilder";
 
-type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string };
+type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; allLayoutsEnabled: boolean };
 
-export default function ScreenManagement({ configuration, apiKey, venueId }: Props) {
+export default function ScreenManagement({ configuration, apiKey, venueId, allLayoutsEnabled }: Props) {
   const [screens, setScreens] = useState<ManagedScreen[]>([]);
   const [newName, setNewName] = useState("");
   const [newLocation, setNewLocation] = useState("");
@@ -86,6 +86,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId }: Pro
     </div>
     {error ? <p className="state error">{error}</p> : null}
     {notice ? <p className="screen-notice" role="status">{notice}</p> : null}
+    {!allLayoutsEnabled ? <aside className="tier-prompt" role="status"><div><strong>Bar layouts require All Layouts</strong><p>Neon Chalkboard remains visible in the selector. Upgrade to Pro or add a venue override to choose it.</p></div></aside> : null}
     <form className="screen-create" onSubmit={create}>
       <input aria-label="New screen name" maxLength={200} required value={newName} onChange={event => setNewName(event.target.value)} placeholder="Screen name" />
       <input aria-label="New screen location" maxLength={200} value={newLocation} onChange={event => setNewLocation(event.target.value)} placeholder="Location (optional)" />
@@ -110,6 +111,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId }: Pro
           >
             <option value="photo_grid">Photo Grid</option>
             <option value="classic_diner">Classic Diner</option>
+            <option disabled={!allLayoutsEnabled} value="neon_chalkboard">Neon Chalkboard · Pro</option>
           </select>
         </label>
         {screen.displayLayout === "photo_grid" ? <label>Photo Grid density
