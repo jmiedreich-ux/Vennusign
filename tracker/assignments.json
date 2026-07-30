@@ -1,15 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T07:31:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-08.06",
-      "branch": "wp/08.06-happy-hour-admin-display",
-      "issue": 163,
-      "status": "In Progress"
-    }
-  ],
-  "nextAvailableWorkPackage": "WP-08.06",
+  "updatedUtc": "2026-07-30T07:45:00Z",
+  "activeAssignments": [],
+  "nextAvailableWorkPackage": "WP-08.07",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
