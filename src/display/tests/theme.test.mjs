@@ -8,7 +8,7 @@ const photo = await readFile(new URL('../src/layouts/photoGrid.css', import.meta
 const diner = await readFile(new URL('../src/layouts/classicDiner.css', import.meta.url), 'utf8');
 
 test('player applies persisted and live theme values through shared variables', () => {
-  for (const key of ['backgroundColor', 'accentColor', 'fontFamily']) {
+  for (const key of ['backgroundColor', 'accentColor', 'fontFamily', 'titleColor', 'glowColor', 'boardBackgroundColor', 'sectionColors', 'glowIntensity', 'titleFont', 'itemFont']) {
     assert.match(frame, new RegExp(`theme\\.${key}`));
   }
   assert.match(frame, /contrastColor/);
@@ -25,4 +25,7 @@ test('player-backed preview applies draft theme without heartbeat or realtime si
   assert.match(page, /preview\.get\('preview'\) === 'theme'/);
   assert.match(page, /previewTheme \? \{ \.\.\.content, theme: previewTheme \} : content/);
   assert.match(page, /if \(previewTheme\)/);
+  for (const parameter of ["preset", "title", "glow", "board", "sections", "intensity", "titleFont", "itemFont"]) {
+    assert.match(page, new RegExp(`preview\\.get\\('${parameter}'\\)`));
+  }
 });
