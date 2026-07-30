@@ -11,6 +11,9 @@ test('player applies persisted and live theme values through shared variables', 
   for (const key of ['backgroundColor', 'accentColor', 'fontFamily']) {
     assert.match(frame, new RegExp(`theme\\.${key}`));
   }
+  assert.match(frame, /contrastColor/);
+  assert.match(frame, /--vennu-foreground/);
+  assert.match(frame, /--vennu-accent-foreground/);
   for (const css of [photo, diner]) {
     assert.match(css, /--vennu-background/);
     assert.match(css, /--vennu-accent/);
