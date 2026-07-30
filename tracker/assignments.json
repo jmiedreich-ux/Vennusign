@@ -1,15 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T06:11:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-08.01",
-      "branch": "wp/08.01-meal-period-domain-persistence",
-      "issue": 148,
-      "status": "In Progress"
-    }
-  ],
-  "nextAvailableWorkPackage": "WP-08.01",
+  "updatedUtc": "2026-07-30T06:16:00Z",
+  "activeAssignments": [],
+  "nextAvailableWorkPackage": "WP-08.02",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
