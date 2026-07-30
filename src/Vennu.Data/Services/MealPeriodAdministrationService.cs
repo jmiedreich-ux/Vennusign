@@ -31,9 +31,13 @@ public sealed class MealPeriodAdministrationService(
         TimeSpan endLocalTime,
         int activeDaysMask,
         bool isEnabled,
+        string? targetLayout = null,
+        string? menuFilter = null,
+        string? themePresetKey = null,
         CancellationToken cancellationToken = default)
     {
         Validate(venueId, name, startLocalTime, endLocalTime, activeDaysMask);
+        var targets = NormalizeTargets(targetLayout, menuFilter, themePresetKey);
         var existing = await repository.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var period = new MealPeriod
@@ -45,6 +49,9 @@ public sealed class MealPeriodAdministrationService(
             EndLocalTime = endLocalTime,
             ActiveDaysMask = activeDaysMask,
             IsEnabled = isEnabled,
+            TargetLayout = targets.Layout,
+            MenuFilter = targets.MenuFilter,
+            ThemePresetKey = targets.ThemePresetKey,
             SortOrder = existing.Count == 0 ? 0 : existing.Max(item => item.SortOrder) + 1,
             CreatedUtc = now,
             UpdatedUtc = now
@@ -61,9 +68,13 @@ public sealed class MealPeriodAdministrationService(
         TimeSpan endLocalTime,
         int activeDaysMask,
         bool isEnabled,
+        string? targetLayout = null,
+        string? menuFilter = null,
+        string? themePresetKey = null,
         CancellationToken cancellationToken = default)
     {
         Validate(venueId, name, startLocalTime, endLocalTime, activeDaysMask);
+        var targets = NormalizeTargets(targetLayout, menuFilter, themePresetKey);
         RequireId(mealPeriodId, nameof(mealPeriodId));
         var periods = await repository.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
         var period = periods.SingleOrDefault(item => item.Id == mealPeriodId);
@@ -77,6 +88,9 @@ public sealed class MealPeriodAdministrationService(
         period.EndLocalTime = endLocalTime;
         period.ActiveDaysMask = activeDaysMask;
         period.IsEnabled = isEnabled;
+        period.TargetLayout = targets.Layout;
+        period.MenuFilter = targets.MenuFilter;
+        period.ThemePresetKey = targets.ThemePresetKey;
         period.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
         await repository.UpdateAsync(period, cancellationToken).ConfigureAwait(false);
         return period;
@@ -131,6 +145,30 @@ public sealed class MealPeriodAdministrationService(
 
     private static bool Intersects((int Start, int End) first, (int Start, int End) second) =>
         first.Start < second.End && second.Start < first.End;
+
+    private static (string? Layout, string? MenuFilter, string? ThemePresetKey) NormalizeTargets(
+        string? targetLayout,
+        string? menuFilter,
+        string? themePresetKey)
+    {
+        var layout = NormalizeOptional(targetLayout, 50, nameof(targetLayout));
+        var filter = NormalizeOptional(menuFilter, 100, nameof(menuFilter));
+        var preset = NormalizeOptional(themePresetKey, 50, nameof(themePresetKey));
+        if (layout is not null && !new[] { "photo_grid", "classic_diner", "neon_chalkboard", "split_layout", "daily_special_hero" }.Contains(layout, StringComparer.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Target layout is not supported.", nameof(targetLayout));
+        }
+        return (layout?.ToLowerInvariant(), filter, preset?.ToLowerInvariant());
+    }
+
+    private static string? NormalizeOptional(string? value, int maximumLength, string parameterName)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        var normalized = value.Trim();
+        return normalized.Length <= maximumLength
+            ? normalized
+            : throw new ArgumentException($"Value cannot exceed {maximumLength} characters.", parameterName);
+    }
 
     private static void RequireId(Guid id, string name)
     {

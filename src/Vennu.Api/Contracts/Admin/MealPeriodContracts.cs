@@ -7,7 +7,10 @@ public sealed record MealPeriodWriteRequest(
     TimeSpan StartLocalTime,
     TimeSpan EndLocalTime,
     int ActiveDaysMask,
-    bool IsEnabled);
+    bool IsEnabled,
+    string? TargetLayout,
+    string? MenuFilter,
+    string? ThemePresetKey);
 
 public sealed record MealPeriodAdministrationResponse(
     IReadOnlyCollection<Vennu.Core.Models.MealPeriod> MealPeriods,

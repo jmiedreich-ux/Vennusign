@@ -73,7 +73,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-08.04 — Scheduled Content Activation** is the next package in roadmap order.
+**WP-08.04 — Scheduled Content Activation** is in progress.
 
 ## Phase 04 Result
 
@@ -108,7 +108,7 @@ None. **WP-08.04 — Scheduled Content Activation** is the next package in roadm
 
 ## Next Action
 
-Claim and implement **WP-08.04 — Scheduled Content Activation**.
+Complete, validate, review, and merge **WP-08.04 — Scheduled Content Activation**.
 
 ## Phase 05 Work Packages
 

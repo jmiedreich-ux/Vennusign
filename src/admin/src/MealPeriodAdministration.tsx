@@ -9,7 +9,7 @@ const wireTime = (value: string) => `${value}:00`;
 
 export default function MealPeriodAdministration({ configuration, apiKey, venueId }: Props) {
   const [snapshot, setSnapshot] = useState<MealPeriodSnapshot>();
-  const [draft, setDraft] = useState({ name: "", startLocalTime: "07:00", endLocalTime: "11:00", activeDaysMask: 127, isEnabled: true });
+  const [draft, setDraft] = useState({ name: "", startLocalTime: "07:00", endLocalTime: "11:00", activeDaysMask: 127, isEnabled: true, targetLayout: "", menuFilter: "", themePresetKey: "" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const refresh = () => loadMealPeriods(configuration, apiKey, venueId).then(setSnapshot);
@@ -56,6 +56,11 @@ export default function MealPeriodAdministration({ configuration, apiKey, venueI
       <input required maxLength={100} aria-label="Meal period name" placeholder="Breakfast" value={draft.name} onChange={event => setDraft(value => ({ ...value, name: event.target.value }))} />
       <input required type="time" aria-label="Start time" value={draft.startLocalTime} onChange={event => setDraft(value => ({ ...value, startLocalTime: event.target.value }))} />
       <input required type="time" aria-label="End time" value={draft.endLocalTime} onChange={event => setDraft(value => ({ ...value, endLocalTime: event.target.value }))} />
+      <select aria-label="Target layout" value={draft.targetLayout} onChange={event => setDraft(value => ({ ...value, targetLayout: event.target.value }))}>
+        <option value="">Keep current layout</option><option value="photo_grid">Photo Grid</option><option value="classic_diner">Classic Diner</option><option value="neon_chalkboard">Neon Chalkboard</option><option value="split_layout">Split Layout</option><option value="daily_special_hero">Daily Special Hero</option>
+      </select>
+      <input maxLength={100} aria-label="Menu filter" placeholder="Optional menu filter" value={draft.menuFilter} onChange={event => setDraft(value => ({ ...value, menuFilter: event.target.value }))} />
+      <input maxLength={50} aria-label="Theme preset" placeholder="Optional theme preset" value={draft.themePresetKey} onChange={event => setDraft(value => ({ ...value, themePresetKey: event.target.value }))} />
       <div>{days.map((label, day) => <label key={label}><input type="checkbox" checked={(draft.activeDaysMask & (1 << day)) !== 0} onChange={() => setDraft(value => ({ ...value, activeDaysMask: toggleDay(value.activeDaysMask, day) }))} />{label}</label>)}</div>
       <button disabled={busy || draft.activeDaysMask === 0}>Add period</button>
     </form>
@@ -64,6 +69,11 @@ export default function MealPeriodAdministration({ configuration, apiKey, venueI
         <input aria-label="Period name" maxLength={100} value={period.name} onChange={event => patch(period.id, { name: event.target.value })} />
         <input aria-label="Period start" type="time" value={time(period.startLocalTime)} onChange={event => patch(period.id, { startLocalTime: wireTime(event.target.value) })} />
         <input aria-label="Period end" type="time" value={time(period.endLocalTime)} onChange={event => patch(period.id, { endLocalTime: wireTime(event.target.value) })} />
+        <select aria-label="Period target layout" value={period.targetLayout ?? ""} onChange={event => patch(period.id, { targetLayout: event.target.value })}>
+          <option value="">Keep current layout</option><option value="photo_grid">Photo Grid</option><option value="classic_diner">Classic Diner</option><option value="neon_chalkboard">Neon Chalkboard</option><option value="split_layout">Split Layout</option><option value="daily_special_hero">Daily Special Hero</option>
+        </select>
+        <input aria-label="Period menu filter" maxLength={100} value={period.menuFilter ?? ""} onChange={event => patch(period.id, { menuFilter: event.target.value })} />
+        <input aria-label="Period theme preset" maxLength={50} value={period.themePresetKey ?? ""} onChange={event => patch(period.id, { themePresetKey: event.target.value })} />
         <button className="activation" disabled={busy} onClick={() => patch(period.id, { isEnabled: !period.isEnabled })}>{period.isEnabled ? "Enabled" : "Disabled"}</button>
         <button disabled={busy || period.activeDaysMask === 0} onClick={() => save(period)}>Save</button>
         <button disabled={busy} onClick={() => remove(period.id)}>Delete</button>
