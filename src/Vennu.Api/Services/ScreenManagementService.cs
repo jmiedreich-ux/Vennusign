@@ -40,6 +40,7 @@ public sealed class ScreenManagementService(
             Location = NormalizeOptional(location, nameof(location)),
             PhotoGridDensity = PhotoGridDensity.Default,
             DisplayLayout = ScreenLayout.Default,
+            SplitRatio = ScreenSplitRatio.Default,
             Status = "Offline",
             CreatedUtc = timeProvider.GetUtcNow().UtcDateTime,
             UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime
@@ -55,6 +56,7 @@ public sealed class ScreenManagementService(
         string? location,
         string? photoGridDensity,
         string? displayLayout,
+        string? splitRatio = null,
         CancellationToken cancellationToken = default)
     {
         var screen = await GetOwnedScreenAsync(venueId, screenId, cancellationToken).ConfigureAwait(false);
@@ -67,6 +69,7 @@ public sealed class ScreenManagementService(
         screen.Location = NormalizeOptional(location, nameof(location));
         screen.PhotoGridDensity = PhotoGridDensity.Normalize(photoGridDensity ?? screen.PhotoGridDensity);
         screen.DisplayLayout = ScreenLayout.Normalize(displayLayout ?? screen.DisplayLayout);
+        screen.SplitRatio = ScreenSplitRatio.Normalize(splitRatio ?? screen.SplitRatio);
         screen.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
         return await screenRepository.UpdateAsync(screen, cancellationToken).ConfigureAwait(false)
             ? ToItem(screen)
@@ -146,6 +149,7 @@ public sealed class ScreenManagementService(
             screen.Location,
             PhotoGridDensity.Normalize(screen.PhotoGridDensity),
             ScreenLayout.Normalize(screen.DisplayLayout),
+            ScreenSplitRatio.Normalize(screen.SplitRatio),
             screen.Status,
             screen.LastSeen,
             $"/display/{screen.Id}");
