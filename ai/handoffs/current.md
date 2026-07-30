@@ -2,43 +2,41 @@
 
 ## Work Package
 
-- ID: WP-07.05
-- Status: Complete and merged
+- ID: WP-07.06
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/07.05-noto-font-preload`
-- Issue: #130
-- Pull request: #131
-- Latest reviewed commit: `f49cc61`
-- Merge commit: `81c5ea5`
-- CI state: GitHub Actions run #313 passed
+- Branch: `wp/07.06-split-layout-core`
+- Issue: #133
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added approved Noto SC, KR, JP, and Arabic delivery.
-- Added bounded regular/bold Font Loading API preloads.
-- Extended the versioned media cache to font and stylesheet responses.
+- Added migration 019 and validated per-screen Split Layout ratios.
+- Added the ratio to screen-management and display contracts.
+- Added deterministic hero selection and complete-menu Split rendering.
 
 ## Decisions
 
-- Font delivery prepares later multilingual work without translation behavior.
-- Font and style requests keep the media cache's network-first recovery model.
+- Only 40/60 and 50/50 ratios are valid.
+- Administration and responsive preview polish remain in WP-07.07.
 
 ## Validation
 
-- Results: solution build, admin build/tests, 52 display tests, and non-integration unit tests passed in Actions run #313.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-07.06 — Split Layout Domain and Core Rendering.
+- Validate, review, and merge WP-07.06.
 
 ## Exact Next Action
 
-Claim and implement WP-07.06.
+Publish WP-07.06 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not add Phase 13 translation UI or WP-07.06 Split Layout behavior.
+- Do not add WP-07.07 admin ratio controls or Daily Special Hero behavior.
