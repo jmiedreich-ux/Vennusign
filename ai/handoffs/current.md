@@ -3,15 +3,17 @@
 ## Work Package
 
 - ID: WP-08.07
-- Status: In progress
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/08.07-playlist-domain-player-rotation`
 - Issue: #166
-- Pull request: pending
-- CI state: pending
+- Pull request: #167
+- Latest reviewed commit: `1acb4a7`
+- Merge commit: `08561dc`
+- CI state: GitHub Actions runs #390 and #391 passed
 
 ## Completed This Session
 
@@ -26,18 +28,18 @@
 
 ## Validation
 
-- Results: GitHub Actions pending.
+- Results: Release build, admin/display production builds and tests, migration inventory, and required non-integration tests passed in Actions runs #390 and #391.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Validate, review, and merge WP-08.07.
+- WP-08.08 — Emergency Broadcast.
 
 ## Exact Next Action
 
-Publish WP-08.07 and validate its exact PR head in GitHub Actions.
+Claim and implement WP-08.08.
 
 ## Do Not Redo or Reverse
 
-- Do not broaden playlist slides to video or external media validation.
-- Do not add emergency broadcasts or date-range promotions.
+- Do not redo WP-08.07 playlist persistence, administration, or rotation.
+- WP-08.08 should preempt playlists deterministically and recover them after expiry.
