@@ -16,6 +16,12 @@ public sealed class MealPeriod
 
     public bool IsEnabled { get; set; } = true;
 
+    public string? TargetLayout { get; set; }
+
+    public string? MenuFilter { get; set; }
+
+    public string? ThemePresetKey { get; set; }
+
     public int SortOrder { get; set; }
 
     public DateTime CreatedUtc { get; set; }

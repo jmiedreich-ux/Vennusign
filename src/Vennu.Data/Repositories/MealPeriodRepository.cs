@@ -7,7 +7,8 @@ public sealed class MealPeriodRepository(ISqlDataAccess dataAccess) : IMealPerio
 {
     private const string ByVenueSql = """
         SELECT Id, VenueId, Name, StartLocalTime, EndLocalTime, ActiveDaysMask,
-               IsEnabled, SortOrder, CreatedUtc, UpdatedUtc
+               IsEnabled, TargetLayout, MenuFilter, ThemePresetKey,
+               SortOrder, CreatedUtc, UpdatedUtc
         FROM dbo.MealPeriods
         WHERE VenueId = @VenueId
         ORDER BY SortOrder, Id;

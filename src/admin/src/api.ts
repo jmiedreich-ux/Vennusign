@@ -123,8 +123,9 @@ export type VenueThemePreset = Omit<VenueTheme, "venueId" | "backgroundColor" | 
 export type MealPeriod = {
   id: string; venueId: string; name: string; startLocalTime: string; endLocalTime: string;
   activeDaysMask: number; isEnabled: boolean; sortOrder: number;
+  targetLayout?: string; menuFilter?: string; themePresetKey?: string;
 };
-export type MealPeriodWrite = Pick<MealPeriod, "name" | "startLocalTime" | "endLocalTime" | "activeDaysMask" | "isEnabled">;
+export type MealPeriodWrite = Pick<MealPeriod, "name" | "startLocalTime" | "endLocalTime" | "activeDaysMask" | "isEnabled" | "targetLayout" | "menuFilter" | "themePresetKey">;
 export type MealPeriodSnapshot = {
   mealPeriods: MealPeriod[];
   conflicts: Array<{ firstId: string; firstName: string; secondId: string; secondName: string }>;

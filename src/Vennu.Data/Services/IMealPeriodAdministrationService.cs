@@ -13,6 +13,9 @@ public interface IMealPeriodAdministrationService
         TimeSpan endLocalTime,
         int activeDaysMask,
         bool isEnabled,
+        string? targetLayout = null,
+        string? menuFilter = null,
+        string? themePresetKey = null,
         CancellationToken cancellationToken = default);
 
     Task<MealPeriod?> UpdateAsync(
@@ -23,6 +26,9 @@ public interface IMealPeriodAdministrationService
         TimeSpan endLocalTime,
         int activeDaysMask,
         bool isEnabled,
+        string? targetLayout = null,
+        string? menuFilter = null,
+        string? themePresetKey = null,
         CancellationToken cancellationToken = default);
 
     Task<bool> DeleteAsync(Guid venueId, Guid mealPeriodId, CancellationToken cancellationToken = default);

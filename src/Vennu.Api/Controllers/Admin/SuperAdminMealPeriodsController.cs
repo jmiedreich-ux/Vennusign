@@ -37,7 +37,8 @@ public sealed class SuperAdminMealPeriodsController(
         {
             var created = await service.CreateAsync(
                 venueId, request.Name, request.StartLocalTime, request.EndLocalTime,
-                request.ActiveDaysMask, request.IsEnabled, cancellationToken).ConfigureAwait(false);
+                request.ActiveDaysMask, request.IsEnabled, request.TargetLayout,
+                request.MenuFilter, request.ThemePresetKey, cancellationToken).ConfigureAwait(false);
             return CreatedAtAction(nameof(Get), new { venueId }, created);
         }
         catch (ArgumentException exception)
@@ -57,7 +58,8 @@ public sealed class SuperAdminMealPeriodsController(
         {
             var updated = await service.UpdateAsync(
                 venueId, mealPeriodId, request.Name, request.StartLocalTime, request.EndLocalTime,
-                request.ActiveDaysMask, request.IsEnabled, cancellationToken).ConfigureAwait(false);
+                request.ActiveDaysMask, request.IsEnabled, request.TargetLayout,
+                request.MenuFilter, request.ThemePresetKey, cancellationToken).ConfigureAwait(false);
             return updated is null ? NotFound() : Ok(updated);
         }
         catch (ArgumentException exception)

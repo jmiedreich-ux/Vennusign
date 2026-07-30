@@ -13,6 +13,9 @@ test("meal-period administration exposes venue-local day, time, enablement, and 
   assert.match(component, /activeDaysMask/);
   assert.match(component, /Overlapping periods/);
   assert.match(component, /Enabled/);
+  assert.match(component, /Target layout/);
+  assert.match(component, /Menu filter/);
+  assert.match(component, /Theme preset/);
 });
 
 test("meal-period CRUD uses the protected venue-scoped admin route", () => {
