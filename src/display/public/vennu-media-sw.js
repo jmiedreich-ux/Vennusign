@@ -1,5 +1,5 @@
 const mediaCachePrefix = 'vennu-display-media-';
-const mediaCacheName = `${mediaCachePrefix}v1`;
+const mediaCacheName = `${mediaCachePrefix}v2`;
 
 self.addEventListener('install', () => {
   self.skipWaiting();
@@ -18,14 +18,15 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET' || event.request.destination !== 'image') {
+  const supportedDestination = ['image', 'font', 'style'].includes(event.request.destination);
+  if (event.request.method !== 'GET' || !supportedDestination) {
     return;
   }
 
-  event.respondWith(loadImage(event.request));
+  event.respondWith(loadMedia(event.request));
 });
 
-async function loadImage(request) {
+async function loadMedia(request) {
   const cache = await caches.open(mediaCacheName);
 
   try {
