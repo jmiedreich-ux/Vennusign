@@ -13,6 +13,7 @@ public static class ServiceCollectionExtensions
         services.AddMemoryCache();
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IVenueRepository, VenueRepository>();
+        services.AddScoped<IVenueThemeRepository, VenueThemeRepository>();
         services.AddScoped<IMenuRepository, MenuRepository>();
         services.AddScoped<IMenuSectionManagementService, MenuSectionManagementService>();
         services.AddScoped<IScreenRepository, ScreenRepository>();
