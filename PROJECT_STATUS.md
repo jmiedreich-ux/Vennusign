@@ -61,10 +61,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-07.03 — Neon Chalkboard Core Layout
 - WP-07.04 — Neon Motion, Texture, and Accessibility
 - WP-07.05 — Noto Font Preloading
+- WP-07.06 — Split Layout Domain and Core Rendering
 
 ## Active Work Package
 
-**WP-07.06 — Split Layout Domain and Core Rendering** is in progress.
+None. **WP-07.07 — Split Layout Administration and TV Polish** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -93,7 +94,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-07.06 — Split Layout Domain and Core Rendering**.
+Claim and implement **WP-07.07 — Split Layout Administration and TV Polish**.
 
 ## Phase 05 Work Packages
 
