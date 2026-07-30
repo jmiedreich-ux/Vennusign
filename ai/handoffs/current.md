@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-06.05
-- Status: In review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/06.05-classic-diner-core`
-- Latest reviewed commit: Pending
+- Latest reviewed commit: `c10245c`
 - Issue: #100
-- Pull request: Pending
-- Merge commit: Pending
-- CI state: Pending
+- Pull request: #101
+- Merge commit: `efd4fa9`
+- CI state: GitHub Actions run #255 passed
 
 ## Completed This Session
 
@@ -29,7 +29,7 @@
 
 ## Validation
 
-- Results: admin build and 19/19 tests passed; display build and 31/31 tests passed; authoritative GitHub Actions pending.
+- Results: admin build and 19/19 tests passed; display build and 31/31 tests passed; Actions run #255 passed on reviewed head `c10245c`.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
@@ -38,7 +38,7 @@
 
 ## Exact Next Action
 
-Publish, validate, review, and merge WP-06.05.
+Claim and implement WP-06.06.
 
 ## Do Not Redo or Reverse
 
