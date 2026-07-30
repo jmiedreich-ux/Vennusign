@@ -41,10 +41,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-05.05 — Tier-Aware Venue Admin Patterns
 - WP-05.06 — Quick Update Mode
 - WP-05.07 — Screen Management Core
+- WP-05.08 — Screen Targeting and Overflow Visualization
 
 ## Active Work Package
 
-**WP-05.08 — Screen Targeting and Overflow Visualization** is in review on issue #77.
+None. **WP-05.09 — Video Wall Builder** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -59,7 +60,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate and merge **WP-05.08 — Screen Targeting and Overflow Visualization**, then claim WP-05.09.
+Claim and implement **WP-05.09 — Video Wall Builder**.
 
 ## Phase 05 Work Packages
 

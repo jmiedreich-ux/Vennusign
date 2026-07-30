@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T00:04:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-05.08",
-      "issue": 77,
-      "branch": "wp/05.08-screen-targeting-overflow",
-      "owner": "ChatGPT",
-      "status": "in_review"
-    }
-  ],
+  "updatedUtc": "2026-07-30T00:08:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-05.09",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
