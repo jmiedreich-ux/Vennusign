@@ -12,6 +12,7 @@ export type DisplayContent = {
   isHappyHour?: boolean;
   photoGridDensity?: '2x2' | '3x2' | '4x2' | '3x3';
   photoGridOverflowItems?: number;
+  splitRatio?: '40_60' | '50_50';
   theme?: {
     backgroundColor: string;
     accentColor: string;
