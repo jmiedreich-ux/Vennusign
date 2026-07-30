@@ -2,44 +2,42 @@
 
 ## Work Package
 
-- ID: WP-08.01
-- Status: Complete and merged
+- ID: WP-08.02
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/08.01-meal-period-domain-persistence`
-- Issue: #148
-- Pull request: #149
-- Latest reviewed commit: `5274f51`
-- Merge commit: `ce8dc1b`
-- CI state: GitHub Actions run #352 passed
+- Branch: `wp/08.02-venue-timezone-resolver`
+- Issue: #151
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added the venue-scoped meal-period domain model and repository.
-- Added migration 022 with bounded local-time, day-mask, name, and order constraints.
-- Added focused repository and migration tests.
+- Added a pure venue-timezone meal-period resolver.
+- Added regular, overnight, active-day, enabled-state, and deterministic precedence behavior.
+- Added DST and invalid-timezone coverage.
 
 ## Decisions
 
-- Meal periods store venue-local wall-clock times; timezone evaluation belongs to WP-08.02.
-- Sunday is bit 0 through Saturday bit 6 in the active-day mask.
+- Resolve only from UTC through the venue IANA timezone.
+- Overnight after-midnight time belongs to the preceding local day.
 
 ## Validation
 
-- Results: solution build, frontend builds/tests, and non-integration unit tests passed in Actions run #352.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-08.02 — Venue Timezone Schedule Resolver.
+- Validate, review, and merge WP-08.02.
 
 ## Exact Next Action
 
-Claim and implement WP-08.02.
+Publish WP-08.02 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not redo WP-08.01 persistence.
-- Keep WP-08.02 pure; do not add administration or activation behavior.
+- Do not add persistence, administration, timers, or activation behavior to WP-08.02.
+- Do not begin WP-08.03 before WP-08.02 is merged.
