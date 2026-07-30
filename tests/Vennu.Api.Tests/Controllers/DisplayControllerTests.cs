@@ -136,6 +136,37 @@ public class DisplayControllerTests
     }
 
     [Fact]
+    public async Task GetContent_IncludesPersistedVenueTheme()
+    {
+        var venueId = Guid.NewGuid();
+        var screen = new Screen { Id = Guid.NewGuid(), VenueId = venueId };
+        var screenRepository = new FakeScreenRepository
+        {
+            GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(screen)
+        };
+        var themes = new ThemeRepository(new VenueTheme
+        {
+            VenueId = venueId,
+            BackgroundColor = "#102030",
+            AccentColor = "#ABCDEF",
+            FontFamily = "Georgia"
+        });
+        var sut = new DisplayController(
+            screenRepository,
+            new FakeVenueRepository(),
+            new FakeMenuRepository(),
+            themes);
+
+        var result = await sut.GetContent(screen.Id, CancellationToken.None);
+
+        var response = Assert.IsType<DisplayContentResponse>(
+            Assert.IsType<OkObjectResult>(result.Result).Value);
+        Assert.Equal("#102030", response.Theme.BackgroundColor);
+        Assert.Equal("#ABCDEF", response.Theme.AccentColor);
+        Assert.Equal("Georgia", response.Theme.FontFamily);
+    }
+
+    [Fact]
     public async Task GetContent_ReturnsActiveMenuAsPhotoGrid_InStableOrder()
     {
         var screenId = Guid.NewGuid();
@@ -246,4 +277,13 @@ public class DisplayControllerTests
 
     private static DisplayController CreateController(IScreenRepository screenRepository) =>
         new(screenRepository, new FakeVenueRepository(), new FakeMenuRepository());
+
+    private sealed class ThemeRepository(VenueTheme theme) : IVenueThemeRepository
+    {
+        public Task<VenueTheme?> GetByVenueIdAsync(Guid venueId, CancellationToken cancellationToken = default) =>
+            Task.FromResult(theme.VenueId == venueId ? theme : null);
+
+        public Task UpsertAsync(VenueTheme value, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+    }
 }
