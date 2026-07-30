@@ -56,10 +56,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-06.09 — Player Media Caching and Offline Resilience
 - WP-06.10 — Phase 06 Validation and Closure
 - Phase 06 — Display Layouts — Restaurants & Cafes
+- WP-07.01 — Advanced Theme Domain and Preset Foundation
 
 ## Active Work Package
 
-**WP-07.01 — Advanced Theme Domain and Preset Foundation** is in progress.
+None. **WP-07.02 — Full Theme Builder Controls and Preview** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -88,7 +89,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-07.01 — Advanced Theme Domain and Preset Foundation**.
+Claim and implement **WP-07.02 — Full Theme Builder Controls and Preview**.
 
 ## Phase 05 Work Packages
 
