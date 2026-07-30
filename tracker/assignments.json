@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T00:55:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-06.02",
+  "updatedUtc": "2026-07-30T00:59:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-06.02",
+      "branch": "wp/06.02-photo-grid-core",
+      "issue": 91,
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-06.03",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

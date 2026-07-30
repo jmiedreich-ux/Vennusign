@@ -30,11 +30,12 @@ public class AzureSqlPhase02IntegrationTests
 
         var dataAccess = CreateSqlDataAccess(connectionString);
         var venueRepository = new VenueRepository(dataAccess);
+        var menuRepository = new MenuRepository(dataAccess);
         var screenRepository = new ScreenRepository(dataAccess);
         var pairingRepository = new ScreenPairingCodeRepository(dataAccess);
         var venuesController = new VenuesController(venueRepository);
         var screensController = new ScreensController(screenRepository, pairingRepository, venueRepository);
-        var displayController = new DisplayController(screenRepository);
+        var displayController = new DisplayController(screenRepository, venueRepository, menuRepository);
 
         var createVenueResult = await venuesController.CreateVenue(new CreateVenueRequest
         {

@@ -1,6 +1,8 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { DisplayContent } from '../displayContent.mjs';
 import { createLayoutRegistry } from '../layoutRegistry.mjs';
+import PhotoGridLayout from './PhotoGridLayout';
+import './photoGrid.css';
 
 export type DisplayLayoutProps = {
   content: DisplayContent;
@@ -49,6 +51,11 @@ const layoutRegistry = createLayoutRegistry<ComponentType<DisplayLayoutProps>>([
     key: 'default',
     label: 'Default display',
     renderer: DefaultLayout
+  },
+  {
+    key: 'photo_grid',
+    label: 'Photo Grid',
+    renderer: PhotoGridLayout
   }
 ]);
 

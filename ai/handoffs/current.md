@@ -2,55 +2,55 @@
 
 ## Work Package
 
-- ID: WP-06.01
-- Status: Complete and merged
+- ID: WP-06.02
+- Status: In review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/06.01-display-layout-registry`
-- Latest reviewed commit: `c84264b`
-- Issue: #88
-- Pull request: #89
-- Merge commit: `0deff29`
-- CI state: GitHub Actions run #236 passed
+- Branch: `wp/06.02-photo-grid-core`
+- Latest commit: Pending publication
+- Issue: #91
+- Pull request: Pending
+- CI state: Pending GitHub Actions
 
 ## Completed This Session
 
-- Added the typed, normalized display-layout registry contract.
-- Added deterministic fallback behavior, duplicate protection, and the shared display frame.
-- Preserved the existing display boot, heartbeat, SignalR event, and pairing flows.
+- Added venue and active-menu content to the display payload.
+- Added the registered responsive Photo Grid renderer with lazy CDN images and placeholders.
+- Added focused controller and frontend contract tests.
 
 ## Files Changed
 
-- Display layout registry, renderer, page wiring, and focused frontend tests.
+- Display API content contract/controller and test doubles/tests.
+- Photo Grid layout, styling, display types, registry wiring, and frontend tests.
 - WP, project status, tracker, and handoff records.
 
 ## Decisions
 
-- Layout keys normalize to lowercase snake case.
-- Missing and unknown layout keys are observable fallbacks to `default`.
-- New layouts remain additive through the registry.
+- A venue-linked screen with an active menu selects `photo_grid`; unlinked or empty screens retain `default`.
+- Existing repository ordering is the source of truth for sections and items.
+- Merchandising state remains reserved for WP-06.03.
 
 ## Validation
 
-- Commands: display production build, display frontend tests, `git diff --check`
-- Results: local build passed; 23/23 display tests passed; GitHub Actions `phase02-tests` run #236 passed on reviewed head `c84264b`.
-- Skipped checks and reason: all integration-type tests were skipped under the standing owner instruction.
+- Commands: display build/tests, unit-category tests, `git diff --check`
+- Results: Pending
+- Skipped checks and reason: all integration-type tests are skipped under the standing owner instruction.
 
 ## Remaining Work
 
-- WP-06.02 — Photo Grid Core Layout.
+- Publish, validate, review, and merge WP-06.02.
 
 ## Known Risks or Blockers
 
-- Cross-system and hosted-infrastructure behavior remains unexercised by instruction.
+- None.
 
 ## Exact Next Action
 
-Claim and implement WP-06.02 — Photo Grid Core Layout.
+Validate and merge WP-06.02, then begin WP-06.03 — Photo Grid Merchandising States.
 
 ## Do Not Redo or Reverse
 
-- Do not replace the additive layout registry or change player boot behavior.
-- Do not fold merchandising states or density/overflow into WP-06.02.
+- Do not replace the additive registry or change player boot.
+- Do not add merchandising states or density/overflow to this package.

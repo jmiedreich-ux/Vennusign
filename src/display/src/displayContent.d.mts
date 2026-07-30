@@ -6,6 +6,23 @@ export type DisplayContent = {
   status: string;
   lastSeenUtc: string | null;
   layout: string;
+  venueName?: string | null;
+  menuName?: string | null;
+  sections?: DisplayMenuSection[];
+};
+
+export type DisplayMenuSection = {
+  id: string;
+  name: string;
+  items: DisplayMenuItem[];
+};
+
+export type DisplayMenuItem = {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  imageUrl: string | null;
 };
 
 export type DisplayContentErrorKind = 'not-found' | 'api-error';
