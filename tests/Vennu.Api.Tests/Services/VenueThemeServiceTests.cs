@@ -20,6 +20,8 @@ public sealed class VenueThemeServiceTests
         Assert.Equal("#111315", result.BackgroundColor);
         Assert.Equal("#FFB74D", result.AccentColor);
         Assert.Equal("Inter", result.FontFamily);
+        Assert.Equal("bar_classic", result.PresetKey);
+        Assert.Equal(4, result.SectionColors.Count);
     }
 
     [Fact]
@@ -32,7 +34,70 @@ public sealed class VenueThemeServiceTests
 
         Assert.Equal("#AABBCC", result.BackgroundColor);
         Assert.Equal("Georgia", result.FontFamily);
-        Assert.Equal(result, await service.GetAsync(venueId));
+        var persisted = await service.GetAsync(venueId);
+        Assert.Equal(result.BackgroundColor, persisted.BackgroundColor);
+        Assert.Equal(result.AccentColor, persisted.AccentColor);
+        Assert.Equal(result.FontFamily, persisted.FontFamily);
+        Assert.Equal(result.PresetKey, persisted.PresetKey);
+        Assert.Equal(result.SectionColors, persisted.SectionColors);
+    }
+
+    [Fact]
+    public async Task ApplyPresetAsync_UsesFiveDeterministicRoadmapPresets()
+    {
+        var service = CreateService();
+
+        Assert.Equal(5, VenueThemePresets.GetAll().Count);
+        var result = await service.ApplyPresetAsync(venueId, "violet_lounge");
+
+        Assert.Equal("violet_lounge", result.PresetKey);
+        Assert.Equal("#A855F7", result.GlowColor);
+        Assert.Equal("Pacifico", result.TitleFont);
+        Assert.Equal(4, result.SectionColors.Count);
+    }
+
+    [Fact]
+    public async Task UpdateAdvancedAsync_NormalizesCustomValues_WithoutChangingBasicTheme()
+    {
+        var themes = new ThemeRepository();
+        var service = CreateService(themes);
+        await service.UpdateAsync(venueId, "#101010", "#202020", "Georgia");
+
+        var result = await service.UpdateAdvancedAsync(
+            venueId,
+            new("#aabbcc", "#010203", "#040506", ["#111111", "#222222"], 1.75m, " permanent marker ", "kalam"));
+
+        Assert.Equal("custom", result.PresetKey);
+        Assert.Equal("#AABBCC", result.TitleColor);
+        Assert.Equal(1.75m, result.GlowIntensity);
+        Assert.Equal("Permanent Marker", result.TitleFont);
+        Assert.Equal("Kalam", result.ItemFont);
+        Assert.Equal("#101010", result.BackgroundColor);
+        Assert.Equal("Georgia", result.FontFamily);
+    }
+
+    [Theory]
+    [InlineData(0.19)]
+    [InlineData(2.01)]
+    public async Task UpdateAdvancedAsync_RejectsOutOfRangeGlow(double glow)
+    {
+        var service = CreateService();
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            service.UpdateAdvancedAsync(
+                venueId,
+                new("#AABBCC", "#010203", "#040506", ["#111111"], (decimal)glow, "Righteous", "Caveat")));
+    }
+
+    [Fact]
+    public async Task UpdateAdvancedAsync_RejectsMoreThanFourSectionColors()
+    {
+        var service = CreateService();
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            service.UpdateAdvancedAsync(
+                venueId,
+                new("#AABBCC", "#010203", "#040506", ["#111111", "#222222", "#333333", "#444444", "#555555"], 1m, "Righteous", "Caveat")));
     }
 
     [Fact]
