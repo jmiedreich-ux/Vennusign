@@ -3,15 +3,17 @@
 ## Work Package
 
 - ID: WP-06.07
-- Status: In progress
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/06.07-basic-theme-domain`
 - Issue: #106
-- Pull request: pending
-- CI state: pending
+- Latest reviewed commit: `a99ff95`
+- Pull request: #107
+- Merge commit: `892b75c`
+- CI state: GitHub Actions run #264 passed
 
 ## Completed This Session
 
@@ -27,7 +29,7 @@
 
 ## Validation
 
-- Results: GitHub Actions pending.
+- Results: build, admin/display builds and tests, and 196 non-integration unit tests passed in Actions run #264.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
@@ -36,7 +38,7 @@
 
 ## Exact Next Action
 
-Validate, review, and merge WP-06.07.
+Claim and implement WP-06.08.
 
 ## Do Not Redo or Reverse
 
