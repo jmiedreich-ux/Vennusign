@@ -20,6 +20,8 @@ public class Screen
 
     public string DisplayLayout { get; set; } = "photo_grid";
 
+    public string SplitRatio { get; set; } = "40_60";
+
     public DateTime? LastSeen { get; set; }
 
     public string Status { get; set; } = "Offline";

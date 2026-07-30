@@ -109,6 +109,7 @@ public class DisplayController : ControllerBase
         }
 
         response.Layout = ScreenLayout.Normalize(screen.DisplayLayout);
+        response.SplitRatio = ScreenSplitRatio.Normalize(screen.SplitRatio);
         if (!string.Equals(response.Layout, ScreenLayout.Default, StringComparison.Ordinal))
         {
             response.Sections = displaySections;

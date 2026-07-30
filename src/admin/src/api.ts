@@ -79,7 +79,8 @@ export type MenuEditorSnapshot = {
 export type ManagedScreen = {
   id: string; name: string; location?: string; status: string;
   photoGridDensity: "2x2" | "3x2" | "4x2" | "3x3";
-  displayLayout: "photo_grid" | "classic_diner" | "neon_chalkboard";
+  displayLayout: "photo_grid" | "classic_diner" | "neon_chalkboard" | "split_layout";
+  splitRatio: "40_60" | "50_50";
   lastSeen?: string; registrationUrl: string;
 };
 export type ManagedScreenWrite = {
@@ -87,6 +88,7 @@ export type ManagedScreenWrite = {
   location?: string;
   photoGridDensity?: ManagedScreen["photoGridDensity"];
   displayLayout?: ManagedScreen["displayLayout"];
+  splitRatio?: ManagedScreen["splitRatio"];
 };
 export type ScreenOverflowPreview = {
   capacity: number; totalItems: number; visibleItems: number; overflowItems: number;
