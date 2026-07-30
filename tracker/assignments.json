@@ -1,14 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T02:31:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-06.08",
-      "branch": "wp/06.08-basic-theme-builder",
-      "issue": 109,
-      "status": "Review"
-    }
-  ],
+  "updatedUtc": "2026-07-30T02:40:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-06.09",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
