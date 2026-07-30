@@ -3,10 +3,11 @@
 ## Work Package
 
 - ID: WP-05.07
-- Status: In review
+- Status: Complete and merged
 - Branch: `wp/05.07-screen-management-core`
 - Issue: #74
-- Pull request: pending
+- Pull request: #75
+- Merge commit: `e372415`
 
 ## Completed
 
@@ -17,13 +18,15 @@
 
 ## Validation
 
-- Local admin frontend contract validation pending.
-- GitHub Actions validation pending.
+- Admin frontend contract tests: 11 passed.
+- `git diff --check` passed.
+- GitHub Actions run 204 passed restore, Release build, admin/display production builds, frontend tests, unit-category tests, and the explicit integration-test skip on reviewed head `ac1e1ad`.
+- ChatGPT approval was recorded and PR #75 merged as `e372415`.
 - Integration-type tests are intentionally skipped.
 
 ## Exact Next Action
 
-Publish, validate, review, and merge WP-05.07, then claim WP-05.08.
+Claim and implement WP-05.08 — Screen Targeting and Overflow Visualization.
 
 ## Do Not Redo or Reverse
 

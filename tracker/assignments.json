@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-29T23:55:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-05.07",
-      "issue": 74,
-      "branch": "wp/05.07-screen-management-core",
-      "owner": "ChatGPT",
-      "status": "in_review"
-    }
-  ],
+  "updatedUtc": "2026-07-29T23:58:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-05.08",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
