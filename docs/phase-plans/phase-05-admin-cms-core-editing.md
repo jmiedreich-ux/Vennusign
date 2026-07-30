@@ -2,7 +2,7 @@
 
 ## Status
 
-Complete. WP-05.01 through WP-05.10 are merged or represented in the Phase 05 closure pull request.
+Complete. WP-05.01 through WP-05.10 are merged.
 
 ## Approved Objective
 

@@ -3,10 +3,11 @@
 ## Work Package
 
 - ID: WP-05.10
-- Status: Complete
+- Status: Complete and merged
 - Branch: `wp/05.10-phase-05-validation`
 - Issue: #84
 - Pull request: #85
+- Merge commit: `1232135`
 
 ## Completed
 
@@ -19,11 +20,12 @@
 - Admin frontend contract tests: 17 passed.
 - `git diff --check` passed.
 - GitHub Actions run 225 passed restore, Release build, admin/display production builds, frontend tests, unit-category tests, migration-resource validation, and the explicit integration-test skip on functional head `054f0d4`.
+- Final reconciled head `d38545b` passed GitHub Actions run 229 and merged as `1232135`.
 - Integration-type tests are intentionally skipped.
 
 ## Exact Next Action
 
-Merge WP-05.10 after the final documentation head passes, then claim WP-06.01.
+Claim WP-06.01 — Display Layout Contract and Registry Foundation.
 
 ## Do Not Redo or Reverse
 
