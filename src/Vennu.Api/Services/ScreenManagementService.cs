@@ -127,7 +127,11 @@ public sealed class ScreenManagementService(
     private static string? NormalizeOptional(string? value, string parameterName)
     {
         var normalized = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-        return normalized?.Length <= 200
+        if (normalized is null)
+        {
+            return null;
+        }
+        return normalized.Length <= 200
             ? normalized
             : throw new ArgumentException("Screen location cannot exceed 200 characters.", parameterName);
     }
