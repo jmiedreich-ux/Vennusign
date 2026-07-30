@@ -2,44 +2,42 @@
 
 ## Work Package
 
-- ID: WP-08.07
-- Status: Complete and merged
+- ID: WP-08.08
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/08.07-playlist-domain-player-rotation`
-- Issue: #166
-- Pull request: #167
-- Latest reviewed commit: `1acb4a7`
-- Merge commit: `08561dc`
-- CI state: GitHub Actions runs #390 and #391 passed
+- Branch: `wp/08.08-emergency-broadcast`
+- Issue: #169
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added screen-scoped playlist domain, repository, migration, and protected API.
-- Added tier-visible playlist creation and deterministic reordering.
-- Added active-window filtering and stable player rotation.
+- Added scoped emergency broadcast domain, persistence, active selection, and protected API.
+- Added tier-visible venue-wide/screen-targeted activation and cancellation.
+- Added realtime full-screen preemption with authoritative expiry recovery.
 
 ## Decisions
 
-- Playlist windows are evaluated through venue timezone from an injected UTC instant.
-- Only menu, image, and message slides are supported; dwell is bounded to 5–120 seconds.
+- Screen targets must belong to the venue.
+- Targeted broadcasts win over venue-wide broadcasts; cancelled and expired rows are ignored.
 
 ## Validation
 
-- Results: Release build, admin/display production builds and tests, migration inventory, and required non-integration tests passed in Actions runs #390 and #391.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-08.08 — Emergency Broadcast.
+- Validate, review, and merge WP-08.08.
 
 ## Exact Next Action
 
-Claim and implement WP-08.08.
+Publish WP-08.08 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not redo WP-08.07 playlist persistence, administration, or rotation.
-- WP-08.08 should preempt playlists deterministically and recover them after expiry.
+- Do not redo WP-08.07 playlist behavior.
+- Do not add date-range promotions or notification integrations.

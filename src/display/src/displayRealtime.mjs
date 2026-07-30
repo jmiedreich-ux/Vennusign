@@ -16,6 +16,9 @@ export function applyRealtimeEvent(content, eventName, ...args) {
           happyHourMode: args[0].mode ?? 'automatic'
         };
       }
+      if (args[0]?.change === 'emergency-broadcast') {
+        return { ...content, emergencyBroadcast: args[0].emergencyBroadcast ?? null };
+      }
       return args[0];
 
     case displayRealtimeEvents.themeUpdated:

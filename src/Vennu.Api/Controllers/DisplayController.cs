@@ -17,6 +17,7 @@ public class DisplayController : ControllerBase
     private readonly IVenueThemeRepository? themeRepository;
     private readonly IHappyHourService? happyHourService;
     private readonly IPlaylistAdministrationService? playlistService;
+    private readonly IEmergencyBroadcastService? emergencyBroadcastService;
     private readonly TimeProvider timeProvider;
 
     public DisplayController(
@@ -26,9 +27,10 @@ public class DisplayController : ControllerBase
         IVenueThemeRepository? themeRepository = null,
         IHappyHourService? happyHourService = null,
         IPlaylistAdministrationService? playlistService = null,
+        IEmergencyBroadcastService? emergencyBroadcastService = null,
         TimeProvider? timeProvider = null) =>
-        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.timeProvider) =
-        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, timeProvider ?? TimeProvider.System);
+        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.emergencyBroadcastService, this.timeProvider) =
+        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, emergencyBroadcastService, timeProvider ?? TimeProvider.System);
 
     [HttpGet("{screenId:guid}/content")]
     [ProducesResponseType<DisplayContentResponse>(StatusCodes.Status200OK)]
@@ -60,6 +62,12 @@ public class DisplayController : ControllerBase
 
         var venueId = screen.VenueId.Value;
         var venue = await venueRepository.GetByIdAsync(venueId, cancellationToken);
+        if (emergencyBroadcastService is not null)
+        {
+            var broadcast = await emergencyBroadcastService.GetActiveAsync(
+                venueId, screen.Id, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false);
+            response.EmergencyBroadcast = broadcast is null ? null : DisplayEmergencyBroadcastResponse.From(broadcast);
+        }
         if (playlistService is not null)
         {
             response.Playlist = (await playlistService.GetActiveAsync(

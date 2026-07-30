@@ -1,0 +1,15 @@
+.emergency-broadcast {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #fff;
+  background: #b00020;
+}
+.emergency-broadcast img { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.24; }
+.emergency-broadcast section { position: relative; max-width: 84vw; text-align: center; }
+.emergency-broadcast section > p { font-size: clamp(1.25rem, 2.5vw, 2.5rem); font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.emergency-broadcast h1 { margin: 0.2em 0; font-size: clamp(3.5rem, 10vw, 10rem); }
+.emergency-broadcast div { font-size: clamp(1.75rem, 4vw, 4rem); }

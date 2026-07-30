@@ -30,6 +30,15 @@ test('happy-hour transition patches authoritative state without replacing conten
   assert.equal(result.happyHourEndsAtUtc, '2026-07-30T22:00:00Z');
 });
 
+test('emergency broadcast transition preempts without replacing playlist content', () => {
+  const broadcast = { id: 'b1', title: 'Close now', message: 'Please exit', expiresUtc: '2026-07-30T09:00:00Z' };
+  const result = applyRealtimeEvent(initialContent, displayRealtimeEvents.contentUpdated, {
+    change: 'emergency-broadcast', emergencyBroadcast: broadcast
+  });
+  assert.equal(result.screenId, initialContent.screenId);
+  assert.deepEqual(result.emergencyBroadcast, broadcast);
+});
+
 test('ThemeUpdated applies a deterministic theme patch', () => {
   const theme = { background: '#111111', foreground: '#ffffff' };
   const result = applyRealtimeEvent(

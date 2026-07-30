@@ -38,9 +38,23 @@ public class DisplayContentResponse
 
     public IReadOnlyCollection<DisplayPlaylistSlideResponse> Playlist { get; set; } = [];
 
+    public DisplayEmergencyBroadcastResponse? EmergencyBroadcast { get; set; }
+
     public DisplayThemeResponse Theme { get; set; } = new();
 
     public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];
+}
+
+public sealed class DisplayEmergencyBroadcastResponse
+{
+    public Guid Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string? MediaUrl { get; set; }
+    public DateTime ExpiresUtc { get; set; }
+
+    public static DisplayEmergencyBroadcastResponse From(Vennu.Core.Models.EmergencyBroadcast value) =>
+        new() { Id = value.Id, Title = value.Title, Message = value.Message, MediaUrl = value.MediaUrl, ExpiresUtc = value.ExpiresUtc };
 }
 
 public sealed class DisplayPlaylistSlideResponse

@@ -77,7 +77,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-08.08 — Emergency Broadcast** is the next package in roadmap order.
+**WP-08.08 — Emergency Broadcast** is in progress.
 
 ## Phase 04 Result
 
@@ -112,7 +112,7 @@ None. **WP-08.08 — Emergency Broadcast** is the next package in roadmap order.
 
 ## Next Action
 
-Claim and implement **WP-08.08 — Emergency Broadcast**.
+Complete, validate, review, and merge **WP-08.08 — Emergency Broadcast**.
 
 ## Phase 05 Work Packages
 
