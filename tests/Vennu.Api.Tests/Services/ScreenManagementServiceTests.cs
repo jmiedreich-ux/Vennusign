@@ -21,6 +21,7 @@ public sealed class ScreenManagementServiceTests
         Assert.Equal("East wall", created.Location);
         Assert.Equal($"/display/{created.Id}", created.RegistrationUrl);
         Assert.Equal(venueId, screens.LastCreatedScreen?.VenueId);
+        Assert.Equal("3x2", screens.LastCreatedScreen?.PhotoGridDensity);
         Assert.Matches("^sc-[a-z0-9]{6}$", screens.LastCreatedScreen?.ScreenKey);
     }
 
@@ -55,13 +56,33 @@ public sealed class ScreenManagementServiceTests
         var notifier = new RecordingNotifier();
         var service = CreateService(venueId, screens, notifier);
 
-        var updated = await service.UpdateAsync(venueId, Guid.NewGuid(), "Renamed", null);
+        var updated = await service.UpdateAsync(venueId, Guid.NewGuid(), "Renamed", null, "3x2");
         var pushed = await service.PushAsync(venueId, Guid.NewGuid());
 
         Assert.Null(updated);
         Assert.False(pushed);
         Assert.Null(screens.LastUpdatedScreen);
         Assert.Equal(0, notifier.ScreenContentCount);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_PersistsSupportedPhotoGridDensity()
+    {
+        var venueId = Guid.NewGuid();
+        var screenId = Guid.NewGuid();
+        var screens = new FakeScreenRepository
+        {
+            GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(
+                new Screen { Id = screenId, VenueId = venueId, Name = "Bar" })
+        };
+        var service = CreateService(venueId, screens, new RecordingNotifier());
+
+        var updated = await service.UpdateAsync(venueId, screenId, "Bar", null, " 4X2 ");
+
+        Assert.Equal("4x2", updated?.PhotoGridDensity);
+        Assert.Equal("4x2", screens.LastUpdatedScreen?.PhotoGridDensity);
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => service.UpdateAsync(venueId, screenId, "Bar", null, "5x2"));
     }
 
     [Fact]
