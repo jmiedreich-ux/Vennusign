@@ -39,6 +39,14 @@ test('uses the default layout for an unknown key', () => {
   assert.equal(result.registration.renderer, defaultRenderer);
 });
 
+test('marks a missing layout key as a default fallback', () => {
+  const result = createTestRegistry().resolve('  ');
+
+  assert.equal(result.requestedKey, 'default');
+  assert.equal(result.key, 'default');
+  assert.equal(result.isFallback, true);
+});
+
 test('rejects duplicate normalized keys', () => {
   assert.throws(
     () =>
