@@ -3,15 +3,17 @@
 ## Work Package
 
 - ID: WP-07.08
-- Status: In progress
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/07.08-daily-special-hero`
 - Issue: #139
-- Pull request: pending
-- CI state: pending
+- Pull request: #140
+- Latest reviewed commit: `77f51d7`
+- Merge commit: `dff640c`
+- CI state: GitHub Actions run #334 passed
 
 ## Completed This Session
 
@@ -26,17 +28,18 @@
 
 ## Validation
 
-- Results: GitHub Actions pending.
+- Results: solution build, admin build/tests, 59 display tests, and non-integration unit tests passed in Actions run #334.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Validate, review, and merge WP-07.08.
+- WP-07.09 — Hero Rotation and Administration.
 
 ## Exact Next Action
 
-Publish WP-07.08 and validate its exact PR head in GitHub Actions.
+Claim and implement WP-07.09.
 
 ## Do Not Redo or Reverse
 
-- Do not add WP-07.09 rotation, dwell persistence, or administration behavior.
+- Do not redo Daily Special Hero core selection, migration, or rendering.
+- Preserve the stable selection and presentation contracts while adding WP-07.09 behavior.
