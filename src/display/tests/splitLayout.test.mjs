@@ -26,3 +26,11 @@ test('supports only the persisted 40/60 and 50/50 core ratios', () => {
   assert.match(css, /data-ratio="50_50"/);
   assert.match(css, /grid-template-columns: 50% 50%/);
 });
+
+test('keeps pricing and allergen tags visible within TV-safe overflow bounds', () => {
+  assert.match(layout, /activePrice\(content\.isHappyHour, item\)/);
+  assert.match(layout, /item\.tags\.map/);
+  assert.match(css, /max-height: 100vh/);
+  assert.match(css, /overflow: hidden/);
+  assert.ok(css.includes("max-aspect-ratio: 4 / 3"));
+});
