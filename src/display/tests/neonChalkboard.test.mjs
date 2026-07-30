@@ -20,10 +20,19 @@ test('renders menu columns, current pricing, sold-out state, and section divider
   assert.match(css, /--neon-section-color/);
 });
 
-test('uses advanced theme values for a static TV-safe chalkboard frame', () => {
+test('uses advanced theme values for a TV-safe chalkboard frame', () => {
   for (const variable of ['--vennu-board-background', '--vennu-glow-color', '--vennu-title-color', '--vennu-title-font', '--vennu-item-font', '--vennu-glow-intensity']) {
     assert.match(css, new RegExp(variable));
   }
   assert.match(css, /neon-chalkboard__frame/);
-  assert.doesNotMatch(css, /@keyframes|animation:/);
+});
+
+test('bounds neon motion and removes it for reduced-motion viewers', () => {
+  for (const motion of ['neon-title-flicker', 'neon-glow-breathe', 'chalk-draw-in']) {
+    assert.match(css, new RegExp(`@keyframes ${motion}`));
+  }
+  assert.match(css, /repeating-linear-gradient/);
+  assert.match(css, /prefers-reduced-motion: reduce/);
+  assert.match(css, /animation: none/);
+  assert.match(css, /clip-path: none/);
 });
