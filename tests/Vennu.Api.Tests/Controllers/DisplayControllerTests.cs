@@ -84,7 +84,21 @@ public class DisplayControllerTests
             Items =
             [
                 new MenuItem { Id = Guid.NewGuid(), VenueId = venueId, MenuSectionId = activeSectionId, Name = "Second", Price = 14m, SortOrder = 2 },
-                new MenuItem { Id = Guid.NewGuid(), VenueId = venueId, MenuSectionId = activeSectionId, Name = "First", Description = "Seasonal vegetables", Price = 12.5m, ImageUrl = "https://cdn.example/first.jpg", SortOrder = 1 }
+                new MenuItem
+                {
+                    Id = Guid.NewGuid(),
+                    VenueId = venueId,
+                    MenuSectionId = activeSectionId,
+                    Name = "First",
+                    Description = "Seasonal vegetables",
+                    Price = 12.5m,
+                    HappyHourPrice = 10m,
+                    QuantityAvailable = 3,
+                    IsPopular = true,
+                    Tags = "Vegan, GF, vegan",
+                    ImageUrl = "https://cdn.example/first.jpg",
+                    SortOrder = 1
+                }
             ]
         };
         var sut = new DisplayController(screenRepository, venueRepository, menuRepository);
@@ -99,7 +113,12 @@ public class DisplayControllerTests
         var section = Assert.Single(response.Sections);
         Assert.Equal("Bowls", section.Name);
         Assert.Equal(new[] { "First", "Second" }, section.Items.Select(item => item.Name));
-        Assert.Equal("https://cdn.example/first.jpg", section.Items.First().ImageUrl);
+        var first = section.Items.First();
+        Assert.Equal("https://cdn.example/first.jpg", first.ImageUrl);
+        Assert.Equal(10m, first.HappyHourPrice);
+        Assert.Equal(3, first.QuantityAvailable);
+        Assert.True(first.IsPopular);
+        Assert.Equal(new[] { "Vegan", "GF" }, first.Tags);
     }
 
     [Fact]
