@@ -45,7 +45,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-05.09 — Video Wall Builder** is the next package in roadmap order.
+**WP-05.09 — Video Wall Builder** is in review on issue #80.
 
 ## Phase 04 Result
 
@@ -60,7 +60,7 @@ None. **WP-05.09 — Video Wall Builder** is the next package in roadmap order.
 
 ## Next Action
 
-Claim and implement **WP-05.09 — Video Wall Builder**.
+Validate and merge **WP-05.09 — Video Wall Builder**, then claim WP-05.10.
 
 ## Phase 05 Work Packages
 

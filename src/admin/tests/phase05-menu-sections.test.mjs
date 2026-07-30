@@ -7,6 +7,7 @@ const items = await readFile(new URL("../src/MenuItemsEditor.tsx", import.meta.u
 const api = await readFile(new URL("../src/api.ts", import.meta.url), "utf8");
 const quick = await readFile(new URL("../src/QuickUpdateMode.tsx", import.meta.url), "utf8");
 const screens = await readFile(new URL("../src/ScreenManagement.tsx", import.meta.url), "utf8");
+const videoWall = await readFile(new URL("../src/VideoWallBuilder.tsx", import.meta.url), "utf8");
 
 test("section journeys remain venue scoped", () => {
   assert.ok(api.includes("api/admin/venues/${venueId}/menus"));
@@ -69,4 +70,14 @@ test("screen targeting supports send-to-all and deterministic overflow guidance"
   assert.match(screens, /overflowItems/);
   assert.ok(api.includes("/push-all"));
   assert.ok(api.includes("/overflow?capacity=${capacity}"));
+});
+
+test("video wall builder is tier visible and limits supported layouts", () => {
+  assert.match(videoWall, /Video Wall is a higher-tier feature/);
+  assert.match(videoWall, /2 × 1/);
+  assert.match(videoWall, /3 × 1/);
+  assert.match(videoWall, /2 × 2/);
+  assert.match(videoWall, /saveVideoWall/);
+  assert.match(videoWall, /removeVideoWall/);
+  assert.ok(api.includes("/video-walls"));
 });
