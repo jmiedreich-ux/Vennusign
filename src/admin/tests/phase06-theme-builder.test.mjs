@@ -9,7 +9,8 @@ test("basic theme builder exposes six swatches full colors and three fonts", () 
   for (const name of ["Ember", "Ocean", "Forest", "Cafe", "Mono", "Plum"]) {
     assert.match(source, new RegExp(`name: "${name}"`));
   }
-  assert.equal((source.match(/type="color"/g) ?? []).length, 2);
+  assert.match(source, /Background color<input type="color"/);
+  assert.match(source, /Accent color<input type="color"/);
   for (const font of ["Inter", "Georgia", "Arial"]) {
     assert.match(source, new RegExp(`value="${font}"`));
   }
