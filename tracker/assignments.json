@@ -1,15 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T06:20:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-08.02",
-      "branch": "wp/08.02-venue-timezone-resolver",
-      "issue": 151,
-      "status": "In Progress"
-    }
-  ],
-  "nextAvailableWorkPackage": "WP-08.02",
+  "updatedUtc": "2026-07-30T06:24:00Z",
+  "activeAssignments": [],
+  "nextAvailableWorkPackage": "WP-08.03",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
