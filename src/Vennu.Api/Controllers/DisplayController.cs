@@ -110,6 +110,7 @@ public class DisplayController : ControllerBase
 
         response.Layout = ScreenLayout.Normalize(screen.DisplayLayout);
         response.SplitRatio = ScreenSplitRatio.Normalize(screen.SplitRatio);
+        response.HeroDwellSeconds = HeroDwellSeconds.Normalize(screen.HeroDwellSeconds);
         if (!string.Equals(response.Layout, ScreenLayout.Default, StringComparison.Ordinal))
         {
             response.Sections = displaySections;
