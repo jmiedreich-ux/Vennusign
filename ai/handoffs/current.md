@@ -2,43 +2,41 @@
 
 ## Work Package
 
-- ID: WP-07.06
-- Status: Complete and merged
+- ID: WP-07.07
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/07.06-split-layout-core`
-- Issue: #133
-- Pull request: #134
-- Latest reviewed commit: `fff54f6`
-- Merge commit: `07c68e5`
-- CI state: GitHub Actions run #319 passed
+- Branch: `wp/07.07-split-layout-admin`
+- Issue: #136
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added migration 019 and validated per-screen Split Layout ratios.
-- Added the ratio to screen-management and display contracts.
-- Added deterministic hero selection and complete-menu Split rendering.
+- Added tier-aware Split Layout and ratio controls.
+- Added an exact player-backed preview for each Split Layout screen.
+- Added responsive TV bounds and menu tag visibility.
 
 ## Decisions
 
-- Only 40/60 and 50/50 ratios are valid.
-- Administration and responsive preview polish remain in WP-07.07.
+- Reuse the existing screen update contract and production player route.
+- Preserve the complete menu in the DOM while bounding TV overflow.
 
 ## Validation
 
-- Results: solution build, admin build/tests, 55 display tests, and non-integration unit tests passed in Actions run #319.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-07.07 — Split Layout Administration and TV Polish.
+- Validate, review, and merge WP-07.07.
 
 ## Exact Next Action
 
-Claim and implement WP-07.07.
+Publish WP-07.07 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not add WP-07.07 admin ratio controls or Daily Special Hero behavior.
+- Do not add Daily Special Hero, rotation, or scheduling behavior.
