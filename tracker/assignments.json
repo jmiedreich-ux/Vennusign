@@ -1,14 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T22:49:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-09.02",
-      "branch": "wp/09.02-tap-list-administration",
-      "issue": 181,
-      "status": "In Progress"
-    }
-  ],
+  "updatedUtc": "2026-07-30T22:54:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-09.03",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
