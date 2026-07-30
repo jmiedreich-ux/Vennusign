@@ -8,6 +8,7 @@ export type DisplayContent = {
   layout: string;
   venueName?: string | null;
   menuName?: string | null;
+  isHappyHour?: boolean;
   sections?: DisplayMenuSection[];
 };
 
@@ -22,6 +23,11 @@ export type DisplayMenuItem = {
   name: string;
   description: string | null;
   price: number;
+  happyHourPrice: number | null;
+  isAvailable: boolean;
+  quantityAvailable: number | null;
+  isPopular: boolean;
+  tags: string[];
   imageUrl: string | null;
 };
 

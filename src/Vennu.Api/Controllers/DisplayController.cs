@@ -70,6 +70,11 @@ public class DisplayController : ControllerBase
                     Name = item.Name,
                     Description = item.Description,
                     Price = item.Price,
+                    HappyHourPrice = item.HappyHourPrice,
+                    IsAvailable = item.IsAvailable,
+                    QuantityAvailable = item.QuantityAvailable,
+                    IsPopular = item.IsPopular,
+                    Tags = ParseTags(item.Tags),
                     ImageUrl = item.ImageUrl
                 }).ToArray()
             });
@@ -79,6 +84,14 @@ public class DisplayController : ControllerBase
         response.Sections = displaySections;
         return Ok(response);
     }
+
+    private static IReadOnlyCollection<string> ParseTags(string? tags) =>
+        string.IsNullOrWhiteSpace(tags)
+            ? []
+            : tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(tag => tag.Length > 0)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
 
     [HttpPost("{screenId:guid}/heartbeat")]
     [ProducesResponseType<ScreenHeartbeatResponse>(StatusCodes.Status200OK)]

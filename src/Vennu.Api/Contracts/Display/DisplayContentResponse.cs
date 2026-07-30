@@ -20,6 +20,8 @@ public class DisplayContentResponse
 
     public string? MenuName { get; set; }
 
+    public bool IsHappyHour { get; set; }
+
     public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];
 }
 
@@ -41,6 +43,16 @@ public sealed class DisplayMenuItemResponse
     public string? Description { get; set; }
 
     public decimal Price { get; set; }
+
+    public decimal? HappyHourPrice { get; set; }
+
+    public bool IsAvailable { get; set; }
+
+    public int? QuantityAvailable { get; set; }
+
+    public bool IsPopular { get; set; }
+
+    public IReadOnlyCollection<string> Tags { get; set; } = [];
 
     public string? ImageUrl { get; set; }
 }

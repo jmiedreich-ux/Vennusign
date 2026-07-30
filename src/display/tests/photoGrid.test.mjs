@@ -24,3 +24,14 @@ test('uses a responsive card grid and bounded food-photo crop', () => {
   assert.match(styleSource, /aspect-ratio: 16 \/ 10/);
   assert.match(styleSource, /object-fit: cover/);
 });
+
+test('renders merchandising states only from display content', () => {
+  for (const contract of ['item.isPopular', 'item.isAvailable', 'item.quantityAvailable', 'item.tags', 'content.isHappyHour', 'item.happyHourPrice']) {
+    assert.match(layoutSource, new RegExp(contract.replace('.', '\\.')));
+  }
+  assert.match(layoutSource, /photo-grid__sold-out/);
+  assert.match(layoutSource, /photo-grid__popular/);
+  assert.match(layoutSource, /photo-grid__badge/);
+  assert.match(layoutSource, /<s>/);
+  assert.match(layoutSource, /limitedQuantityThreshold = 5/);
+});

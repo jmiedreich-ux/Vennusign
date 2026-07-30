@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T01:08:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-06.03",
+  "updatedUtc": "2026-07-30T01:09:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-06.03",
+      "branch": "wp/06.03-photo-grid-merchandising",
+      "issue": 94,
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-06.04",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
