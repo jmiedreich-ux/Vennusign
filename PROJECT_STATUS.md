@@ -48,7 +48,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-06.01 — Display Layout Contract and Registry Foundation** is the next package in roadmap order.
+**WP-06.01 — Display Layout Contract and Registry Foundation** is in review.
 
 ## Phase 04 Result
 
@@ -70,7 +70,7 @@ None. **WP-06.01 — Display Layout Contract and Registry Foundation** is the ne
 
 ## Next Action
 
-Claim and implement **WP-06.01 — Display Layout Contract and Registry Foundation**.
+Validate, review, and merge **WP-06.01 — Display Layout Contract and Registry Foundation** before beginning WP-06.02.
 
 ## Phase 05 Work Packages
 

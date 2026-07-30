@@ -2,33 +2,59 @@
 
 ## Work Package
 
-- ID: WP-05.10
-- Status: Complete and merged
-- Branch: `wp/05.10-phase-05-validation`
-- Issue: #84
-- Pull request: #85
-- Merge commit: `1232135`
+- ID: WP-06.01
+- Status: In review
+- Execution mode: Sequential
 
-## Completed
+## Git State
 
-- Added consolidated Phase 05 critical-journey frontend contracts.
-- Added the Phase 05 capability map, migration evidence, residual risks, and standing validation exception.
-- Verified the approved Phase 06 sequential AWP breakdown and WP-06.01 transition.
+- Branch: `wp/06.01-display-layout-registry`
+- Latest commit: Pending publication
+- Issue: #88
+- Pull request: Pending
+- CI state: Pending GitHub Actions
+
+## Completed This Session
+
+- Added the typed, normalized display-layout registry contract.
+- Added deterministic default fallback, duplicate protection, and a required-fallback guard.
+- Routed ready content through a shared display frame and registered default renderer.
+- Added focused registry tests without changing display boot, heartbeat, or SignalR behavior.
+
+## Files Changed
+
+- `src/display/src/layoutRegistry.mjs`
+- `src/display/src/layoutRegistry.d.mts`
+- `src/display/src/layouts/DisplayLayout.tsx`
+- `src/display/src/DisplayPage.tsx`
+- `src/display/tests/layoutRegistry.test.mjs`
+- WP, project status, tracker, and handoff records
+
+## Decisions
+
+- Layout keys normalize to lowercase snake case.
+- Unknown layouts retain their requested key in frame metadata but render the registered `default` layout.
+- The registry remains additive; WP-06.02 can register Photo Grid without changing player boot.
 
 ## Validation
 
-- Admin frontend contract tests: 17 passed.
-- `git diff --check` passed.
-- GitHub Actions run 225 passed restore, Release build, admin/display production builds, frontend tests, unit-category tests, migration-resource validation, and the explicit integration-test skip on functional head `054f0d4`.
-- Final reconciled head `d38545b` passed GitHub Actions run 229 and merged as `1232135`.
-- Integration-type tests are intentionally skipped.
+- Commands: display production build, display frontend tests, `git diff --check`
+- Results: Pending
+- Skipped checks and reason: all integration-type tests are skipped under the standing owner instruction.
+
+## Remaining Work
+
+- Publish the branch and PR, obtain authoritative GitHub Actions results, complete ChatGPT review, and merge.
+
+## Known Risks or Blockers
+
+- None.
 
 ## Exact Next Action
 
-Claim WP-06.01 — Display Layout Contract and Registry Foundation.
+Validate and merge WP-06.01, then begin WP-06.02 — Photo Grid Core Layout.
 
 ## Do Not Redo or Reverse
 
-- Do not change the existing pairing workflow.
-- Do not implement Phase 06 layout-registry or display-template code in the closure package.
-- Do not run integration-type tests.
+- Do not change the existing boot, heartbeat, SignalR event, or pairing flows.
+- Do not add Photo Grid implementation to WP-06.01.
