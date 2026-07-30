@@ -30,10 +30,11 @@ export function createLayoutRegistry(registrations, fallbackKey = fallbackLayout
   return Object.freeze({
     keys: Object.freeze([...layouts.keys()]),
     resolve(requestedKey) {
+      const isMissingKey = typeof requestedKey !== 'string' || requestedKey.trim().length === 0;
       const normalizedRequestedKey = normalizeLayoutKey(requestedKey);
       const matched = layouts.get(normalizedRequestedKey);
 
-      if (matched) {
+      if (matched && !isMissingKey) {
         return Object.freeze({
           requestedKey: normalizedRequestedKey,
           key: matched.key,
