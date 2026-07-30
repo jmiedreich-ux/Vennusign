@@ -40,9 +40,28 @@ public class DisplayContentResponse
 
     public DisplayEmergencyBroadcastResponse? EmergencyBroadcast { get; set; }
 
+    public DisplayPromotionResponse? Promotion { get; set; }
+
     public DisplayThemeResponse Theme { get; set; } = new();
 
     public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];
+}
+
+public sealed class DisplayPromotionResponse
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? TargetLayout { get; set; }
+    public string? Title { get; set; }
+    public string? Body { get; set; }
+    public DateTime EndLocalDate { get; set; }
+
+    public static DisplayPromotionResponse From(Vennu.Core.Models.DateRangePromotion value) =>
+        new()
+        {
+            Id = value.Id, Name = value.Name, TargetLayout = value.TargetLayout,
+            Title = value.Title, Body = value.Body, EndLocalDate = value.EndLocalDate
+        };
 }
 
 public sealed class DisplayEmergencyBroadcastResponse

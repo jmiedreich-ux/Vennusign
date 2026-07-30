@@ -23,6 +23,10 @@ export type DisplayContent = {
   emergencyBroadcast?: {
     id: string; title: string; message: string; mediaUrl?: string | null; expiresUtc: string;
   } | null;
+  promotion?: {
+    id: string; name: string; targetLayout?: string | null; title?: string | null;
+    body?: string | null; endLocalDate: string;
+  } | null;
   theme?: {
     backgroundColor: string;
     accentColor: string;

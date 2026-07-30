@@ -1,0 +1,13 @@
+.promotion-banner {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: .55rem 1rem;
+  color: var(--vennu-accent-foreground);
+  background: var(--vennu-accent);
+  text-align: center;
+}
+
+.promotion-banner span {
+  opacity: .9;
+}

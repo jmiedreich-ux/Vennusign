@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T08:18:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-08.09",
+  "updatedUtc": "2026-07-30T22:23:25Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-08.09",
+      "issue": 172,
+      "branch": "wp/08.09-date-range-promotions",
+      "status": "In Progress"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-08.10",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

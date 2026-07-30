@@ -25,6 +25,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlaylistAdministrationService, PlaylistAdministrationService>();
         services.AddScoped<IEmergencyBroadcastRepository, EmergencyBroadcastRepository>();
         services.AddScoped<IEmergencyBroadcastService, EmergencyBroadcastService>();
+        services.AddScoped<IDateRangePromotionRepository, DateRangePromotionRepository>();
+        services.AddSingleton<IDateRangePromotionResolver, DateRangePromotionResolver>();
+        services.AddScoped<IDateRangePromotionService, DateRangePromotionService>();
         services.AddScoped<IMenuSectionManagementService, MenuSectionManagementService>();
         services.AddScoped<IScreenRepository, ScreenRepository>();
         services.AddScoped<IScreenPairingCodeRepository, ScreenPairingCodeRepository>();

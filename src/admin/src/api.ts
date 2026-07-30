@@ -55,6 +55,10 @@ export type RevenueTrend = {
 export type OperationalEvent = {
   id: string; venueId: string; venueName: string; eventType: string; summary: string; occurredUtc: string;
 };
+export type DateRangePromotion = {
+  id: string; venueId: string; name: string; startLocalDate: string; endLocalDate: string;
+  targetLayout?: string; title?: string; body?: string; priority: number; isEnabled: boolean;
+};
 export type MenuSection = {
   id: string; venueId: string; menuId: string; name: string;
   sortOrder: number; isActive: boolean; createdUtc: string; updatedUtc: string;
@@ -393,6 +397,25 @@ export async function loadOperationalEvents(configuration: AdminConfiguration, a
   });
   if (!response.ok) throw new AdminApiError(response.status, "Unable to load recent commercial events.");
   return response.json() as Promise<OperationalEvent[]>;
+}
+
+async function promotionRequest(configuration: AdminConfiguration, apiKey: string, venueId: string, path = "", init?: RequestInit) {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}/date-range-promotions${path}`, {
+    ...init, headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to manage date-range promotions.");
+  return response;
+}
+export async function loadDateRangePromotions(configuration: AdminConfiguration, apiKey: string, venueId: string): Promise<DateRangePromotion[]> {
+  return (await promotionRequest(configuration, apiKey, venueId)).json() as Promise<DateRangePromotion[]>;
+}
+export async function saveDateRangePromotion(configuration: AdminConfiguration, apiKey: string, venueId: string, value: Omit<DateRangePromotion, "id" | "venueId">, id?: string): Promise<DateRangePromotion> {
+  return (await promotionRequest(configuration, apiKey, venueId, id ? `/${id}` : "", {
+    method: id ? "PUT" : "POST", body: JSON.stringify(value)
+  })).json() as Promise<DateRangePromotion>;
+}
+export async function archiveDateRangePromotion(configuration: AdminConfiguration, apiKey: string, venueId: string, id: string): Promise<void> {
+  await promotionRequest(configuration, apiKey, venueId, `/${id}`, { method: "DELETE" });
 }
 
 async function menuRequest(configuration: AdminConfiguration, apiKey: string, venueId: string, path = "", init?: RequestInit) {

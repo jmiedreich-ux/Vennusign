@@ -18,6 +18,7 @@ public class DisplayController : ControllerBase
     private readonly IHappyHourService? happyHourService;
     private readonly IPlaylistAdministrationService? playlistService;
     private readonly IEmergencyBroadcastService? emergencyBroadcastService;
+    private readonly IDateRangePromotionService? promotionService;
     private readonly TimeProvider timeProvider;
 
     public DisplayController(
@@ -28,9 +29,10 @@ public class DisplayController : ControllerBase
         IHappyHourService? happyHourService = null,
         IPlaylistAdministrationService? playlistService = null,
         IEmergencyBroadcastService? emergencyBroadcastService = null,
-        TimeProvider? timeProvider = null) =>
-        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.emergencyBroadcastService, this.timeProvider) =
-        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, emergencyBroadcastService, timeProvider ?? TimeProvider.System);
+        TimeProvider? timeProvider = null,
+        IDateRangePromotionService? promotionService = null) =>
+        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.emergencyBroadcastService, this.promotionService, this.timeProvider) =
+        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, emergencyBroadcastService, promotionService, timeProvider ?? TimeProvider.System);
 
     [HttpGet("{screenId:guid}/content")]
     [ProducesResponseType<DisplayContentResponse>(StatusCodes.Status200OK)]
@@ -62,6 +64,12 @@ public class DisplayController : ControllerBase
 
         var venueId = screen.VenueId.Value;
         var venue = await venueRepository.GetByIdAsync(venueId, cancellationToken);
+        if (promotionService is not null)
+        {
+            var promotion = await promotionService.GetActiveAsync(
+                venueId, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false);
+            response.Promotion = promotion is null ? null : DisplayPromotionResponse.From(promotion);
+        }
         if (emergencyBroadcastService is not null)
         {
             var broadcast = await emergencyBroadcastService.GetActiveAsync(
@@ -141,7 +149,9 @@ public class DisplayController : ControllerBase
             });
         }
 
-        response.Layout = ScreenLayout.Normalize(screen.DisplayLayout);
+        response.Layout = response.Promotion?.TargetLayout is { Length: > 0 } promotionLayout
+            ? ScreenLayout.Normalize(promotionLayout)
+            : ScreenLayout.Normalize(screen.DisplayLayout);
         response.SplitRatio = ScreenSplitRatio.Normalize(screen.SplitRatio);
         response.HeroDwellSeconds = HeroDwellSeconds.Normalize(screen.HeroDwellSeconds);
         if (!string.Equals(response.Layout, ScreenLayout.Default, StringComparison.Ordinal))
