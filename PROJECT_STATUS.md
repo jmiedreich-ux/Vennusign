@@ -76,7 +76,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-08.07 — Playlist Domain and Player Rotation** is the next package in roadmap order.
+**WP-08.07 — Playlist Domain and Player Rotation** is in progress.
 
 ## Phase 04 Result
 
@@ -111,7 +111,7 @@ None. **WP-08.07 — Playlist Domain and Player Rotation** is the next package i
 
 ## Next Action
 
-Claim and implement **WP-08.07 — Playlist Domain and Player Rotation**.
+Complete, validate, review, and merge **WP-08.07 — Playlist Domain and Player Rotation**.
 
 ## Phase 05 Work Packages
 

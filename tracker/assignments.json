@@ -1,7 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T07:45:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-07-30T07:55:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-08.07",
+      "branch": "wp/08.07-playlist-domain-player-rotation",
+      "issue": 166,
+      "status": "In Progress"
+    }
+  ],
   "nextAvailableWorkPackage": "WP-08.07",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

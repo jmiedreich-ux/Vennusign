@@ -16,6 +16,10 @@ export type DisplayContent = {
   photoGridOverflowItems?: number;
   splitRatio?: '40_60' | '50_50';
   heroDwellSeconds?: number;
+  playlist?: Array<{
+    id: string; slideType: 'menu' | 'image' | 'message'; title?: string | null;
+    body?: string | null; mediaUrl?: string | null; dwellSeconds: number;
+  }>;
   theme?: {
     backgroundColor: string;
     accentColor: string;

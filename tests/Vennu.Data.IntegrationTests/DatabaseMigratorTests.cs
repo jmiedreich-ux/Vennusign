@@ -33,7 +33,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.021_add_hero_dwell_seconds.sql",
                 "Vennu.Data.Scripts.022_create_meal_periods.sql",
                 "Vennu.Data.Scripts.023_add_meal_period_targets.sql",
-                "Vennu.Data.Scripts.024_create_happy_hour_schedules.sql"
+                "Vennu.Data.Scripts.024_create_happy_hour_schedules.sql",
+                "Vennu.Data.Scripts.025_create_playlist_slides.sql"
             ],
             scriptNames);
     }
