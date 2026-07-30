@@ -3,10 +3,11 @@
 ## Work Package
 
 - ID: WP-05.09
-- Status: In review
+- Status: Complete and merged
 - Branch: `wp/05.09-video-wall-builder`
 - Issue: #80
-- Pull request: pending
+- Pull request: #81
+- Merge commit: `b1da8ab`
 
 ## Completed
 
@@ -17,13 +18,15 @@
 
 ## Validation
 
-- Local admin frontend contract validation pending.
-- GitHub Actions validation pending.
+- Admin frontend contract tests: 13 passed.
+- `git diff --check` passed.
+- GitHub Actions run 216 passed restore, Release build, admin/display production builds, frontend tests, unit-category tests, migration-resource validation, and the explicit integration-test skip on reviewed head `7016289`.
+- ChatGPT approval was recorded and PR #81 merged as `b1da8ab`.
 - Integration-type tests are intentionally skipped.
 
 ## Exact Next Action
 
-Publish, validate, review, and merge WP-05.09, then claim WP-05.10.
+Claim and complete WP-05.10 — Phase 05 Validation and Closure.
 
 ## Do Not Redo or Reverse
 
