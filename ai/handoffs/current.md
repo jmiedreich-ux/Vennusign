@@ -3,15 +3,17 @@
 ## Work Package
 
 - ID: WP-07.09
-- Status: In progress
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/07.09-hero-rotation-admin`
 - Issue: #142
-- Pull request: pending
-- CI state: pending
+- Pull request: #143
+- Latest reviewed commit: `bdf46e1`
+- Merge commit: `226c670`
+- CI state: GitHub Actions run #340 passed
 
 ## Completed This Session
 
@@ -26,17 +28,18 @@
 
 ## Validation
 
-- Results: GitHub Actions pending.
+- Results: solution build, 30 admin tests, 61 display tests, and non-integration unit tests passed in Actions run #340.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Validate, review, and merge WP-07.09.
+- WP-07.10 — Phase 07 Validation and Closure.
 
 ## Exact Next Action
 
-Publish WP-07.09 and validate its exact PR head in GitHub Actions.
+Claim and implement WP-07.10.
 
 ## Do Not Redo or Reverse
 
-- Do not add Phase 08 scheduling behavior.
+- Do not redo hero dwell, rotation, or administration behavior.
+- Do not begin Phase 08 before Phase 07 closure is merged.
