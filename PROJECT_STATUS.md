@@ -64,7 +64,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-07.06 — Split Layout Domain and Core Rendering** is the next package in roadmap order.
+**WP-07.06 — Split Layout Domain and Core Rendering** is in progress.
 
 ## Phase 04 Result
 
@@ -93,7 +93,7 @@ None. **WP-07.06 — Split Layout Domain and Core Rendering** is the next packag
 
 ## Next Action
 
-Claim and implement **WP-07.06 — Split Layout Domain and Core Rendering**.
+Complete, validate, review, and merge **WP-07.06 — Split Layout Domain and Core Rendering**.
 
 ## Phase 05 Work Packages
 
