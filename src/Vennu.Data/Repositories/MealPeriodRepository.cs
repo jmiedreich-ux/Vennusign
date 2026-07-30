@@ -13,6 +13,12 @@ public sealed class MealPeriodRepository(ISqlDataAccess dataAccess) : IMealPerio
         ORDER BY SortOrder, Id;
         """;
 
+    private const string DeleteSql = """
+        DELETE FROM dbo.MealPeriods
+        WHERE VenueId = @VenueId AND Id = @MealPeriodId;
+        SELECT CONVERT(BIT, CASE WHEN @@ROWCOUNT > 0 THEN 1 ELSE 0 END) AS Removed;
+        """;
+
     public async Task<Guid> CreateAsync(
         MealPeriod mealPeriod,
         CancellationToken cancellationToken = default)
@@ -57,8 +63,28 @@ public sealed class MealPeriodRepository(ISqlDataAccess dataAccess) : IMealPerio
             new { VenueId = RequireVenueId(venueId) },
             cancellationToken).ConfigureAwait(false)).ToArray();
 
+    public async Task<bool> DeleteAsync(
+        Guid venueId,
+        Guid mealPeriodId,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<RemovalResult, object>(
+            DeleteSql,
+            new
+            {
+                VenueId = RequireVenueId(venueId),
+                MealPeriodId = mealPeriodId == Guid.Empty
+                    ? throw new ArgumentException("Identifier cannot be empty.", nameof(mealPeriodId))
+                    : mealPeriodId
+            },
+            cancellationToken).ConfigureAwait(false)).Single().Removed;
+
     private static Guid RequireVenueId(Guid venueId) =>
         venueId == Guid.Empty
             ? throw new ArgumentException("Identifier cannot be empty.", nameof(venueId))
             : venueId;
+
+    public sealed class RemovalResult
+    {
+        public bool Removed { get; set; }
+    }
 }

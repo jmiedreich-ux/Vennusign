@@ -120,11 +120,45 @@ export type VenueThemePreset = Omit<VenueTheme, "venueId" | "backgroundColor" | 
   key: string;
   label: string;
 };
+export type MealPeriod = {
+  id: string; venueId: string; name: string; startLocalTime: string; endLocalTime: string;
+  activeDaysMask: number; isEnabled: boolean; sortOrder: number;
+};
+export type MealPeriodWrite = Pick<MealPeriod, "name" | "startLocalTime" | "endLocalTime" | "activeDaysMask" | "isEnabled">;
+export type MealPeriodSnapshot = {
+  mealPeriods: MealPeriod[];
+  conflicts: Array<{ firstId: string; firstName: string; secondId: string; secondName: string }>;
+};
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
     super(message);
   }
+}
+
+async function mealPeriodRequest(configuration: AdminConfiguration, apiKey: string, venueId: string, path = "", init?: RequestInit) {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}/meal-periods${path}`, {
+    ...init,
+    headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to manage meal periods.");
+  return response;
+}
+
+export async function loadMealPeriods(configuration: AdminConfiguration, apiKey: string, venueId: string): Promise<MealPeriodSnapshot> {
+  return (await mealPeriodRequest(configuration, apiKey, venueId)).json() as Promise<MealPeriodSnapshot>;
+}
+
+export async function createMealPeriod(configuration: AdminConfiguration, apiKey: string, venueId: string, value: MealPeriodWrite): Promise<MealPeriod> {
+  return (await mealPeriodRequest(configuration, apiKey, venueId, "", { method: "POST", body: JSON.stringify(value) })).json() as Promise<MealPeriod>;
+}
+
+export async function updateMealPeriod(configuration: AdminConfiguration, apiKey: string, venueId: string, value: MealPeriod): Promise<MealPeriod> {
+  return (await mealPeriodRequest(configuration, apiKey, venueId, `/${value.id}`, { method: "PUT", body: JSON.stringify(value) })).json() as Promise<MealPeriod>;
+}
+
+export async function deleteMealPeriod(configuration: AdminConfiguration, apiKey: string, venueId: string, id: string): Promise<void> {
+  await mealPeriodRequest(configuration, apiKey, venueId, `/${id}`, { method: "DELETE" });
 }
 
 export async function loadSession(configuration: AdminConfiguration, apiKey: string, signal?: AbortSignal): Promise<AdminSession> {

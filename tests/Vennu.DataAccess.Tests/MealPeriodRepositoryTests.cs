@@ -65,4 +65,29 @@ public sealed class MealPeriodRepositoryTests
 
         Assert.Equal("venueId", exception.ParamName);
     }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public async Task DeleteAsync_UsesVenueAndPeriodScope()
+    {
+        string? capturedSql = null;
+        object? capturedParameters = null;
+        var dataAccess = new FakeSqlDataAccess
+        {
+            ExecuteSqlQueryHandler = (sql, parameters) =>
+            {
+                capturedSql = sql;
+                capturedParameters = parameters;
+                return [new MealPeriodRepository.RemovalResult { Removed = true }];
+            }
+        };
+        var repository = new MealPeriodRepository(dataAccess);
+        var venueId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+
+        Assert.True(await repository.DeleteAsync(venueId, periodId));
+        Assert.Contains("VenueId = @VenueId AND Id = @MealPeriodId", capturedSql, StringComparison.Ordinal);
+        Assert.Equal(venueId, capturedParameters!.GetType().GetProperty("VenueId")!.GetValue(capturedParameters));
+        Assert.Equal(periodId, capturedParameters.GetType().GetProperty("MealPeriodId")!.GetValue(capturedParameters));
+    }
 }

@@ -2,44 +2,42 @@
 
 ## Work Package
 
-- ID: WP-08.02
-- Status: Complete and merged
+- ID: WP-08.03
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/08.02-venue-timezone-resolver`
-- Issue: #151
-- Pull request: #152
-- Latest reviewed commit: `3ab31cb`
-- Merge commit: `172d079`
-- CI state: GitHub Actions run #358 passed
+- Branch: `wp/08.03-meal-period-administration`
+- Issue: #154
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added a pure venue-timezone meal-period resolver.
-- Added regular, overnight, active-day, enabled-state, and deterministic precedence behavior.
-- Added DST and invalid-timezone coverage.
+- Added protected venue-scoped meal-period CRUD.
+- Added validation and weekly overlap guidance including overnight windows.
+- Added admin day/time controls, enablement, and conflict messaging.
 
 ## Decisions
 
-- Resolve only from UTC through the venue IANA timezone.
-- Overnight after-midnight time belongs to the preceding local day.
+- Overlaps provide guidance but do not block deliberate configuration.
+- Administration does not activate player content.
 
 ## Validation
 
-- Results: solution build, frontend builds/tests, and non-integration unit tests passed in Actions run #358.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-08.03 — Meal Period Administration.
+- Validate, review, and merge WP-08.03.
 
 ## Exact Next Action
 
-Claim and implement WP-08.03.
+Publish WP-08.03 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not redo WP-08.02 resolution behavior.
-- Keep WP-08.03 administrative; do not activate player content.
+- Do not add hosted evaluation, player activation, or SignalR to WP-08.03.
+- Do not begin WP-08.04 before WP-08.03 is merged.
