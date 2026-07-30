@@ -24,6 +24,7 @@ public sealed class ScreenManagementServiceTests
         Assert.Equal("3x2", screens.LastCreatedScreen?.PhotoGridDensity);
         Assert.Equal("photo_grid", screens.LastCreatedScreen?.DisplayLayout);
         Assert.Equal("40_60", screens.LastCreatedScreen?.SplitRatio);
+        Assert.Equal(8, screens.LastCreatedScreen?.HeroDwellSeconds);
         Assert.Matches("^sc-[a-z0-9]{6}$", screens.LastCreatedScreen?.ScreenKey);
     }
 
@@ -128,6 +129,28 @@ public sealed class ScreenManagementServiceTests
         Assert.Equal("50_50", screens.LastUpdatedScreen?.SplitRatio);
         await Assert.ThrowsAsync<ArgumentException>(
             () => service.UpdateAsync(venueId, screenId, "Bar", null, null, "split_layout", "70_30"));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_PersistsBoundedHeroDwell()
+    {
+        var venueId = Guid.NewGuid();
+        var screenId = Guid.NewGuid();
+        var screens = new FakeScreenRepository
+        {
+            GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(
+                new Screen { Id = screenId, VenueId = venueId, Name = "Bar" })
+        };
+        var service = CreateService(venueId, screens, new RecordingNotifier());
+
+        var updated = await service.UpdateAsync(
+            venueId, screenId, "Bar", null, null, "daily_special_hero", null, 12);
+
+        Assert.Equal("daily_special_hero", updated?.DisplayLayout);
+        Assert.Equal(12, updated?.HeroDwellSeconds);
+        Assert.Equal(12, screens.LastUpdatedScreen?.HeroDwellSeconds);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => service.UpdateAsync(venueId, screenId, "Bar", null, null, "daily_special_hero", null, 31));
     }
 
     [Fact]

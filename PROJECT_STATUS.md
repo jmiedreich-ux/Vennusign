@@ -67,7 +67,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-07.09 — Hero Rotation and Administration** is the next package in roadmap order.
+**WP-07.09 — Hero Rotation and Administration** is in progress.
 
 ## Phase 04 Result
 
@@ -96,7 +96,7 @@ None. **WP-07.09 — Hero Rotation and Administration** is the next package in r
 
 ## Next Action
 
-Claim and implement **WP-07.09 — Hero Rotation and Administration**.
+Complete, validate, review, and merge **WP-07.09 — Hero Rotation and Administration**.
 
 ## Phase 05 Work Packages
 

@@ -41,6 +41,7 @@ public sealed class ScreenManagementService(
             PhotoGridDensity = PhotoGridDensity.Default,
             DisplayLayout = ScreenLayout.Default,
             SplitRatio = ScreenSplitRatio.Default,
+            HeroDwellSeconds = HeroDwellSeconds.Default,
             Status = "Offline",
             CreatedUtc = timeProvider.GetUtcNow().UtcDateTime,
             UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime
@@ -57,6 +58,7 @@ public sealed class ScreenManagementService(
         string? photoGridDensity,
         string? displayLayout,
         string? splitRatio = null,
+        int? heroDwellSeconds = null,
         CancellationToken cancellationToken = default)
     {
         var screen = await GetOwnedScreenAsync(venueId, screenId, cancellationToken).ConfigureAwait(false);
@@ -70,6 +72,7 @@ public sealed class ScreenManagementService(
         screen.PhotoGridDensity = PhotoGridDensity.Normalize(photoGridDensity ?? screen.PhotoGridDensity);
         screen.DisplayLayout = ScreenLayout.Normalize(displayLayout ?? screen.DisplayLayout);
         screen.SplitRatio = ScreenSplitRatio.Normalize(splitRatio ?? screen.SplitRatio);
+        screen.HeroDwellSeconds = HeroDwellSeconds.Normalize(heroDwellSeconds ?? screen.HeroDwellSeconds);
         screen.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
         return await screenRepository.UpdateAsync(screen, cancellationToken).ConfigureAwait(false)
             ? ToItem(screen)
@@ -150,6 +153,7 @@ public sealed class ScreenManagementService(
             PhotoGridDensity.Normalize(screen.PhotoGridDensity),
             ScreenLayout.Normalize(screen.DisplayLayout),
             ScreenSplitRatio.Normalize(screen.SplitRatio),
+            HeroDwellSeconds.Normalize(screen.HeroDwellSeconds),
             screen.Status,
             screen.LastSeen,
             $"/display/{screen.Id}");

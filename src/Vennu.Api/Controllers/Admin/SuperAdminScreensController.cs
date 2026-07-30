@@ -70,6 +70,7 @@ public sealed class SuperAdminScreensController(
                     request.PhotoGridDensity,
                     request.DisplayLayout,
                     request.SplitRatio,
+                    request.HeroDwellSeconds,
                     cancellationToken)
                 .ConfigureAwait(false);
             return screen is null ? NotFound() : Ok(screen);

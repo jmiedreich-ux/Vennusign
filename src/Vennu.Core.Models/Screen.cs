@@ -22,6 +22,8 @@ public class Screen
 
     public string SplitRatio { get; set; } = "40_60";
 
+    public int HeroDwellSeconds { get; set; } = 8;
+
     public DateTime? LastSeen { get; set; }
 
     public string Status { get; set; } = "Offline";

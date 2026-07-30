@@ -13,6 +13,7 @@ export type DisplayContent = {
   photoGridDensity?: '2x2' | '3x2' | '4x2' | '3x3';
   photoGridOverflowItems?: number;
   splitRatio?: '40_60' | '50_50';
+  heroDwellSeconds?: number;
   theme?: {
     backgroundColor: string;
     accentColor: string;

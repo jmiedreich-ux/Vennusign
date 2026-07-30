@@ -20,7 +20,8 @@ test("uses the exact player route for a 16 by 9 preview", () => {
   assert.ok(screens.includes("configuration.displayBaseUrl}/display/${screen.id}"));
   assert.match(screens, /Split Layout TV preview/);
   assert.match(screens, /setPreviewRevision\(current => current \+ 1\)/);
-  assert.match(screens, /screen\.splitRatio}-\$\{previewRevision/);
+  assert.match(screens, /screen\.splitRatio}/);
+  assert.match(screens, /\$\{previewRevision}/);
   assert.match(styles, /\.split-layout-preview iframe/);
   assert.ok(styles.includes("aspect-ratio: 16 / 9"));
 });

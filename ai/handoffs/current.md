@@ -2,44 +2,41 @@
 
 ## Work Package
 
-- ID: WP-07.08
-- Status: Complete and merged
+- ID: WP-07.09
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/07.08-daily-special-hero`
-- Issue: #139
-- Pull request: #140
-- Latest reviewed commit: `77f51d7`
-- Merge commit: `dff640c`
-- CI state: GitHub Actions run #334 passed
+- Branch: `wp/07.09-hero-rotation-admin`
+- Issue: #142
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added migration 020 and Daily Special Hero layout normalization.
-- Added deterministic featured and secondary item selection.
-- Added full-screen hero media, copy, active pricing, and Today Only presentation.
+- Added migration 021 and bounded hero dwell persistence.
+- Added tier-aware hero selection, dwell controls, and exact preview.
+- Added reduced-motion-aware rotation and stable content replacement recovery.
 
 ## Decisions
 
-- Reuse existing daily-special, availability, popularity, media, and pricing contracts.
-- Preserve rotation and administration for WP-07.09.
+- Default to eight seconds and validate 4–30 seconds.
+- Reset safely when realtime or cached content removes the active item.
 
 ## Validation
 
-- Results: solution build, admin build/tests, 59 display tests, and non-integration unit tests passed in Actions run #334.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-07.09 — Hero Rotation and Administration.
+- Validate, review, and merge WP-07.09.
 
 ## Exact Next Action
 
-Claim and implement WP-07.09.
+Publish WP-07.09 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not redo Daily Special Hero core selection, migration, or rendering.
-- Preserve the stable selection and presentation contracts while adding WP-07.09 behavior.
+- Do not add Phase 08 scheduling behavior.

@@ -30,6 +30,8 @@ public class DisplayContentResponse
 
     public string SplitRatio { get; set; } = "40_60";
 
+    public int HeroDwellSeconds { get; set; } = 8;
+
     public DisplayThemeResponse Theme { get; set; } = new();
 
     public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];

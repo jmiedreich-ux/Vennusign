@@ -14,6 +14,7 @@ public interface IScreenManagementService
         string? photoGridDensity,
         string? displayLayout,
         string? splitRatio = null,
+        int? heroDwellSeconds = null,
         CancellationToken cancellationToken = default);
     Task<bool> PushAsync(Guid venueId, Guid screenId, CancellationToken cancellationToken = default);
 }

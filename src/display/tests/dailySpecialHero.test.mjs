@@ -20,9 +20,21 @@ test('selects the requested available item before deterministic media fallbacks'
 
 test('renders full-screen media, active price, Today Only, and ordered secondary items', () => {
   assert.match(layout, /Today Only/);
-  assert.match(layout, /featured\.description/);
-  assert.match(layout, /activePrice\(content\.isHappyHour, featured\)/);
+  assert.match(layout, /active\.description/);
+  assert.match(layout, /activePrice\(content\.isHappyHour, active\)/);
   assert.match(layout, /filter\(item => isAvailable\(item\) && item\.id !== featuredId\)\.slice\(0, 3\)/);
   assert.match(css, /max-height: 100vh/);
   assert.match(css, /object-fit: cover/);
+});
+
+test('rotates with the persisted dwell and recovers after live or cached content changes', () => {
+  assert.match(layout, /content\.heroDwellSeconds \?\? 8/);
+  assert.match(layout, /window\.setInterval/);
+  assert.match(layout, /rotationItems\.some\(item => item\.id === current\)/);
+  assert.match(layout, /rotationKey/);
+});
+
+test('disables rotation for reduced-motion viewers', () => {
+  assert.match(layout, /prefers-reduced-motion: reduce/);
+  assert.match(layout, /if \(reduceMotion \|\| rotationItems\.length < 2\)/);
 });
