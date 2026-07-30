@@ -104,7 +104,7 @@ test('media cache registration uses the versioned player worker', async () => {
   assert.equal(result, expected);
 });
 
-test('media worker cleans old versions and recovers cached images offline', async () => {
+test('media worker cleans old versions and recovers supported media offline', async () => {
   const worker = await readFile(
     new URL('../public/vennu-media-sw.js', import.meta.url),
     'utf8'
@@ -112,7 +112,7 @@ test('media worker cleans old versions and recovers cached images offline', asyn
 
   assert.match(worker, /vennu-display-media-/);
   assert.match(worker, /caches\.delete/);
-  assert.match(worker, /event\.request\.destination !== 'image'/);
+  assert.match(worker, /\['image', 'font', 'style'\]\.includes/);
   assert.match(worker, /await fetch\(request\)/);
   assert.match(worker, /await cache\.match\(request\)/);
 });

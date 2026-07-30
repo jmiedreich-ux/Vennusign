@@ -63,7 +63,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-07.05 — Noto Font Preloading** is the next package in roadmap order.
+**WP-07.05 — Noto Font Preloading** is in progress.
 
 ## Phase 04 Result
 
@@ -92,7 +92,7 @@ None. **WP-07.05 — Noto Font Preloading** is the next package in roadmap order
 
 ## Next Action
 
-Claim and implement **WP-07.05 — Noto Font Preloading**.
+Complete, validate, review, and merge **WP-07.05 — Noto Font Preloading**.
 
 ## Phase 05 Work Packages
 

@@ -54,10 +54,10 @@ test('offline content is screen-bound versioned and recoverable', () => {
   assert.match(page, /Offline — showing the last saved menu/);
 });
 
-test('media cache invalidates old versions and falls back only for images', () => {
+test('media cache invalidates old versions and falls back only for supported media', () => {
   assert.match(worker, /mediaCacheName/);
   assert.match(worker, /caches\.delete/);
-  assert.match(worker, /request\.destination !== 'image'/);
+  assert.match(worker, /\['image', 'font', 'style'\]\.includes/);
   assert.match(worker, /await fetch\(request\)/);
   assert.match(worker, /await cache\.match\(request\)/);
 });
