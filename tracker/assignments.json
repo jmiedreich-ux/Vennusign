@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T23:42:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-09.06",
+  "updatedUtc": "2026-07-30T23:44:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-09.06",
+      "orchestrator": "ChatGPT",
+      "branch": "wp/09.06-tap-strips-polish",
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-09.07",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

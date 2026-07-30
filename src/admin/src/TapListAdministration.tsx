@@ -9,6 +9,7 @@ type Props = { configuration: AdminConfiguration; apiKey: string; venueId: strin
 const newItem = (): Omit<TapItem, "id" | "venueId" | "sortOrder"> => ({
   name: "", price: 0, isAvailable: true, isComingSoon: false, glassColor: "#F5C842", nameColor: "#FFD700"
 });
+const tapStripsCapacity = 12;
 
 export default function TapListAdministration({ configuration, apiKey, venueId, enabled }: Props) {
   const [data, setData] = useState<TapListSnapshot>({ categories: [], items: [] });
@@ -46,6 +47,10 @@ export default function TapListAdministration({ configuration, apiKey, venueId, 
   return <article className="tap-list-admin">
     <div className="promotion-heading"><div><p>Breweries & bars</p><h3>Tap list</h3></div><span>{data.items.length} taps</span></div>
     {!enabled ? <p className="tier-notice">Tap List controls remain visible. Enable All Layouts to edit them.</p> : null}
+    <p className={data.items.length > tapStripsCapacity ? "state error" : "state"}>
+      Tap Strips TV capacity: {Math.min(data.items.length, tapStripsCapacity)} visible
+      {data.items.length > tapStripsCapacity ? ` · ${data.items.length - tapStripsCapacity} overflow` : " · no overflow"}
+    </p>
     {error ? <p className="state error">{error}</p> : null}
     <section><h4>Categories</h4>
       <form onSubmit={addCategory}><input required disabled={!enabled} maxLength={120} placeholder="Import Beer" value={category.name} onChange={event => setCategory(value => ({ ...value, name: event.target.value }))} /><input disabled={!enabled} min={0} step=".01" type="number" placeholder="Category price" value={category.categoryPrice ?? ""} onChange={event => setCategory(value => ({ ...value, categoryPrice: event.target.value ? Number(event.target.value) : undefined }))} /><button disabled={!enabled || busy}>Add category</button></form>

@@ -119,6 +119,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
             <option disabled={!allLayoutsEnabled} value="split_layout">Split Layout · Pro</option>
             <option disabled={!allLayoutsEnabled} value="daily_special_hero">Daily Special Hero · Pro</option>
             <option disabled={!allLayoutsEnabled} value="classic_chalkboard">Classic Chalkboard Drinks · Pro</option>
+            <option disabled={!allLayoutsEnabled} value="tap_strips">Tap Strips · Pro</option>
           </select>
         </label>
         {screen.displayLayout === "photo_grid" ? <label>Photo Grid density
@@ -169,7 +170,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
           <a href={screen.registrationUrl} target="_blank" rel="noreferrer">Open registration URL</a>
           <button disabled={busyId === screen.id} onClick={() => push(screen)}>Push content</button>
         </div>
-        {["split_layout", "daily_special_hero", "classic_chalkboard"].includes(screen.displayLayout) ? <div className="split-layout-preview">
+        {["split_layout", "daily_special_hero", "classic_chalkboard", "tap_strips"].includes(screen.displayLayout) ? <div className="split-layout-preview">
           <div><strong>Exact TV preview</strong><span>Uses this screen’s saved menu, theme, and layout settings.</span></div>
           <iframe
             key={`${screen.id}-${screen.displayLayout}-${screen.splitRatio}-${screen.heroDwellSeconds}-${previewRevision}`}
@@ -178,7 +179,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
               ? `${screen.name} Split Layout TV preview`
               : screen.displayLayout === "daily_special_hero"
                 ? `${screen.name} Daily Special Hero TV preview`
-                : `${screen.name} Classic Chalkboard TV preview`}
+                : `${screen.name} ${screen.displayLayout === "classic_chalkboard" ? "Classic Chalkboard" : "Tap Strips"} TV preview`}
           />
         </div> : null}
       </section>)}</div> : <p>No screens assigned.</p>}
