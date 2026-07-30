@@ -54,6 +54,7 @@ builder.Services.AddScoped<IStripeRevenueSource, StripeRevenueSource>();
 builder.Services.AddScoped<IStripeSubscriptionTierUpdater, StripeSubscriptionTierUpdater>();
 builder.Services.AddHostedService<HeartbeatMonitor>();
 builder.Services.AddVennuData();
+builder.Services.AddScoped<IVenueThemeService, VenueThemeService>();
 
 if (!builder.Environment.IsEnvironment("Testing"))
 {
