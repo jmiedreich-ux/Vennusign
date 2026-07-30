@@ -79,7 +79,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-08.10 — Phase 08 Validation and Closure** is the next package in roadmap order.
+**WP-08.10 — Phase 08 Validation and Closure** is ready for review on `wp/08.10-phase-08-validation-closure` (issue #175).
 
 ## Phase 04 Result
 
@@ -114,7 +114,7 @@ None. **WP-08.10 — Phase 08 Validation and Closure** is the next package in ro
 
 ## Next Action
 
-Claim and complete **WP-08.10 — Phase 08 Validation and Closure**.
+Publish **WP-08.10**, validate it in GitHub Actions, review, and merge it.
 
 ## Phase 05 Work Packages
 

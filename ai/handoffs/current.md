@@ -2,44 +2,44 @@
 
 ## Work Package
 
-- ID: WP-08.09
-- Status: Complete and merged
+- ID: WP-08.10
+- Status: Ready for review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/08.09-date-range-promotions`
-- Issue: #172
-- Pull request: #173
-- Latest reviewed commit: `146a014`
-- Merge commit: `852defa`
-- CI state: GitHub Actions run #400 passed
+- Branch: `wp/08.10-phase-08-validation-closure`
+- Issue: #175
+- Pull request: pending
+- Latest reviewed commit: pending
+- Merge commit: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added venue-local inclusive promotion ranges with deterministic overlap precedence.
-- Added protected tier-visible administration, layout targeting, and promotion content.
-- Added transition-only evaluation and authoritative player reloads.
+- Added consolidated Phase 08 admin and player critical journeys.
+- Added the acceptance matrix for scheduling, precedence, realtime, offline, and recovery.
+- Kept the package validation-only with no new feature behavior.
 
 ## Decisions
 
-- Higher promotion priority wins; ties use latest start, creation time, then identifier.
-- Emergency broadcasts continue to preempt promotions.
+- Phase closure requires the exact PR head to pass authoritative non-integration Actions.
+- Phase 09 implementation remains out of this package.
 
 ## Validation
 
-- Results: restore, Release build, admin/display production builds and tests, migration inventory, and required non-integration tests passed in Actions run #400.
+- Results: focused local frontend tests pending; GitHub Actions is authoritative.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-08.10 — Phase 08 Validation and Closure.
+- Publish, validate, review, and merge WP-08.10.
 
 ## Exact Next Action
 
-Claim and complete WP-08.10.
+Publish WP-08.10 and wait for authoritative non-integration Actions checks.
 
 ## Do Not Redo or Reverse
 
-- Do not change emergency-broadcast precedence.
-- Do not implement Phase 09 tap-list behavior.
+- Do not add scheduling behavior in the closure package.
+- Do not start Phase 09 until WP-08.10 is merged.
