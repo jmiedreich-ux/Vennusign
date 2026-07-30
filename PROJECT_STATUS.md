@@ -51,10 +51,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-06.04 — Photo Grid Density and Multi-Screen Overflow
 - WP-06.05 — Classic Diner Core Layout
 - WP-06.06 — Classic Diner Pricing and Daily Special
+- WP-06.07 — Basic Theme Domain and Persistence
 
 ## Active Work Package
 
-**WP-06.07 — Basic Theme Domain and Persistence** is in progress.
+None. **WP-06.08 — Basic Theme Builder and Live Preview** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -76,7 +77,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete and merge **WP-06.07 — Basic Theme Domain and Persistence**.
+Claim and implement **WP-06.08 — Basic Theme Builder and Live Preview**.
 
 ## Phase 05 Work Packages
 
