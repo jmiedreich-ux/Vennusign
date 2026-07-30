@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T23:54:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-09.08",
+  "updatedUtc": "2026-07-30T23:57:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-09.08",
+      "orchestrator": "ChatGPT",
+      "branch": "wp/09.08-digital-tap-overflow",
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-09.09",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
