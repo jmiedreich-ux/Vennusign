@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T23:48:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-09.07",
+  "updatedUtc": "2026-07-30T23:50:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-09.07",
+      "orchestrator": "ChatGPT",
+      "branch": "wp/09.07-digital-tap-board-core",
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-09.08",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

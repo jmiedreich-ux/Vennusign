@@ -13,6 +13,7 @@ public sealed class ScreenLayoutTests
     [InlineData(" Daily Special Hero ", "daily_special_hero")]
     [InlineData(" Classic Chalkboard ", "classic_chalkboard")]
     [InlineData(" Tap Strips ", "tap_strips")]
+    [InlineData(" Digital Tap Board ", "digital_tap_board")]
     public void Normalize_ReturnsSupportedStableKey(string input, string expected) =>
         Assert.Equal(expected, ScreenLayout.Normalize(input));
 
