@@ -37,6 +37,29 @@
   text-align: right;
 }
 
+.classic-diner__special {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding: 0.8rem 1.25rem;
+  color: #f6edda;
+  background: #7b241c;
+  text-align: center;
+}
+
+.classic-diner__special span {
+  font-size: clamp(0.85rem, 1.2vw, 1.2rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.classic-diner__special strong {
+  font-size: clamp(1.2rem, 2vw, 2rem);
+}
+
 .classic-diner__columns {
   column-count: 2;
   column-gap: clamp(2rem, 4vw, 5rem);
@@ -50,8 +73,10 @@
 }
 
 .classic-diner__section h2 {
-  margin-bottom: 0.75rem;
-  color: #7b241c;
+  margin-bottom: 1rem;
+  padding: 0.35rem 0.6rem;
+  color: #f6edda;
+  background: #7b241c;
   font-size: clamp(1.5rem, 2.4vw, 2.6rem);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -73,6 +98,26 @@
 
 .classic-diner__section h3 {
   font-size: clamp(1.2rem, 1.8vw, 2rem);
+}
+
+.classic-diner__item-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.classic-diner__leader {
+  min-width: 1rem;
+  flex: 1;
+  border-bottom: 0.13em dotted #9a8765;
+}
+
+.classic-diner__item-line data {
+  color: #7b241c;
+  font-size: clamp(1.1rem, 1.6vw, 1.7rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .classic-diner__section p {
