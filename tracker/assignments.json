@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T22:34:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-09.01",
+  "updatedUtc": "2026-07-30T22:40:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-09.01",
+      "branch": "wp/09.01-tap-domain-persistence",
+      "issue": 178,
+      "status": "In Progress"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-09.02",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

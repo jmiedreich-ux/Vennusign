@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDateRangePromotionRepository, DateRangePromotionRepository>();
         services.AddSingleton<IDateRangePromotionResolver, DateRangePromotionResolver>();
         services.AddScoped<IDateRangePromotionService, DateRangePromotionService>();
+        services.AddScoped<ITapListRepository, TapListRepository>();
         services.AddScoped<IMenuSectionManagementService, MenuSectionManagementService>();
         services.AddScoped<IScreenRepository, ScreenRepository>();
         services.AddScoped<IScreenPairingCodeRepository, ScreenPairingCodeRepository>();
