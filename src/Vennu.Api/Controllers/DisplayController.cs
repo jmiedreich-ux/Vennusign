@@ -51,6 +51,7 @@ public class DisplayController : ControllerBase
 
         response.VenueName = venue?.Name;
         response.MenuName = menu?.Name;
+        response.DailySpecial = menu?.DailySpecial;
         if (menu is null)
         {
             return Ok(response);

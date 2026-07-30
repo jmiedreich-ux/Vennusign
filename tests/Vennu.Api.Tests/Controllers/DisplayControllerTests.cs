@@ -37,7 +37,7 @@ public class DisplayControllerTests
         };
         var menuRepository = new FakeMenuRepository
         {
-            Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Dinner", IsActive = true }],
+            Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Dinner", DailySpecial = "Chicken pot pie", IsActive = true }],
             Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Mains", IsActive = true }],
             Items = Enumerable.Range(1, 8).Select(index => new MenuItem
             {
@@ -52,6 +52,7 @@ public class DisplayControllerTests
         var response = Assert.IsType<DisplayContentResponse>(
             Assert.IsType<OkObjectResult>(result.Result).Value);
         Assert.Equal("classic_diner", response.Layout);
+        Assert.Equal("Chicken pot pie", response.DailySpecial);
         Assert.Equal(8, Assert.Single(response.Sections).Items.Count);
         Assert.Equal(0, response.PhotoGridOverflowItems);
     }

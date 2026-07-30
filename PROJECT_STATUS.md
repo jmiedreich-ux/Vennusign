@@ -53,7 +53,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-06.06 — Classic Diner Pricing and Daily Special** is the next package in roadmap order.
+**WP-06.06 — Classic Diner Pricing and Daily Special** is in review.
 
 ## Phase 04 Result
 
@@ -75,7 +75,7 @@ None. **WP-06.06 — Classic Diner Pricing and Daily Special** is the next packa
 
 ## Next Action
 
-Claim and implement **WP-06.06 — Classic Diner Pricing and Daily Special**.
+Validate, review, and merge **WP-06.06 — Classic Diner Pricing and Daily Special**.
 
 ## Phase 05 Work Packages
 

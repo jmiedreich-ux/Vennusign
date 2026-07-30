@@ -9,6 +9,12 @@ export default function ClassicDinerLayout({ content }: DisplayLayoutProps) {
         <p>{content.venueName}</p>
         <h1>{content.menuName}</h1>
       </header>
+      {content.dailySpecial?.trim() ? (
+        <aside className="classic-diner__special">
+          <span>Today's special</span>
+          <strong>{content.dailySpecial}</strong>
+        </aside>
+      ) : null}
       <div className="classic-diner__columns">
         {sections.map((section) => (
           <section className="classic-diner__section" key={section.id}>
@@ -16,7 +22,13 @@ export default function ClassicDinerLayout({ content }: DisplayLayoutProps) {
             <ul>
               {section.items.map((item) => (
                 <li className={!item.isAvailable || item.quantityAvailable === 0 ? 'is-sold-out' : ''} key={item.id}>
-                  <h3>{item.name}</h3>
+                  <div className="classic-diner__item-line">
+                    <h3>{item.name}</h3>
+                    <span aria-hidden="true" className="classic-diner__leader" />
+                    <data value={activePrice(content.isHappyHour, item.price, item.happyHourPrice)}>
+                      {formatPrice(activePrice(content.isHappyHour, item.price, item.happyHourPrice))}
+                    </data>
+                  </div>
                   {item.description && <p>{item.description}</p>}
                   {!item.isAvailable || item.quantityAvailable === 0 ? <span>Sold out</span> : null}
                 </li>
@@ -27,4 +39,15 @@ export default function ClassicDinerLayout({ content }: DisplayLayoutProps) {
       </div>
     </div>
   );
+}
+
+function activePrice(isHappyHour: boolean | undefined, price: number, happyHourPrice: number | null) {
+  return isHappyHour && happyHourPrice !== null ? happyHourPrice : price;
+}
+
+function formatPrice(price: number) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(price);
 }

@@ -8,6 +8,7 @@ export type DisplayContent = {
   layout: string;
   venueName?: string | null;
   menuName?: string | null;
+  dailySpecial?: string | null;
   isHappyHour?: boolean;
   photoGridDensity?: '2x2' | '3x2' | '4x2' | '3x3';
   photoGridOverflowItems?: number;
