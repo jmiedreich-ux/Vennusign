@@ -22,6 +22,51 @@ public class DisplayControllerTests
     }
 
     [Fact]
+    public async Task GetContent_SlicesVideoWallByPriorScreenCapacity_AndBoundsOverflow()
+    {
+        var venueId = Guid.NewGuid();
+        var menuId = Guid.NewGuid();
+        var sectionId = Guid.NewGuid();
+        var firstScreen = new Screen
+        {
+            Id = Guid.NewGuid(), VenueId = venueId, WallGroup = "Main",
+            WallPosition = 1, PhotoGridDensity = "2x2"
+        };
+        var secondScreen = new Screen
+        {
+            Id = Guid.NewGuid(), VenueId = venueId, WallGroup = "Main",
+            WallPosition = 2, PhotoGridDensity = "3x2"
+        };
+        var screenRepository = new FakeScreenRepository
+        {
+            GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(secondScreen),
+            GetByVenueIdAsyncHandler = (_, _) => Task.FromResult<IReadOnlyCollection<Screen>>([secondScreen, firstScreen])
+        };
+        var menuRepository = new FakeMenuRepository
+        {
+            Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Main", IsActive = true }],
+            Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Food", IsActive = true }],
+            Items = Enumerable.Range(1, 12)
+                .Select(index => new MenuItem
+                {
+                    Id = Guid.NewGuid(), VenueId = venueId, MenuSectionId = sectionId,
+                    Name = $"Item {index}", SortOrder = index
+                })
+                .ToArray()
+        };
+        var sut = new DisplayController(screenRepository, new FakeVenueRepository(), menuRepository);
+
+        var result = await sut.GetContent(secondScreen.Id, CancellationToken.None);
+
+        var response = Assert.IsType<DisplayContentResponse>(
+            Assert.IsType<OkObjectResult>(result.Result).Value);
+        Assert.Equal("3x2", response.PhotoGridDensity);
+        Assert.Equal(["Item 5", "Item 6", "Item 7", "Item 8", "Item 9", "Item 10"],
+            Assert.Single(response.Sections).Items.Select(item => item.Name));
+        Assert.Equal(2, response.PhotoGridOverflowItems);
+    }
+
+    [Fact]
     public async Task GetContent_ReturnsScreenContent_WhenScreenExists()
     {
         var screenId = Guid.NewGuid();
