@@ -82,7 +82,13 @@ public class DisplayController : ControllerBase
             });
         }
 
-        response.Layout = "photo_grid";
+        response.Layout = ScreenLayout.Normalize(screen.DisplayLayout);
+        if (!string.Equals(response.Layout, ScreenLayout.Default, StringComparison.Ordinal))
+        {
+            response.Sections = displaySections;
+            return Ok(response);
+        }
+
         var wallScreens = await ResolveWallScreensAsync(screen, venueId, cancellationToken);
         var screenIndex = Array.FindIndex(wallScreens, candidate => candidate.Id == screen.Id);
         screenIndex = screenIndex < 0 ? 0 : screenIndex;
