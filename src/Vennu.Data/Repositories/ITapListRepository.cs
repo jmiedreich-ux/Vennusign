@@ -10,4 +10,8 @@ public interface ITapListRepository
     Task<Guid> CreateItemAsync(TapItem item, CancellationToken cancellationToken = default);
     Task<bool> UpdateCategoryAsync(TapCategory category, CancellationToken cancellationToken = default);
     Task<bool> UpdateItemAsync(TapItem item, CancellationToken cancellationToken = default);
+    Task<bool> DeleteCategoryAsync(Guid venueId, Guid categoryId, CancellationToken cancellationToken = default);
+    Task<bool> DeleteItemAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken = default);
+    Task<int> ReorderCategoriesAsync(Guid venueId, IReadOnlyCollection<Guid> categoryIds, DateTime updatedUtc, CancellationToken cancellationToken = default);
+    Task<int> ReorderItemsAsync(Guid venueId, IReadOnlyCollection<Guid> itemIds, DateTime updatedUtc, CancellationToken cancellationToken = default);
 }

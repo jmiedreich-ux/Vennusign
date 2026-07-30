@@ -2,44 +2,44 @@
 
 ## Work Package
 
-- ID: WP-09.01
-- Status: Complete and merged
+- ID: WP-09.02
+- Status: Ready for review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/09.01-tap-domain-persistence`
-- Issue: #178
-- Pull request: #179
-- Latest reviewed commit: `71897f5`
-- Merge commit: `ee44f88`
-- CI state: GitHub Actions run #408 passed
+- Branch: `wp/09.02-tap-list-administration`
+- Issue: #181
+- Pull request: pending
+- Latest reviewed commit: pending
+- Merge commit: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added separate venue-scoped tap category and tap item models.
-- Added ordered migration 028 with composite ownership and bounded values.
-- Added repository contracts, dependency registration, and focused unit coverage.
+- Added protected venue-scoped tap category/item CRUD and exact reorder APIs.
+- Added bounded validation, category ownership, availability, and coming-soon controls.
+- Added tier-visible All Layouts soft locking and venue notification wiring.
 
 ## Decisions
 
-- TapItem remains separate from MenuItem.
-- Nullable category ownership allows category-priced and direct tap-board styles.
+- Category deletion is rejected while venue items reference it.
+- Reorder requests must contain every venue row exactly once.
 
 ## Validation
 
-- Results: restore, Release build, frontend builds/tests, migration inventory, and required non-integration unit tests passed in Actions run #408.
+- Results: local frontend tests pending; GitHub Actions is authoritative.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-09.02 — Tap List Administration and Availability.
+- Publish, validate, review, and merge WP-09.02.
 
 ## Exact Next Action
 
-Claim and implement WP-09.02.
+Publish WP-09.02 and wait for authoritative non-integration Actions checks.
 
 ## Do Not Redo or Reverse
 
-- Do not add tap administration or display layout behavior.
-- Do not merge tap data into the generic menu domain.
+- Do not add a tap-board display layout.
+- Do not change pairing behavior.

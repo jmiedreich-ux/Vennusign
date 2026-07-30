@@ -82,7 +82,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-09.02 — Tap List Administration and Availability** is the next package in roadmap order.
+**WP-09.02 — Tap List Administration and Availability** is ready for review on `wp/09.02-tap-list-administration` (issue #181).
 
 ## Phase 04 Result
 
@@ -123,7 +123,7 @@ None. **WP-09.02 — Tap List Administration and Availability** is the next pack
 
 ## Next Action
 
-Claim and implement **WP-09.02 — Tap List Administration and Availability**.
+Publish **WP-09.02**, validate it in GitHub Actions, review, and merge it.
 
 ## Phase 05 Work Packages
 
