@@ -31,11 +31,11 @@
 | 07 | Display Layouts — Bars | BUILD | Wks 16–20 |
 | 08 | Scheduling Engine | BUILD | Wks 18–22 |
 | 09 | Tap List Boards — Breweries & Bars | BUILD | Wks 20–24 |
-| 10 | Upgrade Prompts & Billing UX | PLAN | Mos 5–7 |
-| 11 | POS Integration | PLAN | Mos 6–9 |
-| 12 | Multilingual Support | PLAN | Mos 8–10 |
-| 13 | Staff Mobile App | PLAN | Mos 10–12 |
-| 14 | TV Apps & Platform Distribution | PLAN | Mos 12–16 |
+| 10 | TV Apps & Platform Distribution | PLAN | Mos 6–10 |
+| 11 | Upgrade Prompts & Billing UX | PLAN | Mos 9–11 |
+| 12 | POS Integration | PLAN | Mos 10–13 |
+| 13 | Multilingual Support | PLAN | Mos 12–14 |
+| 14 | Staff Mobile App | PLAN | Mos 14–16 |
 | 15 | AI Features | PLAN | Mos 15–19 |
 | 16 | Analytics & Smart Features | PLAN | Mos 18–23 |
 
@@ -129,7 +129,7 @@ The foundation every other phase depends on. Get the API, SignalR hub, and displ
 | ScreenPairingCode | Code, VenueId, ScreenId, ExpiresAt, IsClaimed | 6-digit code · 10-min expiry · polling endpoint checks IsClaimed |
 | Menu / MenuSection | Id, VenueId, Name, IsActive, DisplayOrder | Sections ordered by DisplayOrder · IsActive controls visibility |
 | MenuItem | Id, SectionId, Name, Desc, Price, HHPrice, Available, Qty, Tags, ImageUrl | HHPrice used when isHappyHour active · Qty drives 'Only N left!' |
-| MenuItemTranslation | ItemId, LanguageCode, Name, Desc | Multilingual baked in from day one · no schema change needed in Phase 12 |
+| MenuItemTranslation | ItemId, LanguageCode, Name, Desc | Multilingual baked in from day one · no schema change needed in Phase 13 |
 | TapItem | Id, VenueId, Name, Style, ABV, IBU, Desc, Price, GlassColor, NameColor, Available | Separate entity from MenuItem · beer-specific fields |
 
 ### DbUp Migration Setup
@@ -276,7 +276,7 @@ The daily interface for restaurant and bar owners. Every panel calls `HasFeature
 - **Section expand/collapse** — Manage large menus without scrolling · focus one section at a time · state persisted in localStorage
 - **Inline item editing** — Edit name, description, price, HH price in-place · no modal · Save & Sync pushes via SignalR
 - **Availability toggle** — 86 items — One click marks item unavailable · Live/Off pill shown · auto-resets at midnight via ScheduleEvaluator
-- **Sold-out / limited qty badge** — 'Only 3 left!' shown on display · auto-removed when Qty reaches zero · POS integration updates this in Phase 11
+- **Sold-out / limited qty badge** — 'Only 3 left!' shown on display · auto-removed when Qty reaches zero · POS integration updates this in Phase 12
 - **Allergen and dietary badges** — GF · Vegetarian · Vegan · Halal · Kosher · Nuts · Spice level · stored as comma-separated tags on MenuItem
 - **HH price field** — Always visible in editor · disabled with tier badge if venue is below Pro · shows greyed value not hidden
 
@@ -323,7 +323,7 @@ The player selects a React component based on `board.layout`. Adding a new layou
 - **Grid density** — 2×2 (4 items) · 3×2 (6) · 4×2 (8) · 3×3 (9) · admin selects per venue
 - **Item cards** — Azure Blob CDN image with gradient placeholder while loading · name, desc, price overlay
 - **Bestseller ribbon** — ★ POPULAR badge top-left · driven by admin toggle · not automatic
-- **Sold-out overlay** — Card dims with SOLD OUT text · restores at midnight or on POS event in Phase 11
+- **Sold-out overlay** — Card dims with SOLD OUT text · restores at midnight or on POS event in Phase 12
 - **Happy hour pricing** — HH price shown in amber · regular price struck through · only visible when `isHappyHour=true` in payload
 - **Multi-screen overflow** — `start = (screenPosition-1) × itemsPerScreen` · screen self-selects its slice · no server-side per-screen logic
 
@@ -471,135 +471,8 @@ Added here because brewery customers typically have multiple TVs and typing long
 
 ---
 
-## Phase 10 — Upgrade Prompts & Billing UX
-**PLAN · Months 5–7 · Milestone: Self-serve upgrade funnel generating revenue**
-
-The in-product upgrade experience. Every prompt is non-invasive — customers see what they're missing without their current workflow being interrupted.
-
-### Core Principles
-
-| Principle | Rule |
-|---|---|
-| Show benefit, not tier name | 'Items sell out → board updates in seconds' not 'Upgrade to Pro for POS' |
-| Never block a workflow | Locked features show a hint · never an error · customer always gets past it |
-| One prompt per screen | Never more than one upgrade suggestion visible simultaneously |
-| All prompts dismissible | Per-session memory · dismissed hints never reappear in the same session |
-| Upgrade in one click | Modal → single CTA → Stripe checkout · no more than two taps total |
-
-### Six Prompt Patterns
-
-- **Tier badge** — Small coloured pill (PRO / RESTAURANT STARTER) beside any locked item · informational only
-- **Locked nav item** — 50% opacity in sidebar · tier badge beside label · clicking opens modal not an error
-- **Locked section preview** — 0.3px blur on a mockup of the feature · one benefit sentence · soft unlock CTA
-- **Inline feature hint** — Amber-accented card at bottom of relevant panel · contextual · one per panel · dismissible
-- **Sidebar nudge** — Rotates locked features at bottom of sidebar · 7-second intervals · per-feature dismiss · dots show queue
-- **Upgrade modal (bottom sheet)** — Feature benefit · all tier features as pills · current tier shown · single CTA · 'Maybe later' exit
-
-### Stripe Self-Serve Checkout
-
-- **Stripe Billing Portal** — Pre-built hosted portal for plan changes · no custom UI needed for billing management
-- **Upgrade flow** — Upgrade modal CTA → Stripe Checkout with pre-selected plan → webhook fires → features unlock immediately
-- **Downgrade flow** — Via Billing Portal → effective at end of billing period · features restricted at period end
-- **Trial conversion** — 14-day trial ends → Stripe sends invoice → if unpaid within grace period → status = past_due → features restricted
-- **HaaS contract billing** — Separate Stripe subscription with 18/24/36 month term · early cancel triggers buyout charge
-
----
-
-## Phase 11 — POS Integration
-**PLAN · Months 6–9 · Milestone: Beats every generic signage competitor**
-
-Real-time POS sync is the single most powerful differentiator. When an item sells out at the register the board updates in under 500ms. No generic signage tool does this reliably.
-
-### Square — Build First
-
-- **OAuth 2.0 connect** — 'Connect Square' button in admin · one-click auth · access token encrypted in Azure SQL
-- **Catalog API sync on connect** — Full menu auto-imported from Square on first connect · zero manual data entry for the customer
-- **Inventory webhook** — POST `/webhooks/square` · Return HTTP 200 immediately · process in background Task · never times out
-- **Price sync** — Item price change in Square POS → SignalR push → board updates within 200ms
-- **Square App Marketplace** — Free distribution channel · listing gives access to 4M+ restaurant customers
-
-### Toast — Build Second
-
-- Why second: Dominates full-service restaurant market — the primary Pro tier customer profile
-- Webhook registration — Not self-serve · submit production URL to Toast developer contact · requires approval and review
-- Hourly polling fallback — GET menu availability every 60 minutes · resilience if a webhook event is missed
-- GUID deduplication — Log Stripe event IDs in a processed-events table · idempotent handlers safe to receive duplicates
-
-### Clover — Build Third
-
-- Why third: Fills the mid-market gap between Square (SMB) and Toast (enterprise)
-- REST API + OAuth — GET `/v3/merchants/{merchantId}/items` · same OAuth pattern as Square · IPosProvider slots straight in
-
-### Shared Integration Architecture
-
-- **Unified webhook endpoint** — POST `/webhooks/{provider}` · one controller receives all three · routes to IPosProvider implementation
-- **IPosProvider interface** — Abstraction means a fourth POS (Lightspeed, EPOS Now etc.) adds one class and nothing else changes
-- **ItemAvailabilityChanged push** — SignalR pushes to all venue screens · player patches single item in board state · no full re-render
-- **Apideck evaluation** — $300–500/mo unified wrapper · evaluate at 50+ venues requesting less common POS systems
-
----
-
-## Phase 12 — Multilingual Support
-**PLAN · Months 8–10 · Milestone: Ethnic restaurant market unlocked**
-
-No generic signage competitor does multilingual well. The MenuItemTranslation table was created in Phase 02 — this phase builds the editing UI and display rendering on top of existing schema.
-
-### Admin UI Translation
-
-- **react-i18next** — Auto-detects browser language · language stored on User entity · instant switch via header dropdown
-- **Launch languages** — Spanish · Simplified Chinese · Vietnamese — highest-ROI non-English restaurant owner markets in the US
-- **Phase 2 languages** — Korean · Portuguese — add after validating demand from launch three
-- **Zero hardcoded English** — All UI strings externalised from Phase 05 · this phase just provides the translation JSON files
-
-### AI Bulk Translation — Claude API
-
-- **One-click translate** — 'Translate to Chinese' button · Claude translates all items in approximately 15 seconds
-- **Cost** — ~$0.30 to translate a 50-item menu into 3 languages · essentially free at any volume
-- **Context-aware** — Claude understands restaurant terminology · 'Kung Pao' → correct translation not a literal word-for-word output
-- **Review table** — All translations shown with IsAutoTranslated flag · owner edits inline · marks as reviewed
-
-### Bilingual Display Modes
-
-- **Stack** — Primary language large · secondary smaller below · cleanest option for most boards
-- **Side-by-side** — Two full columns one per language · equal prominence · good for EN + ZH parity
-- **Subtitle** — Primary large · translation as small italic subtitle · minimal extra vertical space
-- **Font pairing** — English in Caveat/Kalam · CJK/Arabic in matching-weight Noto · Noto was preloaded in Phase 07
-
-### RTL Support
-
-- Arabic and Hebrew — `dir=rtl` applied to RTL language content · layout mirrors via CSS logical properties
-- Noto Sans Arabic — Already preloaded in display app from Phase 07 · no additional font load time
-
----
-
-## Phase 13 — Staff Mobile App
-**PLAN · Months 10–12 · Milestone: Pro tier becomes sticky**
-
-The single most-requested feature post-launch. A bar manager who can't find the laptop at 6pm on a Friday will cancel. The one who can update the board from their iPhone will refer Vennu to every venue they know. This app is the primary retention driver for the Pro tier — included as a listed feature, not an add-on.
-
-### React Native — iOS + Android
-
-- **One codebase** — React Native · submitted to App Store and Google Play · included in Pro and above at no extra charge
-- **Shared API** — Same .NET endpoints as web admin · no new backend required · biometric auth (Face ID / Touch ID)
-- **Push notifications** — Firebase Cloud Messaging · screen offline · keg blow · daily special reminder
-
-### Core Actions
-
-- **Quick 86 toggle** — Mark item unavailable in 2 taps · SignalR push · board updates in under 200ms · most-used feature post-launch
-- **Daily special push** — Text entry → live on all screens in under 10 seconds
-- **Happy hour override** — Activate or deactivate instantly regardless of schedule
-- **Emergency broadcast** — 'Cash only tonight' from the phone · all screens update immediately
-
-### Brewery-Specific
-
-- **Keg blow notification** — Staff marks keg empty → board removes tap + manager push notification
-- **Tap list quick-edit** — Change ABV, price, or description directly from the phone without opening a laptop
-- **'Now Pouring' update** — Mark a new keg live · board updates the tap strip immediately via SignalR
-
----
-
-## Phase 14 — TV Apps & Platform Distribution
-**PLAN · Months 12–16 · Milestone: App store presence on all major TV platforms**
+## Phase 10 — TV Apps & Platform Distribution
+**PLAN · Months 6–10 · Milestone: App store presence on all major TV platforms**
 
 Thin native wrappers around the existing React display SPA. The player code is identical across every platform — only the packaging changes. Pairing code flow handles setup with zero URL typing on any platform.
 
@@ -633,10 +506,137 @@ Thin native wrappers around the existing React display SPA. The player code is i
 
 ---
 
+## Phase 11 — Upgrade Prompts & Billing UX
+**PLAN · Months 9–11 · Milestone: Self-serve upgrade funnel generating revenue**
+
+The in-product upgrade experience. Every prompt is non-invasive — customers see what they're missing without their current workflow being interrupted.
+
+### Core Principles
+
+| Principle | Rule |
+|---|---|
+| Show benefit, not tier name | 'Items sell out → board updates in seconds' not 'Upgrade to Pro for POS' |
+| Never block a workflow | Locked features show a hint · never an error · customer always gets past it |
+| One prompt per screen | Never more than one upgrade suggestion visible simultaneously |
+| All prompts dismissible | Per-session memory · dismissed hints never reappear in the same session |
+| Upgrade in one click | Modal → single CTA → Stripe checkout · no more than two taps total |
+
+### Six Prompt Patterns
+
+- **Tier badge** — Small coloured pill (PRO / RESTAURANT STARTER) beside any locked item · informational only
+- **Locked nav item** — 50% opacity in sidebar · tier badge beside label · clicking opens modal not an error
+- **Locked section preview** — 0.3px blur on a mockup of the feature · one benefit sentence · soft unlock CTA
+- **Inline feature hint** — Amber-accented card at bottom of relevant panel · contextual · one per panel · dismissible
+- **Sidebar nudge** — Rotates locked features at bottom of sidebar · 7-second intervals · per-feature dismiss · dots show queue
+- **Upgrade modal (bottom sheet)** — Feature benefit · all tier features as pills · current tier shown · single CTA · 'Maybe later' exit
+
+### Stripe Self-Serve Checkout
+
+- **Stripe Billing Portal** — Pre-built hosted portal for plan changes · no custom UI needed for billing management
+- **Upgrade flow** — Upgrade modal CTA → Stripe Checkout with pre-selected plan → webhook fires → features unlock immediately
+- **Downgrade flow** — Via Billing Portal → effective at end of billing period · features restricted at period end
+- **Trial conversion** — 14-day trial ends → Stripe sends invoice → if unpaid within grace period → status = past_due → features restricted
+- **HaaS contract billing** — Separate Stripe subscription with 18/24/36 month term · early cancel triggers buyout charge
+
+---
+
+## Phase 12 — POS Integration
+**PLAN · Months 10–13 · Milestone: Beats every generic signage competitor**
+
+Real-time POS sync is the single most powerful differentiator. When an item sells out at the register the board updates in under 500ms. No generic signage tool does this reliably.
+
+### Square — Build First
+
+- **OAuth 2.0 connect** — 'Connect Square' button in admin · one-click auth · access token encrypted in Azure SQL
+- **Catalog API sync on connect** — Full menu auto-imported from Square on first connect · zero manual data entry for the customer
+- **Inventory webhook** — POST `/webhooks/square` · Return HTTP 200 immediately · process in background Task · never times out
+- **Price sync** — Item price change in Square POS → SignalR push → board updates within 200ms
+- **Square App Marketplace** — Free distribution channel · listing gives access to 4M+ restaurant customers
+
+### Toast — Build Second
+
+- Why second: Dominates full-service restaurant market — the primary Pro tier customer profile
+- Webhook registration — Not self-serve · submit production URL to Toast developer contact · requires approval and review
+- Hourly polling fallback — GET menu availability every 60 minutes · resilience if a webhook event is missed
+- GUID deduplication — Log Stripe event IDs in a processed-events table · idempotent handlers safe to receive duplicates
+
+### Clover — Build Third
+
+- Why third: Fills the mid-market gap between Square (SMB) and Toast (enterprise)
+- REST API + OAuth — GET `/v3/merchants/{merchantId}/items` · same OAuth pattern as Square · IPosProvider slots straight in
+
+### Shared Integration Architecture
+
+- **Unified webhook endpoint** — POST `/webhooks/{provider}` · one controller receives all three · routes to IPosProvider implementation
+- **IPosProvider interface** — Abstraction means a fourth POS (Lightspeed, EPOS Now etc.) adds one class and nothing else changes
+- **ItemAvailabilityChanged push** — SignalR pushes to all venue screens · player patches single item in board state · no full re-render
+- **Apideck evaluation** — $300–500/mo unified wrapper · evaluate at 50+ venues requesting less common POS systems
+
+---
+
+## Phase 13 — Multilingual Support
+**PLAN · Months 12–14 · Milestone: Ethnic restaurant market unlocked**
+
+No generic signage competitor does multilingual well. The MenuItemTranslation table was created in Phase 02 — this phase builds the editing UI and display rendering on top of existing schema.
+
+### Admin UI Translation
+
+- **react-i18next** — Auto-detects browser language · language stored on User entity · instant switch via header dropdown
+- **Launch languages** — Spanish · Simplified Chinese · Vietnamese — highest-ROI non-English restaurant owner markets in the US
+- **Phase 2 languages** — Korean · Portuguese — add after validating demand from launch three
+- **Zero hardcoded English** — All UI strings externalised from Phase 05 · this phase just provides the translation JSON files
+
+### AI Bulk Translation — Claude API
+
+- **One-click translate** — 'Translate to Chinese' button · Claude translates all items in approximately 15 seconds
+- **Cost** — ~$0.30 to translate a 50-item menu into 3 languages · essentially free at any volume
+- **Context-aware** — Claude understands restaurant terminology · 'Kung Pao' → correct translation not a literal word-for-word output
+- **Review table** — All translations shown with IsAutoTranslated flag · owner edits inline · marks as reviewed
+
+### Bilingual Display Modes
+
+- **Stack** — Primary language large · secondary smaller below · cleanest option for most boards
+- **Side-by-side** — Two full columns one per language · equal prominence · good for EN + ZH parity
+- **Subtitle** — Primary large · translation as small italic subtitle · minimal extra vertical space
+- **Font pairing** — English in Caveat/Kalam · CJK/Arabic in matching-weight Noto · Noto was preloaded in Phase 07
+
+### RTL Support
+
+- Arabic and Hebrew — `dir=rtl` applied to RTL language content · layout mirrors via CSS logical properties
+- Noto Sans Arabic — Already preloaded in display app from Phase 07 · no additional font load time
+
+---
+
+## Phase 14 — Staff Mobile App
+**PLAN · Months 14–16 · Milestone: Pro tier becomes sticky**
+
+The single most-requested feature post-launch. A bar manager who can't find the laptop at 6pm on a Friday will cancel. The one who can update the board from their iPhone will refer Vennu to every venue they know. This app is the primary retention driver for the Pro tier — included as a listed feature, not an add-on.
+
+### React Native — iOS + Android
+
+- **One codebase** — React Native · submitted to App Store and Google Play · included in Pro and above at no extra charge
+- **Shared API** — Same .NET endpoints as web admin · no new backend required · biometric auth (Face ID / Touch ID)
+- **Push notifications** — Firebase Cloud Messaging · screen offline · keg blow · daily special reminder
+
+### Core Actions
+
+- **Quick 86 toggle** — Mark item unavailable in 2 taps · SignalR push · board updates in under 200ms · most-used feature post-launch
+- **Daily special push** — Text entry → live on all screens in under 10 seconds
+- **Happy hour override** — Activate or deactivate instantly regardless of schedule
+- **Emergency broadcast** — 'Cash only tonight' from the phone · all screens update immediately
+
+### Brewery-Specific
+
+- **Keg blow notification** — Staff marks keg empty → board removes tap + manager push notification
+- **Tap list quick-edit** — Change ABV, price, or description directly from the phone without opening a laptop
+- **'Now Pouring' update** — Mark a new keg live · board updates the tap strip immediately via SignalR
+
+---
+
 ## Phase 15 — AI Features
 **PLAN · Months 15–19 · Milestone: Premium tier upsell driver**
 
-Intelligence that lowers the skill floor. A restaurant owner who has never written a menu description gets professional copy in seconds. All AI features use the Claude API via `/v1/messages` at ~$0.01–0.03 per call. AI translation was introduced in Phase 12 — this phase adds the remaining AI features.
+Intelligence that lowers the skill floor. A restaurant owner who has never written a menu description gets professional copy in seconds. All AI features use the Claude API via `/v1/messages` at ~$0.01–0.03 per call. AI translation was introduced in Phase 13 — this phase adds the remaining AI features.
 
 ### AI Menu Content
 

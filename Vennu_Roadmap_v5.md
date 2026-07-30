@@ -37,11 +37,11 @@
 | 07 | Display Layouts — Bars | BUILD | Wks 16–20 |
 | 08 | Scheduling Engine | BUILD | Wks 18–22 |
 | 09 | Tap List Boards — Breweries & Bars | BUILD | Wks 20–24 |
-| 10 | Upgrade Prompts & Billing UX | BUILD | Wks 20–28 |
-| 11 | POS Integration | PLAN | Mos 5–8 (Wks 24–36) |
-| 12 | Multilingual Support | PLAN | Mos 7–9 (Wks 32–40) |
-| 13 | Staff Mobile App | PLAN | Mos 9–11 (Wks 40–48) |
-| 14 | TV Apps & Platform Distribution | PLAN | Mos 11–15 (Wks 48–64) |
+| 10 | TV Apps & Platform Distribution | PLAN | Mos 6–10 (Wks 24–40) |
+| 11 | Upgrade Prompts & Billing UX | BUILD | Wks 36–44 |
+| 12 | POS Integration | PLAN | Mos 10–13 (Wks 40–52) |
+| 13 | Multilingual Support | PLAN | Mos 12–14 (Wks 48–56) |
+| 14 | Staff Mobile App | PLAN | Mos 14–16 (Wks 56–64) |
 | 15 | AI Features | PLAN | Mos 14–18 (Wks 60–76) |
 | 16 | Analytics & Smart Features | PLAN | Mos 17–22 (Wks 72–92) |
 
@@ -163,7 +163,7 @@ Core entities only — feature flag and tier entities come in Phase 03. All PKs 
 | ScreenPairingCode | Code (6-digit string), VenueId, ScreenId (null until claimed), ExpiresAt, IsClaimed · TV polls IsClaimed every 3s |
 | Menu / MenuSection | Menu: Id, VenueId, Name, IsActive · MenuSection: Id, MenuId, Name, DisplayOrder, IsActive |
 | MenuItem | Id, SectionId, Name, Description, Price, HHPrice, Available, Qty, Tags (CSV), ImageUrl, IsPopular |
-| MenuItemTranslation | (ItemId, LanguageCode, Name, Description, IsAutoTranslated) · baked in from day one · no schema change in Phase 12 |
+| MenuItemTranslation | (ItemId, LanguageCode, Name, Description, IsAutoTranslated) · baked in from day one · no schema change in Phase 13 |
 | TapItem | Id, VenueId, Name, Style, ABV, IBU, Description, Price, GlassColor, NameColor, BreweryName, Available, DisplayOrder |
 
 ### DbUp Migration Setup
@@ -368,7 +368,7 @@ The first two display layouts cover the broadest market. Photo Grid targets food
 - **Grid density options** — 2×2 (4 items) · 3×2 (6 items) · 4×2 (8 items) · 3×3 (9 items) · admin selects per venue
 - **Food photo cards** — Azure Blob CDN image with gradient placeholder while loading · name, short description, price overlay
 - **Bestseller ribbon** — ★ POPULAR badge top-left of card · driven by `MenuItem.IsPopular` toggle in admin
-- **Sold-out overlay** — Card dims to 40% opacity with SOLD OUT text · auto-restores at midnight · instant via SignalR from POS in Phase 11
+- **Sold-out overlay** — Card dims to 40% opacity with SOLD OUT text · auto-restores at midnight · instant via SignalR from POS in Phase 12
 - **Happy hour pricing** — HH price shown in amber · regular price struck through · only when `isHappyHour=true` in content payload
 - **Multi-screen overflow** — `start = (screenPosition-1) × itemsPerScreen` · screen self-selects its slice · no server-side per-screen logic
 
@@ -423,7 +423,7 @@ The Neon Chalkboard is the visual centrepiece of the platform — the display th
 - **Venue name font — 6 options** — Pacifico · Lobster · Righteous · Fredoka One · Bungee · Permanent Marker
 - **Menu items font — 4 options** — Caveat · Kalam · Patrick Hand · Permanent Marker · shown in actual item text in live preview
 - **Board background** — Colour picker + 6 quick swatches for common dark board tones
-- **Noto font preloading** — Noto Sans SC, KR, JP, Arabic preloaded from this phase · prevents CJK flash when Phase 12 ships
+- **Noto font preloading** — Noto Sans SC, KR, JP, Arabic preloaded from this phase · prevents CJK flash when Phase 13 ships
 
 ### Split Layout (Pro Tier)
 
@@ -540,8 +540,52 @@ Three distinct tap list styles covering the full range of brewery and bar aesthe
 
 ---
 
-## Phase 10 — Upgrade Prompts & Billing UX
-**BUILD · Weeks 20–28 · Milestone: Self-serve upgrade funnel generating revenue**
+## Phase 10 — TV Apps & Platform Distribution
+**PLAN · Months 6–10 (Weeks 24–40) · Milestone: App store presence on all major TV platforms**
+
+Thin native wrappers around the existing React display SPA. Player code is identical across every platform — only packaging and build target change. The pairing code flow from Phase 09 handles all setup with no URL typing on any platform.
+
+### Android TV + Amazon Fire TV
+
+- **Why first** — Fire TV Stick is the most common hospitality hardware · one APK covers both platforms
+- **Kotlin WebView wrapper** — Thin native shell · `webView.loadUrl('vennu.app/display/{screenId}')` · zero player code changes
+- **Pairing code on first launch** — App shows 6-digit code automatically · admin claims · TV redirects to display URL in 30s
+- **Boot receiver** — Android `BOOT_COMPLETED` intent · Vennu starts automatically when TV powers on
+- **Kiosk / pinned mode** — Device owner mode · prevents exit without PIN · always-on display
+- **Google Play for TV** — Vennu searchable in TV app store · customers install like Netflix · no sideloading
+- **Amazon Appstore submission** — Same APK · separate submission · covers all Fire Stick variants including 4K Max
+
+### Samsung Tizen
+
+- **Why important** — Samsung dominates commercial display market · app store listing removes all setup friction
+- **Tizen web app package** — React SPA + config.xml manifest · submitted to Samsung Smart Signage Platform (SSSP)
+- **Zero player changes** — Same display app code · Tizen packages and hosts it · pairing code works identically
+- **Samsung B2B program** — Enables pre-installation on Samsung screens shipped as part of HaaS bundles
+
+### LG webOS
+
+- **IPK package** — Same React SPA · different build target · submitted to LG Smart Signage Solution (SSS)
+- **webOS simulator** — Free LG developer tool for Mac/Windows · test without physical hardware
+- **Coverage** — LG is the second-largest commercial display brand globally
+
+### Screen Registration — Phase 10 Update
+
+- **TV app pairing screen** — App shows code fullscreen on first launch · vennu.app/pair instruction text below
+- **Auto-redirect on claim** — TV transitions seamlessly from pairing screen to content display when claimed
+- **Platform field** — `Screen.Platform` set to 'android_tv' / 'fire_tv' / 'tizen' / 'webos' · visible in Super Admin
+- **App version tracking** — Player reports app version in each heartbeat ping · Super Admin flags outdated screens
+
+### HaaS Pre-Registration
+
+- **Screens arrive pre-configured** — Create screen records before shipping · venue content loaded before the box is sealed
+- **Customer experience** — Powers on the TV · correct menu already showing · zero setup required
+- **Card in the box** — 'Your screens are already set up. Plug in, power on, done.'
+- **No pairing code needed** — Screens registered to venue before delivery · shows Online after first heartbeat
+
+---
+
+## Phase 11 — Upgrade Prompts & Billing UX
+**BUILD · Weeks 36–44 · Milestone: Self-serve upgrade funnel generating revenue**
 
 The in-product experience that turns trials into paying customers and paying customers into higher tiers. Every prompt is non-invasive — customers see what they're missing without their current workflow being interrupted or blocked.
 
@@ -606,8 +650,8 @@ The in-product experience that turns trials into paying customers and paying cus
 
 ---
 
-## Phase 11 — POS Integration
-**PLAN · Months 5–8 (Weeks 24–36) · Milestone: Beats every generic signage competitor**
+## Phase 12 — POS Integration
+**PLAN · Months 10–13 (Weeks 40–52) · Milestone: Beats every generic signage competitor**
 
 Real-time POS sync is the single most powerful differentiator. When an item sells out at the register the board updates in under 500ms. Square is built first — best developer API, free sandbox, 4M+ restaurant customers, .NET SDK available.
 
@@ -644,8 +688,8 @@ Real-time POS sync is the single most powerful differentiator. When an item sell
 
 ---
 
-## Phase 12 — Multilingual Support
-**PLAN · Months 7–9 (Weeks 32–40) · Milestone: Ethnic restaurant market unlocked**
+## Phase 13 — Multilingual Support
+**PLAN · Months 12–14 (Weeks 48–56) · Milestone: Ethnic restaurant market unlocked**
 
 No signage competitor does multilingual well. MenuItemTranslation was created in Phase 02 and Noto fonts were preloaded in Phase 07 — this phase builds the editing UI and bilingual rendering on top of that foundation. No new migrations or font loading needed.
 
@@ -679,15 +723,15 @@ No signage competitor does multilingual well. MenuItemTranslation was created in
 - **Noto Sans Arabic** — Already preloaded from Phase 07 · no additional font loading time in this phase
 - **Admin RTL mode** — Admin UI can also render in RTL for Arabic and Hebrew-speaking venue owners
 
-### Screen Registration — Phase 12 Update
+### Screen Registration — Phase 13 Update
 
 - **Language on pairing screen** — `vennu.app/pair` shown in browser's detected language automatically
 - **Venue language inherited** — New screens automatically inherit venue's primary and secondary language settings
 
 ---
 
-## Phase 13 — Staff Mobile App
-**PLAN · Months 9–11 (Weeks 40–48) · Milestone: Pro tier becomes sticky**
+## Phase 14 — Staff Mobile App
+**PLAN · Months 14–16 (Weeks 56–64) · Milestone: Pro tier becomes sticky**
 
 The single most-requested feature post-launch. A bar manager who can't find the laptop at 6pm Friday will cancel. The one who can update from their iPhone will refer Vennu to every venue they know. Included in Pro at no extra charge — it is a retention feature, not an add-on.
 
@@ -719,54 +763,10 @@ The single most-requested feature post-launch. A bar manager who can't find the 
 
 ---
 
-## Phase 14 — TV Apps & Platform Distribution
-**PLAN · Months 11–15 (Weeks 48–64) · Milestone: App store presence on all major TV platforms**
-
-Thin native wrappers around the existing React display SPA. Player code is identical across every platform — only packaging and build target change. The pairing code flow from Phase 09 handles all setup with no URL typing on any platform.
-
-### Android TV + Amazon Fire TV
-
-- **Why first** — Fire TV Stick is the most common hospitality hardware · one APK covers both platforms
-- **Kotlin WebView wrapper** — Thin native shell · `webView.loadUrl('vennu.app/display/{screenId}')` · zero player code changes
-- **Pairing code on first launch** — App shows 6-digit code automatically · admin claims · TV redirects to display URL in 30s
-- **Boot receiver** — Android `BOOT_COMPLETED` intent · Vennu starts automatically when TV powers on
-- **Kiosk / pinned mode** — Device owner mode · prevents exit without PIN · always-on display
-- **Google Play for TV** — Vennu searchable in TV app store · customers install like Netflix · no sideloading
-- **Amazon Appstore submission** — Same APK · separate submission · covers all Fire Stick variants including 4K Max
-
-### Samsung Tizen
-
-- **Why important** — Samsung dominates commercial display market · app store listing removes all setup friction
-- **Tizen web app package** — React SPA + config.xml manifest · submitted to Samsung Smart Signage Platform (SSSP)
-- **Zero player changes** — Same display app code · Tizen packages and hosts it · pairing code works identically
-- **Samsung B2B program** — Enables pre-installation on Samsung screens shipped as part of HaaS bundles
-
-### LG webOS
-
-- **IPK package** — Same React SPA · different build target · submitted to LG Smart Signage Solution (SSS)
-- **webOS simulator** — Free LG developer tool for Mac/Windows · test without physical hardware
-- **Coverage** — LG is the second-largest commercial display brand globally
-
-### Screen Registration — Phase 14 Update
-
-- **TV app pairing screen** — App shows code fullscreen on first launch · vennu.app/pair instruction text below
-- **Auto-redirect on claim** — TV transitions seamlessly from pairing screen to content display when claimed
-- **Platform field** — `Screen.Platform` set to 'android_tv' / 'fire_tv' / 'tizen' / 'webos' · visible in Super Admin
-- **App version tracking** — Player reports app version in each heartbeat ping · Super Admin flags outdated screens
-
-### HaaS Pre-Registration
-
-- **Screens arrive pre-configured** — Create screen records before shipping · venue content loaded before the box is sealed
-- **Customer experience** — Powers on the TV · correct menu already showing · zero setup required
-- **Card in the box** — 'Your screens are already set up. Plug in, power on, done.'
-- **No pairing code needed** — Screens registered to venue before delivery · shows Online after first heartbeat
-
----
-
 ## Phase 15 — AI Features
 **PLAN · Months 14–18 (Weeks 60–76) · Milestone: Premium tier upsell driver**
 
-AI that lowers the skill floor for every venue owner. A restaurant operator who has never written a menu description gets professional copy in seconds. All features use the Claude API at approximately $0.01–0.03 per call. AI bulk translation was introduced in Phase 12 — this phase adds all remaining AI capabilities.
+AI that lowers the skill floor for every venue owner. A restaurant operator who has never written a menu description gets professional copy in seconds. All features use the Claude API at approximately $0.01–0.03 per call. AI bulk translation was introduced in Phase 13 — this phase adds all remaining AI capabilities.
 
 ### AI Menu Content — Claude API
 
