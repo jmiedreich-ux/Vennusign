@@ -67,10 +67,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-07.09 — Hero Rotation and Administration
 - WP-07.10 — Phase 07 Validation and Closure
 - Phase 07 — Display Layouts — Bars
+- WP-08.01 — Meal Period Domain and Persistence
 
 ## Active Work Package
 
-**WP-08.01 — Meal Period Domain and Persistence** is in progress.
+None. **WP-08.02 — Venue Timezone Schedule Resolver** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -105,7 +106,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-08.01 — Meal Period Domain and Persistence**.
+Claim and implement **WP-08.02 — Venue Timezone Schedule Resolver**.
 
 ## Phase 05 Work Packages
 
