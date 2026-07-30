@@ -16,6 +16,14 @@ export type DisplayContent = {
     backgroundColor: string;
     accentColor: string;
     fontFamily: 'Inter' | 'Georgia' | 'Arial';
+    presetKey: string;
+    titleColor: string;
+    glowColor: string;
+    boardBackgroundColor: string;
+    sectionColors: string[];
+    glowIntensity: number;
+    titleFont: string;
+    itemFont: string;
   };
   sections?: DisplayMenuSection[];
 };
