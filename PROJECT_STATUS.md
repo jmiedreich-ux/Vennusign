@@ -49,7 +49,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-06.02 — Photo Grid Core Layout** is the next package in roadmap order.
+**WP-06.02 — Photo Grid Core Layout** is in review.
 
 ## Phase 04 Result
 
@@ -71,7 +71,7 @@ None. **WP-06.02 — Photo Grid Core Layout** is the next package in roadmap ord
 
 ## Next Action
 
-Claim and implement **WP-06.02 — Photo Grid Core Layout**.
+Validate, review, and merge **WP-06.02 — Photo Grid Core Layout** before beginning WP-06.03.
 
 ## Phase 05 Work Packages
 
