@@ -6,7 +6,8 @@ public sealed record ScreenUpdateRequest(
     string Name,
     string? Location,
     string? PhotoGridDensity,
-    string? DisplayLayout);
+    string? DisplayLayout,
+    string? SplitRatio);
 
 public sealed record ScreenManagementItem(
     Guid Id,
@@ -14,6 +15,7 @@ public sealed record ScreenManagementItem(
     string? Location,
     string PhotoGridDensity,
     string DisplayLayout,
+    string SplitRatio,
     string Status,
     DateTime? LastSeen,
     string RegistrationUrl);
