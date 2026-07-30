@@ -1,6 +1,7 @@
 using Vennu.Api.Services;
 using Vennu.Core.Models;
 using Vennu.Data.Repositories;
+using Vennu.Api.Notifications;
 
 namespace Vennu.Api.Tests.Services;
 
@@ -32,6 +33,22 @@ public sealed class VenueThemeServiceTests
         Assert.Equal("#AABBCC", result.BackgroundColor);
         Assert.Equal("Georgia", result.FontFamily);
         Assert.Equal(result, await service.GetAsync(venueId));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_NotifiesEveryVenueScreenThroughThemeChannel()
+    {
+        var notifier = new ThemeNotifier();
+        var service = new VenueThemeService(
+            new VenueRepository(new Venue { Id = venueId }),
+            new ThemeRepository(),
+            TimeProvider.System,
+            notifier);
+
+        await service.UpdateAsync(venueId, "#010203", "#AABBCC", "Arial");
+
+        Assert.Equal(venueId, notifier.VenueId);
+        Assert.NotNull(notifier.Theme);
     }
 
     [Theory]
@@ -87,5 +104,26 @@ public sealed class VenueThemeServiceTests
             theme = value;
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class ThemeNotifier : IScreenUpdateNotifier
+    {
+        public Guid? VenueId { get; private set; }
+        public object? Theme { get; private set; }
+
+        public Task NotifyVenueThemeUpdatedAsync(Guid venueId, object theme, CancellationToken cancellationToken = default)
+        {
+            VenueId = venueId;
+            Theme = theme;
+            return Task.CompletedTask;
+        }
+
+        public Task NotifyScreenContentUpdatedAsync(Guid screenId, object payload, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyVenueContentUpdatedAsync(Guid venueId, object payload, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyScreenThemeUpdatedAsync(Guid screenId, object theme, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyScreenItemAvailabilityChangedAsync(Guid screenId, string itemId, bool available, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyVenueItemAvailabilityChangedAsync(Guid venueId, string itemId, bool available, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyScreenSyncTickAsync(Guid screenId, long serverTimeMs, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyVenueSyncTickAsync(Guid venueId, long serverTimeMs, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 }
