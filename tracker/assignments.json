@@ -1,7 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T04:53:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-07-30T04:57:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-07.07",
+      "branch": "wp/07.07-split-layout-admin",
+      "issue": 136,
+      "status": "In Progress"
+    }
+  ],
   "nextAvailableWorkPackage": "WP-07.07",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

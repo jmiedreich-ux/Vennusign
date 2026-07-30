@@ -65,7 +65,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-07.07 — Split Layout Administration and TV Polish** is the next package in roadmap order.
+**WP-07.07 — Split Layout Administration and TV Polish** is in progress.
 
 ## Phase 04 Result
 
@@ -94,7 +94,7 @@ None. **WP-07.07 — Split Layout Administration and TV Polish** is the next pac
 
 ## Next Action
 
-Claim and implement **WP-07.07 — Split Layout Administration and TV Polish**.
+Complete, validate, review, and merge **WP-07.07 — Split Layout Administration and TV Polish**.
 
 ## Phase 05 Work Packages
 

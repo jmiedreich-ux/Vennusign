@@ -23,6 +23,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
   const [notice, setNotice] = useState<string>();
   const [capacity, setCapacity] = useState(6);
   const [overflow, setOverflow] = useState<ScreenOverflowPreview>();
+  const [previewRevision, setPreviewRevision] = useState(0);
 
   const refresh = () => loadManagedScreens(configuration, apiKey, venueId).then(setScreens);
   useEffect(() => { refresh().catch(() => setError("Screens could not be loaded.")); }, [apiKey, configuration, venueId]);
@@ -52,9 +53,11 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
         name: screen.name,
         location: screen.location,
         photoGridDensity: screen.photoGridDensity,
-        displayLayout: screen.displayLayout
+        displayLayout: screen.displayLayout,
+        splitRatio: screen.splitRatio
       });
       await refresh();
+      setPreviewRevision(current => current + 1);
     } catch { setError("The screen details could not be saved."); }
     finally { setBusyId(undefined); }
   };
@@ -86,7 +89,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
     </div>
     {error ? <p className="state error">{error}</p> : null}
     {notice ? <p className="screen-notice" role="status">{notice}</p> : null}
-    {!allLayoutsEnabled ? <aside className="tier-prompt" role="status"><div><strong>Bar layouts require All Layouts</strong><p>Neon Chalkboard remains visible in the selector. Upgrade to Pro or add a venue override to choose it.</p></div></aside> : null}
+    {!allLayoutsEnabled ? <aside className="tier-prompt" role="status"><div><strong>Bar layouts require All Layouts</strong><p>Neon Chalkboard and Split Layout remain visible in the selector. Upgrade to Pro or add a venue override to choose them.</p></div></aside> : null}
     <form className="screen-create" onSubmit={create}>
       <input aria-label="New screen name" maxLength={200} required value={newName} onChange={event => setNewName(event.target.value)} placeholder="Screen name" />
       <input aria-label="New screen location" maxLength={200} value={newLocation} onChange={event => setNewLocation(event.target.value)} placeholder="Location (optional)" />
@@ -112,6 +115,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
             <option value="photo_grid">Photo Grid</option>
             <option value="classic_diner">Classic Diner</option>
             <option disabled={!allLayoutsEnabled} value="neon_chalkboard">Neon Chalkboard · Pro</option>
+            <option disabled={!allLayoutsEnabled} value="split_layout">Split Layout · Pro</option>
           </select>
         </label>
         {screen.displayLayout === "photo_grid" ? <label>Photo Grid density
@@ -129,10 +133,31 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
             <option value="3x3">3 × 3 · 9 items</option>
           </select>
         </label> : null}
+        {screen.displayLayout === "split_layout" ? <label>Split ratio
+          <select
+            value={screen.splitRatio}
+            onChange={event => {
+              const updated = { ...screen, splitRatio: event.target.value as ManagedScreen["splitRatio"] };
+              patch(screen.id, { splitRatio: updated.splitRatio });
+              void save(updated);
+            }}
+          >
+            <option value="40_60">40% hero · 60% menu</option>
+            <option value="50_50">50% hero · 50% menu</option>
+          </select>
+        </label> : null}
         <div className="screen-actions">
           <a href={screen.registrationUrl} target="_blank" rel="noreferrer">Open registration URL</a>
           <button disabled={busyId === screen.id} onClick={() => push(screen)}>Push content</button>
         </div>
+        {screen.displayLayout === "split_layout" ? <div className="split-layout-preview">
+          <div><strong>Exact TV preview</strong><span>Uses this screen’s saved menu, theme, and ratio.</span></div>
+          <iframe
+            key={`${screen.id}-${screen.displayLayout}-${screen.splitRatio}-${previewRevision}`}
+            src={`${configuration.displayBaseUrl}/display/${screen.id}`}
+            title={`${screen.name} Split Layout TV preview`}
+          />
+        </div> : null}
       </section>)}</div> : <p>No screens assigned.</p>}
     <section className="overflow-preview">
       <div>

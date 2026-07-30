@@ -27,6 +27,8 @@ export default function SplitLayout({ content }: DisplayLayoutProps) {
                 <li className={!item.isAvailable || item.quantityAvailable === 0 ? 'is-sold-out' : ''} key={item.id}>
                   <div><strong>{item.name}</strong><span aria-hidden="true" /><data value={activePrice(content.isHappyHour, item)}>{formatPrice(activePrice(content.isHappyHour, item))}</data></div>
                   {item.description ? <p>{item.description}</p> : null}
+                  {item.tags.length ? <div className="split-layout__tags">{item.tags.map(tag =>
+                    <span key={tag}>{tag}</span>)}</div> : null}
                 </li>
               ))}</ul>
             </section>
