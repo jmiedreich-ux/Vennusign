@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 07 — Display Layouts — Bars: Active**
+**Phase 08 — Scheduling Engine: Active**
 
 ## Milestone
 
@@ -70,7 +70,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-08.01 — Meal Period Domain and Persistence** is the next package in roadmap order.
+**WP-08.01 — Meal Period Domain and Persistence** is in progress.
 
 ## Phase 04 Result
 
@@ -105,7 +105,7 @@ None. **WP-08.01 — Meal Period Domain and Persistence** is the next package in
 
 ## Next Action
 
-Claim and implement **WP-08.01 — Meal Period Domain and Persistence**.
+Complete, validate, review, and merge **WP-08.01 — Meal Period Domain and Persistence**.
 
 ## Phase 05 Work Packages
 

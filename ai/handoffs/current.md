@@ -2,43 +2,42 @@
 
 ## Work Package
 
-- ID: WP-07.10
-- Status: Complete and merged
+- ID: WP-08.01
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/07.10-phase-07-closure`
-- Issue: #145
-- Pull request: #146
-- Latest reviewed commit: `434efad`
-- Merge commit: `8702138`
-- CI state: GitHub Actions run #346 passed
+- Branch: `wp/08.01-meal-period-domain-persistence`
+- Issue: #148
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added consolidated admin Phase 07 critical journeys.
-- Added consolidated display Phase 07 critical journeys.
-- Preserved Phase 07 behavior while preparing closure evidence.
+- Added the venue-scoped meal-period domain model and repository.
+- Added migration 022 with bounded local-time, day-mask, name, and order constraints.
+- Added focused repository and migration tests.
 
 ## Decisions
 
-- Closure adds validation only; feature behavior remains unchanged.
+- Meal periods store venue-local wall-clock times; timezone evaluation belongs to WP-08.02.
+- Sunday is bit 0 through Saturday bit 6 in the active-day mask.
 
 ## Validation
 
-- Results: solution build, 33 admin tests, 64 display tests, and non-integration unit tests passed in Actions run #346.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-08.01 — Meal Period Domain and Persistence.
+- Validate, review, and merge WP-08.01.
 
 ## Exact Next Action
 
-Claim and implement WP-08.01.
+Publish WP-08.01 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not redo Phase 07 validation or feature behavior.
-- Follow the approved Phase 08 breakdown sequentially.
+- Do not add resolver, administration, or activation behavior to WP-08.01.
+- Do not begin WP-08.02 before WP-08.01 is merged.
