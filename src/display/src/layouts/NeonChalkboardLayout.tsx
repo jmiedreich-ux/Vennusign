@@ -17,7 +17,10 @@ export default function NeonChalkboardLayout({ content }: DisplayLayoutProps) {
           <section
             className="neon-chalkboard__section"
             key={section.id}
-            style={{ '--neon-section-color': `var(--vennu-section-color-${index % 4 + 1})` } as CSSProperties}
+            style={{
+              '--neon-section-color': `var(--vennu-section-color-${index % 4 + 1})`,
+              '--neon-section-index': index
+            } as CSSProperties}
           >
             <h2>{section.name}</h2>
             <ul>
