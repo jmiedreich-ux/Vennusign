@@ -20,6 +20,8 @@ public class DisplayContentResponse
 
     public string? MenuName { get; set; }
 
+    public string? DailySpecial { get; set; }
+
     public bool IsHappyHour { get; set; }
 
     public string PhotoGridDensity { get; set; } = "3x2";
