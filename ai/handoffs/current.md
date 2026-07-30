@@ -3,15 +3,17 @@
 ## Work Package
 
 - ID: WP-06.09
-- Status: In progress
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/06.09-player-media-cache`
 - Issue: #112
-- Pull request: pending
-- CI state: pending
+- Pull request: #113
+- Latest reviewed commit: `9848aff`
+- Merge commit: `23bde9b`
+- CI state: GitHub Actions run #276 passed
 
 ## Completed This Session
 
@@ -27,16 +29,16 @@
 
 ## Validation
 
-- Results: GitHub Actions pending.
+- Results: solution build, 21 admin tests, 40 display tests, and non-integration unit tests passed in Actions run #276.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Validate, review, and merge WP-06.09.
+- WP-06.10 — Phase 06 Validation and Closure.
 
 ## Exact Next Action
 
-Publish WP-06.09 and validate its exact PR head in GitHub Actions.
+Claim and implement WP-06.10.
 
 ## Do Not Redo or Reverse
 
