@@ -8,6 +8,8 @@ public interface IMealPeriodRepository
 
     Task<bool> UpdateAsync(MealPeriod mealPeriod, CancellationToken cancellationToken = default);
 
+    Task<bool> DeleteAsync(Guid venueId, Guid mealPeriodId, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyCollection<MealPeriod>> GetByVenueIdAsync(
         Guid venueId,
         CancellationToken cancellationToken = default);

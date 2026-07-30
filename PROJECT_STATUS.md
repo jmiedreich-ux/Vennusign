@@ -72,7 +72,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-08.03 — Meal Period Administration** is the next package in roadmap order.
+**WP-08.03 — Meal Period Administration** is in progress.
 
 ## Phase 04 Result
 
@@ -107,7 +107,7 @@ None. **WP-08.03 — Meal Period Administration** is the next package in roadmap
 
 ## Next Action
 
-Claim and implement **WP-08.03 — Meal Period Administration**.
+Complete, validate, review, and merge **WP-08.03 — Meal Period Administration**.
 
 ## Phase 05 Work Packages
 
