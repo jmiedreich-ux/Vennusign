@@ -31,5 +31,5 @@ Deliver the mobile-responsive venue-admin interface used to manage menus and scr
 
 - Complete packages sequentially and keep each slice independently testable and mergeable.
 - Reuse `HasFeatureAsync` and the established notification abstraction.
-- Do not pull Phase 06 display-template implementation, Phase 08 scheduling, Phase 09 pairing, Phase 11 POS integration, or Phase 12 translation automation into Phase 05.
+- Do not pull Phase 06 display-template implementation, Phase 08 scheduling, Phase 09 pairing, Phase 12 POS integration, or Phase 13 translation automation into Phase 05.
 - Integration-type tests remain skipped under the standing repository-owner instruction.
