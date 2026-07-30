@@ -1,14 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T01:27:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-06.04",
-      "branch": "wp/06.04-photo-grid-density-overflow",
-      "issue": 97,
-      "status": "Review"
-    }
-  ],
+  "updatedUtc": "2026-07-30T01:34:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-06.05",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
