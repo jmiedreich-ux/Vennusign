@@ -2,43 +2,41 @@
 
 ## Work Package
 
-- ID: WP-07.02
-- Status: Complete and merged
+- ID: WP-07.03
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/07.02-full-theme-builder`
-- Issue: #121
-- Pull request: #122
-- Latest reviewed commit: `0cb2f6e`
-- Merge commit: `c2f91bf`
-- CI state: GitHub Actions run #295 passed
+- Branch: `wp/07.03-neon-chalkboard`
+- Issue: #124
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added Pro-tier preset, palette, glow, and font controls.
-- Added the complete advanced theme to display content and preview parameters.
-- Preserved visible basic controls and the `all_layouts` soft-lock pattern.
+- Registered the Neon Chalkboard through the additive layout registry.
+- Added the static neon frame, TV menu columns, pricing, and section dividers.
+- Added the visible `all_layouts` selection soft lock.
 
 ## Decisions
 
-- Basic controls remain independently savable for every tier.
-- Presets are applied server-side; custom advanced values use the bounded advanced endpoint.
+- Existing layout defaults and fallback behavior remain unchanged.
+- Motion, texture, scanlines, and reduced-motion behavior remain in WP-07.04.
 
 ## Validation
 
-- Results: solution build, 24 admin tests, 45 display tests, and non-integration unit tests passed in Actions run #295.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-07.03 — Neon Chalkboard Core Layout.
+- Validate, review, and merge WP-07.03.
 
 ## Exact Next Action
 
-Claim and implement WP-07.03.
+Publish WP-07.03 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not add the WP-07.03 Neon Chalkboard renderer or later motion/font behavior.
+- Do not add WP-07.04 animation, texture, scanlines, or accessibility behavior.
