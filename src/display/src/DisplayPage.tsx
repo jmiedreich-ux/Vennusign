@@ -29,6 +29,14 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
   const [connectionState, setConnectionState] = useState<DisplayConnectionState>('connecting');
 
   useEffect(() => {
+    const preview = new URLSearchParams(window.location.search);
+    const previewTheme = preview.get('preview') === 'theme'
+      ? {
+          backgroundColor: preview.get('background') ?? '#111315',
+          accentColor: preview.get('accent') ?? '#FFB74D',
+          fontFamily: preview.get('font') ?? 'Inter'
+        } as DisplayContent['theme']
+      : undefined;
     const abortController = new AbortController();
     let realtimeConnection: DisplayRealtimeConnection | undefined;
     let heartbeat: { stop: () => void } | undefined;
@@ -47,7 +55,11 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
           return;
         }
 
-        setState({ kind: 'ready', content });
+        setState({ kind: 'ready', content: previewTheme ? { ...content, theme: previewTheme } : content });
+        if (previewTheme) {
+          setConnectionState('connected');
+          return;
+        }
         heartbeat = startDisplayHeartbeat(displayConfig.apiBaseUrl, screenId);
 
         realtimeConnection = await connectDisplayRealtime(
