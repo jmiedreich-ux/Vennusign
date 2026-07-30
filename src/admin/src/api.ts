@@ -102,7 +102,19 @@ export type VenueTheme = {
   backgroundColor: string;
   accentColor: string;
   fontFamily: "Inter" | "Georgia" | "Arial";
+  presetKey: string;
+  titleColor: string;
+  glowColor: string;
+  boardBackgroundColor: string;
+  sectionColors: string[];
+  glowIntensity: number;
+  titleFont: "Pacifico" | "Lobster" | "Righteous" | "Fredoka One" | "Bungee" | "Permanent Marker";
+  itemFont: "Caveat" | "Kalam" | "Patrick Hand" | "Permanent Marker";
   updatedUtc: string;
+};
+export type VenueThemePreset = Omit<VenueTheme, "venueId" | "backgroundColor" | "accentColor" | "fontFamily" | "presetKey" | "updatedUtc"> & {
+  key: string;
+  label: string;
 };
 
 export class AdminApiError extends Error {
@@ -429,8 +441,8 @@ export async function removeVideoWall(configuration: AdminConfiguration, apiKey:
   await screenRequest(configuration, apiKey, venueId, `/video-walls/${encodeURIComponent(name)}`, { method: "DELETE" });
 }
 
-async function themeRequest(configuration: AdminConfiguration, apiKey: string, venueId: string, init?: RequestInit) {
-  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}/theme`, {
+async function themeRequest(configuration: AdminConfiguration, apiKey: string, venueId: string, path = "", init?: RequestInit) {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}/theme${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
   });
@@ -442,14 +454,41 @@ export async function loadVenueTheme(configuration: AdminConfiguration, apiKey: 
   return (await themeRequest(configuration, apiKey, venueId)).json() as Promise<VenueTheme>;
 }
 
+export async function loadVenueThemePresets(configuration: AdminConfiguration, apiKey: string, venueId: string): Promise<VenueThemePreset[]> {
+  return (await themeRequest(configuration, apiKey, venueId, "/presets")).json() as Promise<VenueThemePreset[]>;
+}
+
 export async function saveVenueTheme(
   configuration: AdminConfiguration,
   apiKey: string,
   venueId: string,
   theme: Pick<VenueTheme, "backgroundColor" | "accentColor" | "fontFamily">
 ): Promise<VenueTheme> {
-  return (await themeRequest(configuration, apiKey, venueId, {
+  return (await themeRequest(configuration, apiKey, venueId, "", {
     method: "PUT",
     body: JSON.stringify(theme)
+  })).json() as Promise<VenueTheme>;
+}
+
+export async function saveAdvancedVenueTheme(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  theme: Pick<VenueTheme, "titleColor" | "glowColor" | "boardBackgroundColor" | "sectionColors" | "glowIntensity" | "titleFont" | "itemFont">
+): Promise<VenueTheme> {
+  return (await themeRequest(configuration, apiKey, venueId, "/advanced", {
+    method: "PUT",
+    body: JSON.stringify(theme)
+  })).json() as Promise<VenueTheme>;
+}
+
+export async function applyVenueThemePreset(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  presetKey: string
+): Promise<VenueTheme> {
+  return (await themeRequest(configuration, apiKey, venueId, `/presets/${encodeURIComponent(presetKey)}`, {
+    method: "PUT"
   })).json() as Promise<VenueTheme>;
 }
