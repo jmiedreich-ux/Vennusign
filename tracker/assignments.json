@@ -1,7 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T03:31:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-07-30T03:34:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-06.10",
+      "branch": "wp/06.10-phase-06-validation",
+      "issue": 115,
+      "status": "In Progress"
+    }
+  ],
   "nextAvailableWorkPackage": "WP-06.10",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
