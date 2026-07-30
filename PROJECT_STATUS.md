@@ -47,10 +47,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - Phase 05 — Admin CMS Core Editing
 - WP-06.01 — Display Layout Contract and Registry Foundation
 - WP-06.02 — Photo Grid Core Layout
+- WP-06.03 — Photo Grid Merchandising States
 
 ## Active Work Package
 
-**WP-06.03 — Photo Grid Merchandising States** is in review.
+None. **WP-06.04 — Photo Grid Density and Multi-Screen Overflow** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -72,7 +73,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate, review, and merge **WP-06.03 — Photo Grid Merchandising States** before beginning WP-06.04.
+Claim and implement **WP-06.04 — Photo Grid Density and Multi-Screen Overflow**.
 
 ## Phase 05 Work Packages
 
