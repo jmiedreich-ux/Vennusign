@@ -54,7 +54,8 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
         location: screen.location,
         photoGridDensity: screen.photoGridDensity,
         displayLayout: screen.displayLayout,
-        splitRatio: screen.splitRatio
+        splitRatio: screen.splitRatio,
+        heroDwellSeconds: screen.heroDwellSeconds
       });
       await refresh();
       setPreviewRevision(current => current + 1);
@@ -89,7 +90,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
     </div>
     {error ? <p className="state error">{error}</p> : null}
     {notice ? <p className="screen-notice" role="status">{notice}</p> : null}
-    {!allLayoutsEnabled ? <aside className="tier-prompt" role="status"><div><strong>Bar layouts require All Layouts</strong><p>Neon Chalkboard and Split Layout remain visible in the selector. Upgrade to Pro or add a venue override to choose them.</p></div></aside> : null}
+    {!allLayoutsEnabled ? <aside className="tier-prompt" role="status"><div><strong>Bar layouts require All Layouts</strong><p>Neon Chalkboard and Split Layout remain visible in the selector. Daily Special Hero remains visible too. Upgrade to Pro or add a venue override to choose them.</p></div></aside> : null}
     <form className="screen-create" onSubmit={create}>
       <input aria-label="New screen name" maxLength={200} required value={newName} onChange={event => setNewName(event.target.value)} placeholder="Screen name" />
       <input aria-label="New screen location" maxLength={200} value={newLocation} onChange={event => setNewLocation(event.target.value)} placeholder="Location (optional)" />
@@ -116,6 +117,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
             <option value="classic_diner">Classic Diner</option>
             <option disabled={!allLayoutsEnabled} value="neon_chalkboard">Neon Chalkboard · Pro</option>
             <option disabled={!allLayoutsEnabled} value="split_layout">Split Layout · Pro</option>
+            <option disabled={!allLayoutsEnabled} value="daily_special_hero">Daily Special Hero · Pro</option>
           </select>
         </label>
         {screen.displayLayout === "photo_grid" ? <label>Photo Grid density
@@ -131,6 +133,22 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
             <option value="3x2">3 × 2 · 6 items</option>
             <option value="4x2">4 × 2 · 8 items</option>
             <option value="3x3">3 × 3 · 9 items</option>
+          </select>
+        </label> : null}
+        {screen.displayLayout === "daily_special_hero" ? <label>Hero rotation
+          <select
+            value={screen.heroDwellSeconds}
+            onChange={event => {
+              const updated = { ...screen, heroDwellSeconds: Number(event.target.value) };
+              patch(screen.id, { heroDwellSeconds: updated.heroDwellSeconds });
+              void save(updated);
+            }}
+          >
+            <option value={4}>Every 4 seconds</option>
+            <option value={8}>Every 8 seconds · default</option>
+            <option value={12}>Every 12 seconds</option>
+            <option value={20}>Every 20 seconds</option>
+            <option value={30}>Every 30 seconds</option>
           </select>
         </label> : null}
         {screen.displayLayout === "split_layout" ? <label>Split ratio
@@ -150,12 +168,14 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
           <a href={screen.registrationUrl} target="_blank" rel="noreferrer">Open registration URL</a>
           <button disabled={busyId === screen.id} onClick={() => push(screen)}>Push content</button>
         </div>
-        {screen.displayLayout === "split_layout" ? <div className="split-layout-preview">
-          <div><strong>Exact TV preview</strong><span>Uses this screen’s saved menu, theme, and ratio.</span></div>
+        {screen.displayLayout === "split_layout" || screen.displayLayout === "daily_special_hero" ? <div className="split-layout-preview">
+          <div><strong>Exact TV preview</strong><span>Uses this screen’s saved menu, theme, and layout settings.</span></div>
           <iframe
-            key={`${screen.id}-${screen.displayLayout}-${screen.splitRatio}-${previewRevision}`}
+            key={`${screen.id}-${screen.displayLayout}-${screen.splitRatio}-${screen.heroDwellSeconds}-${previewRevision}`}
             src={`${configuration.displayBaseUrl}/display/${screen.id}`}
-            title={`${screen.name} Split Layout TV preview`}
+            title={screen.displayLayout === "split_layout"
+              ? `${screen.name} Split Layout TV preview`
+              : `${screen.name} Daily Special Hero TV preview`}
           />
         </div> : null}
       </section>)}</div> : <p>No screens assigned.</p>}
