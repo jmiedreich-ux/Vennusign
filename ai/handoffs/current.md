@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-09.06
-- Status: In Review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/09.06-tap-strips-polish`
 - Issue: #193
-- Pull request: pending
-- Latest reviewed commit: pending
-- Merge commit: pending
-- CI state: pending GitHub Actions
+- Pull request: #194
+- Latest reviewed commit: `a216587`
+- Merge commit: `8a1e99b`
+- CI state: GitHub Actions run #430 passed
 
 ## Completed This Session
 
@@ -29,7 +29,7 @@
 
 ## Validation
 
-- Results: pending GitHub Actions.
+- Results: restore, Release build, admin/display production builds/tests, and required non-integration tests passed in Actions run #430.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
@@ -38,7 +38,7 @@
 
 ## Exact Next Action
 
-Merge WP-09.06 after exact-head Actions and review, then implement WP-09.07.
+Claim and implement WP-09.07 — Digital Tap Board Core.
 
 ## Do Not Redo or Reverse
 
