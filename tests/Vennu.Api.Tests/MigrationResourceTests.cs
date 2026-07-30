@@ -76,4 +76,13 @@ public sealed class MigrationResourceTests
         Assert.Contains(scripts, name => name.EndsWith(".Scripts.019_add_split_layout.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
+
+    [Fact]
+    public void DailySpecialHeroMigration_IsEmbeddedInOrder()
+    {
+        var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
+
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.020_add_daily_special_hero.sql", StringComparison.Ordinal));
+        Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
+    }
 }

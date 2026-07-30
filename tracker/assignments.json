@@ -1,7 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T05:06:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-07-30T05:11:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-07.08",
+      "branch": "wp/07.08-daily-special-hero",
+      "issue": 139,
+      "status": "In Progress"
+    }
+  ],
   "nextAvailableWorkPackage": "WP-07.08",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

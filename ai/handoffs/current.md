@@ -2,44 +2,41 @@
 
 ## Work Package
 
-- ID: WP-07.07
-- Status: Complete and merged
+- ID: WP-07.08
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/07.07-split-layout-admin`
-- Issue: #136
-- Pull request: #137
-- Latest reviewed commit: `dbda3ba`
-- Merge commit: `af4101c`
-- CI state: GitHub Actions run #328 passed
+- Branch: `wp/07.08-daily-special-hero`
+- Issue: #139
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added tier-aware Split Layout and ratio controls.
-- Added an exact player-backed preview for each Split Layout screen.
-- Added responsive TV bounds and menu tag visibility.
+- Added migration 020 and Daily Special Hero layout normalization.
+- Added deterministic featured and secondary item selection.
+- Added full-screen hero media, copy, active pricing, and Today Only presentation.
 
 ## Decisions
 
-- Reuse the existing screen update contract and production player route.
-- Preserve the complete menu in the DOM while bounding TV overflow.
+- Reuse existing daily-special, availability, popularity, media, and pricing contracts.
+- Preserve rotation and administration for WP-07.09.
 
 ## Validation
 
-- Results: solution build, admin build/tests, 56 display tests, and non-integration unit tests passed in Actions run #328.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-07.08 — Daily Special Hero Core.
+- Validate, review, and merge WP-07.08.
 
 ## Exact Next Action
 
-Claim and implement WP-07.08.
+Publish WP-07.08 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not redo Split Layout administration or TV polish.
-- Do not add WP-07.09 rotation or administration behavior to WP-07.08.
+- Do not add WP-07.09 rotation, dwell persistence, or administration behavior.
