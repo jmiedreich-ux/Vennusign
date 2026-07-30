@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react';
 import { displayConfig } from './config';
 import {
   DisplayContentError,
-  loadDisplayContent,
   type DisplayContent
 } from './displayContent.mjs';
+import {
+  cacheDisplayContent,
+  loadDisplayContentResilient
+} from './displayCache.mjs';
 import { startDisplayHeartbeat } from './displayHeartbeat.mjs';
 import { applyRealtimeEvent } from './displayRealtime.mjs';
 import {
@@ -20,7 +23,7 @@ type DisplayPageProps = {
 
 type DisplayState =
   | { kind: 'loading' }
-  | { kind: 'ready'; content: DisplayContent }
+  | { kind: 'ready'; content: DisplayContent; source: 'network' | 'cache' }
   | { kind: 'not-found'; message: string }
   | { kind: 'api-error'; message: string };
 
@@ -41,52 +44,87 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
     let realtimeConnection: DisplayRealtimeConnection | undefined;
     let heartbeat: { stop: () => void } | undefined;
     let disposed = false;
+    let liveServicesStarted = false;
 
     setState({ kind: 'loading' });
     setConnectionState('connecting');
 
-    loadDisplayContent(
-      displayConfig.apiBaseUrl,
-      screenId,
-      (input, init) => fetch(input, { ...init, signal: abortController.signal })
-    )
-      .then(async (content) => {
+    const startLiveServices = async () => {
+      if (liveServicesStarted || disposed || previewTheme) {
+        return;
+      }
+
+      liveServicesStarted = true;
+      heartbeat = startDisplayHeartbeat(displayConfig.apiBaseUrl, screenId);
+      realtimeConnection = await connectDisplayRealtime(
+        displayConfig.apiBaseUrl,
+        screenId,
+        {
+          onConnectionStateChanged: (nextConnectionState) => {
+            if (!disposed) {
+              setConnectionState(nextConnectionState);
+            }
+          },
+          onEvent: (eventName, ...args) => {
+            if (disposed) {
+              return;
+            }
+
+            setState((currentState) => {
+              if (currentState.kind !== 'ready') {
+                return currentState;
+              }
+
+              const content = applyRealtimeEvent(currentState.content, eventName, ...args);
+              cacheDisplayContent(screenId, content);
+              return { kind: 'ready', content, source: 'network' };
+            });
+          }
+        }
+      );
+    };
+
+    const loadAndActivate = async () => {
+      const result = await loadDisplayContentResilient(
+        displayConfig.apiBaseUrl,
+        screenId,
+        {
+          fetchImpl: (input, init) => fetch(input, { ...init, signal: abortController.signal })
+        }
+      );
+
+      if (disposed) {
+        return;
+      }
+
+      const { content, source } = result;
+      const themedContent = previewTheme ? { ...content, theme: previewTheme } : content;
+      setState({ kind: 'ready', content: themedContent, source });
+
+      if (previewTheme) {
+        setConnectionState('connected');
+      } else if (result.source === 'network') {
+        await startLiveServices();
+      } else {
+        setConnectionState('degraded');
+      }
+    };
+
+    const recoverOnline = () => {
+      loadAndActivate().catch(() => {
+        if (!disposed) {
+          setConnectionState('degraded');
+        }
+      });
+    };
+
+    window.addEventListener('online', recoverOnline);
+
+    loadAndActivate()
+      .then(() => {
         if (disposed) {
           return;
         }
-
-        setState({ kind: 'ready', content: previewTheme ? { ...content, theme: previewTheme } : content });
-        if (previewTheme) {
-          setConnectionState('connected');
-          return;
-        }
-        heartbeat = startDisplayHeartbeat(displayConfig.apiBaseUrl, screenId);
-
-        realtimeConnection = await connectDisplayRealtime(
-          displayConfig.apiBaseUrl,
-          screenId,
-          {
-            onConnectionStateChanged: (nextConnectionState) => {
-              if (!disposed) {
-                setConnectionState(nextConnectionState);
-              }
-            },
-            onEvent: (eventName, ...args) => {
-              if (disposed) {
-                return;
-              }
-
-              setState((currentState) =>
-                currentState.kind === 'ready'
-                  ? {
-                      kind: 'ready',
-                      content: applyRealtimeEvent(currentState.content, eventName, ...args)
-                    }
-                  : currentState
-              );
-            }
-          }
-        );
       })
       .catch((error: unknown) => {
         if (abortController.signal.aborted || disposed) {
@@ -103,6 +141,7 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
 
     return () => {
       disposed = true;
+      window.removeEventListener('online', recoverOnline);
       abortController.abort();
       heartbeat?.stop();
       void realtimeConnection?.stop();
@@ -141,6 +180,9 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
   return (
     <>
       <p aria-live="polite">Real-time connection: {connectionState}</p>
+      {state.source === 'cache' && (
+        <p aria-live="polite">Offline — showing the last saved menu.</p>
+      )}
       <DisplayLayout content={content} />
     </>
   );

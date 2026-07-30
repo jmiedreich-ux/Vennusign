@@ -2,43 +2,42 @@
 
 ## Work Package
 
-- ID: WP-06.08
-- Status: Complete and merged
+- ID: WP-06.09
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/06.08-basic-theme-builder`
-- Issue: #109
-- Latest reviewed commit: `b33b563`
-- Pull request: #110
-- Merge commit: `a477571`
-- CI state: GitHub Actions run #271 passed
+- Branch: `wp/06.09-player-media-cache`
+- Issue: #112
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added all-tier basic theme controls and player-backed preview.
-- Added display theme delivery and layout CSS variables.
-- Added venue-wide ThemeUpdated notification on save.
+- Added versioned per-screen display content caching and transient-failure fallback.
+- Added versioned service-worker image caching with old-version cleanup.
+- Added online recovery behavior and focused display tests.
 
 ## Decisions
 
-- Preview mode uses the real display player but suppresses heartbeat/realtime side effects.
-- Basic styling remains limited to two colors and three approved fonts.
+- A 404 never revives cached content.
+- Cached content is bounded by screen identity, version, validity, and age.
+- Image loading is network-first so recovery refreshes the cache naturally.
 
 ## Validation
 
-- Results: solution build, 21 admin tests, 34 display tests, and 198 non-integration unit tests passed in Actions run #271.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-06.09 — Player Media Caching and Offline Resilience.
+- Validate, review, and merge WP-06.09.
 
 ## Exact Next Action
 
-Claim and implement WP-06.09.
+Publish WP-06.09 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not add Phase 07 advanced theme controls or WP-06.09 caching behavior.
+- Do not add an installable PWA shell, scheduling, POS, or Phase 07 behavior.
