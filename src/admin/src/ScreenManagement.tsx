@@ -51,7 +51,8 @@ export default function ScreenManagement({ configuration, apiKey, venueId }: Pro
       await updateManagedScreen(configuration, apiKey, venueId, screen.id, {
         name: screen.name,
         location: screen.location,
-        photoGridDensity: screen.photoGridDensity
+        photoGridDensity: screen.photoGridDensity,
+        displayLayout: screen.displayLayout
       });
       await refresh();
     } catch { setError("The screen details could not be saved."); }
@@ -98,7 +99,20 @@ export default function ScreenManagement({ configuration, apiKey, venueId }: Pro
         </div>
         <label>Name<input maxLength={200} value={screen.name} onChange={event => patch(screen.id, { name: event.target.value })} onBlur={() => save(screen)} /></label>
         <label>Location<input maxLength={200} value={screen.location ?? ""} onChange={event => patch(screen.id, { location: event.target.value || undefined })} onBlur={() => save(screen)} /></label>
-        <label>Photo Grid density
+        <label>Display layout
+          <select
+            value={screen.displayLayout}
+            onChange={event => {
+              const updated = { ...screen, displayLayout: event.target.value as ManagedScreen["displayLayout"] };
+              patch(screen.id, { displayLayout: updated.displayLayout });
+              void save(updated);
+            }}
+          >
+            <option value="photo_grid">Photo Grid</option>
+            <option value="classic_diner">Classic Diner</option>
+          </select>
+        </label>
+        {screen.displayLayout === "photo_grid" ? <label>Photo Grid density
           <select
             value={screen.photoGridDensity}
             onChange={event => {
@@ -112,7 +126,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId }: Pro
             <option value="4x2">4 × 2 · 8 items</option>
             <option value="3x3">3 × 3 · 9 items</option>
           </select>
-        </label>
+        </label> : null}
         <div className="screen-actions">
           <a href={screen.registrationUrl} target="_blank" rel="noreferrer">Open registration URL</a>
           <button disabled={busyId === screen.id} onClick={() => push(screen)}>Push content</button>
