@@ -2,8 +2,10 @@ import type { ComponentType, CSSProperties, ReactNode } from 'react';
 import type { DisplayContent } from '../displayContent.mjs';
 import { createLayoutRegistry } from '../layoutRegistry.mjs';
 import ClassicDinerLayout from './ClassicDinerLayout';
+import NeonChalkboardLayout from './NeonChalkboardLayout';
 import PhotoGridLayout from './PhotoGridLayout';
 import './classicDiner.css';
+import './neonChalkboard.css';
 import './photoGrid.css';
 
 export type DisplayLayoutProps = {
@@ -56,6 +58,9 @@ export function DisplayFrame({ children, content, layoutKey, requestedLayoutKey,
     '--vennu-section-color-3': theme.sectionColors[2] ?? theme.glowColor,
     '--vennu-section-color-4': theme.sectionColors[3] ?? theme.glowColor,
     '--vennu-glow-intensity': theme.glowIntensity,
+    '--vennu-frame-glow': `${0.7 * theme.glowIntensity}rem`,
+    '--vennu-title-glow': `${0.55 * theme.glowIntensity}rem`,
+    '--vennu-section-glow': `${0.35 * theme.glowIntensity}rem`,
     '--vennu-title-font': theme.titleFont,
     '--vennu-item-font': theme.itemFont,
     fontFamily: theme.fontFamily
@@ -106,6 +111,11 @@ const layoutRegistry = createLayoutRegistry<ComponentType<DisplayLayoutProps>>([
     key: 'classic_diner',
     label: 'Classic Diner',
     renderer: ClassicDinerLayout
+  },
+  {
+    key: 'neon_chalkboard',
+    label: 'Neon Chalkboard',
+    renderer: NeonChalkboardLayout
   }
 ]);
 
