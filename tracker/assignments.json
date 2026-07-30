@@ -1,15 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T03:43:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-07.01",
-      "branch": "wp/07.01-advanced-theme-domain",
-      "issue": 118,
-      "status": "In Progress"
-    }
-  ],
-  "nextAvailableWorkPackage": "WP-07.01",
+  "updatedUtc": "2026-07-30T03:52:00Z",
+  "activeAssignments": [],
+  "nextAvailableWorkPackage": "WP-07.02",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
