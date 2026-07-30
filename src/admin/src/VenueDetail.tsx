@@ -73,7 +73,12 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
       <article><h3>Profile</h3><dl><dt>Timezone</dt><dd>{detail.venue.timezone}</dd><dt>Languages</dt><dd>{[detail.venue.primaryLanguage, detail.venue.secondaryLanguage].filter(Boolean).join(", ")}</dd></dl></article>
       <article><h3>Subscription</h3><dl><dt>Tier</dt><dd>{detail.tier?.name ?? "None"}</dd><dt>Screen limit</dt><dd>{detail.tier?.maxScreens ?? "—"}</dd><dt>Period end</dt><dd>{detail.subscription?.currentPeriodEnd ? new Date(detail.subscription.currentPeriodEnd).toLocaleDateString() : "—"}</dd></dl>{detail.subscription ? <form className="tier-switch" onSubmit={saveTier}><label>Switch tier<select value={targetTierId} onChange={event => setTargetTierId(event.target.value)}>{matrix?.tiers.filter(tier => tier.isActive).map(tier => <option key={tier.id} value={tier.id}>{tier.name}</option>)}</select></label><button disabled={saving || !targetTierId || targetTierId === detail.tier?.id} type="submit">Update Stripe subscription</button></form> : null}</article>
     </div>
-    <ScreenManagement configuration={configuration} apiKey={apiKey} venueId={venueId} />
+    <ScreenManagement
+      configuration={configuration}
+      apiKey={apiKey}
+      venueId={venueId}
+      allLayoutsEnabled={detail.features.all_layouts?.enabled ?? false}
+    />
     <ThemeBuilder
       configuration={configuration}
       apiKey={apiKey}
