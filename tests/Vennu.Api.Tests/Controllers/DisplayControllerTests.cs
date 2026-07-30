@@ -160,8 +160,10 @@ public class DisplayControllerTests
         Assert.Equal("Online", response.Status);
     }
 
-    [Fact]
-    public async Task GetContent_ReturnsClassicChalkboardTapData_WithoutAnActiveMenu()
+    [Theory]
+    [InlineData("classic_chalkboard")]
+    [InlineData("tap_strips")]
+    public async Task GetContent_ReturnsTapLayoutData_WithoutAnActiveMenu(string layout)
     {
         var venueId = Guid.NewGuid();
         var categoryId = Guid.NewGuid();
@@ -169,7 +171,7 @@ public class DisplayControllerTests
         {
             Id = Guid.NewGuid(),
             VenueId = venueId,
-            DisplayLayout = "classic_chalkboard"
+            DisplayLayout = layout
         };
         var screens = new FakeScreenRepository
         {
@@ -200,7 +202,7 @@ public class DisplayControllerTests
 
         var response = Assert.IsType<DisplayContentResponse>(
             Assert.IsType<OkObjectResult>(result.Result).Value);
-        Assert.Equal("classic_chalkboard", response.Layout);
+        Assert.Equal(layout, response.Layout);
         Assert.Equal("Draft Beer", Assert.Single(response.TapCategories).Name);
         var item = Assert.Single(response.TapItems);
         Assert.Equal("House Lager", item.Name);

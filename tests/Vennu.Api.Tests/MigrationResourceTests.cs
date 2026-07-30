@@ -148,4 +148,13 @@ public sealed class MigrationResourceTests
         Assert.Contains(scripts, name => name.EndsWith(".Scripts.029_add_classic_chalkboard_layout.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
+
+    [Fact]
+    public void TapStripsMigration_IsEmbeddedInOrder()
+    {
+        var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
+
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.030_add_tap_strips_layout.sql", StringComparison.Ordinal));
+        Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
+    }
 }

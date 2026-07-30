@@ -9,6 +9,7 @@ import SplitLayout from './SplitLayout';
 import HappyHourBanner from './HappyHourBanner';
 import PromotionBanner from './PromotionBanner';
 import ClassicChalkboardLayout from './ClassicChalkboardLayout';
+import TapStripsLayout from './TapStripsLayout';
 import './classicDiner.css';
 import './dailySpecialHero.css';
 import './neonChalkboard.css';
@@ -17,6 +18,7 @@ import './splitLayout.css';
 import './happyHour.css';
 import './promotion.css';
 import './classicChalkboard.css';
+import './tapStrips.css';
 
 export type DisplayLayoutProps = {
   content: DisplayContent;
@@ -143,6 +145,11 @@ const layoutRegistry = createLayoutRegistry<ComponentType<DisplayLayoutProps>>([
     key: 'classic_chalkboard',
     label: 'Classic Chalkboard Drinks',
     renderer: ClassicChalkboardLayout
+  },
+  {
+    key: 'tap_strips',
+    label: 'Tap Strips',
+    renderer: TapStripsLayout
   }
 ]);
 

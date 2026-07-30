@@ -1,0 +1,26 @@
+.tap-strips {
+  box-sizing: border-box;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: clamp(1rem, 2.5vh, 2rem) clamp(1.25rem, 3vw, 3rem);
+  color: #f7f1dc;
+  background: linear-gradient(120deg, #101613, #1d271f 50%, #111713);
+}
+
+.tap-strips header { display: flex; align-items: baseline; justify-content: space-between; border-bottom: .25rem solid #ca6; }
+.tap-strips header p { letter-spacing: .18em; text-transform: uppercase; }
+.tap-strips h1 { margin: 0; color: #e8cb75; font: 700 clamp(3rem, 6vw, 6rem) Caveat, cursive; }
+.tap-strips ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; list-style: none; padding: 0; }
+.tap-strips li { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1rem; min-height: clamp(6.5rem, 13vh, 10rem); padding: .8rem 1rem; border: 1px solid rgba(255,255,255,.14); border-left: .4rem solid #ca6; background: rgba(0,0,0,.24); }
+.tap-number { align-self: start; color: #ca6; font: 700 clamp(1.3rem, 2vw, 2.2rem) Inter, sans-serif; }
+.tap-strips h2 { margin: 0; color: var(--tap-name-color); font-size: clamp(1.8rem, 3.4vw, 3.3rem); line-height: .95; text-shadow: 0 0 .45rem color-mix(in srgb, var(--tap-name-color) 55%, transparent); }
+.tap-strips li p { margin: .25rem 0; color: #c7ccbf; }
+.tap-price { color: #fff3c4; font: 700 clamp(1.3rem, 2.4vw, 2.2rem) Kalam, cursive; }
+.tap-state { position: absolute; right: .7rem; bottom: .35rem; color: #f0ba72; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; }
+.tap-strips li.unavailable { opacity: .42; filter: grayscale(.7); }
+.tap-strips li.coming-soon { opacity: .78; border-style: dashed; }
+.tap-strips-empty { text-align: center; font: 2rem Caveat, cursive; }
+
+@media (max-width: 960px) {
+  .tap-strips ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
