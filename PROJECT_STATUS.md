@@ -65,10 +65,12 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-07.07 — Split Layout Administration and TV Polish
 - WP-07.08 — Daily Special Hero Core
 - WP-07.09 — Hero Rotation and Administration
+- WP-07.10 — Phase 07 Validation and Closure
+- Phase 07 — Display Layouts — Bars
 
 ## Active Work Package
 
-**WP-07.10 — Phase 07 Validation and Closure** is in progress.
+None. **WP-08.01 — Meal Period Domain and Persistence** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -90,6 +92,12 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - Added versioned offline content/media caching with safe invalidation and online recovery.
 - Added repeatable layout, theme, realtime, overflow, and offline critical-journey validation.
 
+## Phase 07 Result
+
+- Delivered advanced Pro themes, Neon Chalkboard, Split Layout, and Daily Special Hero.
+- Added accessible motion, multilingual Noto delivery, exact previews, and bounded hero rotation.
+- Added repeatable tier, layout, pricing, realtime, and offline critical-journey validation.
+
 ## Standing Validation Exception
 
 - Integration-type tests are skipped for every AWP under the repository owner's standing instruction.
@@ -97,7 +105,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-07.10 — Phase 07 Validation and Closure**.
+Claim and implement **WP-08.01 — Meal Period Domain and Persistence**.
 
 ## Phase 05 Work Packages
 
@@ -110,3 +118,7 @@ Complete, validate, review, and merge **WP-07.10 — Phase 07 Validation and Clo
 ## Phase 07 Work Packages
 
 - WP-07.01 through WP-07.10 are defined in `docs/phase-plans/phase-07-display-layouts-bars.md`.
+
+## Phase 08 Work Packages
+
+- WP-08.01 through WP-08.10 are defined in `docs/phase-plans/phase-08-scheduling-engine.md`.
