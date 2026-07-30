@@ -46,7 +46,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-05.10 — Phase 05 Validation and Closure** is the next package in roadmap order.
+**WP-05.10 — Phase 05 Validation and Closure** is in review on issue #84.
 
 ## Phase 04 Result
 
@@ -61,7 +61,7 @@ None. **WP-05.10 — Phase 05 Validation and Closure** is the next package in ro
 
 ## Next Action
 
-Claim and complete **WP-05.10 — Phase 05 Validation and Closure**.
+Validate and merge **WP-05.10 — Phase 05 Validation and Closure**.
 
 ## Phase 05 Work Packages
 
