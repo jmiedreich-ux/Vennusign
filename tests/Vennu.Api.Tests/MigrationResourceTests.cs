@@ -94,4 +94,13 @@ public sealed class MigrationResourceTests
         Assert.Contains(scripts, name => name.EndsWith(".Scripts.021_add_hero_dwell_seconds.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
+
+    [Fact]
+    public void MealPeriodMigration_IsEmbeddedInOrder()
+    {
+        var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
+
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.022_create_meal_periods.sql", StringComparison.Ordinal));
+        Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
+    }
 }
