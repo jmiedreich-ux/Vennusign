@@ -33,4 +33,5 @@ test('renders merchandising states only from display content', () => {
   assert.match(layoutSource, /photo-grid__popular/);
   assert.match(layoutSource, /photo-grid__badge/);
   assert.match(layoutSource, /<s>/);
+  assert.match(layoutSource, /limitedQuantityThreshold = 5/);
 });
