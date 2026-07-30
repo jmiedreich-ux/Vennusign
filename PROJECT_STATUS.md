@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 05 — Admin CMS Core Editing: Active**
+**Phase 06 — Display Layouts — Restaurants & Cafes: Active**
 
 ## Milestone
 
@@ -43,16 +43,25 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-05.07 — Screen Management Core
 - WP-05.08 — Screen Targeting and Overflow Visualization
 - WP-05.09 — Video Wall Builder
+- WP-05.10 — Phase 05 Validation and Closure
+- Phase 05 — Admin CMS Core Editing
 
 ## Active Work Package
 
-None. **WP-05.10 — Phase 05 Validation and Closure** is the next package in roadmap order.
+None. **WP-06.01 — Display Layout Contract and Registry Foundation** is the next package in roadmap order.
 
 ## Phase 04 Result
 
 - Delivered protected venue support, tier management, feature matrix, overrides, operational health, and commercial events.
 - Added live Stripe USD revenue, safe venue tier switching, and persisted monthly revenue trends.
 - Added repeatable authorization and critical UI journey validation.
+
+## Phase 05 Result
+
+- Delivered venue-scoped menu editing, presentation states, and tier-aware controls.
+- Added mobile Quick Update with venue-local midnight availability restoration.
+- Added screen registration, health, one/all targeting, deterministic overflow guidance, and supported video walls.
+- Added repeatable protected-route, service, repository, worker, migration, and frontend validation.
 
 ## Standing Validation Exception
 
@@ -61,8 +70,12 @@ None. **WP-05.10 — Phase 05 Validation and Closure** is the next package in ro
 
 ## Next Action
 
-Claim and complete **WP-05.10 — Phase 05 Validation and Closure**.
+Claim and implement **WP-06.01 — Display Layout Contract and Registry Foundation**.
 
 ## Phase 05 Work Packages
 
 - WP-05.01 through WP-05.10 are defined in `docs/phase-plans/phase-05-admin-cms-core-editing.md`.
+
+## Phase 06 Work Packages
+
+- WP-06.01 through WP-06.10 are defined in `docs/phase-plans/phase-06-display-layouts-restaurants-cafes.md`.
