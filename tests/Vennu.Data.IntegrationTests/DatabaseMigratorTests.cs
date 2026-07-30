@@ -28,7 +28,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.016_add_screen_display_layout.sql",
                 "Vennu.Data.Scripts.017_create_venue_themes.sql",
                 "Vennu.Data.Scripts.018_add_advanced_venue_themes.sql",
-                "Vennu.Data.Scripts.019_add_split_layout.sql"
+                "Vennu.Data.Scripts.019_add_split_layout.sql",
+                "Vennu.Data.Scripts.020_add_daily_special_hero.sql"
             ],
             scriptNames);
     }
