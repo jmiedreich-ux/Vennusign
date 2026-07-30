@@ -10,6 +10,16 @@ export type DisplayLayoutProps = {
   content: DisplayContent;
 };
 
+function contrastColor(hexColor: string, dark = '#241B12', light = '#FFFFFF') {
+  const match = /^#([0-9A-F]{6})$/i.exec(hexColor);
+  if (!match) return light;
+  const value = Number.parseInt(match[1], 16);
+  const red = (value >> 16) & 255;
+  const green = (value >> 8) & 255;
+  const blue = value & 255;
+  return (red * 299 + green * 587 + blue * 114) / 255000 > 0.55 ? dark : light;
+}
+
 type DisplayFrameProps = {
   children: ReactNode;
   content: DisplayContent;
@@ -27,7 +37,10 @@ export function DisplayFrame({ children, content, layoutKey, requestedLayoutKey,
   const style = {
     '--vennu-background': theme.backgroundColor,
     '--vennu-accent': theme.accentColor,
-    '--vennu-font-family': theme.fontFamily
+    '--vennu-font-family': theme.fontFamily,
+    '--vennu-foreground': contrastColor(theme.backgroundColor),
+    '--vennu-accent-foreground': contrastColor(theme.accentColor),
+    fontFamily: theme.fontFamily
   } as CSSProperties;
   return (
     <main
