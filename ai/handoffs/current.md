@@ -3,15 +3,17 @@
 ## Work Package
 
 - ID: WP-08.06
-- Status: In progress
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/08.06-happy-hour-admin-display`
 - Issue: #163
-- Pull request: pending
-- CI state: pending
+- Pull request: #164
+- Latest reviewed commit: `82a1cf9`
+- Merge commit: `6456a47`
+- CI state: GitHub Actions runs #384 and #385 passed
 
 ## Completed This Session
 
@@ -26,18 +28,18 @@
 
 ## Validation
 
-- Results: GitHub Actions pending.
+- Results: Release build, admin/display production builds and tests, and required non-integration tests passed in Actions runs #384 and #385.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Validate, review, and merge WP-08.06.
+- WP-08.07 — Playlist Domain and Player Rotation.
 
 ## Exact Next Action
 
-Publish WP-08.06 and validate its exact PR head in GitHub Actions.
+Claim and implement WP-08.07.
 
 ## Do Not Redo or Reverse
 
-- Do not change WP-08.05 resolver or persistence semantics.
-- Do not add playlists, broadcasts, or promotions.
+- Do not redo WP-08.05 resolver/persistence or WP-08.06 administration/display behavior.
+- WP-08.07 should add bounded playlist persistence and player rotation without broadcast or promotion scope.
