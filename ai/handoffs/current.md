@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-09.01
-- Status: Ready for review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/09.01-tap-domain-persistence`
 - Issue: #178
-- Pull request: pending
-- Latest reviewed commit: pending
-- Merge commit: pending
-- CI state: pending
+- Pull request: #179
+- Latest reviewed commit: `71897f5`
+- Merge commit: `ee44f88`
+- CI state: GitHub Actions run #408 passed
 
 ## Completed This Session
 
@@ -28,16 +28,16 @@
 
 ## Validation
 
-- Results: GitHub Actions validation pending.
+- Results: restore, Release build, frontend builds/tests, migration inventory, and required non-integration unit tests passed in Actions run #408.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Publish, validate, review, and merge WP-09.01.
+- WP-09.02 — Tap List Administration and Availability.
 
 ## Exact Next Action
 
-Publish WP-09.01 and wait for authoritative non-integration Actions checks.
+Claim and implement WP-09.02.
 
 ## Do Not Redo or Reverse
 
