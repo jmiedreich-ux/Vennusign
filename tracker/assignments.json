@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T00:24:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-05.10",
-      "issue": 84,
-      "branch": "wp/05.10-phase-05-validation",
-      "owner": "ChatGPT",
-      "status": "in_review"
-    }
-  ],
+  "updatedUtc": "2026-07-30T00:27:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-06.01",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

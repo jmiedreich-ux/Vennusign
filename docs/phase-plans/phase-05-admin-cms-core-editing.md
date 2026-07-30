@@ -1,5 +1,9 @@
 # Phase 05 — Admin CMS Core Editing
 
+## Status
+
+Complete. WP-05.01 through WP-05.10 are merged or represented in the Phase 05 closure pull request.
+
 ## Approved Objective
 
 Deliver the mobile-responsive venue-admin interface used to manage menus and screens. Feature-gated controls must use the established effective-feature service and show informative, dismissible tier prompts rather than errors.
