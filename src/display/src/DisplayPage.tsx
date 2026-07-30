@@ -12,6 +12,7 @@ import {
   type DisplayConnectionState,
   type DisplayRealtimeConnection
 } from './signalRClient';
+import { DisplayLayout } from './layouts/DisplayLayout';
 
 type DisplayPageProps = {
   screenId: string;
@@ -126,20 +127,9 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
   const { content } = state;
 
   return (
-    <main>
-      <header>
-        <h1>{content.screenName}</h1>
-        <p>{content.status}</p>
-        <p aria-live="polite">Real-time connection: {connectionState}</p>
-      </header>
-      <dl>
-        <dt>Screen key</dt>
-        <dd>{content.screenKey}</dd>
-        <dt>Layout</dt>
-        <dd>{content.layout}</dd>
-        <dt>Last seen</dt>
-        <dd>{content.lastSeenUtc ?? 'Not yet reported'}</dd>
-      </dl>
-    </main>
+    <>
+      <p aria-live="polite">Real-time connection: {connectionState}</p>
+      <DisplayLayout content={content} />
+    </>
   );
 }
