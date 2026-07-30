@@ -130,6 +130,21 @@ export type MealPeriodSnapshot = {
   mealPeriods: MealPeriod[];
   conflicts: Array<{ firstId: string; firstName: string; secondId: string; secondName: string }>;
 };
+export type HappyHourSnapshot = {
+  schedule?: {
+    venueId: string; startLocalTime: string; endLocalTime: string;
+    activeDaysMask: number; isEnabled: boolean;
+    overrideMode: "automatic" | "force_on" | "force_off"; updatedUtc: string;
+  };
+  isActive: boolean;
+  endsAtUtc?: string;
+  mode: "automatic" | "force_on" | "force_off";
+  isEntitled: boolean;
+};
+export type HappyHourWrite = {
+  startLocalTime: string; endLocalTime: string; activeDaysMask: number;
+  isEnabled: boolean; overrideMode: HappyHourSnapshot["mode"];
+};
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -160,6 +175,23 @@ export async function updateMealPeriod(configuration: AdminConfiguration, apiKey
 
 export async function deleteMealPeriod(configuration: AdminConfiguration, apiKey: string, venueId: string, id: string): Promise<void> {
   await mealPeriodRequest(configuration, apiKey, venueId, `/${id}`, { method: "DELETE" });
+}
+
+async function happyHourRequest(configuration: AdminConfiguration, apiKey: string, venueId: string, init?: RequestInit) {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}/happy-hour`, {
+    ...init,
+    headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to manage happy hour.");
+  return response;
+}
+
+export async function loadHappyHour(configuration: AdminConfiguration, apiKey: string, venueId: string): Promise<HappyHourSnapshot> {
+  return (await happyHourRequest(configuration, apiKey, venueId)).json() as Promise<HappyHourSnapshot>;
+}
+
+export async function saveHappyHour(configuration: AdminConfiguration, apiKey: string, venueId: string, value: HappyHourWrite): Promise<HappyHourSnapshot> {
+  return (await happyHourRequest(configuration, apiKey, venueId, { method: "PUT", body: JSON.stringify(value) })).json() as Promise<HappyHourSnapshot>;
 }
 
 export async function loadSession(configuration: AdminConfiguration, apiKey: string, signal?: AbortSignal): Promise<AdminSession> {

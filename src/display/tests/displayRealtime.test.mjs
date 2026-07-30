@@ -20,6 +20,16 @@ test('ContentUpdated replaces the complete display payload', () => {
   );
 });
 
+test('happy-hour transition patches authoritative state without replacing content', () => {
+  const result = applyRealtimeEvent(initialContent, displayRealtimeEvents.contentUpdated, {
+    change: 'happy-hour-transition', isHappyHour: true,
+    endsAtUtc: '2026-07-30T22:00:00Z', mode: 'automatic'
+  });
+  assert.equal(result.screenId, initialContent.screenId);
+  assert.equal(result.isHappyHour, true);
+  assert.equal(result.happyHourEndsAtUtc, '2026-07-30T22:00:00Z');
+});
+
 test('ThemeUpdated applies a deterministic theme patch', () => {
   const theme = { background: '#111111', foreground: '#ffffff' };
   const result = applyRealtimeEvent(
