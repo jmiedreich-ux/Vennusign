@@ -28,3 +28,10 @@ Azure SQL execution, hosted infrastructure, credentials, containers, external se
 ## Phase Result
 
 Phase 06 delivers production-ready restaurant/cafe layouts, all-tier basic theming, multi-screen overflow, and a player that keeps the last valid menu and images visible through temporary outages.
+
+## Validation Evidence
+
+- Local display contracts passed 45/45.
+- GitHub Actions run #282 passed restore, Release build, both frontend production builds/tests, non-integration unit tests, and the explicit integration-test skip at reviewed head `92b9f3e`.
+- PR #116 merged as `2095731`.
+- Integration-type tests were intentionally skipped.
