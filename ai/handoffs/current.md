@@ -3,15 +3,17 @@
 ## Work Package
 
 - ID: WP-07.05
-- Status: In progress
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/07.05-noto-font-preload`
 - Issue: #130
-- Pull request: pending
-- CI state: pending
+- Pull request: #131
+- Latest reviewed commit: `f49cc61`
+- Merge commit: `81c5ea5`
+- CI state: GitHub Actions run #313 passed
 
 ## Completed This Session
 
@@ -26,16 +28,16 @@
 
 ## Validation
 
-- Results: GitHub Actions pending.
+- Results: solution build, admin build/tests, 52 display tests, and non-integration unit tests passed in Actions run #313.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- Validate, review, and merge WP-07.05.
+- WP-07.06 — Split Layout Domain and Core Rendering.
 
 ## Exact Next Action
 
-Publish WP-07.05 and validate its exact PR head in GitHub Actions.
+Claim and implement WP-07.06.
 
 ## Do Not Redo or Reverse
 
