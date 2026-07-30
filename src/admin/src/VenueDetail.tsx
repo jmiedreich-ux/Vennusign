@@ -6,6 +6,7 @@ import ScreenManagement from "./ScreenManagement";
 import ThemeBuilder from "./ThemeBuilder";
 import MealPeriodAdministration from "./MealPeriodAdministration";
 import HappyHourAdministration from "./HappyHourAdministration";
+import PlaylistAdministration from "./PlaylistAdministration";
 
 type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; onBack: () => void };
 
@@ -90,6 +91,7 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
     <MenuSectionsEditor configuration={configuration} apiKey={apiKey} venueId={venueId} />
     <MealPeriodAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} />
     <HappyHourAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} enabled={detail.features.happy_hour?.enabled ?? false} />
+    <PlaylistAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} screens={detail.screens} enabled={detail.features.playlist_rotation?.enabled ?? false} />
     <article><h3>Effective features</h3><ul className="support-list">{features.map(feature => <li key={feature.key}><strong>{feature.key}</strong><span>{feature.enabled ? "Enabled" : "Disabled"} · {feature.source}{feature.limitValue ? ` · limit ${feature.limitValue}` : ""}</span></li>)}</ul></article>
     <article className="override-panel"><div><h3>Active overrides ({detail.activeOverrides.length})</h3>{detail.activeOverrides.length ? <ul className="support-list">{detail.activeOverrides.map(item => <li key={item.featureId}><strong>{matrix?.features.find(feature => feature.id === item.featureId)?.label ?? item.featureId}</strong><span>{item.enabled ? "Unlock" : "Block"} · {item.reason}{item.expiresAt ? ` · expires ${new Date(item.expiresAt).toLocaleString()}` : ""}<button disabled={saving} onClick={() => removeOverride(item.featureId)}>Remove</button></span></li>)}</ul> : <p>No active overrides.</p>}</div>
       <form onSubmit={saveOverride}><h3>Add or replace override</h3><label>Feature<select required value={featureId} onChange={event => setFeatureId(event.target.value)}>{matrix?.features.map(feature => <option key={feature.id} value={feature.id}>{feature.label}</option>)}</select></label><div className="override-choice"><label><input type="radio" checked={enabled} onChange={() => setEnabled(true)} /> Unlock</label><label><input type="radio" checked={!enabled} onChange={() => setEnabled(false)} /> Block</label></div><label>Reason<textarea required maxLength={500} value={reason} onChange={event => setReason(event.target.value)} /></label><label>Expires (optional)<input type="datetime-local" value={expiresAt} onChange={event => setExpiresAt(event.target.value)} /></label><button disabled={saving || !featureId} type="submit">Save override</button></form>

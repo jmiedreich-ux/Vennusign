@@ -145,6 +145,13 @@ export type HappyHourWrite = {
   startLocalTime: string; endLocalTime: string; activeDaysMask: number;
   isEnabled: boolean; overrideMode: HappyHourSnapshot["mode"];
 };
+export type PlaylistSlide = {
+  id: string; venueId: string; screenId: string;
+  slideType: "menu" | "image" | "message"; title?: string; body?: string; mediaUrl?: string;
+  dwellSeconds: number; startLocalTime?: string; endLocalTime?: string; activeDaysMask?: number;
+  isEnabled: boolean; sortOrder: number;
+};
+export type PlaylistSlideWrite = Omit<PlaylistSlide, "id" | "venueId" | "screenId" | "sortOrder">;
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -192,6 +199,28 @@ export async function loadHappyHour(configuration: AdminConfiguration, apiKey: s
 
 export async function saveHappyHour(configuration: AdminConfiguration, apiKey: string, venueId: string, value: HappyHourWrite): Promise<HappyHourSnapshot> {
   return (await happyHourRequest(configuration, apiKey, venueId, { method: "PUT", body: JSON.stringify(value) })).json() as Promise<HappyHourSnapshot>;
+}
+
+const playlistUrl = (configuration: AdminConfiguration, venueId: string, screenId: string) =>
+  `${configuration.apiBaseUrl}/api/admin/venues/${venueId}/screens/${screenId}/playlist`;
+async function playlistRequest(configuration: AdminConfiguration, apiKey: string, venueId: string, screenId: string, path = "", init?: RequestInit) {
+  const response = await fetch(`${playlistUrl(configuration, venueId, screenId)}${path}`, {
+    ...init, headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to manage playlist.");
+  return response;
+}
+export async function loadPlaylist(configuration: AdminConfiguration, apiKey: string, venueId: string, screenId: string): Promise<PlaylistSlide[]> {
+  return (await playlistRequest(configuration, apiKey, venueId, screenId)).json() as Promise<PlaylistSlide[]>;
+}
+export async function createPlaylistSlide(configuration: AdminConfiguration, apiKey: string, venueId: string, screenId: string, value: PlaylistSlideWrite): Promise<PlaylistSlide> {
+  return (await playlistRequest(configuration, apiKey, venueId, screenId, "", { method: "POST", body: JSON.stringify(value) })).json() as Promise<PlaylistSlide>;
+}
+export async function reorderPlaylist(configuration: AdminConfiguration, apiKey: string, venueId: string, screenId: string, orderedIds: string[]): Promise<PlaylistSlide[]> {
+  return (await playlistRequest(configuration, apiKey, venueId, screenId, "/order", { method: "PUT", body: JSON.stringify({ orderedIds }) })).json() as Promise<PlaylistSlide[]>;
+}
+export async function deletePlaylistSlide(configuration: AdminConfiguration, apiKey: string, venueId: string, screenId: string, slideId: string) {
+  await playlistRequest(configuration, apiKey, venueId, screenId, `/${slideId}`, { method: "DELETE" });
 }
 
 export async function loadSession(configuration: AdminConfiguration, apiKey: string, signal?: AbortSignal): Promise<AdminSession> {

@@ -16,6 +16,7 @@ public class DisplayController : ControllerBase
     private readonly IMenuRepository menuRepository;
     private readonly IVenueThemeRepository? themeRepository;
     private readonly IHappyHourService? happyHourService;
+    private readonly IPlaylistAdministrationService? playlistService;
     private readonly TimeProvider timeProvider;
 
     public DisplayController(
@@ -24,9 +25,10 @@ public class DisplayController : ControllerBase
         IMenuRepository menuRepository,
         IVenueThemeRepository? themeRepository = null,
         IHappyHourService? happyHourService = null,
+        IPlaylistAdministrationService? playlistService = null,
         TimeProvider? timeProvider = null) =>
-        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.timeProvider) =
-        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, timeProvider ?? TimeProvider.System);
+        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.timeProvider) =
+        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, timeProvider ?? TimeProvider.System);
 
     [HttpGet("{screenId:guid}/content")]
     [ProducesResponseType<DisplayContentResponse>(StatusCodes.Status200OK)]
@@ -58,6 +60,16 @@ public class DisplayController : ControllerBase
 
         var venueId = screen.VenueId.Value;
         var venue = await venueRepository.GetByIdAsync(venueId, cancellationToken);
+        if (playlistService is not null)
+        {
+            response.Playlist = (await playlistService.GetActiveAsync(
+                venueId, screen.Id, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false))
+                .Select(slide => new DisplayPlaylistSlideResponse
+                {
+                    Id = slide.Id, SlideType = slide.SlideType, Title = slide.Title,
+                    Body = slide.Body, MediaUrl = slide.MediaUrl, DwellSeconds = slide.DwellSeconds
+                }).ToArray();
+        }
         if (happyHourService is not null)
         {
             var happyHour = (await happyHourService.GetAsync(

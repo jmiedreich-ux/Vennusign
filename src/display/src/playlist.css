@@ -1,0 +1,13 @@
+.playlist-slide {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--vennu-title, #fff);
+  background: var(--vennu-background, #111315);
+}
+.playlist-slide img { width: 100%; height: 100%; object-fit: cover; }
+.playlist-slide section { max-width: 80vw; text-align: center; }
+.playlist-slide h1 { margin: 0; font-size: clamp(3rem, 9vw, 9rem); }
+.playlist-slide p { font-size: clamp(1.5rem, 3vw, 3.5rem); }

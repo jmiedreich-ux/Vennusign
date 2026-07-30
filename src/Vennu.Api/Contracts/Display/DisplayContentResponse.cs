@@ -36,9 +36,21 @@ public class DisplayContentResponse
 
     public int HeroDwellSeconds { get; set; } = 8;
 
+    public IReadOnlyCollection<DisplayPlaylistSlideResponse> Playlist { get; set; } = [];
+
     public DisplayThemeResponse Theme { get; set; } = new();
 
     public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];
+}
+
+public sealed class DisplayPlaylistSlideResponse
+{
+    public Guid Id { get; set; }
+    public string SlideType { get; set; } = "menu";
+    public string? Title { get; set; }
+    public string? Body { get; set; }
+    public string? MediaUrl { get; set; }
+    public int DwellSeconds { get; set; }
 }
 
 public sealed class DisplayThemeResponse
