@@ -4,9 +4,10 @@ const limitedQuantityThreshold = 5;
 
 export default function PhotoGridLayout({ content }: DisplayLayoutProps) {
   const sections = content.sections ?? [];
+  const density = content.photoGridDensity ?? '3x2';
 
   return (
-    <div className="photo-grid">
+    <div className={`photo-grid photo-grid--density-${density}`} data-density={density}>
       <header className="photo-grid__header">
         <p className="photo-grid__venue">{content.venueName}</p>
         <h1>{content.menuName}</h1>
@@ -59,6 +60,11 @@ export default function PhotoGridLayout({ content }: DisplayLayoutProps) {
           </div>
         </section>
       ))}
+      {(content.photoGridOverflowItems ?? 0) > 0 && (
+        <footer className="photo-grid__overflow">
+          {content.photoGridOverflowItems} more item{content.photoGridOverflowItems === 1 ? '' : 's'}
+        </footer>
+      )}
     </div>
   );
 }
