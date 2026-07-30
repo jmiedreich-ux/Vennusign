@@ -23,6 +23,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
   const [notice, setNotice] = useState<string>();
   const [capacity, setCapacity] = useState(6);
   const [overflow, setOverflow] = useState<ScreenOverflowPreview>();
+  const [previewRevision, setPreviewRevision] = useState(0);
 
   const refresh = () => loadManagedScreens(configuration, apiKey, venueId).then(setScreens);
   useEffect(() => { refresh().catch(() => setError("Screens could not be loaded.")); }, [apiKey, configuration, venueId]);
@@ -56,6 +57,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
         splitRatio: screen.splitRatio
       });
       await refresh();
+      setPreviewRevision(current => current + 1);
     } catch { setError("The screen details could not be saved."); }
     finally { setBusyId(undefined); }
   };
@@ -151,7 +153,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
         {screen.displayLayout === "split_layout" ? <div className="split-layout-preview">
           <div><strong>Exact TV preview</strong><span>Uses this screen’s saved menu, theme, and ratio.</span></div>
           <iframe
-            key={`${screen.id}-${screen.displayLayout}-${screen.splitRatio}`}
+            key={`${screen.id}-${screen.displayLayout}-${screen.splitRatio}-${previewRevision}`}
             src={`${configuration.displayBaseUrl}/display/${screen.id}`}
             title={`${screen.name} Split Layout TV preview`}
           />
