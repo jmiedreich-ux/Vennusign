@@ -21,6 +21,15 @@
 .tap-strips li.coming-soon { opacity: .78; border-style: dashed; }
 .tap-strips-empty { text-align: center; font: 2rem Caveat, cursive; }
 
+@media (prefers-reduced-motion: no-preference) {
+  .tap-strips li { animation: tap-strip-in .45s ease-out both; }
+  @keyframes tap-strip-in { from { opacity: 0; transform: translateY(.8rem) rotate(-.3deg); } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-strips li { animation: none; transform: none; }
+}
+
 @media (max-width: 960px) {
   .tap-strips ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

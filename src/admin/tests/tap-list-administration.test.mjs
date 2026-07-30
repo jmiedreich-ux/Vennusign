@@ -28,3 +28,13 @@ test("screen management exposes the Classic Chalkboard exact player preview", as
   assert.match(screen, /Classic Chalkboard.*TV preview/);
   assert.match(api, /\| "classic_chalkboard"/);
 });
+
+test("Tap Strips administration exposes exact preview colors and TV overflow guidance", async () => {
+  const screen = await readFile(new URL("../src/ScreenManagement.tsx", import.meta.url), "utf8");
+  assert.match(screen, /value="tap_strips"/);
+  assert.match(screen, /Tap Strips.*TV preview/);
+  assert.match(component, /tapStripsCapacity = 12/);
+  assert.match(component, /Glass color/);
+  assert.match(component, /Name color/);
+  assert.match(component, /overflow/);
+});

@@ -11,7 +11,7 @@ export default function TapStripsLayout({ content }: { content: DisplayContent }
     <ol>{items.map((item, index) => <li className={[
       item.isAvailable ? '' : 'unavailable',
       item.isComingSoon ? 'coming-soon' : ''
-    ].filter(Boolean).join(' ')} key={item.id}>
+    ].filter(Boolean).join(' ')} key={item.id} style={{ animationDelay: `${index * 70}ms` } as CSSProperties}>
       <strong className="tap-number">{index + 1}</strong>
       <div>
         <h2 style={{
