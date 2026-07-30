@@ -19,6 +19,7 @@ public class DisplayController : ControllerBase
     private readonly IPlaylistAdministrationService? playlistService;
     private readonly IEmergencyBroadcastService? emergencyBroadcastService;
     private readonly IDateRangePromotionService? promotionService;
+    private readonly ITapListRepository? tapListRepository;
     private readonly TimeProvider timeProvider;
 
     public DisplayController(
@@ -30,9 +31,10 @@ public class DisplayController : ControllerBase
         IPlaylistAdministrationService? playlistService = null,
         IEmergencyBroadcastService? emergencyBroadcastService = null,
         TimeProvider? timeProvider = null,
-        IDateRangePromotionService? promotionService = null) =>
-        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.emergencyBroadcastService, this.promotionService, this.timeProvider) =
-        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, emergencyBroadcastService, promotionService, timeProvider ?? TimeProvider.System);
+        IDateRangePromotionService? promotionService = null,
+        ITapListRepository? tapListRepository = null) =>
+        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.emergencyBroadcastService, this.promotionService, this.tapListRepository, this.timeProvider) =
+        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, emergencyBroadcastService, promotionService, tapListRepository, timeProvider ?? TimeProvider.System);
 
     [HttpGet("{screenId:guid}/content")]
     [ProducesResponseType<DisplayContentResponse>(StatusCodes.Status200OK)]
@@ -70,6 +72,11 @@ public class DisplayController : ControllerBase
                 venueId, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false);
             response.Promotion = promotion is null ? null : DisplayPromotionResponse.From(promotion);
         }
+        response.Layout = response.Promotion?.TargetLayout is { Length: > 0 } promotionLayout
+            ? ScreenLayout.Normalize(promotionLayout)
+            : ScreenLayout.Normalize(screen.DisplayLayout);
+        response.SplitRatio = ScreenSplitRatio.Normalize(screen.SplitRatio);
+        response.HeroDwellSeconds = HeroDwellSeconds.Normalize(screen.HeroDwellSeconds);
         if (emergencyBroadcastService is not null)
         {
             var broadcast = await emergencyBroadcastService.GetActiveAsync(
@@ -112,6 +119,15 @@ public class DisplayController : ControllerBase
             TitleFont = theme?.TitleFont ?? "Righteous",
             ItemFont = theme?.ItemFont ?? "Caveat"
         };
+        if (string.Equals(response.Layout, "classic_chalkboard", StringComparison.Ordinal))
+        {
+            if (tapListRepository is not null)
+            {
+                response.TapCategories = await tapListRepository.GetCategoriesAsync(venueId, cancellationToken);
+                response.TapItems = await tapListRepository.GetItemsAsync(venueId, cancellationToken);
+            }
+            return Ok(response);
+        }
         var menu = (await menuRepository.GetMenusAsync(venueId, cancellationToken))
             .FirstOrDefault(candidate => candidate.IsActive);
 
@@ -149,11 +165,6 @@ public class DisplayController : ControllerBase
             });
         }
 
-        response.Layout = response.Promotion?.TargetLayout is { Length: > 0 } promotionLayout
-            ? ScreenLayout.Normalize(promotionLayout)
-            : ScreenLayout.Normalize(screen.DisplayLayout);
-        response.SplitRatio = ScreenSplitRatio.Normalize(screen.SplitRatio);
-        response.HeroDwellSeconds = HeroDwellSeconds.Normalize(screen.HeroDwellSeconds);
         if (!string.Equals(response.Layout, ScreenLayout.Default, StringComparison.Ordinal))
         {
             response.Sections = displaySections;

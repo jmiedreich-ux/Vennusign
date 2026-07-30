@@ -37,7 +37,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.025_create_playlist_slides.sql",
                 "Vennu.Data.Scripts.026_create_emergency_broadcasts.sql",
                 "Vennu.Data.Scripts.027_create_date_range_promotions.sql",
-                "Vennu.Data.Scripts.028_create_tap_domain.sql"
+                "Vennu.Data.Scripts.028_create_tap_domain.sql",
+                "Vennu.Data.Scripts.029_add_classic_chalkboard_layout.sql"
             ],
             scriptNames);
     }

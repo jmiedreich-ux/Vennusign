@@ -27,6 +27,16 @@ export type DisplayContent = {
     id: string; name: string; targetLayout?: string | null; title?: string | null;
     body?: string | null; endLocalDate: string;
   } | null;
+  tapCategories?: Array<{
+    id: string; venueId: string; name: string; categoryPrice?: number | null;
+    sortOrder: number; isActive: boolean;
+  }>;
+  tapItems?: Array<{
+    id: string; venueId: string; tapCategoryId?: string | null; name: string; style?: string | null;
+    abv?: number | null; ibu?: number | null; description?: string | null; price: number;
+    glassColor?: string | null; nameColor?: string | null; isAvailable: boolean;
+    isComingSoon: boolean; sortOrder: number;
+  }>;
   theme?: {
     backgroundColor: string;
     accentColor: string;

@@ -1,0 +1,26 @@
+.classic-chalkboard {
+  min-height: 100vh;
+  padding: 2.4rem 3.5rem;
+  color: #ead9a4;
+  background:
+    radial-gradient(circle at 25% 80%, rgba(53, 84, 57, .24), transparent 45%),
+    #172019;
+}
+
+.classic-chalkboard header { text-align: center; }
+.classic-chalkboard header p { margin: 0; color: #b9c8b9; letter-spacing: .18em; text-transform: uppercase; }
+.classic-chalkboard h1 { margin: -.1em 0 .25em; color: #68bfff; font-family: Pacifico, cursive; font-size: clamp(4rem, 8vw, 7rem); text-shadow: 0 0 18px rgba(104, 191, 255, .42); }
+.chalkboard-categories { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 4rem; }
+.chalkboard-category-heading { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid rgba(255,255,255,.2); }
+.chalkboard-category-heading h2 { color: #68bfff; font-family: Kalam, cursive; letter-spacing: .1em; text-transform: uppercase; }
+.chalkboard-category-heading strong { border: 2px solid rgba(255,255,255,.45); border-radius: .35rem; padding: .2rem .8rem; color: #f6f1df; font: 700 1.7rem Caveat, cursive; }
+.classic-chalkboard ul { columns: 2; column-gap: 2rem; list-style: none; padding: 0; }
+.classic-chalkboard li { display: flex; break-inside: avoid; justify-content: space-between; gap: .7rem; padding: .22rem 0; font: 700 clamp(1.2rem, 2.2vw, 2rem) Caveat, cursive; }
+.classic-chalkboard li.unavailable { opacity: .38; text-decoration: line-through; }
+.classic-chalkboard li small { font-size: .75em; }
+.chalkboard-empty { text-align: center; font: 2rem Caveat, cursive; }
+
+@media (max-width: 800px) {
+  .classic-chalkboard { padding: 1.5rem; }
+  .chalkboard-categories { grid-template-columns: 1fr; }
+}

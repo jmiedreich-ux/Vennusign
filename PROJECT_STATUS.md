@@ -83,7 +83,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-09.03 — Classic Chalkboard Drinks Core** is the next package in roadmap order.
+**WP-09.03 — Classic Chalkboard Drinks Core** is ready for review on `wp/09.03-classic-chalkboard-core` (issue #184).
 
 ## Phase 04 Result
 
@@ -124,7 +124,7 @@ None. **WP-09.03 — Classic Chalkboard Drinks Core** is the next package in roa
 
 ## Next Action
 
-Claim and implement **WP-09.03 — Classic Chalkboard Drinks Core**.
+Publish WP-09.03, validate the exact head in GitHub Actions, review, and merge it.
 
 ## Phase 05 Work Packages
 

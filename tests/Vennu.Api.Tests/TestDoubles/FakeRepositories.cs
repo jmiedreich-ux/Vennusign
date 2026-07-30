@@ -98,6 +98,25 @@ internal sealed class FakeMenuRepository : IMenuRepository
     public Task<IReadOnlyCollection<MenuItemTranslation>> GetTranslationsAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyCollection<MenuItemTranslation>>([]);
 }
 
+internal sealed class FakeTapListRepository : ITapListRepository
+{
+    public IReadOnlyCollection<TapCategory> Categories { get; set; } = [];
+    public IReadOnlyCollection<TapItem> Items { get; set; } = [];
+
+    public Task<IReadOnlyCollection<TapCategory>> GetCategoriesAsync(Guid venueId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyCollection<TapCategory>>(Categories.Where(category => category.VenueId == venueId).OrderBy(category => category.SortOrder).ToArray());
+    public Task<IReadOnlyCollection<TapItem>> GetItemsAsync(Guid venueId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyCollection<TapItem>>(Items.Where(item => item.VenueId == venueId).OrderBy(item => item.SortOrder).ToArray());
+    public Task<Guid> CreateCategoryAsync(TapCategory category, CancellationToken cancellationToken = default) => Task.FromResult(category.Id);
+    public Task<Guid> CreateItemAsync(TapItem item, CancellationToken cancellationToken = default) => Task.FromResult(item.Id);
+    public Task<bool> UpdateCategoryAsync(TapCategory category, CancellationToken cancellationToken = default) => Task.FromResult(true);
+    public Task<bool> UpdateItemAsync(TapItem item, CancellationToken cancellationToken = default) => Task.FromResult(true);
+    public Task<bool> DeleteCategoryAsync(Guid venueId, Guid categoryId, CancellationToken cancellationToken = default) => Task.FromResult(true);
+    public Task<bool> DeleteItemAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken = default) => Task.FromResult(true);
+    public Task<int> ReorderCategoriesAsync(Guid venueId, IReadOnlyCollection<Guid> categoryIds, DateTime updatedUtc, CancellationToken cancellationToken = default) => Task.FromResult(categoryIds.Count);
+    public Task<int> ReorderItemsAsync(Guid venueId, IReadOnlyCollection<Guid> itemIds, DateTime updatedUtc, CancellationToken cancellationToken = default) => Task.FromResult(itemIds.Count);
+}
+
 internal sealed class FakeScreenPairingCodeRepository : IScreenPairingCodeRepository
 {
     public Func<ScreenPairingCode, CancellationToken, Task<string>>? CreateAsyncHandler { get; set; }

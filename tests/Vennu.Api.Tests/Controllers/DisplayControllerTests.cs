@@ -161,6 +161,54 @@ public class DisplayControllerTests
     }
 
     [Fact]
+    public async Task GetContent_ReturnsClassicChalkboardTapData_WithoutAnActiveMenu()
+    {
+        var venueId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var screen = new Screen
+        {
+            Id = Guid.NewGuid(),
+            VenueId = venueId,
+            DisplayLayout = "classic_chalkboard"
+        };
+        var screens = new FakeScreenRepository
+        {
+            GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(screen)
+        };
+        var taps = new FakeTapListRepository
+        {
+            Categories =
+            [
+                new TapCategory { Id = categoryId, VenueId = venueId, Name = "Draft Beer", CategoryPrice = 7m, IsActive = true }
+            ],
+            Items =
+            [
+                new TapItem
+                {
+                    Id = Guid.NewGuid(), VenueId = venueId, TapCategoryId = categoryId,
+                    Name = "House Lager", Price = 7m, IsAvailable = false
+                }
+            ]
+        };
+        var sut = new DisplayController(
+            screens,
+            new FakeVenueRepository(),
+            new FakeMenuRepository(),
+            tapListRepository: taps);
+
+        var result = await sut.GetContent(screen.Id, CancellationToken.None);
+
+        var response = Assert.IsType<DisplayContentResponse>(
+            Assert.IsType<OkObjectResult>(result.Result).Value);
+        Assert.Equal("classic_chalkboard", response.Layout);
+        Assert.Equal("Draft Beer", Assert.Single(response.TapCategories).Name);
+        var item = Assert.Single(response.TapItems);
+        Assert.Equal("House Lager", item.Name);
+        Assert.False(item.IsAvailable);
+        Assert.Empty(response.Sections);
+    }
+
+    [Fact]
     public async Task GetContent_IncludesPersistedVenueTheme()
     {
         var venueId = Guid.NewGuid();
