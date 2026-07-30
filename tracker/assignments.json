@@ -1,7 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T04:35:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-07-30T04:38:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-07.05",
+      "branch": "wp/07.05-noto-font-preload",
+      "issue": 130,
+      "status": "In Progress"
+    }
+  ],
   "nextAvailableWorkPackage": "WP-07.05",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
