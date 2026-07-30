@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Vennu.Core.Models;
 using Vennu.DataAccess;
 
@@ -18,6 +19,16 @@ public sealed class TapListRepository(ISqlDataAccess dataAccess) : ITapListRepos
         FROM dbo.TapItems
         WHERE VenueId = @VenueId
         ORDER BY SortOrder, Id;
+        """;
+
+    private const string DeleteCategorySql = """
+        DELETE FROM dbo.TapCategories WHERE VenueId = @VenueId AND Id = @Id;
+        SELECT CONVERT(BIT, CASE WHEN @@ROWCOUNT > 0 THEN 1 ELSE 0 END) AS Removed;
+        """;
+
+    private const string DeleteItemSql = """
+        DELETE FROM dbo.TapItems WHERE VenueId = @VenueId AND Id = @Id;
+        SELECT CONVERT(BIT, CASE WHEN @@ROWCOUNT > 0 THEN 1 ELSE 0 END) AS Removed;
         """;
 
     public async Task<IReadOnlyCollection<TapCategory>> GetCategoriesAsync(
@@ -50,6 +61,64 @@ public sealed class TapListRepository(ISqlDataAccess dataAccess) : ITapListRepos
         return await dataAccess.UpdateAsync(item, cancellationToken).ConfigureAwait(false) > 0;
     }
 
+    public Task<bool> DeleteCategoryAsync(Guid venueId, Guid categoryId, CancellationToken cancellationToken = default) =>
+        DeleteAsync(DeleteCategorySql, venueId, categoryId, cancellationToken);
+
+    public Task<bool> DeleteItemAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken = default) =>
+        DeleteAsync(DeleteItemSql, venueId, itemId, cancellationToken);
+
+    public Task<int> ReorderCategoriesAsync(
+        Guid venueId, IReadOnlyCollection<Guid> categoryIds, DateTime updatedUtc,
+        CancellationToken cancellationToken = default) =>
+        ReorderAsync("TapCategories", venueId, categoryIds, updatedUtc, cancellationToken);
+
+    public Task<int> ReorderItemsAsync(
+        Guid venueId, IReadOnlyCollection<Guid> itemIds, DateTime updatedUtc,
+        CancellationToken cancellationToken = default) =>
+        ReorderAsync("TapItems", venueId, itemIds, updatedUtc, cancellationToken);
+
+    private async Task<bool> DeleteAsync(
+        string sql, Guid venueId, Guid id, CancellationToken cancellationToken) =>
+        (await dataAccess.ExecuteSqlQueryAsync<RemovalResult, object>(
+            sql,
+            new { VenueId = Require(venueId, nameof(venueId)), Id = Require(id, nameof(id)) },
+            cancellationToken).ConfigureAwait(false)).Single().Removed;
+
+    private async Task<int> ReorderAsync(
+        string table, Guid venueId, IReadOnlyCollection<Guid> ids, DateTime updatedUtc,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(ids);
+        var sql = $"""
+            SET XACT_ABORT ON;
+            BEGIN TRANSACTION;
+            DECLARE @Requested TABLE (Id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY, SortOrder INT NOT NULL UNIQUE);
+            INSERT INTO @Requested (Id, SortOrder)
+            SELECT Id, SortOrder FROM OPENJSON(@RowsJson)
+            WITH (Id UNIQUEIDENTIFIER '$.id', SortOrder INT '$.sortOrder');
+            DECLARE @ExpectedCount INT = (SELECT COUNT(*) FROM dbo.{table} WHERE VenueId = @VenueId);
+            IF @ExpectedCount <> (SELECT COUNT(*) FROM @Requested)
+               OR EXISTS (SELECT 1 FROM @Requested WHERE SortOrder < 0 OR SortOrder >= @ExpectedCount)
+               OR EXISTS (
+                  SELECT 1 FROM @Requested requested
+                  LEFT JOIN dbo.{table} row ON row.Id = requested.Id AND row.VenueId = @VenueId
+                  WHERE row.Id IS NULL)
+                THROW 51000, 'Order must contain every venue row exactly once.', 1;
+            DECLARE @Offset INT = (SELECT ISNULL(MAX(SortOrder), 0) + @ExpectedCount + 1 FROM dbo.{table} WHERE VenueId = @VenueId);
+            UPDATE dbo.{table} SET SortOrder = SortOrder + @Offset WHERE VenueId = @VenueId;
+            UPDATE row SET SortOrder = requested.SortOrder, UpdatedUtc = @UpdatedUtc
+            FROM dbo.{table} row INNER JOIN @Requested requested ON requested.Id = row.Id
+            WHERE row.VenueId = @VenueId;
+            COMMIT TRANSACTION;
+            SELECT @ExpectedCount AS ChangedCount;
+            """;
+        var rowsJson = JsonSerializer.Serialize(ids.Select((id, sortOrder) => new { id, sortOrder }), JsonSerializerOptions.Web);
+        return (await dataAccess.ExecuteSqlQueryAsync<OrderResult, object>(
+            sql,
+            new { VenueId = Require(venueId, nameof(venueId)), RowsJson = rowsJson, UpdatedUtc = updatedUtc },
+            cancellationToken).ConfigureAwait(false)).Single().ChangedCount;
+    }
+
     private async Task<Guid> InsertAsync<T>(T entity, CancellationToken cancellationToken) where T : class
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -72,4 +141,7 @@ public sealed class TapListRepository(ISqlDataAccess dataAccess) : ITapListRepos
 
     private static Guid Require(Guid value, string parameterName) =>
         value == Guid.Empty ? throw new ArgumentException("Identifier cannot be empty.", parameterName) : value;
+
+    public sealed class RemovalResult { public bool Removed { get; set; } }
+    public sealed class OrderResult { public int ChangedCount { get; set; } }
 }

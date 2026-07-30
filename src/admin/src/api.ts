@@ -59,6 +59,16 @@ export type DateRangePromotion = {
   id: string; venueId: string; name: string; startLocalDate: string; endLocalDate: string;
   targetLayout?: string; title?: string; body?: string; priority: number; isEnabled: boolean;
 };
+export type TapCategory = {
+  id: string; venueId: string; name: string; categoryPrice?: number;
+  sortOrder: number; isActive: boolean;
+};
+export type TapItem = {
+  id: string; venueId: string; tapCategoryId?: string; name: string; style?: string;
+  abv?: number; ibu?: number; description?: string; price: number;
+  glassColor?: string; nameColor?: string; isAvailable: boolean; isComingSoon: boolean; sortOrder: number;
+};
+export type TapListSnapshot = { categories: TapCategory[]; items: TapItem[] };
 export type MenuSection = {
   id: string; venueId: string; menuId: string; name: string;
   sortOrder: number; isActive: boolean; createdUtc: string; updatedUtc: string;
@@ -416,6 +426,32 @@ export async function saveDateRangePromotion(configuration: AdminConfiguration, 
 }
 export async function archiveDateRangePromotion(configuration: AdminConfiguration, apiKey: string, venueId: string, id: string): Promise<void> {
   await promotionRequest(configuration, apiKey, venueId, `/${id}`, { method: "DELETE" });
+}
+
+async function tapRequest(configuration: AdminConfiguration, apiKey: string, venueId: string, path = "", init?: RequestInit) {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues/${venueId}/tap-list${path}`, {
+    ...init, headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to manage the tap list.");
+  return response;
+}
+export async function loadTapList(configuration: AdminConfiguration, apiKey: string, venueId: string): Promise<TapListSnapshot> {
+  return (await tapRequest(configuration, apiKey, venueId)).json() as Promise<TapListSnapshot>;
+}
+export async function saveTapCategory(configuration: AdminConfiguration, apiKey: string, venueId: string, value: Omit<TapCategory, "id" | "venueId" | "sortOrder">, id?: string): Promise<TapCategory> {
+  return (await tapRequest(configuration, apiKey, venueId, `/categories${id ? `/${id}` : ""}`, { method: id ? "PUT" : "POST", body: JSON.stringify(value) })).json() as Promise<TapCategory>;
+}
+export async function deleteTapCategory(configuration: AdminConfiguration, apiKey: string, venueId: string, id: string): Promise<void> {
+  await tapRequest(configuration, apiKey, venueId, `/categories/${id}`, { method: "DELETE" });
+}
+export async function saveTapItem(configuration: AdminConfiguration, apiKey: string, venueId: string, value: Omit<TapItem, "id" | "venueId" | "sortOrder">, id?: string): Promise<TapItem> {
+  return (await tapRequest(configuration, apiKey, venueId, `/items${id ? `/${id}` : ""}`, { method: id ? "PUT" : "POST", body: JSON.stringify(value) })).json() as Promise<TapItem>;
+}
+export async function deleteTapItem(configuration: AdminConfiguration, apiKey: string, venueId: string, id: string): Promise<void> {
+  await tapRequest(configuration, apiKey, venueId, `/items/${id}`, { method: "DELETE" });
+}
+export async function reorderTapRows(configuration: AdminConfiguration, apiKey: string, venueId: string, kind: "categories" | "items", ids: string[]): Promise<void> {
+  await tapRequest(configuration, apiKey, venueId, `/${kind}/order`, { method: "PUT", body: JSON.stringify({ ids }) });
 }
 
 async function menuRequest(configuration: AdminConfiguration, apiKey: string, venueId: string, path = "", init?: RequestInit) {
