@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-09.05
-- Status: In Review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/09.05-tap-strips-core`
 - Issue: #190
-- Pull request: pending
-- Latest reviewed commit: pending
-- Merge commit: pending
-- CI state: pending GitHub Actions
+- Pull request: #191
+- Latest reviewed commit: `8ee18b8`
+- Merge commit: `9e31551`
+- CI state: GitHub Actions run #425 passed
 
 ## Completed This Session
 
@@ -29,7 +29,7 @@
 
 ## Validation
 
-- Results: pending GitHub Actions.
+- Results: restore, Release build, admin/display production builds/tests, and required non-integration tests passed in Actions run #425.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
@@ -38,7 +38,7 @@
 
 ## Exact Next Action
 
-Merge WP-09.05 after exact-head Actions and review, then implement WP-09.06.
+Claim and implement WP-09.06 — Tap Strips Administration and Motion Polish.
 
 ## Do Not Redo or Reverse
 
