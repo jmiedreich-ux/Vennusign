@@ -46,10 +46,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-05.10 — Phase 05 Validation and Closure
 - Phase 05 — Admin CMS Core Editing
 - WP-06.01 — Display Layout Contract and Registry Foundation
+- WP-06.02 — Photo Grid Core Layout
 
 ## Active Work Package
 
-**WP-06.02 — Photo Grid Core Layout** is in review.
+None. **WP-06.03 — Photo Grid Merchandising States** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -71,7 +72,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate, review, and merge **WP-06.02 — Photo Grid Core Layout** before beginning WP-06.03.
+Claim and implement **WP-06.03 — Photo Grid Merchandising States**.
 
 ## Phase 05 Work Packages
 
