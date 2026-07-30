@@ -52,7 +52,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-06.05 — Classic Diner Core Layout** is the next package in roadmap order.
+**WP-06.05 — Classic Diner Core Layout** is in review.
 
 ## Phase 04 Result
 
@@ -74,7 +74,7 @@ None. **WP-06.05 — Classic Diner Core Layout** is the next package in roadmap 
 
 ## Next Action
 
-Claim and implement **WP-06.05 — Classic Diner Core Layout**.
+Validate, review, and merge **WP-06.05 — Classic Diner Core Layout**.
 
 ## Phase 05 Work Packages
 
