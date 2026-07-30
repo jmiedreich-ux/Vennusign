@@ -2,6 +2,7 @@ using Vennu.Api.Contracts.Display;
 using Vennu.Api.Controllers;
 using Vennu.Api.Tests.TestDoubles;
 using Vennu.Core.Models;
+using Vennu.Data.Repositories;
 
 namespace Vennu.Api.Tests.Controllers;
 
