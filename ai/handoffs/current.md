@@ -2,43 +2,41 @@
 
 ## Work Package
 
-- ID: WP-07.03
-- Status: Complete and merged
+- ID: WP-07.04
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/07.03-neon-chalkboard`
-- Issue: #124
-- Pull request: #125
-- Latest reviewed commit: `41009a1`
-- Merge commit: `df29e2c`
-- CI state: GitHub Actions run #301 passed
+- Branch: `wp/07.04-neon-motion`
+- Issue: #127
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Registered the Neon Chalkboard through the additive layout registry.
-- Added the static neon frame, TV menu columns, pricing, and section dividers.
-- Added the visible `all_layouts` selection soft lock.
+- Added irregular title flicker and theme-intensity glow breathing.
+- Added staggered chalk draw-in, chalk grain, and scanlines.
+- Added a complete reduced-motion static override.
 
 ## Decisions
 
-- Existing layout defaults and fallback behavior remain unchanged.
-- Motion, texture, scanlines, and reduced-motion behavior remain in WP-07.04.
+- Motion remains scoped to Neon Chalkboard CSS.
+- Player lifecycle, realtime, and cache paths remain unchanged.
 
 ## Validation
 
-- Results: solution build, 25 admin tests, 48 display tests, and non-integration unit tests passed in Actions run #301.
+- Results: GitHub Actions pending.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
 
-- WP-07.04 — Neon Motion, Texture, and Accessibility.
+- Validate, review, and merge WP-07.04.
 
 ## Exact Next Action
 
-Claim and implement WP-07.04.
+Publish WP-07.04 and validate its exact PR head in GitHub Actions.
 
 ## Do Not Redo or Reverse
 
-- Do not add WP-07.04 animation, texture, scanlines, or accessibility behavior.
+- Do not add WP-07.05 font assets or later layout behavior.

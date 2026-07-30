@@ -1,7 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-30T04:13:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-07-30T04:31:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-07.04",
+      "branch": "wp/07.04-neon-motion",
+      "issue": 127,
+      "status": "In Progress"
+    }
+  ],
   "nextAvailableWorkPackage": "WP-07.04",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

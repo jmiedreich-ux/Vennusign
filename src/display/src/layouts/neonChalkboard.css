@@ -8,6 +8,28 @@
   font-family: var(--vennu-item-font, Caveat), cursive;
 }
 
+.neon-chalkboard::before,
+.neon-chalkboard::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.neon-chalkboard::before {
+  opacity: 0.18;
+  background-image:
+    radial-gradient(circle at 17% 23%, #ffffff 0 0.05rem, transparent 0.08rem),
+    radial-gradient(circle at 73% 61%, #ffffff 0 0.04rem, transparent 0.07rem);
+  background-size: 2.9rem 3.7rem, 4.3rem 3.1rem;
+}
+
+.neon-chalkboard::after {
+  opacity: 0.12;
+  background: repeating-linear-gradient(to bottom, transparent 0 0.28rem, #ffffff 0.31rem);
+}
+
 .neon-chalkboard__frame {
   position: absolute;
   inset: clamp(1rem, 2vw, 2rem);
@@ -18,6 +40,7 @@
   box-shadow:
     0 0 var(--vennu-frame-glow, 0.7rem) var(--vennu-glow-color, #00e5ff),
     inset 0 0 var(--vennu-frame-glow, 0.7rem) var(--vennu-glow-color, #00e5ff);
+  animation: neon-glow-breathe 4.8s ease-in-out infinite alternate;
 }
 
 .neon-chalkboard__frame::before,
@@ -76,6 +99,7 @@
   line-height: 0.9;
   text-align: right;
   text-shadow: 0 0 var(--vennu-title-glow, 0.55rem) var(--vennu-glow-color, #00e5ff);
+  animation: neon-title-flicker 7.3s steps(1, end) infinite;
 }
 
 .neon-chalkboard__columns {
@@ -88,6 +112,8 @@
 .neon-chalkboard__section {
   break-inside: avoid;
   margin-bottom: clamp(1.5rem, 3vw, 3rem);
+  animation: chalk-draw-in 0.72s both;
+  animation-delay: calc(var(--neon-section-index, 0) * 90ms);
 }
 
 .neon-chalkboard__section h2 {
@@ -151,5 +177,35 @@
 @media (min-width: 1600px) {
   .neon-chalkboard__columns {
     column-count: 3;
+  }
+}
+
+@keyframes neon-title-flicker {
+  0%, 7%, 9%, 11%, 32%, 35%, 64%, 100% { opacity: 1; }
+  8%, 10%, 33%, 34% { opacity: 0.68; }
+  65% { opacity: 0.84; }
+}
+
+@keyframes neon-glow-breathe {
+  from { opacity: 0.86; }
+  to { opacity: 1; }
+}
+
+@keyframes chalk-draw-in {
+  from { opacity: 0; transform: translateY(0.8rem); clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; transform: translateY(0); clip-path: inset(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-chalkboard__frame,
+  .neon-chalkboard__header h1,
+  .neon-chalkboard__section {
+    animation: none;
+  }
+
+  .neon-chalkboard__section {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
   }
 }
