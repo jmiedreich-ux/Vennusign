@@ -12,4 +12,14 @@ public interface IVenueThemeService
         string accentColor,
         string fontFamily,
         CancellationToken cancellationToken = default);
+
+    Task<VenueThemeResponse> UpdateAdvancedAsync(
+        Guid venueId,
+        VenueAdvancedThemeUpdateRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<VenueThemeResponse> ApplyPresetAsync(
+        Guid venueId,
+        string presetKey,
+        CancellationToken cancellationToken = default);
 }
