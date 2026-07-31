@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T01:10:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-10.02",
+  "updatedUtc": "2026-07-31T02:00:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-10.04",
+      "branch": "wp/10.04-android-boot-lifecycle",
+      "issue": 217,
+      "status": "review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-10.05",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

@@ -4,11 +4,13 @@ import test from 'node:test';
 
 const androidRoot = new URL('../../tv/android/', import.meta.url);
 const readAndroid = (path) => readFile(new URL(path, androidRoot), 'utf8');
-const [manifest, activity, appGradle, networkPolicy] = await Promise.all([
+const [manifest, activity, appGradle, networkPolicy, bootReceiver, launchState] = await Promise.all([
   readAndroid('app/src/main/AndroidManifest.xml'),
   readAndroid('app/src/main/java/com/vennu/tv/MainActivity.kt'),
   readAndroid('app/build.gradle.kts'),
-  readAndroid('app/src/main/res/xml/network_security_config.xml')
+  readAndroid('app/src/main/res/xml/network_security_config.xml'),
+  readAndroid('app/src/main/java/com/vennu/tv/BootReceiver.kt'),
+  readAndroid('app/src/main/java/com/vennu/tv/LaunchStatePreferences.kt')
 ]);
 
 test('declares a remote-first TV launcher with a strict network policy', () => {
@@ -19,6 +21,28 @@ test('declares a remote-first TV launcher with a strict network policy', () => {
   assert.match(manifest, /android:usesCleartextTraffic="false"/);
   assert.match(manifest, /android:networkSecurityConfig="@xml\/network_security_config"/);
   assert.match(networkPolicy, /cleartextTrafficPermitted="false"/);
+});
+
+test('keeps boot launch opt-in and starts the shell only after explicit enablement', () => {
+  assert.match(manifest, /android\.permission\.RECEIVE_BOOT_COMPLETED/);
+  assert.match(manifest, /android\.permission\.ACCESS_NETWORK_STATE/);
+  assert.match(manifest, /android:name="\.BootReceiver"/);
+  assert.match(manifest, /android\.intent\.action\.BOOT_COMPLETED/);
+  assert.match(bootReceiver, /Intent\.ACTION_BOOT_COMPLETED/);
+  assert.match(bootReceiver, /isBootLaunchEnabled/);
+  assert.match(launchState, /getBoolean\(BOOT_LAUNCH_ENABLED, false\)/);
+  assert.match(activity, /getQueryParameter\(BOOT_QUERY\)/);
+});
+
+test('bounds lifecycle and network recovery until a successful commit', () => {
+  assert.match(activity, /registerDefaultNetworkCallback/);
+  assert.match(activity, /if \(playerState == PlayerState\.ERROR\) requestAutomaticRecovery/);
+  assert.match(activity, /timeAway >= STALE_FOREGROUND_MS/);
+  assert.match(activity, /automaticReloads >= MAX_AUTOMATIC_RELOADS/);
+  assert.match(activity, /AUTOMATIC_RELOAD_COOLDOWN_MS/);
+  assert.match(activity, /automaticReloads = 0/);
+  assert.match(activity, /webView\.onPause\(\)/);
+  assert.match(activity, /webView\.onResume\(\)/);
 });
 
 test('injects the shared platform contract at document start', () => {
@@ -33,17 +57,17 @@ test('injects the shared platform contract at document start', () => {
 });
 
 test('persists only a trusted valid screen route and resumes it after restart', () => {
-  assert.match(activity, /getSharedPreferences\(LAUNCH_STATE_PREFERENCES, MODE_PRIVATE\)/);
+  assert.match(activity, /getSharedPreferences\(LaunchStatePreferences\.NAME, MODE_PRIVATE\)/);
   assert.match(activity, /recordTrustedNavigation/);
   assert.match(activity, /if \(!isAllowed\(url\)\) return/);
   assert.match(activity, /DISPLAY_PATH\.matchEntire/);
   assert.match(activity, /UUID\.fromString/);
-  assert.match(activity, /putString\(SCREEN_ID_KEY, screenId\)/);
+  assert.match(activity, /putString\(LaunchStatePreferences\.SCREEN_ID, screenId\)/);
   assert.match(activity, /"\/display\/\$\{Uri\.encode\(it\)\}"/);
 });
 
 test('clears corrupted state and supports a narrow same-origin re-pair route', () => {
-  assert.match(activity, /remove\(SCREEN_ID_KEY\)/);
+  assert.match(activity, /remove\(LaunchStatePreferences\.SCREEN_ID\)/);
   assert.match(activity, /url\.path == "\/pair"/);
   assert.match(activity, /getQueryParameter\(RESET_QUERY\) == "1"/);
   assert.doesNotMatch(activity, /addJavascriptInterface/);
