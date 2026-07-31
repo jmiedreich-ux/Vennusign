@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T22:18:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-11.07",
-      "owner": "Codex",
-      "issue": 270,
-      "branch": "wp/11.07-checkout-launch-return",
-      "status": "Ready for review"
-    }
-  ],
+  "updatedUtc": "2026-07-31T22:29:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-11.08",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
