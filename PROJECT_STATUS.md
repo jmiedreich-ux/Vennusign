@@ -119,7 +119,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. Phase 11 is complete. The bounded Phase 12 work-package breakdown is next.
+No implementation package is active. Phase 11 is complete. Phase 12 is now bounded into WP-12.01 through WP-12.10; **WP-12.01 — POS Connection Domain and Provider Contracts** is next.
 
 ## Phase 04 Result
 
@@ -181,7 +181,7 @@ No implementation package is active. Phase 11 is complete. The bounded Phase 12 
 
 ## Next Action
 
-Create and document the bounded sequential Phase 12 work-package breakdown, then begin WP-12.01.
+Claim and implement **WP-12.01 — POS Connection Domain and Provider Contracts**.
 
 ## Phase 05 Work Packages
 
@@ -210,3 +210,7 @@ Create and document the bounded sequential Phase 12 work-package breakdown, then
 ## Phase 11 Work Packages
 
 - WP-11.01 through WP-11.10 are defined in `docs/phase-plans/phase-11-upgrade-prompts-billing-ux.md`.
+
+## Phase 12 Work Packages
+
+- WP-12.01 through WP-12.10 are defined in `docs/phase-plans/phase-12-pos-integration.md`.
