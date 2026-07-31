@@ -9,6 +9,16 @@ function cleanVersion(value, fallback) {
   return version || fallback;
 }
 
+export function readPlatformBootstrap(search) {
+  const parameters = new URLSearchParams(search);
+  const platform = normalizePlatform(parameters.get('vennuPlatform'));
+  if (platform === 'browser') return undefined;
+  return {
+    platform,
+    appVersion: cleanVersion(parameters.get('vennuVersion'), 'unknown')
+  };
+}
+
 export function resolvePlatformLaunch(pathname, bridge, resetPairing = false) {
   const platform = normalizePlatform(bridge?.platform);
   const appVersion = cleanVersion(bridge?.appVersion, platform === 'browser' ? 'web' : 'unknown');

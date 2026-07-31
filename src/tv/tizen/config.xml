@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets"
+        xmlns:tizen="http://tizen.org/ns/widgets"
+        id="https://vennu.app/tv/tizen"
+        version="0.1.0"
+        viewmodes="maximized">
+    <tizen:application id="VennuTvPkg.Display"
+                       package="VennuTvPkg"
+                       required_version="6.0" />
+    <tizen:profile name="tv-samsung" />
+    <content src="index.html" />
+    <name>Vennu TV</name>
+    <icon src="icon.svg" />
+    <access origin="https://display.vennu.app" subdomains="false" />
+    <feature name="http://tizen.org/feature/screen.size.all" />
+    <tizen:privilege name="http://tizen.org/privilege/application.launch" />
+    <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice" />
+    <tizen:setting screen-orientation="landscape"
+                   context-menu="disable"
+                   background-support="disable"
+                   encryption="disable"
+                   install-location="auto"
+                   hwkey-event="enable" />
+</widget>

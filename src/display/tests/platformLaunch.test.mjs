@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { resolvePlatformLaunch, supportedTvPlatforms } from '../src/platformLaunch.mjs';
+import {
+  readPlatformBootstrap,
+  resolvePlatformLaunch,
+  supportedTvPlatforms
+} from '../src/platformLaunch.mjs';
 
 const app = await readFile(new URL('../src/App.tsx', import.meta.url), 'utf8');
 
@@ -36,4 +40,12 @@ test('supports only the approved TV identifiers and feeds pairing registration',
   assert.match(app, /window\.__VENNU_PLATFORM__/);
   assert.match(app, /platform=\{launch\.platform\}/);
   assert.match(app, /appVersion=\{launch\.appVersion\}/);
+});
+
+test('accepts only approved sanitized hosted-wrapper query metadata', () => {
+  assert.deepEqual(readPlatformBootstrap('?vennuPlatform=tizen&vennuVersion=%202.4.0%20'), {
+    platform: 'tizen', appVersion: '2.4.0'
+  });
+  assert.equal(readPlatformBootstrap('?vennuPlatform=browser'), undefined);
+  assert.equal(readPlatformBootstrap('?vennuPlatform=unknown&vennuVersion=bad'), undefined);
 });

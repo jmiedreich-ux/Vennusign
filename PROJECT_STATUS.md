@@ -98,7 +98,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-10.07 — Samsung Tizen Package** is the next package in roadmap order.
+**WP-10.07 — Samsung Tizen Package** is in review.
 
 ## Phase 04 Result
 
@@ -146,7 +146,7 @@ None. **WP-10.07 — Samsung Tizen Package** is the next package in roadmap orde
 
 ## Next Action
 
-Claim and implement **WP-10.07 — Samsung Tizen Package**.
+Validate and merge **WP-10.07**, then claim **WP-10.08 — LG webOS Package**.
 
 ## Phase 05 Work Packages
 
