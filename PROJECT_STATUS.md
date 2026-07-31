@@ -97,10 +97,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-10.06 — Android and Fire Distribution Profiles
 - WP-10.07 — Samsung Tizen Package
 - WP-10.08 — LG webOS Package
+- WP-10.09 — HaaS Pre-Registration and Fleet Version Health
 
 ## Active Work Package
 
-**WP-10.09 — HaaS Pre-Registration and Fleet Version Health** is in review on issue #232.
+No implementation package is active. **WP-10.10 — Phase 10 Validation and Closure** is next.
 
 ## Phase 04 Result
 
@@ -148,7 +149,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Publish and validate **WP-10.09 — HaaS Pre-Registration and Fleet Version Health** through GitHub Actions.
+Claim and implement **WP-10.10 — Phase 10 Validation and Closure**.
 
 ## Phase 05 Work Packages
 
