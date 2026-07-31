@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T06:40:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "RWP-11.01",
-      "owner": "ChatGPT",
-      "branch": "rwp/11.01-venue-admin-billing-ux-reconciliation",
-      "issue": 264,
-      "status": "Review"
-    }
-  ],
+  "updatedUtc": "2026-07-31T06:48:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-11.06",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

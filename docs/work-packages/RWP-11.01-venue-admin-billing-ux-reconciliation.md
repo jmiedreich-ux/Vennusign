@@ -2,7 +2,7 @@
 
 ## Status
 
-In Review.
+Complete.
 
 ## Goal
 
@@ -36,14 +36,16 @@ Relocate the customer upgrade experience delivered by WP-11.01 through WP-11.05 
 
 - Issue: #264
 - Branch: `rwp/11.01-venue-admin-billing-ux-reconciliation`
-- Pull request: pending
+- Pull request: #265
 
 ## Validation Evidence
 
 - Local Venue Admin tests: 17 passed; production build passed.
 - Local Super Admin tests: 73 passed; production build passed.
 - Local .NET validation: not run because the SDK is unavailable in this workspace.
-- GitHub Actions: pending and authoritative.
+- GitHub Actions run #565: passed against reviewed head `f3b002516f6d25c5efe300451e6eb917679602ca`.
+- Merge commit: `484f2fb4be7695089961a2da3f68981b1d6be57f`.
+- Review: `CHATGPT APPROVED` recorded against the exact reviewed head.
 - Skipped: Azure SQL, external Stripe/service, credentialed, hosted-infrastructure, container, and all other integration-type tests under the standing owner exception.
 
 ## Next
