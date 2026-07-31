@@ -47,3 +47,22 @@ export function selectUpgradeOpportunity(effectiveFeatures, dismissed = new Set(
     effectiveFeatures[item.featureKey]?.enabled === false && !dismissed.has(item.featureKey)
   );
 }
+
+const panelByFeature = Object.freeze({
+  all_layouts: 'design',
+  video_wall: 'design',
+  white_label: 'design',
+  html_editor: 'design',
+  quick_update: 'menu',
+  bilingual_display: 'menu',
+  ai_translation: 'menu',
+  pos_integration: 'menu',
+  staff_app: 'menu',
+  meal_periods: 'scheduling',
+  happy_hour: 'scheduling',
+  multi_location: 'operations'
+});
+
+export function upgradePanelForFeature(featureKey) {
+  return panelByFeature[featureKey] ?? 'operations';
+}

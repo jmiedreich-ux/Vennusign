@@ -105,7 +105,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-11.03 — Inline Feature Hints** is next.
+**WP-11.03 — Inline Feature Hints** is in review on issue #245.
 
 ## Phase 04 Result
 
@@ -160,7 +160,7 @@ No implementation package is active. **WP-11.03 — Inline Feature Hints** is ne
 
 ## Next Action
 
-Claim and implement **WP-11.03 — Inline Feature Hints**.
+Publish and validate **WP-11.03 — Inline Feature Hints** through GitHub Actions.
 
 ## Phase 05 Work Packages
 

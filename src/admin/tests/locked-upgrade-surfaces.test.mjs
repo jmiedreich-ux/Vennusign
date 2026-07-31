@@ -26,10 +26,10 @@ test('locked section preview shows one concrete benefit and keeps its mockup non
   assert.match(styles, /filter: blur\(\.3px\)/);
 });
 
-test('venue detail selects one opportunity and preserves every existing workflow', () => {
+test('venue detail retains one selected upgrade surface and every existing workflow', () => {
   assert.match(venue, /selectUpgradeOpportunity\(detail\.features/);
-  assert.match(venue, /<LockedSectionPreview/);
-  assert.equal((venue.match(/<LockedSectionPreview/g) ?? []).length, 1);
+  assert.match(venue, /const inlineHint = upgradeOpportunity/);
+  assert.match(preview, /export default function LockedSectionPreview/);
   for (const workflow of ['ScreenManagement', 'ThemeBuilder', 'MenuSectionsEditor', 'HappyHourAdministration']) {
     assert.match(venue, new RegExp(`<${workflow}`));
   }
