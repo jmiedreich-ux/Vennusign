@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T03:34:25Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-10.10",
+  "updatedUtc": "2026-07-31T03:38:30Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-10.10",
+      "owner": "ChatGPT",
+      "branch": "wp/10.10-phase-10-validation-closure",
+      "issue": 235,
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "Phase 11 AWP breakdown",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
