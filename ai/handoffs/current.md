@@ -2,17 +2,17 @@
 
 ## Work Package
 
-- ID: WP-12.02
-- Status: Ready for review
+- ID: WP-12.03
+- Status: Available
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/12.02-square-oauth-connection-flow`
-- Latest commit: pending
-- Issue: #287
+- Branch: pending
+- Latest commit: `8eed66a6412e0750be3c7aa8250fee91df7f4236` (WP-12.02 reviewed head)
+- Issue: pending
 - Pull request: pending
-- CI state: pending publication
+- CI state: WP-12.02 Actions run #612 passed
 
 ## Completed This Session
 
@@ -26,6 +26,7 @@
 - Reviewed and merged WP-12.01 through PR #285.
 - Added the Square OAuth connect, callback, credential persistence, status, and revoke-before-delete flow.
 - Added protected single-use state and allowlisted server-owned provider/return URLs.
+- Reviewed and merged WP-12.02 through PR #288.
 
 ## Files Changed
 
@@ -45,7 +46,7 @@
 
 ## Remaining Work
 
-- Publish, validate, review, and merge WP-12.02.
+- WP-12.03 — Square Catalog Import.
 
 ## Known Risks or Blockers
 
@@ -53,7 +54,7 @@
 
 ## Exact Next Action
 
-- Publish WP-12.02 and inspect exact-head GitHub Actions validation.
+- Claim WP-12.03 and implement its idempotent Square catalog import through the existing menu domain.
 
 ## Do Not Redo or Reverse
 
