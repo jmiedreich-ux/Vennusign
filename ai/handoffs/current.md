@@ -2,17 +2,17 @@
 
 ## Work Package
 
-- ID: WP-12.01
-- Status: Ready for review
+- ID: WP-12.02
+- Status: Available
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/12.01-pos-connection-domain-provider-contracts`
-- Latest commit: pending
-- Issue: #284
-- Pull request: pending publication
-- CI state: GitHub Actions pending publication
+- Branch: pending
+- Latest commit: `adb4406966908d3970618072a96da1824b35e573` (WP-12.01 reviewed head)
+- Issue: pending
+- Pull request: pending
+- CI state: WP-12.01 Actions run #605 passed
 
 ## Completed This Session
 
@@ -23,6 +23,7 @@
 - Added a service boundary that protects credentials before persistence and returns credential-free summaries.
 - Added the ASP.NET Core Data Protection implementation and provider-neutral catalog/inventory contracts.
 - Added focused repository, service, protector, and migration tests.
+- Reviewed and merged WP-12.01 through PR #285.
 
 ## Files Changed
 
@@ -37,23 +38,22 @@
 ## Validation
 
 - Commands: `git diff --check`; `jq empty tracker/assignments.json`; source and secret review.
-- Results: static checks passed locally. Actions run #604 passed restore, Release build, all frontend/package checks, and 313 of 314 .NET unit tests; its single failure was an overly broad new summary-reflection assertion, now corrected and pending exact-head revalidation.
+- Results: GitHub Actions run #605 passed restore, Release build, frontend/package checks, migration inventory, and all required unit tests against `adb4406966908d3970618072a96da1824b35e573`.
 - Skipped checks and reason: integration and external-provider tests remain skipped by standing owner instruction.
 
 ## Remaining Work
 
-- Publish, validate, review, and merge WP-12.01.
-- Then continue with WP-12.02 — Square OAuth Connection Flow.
+- WP-12.02 — Square OAuth Connection Flow.
 
 ## Known Risks or Blockers
 
-- No blocker. Deployment must persist and protect the Data Protection key ring before OAuth is enabled; OAuth remains WP-12.02 scope.
+- No blocker. Deployment must persist and protect the Data Protection key ring before production OAuth credentials are stored.
 
 ## Exact Next Action
 
-- Publish WP-12.01 and inspect the exact-head GitHub Actions result.
+- Claim WP-12.02 and implement its claim-bound Square OAuth connect, callback, disconnect, and status flow.
 
 ## Do Not Redo or Reverse
 
-- Do not begin OAuth, webhook, catalog import, or provider calls in WP-12.01.
+- Do not redo the POS connection domain, credential protector, migration 035, or provider-neutral contracts.
 - Do not persist plaintext credentials or add provider-specific SDK types to shared contracts.
