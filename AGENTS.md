@@ -66,6 +66,18 @@ Repository and GitHub state are the source of truth. Chat history is supporting 
 - When GitHub prevents a formal approving review because the reviewing identity is also the PR author, ChatGPT must record an explicit top-level review comment containing `CHATGPT APPROVED`, the reviewed head commit SHA, validation status, and any residual risks. That recorded decision is the required approval gate.
 - Approval is invalid if required GitHub Actions checks are failing or incomplete, acceptance criteria are incomplete, unresolved blocking comments remain, documentation is stale, secrets are exposed, or the reviewed commit no longer matches the PR head.
 
+## Gap and Remediation Workflow
+
+- Testing, review, and implementation agents record newly discovered gaps as GitHub issues first. They must not create, renumber, reprioritize, or insert work packages directly.
+- Use the `gap-found` label for a discovered gap. Add `remediation` only after planning review confirms remediation work is required, plus the affected phase label.
+- A small defect that stays within the active package's approved scope may be fixed there only when the issue and package record explicitly link the decision.
+- A substantial architectural, cross-package, or historical gap must be promoted by the designated planning agent to a Remediation Work Package (RWP) before implementation.
+- RWP IDs use `RWP-<origin-phase>.<sequence>`, such as `RWP-05.02`. They supplement completed roadmap history; never renumber or rewrite completed WPs.
+- Promotion requires an approved GitHub issue with problem statement, evidence, affected architecture, acceptance criteria, dependencies, queue position, and migration or reconciliation impact.
+- Every RWP uses one claimed issue, one branch named `rwp/<id>-<short-name>`, one PR, required GitHub Actions validation, ChatGPT review, completion evidence, and merge.
+- Only the designated planning agent may promote a finding to an RWP or change queue priority. Testing agents create findings and evidence only.
+- When remediation changes a surface used by later completed work, create an explicit reconciliation package before continuing dependent roadmap work.
+
 ## Multi-Agent Rules
 
 - Default to sequential execution when ownership cannot be divided cleanly.
