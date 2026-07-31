@@ -15,13 +15,16 @@ public sealed class StripeWebhooksController : ControllerBase
     private const int MaximumPayloadBytes = 1024 * 1024;
     private readonly IStripeWebhookEventVerifier verifier;
     private readonly IStripeSubscriptionEventHandler eventHandler;
+    private readonly IHaasContractSubscriptionEventHandler haasEventHandler;
 
     public StripeWebhooksController(
         IStripeWebhookEventVerifier verifier,
-        IStripeSubscriptionEventHandler eventHandler)
+        IStripeSubscriptionEventHandler eventHandler,
+        IHaasContractSubscriptionEventHandler haasEventHandler)
     {
         this.verifier = verifier;
         this.eventHandler = eventHandler;
+        this.haasEventHandler = haasEventHandler;
     }
 
     [HttpPost]
@@ -39,6 +42,7 @@ public sealed class StripeWebhooksController : ControllerBase
 
         Stripe.Event stripeEvent;
         StripeSubscriptionEvent? subscriptionEvent;
+        HaasContractSubscriptionEvent? haasEvent;
         try
         {
             using var reader = new StreamReader(
@@ -48,6 +52,14 @@ public sealed class StripeWebhooksController : ControllerBase
                 leaveOpen: true);
             var payload = await reader.ReadToEndAsync(cancellationToken);
             stripeEvent = verifier.Verify(payload, signatureHeader);
+
+            if (StripeHaasWebhookEventMapper.TryMap(stripeEvent, out haasEvent))
+            {
+                var haasProcessed = await haasEventHandler
+                    .HandleAsync(haasEvent!, cancellationToken)
+                    .ConfigureAwait(false);
+                return Ok(new StripeWebhookResponse(Received: true, Processed: haasProcessed));
+            }
 
             if (!StripeWebhookEventMapper.TryMap(stripeEvent, out subscriptionEvent))
             {

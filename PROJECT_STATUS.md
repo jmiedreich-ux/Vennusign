@@ -116,7 +116,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-11.09 — HaaS Contract Lifecycle** is next.
+**WP-11.09 — HaaS Contract Billing Guardrails** is ready for review on `wp/11.09-haas-billing-guardrails` (issue #276). Local Venue Admin validation passed; authoritative GitHub Actions validation is pending publication.
 
 ## Phase 04 Result
 
@@ -171,7 +171,7 @@ No implementation package is active. **WP-11.09 — HaaS Contract Lifecycle** is
 
 ## Next Action
 
-Claim and implement **WP-11.09 — HaaS Contract Lifecycle**.
+Complete, validate, review, and merge **WP-11.09 — HaaS Contract Billing Guardrails**.
 
 ## Phase 05 Work Packages
 

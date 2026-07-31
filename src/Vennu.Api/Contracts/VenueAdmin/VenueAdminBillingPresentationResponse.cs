@@ -4,7 +4,9 @@ public sealed record VenueAdminBillingPresentationResponse(
     VenueAdminTierSummary? CurrentTier,
     VenueAdminSubscriptionSummary? Subscription,
     IReadOnlyCollection<VenueAdminTierSummary> AvailableTiers,
-    IReadOnlyDictionary<string, VenueAdminFeatureSummary> EffectiveFeatures);
+    IReadOnlyDictionary<string, VenueAdminFeatureSummary> EffectiveFeatures,
+    IReadOnlyCollection<VenueAdminHaasBundleSummary> HaasBundles,
+    VenueAdminHaasContractSummary? HaasContract);
 
 public sealed record VenueAdminTierSummary(
     Guid Id,
@@ -19,6 +21,26 @@ public sealed record VenueAdminSubscriptionSummary(
     DateTime? CurrentPeriodEnd,
     bool CancelAtPeriodEnd,
     bool CanManageBilling);
+
+public sealed record VenueAdminHaasBundleSummary(
+    string Key,
+    string Name,
+    int TermMonths,
+    decimal MonthlyAmount,
+    string PostContractTierSlug);
+
+public sealed record VenueAdminHaasContractSummary(
+    string BundleKey,
+    string BundleName,
+    string Status,
+    int TermMonths,
+    decimal MonthlyAmount,
+    DateTime StartedUtc,
+    DateTime ContractEndsUtc,
+    int RemainingMonths,
+    decimal EstimatedBuyoutAmount,
+    bool CancelAtPeriodEnd,
+    DateTime? EndedUtc);
 
 public sealed record VenueAdminFeatureSummary(
     bool Enabled,

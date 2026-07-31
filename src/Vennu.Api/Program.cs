@@ -88,10 +88,12 @@ builder.Services.AddSingleton<IStripeWebhookEventVerifier, StripeWebhookEventVer
 builder.Services.Configure<StripeRevenueOptions>(builder.Configuration.GetSection(StripeRevenueOptions.SectionName));
 builder.Services.Configure<StripeCheckoutOptions>(builder.Configuration.GetSection(StripeCheckoutOptions.SectionName));
 builder.Services.Configure<StripeBillingPortalOptions>(builder.Configuration.GetSection(StripeBillingPortalOptions.SectionName));
+builder.Services.Configure<StripeHaasCheckoutOptions>(builder.Configuration.GetSection(StripeHaasCheckoutOptions.SectionName));
 builder.Services.AddScoped<IStripeRevenueSource, StripeRevenueSource>();
 builder.Services.AddScoped<IStripeSubscriptionTierUpdater, StripeSubscriptionTierUpdater>();
 builder.Services.AddScoped<IStripeCheckoutSessionGateway, StripeCheckoutSessionGateway>();
 builder.Services.AddScoped<IStripeBillingPortalSessionGateway, StripeBillingPortalSessionGateway>();
+builder.Services.AddScoped<IStripeHaasCheckoutSessionGateway, StripeHaasCheckoutSessionGateway>();
 builder.Services.AddHostedService<HeartbeatMonitor>();
 builder.Services.AddVennuData();
 builder.Services.AddScoped<IVenueThemeService, VenueThemeService>();
