@@ -82,10 +82,10 @@ public class ApiE2ETests : IClassFixture<VennuApiFactory>
         Assert.False(beforeClaim.Linked);
         Assert.Null(beforeClaim.ScreenId);
 
-        var claimResponse = await PostAsJsonAsync($"/api/screens/pairing/{pairing.Code}/claim", new ClaimScreenPairingCodeRequest
-        {
-            VenueId = venue.VenueId
-        });
+        using var claimRequest = new HttpRequestMessage(HttpMethod.Post, $"/api/screens/pairing/{pairing.Code}/claim");
+        claimRequest.Headers.Add("X-Vennu-Admin-Key", "test-admin-key");
+        claimRequest.Content = JsonContent.Create(new ClaimScreenPairingCodeRequest { VenueId = venue.VenueId });
+        var claimResponse = await client.SendAsync(claimRequest);
 
         claimResponse.EnsureSuccessStatusCode();
         var claim = await ReadJsonAsync<ClaimScreenPairingCodeResponse>(claimResponse);

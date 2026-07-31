@@ -33,6 +33,7 @@ public sealed class SuperAdminAuthorizationMatrixTests : IClassFixture<VennuApiF
             { "GET", $"/api/admin/venues/{Guid.NewGuid()}/screens/video-walls" },
             { "PUT", $"/api/admin/venues/{Guid.NewGuid()}/screens/video-walls" },
             { "DELETE", $"/api/admin/venues/{Guid.NewGuid()}/screens/video-walls/main" },
+            { "POST", "/api/screens/pairing/123456/claim" },
             { "GET", $"/api/admin/venues/{Guid.NewGuid()}/theme" },
             { "PUT", $"/api/admin/venues/{Guid.NewGuid()}/theme" },
             { "GET", "/api/admin/tiers" },

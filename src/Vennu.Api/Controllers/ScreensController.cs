@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Vennu.Api.Admin;
 using Vennu.Api.Contracts.Screens;
 using Vennu.Api.Infrastructure;
 using Vennu.Core.Models;
@@ -101,6 +103,7 @@ public class ScreensController : ControllerBase
     }
 
     [HttpPost("pairing/{code}/claim")]
+    [Authorize(Policy = SuperAdminAuthenticationDefaults.AuthorizationPolicy)]
     [ProducesResponseType<ClaimScreenPairingCodeResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]

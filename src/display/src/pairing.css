@@ -1,0 +1,28 @@
+.pairing-page {
+  align-items: center;
+  background: radial-gradient(circle at top, #18323a, #081014 68%);
+  box-sizing: border-box;
+  color: #f8f5e9;
+  display: flex;
+  flex-direction: column;
+  font-family: Inter, system-ui, sans-serif;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 8vh 8vw;
+  text-align: center;
+}
+
+.pairing-page h1 { font-size: clamp(3rem, 7vw, 6rem); margin: 0.2em 0; }
+.pairing-page p { font-size: clamp(1.2rem, 2.2vw, 2rem); max-width: 36em; }
+.pairing-page .eyebrow { color: #ffb74d; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; }
+.pairing-code {
+  background: #f8f5e9;
+  border-radius: 0.18em;
+  color: #081014;
+  font-size: clamp(5rem, 16vw, 12rem);
+  letter-spacing: 0.16em;
+  line-height: 1;
+  margin: 0.25em 0;
+  padding: 0.18em 0.28em 0.18em 0.44em;
+}
+.pairing-page .pairing-expiry { color: #b9c8cc; font-size: clamp(1rem, 1.6vw, 1.4rem); }
