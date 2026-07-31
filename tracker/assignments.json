@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T00:54:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-09.10",
+  "updatedUtc": "2026-07-31T00:57:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-09.10",
+      "orchestrator": "ChatGPT",
+      "branch": "wp/09.10-phase-09-validation",
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "Phase 10 planning",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

@@ -90,7 +90,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-09.10 — Phase 09 Validation and Closure** is the next package in roadmap order.
+**WP-09.10 — Phase 09 Validation and Closure: In Review**
 
 ## Phase 04 Result
 
@@ -131,7 +131,7 @@ None. **WP-09.10 — Phase 09 Validation and Closure** is the next package in ro
 
 ## Next Action
 
-Claim and implement **WP-09.10 — Phase 09 Validation and Closure**.
+Validate and merge **WP-09.10 — Phase 09 Validation and Closure**. Then create the Phase 10 AWP breakdown.
 
 ## Phase 05 Work Packages
 
