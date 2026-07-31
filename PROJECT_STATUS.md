@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 10 — TV Apps & Platform Distribution: Active**
+**Phase 11 — Upgrade Prompts & Billing UX: Planning**
 
 ## Milestone
 
@@ -98,10 +98,12 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-10.07 — Samsung Tizen Package
 - WP-10.08 — LG webOS Package
 - WP-10.09 — HaaS Pre-Registration and Fleet Version Health
+- WP-10.10 — Phase 10 Validation and Closure
+- Phase 10 — TV Apps & Platform Distribution
 
 ## Active Work Package
 
-**WP-10.10 — Phase 10 Validation and Closure** is in review on issue #235.
+No implementation package is active. The formal Phase 11 AWP breakdown is next.
 
 ## Phase 04 Result
 
@@ -142,6 +144,13 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - Completed no-keyboard pairing with protected claims, automatic expiry regeneration, and display redirect.
 - Added repeatable tap, pairing, entitlement, realtime, offline, and recovery validation.
 
+## Phase 10 Result
+
+- Packaged the authoritative hosted player for Android TV, Fire TV, Samsung Tizen, and LG webOS.
+- Added no-keyboard pairing, lifecycle recovery, opt-in kiosk behavior, and credential-free distribution profiles.
+- Added protected HaaS pre-registration, platform/app-version heartbeats, and fleet version health.
+- Added repeatable shared-player, pairing, provisioning, recovery, package, security, and non-integration build validation.
+
 ## Standing Validation Exception
 
 - Integration-type tests are skipped for every AWP under the repository owner's standing instruction.
@@ -149,7 +158,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Publish and validate **WP-10.10 — Phase 10 Validation and Closure** through GitHub Actions.
+Create the formal Phase 11 AWP breakdown, then claim its first package.
 
 ## Phase 05 Work Packages
 
