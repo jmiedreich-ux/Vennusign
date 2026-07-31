@@ -92,10 +92,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-10.01 — Platform Launch Contract and Player Bridge
 - WP-10.02 — Android TV and Fire TV Shell Foundation
 - WP-10.03 — Android Pairing and Durable Launch State
+- WP-10.04 — Android Boot and Lifecycle Recovery
 
 ## Active Work Package
 
-**WP-10.04 — Android Boot and Lifecycle Recovery** is in review.
+None. **WP-10.05 — Android Kiosk and Operator Escape** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -143,7 +144,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate and merge **WP-10.04**, then claim **WP-10.05 — Android Kiosk and Operator Escape**.
+Claim and implement **WP-10.05 — Android Kiosk and Operator Escape**.
 
 ## Phase 05 Work Packages
 
