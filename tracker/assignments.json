@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T22:47:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-11.08",
-      "owner": "Codex",
-      "issue": 273,
-      "branch": "wp/11.08-billing-portal-status",
-      "status": "Ready for review"
-    }
-  ],
+  "updatedUtc": "2026-07-31T22:42:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-11.09",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

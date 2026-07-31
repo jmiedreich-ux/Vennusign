@@ -3,16 +3,17 @@
 ## Work Package
 
 - ID: WP-11.08
-- Status: Ready for review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/11.08-billing-portal-status`
-- Latest commit: pending
+- Latest commit: `e86ccce73ab57cd9738e5b7044e76aae18eb570e`
 - Issue: #273
-- Pull request: pending publication
-- CI state: GitHub Actions pending publication
+- Pull request: #274
+- Merge commit: `ae80aff57723a0abe56fb26459317698165edee2`
+- CI state: GitHub Actions `phase02-tests` run #582 passed
 
 ## Completed This Session
 
@@ -38,13 +39,12 @@
 ## Validation
 
 - Commands: `npm test`; `npm run build`; `git diff --check`; `jq empty tracker/assignments.json`.
-- Results: 24 Venue Admin tests and the Venue Admin production build passed locally; diff and tracker checks passed.
+- Results: 24 Venue Admin tests and the Venue Admin production build passed locally; Actions run #582 passed the complete required non-integration matrix.
 - Skipped checks and reason: local .NET tooling is unavailable and GitHub Actions is authoritative. All integration-type and external Stripe tests are skipped by standing owner instruction.
 
 ## Remaining Work
 
-- Publish the exact branch, run required GitHub Actions checks, complete ChatGPT review, and merge.
-- Then continue with WP-11.09 — HaaS contract lifecycle.
+- WP-11.09 — HaaS Contract Lifecycle.
 
 ## Known Risks or Blockers
 
@@ -52,7 +52,7 @@
 
 ## Exact Next Action
 
-- Commit and publish WP-11.08, open its pull request, and inspect the exact-head GitHub Actions result.
+- Claim WP-11.09 and implement the documented HaaS contract lifecycle slice.
 
 ## Do Not Redo or Reverse
 
