@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T02:20:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-10.07",
+  "updatedUtc": "2026-07-31T02:25:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-10.07",
+      "branch": "wp/10.07-samsung-tizen",
+      "issue": 226,
+      "status": "review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-10.08",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

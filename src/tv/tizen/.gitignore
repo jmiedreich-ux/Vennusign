@@ -1,0 +1,4 @@
+/.build/
+*.wgt
+.sign/
+profiles.xml

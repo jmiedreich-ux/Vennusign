@@ -110,6 +110,9 @@ jobs:
         working-directory: src/tv/android
         run: gradle :app:assembleGoogleTvDebug :app:assembleFireTvDebug --no-daemon --stacktrace
 
+      - name: Validate Samsung Tizen package
+        run: node src/tv/tizen/scripts/validate.mjs
+
       - name: Upload display build diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
@@ -167,6 +170,7 @@ jobs:
           echo "Display app: dependencies installed, production build, and frontend tests executed"
           echo "Super Admin app: dependencies installed, production build, and frontend tests executed"
           echo "Android TV: unsigned Google TV and Fire TV debug variants assembled"
+          echo "Samsung Tizen: package manifest and launcher statically validated"
           echo "Unit tests: ran with filter Category=Unit"
           echo "Integration tests: SKIPPED by standing repository-owner instruction"
           echo "Projects tested:"
