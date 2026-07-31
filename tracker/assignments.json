@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T23:14:00Z",
+  "updatedUtc": "2026-07-31T23:17:00Z",
   "activeAssignments": [],
-  "nextAvailableWorkPackage": "Phase-12 breakdown",
+  "nextAvailableWorkPackage": "WP-12.01",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

@@ -1,4 +1,4 @@
-# Vennu Session Handoff
+# Session Handoff
 
 ## Work Package
 
