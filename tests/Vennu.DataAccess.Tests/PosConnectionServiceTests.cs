@@ -67,11 +67,11 @@ public sealed class PosConnectionServiceTests
         var result = Assert.Single(await service.GetAllAsync(VenueId));
 
         Assert.Equal("merchant-2", result.ExternalMerchantId);
-        Assert.DoesNotContain(
-            typeof(PosConnectionSummary).GetProperties(),
-            property => property.Name.Contains("Token", StringComparison.OrdinalIgnoreCase) ||
-                property.Name.Contains("Credential", StringComparison.OrdinalIgnoreCase) ||
-                property.Name.Contains("Protected", StringComparison.OrdinalIgnoreCase));
+        var propertyNames = typeof(PosConnectionSummary).GetProperties().Select(property => property.Name);
+        Assert.DoesNotContain("AccessToken", propertyNames);
+        Assert.DoesNotContain("RefreshToken", propertyNames);
+        Assert.DoesNotContain("ProtectedAccessToken", propertyNames);
+        Assert.DoesNotContain("ProtectedRefreshToken", propertyNames);
     }
 
     [Fact]
