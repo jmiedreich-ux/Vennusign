@@ -1,6 +1,10 @@
 package com.vennu.tv
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.app.KeyguardManager
+import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.Network
@@ -8,6 +12,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.View
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -19,6 +24,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.setPadding
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
@@ -37,6 +43,7 @@ class MainActivity : ComponentActivity() {
     private val connectivityManager by lazy {
         getSystemService(ConnectivityManager::class.java)
     }
+    private val kioskController by lazy { KioskController(this) }
     private var playerState = PlayerState.LOADING
     private var automaticReloads = 0
     private var lastAutomaticReloadAt = 0L
@@ -48,6 +55,11 @@ class MainActivity : ComponentActivity() {
                 if (playerState == PlayerState.ERROR) requestAutomaticRecovery()
             }
         }
+    }
+    private val operatorExitLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) exitKiosk()
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -105,10 +117,34 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         webView.onResume()
+        if (KioskController.isEnabled(this)) kioskController.activate()
         if (!networkCallbackRegistered) {
             connectivityManager.registerDefaultNetworkCallback(networkCallback)
             networkCallbackRegistered = true
         }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus && KioskController.isEnabled(this)) kioskController.hideSystemUi()
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.repeatCount == 0 &&
+            KioskController.isEnabled(this)
+        ) {
+            event.startTracking()
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyLongPress(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK && KioskController.isEnabled(this)) {
+            requestOperatorExit()
+            return true
+        }
+        return super.onKeyLongPress(keyCode, event)
     }
 
     override fun onResume() {
@@ -217,6 +253,10 @@ class MainActivity : ComponentActivity() {
                 "0" -> launchState.edit()
                     .putBoolean(LaunchStatePreferences.BOOT_LAUNCH_ENABLED, false).apply()
             }
+            when (url.getQueryParameter(KIOSK_QUERY)) {
+                "1" -> KioskController.setEnabled(this, true)
+                "0" -> KioskController.setEnabled(this, false)
+            }
         }
 
         val encodedScreenId = DISPLAY_PATH.matchEntire(url.path.orEmpty())?.groupValues?.get(1)
@@ -240,6 +280,36 @@ class MainActivity : ComponentActivity() {
         } catch (_: IllegalArgumentException) {
             null
         }
+
+    private fun requestOperatorExit() {
+        val keyguard = getSystemService(KeyguardManager::class.java)
+        if (!keyguard.isDeviceSecure) {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.operator_exit_title)
+                .setMessage(R.string.operator_exit_unavailable)
+                .setPositiveButton(R.string.ok, null)
+                .show()
+            return
+        }
+
+        val confirmation = keyguard.createConfirmDeviceCredentialIntent(
+            getString(R.string.operator_exit_title),
+            getString(R.string.operator_exit_prompt)
+        )
+        if (confirmation != null) operatorExitLauncher.launch(confirmation)
+    }
+
+    private fun exitKiosk() {
+        KioskController.setEnabled(this, false)
+        kioskController.deactivate()
+        startActivity(
+            Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+        )
+        finish()
+    }
 
     private inner class ShellWebViewClient : WebViewClient() {
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
@@ -282,6 +352,7 @@ class MainActivity : ComponentActivity() {
     companion object {
         private const val RESET_QUERY = "vennuReset"
         private const val BOOT_QUERY = "vennuBoot"
+        private const val KIOSK_QUERY = "vennuKiosk"
         private const val STALE_FOREGROUND_MS = 5 * 60 * 1000L
         private const val AUTOMATIC_RELOAD_COOLDOWN_MS = 10_000L
         private const val MAX_AUTOMATIC_RELOADS = 3
