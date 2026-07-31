@@ -52,6 +52,10 @@ export function listUpgradeOpportunities(effectiveFeatures, dismissed = new Set(
   );
 }
 
+export function upgradeFeaturePills(tier) {
+  return upgradeCatalog.filter(item => item.requiredTier === tier).map(item => item.title);
+}
+
 const panelByFeature = Object.freeze({
   all_layouts: 'design',
   video_wall: 'design',
