@@ -117,7 +117,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-11.10 — Phase 11 Validation and Closure** is next.
+**WP-11.10 — Phase 11 Validation and Closure** is ready for review on `wp/11.10-phase-11-validation-closure` (issue #279). Authoritative GitHub Actions validation is pending publication.
 
 ## Phase 04 Result
 
@@ -172,7 +172,7 @@ No implementation package is active. **WP-11.10 — Phase 11 Validation and Clos
 
 ## Next Action
 
-Claim and complete **WP-11.10 — Phase 11 Validation and Closure**.
+Validate, review, and merge **WP-11.10 — Phase 11 Validation and Closure**.
 
 ## Phase 05 Work Packages
 
