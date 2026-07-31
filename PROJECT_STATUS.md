@@ -90,10 +90,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-09.10 — Phase 09 Validation and Closure
 - Phase 09 — Tap List Boards — Breweries & Bars
 - WP-10.01 — Platform Launch Contract and Player Bridge
+- WP-10.02 — Android TV and Fire TV Shell Foundation
 
 ## Active Work Package
 
-**WP-10.02 — Android TV and Fire TV Shell Foundation** is in review.
+None. **WP-10.03 — Android Pairing and Durable Launch State** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -141,7 +142,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate and merge **WP-10.02**, then claim **WP-10.03 — Android Pairing and Durable Launch State**.
+Claim and implement **WP-10.03 — Android Pairing and Durable Launch State**.
 
 ## Phase 05 Work Packages
 
