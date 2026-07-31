@@ -6,6 +6,7 @@ object LaunchStatePreferences {
     const val NAME = "vennu-tv-launch-state"
     const val SCREEN_ID = "screen-id"
     const val BOOT_LAUNCH_ENABLED = "boot-launch-enabled"
+    const val KIOSK_ENABLED = "kiosk-enabled"
 
     fun isBootLaunchEnabled(context: Context): Boolean =
         context.getSharedPreferences(NAME, Context.MODE_PRIVATE)

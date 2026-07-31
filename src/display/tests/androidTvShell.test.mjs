@@ -4,13 +4,14 @@ import test from 'node:test';
 
 const androidRoot = new URL('../../tv/android/', import.meta.url);
 const readAndroid = (path) => readFile(new URL(path, androidRoot), 'utf8');
-const [manifest, activity, appGradle, networkPolicy, bootReceiver, launchState] = await Promise.all([
+const [manifest, activity, appGradle, networkPolicy, bootReceiver, launchState, kiosk] = await Promise.all([
   readAndroid('app/src/main/AndroidManifest.xml'),
   readAndroid('app/src/main/java/com/vennu/tv/MainActivity.kt'),
   readAndroid('app/build.gradle.kts'),
   readAndroid('app/src/main/res/xml/network_security_config.xml'),
   readAndroid('app/src/main/java/com/vennu/tv/BootReceiver.kt'),
-  readAndroid('app/src/main/java/com/vennu/tv/LaunchStatePreferences.kt')
+  readAndroid('app/src/main/java/com/vennu/tv/LaunchStatePreferences.kt'),
+  readAndroid('app/src/main/java/com/vennu/tv/KioskController.kt')
 ]);
 
 test('declares a remote-first TV launcher with a strict network policy', () => {
@@ -21,6 +22,27 @@ test('declares a remote-first TV launcher with a strict network policy', () => {
   assert.match(manifest, /android:usesCleartextTraffic="false"/);
   assert.match(manifest, /android:networkSecurityConfig="@xml\/network_security_config"/);
   assert.match(networkPolicy, /cleartextTrafficPermitted="false"/);
+});
+
+test('keeps kiosk opt-in with lock-task and immersive fallback paths', () => {
+  assert.match(manifest, /android:lockTaskMode="if_whitelisted"/);
+  assert.match(activity, /getQueryParameter\(KIOSK_QUERY\)/);
+  assert.match(kiosk, /FLAG_KEEP_SCREEN_ON/);
+  assert.match(kiosk, /isLockTaskPermitted/);
+  assert.match(kiosk, /activity\.startLockTask\(\)/);
+  assert.match(kiosk, /PINNING_REQUESTED/);
+  assert.match(kiosk, /IMMERSIVE_FALLBACK/);
+  assert.match(kiosk, /IMMERSIVE_STICKY/);
+});
+
+test('protects operator escape with Android device credential', () => {
+  assert.match(activity, /onKeyLongPress/);
+  assert.match(activity, /KeyEvent\.KEYCODE_BACK/);
+  assert.match(activity, /keyguard\.isDeviceSecure/);
+  assert.match(activity, /createConfirmDeviceCredentialIntent/);
+  assert.match(activity, /result\.resultCode == Activity\.RESULT_OK/);
+  assert.match(activity, /kioskController\.deactivate\(\)/);
+  assert.doesNotMatch(activity, /OPERATOR_EXIT_PIN|password|secret/i);
 });
 
 test('keeps boot launch opt-in and starts the shell only after explicit enablement', () => {
