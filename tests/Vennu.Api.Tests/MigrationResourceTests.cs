@@ -175,4 +175,13 @@ public sealed class MigrationResourceTests
         Assert.Contains(scripts, name => name.EndsWith(".Scripts.032_add_screen_pre_registration.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
+
+    [Fact]
+    public void SubscriptionPeriodEndStateMigration_IsEmbeddedInOrder()
+    {
+        var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
+
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.033_add_subscription_period_end_state.sql", StringComparison.Ordinal));
+        Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
+    }
 }

@@ -2,6 +2,7 @@ namespace Vennu.Api.Contracts.VenueAdmin;
 
 public sealed record VenueAdminBillingPresentationResponse(
     VenueAdminTierSummary? CurrentTier,
+    VenueAdminSubscriptionSummary? Subscription,
     IReadOnlyCollection<VenueAdminTierSummary> AvailableTiers,
     IReadOnlyDictionary<string, VenueAdminFeatureSummary> EffectiveFeatures);
 
@@ -11,6 +12,13 @@ public sealed record VenueAdminTierSummary(
     string Slug,
     decimal MonthlyPrice,
     int MaxScreens);
+
+public sealed record VenueAdminSubscriptionSummary(
+    string Status,
+    DateTime? TrialEndsAt,
+    DateTime? CurrentPeriodEnd,
+    bool CancelAtPeriodEnd,
+    bool CanManageBilling);
 
 public sealed record VenueAdminFeatureSummary(
     bool Enabled,

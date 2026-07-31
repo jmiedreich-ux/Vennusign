@@ -8,4 +8,5 @@ public sealed record StripeSubscriptionEvent(
     string? StripePriceId = null,
     string? Status = null,
     DateTime? TrialEndsAt = null,
-    DateTime? CurrentPeriodEnd = null);
+    DateTime? CurrentPeriodEnd = null,
+    bool CancelAtPeriodEnd = false);

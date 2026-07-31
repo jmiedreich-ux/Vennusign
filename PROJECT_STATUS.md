@@ -115,7 +115,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-11.08 — Billing Portal and Subscription Status** is next.
+**WP-11.08 — Billing Portal and Subscription Status** is ready for review on `wp/11.08-billing-portal-status` (issue #273). Local Venue Admin validation passed; authoritative GitHub Actions validation is pending publication.
 
 ## Phase 04 Result
 
@@ -170,7 +170,7 @@ No implementation package is active. **WP-11.08 — Billing Portal and Subscript
 
 ## Next Action
 
-Claim and implement **WP-11.08 — Billing Portal and Subscription Status**.
+Complete, validate, review, and merge **WP-11.08 — Billing Portal and Subscription Status**.
 
 ## Phase 05 Work Packages
 

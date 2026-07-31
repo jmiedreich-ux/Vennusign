@@ -43,4 +43,16 @@ public sealed class VenueAdminBillingControllerTests : IClassFixture<VennuApiFac
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
+
+    [Fact]
+    public async Task PortalSession_ReturnsUnauthorized_WhenVenueTokenIsMissing()
+    {
+        using var client = factory.CreateClient();
+
+        var response = await client.PostAsync(
+            "/api/venue-admin/billing/portal-session",
+            content: null);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
 }

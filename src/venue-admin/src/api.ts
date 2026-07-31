@@ -1,5 +1,6 @@
 import type { VenueAdminConfiguration } from "./config";
 import { requireHostedCheckoutUrl } from "./checkoutFlow.mjs";
+import { requireHostedBillingPortalUrl } from "./billingPortal.mjs";
 
 export type VenueAdminSession = {
   venueId: string;
@@ -11,8 +12,16 @@ export type VenueAdminTierSummary = {
 };
 export type VenueAdminBillingPresentation = {
   currentTier?: VenueAdminTierSummary;
+  subscription?: VenueAdminSubscriptionSummary;
   availableTiers: VenueAdminTierSummary[];
   effectiveFeatures: Record<string, { enabled: boolean; limitValue?: string }>;
+};
+export type VenueAdminSubscriptionSummary = {
+  status: "trialing" | "active" | "past_due" | "canceled";
+  trialEndsAt?: string;
+  currentPeriodEnd?: string;
+  cancelAtPeriodEnd: boolean;
+  canManageBilling: boolean;
 };
 export type CheckoutBillingInterval = "monthly" | "annual";
 
@@ -191,6 +200,30 @@ export async function createCheckoutSession(
     return requireHostedCheckoutUrl(payload.checkoutUrl);
   } catch {
     throw new VenueAdminApiError(502, "Secure checkout returned an invalid response.");
+  }
+}
+
+export async function createBillingPortalSession(
+  configuration: VenueAdminConfiguration,
+  accessToken: string,
+  signal?: AbortSignal
+): Promise<string> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/venue-admin/billing/portal-session`, {
+    method: "POST",
+    headers: { "X-Vennu-Venue-Token": accessToken },
+    signal
+  });
+  if (!response.ok) {
+    throw new VenueAdminApiError(response.status, "Secure billing management could not be opened.");
+  }
+  const payload = await response.json() as { portalUrl?: string };
+  if (!payload.portalUrl) {
+    throw new VenueAdminApiError(502, "Secure billing management returned an invalid response.");
+  }
+  try {
+    return requireHostedBillingPortalUrl(payload.portalUrl);
+  } catch {
+    throw new VenueAdminApiError(502, "Secure billing management returned an invalid response.");
   }
 }
 

@@ -5,6 +5,7 @@ export const venueAdminRoutes = [
   { path: "themes", label: "Themes", description: "Brand and layouts", capability: "themes", upgradeFeature: "all_layouts" },
   { path: "schedules", label: "Schedules", description: "Timing and broadcasts", capability: "scheduling", upgradeFeature: "meal_periods" },
   { path: "tap-list", label: "Tap list", description: "Draft board operations", capability: "tap_list", upgradeFeature: "all_layouts" },
+  { path: "billing", label: "Billing", description: "Plan and payments" },
   { path: "settings", label: "Settings", description: "Venue and support" }
 ];
 

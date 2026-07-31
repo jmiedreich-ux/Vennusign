@@ -18,6 +18,7 @@ public sealed class StripeWebhookEventMapperTests
             {
                 Id = "sub_123",
                 Status = "trialing",
+                CancelAtPeriodEnd = true,
                 TrialEnd = trialEnd,
                 Metadata = new Dictionary<string, string> { ["venue_id"] = venueId.ToString() },
                 Items = new StripeList<SubscriptionItem>
@@ -45,6 +46,7 @@ public sealed class StripeWebhookEventMapperTests
         Assert.Equal("trialing", result.Status);
         Assert.Equal(trialEnd, result.TrialEndsAt);
         Assert.Equal(periodEnd, result.CurrentPeriodEnd);
+        Assert.True(result.CancelAtPeriodEnd);
     }
 
     [Fact]

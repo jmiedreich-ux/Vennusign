@@ -15,7 +15,8 @@ namespace Vennu.Api.Controllers.VenueAdmin;
 public sealed class VenueAdminBillingController(
     IVenueSupportDetailService supportDetailService,
     ISubscriptionTierRepository tierRepository,
-    ICheckoutSessionService checkoutSessionService) : ControllerBase
+    ICheckoutSessionService checkoutSessionService,
+    IBillingPortalSessionService billingPortalSessionService) : ControllerBase
 {
     [HttpGet("presentation")]
     [ProducesResponseType<VenueAdminBillingPresentationResponse>(StatusCodes.Status200OK)]
@@ -36,6 +37,13 @@ public sealed class VenueAdminBillingController(
         var tiers = await tierRepository.GetAllAsync(cancellationToken).ConfigureAwait(false);
         return Ok(new VenueAdminBillingPresentationResponse(
             detail.Tier is null ? null : ToSummary(detail.Tier),
+            detail.Subscription is null ? null : new VenueAdminSubscriptionSummary(
+                detail.Subscription.Status,
+                detail.Subscription.TrialEndsAt,
+                detail.Subscription.CurrentPeriodEnd,
+                detail.Subscription.CancelAtPeriodEnd,
+                !string.IsNullOrWhiteSpace(detail.Subscription.StripeSubscriptionId) &&
+                    !string.Equals(detail.Subscription.Status, "canceled", StringComparison.OrdinalIgnoreCase)),
             tiers
                 .Where(tier => tier.IsActive && tier.IsPublic)
                 .OrderBy(tier => tier.Price)
@@ -48,6 +56,37 @@ public sealed class VenueAdminBillingController(
                     pair.Value.Enabled,
                     pair.Value.LimitValue),
                 StringComparer.OrdinalIgnoreCase)));
+    }
+
+    [HttpPost("portal-session")]
+    [ProducesResponseType<CreateBillingPortalSessionResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<CreateBillingPortalSessionResponse>> CreateBillingPortalSession(
+        CancellationToken cancellationToken)
+    {
+        var venueId = Guid.Parse(
+            User.FindFirstValue(VenueAdminAuthenticationDefaults.VenueIdClaim)!);
+        try
+        {
+            var result = await billingPortalSessionService
+                .CreateAsync(venueId, cancellationToken)
+                .ConfigureAwait(false);
+            return Ok(new CreateBillingPortalSessionResponse(result.PortalUrl.AbsoluteUri));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Billing management could not be opened.",
+                Detail = exception.Message
+            });
+        }
     }
 
     [HttpPost("checkout-session")]
