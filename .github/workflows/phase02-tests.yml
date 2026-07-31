@@ -95,6 +95,21 @@ jobs:
         working-directory: src/display
         run: npm test
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Build Android TV distribution profiles
+        working-directory: src/tv/android
+        run: gradle :app:assembleGoogleTvDebug :app:assembleFireTvDebug --no-daemon --stacktrace
+
       - name: Upload display build diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
@@ -151,6 +166,7 @@ jobs:
           echo "=== Test Run Summary ==="
           echo "Display app: dependencies installed, production build, and frontend tests executed"
           echo "Super Admin app: dependencies installed, production build, and frontend tests executed"
+          echo "Android TV: unsigned Google TV and Fire TV debug variants assembled"
           echo "Unit tests: ran with filter Category=Unit"
           echo "Integration tests: SKIPPED by standing repository-owner instruction"
           echo "Projects tested:"

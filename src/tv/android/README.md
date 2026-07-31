@@ -4,7 +4,15 @@ This is a thin Kotlin WebView host for the authoritative hosted Vennu display pl
 
 ## Build
 
-Use JDK 17 and Android SDK 35, then run the project with Gradle 8.9+ or open this directory in Android Studio. The default variant targets Android TV and identifies itself as `android_tv`. Fire-specific distribution variants are intentionally deferred to WP-10.06.
+Use JDK 17, Android SDK 35, and Gradle 8.9+ or open this directory in Android Studio.
+
+Unsigned development builds:
+
+```text
+gradle :app:assembleGoogleTvDebug :app:assembleFireTvDebug --no-daemon
+```
+
+The `googleTv` flavor uses application ID `com.vennu.tv.googletv` and platform `android_tv`; `fireTv` uses `com.vennu.tv.firetv` and platform `fire_tv`. Override release inputs with `VENNU_VERSION_CODE`, `VENNU_VERSION_NAME`, and `VENNU_BASE_URL`, or the corresponding Gradle properties `vennuVersionCode`, `vennuVersionName`, and `vennuBaseUrl`.
 
 The shell:
 
