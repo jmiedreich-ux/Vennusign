@@ -104,6 +104,36 @@ public sealed class StripeWebhookEventMapperTests
     }
 
     [Fact]
+    public void HaasMapper_MapsConfirmedBundleMetadata()
+    {
+        var venueId = Guid.NewGuid();
+        var started = new DateTime(2026, 7, 31, 0, 0, 0, DateTimeKind.Utc);
+        var stripeEvent = CreateEvent(
+            EventTypes.CustomerSubscriptionCreated,
+            new Subscription
+            {
+                Id = "sub_haas",
+                Status = "active",
+                StartDate = started,
+                Metadata = new Dictionary<string, string>
+                {
+                    ["venue_id"] = venueId.ToString(),
+                    ["haas_bundle_key"] = "starter_kit",
+                    ["haas_term_months"] = "18"
+                }
+            });
+
+        var mapped = StripeHaasWebhookEventMapper.TryMap(stripeEvent, out var result);
+
+        Assert.True(mapped);
+        Assert.NotNull(result);
+        Assert.Equal(venueId, result.VenueId);
+        Assert.Equal("starter_kit", result.BundleKey);
+        Assert.Equal(18, result.TermMonths);
+        Assert.Equal(started, result.StartedUtc);
+    }
+
+    [Fact]
     public void TryMap_Throws_WhenSubscriptionVenueMetadataIsMissing()
     {
         var stripeEvent = CreateEvent(

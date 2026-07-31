@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   createCheckoutSession,
   createBillingPortalSession,
+  createHaasCheckoutSession,
   loadVenueAdminSession,
   loadVenueBillingPresentation,
   VenueAdminApiError,
@@ -54,6 +55,8 @@ export default function App() {
   const [checkoutError, setCheckoutError] = useState<string>();
   const [billingPortalOpening, setBillingPortalOpening] = useState(false);
   const [billingPortalError, setBillingPortalError] = useState<string>();
+  const [haasOpening, setHaasOpening] = useState<string>();
+  const [haasError, setHaasError] = useState<string>();
   const [checkoutReturn, setCheckoutReturn] = useState<CheckoutReturnState | undefined>(
     () => readCheckoutReturnState(window.location.search)
   );
@@ -143,6 +146,8 @@ export default function App() {
     setCheckoutError(undefined);
     setBillingPortalOpening(false);
     setBillingPortalError(undefined);
+    setHaasOpening(undefined);
+    setHaasError(undefined);
   };
 
   if (!accessToken || error) {
@@ -230,6 +235,24 @@ export default function App() {
       setBillingPortalOpening(false);
     }
   };
+  const startHaasCheckout = async (bundle: NonNullable<typeof billing>["haasBundles"][number]) => {
+    if (haasOpening) return;
+    setHaasOpening(bundle.key);
+    setHaasError(undefined);
+    try {
+      const checkoutUrl = await createHaasCheckoutSession(
+        configuration,
+        accessToken,
+        bundle.key,
+        bundle.termMonths);
+      window.location.assign(checkoutUrl);
+    } catch (reason: unknown) {
+      setHaasError(reason instanceof VenueAdminApiError
+        ? reason.message
+        : "Hardware bundle Checkout could not be opened.");
+      setHaasOpening(undefined);
+    }
+  };
 
   return <div className="shell">
     <aside>
@@ -292,6 +315,11 @@ export default function App() {
             isOpening={billingPortalOpening}
             error={billingPortalError}
             onManage={openBillingPortal}
+            haasBundles={billing.haasBundles}
+            haasContract={billing.haasContract}
+            haasOpening={haasOpening}
+            haasError={haasError}
+            onStartHaas={startHaasCheckout}
           />
         : allowed && route.path === "menu"
         ? <MenuSectionsEditor

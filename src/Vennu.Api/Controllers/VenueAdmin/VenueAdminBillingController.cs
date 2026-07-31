@@ -16,7 +16,8 @@ public sealed class VenueAdminBillingController(
     IVenueSupportDetailService supportDetailService,
     ISubscriptionTierRepository tierRepository,
     ICheckoutSessionService checkoutSessionService,
-    IBillingPortalSessionService billingPortalSessionService) : ControllerBase
+    IBillingPortalSessionService billingPortalSessionService,
+    IHaasBillingService haasBillingService) : ControllerBase
 {
     [HttpGet("presentation")]
     [ProducesResponseType<VenueAdminBillingPresentationResponse>(StatusCodes.Status200OK)]
@@ -35,6 +36,7 @@ public sealed class VenueAdminBillingController(
         }
 
         var tiers = await tierRepository.GetAllAsync(cancellationToken).ConfigureAwait(false);
+        var haas = await haasBillingService.GetPresentationAsync(venueId, cancellationToken).ConfigureAwait(false);
         return Ok(new VenueAdminBillingPresentationResponse(
             detail.Tier is null ? null : ToSummary(detail.Tier),
             detail.Subscription is null ? null : new VenueAdminSubscriptionSummary(
@@ -55,7 +57,25 @@ public sealed class VenueAdminBillingController(
                 pair => new VenueAdminFeatureSummary(
                     pair.Value.Enabled,
                     pair.Value.LimitValue),
-                StringComparer.OrdinalIgnoreCase)));
+                StringComparer.OrdinalIgnoreCase),
+            haas.Bundles.Select(bundle => new VenueAdminHaasBundleSummary(
+                bundle.Key,
+                bundle.Name,
+                bundle.TermMonths,
+                bundle.MonthlyAmount,
+                bundle.PostContractTierSlug)).ToArray(),
+            haas.Contract is null ? null : new VenueAdminHaasContractSummary(
+                haas.Contract.BundleKey,
+                haas.Contract.BundleName,
+                haas.Contract.Status,
+                haas.Contract.TermMonths,
+                haas.Contract.MonthlyAmount,
+                haas.Contract.StartedUtc,
+                haas.Contract.ContractEndsUtc,
+                haas.Contract.RemainingMonths,
+                haas.Contract.EstimatedBuyoutAmount,
+                haas.Contract.CancelAtPeriodEnd,
+                haas.Contract.EndedUtc)));
     }
 
     [HttpPost("portal-session")]
@@ -132,6 +152,45 @@ public sealed class VenueAdminBillingController(
             {
                 Status = StatusCodes.Status409Conflict,
                 Title = "Checkout session could not be created.",
+                Detail = exception.Message
+            });
+        }
+    }
+
+    [HttpPost("haas-checkout-session")]
+    [ProducesResponseType<CreateHaasCheckoutSessionResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<CreateHaasCheckoutSessionResponse>> CreateHaasCheckoutSession(
+        CreateHaasCheckoutSessionRequest request,
+        CancellationToken cancellationToken)
+    {
+        var venueId = Guid.Parse(
+            User.FindFirstValue(VenueAdminAuthenticationDefaults.VenueIdClaim)!);
+        try
+        {
+            var result = await haasBillingService.CreateCheckoutAsync(
+                venueId,
+                request.BundleKey,
+                request.TermMonths,
+                cancellationToken).ConfigureAwait(false);
+            return Ok(new CreateHaasCheckoutSessionResponse(result.CheckoutUrl.AbsoluteUri));
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "HaaS Checkout could not be opened.",
                 Detail = exception.Message
             });
         }

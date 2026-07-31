@@ -2,59 +2,60 @@
 
 ## Work Package
 
-- ID: WP-11.08
-- Status: Complete and merged
+- ID: WP-11.09
+- Status: Ready for review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/11.08-billing-portal-status`
-- Latest commit: `e86ccce73ab57cd9738e5b7044e76aae18eb570e`
-- Issue: #273
-- Pull request: #274
-- Merge commit: `ae80aff57723a0abe56fb26459317698165edee2`
-- CI state: GitHub Actions `phase02-tests` run #582 passed
+- Branch: `wp/11.09-haas-billing-guardrails`
+- Latest commit: pending
+- Issue: #276
+- Pull request: pending publication
+- CI state: GitHub Actions pending publication
 
 ## Completed This Session
 
-- Added claim-bound Stripe Billing Portal session creation without accepting venue, customer, or subscription identifiers from the browser.
-- Added server and browser allowlisting for the Stripe-hosted Billing Portal and a server-configured HTTPS return URL.
-- Exposed authoritative subscription status, trial/current-period dates, and scheduled end-of-period state without exposing Stripe identifiers.
-- Added Venue Admin billing guidance and accessible portal pending/error states.
-- Persisted Stripe `cancel_at_period_end` changes through the existing idempotent webhook path and migration 033.
+- Added separate venue-scoped HaaS contract persistence and migration 034.
+- Added the approved Starter Kit/18-month, Bar Pack/24-month, and Full House/36-month catalog guardrails.
+- Added claim-bound hosted HaaS Checkout creation with Stripe price configuration and provider metadata.
+- Added idempotent confirmed HaaS subscription event mapping and lifecycle persistence.
+- Added Venue Admin bundle selection plus deterministic remaining-month and buyout disclosure without automatic collection.
 
 ## Files Changed
 
-- Billing Portal API options, gateway, service contract, controller response, and dependency registration.
-- `VenueSubscription`, Stripe webhook mapping/handling, and migration `033_add_subscription_period_end_state.sql`.
-- Venue Admin billing route, status card, portal client, API client, styles, and tests.
-- Focused API/data unit tests, migration inventory, and WP/status/tracker/handoff records.
+- HaaS domain model, repository, billing/event services, migration 034, and DI registration.
+- HaaS Checkout options/gateway, webhook mapper/controller routing, and Venue Admin billing contracts.
+- Venue Admin HaaS selection/disclosure UI, API client, responsive styles, and focused tests.
+- API/data/mapper/migration tests and WP/status/tracker/handoff records.
 
 ## Decisions
 
-- Resolve the Stripe customer server-side from the claim-bound venue subscription rather than accepting any Stripe identifier from Venue Admin.
-- Permit only absolute HTTPS `billing.stripe.com` session URLs at both API and browser boundaries.
-- Treat webhook state as authoritative; the portal launch does not mutate subscription or entitlement state.
+- Keep HaaS subscription state separate from the software subscription and use fixed approved bundle/term metadata.
+- Accept only bundle key and term from Venue Admin; venue and Stripe identifiers remain server/provider derived.
+- Treat Checkout as intent only. Only confirmed idempotent Stripe subscription events activate, update, or end a contract.
+- Disclose remaining contractual installments as the estimated buyout, but do not create or collect a charge.
 
 ## Validation
 
 - Commands: `npm test`; `npm run build`; `git diff --check`; `jq empty tracker/assignments.json`.
-- Results: 24 Venue Admin tests and the Venue Admin production build passed locally; Actions run #582 passed the complete required non-integration matrix.
+- Results: 28 Venue Admin tests and the Venue Admin production build passed locally; diff and tracker checks passed.
 - Skipped checks and reason: local .NET tooling is unavailable and GitHub Actions is authoritative. All integration-type and external Stripe tests are skipped by standing owner instruction.
 
 ## Remaining Work
 
-- WP-11.09 — HaaS Contract Lifecycle.
+- Publish, validate, review, and merge WP-11.09.
+- Then continue with WP-11.10 — Phase 11 Validation and Closure.
 
 ## Known Risks or Blockers
 
-- No known blocker. Live Stripe behavior is intentionally outside this package and covered by the standing integration-test exception.
+- No known blocker. Production deployment must configure the three HaaS Stripe Price IDs; live Stripe validation is intentionally excluded.
 
 ## Exact Next Action
 
-- Claim WP-11.09 and implement the documented HaaS contract lifecycle slice.
+- Publish WP-11.09 and inspect the exact-head GitHub Actions result.
 
 ## Do Not Redo or Reverse
 
-- Do not accept venue or Stripe identifiers from the Billing Portal request.
-- Do not add custom payment-method UI or HaaS contract behavior assigned to WP-11.09.
+- Do not merge HaaS state into `VenueSubscription`.
+- Do not persist a contract from Checkout intent or automatically collect a buyout.

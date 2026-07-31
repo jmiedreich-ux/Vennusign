@@ -123,7 +123,7 @@ public sealed class StripeWebhooksControllerTests
         RecordingHandler handler,
         string? signatureHeader = "t=123,v1=signature")
     {
-        var controller = new StripeWebhooksController(verifier, handler)
+        var controller = new StripeWebhooksController(verifier, handler, new RecordingHaasHandler())
         {
             ControllerContext = new ControllerContext
             {
@@ -170,5 +170,13 @@ public sealed class StripeWebhooksControllerTests
             LastEvent = stripeEvent;
             return Task.FromResult(Result);
         }
+    }
+
+    private sealed class RecordingHaasHandler : IHaasContractSubscriptionEventHandler
+    {
+        public Task<bool> HandleAsync(
+            HaasContractSubscriptionEvent stripeEvent,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(true);
     }
 }

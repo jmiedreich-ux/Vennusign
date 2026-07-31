@@ -38,6 +38,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISubscriptionTierRepository>(provider => provider.GetRequiredService<SubscriptionTierRepository>());
         services.AddScoped<IBillingCatalogRepository>(provider => provider.GetRequiredService<SubscriptionTierRepository>());
         services.AddScoped<IVenueSubscriptionRepository, VenueSubscriptionRepository>();
+        services.AddScoped<IHaasContractRepository, HaasContractRepository>();
         services.AddScoped<IVenueFeatureOverrideRepository, VenueFeatureOverrideRepository>();
         services.AddScoped<IFeatureUsageRepository, FeatureUsageRepository>();
         services.AddScoped<IFeatureResolutionService, FeatureResolutionService>();
@@ -47,11 +48,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBillingCatalogService, BillingCatalogService>();
         services.AddScoped<ICheckoutSessionService, CheckoutSessionService>();
         services.AddScoped<IBillingPortalSessionService, BillingPortalSessionService>();
+        services.AddScoped<IHaasBillingService, HaasBillingService>();
         services.AddScoped<IProcessedStripeEventRepository, ProcessedStripeEventRepository>();
         services.AddScoped<IOperationalEventRepository, OperationalEventRepository>();
         services.AddScoped<IRevenueDailySnapshotRepository, RevenueDailySnapshotRepository>();
         services.AddScoped<IStripeEventIdempotencyService, StripeEventIdempotencyService>();
         services.AddScoped<IStripeSubscriptionEventHandler, StripeSubscriptionEventHandler>();
+        services.AddScoped<IHaasContractSubscriptionEventHandler, HaasContractSubscriptionEventHandler>();
         services.AddScoped<IVenueDirectoryService, VenueDirectoryService>();
         services.AddScoped<IVenueSupportDetailService, VenueSupportDetailService>();
         services.AddScoped<ITierManagementService, TierManagementService>();

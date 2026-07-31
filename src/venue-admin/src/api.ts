@@ -15,6 +15,8 @@ export type VenueAdminBillingPresentation = {
   subscription?: VenueAdminSubscriptionSummary;
   availableTiers: VenueAdminTierSummary[];
   effectiveFeatures: Record<string, { enabled: boolean; limitValue?: string }>;
+  haasBundles: VenueAdminHaasBundleSummary[];
+  haasContract?: VenueAdminHaasContractSummary;
 };
 export type VenueAdminSubscriptionSummary = {
   status: "trialing" | "active" | "past_due" | "canceled";
@@ -22,6 +24,15 @@ export type VenueAdminSubscriptionSummary = {
   currentPeriodEnd?: string;
   cancelAtPeriodEnd: boolean;
   canManageBilling: boolean;
+};
+export type VenueAdminHaasBundleSummary = {
+  key: string; name: string; termMonths: 18 | 24 | 36;
+  monthlyAmount: number; postContractTierSlug: string;
+};
+export type VenueAdminHaasContractSummary = {
+  bundleKey: string; bundleName: string; status: "active" | "past_due" | "completed" | "canceled";
+  termMonths: number; monthlyAmount: number; startedUtc: string; contractEndsUtc: string;
+  remainingMonths: number; estimatedBuyoutAmount: number; cancelAtPeriodEnd: boolean; endedUtc?: string;
 };
 export type CheckoutBillingInterval = "monthly" | "annual";
 
@@ -224,6 +235,36 @@ export async function createBillingPortalSession(
     return requireHostedBillingPortalUrl(payload.portalUrl);
   } catch {
     throw new VenueAdminApiError(502, "Secure billing management returned an invalid response.");
+  }
+}
+
+export async function createHaasCheckoutSession(
+  configuration: VenueAdminConfiguration,
+  accessToken: string,
+  bundleKey: string,
+  termMonths: number,
+  signal?: AbortSignal
+): Promise<string> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/venue-admin/billing/haas-checkout-session`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Vennu-Venue-Token": accessToken
+    },
+    body: JSON.stringify({ bundleKey, termMonths }),
+    signal
+  });
+  if (!response.ok) {
+    throw new VenueAdminApiError(response.status, "Hardware bundle Checkout could not be opened.");
+  }
+  const payload = await response.json() as { checkoutUrl?: string };
+  if (!payload.checkoutUrl) {
+    throw new VenueAdminApiError(502, "Hardware bundle Checkout returned an invalid response.");
+  }
+  try {
+    return requireHostedCheckoutUrl(payload.checkoutUrl);
+  } catch {
+    throw new VenueAdminApiError(502, "Hardware bundle Checkout returned an invalid response.");
   }
 }
 
