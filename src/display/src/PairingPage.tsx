@@ -15,7 +15,9 @@ type PairingState =
   | { kind: 'ready'; code: string; expiresAt: string }
   | { kind: 'error' };
 
-export default function PairingPage() {
+type PairingPageProps = { platform: string; appVersion: string };
+
+export default function PairingPage({ platform, appVersion }: PairingPageProps) {
   const [state, setState] = useState<PairingState>({ kind: 'loading' });
 
   useEffect(() => {
@@ -27,7 +29,7 @@ export default function PairingPage() {
 
     const regenerate = async () => {
       if (!screenId) {
-        const registration = await registerPairingScreen(displayConfig.apiBaseUrl);
+        const registration = await registerPairingScreen(displayConfig.apiBaseUrl, platform, appVersion);
         screenId = registration.screenId;
         window.localStorage.setItem(PAIRING_SCREEN_STORAGE_KEY, screenId);
       }
@@ -70,7 +72,7 @@ export default function PairingPage() {
       window.clearInterval(pollHandle);
       window.clearTimeout(expiryHandle);
     };
-  }, []);
+  }, [appVersion, platform]);
 
   if (state.kind === 'loading') {
     return <main className="pairing-page" aria-busy="true"><p>Preparing this TV…</p></main>;

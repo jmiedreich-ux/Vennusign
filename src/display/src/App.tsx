@@ -1,12 +1,14 @@
 import DisplayPage from './DisplayPage';
 import PairingPage from './PairingPage';
+import { resolvePlatformLaunch } from './platformLaunch.mjs';
 import { resolveDisplayRoute } from './routing';
 
 export default function App() {
-  const route = resolveDisplayRoute(window.location.pathname);
+  const launch = resolvePlatformLaunch(window.location.pathname, window.__VENNU_PLATFORM__);
+  const route = resolveDisplayRoute(launch.pathname);
 
   if (route.kind === 'pair') {
-    return <PairingPage />;
+    return <PairingPage platform={launch.platform} appVersion={launch.appVersion} />;
   }
 
   if (route.kind === 'not-found') {
