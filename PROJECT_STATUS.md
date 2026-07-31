@@ -103,7 +103,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-11.01 — Upgrade Experience Contract and Tier Badges** is next.
+**WP-11.01 — Upgrade Experience Contract and Tier Badges** is in review on issue #239.
 
 ## Phase 04 Result
 
@@ -158,7 +158,7 @@ No implementation package is active. **WP-11.01 — Upgrade Experience Contract 
 
 ## Next Action
 
-Claim and implement **WP-11.01 — Upgrade Experience Contract and Tier Badges**.
+Publish and validate **WP-11.01 — Upgrade Experience Contract and Tier Badges** through GitHub Actions.
 
 ## Phase 05 Work Packages
 

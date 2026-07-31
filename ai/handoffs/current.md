@@ -2,45 +2,45 @@
 
 ## Work Package
 
-- ID: WP-10.10
-- Status: Complete and merged
+- ID: WP-11.01
+- Status: Review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/10.10-phase-10-validation-closure`
-- Issue: #235
-- Pull request: #236
-- Latest reviewed commit: `75d6c03`
-- Merge commit: `1aab0fb`
-- CI state: GitHub Actions run #509 passed
+- Branch: `wp/11.01-upgrade-contract-tier-badges`
+- Issue: #239
+- Pull request: pending
+- Latest reviewed commit: pending
+- Merge commit: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added consolidated display critical journeys for all four TV platforms.
-- Added consolidated HaaS and fleet-health administration coverage.
-- Added the Phase 10 validation acceptance matrix.
-- Synchronized closure-review status, tracker, work-package, and handoff records.
+- Added the canonical upgrade benefit and tier presentation catalog.
+- Added deterministic single-opportunity selection and session-scoped dismissal.
+- Added the reusable informational tier badge.
+- Added focused non-integration tests and review-state project records.
 
 ## Decisions
 
-- Phase 10 closure adds validation evidence only.
-- The hosted React player remains authoritative across all platform wrappers.
+- Upgrade foundations remain presentation-only and do not alter entitlements.
+- Workflow placement begins only in WP-11.02.
 
 ## Validation
 
-- Results: restore, Release build, 53 admin tests, 121 display tests, required unit tests, Android profile builds, Tizen validation, and webOS validation passed in Actions run #509.
-- Skipped: all integration-type and external store/simulator/device tests.
+- Results: pending authoritative GitHub Actions.
+- Skipped: all integration-type and external Stripe tests.
 
 ## Remaining Work
 
-- WP-11.01 — Upgrade Experience Contract and Tier Badges.
+- WP-11.02 — Locked Navigation and Section Previews after WP-11.01 merges.
 
 ## Exact Next Action
 
-Claim and implement WP-11.01 — Upgrade Experience Contract and Tier Badges.
+Publish WP-11.01, run required GitHub Actions, review the exact head, and merge when green.
 
 ## Do Not Redo or Reverse
 
-- Do not add billing behavior to this closure package.
-- Do not persist or log raw provisioning tokens or fork player behavior into platform wrappers.
+- Do not place prompts in workflows before WP-11.02.
+- Do not store dismissals outside browser session storage.

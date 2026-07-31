@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T03:48:30Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-11.01",
+  "updatedUtc": "2026-07-31T03:52:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-11.01",
+      "owner": "ChatGPT",
+      "branch": "wp/11.01-upgrade-contract-tier-badges",
+      "issue": 239,
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-11.02",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
