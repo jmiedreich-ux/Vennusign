@@ -103,10 +103,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-11.01 — Upgrade Experience Contract and Tier Badges
 - WP-11.02 — Locked Navigation and Section Previews
 - WP-11.03 — Inline Feature Hints
+- WP-11.04 — Sidebar Upgrade Nudge
 
 ## Active Work Package
 
-**WP-11.04 — Sidebar Upgrade Nudge** is in review.
+No implementation package is active. **WP-11.05 — Upgrade Modal and Tier Value Summary** is next.
 
 ## Phase 04 Result
 
@@ -161,7 +162,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Publish and validate **WP-11.04 — Sidebar Upgrade Nudge** through GitHub Actions.
+Claim and implement **WP-11.05 — Upgrade Modal and Tier Value Summary**.
 
 ## Phase 05 Work Packages
 
