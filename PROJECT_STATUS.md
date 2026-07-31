@@ -106,7 +106,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-11.04 — Sidebar Upgrade Nudge** is next.
+**WP-11.04 — Sidebar Upgrade Nudge** is in review.
 
 ## Phase 04 Result
 
@@ -161,7 +161,7 @@ No implementation package is active. **WP-11.04 — Sidebar Upgrade Nudge** is n
 
 ## Next Action
 
-Claim and implement **WP-11.04 — Sidebar Upgrade Nudge**.
+Publish and validate **WP-11.04 — Sidebar Upgrade Nudge** through GitHub Actions.
 
 ## Phase 05 Work Packages
 

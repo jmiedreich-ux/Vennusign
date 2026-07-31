@@ -7,6 +7,8 @@ import VenueDetail from "./VenueDetail";
 import TierManagement from "./TierManagement";
 import FeatureMatrix from "./FeatureMatrix";
 import OperationalDashboard from "./OperationalDashboard";
+import SidebarUpgradeNudge from "./SidebarUpgradeNudge";
+import type { EffectiveFeatureMap, UpgradeOpportunity } from "./upgradeExperience.mjs";
 
 const routes = [
   { path: "dashboard", label: "Dashboard", description: "Revenue and operational health" },
@@ -27,6 +29,8 @@ export default function App() {
   const [session, setSession] = useState<AdminSession>();
   const [route, setRoute] = useState(currentRoute);
   const [error, setError] = useState<string>();
+  const [venueFeatures, setVenueFeatures] = useState<EffectiveFeatureMap>();
+  const [upgradeContext, setUpgradeContext] = useState<Readonly<UpgradeOpportunity>>();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -72,6 +76,8 @@ export default function App() {
         <nav aria-label="Super Admin">
           {routes.map(item => <a className={route.path === item.path ? "active" : ""} href={`#/${item.path}`} key={item.path}><strong>{item.label}</strong><small>{item.description}</small></a>)}
         </nav>
+        {venueFeatures ? <SidebarUpgradeNudge effectiveFeatures={venueFeatures} onUpgrade={setUpgradeContext} /> : null}
+        {upgradeContext ? <p className="sidebar-upgrade-context" role="status">Upgrade options for {upgradeContext.title} open in the next billing step.</p> : null}
         <button className="identity" type="button" onClick={() => { sessionStorage.removeItem("vennu.admin.key"); setSession(undefined); setApiKey(""); }}><span>{session.displayName.slice(0, 1)}</span><div><strong>{session.displayName}</strong><small>Sign out</small></div></button>
       </aside>
       <main>
@@ -80,7 +86,7 @@ export default function App() {
           ? <OperationalDashboard configuration={configuration} apiKey={apiKey} />
           : route.path === "venues"
           ? selectedVenueId
-            ? <VenueDetail configuration={configuration} apiKey={apiKey} venueId={selectedVenueId} onBack={() => setSelectedVenueId(undefined)} />
+            ? <VenueDetail configuration={configuration} apiKey={apiKey} venueId={selectedVenueId} onBack={() => { setSelectedVenueId(undefined); setVenueFeatures(undefined); setUpgradeContext(undefined); }} onUpgradeFeaturesChange={setVenueFeatures} />
             : <VenueDirectory configuration={configuration} apiKey={apiKey} onSelectVenue={setSelectedVenueId} />
           : route.path === "tiers"
             ? <TierManagement configuration={configuration} apiKey={apiKey} />

@@ -11,11 +11,11 @@ import EmergencyBroadcastAdministration from "./EmergencyBroadcastAdministration
 import DateRangePromotionAdministration from "./DateRangePromotionAdministration";
 import TapListAdministration from "./TapListAdministration";
 import InlineFeatureHint from "./InlineFeatureHint";
-import { dismissUpgradeFeature, readDismissedUpgradeFeatures, selectUpgradeOpportunity, upgradePanelForFeature, type UpgradeOpportunity, type UpgradePanel } from "./upgradeExperience.mjs";
+import { dismissUpgradeFeature, readDismissedUpgradeFeatures, selectUpgradeOpportunity, upgradePanelForFeature, type EffectiveFeatureMap, type UpgradeOpportunity, type UpgradePanel } from "./upgradeExperience.mjs";
 
-type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; onBack: () => void };
+type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; onBack: () => void; onUpgradeFeaturesChange?: (features: EffectiveFeatureMap) => void };
 
-export default function VenueDetail({ configuration, apiKey, venueId, onBack }: Props) {
+export default function VenueDetail({ configuration, apiKey, venueId, onBack, onUpgradeFeaturesChange }: Props) {
   const [detail, setDetail] = useState<VenueSupportDetail>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
@@ -39,7 +39,7 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
       loadFeatureMatrix(configuration, apiKey)
     ])
       .then(([value, featureMatrix]) => {
-        if (value) { setDetail(value); setMatrix(featureMatrix); setFeatureId(current => current || featureMatrix.features[0]?.id || ""); setTargetTierId(value.tier?.id ?? ""); }
+        if (value) { setDetail(value); setMatrix(featureMatrix); setFeatureId(current => current || featureMatrix.features[0]?.id || ""); setTargetTierId(value.tier?.id ?? ""); onUpgradeFeaturesChange?.(value.features); }
         else setError("Venue not found.");
       })
       .catch(reason => {
@@ -47,7 +47,7 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
-  }, [apiKey, configuration, venueId, version]);
+  }, [apiKey, configuration, onUpgradeFeaturesChange, venueId, version]);
 
   const saveOverride = async (event: FormEvent) => {
     event.preventDefault(); setSaving(true); setError(undefined);
@@ -83,7 +83,7 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
     setUpgradeContext(undefined);
     setUpgradeVersion(value => value + 1);
   };
-  const inlineHint = upgradeOpportunity
+  const inlineHint = !onUpgradeFeaturesChange && upgradeOpportunity
     ? <InlineFeatureHint key={`${upgradeOpportunity.featureKey}-${upgradeVersion}`} opportunity={upgradeOpportunity} onDismiss={dismissUpgrade} onUpgrade={setUpgradeContext} />
     : null;
   return <section className="venue-detail">

@@ -9,5 +9,6 @@ export const upgradeCatalog: readonly Readonly<UpgradeOpportunity>[];
 export function readDismissedUpgradeFeatures(storage?: Storage): Set<string>;
 export function dismissUpgradeFeature(featureKey: string, storage?: Storage): void;
 export function selectUpgradeOpportunity(effectiveFeatures: EffectiveFeatureMap, dismissed?: ReadonlySet<string>): Readonly<UpgradeOpportunity> | undefined;
+export function listUpgradeOpportunities(effectiveFeatures: EffectiveFeatureMap, dismissed?: ReadonlySet<string>): readonly Readonly<UpgradeOpportunity>[];
 export type UpgradePanel = 'design' | 'menu' | 'scheduling' | 'operations';
 export function upgradePanelForFeature(featureKey: string): UpgradePanel;

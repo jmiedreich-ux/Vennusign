@@ -2,45 +2,45 @@
 
 ## Work Package
 
-- ID: WP-11.03
-- Status: Complete and merged
+- ID: WP-11.04
+- Status: Review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/11.03-inline-feature-hints`
-- Issue: #245
-- Pull request: #246
-- Latest reviewed commit: `970a04a`
-- Merge commit: `60871a2`
-- CI state: GitHub Actions run #531 passed
+- Branch: `wp/11.04-sidebar-upgrade-nudge`
+- Issue: #248
+- Pull request: pending
+- Latest reviewed commit: pending
+- Merge commit: pending
+- CI state: GitHub Actions pending
 
 ## Completed This Session
 
-- Added deterministic feature-to-panel mapping.
-- Added one quiet, contextual, dismissible inline hint.
-- Preserved every venue workflow and authoritative entitlement.
+- Added deterministic seven-second sidebar rotation and progress controls.
+- Added reduced-motion behavior and per-feature session dismissal.
+- Coordinated sidebar and inline surfaces so only one is active.
 - Added focused non-integration tests and review-state project records.
 
 ## Decisions
 
-- A single selected opportunity is inserted into exactly one mapped panel.
-- Inline hints use the existing session dismissal contract.
+- Sidebar opportunities preserve canonical catalog order.
+- A venue using the sidebar suppresses its inline prompt to prevent overlap.
 
 ## Validation
 
-- Results: restore, Release build, admin/display production builds and tests, required unit tests, Android profiles, Tizen validation, and webOS validation passed in Actions run #531.
+- Results: pending authoritative GitHub Actions.
 - Skipped: all integration-type and external Stripe tests.
 
 ## Remaining Work
 
-- WP-11.04 — Sidebar Upgrade Nudge.
+- GitHub Actions validation and ChatGPT review for WP-11.04.
 
 ## Exact Next Action
 
-Claim and implement WP-11.04 — Sidebar Upgrade Nudge.
+Publish WP-11.04, validate the exact head in GitHub Actions, review, and merge.
 
 ## Do Not Redo or Reverse
 
-- Do not place prompts in workflows before WP-11.02.
-- Do not store dismissals outside browser session storage.
+- Do not show the sidebar nudge and inline hint together.
+- Do not enable automatic rotation for reduced-motion users.

@@ -27,7 +27,7 @@ test('inline hint is concrete quiet accessible and dismissible', () => {
 });
 
 test('one selected opportunity is inserted into exactly one mapped panel', () => {
-  assert.match(venue, /const inlineHint = upgradeOpportunity/);
+  assert.match(venue, /const inlineHint = !onUpgradeFeaturesChange && upgradeOpportunity/);
   for (const panel of ['design', 'menu', 'scheduling', 'operations']) {
     assert.match(venue, new RegExp(`upgradePanel === "${panel}" \\? inlineHint : null`));
   }
