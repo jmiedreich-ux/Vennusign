@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T06:48:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-11.06",
+  "updatedUtc": "2026-07-31T07:10:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-11.06",
+      "issue": 267,
+      "branch": "wp/11.06-stripe-checkout-session-foundation",
+      "owner": "jmiedreich-ux",
+      "status": "in_progress"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-11.07",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

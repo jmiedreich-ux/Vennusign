@@ -45,6 +45,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVenueProvisioningService, VenueProvisioningService>();
         services.AddScoped<IUsageMeteringService, UsageMeteringService>();
         services.AddScoped<IBillingCatalogService, BillingCatalogService>();
+        services.AddScoped<ICheckoutSessionService, CheckoutSessionService>();
         services.AddScoped<IProcessedStripeEventRepository, ProcessedStripeEventRepository>();
         services.AddScoped<IOperationalEventRepository, OperationalEventRepository>();
         services.AddScoped<IRevenueDailySnapshotRepository, RevenueDailySnapshotRepository>();

@@ -3,13 +3,13 @@
 ## Work Package
 
 - ID: WP-11.06
-- Status: Available
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: pending
-- Issue: pending
+- Branch: `wp/11.06-stripe-checkout-session-foundation`
+- Issue: #267
 - Pull request: pending
 - Latest reviewed commit: `f3b002516f6d25c5efe300451e6eb917679602ca` (RWP-11.01)
 - Merge commit: `484f2fb4be7695089961a2da3f68981b1d6be57f` (RWP-11.01)

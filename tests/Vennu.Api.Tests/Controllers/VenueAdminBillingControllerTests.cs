@@ -30,4 +30,16 @@ public sealed class VenueAdminBillingControllerTests : IClassFixture<VennuApiFac
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
+
+    [Fact]
+    public async Task CheckoutSession_ReturnsUnauthorized_WhenVenueTokenIsMissing()
+    {
+        using var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/venue-admin/billing/checkout-session",
+            new { targetTierId = Guid.NewGuid(), billingInterval = "monthly" });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
 }
