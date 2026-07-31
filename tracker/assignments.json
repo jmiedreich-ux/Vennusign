@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T04:24:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-11.04",
+  "updatedUtc": "2026-07-31T04:31:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-11.04",
+      "owner": "ChatGPT",
+      "branch": "wp/11.04-sidebar-upgrade-nudge",
+      "issue": 248,
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-11.05",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

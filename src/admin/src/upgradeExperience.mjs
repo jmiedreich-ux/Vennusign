@@ -43,7 +43,11 @@ export function dismissUpgradeFeature(featureKey, storage = globalThis.sessionSt
 }
 
 export function selectUpgradeOpportunity(effectiveFeatures, dismissed = new Set()) {
-  return upgradeCatalog.find(item =>
+  return listUpgradeOpportunities(effectiveFeatures, dismissed)[0];
+}
+
+export function listUpgradeOpportunities(effectiveFeatures, dismissed = new Set()) {
+  return upgradeCatalog.filter(item =>
     effectiveFeatures[item.featureKey]?.enabled === false && !dismissed.has(item.featureKey)
   );
 }

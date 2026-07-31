@@ -28,7 +28,7 @@ test('locked section preview shows one concrete benefit and keeps its mockup non
 
 test('venue detail retains one selected upgrade surface and every existing workflow', () => {
   assert.match(venue, /selectUpgradeOpportunity\(detail\.features/);
-  assert.match(venue, /const inlineHint = upgradeOpportunity/);
+  assert.match(venue, /const inlineHint = !onUpgradeFeaturesChange && upgradeOpportunity/);
   assert.match(preview, /export default function LockedSectionPreview/);
   for (const workflow of ['ScreenManagement', 'ThemeBuilder', 'MenuSectionsEditor', 'HappyHourAdministration']) {
     assert.match(venue, new RegExp(`<${workflow}`));
