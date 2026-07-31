@@ -34,11 +34,11 @@
 
 ## Remaining Work
 
-- Create the Phase 11 AWP breakdown before starting Phase 11 implementation.
+- WP-11.01 — Upgrade Experience Contract and Tier Badges.
 
 ## Exact Next Action
 
-Create and merge the Phase 11 AWP breakdown, then claim its first package.
+Claim and implement WP-11.01 — Upgrade Experience Contract and Tier Badges.
 
 ## Do Not Redo or Reverse
 

@@ -103,7 +103,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. The formal Phase 11 AWP breakdown is next.
+No implementation package is active. **WP-11.01 — Upgrade Experience Contract and Tier Badges** is next.
 
 ## Phase 04 Result
 
@@ -158,7 +158,7 @@ No implementation package is active. The formal Phase 11 AWP breakdown is next.
 
 ## Next Action
 
-Create the formal Phase 11 AWP breakdown, then claim its first package.
+Claim and implement **WP-11.01 — Upgrade Experience Contract and Tier Badges**.
 
 ## Phase 05 Work Packages
 
@@ -183,3 +183,7 @@ Create the formal Phase 11 AWP breakdown, then claim its first package.
 ## Phase 10 Work Packages
 
 - WP-10.01 through WP-10.10 are defined in `docs/phase-plans/phase-10-tv-apps-platform-distribution.md`.
+
+## Phase 11 Work Packages
+
+- WP-11.01 through WP-11.10 are defined in `docs/phase-plans/phase-11-upgrade-prompts-billing-ux.md`.

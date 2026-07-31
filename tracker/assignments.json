@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T03:44:30Z",
+  "updatedUtc": "2026-07-31T03:48:30Z",
   "activeAssignments": [],
-  "nextAvailableWorkPackage": "Phase 11 AWP breakdown",
+  "nextAvailableWorkPackage": "WP-11.01",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
