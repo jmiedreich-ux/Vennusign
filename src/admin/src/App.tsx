@@ -52,6 +52,13 @@ export default function App() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
+  useEffect(() => {
+    if (route.path !== "venues") {
+      setVenueFeatures(undefined);
+      setUpgradeContext(undefined);
+    }
+  }, [route.path]);
+
   const authorize = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);

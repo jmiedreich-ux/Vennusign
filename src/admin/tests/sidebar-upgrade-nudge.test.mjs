@@ -28,6 +28,7 @@ test('sidebar nudge rotates every seven seconds unless reduced motion is request
 test('dismissal is per feature and the app exposes only one active prompt surface', () => {
   assert.match(component, /dismissUpgradeFeature\(opportunity\.featureKey\)/);
   assert.match(app, /<SidebarUpgradeNudge/);
+  assert.match(app, /route\.path !== "venues"/);
   assert.match(venue, /!onUpgradeFeaturesChange && upgradeOpportunity/);
   assert.match(styles, /\.sidebar-upgrade-nudge/);
 });
