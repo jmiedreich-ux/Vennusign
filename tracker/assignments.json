@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T05:50:00Z",
+  "updatedUtc": "2026-07-31T06:08:00Z",
   "activeAssignments": [
     {
-      "workPackage": "RWP-04.01",
+      "workPackage": "RWP-05.01",
       "owner": "ChatGPT",
-      "branch": "rwp/04.01-super-admin-venue-provisioning",
-      "issue": 253,
+      "branch": "rwp/05.01-venue-admin-cms-foundation",
+      "issue": 254,
       "status": "Review"
     }
   ],
-  "nextAvailableWorkPackage": "RWP-05.01",
+  "nextAvailableWorkPackage": "RWP-05.02",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

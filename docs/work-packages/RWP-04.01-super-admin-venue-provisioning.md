@@ -2,7 +2,7 @@
 
 ## Status
 
-In Review.
+Complete.
 
 ## Goal
 
@@ -103,12 +103,13 @@ Create:
 
 - Issue: #253
 - Branch: `rwp/04.01-super-admin-venue-provisioning`
-- Pull request: pending
+- Pull request: #260
 
 ## Validation Evidence
 
 - Local Super Admin tests: 73 passed.
 - Local Super Admin production build: passed.
 - Local .NET validation: not run because the SDK is unavailable in this workspace.
-- GitHub Actions: pending and authoritative.
+- GitHub Actions run #553: passed against reviewed head `76678410e74f673922a9a7b4c977d6e8799fa58b`.
+- Merge commit: `a1ba62934f13be179d8f892fe83ac75d5fb633ac`.
 - Skipped: Azure SQL, external-service, credentialed, hosted-infrastructure, container, and all other integration-type tests under the standing owner exception.

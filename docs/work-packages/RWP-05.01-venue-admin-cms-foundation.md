@@ -1,9 +1,8 @@
-# WP-05.11 — Venue Admin CMS Foundation and Protected Bootstrap
-# WP-05.11 — Venue Admin CMS Foundation and Protected Bootstrap
+# RWP-05.01 â€” Venue Admin CMS Foundation
 
 ## Status
 
-Planned.
+In Review.
 
 ## Goal
 
@@ -34,9 +33,9 @@ Restore the planned architecture by introducing a separate venue-facing Admin CM
 
 ## Dependencies
 
-- WP-04.13 — Super Admin Venue Provisioning
-- WP-05.05 — Tier-Aware Venue Admin Patterns
-- WP-05.10 — Phase 05 Validation and Closure
+- RWP-04.01 â€” Super Admin Venue Provisioning
+- WP-05.05 â€” Tier-Aware Venue Admin Patterns
+- WP-05.10 â€” Phase 05 Validation and Closure
 
 ## Implementation Plan
 
@@ -119,6 +118,14 @@ Create:
 
 ## GitHub
 
-- Issue: pending
-- Branch: `wp/05.11-venue-admin-cms-foundation`
+- Issue: #254
+- Branch: `rwp/05.01-venue-admin-cms-foundation`
 - Pull request: pending
+
+## Validation Evidence
+
+- Local Venue Admin tests: 3 passed.
+- Local Venue Admin production build: passed.
+- Local .NET validation: not run because the SDK is unavailable in this workspace.
+- GitHub Actions: pending and authoritative.
+- Skipped: Azure SQL, external-service, credentialed, hosted-infrastructure, container, and all other integration-type tests under the standing owner exception.
