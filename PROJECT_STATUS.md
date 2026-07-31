@@ -92,7 +92,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-10.01 — Platform Launch Contract and Player Bridge** is the next package in roadmap order.
+**WP-10.01 — Platform Launch Contract and Player Bridge: In Review**
 
 ## Phase 04 Result
 
@@ -140,7 +140,7 @@ None. **WP-10.01 — Platform Launch Contract and Player Bridge** is the next pa
 
 ## Next Action
 
-Claim and implement **WP-10.01 — Platform Launch Contract and Player Bridge**.
+Validate and merge **WP-10.01 — Platform Launch Contract and Player Bridge**. Then begin WP-10.02.
 
 ## Phase 05 Work Packages
 

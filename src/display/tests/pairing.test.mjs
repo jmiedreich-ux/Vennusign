@@ -26,9 +26,12 @@ test('registers and requests a code using the existing pairing APIs', async () =
       headers: { 'Content-Type': 'application/json' }
     });
   };
-  const screen = await registerPairingScreen('https://api.example.com/', fetchImpl);
+  const screen = await registerPairingScreen('https://api.example.com/', 'android_tv', '2.1.0', fetchImpl);
   const code = await createPairingCode('https://api.example.com/', screen.screenId, fetchImpl);
   assert.equal(requests[0].input, 'https://api.example.com/api/screens');
+  assert.deepEqual(JSON.parse(requests[0].init.body), {
+    name: 'Vennu TV', platform: 'android_tv', appVersion: '2.1.0'
+  });
   assert.equal(requests[1].input, 'https://api.example.com/api/screens/pairing-code');
   assert.equal(code.code, '123456');
 });
@@ -52,5 +55,5 @@ test('polls status every three seconds and redirects to the encoded display rout
 test('routes /pair to the pairing page', () => {
   assert.match(routes, /kind: 'pair'/);
   assert.match(routes, /\^\\\/pair/);
-  assert.match(app, /<PairingPage \/>/);
+  assert.match(app, /<PairingPage/);
 });

@@ -1,0 +1,28 @@
+export const supportedTvPlatforms = Object.freeze(['android_tv', 'fire_tv', 'tizen', 'webos']);
+
+function normalizePlatform(value) {
+  return supportedTvPlatforms.includes(value) ? value : 'browser';
+}
+
+function cleanVersion(value, fallback) {
+  const version = typeof value === 'string' ? value.trim().slice(0, 50) : '';
+  return version || fallback;
+}
+
+export function resolvePlatformLaunch(pathname, bridge) {
+  const platform = normalizePlatform(bridge?.platform);
+  const appVersion = cleanVersion(bridge?.appVersion, platform === 'browser' ? 'web' : 'unknown');
+  const screenId = typeof bridge?.screenId === 'string' && bridge.screenId.trim()
+    ? bridge.screenId.trim()
+    : undefined;
+
+  if (platform !== 'browser' && screenId) {
+    return { platform, appVersion, pathname: `/display/${encodeURIComponent(screenId)}` };
+  }
+
+  if (platform !== 'browser' && /^\/?$/i.test(pathname)) {
+    return { platform, appVersion, pathname: '/pair' };
+  }
+
+  return { platform, appVersion, pathname };
+}

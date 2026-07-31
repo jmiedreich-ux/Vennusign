@@ -13,14 +13,14 @@ async function jsonRequest(url, init, fetchImpl) {
   return response.json();
 }
 
-export async function registerPairingScreen(baseUrl, fetchImpl = fetch) {
+export async function registerPairingScreen(baseUrl, platform = 'browser', appVersion = 'web', fetchImpl = fetch) {
   return jsonRequest(apiUrl(baseUrl, '/api/screens'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       name: 'Vennu TV',
-      platform: 'web-tv',
-      appVersion: '1.0'
+      platform,
+      appVersion
     })
   }, fetchImpl);
 }
