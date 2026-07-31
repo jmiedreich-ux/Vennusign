@@ -2,18 +2,18 @@
 
 ## Work Package
 
-- ID: WP-11.06
-- Status: In progress
+- ID: WP-11.07
+- Status: Available
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/11.06-stripe-checkout-session-foundation`
-- Issue: #267
+- Branch: pending
+- Issue: pending
 - Pull request: pending
-- Latest reviewed commit: `f3b002516f6d25c5efe300451e6eb917679602ca` (RWP-11.01)
-- Merge commit: `484f2fb4be7695089961a2da3f68981b1d6be57f` (RWP-11.01)
-- CI state: RWP-11.01 Actions run #565 passed
+- Latest reviewed commit: `2a5e7a4e269700fc5bdbe428339d7b8f77c0fb60` (WP-11.06)
+- Merge commit: `f3380b060f1732d725ea25d0b56b9164db169b7c` (WP-11.06)
+- CI state: WP-11.06 Actions run #572 passed
 
 ## Completed This Session
 
@@ -33,6 +33,7 @@
 - Moved the WP-11.01–11.05 upgrade catalog, prompts, locked previews, and modal into Venue Admin.
 - Removed customer upgrade orchestration from Super Admin while retaining support tier and override controls.
 - Completed the approved RWP queue and restored normal Phase 11 roadmap order.
+- Added the claim-bound Stripe Checkout Session foundation with public catalog validation and an allowlisted hosted-URL response.
 
 ## Decisions
 
@@ -50,19 +51,20 @@
 - RWP-05.03: Actions run #562 passed all required non-integration validation.
 - RWP-11.01 local validation: 17 Venue Admin tests and 73 Super Admin tests passed; both production builds passed.
 - RWP-11.01: Actions run #565 passed all required non-integration validation.
+- WP-11.06: Actions run #572 passed all required non-integration validation.
 - Skipped: local .NET validation because the SDK is unavailable.
 - Standing skip: all Azure SQL, external-service, credentialed, hosted-infrastructure, container, and other integration-type tests.
 
 ## Remaining Work
 
-- WP-11.06 — Stripe Checkout Session Foundation.
+- WP-11.07 — Checkout Launch and Entitlement Return.
 
 ## Exact Next Action
 
-Claim WP-11.06 and implement its authenticated venue-scoped Checkout session foundation.
+Claim WP-11.07 and connect the Venue Admin upgrade CTA to Checkout with bounded success/cancel return states and authoritative post-webhook refresh.
 
 ## Do Not Redo or Reverse
 
-- Do not add public self-service signup or Stripe Checkout to this remediation package.
+- Do not grant entitlements from Checkout return parameters; webhook-processed subscription state remains authoritative.
 - Do not move venue-operator workflows into Super Admin; RWP-05.01 establishes the separate Venue Admin CMS.
-- Do not connect Checkout or mutate entitlement until WP-11.06 and WP-11.07.
+- Do not implement Billing Portal or contract billing before WP-11.08 and WP-11.09.
