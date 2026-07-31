@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T04:06:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-11.02",
-      "owner": "ChatGPT",
-      "branch": "wp/11.02-locked-navigation-section-previews",
-      "issue": 242,
-      "status": "Review"
-    }
-  ],
+  "updatedUtc": "2026-07-31T04:12:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-11.03",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
