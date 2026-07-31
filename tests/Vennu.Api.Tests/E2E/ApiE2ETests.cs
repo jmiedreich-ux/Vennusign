@@ -166,6 +166,12 @@ public sealed class VennuApiFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting("SuperAdmin:ApiKey", "test-admin-key");
+        builder.UseSetting("VenueAdmin:Sessions:0:AccessToken", "test-venue-token");
+        builder.UseSetting("VenueAdmin:Sessions:0:VenueId", "11111111-1111-1111-1111-111111111111");
+        builder.UseSetting("VenueAdmin:Sessions:0:UserId", "venue-owner");
+        builder.UseSetting("VenueAdmin:Sessions:0:DisplayName", "Harbor Owner");
+        builder.UseSetting("VenueAdmin:Sessions:0:Capabilities:0", "menus");
+        builder.UseSetting("VenueAdmin:Sessions:0:Capabilities:1", "screens");
         builder.UseSetting("Stripe:Webhook:SigningSecret", "whsec_test");
 
         builder.ConfigureServices(services =>

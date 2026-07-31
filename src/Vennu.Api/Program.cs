@@ -8,13 +8,20 @@ using Vennu.Api.Admin;
 using Vennu.Api.Billing;
 using Vennu.Data.Services;
 using Vennu.Api.Services;
+using Vennu.Api.VenueAdmin;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var adminCorsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
 if (builder.Environment.IsDevelopment() && (adminCorsOrigins is null || adminCorsOrigins.Length == 0))
 {
-    adminCorsOrigins = ["http://localhost:5173", "https://localhost:5173"];
+    adminCorsOrigins =
+    [
+        "http://localhost:5173",
+        "https://localhost:5173",
+        "http://localhost:5174",
+        "https://localhost:5174"
+    ];
 }
 
 var adminCorsEnabled = adminCorsOrigins is { Length: > 0 };
@@ -34,7 +41,10 @@ builder.Services
     .AddAuthentication(SuperAdminAuthenticationDefaults.AuthenticationScheme)
     .AddScheme<SuperAdminAuthenticationOptions, SuperAdminAuthenticationHandler>(
         SuperAdminAuthenticationDefaults.AuthenticationScheme,
-        options => builder.Configuration.GetSection(SuperAdminAuthenticationOptions.SectionName).Bind(options));
+        options => builder.Configuration.GetSection(SuperAdminAuthenticationOptions.SectionName).Bind(options))
+    .AddScheme<VenueAdminAuthenticationOptions, VenueAdminAuthenticationHandler>(
+        VenueAdminAuthenticationDefaults.AuthenticationScheme,
+        options => builder.Configuration.GetSection(VenueAdminAuthenticationOptions.SectionName).Bind(options));
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(
@@ -43,6 +53,13 @@ builder.Services.AddAuthorization(options =>
             .AddAuthenticationSchemes(SuperAdminAuthenticationDefaults.AuthenticationScheme)
             .RequireAuthenticatedUser()
             .RequireRole("SuperAdmin"));
+    options.AddPolicy(
+        VenueAdminAuthenticationDefaults.AuthorizationPolicy,
+        policy => policy
+            .AddAuthenticationSchemes(VenueAdminAuthenticationDefaults.AuthenticationScheme)
+            .RequireAuthenticatedUser()
+            .RequireRole("VenueAdmin")
+            .RequireClaim(VenueAdminAuthenticationDefaults.VenueIdClaim));
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();

@@ -59,6 +59,7 @@ jobs:
           cache-dependency-path: |
             src/display/package-lock.json
             src/admin/package-lock.json
+            src/venue-admin/package-lock.json
 
       - name: Install admin dependencies
         working-directory: src/admin
@@ -70,6 +71,18 @@ jobs:
 
       - name: Test admin
         working-directory: src/admin
+        run: npm test
+
+      - name: Install venue admin dependencies
+        working-directory: src/venue-admin
+        run: npm ci
+
+      - name: Build venue admin
+        working-directory: src/venue-admin
+        run: npm run build
+
+      - name: Test venue admin
+        working-directory: src/venue-admin
         run: npm test
 
       - name: Install display dependencies
@@ -172,6 +185,7 @@ jobs:
           echo "=== Test Run Summary ==="
           echo "Display app: dependencies installed, production build, and frontend tests executed"
           echo "Super Admin app: dependencies installed, production build, and frontend tests executed"
+          echo "Venue Admin app: dependencies installed, production build, and frontend tests executed"
           echo "Android TV: unsigned Google TV and Fire TV debug variants assembled"
           echo "Samsung Tizen: package manifest and launcher statically validated"
           echo "LG webOS: package manifest, launcher, and lifecycle handling statically validated"
@@ -179,6 +193,7 @@ jobs:
           echo "Integration tests: SKIPPED by standing repository-owner instruction"
           echo "Projects tested:"
           echo "  - src/display (npm ci and npm run build)"
+          echo "  - src/venue-admin (npm ci, npm run build, and npm test)"
           echo "  - Vennu.DataAccess.Tests (unit: repository and data access tests)"
           echo "  - Vennu.Api.Tests (unit: controller tests; integration: vertical slice)"
           echo "  - Vennu.Data.IntegrationTests (integration: entity persistence tests)"
