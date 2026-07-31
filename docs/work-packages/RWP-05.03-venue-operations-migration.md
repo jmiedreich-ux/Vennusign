@@ -2,7 +2,7 @@
 
 ## Status
 
-In Review.
+Complete.
 
 ## Goal
 
@@ -135,12 +135,13 @@ Create:
 
 - Issue: #256
 - Branch: `rwp/05.03-venue-operations-migration`
-- Pull request: pending
+- Pull request: #263
 
 ## Validation Evidence
 
 - Local Venue Admin tests: 12 passed; production build passed.
 - Local Super Admin tests: 73 passed; production build passed.
 - Local .NET validation: not run because the SDK is unavailable in this workspace.
-- GitHub Actions: pending and authoritative.
+- GitHub Actions run #562: passed against reviewed head `a225dc078a31a920cf4ee7ebfda6b6064fe0ecf3`.
+- Merge commit: `16a477cf80e9f90711706dde364d4f67de6dde26`.
 - Skipped: Azure SQL, external-service, credentialed, hosted-infrastructure, container, and all other integration-type tests under the standing owner exception.

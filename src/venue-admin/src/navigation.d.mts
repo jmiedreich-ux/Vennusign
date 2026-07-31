@@ -3,6 +3,7 @@ export type VenueAdminRoute = {
   label: string;
   description: string;
   capability?: string;
+  upgradeFeature?: string;
 };
 
 export const venueAdminRoutes: VenueAdminRoute[];

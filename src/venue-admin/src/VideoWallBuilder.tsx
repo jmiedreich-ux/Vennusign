@@ -2,10 +2,10 @@ import { useEffect, useState, type FormEvent } from "react";
 import { loadVideoWalls, removeVideoWall, saveVideoWall, type ManagedScreen, type VideoWallSnapshot } from "./api";
 import type { VenueAdminConfiguration as AdminConfiguration } from "./config";
 
-type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; screens: ManagedScreen[] };
+type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; screens: ManagedScreen[]; showUpgradePrompt?: boolean };
 const layoutSizes: Record<string, number> = { "2x1": 2, "3x1": 3, "2x2": 4 };
 
-export default function VideoWallBuilder({ configuration, apiKey, venueId, screens }: Props) {
+export default function VideoWallBuilder({ configuration, apiKey, venueId, screens, showUpgradePrompt = true }: Props) {
   const [snapshot, setSnapshot] = useState<VideoWallSnapshot>();
   const [name, setName] = useState("Main wall");
   const [layout, setLayout] = useState("2x1");
@@ -37,7 +37,7 @@ export default function VideoWallBuilder({ configuration, apiKey, venueId, scree
 
   return <section className="video-wall-builder">
     <div className="video-wall-heading"><div><p>Pro layout</p><h4>Video wall builder</h4></div><span>2×1 · 3×1 · 2×2</span></div>
-    {snapshot && !snapshot.enabled ? <aside className="tier-prompt" role="status"><div><strong>Video Wall is a higher-tier feature</strong><p>The builder stays visible so you can preview the workflow. Upgrade or add a venue override to configure walls.</p></div></aside> : null}
+    {showUpgradePrompt && snapshot && !snapshot.enabled ? <aside className="tier-prompt" role="status"><div><strong>Video Wall is a higher-tier feature</strong><p>The builder stays visible so you can preview the workflow. Upgrade or add a venue override to configure walls.</p></div></aside> : null}
     {error ? <p className="state error">{error}</p> : null}
     <form onSubmit={save}>
       <label>Wall name<input maxLength={100} required value={name} onChange={event => setName(event.target.value)} disabled={!snapshot?.enabled} /></label>

@@ -1,18 +1,10 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { loadFeatureMatrix, loadVenueSupportDetail, removeVenueFeatureOverride, saveVenueFeatureOverride, switchVenueTier, type FeatureMatrixSnapshot, type SubscriptionTier, type VenueSupportDetail } from "./api";
+import { loadFeatureMatrix, loadVenueSupportDetail, removeVenueFeatureOverride, saveVenueFeatureOverride, switchVenueTier, type FeatureMatrixSnapshot, type VenueSupportDetail } from "./api";
 import type { AdminConfiguration } from "./config";
-import InlineFeatureHint from "./InlineFeatureHint";
-import { dismissUpgradeFeature, readDismissedUpgradeFeatures, selectUpgradeOpportunity, type EffectiveFeatureMap, type UpgradeOpportunity } from "./upgradeExperience.mjs";
 
-export type VenueUpgradeContext = {
-  effectiveFeatures: EffectiveFeatureMap;
-  currentTier?: Pick<SubscriptionTier, "name" | "slug">;
-  tiers: SubscriptionTier[];
-};
+type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; onBack: () => void };
 
-type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; onBack: () => void; onUpgradeContextChange?: (context: VenueUpgradeContext) => void };
-
-export default function VenueDetail({ configuration, apiKey, venueId, onBack, onUpgradeContextChange }: Props) {
+export default function VenueDetail({ configuration, apiKey, venueId, onBack }: Props) {
   const [detail, setDetail] = useState<VenueSupportDetail>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
@@ -24,8 +16,6 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack, on
   const [saving, setSaving] = useState(false);
   const [version, setVersion] = useState(0);
   const [targetTierId, setTargetTierId] = useState("");
-  const [upgradeVersion, setUpgradeVersion] = useState(0);
-  const [upgradeContext, setUpgradeContext] = useState<Readonly<UpgradeOpportunity>>();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -41,7 +31,6 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack, on
           setMatrix(featureMatrix);
           setFeatureId(current => current || featureMatrix.features[0]?.id || "");
           setTargetTierId(value.tier?.id ?? "");
-          onUpgradeContextChange?.({ effectiveFeatures: value.features, currentTier: value.tier, tiers: featureMatrix.tiers });
         }
         else setError("Venue not found.");
       })
@@ -50,7 +39,7 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack, on
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
-  }, [apiKey, configuration, onUpgradeContextChange, venueId, version]);
+  }, [apiKey, configuration, venueId, version]);
 
   const saveOverride = async (event: FormEvent) => {
     event.preventDefault(); setSaving(true); setError(undefined);
@@ -79,15 +68,6 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack, on
   if (error || !detail) return <section><button className="back" onClick={onBack}>← Back to venues</button><p className="state error">{error}</p></section>;
 
   const features = Object.values(detail.features).sort((a, b) => a.key.localeCompare(b.key));
-  const upgradeOpportunity = selectUpgradeOpportunity(detail.features, readDismissedUpgradeFeatures());
-  const dismissUpgrade = (featureKey: string) => {
-    dismissUpgradeFeature(featureKey);
-    setUpgradeContext(undefined);
-    setUpgradeVersion(value => value + 1);
-  };
-  const inlineHint = !onUpgradeContextChange && upgradeOpportunity
-    ? <InlineFeatureHint key={`${upgradeOpportunity.featureKey}-${upgradeVersion}`} opportunity={upgradeOpportunity} onDismiss={dismissUpgrade} onUpgrade={setUpgradeContext} />
-    : null;
   return <section className="venue-detail">
     <button className="back" onClick={onBack}>← Back to venues</button>
     <div className="detail-heading"><div><p>{detail.venue.type}</p><h2>{detail.venue.name}</h2></div><span className="health">{detail.subscription?.status ?? "unsubscribed"}</span></div>
@@ -95,7 +75,6 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack, on
       <article><h3>Profile</h3><dl><dt>Timezone</dt><dd>{detail.venue.timezone}</dd><dt>Languages</dt><dd>{[detail.venue.primaryLanguage, detail.venue.secondaryLanguage].filter(Boolean).join(", ")}</dd></dl></article>
       <article><h3>Subscription</h3><dl><dt>Tier</dt><dd>{detail.tier?.name ?? "None"}</dd><dt>Screen limit</dt><dd>{detail.tier?.maxScreens ?? "—"}</dd><dt>Period end</dt><dd>{detail.subscription?.currentPeriodEnd ? new Date(detail.subscription.currentPeriodEnd).toLocaleDateString() : "—"}</dd></dl>{detail.subscription ? <form className="tier-switch" onSubmit={saveTier}><label>Switch tier<select value={targetTierId} onChange={event => setTargetTierId(event.target.value)}>{matrix?.tiers.filter(tier => tier.isActive).map(tier => <option key={tier.id} value={tier.id}>{tier.name}</option>)}</select></label><button disabled={saving || !targetTierId || targetTierId === detail.tier?.id} type="submit">Update Stripe subscription</button></form> : null}</article>
     </div>
-    {inlineHint}
     <article className="venue-admin-handoff">
       <div><p>Customer workspace</p><h3>Menu and Quick Update</h3><span>Day-to-day menu work now runs in the venue-scoped Venue Admin CMS.</span></div>
       <a href={`${configuration.venueAdminBaseUrl}#/menu`}>Open Venue Admin</a>
@@ -105,7 +84,6 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack, on
       <a href={`${configuration.venueAdminBaseUrl}#/screens`}>Open venue operations</a>
     </article>
     <article><h3>Effective features</h3><ul className="support-list">{features.map(feature => <li key={feature.key}><strong>{feature.key}</strong><span>{feature.enabled ? "Enabled" : "Disabled"} · {feature.source}{feature.limitValue ? ` · limit ${feature.limitValue}` : ""}</span></li>)}</ul></article>
-    {upgradeContext ? <p className="upgrade-context" role="status">Upgrade options for {upgradeContext.title} will open here in the next billing step. Your current workflow remains available.</p> : null}
     <article className="override-panel"><div><h3>Active overrides ({detail.activeOverrides.length})</h3>{detail.activeOverrides.length ? <ul className="support-list">{detail.activeOverrides.map(item => <li key={item.featureId}><strong>{matrix?.features.find(feature => feature.id === item.featureId)?.label ?? item.featureId}</strong><span>{item.enabled ? "Unlock" : "Block"} · {item.reason}{item.expiresAt ? ` · expires ${new Date(item.expiresAt).toLocaleString()}` : ""}<button disabled={saving} onClick={() => removeOverride(item.featureId)}>Remove</button></span></li>)}</ul> : <p>No active overrides.</p>}</div>
       <form onSubmit={saveOverride}><h3>Add or replace override</h3><label>Feature<select required value={featureId} onChange={event => setFeatureId(event.target.value)}>{matrix?.features.map(feature => <option key={feature.id} value={feature.id}>{feature.label}</option>)}</select></label><div className="override-choice"><label><input type="radio" checked={enabled} onChange={() => setEnabled(true)} /> Unlock</label><label><input type="radio" checked={!enabled} onChange={() => setEnabled(false)} /> Block</label></div><label>Reason<textarea required maxLength={500} value={reason} onChange={event => setReason(event.target.value)} /></label><label>Expires (optional)<input type="datetime-local" value={expiresAt} onChange={event => setExpiresAt(event.target.value)} /></label><button disabled={saving || !featureId} type="submit">Save override</button></form>
     </article>

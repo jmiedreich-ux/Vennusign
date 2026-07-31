@@ -5,13 +5,13 @@ import {
 } from "./api";
 import type { VenueAdminConfiguration as AdminConfiguration } from "./config";
 
-type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; enabled: boolean };
+type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; enabled: boolean; showUpgradePrompt?: boolean };
 const newItem = (): Omit<TapItem, "id" | "venueId" | "sortOrder"> => ({
   name: "", price: 0, isAvailable: true, isComingSoon: false, glassColor: "#F5C842", nameColor: "#FFD700"
 });
 const tapStripsCapacity = 12;
 
-export default function TapListAdministration({ configuration, apiKey, venueId, enabled }: Props) {
+export default function TapListAdministration({ configuration, apiKey, venueId, enabled, showUpgradePrompt = true }: Props) {
   const [data, setData] = useState<TapListSnapshot>({ categories: [], items: [] });
   const [category, setCategory] = useState({ name: "", categoryPrice: undefined as number | undefined, isActive: true });
   const [item, setItem] = useState(newItem());
@@ -46,7 +46,7 @@ export default function TapListAdministration({ configuration, apiKey, venueId, 
 
   return <article className="tap-list-admin">
     <div className="promotion-heading"><div><p>Breweries & bars</p><h3>Tap list</h3></div><span>{data.items.length} taps</span></div>
-    {!enabled ? <p className="tier-notice">Tap List controls remain visible. Enable All Layouts to edit them.</p> : null}
+    {showUpgradePrompt && !enabled ? <p className="tier-notice">Tap List controls remain visible. Enable All Layouts to edit them.</p> : null}
     <p className={data.items.length > tapStripsCapacity ? "state error" : "state"}>
       Tap Strips TV capacity: {Math.min(data.items.length, tapStripsCapacity)} visible
       {data.items.length > tapStripsCapacity ? ` · ${data.items.length - tapStripsCapacity} overflow` : " · no overflow"}

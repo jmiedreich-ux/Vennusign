@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T06:36:00Z",
+  "updatedUtc": "2026-07-31T06:40:00Z",
   "activeAssignments": [
     {
-      "workPackage": "RWP-05.03",
+      "workPackage": "RWP-11.01",
       "owner": "ChatGPT",
-      "branch": "rwp/05.03-venue-operations-migration",
-      "issue": 256,
+      "branch": "rwp/11.01-venue-admin-billing-ux-reconciliation",
+      "issue": 264,
       "status": "Review"
     }
   ],
-  "nextAvailableWorkPackage": "Phase 11 reconciliation",
+  "nextAvailableWorkPackage": "WP-11.06",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

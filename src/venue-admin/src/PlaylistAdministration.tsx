@@ -5,9 +5,10 @@ import type { VenueAdminConfiguration as AdminConfiguration } from "./config";
 type Props = {
   configuration: AdminConfiguration; apiKey: string; venueId: string; enabled: boolean;
   screens: Array<{ id: string; name: string }>;
+  showUpgradePrompt?: boolean;
 };
 
-export default function PlaylistAdministration({ configuration, apiKey, venueId, enabled, screens }: Props) {
+export default function PlaylistAdministration({ configuration, apiKey, venueId, enabled, screens, showUpgradePrompt = true }: Props) {
   const [screenId, setScreenId] = useState(screens[0]?.id ?? "");
   const [slides, setSlides] = useState<PlaylistSlide[]>([]);
   const [type, setType] = useState<PlaylistSlide["slideType"]>("menu");
@@ -47,7 +48,7 @@ export default function PlaylistAdministration({ configuration, apiKey, venueId,
 
   return <article className="menu-editor playlist-admin">
     <div className="menu-editor-heading"><div><p>Pro scheduling</p><h3>Screen playlist</h3></div><span>{slides.length} slides</span></div>
-    {!enabled ? <aside className="tier-prompt"><div><strong>Playlist Rotation requires Pro</strong><p>Controls remain visible while editing is soft locked.</p></div></aside> : null}
+    {showUpgradePrompt && !enabled ? <aside className="tier-prompt"><div><strong>Playlist Rotation requires Pro</strong><p>Controls remain visible while editing is soft locked.</p></div></aside> : null}
     {error ? <p className="state error">{error}</p> : null}
     <label>Screen<select value={screenId} onChange={event => setScreenId(event.target.value)}>{screens.map(screen => <option key={screen.id} value={screen.id}>{screen.name}</option>)}</select></label>
     <ol>{slides.map((slide, index) => <li key={slide.id}><strong>{slide.title || slide.slideType}</strong><span>{slide.dwellSeconds}s</span>

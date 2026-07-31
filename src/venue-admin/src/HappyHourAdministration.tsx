@@ -2,12 +2,12 @@ import { useEffect, useState, type FormEvent } from "react";
 import { loadHappyHour, saveHappyHour, type HappyHourWrite } from "./api";
 import type { VenueAdminConfiguration as AdminConfiguration } from "./config";
 
-type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; enabled: boolean };
+type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; enabled: boolean; showUpgradePrompt?: boolean };
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const time = (value: string) => value.slice(0, 5);
 const wireTime = (value: string) => `${value}:00`;
 
-export default function HappyHourAdministration({ configuration, apiKey, venueId, enabled }: Props) {
+export default function HappyHourAdministration({ configuration, apiKey, venueId, enabled, showUpgradePrompt = true }: Props) {
   const [draft, setDraft] = useState<HappyHourWrite>({
     startLocalTime: "16:00:00", endLocalTime: "19:00:00",
     activeDaysMask: 127, isEnabled: true, overrideMode: "automatic"
@@ -46,7 +46,7 @@ export default function HappyHourAdministration({ configuration, apiKey, venueId
 
   return <article className="menu-editor happy-hour-admin">
     <div className="menu-editor-heading"><div><p>Pro scheduling</p><h3>Happy hour</h3></div><span>{active ? "Active" : "Inactive"}</span></div>
-    {!enabled ? <aside className="tier-prompt"><div><strong>Happy Hour requires Pro</strong><p>Your schedule stays visible. Upgrade or apply an override to edit it.</p></div></aside> : null}
+    {showUpgradePrompt && !enabled ? <aside className="tier-prompt"><div><strong>Happy Hour requires Pro</strong><p>Your schedule stays visible. Upgrade or apply an override to edit it.</p></div></aside> : null}
     {error ? <p className="state error">{error}</p> : null}
     <form onSubmit={save}>
       <fieldset disabled={!enabled || busy}>

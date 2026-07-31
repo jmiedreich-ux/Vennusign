@@ -16,6 +16,7 @@ type Props = {
   apiKey: string;
   venueId: string;
   advancedEnabled: boolean;
+  showUpgradePrompt?: boolean;
 };
 type DraftTheme = VenueTheme;
 
@@ -30,7 +31,7 @@ const swatches: Array<{ name: string; backgroundColor: string; accentColor: stri
 const titleFonts: DraftTheme["titleFont"][] = ["Pacifico", "Lobster", "Righteous", "Fredoka One", "Bungee", "Permanent Marker"];
 const itemFonts: DraftTheme["itemFont"][] = ["Caveat", "Kalam", "Patrick Hand", "Permanent Marker"];
 
-export default function ThemeBuilder({ configuration, apiKey, venueId, advancedEnabled }: Props) {
+export default function ThemeBuilder({ configuration, apiKey, venueId, advancedEnabled, showUpgradePrompt = true }: Props) {
   const [theme, setTheme] = useState<DraftTheme>();
   const [presets, setPresets] = useState<VenueThemePreset[]>([]);
   const [screenId, setScreenId] = useState<string>();
@@ -154,7 +155,7 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
         </label>
         <section className="advanced-theme">
           <div><p>Pro styling</p><h4>Full theme controls</h4></div>
-          {!advancedEnabled ? <aside className="tier-prompt" role="status"><div><strong>Full themes require All Layouts</strong><p>The controls remain visible for evaluation. Upgrade to Pro or add a venue override to save presets and advanced values.</p></div></aside> : null}
+          {showUpgradePrompt && !advancedEnabled ? <aside className="tier-prompt" role="status"><div><strong>Full themes require All Layouts</strong><p>The controls remain visible for evaluation. Upgrade to Pro or add a venue override to save presets and advanced values.</p></div></aside> : null}
           <fieldset disabled={!advancedEnabled || busy}>
             <legend>Presets</legend>
             <div className="theme-presets">{presets.map(preset =>
