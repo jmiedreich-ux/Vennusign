@@ -11,7 +11,7 @@ const [component, api, detail] = await Promise.all([
 test("happy-hour administration stays visible and soft locks without entitlement", () => {
   assert.match(component, /Happy Hour requires Pro/);
   assert.match(component, /disabled=\{!enabled \|\| busy\}/);
-  assert.match(detail, /features\.happy_hour\?\.enabled/);
+  assert.match(detail, /Open venue operations/);
 });
 
 test("happy-hour controls expose time days enablement and all override modes", () => {

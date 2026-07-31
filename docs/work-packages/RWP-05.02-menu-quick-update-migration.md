@@ -2,7 +2,7 @@
 
 ## Status
 
-In Review.
+Complete.
 
 ## Goal
 
@@ -115,12 +115,13 @@ Create:
 
 - Issue: #255
 - Branch: `rwp/05.02-menu-quick-update-migration`
-- Pull request: pending
+- Pull request: #262
 
 ## Validation Evidence
 
 - Local Venue Admin tests: 7 passed; production build passed.
 - Local Super Admin tests: 73 passed; production build passed.
 - Local .NET validation: not run because the SDK is unavailable in this workspace.
-- GitHub Actions: pending and authoritative.
+- GitHub Actions run #559: passed against reviewed head `07d585adffd35d7291bd22b51a687a24b280eee6`.
+- Merge commit: `5bc870fceb145c14f42ce9dc9a8c2f074e6b28a4`.
 - Skipped: Azure SQL, external-service, credentialed, hosted-infrastructure, container, and all other integration-type tests under the standing owner exception.

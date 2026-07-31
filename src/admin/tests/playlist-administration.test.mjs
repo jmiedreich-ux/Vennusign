@@ -14,5 +14,5 @@ test("playlist administration is screen scoped tier visible and reorderable", ()
   assert.match(component, /min=\{5\} max=\{120\}/);
   assert.match(component, /menu.*image.*message/s);
   assert.match(api, /screens\/\$\{screenId\}\/playlist/);
-  assert.match(detail, /features\.playlist_rotation\?\.enabled/);
+  assert.match(detail, /Open venue operations/);
 });

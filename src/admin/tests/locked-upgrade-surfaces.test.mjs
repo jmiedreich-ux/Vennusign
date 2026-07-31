@@ -31,8 +31,8 @@ test('venue detail retains one selected upgrade surface and support workflows', 
   assert.match(venue, /const inlineHint = !onUpgradeContextChange && upgradeOpportunity/);
   assert.match(preview, /export default function LockedSectionPreview/);
   for (const workflow of ['ScreenManagement', 'ThemeBuilder', 'HappyHourAdministration']) {
-    assert.match(venue, new RegExp(`<${workflow}`));
+    assert.doesNotMatch(venue, new RegExp(`<${workflow}`));
   }
   assert.match(venue, /Open Venue Admin/);
-  assert.doesNotMatch(venue, /<MenuSectionsEditor/);
+  assert.match(venue, /Open venue operations/);
 });

@@ -7,7 +7,10 @@ import {
 } from "../src/navigation.mjs";
 
 test("venue admin shell has the bounded foundation routes", () => {
-  assert.deepEqual(venueAdminRoutes.map(route => route.path), ["home", "menu", "screens", "settings"]);
+  assert.deepEqual(
+    venueAdminRoutes.map(route => route.path),
+    ["home", "menu", "screens", "themes", "schedules", "tap-list", "settings"]
+  );
   assert.equal(resolveVenueAdminRoute("#/screens").path, "screens");
   assert.equal(resolveVenueAdminRoute("#/unknown").path, "home");
 });

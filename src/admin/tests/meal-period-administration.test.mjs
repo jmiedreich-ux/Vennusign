@@ -23,5 +23,5 @@ test("meal-period CRUD uses the protected venue-scoped admin route", () => {
   assert.match(api, /method: "POST"/);
   assert.match(api, /method: "PUT"/);
   assert.match(api, /method: "DELETE"/);
-  assert.match(detail, /<MealPeriodAdministration/);
+  assert.match(detail, /Open venue operations/);
 });

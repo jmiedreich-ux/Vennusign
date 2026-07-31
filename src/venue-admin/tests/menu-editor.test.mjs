@@ -21,10 +21,11 @@ test("venue admin composes the migrated menu and quick-update workflows", () => 
 });
 
 test("menu requests use the venue token and never accept a browser venue route", () => {
-  assert.match(api, /api\/venue-admin\/menus/);
-  assert.match(api, /X-Vennu-Venue-Token/);
-  assert.doesNotMatch(api, /api\/venue-admin\/venues\/\$\{venueId\}/);
-  assert.doesNotMatch(api, /X-Vennu-Admin-Key/);
+  const menuApi = api.slice(api.indexOf("async function menuRequest"), api.indexOf("async function venueOperationRequest"));
+  assert.match(menuApi, /api\/venue-admin\/menus/);
+  assert.match(menuApi, /X-Vennu-Venue-Token/);
+  assert.doesNotMatch(menuApi, /api\/venue-admin\/venues\/\$\{venueId\}/);
+  assert.doesNotMatch(menuApi, /X-Vennu-Admin-Key/);
 });
 
 test("tier-aware menu affordances remain visible", () => {

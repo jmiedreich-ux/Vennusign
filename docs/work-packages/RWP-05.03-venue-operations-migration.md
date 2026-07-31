@@ -1,9 +1,8 @@
-# WP-05.13 — Venue Admin CMS Operational Surface Migration
-# WP-05.13 — Venue Admin CMS Operational Surface Migration
+# RWP-05.03 â€” Remaining Venue Features Migration
 
 ## Status
 
-Planned.
+In Review.
 
 ## Goal
 
@@ -33,11 +32,11 @@ Complete the venue-facing Admin CMS by moving the remaining venue-scoped operati
 
 ## Dependencies
 
-- WP-05.11 — Venue Admin CMS Foundation and Protected Bootstrap
-- WP-05.12 — Venue Admin CMS Menu and Quick Update Migration
-- WP-07.09 — Hero Rotation and Administration
-- WP-08.09 — Date-Range Promotions
-- WP-09.09 — Pairing Code Registration Completion
+- RWP-05.01 â€” Venue Admin CMS Foundation
+- RWP-05.02 â€” Menu and Quick Update Migration
+- WP-07.09 â€” Hero Rotation and Administration
+- WP-08.09 â€” Date-Range Promotions
+- WP-09.09 â€” Pairing Code Registration Completion
 
 ## Implementation Plan
 
@@ -134,6 +133,14 @@ Create:
 
 ## GitHub
 
-- Issue: pending
-- Branch: `wp/05.13-venue-admin-operational-surface`
+- Issue: #256
+- Branch: `rwp/05.03-venue-operations-migration`
 - Pull request: pending
+
+## Validation Evidence
+
+- Local Venue Admin tests: 12 passed; production build passed.
+- Local Super Admin tests: 73 passed; production build passed.
+- Local .NET validation: not run because the SDK is unavailable in this workspace.
+- GitHub Actions: pending and authoritative.
+- Skipped: Azure SQL, external-service, credentialed, hosted-infrastructure, container, and all other integration-type tests under the standing owner exception.

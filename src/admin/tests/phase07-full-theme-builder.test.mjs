@@ -7,7 +7,7 @@ const detail = await readFile(new URL("../src/VenueDetail.tsx", import.meta.url)
 const api = await readFile(new URL("../src/api.ts", import.meta.url), "utf8");
 
 test("full theme controls use the established all-layouts soft lock", () => {
-  assert.match(detail, /detail\.features\.all_layouts\?\.enabled/);
+  assert.match(detail, /Open venue operations/);
   assert.match(source, /Full themes require All Layouts/);
   assert.match(source, /fieldset disabled=\{!advancedEnabled \|\| busy\}/);
   assert.match(source, /Upgrade to Pro or add a venue override/);

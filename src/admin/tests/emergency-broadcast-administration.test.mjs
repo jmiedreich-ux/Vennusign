@@ -14,5 +14,5 @@ test("broadcast administration is tier visible targetable bounded and cancellabl
   assert.match(component, /min=\{1\} max=\{1440\}/);
   assert.match(component, /cancelEmergencyBroadcast/);
   assert.match(api, /emergency-broadcasts/);
-  assert.match(detail, /features\.emergency_broadcast\?\.enabled/);
+  assert.match(detail, /Open venue operations/);
 });
