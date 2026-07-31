@@ -119,7 +119,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. Phase 11 is complete. Phase 12 is now bounded into WP-12.01 through WP-12.10; **WP-12.01 — POS Connection Domain and Provider Contracts** is next.
+**WP-12.01 — POS Connection Domain and Provider Contracts** is ready for review on issue #284 and branch `wp/12.01-pos-connection-domain-provider-contracts`. Static checks passed; authoritative GitHub Actions validation is pending publication.
 
 ## Phase 04 Result
 
@@ -181,7 +181,7 @@ No implementation package is active. Phase 11 is complete. Phase 12 is now bound
 
 ## Next Action
 
-Claim and implement **WP-12.01 — POS Connection Domain and Provider Contracts**.
+Complete, validate, review, and merge **WP-12.01 — POS Connection Domain and Provider Contracts**.
 
 ## Phase 05 Work Packages
 

@@ -9,6 +9,7 @@ using Vennu.Api.Billing;
 using Vennu.Data.Services;
 using Vennu.Api.Services;
 using Vennu.Api.VenueAdmin;
+using Vennu.Api.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +65,8 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
+builder.Services.AddDataProtection();
+builder.Services.AddSingleton<IPosCredentialProtector, DataProtectionPosCredentialProtector>();
 builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier>();
 builder.Services.AddScoped<IMenuItemManagementService, MenuItemManagementService>();
 builder.Services.AddScoped<IQuickUpdateService, QuickUpdateService>();

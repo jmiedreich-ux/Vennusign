@@ -39,6 +39,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBillingCatalogRepository>(provider => provider.GetRequiredService<SubscriptionTierRepository>());
         services.AddScoped<IVenueSubscriptionRepository, VenueSubscriptionRepository>();
         services.AddScoped<IHaasContractRepository, HaasContractRepository>();
+        services.AddScoped<IPosConnectionRepository, PosConnectionRepository>();
         services.AddScoped<IVenueFeatureOverrideRepository, VenueFeatureOverrideRepository>();
         services.AddScoped<IFeatureUsageRepository, FeatureUsageRepository>();
         services.AddScoped<IFeatureResolutionService, FeatureResolutionService>();
@@ -49,6 +50,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICheckoutSessionService, CheckoutSessionService>();
         services.AddScoped<IBillingPortalSessionService, BillingPortalSessionService>();
         services.AddScoped<IHaasBillingService, HaasBillingService>();
+        services.AddScoped<IPosConnectionService, PosConnectionService>();
         services.AddScoped<IProcessedStripeEventRepository, ProcessedStripeEventRepository>();
         services.AddScoped<IOperationalEventRepository, OperationalEventRepository>();
         services.AddScoped<IRevenueDailySnapshotRepository, RevenueDailySnapshotRepository>();
