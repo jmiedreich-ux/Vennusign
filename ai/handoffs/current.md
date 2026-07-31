@@ -3,16 +3,17 @@
 ## Work Package
 
 - ID: WP-11.07
-- Status: Ready for review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/11.07-checkout-launch-return`
-- Latest commit: pending
+- Latest commit: `37a962a0db5e15eb5f833379048e3c4261754bbe`
 - Issue: #270
-- Pull request: pending
-- CI state: pending GitHub Actions
+- Pull request: #271
+- Merge commit: `84fb81831b2757a3d630fdcf1d006071725644af`
+- CI state: GitHub Actions `phase02-tests` run #578 passed
 
 ## Completed This Session
 
@@ -38,12 +39,12 @@
 ## Validation
 
 - Commands: `npm test`; `npm run build`; `git diff --check`; tracker JSON and secret/debug scans.
-- Results: 21 Venue Admin tests passed; Venue Admin production build passed; static checks passed.
+- Results: 21 Venue Admin tests and the Venue Admin production build passed locally; Actions run #578 passed the complete required non-integration matrix.
 - Skipped checks and reason: local .NET validation unavailable; GitHub Actions is authoritative. All integration-type and external Stripe tests are skipped by standing owner instruction.
 
 ## Remaining Work
 
-- Publish the branch and PR, run exact-head GitHub Actions, review, and merge WP-11.07.
+- WP-11.08 — Billing Portal and Subscription Status.
 
 ## Known Risks or Blockers
 
@@ -51,7 +52,7 @@
 
 ## Exact Next Action
 
-- Publish WP-11.07 and wait for required GitHub Actions against the exact PR head.
+- Claim WP-11.08 and add claim-bound Billing Portal access plus authoritative subscription status guidance.
 
 ## Do Not Redo or Reverse
 

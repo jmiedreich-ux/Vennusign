@@ -106,6 +106,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-11.04 — Sidebar Upgrade Nudge
 - WP-11.05 — Upgrade Modal and Tier Value Summary
 - WP-11.06 — Stripe Checkout Session Foundation
+- WP-11.07 — Checkout Launch and Entitlement Return
 - RWP-04.01 — Super Admin Venue Provisioning
 - RWP-05.01 — Venue Admin CMS Foundation
 - RWP-05.02 — Menu and Quick Update Migration
@@ -114,7 +115,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-**WP-11.07 — Checkout Launch and Entitlement Return** is ready for review on `wp/11.07-checkout-launch-return` (issue #270).
+No implementation package is active. **WP-11.08 — Billing Portal and Subscription Status** is next.
 
 ## Phase 04 Result
 
@@ -169,7 +170,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-11.07 — Checkout Launch and Entitlement Return**.
+Claim and implement **WP-11.08 — Billing Portal and Subscription Status**.
 
 ## Phase 05 Work Packages
 
