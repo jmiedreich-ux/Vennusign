@@ -10,6 +10,7 @@ using Vennu.Data.Services;
 using Vennu.Api.Services;
 using Vennu.Api.VenueAdmin;
 using Vennu.Api.Infrastructure;
+using Vennu.Api.Pos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,6 +68,10 @@ builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddDataProtection();
 builder.Services.AddSingleton<IPosCredentialProtector, DataProtectionPosCredentialProtector>();
+builder.Services.AddSingleton<IPosOAuthStateService, ProtectedPosOAuthStateService>();
+builder.Services.Configure<SquareOAuthOptions>(builder.Configuration.GetSection(SquareOAuthOptions.SectionName));
+builder.Services.AddHttpClient<ISquareOAuthGateway, SquareOAuthGateway>();
+builder.Services.AddScoped<ISquareOAuthConnectionService, SquareOAuthConnectionService>();
 builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier>();
 builder.Services.AddScoped<IMenuItemManagementService, MenuItemManagementService>();
 builder.Services.AddScoped<IQuickUpdateService, QuickUpdateService>();

@@ -102,6 +102,28 @@ public sealed class PosConnectionRepositoryTests
         Assert.Equal("connection", exception.ParamName);
     }
 
+    [Fact]
+    public async Task DeleteAsync_UsesVenueAndProviderScope()
+    {
+        string? capturedSql = null;
+        object? capturedParameters = null;
+        var dataAccess = new FakeSqlDataAccess
+        {
+            ExecuteSqlQueryHandler = (sql, parameters) =>
+            {
+                capturedSql = sql;
+                capturedParameters = parameters;
+                return [];
+            }
+        };
+        var repository = new PosConnectionRepository(dataAccess, new FixedTimeProvider(UtcNow));
+
+        Assert.False(await repository.DeleteAsync(VenueId, PosProvider.Square));
+        Assert.Contains("VenueId = @VenueId AND Provider = @Provider", capturedSql, StringComparison.Ordinal);
+        Assert.Equal(VenueId, Property<Guid>(capturedParameters!, "VenueId"));
+        Assert.Equal((int)PosProvider.Square, Property<int>(capturedParameters!, "Provider"));
+    }
+
     private static PosConnection Connection() => new()
     {
         VenueId = VenueId,

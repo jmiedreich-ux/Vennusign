@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T23:34:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-12.02",
+  "updatedUtc": "2026-07-31T23:39:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-12.02",
+      "owner": "Codex",
+      "branch": "wp/12.02-square-oauth-connection-flow",
+      "issue": 287,
+      "status": "Ready for review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-12.03",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
