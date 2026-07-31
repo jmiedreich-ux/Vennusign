@@ -104,7 +104,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-11.02 — Locked Navigation and Section Previews** is next.
+**WP-11.02 — Locked Navigation and Section Previews** is in review on issue #242.
 
 ## Phase 04 Result
 
@@ -159,7 +159,7 @@ No implementation package is active. **WP-11.02 — Locked Navigation and Sectio
 
 ## Next Action
 
-Claim and implement **WP-11.02 — Locked Navigation and Section Previews**.
+Publish and validate **WP-11.02 — Locked Navigation and Section Previews** through GitHub Actions.
 
 ## Phase 05 Work Packages
 

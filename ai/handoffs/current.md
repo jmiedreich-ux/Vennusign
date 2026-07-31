@@ -2,43 +2,43 @@
 
 ## Work Package
 
-- ID: WP-11.01
-- Status: Complete and merged
+- ID: WP-11.02
+- Status: Review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/11.01-upgrade-contract-tier-badges`
-- Issue: #239
-- Pull request: #240
-- Latest reviewed commit: `38711dc`
-- Merge commit: `43d6e34`
-- CI state: GitHub Actions run #519 passed
+- Branch: `wp/11.02-locked-navigation-section-previews`
+- Issue: #242
+- Pull request: pending
+- Latest reviewed commit: pending
+- Merge commit: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added the canonical upgrade benefit and tier presentation catalog.
-- Added deterministic single-opportunity selection and session-scoped dismissal.
-- Added the reusable informational tier badge.
+- Added reusable locked navigation and section-preview surfaces.
+- Added one selected venue-level preview with shared upgrade context.
+- Kept existing unlocked workflows operable and outside the blurred glimpse.
 - Added focused non-integration tests and review-state project records.
 
 ## Decisions
 
-- Upgrade foundations remain presentation-only and do not alter entitlements.
-- Workflow placement begins only in WP-11.02.
+- Locked actions set presentation context only and do not alter entitlements.
+- Only the decorative mockup glimpse is blurred.
 
 ## Validation
 
-- Results: restore, Release build, admin/display production builds and tests, required unit tests, Android profiles, Tizen validation, and webOS validation passed in Actions run #519.
+- Results: pending authoritative GitHub Actions.
 - Skipped: all integration-type and external Stripe tests.
 
 ## Remaining Work
 
-- WP-11.02 — Locked Navigation and Section Previews.
+- WP-11.03 — Inline Feature Hints after WP-11.02 merges.
 
 ## Exact Next Action
 
-Claim and implement WP-11.02 — Locked Navigation and Section Previews.
+Publish WP-11.02, run required GitHub Actions, review the exact head, and merge when green.
 
 ## Do Not Redo or Reverse
 

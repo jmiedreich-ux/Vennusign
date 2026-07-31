@@ -10,6 +10,8 @@ import PlaylistAdministration from "./PlaylistAdministration";
 import EmergencyBroadcastAdministration from "./EmergencyBroadcastAdministration";
 import DateRangePromotionAdministration from "./DateRangePromotionAdministration";
 import TapListAdministration from "./TapListAdministration";
+import LockedSectionPreview from "./LockedSectionPreview";
+import { dismissUpgradeFeature, readDismissedUpgradeFeatures, selectUpgradeOpportunity, type UpgradeOpportunity } from "./upgradeExperience.mjs";
 
 type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; onBack: () => void };
 
@@ -25,6 +27,8 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
   const [saving, setSaving] = useState(false);
   const [version, setVersion] = useState(0);
   const [targetTierId, setTargetTierId] = useState("");
+  const [upgradeVersion, setUpgradeVersion] = useState(0);
+  const [upgradeContext, setUpgradeContext] = useState<Readonly<UpgradeOpportunity>>();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -72,9 +76,17 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
   if (error || !detail) return <section><button className="back" onClick={onBack}>← Back to venues</button><p className="state error">{error}</p></section>;
 
   const features = Object.values(detail.features).sort((a, b) => a.key.localeCompare(b.key));
+  const upgradeOpportunity = selectUpgradeOpportunity(detail.features, readDismissedUpgradeFeatures());
+  const dismissUpgrade = (featureKey: string) => {
+    dismissUpgradeFeature(featureKey);
+    setUpgradeContext(undefined);
+    setUpgradeVersion(value => value + 1);
+  };
   return <section className="venue-detail">
     <button className="back" onClick={onBack}>← Back to venues</button>
     <div className="detail-heading"><div><p>{detail.venue.type}</p><h2>{detail.venue.name}</h2></div><span className="health">{detail.subscription?.status ?? "unsubscribed"}</span></div>
+    {upgradeOpportunity ? <LockedSectionPreview key={`${upgradeOpportunity.featureKey}-${upgradeVersion}`} opportunity={upgradeOpportunity} onDismiss={dismissUpgrade} onUpgrade={setUpgradeContext} /> : null}
+    {upgradeContext ? <p className="upgrade-context" role="status">Upgrade options for {upgradeContext.title} will open here in the next billing step. Your current workflow remains available.</p> : null}
     <div className="detail-grid">
       <article><h3>Profile</h3><dl><dt>Timezone</dt><dd>{detail.venue.timezone}</dd><dt>Languages</dt><dd>{[detail.venue.primaryLanguage, detail.venue.secondaryLanguage].filter(Boolean).join(", ")}</dd></dl></article>
       <article><h3>Subscription</h3><dl><dt>Tier</dt><dd>{detail.tier?.name ?? "None"}</dd><dt>Screen limit</dt><dd>{detail.tier?.maxScreens ?? "—"}</dd><dt>Period end</dt><dd>{detail.subscription?.currentPeriodEnd ? new Date(detail.subscription.currentPeriodEnd).toLocaleDateString() : "—"}</dd></dl>{detail.subscription ? <form className="tier-switch" onSubmit={saveTier}><label>Switch tier<select value={targetTierId} onChange={event => setTargetTierId(event.target.value)}>{matrix?.tiers.filter(tier => tier.isActive).map(tier => <option key={tier.id} value={tier.id}>{tier.name}</option>)}</select></label><button disabled={saving || !targetTierId || targetTierId === detail.tier?.id} type="submit">Update Stripe subscription</button></form> : null}</article>
