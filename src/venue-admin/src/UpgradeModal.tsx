@@ -11,11 +11,13 @@ type Props = {
   targetTier: VenueAdminTierSummary;
   onClose: () => void;
   onUpgrade: (interval: BillingInterval) => void;
+  isSubmitting?: boolean;
+  error?: string;
 };
 
 const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
-export default function UpgradeModal({ opportunity, currentTier, targetTier, onClose, onUpgrade }: Props) {
+export default function UpgradeModal({ opportunity, currentTier, targetTier, onClose, onUpgrade, isSubmitting = false, error }: Props) {
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const features = useMemo(() => upgradeFeaturePills(opportunity.requiredTier), [opportunity.requiredTier]);
   const amount = interval === "monthly" ? targetTier.monthlyPrice : targetTier.monthlyPrice * 10;
@@ -29,7 +31,7 @@ export default function UpgradeModal({ opportunity, currentTier, targetTier, onC
   return (
     <div className="upgrade-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="upgrade-modal-title">
-        <button className="upgrade-modal__close" type="button" onClick={onClose} aria-label="Close upgrade options">×</button>
+        <button className="upgrade-modal__close" type="button" onClick={onClose} aria-label="Close upgrade options" disabled={isSubmitting}>×</button>
         <TierBadge tier={opportunity.requiredTier} />
         <p className="upgrade-modal__eyebrow">Unlock {opportunity.title}</p>
         <h2 id="upgrade-modal-title">Move from {currentTier?.name ?? "your current plan"} to {targetTier.name}</h2>
@@ -43,8 +45,11 @@ export default function UpgradeModal({ opportunity, currentTier, targetTier, onC
           <label><input type="radio" name="billingInterval" checked={interval === "annual"} onChange={() => setInterval("annual")} /> Annual · two months included</label>
         </fieldset>
         <div className="upgrade-modal__price"><strong>{currency.format(amount)}</strong><span>/{interval === "monthly" ? "month" : "year"}</span></div>
-        <button className="upgrade-modal__primary" type="button" onClick={() => onUpgrade(interval)}>Upgrade to {targetTier.name}</button>
-        <button className="upgrade-modal__later" type="button" onClick={onClose}>Maybe later</button>
+        {error ? <p className="upgrade-modal__error" role="alert">{error}</p> : null}
+        <button className="upgrade-modal__primary" type="button" onClick={() => onUpgrade(interval)} disabled={isSubmitting}>
+          {isSubmitting ? "Opening secure checkout…" : `Upgrade to ${targetTier.name}`}
+        </button>
+        <button className="upgrade-modal__later" type="button" onClick={onClose} disabled={isSubmitting}>Maybe later</button>
       </section>
     </div>
   );
