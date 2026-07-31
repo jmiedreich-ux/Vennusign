@@ -100,10 +100,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-10.09 — HaaS Pre-Registration and Fleet Version Health
 - WP-10.10 — Phase 10 Validation and Closure
 - Phase 10 — TV Apps & Platform Distribution
+- WP-11.01 — Upgrade Experience Contract and Tier Badges
 
 ## Active Work Package
 
-**WP-11.01 — Upgrade Experience Contract and Tier Badges** is in review on issue #239.
+No implementation package is active. **WP-11.02 — Locked Navigation and Section Previews** is next.
 
 ## Phase 04 Result
 
@@ -158,7 +159,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Publish and validate **WP-11.01 — Upgrade Experience Contract and Tier Badges** through GitHub Actions.
+Claim and implement **WP-11.02 — Locked Navigation and Section Previews**.
 
 ## Phase 05 Work Packages
 
