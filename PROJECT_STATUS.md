@@ -120,7 +120,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-12.02 — Square OAuth Connection Flow** is next.
+**WP-12.02 — Square OAuth Connection Flow** is ready for review on issue #287 and branch `wp/12.02-square-oauth-connection-flow`.
 
 ## Phase 04 Result
 
@@ -182,7 +182,7 @@ No implementation package is active. **WP-12.02 — Square OAuth Connection Flow
 
 ## Next Action
 
-Claim and implement **WP-12.02 — Square OAuth Connection Flow**.
+Validate, review, and merge **WP-12.02 — Square OAuth Connection Flow**.
 
 ## Phase 05 Work Packages
 

@@ -3,16 +3,16 @@
 ## Work Package
 
 - ID: WP-12.02
-- Status: Available
+- Status: Ready for review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: pending
-- Latest commit: `adb4406966908d3970618072a96da1824b35e573` (WP-12.01 reviewed head)
-- Issue: pending
+- Branch: `wp/12.02-square-oauth-connection-flow`
+- Latest commit: pending
+- Issue: #287
 - Pull request: pending
-- CI state: WP-12.01 Actions run #605 passed
+- CI state: pending publication
 
 ## Completed This Session
 
@@ -24,6 +24,8 @@
 - Added the ASP.NET Core Data Protection implementation and provider-neutral catalog/inventory contracts.
 - Added focused repository, service, protector, and migration tests.
 - Reviewed and merged WP-12.01 through PR #285.
+- Added the Square OAuth connect, callback, credential persistence, status, and revoke-before-delete flow.
+- Added protected single-use state and allowlisted server-owned provider/return URLs.
 
 ## Files Changed
 
@@ -43,7 +45,7 @@
 
 ## Remaining Work
 
-- WP-12.02 — Square OAuth Connection Flow.
+- Publish, validate, review, and merge WP-12.02.
 
 ## Known Risks or Blockers
 
@@ -51,7 +53,7 @@
 
 ## Exact Next Action
 
-- Claim WP-12.02 and implement its claim-bound Square OAuth connect, callback, disconnect, and status flow.
+- Publish WP-12.02 and inspect exact-head GitHub Actions validation.
 
 ## Do Not Redo or Reverse
 

@@ -17,4 +17,9 @@ public interface IPosConnectionRepository
         Guid venueId,
         PosConnection connection,
         CancellationToken cancellationToken = default);
+
+    Task<bool> DeleteAsync(
+        Guid venueId,
+        PosProvider provider,
+        CancellationToken cancellationToken = default);
 }

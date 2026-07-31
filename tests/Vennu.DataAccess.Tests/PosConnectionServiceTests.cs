@@ -127,5 +127,10 @@ public sealed class PosConnectionServiceTests
             Saved.Add(connection);
             return Task.FromResult(connection);
         }
+
+        public Task<bool> DeleteAsync(
+            Guid venueId,
+            PosProvider provider,
+            CancellationToken cancellationToken = default) => Task.FromResult(false);
     }
 }

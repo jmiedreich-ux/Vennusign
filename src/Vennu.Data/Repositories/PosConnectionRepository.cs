@@ -23,6 +23,12 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
         ORDER BY Provider, Id;
         """;
 
+    private const string DeleteSql = """
+        DELETE FROM dbo.PosConnections
+        OUTPUT CAST(1 AS BIT) AS Removed
+        WHERE VenueId = @VenueId AND Provider = @Provider;
+        """;
+
     public async Task<PosConnection?> GetAsync(
         Guid venueId,
         PosProvider provider,
@@ -90,9 +96,24 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
         return existing;
     }
 
+    public async Task<bool> DeleteAsync(
+        Guid venueId,
+        PosProvider provider,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<RemovalResult, object>(
+            DeleteSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                Provider = RequireProvider(provider)
+            },
+            cancellationToken).ConfigureAwait(false)).SingleOrDefault()?.Removed ?? false;
+
     private static Guid RequireId(Guid value, string parameterName) =>
         value != Guid.Empty ? value : throw new ArgumentException("A non-empty identifier is required.", parameterName);
 
     private static int RequireProvider(PosProvider provider) =>
         Enum.IsDefined(provider) ? (int)provider : throw new ArgumentOutOfRangeException(nameof(provider));
+
+    private sealed class RemovalResult { public bool Removed { get; set; } }
 }
