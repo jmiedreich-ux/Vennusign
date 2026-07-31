@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T23:05:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-11.10",
+  "updatedUtc": "2026-07-31T23:08:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-11.10",
+      "owner": "Codex",
+      "issue": 279,
+      "branch": "wp/11.10-phase-11-validation-closure",
+      "status": "Ready for review"
+    }
+  ],
+  "nextAvailableWorkPackage": "Phase-12 breakdown",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
