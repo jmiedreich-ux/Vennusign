@@ -61,10 +61,12 @@ public class StripeSubscriptionEventHandlerTests
             "sub_1",
             venueId,
             "price_business",
-            "past_due"));
+            "past_due",
+            CancelAtPeriodEnd: true));
 
         Assert.Equal(tier.Id, existing.TierId);
         Assert.Equal("past_due", existing.Status);
+        Assert.True(existing.CancelAtPeriodEnd);
         Assert.Equal("upgrade", Assert.Single(events.Items).EventType);
     }
 
@@ -107,6 +109,7 @@ public class StripeSubscriptionEventHandlerTests
             "sub_1"));
 
         Assert.Equal("canceled", existing.Status);
+        Assert.False(existing.CancelAtPeriodEnd);
         Assert.Equal(existing.VenueId, Assert.Single(features.InvalidatedVenueIds));
         Assert.Equal("churn", Assert.Single(events.Items).EventType);
     }

@@ -120,6 +120,7 @@ public sealed class StripeSubscriptionEventHandler : IStripeSubscriptionEventHan
         subscription.Status = status;
         subscription.TrialEndsAt = status == "active" ? null : stripeEvent.TrialEndsAt;
         subscription.CurrentPeriodEnd = stripeEvent.CurrentPeriodEnd ?? subscription.CurrentPeriodEnd;
+        subscription.CancelAtPeriodEnd = stripeEvent.CancelAtPeriodEnd;
         subscription.UpdatedUtc = utcNow;
         await SaveAndInvalidateAsync(subscription, cancellationToken).ConfigureAwait(false);
 
@@ -172,6 +173,7 @@ public sealed class StripeSubscriptionEventHandler : IStripeSubscriptionEventHan
     {
         var subscription = await GetRequiredSubscriptionAsync(stripeEvent, cancellationToken).ConfigureAwait(false);
         subscription.Status = "canceled";
+        subscription.CancelAtPeriodEnd = false;
         subscription.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
         await SaveAndInvalidateAsync(subscription, cancellationToken).ConfigureAwait(false);
         await RecordAsync(

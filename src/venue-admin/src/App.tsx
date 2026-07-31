@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   createCheckoutSession,
+  createBillingPortalSession,
   loadVenueAdminSession,
   loadVenueBillingPresentation,
   VenueAdminApiError,
@@ -27,6 +28,7 @@ import LockedNavigationItem from "./LockedNavigationItem";
 import LockedSectionPreview from "./LockedSectionPreview";
 import SidebarUpgradeNudge from "./SidebarUpgradeNudge";
 import UpgradeModal, { type BillingInterval } from "./UpgradeModal";
+import BillingStatusCard from "./BillingStatusCard";
 import {
   dismissUpgradeFeature,
   listUpgradeOpportunities,
@@ -50,6 +52,8 @@ export default function App() {
   const [upgradeNotice, setUpgradeNotice] = useState<string>();
   const [checkoutLaunching, setCheckoutLaunching] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string>();
+  const [billingPortalOpening, setBillingPortalOpening] = useState(false);
+  const [billingPortalError, setBillingPortalError] = useState<string>();
   const [checkoutReturn, setCheckoutReturn] = useState<CheckoutReturnState | undefined>(
     () => readCheckoutReturnState(window.location.search)
   );
@@ -137,6 +141,8 @@ export default function App() {
     setUpgradeContext(undefined);
     setCheckoutLaunching(false);
     setCheckoutError(undefined);
+    setBillingPortalOpening(false);
+    setBillingPortalError(undefined);
   };
 
   if (!accessToken || error) {
@@ -210,6 +216,20 @@ export default function App() {
     window.history.replaceState(null, "", `${window.location.pathname}${search}${window.location.hash}`);
     setCheckoutReturn(undefined);
   };
+  const openBillingPortal = async () => {
+    if (billingPortalOpening) return;
+    setBillingPortalOpening(true);
+    setBillingPortalError(undefined);
+    try {
+      const portalUrl = await createBillingPortalSession(configuration, accessToken);
+      window.location.assign(portalUrl);
+    } catch (reason: unknown) {
+      setBillingPortalError(reason instanceof VenueAdminApiError
+        ? reason.message
+        : "Secure billing management could not be opened.");
+      setBillingPortalOpening(false);
+    }
+  };
 
   return <div className="shell">
     <aside>
@@ -265,7 +285,15 @@ export default function App() {
             onUpgrade={setUpgradeContext}
           />
         : null}
-      {allowed && route.path === "menu"
+      {allowed && route.path === "billing" && billing
+        ? <BillingStatusCard
+            currentTier={billing.currentTier}
+            subscription={billing.subscription}
+            isOpening={billingPortalOpening}
+            error={billingPortalError}
+            onManage={openBillingPortal}
+          />
+        : allowed && route.path === "menu"
         ? <MenuSectionsEditor
             configuration={configuration}
             apiKey={accessToken}

@@ -54,7 +54,8 @@ public static class StripeWebhookEventMapper
             priceId,
             Required(subscription.Status, "Stripe subscription status is required."),
             subscription.TrialEnd?.ToUniversalTime(),
-            currentPeriodEnd);
+            currentPeriodEnd,
+            subscription.CancelAtPeriodEnd);
     }
 
     private static StripeSubscriptionEvent MapDeletedSubscription(Stripe.Event stripeEvent)
