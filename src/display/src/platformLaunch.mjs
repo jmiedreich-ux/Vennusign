@@ -9,12 +9,16 @@ function cleanVersion(value, fallback) {
   return version || fallback;
 }
 
-export function resolvePlatformLaunch(pathname, bridge) {
+export function resolvePlatformLaunch(pathname, bridge, resetPairing = false) {
   const platform = normalizePlatform(bridge?.platform);
   const appVersion = cleanVersion(bridge?.appVersion, platform === 'browser' ? 'web' : 'unknown');
   const screenId = typeof bridge?.screenId === 'string' && bridge.screenId.trim()
     ? bridge.screenId.trim()
     : undefined;
+
+  if (resetPairing && /^\/pair\/?$/i.test(pathname)) {
+    return { platform, appVersion, pathname: '/pair' };
+  }
 
   if (platform !== 'browser' && screenId) {
     return { platform, appVersion, pathname: `/display/${encodeURIComponent(screenId)}` };

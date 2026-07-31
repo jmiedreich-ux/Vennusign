@@ -26,8 +26,27 @@ test('injects the shared platform contract at document start', () => {
   assert.match(activity, /window, "__VENNU_PLATFORM__"/);
   assert.match(activity, /BuildConfig\.TV_PLATFORM/);
   assert.match(activity, /BuildConfig\.VERSION_NAME/);
+  assert.match(activity, /readScreenId\(\)/);
+  assert.match(activity, /screenId: \$\{JSONObject\.quote\(it\)\}/);
   assert.match(activity, /settings\.javaScriptEnabled = true/);
   assert.match(activity, /settings\.domStorageEnabled = true/);
+});
+
+test('persists only a trusted valid screen route and resumes it after restart', () => {
+  assert.match(activity, /getSharedPreferences\(LAUNCH_STATE_PREFERENCES, MODE_PRIVATE\)/);
+  assert.match(activity, /recordTrustedNavigation/);
+  assert.match(activity, /if \(!isAllowed\(url\)\) return/);
+  assert.match(activity, /DISPLAY_PATH\.matchEntire/);
+  assert.match(activity, /UUID\.fromString/);
+  assert.match(activity, /putString\(SCREEN_ID_KEY, screenId\)/);
+  assert.match(activity, /"\/display\/\$\{Uri\.encode\(it\)\}"/);
+});
+
+test('clears corrupted state and supports a narrow same-origin re-pair route', () => {
+  assert.match(activity, /remove\(SCREEN_ID_KEY\)/);
+  assert.match(activity, /url\.path == "\/pair"/);
+  assert.match(activity, /getQueryParameter\(RESET_QUERY\) == "1"/);
+  assert.doesNotMatch(activity, /addJavascriptInterface/);
 });
 
 test('has deterministic loading, HTTPS navigation, error, and D-pad focus behavior', () => {
