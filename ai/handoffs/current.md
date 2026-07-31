@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-10.04
-- Status: In Review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/10.04-android-boot-lifecycle`
 - Issue: #217
-- Pull request: pending
-- Latest reviewed commit: pending
-- Merge commit: pending
-- CI state: pending
+- Pull request: #218
+- Latest reviewed commit: `9742b93`
+- Merge commit: `2ce7ce9`
+- CI state: GitHub Actions run #472 passed
 
 ## Completed This Session
 
@@ -28,7 +28,7 @@
 
 ## Validation
 
-- Results: pending GitHub Actions.
+- Results: restore, Release build, admin/display production builds/tests, and required non-integration tests passed in Actions run #472.
 - Skipped: all integration-type and physical-device tests by standing owner instruction.
 
 ## Remaining Work
@@ -37,7 +37,7 @@
 
 ## Exact Next Action
 
-Validate and merge WP-10.04, then claim WP-10.05.
+Claim and implement WP-10.05 — Android Kiosk and Operator Escape.
 
 ## Do Not Redo or Reverse
 
