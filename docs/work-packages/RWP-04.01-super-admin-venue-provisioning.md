@@ -1,9 +1,8 @@
-# WP-04.13 — Super Admin Venue Provisioning
-# WP-04.13 — Super Admin Venue Provisioning
+# RWP-04.01 â€” Super Admin Venue Provisioning
 
 ## Status
 
-Planned.
+In Review.
 
 ## Goal
 
@@ -34,9 +33,9 @@ Allow authorized Super Admin operators to create and provision a new venue from 
 
 ## Dependencies
 
-- WP-04.02 — Venue Directory
-- WP-04.03 — Venue Detail & Support View
-- WP-04.10 — Venue Tier Switching
+- WP-04.02 â€” Venue Directory
+- WP-04.03 â€” Venue Detail & Support View
+- WP-04.10 â€” Venue Tier Switching
 
 ## Implementation Plan
 
@@ -102,6 +101,14 @@ Create:
 
 ## GitHub
 
-- Issue: pending
-- Branch: `wp/04.13-super-admin-venue-provisioning`
+- Issue: #253
+- Branch: `rwp/04.01-super-admin-venue-provisioning`
 - Pull request: pending
+
+## Validation Evidence
+
+- Local Super Admin tests: 73 passed.
+- Local Super Admin production build: passed.
+- Local .NET validation: not run because the SDK is unavailable in this workspace.
+- GitHub Actions: pending and authoritative.
+- Skipped: Azure SQL, external-service, credentialed, hosted-infrastructure, container, and all other integration-type tests under the standing owner exception.

@@ -42,6 +42,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFeatureUsageRepository, FeatureUsageRepository>();
         services.AddScoped<IFeatureResolutionService, FeatureResolutionService>();
         services.AddScoped<ISubscriptionManagementService, SubscriptionManagementService>();
+        services.AddScoped<IVenueProvisioningService, VenueProvisioningService>();
         services.AddScoped<IUsageMeteringService, UsageMeteringService>();
         services.AddScoped<IBillingCatalogService, BillingCatalogService>();
         services.AddScoped<IProcessedStripeEventRepository, ProcessedStripeEventRepository>();

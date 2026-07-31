@@ -35,8 +35,12 @@ header h1 { font-size: clamp(2rem, 4vw, 3.4rem); margin: 0; letter-spacing: -.05
 .placeholder p:last-child { color: #64766f; max-width: 520px; }
 @media (max-width: 760px) { .shell { grid-template-columns: 1fr; } aside { position: static; } nav { grid-template-columns: repeat(2, 1fr); } .identity { display: none; } .shell > main { padding-top: 28px; } .environment { display: none; } }
 .directory { margin-top: 38px; }
-.directory-toolbar { display: grid; grid-template-columns: minmax(220px, 1fr) 180px 180px; gap: 10px; margin-bottom: 18px; }
+.directory-toolbar { display: grid; grid-template-columns: minmax(220px, 1fr) 180px 180px auto; gap: 10px; margin-bottom: 18px; }
 .directory-toolbar input, .directory-toolbar select { border: 1px solid #ccd8d1; border-radius: 12px; padding: 11px 13px; background: white; }
+.create-venue-action, .venue-create > button { border: 0; border-radius: 12px; padding: 11px 15px; color: white; background: #194d3b; font-weight: 750; cursor: pointer; }
+.venue-create { display: grid; grid-template-columns: 1.3fr repeat(4, minmax(120px, .8fr)) auto; gap: 10px; align-items: end; margin: 0 0 18px; border: 1px solid #bdd7ca; border-radius: 16px; padding: 16px; background: #f1f8f4; }
+.venue-create > div p, .venue-create > div h2 { margin: 0; }.venue-create > div p { color: #267252; font-size: .7rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }.venue-create > div h2 { margin: 3px 0; font-size: 1.1rem; }.venue-create > div span { color: #61756c; font-size: .76rem; }
+.venue-create label { display: grid; gap: 4px; color: #4c6259; font-size: .72rem; font-weight: 750; }.venue-create input { min-width: 0; border: 1px solid #b9ccc2; border-radius: 10px; padding: 10px; background: white; }.venue-create > button:disabled { opacity: .55; cursor: wait; }.venue-create-error { grid-column: 1 / -1; margin: 0; color: #8a2929; }
 .table-wrap { overflow-x: auto; border: 1px solid #dbe3de; border-radius: 18px; background: white; }
 table { width: 100%; border-collapse: collapse; min-width: 850px; }
 th, td { padding: 15px 17px; text-align: left; border-bottom: 1px solid #edf1ee; font-size: .9rem; }
@@ -45,7 +49,8 @@ td small { display: block; color: #7a8b84; margin-top: 3px; }
 .health { display: inline-block; border-radius: 999px; padding: 5px 9px; background: #edf0ee; text-transform: capitalize; font-size: .75rem; font-weight: 750; }
 .health.online { color: #18603f; background: #dff4e8; } .health.degraded { color: #7d5911; background: #fff0c8; } .health.offline { color: #8a2929; background: #f9dddd; }
 .state { padding: 60px 24px; text-align: center; border: 1px solid #dbe3de; border-radius: 18px; background: white; color: #60736b; }.state.error { color: #8a2929; }
-@media (max-width: 760px) { .directory-toolbar { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) { .venue-create { grid-template-columns: repeat(2, 1fr); }.venue-create > div, .venue-create-error { grid-column: 1 / -1; } }
+@media (max-width: 760px) { .directory-toolbar, .venue-create { grid-template-columns: 1fr; }.venue-create > div, .venue-create-error { grid-column: 1; } }
 .venue-link { border: 0; background: transparent; padding: 0; text-align: left; color: inherit; cursor: pointer; }
 .venue-link:hover strong { color: #18603f; }
 .back { border: 0; background: transparent; color: #376052; font-weight: 700; padding: 0; cursor: pointer; }

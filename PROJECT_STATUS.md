@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 11 — Upgrade Prompts & Billing UX: Planning**
+**Cross-phase Remediation Queue — Active (Phase 11 paused)**
 
 ## Milestone
 
@@ -104,10 +104,13 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-11.02 — Locked Navigation and Section Previews
 - WP-11.03 — Inline Feature Hints
 - WP-11.04 — Sidebar Upgrade Nudge
+- WP-11.05 — Upgrade Modal and Tier Value Summary
 
 ## Active Work Package
 
-**WP-11.05 — Upgrade Modal and Tier Value Summary** is in review.
+**RWP-04.01 — Super Admin Venue Provisioning** is in review.
+
+Phase 11 remains paused while the approved Phase 04/05 remediation queue is completed and its billing UX is reconciled into Venue Admin.
 
 ## Phase 04 Result
 
@@ -162,7 +165,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Publish and validate **WP-11.05 — Upgrade Modal and Tier Value Summary** through GitHub Actions.
+Publish, validate, review, and merge **RWP-04.01 — Super Admin Venue Provisioning**, then begin **RWP-05.01 — Venue Admin CMS Foundation**.
 
 ## Phase 05 Work Packages
 

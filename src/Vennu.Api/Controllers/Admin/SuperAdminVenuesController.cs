@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vennu.Api.Admin;
 using Vennu.Api.Contracts.Admin;
+using Vennu.Api.Contracts.Venues;
 using Vennu.Core.Models;
 using Vennu.Data.Services;
 
@@ -16,17 +17,61 @@ public sealed class SuperAdminVenuesController : ControllerBase
     private readonly IVenueSupportDetailService venueSupportDetailService;
     private readonly IVenueFeatureOverrideManagementService overrideManagementService;
     private readonly IVenueTierSwitchService tierSwitchService;
+    private readonly IVenueProvisioningService venueProvisioningService;
 
     public SuperAdminVenuesController(
         IVenueDirectoryService venueDirectoryService,
         IVenueSupportDetailService venueSupportDetailService,
         IVenueFeatureOverrideManagementService overrideManagementService,
-        IVenueTierSwitchService tierSwitchService)
+        IVenueTierSwitchService tierSwitchService,
+        IVenueProvisioningService venueProvisioningService)
     {
         this.venueDirectoryService = venueDirectoryService;
         this.venueSupportDetailService = venueSupportDetailService;
         this.overrideManagementService = overrideManagementService;
         this.tierSwitchService = tierSwitchService;
+        this.venueProvisioningService = venueProvisioningService;
+    }
+
+    [HttpPost]
+    [ProducesResponseType<CreateVenueResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<CreateVenueResponse>> Create(
+        [FromBody] CreateVenueRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await venueProvisioningService.ProvisionAsync(
+                new Venue
+                {
+                    Name = request.Name,
+                    Timezone = request.Timezone,
+                    Type = request.Type,
+                    PrimaryLanguage = request.PrimaryLanguage,
+                    SecondaryLanguage = request.SecondaryLanguage
+                },
+                cancellationToken).ConfigureAwait(false);
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { venueId = result.VenueId },
+                new CreateVenueResponse { VenueId = result.VenueId });
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Venue provisioning failed",
+                Detail = exception.Message
+            });
+        }
     }
 
     [HttpPut("{venueId:guid}/tier")]
