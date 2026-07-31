@@ -42,4 +42,22 @@ public class SqlDataAccessTests
 
         Assert.Null(sut.GetFieldList("  "));
     }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Constructor_AcceptsVennuDatabaseConnectionStringName()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:VennuDatabase"] = "Server=(localdb)\\MSSQLLocalDB;Database=master;Trusted_Connection=True;TrustServerCertificate=True;"
+            })
+            .Build();
+
+        var sut = new SqlDataAccess(configuration);
+
+        var fields = sut.GetFieldList("Id");
+
+        Assert.NotNull(fields);
+    }
 }

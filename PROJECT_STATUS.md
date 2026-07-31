@@ -1,4 +1,5 @@
 # Vennu Project Status
+# Vennu Project Status
 
 ## Current Phase
 
@@ -6,7 +7,7 @@
 
 ## Milestone
 
-The internal Super Admin CRM is complete; the next milestone is the first venue managing its board.
+The internal Super Admin CRM foundation is delivered, but follow-up remediation is required to restore the planned split between Super Admin and the venue-facing Admin CMS and to add missing venue provisioning.
 
 ## Completed
 
@@ -100,13 +101,14 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-10.09 — HaaS Pre-Registration and Fleet Version Health** is the next package in roadmap order.
+None. **WP-04.13 — Super Admin Venue Provisioning** is the next package due to a discovered Phase 04/05 planning gap.
 
 ## Phase 04 Result
 
 - Delivered protected venue support, tier management, feature matrix, overrides, operational health, and commercial events.
 - Added live Stripe USD revenue, safe venue tier switching, and persisted monthly revenue trends.
 - Added repeatable authorization and critical UI journey validation.
+- Follow-up remediation remains open for missing venue provisioning in the Super Admin venue workflow.
 
 ## Phase 05 Result
 
@@ -114,6 +116,14 @@ None. **WP-10.09 — HaaS Pre-Registration and Fleet Version Health** is the nex
 - Added mobile Quick Update with venue-local midnight availability restoration.
 - Added screen registration, health, one/all targeting, deterministic overflow guidance, and supported video walls.
 - Added repeatable protected-route, service, repository, worker, migration, and frontend validation.
+- Follow-up remediation remains open to move day-to-day venue workflows into a separate venue-facing Admin CMS surface.
+
+## Discovered Planning Gaps
+
+- The roadmap defines two separate admin surfaces: a Phase 04 Super Admin CRM and a Phase 05 venue-facing Admin CMS.
+- The repository currently contains `src/admin` for Super Admin and `src/display` for the player, but no separate venue/customer CMS SPA.
+- The Super Admin venue directory and detail experience has no venue-creation flow even though the API already supports venue creation.
+- Venue-scoped operational tools currently live inside the Super Admin SPA instead of an independent venue-facing CMS.
 
 ## Phase 06 Result
 
@@ -148,7 +158,14 @@ None. **WP-10.09 — HaaS Pre-Registration and Fleet Version Health** is the nex
 
 ## Next Action
 
-Claim and implement **WP-10.09 — HaaS Pre-Registration and Fleet Version Health**.
+Claim and implement **WP-04.13 — Super Admin Venue Provisioning**.
+
+## Remediation Work Packages
+
+- WP-04.13 — Super Admin Venue Provisioning
+- WP-05.11 — Venue Admin CMS Foundation and Protected Bootstrap
+- WP-05.12 — Venue Admin CMS Menu and Quick Update Migration
+- WP-05.13 — Venue Admin CMS Operational Surface Migration
 
 ## Phase 05 Work Packages
 

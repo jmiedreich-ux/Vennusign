@@ -12,7 +12,8 @@ public partial class SqlDataAccess : ISqlDataAccess
 {
     private const int DefaultCommandTimeoutSeconds = 180;
     private const int DynamicQueryTimeoutSeconds = 60;
-    private const string DefaultConnectionStringName = "ConnectionString";
+    private const string LegacyConnectionStringName = "ConnectionString";
+    private const string PreferredConnectionStringName = "VennuDatabase";
     private static readonly object TableMappingLock = new();
     private static bool tableMappingsConfigured;
 
@@ -142,12 +143,14 @@ public partial class SqlDataAccess : ISqlDataAccess
 
     private string GetConnectionString()
     {
-        var configuredConnectionString = configuration.GetConnectionString(DefaultConnectionStringName)
-            ?? configuration[DefaultConnectionStringName];
+        var configuredConnectionString = configuration.GetConnectionString(PreferredConnectionStringName)
+            ?? configuration[PreferredConnectionStringName]
+            ?? configuration.GetConnectionString(LegacyConnectionStringName)
+            ?? configuration[LegacyConnectionStringName];
 
         if (string.IsNullOrWhiteSpace(configuredConnectionString))
         {
-            throw new InvalidOperationException($"A connection string named '{DefaultConnectionStringName}' was not found.");
+            throw new InvalidOperationException($"A connection string named '{PreferredConnectionStringName}' or '{LegacyConnectionStringName}' was not found.");
         }
 
         return configuredConnectionString;

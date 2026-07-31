@@ -11,7 +11,25 @@ using Vennu.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var adminCorsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+if (builder.Environment.IsDevelopment() && (adminCorsOrigins is null || adminCorsOrigins.Length == 0))
+{
+    adminCorsOrigins = ["http://localhost:5173", "https://localhost:5173"];
+}
+
+var adminCorsEnabled = adminCorsOrigins is { Length: > 0 };
+
 builder.Services.AddControllers();
+if (adminCorsEnabled)
+{
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AdminPortal", policy => policy
+            .WithOrigins(adminCorsOrigins!)
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+    });
+}
 builder.Services
     .AddAuthentication(SuperAdminAuthenticationDefaults.AuthenticationScheme)
     .AddScheme<SuperAdminAuthenticationOptions, SuperAdminAuthenticationHandler>(
@@ -73,6 +91,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+}
+
+if (adminCorsEnabled)
+{
+    app.UseCors("AdminPortal");
 }
 
 app.UseHttpsRedirection();
