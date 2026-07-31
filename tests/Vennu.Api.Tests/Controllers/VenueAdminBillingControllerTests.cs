@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using Vennu.Api.Tests.E2E;
 
 namespace Vennu.Api.Tests.Controllers;
@@ -27,6 +28,18 @@ public sealed class VenueAdminBillingControllerTests : IClassFixture<VennuApiFac
         client.DefaultRequestHeaders.Add("X-Vennu-Admin-Key", "test-admin-key");
 
         var response = await client.GetAsync("/api/venue-admin/billing/presentation");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CheckoutSession_ReturnsUnauthorized_WhenVenueTokenIsMissing()
+    {
+        using var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/venue-admin/billing/checkout-session",
+            new { targetTierId = Guid.NewGuid(), billingInterval = "monthly" });
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }

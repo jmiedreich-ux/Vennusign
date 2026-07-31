@@ -86,8 +86,10 @@ builder.Services
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<IStripeWebhookEventVerifier, StripeWebhookEventVerifier>();
 builder.Services.Configure<StripeRevenueOptions>(builder.Configuration.GetSection(StripeRevenueOptions.SectionName));
+builder.Services.Configure<StripeCheckoutOptions>(builder.Configuration.GetSection(StripeCheckoutOptions.SectionName));
 builder.Services.AddScoped<IStripeRevenueSource, StripeRevenueSource>();
 builder.Services.AddScoped<IStripeSubscriptionTierUpdater, StripeSubscriptionTierUpdater>();
+builder.Services.AddScoped<IStripeCheckoutSessionGateway, StripeCheckoutSessionGateway>();
 builder.Services.AddHostedService<HeartbeatMonitor>();
 builder.Services.AddVennuData();
 builder.Services.AddScoped<IVenueThemeService, VenueThemeService>();

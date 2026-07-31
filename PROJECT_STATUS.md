@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Cross-phase Remediation Queue — Active (Phase 11 paused)**
+**Phase 11 — Upgrade Prompts & Billing UX**
 
 ## Milestone
 
@@ -113,9 +113,9 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-11.06 — Stripe Checkout Session Foundation** is next.
+**WP-11.06 — Stripe Checkout Session Foundation** is active under issue #267.
 
-The approved remediation queue and Phase 11 customer-UI reconciliation are complete. Normal Phase 11 roadmap execution resumes.
+The approved remediation queue and Phase 11 customer-UI reconciliation are complete. Normal Phase 11 roadmap execution has resumed.
 
 ## Phase 04 Result
 
