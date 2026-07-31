@@ -6,6 +6,9 @@ export type AdminSession = {
 };
 
 export type VenueDirectoryQuery = { search?: string; tier?: string; status?: string; health?: string };
+export type CreateVenueRequest = {
+  name: string; timezone: string; type: string; primaryLanguage: string; secondaryLanguage?: string;
+};
 export type VenueDirectoryItem = {
   venueId: string; name: string; type: string; tierId?: string; tierName?: string;
   subscriptionStatus: string; screenCount: number; lastActiveUtc?: string;
@@ -286,6 +289,20 @@ export async function loadVenueDirectory(configuration: AdminConfiguration, apiK
   });
   if (!response.ok) throw new AdminApiError(response.status, "Unable to load venue directory.");
   return response.json() as Promise<VenueDirectoryItem[]>;
+}
+
+export async function createVenue(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  request: CreateVenueRequest
+): Promise<{ venueId: string }> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/venues`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey },
+    body: JSON.stringify(request)
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to create this venue.");
+  return response.json() as Promise<{ venueId: string }>;
 }
 
 export async function loadVenueSupportDetail(configuration: AdminConfiguration, apiKey: string, venueId: string, signal?: AbortSignal): Promise<VenueSupportDetail | undefined> {

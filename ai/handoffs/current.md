@@ -2,14 +2,14 @@
 
 ## Work Package
 
-- ID: WP-11.05
+- ID: RWP-04.01
 - Status: Review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/11.05-upgrade-modal`
-- Issue: #251
+- Branch: `rwp/04.01-super-admin-venue-provisioning`
+- Issue: #253
 - Pull request: pending
 - Latest reviewed commit: pending
 - Merge commit: pending
@@ -17,30 +17,36 @@
 
 ## Completed This Session
 
-- Added a dismissible accessible bottom-sheet upgrade modal.
-- Added current/target tier value, feature pills, and monthly/annual presentation.
-- Hid the sidebar suggestion while the modal is active.
-- Added focused non-integration tests and review-state records.
+- Added protected Super Admin venue provisioning.
+- Added normalized venue validation and deterministic Starter-tier trial initialization.
+- Added the venue creation form and immediate navigation to the new venue.
+- Added focused service, controller, authorization, frontend validation, and wiring tests.
+- Renamed the historical WP-04.13 planning record to the approved RWP-04.01 designation.
 
 ## Decisions
 
-- Pricing comes from the active public tier catalog already returned by the protected API.
-- Annual presentation uses the Phase 03 ten-month annual catalog rule.
+- Venue creation reuses the established venue repository and trial service; no new database table or subscription path was introduced.
+- The initial commercial state is the active seeded `starter` tier with the existing 14-day trial behavior.
+- Super Admin remains the internal provisioning surface; venue-facing daily management moves in RWP-05.01 through RWP-05.03.
 
 ## Validation
 
-- Results: pending authoritative GitHub Actions.
-- Skipped: all integration-type and external Stripe tests.
+- Results: 73 Super Admin tests passed; Super Admin production build passed.
+- Pending: authoritative GitHub Actions against the published PR head.
+- Skipped: local .NET validation because the SDK is unavailable.
+- Standing skip: all Azure SQL, external-service, credentialed, hosted-infrastructure, container, and other integration-type tests.
 
 ## Remaining Work
 
-- GitHub Actions validation and ChatGPT review for WP-11.05.
+- Publish the RWP-04.01 branch and validate it in GitHub Actions.
+- Complete ChatGPT review and merge.
+- Begin RWP-05.01.
 
 ## Exact Next Action
 
-Publish WP-11.05, validate the exact head in GitHub Actions, review, and merge.
+Publish RWP-04.01, validate the exact head in GitHub Actions, review, and merge.
 
 ## Do Not Redo or Reverse
 
-- Do not invent target-tier pricing in the browser.
-- Do not start Checkout or mutate entitlement in this package.
+- Do not add public self-service signup or Stripe Checkout to this remediation package.
+- Do not move venue-operator workflows into Super Admin; RWP-05.01 establishes the separate Venue Admin CMS.
