@@ -95,7 +95,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-10.04 — Android Boot and Lifecycle Recovery** is the next package in roadmap order.
+**WP-10.04 — Android Boot and Lifecycle Recovery** is in review.
 
 ## Phase 04 Result
 
@@ -143,7 +143,7 @@ None. **WP-10.04 — Android Boot and Lifecycle Recovery** is the next package i
 
 ## Next Action
 
-Claim and implement **WP-10.04 — Android Boot and Lifecycle Recovery**.
+Validate and merge **WP-10.04**, then claim **WP-10.05 — Android Kiosk and Operator Escape**.
 
 ## Phase 05 Work Packages
 

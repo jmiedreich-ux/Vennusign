@@ -2,8 +2,11 @@ package com.vennu.tv
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.net.ConnectivityManager
+import android.net.Network
 import android.net.Uri
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.Gravity
 import android.view.View
 import android.webkit.WebResourceError
@@ -29,7 +32,22 @@ class MainActivity : ComponentActivity() {
     private lateinit var retryButton: Button
     private val allowedOrigin by lazy { Uri.parse(BuildConfig.VENNU_BASE_URL) }
     private val launchState by lazy {
-        getSharedPreferences(LAUNCH_STATE_PREFERENCES, MODE_PRIVATE)
+        getSharedPreferences(LaunchStatePreferences.NAME, MODE_PRIVATE)
+    }
+    private val connectivityManager by lazy {
+        getSystemService(ConnectivityManager::class.java)
+    }
+    private var playerState = PlayerState.LOADING
+    private var automaticReloads = 0
+    private var lastAutomaticReloadAt = 0L
+    private var backgroundedAt = 0L
+    private var networkCallbackRegistered = false
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            runOnUiThread {
+                if (playerState == PlayerState.ERROR) requestAutomaticRecovery()
+            }
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -59,7 +77,7 @@ class MainActivity : ComponentActivity() {
             text = getString(R.string.retry)
             isFocusable = true
             isFocusableInTouchMode = true
-            setOnClickListener { loadPlayer() }
+            setOnClickListener { loadPlayer(manual = true) }
         }
         errorPanel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -84,6 +102,34 @@ class MainActivity : ComponentActivity() {
         loadPlayer()
     }
 
+    override fun onStart() {
+        super.onStart()
+        webView.onResume()
+        if (!networkCallbackRegistered) {
+            connectivityManager.registerDefaultNetworkCallback(networkCallback)
+            networkCallbackRegistered = true
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val timeAway = SystemClock.elapsedRealtime() - backgroundedAt
+        if (backgroundedAt > 0L && timeAway >= STALE_FOREGROUND_MS) {
+            requestAutomaticRecovery()
+        }
+        backgroundedAt = 0L
+    }
+
+    override fun onStop() {
+        backgroundedAt = SystemClock.elapsedRealtime()
+        webView.onPause()
+        if (networkCallbackRegistered) {
+            connectivityManager.unregisterNetworkCallback(networkCallback)
+            networkCallbackRegistered = false
+        }
+        super.onStop()
+    }
+
     private fun platformBridgeScript(): String =
         buildString {
             append(
@@ -105,19 +151,35 @@ class MainActivity : ComponentActivity() {
             )
         }
 
-    private fun loadPlayer() {
+    private fun loadPlayer(manual: Boolean = false) {
+        if (manual) automaticReloads = 0
         showLoading()
         val screenPath = readScreenId()?.let { "/display/${Uri.encode(it)}" } ?: "/pair"
         webView.loadUrl("${BuildConfig.VENNU_BASE_URL}$screenPath")
     }
 
+    private fun requestAutomaticRecovery() {
+        val now = SystemClock.elapsedRealtime()
+        if (automaticReloads >= MAX_AUTOMATIC_RELOADS) return
+        if (lastAutomaticReloadAt > 0L &&
+            now - lastAutomaticReloadAt < AUTOMATIC_RELOAD_COOLDOWN_MS
+        ) return
+
+        automaticReloads += 1
+        lastAutomaticReloadAt = now
+        loadPlayer()
+    }
+
     private fun showLoading() {
+        playerState = PlayerState.LOADING
         webView.visibility = View.INVISIBLE
         errorPanel.visibility = View.GONE
         loading.visibility = View.VISIBLE
     }
 
     private fun showPlayer() {
+        playerState = PlayerState.READY
+        automaticReloads = 0
         loading.visibility = View.GONE
         errorPanel.visibility = View.GONE
         webView.visibility = View.VISIBLE
@@ -125,6 +187,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun showError() {
+        playerState = PlayerState.ERROR
         loading.visibility = View.GONE
         webView.visibility = View.INVISIBLE
         errorPanel.visibility = View.VISIBLE
@@ -143,21 +206,30 @@ class MainActivity : ComponentActivity() {
         if (!isAllowed(url)) return
 
         if (url.path == "/pair" && url.getQueryParameter(RESET_QUERY) == "1") {
-            launchState.edit().remove(SCREEN_ID_KEY).apply()
+            launchState.edit().remove(LaunchStatePreferences.SCREEN_ID).apply()
             return
+        }
+
+        if (url.path == "/pair") {
+            when (url.getQueryParameter(BOOT_QUERY)) {
+                "1" -> launchState.edit()
+                    .putBoolean(LaunchStatePreferences.BOOT_LAUNCH_ENABLED, true).apply()
+                "0" -> launchState.edit()
+                    .putBoolean(LaunchStatePreferences.BOOT_LAUNCH_ENABLED, false).apply()
+            }
         }
 
         val encodedScreenId = DISPLAY_PATH.matchEntire(url.path.orEmpty())?.groupValues?.get(1)
             ?: return
         val screenId = normalizeScreenId(Uri.decode(encodedScreenId)) ?: return
-        launchState.edit().putString(SCREEN_ID_KEY, screenId).apply()
+        launchState.edit().putString(LaunchStatePreferences.SCREEN_ID, screenId).apply()
     }
 
     private fun readScreenId(): String? {
-        val stored = launchState.getString(SCREEN_ID_KEY, null) ?: return null
+        val stored = launchState.getString(LaunchStatePreferences.SCREEN_ID, null) ?: return null
         val normalized = normalizeScreenId(stored)
         if (normalized == null) {
-            launchState.edit().remove(SCREEN_ID_KEY).apply()
+            launchState.edit().remove(LaunchStatePreferences.SCREEN_ID).apply()
         }
         return normalized
     }
@@ -208,9 +280,13 @@ class MainActivity : ComponentActivity() {
     )
 
     companion object {
-        private const val LAUNCH_STATE_PREFERENCES = "vennu-tv-launch-state"
-        private const val SCREEN_ID_KEY = "screen-id"
         private const val RESET_QUERY = "vennuReset"
+        private const val BOOT_QUERY = "vennuBoot"
+        private const val STALE_FOREGROUND_MS = 5 * 60 * 1000L
+        private const val AUTOMATIC_RELOAD_COOLDOWN_MS = 10_000L
+        private const val MAX_AUTOMATIC_RELOADS = 3
         private val DISPLAY_PATH = Regex("^/display/([^/]+)/?$")
     }
+
+    private enum class PlayerState { LOADING, READY, ERROR }
 }
