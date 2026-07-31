@@ -117,10 +117,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - RWP-05.03 — Remaining Venue Features Migration
 - RWP-11.01 — Venue Admin Billing UX Reconciliation
 - WP-12.01 — POS Connection Domain and Provider Contracts
+- WP-12.02 — Square OAuth Connection Flow
 
 ## Active Work Package
 
-**WP-12.02 — Square OAuth Connection Flow** is ready for review on issue #287 and branch `wp/12.02-square-oauth-connection-flow`.
+No implementation package is active. **WP-12.03 — Square Catalog Import** is next.
 
 ## Phase 04 Result
 
@@ -182,7 +183,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate, review, and merge **WP-12.02 — Square OAuth Connection Flow**.
+Claim and implement **WP-12.03 — Square Catalog Import**.
 
 ## Phase 05 Work Packages
 
