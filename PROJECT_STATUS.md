@@ -108,12 +108,13 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - RWP-04.01 — Super Admin Venue Provisioning
 - RWP-05.01 — Venue Admin CMS Foundation
 - RWP-05.02 — Menu and Quick Update Migration
+- RWP-05.03 — Remaining Venue Features Migration
 
 ## Active Work Package
 
-**RWP-05.03 — Remaining Venue Features Migration** is in review.
+**RWP-11.01 — Venue Admin Billing UX Reconciliation** is in review.
 
-Phase 11 remains paused while the approved Phase 04/05 remediation queue is completed and its billing UX is reconciled into Venue Admin.
+The approved Phase 04/05 remediation queue is complete. Phase 11 remains paused only until its already-delivered customer billing UX is reconciled into Venue Admin.
 
 ## Phase 04 Result
 
@@ -168,7 +169,7 @@ Phase 11 remains paused while the approved Phase 04/05 remediation queue is comp
 
 ## Next Action
 
-Publish, validate, review, and merge **RWP-05.03 — Remaining Venue Features Migration**, then reconcile WP-11.01 through WP-11.05 into Venue Admin.
+Publish, validate, review, and merge **RWP-11.01 — Venue Admin Billing UX Reconciliation**, then resume with **WP-11.06 — Stripe Checkout Session Foundation**.
 
 ## Phase 05 Work Packages
 

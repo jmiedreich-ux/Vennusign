@@ -2,12 +2,12 @@ import { useEffect, useState, type FormEvent } from "react";
 import { archiveDateRangePromotion, loadDateRangePromotions, saveDateRangePromotion, type DateRangePromotion } from "./api";
 import type { VenueAdminConfiguration as AdminConfiguration } from "./config";
 
-type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; enabled: boolean };
+type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; enabled: boolean; showUpgradePrompt?: boolean };
 type Draft = Omit<DateRangePromotion, "id" | "venueId">;
 const today = new Date().toISOString().slice(0, 10);
 const initial: Draft = { name: "", startLocalDate: today, endLocalDate: today, priority: 0, isEnabled: true };
 
-export default function DateRangePromotionAdministration({ configuration, apiKey, venueId, enabled }: Props) {
+export default function DateRangePromotionAdministration({ configuration, apiKey, venueId, enabled, showUpgradePrompt = true }: Props) {
   const [rows, setRows] = useState<DateRangePromotion[]>([]);
   const [draft, setDraft] = useState<Draft>(initial);
   const [editingId, setEditingId] = useState<string>();
@@ -40,7 +40,7 @@ export default function DateRangePromotionAdministration({ configuration, apiKey
   const cancelEdit = () => { setEditingId(undefined); setDraft(initial); };
   return <article className="promotion-admin">
     <div className="promotion-heading"><div><p>Scheduling</p><h3>Date-range promotions</h3></div><span>{rows.filter(row => row.isEnabled).length} enabled</span></div>
-    {!enabled ? <p className="tier-notice">Promotion scheduling is visible as a preview. Enable Basic Scheduling to edit it.</p> : null}
+    {showUpgradePrompt && !enabled ? <p className="tier-notice">Promotion scheduling is visible as a preview. Enable Basic Scheduling to edit it.</p> : null}
     {error ? <p className="state error">{error}</p> : null}
     <form onSubmit={save}>
       <input aria-label="Promotion name" disabled={!enabled} maxLength={160} required placeholder="Holiday menu" value={draft.name} onChange={event => setDraft(value => ({ ...value, name: event.target.value }))} />

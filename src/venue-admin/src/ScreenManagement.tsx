@@ -13,7 +13,7 @@ import {
 import type { VenueAdminConfiguration as AdminConfiguration } from "./config";
 import VideoWallBuilder from "./VideoWallBuilder";
 
-type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; allLayoutsEnabled: boolean };
+type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; allLayoutsEnabled: boolean; showUpgradePrompt?: boolean };
 
 function previewTitle(screen: ManagedScreen) {
   if (screen.displayLayout === "split_layout") return `${screen.name} Split Layout TV preview`;
@@ -23,7 +23,7 @@ function previewTitle(screen: ManagedScreen) {
   return `${screen.name} Digital Tap Board TV preview`;
 }
 
-export default function ScreenManagement({ configuration, apiKey, venueId, allLayoutsEnabled }: Props) {
+export default function ScreenManagement({ configuration, apiKey, venueId, allLayoutsEnabled, showUpgradePrompt = true }: Props) {
   const [screens, setScreens] = useState<ManagedScreen[]>([]);
   const [newName, setNewName] = useState("");
   const [newLocation, setNewLocation] = useState("");
@@ -112,7 +112,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
     </div>
     {error ? <p className="state error">{error}</p> : null}
     {notice ? <p className="screen-notice" role="status">{notice}</p> : null}
-    {!allLayoutsEnabled ? <aside className="tier-prompt" role="status"><div><strong>Bar layouts require All Layouts</strong><p>Neon Chalkboard and Split Layout remain visible in the selector. Daily Special Hero remains visible too. Upgrade to Pro or add a venue override to choose them.</p></div></aside> : null}
+    {showUpgradePrompt && !allLayoutsEnabled ? <aside className="tier-prompt" role="status"><div><strong>Bar layouts require All Layouts</strong><p>Neon Chalkboard and Split Layout remain visible in the selector. Daily Special Hero remains visible too. Upgrade to Pro or add a venue override to choose them.</p></div></aside> : null}
     <form className="screen-create" onSubmit={create}>
       <input aria-label="New screen name" maxLength={200} required value={newName} onChange={event => setNewName(event.target.value)} placeholder="Screen name" />
       <input aria-label="New screen location" maxLength={200} value={newLocation} onChange={event => setNewLocation(event.target.value)} placeholder="Location (optional)" />
@@ -239,6 +239,6 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
           <span>{item.itemName}</span><small>{item.sectionName} · {item.visible ? "Visible" : "Overflow"}</small>
         </li>)}</ol> : <p>No available menu items to preview.</p>}
       </section>
-    <VideoWallBuilder configuration={configuration} apiKey={apiKey} venueId={venueId} screens={screens} />
+    <VideoWallBuilder configuration={configuration} apiKey={apiKey} venueId={venueId} screens={screens} showUpgradePrompt={showUpgradePrompt} />
   </article>;
 }

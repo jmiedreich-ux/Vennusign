@@ -25,10 +25,9 @@ test('sidebar nudge rotates every seven seconds unless reduced motion is request
   assert.match(component, /aria-current/);
 });
 
-test('dismissal is per feature and the app exposes only one active prompt surface', () => {
+test('dismissal remains per feature while Super Admin no longer mounts customer prompts', () => {
   assert.match(component, /dismissUpgradeFeature\(opportunity\.featureKey\)/);
-  assert.match(app, /<SidebarUpgradeNudge/);
-  assert.match(app, /route\.path !== "venues"/);
-  assert.match(venue, /!onUpgradeContextChange && upgradeOpportunity/);
+  assert.doesNotMatch(app, /<SidebarUpgradeNudge|<UpgradeModal/);
+  assert.doesNotMatch(venue, /onUpgradeContextChange|upgradeOpportunity/);
   assert.match(styles, /\.sidebar-upgrade-nudge/);
 });

@@ -5,9 +5,10 @@ import type { VenueAdminConfiguration as AdminConfiguration } from "./config";
 type Props = {
   configuration: AdminConfiguration; apiKey: string; venueId: string; enabled: boolean;
   screens: Array<{ id: string; name: string }>;
+  showUpgradePrompt?: boolean;
 };
 
-export default function EmergencyBroadcastAdministration({ configuration, apiKey, venueId, enabled, screens }: Props) {
+export default function EmergencyBroadcastAdministration({ configuration, apiKey, venueId, enabled, screens, showUpgradePrompt = true }: Props) {
   const [rows, setRows] = useState<EmergencyBroadcast[]>([]);
   const [screenId, setScreenId] = useState("");
   const [title, setTitle] = useState("");
@@ -34,7 +35,7 @@ export default function EmergencyBroadcastAdministration({ configuration, apiKey
 
   return <article className="menu-editor emergency-broadcast-admin">
     <div className="menu-editor-heading"><div><p>Priority override</p><h3>Emergency broadcast</h3></div><span>{active.length} active</span></div>
-    {!enabled ? <aside className="tier-prompt"><div><strong>Emergency Broadcast requires Pro</strong><p>Controls remain visible while activation is soft locked.</p></div></aside> : null}
+    {showUpgradePrompt && !enabled ? <aside className="tier-prompt"><div><strong>Emergency Broadcast requires Pro</strong><p>Controls remain visible while activation is soft locked.</p></div></aside> : null}
     {error ? <p className="state error">{error}</p> : null}
     <ul>{active.map(row => <li key={row.id}><strong>{row.title}</strong><span>{row.screenId ? "Targeted screen" : "All venue screens"} · expires {new Date(row.expiresUtc).toLocaleTimeString()}</span><button disabled={!enabled} onClick={() => cancel(row.id)}>Cancel</button></li>)}</ul>
     <form onSubmit={create}><fieldset disabled={!enabled}>

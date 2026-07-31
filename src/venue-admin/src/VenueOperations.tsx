@@ -44,6 +44,7 @@ export default function VenueOperations({
         apiKey={accessToken}
         venueId={venueId}
         allLayoutsEnabled={allLayouts}
+        showUpgradePrompt={false}
       />
     </div>;
   }
@@ -55,6 +56,7 @@ export default function VenueOperations({
         apiKey={accessToken}
         venueId={venueId}
         advancedEnabled={allLayouts}
+        showUpgradePrompt={false}
       />
     </div>;
   }
@@ -66,6 +68,7 @@ export default function VenueOperations({
         apiKey={accessToken}
         venueId={venueId}
         enabled={allLayouts}
+        showUpgradePrompt={false}
       />
     </div>;
   }
@@ -77,6 +80,7 @@ export default function VenueOperations({
       apiKey={accessToken}
       venueId={venueId}
       enabled={capabilities.includes("happy_hour")}
+      showUpgradePrompt={false}
     />
     <PlaylistAdministration
       configuration={configuration}
@@ -84,6 +88,7 @@ export default function VenueOperations({
       venueId={venueId}
       screens={screens}
       enabled={capabilities.includes("playlist_rotation")}
+      showUpgradePrompt={false}
     />
     <EmergencyBroadcastAdministration
       configuration={configuration}
@@ -91,12 +96,14 @@ export default function VenueOperations({
       venueId={venueId}
       screens={screens}
       enabled={capabilities.includes("emergency_broadcast")}
+      showUpgradePrompt={false}
     />
     <DateRangePromotionAdministration
       configuration={configuration}
       apiKey={accessToken}
       venueId={venueId}
       enabled={scheduling || capabilities.includes("basic_scheduling")}
+      showUpgradePrompt={false}
     />
   </div>;
 }

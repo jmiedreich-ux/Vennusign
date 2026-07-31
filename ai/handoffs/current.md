@@ -2,18 +2,18 @@
 
 ## Work Package
 
-- ID: RWP-05.03
+- ID: RWP-11.01
 - Status: Review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `rwp/05.03-venue-operations-migration`
-- Issue: #256
+- Branch: `rwp/11.01-venue-admin-billing-ux-reconciliation`
+- Issue: #264
 - Pull request: pending
-- Latest reviewed commit: `07d585adffd35d7291bd22b51a687a24b280eee6` (RWP-05.02)
-- Merge commit: `5bc870fceb145c14f42ce9dc9a8c2f074e6b28a4` (RWP-05.02)
-- CI state: RWP-05.02 Actions run #559 passed
+- Latest reviewed commit: `a225dc078a31a920cf4ee7ebfda6b6064fe0ecf3` (RWP-05.03)
+- Merge commit: `16a477cf80e9f90711706dde364d4f67de6dde26` (RWP-05.03)
+- CI state: RWP-05.03 Actions run #562 passed
 
 ## Completed This Session
 
@@ -29,6 +29,9 @@
 - Moved screens, themes, scheduling, promotions, broadcasts, playlists, and tap management into Venue Admin.
 - Added venue-claim enforcement across every mirrored operational controller and pairing flow.
 - Refocused Super Admin venue detail on support, tier, entitlement, and override context.
+- Added a claim-bound Venue Admin billing presentation contract without Stripe identifiers.
+- Moved the WP-11.01–11.05 upgrade catalog, prompts, locked previews, and modal into Venue Admin.
+- Removed customer upgrade orchestration from Super Admin while retaining support tier and override controls.
 
 ## Decisions
 
@@ -43,18 +46,21 @@
 - RWP-05.01: Actions run #556 passed all required non-integration validation.
 - RWP-05.02 local validation: 7 Venue Admin tests and 73 Super Admin tests passed; both production builds passed.
 - RWP-05.03 local validation: 12 Venue Admin tests and 73 Super Admin tests passed; both production builds passed.
+- RWP-05.03: Actions run #562 passed all required non-integration validation.
+- RWP-11.01 local validation: 17 Venue Admin tests and 73 Super Admin tests passed; both production builds passed.
 - Skipped: local .NET validation because the SDK is unavailable.
 - Standing skip: all Azure SQL, external-service, credentialed, hosted-infrastructure, container, and other integration-type tests.
 
 ## Remaining Work
 
-- Validate, review, and merge RWP-05.03.
+- Validate, review, and merge RWP-11.01.
 
 ## Exact Next Action
 
-Publish RWP-05.03 and use GitHub Actions as the authoritative non-integration gate.
+Publish RWP-11.01 and use GitHub Actions as the authoritative non-integration gate.
 
 ## Do Not Redo or Reverse
 
 - Do not add public self-service signup or Stripe Checkout to this remediation package.
 - Do not move venue-operator workflows into Super Admin; RWP-05.01 establishes the separate Venue Admin CMS.
+- Do not connect Checkout or mutate entitlement until WP-11.06 and WP-11.07.

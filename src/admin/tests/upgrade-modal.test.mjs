@@ -26,10 +26,8 @@ test('modal is accessible dismissible and presents authoritative tier value', ()
   assert.match(styles, /\.upgrade-modal-backdrop/);
 });
 
-test('one modal CTA replaces the sidebar prompt without changing entitlement', () => {
-  assert.match(app, /venueUpgrade && !upgradeContext \? <SidebarUpgradeNudge/);
-  assert.match(app, /<UpgradeModal/);
-  assert.match(app, /onUpgrade=\{continueUpgrade\}/);
-  assert.match(venue, /tiers: featureMatrix\.tiers/);
+test('Super Admin no longer mounts the customer modal or changes entitlement', () => {
+  assert.doesNotMatch(app, /SidebarUpgradeNudge|UpgradeModal|continueUpgrade/);
+  assert.doesNotMatch(venue, /tiers: featureMatrix\.tiers|onUpgradeContextChange/);
   assert.doesNotMatch(modal, /fetch|enabled\s*=|effectiveFeatures/);
 });

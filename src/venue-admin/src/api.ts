@@ -5,6 +5,14 @@ export type VenueAdminSession = {
   displayName: string;
   capabilities: string[];
 };
+export type VenueAdminTierSummary = {
+  id: string; name: string; slug: string; monthlyPrice: number; maxScreens: number;
+};
+export type VenueAdminBillingPresentation = {
+  currentTier?: VenueAdminTierSummary;
+  availableTiers: VenueAdminTierSummary[];
+  effectiveFeatures: Record<string, { enabled: boolean; limitValue?: string }>;
+};
 
 export type MenuSection = {
   id: string; venueId: string; menuId: string; name: string;
@@ -137,6 +145,21 @@ export async function loadVenueAdminSession(
     );
   }
   return response.json() as Promise<VenueAdminSession>;
+}
+
+export async function loadVenueBillingPresentation(
+  configuration: VenueAdminConfiguration,
+  accessToken: string,
+  signal?: AbortSignal
+): Promise<VenueAdminBillingPresentation> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/venue-admin/billing/presentation`, {
+    headers: { "X-Vennu-Venue-Token": accessToken },
+    signal
+  });
+  if (!response.ok) {
+    throw new VenueAdminApiError(response.status, "Upgrade options are unavailable.");
+  }
+  return response.json() as Promise<VenueAdminBillingPresentation>;
 }
 
 async function menuRequest(

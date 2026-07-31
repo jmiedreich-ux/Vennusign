@@ -26,8 +26,7 @@ test('inline hint is concrete quiet accessible and dismissible', () => {
   assert.match(styles, /border-left: 4px solid #3b82f6/);
 });
 
-test('one selected opportunity remains visible before customer-workspace handoffs', () => {
-  assert.match(venue, /const inlineHint = !onUpgradeContextChange && upgradeOpportunity/);
-  assert.match(venue, /\{inlineHint\}[\s\S]*Open Venue Admin/);
-  assert.doesNotMatch(venue, /<LockedSectionPreview/);
+test('customer upgrade hints no longer render in the support-only venue detail', () => {
+  assert.doesNotMatch(venue, /InlineFeatureHint|upgradeOpportunity|onUpgradeContextChange/);
+  assert.match(venue, /Open Venue Admin/);
 });
