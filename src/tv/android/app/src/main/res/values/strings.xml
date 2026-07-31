@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Vennu TV</string>
+    <string name="load_error">Vennu could not load. Check the network connection and try again.</string>
+    <string name="retry">Retry</string>
+</resources>
