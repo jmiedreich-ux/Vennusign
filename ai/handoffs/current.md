@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-09.08
-- Status: In Review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/09.08-digital-tap-overflow`
 - Issue: #199
-- Pull request: pending
-- Latest reviewed commit: pending
-- Merge commit: pending
-- CI state: pending GitHub Actions
+- Pull request: #200
+- Latest reviewed commit: `00f37d6`
+- Merge commit: `5f7ce30`
+- CI state: GitHub Actions run #440 passed
 
 ## Completed This Session
 
@@ -29,7 +29,7 @@
 
 ## Validation
 
-- Results: pending GitHub Actions.
+- Results: restore, Release build, admin/display production builds/tests, and required non-integration tests passed in Actions run #440.
 - Skipped: all integration-type tests by standing owner instruction.
 
 ## Remaining Work
@@ -38,7 +38,7 @@
 
 ## Exact Next Action
 
-Merge WP-09.08 after exact-head Actions and review. Stop after the five-package queue.
+Claim and implement WP-09.09 — Pairing Code Registration Completion.
 
 ## Do Not Redo or Reverse
 
