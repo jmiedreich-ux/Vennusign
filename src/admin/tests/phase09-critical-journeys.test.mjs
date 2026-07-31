@@ -10,7 +10,8 @@ const [venue, screens, tapList, api] = await Promise.all([
 ]);
 
 test('Phase 09 administration keeps tap editing venue scoped tier visible and ordered', () => {
-  assert.match(venue, /<TapListAdministration/);
+  assert.match(venue, /Open venue operations/);
+  assert.doesNotMatch(venue, /<TapListAdministration/);
   assert.match(tapList, /enabled/);
   assert.match(tapList, /reorderTapRows/);
   assert.match(tapList, /isAvailable/);

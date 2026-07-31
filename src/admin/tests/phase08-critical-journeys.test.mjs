@@ -12,12 +12,13 @@ const [venue, mealPeriods, happyHour, playlists, broadcasts, promotions] = await
   source('DateRangePromotionAdministration.tsx')
 ]);
 
-test('Phase 08 administration remains composed in one venue-scoped journey', () => {
-  assert.match(venue, /<MealPeriodAdministration/);
-  assert.match(venue, /<HappyHourAdministration/);
-  assert.match(venue, /<PlaylistAdministration/);
-  assert.match(venue, /<EmergencyBroadcastAdministration/);
-  assert.match(venue, /<DateRangePromotionAdministration/);
+test('Phase 08 administration moves to the venue-scoped customer journey', () => {
+  assert.match(venue, /Open venue operations/);
+  assert.doesNotMatch(venue, /<MealPeriodAdministration/);
+  assert.doesNotMatch(venue, /<HappyHourAdministration/);
+  assert.doesNotMatch(venue, /<PlaylistAdministration/);
+  assert.doesNotMatch(venue, /<EmergencyBroadcastAdministration/);
+  assert.doesNotMatch(venue, /<DateRangePromotionAdministration/);
 });
 
 test('scheduling controls retain time range ordering and tier-visible behavior', () => {

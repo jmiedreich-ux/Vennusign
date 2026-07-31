@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T06:18:00Z",
+  "updatedUtc": "2026-07-31T06:36:00Z",
   "activeAssignments": [
     {
-      "workPackage": "RWP-05.02",
+      "workPackage": "RWP-05.03",
       "owner": "ChatGPT",
-      "branch": "rwp/05.02-menu-quick-update-migration",
-      "issue": 255,
+      "branch": "rwp/05.03-venue-operations-migration",
+      "issue": 256,
       "status": "Review"
     }
   ],
-  "nextAvailableWorkPackage": "RWP-05.03",
+  "nextAvailableWorkPackage": "Phase 11 reconciliation",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

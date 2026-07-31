@@ -16,7 +16,7 @@ test("tap administration is venue scoped tier visible and exact reorderable", ()
   assert.match(component, /Glass color/);
   assert.match(component, /category price/);
   assert.match(component, /patchCategory/);
-  assert.match(venue, /features\.all_layouts/);
+  assert.match(venue, /Open venue operations/);
 });
 
 test("screen management exposes the Classic Chalkboard exact player preview", async () => {

@@ -1,16 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { loadFeatureMatrix, loadVenueSupportDetail, removeVenueFeatureOverride, saveVenueFeatureOverride, switchVenueTier, type FeatureMatrixSnapshot, type SubscriptionTier, type VenueSupportDetail } from "./api";
 import type { AdminConfiguration } from "./config";
-import ScreenManagement from "./ScreenManagement";
-import ThemeBuilder from "./ThemeBuilder";
-import MealPeriodAdministration from "./MealPeriodAdministration";
-import HappyHourAdministration from "./HappyHourAdministration";
-import PlaylistAdministration from "./PlaylistAdministration";
-import EmergencyBroadcastAdministration from "./EmergencyBroadcastAdministration";
-import DateRangePromotionAdministration from "./DateRangePromotionAdministration";
-import TapListAdministration from "./TapListAdministration";
 import InlineFeatureHint from "./InlineFeatureHint";
-import { dismissUpgradeFeature, readDismissedUpgradeFeatures, selectUpgradeOpportunity, upgradePanelForFeature, type EffectiveFeatureMap, type UpgradeOpportunity, type UpgradePanel } from "./upgradeExperience.mjs";
+import { dismissUpgradeFeature, readDismissedUpgradeFeatures, selectUpgradeOpportunity, type EffectiveFeatureMap, type UpgradeOpportunity } from "./upgradeExperience.mjs";
 
 export type VenueUpgradeContext = {
   effectiveFeatures: EffectiveFeatureMap;
@@ -88,7 +80,6 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack, on
 
   const features = Object.values(detail.features).sort((a, b) => a.key.localeCompare(b.key));
   const upgradeOpportunity = selectUpgradeOpportunity(detail.features, readDismissedUpgradeFeatures());
-  const upgradePanel: UpgradePanel | undefined = upgradeOpportunity ? upgradePanelForFeature(upgradeOpportunity.featureKey) : undefined;
   const dismissUpgrade = (featureKey: string) => {
     dismissUpgradeFeature(featureKey);
     setUpgradeContext(undefined);
@@ -104,33 +95,16 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack, on
       <article><h3>Profile</h3><dl><dt>Timezone</dt><dd>{detail.venue.timezone}</dd><dt>Languages</dt><dd>{[detail.venue.primaryLanguage, detail.venue.secondaryLanguage].filter(Boolean).join(", ")}</dd></dl></article>
       <article><h3>Subscription</h3><dl><dt>Tier</dt><dd>{detail.tier?.name ?? "None"}</dd><dt>Screen limit</dt><dd>{detail.tier?.maxScreens ?? "—"}</dd><dt>Period end</dt><dd>{detail.subscription?.currentPeriodEnd ? new Date(detail.subscription.currentPeriodEnd).toLocaleDateString() : "—"}</dd></dl>{detail.subscription ? <form className="tier-switch" onSubmit={saveTier}><label>Switch tier<select value={targetTierId} onChange={event => setTargetTierId(event.target.value)}>{matrix?.tiers.filter(tier => tier.isActive).map(tier => <option key={tier.id} value={tier.id}>{tier.name}</option>)}</select></label><button disabled={saving || !targetTierId || targetTierId === detail.tier?.id} type="submit">Update Stripe subscription</button></form> : null}</article>
     </div>
-    <ScreenManagement
-      configuration={configuration}
-      apiKey={apiKey}
-      venueId={venueId}
-      allLayoutsEnabled={detail.features.all_layouts?.enabled ?? false}
-    />
-    <ThemeBuilder
-      configuration={configuration}
-      apiKey={apiKey}
-      venueId={venueId}
-      advancedEnabled={detail.features.all_layouts?.enabled ?? false}
-    />
-    {upgradePanel === "design" ? inlineHint : null}
+    {inlineHint}
     <article className="venue-admin-handoff">
       <div><p>Customer workspace</p><h3>Menu and Quick Update</h3><span>Day-to-day menu work now runs in the venue-scoped Venue Admin CMS.</span></div>
       <a href={`${configuration.venueAdminBaseUrl}#/menu`}>Open Venue Admin</a>
     </article>
-    {upgradePanel === "menu" ? inlineHint : null}
-    <MealPeriodAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} />
-    <HappyHourAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} enabled={detail.features.happy_hour?.enabled ?? false} />
-    <PlaylistAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} screens={detail.screens} enabled={detail.features.playlist_rotation?.enabled ?? false} />
-    <EmergencyBroadcastAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} screens={detail.screens} enabled={detail.features.emergency_broadcast?.enabled ?? false} />
-    <DateRangePromotionAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} enabled={detail.features.basic_scheduling?.enabled ?? false} />
-    {upgradePanel === "scheduling" ? inlineHint : null}
-    <TapListAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} enabled={detail.features.all_layouts?.enabled ?? false} />
+    <article className="venue-admin-handoff">
+      <div><p>Customer workspace</p><h3>Screens, themes, schedules, and tap lists</h3><span>Venue operations now run in the protected customer workspace while support context remains here.</span></div>
+      <a href={`${configuration.venueAdminBaseUrl}#/screens`}>Open venue operations</a>
+    </article>
     <article><h3>Effective features</h3><ul className="support-list">{features.map(feature => <li key={feature.key}><strong>{feature.key}</strong><span>{feature.enabled ? "Enabled" : "Disabled"} · {feature.source}{feature.limitValue ? ` · limit ${feature.limitValue}` : ""}</span></li>)}</ul></article>
-    {upgradePanel === "operations" ? inlineHint : null}
     {upgradeContext ? <p className="upgrade-context" role="status">Upgrade options for {upgradeContext.title} will open here in the next billing step. Your current workflow remains available.</p> : null}
     <article className="override-panel"><div><h3>Active overrides ({detail.activeOverrides.length})</h3>{detail.activeOverrides.length ? <ul className="support-list">{detail.activeOverrides.map(item => <li key={item.featureId}><strong>{matrix?.features.find(feature => feature.id === item.featureId)?.label ?? item.featureId}</strong><span>{item.enabled ? "Unlock" : "Block"} · {item.reason}{item.expiresAt ? ` · expires ${new Date(item.expiresAt).toLocaleString()}` : ""}<button disabled={saving} onClick={() => removeOverride(item.featureId)}>Remove</button></span></li>)}</ul> : <p>No active overrides.</p>}</div>
       <form onSubmit={saveOverride}><h3>Add or replace override</h3><label>Feature<select required value={featureId} onChange={event => setFeatureId(event.target.value)}>{matrix?.features.map(feature => <option key={feature.id} value={feature.id}>{feature.label}</option>)}</select></label><div className="override-choice"><label><input type="radio" checked={enabled} onChange={() => setEnabled(true)} /> Unlock</label><label><input type="radio" checked={!enabled} onChange={() => setEnabled(false)} /> Block</label></div><label>Reason<textarea required maxLength={500} value={reason} onChange={event => setReason(event.target.value)} /></label><label>Expires (optional)<input type="datetime-local" value={expiresAt} onChange={event => setExpiresAt(event.target.value)} /></label><button disabled={saving || !featureId} type="submit">Save override</button></form>

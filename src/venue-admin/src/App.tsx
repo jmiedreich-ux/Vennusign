@@ -8,6 +8,7 @@ import {
   type VenueAdminRoute
 } from "./navigation.mjs";
 import MenuSectionsEditor from "./MenuSectionsEditor";
+import VenueOperations from "./VenueOperations";
 import "./styles.css";
 
 const tokenStorageKey = "vennu.venue-admin.token";
@@ -106,6 +107,14 @@ export default function App() {
             configuration={configuration}
             apiKey={accessToken}
             venueId={session.venueId}
+          />
+        : allowed && ["screens", "themes", "schedules", "tap-list"].includes(route.path)
+        ? <VenueOperations
+            configuration={configuration}
+            accessToken={accessToken}
+            venueId={session.venueId}
+            capabilities={session.capabilities}
+            area={route.path as "screens" | "themes" | "schedules" | "tap-list"}
           />
         : allowed
         ? <section className="placeholder"><p>Foundation ready</p><h2>{route.label}</h2><span>This protected venue-scoped area is ready for the next migration package.</span></section>

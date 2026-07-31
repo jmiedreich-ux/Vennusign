@@ -7,7 +7,7 @@ const detail = await readFile(new URL("../src/VenueDetail.tsx", import.meta.url)
 const api = await readFile(new URL("../src/api.ts", import.meta.url), "utf8");
 
 test("Neon Chalkboard is visible but soft locked without All Layouts", () => {
-  assert.match(detail, /allLayoutsEnabled=\{detail\.features\.all_layouts\?\.enabled/);
+  assert.match(detail, /Open venue operations/);
   assert.match(screens, /Bar layouts require All Layouts/);
   assert.match(screens, /disabled=\{!allLayoutsEnabled\} value="neon_chalkboard"/);
   assert.match(api, /"neon_chalkboard"/);

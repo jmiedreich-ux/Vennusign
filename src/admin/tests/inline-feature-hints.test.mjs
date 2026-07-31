@@ -26,10 +26,8 @@ test('inline hint is concrete quiet accessible and dismissible', () => {
   assert.match(styles, /border-left: 4px solid #3b82f6/);
 });
 
-test('one selected opportunity is inserted into exactly one mapped panel', () => {
+test('one selected opportunity remains visible before customer-workspace handoffs', () => {
   assert.match(venue, /const inlineHint = !onUpgradeContextChange && upgradeOpportunity/);
-  for (const panel of ['design', 'menu', 'scheduling', 'operations']) {
-    assert.match(venue, new RegExp(`upgradePanel === "${panel}" \\? inlineHint : null`));
-  }
+  assert.match(venue, /\{inlineHint\}[\s\S]*Open Venue Admin/);
   assert.doesNotMatch(venue, /<LockedSectionPreview/);
 });
