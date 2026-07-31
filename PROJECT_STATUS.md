@@ -109,6 +109,8 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-11.07 — Checkout Launch and Entitlement Return
 - WP-11.08 — Billing Portal and Subscription Status
 - WP-11.09 — HaaS Contract Billing Guardrails
+- WP-11.10 — Phase 11 Validation and Closure
+- Phase 11 — Upgrade Prompts & Billing UX
 - RWP-04.01 — Super Admin Venue Provisioning
 - RWP-05.01 — Venue Admin CMS Foundation
 - RWP-05.02 — Menu and Quick Update Migration
@@ -117,7 +119,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-**WP-11.10 — Phase 11 Validation and Closure** is ready for review on `wp/11.10-phase-11-validation-closure` (issue #279). Authoritative GitHub Actions validation is pending publication.
+No implementation package is active. Phase 11 is complete. The bounded Phase 12 work-package breakdown is next.
 
 ## Phase 04 Result
 
@@ -165,6 +167,13 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - Added protected HaaS pre-registration, platform/app-version heartbeats, and fleet version health.
 - Added repeatable shared-player, pairing, provisioning, recovery, package, security, and non-integration build validation.
 
+## Phase 11 Result
+
+- Delivered deterministic, dismissible, benefit-led upgrade prompts without blocking existing workflows.
+- Added claim-bound Stripe Checkout and Billing Portal journeys with provider-host allowlists and webhook-authoritative subscription state.
+- Added separate fixed-term HaaS contract billing guardrails and disclosure-only remaining-term estimates.
+- Added consolidated prompt, billing, webhook, HaaS, security, migration, and non-integration validation.
+
 ## Standing Validation Exception
 
 - Integration-type tests are skipped for every AWP under the repository owner's standing instruction.
@@ -172,7 +181,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate, review, and merge **WP-11.10 — Phase 11 Validation and Closure**.
+Create and document the bounded sequential Phase 12 work-package breakdown, then begin WP-12.01.
 
 ## Phase 05 Work Packages
 
