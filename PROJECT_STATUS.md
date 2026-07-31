@@ -101,10 +101,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-10.10 — Phase 10 Validation and Closure
 - Phase 10 — TV Apps & Platform Distribution
 - WP-11.01 — Upgrade Experience Contract and Tier Badges
+- WP-11.02 — Locked Navigation and Section Previews
 
 ## Active Work Package
 
-**WP-11.02 — Locked Navigation and Section Previews** is in review on issue #242.
+No implementation package is active. **WP-11.03 — Inline Feature Hints** is next.
 
 ## Phase 04 Result
 
@@ -159,7 +160,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Publish and validate **WP-11.02 — Locked Navigation and Section Previews** through GitHub Actions.
+Claim and implement **WP-11.03 — Inline Feature Hints**.
 
 ## Phase 05 Work Packages
 
