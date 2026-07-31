@@ -2,18 +2,18 @@
 
 ## Work Package
 
-- ID: RWP-11.01
-- Status: Review
+- ID: WP-11.06
+- Status: Available
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `rwp/11.01-venue-admin-billing-ux-reconciliation`
-- Issue: #264
+- Branch: pending
+- Issue: pending
 - Pull request: pending
-- Latest reviewed commit: `a225dc078a31a920cf4ee7ebfda6b6064fe0ecf3` (RWP-05.03)
-- Merge commit: `16a477cf80e9f90711706dde364d4f67de6dde26` (RWP-05.03)
-- CI state: RWP-05.03 Actions run #562 passed
+- Latest reviewed commit: `f3b002516f6d25c5efe300451e6eb917679602ca` (RWP-11.01)
+- Merge commit: `484f2fb4be7695089961a2da3f68981b1d6be57f` (RWP-11.01)
+- CI state: RWP-11.01 Actions run #565 passed
 
 ## Completed This Session
 
@@ -32,6 +32,7 @@
 - Added a claim-bound Venue Admin billing presentation contract without Stripe identifiers.
 - Moved the WP-11.01–11.05 upgrade catalog, prompts, locked previews, and modal into Venue Admin.
 - Removed customer upgrade orchestration from Super Admin while retaining support tier and override controls.
+- Completed the approved RWP queue and restored normal Phase 11 roadmap order.
 
 ## Decisions
 
@@ -48,16 +49,17 @@
 - RWP-05.03 local validation: 12 Venue Admin tests and 73 Super Admin tests passed; both production builds passed.
 - RWP-05.03: Actions run #562 passed all required non-integration validation.
 - RWP-11.01 local validation: 17 Venue Admin tests and 73 Super Admin tests passed; both production builds passed.
+- RWP-11.01: Actions run #565 passed all required non-integration validation.
 - Skipped: local .NET validation because the SDK is unavailable.
 - Standing skip: all Azure SQL, external-service, credentialed, hosted-infrastructure, container, and other integration-type tests.
 
 ## Remaining Work
 
-- Validate, review, and merge RWP-11.01.
+- WP-11.06 — Stripe Checkout Session Foundation.
 
 ## Exact Next Action
 
-Publish RWP-11.01 and use GitHub Actions as the authoritative non-integration gate.
+Claim WP-11.06 and implement its authenticated venue-scoped Checkout session foundation.
 
 ## Do Not Redo or Reverse
 
