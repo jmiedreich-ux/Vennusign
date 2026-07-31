@@ -58,8 +58,9 @@ test('supports only the approved TV identifiers and feeds pairing registration',
 
 test('accepts only approved sanitized hosted-wrapper query metadata', () => {
   assert.deepEqual(readPlatformBootstrap('?vennuPlatform=tizen&vennuVersion=%202.4.0%20'), {
-    platform: 'tizen', appVersion: '2.4.0', provisioningToken: ''
+    platform: 'tizen', appVersion: '2.4.0'
   });
   assert.equal(readPlatformBootstrap('?vennuPlatform=browser'), undefined);
   assert.equal(readPlatformBootstrap('?vennuPlatform=unknown&vennuVersion=bad'), undefined);
+  assert.equal(readPlatformBootstrap('?vennuPlatform=tizen&vennuProvision=secret').provisioningToken, undefined);
 });

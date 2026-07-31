@@ -15,8 +15,7 @@ export function readPlatformBootstrap(search) {
   if (platform === 'browser') return undefined;
   return {
     platform,
-    appVersion: cleanVersion(parameters.get('vennuVersion'), 'unknown'),
-    provisioningToken: cleanVersion(parameters.get('vennuProvision'), '')
+    appVersion: cleanVersion(parameters.get('vennuVersion'), 'unknown')
   };
 }
 
