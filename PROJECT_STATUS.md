@@ -104,10 +104,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-11.02 — Locked Navigation and Section Previews
 - WP-11.03 — Inline Feature Hints
 - WP-11.04 — Sidebar Upgrade Nudge
+- WP-11.05 — Upgrade Modal and Tier Value Summary
 
 ## Active Work Package
 
-**WP-11.05 — Upgrade Modal and Tier Value Summary** is in review.
+No implementation package is active. **WP-11.06 — Stripe Checkout Session Foundation** is next.
 
 ## Phase 04 Result
 
@@ -162,7 +163,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Publish and validate **WP-11.05 — Upgrade Modal and Tier Value Summary** through GitHub Actions.
+Claim and implement **WP-11.06 — Stripe Checkout Session Foundation**.
 
 ## Phase 05 Work Packages
 
