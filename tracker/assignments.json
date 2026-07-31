@@ -1,14 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T02:08:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-10.05",
-      "branch": "wp/10.05-android-kiosk-escape",
-      "issue": 220,
-      "status": "review"
-    }
-  ],
+  "updatedUtc": "2026-07-31T02:11:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-10.06",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
