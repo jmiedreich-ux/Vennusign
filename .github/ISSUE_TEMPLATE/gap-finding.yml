@@ -1,0 +1,64 @@
+name: Gap finding
+description: Record a defect, missed requirement, architectural gap, or regression discovered during testing or review.
+title: "[Gap]: "
+labels:
+  - gap-found
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Record evidence here. Do not create or reprioritize a WP/RWP from this form; planning review decides promotion.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is wrong or missing?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and reproduction
+      description: Include exact behavior, affected routes/components/files, screenshots, logs, or test results.
+    validations:
+      required: true
+  - type: input
+    id: affected_phase
+    attributes:
+      label: Originating or affected phase
+      placeholder: "Phase 05"
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: User and architecture impact
+      description: Explain who is affected and whether this crosses application or package boundaries.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected outcome
+      description: Describe the corrected behavior without prescribing an unapproved implementation.
+    validations:
+      required: true
+  - type: dropdown
+    id: recommendation
+    attributes:
+      label: Initial classification suggestion
+      options:
+        - Small defect within an active package
+        - Possible remediation work package
+        - Needs planning review
+    validations:
+      required: true
+  - type: checkboxes
+    id: guardrails
+    attributes:
+      label: Guardrails
+      options:
+        - label: I have not changed the roadmap, queue, or work-package numbering for this finding.
+          required: true
+        - label: I checked for an existing issue covering the same gap.
+          required: true
