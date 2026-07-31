@@ -106,10 +106,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-11.04 — Sidebar Upgrade Nudge
 - WP-11.05 — Upgrade Modal and Tier Value Summary
 - RWP-04.01 — Super Admin Venue Provisioning
+- RWP-05.01 — Venue Admin CMS Foundation
 
 ## Active Work Package
 
-**RWP-05.01 — Venue Admin CMS Foundation** is in implementation.
+**RWP-05.02 — Menu and Quick Update Migration** is in review.
 
 Phase 11 remains paused while the approved Phase 04/05 remediation queue is completed and its billing UX is reconciled into Venue Admin.
 
@@ -166,7 +167,7 @@ Phase 11 remains paused while the approved Phase 04/05 remediation queue is comp
 
 ## Next Action
 
-Publish, validate, review, and merge **RWP-05.01 — Venue Admin CMS Foundation**, then begin **RWP-05.02 — Menu and Quick Update Migration**.
+Publish, validate, review, and merge **RWP-05.02 — Menu and Quick Update Migration**, then begin **RWP-05.03 — Remaining Venue Features Migration**.
 
 ## Phase 05 Work Packages
 

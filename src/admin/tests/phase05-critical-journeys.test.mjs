@@ -13,8 +13,9 @@ const [venue, menus, items, quick, screens, walls, api] = await Promise.all([
   source("api.ts")
 ]);
 
-test("venue board management composes menu and screen journeys", () => {
-  assert.match(venue, /MenuSectionsEditor/);
+test("venue board management hands menu work to Venue Admin and retains screen journeys", () => {
+  assert.match(venue, /Open Venue Admin/);
+  assert.doesNotMatch(venue, /<MenuSectionsEditor/);
   assert.match(venue, /ScreenManagement/);
   assert.match(menus, /MenuItemsEditor/);
   assert.match(menus, /QuickUpdateMode/);

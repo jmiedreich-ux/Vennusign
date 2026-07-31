@@ -2,7 +2,7 @@
 
 ## Status
 
-In Review.
+Complete.
 
 ## Goal
 
@@ -120,12 +120,13 @@ Create:
 
 - Issue: #254
 - Branch: `rwp/05.01-venue-admin-cms-foundation`
-- Pull request: pending
+- Pull request: #261
 
 ## Validation Evidence
 
 - Local Venue Admin tests: 3 passed.
 - Local Venue Admin production build: passed.
 - Local .NET validation: not run because the SDK is unavailable in this workspace.
-- GitHub Actions: pending and authoritative.
+- GitHub Actions run #556: passed against reviewed head `318ae28d35805a0c4297ccfde3e481313bb64e61`.
+- Merge commit: `00c7f6b61c6a808233bc68e810a2cf962d5505bb`.
 - Skipped: Azure SQL, external-service, credentialed, hosted-infrastructure, container, and all other integration-type tests under the standing owner exception.

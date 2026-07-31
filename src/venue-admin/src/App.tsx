@@ -7,6 +7,7 @@ import {
   venueAdminRoutes,
   type VenueAdminRoute
 } from "./navigation.mjs";
+import MenuSectionsEditor from "./MenuSectionsEditor";
 import "./styles.css";
 
 const tokenStorageKey = "vennu.venue-admin.token";
@@ -100,7 +101,13 @@ export default function App() {
     </aside>
     <main>
       <header><div><p>Venue workspace</p><h1>{route.label}</h1></div><span>Secure session</span></header>
-      {allowed
+      {allowed && route.path === "menu"
+        ? <MenuSectionsEditor
+            configuration={configuration}
+            apiKey={accessToken}
+            venueId={session.venueId}
+          />
+        : allowed
         ? <section className="placeholder"><p>Foundation ready</p><h2>{route.label}</h2><span>This protected venue-scoped area is ready for the next migration package.</span></section>
         : <section className="placeholder locked-panel"><p>Upgrade available</p><h2>{route.label} is locked</h2><span>Your current venue access does not include this capability.</span></section>}
     </main>
