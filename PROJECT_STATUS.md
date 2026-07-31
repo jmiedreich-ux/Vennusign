@@ -94,7 +94,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-10.03 — Android Pairing and Durable Launch State** is the next package in roadmap order.
+**WP-10.03 — Android Pairing and Durable Launch State** is in review.
 
 ## Phase 04 Result
 
@@ -142,7 +142,7 @@ None. **WP-10.03 — Android Pairing and Durable Launch State** is the next pack
 
 ## Next Action
 
-Claim and implement **WP-10.03 — Android Pairing and Durable Launch State**.
+Validate and merge **WP-10.03**. The next queue starts with **WP-10.04 — Android Boot and Lifecycle Recovery**.
 
 ## Phase 05 Work Packages
 

@@ -22,6 +22,14 @@ test('starts TV platforms at pairing and resumes a persisted display target', ()
   });
 });
 
+test('lets an explicit pairing route override durable TV launch state', () => {
+  assert.deepEqual(resolvePlatformLaunch('/pair', {
+    platform: 'android_tv', appVersion: '2.0', screenId: 'screen-one'
+  }, true), {
+    platform: 'android_tv', appVersion: '2.0', pathname: '/pair'
+  });
+});
+
 test('supports only the approved TV identifiers and feeds pairing registration', () => {
   assert.deepEqual(supportedTvPlatforms, ['android_tv', 'fire_tv', 'tizen', 'webos']);
   assert.equal(resolvePlatformLaunch('/', { platform: 'unknown' }).platform, 'browser');

@@ -19,6 +19,8 @@ import androidx.activity.ComponentActivity
 import androidx.core.view.setPadding
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import org.json.JSONObject
+import java.util.UUID
 
 class MainActivity : ComponentActivity() {
     private lateinit var webView: WebView
@@ -26,6 +28,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var errorPanel: LinearLayout
     private lateinit var retryButton: Button
     private val allowedOrigin by lazy { Uri.parse(BuildConfig.VENNU_BASE_URL) }
+    private val launchState by lazy {
+        getSharedPreferences(LAUNCH_STATE_PREFERENCES, MODE_PRIVATE)
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,19 +85,30 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun platformBridgeScript(): String =
-        """
+        buildString {
+            append(
+                """
         Object.defineProperty(window, "__VENNU_PLATFORM__", {
           configurable: false,
           value: Object.freeze({
-            platform: "${BuildConfig.TV_PLATFORM}",
-            appVersion: "${BuildConfig.VERSION_NAME}"
+            platform: ${JSONObject.quote(BuildConfig.TV_PLATFORM)},
+            appVersion: ${JSONObject.quote(BuildConfig.VERSION_NAME)}
+        """.trimIndent()
+            )
+            readScreenId()?.let { append(",\n    screenId: ${JSONObject.quote(it)}") }
+            append(
+                """
+
           })
         });
         """.trimIndent()
+            )
+        }
 
     private fun loadPlayer() {
         showLoading()
-        webView.loadUrl(BuildConfig.VENNU_BASE_URL)
+        val screenPath = readScreenId()?.let { "/display/${Uri.encode(it)}" } ?: "/pair"
+        webView.loadUrl("${BuildConfig.VENNU_BASE_URL}$screenPath")
     }
 
     private fun showLoading() {
@@ -123,12 +139,48 @@ class MainActivity : ComponentActivity() {
     private fun effectivePort(url: Uri): Int =
         if (url.port == -1) 443 else url.port
 
+    private fun recordTrustedNavigation(url: Uri) {
+        if (!isAllowed(url)) return
+
+        if (url.path == "/pair" && url.getQueryParameter(RESET_QUERY) == "1") {
+            launchState.edit().remove(SCREEN_ID_KEY).apply()
+            return
+        }
+
+        val encodedScreenId = DISPLAY_PATH.matchEntire(url.path.orEmpty())?.groupValues?.get(1)
+            ?: return
+        val screenId = normalizeScreenId(Uri.decode(encodedScreenId)) ?: return
+        launchState.edit().putString(SCREEN_ID_KEY, screenId).apply()
+    }
+
+    private fun readScreenId(): String? {
+        val stored = launchState.getString(SCREEN_ID_KEY, null) ?: return null
+        val normalized = normalizeScreenId(stored)
+        if (normalized == null) {
+            launchState.edit().remove(SCREEN_ID_KEY).apply()
+        }
+        return normalized
+    }
+
+    private fun normalizeScreenId(value: String): String? =
+        try {
+            UUID.fromString(value.trim()).toString()
+        } catch (_: IllegalArgumentException) {
+            null
+        }
+
     private inner class ShellWebViewClient : WebViewClient() {
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
             !isAllowed(request.url)
 
         override fun onPageStarted(view: WebView, url: String, favicon: android.graphics.Bitmap?) {
-            if (isAllowed(Uri.parse(url))) showLoading() else showError()
+            val parsedUrl = Uri.parse(url)
+            if (isAllowed(parsedUrl)) {
+                recordTrustedNavigation(parsedUrl)
+                showLoading()
+            } else {
+                showError()
+            }
         }
 
         override fun onPageCommitVisible(view: WebView, url: String) {
@@ -154,4 +206,11 @@ class MainActivity : ComponentActivity() {
         FrameLayout.LayoutParams.WRAP_CONTENT,
         Gravity.CENTER
     )
+
+    companion object {
+        private const val LAUNCH_STATE_PREFERENCES = "vennu-tv-launch-state"
+        private const val SCREEN_ID_KEY = "screen-id"
+        private const val RESET_QUERY = "vennuReset"
+        private val DISPLAY_PATH = Regex("^/display/([^/]+)/?$")
+    }
 }

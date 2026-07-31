@@ -4,7 +4,8 @@ import { resolvePlatformLaunch } from './platformLaunch.mjs';
 import { resolveDisplayRoute } from './routing';
 
 export default function App() {
-  const launch = resolvePlatformLaunch(window.location.pathname, window.__VENNU_PLATFORM__);
+  const resetPairing = new URLSearchParams(window.location.search).get('vennuReset') === '1';
+  const launch = resolvePlatformLaunch(window.location.pathname, window.__VENNU_PLATFORM__, resetPairing);
   const route = resolveDisplayRoute(launch.pathname);
 
   if (route.kind === 'pair') {
