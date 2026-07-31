@@ -1,0 +1,11 @@
+{
+  "channel": "Google TV",
+  "flavor": "googleTv",
+  "applicationId": "com.vennu.tv.googletv",
+  "platform": "android_tv",
+  "minSdk": 26,
+  "targetSdk": 35,
+  "versionSource": "VENNU_VERSION_CODE and VENNU_VERSION_NAME",
+  "artifact": "unsigned debug APK in CI; release signing is external",
+  "status": "code-ready"
+}

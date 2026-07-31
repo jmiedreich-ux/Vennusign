@@ -97,7 +97,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-10.06 — Android and Fire Distribution Profiles** is the next package in roadmap order.
+**WP-10.06 — Android and Fire Distribution Profiles** is in review.
 
 ## Phase 04 Result
 
@@ -145,7 +145,7 @@ None. **WP-10.06 — Android and Fire Distribution Profiles** is the next packag
 
 ## Next Action
 
-Claim and implement **WP-10.06 — Android and Fire Distribution Profiles**.
+Validate and merge **WP-10.06**, then claim **WP-10.07 — Samsung Tizen Package**.
 
 ## Phase 05 Work Packages
 
