@@ -95,10 +95,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-10.04 — Android Boot and Lifecycle Recovery
 - WP-10.05 — Android Kiosk and Operator Escape
 - WP-10.06 — Android and Fire Distribution Profiles
+- WP-10.07 — Samsung Tizen Package
 
 ## Active Work Package
 
-**WP-10.07 — Samsung Tizen Package** is in review.
+None. **WP-10.08 — LG webOS Package** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -146,7 +147,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate and merge **WP-10.07**, then claim **WP-10.08 — LG webOS Package**.
+Claim and implement **WP-10.08 — LG webOS Package**.
 
 ## Phase 05 Work Packages
 
