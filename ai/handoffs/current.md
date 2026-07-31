@@ -3,17 +3,17 @@
 ## Work Package
 
 - ID: WP-10.05
-- Status: In Review
+- Status: Complete and merged
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/10.05-android-kiosk-escape`
 - Issue: #220
-- Pull request: pending
-- Latest reviewed commit: pending
-- Merge commit: pending
-- CI state: pending
+- Pull request: #221
+- Latest reviewed commit: `dd6322c`
+- Merge commit: `b1592fa`
+- CI state: GitHub Actions run #478 passed
 
 ## Completed This Session
 
@@ -28,7 +28,7 @@
 
 ## Validation
 
-- Results: pending GitHub Actions.
+- Results: restore, Release build, admin/display production builds/tests, and required non-integration tests passed in Actions run #478.
 - Skipped: all integration-type and physical-device tests by standing owner instruction.
 
 ## Remaining Work
@@ -37,7 +37,7 @@
 
 ## Exact Next Action
 
-Validate and merge WP-10.05, then claim WP-10.06.
+Claim and implement WP-10.06 — Android and Fire Distribution Profiles.
 
 ## Do Not Redo or Reverse
 
