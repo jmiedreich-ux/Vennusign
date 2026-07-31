@@ -8,7 +8,9 @@ import TierManagement from "./TierManagement";
 import FeatureMatrix from "./FeatureMatrix";
 import OperationalDashboard from "./OperationalDashboard";
 import SidebarUpgradeNudge from "./SidebarUpgradeNudge";
-import type { EffectiveFeatureMap, UpgradeOpportunity } from "./upgradeExperience.mjs";
+import type { UpgradeOpportunity } from "./upgradeExperience.mjs";
+import UpgradeModal, { type BillingInterval } from "./UpgradeModal";
+import type { VenueUpgradeContext } from "./VenueDetail";
 
 const routes = [
   { path: "dashboard", label: "Dashboard", description: "Revenue and operational health" },
@@ -29,8 +31,9 @@ export default function App() {
   const [session, setSession] = useState<AdminSession>();
   const [route, setRoute] = useState(currentRoute);
   const [error, setError] = useState<string>();
-  const [venueFeatures, setVenueFeatures] = useState<EffectiveFeatureMap>();
+  const [venueUpgrade, setVenueUpgrade] = useState<VenueUpgradeContext>();
   const [upgradeContext, setUpgradeContext] = useState<Readonly<UpgradeOpportunity>>();
+  const [upgradeNotice, setUpgradeNotice] = useState<string>();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -54,10 +57,19 @@ export default function App() {
 
   useEffect(() => {
     if (route.path !== "venues") {
-      setVenueFeatures(undefined);
+      setVenueUpgrade(undefined);
       setUpgradeContext(undefined);
     }
   }, [route.path]);
+
+  const continueUpgrade = (interval: BillingInterval) => {
+    if (!upgradeContext) return;
+    setUpgradeNotice(`${upgradeContext.title} selected with ${interval} billing. Checkout connection is the next billing step.`);
+    setUpgradeContext(undefined);
+  };
+  const targetUpgradeTier = upgradeContext
+    ? venueUpgrade?.tiers.find(tier => tier.isActive && tier.isPublic && tier.slug === upgradeContext.requiredTier)
+    : undefined;
 
   const authorize = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -83,8 +95,8 @@ export default function App() {
         <nav aria-label="Super Admin">
           {routes.map(item => <a className={route.path === item.path ? "active" : ""} href={`#/${item.path}`} key={item.path}><strong>{item.label}</strong><small>{item.description}</small></a>)}
         </nav>
-        {venueFeatures ? <SidebarUpgradeNudge effectiveFeatures={venueFeatures} onUpgrade={setUpgradeContext} /> : null}
-        {upgradeContext ? <p className="sidebar-upgrade-context" role="status">Upgrade options for {upgradeContext.title} open in the next billing step.</p> : null}
+        {venueUpgrade && !upgradeContext ? <SidebarUpgradeNudge effectiveFeatures={venueUpgrade.effectiveFeatures} onUpgrade={setUpgradeContext} /> : null}
+        {upgradeNotice ? <p className="sidebar-upgrade-context" role="status">{upgradeNotice}</p> : null}
         <button className="identity" type="button" onClick={() => { sessionStorage.removeItem("vennu.admin.key"); setSession(undefined); setApiKey(""); }}><span>{session.displayName.slice(0, 1)}</span><div><strong>{session.displayName}</strong><small>Sign out</small></div></button>
       </aside>
       <main>
@@ -93,7 +105,7 @@ export default function App() {
           ? <OperationalDashboard configuration={configuration} apiKey={apiKey} />
           : route.path === "venues"
           ? selectedVenueId
-            ? <VenueDetail configuration={configuration} apiKey={apiKey} venueId={selectedVenueId} onBack={() => { setSelectedVenueId(undefined); setVenueFeatures(undefined); setUpgradeContext(undefined); }} onUpgradeFeaturesChange={setVenueFeatures} />
+            ? <VenueDetail configuration={configuration} apiKey={apiKey} venueId={selectedVenueId} onBack={() => { setSelectedVenueId(undefined); setVenueUpgrade(undefined); setUpgradeContext(undefined); }} onUpgradeContextChange={setVenueUpgrade} />
             : <VenueDirectory configuration={configuration} apiKey={apiKey} onSelectVenue={setSelectedVenueId} />
           : route.path === "tiers"
             ? <TierManagement configuration={configuration} apiKey={apiKey} />
@@ -101,6 +113,15 @@ export default function App() {
             ? <FeatureMatrix configuration={configuration} apiKey={apiKey} />
           : null}
       </main>
+      {upgradeContext && venueUpgrade && targetUpgradeTier ? (
+        <UpgradeModal
+          opportunity={upgradeContext}
+          currentTier={venueUpgrade.currentTier}
+          targetTier={targetUpgradeTier}
+          onClose={() => setUpgradeContext(undefined)}
+          onUpgrade={continueUpgrade}
+        />
+      ) : null}
     </div>
   );
 }

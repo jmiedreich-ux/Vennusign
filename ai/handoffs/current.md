@@ -2,45 +2,45 @@
 
 ## Work Package
 
-- ID: WP-11.04
-- Status: Complete and merged
+- ID: WP-11.05
+- Status: Review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/11.04-sidebar-upgrade-nudge`
-- Issue: #248
-- Pull request: #249
-- Latest reviewed commit: `0581cf6`
-- Merge commit: `30954ce`
-- CI state: GitHub Actions run #540 passed
+- Branch: `wp/11.05-upgrade-modal`
+- Issue: #251
+- Pull request: pending
+- Latest reviewed commit: pending
+- Merge commit: pending
+- CI state: GitHub Actions pending
 
 ## Completed This Session
 
-- Added deterministic seven-second sidebar rotation and progress controls.
-- Added reduced-motion behavior and per-feature session dismissal.
-- Coordinated sidebar and inline surfaces so only one is active.
-- Added focused non-integration tests and review-state project records.
+- Added a dismissible accessible bottom-sheet upgrade modal.
+- Added current/target tier value, feature pills, and monthly/annual presentation.
+- Hid the sidebar suggestion while the modal is active.
+- Added focused non-integration tests and review-state records.
 
 ## Decisions
 
-- Sidebar opportunities preserve canonical catalog order.
-- A venue using the sidebar suppresses its inline prompt to prevent overlap.
+- Pricing comes from the active public tier catalog already returned by the protected API.
+- Annual presentation uses the Phase 03 ten-month annual catalog rule.
 
 ## Validation
 
-- Results: restore, Release build, admin/display production builds and tests, required unit tests, Android profiles, Tizen validation, and webOS validation passed in Actions run #540.
+- Results: pending authoritative GitHub Actions.
 - Skipped: all integration-type and external Stripe tests.
 
 ## Remaining Work
 
-- WP-11.05 — Upgrade Modal and Tier Value Summary.
+- GitHub Actions validation and ChatGPT review for WP-11.05.
 
 ## Exact Next Action
 
-Claim and implement WP-11.05 — Upgrade Modal and Tier Value Summary.
+Publish WP-11.05, validate the exact head in GitHub Actions, review, and merge.
 
 ## Do Not Redo or Reverse
 
-- Do not show the sidebar nudge and inline hint together.
-- Do not enable automatic rotation for reduced-motion users.
+- Do not invent target-tier pricing in the browser.
+- Do not start Checkout or mutate entitlement in this package.

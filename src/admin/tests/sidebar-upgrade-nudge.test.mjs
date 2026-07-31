@@ -29,6 +29,6 @@ test('dismissal is per feature and the app exposes only one active prompt surfac
   assert.match(component, /dismissUpgradeFeature\(opportunity\.featureKey\)/);
   assert.match(app, /<SidebarUpgradeNudge/);
   assert.match(app, /route\.path !== "venues"/);
-  assert.match(venue, /!onUpgradeFeaturesChange && upgradeOpportunity/);
+  assert.match(venue, /!onUpgradeContextChange && upgradeOpportunity/);
   assert.match(styles, /\.sidebar-upgrade-nudge/);
 });
