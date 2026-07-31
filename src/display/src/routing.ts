@@ -1,8 +1,13 @@
 export type DisplayRoute =
   | { kind: 'display'; screenId: string }
+  | { kind: 'pair' }
   | { kind: 'not-found' };
 
 export function resolveDisplayRoute(pathname: string): DisplayRoute {
+  if (/^\/pair\/?$/i.test(pathname)) {
+    return { kind: 'pair' };
+  }
+
   const match = pathname.match(/^\/display\/([^/]+)\/?$/i);
 
   if (!match) {

@@ -1,7 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T00:01:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-07-31T00:48:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-09.09",
+      "orchestrator": "ChatGPT",
+      "branch": "wp/09.09-pairing-code-registration",
+      "status": "Review"
+    }
+  ],
   "nextAvailableWorkPackage": "WP-09.09",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

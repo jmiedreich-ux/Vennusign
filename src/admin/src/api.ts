@@ -558,6 +558,21 @@ export async function loadManagedScreens(configuration: AdminConfiguration, apiK
   return (await screenRequest(configuration, apiKey, venueId)).json() as Promise<ManagedScreen[]>;
 }
 
+export async function claimPairingCode(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  venueId: string,
+  code: string
+): Promise<{ linked: boolean; screenId: string; venueId: string }> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/screens/pairing/${encodeURIComponent(code)}/claim`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey },
+    body: JSON.stringify({ venueId })
+  });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to pair this screen.");
+  return response.json() as Promise<{ linked: boolean; screenId: string; venueId: string }>;
+}
+
 export async function createManagedScreen(
   configuration: AdminConfiguration,
   apiKey: string,

@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import {
+  claimPairingCode,
   createManagedScreen,
   loadScreenOverflow,
   loadManagedScreens,
@@ -32,6 +33,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
   const [capacity, setCapacity] = useState(6);
   const [overflow, setOverflow] = useState<ScreenOverflowPreview>();
   const [previewRevision, setPreviewRevision] = useState(0);
+  const [pairingCode, setPairingCode] = useState("");
 
   const refresh = () => loadManagedScreens(configuration, apiKey, venueId).then(setScreens);
   useEffect(() => { refresh().catch(() => setError("Screens could not be loaded.")); }, [apiKey, configuration, venueId]);
@@ -48,6 +50,18 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
       await createManagedScreen(configuration, apiKey, venueId, { name: newName, location: newLocation || undefined });
       setNewName(""); setNewLocation(""); await refresh();
     } catch { setError("The screen could not be created."); }
+    finally { setBusyId(undefined); }
+  };
+
+  const claim = async (event: FormEvent) => {
+    event.preventDefault();
+    setBusyId("pair"); setError(undefined); setNotice(undefined);
+    try {
+      await claimPairingCode(configuration, apiKey, venueId, pairingCode);
+      setPairingCode("");
+      setNotice("Screen paired successfully.");
+      await refresh();
+    } catch { setError("The pairing code is invalid, expired, or already claimed."); }
     finally { setBusyId(undefined); }
   };
 
@@ -103,6 +117,20 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
       <input aria-label="New screen name" maxLength={200} required value={newName} onChange={event => setNewName(event.target.value)} placeholder="Screen name" />
       <input aria-label="New screen location" maxLength={200} value={newLocation} onChange={event => setNewLocation(event.target.value)} placeholder="Location (optional)" />
       <button disabled={busyId === "new"}>Add screen</button>
+    </form>
+    <form className="screen-create" onSubmit={claim}>
+      <input
+        aria-label="Six-digit pairing code"
+        inputMode="numeric"
+        maxLength={6}
+        minLength={6}
+        pattern="[0-9]{6}"
+        required
+        value={pairingCode}
+        onChange={event => setPairingCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+        placeholder="TV pairing code"
+      />
+      <button disabled={busyId === "pair"}>Pair screen</button>
     </form>
     {screens.length ? <div className="managed-screen-list">{screens.map(screen =>
       <section key={screen.id}>

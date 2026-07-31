@@ -54,10 +54,10 @@ public sealed class Phase02VerticalSliceTests : IClassFixture<VennuApiFactory>
         Assert.Equal(HttpStatusCode.Created, pairingResponse.StatusCode);
         var pairing = Assert.IsType<CreateScreenPairingCodeResponse>(await pairingResponse.Content.ReadFromJsonAsync<CreateScreenPairingCodeResponse>());
 
-        var claimResponse = await client.PostAsJsonAsync($"/api/screens/pairing/{pairing.Code}/claim", new ClaimScreenPairingCodeRequest
-        {
-            VenueId = venue.VenueId
-        });
+        using var claimRequest = new HttpRequestMessage(HttpMethod.Post, $"/api/screens/pairing/{pairing.Code}/claim");
+        claimRequest.Headers.Add("X-Vennu-Admin-Key", "test-admin-key");
+        claimRequest.Content = JsonContent.Create(new ClaimScreenPairingCodeRequest { VenueId = venue.VenueId });
+        var claimResponse = await client.SendAsync(claimRequest);
         claimResponse.EnsureSuccessStatusCode();
 
         var heartbeatResponse = await client.PostAsJsonAsync($"/api/display/{screen.ScreenId}/heartbeat", new ScreenHeartbeatRequest
