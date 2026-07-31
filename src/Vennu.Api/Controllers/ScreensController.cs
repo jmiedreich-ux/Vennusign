@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Vennu.Api.Admin;
 using Vennu.Api.Contracts.Screens;
 using Vennu.Api.Infrastructure;
+using Vennu.Api.Services;
 using Vennu.Core.Models;
 using Vennu.Data.Repositories;
 
@@ -15,8 +16,43 @@ public class ScreensController : ControllerBase
     private readonly IScreenRepository screenRepository;
     private readonly IScreenPairingCodeRepository screenPairingCodeRepository;
     private readonly IVenueRepository venueRepository;
+    private readonly IHaasPreRegistrationService? preRegistrationService;
 
-    public ScreensController(IScreenRepository screenRepository, IScreenPairingCodeRepository screenPairingCodeRepository, IVenueRepository venueRepository) => (this.screenRepository, this.screenPairingCodeRepository, this.venueRepository) = (screenRepository, screenPairingCodeRepository, venueRepository);
+    public ScreensController(
+        IScreenRepository screenRepository,
+        IScreenPairingCodeRepository screenPairingCodeRepository,
+        IVenueRepository venueRepository,
+        IHaasPreRegistrationService? preRegistrationService = null) =>
+        (this.screenRepository, this.screenPairingCodeRepository, this.venueRepository, this.preRegistrationService) =
+        (screenRepository, screenPairingCodeRepository, venueRepository, preRegistrationService);
+
+    [HttpPost("pre-registration/claim")]
+    [ProducesResponseType<ClaimPreRegisteredScreenResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ClaimPreRegisteredScreenResponse>> ClaimPreRegistration(
+        [FromBody] ClaimPreRegisteredScreenRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (preRegistrationService is null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var response = await preRegistrationService.ClaimAsync(request, cancellationToken).ConfigureAwait(false);
+            return response is null ? Unauthorized() : Ok(response);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid pre-registration request.",
+                Detail = exception.Message,
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+    }
 
     [HttpPost]
     [ProducesResponseType<RegisterScreenResponse>(StatusCodes.Status201Created)]

@@ -48,7 +48,8 @@ export default function OperationalDashboard({ configuration, apiKey }: Props) {
     ["Trialing", dashboard.trialingVenues],
     ["Canceled · 30 days", dashboard.canceledLast30Days],
     ["Screens online", dashboard.onlineScreens],
-    ["Screens offline", dashboard.offlineScreens]
+    ["Screens offline", dashboard.offlineScreens],
+    ["Screens outdated", dashboard.outdatedScreens]
   ] as const;
 
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: revenue?.currency ?? "USD" });
@@ -78,7 +79,7 @@ export default function OperationalDashboard({ configuration, apiKey }: Props) {
         : null}
     <div className="metric-grid">{metrics.map(([label, value]) => <article key={label}><span>{label}</span><strong>{value}</strong></article>)}</div>
     <article className="screen-map"><div><p>Fleet health</p><h2>Screen health map</h2><span>{dashboard.onlineScreens} online · {dashboard.offlineScreens} offline</span></div>
-      {dashboard.screens.length ? <div className="screen-dots">{dashboard.screens.map(screen => <div className="screen-health-item" key={screen.screenId} title={`${screen.venueName} · ${screen.screenName} · ${screen.status} · ${screen.lastSeen ? new Date(screen.lastSeen).toLocaleString() : "never seen"}`}><span className={screen.status} /><div><strong>{screen.screenName}</strong><small>{screen.venueName}{screen.location ? ` · ${screen.location}` : ""}</small></div></div>)}</div> : <p className="empty">No screens have been registered.</p>}
+      {dashboard.screens.length ? <div className="screen-dots">{dashboard.screens.map(screen => <div className="screen-health-item" key={screen.screenId} title={`${screen.venueName} · ${screen.screenName} · ${screen.status} · ${screen.lastSeen ? new Date(screen.lastSeen).toLocaleString() : "never seen"} · ${screen.platform ?? "unknown platform"} ${screen.appVersion ?? "unknown version"} · ${screen.versionStatus}`}><span className={screen.status} /><div><strong>{screen.screenName}</strong><small>{screen.venueName}{screen.location ? ` · ${screen.location}` : ""} · {screen.versionStatus === "outdated" ? `Update ${screen.appVersion ?? "unknown"} → ${screen.desiredAppVersion}` : screen.versionStatus}</small></div></div>)}</div> : <p className="empty">No screens have been registered.</p>}
     </article>
     <article className="event-feed"><div><p>Commercial activity</p><h2>Recent events</h2></div>
       {events.length

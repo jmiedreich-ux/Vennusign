@@ -51,6 +51,12 @@ public class ScreenRepository : IScreenRepository
         return dataAccess.QueryAsync<Screen>(new { ScreenKey = screenKey }, cancellationToken);
     }
 
+    public Task<Screen?> GetByPreRegistrationTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tokenHash);
+        return dataAccess.QueryAsync<Screen>(new { PreRegistrationTokenHash = tokenHash }, cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<Screen>> GetAllAsync(CancellationToken cancellationToken = default) =>
         (await dataAccess.QueryAllAsync<Screen>(cancellationToken).ConfigureAwait(false)).ToArray();
 
@@ -67,7 +73,42 @@ public class ScreenRepository : IScreenRepository
         return await dataAccess.UpdateAsync(screen, cancellationToken).ConfigureAwait(false) > 0;
     }
 
-    public async Task<bool> UpdateHeartbeatAsync(Guid screenId, DateTime lastSeenUtc, string status, CancellationToken cancellationToken = default)
+    public async Task<bool> ClaimPreRegisteredAsync(
+        Guid screenId,
+        string platform,
+        string appVersion,
+        DateTime claimedUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var screen = await dataAccess.QueryAsync<Screen>(new { Id = screenId }, cancellationToken).ConfigureAwait(false);
+        if (screen is null || string.IsNullOrWhiteSpace(screen.PreRegistrationTokenHash))
+        {
+            return false;
+        }
+
+        screen.Platform = platform;
+        screen.AppVersion = appVersion;
+        screen.PreRegistrationTokenHash = null;
+        screen.PreRegistrationExpiresUtc = null;
+        screen.PreRegisteredUtc = claimedUtc;
+        screen.UpdatedUtc = claimedUtc;
+        return await dataAccess.UpdateAsync(screen, cancellationToken).ConfigureAwait(false) > 0;
+    }
+
+    public Task<bool> UpdateHeartbeatAsync(
+        Guid screenId,
+        DateTime lastSeenUtc,
+        string status,
+        CancellationToken cancellationToken = default) =>
+        UpdateHeartbeatAsync(screenId, lastSeenUtc, status, null, null, cancellationToken);
+
+    public async Task<bool> UpdateHeartbeatAsync(
+        Guid screenId,
+        DateTime lastSeenUtc,
+        string status,
+        string? platform,
+        string? appVersion,
+        CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(status);
         var screen = await dataAccess.QueryAsync<Screen>(new { Id = screenId }, cancellationToken).ConfigureAwait(false);
@@ -79,6 +120,14 @@ public class ScreenRepository : IScreenRepository
 
         screen.LastSeen = lastSeenUtc;
         screen.Status = status;
+        if (!string.IsNullOrWhiteSpace(platform))
+        {
+            screen.Platform = platform;
+        }
+        if (!string.IsNullOrWhiteSpace(appVersion))
+        {
+            screen.AppVersion = appVersion;
+        }
         screen.UpdatedUtc = DateTime.UtcNow;
         return await dataAccess.UpdateAsync(screen, cancellationToken).ConfigureAwait(false) > 0;
     }

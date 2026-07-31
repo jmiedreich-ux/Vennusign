@@ -1,5 +1,6 @@
 import DisplayPage from './DisplayPage';
 import PairingPage from './PairingPage';
+import ProvisioningPage from './ProvisioningPage';
 import { readPlatformBootstrap, resolvePlatformLaunch } from './platformLaunch.mjs';
 import { resolveDisplayRoute } from './routing';
 
@@ -13,7 +14,11 @@ export default function App() {
     return <PairingPage platform={launch.platform} appVersion={launch.appVersion} />;
   }
 
-  if (route.kind === 'not-found') {
+  if (route.kind === 'provision' && launch.provisioningToken) {
+    return <ProvisioningPage token={launch.provisioningToken} platform={launch.platform} appVersion={launch.appVersion} />;
+  }
+
+  if (route.kind === 'not-found' || route.kind === 'provision') {
     return (
       <main>
         <h1>Display not found</h1>
@@ -22,5 +27,5 @@ export default function App() {
     );
   }
 
-  return <DisplayPage screenId={route.screenId} />;
+  return <DisplayPage screenId={route.screenId} platform={launch.platform} appVersion={launch.appVersion} />;
 }

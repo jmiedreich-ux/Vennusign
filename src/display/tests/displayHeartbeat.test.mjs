@@ -9,7 +9,7 @@ import {
 
 const settleHeartbeat = () => new Promise((resolve) => setImmediate(resolve));
 
-test('builds the heartbeat URL and sends the existing Online contract', async () => {
+test('builds the heartbeat URL and reports platform version metadata', async () => {
   let request;
   const fetchImpl = async (input, init) => {
     request = { input, init };
@@ -19,12 +19,19 @@ test('builds the heartbeat URL and sends the existing Online contract', async ()
     });
   };
 
-  await sendDisplayHeartbeat('https://api.example.com/', 'screen/1', fetchImpl);
+  await sendDisplayHeartbeat('https://api.example.com/', 'screen/1', fetchImpl, undefined, {
+    platform: 'tizen',
+    appVersion: '2.4.0'
+  });
 
   assert.equal(buildDisplayHeartbeatUrl('https://api.example.com/', 'screen/1'), 'https://api.example.com/api/display/screen%2F1/heartbeat');
   assert.equal(request.input, 'https://api.example.com/api/display/screen%2F1/heartbeat');
   assert.equal(request.init.method, 'POST');
-  assert.deepEqual(JSON.parse(request.init.body), { status: 'Online' });
+  assert.deepEqual(JSON.parse(request.init.body), {
+    status: 'Online',
+    platform: 'tizen',
+    appVersion: '2.4.0'
+  });
 });
 
 test('starts with one immediate heartbeat and one 30-second loop', async () => {

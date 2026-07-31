@@ -32,6 +32,16 @@ public class Screen
 
     public string? AppVersion { get; set; }
 
+    public string? DesiredAppVersion { get; set; }
+
+    public string? DeliveryReference { get; set; }
+
+    public string? PreRegistrationTokenHash { get; set; }
+
+    public DateTime? PreRegistrationExpiresUtc { get; set; }
+
+    public DateTime? PreRegisteredUtc { get; set; }
+
     public DateTime CreatedUtc { get; set; }
 
     public DateTime UpdatedUtc { get; set; }

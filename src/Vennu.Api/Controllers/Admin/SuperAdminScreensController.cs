@@ -11,9 +11,33 @@ namespace Vennu.Api.Controllers.Admin;
 [Authorize(Policy = SuperAdminAuthenticationDefaults.AuthorizationPolicy)]
 public sealed class SuperAdminScreensController(
     IScreenManagementService screenService,
+    IHaasPreRegistrationService preRegistrationService,
     IScreenTargetingService targetingService,
     IVideoWallService videoWallService) : ControllerBase
 {
+    [HttpPost("pre-registrations")]
+    public async Task<ActionResult<HaasPreRegistrationResponse>> PreRegister(
+        Guid venueId,
+        HaasPreRegistrationRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return CreatedAtAction(
+                nameof(Get),
+                new { venueId },
+                await preRegistrationService.CreateAsync(venueId, request, cancellationToken).ConfigureAwait(false));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+    }
+
     [HttpGet]
     public async Task<ActionResult<IReadOnlyCollection<ScreenManagementItem>>> Get(
         Guid venueId,

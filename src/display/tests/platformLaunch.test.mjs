@@ -34,6 +34,20 @@ test('lets an explicit pairing route override durable TV launch state', () => {
   });
 });
 
+test('uses a bounded HaaS provisioning token before pairing', () => {
+  assert.deepEqual(resolvePlatformLaunch('/', {
+    platform: 'webos',
+    appVersion: '3.0',
+    provisioningToken: ' one-time-token '
+  }), {
+    platform: 'webos',
+    appVersion: '3.0',
+    pathname: '/provision',
+    provisioningToken: 'one-time-token'
+  });
+  assert.match(app, /ProvisioningPage/);
+});
+
 test('supports only the approved TV identifiers and feeds pairing registration', () => {
   assert.deepEqual(supportedTvPlatforms, ['android_tv', 'fire_tv', 'tizen', 'webos']);
   assert.equal(resolvePlatformLaunch('/', { platform: 'unknown' }).platform, 'browser');
@@ -48,4 +62,5 @@ test('accepts only approved sanitized hosted-wrapper query metadata', () => {
   });
   assert.equal(readPlatformBootstrap('?vennuPlatform=browser'), undefined);
   assert.equal(readPlatformBootstrap('?vennuPlatform=unknown&vennuVersion=bad'), undefined);
+  assert.equal(readPlatformBootstrap('?vennuPlatform=tizen&vennuProvision=secret').provisioningToken, undefined);
 });

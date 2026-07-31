@@ -7,6 +7,7 @@ public sealed record OperationalDashboard(
     int CanceledLast30Days,
     int OnlineScreens,
     int OfflineScreens,
+    int OutdatedScreens,
     IReadOnlyCollection<OperationalScreenHealth> Screens);
 
 public sealed record OperationalScreenHealth(
@@ -16,4 +17,8 @@ public sealed record OperationalScreenHealth(
     string ScreenName,
     string? Location,
     string Status,
-    DateTime? LastSeen);
+    DateTime? LastSeen,
+    string? Platform,
+    string? AppVersion,
+    string? DesiredAppVersion,
+    string VersionStatus);
