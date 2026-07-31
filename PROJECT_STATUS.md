@@ -114,7 +114,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-11.07 — Checkout Launch and Entitlement Return** is next.
+**WP-11.07 — Checkout Launch and Entitlement Return** is ready for review on `wp/11.07-checkout-launch-return` (issue #270).
 
 ## Phase 04 Result
 
@@ -169,7 +169,7 @@ No implementation package is active. **WP-11.07 — Checkout Launch and Entitlem
 
 ## Next Action
 
-Claim and implement **WP-11.07 — Checkout Launch and Entitlement Return**.
+Complete, validate, review, and merge **WP-11.07 — Checkout Launch and Entitlement Return**.
 
 ## Phase 05 Work Packages
 

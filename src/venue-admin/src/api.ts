@@ -1,4 +1,5 @@
 import type { VenueAdminConfiguration } from "./config";
+import { requireHostedCheckoutUrl } from "./checkoutFlow.mjs";
 
 export type VenueAdminSession = {
   venueId: string;
@@ -13,6 +14,7 @@ export type VenueAdminBillingPresentation = {
   availableTiers: VenueAdminTierSummary[];
   effectiveFeatures: Record<string, { enabled: boolean; limitValue?: string }>;
 };
+export type CheckoutBillingInterval = "monthly" | "annual";
 
 export type MenuSection = {
   id: string; venueId: string; menuId: string; name: string;
@@ -160,6 +162,36 @@ export async function loadVenueBillingPresentation(
     throw new VenueAdminApiError(response.status, "Upgrade options are unavailable.");
   }
   return response.json() as Promise<VenueAdminBillingPresentation>;
+}
+
+export async function createCheckoutSession(
+  configuration: VenueAdminConfiguration,
+  accessToken: string,
+  targetTierId: string,
+  billingInterval: CheckoutBillingInterval,
+  signal?: AbortSignal
+): Promise<string> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/venue-admin/billing/checkout-session`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Vennu-Venue-Token": accessToken
+    },
+    body: JSON.stringify({ targetTierId, billingInterval }),
+    signal
+  });
+  if (!response.ok) {
+    throw new VenueAdminApiError(response.status, "Secure checkout could not be opened.");
+  }
+  const payload = await response.json() as { checkoutUrl?: string };
+  if (!payload.checkoutUrl) {
+    throw new VenueAdminApiError(502, "Secure checkout returned an invalid response.");
+  }
+  try {
+    return requireHostedCheckoutUrl(payload.checkoutUrl);
+  } catch {
+    throw new VenueAdminApiError(502, "Secure checkout returned an invalid response.");
+  }
 }
 
 async function menuRequest(

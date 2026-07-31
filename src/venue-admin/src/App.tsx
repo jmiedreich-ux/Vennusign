@@ -1,11 +1,18 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
+  createCheckoutSession,
   loadVenueAdminSession,
   loadVenueBillingPresentation,
   VenueAdminApiError,
   type VenueAdminBillingPresentation,
   type VenueAdminSession
 } from "./api";
+import {
+  checkoutRefreshDelays,
+  readCheckoutReturnState,
+  stripCheckoutReturnParameter,
+  type CheckoutReturnState
+} from "./checkoutFlow.mjs";
 import { loadVenueAdminConfiguration } from "./config";
 import {
   canOpenVenueAdminRoute,
@@ -41,6 +48,16 @@ export default function App() {
   const [dismissalVersion, setDismissalVersion] = useState(0);
   const [upgradeContext, setUpgradeContext] = useState<Readonly<UpgradeOpportunity>>();
   const [upgradeNotice, setUpgradeNotice] = useState<string>();
+  const [checkoutLaunching, setCheckoutLaunching] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string>();
+  const [checkoutReturn, setCheckoutReturn] = useState<CheckoutReturnState | undefined>(
+    () => readCheckoutReturnState(window.location.search)
+  );
+  const [checkoutReturnNotice, setCheckoutReturnNotice] = useState(() =>
+    checkoutReturn === "success"
+      ? "Stripe returned successfully. Your plan and feature access are being confirmed from Vennu."
+      : "Checkout was canceled. Your current plan and features were not changed."
+  );
 
   useEffect(() => {
     if (!accessToken) return;
@@ -69,10 +86,39 @@ export default function App() {
   }, [accessToken, configuration]);
 
   useEffect(() => {
+    if (!accessToken || checkoutReturn !== "success") return;
+    const controller = new AbortController();
+    const refreshAuthoritativeState = async () => {
+      try {
+        for (const delay of checkoutRefreshDelays) {
+          await new Promise<void>(resolve => window.setTimeout(resolve, delay));
+          if (controller.signal.aborted) return;
+          const [nextSession, nextBilling] = await Promise.all([
+            loadVenueAdminSession(configuration, accessToken, controller.signal),
+            loadVenueBillingPresentation(configuration, accessToken, controller.signal)
+          ]);
+          setSession(nextSession);
+          setBilling(nextBilling);
+        }
+        setCheckoutReturnNotice("Your current plan and feature access were refreshed from Vennu. Stripe webhooks remain authoritative if processing is still finishing.");
+      } catch (reason: unknown) {
+        if (reason instanceof DOMException && reason.name === "AbortError") return;
+        setCheckoutReturnNotice("Stripe returned successfully, but Vennu could not refresh your plan yet. No access was changed from the return URL; refresh this page shortly.");
+      }
+    };
+    void refreshAuthoritativeState();
+    return () => controller.abort();
+  }, [accessToken, checkoutReturn, configuration]);
+
+  useEffect(() => {
     const onHashChange = () => setRoute(resolveVenueAdminRoute(window.location.hash));
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
+
+  useEffect(() => {
+    if (!upgradeContext) setCheckoutError(undefined);
+  }, [upgradeContext]);
 
   const authorize = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -89,6 +135,8 @@ export default function App() {
     setSession(undefined);
     setBilling(undefined);
     setUpgradeContext(undefined);
+    setCheckoutLaunching(false);
+    setCheckoutError(undefined);
   };
 
   if (!accessToken || error) {
@@ -135,10 +183,32 @@ export default function App() {
   const targetTier = upgradeContext
     ? billing?.availableTiers.find(tier => tier.slug === upgradeContext.requiredTier)
     : undefined;
-  const continueUpgrade = (interval: BillingInterval) => {
-    if (!upgradeContext) return;
-    setUpgradeNotice(`${upgradeContext.title} selected with ${interval} billing. Secure checkout is the next step.`);
-    setUpgradeContext(undefined);
+  const continueUpgrade = async (interval: BillingInterval) => {
+    if (!upgradeContext || !targetTier || checkoutLaunching) return;
+    setCheckoutLaunching(true);
+    setCheckoutError(undefined);
+    setUpgradeNotice(`Opening secure checkout for ${upgradeContext.title} with ${interval} billing…`);
+    try {
+      const checkoutUrl = await createCheckoutSession(
+        configuration,
+        accessToken,
+        targetTier.id,
+        interval
+      );
+      window.location.assign(checkoutUrl);
+    } catch (reason: unknown) {
+      const message = reason instanceof VenueAdminApiError
+        ? reason.message
+        : "Secure checkout could not be opened.";
+      setCheckoutError(message);
+      setUpgradeNotice(message);
+      setCheckoutLaunching(false);
+    }
+  };
+  const dismissCheckoutReturn = () => {
+    const search = stripCheckoutReturnParameter(window.location.search);
+    window.history.replaceState(null, "", `${window.location.pathname}${search}${window.location.hash}`);
+    setCheckoutReturn(undefined);
   };
 
   return <div className="shell">
@@ -180,6 +250,13 @@ export default function App() {
     </aside>
     <main>
       <header><div><p>Venue workspace</p><h1>{route.label}</h1></div><span>Secure session</span></header>
+      {checkoutReturn ? <section className={`checkout-return checkout-return--${checkoutReturn}`} role="status">
+        <div>
+          <strong>{checkoutReturn === "success" ? "Confirming your plan" : "Checkout canceled"}</strong>
+          <p>{checkoutReturnNotice}</p>
+        </div>
+        <button type="button" onClick={dismissCheckoutReturn}>Dismiss</button>
+      </section> : null}
       {inlineOpportunity && !upgradeContext
         ? <InlineFeatureHint
             key={`${inlineOpportunity.featureKey}-${dismissalVersion}`}
@@ -219,6 +296,8 @@ export default function App() {
       targetTier={targetTier}
       onClose={() => setUpgradeContext(undefined)}
       onUpgrade={continueUpgrade}
+      isSubmitting={checkoutLaunching}
+      error={checkoutError}
     /> : null}
   </div>;
 }
