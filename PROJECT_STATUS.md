@@ -102,10 +102,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - Phase 10 — TV Apps & Platform Distribution
 - WP-11.01 — Upgrade Experience Contract and Tier Badges
 - WP-11.02 — Locked Navigation and Section Previews
+- WP-11.03 — Inline Feature Hints
 
 ## Active Work Package
 
-**WP-11.03 — Inline Feature Hints** is in review on issue #245.
+No implementation package is active. **WP-11.04 — Sidebar Upgrade Nudge** is next.
 
 ## Phase 04 Result
 
@@ -160,7 +161,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Publish and validate **WP-11.03 — Inline Feature Hints** through GitHub Actions.
+Claim and implement **WP-11.04 — Sidebar Upgrade Nudge**.
 
 ## Phase 05 Work Packages
 
