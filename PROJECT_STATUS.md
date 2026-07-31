@@ -100,7 +100,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-10.09 — HaaS Pre-Registration and Fleet Version Health** is the next package in roadmap order.
+**WP-10.09 — HaaS Pre-Registration and Fleet Version Health** is in review on issue #232.
 
 ## Phase 04 Result
 
@@ -148,7 +148,7 @@ None. **WP-10.09 — HaaS Pre-Registration and Fleet Version Health** is the nex
 
 ## Next Action
 
-Claim and implement **WP-10.09 — HaaS Pre-Registration and Fleet Version Health**.
+Publish and validate **WP-10.09 — HaaS Pre-Registration and Fleet Version Health** through GitHub Actions.
 
 ## Phase 05 Work Packages
 

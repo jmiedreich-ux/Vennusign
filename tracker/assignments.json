@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T02:42:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-10.09",
+  "updatedUtc": "2026-07-31T03:21:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-10.09",
+      "owner": "ChatGPT",
+      "branch": "wp/10.09-haas-fleet-health",
+      "issue": 232,
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-10.10",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

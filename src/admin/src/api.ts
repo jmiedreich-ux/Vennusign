@@ -37,10 +37,12 @@ export type FeatureMatrixSnapshot = {
 export type FeatureMatrixChange = { tierId: string; featureId: string; enabled: boolean };
 export type OperationalDashboard = {
   totalVenues: number; activeVenues: number; trialingVenues: number; canceledLast30Days: number;
-  onlineScreens: number; offlineScreens: number;
+  onlineScreens: number; offlineScreens: number; outdatedScreens: number;
   screens: Array<{
     screenId: string; venueId?: string; venueName: string; screenName: string;
     location?: string; status: "online" | "offline"; lastSeen?: string;
+    platform?: string; appVersion?: string; desiredAppVersion?: string;
+    versionStatus: "current" | "outdated" | "unknown";
   }>;
 };
 export type RevenueSnapshot = {

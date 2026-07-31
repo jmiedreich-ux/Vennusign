@@ -4,14 +4,14 @@ export function buildDisplayHeartbeatUrl(apiBaseUrl, screenId) {
   return `${apiBaseUrl.replace(/\/$/, '')}/api/display/${encodeURIComponent(screenId)}/heartbeat`;
 }
 
-export async function sendDisplayHeartbeat(apiBaseUrl, screenId, fetchImpl = fetch, signal) {
+export async function sendDisplayHeartbeat(apiBaseUrl, screenId, fetchImpl = fetch, signal, metadata = {}) {
   const response = await fetchImpl(buildDisplayHeartbeatUrl(apiBaseUrl, screenId), {
     method: 'POST',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ status: 'Online' }),
+    body: JSON.stringify({ status: 'Online', platform: metadata.platform, appVersion: metadata.appVersion }),
     signal
   });
 
@@ -42,7 +42,13 @@ export function startDisplayHeartbeat(
 
     inFlight = true;
     try {
-      await sendDisplayHeartbeat(apiBaseUrl, screenId, fetchImpl, abortController.signal);
+      await sendDisplayHeartbeat(
+        apiBaseUrl,
+        screenId,
+        fetchImpl,
+        abortController.signal,
+        { platform: options.platform, appVersion: options.appVersion }
+      );
     } catch {
       // Temporary heartbeat failures must not crash or duplicate the display loop.
     } finally {

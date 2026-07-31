@@ -2,43 +2,44 @@
 
 ## Work Package
 
-- ID: WP-10.08
-- Status: Complete and merged
+- ID: WP-10.09
+- Status: Review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/10.08-lg-webos`
-- Issue: #229
-- Pull request: #230
-- Latest reviewed commit: `101fa9f`
-- Merge commit: `9842107`
-- CI state: GitHub Actions run #496 passed
+- Branch: `wp/10.09-haas-fleet-health`
+- Issue: #232
+- Pull request: pending
+- Latest reviewed commit: pending
+- Merge commit: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added the LG webOS manifest, hosted-player launcher, and lifecycle/remote policy.
-- Reused the approved query bootstrap in the shared player.
-- Added credential-free packaging guidance, static validation, and CI coverage.
+- Added protected HaaS pre-registration with one-time hashed delivery tokens.
+- Added zero-pairing provisioning through the shared player.
+- Added platform/version heartbeat metadata and fleet version health.
+- Added migration 032 and focused non-integration tests.
 
 ## Decisions
 
-- The hosted React player remains authoritative.
-- Signing, IPK distribution, simulator/device install, and store operations remain external.
+- Raw provisioning tokens are returned once and never persisted.
+- The hosted React player remains authoritative for provisioning and display startup.
 
 ## Validation
 
-- Results: restore, Release build, admin/display production builds/tests, required unit tests, Android profile builds, Tizen validation, and webOS static validation passed in Actions run #496.
+- Results: pending authoritative GitHub Actions.
 - Skipped: all integration-type and external simulator/device tests.
 
 ## Remaining Work
 
-- WP-10.09 — HaaS Pre-Registration and Fleet Version Health.
+- WP-10.10 — Phase 10 Validation and Closure after WP-10.09 merges.
 
 ## Exact Next Action
 
-Claim and implement WP-10.09 — HaaS Pre-Registration and Fleet Version Health.
+Publish WP-10.09, run required GitHub Actions, review the exact head, and merge when green.
 
 ## Do Not Redo or Reverse
 
-- Do not commit developer-mode credentials, IPK output, SDK binaries, signing material, or store credentials.
+- Do not persist or log raw provisioning tokens or fork player behavior into platform wrappers.

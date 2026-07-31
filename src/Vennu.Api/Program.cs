@@ -33,6 +33,7 @@ builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier
 builder.Services.AddScoped<IMenuItemManagementService, MenuItemManagementService>();
 builder.Services.AddScoped<IQuickUpdateService, QuickUpdateService>();
 builder.Services.AddScoped<IScreenManagementService, ScreenManagementService>();
+builder.Services.AddScoped<IHaasPreRegistrationService, HaasPreRegistrationService>();
 builder.Services.AddScoped<IScreenTargetingService, ScreenTargetingService>();
 builder.Services.AddScoped<IVideoWallService, VideoWallService>();
 builder.Services.Configure<HeartbeatMonitorOptions>(builder.Configuration.GetSection(HeartbeatMonitorOptions.SectionName));
