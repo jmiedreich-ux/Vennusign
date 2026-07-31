@@ -30,7 +30,7 @@ public sealed class OperationalDashboardServiceTests
         {
             GetAllAsyncHandler = _ => Task.FromResult<IReadOnlyCollection<Screen>>(
             [
-                new Screen { Id = Guid.NewGuid(), VenueId = venueId, Name = "Main", Status = "Online" },
+                new Screen { Id = Guid.NewGuid(), VenueId = venueId, Name = "Main", Status = "Online", Platform = "tizen", AppVersion = "1.0", DesiredAppVersion = "2.0" },
                 new Screen { Id = Guid.NewGuid(), Name = "Spare", Status = "Unknown" }
             ])
         };
@@ -44,6 +44,7 @@ public sealed class OperationalDashboardServiceTests
         Assert.Equal(1, dashboard.CanceledLast30Days);
         Assert.Equal(1, dashboard.OnlineScreens);
         Assert.Equal(1, dashboard.OfflineScreens);
+        Assert.Equal(1, dashboard.OutdatedScreens);
         Assert.Contains(dashboard.Screens, screen => screen.VenueName == "North Bar" && screen.Status == "online");
         Assert.Contains(dashboard.Screens, screen => screen.VenueName == "Unassigned" && screen.Status == "offline");
     }

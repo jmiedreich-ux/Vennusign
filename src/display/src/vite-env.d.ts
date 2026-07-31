@@ -5,5 +5,6 @@ interface Window {
     platform?: string;
     appVersion?: string;
     screenId?: string;
+    provisioningToken?: string;
   };
 }

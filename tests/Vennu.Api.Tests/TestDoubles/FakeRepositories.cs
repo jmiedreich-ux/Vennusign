@@ -31,10 +31,13 @@ internal sealed class FakeScreenRepository : IScreenRepository
     public Func<Guid, Guid, CancellationToken, Task<bool>>? AssignVenueAsyncHandler { get; set; }
     public Func<Guid, CancellationToken, Task<Screen?>>? GetByIdAsyncHandler { get; set; }
     public Func<string, CancellationToken, Task<Screen?>>? GetByScreenKeyAsyncHandler { get; set; }
+    public Func<string, CancellationToken, Task<Screen?>>? GetByPreRegistrationTokenHashAsyncHandler { get; set; }
     public Func<CancellationToken, Task<IReadOnlyCollection<Screen>>>? GetAllAsyncHandler { get; set; }
     public Func<Guid, CancellationToken, Task<IReadOnlyCollection<Screen>>>? GetByVenueIdAsyncHandler { get; set; }
     public Func<Screen, CancellationToken, Task<bool>>? UpdateAsyncHandler { get; set; }
+    public Func<Guid, string, string, DateTime, CancellationToken, Task<bool>>? ClaimPreRegisteredAsyncHandler { get; set; }
     public Func<Guid, DateTime, string, CancellationToken, Task<bool>>? UpdateHeartbeatAsyncHandler { get; set; }
+    public Func<Guid, DateTime, string, string?, string?, CancellationToken, Task<bool>>? UpdateHeartbeatWithMetadataAsyncHandler { get; set; }
     public Func<DateTime, CancellationToken, Task<int>>? MarkStaleOnlineScreensOfflineAsyncHandler { get; set; }
     public Screen? LastCreatedScreen { get; private set; }
     public Screen? LastUpdatedScreen { get; private set; }
@@ -56,6 +59,9 @@ internal sealed class FakeScreenRepository : IScreenRepository
     public Task<Screen?> GetByScreenKeyAsync(string screenKey, CancellationToken cancellationToken = default) =>
         GetByScreenKeyAsyncHandler is not null ? GetByScreenKeyAsyncHandler(screenKey, cancellationToken) : Task.FromResult<Screen?>(null);
 
+    public Task<Screen?> GetByPreRegistrationTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default) =>
+        GetByPreRegistrationTokenHashAsyncHandler is not null ? GetByPreRegistrationTokenHashAsyncHandler(tokenHash, cancellationToken) : Task.FromResult<Screen?>(null);
+
     public Task<IReadOnlyCollection<Screen>> GetAllAsync(CancellationToken cancellationToken = default) =>
         GetAllAsyncHandler is not null ? GetAllAsyncHandler(cancellationToken) : Task.FromResult<IReadOnlyCollection<Screen>>([]);
 
@@ -68,8 +74,18 @@ internal sealed class FakeScreenRepository : IScreenRepository
         return UpdateAsyncHandler is not null ? UpdateAsyncHandler(screen, cancellationToken) : Task.FromResult(true);
     }
 
+    public Task<bool> ClaimPreRegisteredAsync(Guid screenId, string platform, string appVersion, DateTime claimedUtc, CancellationToken cancellationToken = default) =>
+        ClaimPreRegisteredAsyncHandler is not null ? ClaimPreRegisteredAsyncHandler(screenId, platform, appVersion, claimedUtc, cancellationToken) : Task.FromResult(true);
+
     public Task<bool> UpdateHeartbeatAsync(Guid screenId, DateTime lastSeenUtc, string status, CancellationToken cancellationToken = default) =>
-        UpdateHeartbeatAsyncHandler is not null ? UpdateHeartbeatAsyncHandler(screenId, lastSeenUtc, status, cancellationToken) : Task.FromResult(true);
+        UpdateHeartbeatAsync(screenId, lastSeenUtc, status, null, null, cancellationToken);
+
+    public Task<bool> UpdateHeartbeatAsync(Guid screenId, DateTime lastSeenUtc, string status, string? platform, string? appVersion, CancellationToken cancellationToken = default) =>
+        UpdateHeartbeatWithMetadataAsyncHandler is not null
+            ? UpdateHeartbeatWithMetadataAsyncHandler(screenId, lastSeenUtc, status, platform, appVersion, cancellationToken)
+            : UpdateHeartbeatAsyncHandler is not null
+                ? UpdateHeartbeatAsyncHandler(screenId, lastSeenUtc, status, cancellationToken)
+                : Task.FromResult(true);
 
     public Task<int> MarkStaleOnlineScreensOfflineAsync(DateTime cutoffUtc, CancellationToken cancellationToken = default) =>
         MarkStaleOnlineScreensOfflineAsyncHandler is not null

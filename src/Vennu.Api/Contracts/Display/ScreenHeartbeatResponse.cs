@@ -7,4 +7,8 @@ public class ScreenHeartbeatResponse
     public string Status { get; set; } = "Online";
 
     public DateTime LastSeenUtc { get; set; }
+
+    public string? Platform { get; set; }
+
+    public string? AppVersion { get; set; }
 }

@@ -1,6 +1,8 @@
 export const DISPLAY_HEARTBEAT_INTERVAL_MS: number;
 
 export type DisplayHeartbeatOptions = {
+  platform?: string;
+  appVersion?: string;
   fetchImpl?: typeof fetch;
   setIntervalImpl?: typeof setInterval;
   clearIntervalImpl?: typeof clearInterval;
@@ -17,7 +19,8 @@ export function sendDisplayHeartbeat(
   apiBaseUrl: string,
   screenId: string,
   fetchImpl?: typeof fetch,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  metadata?: { platform?: string; appVersion?: string }
 ): Promise<unknown>;
 
 export function startDisplayHeartbeat(

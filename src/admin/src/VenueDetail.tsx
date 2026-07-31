@@ -10,6 +10,8 @@ import PlaylistAdministration from "./PlaylistAdministration";
 import EmergencyBroadcastAdministration from "./EmergencyBroadcastAdministration";
 import DateRangePromotionAdministration from "./DateRangePromotionAdministration";
 import TapListAdministration from "./TapListAdministration";
+import InlineFeatureHint from "./InlineFeatureHint";
+import { dismissUpgradeFeature, readDismissedUpgradeFeatures, selectUpgradeOpportunity, upgradePanelForFeature, type UpgradeOpportunity, type UpgradePanel } from "./upgradeExperience.mjs";
 
 type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; onBack: () => void };
 
@@ -25,6 +27,8 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
   const [saving, setSaving] = useState(false);
   const [version, setVersion] = useState(0);
   const [targetTierId, setTargetTierId] = useState("");
+  const [upgradeVersion, setUpgradeVersion] = useState(0);
+  const [upgradeContext, setUpgradeContext] = useState<Readonly<UpgradeOpportunity>>();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -72,6 +76,16 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
   if (error || !detail) return <section><button className="back" onClick={onBack}>← Back to venues</button><p className="state error">{error}</p></section>;
 
   const features = Object.values(detail.features).sort((a, b) => a.key.localeCompare(b.key));
+  const upgradeOpportunity = selectUpgradeOpportunity(detail.features, readDismissedUpgradeFeatures());
+  const upgradePanel: UpgradePanel | undefined = upgradeOpportunity ? upgradePanelForFeature(upgradeOpportunity.featureKey) : undefined;
+  const dismissUpgrade = (featureKey: string) => {
+    dismissUpgradeFeature(featureKey);
+    setUpgradeContext(undefined);
+    setUpgradeVersion(value => value + 1);
+  };
+  const inlineHint = upgradeOpportunity
+    ? <InlineFeatureHint key={`${upgradeOpportunity.featureKey}-${upgradeVersion}`} opportunity={upgradeOpportunity} onDismiss={dismissUpgrade} onUpgrade={setUpgradeContext} />
+    : null;
   return <section className="venue-detail">
     <button className="back" onClick={onBack}>← Back to venues</button>
     <div className="detail-heading"><div><p>{detail.venue.type}</p><h2>{detail.venue.name}</h2></div><span className="health">{detail.subscription?.status ?? "unsubscribed"}</span></div>
@@ -91,14 +105,19 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
       venueId={venueId}
       advancedEnabled={detail.features.all_layouts?.enabled ?? false}
     />
+    {upgradePanel === "design" ? inlineHint : null}
     <MenuSectionsEditor configuration={configuration} apiKey={apiKey} venueId={venueId} />
+    {upgradePanel === "menu" ? inlineHint : null}
     <MealPeriodAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} />
     <HappyHourAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} enabled={detail.features.happy_hour?.enabled ?? false} />
     <PlaylistAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} screens={detail.screens} enabled={detail.features.playlist_rotation?.enabled ?? false} />
     <EmergencyBroadcastAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} screens={detail.screens} enabled={detail.features.emergency_broadcast?.enabled ?? false} />
     <DateRangePromotionAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} enabled={detail.features.basic_scheduling?.enabled ?? false} />
+    {upgradePanel === "scheduling" ? inlineHint : null}
     <TapListAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} enabled={detail.features.all_layouts?.enabled ?? false} />
     <article><h3>Effective features</h3><ul className="support-list">{features.map(feature => <li key={feature.key}><strong>{feature.key}</strong><span>{feature.enabled ? "Enabled" : "Disabled"} · {feature.source}{feature.limitValue ? ` · limit ${feature.limitValue}` : ""}</span></li>)}</ul></article>
+    {upgradePanel === "operations" ? inlineHint : null}
+    {upgradeContext ? <p className="upgrade-context" role="status">Upgrade options for {upgradeContext.title} will open here in the next billing step. Your current workflow remains available.</p> : null}
     <article className="override-panel"><div><h3>Active overrides ({detail.activeOverrides.length})</h3>{detail.activeOverrides.length ? <ul className="support-list">{detail.activeOverrides.map(item => <li key={item.featureId}><strong>{matrix?.features.find(feature => feature.id === item.featureId)?.label ?? item.featureId}</strong><span>{item.enabled ? "Unlock" : "Block"} · {item.reason}{item.expiresAt ? ` · expires ${new Date(item.expiresAt).toLocaleString()}` : ""}<button disabled={saving} onClick={() => removeOverride(item.featureId)}>Remove</button></span></li>)}</ul> : <p>No active overrides.</p>}</div>
       <form onSubmit={saveOverride}><h3>Add or replace override</h3><label>Feature<select required value={featureId} onChange={event => setFeatureId(event.target.value)}>{matrix?.features.map(feature => <option key={feature.id} value={feature.id}>{feature.label}</option>)}</select></label><div className="override-choice"><label><input type="radio" checked={enabled} onChange={() => setEnabled(true)} /> Unlock</label><label><input type="radio" checked={!enabled} onChange={() => setEnabled(false)} /> Block</label></div><label>Reason<textarea required maxLength={500} value={reason} onChange={event => setReason(event.target.value)} /></label><label>Expires (optional)<input type="datetime-local" value={expiresAt} onChange={event => setExpiresAt(event.target.value)} /></label><button disabled={saving || !featureId} type="submit">Save override</button></form>
     </article>

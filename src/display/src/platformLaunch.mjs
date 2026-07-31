@@ -25,6 +25,9 @@ export function resolvePlatformLaunch(pathname, bridge, resetPairing = false) {
   const screenId = typeof bridge?.screenId === 'string' && bridge.screenId.trim()
     ? bridge.screenId.trim()
     : undefined;
+  const provisioningToken = typeof bridge?.provisioningToken === 'string'
+    ? bridge.provisioningToken.trim().slice(0, 128)
+    : '';
 
   if (resetPairing && /^\/pair\/?$/i.test(pathname)) {
     return { platform, appVersion, pathname: '/pair' };
@@ -32,6 +35,10 @@ export function resolvePlatformLaunch(pathname, bridge, resetPairing = false) {
 
   if (platform !== 'browser' && screenId) {
     return { platform, appVersion, pathname: `/display/${encodeURIComponent(screenId)}` };
+  }
+
+  if (platform !== 'browser' && provisioningToken) {
+    return { platform, appVersion, pathname: '/provision', provisioningToken };
   }
 
   if (platform !== 'browser' && /^\/?$/i.test(pathname)) {

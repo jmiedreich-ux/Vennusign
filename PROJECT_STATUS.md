@@ -1,13 +1,12 @@
 # Vennu Project Status
-# Vennu Project Status
 
 ## Current Phase
 
-**Phase 10 — TV Apps & Platform Distribution: Active**
+**Phase 11 — Upgrade Prompts & Billing UX: Planning**
 
 ## Milestone
 
-The internal Super Admin CRM foundation is delivered, but follow-up remediation is required to restore the planned split between Super Admin and the venue-facing Admin CMS and to add missing venue provisioning.
+The internal Super Admin CRM is complete; the next milestone is the first venue managing its board.
 
 ## Completed
 
@@ -98,17 +97,21 @@ The internal Super Admin CRM foundation is delivered, but follow-up remediation 
 - WP-10.06 — Android and Fire Distribution Profiles
 - WP-10.07 — Samsung Tizen Package
 - WP-10.08 — LG webOS Package
+- WP-10.09 — HaaS Pre-Registration and Fleet Version Health
+- WP-10.10 — Phase 10 Validation and Closure
+- Phase 10 — TV Apps & Platform Distribution
+- WP-11.01 — Upgrade Experience Contract and Tier Badges
+- WP-11.02 — Locked Navigation and Section Previews
 
 ## Active Work Package
 
-None. **WP-04.13 — Super Admin Venue Provisioning** is the next package due to a discovered Phase 04/05 planning gap.
+**WP-11.03 — Inline Feature Hints** is in review on issue #245.
 
 ## Phase 04 Result
 
 - Delivered protected venue support, tier management, feature matrix, overrides, operational health, and commercial events.
 - Added live Stripe USD revenue, safe venue tier switching, and persisted monthly revenue trends.
 - Added repeatable authorization and critical UI journey validation.
-- Follow-up remediation remains open for missing venue provisioning in the Super Admin venue workflow.
 
 ## Phase 05 Result
 
@@ -116,14 +119,6 @@ None. **WP-04.13 — Super Admin Venue Provisioning** is the next package due to
 - Added mobile Quick Update with venue-local midnight availability restoration.
 - Added screen registration, health, one/all targeting, deterministic overflow guidance, and supported video walls.
 - Added repeatable protected-route, service, repository, worker, migration, and frontend validation.
-- Follow-up remediation remains open to move day-to-day venue workflows into a separate venue-facing Admin CMS surface.
-
-## Discovered Planning Gaps
-
-- The roadmap defines two separate admin surfaces: a Phase 04 Super Admin CRM and a Phase 05 venue-facing Admin CMS.
-- The repository currently contains `src/admin` for Super Admin and `src/display` for the player, but no separate venue/customer CMS SPA.
-- The Super Admin venue directory and detail experience has no venue-creation flow even though the API already supports venue creation.
-- Venue-scoped operational tools currently live inside the Super Admin SPA instead of an independent venue-facing CMS.
 
 ## Phase 06 Result
 
@@ -151,6 +146,13 @@ None. **WP-04.13 — Super Admin Venue Provisioning** is the next package due to
 - Completed no-keyboard pairing with protected claims, automatic expiry regeneration, and display redirect.
 - Added repeatable tap, pairing, entitlement, realtime, offline, and recovery validation.
 
+## Phase 10 Result
+
+- Packaged the authoritative hosted player for Android TV, Fire TV, Samsung Tizen, and LG webOS.
+- Added no-keyboard pairing, lifecycle recovery, opt-in kiosk behavior, and credential-free distribution profiles.
+- Added protected HaaS pre-registration, platform/app-version heartbeats, and fleet version health.
+- Added repeatable shared-player, pairing, provisioning, recovery, package, security, and non-integration build validation.
+
 ## Standing Validation Exception
 
 - Integration-type tests are skipped for every AWP under the repository owner's standing instruction.
@@ -158,14 +160,7 @@ None. **WP-04.13 — Super Admin Venue Provisioning** is the next package due to
 
 ## Next Action
 
-Claim and implement **WP-04.13 — Super Admin Venue Provisioning**.
-
-## Remediation Work Packages
-
-- WP-04.13 — Super Admin Venue Provisioning
-- WP-05.11 — Venue Admin CMS Foundation and Protected Bootstrap
-- WP-05.12 — Venue Admin CMS Menu and Quick Update Migration
-- WP-05.13 — Venue Admin CMS Operational Surface Migration
+Publish and validate **WP-11.03 — Inline Feature Hints** through GitHub Actions.
 
 ## Phase 05 Work Packages
 
@@ -190,3 +185,7 @@ Claim and implement **WP-04.13 — Super Admin Venue Provisioning**.
 ## Phase 10 Work Packages
 
 - WP-10.01 through WP-10.10 are defined in `docs/phase-plans/phase-10-tv-apps-platform-distribution.md`.
+
+## Phase 11 Work Packages
+
+- WP-11.01 through WP-11.10 are defined in `docs/phase-plans/phase-11-upgrade-prompts-billing-ux.md`.

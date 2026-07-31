@@ -252,6 +252,13 @@ internal sealed class InMemoryScreenRepository : IScreenRepository
         return Task.FromResult(screen);
     }
 
+    public Task<Screen?> GetByPreRegistrationTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default)
+    {
+        var screen = store.Screens.Values.FirstOrDefault(screen =>
+            string.Equals(screen.PreRegistrationTokenHash, tokenHash, StringComparison.Ordinal));
+        return Task.FromResult(screen);
+    }
+
     public Task<IReadOnlyCollection<Screen>> GetAllAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyCollection<Screen>>(store.Screens.Values.ToArray());
 
@@ -272,7 +279,24 @@ internal sealed class InMemoryScreenRepository : IScreenRepository
         return Task.FromResult(true);
     }
 
-    public Task<bool> UpdateHeartbeatAsync(Guid screenId, DateTime lastSeenUtc, string status, CancellationToken cancellationToken = default)
+    public Task<bool> ClaimPreRegisteredAsync(Guid screenId, string platform, string appVersion, DateTime claimedUtc, CancellationToken cancellationToken = default)
+    {
+        if (!store.Screens.TryGetValue(screenId, out var screen))
+        {
+            return Task.FromResult(false);
+        }
+        screen.Platform = platform;
+        screen.AppVersion = appVersion;
+        screen.PreRegistrationTokenHash = null;
+        screen.PreRegistrationExpiresUtc = null;
+        screen.PreRegisteredUtc = claimedUtc;
+        return Task.FromResult(true);
+    }
+
+    public Task<bool> UpdateHeartbeatAsync(Guid screenId, DateTime lastSeenUtc, string status, CancellationToken cancellationToken = default) =>
+        UpdateHeartbeatAsync(screenId, lastSeenUtc, status, null, null, cancellationToken);
+
+    public Task<bool> UpdateHeartbeatAsync(Guid screenId, DateTime lastSeenUtc, string status, string? platform, string? appVersion, CancellationToken cancellationToken = default)
     {
         if (!store.Screens.TryGetValue(screenId, out var screen))
         {
@@ -281,6 +305,8 @@ internal sealed class InMemoryScreenRepository : IScreenRepository
 
         screen.LastSeen = lastSeenUtc;
         screen.Status = status;
+        screen.Platform = platform ?? screen.Platform;
+        screen.AppVersion = appVersion ?? screen.AppVersion;
         return Task.FromResult(true);
     }
 

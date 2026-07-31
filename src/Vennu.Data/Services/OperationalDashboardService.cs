@@ -30,7 +30,11 @@ public sealed class OperationalDashboardService(
                 screen.Name,
                 screen.Location,
                 NormalizeStatus(screen.Status),
-                screen.LastSeen))
+                screen.LastSeen,
+                screen.Platform,
+                screen.AppVersion,
+                screen.DesiredAppVersion,
+                ResolveVersionStatus(screen.AppVersion, screen.DesiredAppVersion)))
             .OrderBy(item => item.VenueName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(item => item.ScreenName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(item => item.ScreenId)
@@ -45,9 +49,21 @@ public sealed class OperationalDashboardService(
                 subscription.UpdatedUtc >= canceledCutoff),
             health.Count(screen => screen.Status == "online"),
             health.Count(screen => screen.Status != "online"),
+            health.Count(screen => screen.VersionStatus == "outdated"),
             health);
     }
 
     private static string NormalizeStatus(string? status) =>
         string.Equals(status, "online", StringComparison.OrdinalIgnoreCase) ? "online" : "offline";
+
+    private static string ResolveVersionStatus(string? appVersion, string? desiredAppVersion)
+    {
+        if (string.IsNullOrWhiteSpace(appVersion) || string.IsNullOrWhiteSpace(desiredAppVersion))
+        {
+            return "unknown";
+        }
+        return string.Equals(appVersion.Trim(), desiredAppVersion.Trim(), StringComparison.OrdinalIgnoreCase)
+            ? "current"
+            : "outdated";
+    }
 }

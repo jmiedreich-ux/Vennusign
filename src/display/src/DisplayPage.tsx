@@ -21,6 +21,8 @@ import EmergencyBroadcastOverlay from './EmergencyBroadcastOverlay';
 
 type DisplayPageProps = {
   screenId: string;
+  platform: string;
+  appVersion: string;
 };
 
 type DisplayState =
@@ -29,7 +31,7 @@ type DisplayState =
   | { kind: 'not-found'; message: string }
   | { kind: 'api-error'; message: string };
 
-export default function DisplayPage({ screenId }: DisplayPageProps) {
+export default function DisplayPage({ screenId, platform, appVersion }: DisplayPageProps) {
   const [state, setState] = useState<DisplayState>({ kind: 'loading' });
   const [connectionState, setConnectionState] = useState<DisplayConnectionState>('connecting');
 
@@ -65,7 +67,7 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
       }
 
       liveServicesStarted = true;
-      heartbeat = startDisplayHeartbeat(displayConfig.apiBaseUrl, screenId);
+      heartbeat = startDisplayHeartbeat(displayConfig.apiBaseUrl, screenId, { platform, appVersion });
       realtimeConnection = await connectDisplayRealtime(
         displayConfig.apiBaseUrl,
         screenId,
@@ -160,7 +162,7 @@ export default function DisplayPage({ screenId }: DisplayPageProps) {
       heartbeat?.stop();
       void realtimeConnection?.stop();
     };
-  }, [screenId]);
+  }, [appVersion, platform, screenId]);
 
   if (state.kind === 'loading') {
     return (

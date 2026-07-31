@@ -257,7 +257,15 @@ public class DisplayController : ControllerBase
     {
         var status = request.Status.Trim();
         var lastSeenUtc = DateTime.UtcNow;
-        var updated = await screenRepository.UpdateHeartbeatAsync(screenId, lastSeenUtc, status, cancellationToken);
+        var platform = ScreenPlatform.NormalizeOptional(request.Platform);
+        var appVersion = string.IsNullOrWhiteSpace(request.AppVersion) ? null : request.AppVersion.Trim();
+        var updated = await screenRepository.UpdateHeartbeatAsync(
+            screenId,
+            lastSeenUtc,
+            status,
+            platform,
+            appVersion,
+            cancellationToken);
 
         if (!updated)
         {
@@ -268,7 +276,9 @@ public class DisplayController : ControllerBase
         {
             ScreenId = screenId,
             Status = status,
-            LastSeenUtc = lastSeenUtc
+            LastSeenUtc = lastSeenUtc,
+            Platform = platform,
+            AppVersion = appVersion
         });
     }
 }
