@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 11 — Upgrade Prompts & Billing UX**
+**Phase 12 — POS Integration**
 
 ## Milestone
 
@@ -116,10 +116,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - RWP-05.02 — Menu and Quick Update Migration
 - RWP-05.03 — Remaining Venue Features Migration
 - RWP-11.01 — Venue Admin Billing UX Reconciliation
+- WP-12.01 — POS Connection Domain and Provider Contracts
 
 ## Active Work Package
 
-**WP-12.01 — POS Connection Domain and Provider Contracts** is ready for review on issue #284 and branch `wp/12.01-pos-connection-domain-provider-contracts`. Static checks passed; authoritative GitHub Actions validation is pending publication.
+No implementation package is active. **WP-12.02 — Square OAuth Connection Flow** is next.
 
 ## Phase 04 Result
 
@@ -181,7 +182,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-12.01 — POS Connection Domain and Provider Contracts**.
+Claim and implement **WP-12.02 — Square OAuth Connection Flow**.
 
 ## Phase 05 Work Packages
 

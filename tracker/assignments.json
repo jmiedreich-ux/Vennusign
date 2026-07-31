@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T23:25:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-12.01",
-      "owner": "Codex",
-      "branch": "wp/12.01-pos-connection-domain-provider-contracts",
-      "issue": 284,
-      "status": "Ready for review"
-    }
-  ],
+  "updatedUtc": "2026-07-31T23:34:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-12.02",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
