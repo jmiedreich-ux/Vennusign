@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T02:30:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-10.08",
+  "updatedUtc": "2026-07-31T02:34:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-10.08",
+      "orchestrator": "ChatGPT",
+      "branch": "wp/10.08-lg-webos",
+      "status": "review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-10.09",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

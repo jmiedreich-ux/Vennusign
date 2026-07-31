@@ -1,0 +1,13 @@
+{
+  "id": "com.vennu.tv.webos",
+  "version": "0.1.0",
+  "vendor": "Vennu",
+  "type": "web",
+  "main": "index.html",
+  "title": "Vennu TV",
+  "icon": "icon.png",
+  "largeIcon": "large-icon.png",
+  "requiredMemory": 64,
+  "disableBackHistoryAPI": true,
+  "resolution": "1920x1080"
+}

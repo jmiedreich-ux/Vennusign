@@ -99,7 +99,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-10.08 — LG webOS Package** is the next package in roadmap order.
+**WP-10.08 — LG webOS Package** is in review.
 
 ## Phase 04 Result
 
@@ -147,7 +147,7 @@ None. **WP-10.08 — LG webOS Package** is the next package in roadmap order.
 
 ## Next Action
 
-Claim and implement **WP-10.08 — LG webOS Package**.
+Validate and merge **WP-10.08 — LG webOS Package**, then continue with WP-10.09.
 
 ## Phase 05 Work Packages
 
