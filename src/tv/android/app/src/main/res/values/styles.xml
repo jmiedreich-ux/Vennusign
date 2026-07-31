@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.VennuTv" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorAccent">#5CE1E6</item>
+    </style>
+</resources>
