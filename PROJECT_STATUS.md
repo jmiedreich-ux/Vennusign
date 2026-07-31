@@ -108,6 +108,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-11.06 — Stripe Checkout Session Foundation
 - WP-11.07 — Checkout Launch and Entitlement Return
 - WP-11.08 — Billing Portal and Subscription Status
+- WP-11.09 — HaaS Contract Billing Guardrails
 - RWP-04.01 — Super Admin Venue Provisioning
 - RWP-05.01 — Venue Admin CMS Foundation
 - RWP-05.02 — Menu and Quick Update Migration
@@ -116,7 +117,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-**WP-11.09 — HaaS Contract Billing Guardrails** is ready for review on `wp/11.09-haas-billing-guardrails` (issue #276). Local Venue Admin validation passed; authoritative GitHub Actions validation is pending publication.
+No implementation package is active. **WP-11.10 — Phase 11 Validation and Closure** is next.
 
 ## Phase 04 Result
 
@@ -171,7 +172,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-11.09 — HaaS Contract Billing Guardrails**.
+Claim and complete **WP-11.10 — Phase 11 Validation and Closure**.
 
 ## Phase 05 Work Packages
 

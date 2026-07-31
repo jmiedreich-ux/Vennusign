@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T23:03:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-11.09",
-      "owner": "Codex",
-      "issue": 276,
-      "branch": "wp/11.09-haas-billing-guardrails",
-      "status": "Ready for review"
-    }
-  ],
+  "updatedUtc": "2026-07-31T23:05:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": "WP-11.10",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
