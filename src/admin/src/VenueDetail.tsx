@@ -1,7 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { loadFeatureMatrix, loadVenueSupportDetail, removeVenueFeatureOverride, saveVenueFeatureOverride, switchVenueTier, type FeatureMatrixSnapshot, type SubscriptionTier, type VenueSupportDetail } from "./api";
 import type { AdminConfiguration } from "./config";
-import MenuSectionsEditor from "./MenuSectionsEditor";
 import ScreenManagement from "./ScreenManagement";
 import ThemeBuilder from "./ThemeBuilder";
 import MealPeriodAdministration from "./MealPeriodAdministration";
@@ -118,7 +117,10 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack, on
       advancedEnabled={detail.features.all_layouts?.enabled ?? false}
     />
     {upgradePanel === "design" ? inlineHint : null}
-    <MenuSectionsEditor configuration={configuration} apiKey={apiKey} venueId={venueId} />
+    <article className="venue-admin-handoff">
+      <div><p>Customer workspace</p><h3>Menu and Quick Update</h3><span>Day-to-day menu work now runs in the venue-scoped Venue Admin CMS.</span></div>
+      <a href={`${configuration.venueAdminBaseUrl}#/menu`}>Open Venue Admin</a>
+    </article>
     {upgradePanel === "menu" ? inlineHint : null}
     <MealPeriodAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} />
     <HappyHourAdministration configuration={configuration} apiKey={apiKey} venueId={venueId} enabled={detail.features.happy_hour?.enabled ?? false} />

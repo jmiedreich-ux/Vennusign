@@ -1,9 +1,8 @@
-# WP-05.12 — Venue Admin CMS Menu and Quick Update Migration
-# WP-05.12 — Venue Admin CMS Menu and Quick Update Migration
+# RWP-05.02 â€” Menu and Quick Update Migration
 
 ## Status
 
-Planned.
+In Review.
 
 ## Goal
 
@@ -33,9 +32,9 @@ Move the core day-to-day menu and service-time workflows into the dedicated venu
 
 ## Dependencies
 
-- WP-05.11 — Venue Admin CMS Foundation and Protected Bootstrap
-- WP-05.03 — Inline Menu Item Editing and Sync
-- WP-05.06 — Quick Update Mode
+- RWP-05.01 â€” Venue Admin CMS Foundation
+- WP-05.03 â€” Inline Menu Item Editing and Sync
+- WP-05.06 â€” Quick Update Mode
 
 ## Implementation Plan
 
@@ -114,6 +113,14 @@ Create:
 
 ## GitHub
 
-- Issue: pending
-- Branch: `wp/05.12-venue-admin-menu-quick-update`
+- Issue: #255
+- Branch: `rwp/05.02-menu-quick-update-migration`
 - Pull request: pending
+
+## Validation Evidence
+
+- Local Venue Admin tests: 7 passed; production build passed.
+- Local Super Admin tests: 73 passed; production build passed.
+- Local .NET validation: not run because the SDK is unavailable in this workspace.
+- GitHub Actions: pending and authoritative.
+- Skipped: Azure SQL, external-service, credentialed, hosted-infrastructure, container, and all other integration-type tests under the standing owner exception.
