@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 09 — Tap List Boards — Breweries & Bars: Active**
+**Phase 10 — TV Apps & Platform Distribution: Active**
 
 ## Milestone
 
@@ -87,10 +87,12 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-09.07 — Digital Tap Board Core
 - WP-09.08 — Digital Tap Overflow and Brewing States
 - WP-09.09 — Pairing Code Registration Completion
+- WP-09.10 — Phase 09 Validation and Closure
+- Phase 09 — Tap List Boards — Breweries & Bars
 
 ## Active Work Package
 
-**WP-09.10 — Phase 09 Validation and Closure: In Review**
+None. **WP-10.01 — Platform Launch Contract and Player Bridge** is the next package in roadmap order.
 
 ## Phase 04 Result
 
@@ -124,6 +126,13 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - Added transition-only evaluation, deterministic precedence, and authoritative realtime player refresh.
 - Added repeatable timezone, DST, scheduling, tier, realtime, offline, precedence, and recovery validation.
 
+## Phase 09 Result
+
+- Delivered venue-scoped tap administration and three distinct brewery/bar board layouts.
+- Added availability, coming-soon, deterministic overflow, motion/accessibility, and exact preview behavior.
+- Completed no-keyboard pairing with protected claims, automatic expiry regeneration, and display redirect.
+- Added repeatable tap, pairing, entitlement, realtime, offline, and recovery validation.
+
 ## Standing Validation Exception
 
 - Integration-type tests are skipped for every AWP under the repository owner's standing instruction.
@@ -131,7 +140,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate and merge **WP-09.10 — Phase 09 Validation and Closure**. Then create the Phase 10 AWP breakdown.
+Claim and implement **WP-10.01 — Platform Launch Contract and Player Bridge**.
 
 ## Phase 05 Work Packages
 
@@ -152,3 +161,7 @@ Validate and merge **WP-09.10 — Phase 09 Validation and Closure**. Then create
 ## Phase 09 Work Packages
 
 - WP-09.01 through WP-09.10 are defined in `docs/phase-plans/phase-09-tap-list-boards.md`.
+
+## Phase 10 Work Packages
+
+- WP-10.01 through WP-10.10 are defined in `docs/phase-plans/phase-10-tv-apps-platform-distribution.md`.
