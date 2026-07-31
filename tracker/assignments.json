@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T04:12:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-11.03",
+  "updatedUtc": "2026-07-31T04:18:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-11.03",
+      "owner": "ChatGPT",
+      "branch": "wp/11.03-inline-feature-hints",
+      "issue": 245,
+      "status": "Review"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-11.04",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

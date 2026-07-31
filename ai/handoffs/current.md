@@ -2,43 +2,43 @@
 
 ## Work Package
 
-- ID: WP-11.02
-- Status: Complete and merged
+- ID: WP-11.03
+- Status: Review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/11.02-locked-navigation-section-previews`
-- Issue: #242
-- Pull request: #243
-- Latest reviewed commit: `dc5d23b`
-- Merge commit: `89ff410`
-- CI state: GitHub Actions run #525 passed
+- Branch: `wp/11.03-inline-feature-hints`
+- Issue: #245
+- Pull request: pending
+- Latest reviewed commit: pending
+- Merge commit: pending
+- CI state: pending
 
 ## Completed This Session
 
-- Added reusable locked navigation and section-preview surfaces.
-- Added one selected venue-level preview with shared upgrade context.
-- Kept existing unlocked workflows operable and outside the blurred glimpse.
+- Added deterministic feature-to-panel mapping.
+- Added one quiet, contextual, dismissible inline hint.
+- Preserved every venue workflow and authoritative entitlement.
 - Added focused non-integration tests and review-state project records.
 
 ## Decisions
 
-- Locked actions set presentation context only and do not alter entitlements.
-- Only the decorative mockup glimpse is blurred.
+- A single selected opportunity is inserted into exactly one mapped panel.
+- Inline hints use the existing session dismissal contract.
 
 ## Validation
 
-- Results: restore, Release build, admin/display production builds and tests, required unit tests, Android profiles, Tizen validation, and webOS validation passed in Actions run #525.
+- Results: pending authoritative GitHub Actions.
 - Skipped: all integration-type and external Stripe tests.
 
 ## Remaining Work
 
-- WP-11.03 — Inline Feature Hints.
+- WP-11.04 — Sidebar Upgrade Nudge after WP-11.03 merges.
 
 ## Exact Next Action
 
-Claim and implement WP-11.03 — Inline Feature Hints.
+Publish WP-11.03, run required GitHub Actions, review the exact head, and merge when green.
 
 ## Do Not Redo or Reverse
 
