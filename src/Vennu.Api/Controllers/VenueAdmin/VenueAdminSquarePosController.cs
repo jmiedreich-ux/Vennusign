@@ -15,7 +15,7 @@ public sealed class VenueAdminSquarePosController(ISquareOAuthConnectionService 
 {
     [HttpPost("connect")]
     public ActionResult<VenueAdminPosConnectResponse> Connect() =>
-        Ok(new VenueAdminPosConnectResponse(service.Begin(VenueId())));
+        Ok(new VenueAdminPosConnectResponse(service.Begin(VenueId()).AbsoluteUri));
 
     [HttpGet("status")]
     public async Task<ActionResult<VenueAdminPosConnectionResponse?>> Status(CancellationToken cancellationToken)
