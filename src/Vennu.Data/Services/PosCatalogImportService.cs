@@ -13,15 +13,23 @@ public sealed class PosCatalogImportService(
 {
     private const string CatalogMenuExternalId = "catalog-root";
 
-    public async Task<PosCatalogImportResult> ImportAsync(Guid venueId, CancellationToken cancellationToken = default)
+    public Task<PosCatalogImportResult> ImportAsync(Guid venueId, CancellationToken cancellationToken = default) =>
+        ImportAsync(venueId, PosProvider.Square, cancellationToken);
+
+    public async Task<PosCatalogImportResult> ImportAsync(
+        Guid venueId,
+        PosProvider providerValue,
+        CancellationToken cancellationToken = default)
     {
         if (venueId == Guid.Empty) throw new ArgumentException("A non-empty venue identifier is required.", nameof(venueId));
-        var provider = providers.SingleOrDefault(value => value.Provider == PosProvider.Square)
-            ?? throw new InvalidOperationException("The Square catalog provider is unavailable.");
-        var connection = await connectionRepository.GetAsync(venueId, PosProvider.Square, cancellationToken).ConfigureAwait(false)
-            ?? throw new InvalidOperationException("Connect Square before importing its catalog.");
+        if (!Enum.IsDefined(providerValue)) throw new ArgumentOutOfRangeException(nameof(providerValue));
+        var providerName = providerValue.ToString();
+        var provider = providers.SingleOrDefault(value => value.Provider == providerValue)
+            ?? throw new InvalidOperationException($"The {providerName} catalog provider is unavailable.");
+        var connection = await connectionRepository.GetAsync(venueId, providerValue, cancellationToken).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Connect {providerName} before importing its catalog.");
         if (connection.Status != PosConnectionStatus.Connected)
-            throw new InvalidOperationException("The Square connection is not ready for catalog import.");
+            throw new InvalidOperationException($"The {providerName} connection is not ready for catalog import.");
 
         var context = new PosProviderContext(
             venueId,
@@ -29,10 +37,10 @@ public sealed class PosCatalogImportService(
             credentialProtector.Unprotect(connection.ProtectedAccessToken));
         var catalog = await provider.GetCatalogAsync(context, cancellationToken).ConfigureAwait(false);
         var conflicts = Validate(catalog).ToList();
-        var mappings = (await mappingRepository.GetAllAsync(venueId, PosProvider.Square, cancellationToken).ConfigureAwait(false))
+        var mappings = (await mappingRepository.GetAllAsync(venueId, providerValue, cancellationToken).ConfigureAwait(false))
             .ToDictionary(value => (value.EntityType, value.ExternalId), value => value);
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var menu = await ResolveMenuAsync(venueId, mappings, now, cancellationToken).ConfigureAwait(false);
+        var menu = await ResolveMenuAsync(venueId, providerValue, providerName, mappings, now, cancellationToken).ConfigureAwait(false);
         var sections = (await menuRepository.GetSectionsAsync(venueId, menu.Id, cancellationToken).ConfigureAwait(false))
             .ToDictionary(value => value.Id);
         var categoriesCreated = 0;
@@ -70,8 +78,8 @@ public sealed class PosCatalogImportService(
                 IsActive = true
             };
             created.Id = await menuRepository.CreateSectionAsync(created, cancellationToken).ConfigureAwait(false);
-            await SaveMappingAsync(venueId, PosCatalogEntityType.Category, category.ExternalId, created.Id, cancellationToken).ConfigureAwait(false);
-            mappings[key] = new PosCatalogMapping { VenueId = venueId, Provider = PosProvider.Square, EntityType = key.Item1, ExternalId = key.Item2, LocalEntityId = created.Id };
+            await SaveMappingAsync(venueId, providerValue, PosCatalogEntityType.Category, category.ExternalId, created.Id, cancellationToken).ConfigureAwait(false);
+            mappings[key] = new PosCatalogMapping { VenueId = venueId, Provider = providerValue, EntityType = key.Item1, ExternalId = key.Item2, LocalEntityId = created.Id };
             categoryIds[category.ExternalId.Trim()] = created.Id;
             sections[created.Id] = created;
             categoriesCreated++;
@@ -121,8 +129,8 @@ public sealed class PosCatalogImportService(
                 localItem = new MenuItem { VenueId = venueId, MenuSectionId = sectionId, SortOrder = localItems.Count, IsAvailable = true };
                 Apply(localItem, item, now);
                 localItem.Id = await menuRepository.CreateItemAsync(localItem, cancellationToken).ConfigureAwait(false);
-                await SaveMappingAsync(venueId, PosCatalogEntityType.Item, item.ExternalId, localItem.Id, cancellationToken).ConfigureAwait(false);
-                mappings[key] = new PosCatalogMapping { VenueId = venueId, Provider = PosProvider.Square, EntityType = key.Item1, ExternalId = key.Item2, LocalEntityId = localItem.Id };
+                await SaveMappingAsync(venueId, providerValue, PosCatalogEntityType.Item, item.ExternalId, localItem.Id, cancellationToken).ConfigureAwait(false);
+                mappings[key] = new PosCatalogMapping { VenueId = venueId, Provider = providerValue, EntityType = key.Item1, ExternalId = key.Item2, LocalEntityId = localItem.Id };
                 localItems[localItem.Id] = localItem;
                 itemsCreated++;
             }
@@ -138,8 +146,8 @@ public sealed class PosCatalogImportService(
                 var modifierKey = (PosCatalogEntityType.Modifier, modifierExternalId);
                 if (!mappings.ContainsKey(modifierKey))
                 {
-                    await SaveMappingAsync(venueId, PosCatalogEntityType.Modifier, modifierExternalId, localItem.Id, cancellationToken).ConfigureAwait(false);
-                    mappings[modifierKey] = new PosCatalogMapping { VenueId = venueId, Provider = PosProvider.Square, EntityType = modifierKey.Item1, ExternalId = modifierKey.Item2, LocalEntityId = localItem.Id };
+                    await SaveMappingAsync(venueId, providerValue, PosCatalogEntityType.Modifier, modifierExternalId, localItem.Id, cancellationToken).ConfigureAwait(false);
+                    mappings[modifierKey] = new PosCatalogMapping { VenueId = venueId, Provider = providerValue, EntityType = modifierKey.Item1, ExternalId = modifierKey.Item2, LocalEntityId = localItem.Id };
                 }
                 modifiersMapped++;
             }
@@ -153,23 +161,23 @@ public sealed class PosCatalogImportService(
             conflicts.Distinct(StringComparer.Ordinal).OrderBy(value => value, StringComparer.Ordinal).ToArray(), now);
     }
 
-    private async Task<Menu> ResolveMenuAsync(Guid venueId, Dictionary<(PosCatalogEntityType, string), PosCatalogMapping> mappings, DateTime now, CancellationToken cancellationToken)
+    private async Task<Menu> ResolveMenuAsync(Guid venueId, PosProvider provider, string providerName, Dictionary<(PosCatalogEntityType, string), PosCatalogMapping> mappings, DateTime now, CancellationToken cancellationToken)
     {
         var menus = await menuRepository.GetMenusAsync(venueId, cancellationToken).ConfigureAwait(false);
         if (mappings.TryGetValue((PosCatalogEntityType.Menu, CatalogMenuExternalId), out var mapping))
             return menus.SingleOrDefault(value => value.Id == mapping.LocalEntityId)
-                ?? throw new InvalidOperationException("The Square catalog maps to a missing venue menu.");
-        var menu = new Menu { VenueId = venueId, Name = "Square Catalog", IsActive = true, UpdatedUtc = now };
+                ?? throw new InvalidOperationException($"The {providerName} catalog maps to a missing venue menu.");
+        var menu = new Menu { VenueId = venueId, Name = $"{providerName} Catalog", IsActive = true, UpdatedUtc = now };
         menu.Id = await menuRepository.CreateMenuAsync(menu, cancellationToken).ConfigureAwait(false);
-        await SaveMappingAsync(venueId, PosCatalogEntityType.Menu, CatalogMenuExternalId, menu.Id, cancellationToken).ConfigureAwait(false);
+        await SaveMappingAsync(venueId, provider, PosCatalogEntityType.Menu, CatalogMenuExternalId, menu.Id, cancellationToken).ConfigureAwait(false);
         return menu;
     }
 
-    private Task<PosCatalogMapping> SaveMappingAsync(Guid venueId, PosCatalogEntityType type, string externalId, Guid localId, CancellationToken cancellationToken) =>
+    private Task<PosCatalogMapping> SaveMappingAsync(Guid venueId, PosProvider provider, PosCatalogEntityType type, string externalId, Guid localId, CancellationToken cancellationToken) =>
         mappingRepository.SaveAsync(venueId, new PosCatalogMapping
         {
             VenueId = venueId,
-            Provider = PosProvider.Square,
+            Provider = provider,
             EntityType = type,
             ExternalId = externalId.Trim(),
             LocalEntityId = localId
