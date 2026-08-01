@@ -118,10 +118,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - RWP-11.01 — Venue Admin Billing UX Reconciliation
 - WP-12.01 — POS Connection Domain and Provider Contracts
 - WP-12.02 — Square OAuth Connection Flow
+- WP-12.03 — Square Catalog Import
 
 ## Active Work Package
 
-**WP-12.03 — Square Catalog Import** is active in issue #290 on branch `wp/12.03-square-catalog-import`.
+No implementation package is active. **WP-12.04 — Unified POS Webhook Intake and Idempotency** is next.
 
 ## Phase 04 Result
 
@@ -183,7 +184,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate, review, and merge **WP-12.03 — Square Catalog Import**, then record completion before starting WP-12.04.
+Claim and implement **WP-12.04 — Unified POS Webhook Intake and Idempotency**.
 
 ## Phase 05 Work Packages
 
