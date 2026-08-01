@@ -153,6 +153,8 @@ public sealed class SquareRealtimeSyncHandlerTests
         public Task NotifyScreenThemeUpdatedAsync(Guid screenId, object payload, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyVenueThemeUpdatedAsync(Guid venueId, object payload, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyScreenItemAvailabilityChangedAsync(Guid screenId, string itemId, bool available, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyScreenSyncTickAsync(Guid screenId, long version, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyVenueSyncTickAsync(Guid venueId, long version, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset value) : TimeProvider { public override DateTimeOffset GetUtcNow() => value; }
