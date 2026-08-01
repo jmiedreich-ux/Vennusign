@@ -8,7 +8,7 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
 {
     private const string GetSql = """
         SELECT Id, VenueId, Provider, Status, ExternalMerchantId,
-               ProtectedAccessToken, ProtectedRefreshToken, AccessTokenExpiresUtc,
+               ProtectedAccessToken, ProtectedRefreshToken, AccessTokenExpiresUtc, RefreshTokenExpiresUtc,
                LastSyncedUtc, LastSyncAttemptUtc, ConsecutiveSyncFailures,
                NextSyncAttemptUtc, LastSyncErrorCode, CreatedUtc, UpdatedUtc
         FROM dbo.PosConnections
@@ -17,7 +17,7 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
 
     private const string GetAllSql = """
         SELECT Id, VenueId, Provider, Status, ExternalMerchantId,
-               ProtectedAccessToken, ProtectedRefreshToken, AccessTokenExpiresUtc,
+               ProtectedAccessToken, ProtectedRefreshToken, AccessTokenExpiresUtc, RefreshTokenExpiresUtc,
                LastSyncedUtc, LastSyncAttemptUtc, ConsecutiveSyncFailures,
                NextSyncAttemptUtc, LastSyncErrorCode, CreatedUtc, UpdatedUtc
         FROM dbo.PosConnections
@@ -27,7 +27,7 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
 
     private const string GetByMerchantSql = """
         SELECT TOP (2) Id, VenueId, Provider, Status, ExternalMerchantId,
-               ProtectedAccessToken, ProtectedRefreshToken, AccessTokenExpiresUtc,
+               ProtectedAccessToken, ProtectedRefreshToken, AccessTokenExpiresUtc, RefreshTokenExpiresUtc,
                LastSyncedUtc, LastSyncAttemptUtc, ConsecutiveSyncFailures,
                NextSyncAttemptUtc, LastSyncErrorCode, CreatedUtc, UpdatedUtc
         FROM dbo.PosConnections
@@ -36,7 +36,7 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
 
     private const string GetAllByProviderSql = """
         SELECT Id, VenueId, Provider, Status, ExternalMerchantId,
-               ProtectedAccessToken, ProtectedRefreshToken, AccessTokenExpiresUtc,
+               ProtectedAccessToken, ProtectedRefreshToken, AccessTokenExpiresUtc, RefreshTokenExpiresUtc,
                LastSyncedUtc, LastSyncAttemptUtc, ConsecutiveSyncFailures,
                NextSyncAttemptUtc, LastSyncErrorCode, CreatedUtc, UpdatedUtc
         FROM dbo.PosConnections
@@ -130,6 +130,7 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
         existing.ProtectedAccessToken = connection.ProtectedAccessToken;
         existing.ProtectedRefreshToken = connection.ProtectedRefreshToken;
         existing.AccessTokenExpiresUtc = connection.AccessTokenExpiresUtc;
+        existing.RefreshTokenExpiresUtc = connection.RefreshTokenExpiresUtc;
         existing.LastSyncedUtc = connection.LastSyncedUtc;
         existing.LastSyncAttemptUtc = connection.LastSyncAttemptUtc;
         existing.ConsecutiveSyncFailures = connection.ConsecutiveSyncFailures;

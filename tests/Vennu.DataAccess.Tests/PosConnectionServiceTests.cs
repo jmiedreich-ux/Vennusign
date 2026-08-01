@@ -19,11 +19,16 @@ public sealed class PosConnectionServiceTests
             VenueId,
             PosProvider.Square,
             " merchant-1 ",
-            new PosCredentialInput(" access-secret ", " refresh-secret ", new DateTime(2026, 8, 1)));
+            new PosCredentialInput(
+                " access-secret ",
+                " refresh-secret ",
+                new DateTime(2026, 8, 1),
+                new DateTime(2026, 9, 1)));
 
         var saved = Assert.Single(repository.Saved);
         Assert.Equal("protected:access-secret", saved.ProtectedAccessToken);
         Assert.Equal("protected:refresh-secret", saved.ProtectedRefreshToken);
+        Assert.Equal(new DateTime(2026, 9, 1), saved.RefreshTokenExpiresUtc);
         Assert.Equal("merchant-1", saved.ExternalMerchantId);
         Assert.Equal(PosConnectionStatus.Connected, saved.Status);
         Assert.Equal(saved.Id, result.Id);

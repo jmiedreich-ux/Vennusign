@@ -25,6 +25,7 @@ public sealed class PosConnection
     public string ProtectedAccessToken { get; set; } = string.Empty;
     public string? ProtectedRefreshToken { get; set; }
     public DateTime? AccessTokenExpiresUtc { get; set; }
+    public DateTime? RefreshTokenExpiresUtc { get; set; }
     public DateTime? LastSyncedUtc { get; set; }
     public DateTime? LastSyncAttemptUtc { get; set; }
     public int ConsecutiveSyncFailures { get; set; }
