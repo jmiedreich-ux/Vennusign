@@ -3,7 +3,7 @@
 ## Work Package
 
 - ID: WP-13.03
-- Status: In Progress
+- Status: Complete upon merge of PR #342
 - Execution mode: Sequential
 
 ## Git State
@@ -11,7 +11,7 @@
 - Branch: `wp/13.03-passkeys-totp-recovery`
 - Issue: #341
 - Pull request: #342 (draft)
-- CI state: pending implementation-head GitHub Actions
+- CI state: implementation Actions run #730 passed; final completion-record head pending
 
 ## Completed This Session
 
@@ -23,12 +23,12 @@
 ## Validation
 
 - Local diff/whitespace and scope checks are clean; local .NET tooling is unavailable and is not a blocker.
-- GitHub Actions is authoritative and must pass on the exact implementation head before approval.
+- GitHub Actions run #730 passed the required affected-area checks on implementation head `b04544146ff1563798f5967e36bfaf0c4b5944ac`.
 - Integration, live-provider, Azure SQL, hosted-infrastructure, browser/device, and cross-system tests are intentionally skipped.
 
 ## Remaining Work
 
-- Publish the implementation, correct any affected-area CI failure, add completion evidence, review the exact final head, merge PR #342, close issue #341, release the claim, and refresh master.
+- Validate the final completion-record head, record ChatGPT approval, merge PR #342, verify issue #341 closes, and refresh master.
 
 ## Known Risks or Blockers
 
@@ -36,8 +36,8 @@
 
 ## Exact Next Action
 
-- Run affected-area GitHub Actions on PR #342's implementation head and correct any compile/test failure.
+- After PR #342 merges, inspect ownership and claim WP-13.04 only if it remains unowned.
 
 ## Do Not Redo or Reverse
 
-- Do not implement WebAuthn cryptography manually, expose stored TOTP/recovery secrets, add password login, alter legacy Venue Admin tokens, or begin WP-13.04 before WP-13.03 merges.
+- Do not implement WebAuthn cryptography manually, expose stored TOTP/recovery secrets, add password login, alter legacy Venue Admin tokens, or begin WP-13.04 before PR #342 merges and ownership is rechecked.
