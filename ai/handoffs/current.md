@@ -18,6 +18,7 @@
 - Phase 12 closed after the full required non-integration validation passed on the reviewed head.
 - The Phase 13 customer identity, signup, tier-defined trial, entitlement, venue setup, first-screen onboarding, and legacy token migration sequence was approved for sequential implementation.
 - UI work now requires UX best-practices MCP consultation and documented UI/function gap analysis before implementation.
+- The repository-wide operational UI/function audit was recorded as deferred future planning evidence outside Phase 13.
 
 ## Validation
 
@@ -33,6 +34,7 @@
 
 - Phase 13 must not commit provider secrets, recovery codes, or local credentials.
 - Individual Phase 13 packages must resolve their assigned architecture decisions before dependent packages begin.
+- Operational findings in `docs/reports/operational-ui-function-gap-analysis.html` require issue-first planning review and must not be inserted into Phase 13 implementation.
 
 ## Exact Next Action
 

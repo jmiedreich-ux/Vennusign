@@ -79,3 +79,9 @@ No UI package is complete if its screen lacks necessary user actions, essential 
 - No simulated Stripe success; paid entitlements remain webhook-authoritative.
 - No replacement of existing Venue Admin authorization without an approved compatibility and migration plan.
 - No external-provider, Azure SQL, hosted-infrastructure, container, or cross-system integration tests under the standing owner exception.
+
+## Deferred Operational Remediation Input
+
+`docs/reports/operational-ui-function-gap-analysis.html` records existing operational product gaps that are intentionally outside this phase, including Super Admin support completion, Venue Admin page/function completion, POS integration accessibility, screen lifecycle, scheduling precedence, emergency broadcast hardening, billing clarity, and display recovery.
+
+Treat the report as future planning evidence only. Each finding must enter the issue-first gap workflow and receive planning review before it is promoted, prioritized, or assigned to a remediation work package. Do not change the approved Phase 13 sequence to absorb these unrelated operational remediations.

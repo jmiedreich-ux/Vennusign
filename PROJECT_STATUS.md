@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 13 — Multilingual Support**
+**Phase 13 — Customer Identity, Signup, and Onboarding**
 
 ## Milestone
 
