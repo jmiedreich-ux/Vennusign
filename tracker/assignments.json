@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T03:12:00Z",
+  "updatedUtc": "2026-08-01T03:22:00Z",
   "activeAssignments": [
     {
       "workPackage": "WP-12.08",
@@ -8,7 +8,7 @@
       "owner": "ChatGPT scheduled development agent",
       "issue": 323,
       "branch": "wp/12.08-clover-oauth-catalog",
-      "pullRequest": null,
+      "pullRequest": 324,
       "claimedUtc": "2026-08-01T03:12:00Z",
       "writableScope": [
         "Clover OAuth, catalog provider, Venue Admin POS surfaces, focused tests, and WP-12.08 documentation"
