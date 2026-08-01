@@ -11,7 +11,8 @@ public interface IPosCredentialProtector
 public sealed record PosCredentialInput(
     string AccessToken,
     string? RefreshToken,
-    DateTime? AccessTokenExpiresUtc);
+    DateTime? AccessTokenExpiresUtc,
+    DateTime? RefreshTokenExpiresUtc = null);
 
 public sealed record PosConnectionSummary(
     Guid Id,

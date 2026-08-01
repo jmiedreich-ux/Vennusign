@@ -126,7 +126,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-12.08 — Clover OAuth and Catalog Provider** is the next available package.
+**WP-12.08 — Clover OAuth and Catalog Provider** is in review on issue #323, branch `wp/12.08-clover-oauth-catalog`, and PR #324.
 
 ## Phase 04 Result
 
@@ -188,7 +188,7 @@ None. **WP-12.08 — Clover OAuth and Catalog Provider** is the next available p
 
 ## Next Action
 
-Claim and implement **WP-12.08 — Clover OAuth and Catalog Provider**.
+Validate and review PR #324 for **WP-12.08 — Clover OAuth and Catalog Provider**, then merge it before WP-12.09 begins.
 
 ## Phase 05 Work Packages
 

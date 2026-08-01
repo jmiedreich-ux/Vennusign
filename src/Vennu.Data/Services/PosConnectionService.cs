@@ -53,7 +53,8 @@ public sealed class PosConnectionService(
                 ExternalMerchantId = merchantId,
                 ProtectedAccessToken = protectedAccessToken,
                 ProtectedRefreshToken = protectedRefreshToken,
-                AccessTokenExpiresUtc = credentials.AccessTokenExpiresUtc
+                AccessTokenExpiresUtc = credentials.AccessTokenExpiresUtc,
+                RefreshTokenExpiresUtc = credentials.RefreshTokenExpiresUtc
             },
             cancellationToken).ConfigureAwait(false);
         return ToSummary(saved);

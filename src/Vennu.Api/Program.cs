@@ -88,6 +88,12 @@ builder.Services.AddScoped<IToastInventorySyncService, ToastInventorySyncService
 builder.Services.Configure<ToastPollingOptions>(builder.Configuration.GetSection(ToastPollingOptions.SectionName));
 builder.Services.AddSingleton<IToastPollingCoordinator, ToastPollingCoordinator>();
 builder.Services.AddHostedService<ToastPollingService>();
+builder.Services.Configure<CloverOAuthOptions>(builder.Configuration.GetSection(CloverOAuthOptions.SectionName));
+builder.Services.AddHttpClient<ICloverOAuthGateway, CloverOAuthGateway>();
+builder.Services.AddScoped<ICloverOAuthConnectionService, CloverOAuthConnectionService>();
+builder.Services.Configure<CloverCatalogOptions>(builder.Configuration.GetSection(CloverCatalogOptions.SectionName));
+builder.Services.AddHttpClient<ICloverCatalogGateway, CloverCatalogGateway>();
+builder.Services.AddScoped<IPosProvider, CloverPosProvider>();
 builder.Services.AddSingleton<IPosWebhookWorkSignal, PosWebhookWorkSignal>();
 builder.Services.AddScoped<IPosWebhookEventHandler, SquareRealtimeSyncHandler>();
 builder.Services.AddScoped<IPosWebhookEventHandler, ToastRealtimeSyncHandler>();
