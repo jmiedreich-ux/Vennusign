@@ -181,7 +181,7 @@ No implementation package is active. **WP-12.06 — Toast Provider and Webhook S
 
 ## Standing Validation Exception
 
-- Integration-type tests are skipped for every AWP under the repository owner's standing instruction.
+- Integration-type tests are skipped for every WP under the repository owner's standing instruction.
 - Restore, Release build, display production build, unit tests, and applicable non-integration validation remain required.
 
 ## Next Action

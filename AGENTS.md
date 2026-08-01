@@ -28,6 +28,7 @@ Repository and GitHub state are the source of truth. Chat history is supporting 
 ## AI Work-Package Workflow
 
 - Every implementation change must map to one documented work package.
+- Every change, including documentation-only work and local-only development configuration work, must start from one approved GitHub issue and proceed on its own branch and pull request.
 - Check `tracker/assignments.json` before claiming work.
 - Use one integration branch and pull request per work package unless inseparable work is explicitly documented.
 - Branch names use `wp/<id>-<short-name>`.
@@ -36,6 +37,14 @@ Repository and GitHub state are the source of truth. Chat history is supporting 
 - Delete the package branch after merge unless a documented exception requires retention.
 - Keep `PROJECT_STATUS.md`, `tracker/assignments.json`, the active work package, and `ai/handoffs/current.md` synchronized.
 - A completed package may not remain listed as Not Started, In Progress, Review, or the next action anywhere in the repository.
+
+## Execution Modes
+
+- Every WP or RWP must declare exactly one execution mode: `Sequential` or `Collaborative`.
+- `Sequential` means the agent executes the package independently within the approved scope, then records results for review.
+- `Collaborative` means the user and agent intentionally drive the package together step by step, but the package still uses the normal issue, branch, pull request, validation, documentation, and approval gates.
+- Execution mode changes how the work is carried out, not the package type, queue position, ownership rules, validation requirements, or approval requirements.
+- Local-only development configuration work also follows the same issue, branch, and PR flow, but secrets and machine-specific values must remain out of the repository and be represented only by safe documentation or placeholder configuration.
 
 ## GitHub Actions as the Authoritative Validation Environment
 
@@ -81,6 +90,7 @@ Repository and GitHub state are the source of truth. Chat history is supporting 
 ## Multi-Agent Rules
 
 - Default to sequential execution when ownership cannot be divided cleanly.
+- Prefer `Collaborative` execution mode when the user explicitly wants to drive implementation interactively with the agent.
 - Before parallel work starts, define each lane's writable, read-only, and prohibited files.
 - No two active agents may modify the same file.
 - Shared contracts, project files, dependency injection, migrations, package configuration, shared fixtures, trackers, handoffs, and GitHub workflow files are orchestrator-owned.
