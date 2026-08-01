@@ -26,7 +26,9 @@
 
 ## Validation
 
-- Claim records require JSON and documentation consistency validation before publication.
+- Local assignment JSON, diff whitespace, file-scope, secret/artifact, and documentation consistency reviews passed.
+- GitHub Actions run #717 passed the affected-area Release build, API/data-access unit suites, repository validation, and classifier-selected non-integration checks on the implementation head.
+- The final completion-record head remains subject to the stable required PR gate before merge.
 - Integration and external-system tests remain skipped under the standing owner instruction.
 
 ## Remaining Work
