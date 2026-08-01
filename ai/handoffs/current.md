@@ -3,14 +3,14 @@
 ## Work Package
 
 - ID: WP-12.04
-- Status: Available
+- Status: In review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: pending
-- Latest commit: `b8bd579c9459e1d4f2e3f7b68472692810a8502b` (WP-12.03 merge)
-- Issue: pending
+- Branch: `wp/12.04-unified-pos-webhook-intake`
+- Latest commit: pending publication
+- Issue: #293
 - Pull request: pending
 - CI state: WP-12.03 Actions run #620 passed
 
@@ -33,26 +33,32 @@
 - Added an idempotent importer that reuses the existing menu domain and reports deterministic conflicts.
 - Added a claim-bound Venue Admin import endpoint and focused non-integration tests.
 - Reviewed and merged WP-12.03 through PR #291.
+- Claimed WP-12.04 as issue #293.
+- Added bounded Square signature verification and provider-neutral verified webhook envelopes.
+- Added migration 037 and a durable provider/event-ID deduplicated work queue.
+- Added oldest-first claims, stale lease recovery, retry state, an in-process worker signal, and provider-neutral dispatch.
+- Added focused verifier, controller, repository, dispatcher, and migration tests without a menu mutation handler.
 
 ## Files Changed
 
-- WP-12.03 completion evidence and the synchronized Phase 12 queue.
+- Unified POS webhook ingress, verification, queue, worker, dispatcher, migration 037, tests, and Phase 12 records.
 
 ## Decisions
 
 - Store only protected credentials and keep connection presentation contracts credential-free.
-- Keep provider-specific transport in `Vennu.Api` behind the provider-neutral contracts established in WP-12.01.
+- Keep signature verification provider-specific in `Vennu.Api`; keep durable queue and dispatch contracts provider-neutral.
+- Persist before `202 Accepted`; use the database rather than the process signal as the restart-safe work authority.
 - Represent Square variations as existing menu items and retain source ownership outside the menu domain.
 
 ## Validation
 
 - Commands: `git diff --check`; `jq empty tracker/assignments.json`; Venue Admin unit tests and production build; source and secret review.
-- Results: GitHub Actions run #620 passed restore, Release build, frontend/package checks, migration inventory, and all required unit tests against `8d53b75e7e2f348fe395fb6a0a25497d2883107e`.
+- Results: available local checks pending; authoritative GitHub Actions is pending publication.
 - Skipped checks and reason: integration and external-provider tests remain skipped by standing owner instruction.
 
 ## Remaining Work
 
-- WP-12.04 — Unified POS Webhook Intake and Idempotency.
+- Validate, review, merge, and record WP-12.04 completion; WP-12.05 follows.
 
 ## Known Risks or Blockers
 
@@ -60,7 +66,7 @@
 
 ## Exact Next Action
 
-- Claim WP-12.04 and implement provider-neutral verified webhook intake and durable event idempotency without applying inventory changes.
+- Publish WP-12.04, use GitHub Actions as authority, review the exact head, and merge only when green.
 
 ## Do Not Redo or Reverse
 

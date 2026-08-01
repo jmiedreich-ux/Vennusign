@@ -75,6 +75,9 @@ builder.Services.AddScoped<ISquareOAuthConnectionService, SquareOAuthConnectionS
 builder.Services.Configure<SquareCatalogOptions>(builder.Configuration.GetSection(SquareCatalogOptions.SectionName));
 builder.Services.AddHttpClient<ISquareCatalogGateway, SquareCatalogGateway>();
 builder.Services.AddScoped<IPosProvider, SquarePosProvider>();
+builder.Services.Configure<SquareWebhookOptions>(builder.Configuration.GetSection(SquareWebhookOptions.SectionName));
+builder.Services.AddSingleton<IPosWebhookVerifier, SquarePosWebhookVerifier>();
+builder.Services.AddSingleton<IPosWebhookWorkSignal, PosWebhookWorkSignal>();
 builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier>();
 builder.Services.AddScoped<IMenuItemManagementService, MenuItemManagementService>();
 builder.Services.AddScoped<IQuickUpdateService, QuickUpdateService>();
@@ -115,6 +118,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
     builder.Services.AddHostedService<ScheduledContentActivationService>();
     builder.Services.AddHostedService<HappyHourEvaluatorService>();
     builder.Services.AddHostedService<PromotionActivationService>();
+    builder.Services.AddHostedService<PosWebhookWorker>();
     var connectionString = builder.Configuration.GetConnectionString("VennuDatabase")
         ?? throw new InvalidOperationException("Connection string 'VennuDatabase' is required.");
 

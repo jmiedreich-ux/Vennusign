@@ -42,6 +42,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPosConnectionRepository, PosConnectionRepository>();
         services.AddScoped<IPosCatalogMappingRepository, PosCatalogMappingRepository>();
         services.AddScoped<IPosCatalogImportService, PosCatalogImportService>();
+        services.AddScoped<IPosWebhookEventRepository, PosWebhookEventRepository>();
+        services.AddScoped<IPosWebhookEventDispatcher, PosWebhookEventDispatcher>();
         services.AddScoped<IVenueFeatureOverrideRepository, VenueFeatureOverrideRepository>();
         services.AddScoped<IFeatureUsageRepository, FeatureUsageRepository>();
         services.AddScoped<IFeatureResolutionService, FeatureResolutionService>();

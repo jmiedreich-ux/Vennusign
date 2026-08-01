@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T01:02:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-12.04",
+  "updatedUtc": "2026-08-01T01:06:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-12.04",
+      "issue": 293,
+      "branch": "wp/12.04-unified-pos-webhook-intake",
+      "owner": "scheduled-orchestrator",
+      "status": "in_review"
+    }
+  ],
+  "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
