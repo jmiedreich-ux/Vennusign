@@ -119,10 +119,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-12.01 — POS Connection Domain and Provider Contracts
 - WP-12.02 — Square OAuth Connection Flow
 - WP-12.03 — Square Catalog Import
+- WP-12.04 — Unified POS Webhook Intake and Idempotency
 
 ## Active Work Package
 
-**WP-12.04 — Unified POS Webhook Intake and Idempotency** is active in issue #293 on branch `wp/12.04-unified-pos-webhook-intake`.
+No implementation package is active. **WP-12.05 — Square Inventory and Price Realtime Sync** is next.
 
 ## Phase 04 Result
 
@@ -184,7 +185,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate, review, and merge **WP-12.04 — Unified POS Webhook Intake and Idempotency**, then record completion before starting WP-12.05.
+Claim and implement **WP-12.05 — Square Inventory and Price Realtime Sync**.
 
 ## Phase 05 Work Packages
 

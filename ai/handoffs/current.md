@@ -2,17 +2,17 @@
 
 ## Work Package
 
-- ID: WP-12.04
-- Status: In review
+- ID: WP-12.05
+- Status: Available
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/12.04-unified-pos-webhook-intake`
-- Latest commit: pending publication
-- Issue: #293
+- Branch: pending
+- Latest commit: `6ef18f6c04f7ee301e5871a9d64c808227258fc2` (WP-12.04 merge)
+- Issue: pending
 - Pull request: pending
-- CI state: WP-12.03 Actions run #620 passed
+- CI state: WP-12.04 Actions run #626 passed
 
 ## Completed This Session
 
@@ -38,10 +38,11 @@
 - Added migration 037 and a durable provider/event-ID deduplicated work queue.
 - Added oldest-first claims, stale lease recovery, retry state, an in-process worker signal, and provider-neutral dispatch.
 - Added focused verifier, controller, repository, dispatcher, and migration tests without a menu mutation handler.
+- Reviewed and merged WP-12.04 through PR #294.
 
 ## Files Changed
 
-- Unified POS webhook ingress, verification, queue, worker, dispatcher, migration 037, tests, and Phase 12 records.
+- WP-12.04 completion evidence and the synchronized Phase 12 queue.
 
 ## Decisions
 
@@ -53,12 +54,12 @@
 ## Validation
 
 - Commands: `git diff --check`; `jq empty tracker/assignments.json`; Venue Admin unit tests and production build; source and secret review.
-- Results: available local checks pending; authoritative GitHub Actions is pending publication.
+- Results: GitHub Actions run #626 passed restore, Release build, frontend/package checks, migration inventory, and all required unit tests against `1be0ee770fc5844c7b487fee1139d781ae6b0e70`.
 - Skipped checks and reason: integration and external-provider tests remain skipped by standing owner instruction.
 
 ## Remaining Work
 
-- Validate, review, merge, and record WP-12.04 completion; WP-12.05 follows.
+- WP-12.05 — Square Inventory and Price Realtime Sync.
 
 ## Known Risks or Blockers
 
@@ -66,7 +67,7 @@
 
 ## Exact Next Action
 
-- Publish WP-12.04, use GitHub Actions as authority, review the exact head, and merge only when green.
+- Claim WP-12.05 and add the first Square inventory/price mutation handler through existing menu mappings and notifications.
 
 ## Do Not Redo or Reverse
 
