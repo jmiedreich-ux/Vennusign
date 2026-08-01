@@ -10,8 +10,8 @@
 
 - Branch: `issue/350-secure-dev-integration-settings`
 - Issue: #350
-- Pull request: not created
-- CI state: pending lightweight repository-record validation
+- Pull request: #352 (draft)
+- CI state: pending GitHub Actions for head `05e35cc20a3f6f044e0473859b9c5f13017d4f76`
 
 ## Completed This Session
 
@@ -19,25 +19,27 @@
 - Created issue #350 for tracked local Azure SQL integration settings.
 - Migrated the existing local test connection to the user-level `VENU_TEST_AZURE_SQL_CONNECTION_STRING` environment variable without logging its value.
 - Stopped tracking `tests/Vennu.Data.IntegrationTests/app.settings.json`, added an ignore rule, and added a credential-free example file.
+- Committed the change as `05e35cc20a3f6f044e0473859b9c5f13017d4f76` and opened draft PR #352.
+- Ran the narrow database migration integration smoke test under the owner-approved collaborative exception; migration execution passed and the stale inventory assertion was recorded as issue #351.
 
 ## Validation
 
-- Commands: `git diff --check`; Git index and ignore verification; user environment-variable presence check.
-- Results: passed without printing the connection string.
-- Skipped checks and reason: configuration and documentation only; no application behavior changed.
+- Commands: `git diff --check`; Git index and ignore verification; user environment-variable presence check; `dotnet test tests/Vennu.Data.IntegrationTests/Vennu.Data.IntegrationTests.csproj --filter "FullyQualifiedName~DatabaseMigratorTests"`.
+- Results: local configuration checks passed. The narrow integration test had one passing migration-execution test and one failed stale expected-script inventory assertion, recorded as issue #351.
+- Skipped checks and reason: no application behavior changed; broader integration expansion remains outside this issue.
 
 ## Remaining Work
 
-- Commit and open a draft PR for issue #350.
-- Rotate the exposed Azure SQL credential and assess Git-history remediation outside this branch.
+- Wait for PR #352 GitHub Actions, then obtain ChatGPT review and merge approval.
+- Verify credential rotation and assess Git-history remediation outside this branch.
 
 ## Known Risks or Blockers
 
-- The previously tracked credential remains in Git history until it is rotated and repository-history remediation is planned.
+- The previously tracked credential remains in Git history; credential rotation must be verified and repository-history remediation assessed.
 
 ## Exact Next Action
 
-- Commit the Issue-350 configuration hardening and open its draft pull request.
+- Review PR #352 GitHub Actions against its latest head, then request ChatGPT approval.
 
 ## Do Not Redo or Reverse
 

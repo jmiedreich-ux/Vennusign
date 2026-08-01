@@ -2,7 +2,7 @@
 
 ## Status
 
-In Progress
+In Review
 
 ## Execution Mode
 
@@ -38,3 +38,5 @@ Collaborative
 - Verify the user-level `VENU_TEST_AZURE_SQL_CONNECTION_STRING` is present without printing it.
 - Verify `tests/Vennu.Data.IntegrationTests/app.settings.json` is ignored and absent from the Git index.
 - Run `git diff --check`.
+- Commit `05e35cc20a3f6f044e0473859b9c5f13017d4f76` and draft PR #352 contain no usable credential.
+- The narrow `DatabaseMigratorTests` smoke run confirmed database migration execution; its stale inventory assertion is tracked in issue #351.
