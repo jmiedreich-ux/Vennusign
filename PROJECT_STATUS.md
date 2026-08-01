@@ -131,7 +131,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-No work package is currently claimed. **WP-13.01 — Identity, Organization, and Membership Foundation** is next.
+**WP-13.01 — Identity, Organization, and Membership Foundation** is complete through issue #337 and PR #338. Its implementation head passed affected-area GitHub Actions run #717; the Sequential claim is released in the merged state.
 
 ## Phase 04 Result
 
@@ -200,7 +200,7 @@ No work package is currently claimed. **WP-13.01 — Identity, Organization, and
 
 ## Next Action
 
-Claim and implement **WP-13.01 — Identity, Organization, and Membership Foundation** in sequential mode.
+Claim **WP-13.02 — Customer Authentication Foundation** sequentially only after PR #338 merges and the default branch confirms no competing claim, branch, or pull request.
 
 ## Phase 05 Work Packages
 

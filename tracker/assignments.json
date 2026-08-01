@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T21:02:00Z",
+  "updatedUtc": "2026-08-01T22:35:00Z",
   "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-13.01",
+  "nextAvailableWorkPackage": "WP-13.02",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

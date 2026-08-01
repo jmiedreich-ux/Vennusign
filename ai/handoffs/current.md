@@ -2,47 +2,48 @@
 
 ## Work Package
 
-- ID: RWP-00.01
-- Status: Complete pending merge
+- ID: WP-13.01
+- Status: Complete upon merge of PR #338
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `rwp/00.01-affected-area-ci`
-- Issue: #335
-- Pull request: #336
-- CI state: Actions run #711 passed on implementation head; final documentation head validation pending
+- Branch: `wp/13.01-identity-organization-membership-foundation`
+- Issue: #337
+- Pull request: #338 (draft)
+- CI state: implementation run #717 passed; merge is gated on the required check for the final reviewed head
 
 ## Completed This Session
 
-- Replaced monolithic WP/RWP validation with deterministic affected-area jobs.
-- Normal packages now run only affected .NET unit-test projects, frontends, and TV packages.
-- Documentation/completion-only work now uses lightweight validation.
-- Full non-integration validation is reserved for phase closure, nightly/manual runs, workflow changes, and explicit labels.
-- Added dependency caches, superseded-run cancellation, a stable required gate, and shared sequential/collaborative rules.
-- Included completion evidence in the implementation PR and released the sequential claim in the proposed merge state.
+- Refreshed current `master` and verified RWP-00.01 merged through PR #336.
+- Confirmed there is no active tracker claim, WP-13.01 branch, issue, or pull request.
+- Read the approved Phase 13 plan, project records, architecture guidance, and identity/tenancy gap evidence.
+- Claimed WP-13.01 exclusively in Sequential mode.
+- Added migration 040 for customer users, external identities, organizations, memberships, venue tenancy, and immutable audit evidence.
+- Added tenant-scoped repositories, atomic membership mutation services, deterministic capability resolution, dependency registration, tests, and architecture documentation.
+- GitHub Actions run #717 passed on implementation head `e3dfce87ec33d9b5f840dec1e32f7a5fece168c0`.
+- Added completion evidence and the proposed post-merge Sequential claim release to PR #338.
 
 ## Validation
 
-- Local: classifier scenarios, shell syntax, assignment JSON, workflow YAML structure, display tests, and diff whitespace checks passed.
-- GitHub Actions: `phase02-tests` run #711 passed on `c383a089a6c8f7c4a263c77478269c421ba5d37d`.
-- The final PR head must pass `build-and-test` before ChatGPT approval and merge.
-- Integration and external-system tests remained skipped under the standing owner instruction.
+- Local assignment JSON, diff whitespace, file-scope, secret/artifact, and documentation consistency reviews passed.
+- GitHub Actions run #717 passed the affected-area Release build, API/data-access unit suites, repository validation, and classifier-selected non-integration checks on the implementation head.
+- The stable required PR gate must pass on the final reviewed head before merge.
+- Integration and external-system tests remain skipped under the standing owner instruction.
 
 ## Remaining Work
 
-- Complete exact-head review and merge PR #336.
-- WP-13.01 — Identity, Organization, and Membership Foundation is next.
+- Validate the final documentation head, review and merge PR #338, verify issue #337 closes, and refresh the default branch.
 
 ## Known Risks or Blockers
 
-- Path mappings must be updated when new applications or test projects are added.
+- No blocker. WP-13.02 remains unclaimed and unstarted until PR #338 merges and ownership is rechecked.
 
 ## Exact Next Action
 
-- After PR #336 passes exact-head validation and merges, claim WP-13.01 sequentially.
+- After PR #338 merges, inspect current ownership and claim WP-13.02 sequentially if it remains unowned.
 
 ## Do Not Redo or Reverse
 
-- Do not restore solution-wide unit tests or unrelated TV/frontend builds for normal WP/RWP merges.
-- Do not create a separate completion-record PR for work whose evidence can be included in its implementation PR.
+- Do not change the execution mode or allow collaborative agents to modify this claim.
+- Do not begin WP-13.02 or any Phase 14/later work.
