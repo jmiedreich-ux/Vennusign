@@ -29,8 +29,12 @@
 ## Validation
 
 - [ ] Required non-integration GitHub Actions checks passed on this exact head.
-- [ ] Applicable unit/static/build/migration checks passed.
+- [ ] Only affected unit/static/build/migration checks ran for a normal WP/RWP.
+- [ ] Unrelated frontend, TV, and .NET unit-test areas were skipped.
+- [ ] Phase closure or explicitly approved full validation ran the complete non-integration suite when applicable.
 - [ ] Integration-type tests were skipped under the standing owner exception.
+- Validation scope: <!-- docs-only / affected areas / full -->
+- Affected areas:
 - Head commit:
 - Workflow run(s):
 - Intentionally non-applicable checks:
