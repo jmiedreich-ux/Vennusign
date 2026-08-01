@@ -123,10 +123,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-12.05 — Square Inventory and Price Realtime Sync
 - WP-12.06 — Toast Provider and Webhook Sync
 - WP-12.07 — Toast Polling Resilience
+- WP-12.08 — Clover OAuth and Catalog Provider
 
 ## Active Work Package
 
-**WP-12.08 — Clover OAuth and Catalog Provider** is in review on issue #323, branch `wp/12.08-clover-oauth-catalog`, and PR #324.
+None. **WP-12.09 — Clover Inventory Webhooks and Provider Conformance** is the next available package.
 
 ## Phase 04 Result
 
@@ -188,7 +189,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate and review PR #324 for **WP-12.08 — Clover OAuth and Catalog Provider**, then merge it before WP-12.09 begins.
+Claim and implement **WP-12.09 — Clover Inventory Webhooks and Provider Conformance**.
 
 ## Phase 05 Work Packages
 
