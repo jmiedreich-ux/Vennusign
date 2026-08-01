@@ -113,6 +113,14 @@ public partial class SqlDataAccess : ISqlDataAccess
                 .Entity<MembershipAuditEntry>()
                 .Table("dbo.MembershipAuditEntries", true);
 
+            FluentMapper
+                .Entity<CustomerAuthSession>()
+                .Table("dbo.CustomerAuthSessions", true);
+
+            FluentMapper
+                .Entity<EmailLoginToken>()
+                .Table("dbo.EmailLoginTokens", true);
+
             tableMappingsConfigured = true;
         }
     }

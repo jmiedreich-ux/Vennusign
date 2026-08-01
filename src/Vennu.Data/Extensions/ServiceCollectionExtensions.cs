@@ -76,6 +76,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOrganizationMembershipRepository, OrganizationMembershipRepository>();
         services.AddSingleton<IMembershipCapabilityResolver, MembershipCapabilityResolver>();
         services.AddScoped<IIdentityMembershipService, IdentityMembershipService>();
+        services.AddScoped<ICustomerAuthenticationRepository, CustomerAuthenticationRepository>();
+        services.AddScoped<ICustomerAccountService, CustomerAccountService>();
+        services.AddScoped<ICustomerSessionService, CustomerSessionService>();
+        services.AddScoped<ICustomerEmailLoginService, CustomerEmailLoginService>();
         return services;
     }
 }
