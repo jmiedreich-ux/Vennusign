@@ -120,10 +120,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-12.02 — Square OAuth Connection Flow
 - WP-12.03 — Square Catalog Import
 - WP-12.04 — Unified POS Webhook Intake and Idempotency
+- WP-12.05 — Square Inventory and Price Realtime Sync
 
 ## Active Work Package
 
-**WP-12.05 — Square Inventory and Price Realtime Sync** is active on issue #296 and branch `wp/12.05-square-inventory-price-sync`.
+No implementation package is active. **WP-12.06 — Toast Provider and Webhook Sync** is next.
 
 ## Phase 04 Result
 
@@ -185,7 +186,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Complete, validate, review, and merge **WP-12.05 — Square Inventory and Price Realtime Sync**.
+Claim and implement **WP-12.06 — Toast Provider and Webhook Sync**.
 
 ## Phase 05 Work Packages
 
