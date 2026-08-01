@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T23:35:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-13.05",
+  "updatedUtc": "2026-08-01T23:38:00Z",
+  "activeAssignments": [{"workPackage":"WP-13.04","title":"Tier-Defined Trials and Stripe Entitlements","owner":"Codex scheduled automation","executionMode":"Sequential","issue":347,"branch":"wp/13.04-tier-trials-entitlements","status":"Blocked","claimedUtc":"2026-08-01T23:29:00Z"}],
+  "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

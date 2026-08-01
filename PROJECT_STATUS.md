@@ -131,7 +131,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-**WP-13.04 — Tier-Defined Trials and Stripe Entitlements** is complete upon merge of issue #347 and PR #349. Affected-area Actions run #734 passed on implementation head `55eada08afc3e8fe7afca85a133518e341ed2512`; the proposed merged state releases the claim. WP-13.05 is next.
+**WP-13.04 — Tier-Defined Trials and Stripe Entitlements** is blocked on Sequential issue #347 and draft PR #349. Actions #734/#735 passed, but final review found the existing venue-scoped subscription/Stripe ownership model cannot enforce Phase 13's organization-level tier, pre-venue trial selection, or maximum-venue entitlement. The claim remains active; WP-13.05 must not start until the organization-entitlement ownership decision is documented and implemented.
 
 ## Phase 04 Result
 
