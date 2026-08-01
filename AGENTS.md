@@ -30,6 +30,7 @@ Repository and GitHub state are the source of truth. Chat history is supporting 
 - Every implementation change must map to one documented work package.
 - Every change, including documentation-only work and local-only development configuration work, must start from one approved GitHub issue and proceed on its own branch and pull request.
 - Check `tracker/assignments.json` before claiming work.
+- Every work item must be explicitly claimed in `tracker/assignments.json` before changes begin so another agent can see the active owner, branch, issue, and execution mode.
 - Use one integration branch and pull request per work package unless inseparable work is explicitly documented.
 - Branch names use `wp/<id>-<short-name>`.
 - Commit messages begin with the work-package ID.
@@ -70,8 +71,8 @@ Repository and GitHub state are the source of truth. Chat history is supporting 
 - The allowed final review decisions are `APPROVE`, `REQUEST_CHANGES`, or `COMMENT` when the PR is not ready for a final decision.
 - A PR may not merge until ChatGPT has explicitly issued `APPROVE` against the latest reviewed commit.
 - Any new commit pushed after approval invalidates that approval and requires a new ChatGPT review of the updated head commit and fresh required GitHub Actions results.
-- Authors and lane agents must not merge their own pull requests, enable auto-merge, bypass review, or treat passing CI as approval.
-- Only ChatGPT performs the final code review and approval decision. The repository owner performs the merge only after that approval is recorded.
+- Authors and lane agents must not merge, enable auto-merge, or bypass review before the required approval is recorded and required checks pass.
+- Only ChatGPT performs the final code review and approval decision. After that approval is recorded and the required checks are green on the reviewed head commit, the active agent may merge the pull request.
 - When GitHub prevents a formal approving review because the reviewing identity is also the PR author, ChatGPT must record an explicit top-level review comment containing `CHATGPT APPROVED`, the reviewed head commit SHA, validation status, and any residual risks. That recorded decision is the required approval gate.
 - Approval is invalid if required GitHub Actions checks are failing or incomplete, acceptance criteria are incomplete, unresolved blocking comments remain, documentation is stale, secrets are exposed, or the reviewed commit no longer matches the PR head.
 

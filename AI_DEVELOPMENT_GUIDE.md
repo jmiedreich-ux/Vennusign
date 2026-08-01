@@ -36,6 +36,7 @@ Repository and GitHub state are the source of truth. Do not reload the full road
 - Every implementation change must map to one documented work package.
 - Every change starts from one approved GitHub issue and proceeds on its own branch and pull request, including documentation-only work and local-only development configuration work.
 - Check and claim the package in `tracker/assignments.json` before modifying code.
+- Record every active work item in `tracker/assignments.json` before modifying code so the current owner, branch, issue, and execution mode are visible to other agents.
 - Implement one work package at a time.
 - Use branch format `wp/<id>-<short-name>` and begin commit messages with the work-package ID.
 - Use one integration branch and pull request per package unless inseparable work is explicitly documented.
@@ -104,6 +105,8 @@ A work package is complete only when:
 - Documentation and tracking records are synchronized.
 - The pull request is merged.
 - The package branch is deleted unless retention is documented.
+
+- After ChatGPT approval is recorded and the required non-integration GitHub checks pass on the reviewed head commit, the active agent may merge the pull request.
 
 ## Validation
 
