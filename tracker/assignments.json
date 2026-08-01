@@ -1,8 +1,17 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T22:35:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-13.02",
+  "updatedUtc": "2026-08-01T22:47:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-13.02",
+      "owner": "Codex scheduled sequential run",
+      "issue": 339,
+      "branch": "wp/13.02-customer-authentication-foundation",
+      "status": "Claimed",
+      "executionMode": "Sequential"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-13.03",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
