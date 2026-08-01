@@ -110,13 +110,15 @@ A work package is complete only when:
 
 ## Validation
 
-Run the narrowest relevant tests during development. Before marking a package complete, run:
+Run the narrowest relevant non-integration tests during development and widen the scope when shared contracts, shared models, project files, dependency injection, authentication, migrations, workflow definitions, or other cross-cutting surfaces are affected. Before marking a package complete, run:
 
 ```powershell
 ./scripts/validate.ps1
 ```
 
 Use `-SkipDisplay` or `-SkipIntegration` only when the package does not affect those areas, and record the skipped checks and reason in the handoff.
+
+For ordinary work, the required GitHub validation is impact-based and should match the nearest affected area. For phase-closure work, run the broader full non-integration suite before approval.
 
 ## Code Quality
 
