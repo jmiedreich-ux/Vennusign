@@ -9,6 +9,13 @@ public interface IPosCatalogMappingRepository
         PosProvider provider,
         CancellationToken cancellationToken = default);
 
+    Task<MenuItem?> GetMappedItemAsync(
+        Guid venueId,
+        PosProvider provider,
+        string externalItemId,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException();
+
     Task<PosCatalogMapping> SaveAsync(
         Guid venueId,
         PosCatalogMapping mapping,

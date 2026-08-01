@@ -9,6 +9,12 @@ public interface IPosConnectionRepository
         PosProvider provider,
         CancellationToken cancellationToken = default);
 
+    Task<PosConnection?> GetByExternalMerchantIdAsync(
+        PosProvider provider,
+        string externalMerchantId,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException();
+
     Task<IReadOnlyCollection<PosConnection>> GetAllByVenueIdAsync(
         Guid venueId,
         CancellationToken cancellationToken = default);

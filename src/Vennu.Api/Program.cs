@@ -78,6 +78,7 @@ builder.Services.AddScoped<IPosProvider, SquarePosProvider>();
 builder.Services.Configure<SquareWebhookOptions>(builder.Configuration.GetSection(SquareWebhookOptions.SectionName));
 builder.Services.AddSingleton<IPosWebhookVerifier, SquarePosWebhookVerifier>();
 builder.Services.AddSingleton<IPosWebhookWorkSignal, PosWebhookWorkSignal>();
+builder.Services.AddScoped<IPosWebhookEventHandler, SquareRealtimeSyncHandler>();
 builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier>();
 builder.Services.AddScoped<IMenuItemManagementService, MenuItemManagementService>();
 builder.Services.AddScoped<IQuickUpdateService, QuickUpdateService>();

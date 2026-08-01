@@ -123,7 +123,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-12.05 — Square Inventory and Price Realtime Sync** is next.
+**WP-12.05 — Square Inventory and Price Realtime Sync** is active on issue #296 and branch `wp/12.05-square-inventory-price-sync`.
 
 ## Phase 04 Result
 
@@ -185,7 +185,7 @@ No implementation package is active. **WP-12.05 — Square Inventory and Price R
 
 ## Next Action
 
-Claim and implement **WP-12.05 — Square Inventory and Price Realtime Sync**.
+Complete, validate, review, and merge **WP-12.05 — Square Inventory and Price Realtime Sync**.
 
 ## Phase 05 Work Packages
 

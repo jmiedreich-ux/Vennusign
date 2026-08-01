@@ -3,14 +3,14 @@
 ## Work Package
 
 - ID: WP-12.05
-- Status: Available
+- Status: In progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: pending
+- Branch: `wp/12.05-square-inventory-price-sync`
 - Latest commit: `6ef18f6c04f7ee301e5871a9d64c808227258fc2` (WP-12.04 merge)
-- Issue: pending
+- Issue: #296
 - Pull request: pending
 - CI state: WP-12.04 Actions run #626 passed
 
@@ -42,7 +42,7 @@
 
 ## Files Changed
 
-- WP-12.04 completion evidence and the synchronized Phase 12 queue.
+- Square realtime handler, venue/provider lookup boundaries, focused tests, architecture, and WP-12.05 tracking.
 
 ## Decisions
 
@@ -67,7 +67,7 @@
 
 ## Exact Next Action
 
-- Claim WP-12.05 and add the first Square inventory/price mutation handler through existing menu mappings and notifications.
+- Publish WP-12.05, validate the exact head through GitHub Actions, review its full diff, and merge if green.
 
 ## Do Not Redo or Reverse
 
