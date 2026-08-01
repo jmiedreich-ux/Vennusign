@@ -3,7 +3,7 @@
 ## Work Package
 
 - ID: WP-13.01
-- Status: Implemented; validation pending
+- Status: Complete upon merge of PR #338
 - Execution mode: Sequential
 
 ## Git State
@@ -11,7 +11,7 @@
 - Branch: `wp/13.01-identity-organization-membership-foundation`
 - Issue: #337
 - Pull request: #338 (draft)
-- CI state: affected-area exact-head run pending
+- CI state: implementation run #717 passed; final completion-record gate pending
 
 ## Completed This Session
 
@@ -21,6 +21,8 @@
 - Claimed WP-13.01 exclusively in Sequential mode.
 - Added migration 040 for customer users, external identities, organizations, memberships, venue tenancy, and immutable audit evidence.
 - Added tenant-scoped repositories, atomic membership mutation services, deterministic capability resolution, dependency registration, tests, and architecture documentation.
+- GitHub Actions run #717 passed on implementation head `e3dfce87ec33d9b5f840dec1e32f7a5fece168c0`.
+- Added completion evidence and the proposed post-merge Sequential claim release to PR #338.
 
 ## Validation
 
@@ -29,15 +31,15 @@
 
 ## Remaining Work
 
-- Publish the implementation head, run affected-area Actions validation, review, merge, close issue #337, and release the claim.
+- Validate the final documentation head, review and merge PR #338, verify issue #337 closes, and refresh the default branch.
 
 ## Known Risks or Blockers
 
-- No blocker. Later authentication, passkey/TOTP, trial, onboarding, and UI work is explicitly excluded.
+- No blocker. WP-13.02 remains unclaimed and unstarted until PR #338 merges and ownership is rechecked.
 
 ## Exact Next Action
 
-- Publish the implementation to PR #338 and validate the exact head through GitHub Actions.
+- After PR #338 merges, inspect current ownership and claim WP-13.02 sequentially if it remains unowned.
 
 ## Do Not Redo or Reverse
 
