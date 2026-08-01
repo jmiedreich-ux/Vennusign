@@ -51,7 +51,7 @@ jobs:
         id: classify
         env:
           CI_FULL_VALIDATION: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.full_validation) || contains(toJson(github.event.pull_request.labels.*.name), 'full-validation') }}
-        run: scripts/ci/classify-changes.sh changed-paths.txt
+        run: bash scripts/ci/classify-changes.sh changed-paths.txt
 
   docs-validation:
     needs: classify
@@ -68,7 +68,7 @@ jobs:
             git diff --check HEAD^
           fi
           jq empty tracker/assignments.json
-          scripts/ci/test-classify-changes.sh
+          bash scripts/ci/test-classify-changes.sh
           if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)'; then
             echo "Unresolved merge marker found."
             exit 1
