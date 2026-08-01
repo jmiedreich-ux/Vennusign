@@ -34,6 +34,7 @@ Repository and GitHub state are the source of truth. Do not reload the full road
 ## Work-Package Rules
 
 - Every implementation change must map to one documented work package.
+- Every change starts from one approved GitHub issue and proceeds on its own branch and pull request, including documentation-only work and local-only development configuration work.
 - Check and claim the package in `tracker/assignments.json` before modifying code.
 - Implement one work package at a time.
 - Use branch format `wp/<id>-<short-name>` and begin commit messages with the work-package ID.
@@ -45,9 +46,18 @@ Repository and GitHub state are the source of truth. Do not reload the full road
 - Add or update tests in the same package as the behavior.
 - Delete package and lane branches after merge unless a documented exception requires retention.
 
+## Execution Modes
+
+- Each WP or RWP uses exactly one execution mode: `Sequential` or `Collaborative`.
+- `Sequential` is the default when the agent performs the work independently inside the approved scope.
+- `Collaborative` is used when the user and agent intentionally progress through the work together step by step.
+- Execution mode does not create a new package type; it only describes how the approved WP or RWP is executed.
+- Local-only development configuration work still follows the same issue, branch, PR, validation, and approval flow, but secrets must stay out of committed files.
+
 ## Multi-Agent Efficiency
 
 - Default to sequential execution when file ownership cannot be divided cleanly.
+- Prefer `Collaborative` execution mode when the user explicitly wants hand-in-hand implementation.
 - Parallel work requires an orchestrator and explicit writable, read-only, and prohibited paths for every lane.
 - No two agents may modify the same file concurrently.
 - Shared contracts, project files, dependency injection, migrations, package configuration, shared fixtures, trackers, and handoffs remain orchestrator-owned.

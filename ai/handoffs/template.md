@@ -4,7 +4,7 @@
 
 - ID:
 - Status:
-- Execution mode: Sequential | ParallelSafe | ParallelWithContractGate | OrchestratorOnlyIntegration
+- Execution mode: Sequential | Collaborative
 
 ## Git State
 
