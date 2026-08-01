@@ -46,7 +46,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.034_create_haas_contracts.sql",
                 "Vennu.Data.Scripts.035_create_pos_connections.sql",
                 "Vennu.Data.Scripts.036_create_pos_catalog_mappings.sql",
-                "Vennu.Data.Scripts.037_create_pos_webhook_events.sql"
+                "Vennu.Data.Scripts.037_create_pos_webhook_events.sql",
+                "Vennu.Data.Scripts.038_add_pos_sync_health.sql"
             ],
             scriptNames);
     }
