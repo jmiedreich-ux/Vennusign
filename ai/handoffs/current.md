@@ -3,15 +3,15 @@
 ## Work Package
 
 - ID: WP-12.10
-- Status: Available
+- Status: Review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: none
-- Issue: none
-- Pull request: none
-- CI state: not started
+- Branch: `wp/12.10-phase-12-validation-closure`
+- Issue: #330
+- Pull request: #331
+- CI state: GitHub Actions rerun pending after correcting the closure-only credential-member assertion found by run #697
 
 ## Completed This Session
 
@@ -27,7 +27,7 @@
 
 ## Exact Next Action
 
-- Claim WP-12.10, add the consolidated Phase 12 validation matrix, and close the phase only after authoritative GitHub Actions passes.
+- Validate PR #331 through GitHub Actions, review its exact head, and merge it before recording Phase 12 closure.
 
 ## Do Not Redo or Reverse
 

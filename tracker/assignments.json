@@ -1,25 +1,26 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T03:46:00Z",
+  "updatedUtc": "2026-08-01T03:49:28Z",
   "activeAssignments": [
     {
-      "workPackage": "Issue-321",
-      "executionMode": "Collaborative",
-      "owner": "GitHub Copilot",
-      "issue": 321,
-      "branch": "issue/321-admin-login-problem",
-      "pullRequest": 327,
-      "claimedUtc": "2026-08-01T03:46:00Z",
+      "workPackage": "WP-12.10",
+      "executionMode": "Sequential",
+      "owner": "ChatGPT scheduled development agent",
+      "issue": 330,
+      "branch": "wp/12.10-phase-12-validation-closure",
+      "pullRequest": 331,
+      "claimedUtc": "2026-08-01T03:49:28Z",
       "writableScope": [
-        "Local admin login startup flow, scripts/start-dev.ps1, and closely related collaborative configuration fixes"
+        "Phase 12 consolidated non-integration validation, operational notes, tests, and closure documentation"
       ],
       "prohibitedScope": [
-        "WP-12.10 phase closure",
-        "Any unrelated sequential work package implementation"
+        "New POS behavior",
+        "Phase 13 work",
+        "Unrelated collaborative issue #321 login work"
       ]
     }
   ],
-  "nextAvailableWorkPackage": "WP-12.10",
+  "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

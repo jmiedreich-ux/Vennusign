@@ -128,7 +128,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No work package is currently claimed. **WP-12.10 — Phase 12 Validation and Closure** is next.
+**WP-12.10 — Phase 12 Validation and Closure** is in review on issue #330, branch `wp/12.10-phase-12-validation-closure`, and PR #331.
 
 ## Phase 04 Result
 
@@ -190,7 +190,7 @@ No work package is currently claimed. **WP-12.10 — Phase 12 Validation and Clo
 
 ## Next Action
 
-Claim **WP-12.10 — Phase 12 Validation and Closure** and run the consolidated non-integration validation matrix.
+Validate and review PR #331 for **WP-12.10 — Phase 12 Validation and Closure**, then merge it before recording Phase 12 completion.
 
 ## Phase 05 Work Packages
 
