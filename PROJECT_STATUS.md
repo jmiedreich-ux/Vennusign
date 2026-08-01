@@ -131,7 +131,9 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-**WP-13.03 — Passkeys, TOTP, and Account Recovery** is complete upon merge of issue #341 and PR #342. Affected-area GitHub Actions run #730 passed on implementation head `b04544146ff1563798f5967e36bfaf0c4b5944ac`; the proposed merged state releases the Sequential claim. WP-13.04 is next.
+**WP-13.03 — Passkeys, TOTP, and Account Recovery** is complete after issue #341 and PR #342 merged. WP-13.04 remains the next roadmap package.
+
+**Issue #350 — Secure Local Development Integration Settings** is active in Collaborative mode as an isolated security remediation. It does not alter the Phase 13 sequence.
 
 ## Phase 04 Result
 

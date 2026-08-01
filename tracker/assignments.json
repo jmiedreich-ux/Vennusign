@@ -1,7 +1,29 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T23:25:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-01T23:37:41Z",
+  "activeAssignments": [
+    {
+      "workPackage": "Issue-350",
+      "executionMode": "Collaborative",
+      "owner": "GitHub Copilot",
+      "issue": 350,
+      "branch": "issue/350-secure-dev-integration-settings",
+      "claimedUtc": "2026-08-01T23:37:41Z",
+      "writableScope": [
+        ".gitignore",
+        "tests/Vennu.Data.IntegrationTests/app.settings.json",
+        "tests/Vennu.Data.IntegrationTests/app.settings.example.json",
+        "docs/work-packages/Issue-350-secure-dev-integration-settings.md",
+        "PROJECT_STATUS.md",
+        "tracker/assignments.json",
+        "ai/handoffs/current.md"
+      ],
+      "prohibitedScope": [
+        "Production credentials and databases",
+        "Application behavior, database schema, and Phase 13 implementation"
+      ]
+    }
+  ],
   "nextAvailableWorkPackage": "WP-13.04",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

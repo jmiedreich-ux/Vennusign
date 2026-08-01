@@ -50,6 +50,9 @@ Generated\ Files/
 TestResult.xml
 nunit-*.xml
 
+# Local development and integration-test credentials
+app.settings.json
+
 # Build Results of an ATL Project
 [Dd]ebugPS/
 [Rr]eleasePS/
