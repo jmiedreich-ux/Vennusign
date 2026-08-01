@@ -68,7 +68,11 @@ public sealed class PosConnectionService(
             connection.ExternalMerchantId,
             connection.AccessTokenExpiresUtc,
             connection.LastSyncedUtc,
-            connection.UpdatedUtc);
+            connection.UpdatedUtc,
+            connection.LastSyncAttemptUtc,
+            connection.ConsecutiveSyncFailures,
+            connection.NextSyncAttemptUtc,
+            connection.LastSyncErrorCode);
 
     private static Guid RequireId(Guid value, string parameterName) =>
         value != Guid.Empty ? value : throw new ArgumentException("A non-empty identifier is required.", parameterName);

@@ -6,4 +6,13 @@ public sealed record VenueAdminToastStatusResponse(
     VenueAdminPosConnectionResponse? Connection,
     string WebhookRegistrationStatus,
     bool RequiresToastApproval,
-    string Guidance);
+    string Guidance,
+    VenueAdminToastPollingHealthResponse? Polling = null);
+
+public sealed record VenueAdminToastPollingHealthResponse(
+    string State,
+    DateTime? LastAttemptUtc,
+    DateTime? LastSucceededUtc,
+    int ConsecutiveFailures,
+    DateTime? NextAttemptUtc,
+    string? ErrorCode);

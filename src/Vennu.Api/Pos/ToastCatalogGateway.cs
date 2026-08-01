@@ -91,16 +91,23 @@ public sealed class ToastCatalogGateway(HttpClient httpClient, IOptions<ToastCat
     }
 }
 
-public sealed class ToastPosProvider(IToastCatalogGateway gateway) : IPosProvider
+public sealed class ToastPosProvider(IToastCatalogGateway catalogGateway, IToastInventoryGateway inventoryGateway) : IPosProvider
 {
     public PosProvider Provider => PosProvider.Toast;
 
     public Task<PosCatalogResult> GetCatalogAsync(PosProviderContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
-        return gateway.GetCatalogAsync(context.ExternalMerchantId, context.AccessToken, cancellationToken);
+        return catalogGateway.GetCatalogAsync(context.ExternalMerchantId, context.AccessToken, cancellationToken);
     }
 
-    public Task<PosInventoryResult> GetInventoryAsync(PosProviderContext context, CancellationToken cancellationToken = default) =>
-        throw new NotSupportedException("Toast polling resilience begins in WP-12.07.");
+    public Task<PosInventoryResult> GetInventoryAsync(PosProviderContext context, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return inventoryGateway.GetInventoryAsync(
+            context.ExternalMerchantId,
+            context.AccessToken,
+            context.InventoryExternalItemIds ?? [],
+            cancellationToken);
+    }
 }

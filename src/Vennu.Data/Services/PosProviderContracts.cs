@@ -18,7 +18,8 @@ public interface IPosProvider
 public sealed record PosProviderContext(
     Guid VenueId,
     string ExternalMerchantId,
-    string AccessToken);
+    string AccessToken,
+    IReadOnlyCollection<string>? InventoryExternalItemIds = null);
 
 public sealed record PosCatalogResult(
     IReadOnlyCollection<PosCatalogCategory> Categories,

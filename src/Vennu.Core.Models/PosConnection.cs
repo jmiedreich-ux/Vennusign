@@ -26,6 +26,10 @@ public sealed class PosConnection
     public string? ProtectedRefreshToken { get; set; }
     public DateTime? AccessTokenExpiresUtc { get; set; }
     public DateTime? LastSyncedUtc { get; set; }
+    public DateTime? LastSyncAttemptUtc { get; set; }
+    public int ConsecutiveSyncFailures { get; set; }
+    public DateTime? NextSyncAttemptUtc { get; set; }
+    public string? LastSyncErrorCode { get; set; }
     public DateTime CreatedUtc { get; set; }
     public DateTime UpdatedUtc { get; set; }
 }

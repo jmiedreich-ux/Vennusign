@@ -3,40 +3,50 @@
 ## Work Package
 
 - ID: WP-12.07
-- Status: Available
+- Status: Review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: none
-- Issue: none
-- Pull request: none
-- CI state: WP-12.06 implementation passed GitHub Actions run #649
+- Branch: `wp/12.07-toast-polling-resilience`
+- Issue: #315
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
 
-- WP-12.06 merged through PR #307 as `a2d7761ede4f5a02b3bb0d35e2598e373420946b`.
-- Added venue-scoped Toast connection configuration and credential-free status guidance.
-- Added the official-host-only Toast catalog gateway and provider-neutral catalog import ownership.
-- Added category-secret Toast signature verification and durable menus/stock webhook processing.
-- Added focused non-integration verification, translation, ownership, idempotency, mapping, and notification tests.
+- Added a configurable hourly Toast polling host with overlap prevention, deterministic due-venue ordering, cancellation, and per-location isolation.
+- Added official-host-only Toast inventory search translation over each venue's recorded item GUIDs.
+- Refactored Toast stock application into one venue/provider-owned idempotent service shared by webhook and polling paths.
+- Added persisted last-attempt/success, bounded error code, failure count, next-attempt, exponential backoff, and reauthorization telemetry.
+- Added credential-free Venue Admin polling health and focused non-integration gateway, sync, poller, recovery, and migration tests.
 
 ## Decisions
 
-- Toast webhook registration remains an honest manual provider/developer-portal operation.
-- Restaurant GUID resolves the connection boundary; item GUID resolves Toast-owned catalog mappings.
-- Toast polling and recovery behavior belongs to WP-12.07.
+- Poll only recorded Toast item GUIDs through the stock search resource so successful responses are complete snapshots, including `IN_STOCK` recovery.
+- Treat incomplete/invalid snapshots as failures rather than guessing availability.
+- Keep raw provider errors and response payloads out of telemetry and logs; persist bounded error codes only.
+- Retain transient connections and retry with five-minute exponential backoff capped at one hour; authentication failures require reauthorization.
 
 ## Validation
 
-- GitHub Actions `phase02-tests` run #649 passed on reviewed head `9f205ebeebb488d3438cf5ea85da5e8afa12c6f8`.
-- Live Toast, credentialed, Azure SQL, hosted-infrastructure, container, webhook-registration, and cross-system integration tests were intentionally skipped.
+- Local checks: `git diff --check`; application and assignment JSON parse.
+- GitHub Actions is authoritative for affected .NET build, migration inventory, and unit coverage.
+- Live Toast, credentialed, Azure SQL, hosted-infrastructure, container, and cross-system integration tests are intentionally skipped.
+
+## Remaining Work
+
+- Publish the implementation PR, allow impact-based GitHub Actions to complete, review the exact head, and merge if green.
+
+## Known Risks or Blockers
+
+- Live Toast scopes, credentials, rate limits, payloads, and network behavior remain external operational validation.
 
 ## Exact Next Action
 
-- Claim and implement WP-12.07 — Toast Polling Resilience.
+- Publish WP-12.07, validate the exact head through GitHub Actions, and perform the mandatory ChatGPT review.
 
 ## Do Not Redo or Reverse
 
-- Do not weaken venue/provider mapping ownership or expose protected Toast credentials.
-- Do not represent Toast partner approval or webhook registration as automatic.
+- Do not poll unowned item identifiers or fall back to raw error text.
+- Do not create overlapping cycles or bypass the shared inventory mutation service.

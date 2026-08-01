@@ -9,7 +9,8 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
     private const string GetSql = """
         SELECT Id, VenueId, Provider, Status, ExternalMerchantId,
                ProtectedAccessToken, ProtectedRefreshToken, AccessTokenExpiresUtc,
-               LastSyncedUtc, CreatedUtc, UpdatedUtc
+               LastSyncedUtc, LastSyncAttemptUtc, ConsecutiveSyncFailures,
+               NextSyncAttemptUtc, LastSyncErrorCode, CreatedUtc, UpdatedUtc
         FROM dbo.PosConnections
         WHERE VenueId = @VenueId AND Provider = @Provider;
         """;
@@ -17,7 +18,8 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
     private const string GetAllSql = """
         SELECT Id, VenueId, Provider, Status, ExternalMerchantId,
                ProtectedAccessToken, ProtectedRefreshToken, AccessTokenExpiresUtc,
-               LastSyncedUtc, CreatedUtc, UpdatedUtc
+               LastSyncedUtc, LastSyncAttemptUtc, ConsecutiveSyncFailures,
+               NextSyncAttemptUtc, LastSyncErrorCode, CreatedUtc, UpdatedUtc
         FROM dbo.PosConnections
         WHERE VenueId = @VenueId
         ORDER BY Provider, Id;
@@ -26,9 +28,20 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
     private const string GetByMerchantSql = """
         SELECT TOP (2) Id, VenueId, Provider, Status, ExternalMerchantId,
                ProtectedAccessToken, ProtectedRefreshToken, AccessTokenExpiresUtc,
-               LastSyncedUtc, CreatedUtc, UpdatedUtc
+               LastSyncedUtc, LastSyncAttemptUtc, ConsecutiveSyncFailures,
+               NextSyncAttemptUtc, LastSyncErrorCode, CreatedUtc, UpdatedUtc
         FROM dbo.PosConnections
         WHERE Provider = @Provider AND ExternalMerchantId = @ExternalMerchantId;
+        """;
+
+    private const string GetAllByProviderSql = """
+        SELECT Id, VenueId, Provider, Status, ExternalMerchantId,
+               ProtectedAccessToken, ProtectedRefreshToken, AccessTokenExpiresUtc,
+               LastSyncedUtc, LastSyncAttemptUtc, ConsecutiveSyncFailures,
+               NextSyncAttemptUtc, LastSyncErrorCode, CreatedUtc, UpdatedUtc
+        FROM dbo.PosConnections
+        WHERE Provider = @Provider
+        ORDER BY VenueId, Id;
         """;
 
     private const string DeleteSql = """
@@ -56,6 +69,14 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
         (await dataAccess.ExecuteSqlQueryAsync<PosConnection, object>(
             GetAllSql,
             new { VenueId = RequireId(venueId, nameof(venueId)) },
+            cancellationToken).ConfigureAwait(false)).ToArray();
+
+    public async Task<IReadOnlyCollection<PosConnection>> GetAllByProviderAsync(
+        PosProvider provider,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<PosConnection, object>(
+            GetAllByProviderSql,
+            new { Provider = RequireProvider(provider) },
             cancellationToken).ConfigureAwait(false)).ToArray();
 
     public async Task<PosConnection?> GetByExternalMerchantIdAsync(
@@ -110,6 +131,10 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
         existing.ProtectedRefreshToken = connection.ProtectedRefreshToken;
         existing.AccessTokenExpiresUtc = connection.AccessTokenExpiresUtc;
         existing.LastSyncedUtc = connection.LastSyncedUtc;
+        existing.LastSyncAttemptUtc = connection.LastSyncAttemptUtc;
+        existing.ConsecutiveSyncFailures = connection.ConsecutiveSyncFailures;
+        existing.NextSyncAttemptUtc = connection.NextSyncAttemptUtc;
+        existing.LastSyncErrorCode = connection.LastSyncErrorCode;
         existing.UpdatedUtc = utcNow;
         var updated = await dataAccess.UpdateAsync(existing, cancellationToken).ConfigureAwait(false);
         if (updated <= 0)

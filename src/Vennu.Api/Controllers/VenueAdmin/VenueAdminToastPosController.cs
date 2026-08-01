@@ -37,7 +37,14 @@ public sealed class VenueAdminToastPosController(
             connection is null ? null : ToResponse(connection),
             "manual_provider_registration_required",
             true,
-            "Register the HTTPS menus and stock webhook endpoint in the Toast developer portal after Toast approves the integration. Vennu does not claim registration until Toast confirms it."));
+            "Register the HTTPS menus and stock webhook endpoint in the Toast developer portal after Toast approves the integration. Vennu does not claim registration until Toast confirms it.",
+            connection is null ? null : new VenueAdminToastPollingHealthResponse(
+                PollingState(connection),
+                connection.LastSyncAttemptUtc,
+                connection.LastSyncedUtc,
+                connection.ConsecutiveSyncFailures,
+                connection.NextSyncAttemptUtc,
+                connection.LastSyncErrorCode)));
     }
 
     [HttpPost("catalog/import")]
@@ -61,6 +68,11 @@ public sealed class VenueAdminToastPosController(
     private static VenueAdminPosConnectionResponse ToResponse(PosConnectionSummary connection) =>
         new("toast", connection.Status.ToString().ToLowerInvariant(), connection.ExternalMerchantId,
             connection.AccessTokenExpiresUtc, connection.UpdatedUtc);
+
+    private static string PollingState(PosConnectionSummary connection) =>
+        connection.Status == PosConnectionStatus.ReauthorizationRequired ? "reauthorization_required" :
+        connection.ConsecutiveSyncFailures > 0 ? "retry_scheduled" :
+        connection.LastSyncedUtc.HasValue ? "healthy" : "pending";
 
     private Guid VenueId() => Guid.Parse(User.FindFirstValue(VenueAdminAuthenticationDefaults.VenueIdClaim)!);
 }
