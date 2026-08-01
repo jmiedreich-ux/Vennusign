@@ -2,47 +2,42 @@
 
 ## Work Package
 
-- ID: RWP-00.01
-- Status: Complete pending merge
+- ID: WP-13.01
+- Status: Claimed
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `rwp/00.01-affected-area-ci`
-- Issue: #335
-- Pull request: #336
-- CI state: Actions run #711 passed on implementation head; final documentation head validation pending
+- Branch: `wp/13.01-identity-organization-membership-foundation`
+- Issue: #337
+- Pull request: pending
+- CI state: pending implementation
 
 ## Completed This Session
 
-- Replaced monolithic WP/RWP validation with deterministic affected-area jobs.
-- Normal packages now run only affected .NET unit-test projects, frontends, and TV packages.
-- Documentation/completion-only work now uses lightweight validation.
-- Full non-integration validation is reserved for phase closure, nightly/manual runs, workflow changes, and explicit labels.
-- Added dependency caches, superseded-run cancellation, a stable required gate, and shared sequential/collaborative rules.
-- Included completion evidence in the implementation PR and released the sequential claim in the proposed merge state.
+- Refreshed current `master` and verified RWP-00.01 merged through PR #336.
+- Confirmed there is no active tracker claim, WP-13.01 branch, issue, or pull request.
+- Read the approved Phase 13 plan, project records, architecture guidance, and identity/tenancy gap evidence.
+- Claimed WP-13.01 exclusively in Sequential mode.
 
 ## Validation
 
-- Local: classifier scenarios, shell syntax, assignment JSON, workflow YAML structure, display tests, and diff whitespace checks passed.
-- GitHub Actions: `phase02-tests` run #711 passed on `c383a089a6c8f7c4a263c77478269c421ba5d37d`.
-- The final PR head must pass `build-and-test` before ChatGPT approval and merge.
-- Integration and external-system tests remained skipped under the standing owner instruction.
+- Claim records require JSON and documentation consistency validation before publication.
+- Integration and external-system tests remain skipped under the standing owner instruction.
 
 ## Remaining Work
 
-- Complete exact-head review and merge PR #336.
-- WP-13.01 — Identity, Organization, and Membership Foundation is next.
+- Implement WP-13.01 only, publish the PR, run affected-area Actions validation, review, merge, close issue #337, and release the claim.
 
 ## Known Risks or Blockers
 
-- Path mappings must be updated when new applications or test projects are added.
+- No blocker. Later authentication, passkey/TOTP, trial, onboarding, and UI work is explicitly excluded.
 
 ## Exact Next Action
 
-- After PR #336 passes exact-head validation and merges, claim WP-13.01 sequentially.
+- Publish the Sequential claim, then implement the bounded identity, organization, membership, capability, audit, and persistence foundation.
 
 ## Do Not Redo or Reverse
 
-- Do not restore solution-wide unit tests or unrelated TV/frontend builds for normal WP/RWP merges.
-- Do not create a separate completion-record PR for work whose evidence can be included in its implementation PR.
+- Do not change the execution mode or allow collaborative agents to modify this claim.
+- Do not begin WP-13.02 or any Phase 14/later work.

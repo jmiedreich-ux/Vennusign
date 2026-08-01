@@ -1,8 +1,17 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T21:02:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-13.01",
+  "updatedUtc": "2026-08-01T22:19:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-13.01",
+      "owner": "Codex scheduled sequential run",
+      "issue": 337,
+      "branch": "wp/13.01-identity-organization-membership-foundation",
+      "status": "Claimed",
+      "executionMode": "Sequential"
+    }
+  ],
+  "nextAvailableWorkPackage": "WP-13.02",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
