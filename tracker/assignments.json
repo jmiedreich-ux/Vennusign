@@ -1,12 +1,27 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T02:40:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-01T02:46:00Z",
+  "activeAssignments": [
+    {
+      "workItemType": "Issue",
+      "workItemId": "#316",
+      "title": "Governance — require immediate reconciliation of tracking records",
+      "issueNumber": 316,
+      "branch": "issue/316-immediate-reconciliation",
+      "executionMode": "Collaborative",
+      "claimedBy": "GitHub Copilot",
+      "claimedUtc": "2026-08-01T02:46:00Z"
+    }
+  ],
   "nextAvailableWorkPackage": "WP-12.07",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
     "sharedFilesAreOrchestratorOwned": true,
-    "deleteBranchesAfterMerge": true
+    "deleteBranchesAfterMerge": true,
+    "executionModes": {
+      "Sequential": "Work owned outside the collaborative session. Collaborative agents must not modify it.",
+      "Collaborative": "Work being driven interactively in the current session and owned by the active collaborative claim."
+    }
   }
 }

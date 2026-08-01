@@ -31,6 +31,7 @@ Repository and GitHub state are the source of truth. Chat history is supporting 
 - Every change, including documentation-only work and local-only development configuration work, must start from one approved GitHub issue and proceed on its own branch and pull request.
 - Check `tracker/assignments.json` before claiming work.
 - Every work item must be explicitly claimed in `tracker/assignments.json` before changes begin so another agent can see the active owner, branch, issue, and execution mode.
+- Every tracker claim must make the execution mode explicit. `Sequential` claims identify work owned outside the collaborative session and must not be edited by collaborative agents. `Collaborative` claims identify the work being driven interactively in the current session.
 - Use one integration branch and pull request per work package unless inseparable work is explicitly documented.
 - Branch names use `wp/<id>-<short-name>`.
 - Commit messages begin with the work-package ID.
@@ -115,6 +116,8 @@ Before completing or merging a work package, verify:
 8. ChatGPT approval is recorded against the current PR head commit.
 
 If any applicable record is stale, the package remains incomplete even when code and tests pass.
+
+State changes that trigger immediate reconciliation include claim creation, branch or PR creation, review status changes, merge, closure, and branch deletion.
 
 ## Mandatory Session Handoff
 
