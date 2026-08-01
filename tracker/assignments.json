@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T02:30:00Z",
+  "updatedUtc": "2026-08-01T02:37:00Z",
   "activeAssignments": [
     {
       "workItemType": "WP",
@@ -11,16 +11,6 @@
       "executionMode": "Sequential",
       "claimedBy": "ChatGPT Codex",
       "claimedUtc": "2026-08-01T02:04:00Z"
-    },
-    {
-      "workItemType": "Issue",
-      "workItemId": "#311",
-      "title": "Governance — adopt impact-based validation between phase closures",
-      "issueNumber": 311,
-      "branch": "issue/311-impact-based-validation",
-      "executionMode": "Collaborative",
-      "claimedBy": "GitHub Copilot",
-      "claimedUtc": "2026-08-01T02:30:00Z"
     }
   ],
   "nextAvailableWorkPackage": "WP-12.06",
