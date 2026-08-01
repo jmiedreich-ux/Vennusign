@@ -51,7 +51,9 @@ Repository and GitHub state are the source of truth. Chat history is supporting 
 
 - GitHub Actions is the authoritative validation environment for every implementation pull request.
 - Local builds and tests are optional developer-productivity checks; they do not replace required GitHub Actions validation.
-- Every implementation PR must run all required workflows and checks for the affected areas before ChatGPT may approve it.
+- Every implementation PR must run the required non-integration workflows and checks for the affected areas before ChatGPT may approve it.
+- Ordinary work uses impact-based validation: run the nearest relevant non-integration checks for the area changed, then widen scope whenever shared contracts, shared models, project files, dependency injection, authentication, migrations, workflow definitions, or other cross-cutting surfaces are touched.
+- Phase-closure work packages and equivalent closure PRs must run the broader full-repository non-integration regression suite before approval.
 - Required checks must complete successfully against the exact PR head commit being reviewed.
 - Missing, skipped, cancelled, stale, or failing required non-integration checks block approval unless the work package explicitly documents why a check is not applicable and ChatGPT accepts that exception during review.
 - Owner-approved standing exception: skip all integration-type tests for every work package, including Azure SQL and tests requiring external services, credentials, hosted infrastructure, containers, or cross-system integration. Their omission or failure is never a completion or merge blocker. Restore, Release build, display production build, unit tests, static analysis, and applicable non-integration migration validation remain required.
@@ -146,7 +148,9 @@ Before ending a development session:
 - Add or update non-integration tests with every behavioral change.
 - Prefer unit tests for business rules and mapping.
 - Do not run integration-type tests under the standing repository-owner exception.
-- Run the narrowest relevant tests during development when a local checkout is available.
-- Before completion, ensure the required GitHub Actions workflows execute the authoritative validation for the affected areas.
+- Run the narrowest relevant non-integration tests during development when a local checkout is available.
+- Use the nearest affected validation by default, but widen scope when shared or cross-cutting surfaces are affected.
+- Before completion, ensure the required GitHub Actions workflows execute the authoritative impact-based validation for the affected areas.
+- Before phase closure, ensure the broader full non-integration suite executes successfully across the repository.
 - `./scripts/validate.ps1` remains the standard local validation entry point and should be used when available, but local execution does not replace required GitHub Actions checks.
 - Record any intentionally skipped or non-applicable checks in the PR and work-package completion evidence.
