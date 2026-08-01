@@ -127,7 +127,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-12.09 — Clover Inventory Webhooks and Provider Conformance** is the next available package.
+**WP-12.09 — Clover Inventory Webhooks and Provider Conformance** is claimed in Sequential mode on issue #326 and branch `wp/12.09-clover-inventory-conformance`.
 
 ## Phase 04 Result
 
@@ -189,7 +189,7 @@ None. **WP-12.09 — Clover Inventory Webhooks and Provider Conformance** is the
 
 ## Next Action
 
-Claim and implement **WP-12.09 — Clover Inventory Webhooks and Provider Conformance**.
+Complete, validate, review, and merge **WP-12.09 — Clover Inventory Webhooks and Provider Conformance** before Phase 12 closure.
 
 ## Phase 05 Work Packages
 

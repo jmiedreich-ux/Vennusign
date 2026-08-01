@@ -3,13 +3,13 @@
 ## Work Package
 
 - ID: WP-12.09
-- Status: Available
+- Status: In Progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: none
-- Issue: none
+- Branch: `wp/12.09-clover-inventory-conformance`
+- Issue: #326
 - Pull request: none
 - CI state: WP-12.08 passed GitHub Actions run #682
 
@@ -27,7 +27,7 @@
 
 ## Exact Next Action
 
-- Claim and implement WP-12.09 — Clover Inventory Webhooks and Provider Conformance.
+- Complete the bounded Clover verified inventory and provider conformance slice, then validate it through GitHub Actions.
 
 ## Do Not Redo or Reverse
 
