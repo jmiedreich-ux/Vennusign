@@ -23,6 +23,14 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
         ORDER BY Provider, Id;
         """;
 
+    private const string GetByMerchantSql = """
+        SELECT Id, VenueId, Provider, Status, ExternalMerchantId,
+               ProtectedAccessToken, ProtectedRefreshToken, AccessTokenExpiresUtc,
+               LastSyncedUtc, CreatedUtc, UpdatedUtc
+        FROM dbo.PosConnections
+        WHERE Provider = @Provider AND ExternalMerchantId = @ExternalMerchantId;
+        """;
+
     private const string DeleteSql = """
         DELETE FROM dbo.PosConnections
         OUTPUT CAST(1 AS BIT) AS Removed
@@ -49,6 +57,21 @@ public sealed class PosConnectionRepository(ISqlDataAccess dataAccess, TimeProvi
             GetAllSql,
             new { VenueId = RequireId(venueId, nameof(venueId)) },
             cancellationToken).ConfigureAwait(false)).ToArray();
+
+    public async Task<PosConnection?> GetByExternalMerchantIdAsync(
+        PosProvider provider,
+        string externalMerchantId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(externalMerchantId);
+        var normalized = externalMerchantId.Trim();
+        if (normalized.Length > 200)
+            throw new ArgumentException("External merchant identifiers cannot exceed 200 characters.", nameof(externalMerchantId));
+        return (await dataAccess.ExecuteSqlQueryAsync<PosConnection, object>(
+            GetByMerchantSql,
+            new { Provider = RequireProvider(provider), ExternalMerchantId = normalized },
+            cancellationToken).ConfigureAwait(false)).SingleOrDefault();
+    }
 
     public async Task<PosConnection> SaveAsync(
         Guid venueId,

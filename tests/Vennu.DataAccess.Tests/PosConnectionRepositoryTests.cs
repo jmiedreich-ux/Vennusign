@@ -53,6 +53,29 @@ public sealed class PosConnectionRepositoryTests
     }
 
     [Fact]
+    public async Task GetByExternalMerchantIdAsync_UsesProviderMerchantScope()
+    {
+        string? capturedSql = null;
+        object? capturedParameters = null;
+        var dataAccess = new FakeSqlDataAccess
+        {
+            ExecuteSqlQueryHandler = (sql, parameters) =>
+            {
+                capturedSql = sql;
+                capturedParameters = parameters;
+                return [];
+            }
+        };
+        var repository = new PosConnectionRepository(dataAccess, new FixedTimeProvider(UtcNow));
+
+        Assert.Null(await repository.GetByExternalMerchantIdAsync(PosProvider.Square, " merchant-1 "));
+
+        Assert.Contains("Provider = @Provider AND ExternalMerchantId = @ExternalMerchantId", capturedSql, StringComparison.Ordinal);
+        Assert.Equal((int)PosProvider.Square, Property<int>(capturedParameters!, "Provider"));
+        Assert.Equal("merchant-1", Property<string>(capturedParameters!, "ExternalMerchantId"));
+    }
+
+    [Fact]
     public async Task SaveAsync_NewConnection_AssignsIdentityAndTimestamps()
     {
         var dataAccess = new FakeSqlDataAccess();

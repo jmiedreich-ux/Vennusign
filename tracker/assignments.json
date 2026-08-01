@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T01:16:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-12.05",
+  "updatedUtc": "2026-08-01T01:19:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-12.05",
+      "issue": 296,
+      "branch": "wp/12.05-square-inventory-price-sync",
+      "owner": "scheduled-awp-orchestrator"
+    }
+  ],
+  "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

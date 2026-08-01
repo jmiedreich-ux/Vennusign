@@ -20,6 +20,20 @@ public sealed class PosCatalogMappingRepository(ISqlDataAccess dataAccess, TimeP
           AND EntityType = @EntityType AND ExternalId = @ExternalId;
         """;
 
+    private const string GetMappedItemSql = """
+        SELECT item.Id, item.VenueId, item.MenuSectionId, item.Name, item.Description,
+               item.Price, item.HappyHourPrice, item.IsAvailable, item.AvailabilityResetUtc,
+               item.QuantityAvailable, item.Tags, item.ImageUrl, item.IsPopular, item.SortOrder,
+               item.CreatedUtc, item.UpdatedUtc
+        FROM dbo.PosCatalogMappings mapping
+        INNER JOIN dbo.MenuItems item
+            ON item.Id = mapping.LocalEntityId AND item.VenueId = mapping.VenueId
+        WHERE mapping.VenueId = @VenueId
+          AND mapping.Provider = @Provider
+          AND mapping.EntityType = @EntityType
+          AND mapping.ExternalId = @ExternalId;
+        """;
+
     public async Task<IReadOnlyCollection<PosCatalogMapping>> GetAllAsync(
         Guid venueId,
         PosProvider provider,
@@ -28,6 +42,22 @@ public sealed class PosCatalogMappingRepository(ISqlDataAccess dataAccess, TimeP
             GetAllSql,
             new { VenueId = RequireId(venueId), Provider = RequireProvider(provider) },
             cancellationToken).ConfigureAwait(false)).ToArray();
+
+    public async Task<MenuItem?> GetMappedItemAsync(
+        Guid venueId,
+        PosProvider provider,
+        string externalItemId,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<MenuItem, object>(
+            GetMappedItemSql,
+            new
+            {
+                VenueId = RequireId(venueId),
+                Provider = RequireProvider(provider),
+                EntityType = (int)PosCatalogEntityType.Item,
+                ExternalId = RequireExternalId(externalItemId)
+            },
+            cancellationToken).ConfigureAwait(false)).SingleOrDefault();
 
     public async Task<PosCatalogMapping> SaveAsync(
         Guid venueId,

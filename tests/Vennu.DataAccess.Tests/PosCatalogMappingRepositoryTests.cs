@@ -26,6 +26,24 @@ public sealed class PosCatalogMappingRepositoryTests
     }
 
     [Fact]
+    public async Task GetMappedItemAsync_JoinsMappingWithinVenueProviderScope()
+    {
+        string? sql = null;
+        object? parameters = null;
+        var data = new FakeSqlDataAccess { ExecuteSqlQueryHandler = (value, args) => { sql = value; parameters = args; return []; } };
+        var repository = new PosCatalogMappingRepository(data, new FixedTimeProvider(UtcNow));
+
+        var result = await repository.GetMappedItemAsync(VenueId, PosProvider.Square, " variation-1 ");
+
+        Assert.Null(result);
+        Assert.Contains("item.Id = mapping.LocalEntityId AND item.VenueId = mapping.VenueId", sql, StringComparison.Ordinal);
+        Assert.Contains("mapping.EntityType = @EntityType", sql, StringComparison.Ordinal);
+        Assert.Equal(VenueId, Property<Guid>(parameters!, "VenueId"));
+        Assert.Equal((int)PosCatalogEntityType.Item, Property<int>(parameters!, "EntityType"));
+        Assert.Equal("variation-1", Property<string>(parameters!, "ExternalId"));
+    }
+
+    [Fact]
     public async Task SaveAsync_RejectsCrossVenueMapping()
     {
         var repository = new PosCatalogMappingRepository(new FakeSqlDataAccess(), new FixedTimeProvider(UtcNow));
