@@ -1,7 +1,5 @@
 # Issue-350 — Secure Local Development Integration Settings
 
-# Issue-350 — Secure Local Development Integration Settings
-
 ## Status
 
 Complete

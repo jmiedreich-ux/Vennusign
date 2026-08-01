@@ -1,7 +1,5 @@
 # Vennu Session Handoff
 
-# Vennu Session Handoff
-
 ## Work Package
 
 - ID: Issue-350
