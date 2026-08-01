@@ -2,34 +2,33 @@
 
 ## Work Package
 
-- ID: WP-12.10
-- Status: Review
+- ID: Phase 13 planning
+- Status: Available
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/12.10-phase-12-validation-closure`
-- Issue: #330
-- Pull request: #331
-- CI state: GitHub Actions rerun pending after correcting the closure-only credential-member assertion found by run #697
+- Branch: none
+- Issue: none
+- Pull request: none
+- CI state: not started
 
 ## Completed This Session
 
-- WP-12.09 merged through PR #328 as `c4949bdb9fbd30b32d334fd4866b23b606caf0bd`.
-- Added bounded multi-merchant Clover inventory verification with deterministic replay IDs and durable queue reuse.
-- Added official-host merchant-owned inventory reads, idempotent availability/quantity/fixed-USD-price application, and existing SignalR notifications.
-- Added credential-free registration/sync health and Square/Toast/Clover provider conformance coverage.
+- WP-12.10 merged through PR #331 as `bead6eafc2cf36bea7b3663a66e1fc8a8ccab404`.
+- Added the Phase 12 acceptance matrix, critical-journey authorization/credential/migration coverage, and marketplace/operator notes.
+- Closed Phase 12 after the exact rebased head passed the full required non-integration workflow.
 
 ## Validation
 
-- GitHub Actions `phase02-tests` run #689 passed on reviewed head `ec93f3f5425665e2f4b5e0d159a7d9d9d253e191`.
-- Live Clover, credentialed, Azure SQL, hosted-infrastructure, container, and cross-system integration tests were intentionally skipped.
+- GitHub Actions `phase02-tests` run #699 passed on reviewed head `9ecb88d2db80f53192496477d218b6a78ac4006b`.
+- Live Square, Toast, Clover, credentialed, Azure SQL, hosted-infrastructure, container, and cross-system integration tests were intentionally skipped.
 
 ## Exact Next Action
 
-- Validate PR #331 through GitHub Actions, review its exact head, and merge it before recording Phase 12 closure.
+- Create and merge the bounded Phase 13 work-package breakdown, then claim WP-13.01.
 
 ## Do Not Redo or Reverse
 
-- Do not add new POS behavior during closure.
-- Do not use live provider credentials or integration infrastructure for closure validation.
+- Do not begin Phase 13 implementation before its breakdown is approved and merged.
+- Do not reopen Phase 12 unless a new finding is promoted through the issue-first remediation process.

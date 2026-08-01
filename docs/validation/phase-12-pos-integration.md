@@ -2,7 +2,7 @@
 
 ## Result
 
-Phase 12 is ready for closure when the WP-12.10 GitHub Actions run passes on the exact reviewed head. Integration-type and live-provider tests remain intentionally skipped under the standing repository-owner instruction.
+Phase 12 closed after GitHub Actions run #699 passed on exact reviewed head `9ecb88d2db80f53192496477d218b6a78ac4006b`. Integration-type and live-provider tests were intentionally skipped under the standing repository-owner instruction.
 
 ## Acceptance Matrix
 

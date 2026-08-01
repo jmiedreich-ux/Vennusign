@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 12 — POS Integration**
+**Phase 13 — Multilingual Support**
 
 ## Milestone
 
@@ -125,10 +125,12 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-12.07 — Toast Polling Resilience
 - WP-12.08 — Clover OAuth and Catalog Provider
 - WP-12.09 — Clover Inventory Webhooks and Provider Conformance
+- WP-12.10 — Phase 12 Validation and Closure
+- Phase 12 — POS Integration
 
 ## Active Work Package
 
-**WP-12.10 — Phase 12 Validation and Closure** is in review on issue #330, branch `wp/12.10-phase-12-validation-closure`, and PR #331.
+No work package is currently claimed. Phase 13 requires its bounded sequential work-package breakdown before implementation begins.
 
 ## Phase 04 Result
 
@@ -183,6 +185,13 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - Added separate fixed-term HaaS contract billing guardrails and disclosure-only remaining-term estimates.
 - Added consolidated prompt, billing, webhook, HaaS, security, migration, and non-integration validation.
 
+## Phase 12 Result
+
+- Delivered venue-owned Square, Toast, and Clover connections behind one provider abstraction with encrypted server-side credentials.
+- Added idempotent catalog imports, durable verified webhook intake, availability/quantity/price synchronization, and existing SignalR notification reuse.
+- Added hourly Toast polling resilience, provider isolation, credential-free operational health, and explicit marketplace/operator handoff notes.
+- Added consolidated OAuth, host, ownership, replay, retry, authorization, migration, provider-conformance, and non-integration validation.
+
 ## Standing Validation Exception
 
 - Integration-type tests are skipped for every WP under the repository owner's standing instruction.
@@ -190,7 +199,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate and review PR #331 for **WP-12.10 — Phase 12 Validation and Closure**, then merge it before recording Phase 12 completion.
+Create and merge the bounded Phase 13 work-package breakdown, then claim WP-13.01 in roadmap order.
 
 ## Phase 05 Work Packages
 
