@@ -131,7 +131,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-**WP-13.04 — Tier-Defined Trials and Stripe Entitlements** is in progress through Sequential issue #347 and draft PR #349. WP-13.01 through WP-13.03 are merged.
+**WP-13.04 — Tier-Defined Trials and Stripe Entitlements** is complete upon merge of issue #347 and PR #349. Affected-area Actions run #734 passed on implementation head `55eada08afc3e8fe7afca85a133518e341ed2512`; the proposed merged state releases the claim. WP-13.05 is next.
 
 ## Phase 04 Result
 
