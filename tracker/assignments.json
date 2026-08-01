@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T02:42:00Z",
+  "updatedUtc": "2026-08-01T02:59:00Z",
   "activeAssignments": [
     {
       "workItemType": "WP",
@@ -18,6 +18,10 @@
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
     "sharedFilesAreOrchestratorOwned": true,
-    "deleteBranchesAfterMerge": true
+    "deleteBranchesAfterMerge": true,
+    "executionModes": {
+      "Sequential": "Work owned outside the collaborative session. Collaborative agents must not modify it.",
+      "Collaborative": "Work being driven interactively in the current session and owned by the active collaborative claim."
+    }
   }
 }
