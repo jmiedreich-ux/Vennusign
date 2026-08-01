@@ -42,6 +42,21 @@ public sealed class PosWebhooksControllerTests
         Assert.False(signal.Signaled);
     }
 
+    [Fact]
+    public async Task Receive_PersistsEveryVerifiedEventAndSignalsOnce()
+    {
+        var repository = new RepositoryFake { Enqueued = true };
+        var signal = new SignalFake();
+        var controller = Create(new MultiVerifierFake(), repository, signal, "signature", "{}");
+
+        var result = await controller.Receive("clover", CancellationToken.None);
+
+        var accepted = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.True(Assert.IsType<PosWebhookResponse>(accepted.Value).Queued);
+        Assert.Equal(["event-1", "event-2"], repository.Values.Select(value => value.ProviderEventId));
+        Assert.True(signal.Signaled);
+    }
+
     [Theory]
     [InlineData("unknown", "signature")]
     [InlineData("square", "")]
@@ -71,11 +86,24 @@ public sealed class PosWebhooksControllerTests
         public VerifiedPosWebhookEvent Verify(string payload, string signature) => new(Provider, "event-1", "inventory.count.updated", "merchant-1", payload);
     }
 
+    private sealed class MultiVerifierFake : IPosWebhookVerifier
+    {
+        public PosProvider Provider => PosProvider.Clover;
+        public string SignatureHeaderName => "test-signature";
+        public VerifiedPosWebhookEvent Verify(string payload, string signature) => throw new NotSupportedException();
+        public IReadOnlyCollection<VerifiedPosWebhookEvent> VerifyMany(string payload, string signature) =>
+        [
+            new(Provider, "event-1", "inventory.item.update", "merchant-1", payload),
+            new(Provider, "event-2", "inventory.item.update", "merchant-2", payload)
+        ];
+    }
+
     private sealed class RepositoryFake : IPosWebhookEventRepository
     {
         public bool Enqueued { get; init; }
         public PosWebhookEvent? Value { get; private set; }
-        public Task<bool> EnqueueAsync(PosWebhookEvent webhookEvent, CancellationToken cancellationToken = default) { Value = webhookEvent; return Task.FromResult(Enqueued); }
+        public List<PosWebhookEvent> Values { get; } = [];
+        public Task<bool> EnqueueAsync(PosWebhookEvent webhookEvent, CancellationToken cancellationToken = default) { Value = webhookEvent; Values.Add(webhookEvent); return Task.FromResult(Enqueued); }
         public Task<PosWebhookEvent?> TryClaimNextAsync(DateTime utcNow, DateTime staleBeforeUtc, CancellationToken cancellationToken = default) => Task.FromResult<PosWebhookEvent?>(null);
         public Task<bool> MarkProcessedAsync(Guid id, DateTime processedUtc, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<bool> MarkFailedAsync(Guid id, string failureReason, DateTime failedUtc, DateTime nextAttemptUtc, CancellationToken cancellationToken = default) => Task.FromResult(false);

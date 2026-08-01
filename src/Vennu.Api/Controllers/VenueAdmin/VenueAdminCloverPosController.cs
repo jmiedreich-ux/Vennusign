@@ -21,16 +21,22 @@ public sealed class VenueAdminCloverPosController(
         Ok(new VenueAdminPosConnectResponse(service.Begin(VenueId()).AbsoluteUri));
 
     [HttpGet("status")]
-    public async Task<ActionResult<VenueAdminPosConnectionResponse?>> Status(CancellationToken cancellationToken)
+    public async Task<ActionResult<VenueAdminCloverStatusResponse>> Status(CancellationToken cancellationToken)
     {
         var connection = (await service.GetStatusAsync(VenueId(), cancellationToken).ConfigureAwait(false))
             .SingleOrDefault(value => value.Provider == PosProvider.Clover);
-        return Ok(connection is null ? null : new VenueAdminPosConnectionResponse(
-            "clover",
-            connection.Status.ToString().ToLowerInvariant(),
-            connection.ExternalMerchantId,
-            connection.AccessTokenExpiresUtc,
-            connection.UpdatedUtc));
+        var summary = connection is null ? null : new VenueAdminPosConnectionResponse(
+            "clover", connection.Status.ToString().ToLowerInvariant(), connection.ExternalMerchantId,
+            connection.AccessTokenExpiresUtc, connection.UpdatedUtc);
+        return Ok(new VenueAdminCloverStatusResponse(
+            summary,
+            "external_configuration_required",
+            true,
+            "Register the HTTPS Clover webhook URL in the Clover Developer Dashboard, complete its verification-code step through an operator-controlled receiver, subscribe to inventory events, and configure the resulting X-Clover-Auth key. Vennu does not claim registration until Clover confirms it.",
+            connection?.LastSyncedUtc,
+            connection?.LastSyncAttemptUtc,
+            connection?.ConsecutiveSyncFailures ?? 0,
+            connection?.LastSyncErrorCode));
     }
 
     [HttpDelete("connection")]

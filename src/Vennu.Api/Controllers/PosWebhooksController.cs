@@ -20,6 +20,7 @@ public sealed class PosWebhooksController(
     [HttpPost]
     [RequestSizeLimit(MaximumPayloadBytes)]
     [ProducesResponseType<PosWebhookResponse>(StatusCodes.Status202Accepted)]
+    [ProducesResponseType<PosWebhookResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PosWebhookResponse>> Receive(string provider, CancellationToken cancellationToken)
     {
@@ -29,30 +30,35 @@ public sealed class PosWebhooksController(
         var signature = Request.Headers[verifier.SignatureHeaderName].ToString();
         if (string.IsNullOrWhiteSpace(signature)) return InvalidWebhook();
 
-        VerifiedPosWebhookEvent verified;
+        IReadOnlyCollection<VerifiedPosWebhookEvent> verified;
         try
         {
             using var reader = new StreamReader(Request.Body, Encoding.UTF8, false, leaveOpen: true);
             var payload = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
             if (Encoding.UTF8.GetByteCount(payload) > MaximumPayloadBytes) return InvalidWebhook();
-            verified = verifier.Verify(payload, signature);
+            verified = verifier.VerifyMany(payload, signature);
         }
         catch (Exception exception) when (exception is PosWebhookVerificationException or InvalidOperationException or ArgumentException)
         {
             return InvalidWebhook();
         }
 
-        var queued = await repository.EnqueueAsync(new PosWebhookEvent
+        var queued = false;
+        foreach (var item in verified)
         {
-            Provider = verified.Provider,
-            ProviderEventId = verified.ProviderEventId,
-            EventType = verified.EventType,
-            ExternalMerchantId = verified.ExternalMerchantId,
-            Payload = verified.Payload,
-            Status = PosWebhookEventStatus.Queued
-        }, cancellationToken).ConfigureAwait(false);
+            queued |= await repository.EnqueueAsync(new PosWebhookEvent
+            {
+                Provider = item.Provider,
+                ProviderEventId = item.ProviderEventId,
+                EventType = item.EventType,
+                ExternalMerchantId = item.ExternalMerchantId,
+                Payload = item.Payload,
+                Status = PosWebhookEventStatus.Queued
+            }, cancellationToken).ConfigureAwait(false);
+        }
         if (queued) signal.Signal();
-        return Accepted(new PosWebhookResponse(Received: true, Queued: queued));
+        var result = new PosWebhookResponse(Received: true, Queued: queued);
+        return providerValue == PosProvider.Clover ? Ok(result) : Accepted(result);
     }
 
     private BadRequestObjectResult InvalidWebhook() => BadRequest(new ProblemDetails
