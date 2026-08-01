@@ -146,6 +146,13 @@ Before ending a development session:
 - Do not invent database columns, routes, contracts, event names, or payload shapes.
 - Do not refactor unrelated code.
 
+## UI Design and Functional Completeness
+
+- Before designing or implementing a new or changed UI page or screen, consult the available UX best-practices MCP and record the applicable recommendations in the work package or PR.
+- Perform and record a page/screen gap analysis before implementation. Cover user goals, information hierarchy, navigation and route relationships, responsive/accessibility needs, required create/read/edit/delete actions, empty/loading/error/success/permission states, validation, destructive-action confirmation or undo, feedback, and required API/data/authorization/entitlement support.
+- Resolve required gaps in the active package or explicitly document a justified exclusion or linked follow-up package.
+- Do not complete a UI package with missing necessary user actions, essential states, or redundant/confusing navigation.
+
 ## Testing and Validation
 
 - Add or update non-integration tests with every behavioral change.

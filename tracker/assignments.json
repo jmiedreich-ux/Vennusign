@@ -1,7 +1,23 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T04:02:47Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-01T04:10:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "Issue-333",
+      "executionMode": "Collaborative",
+      "owner": "GitHub Copilot",
+      "issue": 333,
+      "branch": "issue/333-phase-13-draft-plan",
+      "claimedUtc": "2026-08-01T04:10:00Z",
+      "writableScope": [
+        "Draft Phase 13 planning, governance guidance for UI design/function gap analysis, and related planning documentation"
+      ],
+      "prohibitedScope": [
+        "WP-12.10 phase closure",
+        "Any unrelated sequential work package implementation"
+      ]
+    }
+  ],
   "nextAvailableWorkPackage": "Phase 13 planning",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

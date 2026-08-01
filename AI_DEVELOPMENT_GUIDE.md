@@ -133,6 +133,12 @@ For ordinary work, the required GitHub validation is impact-based and should mat
 - Do not add dependencies without documenting why.
 - Do not commit credentials, tokens, connection strings, or local secret files.
 
+## UI Design and Functional Completeness
+
+- Consult the available UX best-practices MCP before designing or implementing a new or changed UI page or screen, and record applicable recommendations in the work package or PR.
+- Record a page/screen gap analysis covering user goals, navigation, required create/read/edit/delete actions, essential UI states, validation and destructive actions, accessibility/responsiveness, feedback, and required API/data/authorization/entitlement support.
+- Resolve required gaps in scope or explicitly record a justified exclusion or linked follow-up package. Do not complete a UI surface with missing necessary actions, states, or coherent navigation.
+
 ## Prohibited Assumptions
 
 - Do not invent database columns, repository contracts, routes, event names, or payload shapes.
