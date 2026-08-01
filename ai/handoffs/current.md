@@ -2,17 +2,17 @@
 
 ## Work Package
 
-- ID: WP-12.03
-- Status: In review
+- ID: WP-12.04
+- Status: Available
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/12.03-square-catalog-import`
-- Latest commit: pending publication
-- Issue: #290
+- Branch: pending
+- Latest commit: `b8bd579c9459e1d4f2e3f7b68472692810a8502b` (WP-12.03 merge)
+- Issue: pending
 - Pull request: pending
-- CI state: WP-12.02 Actions run #612 passed
+- CI state: WP-12.03 Actions run #620 passed
 
 ## Completed This Session
 
@@ -32,10 +32,11 @@
 - Added venue/provider-scoped catalog mappings with migration 036.
 - Added an idempotent importer that reuses the existing menu domain and reports deterministic conflicts.
 - Added a claim-bound Venue Admin import endpoint and focused non-integration tests.
+- Reviewed and merged WP-12.03 through PR #291.
 
 ## Files Changed
 
-- Square catalog transport, importer, durable source mappings, migration 036, endpoint, tests, and Phase 12 records.
+- WP-12.03 completion evidence and the synchronized Phase 12 queue.
 
 ## Decisions
 
@@ -46,12 +47,12 @@
 ## Validation
 
 - Commands: `git diff --check`; `jq empty tracker/assignments.json`; Venue Admin unit tests and production build; source and secret review.
-- Results: available local checks passed; authoritative GitHub Actions is pending publication.
+- Results: GitHub Actions run #620 passed restore, Release build, frontend/package checks, migration inventory, and all required unit tests against `8d53b75e7e2f348fe395fb6a0a25497d2883107e`.
 - Skipped checks and reason: integration and external-provider tests remain skipped by standing owner instruction.
 
 ## Remaining Work
 
-- Validate, review, merge, and record WP-12.03 completion; WP-12.04 follows.
+- WP-12.04 — Unified POS Webhook Intake and Idempotency.
 
 ## Known Risks or Blockers
 
@@ -59,7 +60,7 @@
 
 ## Exact Next Action
 
-- Publish WP-12.03, use GitHub Actions as authority, review the exact head, and merge only when green.
+- Claim WP-12.04 and implement provider-neutral verified webhook intake and durable event idempotency without applying inventory changes.
 
 ## Do Not Redo or Reverse
 
