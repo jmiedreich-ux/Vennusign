@@ -21,7 +21,7 @@ run_scenario() {
   local scenario="$1"
   shift
   printf '%s\n' "$@" > "$temp_dir/${scenario}.paths"
-  GITHUB_OUTPUT="$temp_dir/${scenario}.out" "$script_dir/classify-changes.sh" "$temp_dir/${scenario}.paths"
+  GITHUB_OUTPUT="$temp_dir/${scenario}.out" bash "$script_dir/classify-changes.sh" "$temp_dir/${scenario}.paths"
 }
 
 run_scenario docs docs/work-packages/WP-13.01-example.md PROJECT_STATUS.md
