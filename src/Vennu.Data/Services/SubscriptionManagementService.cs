@@ -5,7 +5,6 @@ namespace Vennu.Data.Services;
 
 public sealed class SubscriptionManagementService : ISubscriptionManagementService
 {
-    private static readonly TimeSpan TrialDuration = TimeSpan.FromDays(14);
     private static readonly HashSet<string> AllowedStatuses = new(StringComparer.OrdinalIgnoreCase)
     {
         "trialing",
@@ -17,14 +16,17 @@ public sealed class SubscriptionManagementService : ISubscriptionManagementServi
     private readonly IVenueSubscriptionRepository subscriptionRepository;
     private readonly IFeatureResolutionService featureResolutionService;
     private readonly TimeProvider timeProvider;
+    private readonly ISubscriptionTierRepository tierRepository;
 
     public SubscriptionManagementService(
         IVenueSubscriptionRepository subscriptionRepository,
         IFeatureResolutionService featureResolutionService,
+        ISubscriptionTierRepository tierRepository,
         TimeProvider timeProvider)
     {
         this.subscriptionRepository = subscriptionRepository;
         this.featureResolutionService = featureResolutionService;
+        this.tierRepository = tierRepository;
         this.timeProvider = timeProvider;
     }
 
@@ -40,13 +42,18 @@ public sealed class SubscriptionManagementService : ISubscriptionManagementServi
             throw new InvalidOperationException("A subscription already exists for this venue.");
         }
 
+        var tier = await tierRepository.GetByIdAsync(tierId, cancellationToken).ConfigureAwait(false)
+            ?? throw new KeyNotFoundException("The subscription tier does not exist.");
+        if (!tier.IsActive || !tier.IsPublic || tier.TrialDays <= 0)
+            throw new InvalidOperationException("The selected tier does not offer a no-card trial.");
+
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
         var subscription = new VenueSubscription
         {
             VenueId = venueId,
             TierId = tierId,
             Status = "trialing",
-            TrialEndsAt = utcNow.Add(TrialDuration),
+            TrialEndsAt = utcNow.AddDays(tier.TrialDays),
             CreatedUtc = utcNow,
             UpdatedUtc = utcNow
         };

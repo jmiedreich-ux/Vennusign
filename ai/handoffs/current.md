@@ -1,43 +1,26 @@
 # Vennu Session Handoff
 
 ## Work Package
-
-- ID: WP-13.03
-- Status: Complete upon merge of PR #342
+- ID: WP-13.04
+- Status: In Progress
 - Execution mode: Sequential
 
 ## Git State
+- Branch: `wp/13.04-tier-trials-entitlements`
+- Issue: #347
+- Pull request: #349 (draft)
+- CI: pending implementation-head Actions
 
-- Branch: `wp/13.03-passkeys-totp-recovery`
-- Issue: #341
-- Pull request: #342 (draft)
-- CI state: implementation Actions run #730 passed; final completion-record head pending
-
-## Completed This Session
-
-- Refreshed master and verified WP-13.02 merged, its issue closed, and no competing WP-13.03 issue, branch, PR, or tracker claim existed.
-- Claimed WP-13.03 exclusively before implementation.
-- Added FIDO2-backed passkey ceremonies, protected/one-time challenges, TOTP enrollment and replay protection, hashed recovery codes, session assurance/step-up behavior, migration 042, tests, and architecture records.
-- Confirmed this backend/API package changes no UI page or screen; later UI work remains bounded to WP-13.05/WP-13.07.
+## Completed
+- Verified WP-13.03 merged and WP-13.04 had no competing owner before claiming.
+- Added tier-defined trial/expiry/venue policy, removed hardcoded production trial duration, enforced active/unexpired subscription and screen capacity on screen creation, migration 043, tests and architecture records.
+- Preserved the existing webhook-authoritative paid activation and feature-resolution pipeline.
 
 ## Validation
-
-- Local diff/whitespace and scope checks are clean; local .NET tooling is unavailable and is not a blocker.
-- GitHub Actions run #730 passed the required affected-area checks on implementation head `b04544146ff1563798f5967e36bfaf0c4b5944ac`.
-- Integration, live-provider, Azure SQL, hosted-infrastructure, browser/device, and cross-system tests are intentionally skipped.
-
-## Remaining Work
-
-- Validate the final completion-record head, record ChatGPT approval, merge PR #342, verify issue #341 closes, and refresh master.
-
-## Known Risks or Blockers
-
-- No blocker. Live WebAuthn/browser and external infrastructure verification is excluded; non-integration contract/security tests and Actions remain required.
+GitHub Actions is pending. Integration, live Stripe, Azure SQL, hosted infrastructure and cross-system tests are skipped.
 
 ## Exact Next Action
+Validate PR #349's implementation head, correct failures, record completion, review and merge before WP-13.05.
 
-- After PR #342 merges, inspect ownership and claim WP-13.04 only if it remains unowned.
-
-## Do Not Redo or Reverse
-
-- Do not implement WebAuthn cryptography manually, expose stored TOTP/recovery secrets, add password login, alter legacy Venue Admin tokens, or begin WP-13.04 before PR #342 merges and ownership is rechecked.
+## Do Not Redo
+Do not grant paid access from Checkout return state, hardcode trial policy, bypass screen/feature limits, or begin WP-13.05 before merge.

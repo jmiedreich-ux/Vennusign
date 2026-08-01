@@ -10,13 +10,16 @@ public sealed class ScreenManagementService(
     IScreenRepository screenRepository,
     IVenueRepository venueRepository,
     IScreenUpdateNotifier notifier,
-    TimeProvider timeProvider) : IScreenManagementService
+    TimeProvider timeProvider,
+    Vennu.Data.Services.IVenueEntitlementService? entitlementService = null) : IScreenManagementService
 {
     public async Task<IReadOnlyCollection<ScreenManagementItem>> GetAsync(
         Guid venueId,
         CancellationToken cancellationToken = default)
     {
         await RequireVenueAsync(venueId, cancellationToken).ConfigureAwait(false);
+        if (entitlementService is not null)
+            await entitlementService.EnsureCanAddScreenAsync(venueId, cancellationToken).ConfigureAwait(false);
         var screens = await screenRepository.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
         return screens
             .OrderBy(screen => screen.Name, StringComparer.OrdinalIgnoreCase)

@@ -9,7 +9,7 @@ public class SubscriptionManagementServiceTests
     private static readonly DateTimeOffset UtcNow = new(2026, 7, 28, 5, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public async Task Start_trial_creates_fourteen_day_subscription_and_invalidates_cache()
+    public async Task Start_trial_uses_tier_defined_duration_and_invalidates_cache()
     {
         var venueId = Guid.NewGuid();
         var tierId = Guid.NewGuid();
@@ -20,7 +20,7 @@ public class SubscriptionManagementServiceTests
         var subscription = await service.StartTrialAsync(venueId, tierId);
 
         Assert.Equal("trialing", subscription.Status);
-        Assert.Equal(UtcNow.UtcDateTime.AddDays(14), subscription.TrialEndsAt);
+        Assert.Equal(UtcNow.UtcDateTime.AddDays(21), subscription.TrialEndsAt);
         Assert.Equal(tierId, subscription.TierId);
         Assert.Equal(venueId, Assert.Single(featureResolution.InvalidatedVenueIds));
     }
@@ -90,7 +90,17 @@ public class SubscriptionManagementServiceTests
     private static SubscriptionManagementService CreateService(
         SubscriptionRepositoryFake repository,
         FeatureResolutionFake featureResolution) =>
-        new(repository, featureResolution, new FixedTimeProvider(UtcNow));
+        new(repository, featureResolution, new TierRepositoryFake(), new FixedTimeProvider(UtcNow));
+
+    private sealed class TierRepositoryFake : ISubscriptionTierRepository
+    {
+        public Task<SubscriptionTier?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<SubscriptionTier?>(new() { Id=id, IsActive=true, IsPublic=true, TrialDays=21 });
+        public Task<SubscriptionTier?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) => Task.FromResult<SubscriptionTier?>(null);
+        public Task<IReadOnlyCollection<SubscriptionTier>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyCollection<SubscriptionTier>>([]);
+        public Task<IReadOnlyCollection<TierFeature>> GetFeaturesAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyCollection<TierFeature>>([]);
+        public Task<bool> CreateAsync(SubscriptionTier tier, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task<bool> UpdateAsync(SubscriptionTier tier, CancellationToken cancellationToken = default) => Task.FromResult(false);
+    }
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
