@@ -177,7 +177,6 @@ public sealed class ToastPollingService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await CheckOnceAsync(stoppingToken).ConfigureAwait(false);
         var interval = options.Value.PollInterval > TimeSpan.Zero
             ? options.Value.PollInterval
             : TimeSpan.FromHours(1);
