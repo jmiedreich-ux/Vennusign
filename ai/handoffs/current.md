@@ -11,7 +11,7 @@
 - Branch: `issue/350-secure-dev-integration-settings`
 - Issue: #350
 - Pull request: #352 (draft)
-- CI state: pending GitHub Actions for head `0a3a97f40fa642df91e8b159a4450ed7b8a2c87e`
+- CI state: pending GitHub Actions for the latest draft PR head
 
 ## Completed This Session
 
