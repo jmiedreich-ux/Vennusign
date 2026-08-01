@@ -1,19 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T03:07:00Z",
-  "activeAssignments": [
-    {
-      "workItemType": "WP",
-      "workItemId": "WP-12.07",
-      "title": "Toast Polling Resilience",
-      "issueNumber": 315,
-      "branch": "wp/12.07-toast-polling-resilience",
-      "executionMode": "Sequential",
-      "claimedBy": "ChatGPT Codex",
-      "claimedUtc": "2026-08-01T02:42:00Z"
-    }
-  ],
-  "nextAvailableWorkPackage": "WP-12.07",
+  "updatedUtc": "2026-08-01T03:10:00Z",
+  "activeAssignments": [],
+  "nextAvailableWorkPackage": "WP-12.08",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
