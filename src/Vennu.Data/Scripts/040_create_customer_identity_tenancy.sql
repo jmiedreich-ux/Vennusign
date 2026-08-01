@@ -111,7 +111,8 @@ CREATE TABLE dbo.MembershipAuditEntries
     NewRole NVARCHAR(30) NULL,
     OccurredUtc DATETIME2(7) NOT NULL,
     CONSTRAINT FK_MembershipAuditEntries_Organizations FOREIGN KEY (OrganizationId) REFERENCES dbo.Organizations (Id),
-    CONSTRAINT FK_MembershipAuditEntries_Venues FOREIGN KEY (VenueId) REFERENCES dbo.Venues (Id),
+    CONSTRAINT FK_MembershipAuditEntries_Venues FOREIGN KEY (VenueId, OrganizationId)
+        REFERENCES dbo.Venues (Id, OrganizationId),
     CONSTRAINT FK_MembershipAuditEntries_Actor FOREIGN KEY (ActorUserId) REFERENCES dbo.CustomerUsers (Id),
     CONSTRAINT FK_MembershipAuditEntries_Subject FOREIGN KEY (SubjectUserId) REFERENCES dbo.CustomerUsers (Id),
     CONSTRAINT CK_MembershipAuditEntries_Scope CHECK (Scope IN (1, 2)),

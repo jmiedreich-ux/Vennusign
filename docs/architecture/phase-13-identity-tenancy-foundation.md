@@ -35,7 +35,7 @@ Unknown roles and capabilities fail closed.
 
 ## Mutation and audit rules
 
-Membership creation, role change, revocation, venue attachment, and ownership transfer write their audit row in the same SQL transaction as the state change. Audit rows capture tenant, optional venue, actor, subject, action, prior/new role, and server time. A database trigger rejects audit updates and deletes.
+Membership creation, role change, revocation, venue attachment, and ownership transfer write their audit row in the same SQL transaction as the state change. Audit rows capture tenant, optional venue, actor, subject, action, prior/new role, and server time. Venue-scoped audit rows use the same composite venue/organization foreign key as venue memberships, and a database trigger rejects audit updates and deletes.
 
 Organization ownership transfer uses serializable isolation and verifies both the current owner and new owner's active membership before changing the two memberships and organization owner pointer.
 
