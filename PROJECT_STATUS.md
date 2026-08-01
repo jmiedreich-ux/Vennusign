@@ -122,7 +122,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-12.04 — Unified POS Webhook Intake and Idempotency** is next.
+**WP-12.04 — Unified POS Webhook Intake and Idempotency** is active in issue #293 on branch `wp/12.04-unified-pos-webhook-intake`.
 
 ## Phase 04 Result
 
@@ -184,7 +184,7 @@ No implementation package is active. **WP-12.04 — Unified POS Webhook Intake a
 
 ## Next Action
 
-Claim and implement **WP-12.04 — Unified POS Webhook Intake and Idempotency**.
+Validate, review, and merge **WP-12.04 — Unified POS Webhook Intake and Idempotency**, then record completion before starting WP-12.05.
 
 ## Phase 05 Work Packages
 
