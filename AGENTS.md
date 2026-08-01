@@ -52,12 +52,17 @@ Repository and GitHub state are the source of truth. Chat history is supporting 
 
 - GitHub Actions is the authoritative validation environment for every implementation pull request.
 - Local builds and tests are optional developer-productivity checks; they do not replace required GitHub Actions validation.
-- Every implementation PR must run the required non-integration workflows and checks for the affected areas before ChatGPT may approve it.
+- Every WP and RWP implementation PR must run the required non-integration workflows and checks for its affected areas before ChatGPT may approve it; a normal package must not run unrelated application builds, TV validations, or the complete unit-test suite.
 - Ordinary work uses impact-based validation: run the nearest relevant non-integration checks for the area changed, then widen scope whenever shared contracts, shared models, project files, dependency injection, authentication, migrations, workflow definitions, or other cross-cutting surfaces are touched.
 - Phase-closure work packages and equivalent closure PRs must run the broader full-repository non-integration regression suite before approval.
 - Required checks must complete successfully against the exact PR head commit being reviewed.
 - Missing, skipped, cancelled, stale, or failing required non-integration checks block approval unless the work package explicitly documents why a check is not applicable and ChatGPT accepts that exception during review.
-- Owner-approved standing exception: skip all integration-type tests for every work package, including Azure SQL and tests requiring external services, credentials, hosted infrastructure, containers, or cross-system integration. Their omission or failure is never a completion or merge blocker. Restore, Release build, display production build, unit tests, static analysis, and applicable non-integration migration validation remain required.
+- Owner-approved standing exception: skip all integration-type tests for every work package, including Azure SQL and tests requiring external services, credentials, hosted infrastructure, containers, or cross-system integration. Their omission or failure is never a completion or merge blocker. Affected-area restore, Release build, unit tests, static analysis, and applicable non-integration migration validation remain required.
+- Documentation and completion-evidence-only pull requests run lightweight repository-record validation and must not build application or TV projects.
+- TV builds and validations run only when the affected TV/player area changes, when a package explicitly owns TV distribution behavior, or during full validation.
+- Full non-integration validation is reserved for phase-closing packages, the nightly workflow, an explicit `full-validation` pull-request label, workflow changes, or a manual full-validation dispatch.
+- Include completion evidence in the implementation PR whenever practical. If a follow-up completion-record PR is unavoidable, it remains documentation-only and uses lightweight validation.
+- The workflow's stable `build-and-test` gate remains required even when individual area jobs are correctly skipped as non-applicable.
 - If a required workflow does not exist for an affected area, creating or extending the workflow is part of the work package before approval.
 - GitHub Actions logs, job results, artifacts, and combined commit status are the source of truth for validation evidence.
 - A successful local run may be recorded as supplemental evidence, but approval still requires passing required GitHub checks.
@@ -94,6 +99,8 @@ Repository and GitHub state are the source of truth. Chat history is supporting 
 ## Multi-Agent Rules
 
 - Default to sequential execution when ownership cannot be divided cleanly.
+- In sequential mode, claim one approved WP/RWP, complete and release it, and only then claim the next queue item.
+- In collaborative mode, all lanes work inside one orchestrator-owned WP/RWP claim; lanes must not claim separate roadmap packages during that session.
 - Prefer `Collaborative` execution mode when the user explicitly wants to drive implementation interactively with the agent.
 - Before parallel work starts, define each lane's writable, read-only, and prohibited files.
 - No two active agents may modify the same file.
@@ -158,7 +165,7 @@ Before ending a development session:
 - Add or update non-integration tests with every behavioral change.
 - Prefer unit tests for business rules and mapping.
 - Do not run integration-type tests under the standing repository-owner exception.
-- Run the narrowest relevant non-integration tests during development when a local checkout is available.
+- Run the narrowest relevant non-integration tests during development and CI. For a normal WP/RWP, select affected unit-test projects explicitly; do not invoke the solution-wide unit-test suite.
 - Use the nearest affected validation by default, but widen scope when shared or cross-cutting surfaces are affected.
 - Before completion, ensure the required GitHub Actions workflows execute the authoritative impact-based validation for the affected areas.
 - Before phase closure, ensure the broader full non-integration suite executes successfully across the repository.
