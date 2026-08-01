@@ -59,4 +59,9 @@ run_scenario workflow .github/workflows/phase02-tests.yml
 assert_output workflow full true
 assert_output workflow webos true
 
+run_scenario unknown config/new-runtime-policy.json
+assert_output unknown full true
+assert_output unknown dotnet_api true
+assert_output unknown display true
+
 echo "Change classification scenarios passed."
