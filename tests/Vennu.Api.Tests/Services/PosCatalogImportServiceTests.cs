@@ -37,7 +37,7 @@ public sealed class PosCatalogImportServiceTests
         Assert.Single(menus.Items);
         Assert.Equal("Cheese", menus.Items[0].Tags);
         Assert.Equal(4, mappings.Values.Count);
-        Assert.Equal(UtcNow.UtcDateTime, connections.Connection.LastSyncedUtc);
+        Assert.Equal(UtcNow.UtcDateTime, Assert.IsType<PosConnection>(connections.Connection).LastSyncedUtc);
     }
 
     [Fact]

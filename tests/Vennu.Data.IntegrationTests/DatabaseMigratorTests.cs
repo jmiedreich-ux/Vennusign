@@ -44,7 +44,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.032_add_screen_pre_registration.sql",
                 "Vennu.Data.Scripts.033_add_subscription_period_end_state.sql",
                 "Vennu.Data.Scripts.034_create_haas_contracts.sql",
-                "Vennu.Data.Scripts.035_create_pos_connections.sql"
+                "Vennu.Data.Scripts.035_create_pos_connections.sql",
+                "Vennu.Data.Scripts.036_create_pos_catalog_mappings.sql"
             ],
             scriptNames);
     }
