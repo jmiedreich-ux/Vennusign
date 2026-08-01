@@ -19,6 +19,11 @@ public interface IPosConnectionRepository
         Guid venueId,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyCollection<PosConnection>> GetAllByProviderAsync(
+        PosProvider provider,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException();
+
     Task<PosConnection> SaveAsync(
         Guid venueId,
         PosConnection connection,

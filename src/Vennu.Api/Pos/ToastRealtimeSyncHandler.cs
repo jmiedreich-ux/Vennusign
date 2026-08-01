@@ -8,11 +8,9 @@ namespace Vennu.Api.Pos;
 
 public sealed class ToastRealtimeSyncHandler(
     IPosConnectionRepository connections,
-    IPosCatalogMappingRepository mappings,
-    IMenuRepository menus,
     IPosCatalogImportService catalogImport,
     IScreenUpdateNotifier notifier,
-    TimeProvider timeProvider) : IPosWebhookEventHandler
+    IToastInventorySyncService inventorySync) : IPosWebhookEventHandler
 {
     private static readonly HashSet<string> StockEvents = ["in_stock", "out_of_stock", "low_quantity"];
 
@@ -39,9 +37,6 @@ public sealed class ToastRealtimeSyncHandler(
         if (!document.RootElement.TryGetProperty("details", out var details) || details.ValueKind != JsonValueKind.Object) return;
         var externalId = Text(details, "itemGuid");
         if (externalId.Length == 0) return;
-        var item = await mappings.GetMappedItemAsync(connection.VenueId, PosProvider.Toast, externalId, cancellationToken).ConfigureAwait(false);
-        if (item is null) return;
-
         var available = webhookEvent.EventType != "out_of_stock";
         int? quantity = null;
         if (details.TryGetProperty("quantity", out var rawQuantity) && rawQuantity.TryGetDecimal(out var numeric) &&
@@ -49,19 +44,10 @@ public sealed class ToastRealtimeSyncHandler(
             quantity = (int)numeric;
         if (webhookEvent.EventType == "out_of_stock") quantity = 0;
 
-        var availabilityChanged = item.IsAvailable != available;
-        var quantityChanged = item.QuantityAvailable != quantity;
-        if (!availabilityChanged && !quantityChanged) return;
-        item.IsAvailable = available;
-        item.QuantityAvailable = quantity;
-        item.AvailabilityResetUtc = null;
-        item.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
-        if (!await menus.UpdateItemAsync(item, cancellationToken).ConfigureAwait(false))
-            throw new InvalidOperationException("The Toast inventory update could not be persisted.");
-        if (availabilityChanged)
-            await notifier.NotifyVenueItemAvailabilityChangedAsync(connection.VenueId, item.Id.ToString(), available, cancellationToken).ConfigureAwait(false);
-        if (quantityChanged)
-            await notifier.NotifyVenueContentUpdatedAsync(connection.VenueId, new { change = "pos-quantity", itemId = item.Id }, cancellationToken).ConfigureAwait(false);
+        await inventorySync.ApplyItemAsync(
+            connection.VenueId,
+            new PosInventoryItem(externalId, available, quantity, null, null),
+            cancellationToken).ConfigureAwait(false);
     }
 
     private static string Text(JsonElement value, string name) =>

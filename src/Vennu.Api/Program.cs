@@ -79,9 +79,15 @@ builder.Services.Configure<SquareWebhookOptions>(builder.Configuration.GetSectio
 builder.Services.AddSingleton<IPosWebhookVerifier, SquarePosWebhookVerifier>();
 builder.Services.Configure<ToastCatalogOptions>(builder.Configuration.GetSection(ToastCatalogOptions.SectionName));
 builder.Services.AddHttpClient<IToastCatalogGateway, ToastCatalogGateway>();
+builder.Services.Configure<ToastInventoryOptions>(builder.Configuration.GetSection(ToastInventoryOptions.SectionName));
+builder.Services.AddHttpClient<IToastInventoryGateway, ToastInventoryGateway>();
 builder.Services.AddScoped<IPosProvider, ToastPosProvider>();
 builder.Services.Configure<ToastWebhookOptions>(builder.Configuration.GetSection(ToastWebhookOptions.SectionName));
 builder.Services.AddSingleton<IPosWebhookVerifier, ToastPosWebhookVerifier>();
+builder.Services.AddScoped<IToastInventorySyncService, ToastInventorySyncService>();
+builder.Services.Configure<ToastPollingOptions>(builder.Configuration.GetSection(ToastPollingOptions.SectionName));
+builder.Services.AddSingleton<IToastPollingCoordinator, ToastPollingCoordinator>();
+builder.Services.AddHostedService<ToastPollingService>();
 builder.Services.AddSingleton<IPosWebhookWorkSignal, PosWebhookWorkSignal>();
 builder.Services.AddScoped<IPosWebhookEventHandler, SquareRealtimeSyncHandler>();
 builder.Services.AddScoped<IPosWebhookEventHandler, ToastRealtimeSyncHandler>();

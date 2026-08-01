@@ -21,7 +21,11 @@ public sealed record PosConnectionSummary(
     string ExternalMerchantId,
     DateTime? AccessTokenExpiresUtc,
     DateTime? LastSyncedUtc,
-    DateTime UpdatedUtc);
+    DateTime UpdatedUtc,
+    DateTime? LastSyncAttemptUtc = null,
+    int ConsecutiveSyncFailures = 0,
+    DateTime? NextSyncAttemptUtc = null,
+    string? LastSyncErrorCode = null);
 
 public interface IPosConnectionService
 {

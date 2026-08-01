@@ -125,7 +125,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-None. **WP-12.07 — Toast Polling Resilience** is the next available package.
+**WP-12.07 — Toast Polling Resilience** is in review on issue #315 and branch `wp/12.07-toast-polling-resilience`.
 
 ## Phase 04 Result
 
@@ -187,7 +187,7 @@ None. **WP-12.07 — Toast Polling Resilience** is the next available package.
 
 ## Next Action
 
-Validate and review **WP-12.06 — Toast Provider and Webhook Sync** through GitHub Actions, then merge it before WP-12.07 begins.
+Validate and review **WP-12.07 — Toast Polling Resilience** through impact-based GitHub Actions, then merge it before WP-12.08 begins.
 
 ## Phase 05 Work Packages
 
