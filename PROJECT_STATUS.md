@@ -131,7 +131,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-**WP-13.02 — Customer Authentication Foundation** is claimed in Sequential mode on issue #339 and branch `wp/13.02-customer-authentication-foundation`. WP-13.01 is complete through issue #337 and PR #338.
+**WP-13.02 — Customer Authentication Foundation** is implemented in Sequential mode on issue #339, branch `wp/13.02-customer-authentication-foundation`, and draft PR #340. Exact-head affected-area GitHub Actions validation is pending. WP-13.01 is complete through issue #337 and PR #338.
 
 ## Phase 04 Result
 
@@ -200,7 +200,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Next Action
 
-Implement, validate, review, and merge **WP-13.02 — Customer Authentication Foundation** without beginning WP-13.03.
+Validate, review, and merge **WP-13.02 — Customer Authentication Foundation** on PR #340 without beginning WP-13.03.
 
 ## Phase 05 Work Packages
 

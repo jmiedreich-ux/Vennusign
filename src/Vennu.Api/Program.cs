@@ -11,6 +11,10 @@ using Vennu.Api.Services;
 using Vennu.Api.VenueAdmin;
 using Vennu.Api.Infrastructure;
 using Vennu.Api.Pos;
+using Vennu.Api.CustomerAuthentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +33,21 @@ if (builder.Environment.IsDevelopment() && (adminCorsOrigins is null || adminCor
 var adminCorsEnabled = adminCorsOrigins is { Length: > 0 };
 
 builder.Services.AddControllers();
+builder.Services
+    .AddOptions<CustomerAuthenticationOptions>()
+    .Bind(builder.Configuration.GetSection(CustomerAuthenticationOptions.SectionName))
+    .ValidateOnStart();
+builder.Services.AddSingleton<IValidateOptions<CustomerAuthenticationOptions>, CustomerAuthenticationOptionsValidator>();
+var customerAuthentication = builder.Configuration
+    .GetSection(CustomerAuthenticationOptions.SectionName)
+    .Get<CustomerAuthenticationOptions>() ?? new CustomerAuthenticationOptions();
+builder.Services.AddSingleton(new CustomerSessionPolicy
+{
+    AbsoluteLifetime = customerAuthentication.AbsoluteSessionLifetime,
+    IdleLifetime = customerAuthentication.IdleSessionLifetime,
+    TouchInterval = customerAuthentication.SessionTouchInterval,
+    EmailLinkLifetime = customerAuthentication.EmailLinkLifetime
+});
 if (adminCorsEnabled)
 {
     builder.Services.AddCors(options =>
@@ -46,7 +65,23 @@ builder.Services
         options => builder.Configuration.GetSection(SuperAdminAuthenticationOptions.SectionName).Bind(options))
     .AddScheme<VenueAdminAuthenticationOptions, VenueAdminAuthenticationHandler>(
         VenueAdminAuthenticationDefaults.AuthenticationScheme,
-        options => builder.Configuration.GetSection(VenueAdminAuthenticationOptions.SectionName).Bind(options));
+        options => builder.Configuration.GetSection(VenueAdminAuthenticationOptions.SectionName).Bind(options))
+    .AddScheme<CustomerSessionAuthenticationOptions, CustomerSessionAuthenticationHandler>(
+        CustomerAuthenticationDefaults.AuthenticationScheme,
+        _ => { })
+    .AddCookie(CustomerAuthenticationDefaults.ExternalCookieScheme, options =>
+    {
+        options.Cookie.Name = "__Host-Vennu.CustomerExternal";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.Path = "/";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+    })
+    .AddOpenIdConnect(CustomerAuthenticationDefaults.GoogleScheme, options =>
+        ConfigureCustomerOidc(options, "https://accounts.google.com", "/signin-customer-google", customerAuthentication.Google, false))
+    .AddOpenIdConnect(CustomerAuthenticationDefaults.AppleScheme, options =>
+        ConfigureCustomerOidc(options, "https://appleid.apple.com", "/signin-customer-apple", customerAuthentication.Apple, true));
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(
@@ -62,11 +97,18 @@ builder.Services.AddAuthorization(options =>
             .RequireAuthenticatedUser()
             .RequireRole("VenueAdmin")
             .RequireClaim(VenueAdminAuthenticationDefaults.VenueIdClaim));
+    options.AddPolicy(
+        CustomerAuthenticationDefaults.AuthorizationPolicy,
+        policy => policy
+            .AddAuthenticationSchemes(CustomerAuthenticationDefaults.AuthenticationScheme)
+            .RequireAuthenticatedUser());
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddDataProtection();
+builder.Services.AddScoped<CustomerOidcEvents>();
+builder.Services.AddHttpClient<IEmailLoginDelivery, ConfiguredEmailLoginDelivery>();
 builder.Services.AddSingleton<IPosCredentialProtector, DataProtectionPosCredentialProtector>();
 builder.Services.AddSingleton<IPosOAuthStateService, ProtectedPosOAuthStateService>();
 builder.Services.Configure<SquareOAuthOptions>(builder.Configuration.GetSection(SquareOAuthOptions.SectionName));
@@ -169,5 +211,40 @@ app.MapHub<VennuHub>("/hubs/vennu");
 app.MapGet("/", () => Results.Ok(new { status = "ok", service = "Vennu.Api" }));
 
 app.Run();
+
+static void ConfigureCustomerOidc(
+    OpenIdConnectOptions options,
+    string authority,
+    string callbackPath,
+    CustomerOidcProviderOptions provider,
+    bool useFormPost)
+{
+    options.Authority = authority;
+    options.ClientId = string.IsNullOrWhiteSpace(provider.ClientId) ? "not-configured" : provider.ClientId;
+    options.ClientSecret = string.IsNullOrWhiteSpace(provider.ClientSecret) ? "not-configured" : provider.ClientSecret;
+    options.CallbackPath = callbackPath;
+    options.SignInScheme = CustomerAuthenticationDefaults.ExternalCookieScheme;
+    options.ResponseType = "code";
+    options.ResponseMode = useFormPost ? "form_post" : "query";
+    options.UsePkce = true;
+    options.RequireHttpsMetadata = true;
+    options.MapInboundClaims = false;
+    options.SaveTokens = false;
+    options.GetClaimsFromUserInfoEndpoint = !useFormPost;
+    options.RemoteAuthenticationTimeout = TimeSpan.FromMinutes(10);
+    options.Scope.Clear();
+    options.Scope.Add("openid");
+    options.Scope.Add("email");
+    options.Scope.Add("profile");
+    options.TokenValidationParameters.NameClaimType = "name";
+    options.TokenValidationParameters.ValidateIssuer = true;
+    options.TokenValidationParameters.ValidateAudience = true;
+    options.TokenValidationParameters.ValidateLifetime = true;
+    options.EventsType = typeof(CustomerOidcEvents);
+    options.CorrelationCookie.SameSite = SameSiteMode.None;
+    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.NonceCookie.SameSite = SameSiteMode.None;
+    options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
+}
 
 public partial class Program;

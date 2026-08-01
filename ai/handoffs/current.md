@@ -3,15 +3,15 @@
 ## Work Package
 
 - ID: WP-13.02
-- Status: Claimed
+- Status: Implemented; validation pending
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/13.02-customer-authentication-foundation`
 - Issue: #339
-- Pull request: pending
-- CI state: pending implementation
+- Pull request: #340 (draft)
+- CI state: affected-area exact-head run pending
 
 ## Completed This Session
 
@@ -19,23 +19,24 @@
 - Verified the default-branch tracker has no active assignment and no WP-13.02 issue, branch, or pull request exists.
 - Read AGENTS.md, the approved Phase 13 plan, current records, WP-13.01 tenancy architecture, and existing authentication/session patterns.
 - Claimed WP-13.02 exclusively in Sequential mode.
+- Added Google/Apple validated OIDC boundaries, verified account linking, hashed one-time email links, opaque hashed sessions, secure cookie authentication, migration 041, tests, and architecture records.
 
 ## Validation
 
-- Claim JSON and documentation consistency must pass before publication.
+- Local assignment JSON, diff whitespace, static security/scope, and migration-order reviews passed.
 - Integration, live Google/Apple/email, Azure SQL, hosted-infrastructure, container, device, and cross-system tests remain skipped under the standing owner instruction.
 
 ## Remaining Work
 
-- Implement, publish, validate, review, and merge WP-13.02 only; close issue #339 and release the claim.
+- Publish the implementation head, validate it through GitHub Actions, review and merge PR #340, close issue #339, and release the claim.
 
 ## Known Risks or Blockers
 
-- No blocker. Provider credentials are environment-owned and must never be committed.
+- No blocker. Live provider/email behavior is intentionally external integration; configuration and non-integration boundaries are validated here.
 
 ## Exact Next Action
 
-- Publish the Sequential claim and draft PR, then implement the approved passwordless authentication foundation.
+- Publish the implementation to PR #340 and validate the exact head through GitHub Actions.
 
 ## Do Not Redo or Reverse
 
