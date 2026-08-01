@@ -1,8 +1,19 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T23:01:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-13.03",
+  "updatedUtc": "2026-08-01T23:08:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-13.03",
+      "title": "Passkeys, TOTP, and Account Recovery",
+      "owner": "Codex scheduled automation",
+      "executionMode": "Sequential",
+      "issue": 341,
+      "branch": "wp/13.03-passkeys-totp-recovery",
+      "status": "In Progress",
+      "claimedUtc": "2026-08-01T23:08:00Z"
+    }
+  ],
+  "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
