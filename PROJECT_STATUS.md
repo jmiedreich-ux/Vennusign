@@ -124,7 +124,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-12.06 — Toast Provider and Webhook Sync** is next.
+**WP-12.06 — Toast Provider and Webhook Sync** is in review on issue #306 and branch `wp/12.06-toast-provider-webhook-sync`.
 
 ## Phase 04 Result
 
@@ -186,7 +186,7 @@ No implementation package is active. **WP-12.06 — Toast Provider and Webhook S
 
 ## Next Action
 
-Claim and implement **WP-12.06 — Toast Provider and Webhook Sync**.
+Validate and review **WP-12.06 — Toast Provider and Webhook Sync** through GitHub Actions, then merge it before WP-12.07 begins.
 
 ## Phase 05 Work Packages
 
