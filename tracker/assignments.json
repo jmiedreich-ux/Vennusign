@@ -1,26 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T03:49:28Z",
-  "activeAssignments": [
-    {
-      "workPackage": "WP-12.10",
-      "executionMode": "Sequential",
-      "owner": "ChatGPT scheduled development agent",
-      "issue": 330,
-      "branch": "wp/12.10-phase-12-validation-closure",
-      "pullRequest": 331,
-      "claimedUtc": "2026-08-01T03:49:28Z",
-      "writableScope": [
-        "Phase 12 consolidated non-integration validation, operational notes, tests, and closure documentation"
-      ],
-      "prohibitedScope": [
-        "New POS behavior",
-        "Phase 13 work",
-        "Unrelated collaborative issue #321 login work"
-      ]
-    }
-  ],
-  "nextAvailableWorkPackage": null,
+  "updatedUtc": "2026-08-01T04:02:47Z",
+  "activeAssignments": [],
+  "nextAvailableWorkPackage": "Phase 13 planning",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
