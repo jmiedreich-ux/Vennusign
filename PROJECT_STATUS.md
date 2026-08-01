@@ -130,7 +130,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-No work package is currently claimed. **WP-13.01 — Identity, Organization, and Membership Foundation** is next.
+**RWP-00.01 — Affected-Area CI and WP/RWP Validation Optimization** is claimed sequentially under issue #335. Phase 13 implementation remains paused until this bounded remediation is complete.
 
 ## Phase 04 Result
 
@@ -194,12 +194,12 @@ No work package is currently claimed. **WP-13.01 — Identity, Organization, and
 
 ## Standing Validation Exception
 
-- Integration-type tests are skipped for every WP under the repository owner's standing instruction.
-- Restore, Release build, display production build, unit tests, and applicable non-integration validation remain required.
+- Integration-type tests are skipped for every WP and RWP under the repository owner's standing instruction.
+- Affected-area restore, Release build, unit tests, and applicable non-integration validation remain required; full non-integration validation is reserved for phase closure, nightly/manual runs, workflow changes, or an explicit `full-validation` label.
 
 ## Next Action
 
-Create and merge the bounded Phase 13 work-package breakdown, then claim WP-13.01 in roadmap order.
+Complete and merge **RWP-00.01**, release its sequential claim, then claim **WP-13.01 — Identity, Organization, and Membership Foundation**.
 
 ## Phase 05 Work Packages
 
