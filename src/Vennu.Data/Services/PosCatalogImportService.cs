@@ -130,6 +130,11 @@ public sealed class PosCatalogImportService(
             foreach (var modifier in item.Modifiers.Where(value => ValidId(value.ExternalId)))
             {
                 var modifierExternalId = $"{item.ExternalId.Trim()}:{modifier.ExternalId.Trim()}";
+                if (modifierExternalId.Length > 300)
+                {
+                    conflicts.Add($"Modifier {modifier.ExternalId} for item {item.ExternalId} has an unsupported identifier.");
+                    continue;
+                }
                 var modifierKey = (PosCatalogEntityType.Modifier, modifierExternalId);
                 if (!mappings.ContainsKey(modifierKey))
                 {

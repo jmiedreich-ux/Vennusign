@@ -60,14 +60,14 @@ public sealed class SquareCatalogGateway(HttpClient httpClient, IOptions<SquareC
                 var money = variationData.TryGetProperty("price_money", out var priceMoney) ? priceMoney : default;
                 var amount = money.ValueKind == JsonValueKind.Object && money.TryGetProperty("amount", out var amountElement)
                     ? amountElement.GetInt64() / 100m : 0m;
-                var currency = money.ValueKind == JsonValueKind.Object ? Text(money, "currency") : "USD";
+                var currency = money.ValueKind == JsonValueKind.Object ? Text(money, "currency") : string.Empty;
                 var itemName = Text(data, "name");
                 var variationName = Text(variationData, "name");
                 items.Add(new PosCatalogItem(
                     Id(variation), categoryId,
                     variationName.Length > 0 && !string.Equals(variationName, "Regular", StringComparison.OrdinalIgnoreCase)
                         ? $"{itemName} — {variationName}" : itemName,
-                    TextOrNull(data, "description"), amount, currency.Length == 0 ? "USD" : currency, modifiers));
+                    TextOrNull(data, "description"), amount, currency, modifiers));
             }
         }
         return new PosCatalogResult(categories, items.OrderBy(value => value.ExternalId, StringComparer.Ordinal).ToArray());

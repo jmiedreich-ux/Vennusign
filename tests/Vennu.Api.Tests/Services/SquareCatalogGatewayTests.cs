@@ -37,4 +37,19 @@ public sealed class SquareCatalogGatewayTests
         Assert.Equal(12.50m, item.Price);
         Assert.Equal("Cheese", Assert.Single(item.Modifiers).Name);
     }
+
+    [Fact]
+    public void Map_MissingPriceMoney_RemainsUnsupportedForImportValidation()
+    {
+        using var document = JsonDocument.Parse("""
+            [{ "type": "ITEM", "id": "item-1", "item_data": {
+              "name": "Market Price", "category_id": "cat-1",
+              "variations": [{ "id": "variation-1", "item_variation_data": { "name": "Regular" } }]
+            } }]
+            """);
+
+        var result = SquareCatalogGateway.Map(document.RootElement.EnumerateArray().Select(value => value.Clone()).ToArray());
+
+        Assert.Equal(string.Empty, Assert.Single(result.Items).CurrencyCode);
+    }
 }
