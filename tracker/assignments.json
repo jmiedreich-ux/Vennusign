@@ -1,7 +1,24 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T03:43:43Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-01T03:46:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "Issue-321",
+      "executionMode": "Collaborative",
+      "owner": "GitHub Copilot",
+      "issue": 321,
+      "branch": "issue/321-admin-login-problem",
+      "pullRequest": 327,
+      "claimedUtc": "2026-08-01T03:46:00Z",
+      "writableScope": [
+        "Local admin login startup flow, scripts/start-dev.ps1, and closely related collaborative configuration fixes"
+      ],
+      "prohibitedScope": [
+        "WP-12.10 phase closure",
+        "Any unrelated sequential work package implementation"
+      ]
+    }
+  ],
   "nextAvailableWorkPackage": "WP-12.10",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
