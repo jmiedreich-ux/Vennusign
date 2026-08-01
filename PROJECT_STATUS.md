@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-**Phase 13 — Multilingual Support**
+**Phase 13 — Customer Identity, Signup, and Onboarding**
 
 ## Milestone
 
-The internal Super Admin CRM is complete; the next milestone is the first venue managing its board.
+The next milestone is frictionless customer identity, signup, tier-defined entitlement, venue setup, and first-screen onboarding.
 
 ## Completed
 
@@ -130,7 +130,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No work package is currently claimed. Phase 13 requires its bounded sequential work-package breakdown before implementation begins.
+No work package is currently claimed. **WP-13.01 — Identity, Organization, and Membership Foundation** is next.
 
 ## Phase 04 Result
 
