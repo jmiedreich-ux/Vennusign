@@ -52,8 +52,8 @@ public sealed class CustomerPasskeyService(
         {
             AttestationResponse = response,
             OriginalOptions = options,
-            IsCredentialIdUniqueToUserCallback = async args =>
-                await authenticationRepository.GetPasskeyByCredentialIdAsync(args.CredentialId, cancellationToken).ConfigureAwait(false) is null
+            IsCredentialIdUniqueToUserCallback = async (args, callbackCancellationToken) =>
+                await authenticationRepository.GetPasskeyByCredentialIdAsync(args.CredentialId, callbackCancellationToken).ConfigureAwait(false) is null
         }, cancellationToken).ConfigureAwait(false);
         await authenticationRepository.CreatePasskeyAsync(new CustomerPasskeyCredential
         {
@@ -81,7 +81,7 @@ public sealed class CustomerPasskeyService(
     public async Task<CustomerSessionIssue?> CompleteAssertionAsync(Guid challengeId, AuthenticatorAssertionRawResponse response, CancellationToken cancellationToken = default)
     {
         var challenge = await ConsumeChallengeAsync(challengeId, CustomerAuthenticationChallengeType.PasskeyAssertion, cancellationToken).ConfigureAwait(false);
-        var credential = await authenticationRepository.GetPasskeyByCredentialIdAsync(response.Id, cancellationToken).ConfigureAwait(false);
+        var credential = await authenticationRepository.GetPasskeyByCredentialIdAsync(response.RawId, cancellationToken).ConfigureAwait(false);
         if (credential is null || credential.UserId != challenge.UserId) return null;
         var options = AssertionOptions.FromJson(challengeProtector.Unprotect(challenge.ProtectedOptions));
         var result = await fido2.MakeAssertionAsync(new MakeAssertionParams
@@ -90,7 +90,7 @@ public sealed class CustomerPasskeyService(
             OriginalOptions = options,
             StoredPublicKey = credential.PublicKey,
             StoredSignatureCounter = credential.SignatureCounter,
-            IsUserHandleOwnerOfCredentialIdCallback = args => Task.FromResult(
+            IsUserHandleOwnerOfCredentialIdCallback = (args, _) => Task.FromResult(
                 args.UserHandle.SequenceEqual(credential.UserHandle) && args.CredentialId.SequenceEqual(credential.CredentialId))
         }, cancellationToken).ConfigureAwait(false);
         if (!await authenticationRepository.UpdatePasskeyCounterAsync(credential.Id, result.Counter, timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false)) return null;
