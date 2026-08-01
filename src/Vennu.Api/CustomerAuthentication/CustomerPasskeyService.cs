@@ -58,7 +58,7 @@ public sealed class CustomerPasskeyService(
         await authenticationRepository.CreatePasskeyAsync(new CustomerPasskeyCredential
         {
             Id = Guid.NewGuid(), UserId = userId, CredentialId = result.Id, PublicKey = result.PublicKey,
-            UserHandle = result.User.Id, DisplayName = displayName.Trim(), CreatedUtc = timeProvider.GetUtcNow().UtcDateTime
+            UserHandle = result.User.Id, SignatureCounter = result.SignCount, DisplayName = displayName.Trim(), CreatedUtc = timeProvider.GetUtcNow().UtcDateTime
         }, cancellationToken).ConfigureAwait(false);
     }
 
@@ -93,7 +93,7 @@ public sealed class CustomerPasskeyService(
             IsUserHandleOwnerOfCredentialIdCallback = (args, _) => Task.FromResult(
                 args.UserHandle.SequenceEqual(credential.UserHandle) && args.CredentialId.SequenceEqual(credential.CredentialId))
         }, cancellationToken).ConfigureAwait(false);
-        if (!await authenticationRepository.UpdatePasskeyCounterAsync(credential.Id, result.Counter, timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false)) return null;
+        if (!await authenticationRepository.UpdatePasskeyCounterAsync(credential.Id, result.SignCount, timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false)) return null;
         return await sessionService.IssueStrongAsync(credential.UserId, CustomerAuthenticationMethod.Passkey, cancellationToken).ConfigureAwait(false);
     }
 
