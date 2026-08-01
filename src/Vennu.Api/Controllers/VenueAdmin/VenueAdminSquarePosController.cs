@@ -11,7 +11,9 @@ namespace Vennu.Api.Controllers.VenueAdmin;
 [ApiController]
 [Route("api/venue-admin/pos/square")]
 [Authorize(Policy = VenueAdminAuthenticationDefaults.AuthorizationPolicy)]
-public sealed class VenueAdminSquarePosController(ISquareOAuthConnectionService service) : ControllerBase
+public sealed class VenueAdminSquarePosController(
+    ISquareOAuthConnectionService service,
+    Vennu.Data.Services.IPosCatalogImportService catalogImportService) : ControllerBase
 {
     [HttpPost("connect")]
     public ActionResult<VenueAdminPosConnectResponse> Connect() =>
@@ -30,6 +32,24 @@ public sealed class VenueAdminSquarePosController(ISquareOAuthConnectionService 
     [HttpDelete("connection")]
     public async Task<IActionResult> Disconnect(CancellationToken cancellationToken) =>
         await service.DisconnectAsync(VenueId(), cancellationToken).ConfigureAwait(false) ? NoContent() : NotFound();
+
+    [HttpPost("catalog/import")]
+    public async Task<ActionResult<Vennu.Data.Services.PosCatalogImportResult>> ImportCatalog(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await catalogImportService.ImportAsync(VenueId(), cancellationToken).ConfigureAwait(false));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Square catalog import is unavailable",
+                Detail = exception.Message,
+                Status = StatusCodes.Status409Conflict
+            });
+        }
+    }
 
     [AllowAnonymous]
     [HttpGet("callback")]
