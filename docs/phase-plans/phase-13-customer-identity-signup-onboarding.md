@@ -4,6 +4,12 @@
 
 This phase is a collaborative planning draft. It is not approved for implementation until its architecture, dependencies, migration plan, and individual work packages are reviewed and accepted.
 
+## Provisional Roadmap Sequencing
+
+- `Phase 13` and its `WP-13.xx` identifiers are provisional planning labels for this draft.
+- Future roadmap phases are paused while this plan is reviewed. Their numbering, names, and order may be revised before any implementation package is approved.
+- No paused future-phase identifier creates an implementation commitment or dependency until the roadmap is explicitly approved.
+
 ## Draft Objective
 
 Deliver frictionless customer identity, signup, entitlement, venue setup, and first-screen onboarding so a customer can authenticate, choose a tier-defined no-card trial or paid plan, complete Checkout when required, create a venue, pair a first screen, and return through a real authenticated user session rather than a manually configured Venue Admin token.

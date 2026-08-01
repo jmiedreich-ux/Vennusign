@@ -39,7 +39,7 @@ Deliver venue-scoped POS connections and near-real-time menu synchronization thr
 
 ## Phase Boundaries
 
-- No Phase 13 translation, Phase 14 mobile app, or Phase 15 AI behavior.
+- No future roadmap capabilities beyond the approved Phase 12 POS scope.
 - No custom POS sales, payments, orders, or staff workflows beyond approved catalog, availability, and price synchronization.
 - No external provider, Azure SQL, hosted infrastructure, container, or cross-system integration tests under the standing owner exception.
 - Marketplace submission, production provider approval, and live webhook registration are operational activities; document them but do not simulate success.
