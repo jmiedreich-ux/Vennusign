@@ -122,10 +122,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-12.04 — Unified POS Webhook Intake and Idempotency
 - WP-12.05 — Square Inventory and Price Realtime Sync
 - WP-12.06 — Toast Provider and Webhook Sync
+- WP-12.07 — Toast Polling Resilience
 
 ## Active Work Package
 
-**WP-12.07 — Toast Polling Resilience** is in review on issue #315 and branch `wp/12.07-toast-polling-resilience`.
+None. **WP-12.08 — Clover OAuth and Catalog Provider** is the next available package.
 
 ## Phase 04 Result
 
@@ -187,7 +188,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Next Action
 
-Validate and review **WP-12.07 — Toast Polling Resilience** through impact-based GitHub Actions, then merge it before WP-12.08 begins.
+Claim and implement **WP-12.08 — Clover OAuth and Catalog Provider**.
 
 ## Phase 05 Work Packages
 
