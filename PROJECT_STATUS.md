@@ -131,7 +131,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-**WP-13.01 — Identity, Organization, and Membership Foundation** is claimed in Sequential mode on issue #337 and branch `wp/13.01-identity-organization-membership-foundation`.
+**WP-13.01 — Identity, Organization, and Membership Foundation** is implemented in Sequential mode on issue #337, branch `wp/13.01-identity-organization-membership-foundation`, and draft PR #338. Exact-head affected-area GitHub Actions validation is pending.
 
 ## Phase 04 Result
 
@@ -200,7 +200,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Next Action
 
-Implement, validate, review, and merge **WP-13.01 — Identity, Organization, and Membership Foundation** without beginning WP-13.02.
+Validate, review, and merge **WP-13.01 — Identity, Organization, and Membership Foundation** on PR #338 without beginning WP-13.02.
 
 ## Phase 05 Work Packages
 

@@ -89,6 +89,30 @@ public partial class SqlDataAccess : ISqlDataAccess
                 .Entity<FeatureMatrixAuditEntry>()
                 .Table("dbo.FeatureMatrixAudit", true);
 
+            FluentMapper
+                .Entity<CustomerUser>()
+                .Table("dbo.CustomerUsers", true);
+
+            FluentMapper
+                .Entity<ExternalIdentity>()
+                .Table("dbo.ExternalIdentities", true);
+
+            FluentMapper
+                .Entity<Organization>()
+                .Table("dbo.Organizations", true);
+
+            FluentMapper
+                .Entity<OrganizationMembership>()
+                .Table("dbo.OrganizationMemberships", true);
+
+            FluentMapper
+                .Entity<VenueMembership>()
+                .Table("dbo.VenueMemberships", true);
+
+            FluentMapper
+                .Entity<MembershipAuditEntry>()
+                .Table("dbo.MembershipAuditEntries", true);
+
             tableMappingsConfigured = true;
         }
     }

@@ -3,15 +3,15 @@
 ## Work Package
 
 - ID: WP-13.01
-- Status: Claimed
+- Status: Implemented; validation pending
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/13.01-identity-organization-membership-foundation`
 - Issue: #337
-- Pull request: pending
-- CI state: pending implementation
+- Pull request: #338 (draft)
+- CI state: affected-area exact-head run pending
 
 ## Completed This Session
 
@@ -19,6 +19,8 @@
 - Confirmed there is no active tracker claim, WP-13.01 branch, issue, or pull request.
 - Read the approved Phase 13 plan, project records, architecture guidance, and identity/tenancy gap evidence.
 - Claimed WP-13.01 exclusively in Sequential mode.
+- Added migration 040 for customer users, external identities, organizations, memberships, venue tenancy, and immutable audit evidence.
+- Added tenant-scoped repositories, atomic membership mutation services, deterministic capability resolution, dependency registration, tests, and architecture documentation.
 
 ## Validation
 
@@ -27,7 +29,7 @@
 
 ## Remaining Work
 
-- Implement WP-13.01 only, publish the PR, run affected-area Actions validation, review, merge, close issue #337, and release the claim.
+- Publish the implementation head, run affected-area Actions validation, review, merge, close issue #337, and release the claim.
 
 ## Known Risks or Blockers
 
@@ -35,7 +37,7 @@
 
 ## Exact Next Action
 
-- Publish the Sequential claim, then implement the bounded identity, organization, membership, capability, audit, and persistence foundation.
+- Publish the implementation to PR #338 and validate the exact head through GitHub Actions.
 
 ## Do Not Redo or Reverse
 

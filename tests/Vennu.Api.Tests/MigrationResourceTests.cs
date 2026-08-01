@@ -6,6 +6,15 @@ namespace Vennu.Api.Tests;
 public sealed class MigrationResourceTests
 {
     [Fact]
+    public void CustomerIdentityTenancyMigration_IsEmbeddedInOrder()
+    {
+        var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
+
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.040_create_customer_identity_tenancy.sql", StringComparison.Ordinal));
+        Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
+    }
+
+    [Fact]
     public void FeatureMatrixMigration_IsEmbeddedInOrder()
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
