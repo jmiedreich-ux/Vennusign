@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T04:10:00Z",
+  "updatedUtc": "2026-08-01T04:25:00Z",
   "activeAssignments": [
     {
       "workPackage": "Issue-333",
@@ -18,7 +18,7 @@
       ]
     }
   ],
-  "nextAvailableWorkPackage": "Phase 13 planning",
+  "nextAvailableWorkPackage": "WP-13.01",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

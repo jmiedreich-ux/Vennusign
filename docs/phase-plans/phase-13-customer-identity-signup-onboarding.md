@@ -1,16 +1,16 @@
-# Draft Phase 13 — Customer Identity, Signup, and Onboarding
+# Phase 13 — Customer Identity, Signup, and Onboarding
 
-## Draft Status
+## Implementation Status
 
-This phase is a collaborative planning draft. It is not approved for implementation until its architecture, dependencies, migration plan, and individual work packages are reviewed and accepted.
+This phase is approved for sequential implementation. Start with `WP-13.01` only after it has its own claimed GitHub issue, branch, work-package record, and pull request.
 
 ## Provisional Roadmap Sequencing
 
-- `Phase 13` and its `WP-13.xx` identifiers are provisional planning labels for this draft.
-- Future roadmap phases are paused while this plan is reviewed. Their numbering, names, and order may be revised before any implementation package is approved.
-- No paused future-phase identifier creates an implementation commitment or dependency until the roadmap is explicitly approved.
+- `Phase 13` and its `WP-13.xx` identifiers are approved for this implementation sequence.
+- Roadmap phases after Phase 13 remain paused. Their numbering, names, and order may be revised before implementation is approved.
+- No paused future-phase identifier creates an implementation commitment or dependency.
 
-## Draft Objective
+## Approved Objective
 
 Deliver frictionless customer identity, signup, entitlement, venue setup, and first-screen onboarding so a customer can authenticate, choose a tier-defined no-card trial or paid plan, complete Checkout when required, create a venue, pair a first screen, and return through a real authenticated user session rather than a manually configured Venue Admin token.
 
@@ -23,7 +23,7 @@ Deliver frictionless customer identity, signup, entitlement, venue setup, and fi
 - Show resumable horizontal onboarding timelines in the customer/Venue Admin experience and the internal Super Admin experience.
 - Keep existing config-backed Venue Admin tokens only as a temporary legacy/local compatibility path while real user authorization is introduced.
 
-## Draft Work Packages
+## Sequential Work Packages
 
 1. **WP-13.01 — Identity, Organization, and Membership Foundation**
    Define and persist users, external identities, organizations, organization memberships, venue memberships, ownership, roles, audit baseline, and authorization boundaries.
@@ -46,15 +46,13 @@ Deliver frictionless customer identity, signup, entitlement, venue setup, and fi
 10. **WP-13.10 — Phase 13 Validation and Closure**
     Run the full non-integration regression suite and validate authentication, authorization, tier/trial entitlements, onboarding recovery, Stripe webhook authority, pairing, security, migration, and documentation consistency.
 
-## Architecture and Security Decisions to Resolve Before Implementation
+## Architecture and Security Decisions Assigned to the Foundation
 
-- External identity keys, verified-email assurance, account linking, and email-collision behavior.
-- Organization, venue, membership, role, and capability authorization model.
-- Session lifetime, refresh/revocation, CSRF, rate-limit, OAuth/OIDC state/nonce/PKCE, redirect allowlists, and audit requirements.
-- Passkey/WebAuthn implementation boundary, TOTP enrollment/recovery-code handling, and mandatory step-up actions.
-- Stripe customer ownership, paid-entitlement lifecycle, no-card trial lifecycle, expiry/grace behavior, and screen-count enforcement.
-- Persisted onboarding state machine, draft/active venue rules, physical-screen pairing state, and resumability behavior.
-- Compatibility and removal plan for existing `VenueAdmin:Sessions` configuration-backed tokens.
+- `WP-13.01` must establish the identity, organization, membership, role, capability, and audit boundaries needed by all later packages.
+- `WP-13.02` and `WP-13.03` must resolve external identity keys, verified-email assurance, account linking, email collision, session boundaries, OAuth/OIDC state/nonce/PKCE, passkey/TOTP, recovery, and step-up rules.
+- `WP-13.04` must resolve Stripe customer ownership, paid and no-card trial lifecycles, expiry/grace behavior, and entitlement enforcement.
+- `WP-13.05` and `WP-13.06` must resolve the persisted onboarding state machine, draft/active venue rules, first-screen state, pairing state, and resumability behavior.
+- `WP-13.09` must define and implement the compatibility and removal plan for existing `VenueAdmin:Sessions` configuration-backed tokens.
 
 ## UI Design and Function Gap Analysis
 

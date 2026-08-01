@@ -2,33 +2,43 @@
 
 ## Work Package
 
-- ID: Phase 13 planning
-- Status: Available
+- ID: Phase 13
+- Status: Ready for implementation
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: none
-- Issue: none
-- Pull request: none
-- CI state: not started
+- Branch: `issue/333-phase-13-draft-plan`
+- Issue: #333
+- Pull request: #334
+- CI state: pending updated Phase 13 plan review
 
 ## Completed This Session
 
-- WP-12.10 merged through PR #331 as `bead6eafc2cf36bea7b3663a66e1fc8a8ccab404`.
-- Added the Phase 12 acceptance matrix, critical-journey authorization/credential/migration coverage, and marketplace/operator notes.
-- Closed Phase 12 after the exact rebased head passed the full required non-integration workflow.
+- Phase 12 closed after the full required non-integration validation passed on the reviewed head.
+- The Phase 13 customer identity, signup, tier-defined trial, entitlement, venue setup, first-screen onboarding, and legacy token migration sequence was approved for sequential implementation.
+- UI work now requires UX best-practices MCP consultation and documented UI/function gap analysis before implementation.
 
 ## Validation
 
-- GitHub Actions `phase02-tests` run #699 passed on reviewed head `9ecb88d2db80f53192496477d218b6a78ac4006b`.
-- Live Square, Toast, Clover, credentialed, Azure SQL, hosted-infrastructure, container, and cross-system integration tests were intentionally skipped.
+- Commands: `git diff --check`; assignment JSON parse.
+- Results: local planning-document validation passed; GitHub Actions remains authoritative for the updated planning PR.
+- Skipped checks and reason: no behavior changed; no local test suite is applicable to planning and governance documentation.
+
+## Remaining Work
+
+- WP-13.01 — Identity, Organization, and Membership Foundation.
+
+## Known Risks or Blockers
+
+- Phase 13 must not commit provider secrets, recovery codes, or local credentials.
+- Individual Phase 13 packages must resolve their assigned architecture decisions before dependent packages begin.
 
 ## Exact Next Action
 
-- Create and merge the bounded Phase 13 work-package breakdown, then claim WP-13.01.
+- Create and claim WP-13.01 through its own approved issue, branch, work-package record, and pull request.
 
 ## Do Not Redo or Reverse
 
-- Do not begin Phase 13 implementation before its breakdown is approved and merged.
-- Do not reopen Phase 12 unless a new finding is promoted through the issue-first remediation process.
+- Do not start later Phase 13 packages before WP-13.01 establishes the shared identity, organization, membership, role, and audit boundaries.
+- Do not reintroduce config-backed Venue Admin tokens as the customer identity model.
