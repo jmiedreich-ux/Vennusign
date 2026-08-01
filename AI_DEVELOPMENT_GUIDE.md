@@ -37,6 +37,7 @@ Repository and GitHub state are the source of truth. Do not reload the full road
 - Every change starts from one approved GitHub issue and proceeds on its own branch and pull request, including documentation-only work and local-only development configuration work.
 - Check and claim the package in `tracker/assignments.json` before modifying code.
 - Record every active work item in `tracker/assignments.json` before modifying code so the current owner, branch, issue, and execution mode are visible to other agents.
+- Make the execution mode explicit in every tracker claim. Treat `Sequential` claims as off-limits to collaborative agents and `Collaborative` claims as the work being driven interactively in the current session.
 - Implement one work package at a time.
 - Use branch format `wp/<id>-<short-name>` and begin commit messages with the work-package ID.
 - Use one integration branch and pull request per package unless inseparable work is explicitly documented.
@@ -92,6 +93,8 @@ A work package is not complete until all applicable records agree:
 - Relevant architecture, API, database, or operational documentation
 
 No repository record may continue to identify a completed package as Not Started, In Progress, Review, or the next action.
+
+Claim creation, branch or PR creation, review status changes, merge, closure, and branch deletion require immediate reconciliation of tracker, status, and handoff records.
 
 ## Definition of Done
 

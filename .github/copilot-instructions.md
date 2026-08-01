@@ -13,6 +13,7 @@ Follow the repository-root `AGENTS.md` as the authoritative rulebook before prop
 - Testing and review findings are GitHub issues first. Do not create or reprioritize WPs/RWPs.
 - Every change, including documentation-only work and local-only development configuration work, still requires its own approved issue, branch, and pull request.
 - Every active work item must be claimed in `tracker/assignments.json` before changes begin.
+- Every tracker claim must identify whether the work is `Sequential` or `Collaborative`; do not edit work claimed as `Sequential` from a collaborative session.
 - Only the designated planning agent may promote a finding into an RWP or change queue order.
 - Do not edit files owned by another active agent.
 - Use one branch and PR per WP/RWP.
