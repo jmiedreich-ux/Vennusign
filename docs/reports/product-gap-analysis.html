@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vennu Product Capability Gap Report</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #60708a;
+      --paper: #ffffff;
+      --page: #f4f7fb;
+      --line: #dbe3ef;
+      --brand: #3159d8;
+      --brand-soft: #e8eeff;
+      --p0: #b42318;
+      --p0-bg: #fff0ef;
+      --p1: #a15c00;
+      --p1-bg: #fff7e8;
+      --p2: #155eef;
+      --p2-bg: #edf4ff;
+      --ok: #067647;
+      --ok-bg: #ecfdf3;
+      --shadow: 0 8px 24px rgba(23, 32, 51, .08);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--page);
+      font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--brand); }
+    .hero {
+      color: white;
+      background: linear-gradient(120deg, #172033, #3159d8);
+      padding: 64px max(24px, calc((100vw - 1120px) / 2));
+    }
+    .eyebrow { margin: 0 0 8px; color: #cbd8ff; font-size: .8rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1; }
+    .hero p { max-width: 760px; margin: 18px 0 0; color: #e5ebff; font-size: 1.1rem; }
+    .metadata { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .metadata span { padding: 5px 10px; border: 1px solid rgba(255,255,255,.28); border-radius: 99px; color: #f4f7ff; font-size: .86rem; }
+    .shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 32px; max-width: 1160px; margin: 0 auto; padding: 32px 24px 72px; }
+    nav { position: sticky; top: 18px; align-self: start; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); box-shadow: var(--shadow); }
+    nav strong { display: block; margin-bottom: 8px; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    nav a { display: block; padding: 6px 0; color: #3d4b62; text-decoration: none; font-size: .92rem; }
+    nav a:hover { color: var(--brand); }
+    main { min-width: 0; }
+    section { margin: 0 0 30px; padding: 30px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); box-shadow: var(--shadow); }
+    h2 { margin: 0 0 14px; font-size: 1.55rem; line-height: 1.25; }
+    h3 { margin: 26px 0 10px; font-size: 1.08rem; }
+    p { margin: 0 0 14px; }
+    ul, ol { margin: 8px 0 18px; padding-left: 22px; }
+    li + li { margin-top: 6px; }
+    .callout { margin: 18px 0; padding: 18px; border-left: 4px solid var(--brand); border-radius: 8px; background: var(--brand-soft); }
+    .callout strong { display: block; margin-bottom: 4px; }
+    .warning { border-left-color: var(--p0); background: var(--p0-bg); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .card { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: #fbfcff; }
+    .card h3 { margin-top: 0; }
+    .metric { font-size: 2.2rem; font-weight: 800; line-height: 1; color: var(--brand); }
+    .metric-label { color: var(--muted); font-size: .9rem; }
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: .92rem; }
+    th, td { padding: 12px 10px; vertical-align: top; text-align: left; border-bottom: 1px solid var(--line); }
+    th { color: #41506a; background: #f7f9fd; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; }
+    code { padding: 2px 5px; border-radius: 4px; background: #edf1f8; color: #31415c; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .88em; }
+    .tag { display: inline-block; padding: 3px 8px; border-radius: 99px; font-size: .75rem; font-weight: 800; white-space: nowrap; }
+    .p0 { color: var(--p0); background: var(--p0-bg); }
+    .p1 { color: var(--p1); background: var(--p1-bg); }
+    .p2 { color: var(--p2); background: var(--p2-bg); }
+    .implemented { color: var(--ok); background: var(--ok-bg); }
+    .partial { color: var(--p1); background: var(--p1-bg); }
+    .missing { color: var(--p0); background: var(--p0-bg); }
+    .timeline { display: flex; align-items: stretch; gap: 0; overflow-x: auto; margin: 18px 0; }
+    .step { position: relative; min-width: 148px; padding: 16px 14px 14px 28px; border-top: 3px solid var(--brand); background: #f8faff; }
+    .step::before { position: absolute; top: -10px; left: 10px; width: 14px; height: 14px; border-radius: 50%; background: var(--brand); content: ""; }
+    .step + .step { border-left: 1px solid var(--line); }
+    .step strong { display: block; font-size: .9rem; }
+    .step span { color: var(--muted); font-size: .8rem; }
+    .footnote { color: var(--muted); font-size: .88rem; }
+    @media (max-width: 840px) {
+      .shell { grid-template-columns: 1fr; }
+      nav { position: static; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <p class="eyebrow">Static product review</p>
+    <h1>Vennu Product Capability Gap Report</h1>
+    <p>A repository-wide capability assessment focused on the customer journey from signup to a live venue display.</p>
+    <div class="metadata">
+      <span>Scope: source, tests, migrations, API, and SPA inventory</span>
+      <span>Method: static read-only assessment</span>
+      <span>Phase 13 planning input</span>
+    </div>
+  </header>
+
+  <div class="shell">
+    <nav aria-label="Report contents">
+      <strong>Contents</strong>
+      <a href="#summary">Executive conclusion</a>
+      <a href="#capabilities">Capability map</a>
+      <a href="#journey">Customer journey</a>
+      <a href="#gaps">Priority gap register</a>
+      <a href="#surfaces">Product surfaces</a>
+      <a href="#security">Security and operations</a>
+      <a href="#testing">Test coverage</a>
+      <a href="#recommendation">Recommended sequence</a>
+      <a href="#process">Planning gate</a>
+    </nav>
+
+    <main>
+      <section id="summary">
+        <h2>Executive conclusion</h2>
+        <p>Vennu has substantial operational capability for internally provisioned venues: Super Admin operations, Venue Admin content management, display pairing, billing foundations, realtime behavior, and POS integrations are all represented in the codebase.</p>
+        <div class="callout warning">
+          <strong>Primary product gap</strong>
+          A new customer cannot independently create an account, select a trial or paid tier, create a venue, obtain authorized access, activate a first screen, and return later through a normal identity/session model.
+        </div>
+        <p>The system currently contains the necessary operational pieces, but they are disconnected. It behaves as an internally provisioned operations platform rather than a self-service customer product. Phase 13 is the correct foundation to close this gap.</p>
+        <div class="grid">
+          <div class="card"><div class="metric">P0</div><div class="metric-label">Customer identity, signup, provisioning, and secret-boundary gaps</div></div>
+          <div class="card"><div class="metric">10</div><div class="metric-label">Planned sequential Phase 13 work packages</div></div>
+        </div>
+      </section>
+
+      <section id="capabilities">
+        <h2>Current capability map</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Domain</th><th>State</th><th>Assessment</th></tr></thead>
+            <tbody>
+              <tr><td>Super Admin operations</td><td><span class="tag implemented">Implemented</span></td><td>Venue directory, tiers, features, dashboard, support detail, and operational controls exist.</td></tr>
+              <tr><td>Venue creation</td><td><span class="tag partial">Partial</span></td><td>Provisioning exists, but it is not connected to customer ownership, selected tier, or self-service access.</td></tr>
+              <tr><td>Venue Admin</td><td><span class="tag partial">Partial</span></td><td>Operational functionality is broad, but entry depends on a configured access token.</td></tr>
+              <tr><td>Screen/display pairing</td><td><span class="tag partial">Partial</span></td><td>Pairing and player behavior exist, but they are not part of a first-run customer journey.</td></tr>
+              <tr><td>Billing and entitlements</td><td><span class="tag partial">Partial</span></td><td>Stripe Checkout, Billing Portal, subscription tiers, and feature resolution exist after venue access is established.</td></tr>
+              <tr><td>Trials</td><td><span class="tag partial">Partial</span></td><td>Provisioning starts a hardcoded Starter trial; tier-defined trial policy is not represented in the tier model.</td></tr>
+              <tr><td>Customer identity</td><td><span class="tag missing">Missing</span></td><td>No user, organization, membership, external identity, passkey, TOTP, or customer session model was located.</td></tr>
+              <tr><td>Customer onboarding</td><td><span class="tag missing">Missing</span></td><td>No public signup, persisted onboarding state, resume flow, or onboarding timeline was located.</td></tr>
+              <tr><td>Team/staff access</td><td><span class="tag missing">Missing</span></td><td>No organization/venue invitation, membership, role, or revoke lifecycle was located.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="journey">
+        <h2>Customer journey analysis</h2>
+        <h3>Required target journey</h3>
+        <div class="timeline" aria-label="Target customer onboarding journey">
+          <div class="step"><strong>Identity</strong><span>Google, Apple, passkey, TOTP, or recovery fallback</span></div>
+          <div class="step"><strong>Plan</strong><span>No-card trial or paid tier selection</span></div>
+          <div class="step"><strong>Entitlement</strong><span>Trial activation or Stripe webhook confirmation</span></div>
+          <div class="step"><strong>Venue</strong><span>Organization and venue setup</span></div>
+          <div class="step"><strong>First screen</strong><span>Create, pair, and activate a display</span></div>
+          <div class="step"><strong>Go live</strong><span>Return through a real authenticated session</span></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Journey step</th><th>Current state</th><th>Gap</th></tr></thead>
+            <tbody>
+              <tr><td>Discover and sign up</td><td>No public customer frontend located</td><td>There is no customer acquisition entry point.</td></tr>
+              <tr><td>Create/verify account</td><td>Super Admin key and Venue Admin token only</td><td>No customer identity provider, passkey, TOTP, or recovery flow.</td></tr>
+              <tr><td>Choose trial or tier</td><td>Tiers and billing exist internally</td><td>No self-service tier selection or tier-defined no-card trial activation.</td></tr>
+              <tr><td>Paid Checkout</td><td>Existing Venue Admin flow</td><td>Checkout requires a pre-existing venue and Venue Admin authorization.</td></tr>
+              <tr><td>Create venue</td><td>API/Super Admin provisioning exists</td><td>No customer owner, organization, membership, or lifecycle connection.</td></tr>
+              <tr><td>Activate first screen</td><td>Screen pairing exists</td><td>No connected onboarding handoff, entitlement state, or customer recovery path.</td></tr>
+              <tr><td>Return later</td><td>Browser-stored raw access token</td><td>No normal customer session, provider login, or account recovery.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="gaps">
+        <h2>Prioritized gap register</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Priority</th><th>Gap</th><th>Evidence</th><th>Planned owner</th></tr></thead>
+            <tbody>
+              <tr><td>GAP-13-01</td><td><span class="tag p0">P0</span></td><td>No customer identity and tenancy model</td><td>No user, organization, membership, external identity, session, passkey, or TOTP model/migration located.</td><td>WP-13.01</td></tr>
+              <tr><td>GAP-13-02</td><td><span class="tag p0">P0</span></td><td>Config-backed Venue Admin token login</td><td><code>VenueAdminAuthenticationHandler</code> compares submitted token with configured session entries.</td><td>WP-13.09</td></tr>
+              <tr><td>GAP-13-03</td><td><span class="tag p0">P0</span></td><td>No public signup/sign-in</td><td>Only internal Super Admin and token-based Venue Admin entry surfaces were located.</td><td>WP-13.02, WP-13.05</td></tr>
+              <tr><td>GAP-13-04</td><td><span class="tag p0">P0</span></td><td>Venue provisioning disconnected from owner and selected tier</td><td><code>VenueProvisioningService</code> starts the hardcoded <code>starter</code> tier and has no customer owner input.</td><td>WP-13.01, WP-13.04, WP-13.05</td></tr>
+              <tr><td>GAP-13-05</td><td><span class="tag p0">P0</span></td><td>Credential-like configuration values are committed</td><td>Default API settings include API key, Stripe key/webhook secret, and connection configuration.</td><td>Security preflight</td></tr>
+              <tr><td>GAP-13-06</td><td><span class="tag p0">P0</span></td><td>Public venue creation endpoint requires security decision</td><td><code>POST /api/venues</code> has no authorization attribute and directly creates a venue.</td><td>Security preflight</td></tr>
+              <tr><td>GAP-13-07</td><td><span class="tag p1">P1</span></td><td>Screen registration/pairing creation requires abuse/security review</td><td>Screen registration and pairing-code creation routes appear unauthenticated.</td><td>WP-13.06</td></tr>
+              <tr><td>GAP-13-08</td><td><span class="tag p1">P1</span></td><td>Trial policy is not tier-defined</td><td><code>SubscriptionTier</code> has price/screen fields but no visible trial-policy fields.</td><td>WP-13.04</td></tr>
+              <tr><td>GAP-13-09</td><td><span class="tag p1">P1</span></td><td>No persisted onboarding state</td><td>No onboarding model, migration, API, or resume UI was located.</td><td>WP-13.05</td></tr>
+              <tr><td>GAP-13-10</td><td><span class="tag p1">P1</span></td><td>No connected first-screen activation journey</td><td>Screen pairing exists but is not connected to customer acquisition or entitlement progression.</td><td>WP-13.06, WP-13.07</td></tr>
+              <tr><td>GAP-13-11</td><td><span class="tag p1">P1</span></td><td>No Super Admin onboarding visibility</td><td>Venue detail shows support context but no onboarding identity/plan/screen lifecycle timeline.</td><td>WP-13.08</td></tr>
+              <tr><td>GAP-13-12</td><td><span class="tag p1">P1</span></td><td>No team membership lifecycle</td><td>No invite, role, organization membership, venue membership, or revoke flows located.</td><td>WP-13.01 scope decision</td></tr>
+              <tr><td>GAP-13-13</td><td><span class="tag p2">P2</span></td><td>No recovery or step-up authentication UX</td><td>No passkey, TOTP, recovery-code, recent-authentication, or account-recovery surface located.</td><td>WP-13.03</td></tr>
+              <tr><td>GAP-13-14</td><td><span class="tag p2">P2</span></td><td>No privacy/account lifecycle surface identified</td><td>No customer account deletion, export, ownership transfer, or privacy-management flow located.</td><td>Phase 13 decision/follow-up</td></tr>
+              <tr><td>GAP-13-15</td><td><span class="tag p2">P2</span></td><td>No end-to-end acquisition/onboarding test suite</td><td>Existing tests cover operational features; the customer lifecycle does not yet exist.</td><td>WP-13.10</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="surfaces">
+        <h2>Product-surface findings</h2>
+        <div class="grid">
+          <article class="card">
+            <h3>Super Admin</h3>
+            <p><strong>Strengths:</strong> dashboard, venue support, tier/feature management, operational controls, and support context.</p>
+            <p><strong>Missing lifecycle support:</strong> customer identity, owner/membership context, onboarding queue, onboarding timeline, verification/invite/passkey recovery actions, and customer activation diagnostics.</p>
+          </article>
+          <article class="card">
+            <h3>Venue Admin</h3>
+            <p><strong>Strengths:</strong> menu, screens, themes, schedules, tap list, billing, capability-aware routes, and upgrade guidance.</p>
+            <p><strong>Missing lifecycle support:</strong> real sign-in, first-run onboarding, account/team settings, recovery, provider management, and an Account ? Plan ? Venue ? First Screen ? Go Live timeline.</p>
+          </article>
+          <article class="card">
+            <h3>Display player</h3>
+            <p><strong>Strengths:</strong> pairing, provisioning, platform bootstrap, and normal display operation.</p>
+            <p><strong>Missing lifecycle support:</strong> connection to customer onboarding, entitlement-aware activation, pairing recovery, and customer-visible device state.</p>
+          </article>
+          <article class="card">
+            <h3>Billing and tiers</h3>
+            <p><strong>Strengths:</strong> Stripe Checkout/Portal, webhook processing, public tiers, screen limits, and feature resolution.</p>
+            <p><strong>Missing lifecycle support:</strong> tier-defined trials, pre-venue entitlement, checkout recovery, and customer acquisition entry points.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="security">
+        <h2>Security and operational preflight</h2>
+        <div class="callout warning">
+          <strong>Do this before exposing public customer acquisition.</strong>
+          The identity foundation should not be released until secret handling, public endpoint intent, rate limiting, authorization, audit requirements, and abuse controls are explicitly decided.
+        </div>
+        <ol>
+          <li>Move secret-like values from committed runtime configuration to secure deployment/user-secret configuration.</li>
+          <li>Decide whether public venue creation and screen registration routes are intentional; protect, remove, or rate-limit them accordingly.</li>
+          <li>Define organization-level tenant isolation before creating customer-facing routes.</li>
+          <li>Use OAuth/OIDC state, nonce, PKCE, strict callback allowlists, and verified provider subject identifiers.</li>
+          <li>Use passkeys as the preferred returning-user path; use TOTP for enrolled fallback/step-up; keep email links for recovery/fallback.</li>
+          <li>Keep Stripe webhooks authoritative for paid entitlement; never trust a return URL as payment proof.</li>
+          <li>Audit membership, billing, ownership, entitlement, and display-pairing changes.</li>
+        </ol>
+      </section>
+
+      <section id="testing">
+        <h2>Test coverage assessment</h2>
+        <p>The current test inventory is strong for implemented operations: Super Admin authorization, billing/webhooks, venue provisioning, screens/pairing, menus, themes, schedules, HaaS, POS providers, migrations, and Phase 12 critical journeys.</p>
+        <p>The following tests are absent because the corresponding product capabilities are absent:</p>
+        <div class="grid">
+          <div class="card"><h3>Identity tests</h3><ul><li>Google/Apple callback and account linking</li><li>Email verification and collision handling</li><li>Passkey enrollment/assertion</li><li>TOTP enrollment, recovery, and step-up</li><li>Session revoke and cross-device behavior</li></ul></div>
+          <div class="card"><h3>Onboarding tests</h3><ul><li>No-card tier-defined trial lifecycle</li><li>Checkout pending and webhook-confirmed activation</li><li>Abandoned onboarding resume</li><li>First-screen entitlement and pairing</li><li>Super Admin/customer timeline states</li></ul></div>
+        </div>
+      </section>
+
+      <section id="recommendation">
+        <h2>Recommended Phase 13 implementation sequence</h2>
+        <ol>
+          <li><strong>WP-13.01:</strong> Identity, Organization, and Membership Foundation</li>
+          <li><strong>WP-13.02:</strong> Customer Authentication Foundation</li>
+          <li><strong>WP-13.03:</strong> Passkeys, TOTP, and Account Recovery</li>
+          <li><strong>WP-13.04:</strong> Tier-Defined Trials and Stripe Entitlements</li>
+          <li><strong>WP-13.05:</strong> Public Signup and Resumable Onboarding</li>
+          <li><strong>WP-13.06:</strong> Venue Setup and First-Screen Activation</li>
+          <li><strong>WP-13.07:</strong> Customer Onboarding Timeline</li>
+          <li><strong>WP-13.08:</strong> Super Admin Onboarding Visibility</li>
+          <li><strong>WP-13.09:</strong> Legacy Venue Access Token Migration</li>
+          <li><strong>WP-13.10:</strong> Phase 13 Validation and Closure</li>
+        </ol>
+        <div class="callout">
+          <strong>Ordering rule</strong>
+          Do not begin customer-facing signup or onboarding UI before WP-13.01 establishes the shared identity, organization, membership, role, and audit boundaries.
+        </div>
+      </section>
+
+      <section id="process">
+        <h2>Recommended ongoing planning gate</h2>
+        <p>Every new product phase should begin with a product gap register and a complete customer-journey review. Every UI package should then perform the documented UX MCP consultation and page/screen function gap analysis.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Gate</th><th>Required evidence</th></tr></thead>
+            <tbody>
+              <tr><td>Customer journey map</td><td>Happy path, abandoned flow, recovery, entitlement, error, and support paths are mapped.</td></tr>
+              <tr><td>Capability map</td><td>Each domain is classified as implemented, partial, disconnected, missing, or intentionally deferred.</td></tr>
+              <tr><td>Gap register</td><td>Every gap has impact, priority, decision, owner, and acceptance evidence.</td></tr>
+              <tr><td>Security review</td><td>Public endpoints, identities, secrets, authorization, audit, and abuse controls are reviewed.</td></tr>
+              <tr><td>UI/function analysis</td><td>Goals, navigation, CRUD needs, states, validation, accessibility, APIs, authorization, and entitlements are checked.</td></tr>
+              <tr><td>Validation plan</td><td>Journey tests and relevant non-integration checks are assigned to the implementation packages.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="footnote">This report is a planning artifact. It identifies evidence and recommended decisions; it does not replace security testing, production threat modeling, or customer usability research.</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
