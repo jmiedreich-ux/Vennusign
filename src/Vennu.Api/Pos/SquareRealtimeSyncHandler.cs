@@ -68,7 +68,7 @@ public sealed class SquareRealtimeSyncHandler(
                 throw new InvalidOperationException("The Square inventory update could not be persisted.");
             if (availabilityChanged)
                 await notifier.NotifyVenueItemAvailabilityChangedAsync(connection.VenueId, item.Id.ToString(), available, cancellationToken).ConfigureAwait(false);
-            else
+            if (quantityChanged)
                 await notifier.NotifyVenueContentUpdatedAsync(connection.VenueId, new { change = "pos-quantity", itemId = item.Id }, cancellationToken).ConfigureAwait(false);
         }
     }

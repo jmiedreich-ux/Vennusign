@@ -30,7 +30,7 @@ public sealed class SquareRealtimeSyncHandlerTests
         Assert.Equal(0, item.QuantityAvailable);
         Assert.Equal(1, menus.UpdateCount);
         Assert.Equal((ItemId.ToString(), false), Assert.Single(notifier.Availability));
-        Assert.Empty(notifier.Content);
+        Assert.Single(notifier.Content);
     }
 
     [Fact]
