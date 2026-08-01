@@ -1,7 +1,18 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T02:02:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-01T02:18:00Z",
+  "activeAssignments": [
+    {
+      "workItemType": "Issue",
+      "workItemId": "#308",
+      "title": "Developer workflow — explicit Development environment in start script",
+      "issueNumber": 308,
+      "branch": "issue/308-start-dev-development-env",
+      "executionMode": "Collaborative",
+      "claimedBy": "GitHub Copilot",
+      "claimedUtc": "2026-08-01T02:18:00Z"
+    }
+  ],
   "nextAvailableWorkPackage": "WP-12.06",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
