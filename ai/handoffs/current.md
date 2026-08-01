@@ -3,77 +3,55 @@
 ## Work Package
 
 - ID: WP-12.06
-- Status: Available
+- Status: Review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: pending
-- Latest commit: `1edf971032758c79c729bdda3d3fd50cb8235883` (WP-12.05 merge)
-- Issue: pending
+- Branch: `wp/12.06-toast-provider-webhook-sync`
+- Issue: #306
 - Pull request: pending
-- CI state: WP-12.05 Actions run #634 passed
+- CI state: pending
 
 ## Completed This Session
 
-- Merged the Phase 12 bounded plan in PR #283 after Actions run #601 passed.
-- Claimed WP-12.01 as issue #284.
-- Added explicit Square, Toast, and Clover provider/status domain values.
-- Added venue-scoped POS connection persistence with one connection per venue/provider and migration 035.
-- Added a service boundary that protects credentials before persistence and returns credential-free summaries.
-- Added the ASP.NET Core Data Protection implementation and provider-neutral catalog/inventory contracts.
-- Added focused repository, service, protector, and migration tests.
-- Reviewed and merged WP-12.01 through PR #285.
-- Added the Square OAuth connect, callback, credential persistence, status, and revoke-before-delete flow.
-- Added protected single-use state and allowlisted server-owned provider/return URLs.
-- Reviewed and merged WP-12.02 through PR #288.
-- Claimed WP-12.03 as issue #290.
-- Added an injectable paged Square Catalog gateway and provider-neutral adapter.
-- Added venue/provider-scoped catalog mappings with migration 036.
-- Added an idempotent importer that reuses the existing menu domain and reports deterministic conflicts.
-- Added a claim-bound Venue Admin import endpoint and focused non-integration tests.
-- Reviewed and merged WP-12.03 through PR #291.
-- Claimed WP-12.04 as issue #293.
-- Added bounded Square signature verification and provider-neutral verified webhook envelopes.
-- Added migration 037 and a durable provider/event-ID deduplicated work queue.
-- Added oldest-first claims, stale lease recovery, retry state, an in-process worker signal, and provider-neutral dispatch.
-- Added focused verifier, controller, repository, dispatcher, and migration tests without a menu mutation handler.
-- Reviewed and merged WP-12.04 through PR #294.
-- Claimed WP-12.05 as issue #296.
-- Added merchant-to-venue and venue/provider mapping ownership boundaries.
-- Added idempotent Square availability, quantity, and USD price application with existing display notifications.
-- Added focused handler and repository tests and reviewed and merged WP-12.05 through PR #297.
+- Added venue-scoped Toast connection configuration and credential-free status guidance.
+- Added an injectable official-host-only Toast Menus V2 gateway and provider-neutral catalog translation.
+- Generalized the existing catalog import service to retain provider ownership for Square and Toast.
+- Added Toast message-signature verification using the event-category subscription secret, exact body, and payload timestamp.
+- Added durable `menus_updated`, `in_stock`, `out_of_stock`, and `low_quantity` handling through the existing POS queue and notification contracts.
+- Added focused verifier, gateway, ownership, idempotency, mapping, and notification tests.
 
 ## Files Changed
 
-- WP-12.05 completion evidence and the synchronized Phase 12 queue.
+- Toast API transport, verification, sync handler, Venue Admin controller/contracts, dependency registration, configuration placeholders, tests, and Phase 12 documentation.
 
 ## Decisions
 
-- Store only protected credentials and keep connection presentation contracts credential-free.
-- Keep signature verification provider-specific in `Vennu.Api`; keep durable queue and dispatch contracts provider-neutral.
-- Persist before `202 Accepted`; use the database rather than the process signal as the restart-safe work authority.
-- Represent Square variations as existing menu items and retain source ownership outside the menu domain.
+- Treat Toast webhook subscription as a manual provider approval/developer-portal operation and report that status honestly.
+- Use the Toast event GUID as the existing provider/event replay key.
+- Use the restaurant GUID as the external connection boundary and item GUID as the catalog/stock mapping key.
+- Keep polling out of WP-12.06; WP-12.07 owns the resilient polling fallback.
 
 ## Validation
 
-- Commands: `git diff --check`; `jq empty tracker/assignments.json`; Venue Admin unit tests and production build; source and secret review.
-- Results: GitHub Actions run #634 passed restore, Release build, frontend/package checks, migration inventory, and all required unit tests against `019a5985b6cec064582596987bb418188240dfc2`.
-- Skipped checks and reason: integration and external-provider tests remain skipped by standing owner instruction.
+- Commands: `git diff --check`; assignment JSON parse; focused local .NET tests attempted.
+- Results: local .NET SDK is unavailable; GitHub Actions is authoritative.
+- Skipped: live Toast, credentialed, Azure SQL, hosted infrastructure, container, and cross-system integration tests under the standing instruction.
 
 ## Remaining Work
 
-- WP-12.06 — Toast Provider and Webhook Sync.
+- Publish the PR, allow required GitHub Actions checks to complete, review the exact head, and merge if green.
 
 ## Known Risks or Blockers
 
-- No blocker. Live Square and integration validation remain deliberately excluded.
+- Toast partner approval, credentials, subscription registration, and live payload validation remain operational activities outside this package.
 
 ## Exact Next Action
 
-- Claim WP-12.06 and add the bounded Toast provider, connection configuration, and verified webhook sync through shared contracts.
+- Publish WP-12.06, validate the exact head through GitHub Actions, and perform the mandatory ChatGPT review.
 
 ## Do Not Redo or Reverse
 
-- Do not redo the POS connection domain, credential protector, migration 035, or provider-neutral contracts.
-- Do not persist plaintext credentials or add provider-specific SDK types to shared contracts.
+- Do not add polling to this package or claim that Toast webhook registration is automatic.
+- Do not weaken the restaurant/provider ownership checks or expose the protected credential.
