@@ -73,6 +73,8 @@ jobs:
             echo "Unresolved merge marker found."
             exit 1
           fi
+      - name: Integration Tests Skipped
+        run: echo "Integration, live-provider, credentialed, hosted-infrastructure, container, and cross-system tests are intentionally skipped."
 
   dotnet-api:
     if: needs.classify.outputs.dotnet_api == 'true'
