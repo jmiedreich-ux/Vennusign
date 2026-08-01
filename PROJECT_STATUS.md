@@ -133,8 +133,6 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 **WP-13.03 — Passkeys, TOTP, and Account Recovery** is complete after issue #341 and PR #342 merged. WP-13.04 remains the next roadmap package.
 
-**Issue #350 — Secure Local Development Integration Settings** is active in Collaborative mode as an isolated security remediation. It does not alter the Phase 13 sequence.
-
 ## Phase 04 Result
 
 - Delivered protected venue support, tier management, feature matrix, overrides, operational health, and commercial events.
