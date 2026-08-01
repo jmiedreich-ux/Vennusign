@@ -2,17 +2,17 @@
 
 ## Work Package
 
-- ID: WP-12.05
-- Status: In progress
+- ID: WP-12.06
+- Status: Available
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/12.05-square-inventory-price-sync`
-- Latest commit: `6ef18f6c04f7ee301e5871a9d64c808227258fc2` (WP-12.04 merge)
-- Issue: #296
+- Branch: pending
+- Latest commit: `1edf971032758c79c729bdda3d3fd50cb8235883` (WP-12.05 merge)
+- Issue: pending
 - Pull request: pending
-- CI state: WP-12.04 Actions run #626 passed
+- CI state: WP-12.05 Actions run #634 passed
 
 ## Completed This Session
 
@@ -39,10 +39,14 @@
 - Added oldest-first claims, stale lease recovery, retry state, an in-process worker signal, and provider-neutral dispatch.
 - Added focused verifier, controller, repository, dispatcher, and migration tests without a menu mutation handler.
 - Reviewed and merged WP-12.04 through PR #294.
+- Claimed WP-12.05 as issue #296.
+- Added merchant-to-venue and venue/provider mapping ownership boundaries.
+- Added idempotent Square availability, quantity, and USD price application with existing display notifications.
+- Added focused handler and repository tests and reviewed and merged WP-12.05 through PR #297.
 
 ## Files Changed
 
-- Square realtime handler, venue/provider lookup boundaries, focused tests, architecture, and WP-12.05 tracking.
+- WP-12.05 completion evidence and the synchronized Phase 12 queue.
 
 ## Decisions
 
@@ -54,12 +58,12 @@
 ## Validation
 
 - Commands: `git diff --check`; `jq empty tracker/assignments.json`; Venue Admin unit tests and production build; source and secret review.
-- Results: GitHub Actions run #626 passed restore, Release build, frontend/package checks, migration inventory, and all required unit tests against `1be0ee770fc5844c7b487fee1139d781ae6b0e70`.
+- Results: GitHub Actions run #634 passed restore, Release build, frontend/package checks, migration inventory, and all required unit tests against `019a5985b6cec064582596987bb418188240dfc2`.
 - Skipped checks and reason: integration and external-provider tests remain skipped by standing owner instruction.
 
 ## Remaining Work
 
-- WP-12.05 — Square Inventory and Price Realtime Sync.
+- WP-12.06 — Toast Provider and Webhook Sync.
 
 ## Known Risks or Blockers
 
@@ -67,7 +71,7 @@
 
 ## Exact Next Action
 
-- Publish WP-12.05, validate the exact head through GitHub Actions, review its full diff, and merge if green.
+- Claim WP-12.06 and add the bounded Toast provider, connection configuration, and verified webhook sync through shared contracts.
 
 ## Do Not Redo or Reverse
 
