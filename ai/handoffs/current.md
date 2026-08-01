@@ -3,57 +3,46 @@
 ## Work Package
 
 - ID: RWP-00.01
-- Status: In Progress
+- Status: Complete pending merge
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `rwp/00.01-affected-area-ci`
 - Issue: #335
-- Pull request: pending
-- CI state: pending affected-area workflow validation
+- Pull request: #336
+- CI state: Actions run #711 passed on implementation head; final documentation head validation pending
 
 ## Completed This Session
 
-- Created approved remediation issue #335 and claimed RWP-00.01 ahead of WP-13.01.
-- Added deterministic path classification for documentation, .NET, frontend, display, and TV areas.
-- Split CI into affected-area jobs with one stable required gate, dependency caching, and superseded-run cancellation.
-- Reserved full non-integration validation for phase closure, nightly/manual runs, workflow changes, and explicit labels.
-- Updated sequential and collaborative WP/RWP governance to prohibit full unit and unrelated TV/frontend validation by default.
-
-## Files Changed
-
-- GitHub Actions workflow and CI classification scripts.
-- Agent, Copilot, pull-request, project-status, assignment, work-package, and handoff records.
-
-## Decisions
-
-- Preserve `build-and-test` as the stable branch-protection gate.
-- Use explicit test-project selection instead of solution-wide unit testing.
-- Treat workflow changes as full validation so CI policy changes prove the complete non-integration path.
-- Keep documentation-only follow-ups lightweight and prefer completion evidence in the implementation PR.
+- Replaced monolithic WP/RWP validation with deterministic affected-area jobs.
+- Normal packages now run only affected .NET unit-test projects, frontends, and TV packages.
+- Documentation/completion-only work now uses lightweight validation.
+- Full non-integration validation is reserved for phase closure, nightly/manual runs, workflow changes, and explicit labels.
+- Added dependency caches, superseded-run cancellation, a stable required gate, and shared sequential/collaborative rules.
+- Included completion evidence in the implementation PR and released the sequential claim in the proposed merge state.
 
 ## Validation
 
-- Commands: classifier scenario tests, assignment JSON parse, workflow YAML parse, and `git diff --check`.
-- Results: classifier scenarios, assignment JSON, workflow YAML structure, shell syntax, and diff whitespace checks passed locally; authoritative GitHub Actions validation remains pending.
-- Skipped checks and reason: integration and external-system tests remain excluded by standing owner instruction.
+- Local: classifier scenarios, shell syntax, assignment JSON, workflow YAML structure, display tests, and diff whitespace checks passed.
+- GitHub Actions: `phase02-tests` run #711 passed on `c383a089a6c8f7c4a263c77478269c421ba5d37d`.
+- The final PR head must pass `build-and-test` before ChatGPT approval and merge.
+- Integration and external-system tests remained skipped under the standing owner instruction.
 
 ## Remaining Work
 
-- Validate, review, and merge RWP-00.01, then release its claim.
-- WP-13.01 — Identity, Organization, and Membership Foundation remains next.
+- Complete exact-head review and merge PR #336.
+- WP-13.01 — Identity, Organization, and Membership Foundation is next.
 
 ## Known Risks or Blockers
 
-- Branch protection must continue to require the stable `build-and-test` check name.
 - Path mappings must be updated when new applications or test projects are added.
 
 ## Exact Next Action
 
-- Run local classifier and syntax checks, publish the RWP PR, and use its exact-head Actions result for review.
+- After PR #336 passes exact-head validation and merges, claim WP-13.01 sequentially.
 
 ## Do Not Redo or Reverse
 
 - Do not restore solution-wide unit tests or unrelated TV/frontend builds for normal WP/RWP merges.
-- Do not start WP-13.01 until this sequential RWP claim is released.
+- Do not create a separate completion-record PR for work whose evidence can be included in its implementation PR.
