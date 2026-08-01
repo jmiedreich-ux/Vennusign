@@ -72,6 +72,9 @@ builder.Services.AddSingleton<IPosOAuthStateService, ProtectedPosOAuthStateServi
 builder.Services.Configure<SquareOAuthOptions>(builder.Configuration.GetSection(SquareOAuthOptions.SectionName));
 builder.Services.AddHttpClient<ISquareOAuthGateway, SquareOAuthGateway>();
 builder.Services.AddScoped<ISquareOAuthConnectionService, SquareOAuthConnectionService>();
+builder.Services.Configure<SquareCatalogOptions>(builder.Configuration.GetSection(SquareCatalogOptions.SectionName));
+builder.Services.AddHttpClient<ISquareCatalogGateway, SquareCatalogGateway>();
+builder.Services.AddScoped<IPosProvider, SquarePosProvider>();
 builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier>();
 builder.Services.AddScoped<IMenuItemManagementService, MenuItemManagementService>();
 builder.Services.AddScoped<IQuickUpdateService, QuickUpdateService>();

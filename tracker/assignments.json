@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-07-31T23:45:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-12.03",
+  "updatedUtc": "2026-08-01T00:45:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-12.03",
+      "issue": 290,
+      "branch": "wp/12.03-square-catalog-import",
+      "owner": "scheduled-orchestrator",
+      "status": "in_review"
+    }
+  ],
+  "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

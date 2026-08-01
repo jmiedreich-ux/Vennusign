@@ -13,6 +13,7 @@ public sealed class VenueAdminSquarePosControllerTests : IClassFixture<VennuApiF
     [Theory]
     [InlineData("GET", "/api/venue-admin/pos/square/status")]
     [InlineData("POST", "/api/venue-admin/pos/square/connect")]
+    [InlineData("POST", "/api/venue-admin/pos/square/catalog/import")]
     [InlineData("DELETE", "/api/venue-admin/pos/square/connection")]
     public async Task VenueOperations_RequireVenueAdminAuthentication(string method, string path)
     {

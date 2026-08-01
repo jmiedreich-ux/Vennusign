@@ -40,6 +40,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVenueSubscriptionRepository, VenueSubscriptionRepository>();
         services.AddScoped<IHaasContractRepository, HaasContractRepository>();
         services.AddScoped<IPosConnectionRepository, PosConnectionRepository>();
+        services.AddScoped<IPosCatalogMappingRepository, PosCatalogMappingRepository>();
+        services.AddScoped<IPosCatalogImportService, PosCatalogImportService>();
         services.AddScoped<IVenueFeatureOverrideRepository, VenueFeatureOverrideRepository>();
         services.AddScoped<IFeatureUsageRepository, FeatureUsageRepository>();
         services.AddScoped<IFeatureResolutionService, FeatureResolutionService>();

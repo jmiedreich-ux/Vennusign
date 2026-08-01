@@ -3,14 +3,14 @@
 ## Work Package
 
 - ID: WP-12.03
-- Status: Available
+- Status: In review
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: pending
-- Latest commit: `8eed66a6412e0750be3c7aa8250fee91df7f4236` (WP-12.02 reviewed head)
-- Issue: pending
+- Branch: `wp/12.03-square-catalog-import`
+- Latest commit: pending publication
+- Issue: #290
 - Pull request: pending
 - CI state: WP-12.02 Actions run #612 passed
 
@@ -27,34 +27,39 @@
 - Added the Square OAuth connect, callback, credential persistence, status, and revoke-before-delete flow.
 - Added protected single-use state and allowlisted server-owned provider/return URLs.
 - Reviewed and merged WP-12.02 through PR #288.
+- Claimed WP-12.03 as issue #290.
+- Added an injectable paged Square Catalog gateway and provider-neutral adapter.
+- Added venue/provider-scoped catalog mappings with migration 036.
+- Added an idempotent importer that reuses the existing menu domain and reports deterministic conflicts.
+- Added a claim-bound Venue Admin import endpoint and focused non-integration tests.
 
 ## Files Changed
 
-- POS connection domain, repository, service, provider contracts, Data Protection adapter, migration 035, and tests.
-- Phase 12 architecture, WP, status, tracker, and handoff records.
+- Square catalog transport, importer, durable source mappings, migration 036, endpoint, tests, and Phase 12 records.
 
 ## Decisions
 
 - Store only protected credentials and keep connection presentation contracts credential-free.
-- Define provider-neutral contracts now; defer provider-specific transports and calls.
+- Keep provider-specific transport in `Vennu.Api` behind the provider-neutral contracts established in WP-12.01.
+- Represent Square variations as existing menu items and retain source ownership outside the menu domain.
 
 ## Validation
 
-- Commands: `git diff --check`; `jq empty tracker/assignments.json`; source and secret review.
-- Results: GitHub Actions run #605 passed restore, Release build, frontend/package checks, migration inventory, and all required unit tests against `adb4406966908d3970618072a96da1824b35e573`.
+- Commands: `git diff --check`; `jq empty tracker/assignments.json`; Venue Admin unit tests and production build; source and secret review.
+- Results: available local checks passed; authoritative GitHub Actions is pending publication.
 - Skipped checks and reason: integration and external-provider tests remain skipped by standing owner instruction.
 
 ## Remaining Work
 
-- WP-12.03 — Square Catalog Import.
+- Validate, review, merge, and record WP-12.03 completion; WP-12.04 follows.
 
 ## Known Risks or Blockers
 
-- No blocker. Deployment must persist and protect the Data Protection key ring before production OAuth credentials are stored.
+- No blocker. Live Square and integration validation remain deliberately excluded.
 
 ## Exact Next Action
 
-- Claim WP-12.03 and implement its idempotent Square catalog import through the existing menu domain.
+- Publish WP-12.03, use GitHub Actions as authority, review the exact head, and merge only when green.
 
 ## Do Not Redo or Reverse
 

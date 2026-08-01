@@ -121,7 +121,7 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 
 ## Active Work Package
 
-No implementation package is active. **WP-12.03 — Square Catalog Import** is next.
+**WP-12.03 — Square Catalog Import** is active in issue #290 on branch `wp/12.03-square-catalog-import`.
 
 ## Phase 04 Result
 
@@ -183,7 +183,7 @@ No implementation package is active. **WP-12.03 — Square Catalog Import** is n
 
 ## Next Action
 
-Claim and implement **WP-12.03 — Square Catalog Import**.
+Validate, review, and merge **WP-12.03 — Square Catalog Import**, then record completion before starting WP-12.04.
 
 ## Phase 05 Work Packages
 
