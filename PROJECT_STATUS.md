@@ -116,6 +116,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 - RWP-05.02 — Menu and Quick Update Migration
 - RWP-05.03 — Remaining Venue Features Migration
 - RWP-11.01 — Venue Admin Billing UX Reconciliation
+- RWP-00.01 — Affected-Area CI and WP/RWP Validation Optimization
 - WP-12.01 — POS Connection Domain and Provider Contracts
 - WP-12.02 — Square OAuth Connection Flow
 - WP-12.03 — Square Catalog Import
@@ -130,7 +131,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-**RWP-00.01 — Affected-Area CI and WP/RWP Validation Optimization** is claimed sequentially under issue #335. Phase 13 implementation remains paused until this bounded remediation is complete.
+No work package is currently claimed. **WP-13.01 — Identity, Organization, and Membership Foundation** is next.
 
 ## Phase 04 Result
 
@@ -199,7 +200,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Next Action
 
-Complete and merge **RWP-00.01**, release its sequential claim, then claim **WP-13.01 — Identity, Organization, and Membership Foundation**.
+Claim and implement **WP-13.01 — Identity, Organization, and Membership Foundation** in sequential mode.
 
 ## Phase 05 Work Packages
 
