@@ -2,199 +2,202 @@ name: phase02-tests
 
 on:
   workflow_dispatch:
+    inputs:
+      full_validation:
+        description: Run the complete non-integration suite
+        required: false
+        default: true
+        type: boolean
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-  push:
-    branches:
-      - master
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+  schedule:
+    - cron: "0 7 * * *"
+
+concurrency:
+  group: phase02-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
-  build-and-test:
+  classify:
     runs-on: ubuntu-latest
-    environment: dev
-    env:
-      VENU_TEST_AZURE_SQL_CONNECTION_STRING: ${{ secrets.VENU_TEST_AZURE_SQL_CONNECTION_STRING }}
+    outputs:
+      docs_only: ${{ steps.classify.outputs.docs_only }}
+      full: ${{ steps.classify.outputs.full }}
+      dotnet_api: ${{ steps.classify.outputs.dotnet_api }}
+      dotnet_data_access: ${{ steps.classify.outputs.dotnet_data_access }}
+      admin: ${{ steps.classify.outputs.admin }}
+      venue_admin: ${{ steps.classify.outputs.venue_admin }}
+      display: ${{ steps.classify.outputs.display }}
+      android_tv: ${{ steps.classify.outputs.android_tv }}
+      tizen: ${{ steps.classify.outputs.tizen }}
+      webos: ${{ steps.classify.outputs.webos }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4
         with:
-          dotnet-version: 9.0.x
-
-      - name: Restore
+          fetch-depth: 0
+      - name: Collect changed paths
         shell: bash
         run: |
-          set +e
-          dotnet restore ${{ github.workspace }}/Vennusign.sln > restore.log 2>&1
-          status=$?
-          if [ $status -ne 0 ]; then
-            echo "=== Restore Errors ==="
-            grep -E "(error|NU[0-9]{4}|MSB[0-9]{4})" restore.log || tail -n 80 restore.log
-            echo "======================"
-            exit $status
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" > changed-paths.txt
+          else
+            git ls-files > changed-paths.txt
           fi
-          cat restore.log
+          cat changed-paths.txt
+      - name: Classify validation scope
+        id: classify
+        env:
+          CI_FULL_VALIDATION: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.full_validation) || contains(toJson(github.event.pull_request.labels.*.name), 'full-validation') }}
+        run: bash scripts/ci/classify-changes.sh changed-paths.txt
 
-      - name: Upload restore diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v4
+  docs-validation:
+    needs: classify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
         with:
-          name: restore-log
-          path: restore.log
-          if-no-files-found: ignore
+          fetch-depth: 0
+      - name: Validate repository records and classifier
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git diff --check "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+          else
+            git diff --check HEAD^
+          fi
+          jq empty tracker/assignments.json
+          bash scripts/ci/test-classify-changes.sh
+          if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)'; then
+            echo "Unresolved merge marker found."
+            exit 1
+          fi
+      - name: Integration Tests Skipped
+        run: echo "Integration, live-provider, credentialed, hosted-infrastructure, container, and cross-system tests are intentionally skipped."
 
-      - name: Build
-        run: dotnet build ${{ github.workspace }}/Vennusign.sln --configuration Release --no-restore
+  dotnet-api:
+    if: needs.classify.outputs.dotnet_api == 'true'
+    needs: classify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - name: Restore affected test project
+        run: dotnet restore tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj
+      - name: Build and run affected API unit tests
+        run: dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj --configuration Release --no-restore --filter "Category=Unit" --logger "console;verbosity=normal"
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+  dotnet-data-access:
+    if: needs.classify.outputs.dotnet_data_access == 'true'
+    needs: classify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - name: Restore affected test project
+        run: dotnet restore tests/Vennu.DataAccess.Tests/Vennu.DataAccess.Tests.csproj
+      - name: Build and run affected data-access unit tests
+        run: dotnet test tests/Vennu.DataAccess.Tests/Vennu.DataAccess.Tests.csproj --configuration Release --no-restore --filter "Category=Unit" --logger "console;verbosity=normal"
+
+  frontend:
+    if: needs.classify.outputs.admin == 'true' || needs.classify.outputs.venue_admin == 'true' || needs.classify.outputs.display == 'true'
+    needs: classify
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: admin
+            enabled: ${{ needs.classify.outputs.admin }}
+          - app: venue-admin
+            enabled: ${{ needs.classify.outputs.venue_admin }}
+          - app: display
+            enabled: ${{ needs.classify.outputs.display }}
+    steps:
+      - name: Skip unaffected frontend
+        if: matrix.enabled != 'true'
+        run: echo "${{ matrix.app }} is unaffected."
+      - uses: actions/checkout@v4
+        if: matrix.enabled == 'true'
+      - uses: actions/setup-node@v4
+        if: matrix.enabled == 'true'
         with:
           node-version: 22.x
           cache: npm
-          cache-dependency-path: |
-            src/display/package-lock.json
-            src/admin/package-lock.json
-            src/venue-admin/package-lock.json
-
-      - name: Install admin dependencies
-        working-directory: src/admin
-        run: npm ci
-
-      - name: Build admin
-        working-directory: src/admin
-        run: npm run build
-
-      - name: Test admin
-        working-directory: src/admin
-        run: npm test
-
-      - name: Install venue admin dependencies
-        working-directory: src/venue-admin
-        run: npm ci
-
-      - name: Build venue admin
-        working-directory: src/venue-admin
-        run: npm run build
-
-      - name: Test venue admin
-        working-directory: src/venue-admin
-        run: npm test
-
-      - name: Install display dependencies
-        working-directory: src/display
-        run: npm ci
-
-      - name: Build display
-        working-directory: src/display
-        shell: bash
+          cache-dependency-path: src/${{ matrix.app }}/package-lock.json
+      - name: Install, build, and test affected frontend
+        if: matrix.enabled == 'true'
+        working-directory: src/${{ matrix.app }}
         run: |
-          set +e
-          npm run build > display-build.log 2>&1
-          status=$?
-          if [ $status -ne 0 ]; then
-            echo "=== Display Build Errors ==="
-            tail -n 100 display-build.log
-            echo "============================"
-            exit $status
-          fi
-          cat display-build.log
+          npm ci
+          npm run build
+          npm test
 
-      - name: Test display
-        working-directory: src/display
-        run: npm test
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
+  android-tv:
+    if: needs.classify.outputs.android_tv == 'true'
+    needs: classify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.9"
-
-      - name: Build Android TV distribution profiles
+      - name: Build affected Android TV profiles
         working-directory: src/tv/android
         run: gradle :app:assembleGoogleTvDebug :app:assembleFireTvDebug --no-daemon --stacktrace
 
-      - name: Validate Samsung Tizen package
-        run: node src/tv/tizen/scripts/validate.mjs
-
-      - name: Validate LG webOS package
-        run: node src/tv/webos/scripts/validate.mjs
-
-      - name: Upload display build diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v4
+  tizen:
+    if: needs.classify.outputs.tizen == 'true'
+    needs: classify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          name: display-build-log
-          path: src/display/display-build.log
-          if-no-files-found: ignore
+          node-version: 22.x
+      - run: node src/tv/tizen/scripts/validate.mjs
 
-      - name: Diagnose environment
+  webos:
+    if: needs.classify.outputs.webos == 'true'
+    needs: classify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+      - run: node src/tv/webos/scripts/validate.mjs
+
+  build-and-test:
+    if: always()
+    needs: [classify, docs-validation, dotnet-api, dotnet-data-access, frontend, android-tv, tizen, webos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every applicable affected-area check
+        env:
+          RESULTS: ${{ toJson(needs) }}
         run: |
-          echo "=== Environment Diagnostics ==="
-          echo ".NET SDK version: $(dotnet --version)"
-          echo "Node version: $(node --version)"
-          echo "npm version: $(npm --version)"
-          echo "Runner OS: $RUNNER_OS"
-          echo "Working directory: $(pwd)"
-          if [ -n "$VENU_TEST_AZURE_SQL_CONNECTION_STRING" ]; then
-            echo "Azure SQL connection string: CONFIGURED"
-          else
-            echo "Azure SQL connection string: NOT CONFIGURED (integration tests will be skipped)"
+          if echo "$RESULTS" | jq -e 'to_entries | any(.value.result == "failure" or .value.result == "cancelled")' >/dev/null; then
+            echo "$RESULTS"
+            exit 1
           fi
-          echo "=============================="
-
-      - name: Run unit tests
-        run: |
-          echo "=== Running Unit Tests ==="
-          dotnet test ${{ github.workspace }}/Vennusign.sln \
-            --configuration Release \
-            --no-build \
-            --filter "Category=Unit" \
-            --logger "console;verbosity=normal" \
-            --logger "trx;LogFileName=unit-test-results.trx" \
-            -- RunConfiguration.TestSessionTimeout=120000
-          echo "========================="
-
-      - name: Skip integration tests notice
-        run: |
-          echo "=== Integration Tests Skipped ==="
-          echo "Integration-type tests are intentionally skipped for every work package"
-          echo "under the repository owner's standing validation instruction."
-          echo "================================="
-
-      - name: Upload unit test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: unit-test-results
-          path: "**/unit-test-results.trx"
-          if-no-files-found: ignore
-
-      - name: Test summary
-        if: always()
-        run: |
-          echo "=== Test Run Summary ==="
-          echo "Display app: dependencies installed, production build, and frontend tests executed"
-          echo "Super Admin app: dependencies installed, production build, and frontend tests executed"
-          echo "Venue Admin app: dependencies installed, production build, and frontend tests executed"
-          echo "Android TV: unsigned Google TV and Fire TV debug variants assembled"
-          echo "Samsung Tizen: package manifest and launcher statically validated"
-          echo "LG webOS: package manifest, launcher, and lifecycle handling statically validated"
-          echo "Unit tests: ran with filter Category=Unit"
-          echo "Integration tests: SKIPPED by standing repository-owner instruction"
-          echo "Projects tested:"
-          echo "  - src/display (npm ci and npm run build)"
-          echo "  - src/venue-admin (npm ci, npm run build, and npm test)"
-          echo "  - Vennu.DataAccess.Tests (unit: repository and data access tests)"
-          echo "  - Vennu.Api.Tests (unit: controller tests; integration: vertical slice)"
-          echo "  - Vennu.Data.IntegrationTests (integration: entity persistence tests)"
-          echo "========================"
+          echo "All applicable affected-area checks passed; unrelated areas were skipped."

@@ -2,45 +2,47 @@
 
 ## Work Package
 
-- ID: Phase 13
-- Status: Ready for implementation
+- ID: RWP-00.01
+- Status: Complete pending merge
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `issue/333-phase-13-draft-plan`
-- Issue: #333
-- Pull request: #334
-- CI state: pending updated Phase 13 plan review
+- Branch: `rwp/00.01-affected-area-ci`
+- Issue: #335
+- Pull request: #336
+- CI state: Actions run #711 passed on implementation head; final documentation head validation pending
 
 ## Completed This Session
 
-- Phase 12 closed after the full required non-integration validation passed on the reviewed head.
-- The Phase 13 customer identity, signup, tier-defined trial, entitlement, venue setup, first-screen onboarding, and legacy token migration sequence was approved for sequential implementation.
-- UI work now requires UX best-practices MCP consultation and documented UI/function gap analysis before implementation.
-- The repository-wide operational UI/function audit was recorded as deferred future planning evidence outside Phase 13.
+- Replaced monolithic WP/RWP validation with deterministic affected-area jobs.
+- Normal packages now run only affected .NET unit-test projects, frontends, and TV packages.
+- Documentation/completion-only work now uses lightweight validation.
+- Full non-integration validation is reserved for phase closure, nightly/manual runs, workflow changes, and explicit labels.
+- Added dependency caches, superseded-run cancellation, a stable required gate, and shared sequential/collaborative rules.
+- Included completion evidence in the implementation PR and released the sequential claim in the proposed merge state.
 
 ## Validation
 
-- Commands: `git diff --check`; assignment JSON parse.
-- Results: local planning-document validation passed; GitHub Actions remains authoritative for the updated planning PR.
-- Skipped checks and reason: no behavior changed; no local test suite is applicable to planning and governance documentation.
+- Local: classifier scenarios, shell syntax, assignment JSON, workflow YAML structure, display tests, and diff whitespace checks passed.
+- GitHub Actions: `phase02-tests` run #711 passed on `c383a089a6c8f7c4a263c77478269c421ba5d37d`.
+- The final PR head must pass `build-and-test` before ChatGPT approval and merge.
+- Integration and external-system tests remained skipped under the standing owner instruction.
 
 ## Remaining Work
 
-- WP-13.01 — Identity, Organization, and Membership Foundation.
+- Complete exact-head review and merge PR #336.
+- WP-13.01 â€” Identity, Organization, and Membership Foundation is next.
 
 ## Known Risks or Blockers
 
-- Phase 13 must not commit provider secrets, recovery codes, or local credentials.
-- Individual Phase 13 packages must resolve their assigned architecture decisions before dependent packages begin.
-- Operational findings in `docs/reports/operational-ui-function-gap-analysis.html` require issue-first planning review and must not be inserted into Phase 13 implementation.
+- Path mappings must be updated when new applications or test projects are added.
 
 ## Exact Next Action
 
-- Create and claim WP-13.01 through its own approved issue, branch, work-package record, and pull request.
+- After PR #336 passes exact-head validation and merges, claim WP-13.01 sequentially.
 
 ## Do Not Redo or Reverse
 
-- Do not start later Phase 13 packages before WP-13.01 establishes the shared identity, organization, membership, role, and audit boundaries.
-- Do not reintroduce config-backed Venue Admin tokens as the customer identity model.
+- Do not restore solution-wide unit tests or unrelated TV/frontend builds for normal WP/RWP merges.
+- Do not create a separate completion-record PR for work whose evidence can be included in its implementation PR.
