@@ -2,7 +2,7 @@
 
 ## Status
 
-In Progress — claimed under GitHub issue #335.
+Complete — implemented under GitHub issue #335 and PR #336.
 
 ## Purpose
 
@@ -35,4 +35,7 @@ Reduce duplicate and unrelated GitHub Actions work while preserving an authorita
 
 ## Validation Evidence
 
-Pending GitHub Actions validation and ChatGPT review on the exact PR head.
+- Local classifier scenarios, shell syntax, assignment JSON, workflow YAML structure, display tests, and diff whitespace checks passed.
+- GitHub Actions `phase02-tests` run #711 passed the complete non-integration suite on implementation head `c383a089a6c8f7c4a263c77478269c421ba5d37d`.
+- The final documentation head remains subject to the same required `build-and-test` gate and ChatGPT review in PR #336.
+- Integration and external-system tests remained skipped under the standing owner instruction.
