@@ -1,7 +1,29 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T01:29:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-01T01:55:00Z",
+  "activeAssignments": [
+    {
+      "workItemType": "Issue",
+      "workItemId": "#300",
+      "title": "Developer workflow — local startup helper and solution completeness",
+      "issueNumber": 300,
+      "branch": "issue/300-local-dev-workflow",
+      "pullRequestNumber": 301,
+      "executionMode": "Collaborative",
+      "claimedBy": "GitHub Copilot",
+      "claimedUtc": "2026-08-01T01:44:00Z"
+    },
+    {
+      "workItemType": "Issue",
+      "workItemId": "#302",
+      "title": "Governance — allow agent merge after approval and require explicit claims",
+      "issueNumber": 302,
+      "branch": "issue/302-agent-merge-claims",
+      "executionMode": "Collaborative",
+      "claimedBy": "GitHub Copilot",
+      "claimedUtc": "2026-08-01T01:55:00Z"
+    }
+  ],
   "nextAvailableWorkPackage": "WP-12.06",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
