@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vennu Operational UI and Function Gap Analysis</title>
+  <style>
+    :root {
+      --ink:#142033; --muted:#5f708b; --bg:#f3f6fb; --card:#fff; --line:#d9e2ef;
+      --brand:#3159d8; --brand-soft:#e9efff; --critical:#b42318; --critical-bg:#fff0ef;
+      --high:#a15c00; --high-bg:#fff7e8; --medium:#155eef; --medium-bg:#edf4ff;
+      --good:#067647; --good-bg:#ecfdf3; --shadow:0 8px 22px rgba(20,32,51,.08);
+    }
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    .hero{padding:64px max(24px,calc((100vw - 1240px)/2));background:linear-gradient(125deg,#142033,#3159d8);color:#fff}.eyebrow{margin:0 0 8px;color:#cbd8ff;font-size:.8rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}h1{margin:0;font-size:clamp(2rem,5vw,3.6rem);line-height:1.08}.hero>p:not(.eyebrow){max-width:850px;margin:18px 0 0;color:#e7edff;font-size:1.1rem}.pills{display:flex;flex-wrap:wrap;gap:9px;margin-top:24px}.pill{padding:5px 10px;border:1px solid rgba(255,255,255,.3);border-radius:99px;font-size:.84rem}
+    .shell{display:grid;grid-template-columns:255px minmax(0,1fr);gap:30px;max-width:1280px;margin:0 auto;padding:30px 24px 72px}nav{position:sticky;top:18px;align-self:start;padding:17px;border:1px solid var(--line);border-radius:15px;background:var(--card);box-shadow:var(--shadow)}nav strong{display:block;margin-bottom:8px;color:var(--muted);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase}nav a{display:block;padding:5px 0;color:#40506a;text-decoration:none;font-size:.9rem}nav a:hover{color:var(--brand)}
+    section{margin:0 0 28px;padding:29px;border:1px solid var(--line);border-radius:18px;background:var(--card);box-shadow:var(--shadow)}h2{margin:0 0 12px;font-size:1.58rem;line-height:1.25}h3{margin:25px 0 9px;font-size:1.12rem}h4{margin:0 0 8px;font-size:1rem}p{margin:0 0 13px}ul,ol{margin:8px 0 16px;padding-left:22px}li+li{margin-top:5px}code{padding:2px 5px;border-radius:4px;background:#edf1f8;color:#31415c;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em}
+    .callout{margin:16px 0;padding:17px;border-left:4px solid var(--brand);border-radius:8px;background:var(--brand-soft)}.callout strong{display:block;margin-bottom:4px}.warning{border-left-color:var(--critical);background:var(--critical-bg)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{padding:17px;border:1px solid var(--line);border-radius:12px;background:#fbfcff}.card h3{margin-top:0}.metric{font-size:2.1rem;font-weight:800;line-height:1;color:var(--brand)}.metric-label{color:var(--muted);font-size:.9rem}
+    .table-wrap{overflow-x:auto;margin:16px 0}table{width:100%;min-width:700px;border-collapse:collapse;font-size:.91rem}th,td{padding:11px 10px;vertical-align:top;text-align:left;border-bottom:1px solid var(--line)}th{background:#f7f9fd;color:#41506a;font-size:.76rem;letter-spacing:.06em;text-transform:uppercase}.tag{display:inline-block;padding:3px 8px;border-radius:99px;font-size:.74rem;font-weight:800;white-space:nowrap}.critical{color:var(--critical);background:var(--critical-bg)}.high{color:var(--high);background:var(--high-bg)}.medium{color:var(--medium);background:var(--medium-bg)}.good{color:var(--good);background:var(--good-bg)}
+    .audit{margin:18px 0;padding:18px;border:1px solid var(--line);border-radius:13px;background:#fcfdff}.audit-head{display:flex;align-items:start;justify-content:space-between;gap:14px}.audit-head h3{margin:0}.subtle{color:var(--muted)}.finding{padding:10px 0;border-top:1px solid var(--line)}.finding:first-of-type{border-top:0}.finding strong{display:block}.journey{display:flex;overflow-x:auto;margin:16px 0}.journey div{position:relative;min-width:145px;padding:16px 14px 12px 27px;border-top:3px solid var(--brand);background:#f7f9ff}.journey div+div{border-left:1px solid var(--line)}.journey div:before{position:absolute;top:-10px;left:10px;width:14px;height:14px;border-radius:50%;background:var(--brand);content:""}.journey strong{display:block;font-size:.9rem}.journey span{color:var(--muted);font-size:.8rem}.footnote{color:var(--muted);font-size:.88rem}
+    @media(max-width:850px){.shell{grid-template-columns:1fr}nav{position:static}.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <p class="eyebrow">Deep page and function audit</p>
+    <h1>Operational UI &amp; Function Gap Analysis</h1>
+    <p>Assessment of existing Vennu operational surfaces only: Super Admin, Venue Admin, display pairing/player, billing, menu, screen, theme, schedule, tap-list, and POS-management accessibility. Customer identity, public signup, no-card trials, and onboarding are intentionally excluded because they are covered by Phase 13 planning.</p>
+    <div class="pills"><span class="pill">Static source and API review</span><span class="pill">Existing product surfaces</span><span class="pill">Phase 13 excluded</span><span class="pill">No implementation changes</span></div>
+  </header>
+
+  <div class="shell">
+    <nav aria-label="Report contents">
+      <strong>Contents</strong>
+      <a href="#purpose">Purpose and method</a>
+      <a href="#summary">Executive findings</a>
+      <a href="#cross">Cross-surface gaps</a>
+      <a href="#super-admin">Super Admin audit</a>
+      <a href="#venue-admin">Venue Admin audit</a>
+      <a href="#display">Display audit</a>
+      <a href="#pos">POS management gap</a>
+      <a href="#register">Remediation register</a>
+      <a href="#validation">Required validation journeys</a>
+    </nav>
+
+    <main>
+      <section id="purpose">
+        <h2>Purpose and method</h2>
+        <p>This is a page-by-page and function-by-function audit of product surfaces that already exist. It asks whether an intended operator can complete their job without support, whether the necessary create/read/edit/delete and recovery operations exist, whether navigation is coherent, and whether UI state is backed by the necessary APIs.</p>
+        <div class="callout">
+          <strong>Important scope boundary</strong>
+          This report does not repeat the Phase 13 gaps for customer identity, customer signup, account recovery, tier-defined trials, or customer onboarding. Those remain Phase 13 work. Findings here identify deficiencies in the existing operational product after a user already has authorized access.
+        </div>
+        <p><strong>Evidence reviewed:</strong> active React route composition, page components, typed frontend API clients, API controller inventory, domain/migration inventory, and existing test inventory. It is not a substitute for hands-on usability research or a live-browser accessibility audit.</p>
+      </section>
+
+      <section id="summary">
+        <h2>Executive findings</h2>
+        <div class="grid">
+          <div class="card"><div class="metric">2</div><div class="metric-label">Venue Admin routes that are currently placeholders: Home and Settings</div></div>
+          <div class="card"><div class="metric">3</div><div class="metric-label">Implemented POS provider families without a Venue Admin Integrations route</div></div>
+          <div class="card"><div class="metric">5</div><div class="metric-label">Distinct schedule functions compressed into one Schedules route</div></div>
+          <div class="card"><div class="metric">0</div><div class="metric-label">Observed menu-item delete or menu-item reorder controls</div></div>
+        </div>
+        <div class="callout warning">
+          <strong>Main conclusion</strong>
+          The codebase contains many individual operational capabilities, but several surfaces stop at the first happy path. The most common gaps are incomplete lifecycle actions, hidden or missing navigation, unsafe destructive actions, confusing state feedback, and implemented backend capability without an accessible user workflow.
+        </div>
+        <p>The next remediation work should not begin as cosmetic UI polish. It should close task-completion gaps: an operator must be able to find a feature, understand its state, make the intended change, safely undo/recover it, and confirm the result on the relevant display or backend state.</p>
+      </section>
+
+      <section id="cross">
+        <h2>Cross-surface findings</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Pattern</th><th>Evidence</th><th>Product impact</th><th>Required remediation pattern</th></tr></thead>
+          <tbody>
+            <tr><td>Incomplete lifecycle management</td><td>Several editors support create and edit but omit delete, archive, unpair, restore, or reorder actions.</td><td>Users accumulate stale data and need support or database intervention to correct mistakes.</td><td>Define complete object lifecycle per domain: create, view, edit, reorder where meaningful, archive/delete, recovery/undo, and audit.</td></tr>
+            <tr><td>Destructive actions without confirmation</td><td>Meal-period deletion, tap category/item deletion, playlist removal, video-wall removal, promotion archive, and broadcast cancellation act immediately.</td><td>Accidental loss or interruption is likely, especially in busy venue operations.</td><td>Add confirmation with object name and impact; prefer undo/soft-delete when practical; announce success/failure.</td></tr>
+            <tr><td>Silent or ambiguous save behavior</td><td>Menu sections/items and screens save on blur or selection change; some local state changes resemble persisted updates.</td><td>Users cannot reliably tell whether a change is saved, failed, or only staged locally.</td><td>Use clear Save/Cancel or robust autosave status; preserve drafts/retry on failure; distinguish local from persisted state.</td></tr>
+            <tr><td>Feature exists without discoverable route</td><td>Square, Toast, and Clover controllers/services exist, but Venue Admin navigation has no Integrations route.</td><td>Delivered provider functionality is unavailable to the intended operator.</td><td>Add a coherent Integrations surface or explicitly defer/hide APIs until UI workflow exists.</td></tr>
+            <tr><td>Operational error recovery is weak</td><td>Most pages show a generic error string; few expose retry, diagnostics, last successful state, or support context.</td><td>Venue users cannot self-resolve API, connection, or configuration problems.</td><td>Provide retry controls, retain previous data, show actionable error context, and expose safe support diagnostics.</td></tr>
+            <tr><td>Route density is uneven</td><td>Home/Settings are placeholders while Schedules combines five substantial tools.</td><td>Navigation is simultaneously sparse and overloaded.</td><td>Replace placeholders with useful dashboards/settings; give high-complexity schedule tools sub-navigation or clear sections/deep links.</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="super-admin">
+        <h2>Super Admin page audit</h2>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Dashboard</h3><p class="subtle">Primary job: assess commercial and fleet health, then drill into an actionable venue or screen problem.</p></div><span class="tag good">Strong read model</span></div>
+          <h4>Existing functions</h4><p>Displays revenue snapshot/trend, venue and fleet metrics, screen-health items, and recent commercial events. It has loading and some error states.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag high">High</span> Metrics are not actionable drill-downs.</strong> Venue counts, offline/outdated screen indicators, events, and revenue-tier information are display-only. A support operator cannot click an offline screen, a trialing venue count, or a commercial event to reach the relevant record.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No refresh, time range, filters, or saved operational views.</strong> The dashboard loads once. There is no visible refresh action, last-updated timestamp, date-range selection, venue filter, severity filter, or “needs attention” queue.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Partial failures are inconsistent.</strong> Revenue and trend failures are shown, but the events request silently becomes an empty list. An empty list can mean “no events” or “failed to load.”</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> The “screen health map” is a list, not a navigable fleet-management map.</strong> It lacks grouping, filtering, remediation actions, and links to venue/screen detail.</div>
+          <h4>Recommended outcome</h4><p>Add clickable metric cards, an attention queue, refresh/last-updated data, resilient partial-error presentation, and drill-through to venue/screen support detail.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Venue Directory</h3><p class="subtle">Primary job: find, inspect, create, and triage venues.</p></div><span class="tag good">Core list and create path</span></div>
+          <h4>Existing functions</h4><p>Searches venues and filters by subscription status and screen health. It shows venue/tier/status/screen count/last activity/override/health columns. It opens detail and creates a venue.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag high">High</span> Query model supports a tier filter but the UI does not expose it.</strong> The typed query contains <code>tier</code>, but the directory toolbar only provides search, subscription status, and health controls.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No pagination, sorting, saved filter, URL state, or export.</strong> As venue count grows, the list cannot reliably support operations. Browser refresh/back navigation loses directory context.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Creation gives no operational post-create checklist.</strong> The UI creates a Starter trial and opens the detail. It does not surface provision result, screen next step, POS next step, or account/onboarding status. Phase 13 owns customer access; this finding concerns the internal operational follow-through.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Empty/error states are weak.</strong> “No venues match these filters” does not distinguish first-use from restrictive filters and offers no clear reset. Load failure has no retry control.</div>
+          <h4>Recommended outcome</h4><p>Add tier filtering, server-backed pagination/sorting, URL-addressable filters, “needs attention” filters, retry/reset controls, and a post-provision operational checklist.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Venue Detail</h3><p class="subtle">Primary job: understand a venue, safely support it, and reach the right operational surface.</p></div><span class="tag high">Incomplete support lifecycle</span></div>
+          <h4>Existing functions</h4><p>Shows basic venue profile, subscription/tier, screen limit, effective features, active feature overrides, tier switching, and override creation/removal. It includes links toward Venue Admin.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag critical">Critical</span> The API type includes screens, but the page does not render the screen list.</strong> Support staff cannot inspect individual screen status, platform, version, last-seen, pairing state, or navigate to a screen remediation action from the venue detail page.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No venue profile edit, archive, or lifecycle action.</strong> Profile is read-only despite venue creation. There is no visible correction path for name, timezone, type, languages, status, or archive/decommission.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Tier switching is high-impact with limited safety context.</strong> It lacks explicit plan-impact preview, feature/screen-limit conflict warning, confirmation, Stripe processing state explanation, or history.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Feature-override removal has no confirmation or visible audit history.</strong> The page shows active overrides but only recent matrix-wide audit elsewhere; a support operator cannot see venue-specific override history, actor, or impact.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Venue Admin links do not establish an operational handoff.</strong> They send the browser to a token-authenticated workspace without an authenticated support/impersonation model or clear explanation if access fails.</div>
+          <h4>Recommended outcome</h4><p>Render the existing screen support data, add guarded venue edit/archive flows, show tier/override impact and audit history, and create safe support handoffs rather than raw workspace links.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Tier Management</h3><p class="subtle">Primary job: safely define commercial catalog tiers and enforce operational limits.</p></div><span class="tag good">Basic CRUD present</span></div>
+          <h4>Existing functions</h4><p>Create, edit, clone, archive, activate/publicly expose tiers, define price, max screens, and Stripe product/price mappings.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag high">High</span> High-impact catalog changes have no impact preview or confirmation.</strong> Archive and clone execute immediately. Changes to Stripe IDs, price, public state, and screen limits do not explain affected venues or checkout behavior.</div>
+          <div class="finding"><strong><span class="tag high">High</span> There is no searchable comparison table, version/audit history, or validation status.</strong> Operators cannot quickly compare tiers or verify that public active tiers have valid monthly/annual mappings.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Trial behavior is absent from this surface.</strong> Phase 13 owns tier-defined trials, but this confirms that the eventual trial policy needs a clear tier-management UI rather than hidden configuration.</div>
+          <h4>Recommended outcome</h4><p>Add catalog validation, dependency/impact preview, archive confirmation, change history, and a comparison-oriented tier list. Incorporate Phase 13 trial policy when that model exists.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Feature Matrix</h3><p class="subtle">Primary job: manage product entitlements safely across tiers.</p></div><span class="tag good">Bulk editing exists</span></div>
+          <h4>Existing functions</h4><p>Displays features by tier, stages changes, supports save/discard, enable-all/clear-all, and displays recent audit records.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag critical">Critical</span> Enable-all and clear-all are destructive bulk actions without confirmation, scope preview, or undo.</strong> A single click can stage a matrix-wide change; the page does not show the exact impact before save.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No search/filter or feature explanation.</strong> A growing matrix becomes difficult to manage. Feature labels/keys do not explain customer impact or dependencies.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Limit values exist in the typed model but cannot be edited in the matrix UI.</strong> The matrix exposes enabled/disabled only, leaving a gap between entitlement representation and management controls.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Audit is short and not actionable.</strong> It shows only ten recent changes with no filtering, detail, rollback, or linked affected-tier/venue impact.</div>
+          <h4>Recommended outcome</h4><p>Add change review/confirmation, scoped bulk operations, feature search/help, limit editing where applicable, and a searchable audit/history view.</p>
+        </article>
+      </section>
+
+      <section id="venue-admin">
+        <h2>Venue Admin page audit</h2>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Home and Settings routes</h3><p class="subtle">Primary job: orient the operator and manage venue-level configuration.</p></div><span class="tag critical">Placeholder routes</span></div>
+          <h4>Evidence</h4><p>The navigation exposes Home and Settings, but the route renderer returns a generic “Foundation ready” placeholder for allowed routes that are not Billing, Menu, Screens, Themes, Schedules, or Tap List.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag critical">Critical</span> Home has no operational dashboard.</strong> There is no venue health summary, screen state, current content/schedule state, urgent issue list, or direct next action.</div>
+          <div class="finding"><strong><span class="tag critical">Critical</span> Settings has no settings management.</strong> There is no venue profile, timezone/language configuration, operational preferences, account/security links, support information, or integration entry point.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Navigation promises functionality that does not exist.</strong> Placeholder routes create a trust problem and hide essential actions that have no other natural location.</div>
+          <h4>Recommended outcome</h4><p>Replace Home with a venue operations dashboard and Settings with genuine venue configuration. Do not retain visible navigation to placeholder surfaces.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Menu editor and Quick Update</h3><p class="subtle">Primary job: maintain an accurate, display-ready menu quickly and safely.</p></div><span class="tag high">Important lifecycle gaps</span></div>
+          <h4>Existing functions</h4><p>Create sections/items; rename and activate/hide sections; reorder sections; edit name, description, price, happy-hour price, availability, quantity, tags, and bestseller state; set daily special; quick-toggle availability.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag critical">Critical</span> No visible delete/archive action for menu sections or menu items.</strong> A venue operator can create data and edit it, but cannot remove obsolete sections/items through the current UI.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No menu-item reordering.</strong> Section order can change, but item order cannot. This conflicts with display presentation and overflow behavior that rely on deterministic item order.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No menu creation/selection lifecycle.</strong> The page uses the first returned menu. If no menu exists, it only says “No menu exists”; the operator cannot create or select a menu from this surface.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Blur-save is unsafe and ambiguous.</strong> Section/item fields persist on blur, but there is no per-row saving/saved/failed indicator, discard action, conflict handling, or retained unsaved draft after failure.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Quick Update lacks service-safe feedback.</strong> Availability can be toggled rapidly, but there is no confirmation/undo, bulk action, filter, search, or explicit explanation of automatic midnight restoration beyond a static sentence.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> The item model includes more presentation data than the create form exposes.</strong> New items initially capture only name and price; description and other presentation fields require a later edit pass.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> No clear empty-state action hierarchy.</strong> A venue with no menu, no sections, or no items does not get guided, contextual setup actions.</div>
+          <h4>Recommended outcome</h4><p>Add section/item archive/delete with confirmation and undo where possible; item reorder; menu selection/creation; explicit save state; search/filter/bulk availability; and first-use empty states.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Screens and Video Walls</h3><p class="subtle">Primary job: create, pair, configure, monitor, replace, and retire venue displays.</p></div><span class="tag high">Create/edit is stronger than lifecycle</span></div>
+          <h4>Existing functions</h4><p>Create a screen, claim a TV pairing code, edit name/location/layout settings, push one/all screens, open registration URL, preview layouts, inspect basic last-seen/status, view overflow, and build/remove video walls.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag critical">Critical</span> No screen unpair, archive, delete, replace, or transfer lifecycle.</strong> An operator cannot safely retire a lost/broken screen, replace a device while retaining configuration, or remove a stale screen from the fleet.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No pairing recovery workflow.</strong> The UI accepts a TV pairing code, but has no instructions/status for expired codes, duplicate device registrations, pending pairing, reset pairing, or support escalation.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Capacity/entitlement context is absent.</strong> “Add screen” does not show current tier limit, remaining capacity, what happens at limit, or why creation fails.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No filter/sort/grouping for a real fleet.</strong> Screen count grows without controls for online/offline, location, layout, version, unpaired status, or last seen.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Screen edits rely on blur/autosave-like behavior.</strong> Name and location save on blur; changing layout immediately calls save. There is no saved indicator, undo, or batch edit.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Push actions lack clear operational result.</strong> “Content pushed” does not distinguish online receipt, queued delivery, failed delivery, or stale/offline screens.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Video walls lack edit, validation preview, and removal protection.</strong> A wall can be created or removed, but not edited. Removing a wall has no confirmation. The UI does not explain whether screens already belong to another wall or preview final positions on a simulated display.</div>
+          <h4>Recommended outcome</h4><p>Implement screen lifecycle actions, entitlement context, pairing recovery, fleet filters, delivery status, and editable/confirmable video walls with position preview.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Theme builder</h3><p class="subtle">Primary job: design and preview consistent venue display appearance.</p></div><span class="tag good">Strong preview foundation</span></div>
+          <h4>Existing functions</h4><p>Basic colors/fonts, swatches, advanced presets, section colors, typography/glow controls, player-backed preview, and save-to-all-screens behavior.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag high">High</span> Global-only theme behavior is not explicit enough.</strong> The editor saves to all venue screens, but users cannot choose a target screen/group or clearly understand whether a screen-specific override is supported.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No explicit reset/revert/version workflow.</strong> Users can alter drafts and save, but cannot restore a default, revert to last saved configuration, compare versions, or undo a bad live theme.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Preview depends on a screen but selection is hidden.</strong> The code selects the first managed screen; the operator cannot choose which screen/layout/device context provides the preview.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Accessibility/readability guidance is absent.</strong> Color pickers offer no contrast feedback, readability warning, or reduced-motion/legibility preview for display distance.</div>
+          <h4>Recommended outcome</h4><p>Clarify scope, allow preview target selection, add reset/version/undo, and include practical contrast/readability checks.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Schedules route</h3><p class="subtle">Primary job: control time-based display behavior without creating conflicting operational rules.</p></div><span class="tag high">Overloaded route</span></div>
+          <p>The single Schedules route renders five substantial tools in sequence: Meal Periods, Happy Hour, Screen Playlist, Emergency Broadcast, and Date-Range Promotions. These tools have distinct mental models and urgency levels.</p>
+          <div class="finding"><strong><span class="tag high">High</span> Navigation/information hierarchy is overloaded.</strong> There is no sub-navigation, route anchor, deep link, summary, or “currently active” overview. A user must scroll through unrelated controls to reach the desired task.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Shared precedence is not explained across schedule types.</strong> Meal periods, happy hour, promotions, playlists, and emergency broadcasts can affect display state, but the page does not expose one consolidated conflict/precedence model.</div>
+          <h4>Recommended outcome</h4><p>Use schedule sub-navigation or dedicated routes, summarize active/upcoming rules, expose precedence/conflicts, and retain an emergency action that is visible but protected from accidental activation.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Meal Periods</h3><p class="subtle">Primary job: schedule predictable venue-local display/menu/theme changes.</p></div><span class="tag high">CRUD exists; precedence control is incomplete</span></div>
+          <h4>Existing functions</h4><p>Create, edit, enable/disable, delete, choose days/times/layout/filter/theme preset, and show detected overlaps.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag critical">Critical</span> Conflict copy says “the first listed period wins,” but no reorder/priority control is provided.</strong> The model has <code>sortOrder</code>, yet the screen gives no way to intentionally choose precedence. Operators can see a conflict but cannot resolve it.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Enable/disable appears unsaved.</strong> The button patches local state while the explicit Save button remains separate. The operator can reasonably assume “Enabled/Disabled” persisted immediately even though persistence is not invoked by that control.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Delete has no confirmation or impact explanation.</strong> Removing a period can immediately change live display behavior, but the UI does not show affected screens/rules or ask for confirmation.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> No visual schedule timeline or next-run preview.</strong> Time fields and masks are difficult to audit. The user cannot see the next activation in venue-local time or test a simulated date/time.</div>
+          <h4>Recommended outcome</h4><p>Add explicit precedence/reorder controls, persist/announce toggles correctly, confirm destructive changes, and provide a venue-local timeline with next-run and conflict preview.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Happy Hour</h3><p class="subtle">Primary job: configure one safe promotional availability/price window.</p></div><span class="tag medium">Basic configuration only</span></div>
+          <h4>Existing functions</h4><p>Configure start/end, days, automatic/force-on/force-off mode, enabled state, and display active status.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag high">High</span> No schedule preview or conflict relationship.</strong> It does not show venue timezone, next start/end, affected menu items, interaction with meal periods/promotions, or what force-on/off overrides.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Active-window end is formatted in browser local time.</strong> A venue-local schedule should clearly present venue-local time, especially for remote operators/support staff.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> No success feedback or recoverable draft.</strong> Save failure is shown, but successful persistence and last updated state are not clearly communicated.</div>
+          <h4>Recommended outcome</h4><p>Add venue-local next-run preview, clear override explanation, cross-schedule conflict context, and explicit save status.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Screen Playlist</h3><p class="subtle">Primary job: create and maintain screen-specific rotating content.</p></div><span class="tag high">Lifecycle and scheduling gaps</span></div>
+          <h4>Existing functions</h4><p>Select a screen, add menu/image/message slides, set dwell time, optionally set a time window, reorder, and remove slides.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag critical">Critical</span> Existing slides cannot be edited or enabled/disabled.</strong> The data model exposes <code>isEnabled</code>, title/body/media/timing, but the current UI provides only reorder and remove for existing slides.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Time-window day selection is a raw numeric mask.</strong> Operators are asked to enter an “Active days mask” number instead of selecting named days. This is not an acceptable operational control.</div>
+          <div class="finding"><strong><span class="tag high">High</span> Screen selection can remain blank after asynchronous screen load.</strong> Initial state is derived from the initial empty screen list and there is no later selection update. A user can encounter a disabled form without an explanation.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No preview, collision handling, or active-now state.</strong> The operator cannot see which slide is live, what follows, whether windows overlap, or how media will render.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Remove is immediate and there is no duplication/template action.</strong> High-frequency content management needs safer recovery and faster reuse.</div>
+          <h4>Recommended outcome</h4><p>Add edit/enable actions, named day controls, no-screen empty state, current/next preview, collision validation, confirmation/undo, and duplicate/template support.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Emergency Broadcast</h3><p class="subtle">Primary job: interrupt normal display operation quickly and safely in an emergency.</p></div><span class="tag critical">Safety-critical workflow needs hardening</span></div>
+          <h4>Existing functions</h4><p>Create all-screen or targeted broadcast with title, message, optional media URL, duration, active count, and cancel action.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag critical">Critical</span> Activation has no final confirmation, target impact summary, or preview.</strong> A single submit can interrupt all venue screens. The user should confirm target count, duration, and message before activation.</div>
+          <div class="finding"><strong><span class="tag high">High</span> History, delivery state, and failed-target diagnostics are absent.</strong> Only currently active broadcasts are displayed. Operators cannot see expired/cancelled history, whether a specific screen received the broadcast, or how to retry.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No edit/extend/replace workflow.</strong> Correcting an active message requires cancellation and recreation, with no clear handoff/continuity.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Cancel has no confirmation or audit context.</strong> Stopping an emergency message is also high-impact.</div>
+          <h4>Recommended outcome</h4><p>Use a confirmation step, explicit target/online-screen summary, history/audit, delivery diagnostics, extend/replace controls, and guarded cancellation.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Date-Range Promotions</h3><p class="subtle">Primary job: plan, edit, activate, and retire bounded promotional display behavior.</p></div><span class="tag medium">Basic create/edit/archive present</span></div>
+          <h4>Existing functions</h4><p>Create/edit promotion dates, target layout, title/body, priority, and archive enabled rows.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag high">High</span> Enabled state is represented but not controllable in the form.</strong> The draft model includes <code>isEnabled</code>, but neither create nor edit exposes an enabled/disabled control. A user cannot safely pause a promotion without archiving it.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No conflict/calendar preview.</strong> Priority is editable but the page does not show overlap/conflict resolution, active-now state, or venue-local calendar timeline.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Archive is irreversible from the visible UI.</strong> There is no archived list, restore action, confirmation, or audit history.</div>
+          <h4>Recommended outcome</h4><p>Add enabled toggle, conflict and active-state preview, calendar/timeline view, archive confirmation, and restore/history lifecycle.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Tap List</h3><p class="subtle">Primary job: operate a brewery/bar board with current categories, availability, pricing, and order.</p></div><span class="tag good">Most complete operational CRUD surface</span></div>
+          <h4>Existing functions</h4><p>Create/edit/delete/reorder categories and tap items; set price/style/ABV/IBU/colors/availability/coming soon; assign category; show Tap Strips capacity/overflow.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag high">High</span> Delete actions have no confirmation or dependency warning.</strong> Deleting a category may affect linked items; the UI does not explain what will happen before executing it.</div>
+          <div class="finding"><strong><span class="tag high">High</span> The item model has a description field that the UI does not expose.</strong> The user cannot manage all represented tap-item data through the page.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> No search/filter/category grouping or display preview.</strong> A large tap list is difficult to operate, and capacity text does not show the exact display placement/overflow outcome for all supported board layouts.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> No bulk availability action or event feedback.</strong> Rapid service changes require more efficient operations and clear live-update confirmation.</div>
+          <h4>Recommended outcome</h4><p>Add dependency-aware deletion, description editing, search/filter/grouping, display preview, bulk availability controls, and stronger success/realtime feedback.</p>
+        </article>
+
+        <article class="audit">
+          <div class="audit-head"><div><h3>Billing</h3><p class="subtle">Primary job: understand current entitlement and manage paid subscription/hardware decisions.</p></div><span class="tag medium">Status is clearer than choice</span></div>
+          <h4>Existing functions</h4><p>Shows current tier/subscription status, opens Stripe Billing Portal when permitted, and presents HaaS bundles or contract summary. Feature locks can launch an upgrade modal.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag high">High</span> No direct plan comparison or general plan-change workflow.</strong> Upgrade starts from locked features, not a clear billing catalog. The customer cannot readily compare tiers, screens, features, pricing, or choose a plan from Billing.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No clear entitlement/limit explanation.</strong> Current tier is shown, but screen usage versus limit, feature inclusions, trial/period end impact, and downgrade consequences are not visible here.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Limited recovery states.</strong> Portal unavailability is stated, but there is no clear next action for payment failure, cancellation, entitlement delay, or webhook processing beyond a generic return notice.</div>
+          <h4>Recommended outcome</h4><p>Add a plan comparison/selection experience, current usage and entitlement explanations, downgrade impact preview, and actionable billing recovery states. Phase 13 later connects this to customer signup/trial flow.</p>
+        </article>
+      </section>
+
+      <section id="display">
+        <h2>Display pairing and player audit</h2>
+        <article class="audit">
+          <div class="audit-head"><div><h3>TV pairing page</h3><p class="subtle">Primary job: place a TV into a pairable state and communicate exactly what the venue operator must do.</p></div><span class="tag good">Clear minimal flow</span></div>
+          <h4>Existing functions</h4><p>Registers a pairing screen, generates/refreshes a six-digit code, polls for claim, redirects when linked, and shows loading/error/ready states.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag high">High</span> Error recovery is “reload this screen” only.</strong> The display does not provide Retry, network status, diagnostic code, last registration state, or safe reset/forget-device action.</div>
+          <div class="finding"><strong><span class="tag high">High</span> No pairing status explanation after the code is entered.</strong> The TV can remain waiting without telling the user whether the code was entered, rejected, expired, or claimed for another venue.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> No QR/deep-link assistance or accessibility fallback beyond text code.</strong> The six-digit code is accessible, but a mobile operator workflow could be faster with a QR/deep-link while retaining code fallback.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> No customer-visible device lifecycle guidance.</strong> There is no practical explanation for replacement, reset pairing, moving a display, or reconnecting after network changes.</div>
+          <h4>Recommended outcome</h4><p>Add retry/reset diagnostics, explicit pairing progress, recovery guidance, and optional QR/deep-link assistance. Keep the code as the reliable fallback.</p>
+        </article>
+        <article class="audit">
+          <div class="audit-head"><div><h3>Display player / provisioning routes</h3><p class="subtle">Primary job: reliably render assigned content or explain why rendering cannot continue.</p></div><span class="tag medium">Route foundation exists</span></div>
+          <h4>Existing functions</h4><p>Resolves pairing, provisioning, display, and not-found routes; supports platform bootstrap and reset-pairing query behavior.</p>
+          <h4>Functional gaps</h4>
+          <div class="finding"><strong><span class="tag high">High</span> Not-found/provision failure guidance is generic.</strong> “Use a display URL with a screen identifier” does not help an operator distinguish bad URL, revoked screen, unavailable venue, offline API, or expired provisioning token.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Operational support state is not surfaced.</strong> There is no support-friendly display identifier, version, connectivity, assigned venue name, or recovery instruction on failure surfaces.</div>
+          <h4>Recommended outcome</h4><p>Provide non-sensitive diagnostic context, clear recovery paths, and distinct messages for URL, registration, entitlement, connectivity, and provisioning failures.</p>
+        </article>
+      </section>
+
+      <section id="pos">
+        <h2>POS management accessibility gap</h2>
+        <div class="callout warning"><strong>Implemented backend capability is not a usable product capability until an operator can reach it.</strong> The API/controller inventory includes Venue Admin Square, Toast, and Clover POS controllers and provider services, but current Venue Admin navigation has no Integrations/POS route.</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Existing provider capability</th><th>Observed user-surface gap</th><th>Operational consequence</th></tr></thead>
+          <tbody>
+            <tr><td>Square OAuth, catalog import, webhooks, inventory/price sync</td><td>No visible Integrations route or connection/import status page in Venue Admin navigation.</td><td>A venue operator cannot discover, connect, monitor, import, disconnect, or troubleshoot Square through the intended workspace.</td></tr>
+            <tr><td>Toast connection, catalog, webhook, polling resilience</td><td>No visible Venue Admin workflow for connection status, provider approval guidance, catalog import, sync health, or polling diagnostics.</td><td>Operationally delivered provider behavior is inaccessible or requires unsupported direct API/internal action.</td></tr>
+            <tr><td>Clover OAuth, catalog, inventory/webhook conformance</td><td>No visible integration-management workflow.</td><td>Same discoverability, support, and lifecycle gap applies.</td></tr>
+          </tbody>
+        </table></div>
+        <p><strong>Required remediation boundary:</strong> create a dedicated Venue Admin Integrations surface with provider list, connect/disconnect, status, last sync, import action/result, error/retry guidance, webhook/poll health, ownership boundaries, and clear provider-specific operational instructions. This is distinct from Phase 13 customer identity work.</p>
+      </section>
+
+      <section id="register">
+        <h2>Recommended remediation register</h2>
+        <p>These are recommendations for planning review. They are not new work packages or queue changes.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Finding</th><th>Priority</th><th>Suggested remediation boundary</th><th>Why it matters</th></tr></thead>
+          <tbody>
+            <tr><td>Venue Admin Home and Settings are placeholders</td><td><span class="tag critical">Critical</span></td><td>Venue Admin operational dashboard and settings remediation</td><td>Primary navigation leads to non-functional pages; essential venue configuration has no home.</td></tr>
+            <tr><td>POS integrations have no visible user workflow</td><td><span class="tag critical">Critical</span></td><td>Venue Admin POS integrations reconciliation</td><td>Phase 12 delivered backend capability that venue operators cannot access.</td></tr>
+            <tr><td>Menu editor lacks deletion, item ordering, and menu lifecycle</td><td><span class="tag critical">Critical</span></td><td>Menu editor functional-completeness remediation</td><td>Core customer data cannot be fully maintained through the product.</td></tr>
+            <tr><td>Screen lifecycle lacks unpair/archive/replace and pairing recovery</td><td><span class="tag critical">Critical</span></td><td>Screen fleet lifecycle remediation</td><td>Physical displays inevitably fail, move, or need replacement.</td></tr>
+            <tr><td>Meal-period precedence cannot be controlled</td><td><span class="tag critical">Critical</span></td><td>Scheduling precedence remediation</td><td>The product warns that first listed period wins but offers no way to set the order.</td></tr>
+            <tr><td>Emergency broadcast lacks confirmation/delivery/history</td><td><span class="tag high">High</span></td><td>Emergency operations hardening</td><td>Safety-critical broadcast changes need guarded, auditable delivery controls.</td></tr>
+            <tr><td>Schedules route combines five complex tools</td><td><span class="tag high">High</span></td><td>Schedule information architecture remediation</td><td>Navigation and precedence are difficult to understand and operate.</td></tr>
+            <tr><td>Super Admin venue detail omits existing screen support data and venue lifecycle actions</td><td><span class="tag high">High</span></td><td>Super Admin support-detail completion</td><td>Support staff cannot complete common diagnosis/correction workflows.</td></tr>
+            <tr><td>Feature matrix has unsafe bulk actions and no limit management</td><td><span class="tag high">High</span></td><td>Entitlement administration hardening</td><td>Matrix-wide mistakes can affect customer access without impact review.</td></tr>
+            <tr><td>Playlist cannot edit/disable existing slides and uses numeric day mask</td><td><span class="tag high">High</span></td><td>Playlist lifecycle and scheduling completion</td><td>Core scheduled content cannot be safely maintained.</td></tr>
+            <tr><td>Billing lacks plan comparison, usage/limit clarity, and recovery guidance</td><td><span class="tag medium">Medium</span></td><td>Billing UX reconciliation</td><td>Existing customers cannot confidently understand or change service.</td></tr>
+            <tr><td>Theme builder lacks revert/version/target preview</td><td><span class="tag medium">Medium</span></td><td>Theme-management completion</td><td>Visual changes can affect all screens without simple recovery.</td></tr>
+            <tr><td>Tap list lacks dependency-aware deletion, search, and preview</td><td><span class="tag medium">Medium</span></td><td>Tap-list operational refinement</td><td>Most CRUD is present, but venue-scale safety and discoverability are weak.</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="validation">
+        <h2>Required validation journeys for remediation</h2>
+        <p>Each remediation should be tested as a complete operational task, not only by service/controller unit tests.</p>
+        <div class="journey">
+          <div><strong>Find</strong><span>Navigate to the correct operational surface from a meaningful entry point.</span></div>
+          <div><strong>Understand</strong><span>See current state, limit, conflict, permission, and next action.</span></div>
+          <div><strong>Change</strong><span>Create/edit/reorder/archive/unpair using valid input and clear feedback.</span></div>
+          <div><strong>Confirm</strong><span>See saved, queued, delivered, or failed result without ambiguity.</span></div>
+          <div><strong>Recover</strong><span>Retry, undo, restore, replace, or obtain safe support context.</span></div>
+        </div>
+        <h3>Minimum journey cases</h3>
+        <ul>
+          <li>Create, reorder, hide, archive, and restore menu content; verify corresponding display state.</li>
+          <li>Create screen, pair TV, handle expired/invalid code, push content, unpair/replace/archive device, and verify entitlement limits.</li>
+          <li>Create overlapping meal periods, set precedence, preview next activation, disable/enable, and delete with confirmation.</li>
+          <li>Create/edit/disable/reorder/remove playlist slides with named-day scheduling and display preview.</li>
+          <li>Activate, confirm, deliver, replace, cancel, and audit an emergency broadcast across one and all screens.</li>
+          <li>Connect, import, monitor, retry, disconnect, and diagnose each supported POS provider from Venue Admin.</li>
+          <li>Change tier/features with impact preview, confirmation, audit, and resulting entitlement visibility.</li>
+          <li>Use dashboard/directory/detail drill-down to identify and resolve a degraded or offline screen.</li>
+        </ul>
+        <p class="footnote">Before implementing any affected UI surface, consult the available UX best-practices MCP and record its applicable guidance in the work package or pull request, as required by repository governance.</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
