@@ -14,7 +14,13 @@ public sealed class CustomerSessionService(
     public async Task<CustomerSessionIssue> IssueAsync(
         Guid userId,
         CustomerAuthenticationMethod method,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        await IssueCoreAsync(userId, method, CustomerAuthenticationAssurance.Primary, cancellationToken).ConfigureAwait(false);
+
+    public Task<CustomerSessionIssue> IssueStrongAsync(Guid userId, CustomerAuthenticationMethod method, CancellationToken cancellationToken = default) =>
+        IssueCoreAsync(userId, method, CustomerAuthenticationAssurance.Strong, cancellationToken);
+
+    private async Task<CustomerSessionIssue> IssueCoreAsync(Guid userId, CustomerAuthenticationMethod method, CustomerAuthenticationAssurance assurance, CancellationToken cancellationToken)
     {
         if (userId == Guid.Empty) throw new ArgumentException("A user identifier is required.", nameof(userId));
         if (!Enum.IsDefined(method)) throw new ArgumentOutOfRangeException(nameof(method));
@@ -30,7 +36,9 @@ public sealed class CustomerSessionService(
             UserId = userId,
             TokenHash = Hash(token),
             AuthenticationMethod = method,
+            Assurance = assurance,
             AuthenticatedUtc = utcNow,
+            StepUpUtc = assurance == CustomerAuthenticationAssurance.Strong ? utcNow : null,
             LastSeenUtc = utcNow,
             ExpiresUtc = utcNow.Add(policy.AbsoluteLifetime),
             CreatedUtc = utcNow
@@ -66,6 +74,20 @@ public sealed class CustomerSessionService(
         ArgumentException.ThrowIfNullOrWhiteSpace(token);
         return authenticationRepository.RevokeSessionAsync(
             Hash(token), timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
+    }
+
+    public bool IsRecent(CustomerAuthSession session)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        var assuranceUtc = session.StepUpUtc ?? session.AuthenticatedUtc;
+        return assuranceUtc.Add(policy.RecentAuthenticationWindow) > timeProvider.GetUtcNow().UtcDateTime;
+    }
+
+    public Task<bool> StepUpAsync(Guid sessionId, CustomerAuthenticationMethod method, CancellationToken cancellationToken = default)
+    {
+        if (method is not (CustomerAuthenticationMethod.Passkey or CustomerAuthenticationMethod.Totp or CustomerAuthenticationMethod.RecoveryCode))
+            throw new ArgumentOutOfRangeException(nameof(method));
+        return authenticationRepository.StepUpSessionAsync(sessionId, method, timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
     }
 
     internal static string CreateToken() =>

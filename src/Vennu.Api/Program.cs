@@ -15,6 +15,7 @@ using Vennu.Api.CustomerAuthentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Options;
+using Fido2NetLib;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +47,8 @@ builder.Services.AddSingleton(new CustomerSessionPolicy
     AbsoluteLifetime = customerAuthentication.AbsoluteSessionLifetime,
     IdleLifetime = customerAuthentication.IdleSessionLifetime,
     TouchInterval = customerAuthentication.SessionTouchInterval,
-    EmailLinkLifetime = customerAuthentication.EmailLinkLifetime
+    EmailLinkLifetime = customerAuthentication.EmailLinkLifetime,
+    RecentAuthenticationWindow = customerAuthentication.RecentAuthenticationWindow
 });
 if (adminCorsEnabled)
 {
@@ -108,6 +110,14 @@ builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddDataProtection();
 builder.Services.AddScoped<CustomerOidcEvents>();
+builder.Services.AddSingleton<ICustomerSecretProtector, DataProtectionCustomerSecretProtector>();
+builder.Services.AddScoped<ICustomerPasskeyService, CustomerPasskeyService>();
+builder.Services.AddFido2(options =>
+{
+    options.ServerDomain = customerAuthentication.Passkeys.ServerDomain;
+    options.ServerName = "Vennu";
+    options.Origins = customerAuthentication.Passkeys.Origins;
+});
 builder.Services.AddHttpClient<IEmailLoginDelivery, ConfiguredEmailLoginDelivery>();
 builder.Services.AddSingleton<IPosCredentialProtector, DataProtectionPosCredentialProtector>();
 builder.Services.AddSingleton<IPosOAuthStateService, ProtectedPosOAuthStateService>();

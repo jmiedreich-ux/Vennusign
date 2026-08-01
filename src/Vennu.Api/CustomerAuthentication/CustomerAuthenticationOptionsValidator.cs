@@ -21,6 +21,13 @@ public sealed class CustomerAuthenticationOptionsValidator : IValidateOptions<Cu
             failures.Add("Session touch interval must be positive and shorter than the idle lifetime.");
         if (options.EmailLinkLifetime <= TimeSpan.Zero || options.EmailLinkLifetime > TimeSpan.FromHours(1))
             failures.Add("Email link lifetime must be between zero and one hour.");
+        if (options.RecentAuthenticationWindow <= TimeSpan.Zero || options.RecentAuthenticationWindow > TimeSpan.FromHours(1))
+            failures.Add("Recent-authentication window must be between zero and one hour.");
+        if (string.IsNullOrWhiteSpace(options.Passkeys.ServerDomain) || options.Passkeys.ServerDomain.Contains("://", StringComparison.Ordinal))
+            failures.Add("CustomerAuthentication:Passkeys:ServerDomain must be a host name without a scheme.");
+        if (options.Passkeys.Origins.Count == 0 || options.Passkeys.Origins.Any(origin =>
+            !Uri.TryCreate(origin, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps))
+            failures.Add("CustomerAuthentication:Passkeys:Origins must contain absolute HTTPS origins.");
         return failures.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(failures);
     }
 

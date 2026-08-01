@@ -72,6 +72,19 @@ public sealed class CustomerSessionServiceTests
             authentication.LastRevokedHash);
     }
 
+    [Fact]
+    public async Task IssueStrongAsync_RecordsStrongAssuranceAndRecentStepUp()
+    {
+        var authentication = new AuthenticationRepositoryFake();
+        var service = CreateService(authentication, new IdentityRepositoryFake(ActiveUser()));
+
+        var issued = await service.IssueStrongAsync(authentication.UserId, CustomerAuthenticationMethod.Passkey);
+
+        Assert.Equal(CustomerAuthenticationAssurance.Strong, issued.Session.Assurance);
+        Assert.Equal(UtcNow.UtcDateTime, issued.Session.StepUpUtc);
+        Assert.True(service.IsRecent(issued.Session));
+    }
+
     private CustomerSessionService CreateService(AuthenticationRepositoryFake auth, IdentityRepositoryFake identity) =>
         new(auth, identity, policy, new FixedTimeProvider(UtcNow));
 
@@ -89,6 +102,7 @@ public sealed class CustomerSessionServiceTests
 
     private sealed class AuthenticationRepositoryFake : ICustomerAuthenticationRepository
     {
+        public Guid UserId { get; } = Guid.NewGuid();
         public CustomerAuthSession? Session { get; set; }
         public int TouchCount { get; private set; }
         public string? LastRevokedHash { get; private set; }

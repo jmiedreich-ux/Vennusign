@@ -2,47 +2,42 @@
 
 ## Work Package
 
-- ID: WP-13.02
-- Status: Complete upon merge of PR #340
+- ID: WP-13.03
+- Status: In Progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/13.02-customer-authentication-foundation`
-- Issue: #339
-- Pull request: #340 (draft)
-- CI state: implementation run #724 passed; merge is gated on the required check for the final reviewed head
+- Branch: `wp/13.03-passkeys-totp-recovery`
+- Issue: #341
+- Pull request: #342 (draft)
+- CI state: pending implementation-head GitHub Actions
 
 ## Completed This Session
 
-- Refreshed `master` and verified WP-13.01 merged through PR #338 and issue #337 closed.
-- Verified the default-branch tracker has no active assignment and no WP-13.02 issue, branch, or pull request exists.
-- Read AGENTS.md, the approved Phase 13 plan, current records, WP-13.01 tenancy architecture, and existing authentication/session patterns.
-- Claimed WP-13.02 exclusively in Sequential mode.
-- Added Google/Apple validated OIDC boundaries, verified account linking, hashed one-time email links, opaque hashed sessions, secure cookie authentication, migration 041, tests, and architecture records.
-- GitHub Actions run #724 passed on implementation head `0be1ce9add15d3a1be8ef37e5bc7f54c324528f4`.
-- Added completion evidence and proposed post-merge claim release to PR #340.
+- Refreshed master and verified WP-13.02 merged, its issue closed, and no competing WP-13.03 issue, branch, PR, or tracker claim existed.
+- Claimed WP-13.03 exclusively before implementation.
+- Added FIDO2-backed passkey ceremonies, protected/one-time challenges, TOTP enrollment and replay protection, hashed recovery codes, session assurance/step-up behavior, migration 042, tests, and architecture records.
+- Confirmed this backend/API package changes no UI page or screen; later UI work remains bounded to WP-13.05/WP-13.07.
 
 ## Validation
 
-- Local assignment/appsettings JSON, diff whitespace, file-scope, secret/artifact, migration-order, and security-boundary reviews passed.
-- GitHub Actions run #724 passed required affected-area non-integration checks on the implementation head.
-- The stable required PR gate must pass on the final reviewed head before merge.
-- Integration, live Google/Apple/email, Azure SQL, hosted-infrastructure, container, device, and cross-system tests remain skipped under the standing owner instruction.
+- Local diff/whitespace and scope checks are clean; local .NET tooling is unavailable and is not a blocker.
+- GitHub Actions is authoritative and must pass on the exact implementation head before approval.
+- Integration, live-provider, Azure SQL, hosted-infrastructure, browser/device, and cross-system tests are intentionally skipped.
 
 ## Remaining Work
 
-- Validate the final completion-record head, review and merge PR #340, verify issue #339 closes, and refresh the default branch.
+- Publish the implementation, correct any affected-area CI failure, add completion evidence, review the exact final head, merge PR #342, close issue #341, release the claim, and refresh master.
 
 ## Known Risks or Blockers
 
-- No blocker. WP-13.03 remains unclaimed and unstarted until PR #340 merges and ownership is rechecked.
+- No blocker. Live WebAuthn/browser and external infrastructure verification is excluded; non-integration contract/security tests and Actions remain required.
 
 ## Exact Next Action
 
-- After PR #340 merges, inspect current ownership and claim WP-13.03 sequentially if it remains unowned.
+- Run affected-area GitHub Actions on PR #342's implementation head and correct any compile/test failure.
 
 ## Do Not Redo or Reverse
 
-- Do not alter the WP-13.01 identity/tenancy boundary or legacy Venue Admin tokens.
-- Do not begin WP-13.03 or any Phase 14/later work.
+- Do not implement WebAuthn cryptography manually, expose stored TOTP/recovery secrets, add password login, alter legacy Venue Admin tokens, or begin WP-13.04 before WP-13.03 merges.

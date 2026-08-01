@@ -7,9 +7,17 @@ public sealed class CustomerAuthenticationOptions
     public TimeSpan IdleSessionLifetime { get; set; } = TimeSpan.FromDays(7);
     public TimeSpan SessionTouchInterval { get; set; } = TimeSpan.FromMinutes(5);
     public TimeSpan EmailLinkLifetime { get; set; } = TimeSpan.FromMinutes(15);
+    public TimeSpan RecentAuthenticationWindow { get; set; } = TimeSpan.FromMinutes(10);
     public CustomerOidcProviderOptions Google { get; set; } = new();
     public CustomerOidcProviderOptions Apple { get; set; } = new();
     public CustomerEmailDeliveryOptions EmailDelivery { get; set; } = new();
+    public CustomerPasskeyOptions Passkeys { get; set; } = new();
+}
+
+public sealed class CustomerPasskeyOptions
+{
+    public string ServerDomain { get; set; } = "localhost";
+    public HashSet<string> Origins { get; set; } = ["https://localhost:5174"];
 }
 
 public sealed class CustomerOidcProviderOptions

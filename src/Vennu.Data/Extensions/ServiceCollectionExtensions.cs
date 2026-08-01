@@ -80,6 +80,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICustomerAccountService, CustomerAccountService>();
         services.AddScoped<ICustomerSessionService, CustomerSessionService>();
         services.AddScoped<ICustomerEmailLoginService, CustomerEmailLoginService>();
+        services.AddScoped<ICustomerStrongAuthenticationService, CustomerStrongAuthenticationService>();
         return services;
     }
 }

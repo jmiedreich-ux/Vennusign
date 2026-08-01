@@ -32,6 +32,8 @@ public sealed class CustomerSessionAuthenticationHandler : AuthenticationHandler
             new Claim(ClaimTypes.Name, identity.User.DisplayName),
             new Claim(ClaimTypes.Email, identity.User.Email),
             new Claim("auth_method", identity.Session.AuthenticationMethod.ToString()),
+            new Claim("session_id", identity.Session.Id.ToString()),
+            new Claim("auth_assurance", identity.Session.Assurance.ToString()),
             new Claim("auth_time", new DateTimeOffset(identity.Session.AuthenticatedUtc).ToUnixTimeSeconds().ToString())
         };
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, Scheme.Name));
