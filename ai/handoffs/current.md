@@ -3,13 +3,13 @@
 ## Work Package
 
 - ID: WP-12.08
-- Status: Available
+- Status: In Progress
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: none
-- Issue: none
+- Branch: `wp/12.08-clover-oauth-catalog`
+- Issue: #323
 - Pull request: none
 - CI state: WP-12.07 passed GitHub Actions run #675
 
@@ -28,7 +28,7 @@
 
 ## Exact Next Action
 
-- Claim and implement WP-12.08 — Clover OAuth and Catalog Provider.
+- Complete the bounded Clover OAuth and catalog provider slice, publish its PR, and use GitHub Actions as the validation authority.
 
 ## Do Not Redo or Reverse
 

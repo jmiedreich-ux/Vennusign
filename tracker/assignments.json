@@ -1,8 +1,25 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T03:10:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "WP-12.08",
+  "updatedUtc": "2026-08-01T03:12:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-12.08",
+      "executionMode": "Sequential",
+      "owner": "ChatGPT scheduled development agent",
+      "issue": 323,
+      "branch": "wp/12.08-clover-oauth-catalog",
+      "pullRequest": null,
+      "claimedUtc": "2026-08-01T03:12:00Z",
+      "writableScope": [
+        "Clover OAuth, catalog provider, Venue Admin POS surfaces, focused tests, and WP-12.08 documentation"
+      ],
+      "prohibitedScope": [
+        "WP-12.09 Clover inventory webhooks",
+        "Unrelated collaborative issue #321 login work"
+      ]
+    }
+  ],
+  "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
