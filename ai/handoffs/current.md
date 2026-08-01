@@ -2,56 +2,41 @@
 
 ## Work Package
 
-- ID: WP-12.06
-- Status: Review
+- ID: WP-12.07
+- Status: Available
 - Execution mode: Sequential
 
 ## Git State
 
-- Branch: `wp/12.06-toast-provider-webhook-sync`
-- Issue: #306
-- Pull request: pending
-- CI state: pending
+- Branch: none
+- Issue: none
+- Pull request: none
+- CI state: WP-12.06 implementation passed GitHub Actions run #649
 
 ## Completed This Session
 
+- WP-12.06 merged through PR #307 as `a2d7761ede4f5a02b3bb0d35e2598e373420946b`.
 - Added venue-scoped Toast connection configuration and credential-free status guidance.
-- Added an injectable official-host-only Toast Menus V2 gateway and provider-neutral catalog translation.
-- Generalized the existing catalog import service to retain provider ownership for Square and Toast.
-- Added Toast message-signature verification using the event-category subscription secret, exact body, and payload timestamp.
-- Added durable `menus_updated`, `in_stock`, `out_of_stock`, and `low_quantity` handling through the existing POS queue and notification contracts.
-- Added focused verifier, gateway, ownership, idempotency, mapping, and notification tests.
-
-## Files Changed
-
-- Toast API transport, verification, sync handler, Venue Admin controller/contracts, dependency registration, configuration placeholders, tests, and Phase 12 documentation.
+- Added the official-host-only Toast catalog gateway and provider-neutral catalog import ownership.
+- Added category-secret Toast signature verification and durable menus/stock webhook processing.
+- Added focused non-integration verification, translation, ownership, idempotency, mapping, and notification tests.
 
 ## Decisions
 
-- Treat Toast webhook subscription as a manual provider approval/developer-portal operation and report that status honestly.
-- Use the Toast event GUID as the existing provider/event replay key.
-- Use the restaurant GUID as the external connection boundary and item GUID as the catalog/stock mapping key.
-- Keep polling out of WP-12.06; WP-12.07 owns the resilient polling fallback.
+- Toast webhook registration remains an honest manual provider/developer-portal operation.
+- Restaurant GUID resolves the connection boundary; item GUID resolves Toast-owned catalog mappings.
+- Toast polling and recovery behavior belongs to WP-12.07.
 
 ## Validation
 
-- Commands: `git diff --check`; assignment JSON parse; focused local .NET tests attempted.
-- Results: local .NET SDK is unavailable; GitHub Actions is authoritative.
-- Skipped: live Toast, credentialed, Azure SQL, hosted infrastructure, container, and cross-system integration tests under the standing instruction.
-
-## Remaining Work
-
-- Publish the PR, allow required GitHub Actions checks to complete, review the exact head, and merge if green.
-
-## Known Risks or Blockers
-
-- Toast partner approval, credentials, subscription registration, and live payload validation remain operational activities outside this package.
+- GitHub Actions `phase02-tests` run #649 passed on reviewed head `9f205ebeebb488d3438cf5ea85da5e8afa12c6f8`.
+- Live Toast, credentialed, Azure SQL, hosted-infrastructure, container, webhook-registration, and cross-system integration tests were intentionally skipped.
 
 ## Exact Next Action
 
-- Publish WP-12.06, validate the exact head through GitHub Actions, and perform the mandatory ChatGPT review.
+- Claim and implement WP-12.07 — Toast Polling Resilience.
 
 ## Do Not Redo or Reverse
 
-- Do not add polling to this package or claim that Toast webhook registration is automatic.
-- Do not weaken the restaurant/provider ownership checks or expose the protected credential.
+- Do not weaken venue/provider mapping ownership or expose protected Toast credentials.
+- Do not represent Toast partner approval or webhook registration as automatic.
