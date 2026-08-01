@@ -121,10 +121,11 @@ The internal Super Admin CRM is complete; the next milestone is the first venue 
 - WP-12.03 — Square Catalog Import
 - WP-12.04 — Unified POS Webhook Intake and Idempotency
 - WP-12.05 — Square Inventory and Price Realtime Sync
+- WP-12.06 — Toast Provider and Webhook Sync
 
 ## Active Work Package
 
-**WP-12.06 — Toast Provider and Webhook Sync** is in review on issue #306 and branch `wp/12.06-toast-provider-webhook-sync`.
+None. **WP-12.07 — Toast Polling Resilience** is the next available package.
 
 ## Phase 04 Result
 
