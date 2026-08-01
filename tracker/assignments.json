@@ -1,27 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T20:50:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "RWP-00.01",
-      "executionMode": "Sequential",
-      "owner": "ChatGPT",
-      "issue": 335,
-      "branch": "rwp/00.01-affected-area-ci",
-      "claimedUtc": "2026-08-01T20:50:00Z",
-      "writableScope": [
-        "GitHub Actions affected-area validation",
-        "CI classification scripts and tests",
-        "WP/RWP validation governance and completion records"
-      ],
-      "prohibitedScope": [
-        "Phase 13 application implementation",
-        "Integration and external-provider tests",
-        "Unrelated application behavior"
-      ]
-    }
-  ],
-  "nextAvailableWorkPackage": "RWP-00.01",
+  "updatedUtc": "2026-08-01T21:02:00Z",
+  "activeAssignments": [],
+  "nextAvailableWorkPackage": "WP-13.01",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
