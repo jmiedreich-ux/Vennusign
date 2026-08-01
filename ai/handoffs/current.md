@@ -11,7 +11,7 @@
 - Branch: `wp/13.01-identity-organization-membership-foundation`
 - Issue: #337
 - Pull request: #338 (draft)
-- CI state: implementation run #717 passed; final completion-record gate pending
+- CI state: implementation run #717 passed; merge is gated on the required check for the final reviewed head
 
 ## Completed This Session
 
@@ -28,7 +28,7 @@
 
 - Local assignment JSON, diff whitespace, file-scope, secret/artifact, and documentation consistency reviews passed.
 - GitHub Actions run #717 passed the affected-area Release build, API/data-access unit suites, repository validation, and classifier-selected non-integration checks on the implementation head.
-- The final completion-record head remains subject to the stable required PR gate before merge.
+- The stable required PR gate must pass on the final reviewed head before merge.
 - Integration and external-system tests remain skipped under the standing owner instruction.
 
 ## Remaining Work
