@@ -1,7 +1,17 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T02:20:00Z",
+  "updatedUtc": "2026-08-01T02:21:00Z",
   "activeAssignments": [
+    {
+      "workItemType": "WP",
+      "workItemId": "WP-12.06",
+      "title": "Toast Provider and Webhook Sync",
+      "issueNumber": 306,
+      "branch": "wp/12.06-toast-provider-webhook-sync",
+      "executionMode": "Sequential",
+      "claimedBy": "ChatGPT Codex",
+      "claimedUtc": "2026-08-01T02:04:00Z"
+    },
     {
       "workItemType": "Issue",
       "workItemId": "#308",
