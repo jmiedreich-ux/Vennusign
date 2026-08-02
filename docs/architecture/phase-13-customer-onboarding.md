@@ -62,3 +62,9 @@ Expired codes leave durable venue progress unchanged and the UI instructs the us
 The customer/Venue Admin timeline is a read-only projection of `CustomerOnboardingSnapshot`; it does not persist, infer, or mutate progress. It always renders Account, Plan, Venue, First Screen, and Go Live in that order, labels every step Complete, Current, or Upcoming, and places `aria-current="step"` only on the incomplete server-selected current step. A fully Online journey has five completed steps and no artificial current mutation.
 
 The component shows completed count, current-step explanation, and the snapshot's last-saved time. One in-page link moves keyboard focus to the current task, avoiding duplicate app navigation or misleading edit affordances on completed steps. Desktop uses a connected horizontal sequence; narrow layouts retain the same ordered semantics in stacked cards. Signed-out, loading, and unavailable behavior stays owned by the surrounding customer-entry surface.
+
+## WP-13.08 Super Admin support projection
+
+Super Admin onboarding visibility is a separate protected read projection over the persisted onboarding, customer, organization, organization-subscription/tier, venue, and screen authorities. It exposes no Stripe customer/subscription identifiers, credentials, provider subjects, recovery data, or mutation route. The support UI may search, select, refresh, and copy a bounded non-secret diagnostic summary; it cannot change identity, membership, entitlement, progress, pairing, or subscription state.
+
+The internal timeline uses the same five ordered labels but computes presentation from the returned authoritative identifiers and Online screen status. This is support visibility only and never becomes a second onboarding state machine.

@@ -82,6 +82,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IIdentityMembershipService, IdentityMembershipService>();
         services.AddScoped<ICustomerAuthenticationRepository, CustomerAuthenticationRepository>();
         services.AddScoped<ICustomerOnboardingRepository, CustomerOnboardingRepository>();
+        services.AddScoped<ISuperAdminOnboardingRepository, SuperAdminOnboardingRepository>();
         services.AddScoped<ICustomerAccountService, CustomerAccountService>();
         services.AddScoped<ICustomerSessionService, CustomerSessionService>();
         services.AddScoped<ICustomerEmailLoginService, CustomerEmailLoginService>();
