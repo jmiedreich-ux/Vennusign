@@ -8,7 +8,7 @@
                 <TextBlock Text="Vennu Development Control" FontSize="22" FontWeight="SemiBold" />
                 <TextBlock Text="Starts and stops only processes launched by this application." Foreground="DimGray" />
             </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="Auto,0,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="16,0,0,0">
                 <Button Content="Start all" Click="StartAll_Click" Margin="16,0,8,0" Padding="14,6" />
                 <Button Content="Stop owned" Click="StopAll_Click" Padding="14,6" />
             </StackPanel>
