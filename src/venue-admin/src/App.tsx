@@ -38,12 +38,14 @@ import {
   type UpgradeOpportunity
 } from "./upgradeExperience.mjs";
 import "./styles.css";
+import { revokeCustomerSession } from "./customerOnboardingApi";
 
 const tokenStorageKey = "vennu.venue-admin.token";
+const customerSessionAccess = "customer-session";
 
 export default function App() {
   const configuration = useMemo(loadVenueAdminConfiguration, []);
-  const [accessToken, setAccessToken] = useState(() => sessionStorage.getItem(tokenStorageKey) ?? "");
+  const [accessToken, setAccessToken] = useState(() => sessionStorage.getItem(tokenStorageKey) ?? customerSessionAccess);
   const [session, setSession] = useState<VenueAdminSession>();
   const [billing, setBilling] = useState<VenueAdminBillingPresentation>();
   const [route, setRoute] = useState<VenueAdminRoute>(() => resolveVenueAdminRoute(window.location.hash));
@@ -83,7 +85,7 @@ export default function App() {
       })
       .catch((reason: unknown) => {
         if (reason instanceof DOMException && reason.name === "AbortError") return;
-        sessionStorage.removeItem(tokenStorageKey);
+        if (accessToken !== customerSessionAccess) sessionStorage.removeItem(tokenStorageKey);
         setAccessToken("");
         setSession(undefined);
         setBilling(undefined);
@@ -137,6 +139,7 @@ export default function App() {
   };
 
   const signOut = () => {
+    if (accessToken === customerSessionAccess) void revokeCustomerSession(configuration).catch(() => undefined);
     sessionStorage.removeItem(tokenStorageKey);
     setAccessToken("");
     setSession(undefined);
@@ -151,15 +154,18 @@ export default function App() {
   };
 
   if (!accessToken || error) {
-    return <main className="centered">
-      <form className="access-card" onSubmit={authorize}>
+    return <main className="centered"><section className="access-card venue-access-choice" aria-labelledby="venue-access-heading">
         <span>Vennu Venue Admin</span>
-        <h1>Open your venue</h1>
-        <p>{error ?? "Use the protected access link supplied for your venue workspace."}</p>
-        <label htmlFor="accessToken">Venue access token</label>
-        <input id="accessToken" name="accessToken" type="password" autoComplete="current-password" required />
-        <button type="submit">Continue</button>
-      </form>
+        <h1 id="venue-access-heading">Open your venue</h1>
+        <p>{error ?? "Sign in with your Vennu customer account to continue."}</p>
+        <a className="customer-sign-in" href="/signin?returnPath=/">Sign in with your customer account</a>
+        <details><summary>Use a temporary legacy venue link</summary><form onSubmit={authorize}>
+          <p>Legacy links are available only during migration and may be revoked or retired.</p>
+          <label htmlFor="accessToken">Legacy venue access token</label>
+          <input id="accessToken" name="accessToken" type="password" autoComplete="current-password" required />
+          <button type="submit">Use legacy access</button>
+        </form></details>
+      </section>
     </main>;
   }
 

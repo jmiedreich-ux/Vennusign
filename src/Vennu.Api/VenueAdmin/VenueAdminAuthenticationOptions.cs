@@ -7,6 +7,8 @@ public sealed class VenueAdminAuthenticationOptions : AuthenticationSchemeOption
     public const string SectionName = "VenueAdmin";
 
     public List<VenueAdminSessionOptions> Sessions { get; set; } = [];
+    public bool LegacySessionsEnabled { get; set; } = true;
+    public DateTime? LegacySessionsRetireAfterUtc { get; set; }
 }
 
 public sealed class VenueAdminSessionOptions
@@ -20,4 +22,7 @@ public sealed class VenueAdminSessionOptions
     public string DisplayName { get; set; } = string.Empty;
 
     public List<string> Capabilities { get; set; } = [];
+    public bool Enabled { get; set; } = true;
+    public DateTime? ExpiresUtc { get; set; }
+    public DateTime? RevokedUtc { get; set; }
 }

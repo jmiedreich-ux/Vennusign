@@ -39,6 +39,7 @@ builder.Services
     .Bind(builder.Configuration.GetSection(CustomerAuthenticationOptions.SectionName))
     .ValidateOnStart();
 builder.Services.AddSingleton<IValidateOptions<CustomerAuthenticationOptions>, CustomerAuthenticationOptionsValidator>();
+builder.Services.AddSingleton<IValidateOptions<VenueAdminAuthenticationOptions>, VenueAdminAuthenticationOptionsValidator>();
 var customerAuthentication = builder.Configuration
     .GetSection(CustomerAuthenticationOptions.SectionName)
     .Get<CustomerAuthenticationOptions>() ?? new CustomerAuthenticationOptions();
@@ -62,13 +63,20 @@ if (adminCorsEnabled)
     });
 }
 builder.Services
+    .AddOptions<VenueAdminAuthenticationOptions>(VenueAdminAuthenticationDefaults.AuthenticationScheme)
+    .Bind(builder.Configuration.GetSection(VenueAdminAuthenticationOptions.SectionName))
+    .ValidateOnStart();
+builder.Services
     .AddAuthentication(SuperAdminAuthenticationDefaults.AuthenticationScheme)
     .AddScheme<SuperAdminAuthenticationOptions, SuperAdminAuthenticationHandler>(
         SuperAdminAuthenticationDefaults.AuthenticationScheme,
         options => builder.Configuration.GetSection(SuperAdminAuthenticationOptions.SectionName).Bind(options))
     .AddScheme<VenueAdminAuthenticationOptions, VenueAdminAuthenticationHandler>(
         VenueAdminAuthenticationDefaults.AuthenticationScheme,
-        options => builder.Configuration.GetSection(VenueAdminAuthenticationOptions.SectionName).Bind(options))
+        _ => { })
+    .AddScheme<CustomerVenueAdminAuthenticationOptions, CustomerVenueAdminAuthenticationHandler>(
+        VenueAdminAuthenticationDefaults.CustomerAuthenticationScheme,
+        _ => { })
     .AddScheme<CustomerSessionAuthenticationOptions, CustomerSessionAuthenticationHandler>(
         CustomerAuthenticationDefaults.AuthenticationScheme,
         _ => { })
@@ -96,7 +104,9 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(
         VenueAdminAuthenticationDefaults.AuthorizationPolicy,
         policy => policy
-            .AddAuthenticationSchemes(VenueAdminAuthenticationDefaults.AuthenticationScheme)
+            .AddAuthenticationSchemes(
+                VenueAdminAuthenticationDefaults.CustomerAuthenticationScheme,
+                VenueAdminAuthenticationDefaults.AuthenticationScheme)
             .RequireAuthenticatedUser()
             .RequireRole("VenueAdmin")
             .RequireClaim(VenueAdminAuthenticationDefaults.VenueIdClaim));
