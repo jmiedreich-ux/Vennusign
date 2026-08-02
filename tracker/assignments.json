@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-02T02:29:00Z",
+  "updatedUtc": "2026-08-02T07:05:00Z",
   "activeAssignments": [
     {
       "workPackage": "INT-TESTING-001",
@@ -21,9 +21,37 @@
         "Normal GitHub Actions integration-test execution",
         "Unapproved coverage-domain implementation"
       ]
+    },
+    {
+      "workPackage": "WP-13.05",
+      "executionMode": "Sequential",
+      "owner": "ChatGPT scheduled automation",
+      "issue": 358,
+      "branch": "wp/13.05-public-signup-onboarding",
+      "claimedUtc": "2026-08-02T07:05:00Z",
+      "writableScope": [
+        "src/Vennu.Core.Models",
+        "src/Vennu.Data",
+        "src/Vennu.Api",
+        "src/venue-admin",
+        "tests/Vennu.Api.Tests",
+        "tests/Vennu.DataAccess.Tests",
+        "docs/work-packages/WP-13.05-public-signup-resumable-onboarding.md",
+        "docs/architecture",
+        "PROJECT_STATUS.md",
+        "tracker/assignments.json",
+        "ai/handoffs/current.md",
+        "ai/handoffs/archive"
+      ],
+      "prohibitedScope": [
+        "WP-13.06 and later work packages",
+        "Phase 14 and later",
+        "Live providers, Azure SQL, credentials, hosted infrastructure, containers, and physical devices",
+        "INT-TESTING-001 implementation files"
+      ]
     }
   ],
-  "nextAvailableWorkPackage": "WP-13.05",
+  "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
