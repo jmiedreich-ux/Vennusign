@@ -27,7 +27,11 @@ test("onboarding is resumable, credentialed, and webhook-authoritative", () => {
   assert.match(api, /requireHostedCheckoutUrl/);
   assert.match(app, /verified webhook/);
   assert.match(app, /Progress saves automatically/);
-  assert.match(app, /Venue setup continues in the next release/);
+  assert.match(app, /Set up your first venue/);
+  assert.match(app, /Pair your physical display/);
+  assert.match(app, /pairing alone does not mean the device is active/);
+  assert.match(api, /api\/customer-onboarding\/venue/);
+  assert.match(api, /api\/customer-onboarding\/first-screen/);
 });
 
 test("entry surface records essential accessible states", () => {
@@ -39,4 +43,6 @@ test("entry surface records essential accessible states", () => {
   assert.match(styles, /:focus-visible/);
   assert.match(styles, /@media \(max-width: 820px\)/);
   assert.match(passkey, /navigator\.credentials\.get/);
+  assert.match(app, /pattern="\[0-9\]\{6\}"/);
+  assert.match(app, /Refresh device status/);
 });

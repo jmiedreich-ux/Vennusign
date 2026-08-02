@@ -96,5 +96,40 @@ public sealed class CustomerOnboardingController(ICustomerOnboardingService onbo
         }
     }
 
+    [Authorize(Policy = CustomerAuthenticationDefaults.AuthorizationPolicy)]
+    [HttpPost("venue")]
+    public async Task<ActionResult<CustomerOnboardingSnapshot>> CreateVenue(
+        CreateOnboardingVenueRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await onboarding.CreateVenueAsync(UserId(), new CustomerOnboardingVenueRequest(
+                request.Name,
+                request.Timezone,
+                request.Type,
+                request.PrimaryLanguage,
+                request.SecondaryLanguage), cancellationToken).ConfigureAwait(false));
+        }
+        catch (ArgumentException exception) { return BadRequest(exception.Message); }
+        catch (KeyNotFoundException exception) { return NotFound(exception.Message); }
+        catch (InvalidOperationException exception) { return Conflict(exception.Message); }
+    }
+
+    [Authorize(Policy = CustomerAuthenticationDefaults.AuthorizationPolicy)]
+    [HttpPost("first-screen")]
+    public async Task<ActionResult<CustomerOnboardingSnapshot>> ClaimFirstScreen(
+        ClaimOnboardingFirstScreenRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await onboarding.ClaimFirstScreenAsync(UserId(), request.Code, cancellationToken).ConfigureAwait(false));
+        }
+        catch (ArgumentException exception) { return BadRequest(exception.Message); }
+        catch (KeyNotFoundException exception) { return NotFound(exception.Message); }
+        catch (InvalidOperationException exception) { return Conflict(exception.Message); }
+    }
+
     private Guid UserId() => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 }

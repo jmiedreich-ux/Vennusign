@@ -3,11 +3,13 @@ import { loadVenueAdminConfiguration } from "./config";
 import {
   createOnboardingCheckout,
   createOnboardingOrganization,
+  createOnboardingVenue,
   externalSignInUrl,
   loadCustomerOnboarding,
   loadCustomerSession,
   loadPublicPlans,
   requestEmailLink,
+  claimOnboardingFirstScreen,
   revokeCustomerSession,
   startOnboardingTrial,
   type CustomerOnboardingSnapshot,
@@ -33,6 +35,7 @@ export default function CustomerOnboardingApp() {
   const [busy, setBusy] = useState<string>();
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
+  const detectedTimezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -96,6 +99,35 @@ export default function CustomerOnboardingApp() {
   const choosePaid = (plan: PublicOnboardingPlan, interval: "monthly" | "annual") =>
     void run(`${interval}-${plan.id}`, async () => window.location.assign(
       await createOnboardingCheckout(configuration, plan.id, interval)));
+
+  const createVenue = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    void run("venue", async () => {
+      setOnboarding(await createOnboardingVenue(configuration, {
+        name: String(data.get("venueName") ?? "").trim(),
+        timezone: String(data.get("timezone") ?? "").trim(),
+        type: String(data.get("venueType") ?? "").trim(),
+        primaryLanguage: String(data.get("primaryLanguage") ?? "").trim(),
+        secondaryLanguage: String(data.get("secondaryLanguage") ?? "").trim() || undefined
+      }));
+      setNotice("Venue saved. Now enter the six-digit code shown on your physical display.");
+    });
+  };
+
+  const claimFirstScreen = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const code = String(new FormData(event.currentTarget).get("pairingCode") ?? "").trim();
+    void run("pairing", async () => {
+      setOnboarding(await claimOnboardingFirstScreen(configuration, code));
+      setNotice("Display paired. It becomes active when the player reports Online.");
+    });
+  };
+
+  const refreshOnboarding = () => void run("refresh", async () => {
+    setOnboarding(await loadCustomerOnboarding(configuration));
+    setNotice("Display status refreshed.");
+  });
 
   const signOut = () => void run("signout", async () => {
     await revokeCustomerSession(configuration);
@@ -180,10 +212,39 @@ export default function CustomerOnboardingApp() {
             {plan.annualCheckoutAvailable ? <button className="quiet" type="button" onClick={() => choosePaid(plan, "annual")} disabled={Boolean(busy)}>Pay annually</button> : null}
           </article>)}
         </div>
-      </section> : <section className="customer-onboarding__panel">
-        <span>Venue</span><h2>Your plan is ready</h2>
-        <p>{onboarding.entitlementStatus === "trialing" && onboarding.trialEndsAt ? `Trial active through ${new Date(onboarding.trialEndsAt).toLocaleDateString()}.` : "Paid entitlement confirmed."}</p>
-        <div className="customer-onboarding__deferred" aria-disabled="true"><strong>Venue setup continues in the next release</strong><p>Your account and plan are saved. Venue details and display pairing belong to WP-13.06.</p></div>
+      </section> : !onboarding.venueId ? <form className="customer-onboarding__panel" onSubmit={createVenue}>
+        <span>Venue</span><h2>Set up your first venue</h2>
+        <p>{onboarding.entitlementStatus === "trialing" && onboarding.trialEndsAt ? `Trial active through ${new Date(onboarding.trialEndsAt).toLocaleDateString()}.` : "Paid entitlement confirmed."} These details control schedules and language defaults.</p>
+        <label htmlFor="venueName">Venue name</label>
+        <input id="venueName" name="venueName" maxLength={200} autoComplete="organization" required />
+        <label htmlFor="timezone">IANA timezone</label>
+        <input id="timezone" name="timezone" list="onboarding-timezones" defaultValue={detectedTimezone} maxLength={100} required />
+        <datalist id="onboarding-timezones">
+          {[detectedTimezone, "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "UTC"].filter((item, index, values) => values.indexOf(item) === index).map(timezone => <option key={timezone} value={timezone} />)}
+        </datalist>
+        <label htmlFor="venueType">Venue type</label>
+        <select id="venueType" name="venueType" required defaultValue="">
+          <option value="" disabled>Select a venue type</option>
+          <option value="restaurant">Restaurant</option><option value="bar">Bar</option><option value="brewery">Brewery</option><option value="cafe">Cafe</option><option value="retail">Retail</option><option value="other">Other</option>
+        </select>
+        <div className="customer-onboarding__language-grid">
+          <label htmlFor="primaryLanguage">Primary language code<input id="primaryLanguage" name="primaryLanguage" defaultValue="en" pattern="[A-Za-z]{2}" maxLength={2} required /></label>
+          <label htmlFor="secondaryLanguage">Secondary language code (optional)<input id="secondaryLanguage" name="secondaryLanguage" pattern="[A-Za-z]{2}" maxLength={2} /></label>
+        </div>
+        <button type="submit" disabled={busy === "venue"}>{busy === "venue" ? "Saving venue…" : "Save venue and continue"}</button>
+      </form> : !onboarding.firstScreenId ? <form className="customer-onboarding__panel" onSubmit={claimFirstScreen}>
+        <span>First Screen</span><h2>Pair your physical display</h2>
+        <p>Open the Vennu player on the display. The player creates its screen record and shows a six-digit code that expires after 10 minutes.</p>
+        <ol className="customer-onboarding__pairing-steps"><li>Start Vennu on the display.</li><li>Wait for its six-digit code.</li><li>Enter that code here to link it to this venue.</li></ol>
+        <label htmlFor="pairingCode">Six-digit pairing code</label>
+        <input id="pairingCode" name="pairingCode" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" minLength={6} maxLength={6} required />
+        <button type="submit" disabled={busy === "pairing"}>{busy === "pairing" ? "Pairing display…" : "Pair this display"}</button>
+        <p className="customer-onboarding__help">Expired or already used? Return to the display and request a fresh code; your saved venue is unchanged.</p>
+      </form> : <section className="customer-onboarding__panel">
+        <span>Go Live</span><h2>{onboarding.firstScreenStatus === "online" ? "Your first display is online" : "Your first display is paired"}</h2>
+        <p>{onboarding.firstScreenStatus === "online" ? "Vennu received the player heartbeat. This onboarding journey is ready for the next timeline release." : "The screen record is linked, but pairing alone does not mean the device is active. Start the player and keep it connected until it reports Online."}</p>
+        <dl className="customer-onboarding__device-status"><div><dt>Pairing</dt><dd>Linked</dd></div><div><dt>Device</dt><dd>{onboarding.firstScreenStatus === "online" ? "Online" : "Offline / waiting"}</dd></div>{onboarding.firstScreenLastSeenUtc ? <div><dt>Last seen</dt><dd>{new Date(onboarding.firstScreenLastSeenUtc).toLocaleString()}</dd></div> : null}</dl>
+        <button type="button" onClick={refreshOnboarding} disabled={busy === "refresh"}>{busy === "refresh" ? "Refreshing…" : "Refresh device status"}</button>
       </section>}
     </section>}
   </main>;
