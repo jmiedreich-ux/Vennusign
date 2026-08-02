@@ -34,6 +34,8 @@ test("entry surface records essential accessible states", () => {
   assert.match(app, /role="status"/);
   assert.match(app, /role="alert"/);
   assert.match(app, /aria-label="Onboarding progress"/);
+  assert.match(app, /We could not safely load your onboarding yet/);
+  assert.match(app, /Refresh onboarding/);
   assert.match(styles, /:focus-visible/);
   assert.match(styles, /@media \(max-width: 820px\)/);
   assert.match(passkey, /navigator\.credentials\.get/);

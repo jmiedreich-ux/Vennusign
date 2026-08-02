@@ -145,6 +145,11 @@ export default function CustomerOnboardingApp() {
           <button className="quiet" type="submit" disabled={busy === "email"}>{busy === "email" ? "Sending…" : "Email me a sign-in link"}</button>
         </form>
       </div>
+    </section> : !onboarding ? <section className="customer-onboarding customer-onboarding__panel" aria-labelledby="onboarding-unavailable-heading">
+      <span>Progress unavailable</span>
+      <h1 id="onboarding-unavailable-heading">We could not safely load your onboarding yet.</h1>
+      <p>Your saved progress has not been changed. Refresh to try again before creating or selecting anything.</p>
+      <button type="button" onClick={() => window.location.reload()}>Refresh onboarding</button>
     </section> : <section className="customer-onboarding" aria-labelledby="onboarding-heading">
       <div className="customer-onboarding__welcome">
         <span>Welcome, {session.displayName}</span>
@@ -152,12 +157,12 @@ export default function CustomerOnboardingApp() {
         <p>Progress saves automatically. Entitlement always comes from Vennu’s verified subscription state.</p>
       </div>
       <ol className="customer-onboarding__steps" aria-label="Onboarding progress">
-        {steps.map(([key, routeKey, label], index) => <li key={key} className={onboarding?.progress[key] ? "complete" : onboarding?.currentStep === routeKey ? "current" : ""}>
-          <span>{onboarding?.progress[key] ? "✓" : index + 1}</span><strong>{label}</strong>
+        {steps.map(([key, routeKey, label], index) => <li key={key} className={onboarding.progress[key] ? "complete" : onboarding.currentStep === routeKey ? "current" : ""}>
+          <span>{onboarding.progress[key] ? "✓" : index + 1}</span><strong>{label}</strong>
         </li>)}
       </ol>
 
-      {!onboarding?.organizationId ? <form className="customer-onboarding__panel" onSubmit={createOrganization}>
+      {!onboarding.organizationId ? <form className="customer-onboarding__panel" onSubmit={createOrganization}>
         <span>Account</span><h2>Name your organization</h2>
         <p>This is the billing and ownership home for all of your venues.</p>
         <label htmlFor="organizationName">Organization name</label>
