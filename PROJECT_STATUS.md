@@ -139,6 +139,8 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
+**WP-13.09 — Legacy Venue Access Token Migration** is in progress on Sequential issue #366 and branch `wp/13.09-legacy-token-migration`. It owns only customer-session Venue Admin authorization, bounded legacy compatibility/revocation/retirement, the changed access screen, focused validation, and synchronized records. WP-13.10 and Phase 14+ remain paused.
+
 **INT-TESTING-001 — Azure SQL Integration Testing Program** is active in Collaborative mode. Azure SQL integration runs remain skipped and non-blocking outside explicitly recorded collaborative execution.
 
 ## Phase 04 Result
@@ -208,7 +210,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Next Action
 
-After WP-13.08 PR #365 merges and its Sequential claim is released, inspect repository ownership and claim **WP-13.09 — Legacy Venue Access Token Migration** only if unowned. Phase 14+ remains paused.
+Complete **WP-13.09 — Legacy Venue Access Token Migration** on issue #366; do not claim WP-13.10 in this run. Phase 14+ remains paused.
 
 ## Phase 05 Work Packages
 

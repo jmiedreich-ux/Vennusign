@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-02T08:02:00Z",
+  "updatedUtc": "2026-08-02T08:07:00Z",
   "activeAssignments": [
     {
       "workPackage": "INT-TESTING-001",
@@ -21,9 +21,36 @@
         "Normal GitHub Actions integration-test execution",
         "Unapproved coverage-domain implementation"
       ]
+    },
+    {
+      "workPackage": "WP-13.09",
+      "executionMode": "Sequential",
+      "owner": "ChatGPT scheduled automation",
+      "issue": 366,
+      "branch": "wp/13.09-legacy-token-migration",
+      "claimedUtc": "2026-08-02T08:07:00Z",
+      "writableScope": [
+        "src/Vennu.Api/VenueAdmin",
+        "src/Vennu.Api/Program.cs",
+        "src/venue-admin",
+        "tests/Vennu.Api.Tests",
+        "docs/work-packages/WP-13.09-legacy-venue-access-token-migration.md",
+        "docs/architecture/phase-13-customer-authentication.md",
+        "PROJECT_STATUS.md",
+        "tracker/assignments.json",
+        "ai/handoffs/current.md",
+        "ai/handoffs/archive"
+      ],
+      "prohibitedScope": [
+        "Raw legacy token persistence, logging, API response, or documentation",
+        "WP-13.10 and later work packages",
+        "Phase 14 and later",
+        "INT-TESTING-001 implementation files",
+        "Integration, live-provider, hosted-infrastructure, container, and cross-system tests"
+      ]
     }
   ],
-  "nextAvailableWorkPackage": "WP-13.09",
+  "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
