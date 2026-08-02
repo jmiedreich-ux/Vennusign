@@ -73,6 +73,50 @@ public sealed class CheckoutSessionServiceTests
         Assert.Null(gateway.LastRequest);
     }
 
+    [Fact]
+    public async Task CreateForOrganization_UsesOrganizationOwnershipAndCustomer()
+    {
+        var organizationId = Guid.NewGuid();
+        var gateway = new GatewayFake();
+        var service = new CheckoutSessionService(
+            new BillingCatalogRepositoryFake(PublicTier()),
+            new SubscriptionRepositoryFake(null),
+            gateway,
+            null,
+            new OrganizationSubscriptionRepositoryFake(new OrganizationSubscription
+            {
+                OrganizationId = organizationId,
+                TierId = TierId,
+                StripeCustomerId = "cus_org",
+                Status = "trialing"
+            }));
+
+        await service.CreateForOrganizationAsync(organizationId, TierId, CheckoutBillingInterval.Monthly);
+
+        Assert.Equal(organizationId, gateway.LastRequest!.OrganizationId);
+        Assert.Equal(Guid.Empty, gateway.LastRequest.VenueId);
+        Assert.Equal("cus_org", gateway.LastRequest.StripeCustomerId);
+    }
+
+    [Fact]
+    public async Task CreateForOrganization_AllowsFirstPaidCheckoutWithoutExistingSubscription()
+    {
+        var organizationId = Guid.NewGuid();
+        var gateway = new GatewayFake();
+        var service = new CheckoutSessionService(
+            new BillingCatalogRepositoryFake(PublicTier()),
+            new SubscriptionRepositoryFake(null),
+            gateway,
+            null,
+            new OrganizationSubscriptionRepositoryFake(null));
+
+        await service.CreateForOrganizationAsync(organizationId, TierId, CheckoutBillingInterval.Annual);
+
+        Assert.Equal(organizationId, gateway.LastRequest!.OrganizationId);
+        Assert.Null(gateway.LastRequest.StripeCustomerId);
+        Assert.Equal("price_pro_year", gateway.LastRequest.PriceId);
+    }
+
     private static CheckoutSessionService CreateService(
         SubscriptionTier tier,
         GatewayFake gateway) =>
@@ -162,5 +206,17 @@ public sealed class CheckoutSessionServiceTests
             VenueSubscription value,
             CancellationToken cancellationToken = default) =>
             Task.FromResult(true);
+    }
+
+    private sealed class OrganizationSubscriptionRepositoryFake(OrganizationSubscription? subscription)
+        : IOrganizationSubscriptionRepository
+    {
+        public Task<IReadOnlyCollection<OrganizationSubscription>> GetAllAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyCollection<OrganizationSubscription>>(subscription is null ? [] : [subscription]);
+        public Task<OrganizationSubscription?> GetByOrganizationIdAsync(Guid organizationId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<OrganizationSubscription?>(subscription?.OrganizationId == organizationId ? subscription : null);
+        public Task<OrganizationSubscription?> GetByStripeSubscriptionIdAsync(string stripeSubscriptionId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<OrganizationSubscription?>(subscription?.StripeSubscriptionId == stripeSubscriptionId ? subscription : null);
+        public Task<bool> SaveAsync(OrganizationSubscription value, CancellationToken cancellationToken = default) => Task.FromResult(true);
     }
 }

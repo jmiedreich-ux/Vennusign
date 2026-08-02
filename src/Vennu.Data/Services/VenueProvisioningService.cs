@@ -10,15 +10,24 @@ public sealed class VenueProvisioningService : IVenueProvisioningService
     private readonly IVenueRepository venueRepository;
     private readonly ISubscriptionTierRepository tierRepository;
     private readonly ISubscriptionManagementService subscriptionManagementService;
+    private readonly IOrganizationSubscriptionRepository? organizationSubscriptions;
+    private readonly IVenueEntitlementService? entitlementService;
+    private readonly IOrganizationSubscriptionProjectionService? projectionService;
 
     public VenueProvisioningService(
         IVenueRepository venueRepository,
         ISubscriptionTierRepository tierRepository,
-        ISubscriptionManagementService subscriptionManagementService)
+        ISubscriptionManagementService subscriptionManagementService,
+        IOrganizationSubscriptionRepository? organizationSubscriptions = null,
+        IVenueEntitlementService? entitlementService = null,
+        IOrganizationSubscriptionProjectionService? projectionService = null)
     {
         this.venueRepository = venueRepository;
         this.tierRepository = tierRepository;
         this.subscriptionManagementService = subscriptionManagementService;
+        this.organizationSubscriptions = organizationSubscriptions;
+        this.entitlementService = entitlementService;
+        this.projectionService = projectionService;
     }
 
     public async Task<VenueProvisioningResult> ProvisionAsync(
@@ -28,14 +37,24 @@ public sealed class VenueProvisioningService : IVenueProvisioningService
         ArgumentNullException.ThrowIfNull(venue);
         NormalizeAndValidate(venue);
 
-        var starterTier = await tierRepository
-            .GetBySlugAsync(StarterTierSlug, cancellationToken)
-            .ConfigureAwait(false);
-        if (starterTier is null || !starterTier.IsActive)
+        if (venue.OrganizationId is Guid organizationId &&
+            organizationSubscriptions is not null &&
+            entitlementService is not null &&
+            projectionService is not null)
         {
-            throw new InvalidOperationException("The Starter subscription tier is unavailable.");
+            await entitlementService.EnsureCanAddVenueAsync(organizationId, cancellationToken).ConfigureAwait(false);
+            var organizationSubscription = await organizationSubscriptions
+                .GetByOrganizationIdAsync(organizationId, cancellationToken).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("An authoritative organization subscription is required.");
+            var organizationVenueId = await venueRepository.CreateAsync(venue, cancellationToken).ConfigureAwait(false);
+            var projection = await projectionService
+                .SyncVenueAsync(organizationVenueId, organizationSubscription, cancellationToken).ConfigureAwait(false);
+            return new VenueProvisioningResult(organizationVenueId, projection);
         }
 
+        var starterTier = await tierRepository.GetBySlugAsync(StarterTierSlug, cancellationToken).ConfigureAwait(false);
+        if (starterTier is null || !starterTier.IsActive)
+            throw new InvalidOperationException("The Starter subscription tier is unavailable.");
         var venueId = await venueRepository
             .CreateAsync(venue, cancellationToken)
             .ConfigureAwait(false);

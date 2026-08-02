@@ -51,7 +51,7 @@ public class FeatureResolutionServiceTests
         var service = CreateService(
             venueId,
             new Feature { Id = featureId, Key = "ai_translation", IsActive = true },
-            new VenueSubscription { VenueId = venueId, TierId = tierId, Status = "trialing" },
+            new VenueSubscription { VenueId = venueId, TierId = tierId, Status = "trialing", TrialEndsAt = DateTime.UtcNow.AddDays(1) },
             new TierFeature { TierId = tierId, FeatureId = featureId, LimitValue = "1" },
             null);
 

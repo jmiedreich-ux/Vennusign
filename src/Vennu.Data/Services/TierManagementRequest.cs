@@ -9,4 +9,7 @@ public sealed record TierManagementRequest(
     bool IsActive,
     string? StripeProductId,
     string? StripeMonthlyPriceId,
-    string? StripeAnnualPriceId);
+    string? StripeAnnualPriceId,
+    int MaxVenues = 1,
+    int TrialDays = 14,
+    string TrialExpiryBehavior = "disable");

@@ -50,6 +50,30 @@ public sealed class StripeWebhookEventMapperTests
     }
 
     [Fact]
+    public void TryMap_PrefersOrganizationOwnershipAndMapsCustomer()
+    {
+        var organizationId = Guid.NewGuid();
+        var stripeEvent = CreateEvent(
+            EventTypes.CustomerSubscriptionCreated,
+            new Subscription
+            {
+                Id = "sub_org",
+                CustomerId = "cus_org",
+                Status = "active",
+                Metadata = new Dictionary<string, string> { ["organization_id"] = organizationId.ToString() },
+                Items = new StripeList<SubscriptionItem>
+                {
+                    Data = [new SubscriptionItem { Price = new Price { Id = "price_pro_monthly" } }]
+                }
+            });
+
+        Assert.True(StripeWebhookEventMapper.TryMap(stripeEvent, out var result));
+        Assert.Equal(organizationId, result!.OrganizationId);
+        Assert.Null(result.VenueId);
+        Assert.Equal("cus_org", result.StripeCustomerId);
+    }
+
+    [Fact]
     public void TryMap_MapsPaidInvoice()
     {
         var periodEnd = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);

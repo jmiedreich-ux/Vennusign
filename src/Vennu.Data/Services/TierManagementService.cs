@@ -60,7 +60,8 @@ public sealed partial class TierManagementService : ITierManagementService
         var clone = new SubscriptionTier
         {
             Id = Guid.NewGuid(), Name = $"{source.Name} Copy", Slug = slug, Price = source.Price,
-            MaxScreens = source.MaxScreens, IsPublic = false, IsActive = false,
+            MaxScreens = source.MaxScreens, MaxVenues = source.MaxVenues, TrialDays = source.TrialDays,
+            TrialExpiryBehavior = source.TrialExpiryBehavior, IsPublic = false, IsActive = false,
             CreatedUtc = utcNow, UpdatedUtc = utcNow
         };
         return await repository.CreateAsync(clone, cancellationToken).ConfigureAwait(false) ? clone : null;
@@ -94,9 +95,14 @@ public sealed partial class TierManagementService : ITierManagementService
         if (slug.Length == 0) throw new ArgumentException("Tier slug is required.", nameof(request));
         if (request.Price < 0) throw new ArgumentOutOfRangeException(nameof(request), "Tier price cannot be negative.");
         if (request.MaxScreens != -1 && request.MaxScreens <= 0) throw new ArgumentOutOfRangeException(nameof(request), "Screen limit must be positive or -1.");
+        if (request.MaxVenues != -1 && request.MaxVenues <= 0) throw new ArgumentOutOfRangeException(nameof(request), "Venue limit must be positive or -1.");
+        if (request.TrialDays is < 0 or > 90) throw new ArgumentOutOfRangeException(nameof(request), "Trial days must be between zero and 90.");
+        var expiry = request.TrialExpiryBehavior.Trim().ToLowerInvariant();
+        if (expiry is not ("disable" or "read_only")) throw new ArgumentException("Trial expiry behavior must be disable or read_only.", nameof(request));
         return new SubscriptionTier
         {
             Id = id, Name = name, Slug = slug, Price = request.Price, MaxScreens = request.MaxScreens,
+            MaxVenues = request.MaxVenues, TrialDays = request.TrialDays, TrialExpiryBehavior = expiry,
             IsPublic = request.IsPublic, IsActive = request.IsActive,
             StripeProductId = Clean(request.StripeProductId), StripeMonthlyPriceId = Clean(request.StripeMonthlyPriceId),
             StripeAnnualPriceId = Clean(request.StripeAnnualPriceId),
