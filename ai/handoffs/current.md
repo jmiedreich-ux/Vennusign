@@ -2,56 +2,57 @@
 
 ## Work Package
 
-- ID: Issue-350
-- Status: Complete
-- Execution mode: Collaborative
+- ID: INT-TESTING-001
+- Status: In Progress
+- Execution mode: Collaborative only
 
 ## Git State
 
-- Branch: `issue/350-secure-dev-integration-settings` (deleted after merge)
-- Latest commit: `ee9e35768b0d6f82ec9acd3cb0156585a5624d3a`
-- Issue: #350
-- Pull request: #352 (merged)
-- CI state: GitHub Actions passed required checks on reviewed head `c6ee15c051cb28cf2a2f442c10b2b311d280fe9f`
+- Branch: `issue/354-int-testing-001-handoff`
+- Latest merged baseline commit: `5804042cc5fb26253aa61989bfbe1dcf15123ebd`
+- Issue: #354
+- Pull request: #356 (merged); handoff PR pending
+- CI state: required GitHub Actions passed on PR #356. Azure SQL integration remains Collaborative-only and skipped/non-blocking in ordinary CI.
 
 ## Completed This Session
 
-- Confirmed PR #342 merged and refreshed the local master baseline.
-- Created issue #350 for tracked local Azure SQL integration settings.
-- Migrated the existing local test connection to the user-level `VENU_TEST_AZURE_SQL_CONNECTION_STRING` environment variable without logging its value.
-- Stopped tracking `tests/Vennu.Data.IntegrationTests/app.settings.json`, added an ignore rule, and added a credential-free example file.
-- Merged PR #352 after GitHub Actions passed and ChatGPT approval was recorded.
-- Ran the narrow database migration integration smoke test under the owner-approved collaborative exception; migration execution passed and the stale inventory assertion was recorded as issue #351.
-
-## Validation
-
-- Commands: `git diff --check`; Git index and ignore verification; user environment-variable presence check; `dotnet test tests/Vennu.Data.IntegrationTests/Vennu.Data.IntegrationTests.csproj --filter "FullyQualifiedName~DatabaseMigratorTests"`.
-- Results: local configuration checks passed. The narrow integration test had one passing migration-execution test and one failed stale expected-script inventory assertion, recorded as issue #351.
-- Skipped checks and reason: no application behavior changed; broader integration expansion remains outside this issue.
+- Established and merged the Azure SQL integration-testing baseline.
+- Serialized fixture migration initialization and updated the migration inventory for script 042.
+- Rebuilt the development database schema and ran the full suite: 17 passed, 0 failed, 0 skipped.
+- Reviewed generated data: 42 migrations, complete seeded tier/feature coverage, valid pairing state, and no orphaned screen/pairing relationships.
+- Created issue #355 for the deferred screen-platform nullability design decision.
 
 ## Files Changed
 
-- `.gitignore`
-- `tests/Vennu.Data.IntegrationTests/app.settings.json` (removed from tracking)
-- `tests/Vennu.Data.IntegrationTests/app.settings.example.json`
-- `docs/work-packages/Issue-350-secure-dev-integration-settings.md`
+- `tests/Vennu.Data.IntegrationTests/Fixtures/DatabaseFixture.cs`
+- `tests/Vennu.Data.IntegrationTests/DatabaseMigratorTests.cs`
+- `docs/work-packages/INT-TESTING-001-azure-sql-integration-program.md`
 - `PROJECT_STATUS.md`
 - `tracker/assignments.json`
-- `ai/handoffs/current.md`
+
+## Validation
+
+- Command: `dotnet test tests/Vennu.Data.IntegrationTests/Vennu.Data.IntegrationTests.csproj`
+- Result: 17 passed, 0 failed, 0 skipped against the rebuilt development database.
+- GitHub Actions: all PR #356 checks passed.
+- Intentional exception: Azure SQL integration is Collaborative-only and remains skipped/non-blocking in ordinary CI.
 
 ## Remaining Work
 
-- Planning review and claim of issue #351 before correcting the stale migration inventory assertion.
-- Verify credential rotation and assess Git-history remediation separately.
+- Create and claim the first bounded coverage-expansion package under #354.
+- Cover identity/membership, commercial entitlement, content, scheduling, POS, and audit persistence in separately approved packages.
+- Resolve #355 before making a screen-platform schema/API requirement.
 
 ## Known Risks or Blockers
 
-- The previously tracked credential remains in Git history; credential rotation must be verified and repository-history remediation assessed.
+- The in-process fixture lock protects one test process only. Multi-process integration execution needs a future database-level migration lock.
 
 ## Exact Next Action
 
-- Review and promote issue #351 into an approved, bounded integration-test remediation package before modifying the test assertion.
+- Create and claim the first approved bounded integration-coverage package under #354.
 
 ## Do Not Redo or Reverse
 
-- Do not re-track local `app.settings.json` files or place connection strings in repository files, issues, pull requests, or documentation.
+- Do not run Azure SQL integration tests in ordinary CI.
+- Do not use production databases or commit credentials.
+- Do not remove the fixture initialization lock without a safe replacement.
