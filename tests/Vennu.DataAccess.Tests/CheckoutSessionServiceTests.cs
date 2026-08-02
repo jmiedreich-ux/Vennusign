@@ -98,6 +98,25 @@ public sealed class CheckoutSessionServiceTests
         Assert.Equal("cus_org", gateway.LastRequest.StripeCustomerId);
     }
 
+    [Fact]
+    public async Task CreateForOrganization_AllowsFirstPaidCheckoutWithoutExistingSubscription()
+    {
+        var organizationId = Guid.NewGuid();
+        var gateway = new GatewayFake();
+        var service = new CheckoutSessionService(
+            new BillingCatalogRepositoryFake(PublicTier()),
+            new SubscriptionRepositoryFake(null),
+            gateway,
+            null,
+            new OrganizationSubscriptionRepositoryFake(null));
+
+        await service.CreateForOrganizationAsync(organizationId, TierId, CheckoutBillingInterval.Annual);
+
+        Assert.Equal(organizationId, gateway.LastRequest!.OrganizationId);
+        Assert.Null(gateway.LastRequest.StripeCustomerId);
+        Assert.Equal("price_pro_year", gateway.LastRequest.PriceId);
+    }
+
     private static CheckoutSessionService CreateService(
         SubscriptionTier tier,
         GatewayFake gateway) =>
@@ -189,15 +208,15 @@ public sealed class CheckoutSessionServiceTests
             Task.FromResult(true);
     }
 
-    private sealed class OrganizationSubscriptionRepositoryFake(OrganizationSubscription subscription)
+    private sealed class OrganizationSubscriptionRepositoryFake(OrganizationSubscription? subscription)
         : IOrganizationSubscriptionRepository
     {
         public Task<IReadOnlyCollection<OrganizationSubscription>> GetAllAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyCollection<OrganizationSubscription>>([subscription]);
+            Task.FromResult<IReadOnlyCollection<OrganizationSubscription>>(subscription is null ? [] : [subscription]);
         public Task<OrganizationSubscription?> GetByOrganizationIdAsync(Guid organizationId, CancellationToken cancellationToken = default) =>
-            Task.FromResult<OrganizationSubscription?>(subscription.OrganizationId == organizationId ? subscription : null);
+            Task.FromResult<OrganizationSubscription?>(subscription?.OrganizationId == organizationId ? subscription : null);
         public Task<OrganizationSubscription?> GetByStripeSubscriptionIdAsync(string stripeSubscriptionId, CancellationToken cancellationToken = default) =>
-            Task.FromResult<OrganizationSubscription?>(subscription.StripeSubscriptionId == stripeSubscriptionId ? subscription : null);
+            Task.FromResult<OrganizationSubscription?>(subscription?.StripeSubscriptionId == stripeSubscriptionId ? subscription : null);
         public Task<bool> SaveAsync(OrganizationSubscription value, CancellationToken cancellationToken = default) => Task.FromResult(true);
     }
 }

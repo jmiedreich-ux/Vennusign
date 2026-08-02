@@ -80,14 +80,13 @@ public sealed class CheckoutSessionService(
         if (organizationSubscriptionRepository is null)
             throw new InvalidOperationException("Organization billing is unavailable.");
         var subscription = await organizationSubscriptionRepository
-            .GetByOrganizationIdAsync(organizationId, cancellationToken).ConfigureAwait(false)
-            ?? throw new KeyNotFoundException($"Organization '{organizationId}' does not have a subscription.");
+            .GetByOrganizationIdAsync(organizationId, cancellationToken).ConfigureAwait(false);
         var tier = await RequireTierAsync(targetTierId, billingInterval, cancellationToken).ConfigureAwait(false);
         var priceId = billingInterval == CheckoutBillingInterval.Monthly
             ? tier.StripeMonthlyPriceId!
             : tier.StripeAnnualPriceId!;
         return await gateway.CreateAsync(
-            new StripeCheckoutSessionRequest(Guid.Empty, priceId, tier.Slug, organizationId, subscription.StripeCustomerId),
+            new StripeCheckoutSessionRequest(Guid.Empty, priceId, tier.Slug, organizationId, subscription?.StripeCustomerId),
             cancellationToken).ConfigureAwait(false);
     }
 
