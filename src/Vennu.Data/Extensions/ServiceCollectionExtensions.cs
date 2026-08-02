@@ -81,10 +81,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMembershipCapabilityResolver, MembershipCapabilityResolver>();
         services.AddScoped<IIdentityMembershipService, IdentityMembershipService>();
         services.AddScoped<ICustomerAuthenticationRepository, CustomerAuthenticationRepository>();
+        services.AddScoped<ICustomerOnboardingRepository, CustomerOnboardingRepository>();
         services.AddScoped<ICustomerAccountService, CustomerAccountService>();
         services.AddScoped<ICustomerSessionService, CustomerSessionService>();
         services.AddScoped<ICustomerEmailLoginService, CustomerEmailLoginService>();
         services.AddScoped<ICustomerStrongAuthenticationService, CustomerStrongAuthenticationService>();
+        services.AddScoped<ICustomerOnboardingService, CustomerOnboardingService>();
         return services;
     }
 }

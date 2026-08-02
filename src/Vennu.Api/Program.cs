@@ -57,7 +57,8 @@ if (adminCorsEnabled)
         options.AddPolicy("AdminPortal", policy => policy
             .WithOrigins(adminCorsOrigins!)
             .AllowAnyHeader()
-            .AllowAnyMethod());
+            .AllowAnyMethod()
+            .AllowCredentials());
     });
 }
 builder.Services
