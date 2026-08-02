@@ -133,10 +133,9 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 - WP-13.03 — Passkeys, TOTP, and Account Recovery
 - WP-13.04 — Tier-Defined Trials and Stripe Entitlements
 - WP-13.05 — Public Signup and Resumable Onboarding
+- WP-13.06 — Venue Setup and First-Screen Activation
 
 ## Active Work Package
-
-**WP-13.06 — Venue Setup and First-Screen Activation** is in progress on Sequential issue #360 and branch `wp/13.06-venue-first-screen`. It owns customer-first venue creation, first-display pairing activation, focused UI/API/data validation, and synchronized completion records. WP-13.07 and Phase 14+ remain paused.
 
 **INT-TESTING-001 — Azure SQL Integration Testing Program** is active in Collaborative mode. Azure SQL integration runs remain skipped and non-blocking outside explicitly recorded collaborative execution.
 
@@ -207,7 +206,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Next Action
 
-Complete **WP-13.06 — Venue Setup and First-Screen Activation** on issue #360; do not claim WP-13.07 until its PR merges and the Sequential claim is released. Phase 14+ remains paused.
+After PR #361 merges, claim **WP-13.07 — Customer Onboarding Timeline** sequentially only if no competing owner exists. Phase 14+ remains paused.
 
 ## Phase 05 Work Packages
 

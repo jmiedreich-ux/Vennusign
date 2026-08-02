@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-02T07:30:00Z",
+  "updatedUtc": "2026-08-02T07:40:00Z",
   "activeAssignments": [
     {
       "workPackage": "INT-TESTING-001",
@@ -21,37 +21,9 @@
         "Normal GitHub Actions integration-test execution",
         "Unapproved coverage-domain implementation"
       ]
-    },
-    {
-      "workPackage": "WP-13.06",
-      "executionMode": "Sequential",
-      "owner": "ChatGPT scheduled automation",
-      "issue": 360,
-      "branch": "wp/13.06-venue-first-screen",
-      "claimedUtc": "2026-08-02T07:30:00Z",
-      "writableScope": [
-        "src/Vennu.Data/Services/CustomerOnboardingService.cs",
-        "src/Vennu.Api/Contracts/CustomerOnboarding",
-        "src/Vennu.Api/Controllers/CustomerOnboardingController.cs",
-        "src/venue-admin",
-        "tests/Vennu.DataAccess.Tests/CustomerOnboardingServiceTests.cs",
-        "docs/work-packages/WP-13.06-venue-setup-first-screen-activation.md",
-        "docs/architecture/phase-13-customer-onboarding.md",
-        "PROJECT_STATUS.md",
-        "tracker/assignments.json",
-        "ai/handoffs/current.md",
-        "ai/handoffs/archive"
-      ],
-      "prohibitedScope": [
-        "WP-13.07 and later work packages",
-        "Phase 14 and later",
-        "General screen lifecycle remediation from issue #345",
-        "Live devices, Azure SQL, credentials, hosted infrastructure, containers, signing/store, and cross-system tests",
-        "INT-TESTING-001 implementation files"
-      ]
     }
   ],
-  "nextAvailableWorkPackage": null,
+  "nextAvailableWorkPackage": "WP-13.07",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
