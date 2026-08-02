@@ -134,6 +134,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 - WP-13.04 — Tier-Defined Trials and Stripe Entitlements
 - WP-13.05 — Public Signup and Resumable Onboarding
 - WP-13.06 — Venue Setup and First-Screen Activation
+- WP-13.07 — Customer Onboarding Timeline
 
 ## Active Work Package
 
@@ -206,7 +207,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Next Action
 
-After PR #361 merges, claim **WP-13.07 — Customer Onboarding Timeline** sequentially only if no competing owner exists. Phase 14+ remains paused.
+After WP-13.07 PR #363 merges and its Sequential claim is released, inspect repository ownership and claim **WP-13.08 — Super Admin Customer Visibility** only if unowned. Phase 14+ remains paused.
 
 ## Phase 05 Work Packages
 
