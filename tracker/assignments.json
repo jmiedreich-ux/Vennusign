@@ -1,24 +1,26 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-03T00:00:00Z",
+  "updatedUtc": "2026-08-03T00:20:00Z",
   "activeAssignments": [
     {
-      "workPackage": "Issue-371",
+      "workPackage": "Issue-370",
       "executionMode": "Collaborative",
       "owner": "GitHub Copilot",
-      "issue": 371,
-      "branch": "issue/371-dev-control-panel",
-      "claimedUtc": "2026-08-03T00:00:00Z",
+      "issue": 370,
+      "branch": "issue/370-customer-root-routes",
+      "claimedUtc": "2026-08-03T00:20:00Z",
       "writableScope": [
-        "tools/Vennu.DevControl",
-        "docs/work-packages/Issue-371-dev-control-panel.md",
+        "src/venue-admin",
+        "scripts/start-dev.ps1",
+        "tools/Vennu.DevControl/MainWindow.xaml.cs",
+        "docs/work-packages/Issue-370-customer-root-routes.md",
         "PROJECT_STATUS.md",
         "tracker/assignments.json",
         "ai/handoffs/current.md"
       ],
       "prohibitedScope": [
-        "Production systems and credentials",
-        "Application behavior outside local development tooling"
+        "Customer authentication semantics",
+        "Production hosting configuration outside canonical route documentation"
       ]
     }
   ],

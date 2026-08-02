@@ -20,8 +20,8 @@ public partial class MainWindow : Window
         services =
         [
             new("API", 5192, repositoryRoot, "dotnet", "run --no-build --launch-profile http --project .\\src\\Vennu.Api\\Vennu.Api.csproj", "http://localhost:5192", ["ASPNETCORE_ENVIRONMENT=Development"]),
-            new("Admin", 5173, Path.Combine(repositoryRoot, "src", "admin"), "cmd.exe", "/c npm run dev -- --host localhost --port 5173", "http://localhost:5173", ["VITE_VENNU_API_BASE_URL=http://localhost:5192", "VITE_VENNU_DISPLAY_BASE_URL=http://localhost:5175", "VITE_VENNU_VENUE_ADMIN_BASE_URL=http://localhost:5174/venue-admin/"]),
-            new("Venue Admin", 5174, Path.Combine(repositoryRoot, "src", "venue-admin"), "cmd.exe", "/c npm run dev -- --host localhost --port 5174", "http://localhost:5174/venue-admin/", ["VITE_VENNU_API_BASE_URL=http://localhost:5192"]),
+            new("Admin", 5173, Path.Combine(repositoryRoot, "src", "admin"), "cmd.exe", "/c npm run dev -- --host localhost --port 5173", "http://localhost:5173", ["VITE_VENNU_API_BASE_URL=http://localhost:5192", "VITE_VENNU_DISPLAY_BASE_URL=http://localhost:5175", "VITE_VENNU_VENUE_ADMIN_BASE_URL=http://localhost:5174/"]),
+            new("Venue Admin", 5174, Path.Combine(repositoryRoot, "src", "venue-admin"), "cmd.exe", "/c npm run dev -- --host localhost --port 5174", "http://localhost:5174/", ["VITE_VENNU_API_BASE_URL=http://localhost:5192"]),
             new("Display", 5175, Path.Combine(repositoryRoot, "src", "display"), "cmd.exe", "/c npm run dev -- --host localhost --port 5175", "http://localhost:5175", ["VITE_API_BASE_URL=http://localhost:5192", "VITE_SIGNALR_HUB_URL=http://localhost:5192/hubs/vennu"])
         ];
         ServicesGrid.ItemsSource = services;

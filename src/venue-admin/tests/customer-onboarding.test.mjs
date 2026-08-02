@@ -19,6 +19,7 @@ test("public entry exposes passwordless routes and returning-user recovery", () 
   assert.match(app, /Available plans/);
   assert.match(app, /No public plans are available right now/);
   assert.match(main, /\/signup/);
+  assert.match(main, /\/signin/);
   assert.match(main, /\/onboarding/);
 });
 
