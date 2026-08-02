@@ -135,10 +135,9 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 - WP-13.05 — Public Signup and Resumable Onboarding
 - WP-13.06 — Venue Setup and First-Screen Activation
 - WP-13.07 — Customer Onboarding Timeline
+- WP-13.08 — Super Admin Onboarding Visibility
 
 ## Active Work Package
-
-**WP-13.08 — Super Admin Onboarding Visibility** is in progress on Sequential issue #364 and branch `wp/13.08-super-admin-onboarding-visibility`. It owns only the protected read-only support projection, Super Admin visibility UI, focused validation, and synchronized records. WP-13.09 and Phase 14+ remain paused.
 
 **INT-TESTING-001 — Azure SQL Integration Testing Program** is active in Collaborative mode. Azure SQL integration runs remain skipped and non-blocking outside explicitly recorded collaborative execution.
 
@@ -209,7 +208,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Next Action
 
-Complete **WP-13.08 — Super Admin Onboarding Visibility** on issue #364; do not claim WP-13.09 until its PR merges and the Sequential claim is released. Phase 14+ remains paused.
+After WP-13.08 PR #365 merges and its Sequential claim is released, inspect repository ownership and claim **WP-13.09 — Legacy Venue Access Token Migration** only if unowned. Phase 14+ remains paused.
 
 ## Phase 05 Work Packages
 
