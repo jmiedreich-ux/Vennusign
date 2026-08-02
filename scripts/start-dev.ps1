@@ -1,7 +1,7 @@
 $repoRoot = Split-Path -Parent $PSScriptRoot
 
 $apiBaseUrl = 'http://localhost:5192'
-$venueAdminBaseUrl = 'http://localhost:5174/venue-admin/'
+$venueAdminBaseUrl = 'http://localhost:5174/'
 $displayBaseUrl = 'http://localhost:5175'
 
 function Start-DevShell {
