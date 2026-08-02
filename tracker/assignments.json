@@ -1,7 +1,28 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T23:50:46Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-02T00:10:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "INT-TESTING-001",
+      "executionMode": "Collaborative",
+      "owner": "GitHub Copilot",
+      "issue": 354,
+      "branch": "issue/354-int-testing-001",
+      "claimedUtc": "2026-08-02T00:10:00Z",
+      "writableScope": [
+        "tests/Vennu.Data.IntegrationTests",
+        "docs/work-packages/INT-TESTING-001-azure-sql-integration-program.md",
+        "PROJECT_STATUS.md",
+        "tracker/assignments.json",
+        "ai/handoffs/current.md"
+      ],
+      "prohibitedScope": [
+        "Production databases and credentials",
+        "Normal GitHub Actions integration-test execution",
+        "Unapproved coverage-domain implementation"
+      ]
+    }
+  ],
   "nextAvailableWorkPackage": "WP-13.04",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
