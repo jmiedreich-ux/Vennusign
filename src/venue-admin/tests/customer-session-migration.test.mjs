@@ -3,8 +3,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
-const [app, api, handler, legacy, options, program] = await Promise.all([
-  read("../src/App.tsx"), read("../src/api.ts"),
+const [app, onboardingApp, onboardingApi, api, handler, legacy, options, program] = await Promise.all([
+  read("../src/App.tsx"), read("../src/CustomerOnboardingApp.tsx"),
+  read("../src/customerOnboardingApi.ts"), read("../src/api.ts"),
   read("../../Vennu.Api/VenueAdmin/CustomerVenueAdminAuthenticationHandler.cs"),
   read("../../Vennu.Api/VenueAdmin/VenueAdminAuthenticationHandler.cs"),
   read("../../Vennu.Api/VenueAdmin/VenueAdminAuthenticationOptions.cs"),
@@ -23,6 +24,10 @@ test("persisted customer sessions are the primary membership-checked venue path"
   assert.match(api, /headers\.delete\("X-Vennu-Venue-Token"\)/);
   assert.match(app, /customerSessionAccess/);
   assert.match(app, /Sign in with your customer account/);
+  assert.match(onboardingApp, /!requested\.startsWith\("\/\/"\)/);
+  assert.match(onboardingApp, /window\.location\.replace\(returnPath\)/);
+  assert.match(onboardingApi, /body: JSON\.stringify\(\{ email, returnPath \}\)/);
+  assert.match(onboardingApi, /encodeURIComponent\(returnPath\)/);
 });
 
 test("legacy compatibility is explicitly bounded and secondary", () => {

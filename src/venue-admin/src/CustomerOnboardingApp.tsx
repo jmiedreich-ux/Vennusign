@@ -21,6 +21,10 @@ import CustomerOnboardingTimeline from "./CustomerOnboardingTimeline";
 
 export default function CustomerOnboardingApp() {
   const configuration = useMemo(loadVenueAdminConfiguration, []);
+  const returnPath = useMemo(() => {
+    const requested = new URLSearchParams(window.location.search).get("returnPath");
+    return requested?.startsWith("/") && !requested.startsWith("//") ? requested : "/onboarding";
+  }, []);
   const [plans, setPlans] = useState<PublicOnboardingPlan[]>([]);
   const [session, setSession] = useState<CustomerSession>();
   const [onboarding, setOnboarding] = useState<CustomerOnboardingSnapshot>();
@@ -38,6 +42,10 @@ export default function CustomerOnboardingApp() {
     ]).then(async ([availablePlans, activeSession]) => {
       setPlans(availablePlans);
       setSession(activeSession);
+      if (activeSession && returnPath !== "/onboarding") {
+        window.location.replace(returnPath);
+        return;
+      }
       if (activeSession) setOnboarding(await loadCustomerOnboarding(configuration, controller.signal));
       const returned = new URLSearchParams(window.location.search).get("checkout");
       if (returned === "success") setNotice("Stripe returned successfully. Your plan will complete only after Vennu receives the verified webhook.");
@@ -46,7 +54,7 @@ export default function CustomerOnboardingApp() {
       if (!(reason instanceof DOMException && reason.name === "AbortError")) setError("Vennu signup is temporarily unavailable.");
     }).finally(() => setLoading(false));
     return () => controller.abort();
-  }, [configuration]);
+  }, [configuration, returnPath]);
 
   const run = async (key: string, action: () => Promise<void>) => {
     setBusy(key); setError(undefined); setNotice(undefined);
@@ -59,7 +67,7 @@ export default function CustomerOnboardingApp() {
     event.preventDefault();
     const email = String(new FormData(event.currentTarget).get("email") ?? "").trim();
     void run("email", async () => {
-      await requestEmailLink(configuration, email);
+      await requestEmailLink(configuration, email, returnPath);
       setNotice("If that verified account exists, a secure sign-in link is on its way.");
     });
   };
@@ -69,6 +77,10 @@ export default function CustomerOnboardingApp() {
     const email = String(new FormData(event.currentTarget).get("passkeyEmail") ?? "").trim();
     void run("passkey", async () => {
       await signInWithPasskey(configuration, email);
+      if (returnPath !== "/onboarding") {
+        window.location.replace(returnPath);
+        return;
+      }
       const activeSession = await loadCustomerSession(configuration);
       setSession(activeSession);
       setOnboarding(await loadCustomerOnboarding(configuration));
@@ -156,8 +168,8 @@ export default function CustomerOnboardingApp() {
       <div className="customer-entry__auth-card">
         <h2>Start with your account</h2>
         <p>No password to remember.</p>
-        <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google")}>Continue with Google</a>
-        <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple")}>Continue with Apple</a>
+        <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", returnPath)}>Continue with Google</a>
+        <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple", returnPath)}>Continue with Apple</a>
         <div className="customer-entry__divider"><span>Returning customers</span></div>
         <form onSubmit={usePasskey}>
           <label htmlFor="passkeyEmail">Email for your passkey</label>
