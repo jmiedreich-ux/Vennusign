@@ -2,31 +2,31 @@
 
 ## Work Package
 - ID: WP-13.07
-- Status: In Progress
+- Status: Complete in proposed merge state
 - Execution mode: Sequential
 
 ## Git State
 - Branch: `wp/13.07-customer-onboarding-timeline`
 - Issue: #362
-- Pull request: not opened
-- CI state: not started
+- Pull request: #363
+- CI state: Actions #761 passed affected-area validation; final completion-record validation pending
 
 ## Completed This Session
-- Merged WP-13.06 through PR #361 and confirmed its issue closed and claim released.
-- Verified no WP-13.07 issue, branch, PR, commit, or tracker claim existed.
-- Created and claimed the bounded read-only timeline package.
-- Recorded the W3C/WAI-backed UI/function gap analysis.
+- Added the five-step, snapshot-derived onboarding timeline with explicit Complete, Current, and Upcoming states.
+- Added completed-count/current-step summaries, last-saved context, an in-page resume link, visible focus, and responsive connected/stacked layouts.
+- Added focused read-only projection tests; local production build and all 36 frontend tests passed.
+- Actions #761 passed Venue Admin and repository-record validation; unrelated application and TV jobs skipped.
+- Recorded the W3C/WAI-backed UI/function gap analysis and architecture decision.
 
 ## Remaining Work
-- Implement the timeline component, responsive styles, and focused frontend tests.
-- Open, validate, review, approve, merge, close #362, and release the claim.
+- Validate the final completion-record head, review the full diff, approve, merge, confirm #362 closes, and confirm claim release.
 
 ## Known Risks or Blockers
 - Integration/live-provider/device validation remains intentionally skipped and is not applicable to this read-only UI package.
 - INT-TESTING-001 remains a separate Collaborative claim.
 
 ## Exact Next Action
-- Implement the WP-13.07 timeline on the claimed branch.
+- Validate and merge PR #363; then inspect ownership before claiming WP-13.08.
 
 ## Do Not Redo or Reverse
 - Do not add a second progress authority or mutate onboarding state.
