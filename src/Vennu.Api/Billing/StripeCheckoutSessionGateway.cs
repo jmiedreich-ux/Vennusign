@@ -22,13 +22,20 @@ public sealed class StripeCheckoutSessionGateway(
         var successUrl = RequireHttpsUrl(checkoutOptions.Value.SuccessUrl, "success");
         var cancelUrl = RequireHttpsUrl(checkoutOptions.Value.CancelUrl, "cancel");
         var service = new SessionService(new StripeClient(apiKey));
-        var session = await service.CreateAsync(
-            new SessionCreateOptions
+        var ownerId = request.OrganizationId ?? request.VenueId;
+        if (ownerId == Guid.Empty)
+            throw new InvalidOperationException("Stripe Checkout requires an organization or legacy venue owner.");
+        var metadata = new Dictionary<string, string>
+        {
+            [request.OrganizationId is null ? "venue_id" : "organization_id"] = ownerId.ToString(),
+            ["tier_slug"] = request.TierSlug
+        };
+        var options = new SessionCreateOptions
             {
                 Mode = "subscription",
                 SuccessUrl = successUrl.AbsoluteUri,
                 CancelUrl = cancelUrl.AbsoluteUri,
-                ClientReferenceId = request.VenueId.ToString(),
+                ClientReferenceId = ownerId.ToString(),
                 LineItems =
                 [
                     new SessionLineItemOptions
@@ -37,12 +44,13 @@ public sealed class StripeCheckoutSessionGateway(
                         Quantity = 1
                     }
                 ],
-                Metadata = new Dictionary<string, string>
-                {
-                    ["venue_id"] = request.VenueId.ToString(),
-                    ["tier_slug"] = request.TierSlug
-                }
-            },
+                Metadata = metadata,
+                SubscriptionData = new SessionSubscriptionDataOptions { Metadata = metadata }
+            };
+        if (!string.IsNullOrWhiteSpace(request.StripeCustomerId))
+            options.Customer = request.StripeCustomerId.Trim();
+        var session = await service.CreateAsync(
+            options,
             requestOptions: null,
             cancellationToken).ConfigureAwait(false);
 

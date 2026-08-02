@@ -152,6 +152,37 @@ public class StripeSubscriptionEventHandlerTests
         Assert.Empty(idempotency.EventIds);
     }
 
+    [Fact]
+    [Trait("Category", "Unit")]
+    public async Task Subscription_created_persists_authoritative_organization_owner()
+    {
+        var organizationId = Guid.NewGuid();
+        var tier = Tier("price_pro");
+        var organizations = new OrganizationSubscriptionRepositoryFake();
+        var projection = new ProjectionFake();
+        var handler = new StripeSubscriptionEventHandler(
+            new IdempotencyFake(),
+            new BillingCatalogRepositoryFake(tier),
+            new SubscriptionRepositoryFake(),
+            new OperationalEventRepositoryFake(),
+            new FeatureResolutionFake(),
+            new FixedTimeProvider(UtcNow),
+            organizations,
+            new VenueRepositoryFake(),
+            projection);
+
+        await handler.HandleAsync(new StripeSubscriptionEvent(
+            "evt_org", "customer.subscription.created", "sub_org",
+            StripePriceId: "price_pro", Status: "active",
+            OrganizationId: organizationId, StripeCustomerId: "cus_org"));
+
+        var subscription = Assert.Single(organizations.Items);
+        Assert.Equal(organizationId, subscription.OrganizationId);
+        Assert.Equal("cus_org", subscription.StripeCustomerId);
+        Assert.Equal("sub_org", subscription.StripeSubscriptionId);
+        Assert.Same(subscription, Assert.Single(projection.Items));
+    }
+
     private static StripeSubscriptionEventHandler CreateHandler(
         SubscriptionTier tier,
         SubscriptionRepositoryFake subscriptions,
@@ -290,5 +321,40 @@ public class StripeSubscriptionEventHandlerTests
             int limit,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyCollection<OperationalEvent>>(Items.Take(limit).ToArray());
+    }
+
+    private sealed class OrganizationSubscriptionRepositoryFake : IOrganizationSubscriptionRepository
+    {
+        public List<OrganizationSubscription> Items { get; } = [];
+        public Task<IReadOnlyCollection<OrganizationSubscription>> GetAllAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyCollection<OrganizationSubscription>>(Items);
+        public Task<OrganizationSubscription?> GetByOrganizationIdAsync(Guid organizationId, CancellationToken cancellationToken = default) =>
+            Task.FromResult(Items.SingleOrDefault(item => item.OrganizationId == organizationId));
+        public Task<OrganizationSubscription?> GetByStripeSubscriptionIdAsync(string stripeSubscriptionId, CancellationToken cancellationToken = default) =>
+            Task.FromResult(Items.SingleOrDefault(item => item.StripeSubscriptionId == stripeSubscriptionId));
+        public Task<bool> SaveAsync(OrganizationSubscription subscription, CancellationToken cancellationToken = default)
+        {
+            if (!Items.Contains(subscription)) Items.Add(subscription);
+            return Task.FromResult(true);
+        }
+    }
+
+    private sealed class VenueRepositoryFake : IVenueRepository
+    {
+        public Task<Guid> CreateAsync(Venue venue, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<Venue>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyCollection<Venue>>([]);
+        public Task<Venue?> GetByIdAsync(Guid venueId, CancellationToken cancellationToken = default) => Task.FromResult<Venue?>(null);
+    }
+
+    private sealed class ProjectionFake : IOrganizationSubscriptionProjectionService
+    {
+        public List<OrganizationSubscription> Items { get; } = [];
+        public Task SyncAsync(OrganizationSubscription subscription, CancellationToken cancellationToken = default)
+        {
+            Items.Add(subscription);
+            return Task.CompletedTask;
+        }
+        public Task<VenueSubscription> SyncVenueAsync(Guid venueId, OrganizationSubscription subscription, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new VenueSubscription { VenueId = venueId, TierId = subscription.TierId, Status = subscription.Status });
     }
 }

@@ -131,7 +131,9 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-**WP-13.04 — Tier-Defined Trials and Stripe Entitlements** is blocked on Sequential issue #347 and draft PR #349. Actions #734/#735 passed, but final review found the existing venue-scoped subscription/Stripe ownership model cannot enforce Phase 13's organization-level tier, pre-venue trial selection, or maximum-venue entitlement. The claim remains active; WP-13.05 must not start until the organization-entitlement ownership decision is documented and implemented.
+**WP-13.04 — Tier-Defined Trials and Stripe Entitlements** is active on Sequential issue #347 and draft PR #349. The owner approved organization-level Stripe customer and subscription ownership. The existing branch is implementing the organization entitlement, migration/backfill, webhook mapping, venue-limit enforcement, and compatibility with legacy venue subscriptions. WP-13.05 must not start until WP-13.04 is validated, reviewed, merged, and released.
+
+**INT-TESTING-001 — Azure SQL Integration Testing Program** is active in Collaborative mode. Azure SQL integration runs remain skipped and non-blocking outside explicitly recorded collaborative execution.
 
 ## Phase 04 Result
 
@@ -200,7 +202,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Next Action
 
-Claim **WP-13.03 — Passkeys, TOTP, and Account Recovery** sequentially only after PR #340 merges and the default branch confirms no competing claim, branch, or pull request.
+Complete and merge **WP-13.04 — Tier-Defined Trials and Stripe Entitlements** under its existing Sequential claim. Do not claim WP-13.05 until PR #349 is validated, reviewed, merged, and the claim is released.
 
 ## Phase 05 Work Packages
 

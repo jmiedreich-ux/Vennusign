@@ -7,7 +7,10 @@ public sealed class IdentityMembershipService(
     ICustomerIdentityRepository identityRepository,
     IOrganizationMembershipRepository membershipRepository,
     IMembershipCapabilityResolver capabilityResolver,
-    TimeProvider timeProvider) : IIdentityMembershipService
+    TimeProvider timeProvider,
+    IVenueEntitlementService? entitlementService = null,
+    IOrganizationSubscriptionRepository? organizationSubscriptions = null,
+    IOrganizationSubscriptionProjectionService? projectionService = null) : IIdentityMembershipService
 {
     public async Task<Organization> CreateOrganizationAsync(
         string name,
@@ -141,12 +144,20 @@ public sealed class IdentityMembershipService(
     {
         var actor = await RequireOrganizationCapabilityAsync(
             actorUserId, organizationId, MembershipCapability.ManageVenueMembers, cancellationToken).ConfigureAwait(false);
+        if (entitlementService is not null)
+            await entitlementService.EnsureCanAddVenueAsync(organizationId, cancellationToken).ConfigureAwait(false);
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
         await membershipRepository.AttachVenueAsync(
             organizationId,
             RequireId(venueId, nameof(venueId)),
             Audit(organizationId, venueId, actor.UserId, actor.UserId, MembershipAuditAction.VenueAttached, null, null, utcNow),
             cancellationToken).ConfigureAwait(false);
+        if (organizationSubscriptions is not null && projectionService is not null)
+        {
+            var subscription = await organizationSubscriptions.GetByOrganizationIdAsync(organizationId, cancellationToken).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("An authoritative organization subscription is required.");
+            await projectionService.SyncVenueAsync(venueId, subscription, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     public async Task<VenueMembership> AddOrChangeVenueMemberAsync(

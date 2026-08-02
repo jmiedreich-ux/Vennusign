@@ -9,4 +9,6 @@ public sealed record StripeSubscriptionEvent(
     string? Status = null,
     DateTime? TrialEndsAt = null,
     DateTime? CurrentPeriodEnd = null,
-    bool CancelAtPeriodEnd = false);
+    bool CancelAtPeriodEnd = false,
+    Guid? OrganizationId = null,
+    string? StripeCustomerId = null);

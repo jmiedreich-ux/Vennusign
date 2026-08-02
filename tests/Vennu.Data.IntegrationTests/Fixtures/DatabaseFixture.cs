@@ -5,6 +5,7 @@ public sealed class DatabaseFixture : IAsyncLifetime
     private const string SettingsFileName = "app.settings.json";
     private const string ConnectionStringVariable = "VENU_TEST_AZURE_SQL_CONNECTION_STRING";
     private const string ResetTablesVariable = "VENU_TEST_RESET_TABLES";
+    private static readonly SemaphoreSlim initializationLock = new(1, 1);
 
     private readonly Dictionary<string, string?> settings = [];
 
@@ -16,7 +17,7 @@ public sealed class DatabaseFixture : IAsyncLifetime
 
     public bool ResetTablesBeforeEachTest => IsEnabled(GetSetting(ResetTablesVariable));
 
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
         LoadSettings();
         ConnectionString = GetSetting(ConnectionStringVariable);
@@ -24,11 +25,17 @@ public sealed class DatabaseFixture : IAsyncLifetime
         if (IsAvailable)
         {
             EnsureDevDatabase(ConnectionString!);
-            DatabaseMigrator.Run(ConnectionString!);
-            return EnsureTestRecordTraceTableAsync();
+            await initializationLock.WaitAsync();
+            try
+            {
+                DatabaseMigrator.Run(ConnectionString!);
+                await EnsureTestRecordTraceTableAsync();
+            }
+            finally
+            {
+                initializationLock.Release();
+            }
         }
-
-        return Task.CompletedTask;
     }
 
     public Task DisposeAsync() => Task.CompletedTask;

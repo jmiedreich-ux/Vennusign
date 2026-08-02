@@ -9,7 +9,9 @@ public enum CheckoutBillingInterval
 public sealed record StripeCheckoutSessionRequest(
     Guid VenueId,
     string PriceId,
-    string TierSlug);
+    string TierSlug,
+    Guid? OrganizationId = null,
+    string? StripeCustomerId = null);
 
 public sealed record StripeCheckoutSessionResult(Uri CheckoutUrl);
 
@@ -24,6 +26,12 @@ public interface ICheckoutSessionService
 {
     Task<StripeCheckoutSessionResult> CreateAsync(
         Guid venueId,
+        Guid targetTierId,
+        CheckoutBillingInterval billingInterval,
+        CancellationToken cancellationToken = default);
+
+    Task<StripeCheckoutSessionResult> CreateForOrganizationAsync(
+        Guid organizationId,
         Guid targetTierId,
         CheckoutBillingInterval billingInterval,
         CancellationToken cancellationToken = default);

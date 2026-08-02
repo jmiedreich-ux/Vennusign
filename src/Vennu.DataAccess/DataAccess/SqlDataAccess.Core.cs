@@ -70,6 +70,10 @@ public partial class SqlDataAccess : ISqlDataAccess
                 .Table("dbo.VenueSubscriptions", true);
 
             FluentMapper
+                .Entity<OrganizationSubscription>()
+                .Table("dbo.OrganizationSubscriptions", true);
+
+            FluentMapper
                 .Entity<HaasContract>()
                 .Table("dbo.HaasContracts", true);
 

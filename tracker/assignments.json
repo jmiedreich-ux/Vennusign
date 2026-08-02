@@ -1,7 +1,38 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-01T23:38:00Z",
-  "activeAssignments": [{"workPackage":"WP-13.04","title":"Tier-Defined Trials and Stripe Entitlements","owner":"Codex scheduled automation","executionMode":"Sequential","issue":347,"branch":"wp/13.04-tier-trials-entitlements","status":"Blocked","claimedUtc":"2026-08-01T23:29:00Z"}],
+  "updatedUtc": "2026-08-02T02:05:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "WP-13.04",
+      "title": "Tier-Defined Trials and Stripe Entitlements",
+      "owner": "Codex scheduled automation",
+      "executionMode": "Sequential",
+      "issue": 347,
+      "branch": "wp/13.04-tier-trials-entitlements",
+      "status": "In Progress",
+      "claimedUtc": "2026-08-01T23:29:00Z"
+    },
+    {
+      "workPackage": "INT-TESTING-001",
+      "executionMode": "Collaborative",
+      "owner": "GitHub Copilot",
+      "issue": 354,
+      "branch": "issue/354-int-testing-001",
+      "claimedUtc": "2026-08-02T00:10:00Z",
+      "writableScope": [
+        "tests/Vennu.Data.IntegrationTests",
+        "docs/work-packages/INT-TESTING-001-azure-sql-integration-program.md",
+        "PROJECT_STATUS.md",
+        "tracker/assignments.json",
+        "ai/handoffs/current.md"
+      ],
+      "prohibitedScope": [
+        "Production databases and credentials",
+        "Normal GitHub Actions integration-test execution",
+        "Unapproved coverage-domain implementation"
+      ]
+    }
+  ],
   "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

@@ -5,6 +5,7 @@ namespace Vennu.Api.Webhooks;
 public static class StripeWebhookEventMapper
 {
     private const string VenueIdMetadataKey = "venue_id";
+    private const string OrganizationIdMetadataKey = "organization_id";
     private const string SubscriptionCreated = "customer.subscription.created";
     private const string SubscriptionUpdated = "customer.subscription.updated";
     private const string SubscriptionDeleted = "customer.subscription.deleted";
@@ -30,7 +31,7 @@ public static class StripeWebhookEventMapper
     private static StripeSubscriptionEvent MapSubscription(Stripe.Event stripeEvent)
     {
         var subscription = GetObject<Stripe.Subscription>(stripeEvent);
-        var venueId = GetVenueId(subscription.Metadata);
+        var (organizationId, venueId) = GetOwner(subscription.Metadata);
         var activeItems = subscription.Items?.Data?
             .Where(item => item.Deleted is not true)
             .ToArray() ?? [];
@@ -55,7 +56,9 @@ public static class StripeWebhookEventMapper
             Required(subscription.Status, "Stripe subscription status is required."),
             subscription.TrialEnd?.ToUniversalTime(),
             currentPeriodEnd,
-            subscription.CancelAtPeriodEnd);
+            subscription.CancelAtPeriodEnd,
+            organizationId,
+            subscription.CustomerId);
     }
 
     private static StripeSubscriptionEvent MapDeletedSubscription(Stripe.Event stripeEvent)
@@ -91,18 +94,21 @@ public static class StripeWebhookEventMapper
                 $"Stripe event '{stripeEvent.Type}' does not contain the expected {typeof(T).Name} payload.");
     }
 
-    private static Guid GetVenueId(IReadOnlyDictionary<string, string>? metadata)
+    private static (Guid? OrganizationId, Guid? VenueId) GetOwner(
+        IReadOnlyDictionary<string, string>? metadata)
     {
-        if (metadata is null ||
-            !metadata.TryGetValue(VenueIdMetadataKey, out var value) ||
-            !Guid.TryParse(value, out var venueId) ||
-            venueId == Guid.Empty)
-        {
-            throw new StripeWebhookPayloadException(
-                $"Stripe subscription metadata must contain a valid '{VenueIdMetadataKey}'.");
-        }
-
-        return venueId;
+        if (metadata is not null &&
+            metadata.TryGetValue(OrganizationIdMetadataKey, out var organizationValue) &&
+            Guid.TryParse(organizationValue, out var organizationId) &&
+            organizationId != Guid.Empty)
+            return (organizationId, null);
+        if (metadata is not null &&
+            metadata.TryGetValue(VenueIdMetadataKey, out var venueValue) &&
+            Guid.TryParse(venueValue, out var venueId) &&
+            venueId != Guid.Empty)
+            return (null, venueId);
+        throw new StripeWebhookPayloadException(
+            $"Stripe subscription metadata must contain a valid '{OrganizationIdMetadataKey}' or legacy '{VenueIdMetadataKey}'.");
     }
 
     private static string Required(string? value, string message)

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Caching.Memory;
+using Vennu.Core.Models;
 using Vennu.Data.Repositories;
 
 namespace Vennu.Data.Services;
@@ -12,6 +13,8 @@ public sealed class FeatureResolutionService : IFeatureResolutionService
     private readonly IVenueFeatureOverrideRepository overrideRepository;
     private readonly IMemoryCache cache;
     private readonly TimeProvider timeProvider;
+    private readonly IVenueRepository? venueRepository;
+    private readonly IOrganizationSubscriptionRepository? organizationSubscriptionRepository;
 
     public FeatureResolutionService(
         IFeatureRepository featureRepository,
@@ -19,7 +22,9 @@ public sealed class FeatureResolutionService : IFeatureResolutionService
         IVenueSubscriptionRepository subscriptionRepository,
         IVenueFeatureOverrideRepository overrideRepository,
         IMemoryCache cache,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IVenueRepository? venueRepository = null,
+        IOrganizationSubscriptionRepository? organizationSubscriptionRepository = null)
     {
         this.featureRepository = featureRepository;
         this.tierRepository = tierRepository;
@@ -27,6 +32,8 @@ public sealed class FeatureResolutionService : IFeatureResolutionService
         this.overrideRepository = overrideRepository;
         this.cache = cache;
         this.timeProvider = timeProvider;
+        this.venueRepository = venueRepository;
+        this.organizationSubscriptionRepository = organizationSubscriptionRepository;
     }
 
     public async Task<bool> HasFeatureAsync(Guid venueId, string featureKey, CancellationToken cancellationToken = default)
@@ -66,10 +73,16 @@ public sealed class FeatureResolutionService : IFeatureResolutionService
             feature => new FeatureEntitlement(feature.Key, false, null, feature.IsActive ? "none" : "master-switch"),
             StringComparer.OrdinalIgnoreCase);
 
-        var subscription = await subscriptionRepository.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
-        if (subscription is not null && IsAccessStatus(subscription.Status))
+        var organizationSubscription = await GetOrganizationSubscriptionAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var venueSubscription = organizationSubscription is null
+            ? await subscriptionRepository.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false)
+            : null;
+        var tierId = organizationSubscription?.TierId ?? venueSubscription?.TierId;
+        var status = organizationSubscription?.Status ?? venueSubscription?.Status;
+        var trialEndsAt = organizationSubscription?.TrialEndsAt ?? venueSubscription?.TrialEndsAt;
+        if (tierId is not null && IsAccessStatus(status, trialEndsAt, timeProvider.GetUtcNow().UtcDateTime))
         {
-            var tierFeatures = await tierRepository.GetFeaturesAsync(subscription.TierId, cancellationToken).ConfigureAwait(false);
+            var tierFeatures = await tierRepository.GetFeaturesAsync(tierId.Value, cancellationToken).ConfigureAwait(false);
             foreach (var tierFeature in tierFeatures)
             {
                 var feature = features.FirstOrDefault(item => item.Id == tierFeature.FeatureId);
@@ -94,9 +107,20 @@ public sealed class FeatureResolutionService : IFeatureResolutionService
         return result;
     }
 
-    private static bool IsAccessStatus(string status) =>
-        status.Equals("active", StringComparison.OrdinalIgnoreCase) ||
-        status.Equals("trialing", StringComparison.OrdinalIgnoreCase);
+    private async Task<OrganizationSubscription?> GetOrganizationSubscriptionAsync(
+        Guid venueId,
+        CancellationToken cancellationToken)
+    {
+        if (venueRepository is null || organizationSubscriptionRepository is null) return null;
+        var venue = await venueRepository.GetByIdAsync(venueId, cancellationToken).ConfigureAwait(false);
+        return venue?.OrganizationId is Guid organizationId
+            ? await organizationSubscriptionRepository.GetByOrganizationIdAsync(organizationId, cancellationToken).ConfigureAwait(false)
+            : null;
+    }
+
+    private static bool IsAccessStatus(string? status, DateTime? trialEndsAt, DateTime utcNow) =>
+        status?.Equals("active", StringComparison.OrdinalIgnoreCase) == true ||
+        status?.Equals("trialing", StringComparison.OrdinalIgnoreCase) == true && trialEndsAt > utcNow;
 
     private static string CacheKey(Guid venueId) => $"feature-set:{venueId:N}";
 }
