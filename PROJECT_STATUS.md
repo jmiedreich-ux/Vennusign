@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 13 — Customer Identity, Signup, and Onboarding**
+**Phase 13 — Customer Identity, Signup, and Onboarding — Complete**
 
 ## Milestone
 
@@ -137,6 +137,8 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 - WP-13.07 — Customer Onboarding Timeline
 - WP-13.08 — Super Admin Onboarding Visibility
 - WP-13.09 — Legacy Venue Access Token Migration
+- WP-13.10 — Phase 13 Validation and Closure
+- Phase 13 — Customer Identity, Signup, and Onboarding
 
 ## Active Work Package
 
@@ -207,9 +209,16 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 - Integration-type tests are skipped for every WP and RWP under the repository owner's standing instruction.
 - Affected-area restore, Release build, unit tests, and applicable non-integration validation remain required; full non-integration validation is reserved for phase closure, nightly/manual runs, workflow changes, or an explicit `full-validation` label.
 
+## Phase 13 Result
+
+- Delivered organization-owned customer identity, external authentication, passkeys, TOTP, recovery, and active membership authorization.
+- Added tier-defined no-card trials and Stripe-backed paid entitlements with webhook-authoritative subscription state.
+- Added resumable public signup, venue setup, first-screen pairing, customer and Super Admin onboarding visibility, and controlled legacy-token retirement.
+- Passed the complete non-integration phase-closure suite in Actions run #772; integration and external-system tests remained intentionally skipped.
+
 ## Next Action
 
-Inspect repository ownership before claiming **WP-13.10 — Phase 13 Validation and Closure** in a later sequential run. Phase 14+ remains paused.
+No future-phase WP is active. Phase 14 and later remain paused pending explicit owner approval.
 
 ## Phase 05 Work Packages
 
