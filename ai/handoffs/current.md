@@ -3,43 +3,60 @@
 ## Work Package
 
 - ID: WP-13.04
-- Status: In Progress
+- Status: Complete in proposed merge state
 - Execution mode: Sequential
 
 ## Git State
 
 - Branch: `wp/13.04-tier-trials-entitlements`
+- Implementation head: `8d5c5740774e4bad8b70da8e3f059480bb760259`
 - Issue: #347
-- Pull request: #349 (draft)
-- CI: Actions #734 and #735 passed the earlier venue-policy implementation; new exact-head validation is required after organization ownership is implemented.
+- Pull request: #349
+- CI state: affected-area Actions #751 passed; final completion-record head validation and ChatGPT review remain required before merge.
 
-## Completed
+## Completed This Session
 
-- Verified WP-13.03 merged and resumed the existing WP-13.04 Sequential claim.
-- Added tier-defined trial/expiry/venue policy, removed hardcoded production trial duration, enforced active/unexpired subscription and screen capacity on screen creation, migration 043, tests and architecture records.
-- Preserved webhook-authoritative paid activation; Checkout return state does not grant access.
-- Incorporated the merged security and integration-test baseline from `master` without changing the standing integration-test skip for ordinary WP execution.
-- Recorded the owner's decision that Stripe customer and subscription ownership belongs to the organization.
+- Moved authoritative Stripe customer/subscription and tier entitlement ownership to organizations.
+- Added organization trials before venue creation, first paid Checkout without a pre-existing subscription, and tier-defined venue/screen enforcement.
+- Added organization Checkout/subscription metadata, Stripe customer reuse, webhook mapping and legacy venue-metadata promotion.
+- Added migration 044 with conservative unambiguous backfill and RepoDb mapping.
+- Added organization-first feature, billing portal and tier-switch behavior plus synchronized legacy venue projections that retain the unique Stripe ID on only one projection.
+- Added focused regression tests and synchronized project records.
+
+## Files Changed
+
+- Organization subscription model, repository, migration, management and projection services.
+- Checkout, webhook, feature, entitlement, provisioning, membership, billing portal and tier-switch paths.
+- Focused API/data-access tests and Phase 13 architecture/work-package/status/tracker/handoff records.
+
+## Decisions
+
+- Organization subscription state is authoritative for linked organizations.
+- Checkout return state never grants access; verified Stripe webhook state remains authoritative.
+- Migration 044 backfills only organizations with one legacy venue subscription; ambiguous histories require explicit reconciliation.
+- Venue subscriptions remain compatibility projections and fallback only for venues without organization entitlement.
 
 ## Validation
 
-Actions #734 and #735 passed the earlier branch head. Integration, live Stripe, Azure SQL, hosted infrastructure and cross-system tests are skipped. Affected-area validation is pending for the resumed implementation.
+- GitHub Actions #751: API and data-access Release builds/tests, migration/document checks and stable gate passed.
+- Frontend, Android TV, Tizen and webOS jobs: correctly skipped as unaffected.
+- Integration, live Stripe, Azure SQL, credentialed, hosted-infrastructure, container and cross-system tests: skipped under the standing owner instruction.
 
 ## Remaining Work
 
-- Add authoritative organization subscription persistence and repository behavior.
-- Update trial, Checkout, webhook, feature, screen and venue-limit paths with safe legacy venue-subscription compatibility.
-- Add migration/backfill, focused tests, completion records, exact-head Actions evidence and ChatGPT review.
+- Final completion-record head Actions and ChatGPT review/approval.
+- Merge PR #349, close issue #347 and delete the package branch.
 
-## Concurrent Program
+## Known Risks or Blockers
 
-INT-TESTING-001 remains active in Collaborative mode on issue #354. This Sequential WP does not run or extend Azure SQL integration coverage.
+- Organizations with multiple historical venue subscriptions are intentionally not auto-consolidated and require explicit reconciliation before organization billing changes.
+- Live Stripe and Azure SQL behavior is intentionally unvalidated under the standing integration-test exception.
 
 ## Exact Next Action
 
-Implement the approved organization-entitlement architecture on PR #349, run affected-area Actions, and re-review. Do not start WP-13.05.
+- Validate and approve the final PR #349 head, merge it, then claim WP-13.05 sequentially only if no competing owner exists.
 
-## Do Not Redo
+## Do Not Redo or Reverse
 
-- Do not grant paid access from Checkout return state, hardcode trial policy, bypass screen/feature limits, or begin WP-13.05 before merge.
-- Do not re-track local integration settings or run Azure SQL integration tests in this Sequential WP.
+- Do not restore venue-scoped Stripe ownership, grant access from Checkout return state, assign one Stripe subscription ID to multiple legacy rows, or start Phase 14+.
+- Do not re-track local integration settings or run integration tests in ordinary WP CI.

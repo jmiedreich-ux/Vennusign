@@ -128,10 +128,14 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 - WP-12.09 — Clover Inventory Webhooks and Provider Conformance
 - WP-12.10 — Phase 12 Validation and Closure
 - Phase 12 — POS Integration
+- WP-13.01 — Identity, Organization, and Membership Foundation
+- WP-13.02 — Customer Authentication Foundation
+- WP-13.03 — Passkeys, TOTP, and Account Recovery
+- WP-13.04 — Tier-Defined Trials and Stripe Entitlements
 
 ## Active Work Package
 
-**WP-13.04 — Tier-Defined Trials and Stripe Entitlements** is active on Sequential issue #347 and draft PR #349. The owner approved organization-level Stripe customer and subscription ownership. The existing branch is implementing the organization entitlement, migration/backfill, webhook mapping, venue-limit enforcement, and compatibility with legacy venue subscriptions. WP-13.05 must not start until WP-13.04 is validated, reviewed, merged, and released.
+**WP-13.04 — Tier-Defined Trials and Stripe Entitlements** is complete in the proposed merge state on issue #347 and PR #349. Organization-level Stripe ownership, migration/backfill, webhook mapping, venue/screen limits and legacy compatibility passed affected-area Actions #751. The Sequential claim is released by this merge state; WP-13.05 is next after PR #349 merges.
 
 **INT-TESTING-001 — Azure SQL Integration Testing Program** is active in Collaborative mode. Azure SQL integration runs remain skipped and non-blocking outside explicitly recorded collaborative execution.
 
@@ -202,7 +206,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Next Action
 
-Complete and merge **WP-13.04 — Tier-Defined Trials and Stripe Entitlements** under its existing Sequential claim. Do not claim WP-13.05 until PR #349 is validated, reviewed, merged, and the claim is released.
+After PR #349 merges, claim **WP-13.05 — Public Signup and Identity UX** sequentially only after confirming no competing issue, branch, PR or claim.
 
 ## Phase 05 Work Packages
 
