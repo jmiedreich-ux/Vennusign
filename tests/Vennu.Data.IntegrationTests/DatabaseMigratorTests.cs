@@ -50,7 +50,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.038_add_pos_sync_health.sql",
                 "Vennu.Data.Scripts.039_add_pos_refresh_token_expiration.sql",
                 "Vennu.Data.Scripts.040_create_customer_identity_tenancy.sql",
-                "Vennu.Data.Scripts.041_create_customer_authentication.sql"
+                "Vennu.Data.Scripts.041_create_customer_authentication.sql",
+                "Vennu.Data.Scripts.042_add_customer_strong_authentication.sql"
             ],
             scriptNames);
     }
