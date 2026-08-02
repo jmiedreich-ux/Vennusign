@@ -42,3 +42,17 @@ The UI provides loading, error, empty-plan, sign-in, saved-progress, Checkout-ca
 - Cross-origin customer-session use is limited to configured CORS origins with credentials; wildcard origins are not enabled.
 - No destructive onboarding action exists in WP-13.05. Sign-out revokes only the current session and leaves durable progress intact.
 - Integration, Azure SQL, live identity-provider, live Stripe, hosted-infrastructure, container, and physical-device validation remains skipped under the standing owner exception. Focused unit, migration-contract, frontend source-contract, TypeScript, and production-build validation cover this package.
+
+## WP-13.06 venue and first-display activation
+
+Venue creation resumes only from a customer-owned onboarding state with an authoritative active/trialing organization subscription. The client supplies venue details but never a user, organization, or venue owner identifier. `VenueProvisioningService` enforces the organization venue limit and writes the existing compatibility subscription projection before onboarding persists `VenueId`. A second venue mutation through the same journey is rejected.
+
+The physical display continues to own the existing registration sequence: it creates an unassigned screen record and a six-digit pairing code. The customer enters that code in `/onboarding`; the server resolves the journey's saved venue, enforces its tier screen limit, rejects missing, malformed, expired, claimed, or already-assigned records, claims the code, links the screen, and then persists `FirstScreenId`. The browser never supplies the target venue.
+
+Screen creation, pairing, and activity are distinct states:
+
+1. The display-created screen record is unassigned and not part of customer progress.
+2. A successful pairing claim links it to the venue and completes `First Screen`, but its state is `paired-offline` until a player heartbeat reports `Online`.
+3. `Go Live` completes only from authoritative screen status `Online`; refreshing onboarding reads that server state and no browser event can simulate it.
+
+Expired codes leave durable venue progress unchanged and the UI instructs the user to request a fresh code on the display. General unpair, archive, replace, transfer, and stale-device remediation remains issue #345 rather than expanding this initial-activation package.

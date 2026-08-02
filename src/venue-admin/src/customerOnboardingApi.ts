@@ -30,6 +30,8 @@ export type CustomerOnboardingSnapshot = {
   entitlementStatus: "none" | "trialing" | "active" | "past_due" | "canceled";
   trialEndsAt?: string;
   checkoutPending: boolean;
+  firstScreenStatus: "not-paired" | "paired-offline" | "online";
+  firstScreenLastSeenUtc?: string;
   progress: { account: boolean; plan: boolean; venue: boolean; firstScreen: boolean; goLive: boolean };
   updatedUtc: string;
 };
@@ -80,6 +82,25 @@ export function startOnboardingTrial(configuration: VenueAdminConfiguration, tie
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ tierId })
+  });
+}
+
+export function createOnboardingVenue(
+  configuration: VenueAdminConfiguration,
+  venue: { name: string; timezone: string; type: string; primaryLanguage: string; secondaryLanguage?: string }
+) {
+  return request<CustomerOnboardingSnapshot>(`${configuration.apiBaseUrl}/api/customer-onboarding/venue`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(venue)
+  });
+}
+
+export function claimOnboardingFirstScreen(configuration: VenueAdminConfiguration, code: string) {
+  return request<CustomerOnboardingSnapshot>(`${configuration.apiBaseUrl}/api/customer-onboarding/first-screen`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code })
   });
 }
 
