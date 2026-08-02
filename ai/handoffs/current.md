@@ -1,37 +1,35 @@
 # Vennu Session Handoff
 
 ## Work Package
-- ID: WP-13.05
-- Status: Complete in proposed merge state
+- ID: WP-13.06
+- Status: In Progress
 - Execution mode: Sequential
 
 ## Git State
-- Branch: `wp/13.05-public-signup-onboarding`
-- Issue: #358
-- Pull request: #359
-- Implementation head: `1927584e526180fccd7dbaece26c6c4700ea411f`
-- CI state: affected-area Actions run #753 passed; final completion-record head validation and ChatGPT review remain required.
+- Branch: `wp/13.06-venue-first-screen`
+- Issue: #360
+- Pull request: not opened
+- CI state: not started
 
 ## Completed This Session
-- Added durable customer-owned onboarding state and migration 045.
-- Added public plan discovery and authenticated organization, trial, Stripe Checkout, and resumable-state endpoints.
-- Added public Venue Admin signup/sign-in/onboarding routes with Google, Apple, returning-user email link and passkey flows.
-- Recorded the W3C/WAI consultation and complete UI/function gap analysis.
-- Passed the affected API/data Release builds/unit tests, migration/docs validation, and Venue Admin build/tests in Actions #753.
-- Released the WP-13.05 Sequential claim in the proposed merge state.
+- Merged WP-13.05 through PR #359 and confirmed issue #358 closed and its claim released.
+- Verified no WP-13.06 issue, branch, PR, commit, or tracker claim existed.
+- Created and claimed WP-13.06 with bounded venue/pairing scope.
+- Consulted W3C/WAI form, status-message, timing, and focus guidance and recorded the UI/function gap analysis.
 
 ## Remaining Work
-- Validate and review the final exact PR #359 head, then merge and close issue #358.
-- Claim WP-13.06 only after merge and a fresh ownership inspection.
+- Implement customer-owned venue creation and first-display pairing activation.
+- Add focused tests and architecture/completion records.
+- Open, validate, review, approve, merge, close #360, and release the claim.
 
 ## Known Risks or Blockers
-- Live Google, Apple, email, passkey, Stripe, Azure SQL, hosted-infrastructure, container, device, signing/store, and cross-system behavior remains intentionally unvalidated.
-- INT-TESTING-001 remains a separate Collaborative claim and was not modified.
+- Live device, Azure SQL, hosted-infrastructure, container, signing/store, and cross-system behavior remains intentionally unvalidated.
+- INT-TESTING-001 remains a separate Collaborative claim; do not edit its implementation files.
 
 ## Exact Next Action
-- Validate and approve the final PR #359 head; merge it if clean, then inspect ownership before WP-13.06.
+- Implement the bounded WP-13.06 data/API/frontend slice on the claimed branch.
 
 ## Do Not Redo or Reverse
-- Do not grant entitlement from browser or Checkout return state; organization subscription/webhook state is authoritative.
-- Do not implement WP-13.06 before WP-13.05 merges or start Phase 14+.
+- Do not create a duplicate logical screen; claim the device-created screen through its pairing code.
+- Do not implement general screen lifecycle remediation, WP-13.07+, or Phase 14+.
 - Do not run integration tests or edit INT-TESTING-001 implementation files.
