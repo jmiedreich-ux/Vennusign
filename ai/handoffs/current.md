@@ -1,62 +1,37 @@
 # Vennu Session Handoff
 
 ## Work Package
-
-- ID: WP-13.04
+- ID: WP-13.05
 - Status: Complete in proposed merge state
 - Execution mode: Sequential
 
 ## Git State
-
-- Branch: `wp/13.04-tier-trials-entitlements`
-- Implementation head: `8d5c5740774e4bad8b70da8e3f059480bb760259`
-- Issue: #347
-- Pull request: #349
-- CI state: affected-area Actions #751 passed; final completion-record head validation and ChatGPT review remain required before merge.
+- Branch: `wp/13.05-public-signup-onboarding`
+- Issue: #358
+- Pull request: #359
+- Implementation head: `1927584e526180fccd7dbaece26c6c4700ea411f`
+- CI state: affected-area Actions run #753 passed; final completion-record head validation and ChatGPT review remain required.
 
 ## Completed This Session
-
-- Moved authoritative Stripe customer/subscription and tier entitlement ownership to organizations.
-- Added organization trials before venue creation, first paid Checkout without a pre-existing subscription, and tier-defined venue/screen enforcement.
-- Added organization Checkout/subscription metadata, Stripe customer reuse, webhook mapping and legacy venue-metadata promotion.
-- Added migration 044 with conservative unambiguous backfill and RepoDb mapping.
-- Added organization-first feature, billing portal and tier-switch behavior plus synchronized legacy venue projections that retain the unique Stripe ID on only one projection.
-- Added focused regression tests and synchronized project records.
-
-## Files Changed
-
-- Organization subscription model, repository, migration, management and projection services.
-- Checkout, webhook, feature, entitlement, provisioning, membership, billing portal and tier-switch paths.
-- Focused API/data-access tests and Phase 13 architecture/work-package/status/tracker/handoff records.
-
-## Decisions
-
-- Organization subscription state is authoritative for linked organizations.
-- Checkout return state never grants access; verified Stripe webhook state remains authoritative.
-- Migration 044 backfills only organizations with one legacy venue subscription; ambiguous histories require explicit reconciliation.
-- Venue subscriptions remain compatibility projections and fallback only for venues without organization entitlement.
-
-## Validation
-
-- GitHub Actions #751: API and data-access Release builds/tests, migration/document checks and stable gate passed.
-- Frontend, Android TV, Tizen and webOS jobs: correctly skipped as unaffected.
-- Integration, live Stripe, Azure SQL, credentialed, hosted-infrastructure, container and cross-system tests: skipped under the standing owner instruction.
+- Added durable customer-owned onboarding state and migration 045.
+- Added public plan discovery and authenticated organization, trial, Stripe Checkout, and resumable-state endpoints.
+- Added public Venue Admin signup/sign-in/onboarding routes with Google, Apple, returning-user email link and passkey flows.
+- Recorded the W3C/WAI consultation and complete UI/function gap analysis.
+- Passed the affected API/data Release builds/unit tests, migration/docs validation, and Venue Admin build/tests in Actions #753.
+- Released the WP-13.05 Sequential claim in the proposed merge state.
 
 ## Remaining Work
-
-- Final completion-record head Actions and ChatGPT review/approval.
-- Merge PR #349, close issue #347 and delete the package branch.
+- Validate and review the final exact PR #359 head, then merge and close issue #358.
+- Claim WP-13.06 only after merge and a fresh ownership inspection.
 
 ## Known Risks or Blockers
-
-- Organizations with multiple historical venue subscriptions are intentionally not auto-consolidated and require explicit reconciliation before organization billing changes.
-- Live Stripe and Azure SQL behavior is intentionally unvalidated under the standing integration-test exception.
+- Live Google, Apple, email, passkey, Stripe, Azure SQL, hosted-infrastructure, container, device, signing/store, and cross-system behavior remains intentionally unvalidated.
+- INT-TESTING-001 remains a separate Collaborative claim and was not modified.
 
 ## Exact Next Action
-
-- Validate and approve the final PR #349 head, merge it, then claim WP-13.05 sequentially only if no competing owner exists.
+- Validate and approve the final PR #359 head; merge it if clean, then inspect ownership before WP-13.06.
 
 ## Do Not Redo or Reverse
-
-- Do not restore venue-scoped Stripe ownership, grant access from Checkout return state, assign one Stripe subscription ID to multiple legacy rows, or start Phase 14+.
-- Do not re-track local integration settings or run integration tests in ordinary WP CI.
+- Do not grant entitlement from browser or Checkout return state; organization subscription/webhook state is authoritative.
+- Do not implement WP-13.06 before WP-13.05 merges or start Phase 14+.
+- Do not run integration tests or edit INT-TESTING-001 implementation files.

@@ -132,10 +132,9 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 - WP-13.02 — Customer Authentication Foundation
 - WP-13.03 — Passkeys, TOTP, and Account Recovery
 - WP-13.04 — Tier-Defined Trials and Stripe Entitlements
+- WP-13.05 — Public Signup and Resumable Onboarding
 
 ## Active Work Package
-
-**WP-13.04 — Tier-Defined Trials and Stripe Entitlements** is complete in the proposed merge state on issue #347 and PR #349. Organization-level Stripe ownership, migration/backfill, webhook mapping, venue/screen limits and legacy compatibility passed affected-area Actions #751. The Sequential claim is released by this merge state; WP-13.05 is next after PR #349 merges.
 
 **INT-TESTING-001 — Azure SQL Integration Testing Program** is active in Collaborative mode. Azure SQL integration runs remain skipped and non-blocking outside explicitly recorded collaborative execution.
 
@@ -206,7 +205,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Next Action
 
-After PR #349 merges, claim **WP-13.05 — Public Signup and Identity UX** sequentially only after confirming no competing issue, branch, PR or claim.
+After PR #359 merges, claim **WP-13.06 — Venue Setup and First-Screen Activation** sequentially only if no competing owner exists. Phase 14+ remains paused.
 
 ## Phase 05 Work Packages
 
