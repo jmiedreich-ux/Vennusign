@@ -1,25 +1,24 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-02T21:55:00Z",
+  "updatedUtc": "2026-08-03T00:00:00Z",
   "activeAssignments": [
     {
-      "workPackage": "INT-TESTING-001",
+      "workPackage": "Issue-371",
       "executionMode": "Collaborative",
       "owner": "GitHub Copilot",
-      "issue": 354,
-      "branch": "issue/354-int-testing-001",
-      "claimedUtc": "2026-08-02T00:10:00Z",
+      "issue": 371,
+      "branch": "issue/371-dev-control-panel",
+      "claimedUtc": "2026-08-03T00:00:00Z",
       "writableScope": [
-        "tests/Vennu.Data.IntegrationTests",
-        "docs/work-packages/INT-TESTING-001-azure-sql-integration-program.md"
-      ],
-      "prohibitedScope": [
-        "Production databases and credentials",
-        "Normal GitHub Actions integration-test execution",
-        "Unapproved coverage-domain implementation",
+        "scripts/dev-control.ps1",
+        "docs/work-packages/Issue-371-dev-control-panel.md",
         "PROJECT_STATUS.md",
         "tracker/assignments.json",
-        "ai/handoffs"
+        "ai/handoffs/current.md"
+      ],
+      "prohibitedScope": [
+        "Production systems and credentials",
+        "Application behavior outside local development tooling"
       ]
     }
   ],
