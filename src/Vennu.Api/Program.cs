@@ -16,8 +16,40 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Options;
 using Fido2NetLib;
+using Azure.Identity;
+using Vennu.Data.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var configurationEnvironment = Environment.GetEnvironmentVariable("VENU_CONFIGURATION_ENVIRONMENT");
+if (!string.IsNullOrWhiteSpace(configurationEnvironment))
+{
+    var configurationConnectionString = Environment.GetEnvironmentVariable("VENU_CONFIGURATION_CONNECTION_STRING")
+        ?? builder.Configuration.GetConnectionString("VennuDatabase")
+        ?? throw new InvalidOperationException("VENU_CONFIGURATION_CONNECTION_STRING or ConnectionStrings:VennuDatabase is required when database configuration is enabled.");
+    DatabaseMigrator.Run(configurationConnectionString);
+    IConfigurationSecretProtector? secretProtector = Environment.GetEnvironmentVariable("VENU_CONFIGURATION_KEY_PROVIDER") switch
+    {
+        "AzureKeyVault" => new AzureKeyVaultConfigurationSecretProtector(
+            new Uri(Environment.GetEnvironmentVariable("VENU_CONFIGURATION_KEY_ID")
+                ?? throw new InvalidOperationException("VENU_CONFIGURATION_KEY_ID is required for Azure Key Vault secret protection.")),
+            new DefaultAzureCredential()),
+        "Environment" => new EnvironmentKeyConfigurationSecretProtector(
+            Environment.GetEnvironmentVariable("VENU_CONFIGURATION_LOCAL_KEY")
+                ?? throw new InvalidOperationException("VENU_CONFIGURATION_LOCAL_KEY is required for environment-key secret protection.")),
+        null or "" => null,
+        var provider => throw new InvalidOperationException($"Unsupported VENU_CONFIGURATION_KEY_PROVIDER '{provider}'.")
+    };
+    builder.Configuration.AddVennuDatabaseConfiguration(new VennuDatabaseConfigurationOptions
+    {
+        ConnectionString = configurationConnectionString,
+        EnvironmentName = configurationEnvironment,
+        ApplicationScope = "API",
+        SecretProtector = secretProtector
+    });
+    builder.Configuration.AddEnvironmentVariables();
+    builder.Configuration.AddCommandLine(args);
+}
 
 var adminCorsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
 if (builder.Environment.IsDevelopment() && (adminCorsOrigins is null || adminCorsOrigins.Length == 0))
