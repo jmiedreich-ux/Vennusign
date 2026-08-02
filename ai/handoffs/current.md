@@ -1,34 +1,36 @@
 # Vennu Session Handoff
 
 ## Work Package
-- ID: WP-13.09
-- Status: Complete in proposed merge state
+- ID: WP-13.10
+- Status: In Progress
 - Execution mode: Sequential
 
 ## Git State
-- Branch: `wp/13.09-legacy-token-migration`
-- Issue: #366
-- Pull request: #367
-- CI state: Actions #767 passed affected-area validation; final completion-record validation pending
+- Branch: `wp/13.10-phase-13-closure`
+- Issue: #368
+- Pull request: pending
+- CI state: full non-integration phase-closure validation pending
 
 ## Completed This Session
-- Added customer-session-first Venue Admin authorization with active organization/venue membership checks and feature-derived capabilities.
-- Added global and per-entry legacy-token enable, revoke, expiry, retirement, startup-validation, and constant-time comparison controls.
-- Made secure customer sign-in primary, temporary legacy access secondary, and omitted legacy headers from customer-session requests.
-- Local Venue Admin tests passed 38/38; Actions #767 passed affected API, Venue Admin, and repository validation.
-- Recorded the W3C/WAI-backed access-screen gap analysis and migration architecture.
+- Confirmed WP-13.01 through WP-13.09 are merged.
+- Retired stale integration handoff PR #357 without merging because it would overwrite the current Phase 13 handoff.
+- Narrowed the continuing INT-TESTING-001 claim to its integration-program files.
+- Claimed WP-13.10 with exclusive ownership of shared phase-closure records.
+- Created the Phase 13 closure record and full-validation plan.
 
 ## Remaining Work
-- Validate the final completion-record head, review the full diff, merge PR #367, confirm issue #366 closes, and confirm claim release.
+- Open the WP-13.10 pull request with `full-validation`.
+- Pass the complete non-integration suite on the exact head.
+- Reconcile completion records, release the claim in proposed merge state, obtain ChatGPT approval, and merge.
 
 ## Known Risks or Blockers
 - Integration/live-provider/device validation remains intentionally skipped.
-- INT-TESTING-001 remains a separate Collaborative claim.
+- INT-TESTING-001 remains a separate Collaborative claim limited to its declared files.
 
 ## Exact Next Action
-- Validate and merge PR #367; stop after the fifth completed package without claiming WP-13.10.
+- Open and validate the WP-13.10 phase-closure pull request.
 
 ## Do Not Redo or Reverse
-- Do not expose or persist raw legacy tokens.
-- Do not claim WP-13.10 or implement Phase 14+ in this run.
-- Do not edit INT-TESTING-001 files.
+- Do not reopen or merge stale PR #357.
+- Do not broaden INT-TESTING-001 into shared phase records.
+- Do not create or begin Phase 14 work.
