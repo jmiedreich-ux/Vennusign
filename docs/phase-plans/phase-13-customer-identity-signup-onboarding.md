@@ -1,8 +1,8 @@
-# Phase 13 — Customer Identity, Signup, and Onboarding
+# Phase 13 â€” Customer Identity, Signup, and Onboarding
 
 ## Implementation Status
 
-This phase is approved for sequential implementation. Start with `WP-13.01` only after it has its own claimed GitHub issue, branch, work-package record, and pull request.
+Phase 13 is complete. WP-13.01 through WP-13.10 were implemented sequentially, and the full non-integration phase-closure suite passed in GitHub Actions run #772. Phase 14 and later remain paused.
 
 ## Provisional Roadmap Sequencing
 
@@ -25,25 +25,25 @@ Deliver frictionless customer identity, signup, entitlement, venue setup, and fi
 
 ## Sequential Work Packages
 
-1. **WP-13.01 — Identity, Organization, and Membership Foundation**
+1. **WP-13.01 â€” Identity, Organization, and Membership Foundation**
    Define and persist users, external identities, organizations, organization memberships, venue memberships, ownership, roles, audit baseline, and authorization boundaries.
-2. **WP-13.02 — Customer Authentication Foundation**
+2. **WP-13.02 â€” Customer Authentication Foundation**
    Add Google and Apple sign-in, verified identity/account-linking rules, session boundaries, and email-link fallback/recovery without a password-login flow.
-3. **WP-13.03 — Passkeys, TOTP, and Account Recovery**
+3. **WP-13.03 â€” Passkeys, TOTP, and Account Recovery**
    Add passkey enrollment/sign-in, TOTP enrollment and recovery codes, recent-authentication/step-up rules, and secure recovery behavior.
-4. **WP-13.04 — Tier-Defined Trials and Stripe Entitlements**
+4. **WP-13.04 â€” Tier-Defined Trials and Stripe Entitlements**
    Resolve no-card trial behavior from tier settings, add paid Checkout activation, keep Stripe webhooks authoritative, and enforce venue/screen/feature entitlements.
-5. **WP-13.05 — Public Signup and Resumable Onboarding**
+5. **WP-13.05 â€” Public Signup and Resumable Onboarding**
    Add public signup/sign-in routes and persisted onboarding state for identity, plan selection, entitlement, venue setup, and first-screen progress.
-6. **WP-13.06 — Venue Setup and First-Screen Activation**
+6. **WP-13.06 â€” Venue Setup and First-Screen Activation**
    Add venue details, entitlement-aware initial screen creation, physical display pairing handoff, and a clear distinction between screen creation and an active paired device.
-7. **WP-13.07 — Customer Onboarding Timeline**
+7. **WP-13.07 â€” Customer Onboarding Timeline**
    Add the customer/Venue Admin horizontal timeline: Account, Plan, Venue, First Screen, and Go Live.
-8. **WP-13.08 — Super Admin Onboarding Visibility**
+8. **WP-13.08 â€” Super Admin Onboarding Visibility**
    Add the Super Admin venue-support timeline with onboarding state, plan/trial status, first-screen progress, last activity, and safe operational support actions.
-9. **WP-13.09 — Legacy Venue Access Token Migration**
+9. **WP-13.09 â€” Legacy Venue Access Token Migration**
    Define and implement the compatibility, migration, revoke, and retirement path for config-backed Venue Admin access tokens.
-10. **WP-13.10 — Phase 13 Validation and Closure**
+10. **WP-13.10 â€” Phase 13 Validation and Closure**
     Run the full non-integration regression suite and validate authentication, authorization, tier/trial entitlements, onboarding recovery, Stripe webhook authority, pairing, security, migration, and documentation consistency.
 
 ## Architecture and Security Decisions Assigned to the Foundation
