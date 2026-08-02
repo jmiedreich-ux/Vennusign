@@ -1,0 +1,36 @@
+<Window x:Class="Vennu.DevControl.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Vennu Development Control" Height="390" Width="780" MinHeight="330" MinWidth="680">
+    <DockPanel Margin="20">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="Vennu Development Control" FontSize="22" FontWeight="SemiBold" />
+                <TextBlock Text="Starts and stops only processes launched by this application." Foreground="DimGray" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="16,0,0,0">
+                <Button Content="Start all" Click="StartAll_Click" Margin="16,0,8,0" Padding="14,6" />
+                <Button Content="Stop owned" Click="StopAll_Click" Padding="14,6" />
+            </StackPanel>
+        </StackPanel>
+        <DataGrid x:Name="ServicesGrid" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Service" Binding="{Binding Name}" Width="*" />
+                <DataGridTextColumn Header="Port" Binding="{Binding Port}" Width="60" />
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
+                <DataGridTemplateColumn Header="Actions" Width="320">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Start" Tag="{Binding}" Click="Start_Click" Margin="0,0,8,0" Padding="10,4" />
+                                <Button Content="Stop" Tag="{Binding}" Click="Stop_Click" Margin="0,0,8,0" Padding="10,4" />
+                                <Button Content="Restart" Tag="{Binding}" Click="Restart_Click" Margin="0,0,8,0" Padding="10,4" />
+                                <Button Content="Open" Tag="{Binding}" Click="Open_Click" Padding="10,4" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Window>
