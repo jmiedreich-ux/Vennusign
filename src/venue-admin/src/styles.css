@@ -8,6 +8,7 @@ button, input, select { font: inherit; }
 .access-card h1 { margin: 0; font-size: 2rem; }.access-card p { margin: 0; color: #65776f; line-height: 1.55; }
 .access-card label { font-size: .8rem; font-weight: 750; }.access-card input { border: 1px solid #b7c9bf; border-radius: 12px; padding: 12px; }
 .access-card button { border: 0; border-radius: 12px; padding: 12px; color: #fff; background: #185943; font-weight: 800; cursor: pointer; }
+.venue-access-choice { display: grid; gap: 12px; }.customer-sign-in { display: block; border-radius: 12px; padding: 12px 14px; color: white; background: #173f30; text-align: center; text-decoration: none; font-weight: 800; }.venue-access-choice details { margin-top: 8px; border-top: 1px solid #dbe3df; padding-top: 14px; }.venue-access-choice summary { color: #52675e; cursor: pointer; font-weight: 750; }.venue-access-choice details p { margin-top: 12px; font-size: .82rem; }.venue-access-choice form { display: grid; gap: 10px; margin-top: 12px; }.venue-access-choice a:focus-visible, .venue-access-choice summary:focus-visible { outline: 3px solid #d49d22; outline-offset: 3px; }
 .loading { color: #527066; font-weight: 750; }
 .shell { min-height: 100vh; display: grid; grid-template-columns: 270px minmax(0, 1fr); }
 aside { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: 28px 20px; color: #eaf4ef; background: #123b30; }

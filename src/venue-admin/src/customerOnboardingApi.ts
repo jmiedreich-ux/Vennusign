@@ -61,11 +61,11 @@ export function loadCustomerOnboarding(configuration: VenueAdminConfiguration, s
   return request<CustomerOnboardingSnapshot>(`${configuration.apiBaseUrl}/api/customer-onboarding`, { signal });
 }
 
-export function requestEmailLink(configuration: VenueAdminConfiguration, email: string) {
+export function requestEmailLink(configuration: VenueAdminConfiguration, email: string, returnPath = "/onboarding") {
   return request<void>(`${configuration.apiBaseUrl}/api/customer-auth/email-links`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, returnPath: "/onboarding" })
+    body: JSON.stringify({ email, returnPath })
   });
 }
 
@@ -121,6 +121,6 @@ export function revokeCustomerSession(configuration: VenueAdminConfiguration) {
   return request<void>(`${configuration.apiBaseUrl}/api/customer-auth/session`, { method: "DELETE" });
 }
 
-export function externalSignInUrl(configuration: VenueAdminConfiguration, provider: "google" | "apple") {
-  return `${configuration.apiBaseUrl}/api/customer-auth/external/${provider}?returnPath=${encodeURIComponent("/onboarding")}`;
+export function externalSignInUrl(configuration: VenueAdminConfiguration, provider: "google" | "apple", returnPath = "/onboarding") {
+  return `${configuration.apiBaseUrl}/api/customer-auth/external/${provider}?returnPath=${encodeURIComponent(returnPath)}`;
 }

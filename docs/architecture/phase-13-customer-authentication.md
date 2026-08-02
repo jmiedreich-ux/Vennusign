@@ -32,6 +32,14 @@ WP-13.02 adds passwordless customer authentication without replacing the legacy 
 
 - Super Admin API-key and config-backed Venue Admin token schemes remain separate and unchanged.
 - WP-13.09 owns the compatibility and retirement path for `VenueAdmin:Sessions`.
+
+## WP-13.09 Venue Admin migration and retirement
+
+Venue Admin authorization now prefers the persisted HttpOnly customer session. The server resolves an explicit venue-selection header only after loading that venue and verifying the authenticated user has an active organization or venue membership with content-management capability; otherwise it uses the user's saved onboarding venue. It then emits the existing venue claim and entitlement-derived UI capabilities. A caller cannot choose another organization's venue by supplying an identifier.
+
+The Venue Admin access screen sends unauthenticated customers through the existing passwordless sign-in surface with a validated local return path. Email links, Google/Apple OIDC, and passkey completion preserve that return path; protocol-relative or non-local values fall back to `/onboarding`.
+
+Config-backed `VenueAdmin:Sessions` remain a temporary parallel authentication scheme only. Operations can disable all legacy entries, set a global retirement instant, or disable/revoke/expire individual entries. Accepted tokens retain constant-time comparison and remain configuration-only; they are never persisted, logged, returned, or documented. After the compatibility window is confirmed unused, remove the legacy scheme, header, options, and temporary access disclosure in a separately reviewed change; customer-session authorization remains the durable path.
 - Trial, Stripe entitlement, signup/onboarding state, and customer UI remain WP-13.04 through WP-13.08.
 
 ## UI and function gap analysis

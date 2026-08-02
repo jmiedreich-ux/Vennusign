@@ -136,6 +136,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 - WP-13.06 — Venue Setup and First-Screen Activation
 - WP-13.07 — Customer Onboarding Timeline
 - WP-13.08 — Super Admin Onboarding Visibility
+- WP-13.09 — Legacy Venue Access Token Migration
 
 ## Active Work Package
 
@@ -208,7 +209,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Next Action
 
-After WP-13.08 PR #365 merges and its Sequential claim is released, inspect repository ownership and claim **WP-13.09 — Legacy Venue Access Token Migration** only if unowned. Phase 14+ remains paused.
+Inspect repository ownership before claiming **WP-13.10 — Phase 13 Validation and Closure** in a later sequential run. Phase 14+ remains paused.
 
 ## Phase 05 Work Packages
 

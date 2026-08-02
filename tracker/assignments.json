@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-02T08:02:00Z",
+  "updatedUtc": "2026-08-02T08:17:00Z",
   "activeAssignments": [
     {
       "workPackage": "INT-TESTING-001",
@@ -23,7 +23,7 @@
       ]
     }
   ],
-  "nextAvailableWorkPackage": "WP-13.09",
+  "nextAvailableWorkPackage": "WP-13.10",
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

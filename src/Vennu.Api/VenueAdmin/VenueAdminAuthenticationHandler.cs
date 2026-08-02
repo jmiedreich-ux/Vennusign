@@ -23,8 +23,15 @@ public sealed class VenueAdminAuthenticationHandler : AuthenticationHandler<Venu
             return Task.FromResult(AuthenticateResult.NoResult());
         }
 
+        var utcNow = TimeProvider.GetUtcNow().UtcDateTime;
+        if (!Options.LegacySessionsEnabled || Options.LegacySessionsRetireAfterUtc is DateTime retireAt && retireAt <= utcNow)
+            return Task.FromResult(AuthenticateResult.Fail("Legacy venue access has been retired."));
+
         var suppliedToken = suppliedValues.ToString();
         var session = Options.Sessions.FirstOrDefault(candidate =>
+            candidate.Enabled &&
+            candidate.RevokedUtc is null &&
+            (candidate.ExpiresUtc is null || candidate.ExpiresUtc > utcNow) &&
             candidate.VenueId != Guid.Empty &&
             !string.IsNullOrWhiteSpace(candidate.AccessToken) &&
             TokensMatch(suppliedToken, candidate.AccessToken));
@@ -38,7 +45,8 @@ public sealed class VenueAdminAuthenticationHandler : AuthenticationHandler<Venu
             new(ClaimTypes.NameIdentifier, session.UserId),
             new(ClaimTypes.Name, session.DisplayName),
             new(ClaimTypes.Role, "VenueAdmin"),
-            new(VenueAdminAuthenticationDefaults.VenueIdClaim, session.VenueId.ToString())
+            new(VenueAdminAuthenticationDefaults.VenueIdClaim, session.VenueId.ToString()),
+            new(VenueAdminAuthenticationDefaults.AuthenticationSourceClaim, "legacy-config")
         };
         claims.AddRange(session.Capabilities
             .Where(capability => !string.IsNullOrWhiteSpace(capability))

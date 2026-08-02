@@ -149,12 +149,20 @@ export class VenueAdminApiError extends Error {
   }
 }
 
+function venueFetch(input: RequestInfo | URL, init?: RequestInit) {
+  const headers = new Headers(init?.headers);
+  if (headers.get("X-Vennu-Venue-Token") === "customer-session") {
+    headers.delete("X-Vennu-Venue-Token");
+  }
+  return fetch(input, { ...init, headers, credentials: "include" });
+}
+
 export async function loadVenueAdminSession(
   configuration: VenueAdminConfiguration,
   accessToken: string,
   signal?: AbortSignal
 ): Promise<VenueAdminSession> {
-  const response = await fetch(`${configuration.apiBaseUrl}/api/venue-admin/session`, {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/venue-admin/session`, {
     headers: { "X-Vennu-Venue-Token": accessToken },
     signal
   });
@@ -174,7 +182,7 @@ export async function loadVenueBillingPresentation(
   accessToken: string,
   signal?: AbortSignal
 ): Promise<VenueAdminBillingPresentation> {
-  const response = await fetch(`${configuration.apiBaseUrl}/api/venue-admin/billing/presentation`, {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/venue-admin/billing/presentation`, {
     headers: { "X-Vennu-Venue-Token": accessToken },
     signal
   });
@@ -191,7 +199,7 @@ export async function createCheckoutSession(
   billingInterval: CheckoutBillingInterval,
   signal?: AbortSignal
 ): Promise<string> {
-  const response = await fetch(`${configuration.apiBaseUrl}/api/venue-admin/billing/checkout-session`, {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/venue-admin/billing/checkout-session`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -219,7 +227,7 @@ export async function createBillingPortalSession(
   accessToken: string,
   signal?: AbortSignal
 ): Promise<string> {
-  const response = await fetch(`${configuration.apiBaseUrl}/api/venue-admin/billing/portal-session`, {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/venue-admin/billing/portal-session`, {
     method: "POST",
     headers: { "X-Vennu-Venue-Token": accessToken },
     signal
@@ -245,7 +253,7 @@ export async function createHaasCheckoutSession(
   termMonths: number,
   signal?: AbortSignal
 ): Promise<string> {
-  const response = await fetch(`${configuration.apiBaseUrl}/api/venue-admin/billing/haas-checkout-session`, {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/venue-admin/billing/haas-checkout-session`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -274,7 +282,7 @@ async function menuRequest(
   path = "",
   init?: RequestInit
 ) {
-  const response = await fetch(`${configuration.apiBaseUrl}/api/venue-admin/menus${path}`, {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/venue-admin/menus${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
@@ -423,7 +431,7 @@ async function venueOperationRequest(
   path = "",
   init?: RequestInit
 ) {
-  const response = await fetch(
+  const response = await venueFetch(
     `${configuration.apiBaseUrl}/api/venue-admin/venues/${venueId}/${area}${path}`,
     {
       ...init,
@@ -476,7 +484,7 @@ export async function removeVideoWall(configuration: VenueAdminConfiguration, ac
   await screenRequest(configuration, accessToken, venueId, `/video-walls/${encodeURIComponent(name)}`, { method: "DELETE" });
 }
 export async function claimPairingCode(configuration: VenueAdminConfiguration, accessToken: string, _venueId: string, code: string): Promise<{ linked: boolean; screenId: string; venueId: string }> {
-  const response = await fetch(`${configuration.apiBaseUrl}/api/venue-admin/screens/pairing/${encodeURIComponent(code)}/claim`, {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/venue-admin/screens/pairing/${encodeURIComponent(code)}/claim`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-Vennu-Venue-Token": accessToken }
   });
