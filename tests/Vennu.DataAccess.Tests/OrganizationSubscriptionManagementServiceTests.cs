@@ -46,6 +46,24 @@ public sealed class OrganizationSubscriptionManagementServiceTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.EnsureCanAddVenueAsync(organizationId));
     }
 
+    [Fact]
+    public async Task ExpireTrials_CancelsExpiredOrganizationEntitlement()
+    {
+        var subscription = new OrganizationSubscription
+        {
+            OrganizationId = Guid.NewGuid(), TierId = Guid.NewGuid(), Status = "trialing", TrialEndsAt = UtcNow.UtcDateTime.AddMinutes(-1)
+        };
+        var projections = new ProjectionFake();
+        var service = new OrganizationSubscriptionManagementService(
+            new OrganizationSubscriptionRepositoryFake(subscription),
+            new TierRepositoryFake(new SubscriptionTier { Id = subscription.TierId }),
+            new VenueRepositoryFake([]), projections, new FixedTimeProvider());
+
+        Assert.Equal(1, await service.ExpireTrialsAsync());
+        Assert.Equal("canceled", subscription.Status);
+        Assert.Same(subscription, Assert.Single(projections.Items));
+    }
+
     private sealed class FixedTimeProvider : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => UtcNow;
@@ -87,7 +105,12 @@ public sealed class OrganizationSubscriptionManagementServiceTests
 
     private sealed class ProjectionFake : IOrganizationSubscriptionProjectionService
     {
-        public Task SyncAsync(OrganizationSubscription subscription, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public List<OrganizationSubscription> Items { get; } = [];
+        public Task SyncAsync(OrganizationSubscription subscription, CancellationToken cancellationToken = default)
+        {
+            Items.Add(subscription);
+            return Task.CompletedTask;
+        }
         public Task<VenueSubscription> SyncVenueAsync(Guid venueId, OrganizationSubscription subscription, CancellationToken cancellationToken = default) =>
             Task.FromResult(new VenueSubscription { VenueId = venueId, TierId = subscription.TierId, Status = subscription.Status });
     }

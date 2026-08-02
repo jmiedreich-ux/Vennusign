@@ -21,9 +21,20 @@ public sealed class OrganizationSubscriptionProjectionService(
         ArgumentNullException.ThrowIfNull(subscription);
         var organizationVenues = (await venues.GetAllAsync(cancellationToken).ConfigureAwait(false))
             .Where(venue => venue.OrganizationId == subscription.OrganizationId)
+            .OrderBy(venue => venue.Id)
             .ToArray();
+        var existing = await venueSubscriptions.GetAllAsync(cancellationToken).ConfigureAwait(false);
+        var stripeOwnerVenueId = organizationVenues
+            .Select(venue => existing.FirstOrDefault(item =>
+                item.VenueId == venue.Id &&
+                string.Equals(item.StripeSubscriptionId, subscription.StripeSubscriptionId, StringComparison.Ordinal)))
+            .FirstOrDefault(item => item is not null)?.VenueId ?? organizationVenues.FirstOrDefault()?.Id;
         foreach (var venue in organizationVenues)
-            await SyncVenueAsync(venue.Id, subscription, cancellationToken).ConfigureAwait(false);
+            await SyncVenueCoreAsync(
+                venue.Id,
+                subscription,
+                venue.Id == stripeOwnerVenueId,
+                cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<VenueSubscription> SyncVenueAsync(
@@ -32,10 +43,31 @@ public sealed class OrganizationSubscriptionProjectionService(
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(subscription);
+        var organizationVenueIds = (await venues.GetAllAsync(cancellationToken).ConfigureAwait(false))
+            .Where(venue => venue.OrganizationId == subscription.OrganizationId)
+            .Select(venue => venue.Id)
+            .ToHashSet();
+        var stripeOwner = (await venueSubscriptions.GetAllAsync(cancellationToken).ConfigureAwait(false))
+            .FirstOrDefault(item =>
+                organizationVenueIds.Contains(item.VenueId) &&
+                string.Equals(item.StripeSubscriptionId, subscription.StripeSubscriptionId, StringComparison.Ordinal));
+        return await SyncVenueCoreAsync(
+            venueId,
+            subscription,
+            stripeOwner is null || stripeOwner.VenueId == venueId,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<VenueSubscription> SyncVenueCoreAsync(
+        Guid venueId,
+        OrganizationSubscription subscription,
+        bool includeLegacyStripeId,
+        CancellationToken cancellationToken)
+    {
         var existing = await venueSubscriptions.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
         var projection = existing ?? new VenueSubscription { VenueId = venueId, CreatedUtc = subscription.CreatedUtc };
         projection.TierId = subscription.TierId;
-        projection.StripeSubscriptionId = subscription.StripeSubscriptionId;
+        projection.StripeSubscriptionId = includeLegacyStripeId ? subscription.StripeSubscriptionId : null;
         projection.Status = subscription.Status;
         projection.TrialEndsAt = subscription.TrialEndsAt;
         projection.CurrentPeriodEnd = subscription.CurrentPeriodEnd;

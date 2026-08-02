@@ -7,6 +7,7 @@ public interface IOrganizationSubscriptionManagementService
 {
     Task<OrganizationSubscription> StartTrialAsync(Guid organizationId, Guid tierId, CancellationToken cancellationToken = default);
     Task EnsureCanAddVenueAsync(Guid organizationId, CancellationToken cancellationToken = default);
+    Task<int> ExpireTrialsAsync(CancellationToken cancellationToken = default);
 }
 
 public sealed class OrganizationSubscriptionManagementService(
@@ -61,6 +62,26 @@ public sealed class OrganizationSubscriptionManagementService(
         var current = await venues.GetAllAsync(cancellationToken).ConfigureAwait(false);
         if (current.Count(venue => venue.OrganizationId == organizationId) >= tier.MaxVenues)
             throw new InvalidOperationException("The tier venue limit has been reached.");
+    }
+
+    public async Task<int> ExpireTrialsAsync(CancellationToken cancellationToken = default)
+    {
+        var utcNow = timeProvider.GetUtcNow().UtcDateTime;
+        var expired = (await subscriptions.GetAllAsync(cancellationToken).ConfigureAwait(false))
+            .Where(subscription =>
+                subscription.Status.Equals("trialing", StringComparison.OrdinalIgnoreCase) &&
+                subscription.TrialEndsAt is not null &&
+                subscription.TrialEndsAt <= utcNow)
+            .ToArray();
+        foreach (var subscription in expired)
+        {
+            subscription.Status = "canceled";
+            subscription.UpdatedUtc = utcNow;
+            if (!await subscriptions.SaveAsync(subscription, cancellationToken).ConfigureAwait(false))
+                throw new InvalidOperationException("The expired organization subscription could not be persisted.");
+            await projections.SyncAsync(subscription, cancellationToken).ConfigureAwait(false);
+        }
+        return expired.Length;
     }
 
     internal static void EnsureEntitled(OrganizationSubscription subscription, DateTime utcNow)
