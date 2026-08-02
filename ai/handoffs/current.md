@@ -1,34 +1,34 @@
 # Vennu Session Handoff
 
 ## Work Package
-- ID: WP-13.07
-- Status: Complete in proposed merge state
+- ID: WP-13.08
+- Status: In Progress
 - Execution mode: Sequential
 
 ## Git State
-- Branch: `wp/13.07-customer-onboarding-timeline`
-- Issue: #362
-- Pull request: #363
-- CI state: Actions #761 passed affected-area validation; final completion-record validation pending
+- Branch: `wp/13.08-super-admin-onboarding-visibility`
+- Issue: #364
+- Pull request: not opened
+- CI state: not started
 
 ## Completed This Session
-- Added the five-step, snapshot-derived onboarding timeline with explicit Complete, Current, and Upcoming states.
-- Added completed-count/current-step summaries, last-saved context, an in-page resume link, visible focus, and responsive connected/stacked layouts.
-- Added focused read-only projection tests; local production build and all 36 frontend tests passed.
-- Actions #761 passed Venue Admin and repository-record validation; unrelated application and TV jobs skipped.
-- Recorded the W3C/WAI-backed UI/function gap analysis and architecture decision.
+- Merged WP-13.07 through PR #363 and confirmed issue #362 closed and its claim released.
+- Verified no WP-13.08 issue, branch, PR, commit, or tracker claim existed.
+- Created and claimed the bounded read-only Super Admin visibility package.
+- Recorded the W3C/WAI-backed UI/function gap analysis.
 
 ## Remaining Work
-- Validate the final completion-record head, review the full diff, approve, merge, confirm #362 closes, and confirm claim release.
+- Implement the protected support projection, Super Admin visibility UI, focused tests, and architecture record.
+- Open, validate, review, approve, merge, close #364, and release the claim.
 
 ## Known Risks or Blockers
-- Integration/live-provider/device validation remains intentionally skipped and is not applicable to this read-only UI package.
+- Integration/live-provider/device validation remains intentionally skipped.
 - INT-TESTING-001 remains a separate Collaborative claim.
 
 ## Exact Next Action
-- Validate and merge PR #363; then inspect ownership before claiming WP-13.08.
+- Implement WP-13.08 on the claimed branch.
 
 ## Do Not Redo or Reverse
-- Do not add a second progress authority or mutate onboarding state.
-- Do not implement Super Admin visibility, WP-13.08+, or Phase 14+.
+- Do not add a second progress authority or any support mutation.
+- Do not implement WP-13.09+, or Phase 14+.
 - Do not edit INT-TESTING-001 files.

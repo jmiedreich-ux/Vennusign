@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-02T07:48:00Z",
+  "updatedUtc": "2026-08-02T07:52:00Z",
   "activeAssignments": [
     {
       "workPackage": "INT-TESTING-001",
@@ -21,9 +21,37 @@
         "Normal GitHub Actions integration-test execution",
         "Unapproved coverage-domain implementation"
       ]
+    },
+    {
+      "workPackage": "WP-13.08",
+      "executionMode": "Sequential",
+      "owner": "ChatGPT scheduled automation",
+      "issue": 364,
+      "branch": "wp/13.08-super-admin-onboarding-visibility",
+      "claimedUtc": "2026-08-02T07:52:00Z",
+      "writableScope": [
+        "src/Vennu.Api",
+        "src/Vennu.Data",
+        "src/admin",
+        "tests/Vennu.Api.Tests",
+        "tests/Vennu.DataAccess.Tests",
+        "docs/work-packages/WP-13.08-super-admin-onboarding-visibility.md",
+        "docs/architecture/phase-13-customer-onboarding.md",
+        "PROJECT_STATUS.md",
+        "tracker/assignments.json",
+        "ai/handoffs/current.md",
+        "ai/handoffs/archive"
+      ],
+      "prohibitedScope": [
+        "Customer onboarding mutation, entitlement mutation, identity mutation, pairing mutation, or subscription mutation",
+        "WP-13.09 and later work packages",
+        "Phase 14 and later",
+        "INT-TESTING-001 implementation files",
+        "Integration, live-provider, live-device, hosted-infrastructure, container, and cross-system tests"
+      ]
     }
   ],
-  "nextAvailableWorkPackage": "WP-13.08",
+  "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
