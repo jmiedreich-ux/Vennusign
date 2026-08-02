@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-02T08:17:00Z",
+  "updatedUtc": "2026-08-02T21:53:00Z",
   "activeAssignments": [
     {
       "workPackage": "INT-TESTING-001",
@@ -11,19 +11,41 @@
       "claimedUtc": "2026-08-02T00:10:00Z",
       "writableScope": [
         "tests/Vennu.Data.IntegrationTests",
-        "docs/work-packages/INT-TESTING-001-azure-sql-integration-program.md",
-        "PROJECT_STATUS.md",
-        "tracker/assignments.json",
-        "ai/handoffs/current.md"
+        "docs/work-packages/INT-TESTING-001-azure-sql-integration-program.md"
       ],
       "prohibitedScope": [
         "Production databases and credentials",
         "Normal GitHub Actions integration-test execution",
-        "Unapproved coverage-domain implementation"
+        "Unapproved coverage-domain implementation",
+        "PROJECT_STATUS.md",
+        "tracker/assignments.json",
+        "ai/handoffs"
+      ]
+    },
+    {
+      "workPackage": "WP-13.10",
+      "executionMode": "Sequential",
+      "owner": "Codex",
+      "issue": 368,
+      "branch": "wp/13.10-phase-13-closure",
+      "claimedUtc": "2026-08-02T21:53:00Z",
+      "writableScope": [
+        "docs/work-packages/WP-13.10-phase-13-validation-and-closure.md",
+        "docs/phase-plans/phase-13-customer-identity-signup-onboarding.md",
+        "docs/architecture/phase-13-customer-authentication.md",
+        "PROJECT_STATUS.md",
+        "tracker/assignments.json",
+        "ai/handoffs/current.md",
+        "ai/handoffs/archive"
+      ],
+      "prohibitedScope": [
+        "INT-TESTING-001 implementation files",
+        "Phase 14 and later implementation",
+        "Integration and live-provider test execution"
       ]
     }
   ],
-  "nextAvailableWorkPackage": "WP-13.10",
+  "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
