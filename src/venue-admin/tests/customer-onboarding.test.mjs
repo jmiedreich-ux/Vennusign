@@ -2,8 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [app, api, passkey, main, styles] = await Promise.all([
+const [app, timeline, api, passkey, main, styles] = await Promise.all([
   readFile(new URL("../src/CustomerOnboardingApp.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../src/CustomerOnboardingTimeline.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/customerOnboardingApi.ts", import.meta.url), "utf8"),
   readFile(new URL("../src/passkeySignIn.ts", import.meta.url), "utf8"),
   readFile(new URL("../src/main.tsx", import.meta.url), "utf8"),
@@ -37,7 +38,7 @@ test("onboarding is resumable, credentialed, and webhook-authoritative", () => {
 test("entry surface records essential accessible states", () => {
   assert.match(app, /role="status"/);
   assert.match(app, /role="alert"/);
-  assert.match(app, /aria-label="Onboarding progress"/);
+  assert.match(timeline, /aria-label="Customer onboarding timeline"/);
   assert.match(app, /We could not safely load your onboarding yet/);
   assert.match(app, /Refresh onboarding/);
   assert.match(styles, /:focus-visible/);
@@ -45,4 +46,20 @@ test("entry surface records essential accessible states", () => {
   assert.match(passkey, /navigator\.credentials\.get/);
   assert.match(app, /pattern="\[0-9\]\{6\}"/);
   assert.match(app, /Refresh device status/);
+});
+
+test("customer timeline is ordered, resumable, and server-authoritative", () => {
+  assert.match(timeline, /Account/);
+  assert.match(timeline, /Plan/);
+  assert.match(timeline, /Venue/);
+  assert.match(timeline, /First Screen/);
+  assert.match(timeline, /Go Live/);
+  assert.match(timeline, /aria-current=\{isCurrent \? "step"/);
+  assert.match(timeline, /Complete/);
+  assert.match(timeline, /Current/);
+  assert.match(timeline, /Upcoming/);
+  assert.match(timeline, /Last saved/);
+  assert.match(timeline, /#onboarding-current-task/);
+  assert.match(timeline, /onboarding\.progress/);
+  assert.doesNotMatch(timeline, /fetch\(|request\(|onClick/);
 });

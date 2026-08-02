@@ -56,3 +56,9 @@ Screen creation, pairing, and activity are distinct states:
 3. `Go Live` completes only from authoritative screen status `Online`; refreshing onboarding reads that server state and no browser event can simulate it.
 
 Expired codes leave durable venue progress unchanged and the UI instructs the user to request a fresh code on the display. General unpair, archive, replace, transfer, and stale-device remediation remains issue #345 rather than expanding this initial-activation package.
+
+## WP-13.07 customer timeline projection
+
+The customer/Venue Admin timeline is a read-only projection of `CustomerOnboardingSnapshot`; it does not persist, infer, or mutate progress. It always renders Account, Plan, Venue, First Screen, and Go Live in that order, labels every step Complete, Current, or Upcoming, and places `aria-current="step"` only on the incomplete server-selected current step. A fully Online journey has five completed steps and no artificial current mutation.
+
+The component shows completed count, current-step explanation, and the snapshot's last-saved time. One in-page link moves keyboard focus to the current task, avoiding duplicate app navigation or misleading edit affordances on completed steps. Desktop uses a connected horizontal sequence; narrow layouts retain the same ordered semantics in stacked cards. Signed-out, loading, and unavailable behavior stays owned by the surrounding customer-entry surface.

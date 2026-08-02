@@ -17,14 +17,7 @@ import {
   type PublicOnboardingPlan
 } from "./customerOnboardingApi";
 import { signInWithPasskey } from "./passkeySignIn";
-
-const steps = [
-  ["account", "account", "Account"],
-  ["plan", "plan", "Plan"],
-  ["venue", "venue", "Venue"],
-  ["firstScreen", "first-screen", "First Screen"],
-  ["goLive", "go-live", "Go Live"]
-] as const;
+import CustomerOnboardingTimeline from "./CustomerOnboardingTimeline";
 
 export default function CustomerOnboardingApp() {
   const configuration = useMemo(loadVenueAdminConfiguration, []);
@@ -188,13 +181,9 @@ export default function CustomerOnboardingApp() {
         <h1 id="onboarding-heading">Your opening checklist</h1>
         <p>Progress saves automatically. Entitlement always comes from Vennu’s verified subscription state.</p>
       </div>
-      <ol className="customer-onboarding__steps" aria-label="Onboarding progress">
-        {steps.map(([key, routeKey, label], index) => <li key={key} className={onboarding.progress[key] ? "complete" : onboarding.currentStep === routeKey ? "current" : ""}>
-          <span>{onboarding.progress[key] ? "✓" : index + 1}</span><strong>{label}</strong>
-        </li>)}
-      </ol>
+      <CustomerOnboardingTimeline onboarding={onboarding} />
 
-      {!onboarding.organizationId ? <form className="customer-onboarding__panel" onSubmit={createOrganization}>
+      <div id="onboarding-current-task" tabIndex={-1}>{!onboarding.organizationId ? <form className="customer-onboarding__panel" onSubmit={createOrganization}>
         <span>Account</span><h2>Name your organization</h2>
         <p>This is the billing and ownership home for all of your venues.</p>
         <label htmlFor="organizationName">Organization name</label>
@@ -245,7 +234,7 @@ export default function CustomerOnboardingApp() {
         <p>{onboarding.firstScreenStatus === "online" ? "Vennu received the player heartbeat. This onboarding journey is ready for the next timeline release." : "The screen record is linked, but pairing alone does not mean the device is active. Start the player and keep it connected until it reports Online."}</p>
         <dl className="customer-onboarding__device-status"><div><dt>Pairing</dt><dd>Linked</dd></div><div><dt>Device</dt><dd>{onboarding.firstScreenStatus === "online" ? "Online" : "Offline / waiting"}</dd></div>{onboarding.firstScreenLastSeenUtc ? <div><dt>Last seen</dt><dd>{new Date(onboarding.firstScreenLastSeenUtc).toLocaleString()}</dd></div> : null}</dl>
         <button type="button" onClick={refreshOnboarding} disabled={busy === "refresh"}>{busy === "refresh" ? "Refreshing…" : "Refresh device status"}</button>
-      </section>}
+      </section>}</div>
     </section>}
   </main>;
 }
