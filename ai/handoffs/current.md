@@ -1,37 +1,34 @@
 # Vennu Session Handoff
 
 ## Work Package
-- ID: WP-13.06
-- Status: Complete in proposed merge state
+- ID: WP-13.07
+- Status: In Progress
 - Execution mode: Sequential
 
 ## Git State
-- Branch: `wp/13.06-venue-first-screen`
-- Issue: #360
-- Pull request: #361
-- Implementation head: `84d76ec9be768224dca4c87d84905b7734d25285`
-- CI state: affected-area Actions #757 passed; final completion-record exact-head validation and ChatGPT review remain required.
+- Branch: `wp/13.07-customer-onboarding-timeline`
+- Issue: #362
+- Pull request: not opened
+- CI state: not started
 
 ## Completed This Session
-- Added customer-owned first-venue creation with authoritative organization entitlement and tier venue limits.
-- Added server-bound first-display code claim with screen limits and invalid/expired/claimed/assigned recovery.
-- Added durable VenueId/FirstScreenId progress and separate paired-offline versus Online/go-live state.
-- Added W3C/WAI-backed venue/pairing UI, focused data/frontend tests, and architecture records.
-- Passed affected API/data Release builds/unit tests, repository validation, and Venue Admin build/tests in Actions #757.
-- Released the WP-13.06 Sequential claim in the proposed merge state.
+- Merged WP-13.06 through PR #361 and confirmed its issue closed and claim released.
+- Verified no WP-13.07 issue, branch, PR, commit, or tracker claim existed.
+- Created and claimed the bounded read-only timeline package.
+- Recorded the W3C/WAI-backed UI/function gap analysis.
 
 ## Remaining Work
-- Validate and review the final exact PR #361 head, then merge and close issue #360.
-- Claim WP-13.07 only after merge and a fresh ownership inspection.
+- Implement the timeline component, responsive styles, and focused frontend tests.
+- Open, validate, review, approve, merge, close #362, and release the claim.
 
 ## Known Risks or Blockers
-- Live device, Azure SQL, credentialed, hosted-infrastructure, container, signing/store, physical-device, and cross-system behavior remains intentionally unvalidated.
-- INT-TESTING-001 remains a separate Collaborative claim and was not modified.
+- Integration/live-provider/device validation remains intentionally skipped and is not applicable to this read-only UI package.
+- INT-TESTING-001 remains a separate Collaborative claim.
 
 ## Exact Next Action
-- Validate and approve the final PR #361 head; merge it if clean, then inspect ownership before WP-13.07.
+- Implement the WP-13.07 timeline on the claimed branch.
 
 ## Do Not Redo or Reverse
-- Do not create a duplicate logical screen or mark Go Live from pairing alone; Online screen status is authoritative.
-- Do not implement general screen lifecycle remediation, WP-13.07+, or Phase 14+.
-- Do not run integration tests or edit INT-TESTING-001 implementation files.
+- Do not add a second progress authority or mutate onboarding state.
+- Do not implement Super Admin visibility, WP-13.08+, or Phase 14+.
+- Do not edit INT-TESTING-001 files.

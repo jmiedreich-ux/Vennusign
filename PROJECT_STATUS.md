@@ -137,6 +137,8 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
+**WP-13.07 — Customer Onboarding Timeline** is in progress on Sequential issue #362 and branch `wp/13.07-customer-onboarding-timeline`. It owns only the customer/Venue Admin read-only timeline UI, focused frontend validation, and synchronized records. WP-13.08 and Phase 14+ remain paused.
+
 **INT-TESTING-001 — Azure SQL Integration Testing Program** is active in Collaborative mode. Azure SQL integration runs remain skipped and non-blocking outside explicitly recorded collaborative execution.
 
 ## Phase 04 Result
@@ -206,7 +208,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Next Action
 
-After PR #361 merges, claim **WP-13.07 — Customer Onboarding Timeline** sequentially only if no competing owner exists. Phase 14+ remains paused.
+Complete **WP-13.07 — Customer Onboarding Timeline** on issue #362; do not claim WP-13.08 until its PR merges and the Sequential claim is released. Phase 14+ remains paused.
 
 ## Phase 05 Work Packages
 
