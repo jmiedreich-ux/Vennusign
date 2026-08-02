@@ -60,6 +60,13 @@ export type RevenueTrend = {
 export type OperationalEvent = {
   id: string; venueId: string; venueName: string; eventType: string; summary: string; occurredUtc: string;
 };
+export type OnboardingSupportItem = {
+  userId: string; customerName: string; customerEmail: string;
+  organizationId?: string; organizationName?: string; venueId?: string; venueName?: string;
+  tierId?: string; tierName?: string; subscriptionStatus: string; trialEndsAt?: string;
+  firstScreenId?: string; firstScreenName?: string; firstScreenStatus: "not-paired" | "paired-offline" | "online";
+  firstScreenLastSeenUtc?: string; lastActivityUtc: string;
+};
 export type DateRangePromotion = {
   id: string; venueId: string; name: string; startLocalDate: string; endLocalDate: string;
   targetLayout?: string; title?: string; body?: string; priority: number; isEnabled: boolean;
@@ -289,6 +296,21 @@ export async function loadVenueDirectory(configuration: AdminConfiguration, apiK
   });
   if (!response.ok) throw new AdminApiError(response.status, "Unable to load venue directory.");
   return response.json() as Promise<VenueDirectoryItem[]>;
+}
+
+export async function loadOnboardingSupport(
+  configuration: AdminConfiguration,
+  apiKey: string,
+  search = "",
+  signal?: AbortSignal
+): Promise<OnboardingSupportItem[]> {
+  const parameters = new URLSearchParams();
+  if (search.trim()) parameters.set("search", search.trim());
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/onboarding?${parameters}`, {
+    headers: { "X-Vennu-Admin-Key": apiKey }, signal
+  });
+  if (!response.ok) throw new AdminApiError(response.status, response.status === 403 ? "This Super Admin session cannot view customer onboarding." : "Unable to load customer onboarding support.");
+  return response.json() as Promise<OnboardingSupportItem[]>;
 }
 
 export async function createVenue(

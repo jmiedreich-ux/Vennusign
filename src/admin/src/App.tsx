@@ -7,10 +7,12 @@ import VenueDetail from "./VenueDetail";
 import TierManagement from "./TierManagement";
 import FeatureMatrix from "./FeatureMatrix";
 import OperationalDashboard from "./OperationalDashboard";
+import OnboardingSupport from "./OnboardingSupport";
 
 const routes = [
   { path: "dashboard", label: "Dashboard", description: "Revenue and operational health" },
   { path: "venues", label: "Venues", description: "Venue directory and support context" },
+  { path: "onboarding", label: "Onboarding", description: "Customer journey support visibility" },
   { path: "tiers", label: "Tiers", description: "Tier catalogue and billing mapping" },
   { path: "features", label: "Features", description: "Feature access matrix" }
 ] as const;
@@ -84,6 +86,8 @@ export default function App() {
             : <VenueDirectory configuration={configuration} apiKey={apiKey} onSelectVenue={setSelectedVenueId} />
           : route.path === "tiers"
             ? <TierManagement configuration={configuration} apiKey={apiKey} />
+          : route.path === "onboarding"
+            ? <OnboardingSupport configuration={configuration} apiKey={apiKey} />
           : route.path === "features"
             ? <FeatureMatrix configuration={configuration} apiKey={apiKey} />
           : null}
