@@ -10,7 +10,7 @@
       "branch": "issue/371-dev-control-panel",
       "claimedUtc": "2026-08-03T00:00:00Z",
       "writableScope": [
-        "scripts/dev-control.ps1",
+        "tools/Vennu.DevControl",
         "docs/work-packages/Issue-371-dev-control-panel.md",
         "PROJECT_STATUS.md",
         "tracker/assignments.json",
