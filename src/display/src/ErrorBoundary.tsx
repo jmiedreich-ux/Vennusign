@@ -1,4 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import PlayerStateScreen from './PlayerStateScreen';
+import { getDisplayStatePresentation } from './displayPresentation.mjs';
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -24,12 +26,7 @@ export default class ErrorBoundary extends Component<
 
   public render(): ReactNode {
     if (this.state.hasError) {
-      return (
-        <main role="alert">
-          <h1>Display unavailable</h1>
-          <p>An unexpected error occurred. Reload the display to try again.</p>
-        </main>
-      );
+      return <PlayerStateScreen {...getDisplayStatePresentation('unexpected')} onAction={() => window.location.reload()} />;
     }
 
     return this.props.children;

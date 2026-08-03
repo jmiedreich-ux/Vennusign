@@ -3,6 +3,8 @@ import PairingPage from './PairingPage';
 import ProvisioningPage from './ProvisioningPage';
 import { readPlatformBootstrap, resolvePlatformLaunch } from './platformLaunch.mjs';
 import { resolveDisplayRoute } from './routing';
+import PlayerStateScreen from './PlayerStateScreen';
+import { getDisplayStatePresentation } from './displayPresentation.mjs';
 
 export default function App() {
   const resetPairing = new URLSearchParams(window.location.search).get('vennuReset') === '1';
@@ -19,12 +21,7 @@ export default function App() {
   }
 
   if (route.kind === 'not-found' || route.kind === 'provision') {
-    return (
-      <main>
-        <h1>Display not found</h1>
-        <p>Use a display URL with a screen identifier.</p>
-      </main>
-    );
+    return <PlayerStateScreen {...getDisplayStatePresentation('route-not-found')} />;
   }
 
   return <DisplayPage screenId={route.screenId} platform={launch.platform} appVersion={launch.appVersion} />;

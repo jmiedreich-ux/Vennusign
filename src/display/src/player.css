@@ -3,4 +3,38 @@ html, body, #root { width: 100%; height: 100%; margin: 0; overflow: hidden; over
 body { position: fixed; inset: 0; background: #111315; }
 #root { position: relative; contain: layout paint size; }
 .player-status { position: fixed; z-index: 200; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
-.player-status--offline { left: max(1rem, env(safe-area-inset-left)); bottom: max(1rem, env(safe-area-inset-bottom)); width: auto; height: auto; max-width: calc(100vw - 2rem); padding: .6rem .8rem; overflow: visible; color: #fff; background: rgba(0,0,0,.82); font: 600 1rem/1.3 system-ui, sans-serif; }
+.player-status--connection, .player-status--offline { display: flex; align-items: center; gap: .65rem; left: max(1rem, env(safe-area-inset-left)); width: auto; height: auto; max-width: calc(100vw - 2rem); padding: .7rem .9rem; overflow: visible; color: #fff; background: rgba(7,16,19,.92); border: 1px solid rgba(255,255,255,.22); border-radius: .7rem; box-shadow: 0 .5rem 2rem rgba(0,0,0,.28); font: 650 clamp(.85rem, 1.4vw, 1rem)/1.35 Inter, system-ui, sans-serif; }
+.player-status--connection { top: max(1rem, env(safe-area-inset-top)); }
+.player-status--offline { bottom: max(1rem, env(safe-area-inset-bottom)); }
+.player-status__heartbeat { flex: 0 0 auto; width: .7rem; height: .7rem; border-radius: 50%; background: #75e6a4; box-shadow: 0 0 0 .25rem rgba(117,230,164,.16); }
+.player-status__heartbeat--working { background: #ffcf70; box-shadow: 0 0 0 .25rem rgba(255,207,112,.16); animation: player-heartbeat 1.5s ease-out infinite; }
+.player-status__heartbeat--offline { background: #ff9f89; box-shadow: 0 0 0 .25rem rgba(255,159,137,.14); }
+
+.player-state-screen { min-height: 100%; display: grid; place-items: center; padding: max(2rem, 7vh) max(2rem, 7vw); overflow: hidden; color: #f8f5e9; background: radial-gradient(circle at 50% 0%, #18323a 0%, #0b1b20 34%, #071013 72%); font-family: Inter, system-ui, sans-serif; text-align: center; }
+.player-state-screen::before { content: ''; position: fixed; inset: -25%; pointer-events: none; background: radial-gradient(circle, rgba(0,229,255,.09), transparent 55%); }
+.player-state-screen--error::before { background: radial-gradient(circle, rgba(255,159,137,.09), transparent 55%); }
+.player-state-screen__panel { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; width: min(54rem, 100%); }
+.player-state-screen__mark { display: grid; place-items: center; width: clamp(4.5rem, 8vw, 6.5rem); aspect-ratio: 1; margin-bottom: clamp(1.2rem, 3vh, 2rem); border: 1px solid rgba(255,255,255,.2); border-radius: 50%; background: rgba(255,255,255,.055); box-shadow: inset 0 0 2rem rgba(0,229,255,.06), 0 1rem 4rem rgba(0,0,0,.22); }
+.player-state-screen__heartbeat { width: 1rem; height: 1rem; border-radius: 50%; background: #00e5ff; box-shadow: 0 0 0 .5rem rgba(0,229,255,.12); animation: player-heartbeat 1.5s ease-out infinite; }
+.player-state-screen--error .player-state-screen__heartbeat { background: #ff9f89; box-shadow: 0 0 0 .5rem rgba(255,159,137,.12); animation: none; }
+.player-state-screen__eyebrow { margin: 0 0 .75rem; color: #87eaf4; font-size: clamp(.85rem, 1.5vw, 1.1rem); font-weight: 800; letter-spacing: .17em; text-transform: uppercase; }
+.player-state-screen--error .player-state-screen__eyebrow { color: #ffb4a4; }
+.player-state-screen h1 { margin: 0; color: #fff; font-size: clamp(2.4rem, 6vw, 5.2rem); line-height: 1.02; letter-spacing: -.035em; text-wrap: balance; }
+.player-state-screen__message { max-width: 36em; margin: clamp(1.1rem, 2.5vh, 1.7rem) 0 0; color: #c8d7da; font-size: clamp(1.05rem, 2vw, 1.55rem); line-height: 1.55; text-wrap: balance; }
+.player-state-screen__action { min-height: 3.5rem; margin-top: clamp(1.4rem, 3.5vh, 2.2rem); padding: .8rem 1.45rem; border: 2px solid transparent; border-radius: .75rem; color: #071013; background: #8debf4; font: 800 clamp(1rem, 1.7vw, 1.2rem)/1 Inter, system-ui, sans-serif; cursor: pointer; }
+.player-state-screen__action:hover { background: #b4f4fa; }
+.player-state-screen__action:focus-visible { outline: 4px solid #fff; outline-offset: 4px; }
+
+@keyframes player-heartbeat {
+  0%, 45%, 100% { transform: scale(1); box-shadow: 0 0 0 .35rem rgba(0,229,255,.12); }
+  15% { transform: scale(1.18); box-shadow: 0 0 0 .8rem rgba(0,229,255,.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-state-screen__heartbeat, .player-status__heartbeat--working { animation: none; }
+}
+
+@media (max-width: 640px) {
+  .player-state-screen { padding: 2rem 1.25rem; }
+  .player-status--connection, .player-status--offline { right: 1rem; max-width: none; }
+}
