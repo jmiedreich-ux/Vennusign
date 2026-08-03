@@ -1,7 +1,31 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-03T14:00:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-03T15:00:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "Issue-398",
+      "executionMode": "Collaborative",
+      "owner": "GitHub Copilot",
+      "issue": 398,
+      "branch": "issue/398-admin-key-batch-helper",
+      "claimedUtc": "2026-08-03T15:00:00Z",
+      "writableScope": [
+        "get-super-admin-access-key.cmd",
+        "scripts/set-super-admin-key.ps1",
+        "tools/Vennu.DevControl.Tests/RootAdminKeyBatchTests.cs",
+        "docs/work-packages/Issue-398-admin-key-batch-helper.md",
+        "PROJECT_STATUS.md",
+        "tracker/assignments.json",
+        "ai/handoffs/current.md",
+        "ai/handoffs/archive"
+      ],
+      "prohibitedScope": [
+        "Generated credentials",
+        "Application authentication behavior",
+        "Unrelated local workspace changes"
+      ]
+    }
+  ],
   "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
