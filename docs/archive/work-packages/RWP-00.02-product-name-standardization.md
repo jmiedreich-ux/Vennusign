@@ -53,7 +53,7 @@ This package deliberately does not rename `Vennu.*` projects, assemblies, namesp
 
 - Issue: #418
 - Branch: `rwp/00.02-product-name-standardization`
-- Pull request: pending
+- Pull request: #424
 
 ## Next
 
