@@ -1,9 +1,11 @@
 import { useEffect, useState, type FormEvent } from "react";
 import {
   claimPairingCode,
+  completeScreenReplacement,
   createManagedScreen,
   loadScreenOverflow,
   loadManagedScreens,
+  previewScreenReplacement,
   pushManagedScreen,
   resetManagedScreen,
   setManagedScreenArchived,
@@ -11,7 +13,8 @@ import {
   updateManagedScreen,
   BackOfficeApiError,
   type ManagedScreen,
-  type ScreenOverflowPreview
+  type ScreenOverflowPreview,
+  type ScreenReplacementResult
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
 import VideoWallBuilder from "./VideoWallBuilder";
@@ -54,6 +57,9 @@ export default function ScreenManagement({
   const [overflow, setOverflow] = useState<ScreenOverflowPreview>();
   const [previewRevision, setPreviewRevision] = useState(0);
   const [pairingCode, setPairingCode] = useState("");
+  const [replacementCode, setReplacementCode] = useState("");
+  const [replacementTargetId, setReplacementTargetId] = useState("");
+  const [replacementPreview, setReplacementPreview] = useState<ScreenReplacementResult>();
   const [screenSearch, setScreenSearch] = useState("");
   const [healthFilter, setHealthFilter] = useState("all");
   const [selectedScreenId, setSelectedScreenId] = useState("");
@@ -116,6 +122,29 @@ export default function ScreenManagement({
             ? "That code was already claimed, or the plan limit was reached. Generate a new code or review screen capacity."
             : "Pairing failed. Keep the player on its pairing screen, check the connection, and try again.");
     }
+    finally { setBusyId(undefined); }
+  };
+
+  const previewReplacement = async (event: FormEvent) => {
+    event.preventDefault(); setBusyId("replacement-preview"); setError(undefined); setNotice(undefined); setReplacementPreview(undefined);
+    try { setReplacementPreview(await previewScreenReplacement(configuration, apiKey, replacementTargetId, replacementCode)); }
+    catch (reason: unknown) {
+      const status = reason instanceof BackOfficeApiError ? reason.status : 0;
+      setError(status === 410 ? "That replacement code expired. Generate a new code on the replacement player."
+        : status === 409 ? "The replacement cannot continue because the code or screen state changed. Refresh and try a new code."
+          : status === 404 ? "The selected screen or replacement pairing code was not found."
+            : "The replacement impact could not be checked.");
+    } finally { setBusyId(undefined); }
+  };
+
+  const completeReplacement = async () => {
+    if (!replacementPreview || !window.confirm(`Replace the player for ${replacementPreview.targetName}? The old player credential will stop working immediately.`)) return;
+    setBusyId("replacement-complete"); setError(undefined); setNotice(undefined);
+    try {
+      const result = await completeScreenReplacement(configuration, apiKey, replacementTargetId, replacementCode, replacementPreview.targetUpdatedUtc!);
+      setNotice(`${result.targetName ?? "Screen"} now uses the replacement player. Its configuration, history, and video-wall position were preserved.`);
+      setReplacementCode(""); setReplacementTargetId(""); setReplacementPreview(undefined); await refresh();
+    } catch { setError("The replacement did not complete. Nothing should be partially paired; refresh and retry the same code or generate a new one."); }
     finally { setBusyId(undefined); }
   };
 
@@ -238,6 +267,21 @@ export default function ScreenManagement({
       <button aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "pair" || screenLimitReached}>Pair screen</button>
     </form>
     <p className="screen-notice" role="status">{busyId === "pair" ? "Pairing pending… keep this page and the player open." : "Pairing codes expire and can be used once. If pairing fails, generate a fresh code on the player before retrying."}</p>
+    <section className="screen-delivery-target" aria-labelledby="replacement-heading">
+      <div><p>Player lifecycle</p><h4 id="replacement-heading">Replace a player</h4><span>Keeps the logical screen, content settings, history, and video-wall position. This is separate from adding or unpairing a screen.</span></div>
+      <form className="screen-create" onSubmit={previewReplacement}>
+        <label>Logical screen<select required value={replacementTargetId} onChange={event => { setReplacementTargetId(event.target.value); setReplacementPreview(undefined); }}><option value="">Choose the screen to preserve</option>{activeScreens.map(screen => <option key={screen.id} value={screen.id}>{screen.name}</option>)}</select></label>
+        <input aria-label="Replacement player pairing code" inputMode="numeric" maxLength={6} minLength={6} pattern="[0-9]{6}" required value={replacementCode} onChange={event => { setReplacementCode(event.target.value.replace(/\D/g, "").slice(0, 6)); setReplacementPreview(undefined); }} placeholder="Replacement code" />
+        <button disabled={busyId === "replacement-preview" || !replacementTargetId}>Review replacement</button>
+      </form>
+      {replacementPreview ? <div className="delivery-state queued" role="status">
+        <strong>Ready to replace {replacementPreview.targetName}</strong>
+        <span>New player: {replacementPreview.replacementPlatform ?? "Unknown platform"}{replacementPreview.replacementAppVersion ? ` ${replacementPreview.replacementAppVersion}` : ""}</span>
+        <span>Preserves configuration and history{replacementPreview.preservesVideoWall ? ` · Video wall ${replacementPreview.wallGroup ?? "assignment"} position ${replacementPreview.wallPosition ?? "preserved"}` : " · No video-wall assignment"}.</span>
+        <button type="button" disabled={busyId === "replacement-complete"} onClick={completeReplacement}>Confirm player replacement</button>
+        <button type="button" disabled={busyId === "replacement-complete"} onClick={() => { setReplacementPreview(undefined); setReplacementCode(""); }}>Cancel</button>
+      </div> : null}
+    </section>
     <section className="screen-delivery-target" aria-labelledby="screen-target-heading">
       <div><p>Authorized delivery</p><h4 id="screen-target-heading">Select one screen target</h4><span>Preview and Push remain disabled until you deliberately choose an active venue screen.</span></div>
       <label>Target screen<select value={selectedScreenId} onChange={event => { setSelectedScreenId(event.target.value); setDelivery(undefined); }}><option value="">Choose a screen</option>{activeScreens.map(screen => <option key={screen.id} value={screen.id}>{screen.name} · {isStale(screen) ? "Stale" : screen.status}</option>)}</select></label>
@@ -328,7 +372,7 @@ export default function ScreenManagement({
           <button type="button" aria-pressed={selectedScreenId === screen.id} disabled={busyId === screen.id || screen.status.toLowerCase() === "archived"} onClick={() => { setSelectedScreenId(screen.id); setDelivery(undefined); }}>Select target</button>
           {screen.status.toLowerCase() === "archived"
             ? <button type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, false)}>Restore</button>
-            : <><button type="button" disabled={busyId === screen.id} onClick={() => reset(screen)}>Reset connection</button><button type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, true)}>Archive</button><button type="button" disabled={busyId === screen.id} onClick={() => unpair(screen)}>Unpair for replacement</button></>}
+            : <><button type="button" disabled={busyId === screen.id} onClick={() => reset(screen)}>Reset connection</button><button type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, true)}>Archive</button><button type="button" disabled={busyId === screen.id} onClick={() => unpair(screen)}>Unpair screen</button></>}
         </div>
         {screen.id === selectedScreenId && screen.status.toLowerCase() !== "archived" && ["split_layout", "daily_special_hero", "classic_chalkboard", "tap_strips", "digital_tap_board"].includes(screen.displayLayout) ? <div className="split-layout-preview">
           <div><strong>Exact TV preview</strong><span>Uses this screen’s saved menu, theme, and layout settings.</span></div>
