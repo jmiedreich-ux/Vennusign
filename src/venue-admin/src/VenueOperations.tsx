@@ -16,6 +16,7 @@ type Props = {
   accessToken: string;
   venueId: string;
   capabilities: string[];
+  maxScreens?: number;
   area: "screens" | "themes" | "schedules" | "tap-list";
 };
 
@@ -24,6 +25,7 @@ export default function VenueOperations({
   accessToken,
   venueId,
   capabilities,
+  maxScreens,
   area
 }: Props) {
   const [screens, setScreens] = useState<ManagedScreen[]>([]);
@@ -44,6 +46,8 @@ export default function VenueOperations({
         apiKey={accessToken}
         venueId={venueId}
         allLayoutsEnabled={allLayouts}
+        maxScreens={maxScreens}
+        videoWallEnabled={capabilities.includes("video_wall")}
         showUpgradePrompt={false}
       />
     </div>;

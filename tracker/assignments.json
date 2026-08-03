@@ -1,7 +1,47 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-03T20:00:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-03T23:00:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "Issue-407",
+      "executionMode": "Collaborative",
+      "owner": "GitHub Copilot",
+      "issue": 407,
+      "pullRequest": 408,
+      "branch": "issue/407-screen-quota-gating",
+      "claimedUtc": "2026-08-03T21:00:00Z",
+      "writableScope": [
+        "src/Vennu.Data/Services/VenueEntitlementService.cs",
+        "src/Vennu.Api/Services/ScreenManagementService.cs",
+        "src/Vennu.Api/Controllers/VenueAdmin/VenueAdminScreensController.cs",
+        "src/Vennu.Api/Controllers/VenueAdmin/VenueAdminPairingController.cs",
+        "src/venue-admin/src/App.tsx",
+        "src/venue-admin/src/VenueOperations.tsx",
+        "src/venue-admin/src/ScreenManagement.tsx",
+        "src/venue-admin/src/VideoWallBuilder.tsx",
+        "src/venue-admin/src/api.ts",
+        "tests/Vennu.DataAccess.Tests/VenueEntitlementServiceTests.cs",
+        "tests/Vennu.Api.Tests/Services/ScreenManagementServiceTests.cs",
+        "tests/Vennu.Api.Tests/Controllers/VenueAdminScreensControllerTests.cs",
+        "tests/Vennu.Api.Tests/Controllers/VenueAdminPairingControllerTests.cs",
+        "src/venue-admin/tests/screen-management.test.mjs",
+        "src/display/src/PairingPage.tsx",
+        "src/display/src/pairing.d.mts",
+        "src/display/src/pairing.mjs",
+        "src/display/tests/pairing.test.mjs",
+        "docs/work-packages/Issue-407-screen-quota-gating.md",
+        "PROJECT_STATUS.md",
+        "tracker/assignments.json",
+        "ai/handoffs/current.md",
+        "ai/handoffs/archive"
+      ],
+      "prohibitedScope": [
+        "Screen lifecycle deletion, archive, unpair, or transfer behavior from issue #345",
+        "Subscription schema or billing catalog changes",
+        "Unrelated local src/Vennu.Api/Vennu.Api.csproj and docs/Google changes"
+      ]
+    }
+  ],
   "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

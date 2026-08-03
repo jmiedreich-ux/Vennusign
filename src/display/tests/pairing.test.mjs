@@ -6,6 +6,7 @@ import {
   createPairingCode,
   displayPath,
   loadPairingStatus,
+  preparePairingScreen,
   registerPairingScreen
 } from '../src/pairing.mjs';
 
@@ -50,6 +51,43 @@ test('polls status every three seconds and redirects to the encoded display rout
   assert.match(page, /window\.setInterval/);
   assert.match(page, /error\.status === 410/);
   assert.match(page, /window\.location\.replace/);
+});
+
+test('re-registers when the persisted screen was deleted', async () => {
+  const requests = [];
+  const fetchImpl = async (input, init) => {
+    requests.push({ input, init });
+    if (requests.length === 1) return new Response(null, { status: 404 });
+    if (requests.length === 2) {
+      return new Response(JSON.stringify({ screenId: 'replacement-screen', screenKey: 'sc-NEW123' }), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    return new Response(JSON.stringify({
+      code: '654321', screenId: 'replacement-screen', expiresAt: '2026-08-03T23:00:00Z'
+    }), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  };
+
+  const pairing = await preparePairingScreen(
+    'https://api.example.com',
+    'deleted-screen',
+    'browser',
+    'web',
+    fetchImpl
+  );
+
+  assert.equal(requests.length, 3);
+  assert.deepEqual(JSON.parse(requests[0].init.body), { screenId: 'deleted-screen' });
+  assert.equal(requests[1].input, 'https://api.example.com/api/screens');
+  assert.deepEqual(JSON.parse(requests[2].init.body), { screenId: 'replacement-screen' });
+  assert.equal(pairing.screenId, 'replacement-screen');
+  assert.equal(pairing.code, '654321');
+  assert.match(page, /pairing\.screenId !== screenId/);
+  assert.match(page, /localStorage\.setItem/);
 });
 
 test('routes /pair to the pairing page', () => {

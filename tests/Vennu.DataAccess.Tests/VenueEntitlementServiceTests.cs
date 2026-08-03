@@ -17,7 +17,7 @@ public sealed class VenueEntitlementServiceTests
 
         subscription.TrialEndsAt = DateTime.UtcNow.AddDays(1);
         service = new VenueEntitlementService(new SubscriptionFake(subscription), new TierFake(new SubscriptionTier { Id=tierId, MaxScreens=1 }), new ScreenFake([new Screen { Id=Guid.NewGuid(), VenueId=venueId }]), TimeProvider.System);
-        await Assert.ThrowsAsync<InvalidOperationException>(() => service.EnsureCanAddScreenAsync(venueId));
+        await Assert.ThrowsAsync<TierScreenLimitReachedException>(() => service.EnsureCanAddScreenAsync(venueId));
     }
 
     private sealed class SubscriptionFake(VenueSubscription value) : IVenueSubscriptionRepository

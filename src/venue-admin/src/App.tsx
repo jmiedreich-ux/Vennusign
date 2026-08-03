@@ -339,6 +339,7 @@ export default function App() {
             accessToken={accessToken}
             venueId={session.venueId}
             capabilities={session.capabilities}
+             maxScreens={billing?.currentTier?.maxScreens}
             area={route.path as "screens" | "themes" | "schedules" | "tap-list"}
           />
         : allowed

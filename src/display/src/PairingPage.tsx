@@ -3,10 +3,9 @@ import { displayConfig } from './config';
 import {
   PAIRING_POLL_INTERVAL_MS,
   PAIRING_SCREEN_STORAGE_KEY,
-  createPairingCode,
   displayPath,
   loadPairingStatus,
-  registerPairingScreen
+  preparePairingScreen
 } from './pairing.mjs';
 import './pairing.css';
 
@@ -28,13 +27,16 @@ export default function PairingPage({ platform, appVersion }: PairingPageProps) 
     let screenId = window.localStorage.getItem(PAIRING_SCREEN_STORAGE_KEY) ?? '';
 
     const regenerate = async () => {
-      if (!screenId) {
-        const registration = await registerPairingScreen(displayConfig.apiBaseUrl, platform, appVersion);
-        screenId = registration.screenId;
+      const pairing = await preparePairingScreen(
+        displayConfig.apiBaseUrl,
+        screenId,
+        platform,
+        appVersion
+      );
+      if (pairing.screenId !== screenId) {
+        screenId = pairing.screenId;
         window.localStorage.setItem(PAIRING_SCREEN_STORAGE_KEY, screenId);
       }
-
-      const pairing = await createPairingCode(displayConfig.apiBaseUrl, screenId);
       if (disposed) return;
       activeCode = pairing.code;
       setState({ kind: 'ready', code: pairing.code, expiresAt: pairing.expiresAt });

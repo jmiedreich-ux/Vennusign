@@ -7,13 +7,22 @@ import {
   pushAllManagedScreens,
   pushManagedScreen,
   updateManagedScreen,
+  VenueAdminApiError,
   type ManagedScreen,
   type ScreenOverflowPreview
 } from "./api";
 import type { VenueAdminConfiguration as AdminConfiguration } from "./config";
 import VideoWallBuilder from "./VideoWallBuilder";
 
-type Props = { configuration: AdminConfiguration; apiKey: string; venueId: string; allLayoutsEnabled: boolean; showUpgradePrompt?: boolean };
+type Props = {
+  configuration: AdminConfiguration;
+  apiKey: string;
+  venueId: string;
+  allLayoutsEnabled: boolean;
+  maxScreens?: number;
+  videoWallEnabled: boolean;
+  showUpgradePrompt?: boolean;
+};
 
 function previewTitle(screen: ManagedScreen) {
   if (screen.displayLayout === "split_layout") return `${screen.name} Split Layout TV preview`;
@@ -23,8 +32,17 @@ function previewTitle(screen: ManagedScreen) {
   return `${screen.name} Digital Tap Board TV preview`;
 }
 
-export default function ScreenManagement({ configuration, apiKey, venueId, allLayoutsEnabled, showUpgradePrompt = true }: Props) {
+export default function ScreenManagement({
+  configuration,
+  apiKey,
+  venueId,
+  allLayoutsEnabled,
+  maxScreens,
+  videoWallEnabled,
+  showUpgradePrompt = true
+}: Props) {
   const [screens, setScreens] = useState<ManagedScreen[]>([]);
+  const [screensLoading, setScreensLoading] = useState(true);
   const [newName, setNewName] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [busyId, setBusyId] = useState<string>();
@@ -36,7 +54,12 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
   const [pairingCode, setPairingCode] = useState("");
 
   const refresh = () => loadManagedScreens(configuration, apiKey, venueId).then(setScreens);
-  useEffect(() => { refresh().catch(() => setError("Screens could not be loaded.")); }, [apiKey, configuration, venueId]);
+  useEffect(() => {
+    setScreensLoading(true);
+    refresh()
+      .catch(() => setError("Screens could not be loaded."))
+      .finally(() => setScreensLoading(false));
+  }, [apiKey, configuration, venueId]);
   useEffect(() => {
     loadScreenOverflow(configuration, apiKey, venueId, capacity)
       .then(setOverflow)
@@ -49,7 +72,11 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
     try {
       await createManagedScreen(configuration, apiKey, venueId, { name: newName, location: newLocation || undefined });
       setNewName(""); setNewLocation(""); await refresh();
-    } catch { setError("The screen could not be created."); }
+    } catch (reason: unknown) {
+      setError(reason instanceof VenueAdminApiError && reason.status === 409
+        ? "Your plan's screen limit has been reached. Upgrade before adding another screen."
+        : "The screen could not be created.");
+    }
     finally { setBusyId(undefined); }
   };
 
@@ -61,7 +88,11 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
       setPairingCode("");
       setNotice("Screen paired successfully.");
       await refresh();
-    } catch { setError("The pairing code is invalid, expired, or already claimed."); }
+    } catch (reason: unknown) {
+      setError(reason instanceof VenueAdminApiError && reason.status === 409
+        ? "Your plan's screen limit has been reached. Upgrade before pairing another screen."
+        : "The pairing code is invalid, expired, or already claimed.");
+    }
     finally { setBusyId(undefined); }
   };
 
@@ -105,18 +136,27 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
     finally { setBusyId(undefined); }
   };
 
+  const hasFiniteScreenLimit = typeof maxScreens === "number" && maxScreens >= 0;
+  const screenLimitReached = hasFiniteScreenLimit && screens.length >= maxScreens;
+  const screenUsage = screensLoading || typeof maxScreens !== "number"
+    ? undefined
+    : maxScreens < 0
+      ? `${screens.length} screens used · Unlimited by plan`
+      : `${screens.length} of ${maxScreens} screens used${screenLimitReached ? " · Plan limit reached" : ""}`;
+
   return <article className="screen-management">
     <div className="screen-management-heading">
       <div><p>Display fleet</p><h3>Screens ({screens.length})</h3></div>
       <button className="push-all" disabled={busyId === "all"} onClick={pushAll}>Push to all screens</button>
     </div>
-    {error ? <p className="state error">{error}</p> : null}
+    {error ? <p className="state error" role="alert">{error}</p> : null}
     {notice ? <p className="screen-notice" role="status">{notice}</p> : null}
+    {screenUsage ? <p className="screen-notice" id="screen-quota-status">{screenUsage}</p> : null}
     {showUpgradePrompt && !allLayoutsEnabled ? <aside className="tier-prompt" role="status"><div><strong>Bar layouts require All Layouts</strong><p>Neon Chalkboard and Split Layout remain visible in the selector. Daily Special Hero remains visible too. Upgrade to Pro or add a venue override to choose them.</p></div></aside> : null}
     <form className="screen-create" onSubmit={create}>
       <input aria-label="New screen name" maxLength={200} required value={newName} onChange={event => setNewName(event.target.value)} placeholder="Screen name" />
       <input aria-label="New screen location" maxLength={200} value={newLocation} onChange={event => setNewLocation(event.target.value)} placeholder="Location (optional)" />
-      <button disabled={busyId === "new"}>Add screen</button>
+      <button aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "new" || screenLimitReached}>Add screen</button>
     </form>
     <form className="screen-create" onSubmit={claim}>
       <input
@@ -130,7 +170,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
         onChange={event => setPairingCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
         placeholder="TV pairing code"
       />
-      <button disabled={busyId === "pair"}>Pair screen</button>
+      <button aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "pair" || screenLimitReached}>Pair screen</button>
     </form>
     {screens.length ? <div className="managed-screen-list">{screens.map(screen =>
       <section key={screen.id}>
@@ -239,6 +279,6 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
           <span>{item.itemName}</span><small>{item.sectionName} · {item.visible ? "Visible" : "Overflow"}</small>
         </li>)}</ol> : <p>No available menu items to preview.</p>}
       </section>
-    <VideoWallBuilder configuration={configuration} apiKey={apiKey} venueId={venueId} screens={screens} showUpgradePrompt={showUpgradePrompt} />
+    {videoWallEnabled ? <VideoWallBuilder configuration={configuration} apiKey={apiKey} venueId={venueId} screens={screens} showUpgradePrompt={showUpgradePrompt} /> : null}
   </article>;
 }

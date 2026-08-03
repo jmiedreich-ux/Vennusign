@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Vennu.Api.VenueAdmin;
 using Vennu.Api.Contracts.Admin;
 using Vennu.Api.Services;
+using Vennu.Data.Services;
 
 namespace Vennu.Api.Controllers.VenueAdmin;
 
@@ -74,6 +75,15 @@ public sealed class VenueAdminScreensController(
         catch (ArgumentException exception)
         {
             return ValidationProblem(exception.Message);
+        }
+        catch (TierScreenLimitReachedException exception)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Screen limit reached.",
+                Detail = exception.Message,
+                Status = StatusCodes.Status409Conflict
+            });
         }
     }
 
