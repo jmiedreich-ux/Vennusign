@@ -12,5 +12,5 @@ public sealed class SquareOAuthOptions
     public string CallbackUrl { get; set; } = string.Empty;
     public string VenueAdminReturnUrl { get; set; } = string.Empty;
     public string ApiVersion { get; set; } = "2026-07-15";
-    public string[] Scopes { get; set; } = ["MERCHANT_PROFILE_READ", "ITEMS_READ", "INVENTORY_READ"];
+    public string[] Scopes { get; set; } = [];
 }

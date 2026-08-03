@@ -1,29 +1,28 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-03T03:00:00Z",
+  "updatedUtc": "2026-08-03T04:00:00Z",
   "activeAssignments": [
     {
-      "workPackage": "CFG-001.03",
+      "workPackage": "CFG-001.04",
       "executionMode": "Collaborative",
       "owner": "GitHub Copilot",
-      "issue": 379,
-      "branch": "issue/379-configuration-transfer",
-      "claimedUtc": "2026-08-03T03:00:00Z",
+      "issue": 381,
+      "branch": "issue/381-provider-setting-migration",
+      "claimedUtc": "2026-08-03T04:00:00Z",
       "writableScope": [
-        "src/Vennu.Data/Configuration/SystemConfigurationTransferService.cs",
-        "src/Vennu.Data/Configuration/SystemConfigurationTransferModels.cs",
-        "src/Vennu.Data/Configuration/ISystemConfigurationTransferService.cs",
-        "src/Vennu.Data/Extensions/ServiceCollectionExtensions.cs",
-        "src/Vennu.Api/Controllers/Admin/SystemConfigurationTransferController.cs",
-        "src/Vennu.Api/Contracts/Admin/SystemConfigurationTransferContracts.cs",
-        "src/admin",
-        "docs/work-packages/CFG-001.03-configuration-transfer.md",
+        "src/Vennu.Data/Scripts/049_seed_provider_configuration_definitions.sql",
+        "src/Vennu.Api/appsettings.json",
+        "src/Vennu.Api/Pos/SquareOAuthOptions.cs",
+        "tests/Vennu.Api.Tests/Configuration/ProviderConfigurationBindingTests.cs",
+        "tests/Vennu.Data.IntegrationTests/DatabaseMigratorTests.cs",
+        "docs/architecture/configuration-platform.md",
+        "docs/work-packages/CFG-001.04-provider-setting-migration.md",
         "PROJECT_STATUS.md",
         "tracker/assignments.json",
         "ai/handoffs/current.md"
       ],
       "prohibitedScope": [
-        "Provider-specific consumer migration",
+        "Configuration management behavior",
         "Production credentials"
       ]
     }
