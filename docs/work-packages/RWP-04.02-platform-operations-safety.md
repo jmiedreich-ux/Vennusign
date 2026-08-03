@@ -1,8 +1,11 @@
 # RWP-04.02 — Platform Operations Safety and Support Workflows
 
-Status: Complete in the proposed merge state  
-Issue: #343  
-Mode: Sequential  
+Status: Complete in the proposed merge state
+
+Issue: #343
+
+Mode: Sequential
+
 Branch: `rwp/04.02-platform-operations-safety`
 
 ## Goal
