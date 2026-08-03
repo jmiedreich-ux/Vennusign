@@ -8,34 +8,27 @@ BEGIN
         SELECT 1
         FROM dbo.SystemConfigurationDefinitions legacy
         JOIN dbo.SystemConfigurationDefinitions canonical
-          ON canonical.ApplicationScope = CASE legacy.ApplicationScope
+          ON canonical.Id <> legacy.Id
+         AND canonical.ApplicationScope = CASE legacy.ApplicationScope
               WHEN N'Admin' THEN N'PlatformOperations'
               WHEN N'VenueAdmin' THEN N'BackOffice'
+              ELSE legacy.ApplicationScope
           END
-         AND canonical.[Key] = legacy.[Key]
-        WHERE legacy.ApplicationScope IN (N'Admin', N'VenueAdmin')
-    )
-        THROW 51020, 'Administrative scope migration found a canonical duplicate.', 1;
-
-    IF EXISTS
-    (
-        SELECT 1
-        FROM dbo.SystemConfigurationDefinitions legacy
-        JOIN dbo.SystemConfigurationDefinitions canonical
-          ON canonical.ApplicationScope = legacy.ApplicationScope
          AND canonical.[Key] = CASE legacy.[Key]
               WHEN N'SuperAdmin:ApiKey' THEN N'PlatformOperations:ApiKey'
               WHEN N'Square:OAuth:VenueAdminReturnUrl' THEN N'Square:OAuth:BackOfficeReturnUrl'
               WHEN N'Clover:OAuth:VenueAdminReturnUrl' THEN N'Clover:OAuth:BackOfficeReturnUrl'
+              ELSE legacy.[Key]
           END
-        WHERE legacy.[Key] IN
-        (
-            N'SuperAdmin:ApiKey',
-            N'Square:OAuth:VenueAdminReturnUrl',
-            N'Clover:OAuth:VenueAdminReturnUrl'
-        )
+        WHERE legacy.ApplicationScope IN (N'Admin', N'VenueAdmin')
+           OR legacy.[Key] IN
+           (
+               N'SuperAdmin:ApiKey',
+               N'Square:OAuth:VenueAdminReturnUrl',
+               N'Clover:OAuth:VenueAdminReturnUrl'
+           )
     )
-        THROW 51021, 'Administrative key migration found a canonical duplicate.', 1;
+        THROW 51020, 'Administrative identity migration found a canonical duplicate.', 1;
 
     ALTER TABLE dbo.SystemConfigurationDefinitions
         DROP CONSTRAINT CK_SystemConfigurationDefinitions_Scope;

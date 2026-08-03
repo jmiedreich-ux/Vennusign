@@ -15,6 +15,24 @@ public sealed class MigrationResourceTests
     }
 
     [Fact]
+    public void AdministrativeIdentityMigration_RejectsCompositeCanonicalCollision()
+    {
+        var assembly = typeof(DatabaseMigrator).Assembly;
+        var scriptName = Assert.Single(
+            DatabaseMigrator.GetEmbeddedScriptNames()
+                .Where(name => name.EndsWith(".Scripts.052_migrate_administrative_identity.sql", StringComparison.Ordinal)));
+
+        using var stream = Assert.IsAssignableFrom<Stream>(assembly.GetManifestResourceStream(scriptName));
+        using var reader = new StreamReader(stream);
+        var script = reader.ReadToEnd();
+
+        Assert.Contains("canonical.Id <> legacy.Id", script, StringComparison.Ordinal);
+        Assert.Contains("ELSE legacy.ApplicationScope", script, StringComparison.Ordinal);
+        Assert.Contains("ELSE legacy.[Key]", script, StringComparison.Ordinal);
+        Assert.Contains("Administrative identity migration found a canonical duplicate.", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void CustomerOnboardingMigration_IsEmbeddedInOrder()
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
