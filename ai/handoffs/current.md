@@ -1,39 +1,44 @@
 # Vennu Session Handoff
 
 ## Work Package
-- ID: Issue-392
-- Status: Complete through PR #393
+- ID: Issue-395
+- Status: In Review
 - Execution mode: Collaborative
 
 ## Git State
-- Branch: `master`
-- Issue: #392
-- Pull request: #393
-- CI state: all 12 required checks passed on reviewed head `f08d4c0`; PR #393 merged
+- Branch: `issue/395-google-signup-local-https`
+- Issue: #395
+- Pull request: pending
+- CI state: pending
 
 ## Completed This Session
-- Reproduced API startup failure against LocalDB rather than relying on compilation.
-- Corrected the accidental quote and doubled LocalDB separator in the local user environment without committing the value.
-- Identified SQL Server eager compilation of migration 050's new-column constraint and update.
-- Deferred both references through `sys.sp_executesql` and added regression coverage.
-- Verified migration completion, API listening on port 5192, and authenticated configuration HTTP 200 with 57 definitions.
+- Added a registered trusted customer frontend origin and safe configured-origin plus local-path callback return.
+- Rejected external, scheme-relative, overlong, HTTP, path-bearing, and user-info redirect inputs.
+- Switched Development Control API/Venue Admin customer-authentication paths to HTTPS.
+- Added Vite basic SSL, testable service catalog coverage, migration 051, binding/security tests, and operator documentation.
+- Trusted the ASP.NET development certificate and configured the local Development frontend origin without committing values.
+- Verified actual HTTPS API/Venue Admin startup and a Google code+PKCE challenge with the exact localhost callback.
 
 ## Validation
-- `DatabaseMigratorTests`: 3/3 passed.
-- Debug API build passed.
-- Actual LocalDB startup/migration passed.
-- Configuration API returned HTTP 200 with 57 definitions.
+- API focused tests: 16/16 passed.
+- Development Control tests: 8/8 passed.
+- Venue Admin tests: 39/39 passed; production build passed.
+- Migration inventory tests: 3/3 passed.
+- Actual HTTPS challenge returned Google host, exact callback, code response type, and PKCE.
 - GitHub Actions pending.
 
 ## Remaining Work
-- Start API from Vennu Development Control and refresh Super Admin Configuration.
+- Open, validate, review, and merge the Issue #395 PR.
+- Operator must enter the Google web client ID and secret through Super Admin, enable Google, restart API, and complete live consent.
 
 ## Known Risks or Blockers
-- Azure SQL integration remains skipped; LocalDB execution is supplemental evidence.
+- Live Google consent requires operator-owned credentials and is intentionally not run in CI.
+- Vite's local certificate requires one browser acceptance before callback navigation.
 
 ## Exact Next Action
-- Open Vennu Development Control, start API, and refresh Super Admin Configuration; it should load 57 registered definitions.
+- Open the Issue #395 PR and run affected API, Venue Admin, data, and Windows tooling checks.
 
 ## Do Not Redo or Reverse
-- Do not restore direct same-batch references to `RotationReminderDays`.
-- Do not commit local connection strings, keys, or the unrelated `UserSecretsId` workspace change.
+- Do not accept arbitrary absolute OAuth return URLs.
+- Do not revert API/Venue Admin customer authentication to mixed HTTP/HTTPS origins.
+- Do not commit Google credentials or the unrelated local `UserSecretsId` change.

@@ -20,7 +20,8 @@ public sealed class CustomerAuthenticationController(
     [HttpGet("external/{provider}")]
     public IActionResult BeginExternalSignIn(string provider, [FromQuery] string returnPath = "/")
     {
-        if (!IsLocalReturnPath(returnPath)) return BadRequest("A local return path is required.");
+        if (!CustomerReturnUri.TryCreate(options.Value.FrontendOrigin, returnPath, out var returnUri))
+            return BadRequest("A local return path and valid trusted frontend origin are required.");
         var (scheme, enabled) = provider.ToLowerInvariant() switch
         {
             "google" => (CustomerAuthenticationDefaults.GoogleScheme, options.Value.Google.Enabled),
@@ -29,7 +30,7 @@ public sealed class CustomerAuthenticationController(
         };
         if (string.IsNullOrEmpty(scheme)) return NotFound();
         if (!enabled) return Problem("The requested identity provider is not configured.", statusCode: StatusCodes.Status503ServiceUnavailable);
-        return Challenge(new AuthenticationProperties { RedirectUri = returnPath }, scheme);
+        return Challenge(new AuthenticationProperties { RedirectUri = returnUri.AbsoluteUri }, scheme);
     }
 
     [HttpPost("email-links")]
@@ -85,7 +86,5 @@ public sealed class CustomerAuthenticationController(
     private static CustomerSessionResponse ResponseFor(CustomerSessionIssue issue) => new(
         issue.User.Id, issue.User.Email, issue.User.DisplayName, issue.Session.AuthenticationMethod.ToString());
 
-    private static bool IsLocalReturnPath(string? value) =>
-        !string.IsNullOrWhiteSpace(value) && value.StartsWith('/') &&
-        !value.StartsWith("//", StringComparison.Ordinal) && value.Length <= 500;
+    private static bool IsLocalReturnPath(string? value) => CustomerReturnUri.IsLocalPath(value);
 }

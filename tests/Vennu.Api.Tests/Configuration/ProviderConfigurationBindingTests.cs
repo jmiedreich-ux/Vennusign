@@ -16,6 +16,7 @@ public sealed class ProviderConfigurationBindingTests
             ["CustomerAuthentication:Google:Enabled"] = "true",
             ["CustomerAuthentication:Google:ClientId"] = "google-id",
             ["CustomerAuthentication:Google:ClientSecret"] = "google-secret",
+            ["CustomerAuthentication:FrontendOrigin"] = "https://localhost:5174",
             ["Stripe:Revenue:ApiKey"] = "stripe-key",
             ["Stripe:Webhook:SigningSecret"] = "whsec_test",
             ["Stripe:HaasCheckout:PriceIds:starter_kit"] = "price_starter",
@@ -38,6 +39,7 @@ public sealed class ProviderConfigurationBindingTests
         Assert.True(authentication.Google.Enabled);
         Assert.Equal("google-id", authentication.Google.ClientId);
         Assert.Equal("google-secret", authentication.Google.ClientSecret);
+        Assert.Equal(new Uri("https://localhost:5174"), authentication.FrontendOrigin);
         Assert.Equal("stripe-key", stripeRevenue.ApiKey);
         Assert.Equal("whsec_test", stripeWebhook.SigningSecret);
         Assert.Equal("price_starter", stripeHaas.PriceIds["starter_kit"]);
