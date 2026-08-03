@@ -20,6 +20,12 @@ test('rejects missing and incompatible declarations with actionable errors', () 
   assert.ok(errors.some(error => error.includes('tizen-shell: compatibility')));
 });
 
+test('rejects a syntactically valid shell range that excludes the native bridge', () => {
+  const manifest = materializeTemplate(template, sha, 'build-100');
+  manifest.components.find(component => component.id === 'tizen-shell').compatibility = '>=2.0 <3.0';
+  assert.ok(validateManifest(manifest).some(error => error.includes('does not include native-bridge 1.0.0')));
+});
+
 test('requires changed versions to advance and carried artifacts to remain identical', () => {
   const previous = materializeTemplate(template, sha, 'build-100');
   const current = structuredClone(previous);
