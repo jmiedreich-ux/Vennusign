@@ -18,6 +18,7 @@ import {
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
 import VideoWallBuilder from "./VideoWallBuilder";
+import { identityHasChanges, updateIdentityDraft, type ScreenIdentityDraft } from "./actionRecovery.mjs";
 
 type Props = {
   configuration: BackOfficeConfiguration;
@@ -56,6 +57,8 @@ export default function ScreenManagement({
   const [capacity, setCapacity] = useState(6);
   const [overflow, setOverflow] = useState<ScreenOverflowPreview>();
   const [previewRevision, setPreviewRevision] = useState(0);
+  const [previewScreenId, setPreviewScreenId] = useState("");
+  const [identityDrafts, setIdentityDrafts] = useState<Record<string, ScreenIdentityDraft>>({});
   const [pairingCode, setPairingCode] = useState("");
   const [replacementCode, setReplacementCode] = useState("");
   const [replacementTargetId, setReplacementTargetId] = useState("");
@@ -151,6 +154,12 @@ export default function ScreenManagement({
   const patch = (screenId: string, value: Partial<ManagedScreen>) =>
     setScreens(current => current.map(screen => screen.id === screenId ? { ...screen, ...value } : screen));
 
+  const patchIdentity = (screen: ManagedScreen, value: Partial<ScreenIdentityDraft>) =>
+    setIdentityDrafts(current => ({ ...current, [screen.id]: updateIdentityDraft(current[screen.id], screen, value) }));
+
+  const cancelIdentity = (screenId: string) =>
+    setIdentityDrafts(current => { const next = { ...current }; delete next[screenId]; return next; });
+
   const save = async (screen: ManagedScreen) => {
     setBusyId(screen.id); setError(undefined); setNotice(undefined);
     try {
@@ -162,6 +171,7 @@ export default function ScreenManagement({
         splitRatio: screen.splitRatio,
         heroDwellSeconds: screen.heroDwellSeconds
       });
+      cancelIdentity(screen.id);
       await refresh();
       setPreviewRevision(current => current + 1);
     } catch { setError("The screen details could not be saved."); }
@@ -285,6 +295,7 @@ export default function ScreenManagement({
     <section className="screen-delivery-target" aria-labelledby="screen-target-heading">
       <div><p>Authorized delivery</p><h4 id="screen-target-heading">Select one screen target</h4><span>Preview and Push remain disabled until you deliberately choose an active venue screen.</span></div>
       <label>Target screen<select value={selectedScreenId} onChange={event => { setSelectedScreenId(event.target.value); setDelivery(undefined); }}><option value="">Choose a screen</option>{activeScreens.map(screen => <option key={screen.id} value={screen.id}>{screen.name} · {isStale(screen) ? "Stale" : screen.status}</option>)}</select></label>
+      <button type="button" disabled={!selectedScreen || busyId === selectedScreenId} onClick={() => selectedScreen && setPreviewScreenId(selectedScreen.id)}>Preview selected screen</button>
       <button disabled={!selectedScreen || busyId === selectedScreenId} onClick={() => selectedScreen && push(selectedScreen)}>Push structured content</button>
       {delivery && delivery.screenId === selectedScreenId ? <div className={`delivery-state ${delivery.state}`} role="status"><strong>Delivery: {delivery.state}</strong><span>{delivery.reason ?? "Request in progress."}</span><small>Requested {new Date(delivery.requestedUtc).toLocaleString()}</small>{delivery.state === "failed" && selectedScreen ? <button onClick={() => push(selectedScreen)}>Retry selected target</button> : null}</div> : null}
     </section>
@@ -298,8 +309,13 @@ export default function ScreenManagement({
           <span className={screen.status.toLowerCase()} />
           <div><strong>{isStale(screen) && screen.status.toLowerCase() !== "archived" ? "Stale" : screen.status}</strong><small>{screen.lastSeen ? `Last seen ${new Date(screen.lastSeen).toLocaleString()}` : "Never seen"}{screen.platform ? ` · ${screen.platform}${screen.appVersion ? ` ${screen.appVersion}` : ""}` : ""}</small></div>
         </div>
-        <label>Name<input disabled={screen.status.toLowerCase() === "archived"} maxLength={200} value={screen.name} onChange={event => patch(screen.id, { name: event.target.value })} onBlur={() => save(screen)} /></label>
-        <label>Location<input disabled={screen.status.toLowerCase() === "archived"} maxLength={200} value={screen.location ?? ""} onChange={event => patch(screen.id, { location: event.target.value || undefined })} onBlur={() => save(screen)} /></label>
+        <label>Name<input disabled={screen.status.toLowerCase() === "archived"} maxLength={200} value={identityDrafts[screen.id]?.name ?? screen.name} onChange={event => patchIdentity(screen, { name: event.target.value })} /></label>
+        <label>Location<input disabled={screen.status.toLowerCase() === "archived"} maxLength={200} value={identityDrafts[screen.id]?.location ?? screen.location ?? ""} onChange={event => patchIdentity(screen, { location: event.target.value })} /></label>
+        {identityHasChanges(screen, identityDrafts[screen.id]) ? <div className="screen-actions" role="status">
+          <span>Unsaved screen identity changes</span>
+          <button type="button" disabled={busyId === screen.id || !identityDrafts[screen.id]?.name.trim()} onClick={() => void save({ ...screen, name: identityDrafts[screen.id].name, location: identityDrafts[screen.id].location || undefined })}>Save changes</button>
+          <button type="button" disabled={busyId === screen.id} onClick={() => cancelIdentity(screen.id)}>Cancel changes</button>
+        </div> : null}
         <label>Display layout
           <select
             disabled={screen.status.toLowerCase() === "archived"}
@@ -379,8 +395,9 @@ export default function ScreenManagement({
           {isStale(screen) ? " · player stale/offline" : ""}
           {screen.deliveryFailureCode ? ` · ${screen.deliveryFailureCode}${screen.deliveryFailureDetail ? `: ${screen.deliveryFailureDetail}` : ""}` : ""}
         </p> : null}
-        {screen.id === selectedScreenId && screen.status.toLowerCase() !== "archived" && ["split_layout", "daily_special_hero", "classic_chalkboard", "tap_strips", "digital_tap_board"].includes(screen.displayLayout) ? <div className="split-layout-preview">
+        {screen.id === previewScreenId && screen.id === selectedScreenId && screen.status.toLowerCase() !== "archived" ? <div className="split-layout-preview">
           <div><strong>Exact TV preview</strong><span>Uses this screen’s saved menu, theme, and layout settings.</span></div>
+          <button type="button" onClick={() => setPreviewScreenId("")}>Close preview</button>
           <iframe
             key={`${screen.id}-${screen.displayLayout}-${screen.splitRatio}-${screen.heroDwellSeconds}-${previewRevision}`}
             src={`${configuration.displayBaseUrl}/display/${screen.id}`}
