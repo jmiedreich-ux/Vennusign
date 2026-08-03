@@ -8,7 +8,7 @@
 ## Git State
 - Branch: `issue/401-configuration-search-sizing`
 - Issue: #401
-- Pull request: pending
+- Pull request: #402
 - CI state: pending
 
 ## Completed This Session
@@ -25,7 +25,7 @@
 - GitHub Actions pending.
 
 ## Remaining Work
-- Open, validate, review, and merge the Issue #401 PR, then release the claim.
+- Validate, review, and merge PR #402, then release the claim.
 
 ## Known Risks or Blockers
 - Search is intentionally client-side over the currently selected environment/application result set.

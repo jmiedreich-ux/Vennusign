@@ -18,7 +18,7 @@
 - WCAG AA filter-panel review reported no issues.
 
 ## Exact Next Action
-- Open, validate, review, and merge the Issue #401 PR.
+- Validate, review, and merge PR #402.
 
 ## Do Not Redo or Reverse
 - Do not search configured values or secret content.
