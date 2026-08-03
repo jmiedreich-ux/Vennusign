@@ -8,7 +8,7 @@
 ## Git State
 - Branch: `issue/386-dev-control-bootstrap`
 - Issue: #386
-- Pull request: pending
+- Pull request: #387
 - CI state: pending
 
 ## Completed
@@ -25,14 +25,14 @@
 - GitHub Actions pending.
 
 ## Remaining Work
-- Open the PR, run required checks, review, merge, release the claim, and synchronize completion records.
+- Run PR #387 checks, review, merge, release the claim, and synchronize completion records.
 
 ## Known Risks
 - Windows user environment variables are user-readable storage, not a secrets vault; persistence is explicit and local-development-only.
 - Hosted Key Vault behavior is unchanged and live testing remains excluded.
 
 ## Exact Next Action
-- Open the Issue #386 PR and run its affected WPF/tooling validation.
+- Run PR #387 affected WPF/tooling validation and review the exact head.
 
 ## Do Not Redo or Reverse
 - Do not persist bootstrap values to repository files.

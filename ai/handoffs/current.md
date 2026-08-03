@@ -8,7 +8,7 @@
 ## Git State
 - Branch: `issue/386-dev-control-bootstrap`
 - Issue: #386
-- Pull request: pending
+- Pull request: #387
 - CI state: pending
 
 ## Completed This Session
@@ -32,7 +32,7 @@
 - Hosted Key Vault behavior is unchanged and live testing remains excluded.
 
 ## Exact Next Action
-- Open the Issue #386 PR and run its affected WPF/tooling validation.
+- Run the Issue #386 PR checks, review the exact head, and merge when approved.
 
 ## Do Not Redo or Reverse
 - Do not persist bootstrap values to repository files.
