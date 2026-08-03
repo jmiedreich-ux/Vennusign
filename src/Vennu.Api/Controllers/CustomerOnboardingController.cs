@@ -31,7 +31,8 @@ public sealed class CustomerOnboardingController(ICustomerOnboardingService onbo
         try
         {
             return Ok(await onboarding.CreateOrganizationAsync(
-                UserId(), request.Name, cancellationToken).ConfigureAwait(false));
+                UserId(), new OrganizationProfile(request.Name, request.LegalName, request.PrimaryContactName,
+                    request.ContactEmail, request.ContactPhone, request.MailingAddress), cancellationToken).ConfigureAwait(false));
         }
         catch (ArgumentException exception)
         {

@@ -2,10 +2,23 @@ using Vennu.Core.Models;
 
 namespace Vennu.Data.Services;
 
+public sealed record OrganizationProfile(
+    string Name,
+    string? LegalName,
+    string PrimaryContactName,
+    string ContactEmail,
+    string? ContactPhone,
+    string MailingAddress);
+
 public interface IIdentityMembershipService
 {
     Task<Organization> CreateOrganizationAsync(
         string name,
+        Guid ownerUserId,
+        CancellationToken cancellationToken = default);
+
+    Task<Organization> CreateOrganizationAsync(
+        OrganizationProfile profile,
         Guid ownerUserId,
         CancellationToken cancellationToken = default);
 

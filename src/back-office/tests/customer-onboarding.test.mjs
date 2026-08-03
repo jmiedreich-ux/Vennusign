@@ -34,6 +34,9 @@ test("onboarding is resumable, credentialed, and webhook-authoritative", () => {
   assert.match(app, /pairing alone does not mean the device is active/);
   assert.match(api, /api\/customer-onboarding\/venue/);
   assert.match(api, /api\/customer-onboarding\/first-screen/);
+  for (const field of ["Legal business name", "Primary contact name", "Contact email", "Contact phone", "Business mailing address"]) assert.match(app, new RegExp(field));
+  assert.match(api, /primaryContactName/);
+  assert.match(api, /mailingAddress/);
 });
 
 test("entry surface records essential accessible states", () => {

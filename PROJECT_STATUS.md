@@ -15,8 +15,9 @@
 - RWP-10.01 — Player Runtime, Targeting, and Realtime Delivery Reliability: complete in the proposed merge state.
 - RWP-11.02 — Billing Tier and Downgrade Safety: complete in the proposed merge state.
 - RWP-13.03 — Onboarding Ownership and Navigation Unification: complete in the proposed merge state.
-- Approved Sequential remediation queue: RWP-13.01, then RWP-13.02.
-- Next available package after merge and claim release: RWP-13.01 / issue #416.
+- RWP-13.01 — Organization Profile and Onboarding-to-Back-Office Transition: complete in the proposed merge state.
+- Approved Sequential remediation queue: RWP-13.02.
+- Next available package after merge and claim release: RWP-13.02 / issue #420.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
 ## Completed Delivery
@@ -46,4 +47,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-After RWP-13.03 merges and releases, claim RWP-13.01 / issue #416 in Sequential mode only if it has no active owner. Continue in the recorded queue without skipping. Phase 14 and later remain paused and must not be planned, claimed, or implemented.
+After RWP-13.01 merges and releases, claim RWP-13.02 / issue #420 in Sequential mode only if it has no active owner. Continue in the recorded queue without skipping. Phase 14 and later remain paused and must not be planned, claimed, or implemented.

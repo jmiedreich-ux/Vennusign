@@ -117,9 +117,16 @@ export default function CustomerOnboardingApp() {
 
   const createOrganization = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const name = String(new FormData(event.currentTarget).get("organizationName") ?? "").trim();
+    const data = new FormData(event.currentTarget);
     void run("organization", async () => {
-      setOnboarding(await createOnboardingOrganization(configuration, name));
+      setOnboarding(await createOnboardingOrganization(configuration, {
+        name: String(data.get("organizationName") ?? "").trim(),
+        legalName: String(data.get("legalName") ?? "").trim() || undefined,
+        primaryContactName: String(data.get("primaryContactName") ?? "").trim(),
+        contactEmail: String(data.get("contactEmail") ?? "").trim(),
+        contactPhone: String(data.get("contactPhone") ?? "").trim() || undefined,
+        mailingAddress: String(data.get("mailingAddress") ?? "").trim()
+      }));
       setNotice("Your organization is saved. Choose the plan that fits your venue.");
     });
   };
@@ -227,7 +234,18 @@ export default function CustomerOnboardingApp() {
         <span>Account</span><h2>Name your organization</h2>
         <p>This is the billing and ownership home for all of your venues.</p>
         <label htmlFor="organizationName">Organization name</label>
-        <input id="organizationName" name="organizationName" maxLength={200} required />
+        <input id="organizationName" name="organizationName" maxLength={200} autoComplete="organization" required />
+        <label htmlFor="legalName">Legal business name (optional)</label>
+        <input id="legalName" name="legalName" maxLength={200} autoComplete="organization" />
+        <label htmlFor="primaryContactName">Primary contact name</label>
+        <input id="primaryContactName" name="primaryContactName" maxLength={200} autoComplete="name" defaultValue={session.displayName} required />
+        <label htmlFor="contactEmail">Contact email</label>
+        <input id="contactEmail" name="contactEmail" type="email" maxLength={320} autoComplete="email" defaultValue={session.email} required />
+        <label htmlFor="contactPhone">Contact phone (optional)</label>
+        <input id="contactPhone" name="contactPhone" type="tel" maxLength={50} autoComplete="tel" />
+        <label htmlFor="mailingAddress">Business mailing address</label>
+        <textarea id="mailingAddress" name="mailingAddress" maxLength={500} autoComplete="street-address" rows={4} required />
+        <p className="customer-onboarding__help">Used for organization ownership, billing contact, and support. It is shown only in authorized customer or support contexts.</p>
         <button type="submit" disabled={busy === "organization"}>{busy === "organization" ? "Saving…" : "Save and choose a plan"}</button>
       </form> : !onboarding.progress.plan ? <section className="customer-onboarding__panel">
         <span>Plan</span><h2>Choose how to begin</h2>

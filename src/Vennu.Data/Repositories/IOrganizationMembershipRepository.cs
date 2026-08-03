@@ -4,6 +4,8 @@ namespace Vennu.Data.Repositories;
 
 public interface IOrganizationMembershipRepository
 {
+    Task<Organization?> GetOrganizationAsync(Guid organizationId, CancellationToken cancellationToken = default);
+
     Task<OrganizationMembership?> GetOrganizationMembershipAsync(
         Guid organizationId,
         Guid userId,

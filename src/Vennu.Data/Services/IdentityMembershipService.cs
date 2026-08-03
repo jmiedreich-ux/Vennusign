@@ -15,23 +15,44 @@ public sealed class IdentityMembershipService(
     public async Task<Organization> CreateOrganizationAsync(
         string name,
         Guid ownerUserId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        await CreateOrganizationCoreAsync(new OrganizationProfile(name, null, string.Empty, string.Empty, null, string.Empty), ownerUserId, false, cancellationToken).ConfigureAwait(false);
+
+    public async Task<Organization> CreateOrganizationAsync(
+        OrganizationProfile profile,
+        Guid ownerUserId,
+        CancellationToken cancellationToken = default) =>
+        await CreateOrganizationCoreAsync(profile, ownerUserId, true, cancellationToken).ConfigureAwait(false);
+
+    private async Task<Organization> CreateOrganizationCoreAsync(
+        OrganizationProfile profile,
+        Guid ownerUserId,
+        bool requireCompleteProfile,
+        CancellationToken cancellationToken)
     {
         var owner = await identityRepository.GetUserByIdAsync(RequireId(ownerUserId, nameof(ownerUserId)), cancellationToken)
             .ConfigureAwait(false);
         if (owner is null || owner.Status != CustomerUserStatus.Active)
             throw new InvalidOperationException("An active customer user is required to own an organization.");
 
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        var normalizedName = name.Trim();
-        if (normalizedName.Length > 200)
-            throw new ArgumentException("Organization names cannot exceed 200 characters.", nameof(name));
+        ArgumentNullException.ThrowIfNull(profile);
+        var normalizedName = Required(profile.Name, 200, nameof(profile.Name));
+        var contactName = requireCompleteProfile ? Required(profile.PrimaryContactName, 200, nameof(profile.PrimaryContactName)) : null;
+        var contactEmail = requireCompleteProfile ? Required(profile.ContactEmail, 320, nameof(profile.ContactEmail)) : null;
+        if (requireCompleteProfile && (contactEmail!.IndexOf('@') <= 0 || contactEmail.LastIndexOf('.') < contactEmail.IndexOf('@')))
+            throw new ArgumentException("Enter a valid contact email address.", nameof(profile.ContactEmail));
+        var mailingAddress = requireCompleteProfile ? Required(profile.MailingAddress, 500, nameof(profile.MailingAddress)) : null;
 
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
         var organization = new Organization
         {
             Id = Guid.NewGuid(),
             Name = normalizedName,
+            LegalName = Optional(profile.LegalName, 200, nameof(profile.LegalName)),
+            PrimaryContactName = contactName,
+            ContactEmail = contactEmail?.ToLowerInvariant(),
+            ContactPhone = Optional(profile.ContactPhone, 50, nameof(profile.ContactPhone)),
+            MailingAddress = mailingAddress,
             OwnerUserId = ownerUserId,
             CreatedUtc = utcNow,
             UpdatedUtc = utcNow
@@ -52,6 +73,16 @@ public sealed class IdentityMembershipService(
             Audit(organization.Id, null, ownerUserId, ownerUserId, MembershipAuditAction.OrganizationCreated, null, OrganizationMembershipRole.Owner.ToString(), utcNow),
             cancellationToken).ConfigureAwait(false);
     }
+
+    private static string Required(string? value, int maximumLength, string name)
+    {
+        var normalized = value?.Trim();
+        if (string.IsNullOrWhiteSpace(normalized)) throw new ArgumentException("A value is required.", name);
+        return normalized.Length <= maximumLength ? normalized : throw new ArgumentException($"The value cannot exceed {maximumLength} characters.", name);
+    }
+
+    private static string? Optional(string? value, int maximumLength, string name) =>
+        string.IsNullOrWhiteSpace(value) ? null : Required(value, maximumLength, name);
 
     public async Task<OrganizationMembership> AddOrChangeOrganizationMemberAsync(
         Guid actorUserId,

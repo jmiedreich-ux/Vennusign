@@ -31,14 +31,17 @@ public sealed class CustomerOnboardingServiceTests
         var subscriptions = new OrganizationSubscriptionsFake();
         var service = Create(states, new TierFake(tier), subscriptions);
 
-        var organization = await service.CreateOrganizationAsync(userId, "My Bar");
+        var organization = await service.CreateOrganizationAsync(userId,
+            new OrganizationProfile("My Bar", "My Bar LLC", "Alex Owner", "owner@example.com", null, "1 Main St, New York, NY 10001"));
         var trial = await service.StartTrialAsync(userId, tier.Id);
 
         Assert.NotNull(organization.OrganizationId);
+        Assert.Equal("owner@example.com", organization.Organization?.ContactEmail);
         Assert.Equal("venue", trial.CurrentStep);
         Assert.Equal("trialing", trial.EntitlementStatus);
         Assert.Equal(Now.UtcDateTime.AddDays(21), trial.TrialEndsAt);
-        await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateOrganizationAsync(userId, "Another"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateOrganizationAsync(userId,
+            new OrganizationProfile("Another", null, "Alex", "alex@example.com", null, "2 Main St")));
     }
 
     [Fact]
@@ -166,11 +169,13 @@ public sealed class CustomerOnboardingServiceTests
         states ??= new OnboardingFake();
         tiers ??= new TierFake(Tier());
         subscriptions ??= new OrganizationSubscriptionsFake();
+        var organizations = new OrganizationRepositoryFake();
         return new CustomerOnboardingService(
             states,
             tiers,
             subscriptions,
-            new MembershipFake(),
+            organizations,
+            new MembershipFake(organizations),
             new SubscriptionManagementFake(subscriptions, tiers),
             checkout ?? new CheckoutFake(),
             venueProvisioning ?? new VenueProvisioningFake(Guid.NewGuid()),
@@ -217,9 +222,27 @@ public sealed class CustomerOnboardingServiceTests
         public Task<bool> SaveAsync(OrganizationSubscription value, CancellationToken cancellationToken = default) { Value = value; return Task.FromResult(true); }
     }
 
-    private sealed class MembershipFake : IIdentityMembershipService
+    private sealed class OrganizationRepositoryFake : IOrganizationMembershipRepository
     {
-        public Task<Organization> CreateOrganizationAsync(string name, Guid ownerUserId, CancellationToken cancellationToken = default) => Task.FromResult(new Organization { Id = Guid.NewGuid(), Name = name, OwnerUserId = ownerUserId, CreatedUtc = Now.UtcDateTime, UpdatedUtc = Now.UtcDateTime });
+        public Organization? Value { get; set; }
+        public Task<Organization?> GetOrganizationAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(Value?.Id == id ? Value : null);
+        public Task<OrganizationMembership?> GetOrganizationMembershipAsync(Guid a, Guid b, CancellationToken c = default) => throw new NotSupportedException();
+        public Task<VenueMembership?> GetVenueMembershipAsync(Guid a, Guid b, Guid c, CancellationToken d = default) => throw new NotSupportedException();
+        public Task<Organization> CreateOrganizationAsync(Organization a, OrganizationMembership b, MembershipAuditEntry c, CancellationToken d = default) => throw new NotSupportedException();
+        public Task<OrganizationMembership> SaveOrganizationMembershipAsync(OrganizationMembership a, MembershipAuditEntry b, CancellationToken c = default) => throw new NotSupportedException();
+        public Task TransferOwnershipAsync(Guid a, Guid b, Guid c, DateTime d, MembershipAuditEntry e, CancellationToken f = default) => throw new NotSupportedException();
+        public Task AttachVenueAsync(Guid a, Guid b, MembershipAuditEntry c, CancellationToken d = default) => throw new NotSupportedException();
+        public Task<VenueMembership> SaveVenueMembershipAsync(VenueMembership a, MembershipAuditEntry b, CancellationToken c = default) => throw new NotSupportedException();
+    }
+
+    private sealed class MembershipFake(OrganizationRepositoryFake organizations) : IIdentityMembershipService
+    {
+        public Task<Organization> CreateOrganizationAsync(string name, Guid ownerUserId, CancellationToken cancellationToken = default) => CreateOrganizationAsync(new OrganizationProfile(name, null, "", "", null, ""), ownerUserId, cancellationToken);
+        public Task<Organization> CreateOrganizationAsync(OrganizationProfile profile, Guid ownerUserId, CancellationToken cancellationToken = default)
+        {
+            organizations.Value = new Organization { Id = Guid.NewGuid(), Name = profile.Name, LegalName = profile.LegalName, PrimaryContactName = profile.PrimaryContactName, ContactEmail = profile.ContactEmail, ContactPhone = profile.ContactPhone, MailingAddress = profile.MailingAddress, OwnerUserId = ownerUserId, CreatedUtc = Now.UtcDateTime, UpdatedUtc = Now.UtcDateTime };
+            return Task.FromResult(organizations.Value);
+        }
         public Task<OrganizationMembership> AddOrChangeOrganizationMemberAsync(Guid a, Guid b, Guid c, OrganizationMembershipRole d, CancellationToken e = default) => throw new NotSupportedException();
         public Task RevokeOrganizationMemberAsync(Guid a, Guid b, Guid c, CancellationToken d = default) => throw new NotSupportedException();
         public Task TransferOwnershipAsync(Guid a, Guid b, Guid c, CancellationToken d = default) => throw new NotSupportedException();

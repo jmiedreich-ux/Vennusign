@@ -21,9 +21,18 @@ public sealed record CustomerOnboardingProgress(
     bool FirstScreen,
     bool GoLive);
 
+public sealed record CustomerOnboardingOrganizationProfile(
+    string Name,
+    string? LegalName,
+    string? PrimaryContactName,
+    string? ContactEmail,
+    string? ContactPhone,
+    string? MailingAddress);
+
 public sealed record CustomerOnboardingSnapshot(
     Guid UserId,
     Guid? OrganizationId,
+    CustomerOnboardingOrganizationProfile? Organization,
     Guid? SelectedTierId,
     Guid? VenueId,
     Guid? FirstScreenId,
@@ -47,7 +56,7 @@ public interface ICustomerOnboardingService
 {
     Task<IReadOnlyCollection<PublicOnboardingPlan>> GetPublicPlansAsync(CancellationToken cancellationToken = default);
     Task<CustomerOnboardingSnapshot> GetAsync(Guid userId, CancellationToken cancellationToken = default);
-    Task<CustomerOnboardingSnapshot> CreateOrganizationAsync(Guid userId, string name, CancellationToken cancellationToken = default);
+    Task<CustomerOnboardingSnapshot> CreateOrganizationAsync(Guid userId, OrganizationProfile profile, CancellationToken cancellationToken = default);
     Task<CustomerOnboardingSnapshot> StartTrialAsync(Guid userId, Guid tierId, CancellationToken cancellationToken = default);
     Task<CustomerOnboardingSnapshot> CreateVenueAsync(
         Guid userId,
@@ -68,6 +77,7 @@ public sealed class CustomerOnboardingService(
     ICustomerOnboardingRepository onboarding,
     ISubscriptionTierRepository tiers,
     IOrganizationSubscriptionRepository subscriptions,
+    IOrganizationMembershipRepository organizations,
     IIdentityMembershipService memberships,
     IOrganizationSubscriptionManagementService subscriptionManagement,
     ICheckoutSessionService checkout,
@@ -106,14 +116,14 @@ public sealed class CustomerOnboardingService(
 
     public async Task<CustomerOnboardingSnapshot> CreateOrganizationAsync(
         Guid userId,
-        string name,
+        OrganizationProfile profile,
         CancellationToken cancellationToken = default)
     {
         RequireId(userId, nameof(userId));
         var state = await onboarding.GetByUserIdAsync(userId, cancellationToken).ConfigureAwait(false) ?? NewState(userId);
         if (state.OrganizationId is not null)
             throw new InvalidOperationException("This onboarding journey already has an organization.");
-        var organization = await memberships.CreateOrganizationAsync(name, userId, cancellationToken).ConfigureAwait(false);
+        var organization = await memberships.CreateOrganizationAsync(profile, userId, cancellationToken).ConfigureAwait(false);
         state.OrganizationId = organization.Id;
         state.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
         state = await onboarding.SaveAsync(state, cancellationToken).ConfigureAwait(false);
@@ -247,6 +257,9 @@ public sealed class CustomerOnboardingService(
         var subscription = state.OrganizationId is Guid organizationId
             ? await subscriptions.GetByOrganizationIdAsync(organizationId, cancellationToken).ConfigureAwait(false)
             : null;
+        var organization = state.OrganizationId is Guid profileOrganizationId
+            ? await organizations.GetOrganizationAsync(profileOrganizationId, cancellationToken).ConfigureAwait(false)
+            : null;
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var planComplete = IsEntitled(subscription, now);
         var venueComplete = state.VenueId is not null;
@@ -263,6 +276,9 @@ public sealed class CustomerOnboardingService(
         return new CustomerOnboardingSnapshot(
             state.UserId,
             state.OrganizationId,
+            organization is null ? null : new CustomerOnboardingOrganizationProfile(
+                organization.Name, organization.LegalName, organization.PrimaryContactName,
+                organization.ContactEmail, organization.ContactPhone, organization.MailingAddress),
             state.SelectedTierId ?? subscription?.TierId,
             state.VenueId,
             state.FirstScreenId,

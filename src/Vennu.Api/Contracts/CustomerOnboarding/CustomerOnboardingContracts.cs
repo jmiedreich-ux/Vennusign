@@ -1,6 +1,12 @@
 namespace Vennu.Api.Contracts.CustomerOnboarding;
 
-public sealed record CreateOnboardingOrganizationRequest(string Name);
+public sealed record CreateOnboardingOrganizationRequest(
+    string Name,
+    string? LegalName,
+    string PrimaryContactName,
+    string ContactEmail,
+    string? ContactPhone,
+    string MailingAddress);
 public sealed record SelectOnboardingTrialRequest(Guid TierId);
 public sealed record CreateOnboardingCheckoutRequest(Guid TierId, string BillingInterval);
 public sealed record CreateOnboardingCheckoutResponse(string CheckoutUrl);
