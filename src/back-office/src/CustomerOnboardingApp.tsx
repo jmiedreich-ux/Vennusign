@@ -18,13 +18,18 @@ import {
 } from "./customerOnboardingApi";
 import { signInWithPasskey } from "./passkeySignIn";
 import CustomerOnboardingTimeline from "./CustomerOnboardingTimeline";
+import { authenticatedCustomerDestination, canonicalOnboardingPath, safeLocalReturnPath } from "./customerEntryRouting.mjs";
 
 export default function CustomerOnboardingApp() {
   const configuration = useMemo(loadBackOfficeConfiguration, []);
+  const entryPath = useMemo(() => window.location.pathname.replace(/\/$/, "") || "/", []);
   const returnPath = useMemo(() => {
     const requested = new URLSearchParams(window.location.search).get("returnPath");
-    return requested?.startsWith("/") && !requested.startsWith("//") ? requested : "/onboarding";
+    return safeLocalReturnPath(requested, canonicalOnboardingPath);
   }, []);
+  const authenticationReturnPath = useMemo(() => returnPath === canonicalOnboardingPath
+    ? canonicalOnboardingPath
+    : `${canonicalOnboardingPath}?returnPath=${encodeURIComponent(returnPath)}`, [returnPath]);
   const [plans, setPlans] = useState<PublicOnboardingPlan[]>([]);
   const [session, setSession] = useState<CustomerSession>();
   const [onboarding, setOnboarding] = useState<CustomerOnboardingSnapshot>();
@@ -42,19 +47,23 @@ export default function CustomerOnboardingApp() {
     ]).then(async ([availablePlans, activeSession]) => {
       setPlans(availablePlans);
       setSession(activeSession);
-      if (activeSession && returnPath !== "/onboarding") {
-        window.location.replace(returnPath);
-        return;
+      if (activeSession) {
+        const snapshot = await loadCustomerOnboarding(configuration, controller.signal);
+        const destination = authenticatedCustomerDestination(entryPath, returnPath, snapshot);
+        if (destination) {
+          window.location.replace(destination);
+          return;
+        }
+        setOnboarding(snapshot);
       }
-      if (activeSession) setOnboarding(await loadCustomerOnboarding(configuration, controller.signal));
       const returned = new URLSearchParams(window.location.search).get("checkout");
       if (returned === "success") setNotice("Stripe returned successfully. Your plan will complete only after Vennusign receives the verified webhook.");
       if (returned === "canceled") setNotice("Checkout was canceled. Your onboarding progress is saved and no entitlement was changed.");
     }).catch(reason => {
-      if (!(reason instanceof DOMException && reason.name === "AbortError")) setError("Vennusign signup is temporarily unavailable.");
+      if (!(reason instanceof DOMException && reason.name === "AbortError")) setError("Vennusign could not safely resolve this account's onboarding journey. Sign in again or contact support; no new journey was created.");
     }).finally(() => setLoading(false));
     return () => controller.abort();
-  }, [configuration, returnPath]);
+  }, [configuration, entryPath, returnPath]);
 
   useEffect(() => {
     if (!session || !onboarding?.firstScreenId) return;
@@ -84,7 +93,7 @@ export default function CustomerOnboardingApp() {
     event.preventDefault();
     const email = String(new FormData(event.currentTarget).get("email") ?? "").trim();
     void run("email", async () => {
-      await requestEmailLink(configuration, email, returnPath);
+      await requestEmailLink(configuration, email, authenticationReturnPath);
       setNotice("If that verified account exists, a secure sign-in link is on its way.");
     });
   };
@@ -94,13 +103,15 @@ export default function CustomerOnboardingApp() {
     const email = String(new FormData(event.currentTarget).get("passkeyEmail") ?? "").trim();
     void run("passkey", async () => {
       await signInWithPasskey(configuration, email);
-      if (returnPath !== "/onboarding") {
-        window.location.replace(returnPath);
+      const activeSession = await loadCustomerSession(configuration);
+      const snapshot = await loadCustomerOnboarding(configuration);
+      const destination = authenticatedCustomerDestination(entryPath, returnPath, snapshot);
+      if (destination) {
+        window.location.replace(destination);
         return;
       }
-      const activeSession = await loadCustomerSession(configuration);
       setSession(activeSession);
-      setOnboarding(await loadCustomerOnboarding(configuration));
+      setOnboarding(snapshot);
     });
   };
 
@@ -169,9 +180,9 @@ export default function CustomerOnboardingApp() {
 
     {!session ? <section className="customer-entry__auth" aria-labelledby="signup-heading">
       <div className="customer-entry__intro">
-        <span>Digital menus, without the friction</span>
-        <h1 id="signup-heading">Put your first screen live.</h1>
-        <p>Sign in first. Then name your organization, choose a plan, and resume at any time.</p>
+        <span>{entryPath === "/signin" ? "Return to your Vennusign workspace" : "Digital menus, without the friction"}</span>
+        <h1 id="signup-heading">{entryPath === "/signin" ? "Welcome back." : "Put your first screen live."}</h1>
+        <p>{entryPath === "/signin" ? "Sign in to resume an unfinished opening checklist or enter your authorized Back Office workspace." : "Sign in first. Then name your organization, choose a plan, and resume at any time."}</p>
         <ol><li>Secure account</li><li>Tier-defined trial or paid plan</li><li>Venue and first screen</li></ol>
         <section className="customer-entry__plan-preview" aria-labelledby="available-plans-heading">
           <h2 id="available-plans-heading">Available plans</h2>
@@ -183,10 +194,10 @@ export default function CustomerOnboardingApp() {
         </section>
       </div>
       <div className="customer-entry__auth-card">
-        <h2>Start with your account</h2>
+        <h2>{entryPath === "/signin" ? "Sign in to Vennusign" : "Start with your account"}</h2>
         <p>No password to remember.</p>
-        <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", returnPath)}>Continue with Google</a>
-        <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple", returnPath)}>Continue with Apple</a>
+        <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}>Continue with Google</a>
+        <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple", authenticationReturnPath)}>Continue with Apple</a>
         <div className="customer-entry__divider"><span>Returning customers</span></div>
         <form onSubmit={usePasskey}>
           <label htmlFor="passkeyEmail">Email for your passkey</label>
@@ -202,11 +213,11 @@ export default function CustomerOnboardingApp() {
     </section> : !onboarding ? <section className="customer-onboarding customer-onboarding__panel" aria-labelledby="onboarding-unavailable-heading">
       <span>Progress unavailable</span>
       <h1 id="onboarding-unavailable-heading">We could not safely load your onboarding yet.</h1>
-      <p>Your saved progress has not been changed. Refresh to try again before creating or selecting anything.</p>
+      <p>Your saved progress has not been changed and Vennusign did not create a replacement journey. Refresh, sign in again, or contact support if your organization access changed.</p>
       <button type="button" onClick={() => window.location.reload()}>Refresh onboarding</button>
     </section> : <section className="customer-onboarding" aria-labelledby="onboarding-heading">
       <div className="customer-onboarding__welcome">
-        <span>Welcome, {session.displayName}</span>
+        <span>Back Office onboarding · Welcome, {session.displayName}</span>
         <h1 id="onboarding-heading">Your opening checklist</h1>
         <p>Progress saves automatically. Entitlement always comes from Vennusign’s verified subscription state.</p>
       </div>
@@ -262,7 +273,8 @@ export default function CustomerOnboardingApp() {
         <span>Go Live</span><h2>{onboarding.firstScreenStatus === "online" ? "Your first display is online" : "Your first display is paired"}</h2>
         <p>{onboarding.firstScreenStatus === "online" ? "Vennusign received the player heartbeat. Status continues to update automatically." : "The screen record is linked, but pairing alone does not mean the device is active. Start the player and keep it connected; this status updates automatically when its heartbeat arrives."}</p>
         <dl className="customer-onboarding__device-status"><div><dt>Pairing</dt><dd>Linked</dd></div><div><dt>Device</dt><dd>{onboarding.firstScreenStatus === "online" ? "Online" : "Offline / waiting"}</dd></div>{onboarding.firstScreenLastSeenUtc ? <div><dt>Last seen</dt><dd>{new Date(onboarding.firstScreenLastSeenUtc).toLocaleString()}</dd></div> : null}</dl>
-        <button type="button" onClick={refreshOnboarding} disabled={busy === "refresh"}>{busy === "refresh" ? "Refreshing…" : "Refresh device status"}</button>
+        <div className="customer-onboarding__completion-actions"><a href="/">Open Back Office</a><button className="quiet" type="button" onClick={refreshOnboarding} disabled={busy === "refresh"}>{busy === "refresh" ? "Refreshing…" : "Refresh device status"}</button></div>
+        <p className="customer-onboarding__help">Back Office rechecks your organization membership and saved venue before it opens. A paired but offline display does not block venue setup.</p>
       </section>}</div>
     </section>}
   </main>;

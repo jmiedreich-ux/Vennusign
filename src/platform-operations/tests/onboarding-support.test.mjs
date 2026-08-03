@@ -17,6 +17,7 @@ test("Platform Operations onboarding support is protected and read-only", () => 
   assert.match(api, /X-Vennusign-Platform-Operations-Key/);
   assert.match(app, /path: "onboarding"/);
   assert.doesNotMatch(view, /entitlement.*(?:save|update)|subscription.*(?:save|update)|pair.*(?:save|update)/i);
+  assert.match(view, /never enters or impersonates a customer workspace/);
 });
 
 test("support timeline exposes essential states and safe actions", () => {
