@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { PlatformOperationsApiError, loadSession, type PlatformOperationsSession } from "./api";
+import { PlatformOperationsApiError, loadSession, type PlatformOperationsSession, type VenueDirectoryQuery } from "./api";
 import { loadPlatformOperationsConfiguration } from "./config";
 import "./styles.css";
 
@@ -34,6 +34,7 @@ export default function App() {
   const [session, setSession] = useState<PlatformOperationsSession>();
   const [route, setRoute] = useState(currentRoute);
   const [error, setError] = useState<string>();
+  const [venueDirectoryQuery, setVenueDirectoryQuery] = useState<VenueDirectoryQuery>({});
 
   useEffect(() => {
     const controller = new AbortController();
@@ -67,6 +68,12 @@ export default function App() {
     setApiKey(suppliedKey);
   };
 
+  const openVenues = (query: VenueDirectoryQuery = {}, venueId?: string) => {
+    setVenueDirectoryQuery(query);
+    setSelectedVenueId(venueId);
+    window.location.hash = "/venues";
+  };
+
   if (!apiKey || error) {
     return <main className="centered"><form className="access-card" onSubmit={authorize}><span>Vennusign Internal</span><h1>Platform Operations access</h1><p>{error ?? "Enter the access key supplied through the protected operations channel."}</p><label htmlFor="platformOperationsKey">Access key</label><input id="platformOperationsKey" name="platformOperationsKey" type="password" autoComplete="current-password" required /><button type="submit">Open workspace</button></form></main>;
   }
@@ -86,11 +93,11 @@ export default function App() {
       <main>
         <header><div><p>Internal operations</p><h1>{route.label}</h1></div><span className="environment">Live workspace</span></header>
         {route.path === "dashboard"
-          ? <OperationalDashboard configuration={configuration} apiKey={apiKey} />
+          ? <OperationalDashboard configuration={configuration} apiKey={apiKey} onOpenVenues={openVenues} />
           : route.path === "venues"
           ? selectedVenueId
             ? <VenueDetail configuration={configuration} apiKey={apiKey} venueId={selectedVenueId} onBack={() => setSelectedVenueId(undefined)} />
-            : <VenueDirectory configuration={configuration} apiKey={apiKey} onSelectVenue={setSelectedVenueId} />
+            : <VenueDirectory configuration={configuration} apiKey={apiKey} initialQuery={venueDirectoryQuery} onSelectVenue={setSelectedVenueId} />
           : route.path === "tiers"
             ? <TierManagement configuration={configuration} apiKey={apiKey} />
           : route.path === "onboarding"
