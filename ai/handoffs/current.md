@@ -2,14 +2,14 @@
 
 ## Work Package
 - ID: Issue-404
-- Status: In Review
+- Status: Complete through PR #405
 - Execution mode: Collaborative
 
 ## Git State
-- Branch: `issue/404-display-pairing-cors`
+- Branch: `master`
 - Issue: #404
 - Pull request: #405
-- CI state: pending
+- CI state: all applicable checks passed on reviewed head `f513270`; PR #405 merged
 
 ## Completed This Session
 - Reproduced Display pairing failure as a missing browser CORS response rather than an API registration failure.
@@ -26,14 +26,13 @@
 - GitHub Actions pending.
 
 ## Remaining Work
-- Reload `http://localhost:5175/pair` and confirm the six-digit code appears.
-- Validate, review, and merge PR #405, then release the claim.
+- Reload `http://localhost:5175/pair` and enter the displayed six-digit code in onboarding.
 
 ## Known Risks or Blockers
 - A physical device using a LAN hostname/IP requires separate HTTPS hostname and production-style explicit-origin configuration; this fix targets the current localhost simulation.
 
 ## Exact Next Action
-- Reload `http://localhost:5175/pair`; after the code appears, validate and merge Issue #404.
+- Reload `http://localhost:5175/pair` and complete the first-screen pairing flow.
 
 ## Do Not Redo or Reverse
 - Do not replace explicit CORS origins with a wildcard.
