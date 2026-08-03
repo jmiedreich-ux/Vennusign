@@ -2,7 +2,7 @@
 
 ## Status
 
-In Review on Collaborative issue #407 and PR #408. Owner manual testing is approved; exact-head CI and ChatGPT review are pending.
+In Review on Collaborative issue #407 and PR #408. Owner manual testing is approved and required affected-area CI passed; final exact-head ChatGPT review is pending.
 
 ## Execution Mode
 
@@ -83,6 +83,7 @@ The Form Validation and Button patterns were consulted. Applicable guidance:
 - Integration, Azure SQL, external-service, TV, Display, and unrelated Admin validation were intentionally not run.
 - UX accessibility check passed keyboard, semantics, focus, labels, contrast, and control-name checks. Its generic field-error recommendation is not applicable to the quota alert because quota is a form-level server rule and native field validation remains in place.
 - GitHub Actions and ChatGPT review are intentionally not started before manual testing approval.
+- GitHub Actions `phase02-tests` run #30784731394 passed API, data-access, Display, Venue Admin, docs, and stable `build-and-test` gates on implementation/reconciliation head `689d06e`; unrelated Admin, dev-control, and TV jobs were correctly skipped.
 - Display pairing now recovers from a deleted persisted screen ID by re-registering and replacing browser storage; focused pairing tests passed 4/4 and the Display production build passed.
 - Owner-approved local cleanup ran through `sqlcmd` in one transaction: 3 venues, 4 venue-assigned screens, and their venue-owned dependent records were deleted; onboarding `VenueId` and `FirstScreenId` links were reset.
 - Post-cleanup verification returned zero venues, zero venue-assigned screens, and zero onboarding venue/screen links. One organization, one customer user, and five subscription tiers were preserved.

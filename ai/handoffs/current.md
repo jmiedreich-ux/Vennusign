@@ -9,7 +9,7 @@
 - Branch: `issue/407-screen-quota-gating`
 - Issue: #407
 - Pull request: #408
-- CI state: pending on head `ca14e01`
+- CI state: required affected-area `phase02-tests` run #30784731394 passed on `689d06e`; final documentation reconciliation rerun pending
 
 ## Completed This Session
 - Confirmed the Screens GET path incorrectly calls the add-screen entitlement guard and hides assigned screens at quota.
@@ -37,6 +37,7 @@
 - Local database verification: venues 0, assigned screens 0, onboarding venue/screen links 0, organizations 1, customer users 1, subscription tiers 5.
 - Focused Display pairing tests passed 4/4 and the Display production build passed.
 - SQL verified the newly paired screen is Online and assigned to the correct 1-screen Restaurant Starter trial; the stale pre-fix API process was rebuilt and restarted from the active branch on ports 7138/5192.
+- GitHub Actions run #30784731394 passed all applicable API, data-access, Display, Venue Admin, docs, and stable `build-and-test` gates on `689d06e`; unrelated checks were correctly skipped.
 
 ## Remaining Work
 - Owner repeats onboarding from venue setup, pairs the first display, and verifies the new screen appears in Screens.
