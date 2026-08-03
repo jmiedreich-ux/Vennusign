@@ -21,6 +21,7 @@ public class DisplayController : ControllerBase
     private readonly IDateRangePromotionService? promotionService;
     private readonly ITapListRepository? tapListRepository;
     private readonly TimeProvider timeProvider;
+    private readonly IScreenContentDeliveryService? deliveryService;
 
     public DisplayController(
         IScreenRepository screenRepository,
@@ -32,9 +33,10 @@ public class DisplayController : ControllerBase
         IEmergencyBroadcastService? emergencyBroadcastService = null,
         TimeProvider? timeProvider = null,
         IDateRangePromotionService? promotionService = null,
-        ITapListRepository? tapListRepository = null) =>
-        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.emergencyBroadcastService, this.promotionService, this.tapListRepository, this.timeProvider) =
-        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, emergencyBroadcastService, promotionService, tapListRepository, timeProvider ?? TimeProvider.System);
+        ITapListRepository? tapListRepository = null,
+        IScreenContentDeliveryService? deliveryService = null) =>
+        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.emergencyBroadcastService, this.promotionService, this.tapListRepository, this.timeProvider, this.deliveryService) =
+        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, emergencyBroadcastService, promotionService, tapListRepository, timeProvider ?? TimeProvider.System, deliveryService);
 
     [HttpGet("{screenId:guid}/content")]
     [ProducesResponseType<DisplayContentResponse>(StatusCodes.Status200OK)]
@@ -68,6 +70,9 @@ public class DisplayController : ControllerBase
             LastSeenUtc = screen.LastSeen,
             Layout = "default"
         };
+        response.ContentRevision = deliveryService is null
+            ? null
+            : (await deliveryService.GetLatestAsync(screenId, cancellationToken).ConfigureAwait(false))?.AuthoritativeRevision;
 
         if (!screen.VenueId.HasValue)
         {
@@ -291,5 +296,22 @@ public class DisplayController : ControllerBase
             Platform = platform,
             AppVersion = appVersion
         });
+    }
+
+    [HttpPost("{screenId:guid}/content-receipts")]
+    public async Task<ActionResult<ScreenContentReceiptResponse>> ContentReceipt(
+        Guid screenId, ScreenContentReceiptRequest request, CancellationToken cancellationToken)
+    {
+        if (deliveryService is null) return Problem(statusCode: StatusCodes.Status503ServiceUnavailable);
+        try
+        {
+            var delivery = await deliveryService.AcknowledgeAsync(screenId, new ScreenContentReceipt(
+                request.Revision, request.State, request.ScreenKey, request.PlayerVersion, request.ShellVersion,
+                request.Platform, request.FailureCode, request.FailureDetail, request.Recovered), cancellationToken).ConfigureAwait(false);
+            return delivery is null
+                ? NotFound()
+                : Ok(new ScreenContentReceiptResponse(delivery.AuthoritativeRevision, delivery.AppliedRevision, delivery.State, delivery.AppliedUtc));
+        }
+        catch (ArgumentException exception) { return ValidationProblem(exception.Message); }
     }
 }
