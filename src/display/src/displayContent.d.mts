@@ -5,6 +5,7 @@ export type DisplayContent = {
   screenName: string;
   status: string;
   lastSeenUtc: string | null;
+  contentRevision?: number | null;
   layout: string;
   venueName?: string | null;
   menuName?: string | null;
