@@ -19,6 +19,7 @@ import {
 import type { BackOfficeConfiguration } from "./config";
 import VideoWallBuilder from "./VideoWallBuilder";
 import { identityHasChanges, updateIdentityDraft, type ScreenIdentityDraft } from "./actionRecovery.mjs";
+import { useDestructiveReview } from "./DestructiveReviewDialog";
 
 type Props = {
   configuration: BackOfficeConfiguration;
@@ -67,6 +68,7 @@ export default function ScreenManagement({
   const [healthFilter, setHealthFilter] = useState("all");
   const [selectedScreenId, setSelectedScreenId] = useState("");
   const [delivery, setDelivery] = useState<{ screenId: string; state: "pending" | "requested" | "received" | "applied" | "recovered" | "superseded" | "offline" | "failed"; requestedUtc: string; reason?: string }>();
+  const { review, reviewDialog } = useDestructiveReview();
 
   const refresh = async () => {
     const current = await loadManagedScreens(configuration, apiKey, venueId);
@@ -141,7 +143,7 @@ export default function ScreenManagement({
   };
 
   const completeReplacement = async () => {
-    if (!replacementPreview || !window.confirm(`Replace the player for ${replacementPreview.targetName}? The old player credential will stop working immediately.`)) return;
+    if (!replacementPreview || !await review({ title: `Replace the player for ${replacementPreview.targetName}?`, consequence: "The old player credential will stop working immediately. Screen configuration, delivery history, and video-wall position will stay with the logical screen.", confirmLabel: "Replace player" })) return;
     setBusyId("replacement-complete"); setError(undefined); setNotice(undefined);
     try {
       const result = await completeScreenReplacement(configuration, apiKey, replacementTargetId, replacementCode, replacementPreview.targetUpdatedUtc!);
@@ -196,7 +198,7 @@ export default function ScreenManagement({
   };
 
   const setArchived = async (screen: ManagedScreen, archived: boolean) => {
-    if (archived && !window.confirm(`Archive ${screen.name}? It will stop receiving content and can be restored later.`)) return;
+    if (archived && !await review({ title: `Archive ${screen.name}?`, consequence: "This screen will stop receiving content and will no longer count as active. It can be restored later.", confirmLabel: "Archive screen", tone: "caution" })) return;
     setBusyId(screen.id); setError(undefined); setNotice(undefined);
     try {
       await setManagedScreenArchived(configuration, apiKey, venueId, screen.id, archived);
@@ -207,7 +209,7 @@ export default function ScreenManagement({
   };
 
   const reset = async (screen: ManagedScreen) => {
-    if (!window.confirm(`Reset ${screen.name}'s connection state? The player will need to reconnect.`)) return;
+    if (!await review({ title: `Reset ${screen.name}'s connection state?`, consequence: "The current player session will be cleared and the player must reconnect before it can receive new content.", confirmLabel: "Reset connection", tone: "caution" })) return;
     setBusyId(screen.id); setError(undefined); setNotice(undefined);
     try {
       await resetManagedScreen(configuration, apiKey, venueId, screen.id);
@@ -218,7 +220,7 @@ export default function ScreenManagement({
   };
 
   const unpair = async (screen: ManagedScreen) => {
-    if (!window.confirm(`Unpair ${screen.name}? This releases it from the venue for replacement. This cannot be undone from this list.`)) return;
+    if (!await review({ title: `Unpair ${screen.name}?`, consequence: "This releases the screen from the venue and invalidates its current pairing. It cannot be restored from this list; a replacement must use a new pairing code.", confirmLabel: "Unpair screen", typedConfirmation: screen.name })) return;
     setBusyId(screen.id); setError(undefined); setNotice(undefined);
     try {
       await unpairManagedScreen(configuration, apiKey, venueId, screen.id);
@@ -249,6 +251,7 @@ export default function ScreenManagement({
   const selectedScreen = activeScreens.find(screen => screen.id === selectedScreenId);
 
   return <article className="screen-management">
+    {reviewDialog}
     <div className="screen-management-heading">
       <div><p>Display fleet</p><h3>Screens ({activeScreens.length} active · {screens.length - activeScreens.length} archived)</h3></div>
       <span>{selectedScreen ? `Target: ${selectedScreen.name}` : "No delivery target selected"}</span>

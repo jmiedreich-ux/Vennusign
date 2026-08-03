@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { createMealPeriod, deleteMealPeriod, loadMealPeriods, reorderMealPeriods, updateMealPeriod, type MealPeriod, type MealPeriodSnapshot } from "./api";
 import type { BackOfficeConfiguration } from "./config";
+import { useDestructiveReview } from "./DestructiveReviewDialog";
 
 type Props = { configuration: BackOfficeConfiguration; apiKey: string; venueId: string };
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -14,6 +15,7 @@ export default function MealPeriodAdministration({ configuration, apiKey, venueI
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
+  const { review, reviewDialog } = useDestructiveReview();
   const refresh = () => loadMealPeriods(configuration, apiKey, venueId).then(setSnapshot);
   useEffect(() => { refresh().catch(() => setError("Meal periods could not be loaded.")); }, [apiKey, configuration, venueId]);
 
@@ -42,7 +44,7 @@ export default function MealPeriodAdministration({ configuration, apiKey, venueI
   };
   const remove = async (id: string) => {
     const period = snapshot?.mealPeriods.find(item => item.id === id);
-    if (!period || !window.confirm(`Delete ${period.name}? This removes its scheduled content rules.`)) return;
+    if (!period || !await review({ title: `Delete ${period.name}?`, consequence: "This removes the meal period and its scheduled content rules. Other periods retain their current priority.", confirmLabel: "Delete meal period" })) return;
     setBusy(true); setError(undefined); setNotice(undefined);
     try { await deleteMealPeriod(configuration, apiKey, venueId, id); await refresh(); setNotice(`${period.name} deleted.`); }
     catch { setError("The meal period could not be deleted."); }
@@ -67,6 +69,7 @@ export default function MealPeriodAdministration({ configuration, apiKey, venueI
   const activePeriod = snapshot.mealPeriods.find(period => period.id === snapshot.activeMealPeriodId);
   const nextPeriod = snapshot.mealPeriods.find(period => period.id === snapshot.nextMealPeriodId);
   return <article className="menu-editor meal-periods">
+    {reviewDialog}
     <div className="menu-editor-heading"><div><p>Venue-local schedule</p><h3>Meal periods</h3></div><span>{snapshot.mealPeriods.length} periods</span></div>
     <p>Times use the venue timezone. Overlaps are allowed and resolved by listed priority.</p>
     <aside className="schedule-current" role="status">

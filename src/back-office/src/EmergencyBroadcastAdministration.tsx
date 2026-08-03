@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { cancelEmergencyBroadcast, createEmergencyBroadcast, loadEmergencyBroadcasts, type EmergencyBroadcast } from "./api";
 import type { BackOfficeConfiguration } from "./config";
+import { useDestructiveReview } from "./DestructiveReviewDialog";
 
 type Props = {
   configuration: BackOfficeConfiguration; apiKey: string; venueId: string; enabled: boolean;
@@ -18,12 +19,13 @@ export default function EmergencyBroadcastAdministration({ configuration, apiKey
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
+  const { review, reviewDialog } = useDestructiveReview();
   const reload = () => { void loadEmergencyBroadcasts(configuration, apiKey, venueId).then(setRows).catch(() => setError("Broadcasts could not be loaded.")); };
   useEffect(reload, [apiKey, configuration, venueId]);
   const create = async (event: FormEvent) => {
     event.preventDefault(); setError(undefined); setNotice(undefined);
     const target = screenId ? screens.find(screen => screen.id === screenId)?.name ?? "the selected screen" : `all ${screens.length} venue screen${screens.length === 1 ? "" : "s"}`;
-    if (!window.confirm(`Activate “${title}” on ${target} for ${duration} minute${duration === 1 ? "" : "s"}? This overrides normal content immediately.`)) return;
+    if (!await review({ title: `Activate “${title}”?`, consequence: `This will override normal content on ${target} immediately for ${duration} minute${duration === 1 ? "" : "s"}. Delivery acknowledgement is not available.`, confirmLabel: "Activate broadcast", tone: "caution" })) return;
     setBusy(true);
     try {
       const created = await createEmergencyBroadcast(configuration, apiKey, venueId, {
@@ -35,7 +37,7 @@ export default function EmergencyBroadcastAdministration({ configuration, apiKey
     finally { setBusy(false); }
   };
   const cancel = async (row: EmergencyBroadcast) => {
-    if (!window.confirm(`Cancel “${row.title}” now and return its target to normal content?`)) return;
+    if (!await review({ title: `Cancel “${row.title}”?`, consequence: "A cancellation will be queued immediately and the target will return to normal content after the player receives it. Delivery acknowledgement is not available.", confirmLabel: "Cancel broadcast", tone: "caution" })) return;
     setBusy(true); setError(undefined); setNotice(undefined);
     try { await cancelEmergencyBroadcast(configuration, apiKey, venueId, row.id); reload(); setNotice(`“${row.title}” cancellation queued. Verify player status if delivery is critical.`); }
     catch { setError("Broadcast could not be cancelled."); }
@@ -48,6 +50,7 @@ export default function EmergencyBroadcastAdministration({ configuration, apiKey
     : `All venue screens (${screens.length})`;
 
   return <article className="menu-editor emergency-broadcast-admin">
+    {reviewDialog}
     <div className="menu-editor-heading"><div><p>Priority override</p><h3>Emergency broadcast</h3></div><span>{active.length} active</span></div>
     {showUpgradePrompt && !enabled ? <aside className="tier-prompt"><div><strong>Emergency Broadcast requires Pro</strong><p>Controls remain visible while activation is soft locked.</p></div></aside> : null}
     <p>Emergency broadcasts are the highest-priority override. Activation and cancellation are sent in real time, but delivery acknowledgement is not currently available.</p>

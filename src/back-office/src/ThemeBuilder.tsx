@@ -12,6 +12,7 @@ import {
   type ManagedScreen
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
+import { useDestructiveReview } from "./DestructiveReviewDialog";
 
 type Props = {
   configuration: BackOfficeConfiguration;
@@ -52,6 +53,7 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
   const [message, setMessage] = useState<string>();
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
+  const { review, reviewDialog } = useDestructiveReview();
 
   const load = async () => {
     setLoading(true); setLoadFailed(false); setMessage(undefined);
@@ -139,7 +141,7 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
   };
 
   const resetTheme = async () => {
-    if (!window.confirm("Reset the venue-wide theme to Vennusign defaults? All active screens will receive the reset.")) return;
+    if (!await review({ title: "Reset the venue-wide theme?", consequence: "All custom theme values will be replaced with Vennusign defaults and the reset will be queued for every active screen.", confirmLabel: "Reset venue theme" })) return;
     setBusy(true); setMessage(undefined);
     try {
       const saved = await resetVenueTheme(configuration, apiKey, venueId);
@@ -162,6 +164,7 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
   const titleContrast = theme ? contrastRatio(theme.titleColor, theme.boardBackgroundColor) : 0;
 
   return <article className="theme-builder">
+    {reviewDialog}
     <div className="theme-builder__heading">
       <div><p>All-tier styling</p><h3>Theme builder</h3></div>
       <div><button disabled={busy || !theme} onClick={saveBasic}>Save basic theme</button><button disabled={busy || !theme} onClick={resetTheme}>Reset theme</button></div>

@@ -22,7 +22,7 @@ test("meal periods persist priority, enable state, and destructive confirmation"
   assert.match(meals, /reorderMealPeriods/);
   assert.match(meals, /Current:/);
   assert.match(meals, /Next:/);
-  assert.match(meals, /window\.confirm/);
+  assert.match(meals, /useDestructiveReview/);
   assert.match(meals, /save\(\{ \.\.\.period, isEnabled:/);
   assert.match(api, /meal-periods.*\/order/s);
 });
@@ -31,15 +31,15 @@ test("playlist changes are screen-scoped, editable, and recoverable", () => {
   assert.match(playlists, /Select a screen/);
   assert.match(playlists, /updatePlaylistSlide/);
   assert.match(playlists, /Active days/);
-  assert.match(playlists, /window\.confirm/);
+  assert.match(playlists, /useDestructiveReview/);
   assert.match(playlists, /role="status"/);
 });
 
 test("live overrides disclose target impact, confirm actions, and preserve history", () => {
   assert.match(broadcasts, /Target impact/);
-  assert.match(broadcasts, /window\.confirm/g);
+  assert.match(broadcasts, /useDestructiveReview/);
   assert.match(broadcasts, /delivery acknowledgement is not currently available/);
   assert.match(broadcasts, /Recent broadcast history/);
   assert.match(promotions, /highest numeric priority wins/);
-  assert.match(promotions, /window\.confirm/);
+  assert.match(promotions, /useDestructiveReview/);
 });

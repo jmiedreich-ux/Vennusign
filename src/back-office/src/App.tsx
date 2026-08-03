@@ -37,6 +37,7 @@ import UpgradeModal, { type BillingInterval } from "./UpgradeModal";
 import BillingStatusCard from "./BillingStatusCard";
 import TierDecisionDialog from "./TierDecisionDialog";
 import AccountSecurity from "./AccountSecurity";
+import { useDestructiveReview } from "./DestructiveReviewDialog";
 import {
   clearPendingTierDecision,
   readPendingTierDecision,
@@ -81,6 +82,7 @@ export default function App() {
   const [haasError, setHaasError] = useState<string>();
   const [contextSwitching, setContextSwitching] = useState(false);
   const [contextNotice, setContextNotice] = useState<string>();
+  const { review, reviewDialog } = useDestructiveReview();
   const [checkoutReturn, setCheckoutReturn] = useState<CheckoutReturnState | undefined>(
     () => readCheckoutReturnState(window.location.search)
   );
@@ -339,9 +341,12 @@ export default function App() {
       setContextNotice("That venue is no longer available in this account.");
       return;
     }
-    const confirmed = window.confirm(
-      `Switch to ${destination.organizationName} — ${destination.venueName}? Save any unfinished changes before switching workspaces.`
-    );
+    const confirmed = await review({
+      title: `Switch to ${destination.venueName}?`,
+      consequence: `The active workspace will change to ${destination.organizationName} — ${destination.venueName}. Save unfinished edits before continuing. Account permissions will be rechecked by the server.`,
+      confirmLabel: "Switch workspace",
+      tone: "caution"
+    });
     if (!confirmed) return;
 
     setContextSwitching(true);
@@ -371,6 +376,7 @@ export default function App() {
   };
 
   return <div className="shell">
+    {reviewDialog}
     <aside>
       <div className="brand"><span>V</span><div><strong>Vennusign</strong><small>Back Office</small></div></div>
       <nav aria-label="Back Office">

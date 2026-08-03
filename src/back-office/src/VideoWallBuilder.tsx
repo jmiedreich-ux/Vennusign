@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { loadVideoWalls, removeVideoWall, saveVideoWall, type ManagedScreen, type VideoWallSnapshot } from "./api";
 import type { BackOfficeConfiguration } from "./config";
+import { useDestructiveReview } from "./DestructiveReviewDialog";
 
 type Props = { configuration: BackOfficeConfiguration; apiKey: string; venueId: string; screens: ManagedScreen[]; showUpgradePrompt?: boolean };
 const layoutSizes: Record<string, number> = { "2x1": 2, "3x1": 3, "2x2": 4 };
@@ -14,6 +15,7 @@ export default function VideoWallBuilder({ configuration, apiKey, venueId, scree
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
   const [editingName, setEditingName] = useState<string>();
+  const { review, reviewDialog } = useDestructiveReview();
 
   const refresh = () => loadVideoWalls(configuration, apiKey, venueId).then(setSnapshot);
   useEffect(() => { refresh().catch(() => setError("Video walls could not be loaded.")); }, [apiKey, configuration, venueId]);
@@ -31,7 +33,7 @@ export default function VideoWallBuilder({ configuration, apiKey, venueId, scree
   };
 
   const remove = async (wallName: string) => {
-    if (!window.confirm(`Remove ${wallName}? Its screens will return to independent layouts.`)) return;
+    if (!await review({ title: `Remove ${wallName}?`, consequence: "The wall grouping will be deleted and its screens will return to independent layouts. Screen records and content remain available.", confirmLabel: "Remove video wall", tone: "caution" })) return;
     setBusy(true); setError(undefined); setNotice(undefined);
     try { await removeVideoWall(configuration, apiKey, venueId, wallName); setNotice(`${wallName} removed.`); await refresh(); }
     catch { setError("The video wall could not be removed."); }
@@ -56,6 +58,7 @@ export default function VideoWallBuilder({ configuration, apiKey, venueId, scree
   };
 
   return <section className="video-wall-builder">
+    {reviewDialog}
     <div className="video-wall-heading"><div><p>Pro layout</p><h4>Video wall builder</h4></div><span>2×1 · 3×1 · 2×2</span></div>
     {showUpgradePrompt && snapshot && !snapshot.enabled ? <aside className="tier-prompt" role="status"><div><strong>Video Wall is a higher-tier feature</strong><p>The builder stays visible so you can preview the workflow. Upgrade or add a venue override to configure walls.</p></div></aside> : null}
     {error ? <p className="state error" role="alert">{error}</p> : null}

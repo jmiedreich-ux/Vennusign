@@ -15,7 +15,7 @@ test("Back Office keeps account identity separate from the active organization a
 });
 
 test("venue switching is confirmed, server-authorized, and announced", () => {
-  assert.match(app, /window\.confirm/);
+  assert.match(app, /useDestructiveReview/);
   assert.match(app, /selectBackOfficeVenue/);
   assert.match(app, /role="status" aria-live="polite"/);
   assert.match(api, /X-Vennusign-Venue-Id/);
