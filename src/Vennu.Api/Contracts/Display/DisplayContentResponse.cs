@@ -14,6 +14,8 @@ public class DisplayContentResponse
 
     public DateTime? LastSeenUtc { get; set; }
 
+    public long? ContentRevision { get; set; }
+
     public string Layout { get; set; } = "default";
 
     public string? VenueName { get; set; }
