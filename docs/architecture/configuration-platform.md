@@ -40,6 +40,17 @@ Use `VENU_CONFIGURATION_KEY_PROVIDER=AzureKeyVault`, set `VENU_CONFIGURATION_KEY
 
 Super Admin `Configuration` supports environment/application filtering, typed values, write-only secret replacement/clear, restart notices, secret-safe export, dry-run import, conflict review, and atomic apply. Secrets are never returned or included in standard exports.
 
+The page also reports provider load health, last successful load, sanitized failure type, secret replacement age, and 90-day rotation reminders. Revision history exposes metadata and fingerprints only; secret payloads remain protected and are never returned. Rollback copies the selected stored payload into a new immutable revision and audit record rather than rewriting history.
+
+## Recovery
+
+- Initial provider load failure stops startup so an instance cannot silently run with missing security configuration.
+- A transient reload failure retains the last successful in-memory snapshot and marks provider health unhealthy.
+- Correct the database/Key Vault condition, then wait for the reload interval or restart the application.
+- Use an environment-variable override for emergency recovery; remove it after the database value is corrected.
+- A stale edit, import preview, or rollback returns conflict and must be reloaded before retrying.
+- Rotate any credential that was previously committed or otherwise exposed; database encryption does not retroactively protect repository history.
+
 ## Migrated settings
 
 Registered API definitions cover customer Google/Apple/email authentication, Stripe revenue/webhook/checkout/portal settings, Square OAuth/webhooks, Toast catalog/inventory/polling/webhooks, Clover OAuth/catalog/webhooks, and the Super Admin key. Existing options consumers require no alternate code path because the provider participates in normal .NET configuration binding.

@@ -21,10 +21,12 @@ using Vennu.Data.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 IConfigurationSecretProtector? databaseSecretProtector = null;
+var configurationProviderHealth = new SystemConfigurationProviderHealth();
 
 var configurationEnvironment = Environment.GetEnvironmentVariable("VENU_CONFIGURATION_ENVIRONMENT");
 if (!string.IsNullOrWhiteSpace(configurationEnvironment))
 {
+    configurationProviderHealth.Enable();
     var configurationConnectionString = Environment.GetEnvironmentVariable("VENU_CONFIGURATION_CONNECTION_STRING")
         ?? builder.Configuration.GetConnectionString("VennuDatabase")
         ?? throw new InvalidOperationException("VENU_CONFIGURATION_CONNECTION_STRING or ConnectionStrings:VennuDatabase is required when database configuration is enabled.");
@@ -46,7 +48,8 @@ if (!string.IsNullOrWhiteSpace(configurationEnvironment))
         ConnectionString = configurationConnectionString,
         EnvironmentName = configurationEnvironment,
         ApplicationScope = "API",
-        SecretProtector = databaseSecretProtector
+        SecretProtector = databaseSecretProtector,
+        Health = configurationProviderHealth
     });
     builder.Configuration.AddEnvironmentVariables();
     builder.Configuration.AddCommandLine(args);
@@ -67,6 +70,7 @@ if (builder.Environment.IsDevelopment() && (adminCorsOrigins is null || adminCor
 var adminCorsEnabled = adminCorsOrigins is { Length: > 0 };
 
 builder.Services.AddControllers();
+builder.Services.AddSingleton(configurationProviderHealth);
 if (databaseSecretProtector is not null) builder.Services.AddSingleton<IConfigurationSecretProtector>(databaseSecretProtector);
 builder.Services
     .AddOptions<CustomerAuthenticationOptions>()
