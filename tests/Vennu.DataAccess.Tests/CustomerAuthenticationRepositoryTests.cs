@@ -60,6 +60,23 @@ public sealed class CustomerAuthenticationRepositoryTests
             new CustomerAuthenticationRepository(new FakeSqlDataAccess()).CreateEmailLoginTokenAsync(token));
     }
 
+    [Fact]
+    public async Task RevokePasskeyAsync_IsUserOwnedAndSoftDeletes()
+    {
+        string? sql = null;
+        object? parameters = null;
+        var data = new FakeSqlDataAccess { ExecuteSqlQueryHandler = (capturedSql, capturedParameters) => { sql = capturedSql; parameters = capturedParameters; return []; } };
+        var userId = Guid.NewGuid();
+
+        Assert.False(await new CustomerAuthenticationRepository(data).RevokePasskeyAsync(userId, Guid.NewGuid(), DateTime.UtcNow));
+        Assert.Contains("UserId=@UserId", sql, StringComparison.Ordinal);
+        Assert.Contains("RevokedUtc IS NULL", sql, StringComparison.Ordinal);
+        Assert.Contains("SERIALIZABLE", sql, StringComparison.Ordinal);
+        Assert.Contains("COUNT(*)", sql, StringComparison.Ordinal);
+        Assert.Contains("EmailVerifiedUtc IS NOT NULL", sql, StringComparison.Ordinal);
+        Assert.Equal(userId, Property<Guid>(parameters!, "UserId"));
+    }
+
     private static T Property<T>(object value, string name) =>
         (T)value.GetType().GetProperty(name)!.GetValue(value)!;
 }

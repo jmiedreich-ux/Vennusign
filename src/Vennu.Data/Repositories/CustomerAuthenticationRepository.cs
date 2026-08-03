@@ -132,6 +132,24 @@ public sealed class CustomerAuthenticationRepository(ISqlDataAccess dataAccess)
         return credential;
     }
 
+    public async Task<bool> RenamePasskeyAsync(Guid userId, Guid id, string displayName, CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<MutationResult, object>(
+            "UPDATE dbo.CustomerPasskeyCredentials SET DisplayName=@DisplayName OUTPUT CAST(1 AS BIT) Applied WHERE Id=@Id AND UserId=@UserId AND RevokedUtc IS NULL;",
+            new { UserId = RequireId(userId, nameof(userId)), Id = RequireId(id, nameof(id)), DisplayName = displayName }, cancellationToken).ConfigureAwait(false)).SingleOrDefault()?.Applied ?? false;
+
+    public async Task<bool> RevokePasskeyAsync(Guid userId, Guid id, DateTime revokedUtc, CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<MutationResult, object>(
+            """
+            SET XACT_ABORT ON; SET TRANSACTION ISOLATION LEVEL SERIALIZABLE; BEGIN TRANSACTION;
+            UPDATE dbo.CustomerPasskeyCredentials WITH (UPDLOCK, HOLDLOCK)
+            SET RevokedUtc=@RevokedUtc OUTPUT CAST(1 AS BIT) Applied
+            WHERE Id=@Id AND UserId=@UserId AND RevokedUtc IS NULL
+              AND ((SELECT COUNT(*) FROM dbo.CustomerPasskeyCredentials WITH (UPDLOCK, HOLDLOCK) WHERE UserId=@UserId AND RevokedUtc IS NULL) > 1
+                   OR EXISTS (SELECT 1 FROM dbo.CustomerUsers WHERE Id=@UserId AND EmailVerifiedUtc IS NOT NULL));
+            COMMIT;
+            """,
+            new { UserId = RequireId(userId, nameof(userId)), Id = RequireId(id, nameof(id)), RevokedUtc = RequireUtc(revokedUtc, nameof(revokedUtc)) }, cancellationToken).ConfigureAwait(false)).SingleOrDefault()?.Applied ?? false;
+
     public async Task<bool> UpdatePasskeyCounterAsync(Guid id, uint counter, DateTime usedUtc, CancellationToken cancellationToken = default) =>
         (await dataAccess.ExecuteSqlQueryAsync<MutationResult, object>(
             "UPDATE dbo.CustomerPasskeyCredentials SET SignatureCounter=@Counter, LastUsedUtc=@UsedUtc OUTPUT CAST(1 AS BIT) Applied WHERE Id=@Id AND RevokedUtc IS NULL AND SignatureCounter <= @Counter;",

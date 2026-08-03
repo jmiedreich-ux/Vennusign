@@ -9,7 +9,7 @@ import {
 test("Back Office shell exposes only implemented customer routes", () => {
   assert.deepEqual(
     backOfficeRoutes.map(route => route.path),
-    ["menu", "screens", "themes", "schedules", "tap-list", "pos", "billing"]
+    ["menu", "screens", "themes", "schedules", "tap-list", "pos", "billing", "security"]
   );
   assert.equal(resolveBackOfficeRoute("#/screens").path, "screens");
   assert.equal(resolveBackOfficeRoute("#/unknown").path, "menu");

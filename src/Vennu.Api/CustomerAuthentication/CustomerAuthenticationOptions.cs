@@ -17,8 +17,8 @@ public sealed class CustomerAuthenticationOptions
 
 public sealed class CustomerPasskeyOptions
 {
-    public string ServerDomain { get; set; } = "localhost";
-    public HashSet<string> Origins { get; set; } = ["https://localhost:5174"];
+    public string ServerDomain { get; set; } = "app.vennu.com";
+    public HashSet<string> Origins { get; set; } = [];
 }
 
 public sealed class CustomerOidcProviderOptions

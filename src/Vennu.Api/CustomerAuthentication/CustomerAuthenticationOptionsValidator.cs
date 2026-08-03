@@ -1,9 +1,16 @@
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
 
 namespace Vennu.Api.CustomerAuthentication;
 
 public sealed class CustomerAuthenticationOptionsValidator : IValidateOptions<CustomerAuthenticationOptions>
 {
+    private readonly bool isDevelopment;
+
+    public CustomerAuthenticationOptionsValidator() : this(false) { }
+    public CustomerAuthenticationOptionsValidator(IHostEnvironment environment) : this(environment.IsDevelopment()) { }
+    public CustomerAuthenticationOptionsValidator(bool isDevelopment) => this.isDevelopment = isDevelopment;
+
     public ValidateOptionsResult Validate(string? name, CustomerAuthenticationOptions options)
     {
         var failures = new List<string>();
@@ -25,12 +32,24 @@ public sealed class CustomerAuthenticationOptionsValidator : IValidateOptions<Cu
             failures.Add("Email link lifetime must be between zero and one hour.");
         if (options.RecentAuthenticationWindow <= TimeSpan.Zero || options.RecentAuthenticationWindow > TimeSpan.FromHours(1))
             failures.Add("Recent-authentication window must be between zero and one hour.");
-        if (string.IsNullOrWhiteSpace(options.Passkeys.ServerDomain) || options.Passkeys.ServerDomain.Contains("://", StringComparison.Ordinal))
+        var serverDomain = options.Passkeys.ServerDomain.Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(serverDomain) || serverDomain.Contains("://", StringComparison.Ordinal) ||
+            serverDomain.Contains('*') || serverDomain.Contains('/') || !Uri.CheckHostName(serverDomain).Equals(UriHostNameType.Dns))
             failures.Add("CustomerAuthentication:Passkeys:ServerDomain must be a host name without a scheme.");
-        if (options.Passkeys.Origins.Count == 0 || options.Passkeys.Origins.Any(origin =>
-            !Uri.TryCreate(origin, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps))
-            failures.Add("CustomerAuthentication:Passkeys:Origins must contain absolute HTTPS origins.");
+        if (options.Passkeys.Origins.Count == 0 || options.Passkeys.Origins.Any(origin => !ValidPasskeyOrigin(origin, serverDomain)))
+            failures.Add("CustomerAuthentication:Passkeys:Origins must contain exact HTTPS origins within the relying-party domain.");
+        if (!isDevelopment && (serverDomain == "localhost" || options.Passkeys.Origins.Any(origin => Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.IsLoopback)))
+            failures.Add("Localhost passkey relying-party settings are accepted only in Development.");
         return failures.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(failures);
+    }
+
+    private static bool ValidPasskeyOrigin(string origin, string serverDomain)
+    {
+        if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps ||
+            !string.IsNullOrEmpty(uri.UserInfo) || uri.AbsolutePath != "/" || !string.IsNullOrEmpty(uri.Query) ||
+            !string.IsNullOrEmpty(uri.Fragment) || origin.Contains('*')) return false;
+        var host = uri.Host.ToLowerInvariant();
+        return host == serverDomain || host.EndsWith('.' + serverDomain, StringComparison.Ordinal);
     }
 
     private static void ValidateProvider(CustomerOidcProviderOptions provider, string name, List<string> failures)
