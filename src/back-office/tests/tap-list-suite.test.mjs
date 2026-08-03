@@ -13,6 +13,12 @@ test("venue operations retain tier-visible ordered tap management", () => {
   assert.match(tapList, /reorderTapRows/);
   assert.match(tapList, /isComingSoon/);
   assert.match(api, /tap-list/);
+  assert.match(tapList, /Tap description/);
+  assert.match(tapList, /Search taps/);
+  assert.match(tapList, /bulkLimit = 25/);
+  assert.match(tapList, /Retry last change/);
+  assert.match(tapList, /window\.confirm/);
+  assert.match(tapList, /positions.*overflow/s);
 });
 
 test("every operational request uses the venue token", () => {

@@ -11,8 +11,9 @@
 - RWP-05.05 — Screen, Theme, and Pairing Lifecycle Recovery: complete in the proposed merge state.
 - RWP-05.06 — Back Office Organization and Venue Context: complete in the proposed merge state.
 - RWP-08.01 — Scheduling and Live-Control Safety: complete in the proposed merge state.
-- Approved Sequential remediation queue: RWP-09.01, RWP-10.01, RWP-11.02, RWP-13.03, RWP-13.01, then RWP-13.02.
-- Next available package after merge and claim release: RWP-09.01 / issue #414.
+- RWP-09.01 — Tap-List Lifecycle and Operational Scale: complete in the proposed merge state.
+- Approved Sequential remediation queue: RWP-10.01, RWP-11.02, RWP-13.03, RWP-13.01, then RWP-13.02.
+- Next available package after merge and claim release: RWP-10.01 / issue #423.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
 ## Completed Delivery
@@ -32,7 +33,7 @@
 | 12 | Square, Toast, and Clover integrations through a shared POS model |
 | 13 | Customer identity, organization entitlements, signup, onboarding, and legacy-token migration |
 
-Cross-cutting remediation completed after Phase 13 includes RWP-00.02, which standardizes the visible product name as Vennusign; RWP-00.03, which establishes Back Office and Platform Operations as the canonical administrative application identities across routes, authentication, namespaces, configuration, local tooling, CI, and persisted configuration metadata; RWP-04.02, which adds recoverable support drilldowns and deliberate impact confirmation to Platform Operations; RWP-05.04, which makes Back Office menu navigation, menu selection, lifecycle actions, ordering, Quick Update recovery, and authorized POS entry points operational; RWP-05.05, which adds safe screen lifecycle recovery, pairing guidance, active fleet capacity/filtering, video-wall edit/removal safety, and venue-wide theme scope/reset/readability feedback; RWP-05.06, which separates customer identity from persistent server-authorized organization/venue context throughout Back Office; and RWP-08.01, which makes scheduling and live overrides navigable, target-explicit, ordered, recoverable, and confirmation-safe. Bounded legacy aliases remain observable and fail closed during migration.
+Cross-cutting remediation completed after Phase 13 includes RWP-00.02, which standardizes the visible product name as Vennusign; RWP-00.03, which establishes Back Office and Platform Operations as the canonical administrative application identities across routes, authentication, namespaces, configuration, local tooling, CI, and persisted configuration metadata; RWP-04.02, which adds recoverable support drilldowns and deliberate impact confirmation to Platform Operations; RWP-05.04, which makes Back Office menu navigation, menu selection, lifecycle actions, ordering, Quick Update recovery, and authorized POS entry points operational; RWP-05.05, which adds safe screen lifecycle recovery, pairing guidance, active fleet capacity/filtering, video-wall edit/removal safety, and venue-wide theme scope/reset/readability feedback; RWP-05.06, which separates customer identity from persistent server-authorized organization/venue context throughout Back Office; RWP-08.01, which makes scheduling and live overrides navigable, target-explicit, ordered, recoverable, and confirmation-safe; and RWP-09.01, which adds dependency-safe tap lifecycle controls, descriptions, large-list filtering, placement visibility, bounded bulk availability, and retryable live-update feedback. Bounded legacy aliases remain observable and fail closed during migration.
 
 Completed WP/RWP details, phase plans, validation evidence, and earlier status snapshots are retained under `docs/archive/` for deliberate research.
 
@@ -42,4 +43,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-After RWP-08.01 merges and releases, claim RWP-09.01 / issue #414 in Sequential mode only if it has no active owner. Continue in the recorded queue without skipping. Phase 14 and later remain paused and must not be planned, claimed, or implemented.
+After RWP-09.01 merges and releases, claim RWP-10.01 / issue #423 in Sequential mode only if it has no active owner. Continue in the recorded queue without skipping. Phase 14 and later remain paused and must not be planned, claimed, or implemented.
