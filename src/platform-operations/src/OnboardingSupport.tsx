@@ -46,7 +46,7 @@ export default function OnboardingSupport({ configuration, apiKey }: { configura
   };
 
   return <section className="onboarding-support" aria-labelledby="onboarding-support-heading">
-    <div className="onboarding-support__heading"><div><p>Customer success</p><h2 id="onboarding-support-heading">Onboarding journeys</h2><span>Read-only operational context from persisted customer state.</span></div><button type="button" onClick={() => { setNotice(undefined); setRefreshVersion(value => value + 1); }}>Refresh</button></div>
+    <div className="onboarding-support__heading"><div><p>Customer success · Platform Operations support</p><h2 id="onboarding-support-heading">Onboarding journeys</h2><span>Read-only operational context from persisted customer state. Customer forms remain in Back Office; this surface never enters or impersonates a customer workspace.</span></div><button type="button" onClick={() => { setNotice(undefined); setRefreshVersion(value => value + 1); }}>Refresh</button></div>
     <label className="onboarding-support__search" htmlFor="onboarding-search">Find customer, organization, or venue<input id="onboarding-search" maxLength={100} value={search} onChange={event => setSearch(event.target.value)} placeholder="Search by name or email…" /></label>
     {notice ? <p className="onboarding-support__notice" role="status">{notice}</p> : null}
     {loading ? <p className="state" role="status">Loading onboarding journeys…</p> : error ? <p className="state error" role="alert">{error}</p> : items.length === 0 ? <p className="state">No onboarding journeys match this search.</p> : <div className="onboarding-support__layout">

@@ -49,6 +49,8 @@ test("entry surface records essential accessible states", () => {
   assert.match(app, /Refresh device status/);
   assert.match(app, /window\.setInterval\(\(\) => void refreshPresence\(\), 10_000\)/);
   assert.match(app, /status updates automatically/);
+  assert.match(app, /Open Back Office/);
+  assert.match(app, /Back Office rechecks your organization membership/);
 });
 
 test("customer timeline is ordered, resumable, and server-authoritative", () => {

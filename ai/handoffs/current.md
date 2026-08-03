@@ -2,31 +2,31 @@
 
 ## Current State
 
-- Item: RWP-11.02 — Billing Tier and Downgrade Safety / issue #348
+- Item: RWP-13.03 — Onboarding Ownership and Navigation Unification / issue #421
 - Mode: Sequential
-- Branch: `rwp/11.02-billing-tier-downgrade-safety`
+- Branch: `rwp/13.03-onboarding-ownership-navigation`
 - Status: Complete in the proposed merge state
 
 ## Result
 
-- Back Office presents active screen and organization venue usage against current and target tier limits.
-- Server decisions identify start/current/upgrade/downgrade, disclose known feature losses, and block unsafe targets in both presentation and action endpoints.
-- Existing subscriptions use a targeted Stripe Billing Portal launch; first-time plans use hosted Checkout. Browser returns and pending records never infer access before refreshed webhook-authoritative state.
-- The financial review dialog focuses “Keep current plan”, lists operational impact, and supports keyboard, status-announcement, error, and narrow-screen states.
-- HaaS remains a separate contract, endpoint, and persistence path.
-- The durable contract and UI/function gap analysis are recorded in `docs/architecture/billing-tier-decisions.md` and `docs/archive/work-packages/RWP-11.02-billing-tier-downgrade-safety.md`.
+- Back Office owns the only customer onboarding journey at `/onboarding`; signup and sign-in remain authentication entries only.
+- Google, Apple, and email-link returns pass through the canonical resolver. Incomplete customers always resume the persisted server-selected task; completed customers continue only to a validated local Back Office path.
+- Paired customers can enter Back Office without waiting for Online status; Back Office rechecks membership and the saved venue.
+- Missing, stale, removed-access, provider-return, and pairing states preserve authority and create no duplicate journey.
+- Platform Operations remains protected, read-only support visibility and explicitly does not enter or impersonate a customer workspace.
+- The durable contract and UI/function gap analysis are recorded in `docs/architecture/onboarding-ownership-navigation.md` and `docs/archive/work-packages/RWP-13.03-onboarding-ownership-navigation.md`.
 
 ## Validation
 
-- Back Office Node tests and the production build pass locally.
-- Focused API authorization, data decision-evaluator, and browser pending-state tests are included for affected-area Actions.
-- Exact-head affected-area GitHub Actions is authoritative for .NET build and unit validation.
+- Back Office Node tests pass (60/60) and its production build passes locally.
+- Platform Operations Node tests pass (86/86); its local production build is delegated because the local TypeScript compiler is unavailable.
+- Exact-head affected-area GitHub Actions is authoritative for both frontend builds/tests and repository records.
 - Azure SQL, external-service, credentialed, hosted-infrastructure, container, physical-device, signing/store, cross-system, and all other integration-type tests remain skipped.
 
 ## Exact Next Action
 
-After this RWP merges and its claim is released, reassess and claim only RWP-13.03 / issue #421 in Sequential mode if it has no active owner.
+After this RWP merges and its claim is released, reassess and claim only RWP-13.01 / issue #416 in Sequential mode if it has no active owner.
 
 ## Do Not Redo
 
-Do not infer entitlement changes from a browser return, rely on client-only eligibility, bypass active screen or venue limits, mix HaaS terms into software-tier selection, skip the recorded queue, or resume Phase 14+.
+Do not create another onboarding route or state machine, trust browser step/return parameters, duplicate customer forms in Platform Operations, bypass membership checks, skip the recorded queue, or resume Phase 14+.
