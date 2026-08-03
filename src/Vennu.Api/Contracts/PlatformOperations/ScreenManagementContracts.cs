@@ -26,6 +26,23 @@ public sealed record ScreenManagementItem(
 
 public sealed record ScreenLifecycleRequest(bool Archived);
 
+public sealed record ScreenReplacementRequest(Guid TargetScreenId, string PairingCode, bool Confirmed, DateTime? ExpectedTargetUpdatedUtc = null);
+
+public sealed record ScreenReplacementResponse(
+    string Status,
+    Guid? TargetScreenId,
+    Guid? SourceScreenId,
+    string? TargetName,
+    string? ReplacementPlatform,
+    string? ReplacementAppVersion,
+    string? WallGroup,
+    int? WallPosition,
+    bool PreservesConfiguration,
+    bool PreservesHistory,
+    bool PreservesVideoWall,
+    DateTime? TargetUpdatedUtc,
+    DateTime? CompletedUtc);
+
 public sealed record ScreenPushAllResult(int ScreenCount);
 
 public sealed record HaasPreRegistrationRequest(

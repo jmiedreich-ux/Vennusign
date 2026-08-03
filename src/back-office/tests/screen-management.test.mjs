@@ -46,6 +46,17 @@ test("screen lifecycle recovery is explicit safe and capacity-aware", () => {
   assert.match(api, /unpairManagedScreen/);
 });
 
+test("screen replacement preserves a logical screen through preview and confirmation", () => {
+  assert.match(screens, /Replace a player/);
+  assert.match(screens, /Review replacement/);
+  assert.match(screens, /Confirm player replacement/);
+  assert.match(screens, /previewScreenReplacement/);
+  assert.match(screens, /completeScreenReplacement/);
+  assert.match(screens, /old player credential will stop working immediately/);
+  assert.match(screens, /Unpair screen/);
+  assert.doesNotMatch(screens, /Unpair for replacement/);
+});
+
 test("video wall editing and removal require deliberate recovery-safe actions", () => {
   assert.match(walls, /editingName/);
   assert.match(walls, /Edit wall/);
