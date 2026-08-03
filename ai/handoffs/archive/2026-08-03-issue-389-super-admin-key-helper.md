@@ -8,7 +8,7 @@
 ## Git State
 - Branch: `issue/389-super-admin-key-helper`
 - Issue: #389
-- Pull request: pending
+- Pull request: #390
 - CI state: pending
 
 ## Completed

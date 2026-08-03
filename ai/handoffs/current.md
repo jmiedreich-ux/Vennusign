@@ -8,7 +8,7 @@
 ## Git State
 - Branch: `issue/389-super-admin-key-helper`
 - Issue: #389
-- Pull request: pending
+- Pull request: #390
 - CI state: pending
 
 ## Completed This Session
@@ -23,7 +23,7 @@
 - GitHub Actions pending.
 
 ## Remaining Work
-- Open, validate, review, and merge the Issue #389 PR, then release the claim.
+- Validate, review, and merge PR #390, then release the claim.
 
 ## Known Risks or Blockers
 - The Windows user environment is user-readable storage and this key is for temporary local bootstrap only.
