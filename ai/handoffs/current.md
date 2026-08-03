@@ -2,14 +2,14 @@
 
 ## Current State
 
-- Item: Approved remediation queue activation
+- Item: RWP-13.01 queue addition / issue #416
 - Mode: Mobile Collaborative
-- Branch: `issue/343-rwp-queue-activation`
+- Branch: `issue/416-rwp-queue`
 - Status: Complete in the proposed merge state
 
 ## Goal
 
-Promote the verified operational UI gaps into bounded RWPs for strict Sequential execution.
+Add the missing organization-profile and post-pairing Venue Admin transition remediation to the approved Sequential queue.
 
 ## Result
 
@@ -19,6 +19,7 @@ Promote the verified operational UI gaps into bounded RWPs for strict Sequential
 - RWP-08.01 / #346: scheduling and live-control safety.
 - RWP-09.01 / #414: tap-list lifecycle and operational scale, split from #348.
 - RWP-11.02 / #348: billing tier decisions and downgrade safety.
+- RWP-13.01 / #416: organization profile and onboarding-to-admin transition.
 - The queue is Sequential and unclaimed; Phase 14+ remains paused.
 
 ## Validation
@@ -33,4 +34,4 @@ After this queue record merges, claim only RWP-04.02 / issue #343 in Sequential 
 
 ## Do Not Redo
 
-Do not claim a later RWP, fold Azure SQL research issues into this queue, or resume Phase 14+.
+Do not claim RWP-13.01 ahead of its six predecessors, fold Azure SQL research issues into this queue, or resume Phase 14+.
