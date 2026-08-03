@@ -12,4 +12,6 @@ public interface IMealPeriodScheduleResolver
 
 public sealed record MealPeriodScheduleResolution(
     DateTimeOffset LocalNow,
-    MealPeriod? ActiveMealPeriod);
+    MealPeriod? ActiveMealPeriod,
+    MealPeriod? NextMealPeriod,
+    DateTimeOffset? NextStartsLocal);

@@ -33,7 +33,25 @@ public sealed class MealPeriodScheduleResolver : IMealPeriodScheduleResolver
             .ThenBy(period => period.Id)
             .FirstOrDefault();
 
-        return new MealPeriodScheduleResolution(localNow, active);
+        var next = mealPeriods
+            .Where(period => period.IsEnabled)
+            .SelectMany(period => Enumerable.Range(0, 8)
+                .Where(days => IsActiveDay(period.ActiveDaysMask, localNow.AddDays(days).DayOfWeek))
+                .Select(days => (Period: period, Starts: LocalOccurrence(timezone, localNow.Date.AddDays(days).Add(period.StartLocalTime)))))
+            .Where(candidate => candidate.Starts > localNow)
+            .OrderBy(candidate => candidate.Starts)
+            .ThenBy(candidate => candidate.Period.SortOrder)
+            .ThenBy(candidate => candidate.Period.Id)
+            .FirstOrDefault();
+
+        return new MealPeriodScheduleResolution(localNow, active, next.Period, next.Period is null ? null : next.Starts);
+    }
+
+    private static DateTimeOffset LocalOccurrence(TimeZoneInfo timezone, DateTime localDateTime)
+    {
+        var unspecified = DateTime.SpecifyKind(localDateTime, DateTimeKind.Unspecified);
+        var utc = TimeZoneInfo.ConvertTimeToUtc(unspecified, timezone);
+        return TimeZoneInfo.ConvertTime(new DateTimeOffset(utc, TimeSpan.Zero), timezone);
     }
 
     private static bool IsActive(MealPeriod period, DateTimeOffset localNow)

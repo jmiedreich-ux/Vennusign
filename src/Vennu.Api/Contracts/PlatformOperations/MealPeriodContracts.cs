@@ -14,4 +14,10 @@ public sealed record MealPeriodWriteRequest(
 
 public sealed record MealPeriodAdministrationResponse(
     IReadOnlyCollection<Vennu.Core.Models.MealPeriod> MealPeriods,
-    IReadOnlyCollection<MealPeriodConflict> Conflicts);
+    IReadOnlyCollection<MealPeriodConflict> Conflicts,
+    DateTimeOffset? VenueLocalNow,
+    Guid? ActiveMealPeriodId,
+    Guid? NextMealPeriodId,
+    DateTimeOffset? NextStartsLocal);
+
+public sealed record MealPeriodReorderRequest(IReadOnlyCollection<Guid> OrderedIds);

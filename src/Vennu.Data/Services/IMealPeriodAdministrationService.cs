@@ -31,12 +31,21 @@ public interface IMealPeriodAdministrationService
         string? themePresetKey = null,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyCollection<MealPeriod>> ReorderAsync(
+        Guid venueId,
+        IReadOnlyCollection<Guid> orderedIds,
+        CancellationToken cancellationToken = default);
+
     Task<bool> DeleteAsync(Guid venueId, Guid mealPeriodId, CancellationToken cancellationToken = default);
 }
 
 public sealed record MealPeriodAdministrationSnapshot(
     IReadOnlyCollection<MealPeriod> MealPeriods,
-    IReadOnlyCollection<MealPeriodConflict> Conflicts);
+    IReadOnlyCollection<MealPeriodConflict> Conflicts,
+    DateTimeOffset? VenueLocalNow = null,
+    Guid? ActiveMealPeriodId = null,
+    Guid? NextMealPeriodId = null,
+    DateTimeOffset? NextStartsLocal = null);
 
 public sealed record MealPeriodConflict(
     Guid FirstId,

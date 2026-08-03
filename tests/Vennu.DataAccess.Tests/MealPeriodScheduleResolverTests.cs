@@ -79,6 +79,21 @@ public sealed class MealPeriodScheduleResolverTests
         Assert.Equal("timezoneId", exception.ParamName);
     }
 
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Resolve_ReportsNextEnabledOccurrenceInVenueLocalTime()
+    {
+        var active = Period("Lunch", 11, 14, DayOfWeek.Thursday, sortOrder: 0);
+        var next = Period("Dinner", 17, 21, DayOfWeek.Thursday, sortOrder: 1);
+
+        var result = resolver.Resolve("America/New_York",
+            new DateTimeOffset(2026, 7, 30, 16, 0, 0, TimeSpan.Zero), [next, active]);
+
+        Assert.Same(active, result.ActiveMealPeriod);
+        Assert.Same(next, result.NextMealPeriod);
+        Assert.Equal(new DateTimeOffset(2026, 7, 30, 17, 0, 0, TimeSpan.FromHours(-4)), result.NextStartsLocal);
+    }
+
     private static MealPeriod Period(
         string name,
         int startHour,
