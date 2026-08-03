@@ -8,6 +8,24 @@ namespace Vennu.Api.Tests.Services;
 public sealed class MenuSectionManagementServiceTests
 {
     [Fact]
+    public async Task CreateMenuAsync_TrimsNameAndRejectsVenueDuplicate()
+    {
+        var venueId = Guid.NewGuid();
+        var repository = new FakeMenuRepository
+        {
+            Menus = [new Menu { Id = Guid.NewGuid(), VenueId = venueId, Name = "Dinner" }]
+        };
+        var service = new MenuSectionManagementService(repository, new FakeFeatureResolutionService(), new FixedTimeProvider());
+
+        var created = await service.CreateMenuAsync(venueId, "  Lunch  ");
+        var error = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateMenuAsync(venueId, " dinner "));
+
+        Assert.Equal("Lunch", created.Name);
+        Assert.Equal(created, repository.CreatedMenu);
+        Assert.Contains("already exists", error.Message);
+    }
+
+    [Fact]
     public async Task CreateAsync_TrimsNameAndAppendsSection()
     {
         var venueId = Guid.NewGuid();
@@ -118,10 +136,15 @@ public sealed class MenuSectionManagementServiceTests
         public IReadOnlyCollection<Menu> Menus { get; init; } = [];
         public IReadOnlyCollection<MenuSection> Sections { get; init; } = [];
         public MenuSection? CreatedSection { get; private set; }
+        public Menu? CreatedMenu { get; private set; }
         public MenuSection? UpdatedSection { get; private set; }
         public IReadOnlyCollection<Guid>? ReorderedSectionIds { get; private set; }
 
-        public Task<Guid> CreateMenuAsync(Menu menu, CancellationToken cancellationToken = default) => Task.FromResult(menu.Id);
+        public Task<Guid> CreateMenuAsync(Menu menu, CancellationToken cancellationToken = default)
+        {
+            CreatedMenu = menu;
+            return Task.FromResult(menu.Id);
+        }
         public Task<Guid> CreateSectionAsync(MenuSection section, CancellationToken cancellationToken = default)
         {
             CreatedSection = section;

@@ -148,6 +148,56 @@ public sealed class MenuItemManagementServiceTests
         Assert.Null(repository.UpdatedItem);
     }
 
+    [Fact]
+    public async Task SetActiveAsync_ArchivesOwnedItemAndNotifies()
+    {
+        var venueId = Guid.NewGuid();
+        var menuId = Guid.NewGuid();
+        var sectionId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var repository = new FakeMenuRepository
+        {
+            Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Main" }],
+            Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Food" }],
+            Items = [new MenuItem { Id = itemId, VenueId = venueId, MenuSectionId = sectionId, Name = "Burger", IsActive = true }]
+        };
+        var notifier = new RecordingNotifier();
+        var service = new MenuItemManagementService(repository, notifier, new FakeFeatureResolutionService(), new FixedTimeProvider());
+
+        var archived = await service.SetActiveAsync(venueId, menuId, sectionId, itemId, false);
+
+        Assert.NotNull(archived);
+        Assert.False(archived.IsActive);
+        Assert.Equal(itemId, repository.UpdatedItem?.Id);
+        Assert.Equal(1, notifier.ContentNotificationCount);
+    }
+
+    [Fact]
+    public async Task ReorderAsync_RequiresEveryOwnedItemAndPreservesOrder()
+    {
+        var venueId = Guid.NewGuid();
+        var menuId = Guid.NewGuid();
+        var sectionId = Guid.NewGuid();
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
+        var repository = new FakeMenuRepository
+        {
+            Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Main" }],
+            Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Food" }],
+            Items = [
+                new MenuItem { Id = first, VenueId = venueId, MenuSectionId = sectionId, Name = "First" },
+                new MenuItem { Id = second, VenueId = venueId, MenuSectionId = sectionId, Name = "Second" }
+            ]
+        };
+        var service = new MenuItemManagementService(repository, new RecordingNotifier(), new FakeFeatureResolutionService(), new FixedTimeProvider());
+
+        await service.ReorderAsync(venueId, menuId, sectionId, [second, first]);
+        var error = await Assert.ThrowsAsync<ArgumentException>(() => service.ReorderAsync(venueId, menuId, sectionId, [first]));
+
+        Assert.Equal(new[] { second, first }, repository.ReorderedItemIds);
+        Assert.Contains("every venue menu item", error.Message);
+    }
+
     private sealed class FixedTimeProvider : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => new(2026, 7, 29, 22, 30, 0, TimeSpan.Zero);
@@ -173,6 +223,7 @@ public sealed class MenuItemManagementServiceTests
         public IReadOnlyCollection<MenuItem> Items { get; init; } = [];
         public MenuItem? CreatedItem { get; private set; }
         public MenuItem? UpdatedItem { get; private set; }
+        public IReadOnlyCollection<Guid>? ReorderedItemIds { get; private set; }
 
         public Task<Guid> CreateMenuAsync(Menu menu, CancellationToken cancellationToken = default) => Task.FromResult(menu.Id);
         public Task<Guid> CreateSectionAsync(MenuSection section, CancellationToken cancellationToken = default) => Task.FromResult(section.Id);
@@ -193,6 +244,11 @@ public sealed class MenuItemManagementServiceTests
             Task.FromResult<IReadOnlyCollection<RestoredMenuItem>>([]);
         public Task<int> ReorderSectionsAsync(Guid venueId, Guid menuId, IReadOnlyCollection<Guid> sectionIds, DateTime updatedUtc, CancellationToken cancellationToken = default) =>
             Task.FromResult(sectionIds.Count);
+        public Task<int> ReorderItemsAsync(Guid venueId, Guid sectionId, IReadOnlyCollection<Guid> itemIds, DateTime updatedUtc, CancellationToken cancellationToken = default)
+        {
+            ReorderedItemIds = itemIds;
+            return Task.FromResult(itemIds.Count);
+        }
         public Task<IReadOnlyCollection<Menu>> GetMenusAsync(Guid venueId, CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyCollection<Menu>>(Menus.Where(menu => menu.VenueId == venueId).ToArray());
         public Task<IReadOnlyCollection<MenuSection>> GetSectionsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>

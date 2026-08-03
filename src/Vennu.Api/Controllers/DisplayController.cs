@@ -144,7 +144,7 @@ public class DisplayController : ControllerBase
         var displaySections = new List<DisplayMenuSectionResponse>();
         foreach (var section in sections)
         {
-            var items = await menuRepository.GetItemsAsync(venueId, section.Id, cancellationToken);
+            var items = await menuRepository.GetActiveItemsAsync(venueId, section.Id, cancellationToken);
             displaySections.Add(new DisplayMenuSectionResponse
             {
                 Id = section.Id,

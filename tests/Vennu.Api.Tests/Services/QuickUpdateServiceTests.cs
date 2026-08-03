@@ -61,6 +61,34 @@ public sealed class QuickUpdateServiceTests
     }
 
     [Fact]
+    public async Task SetAvailabilityAsync_DoesNotUpdateArchivedItem()
+    {
+        var venueId = Guid.NewGuid();
+        var menuId = Guid.NewGuid();
+        var sectionId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var menus = new FakeMenuRepository
+        {
+            Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Main" }],
+            Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Food" }],
+            Items = [new MenuItem { Id = itemId, VenueId = venueId, MenuSectionId = sectionId, Name = "Archived", IsActive = false }]
+        };
+        var notifier = new RecordingNotifier();
+        var service = new QuickUpdateService(
+            menus,
+            new FakeVenueRepository(new Venue { Id = venueId, Name = "Cafe" }),
+            new FakeFeatureResolutionService(true),
+            notifier,
+            new FixedTimeProvider());
+
+        var updated = await service.SetAvailabilityAsync(venueId, menuId, sectionId, itemId, false);
+
+        Assert.Null(updated);
+        Assert.Equal(0, notifier.AvailabilityCount);
+        Assert.Equal(0, notifier.ContentCount);
+    }
+
+    [Fact]
     public async Task QuickUpdate_BlocksWhenEffectiveFeatureIsUnavailable()
     {
         var service = new QuickUpdateService(

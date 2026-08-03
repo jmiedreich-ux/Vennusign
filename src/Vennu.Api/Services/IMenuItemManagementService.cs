@@ -35,4 +35,19 @@ public interface IMenuItemManagementService
         IReadOnlyCollection<string>? tags,
         bool isPopular,
         CancellationToken cancellationToken = default);
+
+    Task<MenuItem?> SetActiveAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid itemId,
+        bool isActive,
+        CancellationToken cancellationToken = default);
+
+    Task<int> ReorderAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        IReadOnlyCollection<Guid> itemIds,
+        CancellationToken cancellationToken = default);
 }

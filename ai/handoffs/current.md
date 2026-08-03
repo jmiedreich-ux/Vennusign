@@ -2,30 +2,31 @@
 
 ## Current State
 
-- Item: RWP-04.02 — Platform Operations Safety and Support Workflows / issue #343
+- Item: RWP-05.04 — Back Office Navigation and Menu Lifecycle / issue #344
 - Mode: Sequential
-- Branch: `rwp/04.02-platform-operations-safety`
+- Branch: `rwp/05.04-back-office-menu-lifecycle`
 - Status: Complete in the proposed merge state
 
 ## Result
 
-- Platform Operations dashboard metrics, fleet entries, and commercial events now drill into filtered venue support context.
-- Dashboard, revenue, trend, and event reads expose scoped errors, retry actions, refresh progress, and freshness rather than silently collapsing failed states.
-- Venue search, tier/status/health filters, result counts, empty states, retry behavior, and screen support evidence are explicit.
-- Tier switches, feature overrides, bulk feature-matrix edits, and tier create/edit/archive actions now provide impact review and a separate confirmation step.
-- Existing protected API, role, tenant, commercial, audit-event, and entitlement enforcement remains authoritative. RWP-04.02 adds no integration or provider behavior.
-- The UI/function gap analysis and acceptance evidence are recorded in `docs/work-packages/RWP-04.02-platform-operations-safety.md`.
+- Back Office navigation now opens an authorized Menu workspace by default, removes placeholder destinations, and exposes the entitled POS workspace.
+- Operators can select or create menus, edit and reorder sections/items, archive and restore content deliberately, and recover failed saves without losing drafts.
+- Archived items remain available to Back Office recovery workflows but are excluded from customer displays, screen-overflow calculations, and Quick Update.
+- Quick Update supports search, filters, a 25-item bulk limit, explicit failure recovery, and undo of the most recent availability change.
+- The menu-item lifecycle migration and protected Back Office endpoints preserve venue ownership, authorization, and entitlement enforcement.
+- The UI/function gap analysis and acceptance evidence are recorded in `docs/archive/work-packages/RWP-05.04-back-office-menu-lifecycle.md`.
 
 ## Validation
 
-- Focused Platform Operations Node tests and production build pass locally.
+- Focused Back Office Node tests and production build pass locally.
+- Focused .NET unit and migration checks are delegated to affected-area GitHub Actions because local .NET tooling is unavailable.
 - Exact-head affected-area GitHub Actions is authoritative for the proposed merge.
 - Azure SQL, external-service, credentialed, hosted-infrastructure, container, physical-device, signing/store, cross-system, and all other integration-type tests remain skipped.
 
 ## Exact Next Action
 
-After this RWP merges and its claim is released, reassess and claim only RWP-05.04 / issue #344 in Sequential mode if it has no active owner.
+After this RWP merges and its claim is released, reassess and claim only RWP-05.05 / issue #345 in Sequential mode if it has no active owner.
 
 ## Do Not Redo
 
-Do not weaken Platform Operations authorization, trust client-side impact previews as enforcement, remove server audit/reconciliation behavior, skip the recorded queue, or resume Phase 14+.
+Do not expose archived menu items on displays, weaken venue-scoped Back Office authorization, bypass lifecycle confirmations, skip the recorded queue, or resume Phase 14+.

@@ -1,6 +1,6 @@
 # RWP-04.02 — Platform Operations Safety and Support Workflows
 
-Status: Complete in the proposed merge state
+Status: Complete
 
 Issue: #343
 

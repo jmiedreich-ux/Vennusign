@@ -1,104 +1,37 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { createMenuItem, updateMenuItem, updateMenuItemPresentation, type MenuItem, type MenuItemWrite } from "./api";
+import { createMenuItem, reorderMenuItems, updateMenuItem, updateMenuItemLifecycle, updateMenuItemPresentation, type MenuItem, type MenuItemWrite } from "./api";
 import type { BackOfficeConfiguration } from "./config";
 
-type Props = {
-  configuration: BackOfficeConfiguration;
-  apiKey: string;
-  venueId: string;
-  menuId: string;
-  sectionId: string;
-  items: MenuItem[];
-  capabilities: { happyHour: boolean; allergenBadges: boolean };
-  disabled: boolean;
-  onChanged: () => Promise<void>;
-  onError: () => void;
-  onTierPrompt: (title: string, message: string) => void;
-};
-
+type Props = { configuration: BackOfficeConfiguration; apiKey: string; venueId: string; menuId: string; sectionId: string; items: MenuItem[]; capabilities: { happyHour: boolean; allergenBadges: boolean }; disabled: boolean; onChanged: () => Promise<void>; onError: (message: string) => void; onTierPrompt: (title: string, message: string) => void };
+type SaveState = "draft" | "saving" | "saved" | "failed";
 const emptyItem: MenuItemWrite = { name: "", description: "", price: 0 };
 
-export default function MenuItemsEditor({
-  configuration, apiKey, venueId, menuId, sectionId, items, capabilities, disabled, onChanged, onError, onTierPrompt
-}: Props) {
+export default function MenuItemsEditor({ configuration, apiKey, venueId, menuId, sectionId, items, capabilities, disabled, onChanged, onError, onTierPrompt }: Props) {
   const [drafts, setDrafts] = useState<MenuItem[]>(items);
   const [newItem, setNewItem] = useState<MenuItemWrite>(emptyItem);
-  const [saving, setSaving] = useState(false);
+  const [states, setStates] = useState<Record<string, SaveState>>({});
+  const [pendingArchive, setPendingArchive] = useState<MenuItem>();
   useEffect(() => setDrafts(items), [items]);
-
-  const patch = (itemId: string, values: Partial<MenuItem>) =>
-    setDrafts(current => current.map(item => item.id === itemId ? { ...item, ...values } : item));
+  const patch = (itemId: string, values: Partial<MenuItem>) => { setDrafts(current => current.map(item => item.id === itemId ? { ...item, ...values } : item)); setStates(current => ({ ...current, [itemId]: "draft" })); };
   const save = async (item: MenuItem) => {
-    setSaving(true);
-    try {
-      await updateMenuItem(configuration, apiKey, venueId, menuId, sectionId, item.id, {
-        name: item.name,
-        description: item.description,
-        price: item.price,
-        happyHourPrice: item.happyHourPrice
-      });
-      await onChanged();
-    } catch { onError(); }
-    finally { setSaving(false); }
+    setStates(current => ({ ...current, [item.id]: "saving" }));
+    try { await updateMenuItem(configuration, apiKey, venueId, menuId, sectionId, item.id, { name: item.name, description: item.description, price: item.price, happyHourPrice: item.happyHourPrice }); setStates(current => ({ ...current, [item.id]: "saved" })); await onChanged(); }
+    catch { setStates(current => ({ ...current, [item.id]: "failed" })); onError(`${item.name || "Menu item"} could not be saved. Correct the values or retry.`); }
   };
-  const create = async (event: FormEvent) => {
-    event.preventDefault();
-    setSaving(true);
-    try {
-      await createMenuItem(configuration, apiKey, venueId, menuId, sectionId, newItem);
-      setNewItem(emptyItem);
-      await onChanged();
-    } catch { onError(); }
-    finally { setSaving(false); }
-  };
-  const savePresentation = async (item: MenuItem) => {
-    setSaving(true);
-    try {
-      await updateMenuItemPresentation(configuration, apiKey, venueId, menuId, sectionId, item);
-      await onChanged();
-    } catch { onError(); }
-    finally { setSaving(false); }
-  };
+  const create = async (event: FormEvent) => { event.preventDefault(); try { await createMenuItem(configuration, apiKey, venueId, menuId, sectionId, newItem); setNewItem(emptyItem); await onChanged(); } catch { onError("The new menu item could not be created."); } };
+  const savePresentation = async (item: MenuItem) => { setStates(current => ({ ...current, [item.id]: "saving" })); try { await updateMenuItemPresentation(configuration, apiKey, venueId, menuId, sectionId, item); setStates(current => ({ ...current, [item.id]: "saved" })); await onChanged(); } catch { setStates(current => ({ ...current, [item.id]: "failed" })); onError(`${item.name} presentation could not be saved. Retry the item.`); } };
+  const setActive = async (item: MenuItem, isActive: boolean) => { try { await updateMenuItemLifecycle(configuration, apiKey, venueId, menuId, sectionId, item.id, isActive); setPendingArchive(undefined); await onChanged(); } catch { onError(`${item.name} could not be ${isActive ? "restored" : "archived"}.`); } };
+  const move = async (index: number, delta: number) => { const next = [...drafts]; const target = index + delta; if (target < 0 || target >= next.length) return; [next[index], next[target]] = [next[target], next[index]]; setDrafts(next); try { await reorderMenuItems(configuration, apiKey, venueId, menuId, sectionId, next.map(item => item.id)); await onChanged(); } catch { setDrafts(items); onError("Item order could not be saved. The previous order was restored."); } };
 
   return <div className="menu-items">
-    {drafts.map(item => <div className={item.isAvailable ? "menu-item" : "menu-item unavailable"} key={item.id}>
-      <div className="menu-badges">
-        {item.isPopular ? <span className="popular">Bestseller</span> : null}
-        {item.quantityAvailable != null ? <span>{item.quantityAvailable} left</span> : null}
-        {item.tags?.split(",").filter(Boolean).map(tag => <span key={tag}>{tag}</span>)}
-      </div>
-      <div className="menu-item-row">
-      <input aria-label="Item name" disabled={saving || disabled} maxLength={160} required value={item.name}
-        onChange={event => patch(item.id, { name: event.target.value })} onBlur={() => save(item)} />
-      <input aria-label="Item description" disabled={saving || disabled} maxLength={1000} value={item.description ?? ""}
-        onChange={event => patch(item.id, { description: event.target.value })} onBlur={() => save(item)} />
-      <label>Price<input aria-label="Item price" disabled={saving || disabled} min="0" max="999999.99" step="0.01" type="number" value={item.price}
-        onChange={event => patch(item.id, { price: Number(event.target.value) })} onBlur={() => save(item)} /></label>
-      <label>Happy hour <span className="feature-badge">Tier feature</span><input aria-label="Happy hour price" disabled={saving || disabled || !capabilities.happyHour} min="0" max="999999.99" step="0.01" type="number"
-        value={item.happyHourPrice ?? ""} onChange={event => patch(item.id, { happyHourPrice: event.target.value === "" ? undefined : Number(event.target.value) })}
-        onBlur={() => save(item)} />{!capabilities.happyHour ? <button className="feature-preview" onClick={() => onTierPrompt("Happy-hour pricing", "Preview promotional pricing beside each standard menu price. Enable Happy Hour for this venue to edit it.")}>Preview</button> : null}</label>
-      </div>
-      <div className="menu-item-presentation">
-        <button className={item.isAvailable ? "available" : ""} disabled={saving || disabled}
-          onClick={() => { const changed = { ...item, isAvailable: !item.isAvailable }; patch(item.id, changed); void savePresentation(changed); }}>
-          {item.isAvailable ? "Available" : "Unavailable"}
-        </button>
-        <label>Quantity<input aria-label="Quantity available" disabled={saving || disabled} min="0" step="1" type="number"
-          value={item.quantityAvailable ?? ""} onChange={event => patch(item.id, { quantityAvailable: event.target.value === "" ? undefined : Number(event.target.value) })}
-          onBlur={() => savePresentation(item)} /></label>
-        <label className="tag-field">Dietary / allergen tags <span className="feature-badge">Tier feature</span><input aria-label="Menu item tags" disabled={saving || disabled || !capabilities.allergenBadges} maxLength={500}
-          placeholder="vegan, gluten-free, contains nuts" value={item.tags ?? ""} onChange={event => patch(item.id, { tags: event.target.value })}
-          onBlur={() => savePresentation(item)} />{!capabilities.allergenBadges ? <button className="feature-preview" onClick={() => onTierPrompt("Dietary and allergen badges", "Preview clear dietary and allergen labels on menu items. Enable Allergen Badges for this venue to edit them.")}>Preview</button> : null}</label>
-        <label className="popular-check"><input checked={item.isPopular} disabled={saving || disabled} type="checkbox"
-          onChange={event => { const changed = { ...item, isPopular: event.target.checked }; patch(item.id, changed); void savePresentation(changed); }} /> Bestseller</label>
-      </div>
+    {pendingArchive ? <section className="destructive-review compact" aria-labelledby={`archive-${pendingArchive.id}`}><h4 id={`archive-${pendingArchive.id}`}>Archive {pendingArchive.name}?</h4><p>The item will be hidden but can be restored from this section.</p><div><button type="button" onClick={() => setPendingArchive(undefined)}>Cancel</button><button className="danger" type="button" onClick={() => void setActive(pendingArchive, false)}>Confirm archive</button></div></section> : null}
+    {drafts.map((item, index) => <div className={`${item.isAvailable ? "menu-item" : "menu-item unavailable"}${item.isActive ? "" : " archived"}`} key={item.id}>
+      <div className="menu-badges">{item.isPopular ? <span className="popular">Bestseller</span> : null}{!item.isActive ? <span>Archived</span> : null}{item.quantityAvailable != null ? <span>{item.quantityAvailable} left</span> : null}{item.tags?.split(",").filter(Boolean).map(tag => <span key={tag}>{tag}</span>)}</div>
+      <div className="item-save-status" role="status">{states[item.id] === "saving" ? "Saving…" : states[item.id] === "saved" ? "Saved" : states[item.id] === "failed" ? "Save failed" : states[item.id] === "draft" ? "Unsaved draft" : ""}{states[item.id] === "failed" ? <button type="button" onClick={() => void save(item)}>Retry</button> : null}</div>
+      <div className="menu-item-row"><input aria-label="Item name" disabled={disabled || !item.isActive} maxLength={160} required value={item.name} onChange={event => patch(item.id, { name: event.target.value })} onBlur={() => void save(item)} /><input aria-label="Item description" disabled={disabled || !item.isActive} maxLength={1000} value={item.description ?? ""} onChange={event => patch(item.id, { description: event.target.value })} onBlur={() => void save(item)} /><label>Price<input aria-label="Item price" disabled={disabled || !item.isActive} min="0" max="999999.99" step="0.01" type="number" value={item.price} onChange={event => patch(item.id, { price: Number(event.target.value) })} onBlur={() => void save(item)} /></label><label>Happy hour <span className="feature-badge">Tier feature</span><input aria-label="Happy hour price" disabled={disabled || !item.isActive || !capabilities.happyHour} min="0" max="999999.99" step="0.01" type="number" value={item.happyHourPrice ?? ""} onChange={event => patch(item.id, { happyHourPrice: event.target.value === "" ? undefined : Number(event.target.value) })} onBlur={() => void save(item)} />{!capabilities.happyHour ? <button type="button" className="feature-preview" onClick={() => onTierPrompt("Happy-hour pricing", "Preview promotional pricing beside each standard menu price. Enable Happy Hour for this venue to edit it.")}>Preview</button> : null}</label></div>
+      <div className="menu-item-presentation"><button type="button" className={item.isAvailable ? "available" : ""} disabled={disabled || !item.isActive} onClick={() => { const changed = { ...item, isAvailable: !item.isAvailable }; patch(item.id, changed); void savePresentation(changed); }}>{item.isAvailable ? "Available" : "Unavailable"}</button><label>Quantity<input aria-label="Quantity available" disabled={disabled || !item.isActive} min="0" step="1" type="number" value={item.quantityAvailable ?? ""} onChange={event => patch(item.id, { quantityAvailable: event.target.value === "" ? undefined : Number(event.target.value) })} onBlur={() => void savePresentation(item)} /></label><label className="tag-field">Dietary / allergen tags <span className="feature-badge">Tier feature</span><input aria-label="Menu item tags" disabled={disabled || !item.isActive || !capabilities.allergenBadges} maxLength={500} placeholder="vegan, gluten-free, contains nuts" value={item.tags ?? ""} onChange={event => patch(item.id, { tags: event.target.value })} onBlur={() => void savePresentation(item)} />{!capabilities.allergenBadges ? <button type="button" className="feature-preview" onClick={() => onTierPrompt("Dietary and allergen badges", "Preview clear dietary and allergen labels on menu items. Enable Allergen Badges for this venue to edit them.")}>Preview</button> : null}</label><label className="popular-check"><input checked={item.isPopular} disabled={disabled || !item.isActive} type="checkbox" onChange={event => { const changed = { ...item, isPopular: event.target.checked }; patch(item.id, changed); void savePresentation(changed); }} /> Bestseller</label></div>
+      <div className="item-lifecycle-actions"><button type="button" aria-label={`Move ${item.name} up`} disabled={disabled || index === 0} onClick={() => void move(index, -1)}>Move up</button><button type="button" aria-label={`Move ${item.name} down`} disabled={disabled || index === drafts.length - 1} onClick={() => void move(index, 1)}>Move down</button>{item.isActive ? <button type="button" className="danger-link" disabled={disabled} onClick={() => setPendingArchive(item)}>Archive item</button> : <button type="button" disabled={disabled} onClick={() => void setActive(item, true)}>Restore item</button>}</div>
     </div>)}
-    <form className="menu-item-create" onSubmit={create}>
-      <input aria-label="New item name" disabled={saving || disabled} maxLength={160} required placeholder="Add an item" value={newItem.name}
-        onChange={event => setNewItem(value => ({ ...value, name: event.target.value }))} />
-      <input aria-label="New item price" disabled={saving || disabled} min="0" max="999999.99" step="0.01" required type="number" value={newItem.price}
-        onChange={event => setNewItem(value => ({ ...value, price: Number(event.target.value) }))} />
-      <button disabled={saving || disabled}>Add item</button>
-    </form>
+    <form className="menu-item-create" onSubmit={create}><input aria-label="New item name" disabled={disabled} maxLength={160} required placeholder="Add an item" value={newItem.name} onChange={event => setNewItem(value => ({ ...value, name: event.target.value }))} /><input aria-label="New item price" disabled={disabled} min="0" max="999999.99" step="0.01" required type="number" value={newItem.price} onChange={event => setNewItem(value => ({ ...value, price: Number(event.target.value) }))} /><button disabled={disabled}>Add item</button></form>
   </div>;
 }

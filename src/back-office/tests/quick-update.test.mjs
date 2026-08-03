@@ -10,6 +10,10 @@ test("quick update retains daily-special and one-scroll availability actions", (
   assert.match(quick, /updateQuickDailySpecial/);
   assert.match(quick, /updateQuickAvailability/);
   assert.match(quick, /quick-items/);
+  assert.match(quick, /Search quick-update items/);
+  assert.match(quick, /Select visible/);
+  assert.match(quick, /Undo last change/);
+  assert.match(quick, /bulkLimit = 25/);
   assert.match(api, /quick-update\/daily-special/);
   assert.match(api, /quick-availability/);
 });

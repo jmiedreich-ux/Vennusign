@@ -149,6 +149,66 @@ public sealed class MenuItemManagementService(
         return item;
     }
 
+    public async Task<MenuItem?> SetActiveAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid itemId,
+        bool isActive,
+        CancellationToken cancellationToken = default)
+    {
+        RequireId(itemId, nameof(itemId));
+        if (!await SectionExistsAsync(venueId, menuId, sectionId, cancellationToken).ConfigureAwait(false))
+        {
+            return null;
+        }
+
+        var items = await repository.GetItemsAsync(venueId, sectionId, cancellationToken).ConfigureAwait(false);
+        var item = items.SingleOrDefault(existing => existing.Id == itemId);
+        if (item is null)
+        {
+            return null;
+        }
+
+        item.IsActive = isActive;
+        item.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
+        await repository.UpdateItemAsync(item, cancellationToken).ConfigureAwait(false);
+        await NotifyAsync(venueId, menuId, sectionId, item.Id, isActive ? "restored" : "archived", cancellationToken).ConfigureAwait(false);
+        return item;
+    }
+
+    public async Task<int> ReorderAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        IReadOnlyCollection<Guid> itemIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(itemIds);
+        if (itemIds.Count != itemIds.Distinct().Count() || itemIds.Any(id => id == Guid.Empty))
+        {
+            throw new ArgumentException("Item order cannot contain empty or duplicate identifiers.", nameof(itemIds));
+        }
+        if (!await SectionExistsAsync(venueId, menuId, sectionId, cancellationToken).ConfigureAwait(false))
+        {
+            throw new KeyNotFoundException("Menu section does not exist for this venue menu.");
+        }
+        var existing = await repository.GetItemsAsync(venueId, sectionId, cancellationToken).ConfigureAwait(false);
+        if (!existing.Select(item => item.Id).Order().SequenceEqual(itemIds.Order()))
+        {
+            throw new ArgumentException("Item order must contain every venue menu item exactly once.", nameof(itemIds));
+        }
+
+        var changed = await repository.ReorderItemsAsync(
+            venueId,
+            sectionId,
+            itemIds,
+            timeProvider.GetUtcNow().UtcDateTime,
+            cancellationToken).ConfigureAwait(false);
+        await notifier.NotifyVenueContentUpdatedAsync(venueId, new { change = "items-reordered", menuId, sectionId }, cancellationToken).ConfigureAwait(false);
+        return changed;
+    }
+
     private async Task RequireSectionAsync(
         Guid venueId,
         Guid menuId,
