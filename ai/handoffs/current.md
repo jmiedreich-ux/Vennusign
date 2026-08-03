@@ -3,15 +3,15 @@
 
 ## Work Package
 - ID: CFG-001.05
-- Status: Complete in proposed PR #384 merge state
+- Status: Complete through PR #384
 - Execution mode: Collaborative
 
 ## Git State
-- Branch: `issue/383-configuration-operations`
+- Branch: `master`
 - Program issue: #374
 - Package issue: #383
 - Pull request: #384
-- CI state: final exact-head GitHub Actions validation pending
+- CI state: all required checks passed on reviewed head `9a7ad5e`; PR #384 merged
 
 ## Completed This Session
 - Merged canonical customer root routes through PR #373 and the WPF development control panel through PR #372.
@@ -30,7 +30,8 @@
 - Required GitHub Actions checks for PRs #373, #376, #378, #380, and #382 passed on their reviewed heads.
 
 ## Remaining Work
-- Run exact-head checks for PR #384, perform final ChatGPT review, merge, close #383 and #374, release the tracker claim, archive final completion state, and delete the branch.
+- Rotate and assess any credential previously committed in Git history.
+- Configure bootstrap environment values and populate each deployment environment through Super Admin.
 
 ## Known Risks or Blockers
 - Previously committed credentials require rotation/history assessment; database encryption does not protect Git history.
@@ -38,7 +39,7 @@
 - Phase 14 remains paused.
 
 ## Exact Next Action
-- Validate and merge PR #384, then submit the lightweight completion-record reconciliation that releases CFG-001.05.
+- Configure `VENU_CONFIGURATION_ENVIRONMENT`, the bootstrap database/key provider, and a temporary `SuperAdmin__ApiKey`, then populate Development settings through Super Admin and remove the temporary override.
 
 ## Do Not Redo or Reverse
 - Do not restore credentials to appsettings.
