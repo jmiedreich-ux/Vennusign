@@ -57,6 +57,15 @@ test("screen replacement preserves a logical screen through preview and confirma
   assert.doesNotMatch(screens, /Unpair for replacement/);
 });
 
+test("content delivery distinguishes request receipt application recovery and failure", () => {
+  assert.match(screens, /authoritativeRevision/);
+  assert.match(screens, /appliedRevision/);
+  assert.match(screens, /deliveryState/);
+  assert.match(screens, /acknowledgement pending/);
+  assert.match(screens, /deliveryFailureCode/);
+  assert.doesNotMatch(screens, /future acknowledgement contract/);
+});
+
 test("video wall editing and removal require deliberate recovery-safe actions", () => {
   assert.match(walls, /editingName/);
   assert.match(walls, /Edit wall/);
