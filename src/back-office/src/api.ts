@@ -689,6 +689,42 @@ export async function claimPairingCode(configuration: BackOfficeConfiguration, a
   return response.json() as Promise<{ linked: boolean; screenId: string; venueId: string }>;
 }
 
+export type ScreenReplacementResult = {
+  status: string;
+  targetScreenId?: string;
+  sourceScreenId?: string;
+  targetName?: string;
+  replacementPlatform?: string;
+  replacementAppVersion?: string;
+  wallGroup?: string;
+  wallPosition?: number;
+  preservesConfiguration: boolean;
+  preservesHistory: boolean;
+  preservesVideoWall: boolean;
+  targetUpdatedUtc?: string;
+  completedUtc?: string;
+};
+
+export async function previewScreenReplacement(configuration: BackOfficeConfiguration, accessToken: string, targetScreenId: string, pairingCode: string): Promise<ScreenReplacementResult> {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/back-office/screens/pairing/replacement/preview`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Vennusign-Back-Office-Token": accessToken },
+    body: JSON.stringify({ targetScreenId, pairingCode, confirmed: false })
+  });
+  if (!response.ok) throw new BackOfficeApiError(response.status, "Unable to preview this replacement.");
+  return response.json() as Promise<ScreenReplacementResult>;
+}
+
+export async function completeScreenReplacement(configuration: BackOfficeConfiguration, accessToken: string, targetScreenId: string, pairingCode: string, expectedTargetUpdatedUtc: string): Promise<ScreenReplacementResult> {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/back-office/screens/pairing/replacement`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Vennusign-Back-Office-Token": accessToken },
+    body: JSON.stringify({ targetScreenId, pairingCode, confirmed: true, expectedTargetUpdatedUtc })
+  });
+  if (!response.ok) throw new BackOfficeApiError(response.status, "Unable to complete this replacement.");
+  return response.json() as Promise<ScreenReplacementResult>;
+}
+
 const themeRequest = (configuration: BackOfficeConfiguration, accessToken: string, venueId: string, path = "", init?: RequestInit) =>
   venueOperationRequest(configuration, accessToken, venueId, "theme", path, init);
 export async function loadVenueTheme(configuration: BackOfficeConfiguration, accessToken: string, venueId: string): Promise<VenueTheme> {
