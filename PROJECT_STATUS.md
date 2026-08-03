@@ -150,7 +150,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-**Issue-395 — Google Signup Local HTTPS** is in review with trusted frontend return handling, HTTPS local hosting, and Google challenge validation complete. Phase 14 remains paused.
+No implementation package is active. Issue-395 completed Google signup local HTTPS and trusted callback handling through PR #396. Phase 14 remains paused.
 
 ## Phase 04 Result
 

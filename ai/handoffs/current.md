@@ -2,14 +2,14 @@
 
 ## Work Package
 - ID: Issue-395
-- Status: In Review
+- Status: Complete through PR #396
 - Execution mode: Collaborative
 
 ## Git State
-- Branch: `issue/395-google-signup-local-https`
+- Branch: `master`
 - Issue: #395
 - Pull request: #396
-- CI state: pending
+- CI state: all 12 required checks passed on reviewed head `07ea82d`; PR #396 merged
 
 ## Completed This Session
 - Added a registered trusted customer frontend origin and safe configured-origin plus local-path callback return.
@@ -28,7 +28,6 @@
 - GitHub Actions pending.
 
 ## Remaining Work
-- Validate, review, and merge PR #396.
 - Operator must enter the Google web client ID and secret through Super Admin, enable Google, restart API, and complete live consent.
 
 ## Known Risks or Blockers
@@ -36,7 +35,7 @@
 - Vite's local certificate requires one browser acceptance before callback navigation.
 
 ## Exact Next Action
-- Open the Issue #395 PR and run affected API, Venue Admin, data, and Windows tooling checks.
+- Configure Google OAuth origin/callback and credentials as documented in `docs/architecture/google-customer-signup.md`, restart API, and complete live consent.
 
 ## Do Not Redo or Reverse
 - Do not accept arbitrary absolute OAuth return URLs.
