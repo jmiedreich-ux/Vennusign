@@ -22,8 +22,17 @@ public sealed class VennuDatabaseConfigurationProvider : ConfigurationProvider, 
 
     public override void Load()
     {
-        Data = LoadValues();
-        reloadTimer ??= new Timer(_ => Reload(), null, options.ReloadInterval, options.ReloadInterval);
+        try
+        {
+            Data = LoadValues();
+            options.Health?.RecordSuccess();
+            reloadTimer ??= new Timer(_ => Reload(), null, options.ReloadInterval, options.ReloadInterval);
+        }
+        catch (Exception exception)
+        {
+            options.Health?.RecordFailure(exception);
+            throw;
+        }
     }
 
     public void Dispose() => reloadTimer?.Dispose();
@@ -39,9 +48,11 @@ public sealed class VennuDatabaseConfigurationProvider : ConfigurationProvider, 
                 Data = values;
                 OnReload();
             }
+            options.Health?.RecordSuccess();
         }
-        catch
+        catch (Exception exception)
         {
+            options.Health?.RecordFailure(exception);
             // Retain the last successfully loaded in-memory snapshot during transient reload failures.
         }
         finally

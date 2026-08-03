@@ -16,6 +16,17 @@ test("configuration is a dedicated Super Admin route", () => {
   assert.match(page, /Application/);
 });
 
+test("configuration operations expose health rotation history and audited rollback", () => {
+  assert.match(page, /Database provider:/);
+  assert.match(page, /rotate every/);
+  assert.match(page, /Secret payloads are never returned/);
+  assert.match(page, /new audited revision/);
+  assert.match(page, /Roll back/);
+  assert.match(api, /\/health/);
+  assert.match(api, /\/revisions/);
+  assert.match(api, /\/rollback/);
+});
+
 test("configuration transfer is secret-safe reviewable and transactional", () => {
   assert.match(page, /Export/);
   assert.match(page, /Import JSON/);

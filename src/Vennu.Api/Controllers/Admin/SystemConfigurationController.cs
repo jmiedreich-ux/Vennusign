@@ -9,8 +9,15 @@ namespace Vennu.Api.Controllers.Admin;
 
 [ApiController]
 [Route("api/admin/configuration")]
-public sealed class SystemConfigurationController(ISystemConfigurationService service) : ControllerBase
+public sealed class SystemConfigurationController(
+    ISystemConfigurationService service,
+    ISystemConfigurationOperationsService operations,
+    SystemConfigurationProviderHealth providerHealth) : ControllerBase
 {
+    [HttpGet("health")]
+    [Authorize(Policy = "Configuration:read")]
+    public ActionResult<SystemConfigurationProviderHealthSnapshot> Health() => Ok(providerHealth.Snapshot());
+
     [HttpGet]
     [Authorize(Policy = "Configuration:read")]
     public async Task<ActionResult<IReadOnlyList<SystemConfigurationSettingResponse>>> Get(
@@ -39,6 +46,36 @@ public sealed class SystemConfigurationController(ISystemConfigurationService se
         Guid definitionId,
         SystemConfigurationWriteRequest request,
         CancellationToken cancellationToken) => ExecuteAsync(definitionId, request, true, cancellationToken);
+
+    [HttpGet("{definitionId:guid}/revisions")]
+    [Authorize(Policy = "Configuration:read")]
+    public async Task<ActionResult<IReadOnlyList<SystemConfigurationRevision>>> Revisions(
+        Guid definitionId,
+        [FromQuery] string environmentName,
+        CancellationToken cancellationToken) =>
+        Ok(await operations.GetRevisionsAsync(definitionId, environmentName, cancellationToken).ConfigureAwait(false));
+
+    [HttpPost("{definitionId:guid}/rollback")]
+    [Authorize(Policy = "Configuration:admin")]
+    public async Task<IActionResult> Rollback(
+        Guid definitionId,
+        SystemConfigurationRollbackRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await operations.RollbackAsync(new(
+                definitionId, request.EnvironmentName, request.RevisionNumber, request.ExpectedVersion,
+                User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "super-admin"), cancellationToken).ConfigureAwait(false);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (ArgumentException exception) { return ValidationProblem(exception.Message); }
+        catch (DBConcurrencyException exception)
+        {
+            return Conflict(new ProblemDetails { Title = "Configuration changed", Detail = exception.Message, Status = StatusCodes.Status409Conflict });
+        }
+    }
 
     private async Task<ActionResult<SystemConfigurationSettingResponse>> ExecuteAsync(
         Guid definitionId,
@@ -79,5 +116,5 @@ public sealed class SystemConfigurationController(ISystemConfigurationService se
     private static SystemConfigurationSettingResponse ToResponse(SystemConfigurationSetting setting) => new(
         setting.DefinitionId, setting.Key, setting.ApplicationScope, setting.Description, setting.ValueType,
         setting.IsRequired, setting.IsSecret, setting.Value, setting.HasConfiguredValue, setting.RequiresRestart,
-        setting.ExportPolicy, setting.Version);
+        setting.ExportPolicy, setting.Version, setting.LastUpdatedUtc, setting.RotationReminderDays);
 }

@@ -12,6 +12,9 @@ public sealed record SystemConfigurationSettingResponse(
     bool HasConfiguredValue,
     bool RequiresRestart,
     string ExportPolicy,
-    string? Version);
+    string? Version,
+    DateTime? LastUpdatedUtc,
+    int? RotationReminderDays);
 
 public sealed record SystemConfigurationWriteRequest(string EnvironmentName, string? Value, string? ExpectedVersion);
+public sealed record SystemConfigurationRollbackRequest(string EnvironmentName, int RevisionNumber, string ExpectedVersion);

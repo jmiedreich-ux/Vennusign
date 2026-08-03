@@ -4,11 +4,16 @@ import {
   applySystemConfigurationImport,
   clearSystemConfiguration,
   exportSystemConfiguration,
+  loadSystemConfigurationHealth,
+  loadSystemConfigurationRevisions,
   loadSystemConfiguration,
   previewSystemConfigurationImport,
   saveSystemConfiguration,
+  rollbackSystemConfiguration,
+  type SystemConfigurationHealth,
   type SystemConfigurationImportPreview,
   type SystemConfigurationManifest,
+  type SystemConfigurationRevision,
   type SystemConfigurationSetting
 } from "./api";
 import type { AdminConfiguration } from "./config";
@@ -27,11 +32,30 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
   const [notice, setNotice] = useState<string>();
   const [preview, setPreview] = useState<SystemConfigurationImportPreview>();
   const [selectedImport, setSelectedImport] = useState<string[]>([]);
+  const [health, setHealth] = useState<SystemConfigurationHealth>();
+  const [history, setHistory] = useState<{ setting: SystemConfigurationSetting; revisions: SystemConfigurationRevision[] }>();
 
   const refresh = async () => {
     setBusy(true); setError(undefined);
-    try { setSettings(await loadSystemConfiguration(configuration, apiKey, environmentName, scope || undefined)); }
+    try {
+      const [loadedSettings, loadedHealth] = await Promise.all([
+        loadSystemConfiguration(configuration, apiKey, environmentName, scope || undefined),
+        loadSystemConfigurationHealth(configuration, apiKey)
+      ]);
+      setSettings(loadedSettings); setHealth(loadedHealth);
+    }
     catch { setError("Configuration could not be loaded."); }
+    finally { setBusy(false); }
+  };
+  const viewHistory = async (setting: SystemConfigurationSetting) => {
+    try { setHistory({ setting, revisions: await loadSystemConfigurationRevisions(configuration, apiKey, setting, environmentName) }); }
+    catch { setError("Configuration history could not be loaded."); }
+  };
+  const rollback = async (revisionNumber: number) => {
+    if (!history || !window.confirm(`Roll back ${history.setting.key} to revision ${revisionNumber}? A new audited revision will be created.`)) return;
+    setBusy(true); setError(undefined);
+    try { await rollbackSystemConfiguration(configuration, apiKey, history.setting, environmentName, revisionNumber); setHistory(undefined); setNotice("Configuration rollback created a new audited revision."); await refresh(); }
+    catch (reason) { setError(reason instanceof AdminApiError ? reason.message : "The configuration rollback failed."); }
     finally { setBusy(false); }
   };
 
@@ -96,17 +120,23 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
     </div>
     {notice ? <p className="state" role="status">{notice}</p> : null}
     {error ? <p className="state error" role="alert">{error}</p> : null}
+    {health ? <p className={`configuration-health ${health.healthy ? "healthy" : "unhealthy"}`} role="status">Database provider: {health.enabled ? health.healthy ? "Healthy" : "Attention required" : "Disabled"}{health.lastSuccessfulLoadUtc ? ` · last loaded ${new Date(health.lastSuccessfulLoadUtc).toLocaleString()}` : ""}{health.lastFailure ? ` · ${health.lastFailure}` : ""}</p> : null}
     {busy && settings.length === 0 ? <p className="state" role="status">Loading configuration…</p> : null}
     {!busy && settings.length === 0 ? <p className="state">No registered settings match these filters.</p> : null}
     {preview ? <section className="configuration-preview" aria-labelledby="import-preview-heading"><h3 id="import-preview-heading">Import preview</h3><p>Secrets are excluded. Select reviewed changes to apply atomically.</p>
       {preview.settings.map(item => { const id = `${item.applicationScope}:${item.key}`; const selectable = item.status === "New" || item.status === "Conflict"; return <label key={id}><input type="checkbox" disabled={!selectable} checked={selectedImport.includes(id)} onChange={event => setSelectedImport(current => event.target.checked ? [...current, id] : current.filter(value => value !== id))} /><span><strong>{item.status}</strong> {id}{item.message ? ` — ${item.message}` : ""}</span></label>; })}
       <div className="configuration-actions"><button type="button" disabled={selectedImport.length === 0 || busy} onClick={() => void applyImport()}>Apply selected changes</button><button type="button" onClick={() => setPreview(undefined)}>Cancel</button></div>
     </section> : null}
+    {history ? <section className="configuration-preview" aria-labelledby="history-heading"><h3 id="history-heading">History — {history.setting.key}</h3><p>Secret payloads are never returned. Rollback copies the protected revision into a new audited revision.</p>
+      {history.revisions.length === 0 ? <p>No revisions are available.</p> : history.revisions.map((revision, index) => <div className="configuration-revision" key={revision.revisionNumber}><span>Revision {revision.revisionNumber} · {new Date(revision.createdUtc).toLocaleString()} · {revision.changeSource}{revision.isClear ? " · cleared" : ""}</span>{index > 0 ? <button type="button" disabled={busy} onClick={() => void rollback(revision.revisionNumber)}>Roll back</button> : null}</div>)}
+      <button type="button" onClick={() => setHistory(undefined)}>Close history</button>
+    </section> : null}
     <div className="configuration-list">{settings.map(setting => <form key={setting.definitionId} className="configuration-card" onSubmit={save(setting)}>
       <div className="configuration-card__description">
         <span>{setting.applicationScope} · {setting.valueType}{setting.requiresRestart ? " · Restart required" : ""}</span>
         <h3>{setting.key}</h3><p>{setting.description}</p>
         {setting.isSecret ? <strong>{setting.hasConfiguredValue ? "Secret configured" : "Secret not configured"}</strong> : null}
+        {setting.isSecret && setting.lastUpdatedUtc && setting.rotationReminderDays ? <small>Last replaced {new Date(setting.lastUpdatedUtc).toLocaleDateString()} · rotate every {setting.rotationReminderDays} days</small> : null}
       </div>
       <label>{setting.isSecret ? "Replacement secret" : "Value"}
         <input type={setting.isSecret ? "password" : setting.valueType === "Integer" || setting.valueType === "Decimal" ? "number" : "text"}
@@ -116,7 +146,8 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
           autoComplete={setting.isSecret ? "new-password" : "off"} />
       </label>
       <div className="configuration-actions"><button disabled={busy} type="submit">{setting.isSecret ? "Replace secret" : "Save"}</button>
-        {setting.hasConfiguredValue && !setting.isRequired ? <button disabled={busy} type="button" onClick={() => void clear(setting)}>Clear</button> : null}</div>
+        {setting.hasConfiguredValue && !setting.isRequired ? <button disabled={busy} type="button" onClick={() => void clear(setting)}>Clear</button> : null}
+        {setting.hasConfiguredValue ? <button disabled={busy} type="button" onClick={() => void viewHistory(setting)}>History</button> : null}</div>
     </form>)}</div>
   </section>;
 }

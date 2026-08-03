@@ -4,6 +4,8 @@ export type AdminSession = {
   displayName: string;
   capabilities: string[];
 };
+export type SystemConfigurationHealth = { enabled: boolean; healthy: boolean; lastSuccessfulLoadUtc?: string; lastFailureUtc?: string; lastFailure?: string };
+export type SystemConfigurationRevision = { revisionNumber: number; valueFingerprint: string; isSecret: boolean; isClear: boolean; changedBy: string; changeSource: string; createdUtc: string };
 export type SystemConfigurationManifest = {
   schemaVersion: number; sourceEnvironment: string; exportedUtc: string;
   settings: Array<{ key: string; applicationScope: string; valueType: string; requiresRestart: boolean; value?: string }>;
@@ -15,7 +17,7 @@ export type SystemConfigurationImportPreview = {
 export type SystemConfigurationSetting = {
   definitionId: string; key: string; applicationScope: string; description: string; valueType: string;
   isRequired: boolean; isSecret: boolean; value?: string; hasConfiguredValue: boolean;
-  requiresRestart: boolean; exportPolicy: string; version?: string;
+  requiresRestart: boolean; exportPolicy: string; version?: string; lastUpdatedUtc?: string; rotationReminderDays?: number;
 };
 
 async function configurationRequest(configuration: AdminConfiguration, apiKey: string, path: string, init?: RequestInit) {
@@ -25,6 +27,15 @@ async function configurationRequest(configuration: AdminConfiguration, apiKey: s
   });
   if (!response.ok) throw new AdminApiError(response.status, response.status === 409 ? "This setting changed. Reload before saving again." : "Unable to manage configuration.");
   return response;
+}
+export async function loadSystemConfigurationHealth(configuration: AdminConfiguration, apiKey: string): Promise<SystemConfigurationHealth> {
+  return (await configurationRequest(configuration, apiKey, "/health")).json() as Promise<SystemConfigurationHealth>;
+}
+export async function loadSystemConfigurationRevisions(configuration: AdminConfiguration, apiKey: string, setting: SystemConfigurationSetting, environmentName: string): Promise<SystemConfigurationRevision[]> {
+  return (await configurationRequest(configuration, apiKey, `/${setting.definitionId}/revisions?environmentName=${encodeURIComponent(environmentName)}`)).json() as Promise<SystemConfigurationRevision[]>;
+}
+export async function rollbackSystemConfiguration(configuration: AdminConfiguration, apiKey: string, setting: SystemConfigurationSetting, environmentName: string, revisionNumber: number): Promise<void> {
+  await configurationRequest(configuration, apiKey, `/${setting.definitionId}/rollback`, { method: "POST", body: JSON.stringify({ environmentName, revisionNumber, expectedVersion: setting.version }) });
 }
 
 export async function exportSystemConfiguration(configuration: AdminConfiguration, apiKey: string, environmentName: string): Promise<SystemConfigurationManifest> {

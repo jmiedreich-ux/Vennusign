@@ -25,7 +25,7 @@ public sealed class SystemConfigurationService(
         if (applicationScope is not null && !Scopes.Contains(applicationScope)) throw new ArgumentException("Unsupported application scope.", nameof(applicationScope));
         const string sql = """
             SELECT d.Id, d.[Key], d.ApplicationScope, d.[Description], d.ValueType, d.IsRequired, d.IsSecret,
-                   d.DefaultValue, d.RequiresRestart, d.ExportPolicy, v.ValuePayload, v.IsDeleted, v.Version
+                   d.DefaultValue, d.RequiresRestart, d.ExportPolicy, v.ValuePayload, v.IsDeleted, v.Version, v.UpdatedUtc, d.RotationReminderDays
             FROM dbo.SystemConfigurationDefinitions d
             LEFT JOIN dbo.SystemConfigurationValues v ON v.DefinitionId = d.Id AND v.EnvironmentName = @EnvironmentName
             WHERE @ApplicationScope IS NULL OR d.ApplicationScope = @ApplicationScope
@@ -129,7 +129,8 @@ public sealed class SystemConfigurationService(
         var hasValue = !reader.IsDBNull(10) && !reader.GetBoolean(11);
         var value = isSecret ? null : hasValue ? reader.GetString(10) : reader.IsDBNull(7) ? null : reader.GetString(7);
         return new(reader.GetGuid(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetBoolean(5), isSecret,
-            value, hasValue, reader.GetBoolean(8), reader.GetString(9), reader.IsDBNull(12) ? null : Convert.ToBase64String((byte[])reader[12]));
+            value, hasValue, reader.GetBoolean(8), reader.GetString(9), reader.IsDBNull(12) ? null : Convert.ToBase64String((byte[])reader[12]),
+            reader.IsDBNull(13) ? null : reader.GetDateTime(13), reader.IsDBNull(14) ? null : reader.GetInt32(14));
     }
 
     private static async Task<Definition?> LoadDefinitionAsync(SqlConnection connection, SqlTransaction transaction, Guid id, CancellationToken cancellationToken)

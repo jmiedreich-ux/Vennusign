@@ -1,5 +1,4 @@
 # Vennu Session Handoff
-# Vennu Session Handoff
 
 ## Work Package
 - ID: CFG-001.05

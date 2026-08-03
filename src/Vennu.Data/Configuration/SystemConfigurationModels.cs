@@ -12,7 +12,9 @@ public sealed record SystemConfigurationSetting(
     bool HasConfiguredValue,
     bool RequiresRestart,
     string ExportPolicy,
-    string? Version);
+    string? Version,
+    DateTime? LastUpdatedUtc,
+    int? RotationReminderDays);
 
 public sealed record SystemConfigurationWrite(
     Guid DefinitionId,

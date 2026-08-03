@@ -2,7 +2,7 @@
 
 ## Status
 
-In Progress
+Complete through PR #372.
 
 ## Execution Mode
 
