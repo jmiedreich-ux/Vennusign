@@ -4,7 +4,7 @@
 
 - Phase 13 — Customer Identity, Signup, and Onboarding: complete.
 - Phase 14 and later: paused pending explicit owner approval.
-- Active product WP/RWP: RWP-02.01 / issue #448 is complete in this proposed merge state.
+- Active product WP/RWP: RWP-00.06 / issue #449 is complete in this proposed merge state.
 - The 13-package retrospective remediation round is complete.
 - RWP-00.04 — Deployment Component Versioning and Release Manifest (#437) is complete.
 - RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439) is complete.
@@ -12,8 +12,9 @@
 - RWP-10.02 — Durable Player Content Receipts and Delivery Reconciliation (#441) is complete.
 - RWP-00.05 — Affected-Screen Action Completeness and Recovery (#442) is complete.
 - A new 18-item Sequential remediation queue is approved through issues #448–#465.
-- RWP-02.01 — Display Player State-Screen Presentation (#448) adds visible high-contrast player states, retryable content errors, truthful cached-content age, connection recovery feedback, and reduced-motion heartbeat behavior.
-- RWP-00.06 — Shared Design Tokens and Palette Consolidation (#449) is next and remains unclaimed until RWP-02.01 merges and releases its claim.
+- RWP-02.01 — Display Player State-Screen Presentation (#448) is complete and merged.
+- RWP-00.06 — Shared Design Tokens and Palette Consolidation (#449) establishes one approved Sky UI palette, semantic status set, typography, spacing, radius, focus, and component-foundation contract consumed by both admin applications.
+- RWP-00.07 — Small-Text Contrast Remediation (#450) is next and remains unclaimed until RWP-00.06 merges and releases its claim.
 - RWP-13.06 — Trial-First Onboarding (#466) remains held pending an explicit owner decision and is not part of the executable queue.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
@@ -44,4 +45,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-Complete exact-head Actions, review, and merge for RWP-02.01 / issue #448; close the issue, verify `master`, and release the claim. Only then may the next run claim RWP-00.06 / issue #449. Phase 14 and later remain paused.
+Complete exact-head Actions, review, and merge for RWP-00.06 / issue #449; close the issue, verify `master`, and release the claim. Only then may this run claim RWP-00.07 / issue #450. Phase 14 and later remain paused.
