@@ -150,7 +150,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-**Issue-392 — Fix Configuration Rotation Migration** is in review after reproducing and correcting the LocalDB startup failure. Phase 14 remains paused.
+No implementation package is active. Issue-392 corrected and validated the LocalDB configuration migration startup failure through PR #393. Phase 14 remains paused.
 
 ## Phase 04 Result
 
