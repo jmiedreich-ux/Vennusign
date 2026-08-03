@@ -16,4 +16,4 @@ Recovery-code step-up is deliberately auditable as `RecoveryCode`; it restores a
 
 ## Compatibility
 
-Existing external identities, email links, opaque customer cookies, tenant memberships, and configuration-backed legacy Venue Admin sessions are unchanged. Public enrollment and factor-management screens are deferred to their approved Phase 13 UI packages.
+Existing external identities, email links, opaque customer cookies, tenant memberships, and configuration-backed legacy Back Office sessions are unchanged. Public enrollment and factor-management screens are deferred to their approved Phase 13 UI packages.

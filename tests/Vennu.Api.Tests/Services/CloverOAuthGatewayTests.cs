@@ -19,7 +19,7 @@ public sealed class CloverOAuthGatewayTests
         Assert.Equal("/oauth/v2/authorize", uri.AbsolutePath);
         Assert.Contains("client_id=clover-client", uri.Query, StringComparison.Ordinal);
         Assert.Contains("state=protected-state", uri.Query, StringComparison.Ordinal);
-        Assert.Contains("redirect_uri=https%3A%2F%2Fapi.vennu.test%2Fapi%2Fvenue-admin%2Fpos%2Fclover%2Fcallback", uri.Query, StringComparison.Ordinal);
+        Assert.Contains("redirect_uri=https%3A%2F%2Fapi.vennu.test%2Fapi%2Fback-office%2Fpos%2Fclover%2Fcallback", uri.Query, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -70,8 +70,8 @@ public sealed class CloverOAuthGatewayTests
     {
         ClientId = "clover-client",
         ClientSecret = "clover-secret",
-        CallbackUrl = "https://api.vennu.test/api/venue-admin/pos/clover/callback",
-        VenueAdminReturnUrl = "https://app.vennu.test/integrations"
+        CallbackUrl = "https://api.vennu.test/api/back-office/pos/clover/callback",
+        BackOfficeReturnUrl = "https://app.vennu.test/integrations"
     };
 
     private sealed class RecordingHandler(HttpStatusCode status, string responseBody) : HttpMessageHandler

@@ -14,7 +14,7 @@ public sealed class SystemConfigurationService(
     IConfigurationSecretProtector? secretProtector = null) : ISystemConfigurationService
 {
     private static readonly HashSet<string> Environments = ["Development", "Test", "Staging", "Production"];
-    private static readonly HashSet<string> Scopes = ["Shared", "API", "Admin", "VenueAdmin", "Display", "Background"];
+    private static readonly HashSet<string> Scopes = ["Shared", "API", "PlatformOperations", "BackOffice", "Display", "Background"];
 
     public async Task<IReadOnlyList<SystemConfigurationSetting>> GetAsync(
         string environmentName,

@@ -1,5 +1,5 @@
 using System.Net;
-using Vennu.Api.Contracts.VenueAdmin;
+using Vennu.Api.Contracts.BackOffice;
 using Vennu.Core.Models;
 using Vennu.Data;
 
@@ -14,22 +14,22 @@ public sealed class Phase12CriticalJourneyTests : IClassFixture<VennuApiFactory>
 
     public static TheoryData<string, string> ProtectedVenueOperations => new()
     {
-        { "GET", "/api/venue-admin/pos/square/status" },
-        { "POST", "/api/venue-admin/pos/square/connect" },
-        { "POST", "/api/venue-admin/pos/square/catalog/import" },
-        { "DELETE", "/api/venue-admin/pos/square/connection" },
-        { "GET", "/api/venue-admin/pos/toast/status" },
-        { "PUT", "/api/venue-admin/pos/toast/connection" },
-        { "POST", "/api/venue-admin/pos/toast/catalog/import" },
-        { "GET", "/api/venue-admin/pos/clover/status" },
-        { "POST", "/api/venue-admin/pos/clover/connect" },
-        { "POST", "/api/venue-admin/pos/clover/catalog/import" },
-        { "DELETE", "/api/venue-admin/pos/clover/connection" }
+        { "GET", "/api/back-office/pos/square/status" },
+        { "POST", "/api/back-office/pos/square/connect" },
+        { "POST", "/api/back-office/pos/square/catalog/import" },
+        { "DELETE", "/api/back-office/pos/square/connection" },
+        { "GET", "/api/back-office/pos/toast/status" },
+        { "PUT", "/api/back-office/pos/toast/connection" },
+        { "POST", "/api/back-office/pos/toast/catalog/import" },
+        { "GET", "/api/back-office/pos/clover/status" },
+        { "POST", "/api/back-office/pos/clover/connect" },
+        { "POST", "/api/back-office/pos/clover/catalog/import" },
+        { "DELETE", "/api/back-office/pos/clover/connection" }
     };
 
     [Theory]
     [MemberData(nameof(ProtectedVenueOperations))]
-    public async Task VenuePosOperations_RequireVenueAdminAuthentication(string method, string path)
+    public async Task VenuePosOperations_RequireBackOfficeAuthentication(string method, string path)
     {
         using var client = factory.CreateClient();
         using var response = await client.SendAsync(new HttpRequestMessage(new HttpMethod(method), path));
@@ -42,11 +42,11 @@ public sealed class Phase12CriticalJourneyTests : IClassFixture<VennuApiFactory>
     {
         var contractTypes = new[]
         {
-            typeof(VenueAdminPosConnectResponse),
-            typeof(VenueAdminPosConnectionResponse),
-            typeof(VenueAdminToastStatusResponse),
-            typeof(VenueAdminToastPollingHealthResponse),
-            typeof(VenueAdminCloverStatusResponse)
+            typeof(BackOfficePosConnectResponse),
+            typeof(BackOfficePosConnectionResponse),
+            typeof(BackOfficeToastStatusResponse),
+            typeof(BackOfficeToastPollingHealthResponse),
+            typeof(BackOfficeCloverStatusResponse)
         };
 
         string[] forbiddenCredentialMembers =

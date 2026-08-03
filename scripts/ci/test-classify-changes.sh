@@ -33,12 +33,12 @@ assert_output docs dev_control false
 run_scenario api src/Vennu.Api/Controllers/VenuesController.cs
 assert_output api docs_only false
 assert_output api dotnet_api true
-assert_output api admin false
+assert_output api platform_operations false
 assert_output api android_tv false
 
-run_scenario venue src/venue-admin/src/App.tsx
-assert_output venue venue_admin true
-assert_output venue admin false
+run_scenario venue src/back-office/src/App.tsx
+assert_output venue back_office true
+assert_output venue platform_operations false
 assert_output venue display false
 
 run_scenario display src/display/src/main.tsx
@@ -53,7 +53,7 @@ assert_output tv dotnet_api false
 run_scenario closure docs/work-packages/WP-13.10-phase-13-validation-closure.md
 assert_output closure full true
 assert_output closure dotnet_api true
-assert_output closure admin true
+assert_output closure platform_operations true
 assert_output closure android_tv true
 
 run_scenario workflow .github/workflows/phase02-tests.yml
@@ -66,7 +66,7 @@ assert_output dev-control full false
 assert_output dev-control dev_control true
 assert_output dev-control dotnet_api false
 
-run_scenario key-helper scripts/set-super-admin-key.ps1
+run_scenario key-helper scripts/set-platform-operations-key.ps1
 assert_output key-helper full false
 assert_output key-helper dev_control true
 assert_output key-helper dotnet_api false

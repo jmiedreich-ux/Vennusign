@@ -1,6 +1,6 @@
 # Stripe Revenue Dashboard Operations
 
-The protected Super Admin revenue panel reads current active subscriptions directly from Stripe.
+The protected Platform Operations revenue panel reads current active subscriptions directly from Stripe.
 
 Configure the restricted Stripe secret key through:
 

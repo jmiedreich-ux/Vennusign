@@ -131,7 +131,7 @@ public sealed class CustomerAuthenticationSecurityTests : IClassFixture<VennuApi
         CustomerSessionCookie.Append(context.Response, "opaque-token", DateTime.UtcNow.AddHours(1));
 
         var cookie = Assert.Single(context.Response.Headers.SetCookie).ToString();
-        Assert.Contains("__Host-Vennu.CustomerSession=opaque-token", cookie, StringComparison.Ordinal);
+        Assert.Contains("__Host-Vennusign.CustomerSession=opaque-token", cookie, StringComparison.Ordinal);
         Assert.Contains("httponly", cookie, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("secure", cookie, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("samesite=lax", cookie, StringComparison.OrdinalIgnoreCase);

@@ -1,4 +1,4 @@
-using Vennu.Api.Contracts.Admin;
+using Vennu.Api.Contracts.PlatformOperations;
 using Vennu.Api.Contracts.Screens;
 using Vennu.Api.Services;
 using Vennu.Api.Tests.TestDoubles;

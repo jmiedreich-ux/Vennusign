@@ -5,9 +5,9 @@
 - Phase 13 — Customer Identity, Signup, and Onboarding: complete.
 - Phase 14 and later: paused pending explicit owner approval.
 - Active product WP/RWP: none claimed.
-- RWP-00.02 — User-Facing Product Name Standardization: complete in the proposed merge state.
-- Approved Sequential remediation queue: RWP-00.03, RWP-04.02, RWP-05.04, RWP-05.05, RWP-05.06, RWP-08.01, RWP-09.01, RWP-10.01, RWP-11.02, RWP-13.03, RWP-13.01, then RWP-13.02.
-- Next available package: RWP-00.03 / issue #422.
+- RWP-00.03 — Administrative Surface and Technical Identity Migration: complete in the proposed merge state.
+- Approved Sequential remediation queue: RWP-04.02, RWP-05.04, RWP-05.05, RWP-05.06, RWP-08.01, RWP-09.01, RWP-10.01, RWP-11.02, RWP-13.03, RWP-13.01, then RWP-13.02.
+- Next available package: RWP-04.02 / issue #343.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
 ## Completed Delivery
@@ -16,8 +16,8 @@
 | --- | --- |
 | 02 | Core backend, display boot, realtime updates, and heartbeat lifecycle |
 | 03 | Tier, feature, subscription, Stripe, and usage foundations |
-| 04 | Protected Super Admin CRM, support, commercial, and revenue workflows |
-| 05 | Venue Admin CMS, menus, quick update, screens, and video walls |
+| 04 | Protected Platform Operations CRM, support, commercial, and revenue workflows |
+| 05 | Back Office CMS, menus, quick update, screens, and video walls |
 | 06 | Restaurant/cafe layouts, themes, overflow, and offline media |
 | 07 | Bar layouts, advanced themes, motion, and multilingual font delivery |
 | 08 | Scheduling, playlists, promotions, and emergency broadcast |
@@ -27,7 +27,7 @@
 | 12 | Square, Toast, and Clover integrations through a shared POS model |
 | 13 | Customer identity, organization entitlements, signup, onboarding, and legacy-token migration |
 
-Cross-cutting remediation completed after Phase 13 includes RWP-00.02, which standardizes the visible product name as Vennusign across internal, customer-facing, player, TV-package, authentication, and provider-guidance surfaces. Technical identifiers remain intentionally unchanged for the separately approved RWP-00.03 migration.
+Cross-cutting remediation completed after Phase 13 includes RWP-00.02, which standardizes the visible product name as Vennusign, and RWP-00.03, which establishes Back Office and Platform Operations as the canonical administrative application identities across routes, authentication, namespaces, configuration, local tooling, CI, and persisted configuration metadata. Bounded legacy aliases remain observable and fail closed during migration.
 
 Completed WP/RWP details, phase plans, validation evidence, and earlier status snapshots are retained under `docs/archive/` for deliberate research.
 
@@ -37,4 +37,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-Claim RWP-00.03 / issue #422 in Sequential mode, complete and release it, then continue in the recorded queue without skipping. Phase 14 and later remain paused and must not be planned, claimed, or implemented.
+After RWP-00.03 merges and releases, claim RWP-04.02 / issue #343 in Sequential mode only if it has no active owner. Continue in the recorded queue without skipping. Phase 14 and later remain paused and must not be planned, claimed, or implemented.

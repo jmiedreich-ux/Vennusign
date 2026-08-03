@@ -71,7 +71,7 @@ public sealed class SystemConfigurationOperationsService(IConfiguration configur
             revision.Parameters.AddWithValue("@Fingerprint", targetFingerprint); revision.Parameters.AddWithValue("@Encrypted", encrypted); revision.Parameters.AddWithValue("@Actor", rollback.Actor);
             await revision.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
-        const string auditSql = "INSERT dbo.SystemConfigurationAudit(EnvironmentName,ApplicationScope,SettingKey,ActionName,Actor,ChangeSource,PreviousFingerprint,NewFingerprint) VALUES(@Environment,@Scope,@Key,N'Rollback',@Actor,N'SuperAdmin',@Previous,@New);";
+        const string auditSql = "INSERT dbo.SystemConfigurationAudit(EnvironmentName,ApplicationScope,SettingKey,ActionName,Actor,ChangeSource,PreviousFingerprint,NewFingerprint) VALUES(@Environment,@Scope,@Key,N'Rollback',@Actor,N'PlatformOperations',@Previous,@New);";
         await using var audit = new SqlCommand(auditSql, connection, transaction);
         audit.Parameters.AddWithValue("@Environment", rollback.EnvironmentName); audit.Parameters.AddWithValue("@Scope", scope); audit.Parameters.AddWithValue("@Key", key); audit.Parameters.AddWithValue("@Actor", rollback.Actor);
         audit.Parameters.AddWithValue("@Previous", previousPayload is null ? DBNull.Value : Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(previousPayload)))); audit.Parameters.AddWithValue("@New", targetFingerprint);

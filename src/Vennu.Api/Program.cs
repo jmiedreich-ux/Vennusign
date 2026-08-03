@@ -4,11 +4,11 @@ using Vennu.Api.Hubs;
 using Vennu.Api.Notifications;
 using Vennu.Api.BackgroundServices;
 using Vennu.Api.Webhooks;
-using Vennu.Api.Admin;
+using Vennu.Api.PlatformOperations;
 using Vennu.Api.Billing;
 using Vennu.Data.Services;
 using Vennu.Api.Services;
-using Vennu.Api.VenueAdmin;
+using Vennu.Api.BackOffice;
 using Vennu.Api.Infrastructure;
 using Vennu.Api.Pos;
 using Vennu.Api.CustomerAuthentication;
@@ -56,13 +56,13 @@ if (!string.IsNullOrWhiteSpace(configurationEnvironment))
     builder.Configuration.AddCommandLine(args);
 }
 
-var adminCorsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
-if (builder.Environment.IsDevelopment() && (adminCorsOrigins is null || adminCorsOrigins.Length == 0))
+var administrativeCorsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+if (builder.Environment.IsDevelopment() && (administrativeCorsOrigins is null || administrativeCorsOrigins.Length == 0))
 {
-    adminCorsOrigins = DevelopmentCorsOrigins.Values;
+    administrativeCorsOrigins = DevelopmentCorsOrigins.Values;
 }
 
-var adminCorsEnabled = adminCorsOrigins is { Length: > 0 };
+var administrativeCorsEnabled = administrativeCorsOrigins is { Length: > 0 };
 
 builder.Services.AddControllers();
 builder.Services.AddSingleton(configurationProviderHealth);
@@ -72,7 +72,7 @@ builder.Services
     .Bind(builder.Configuration.GetSection(CustomerAuthenticationOptions.SectionName))
     .ValidateOnStart();
 builder.Services.AddSingleton<IValidateOptions<CustomerAuthenticationOptions>, CustomerAuthenticationOptionsValidator>();
-builder.Services.AddSingleton<IValidateOptions<VenueAdminAuthenticationOptions>, VenueAdminAuthenticationOptionsValidator>();
+builder.Services.AddSingleton<IValidateOptions<BackOfficeAuthenticationOptions>, BackOfficeAuthenticationOptionsValidator>();
 var customerAuthentication = builder.Configuration
     .GetSection(CustomerAuthenticationOptions.SectionName)
     .Get<CustomerAuthenticationOptions>() ?? new CustomerAuthenticationOptions();
@@ -84,38 +84,43 @@ builder.Services.AddSingleton(new CustomerSessionPolicy
     EmailLinkLifetime = customerAuthentication.EmailLinkLifetime,
     RecentAuthenticationWindow = customerAuthentication.RecentAuthenticationWindow
 });
-if (adminCorsEnabled)
+if (administrativeCorsEnabled)
 {
     builder.Services.AddCors(options =>
     {
-        options.AddPolicy("AdminPortal", policy => policy
-            .WithOrigins(adminCorsOrigins!)
+        options.AddPolicy("AdministrativePortals", policy => policy
+            .WithOrigins(administrativeCorsOrigins!)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());
     });
 }
 builder.Services
-    .AddOptions<VenueAdminAuthenticationOptions>(VenueAdminAuthenticationDefaults.AuthenticationScheme)
-    .Bind(builder.Configuration.GetSection(VenueAdminAuthenticationOptions.SectionName))
+    .AddOptions<BackOfficeAuthenticationOptions>(BackOfficeAuthenticationDefaults.AuthenticationScheme)
+    .Configure(options => builder.Configuration.GetSection(BackOfficeAuthenticationOptions.LegacySectionName).Bind(options))
+    .Bind(builder.Configuration.GetSection(BackOfficeAuthenticationOptions.SectionName))
     .ValidateOnStart();
 builder.Services
-    .AddAuthentication(SuperAdminAuthenticationDefaults.AuthenticationScheme)
-    .AddScheme<SuperAdminAuthenticationOptions, SuperAdminAuthenticationHandler>(
-        SuperAdminAuthenticationDefaults.AuthenticationScheme,
-        options => builder.Configuration.GetSection(SuperAdminAuthenticationOptions.SectionName).Bind(options))
-    .AddScheme<VenueAdminAuthenticationOptions, VenueAdminAuthenticationHandler>(
-        VenueAdminAuthenticationDefaults.AuthenticationScheme,
+    .AddAuthentication(PlatformOperationsAuthenticationDefaults.AuthenticationScheme)
+    .AddScheme<PlatformOperationsAuthenticationOptions, PlatformOperationsAuthenticationHandler>(
+        PlatformOperationsAuthenticationDefaults.AuthenticationScheme,
+        options =>
+        {
+            builder.Configuration.GetSection(PlatformOperationsAuthenticationOptions.LegacySectionName).Bind(options);
+            builder.Configuration.GetSection(PlatformOperationsAuthenticationOptions.SectionName).Bind(options);
+        })
+    .AddScheme<BackOfficeAuthenticationOptions, BackOfficeAuthenticationHandler>(
+        BackOfficeAuthenticationDefaults.AuthenticationScheme,
         _ => { })
-    .AddScheme<CustomerVenueAdminAuthenticationOptions, CustomerVenueAdminAuthenticationHandler>(
-        VenueAdminAuthenticationDefaults.CustomerAuthenticationScheme,
+    .AddScheme<CustomerBackOfficeAuthenticationOptions, CustomerBackOfficeAuthenticationHandler>(
+        BackOfficeAuthenticationDefaults.CustomerAuthenticationScheme,
         _ => { })
     .AddScheme<CustomerSessionAuthenticationOptions, CustomerSessionAuthenticationHandler>(
         CustomerAuthenticationDefaults.AuthenticationScheme,
         _ => { })
     .AddCookie(CustomerAuthenticationDefaults.ExternalCookieScheme, options =>
     {
-        options.Cookie.Name = "__Host-Vennu.CustomerExternal";
+        options.Cookie.Name = "__Host-Vennusign.CustomerExternal";
         options.Cookie.HttpOnly = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         options.Cookie.SameSite = SameSiteMode.Lax;
@@ -129,27 +134,27 @@ builder.Services
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(
-        SuperAdminAuthenticationDefaults.AuthorizationPolicy,
+        PlatformOperationsAuthenticationDefaults.AuthorizationPolicy,
         policy => policy
-            .AddAuthenticationSchemes(SuperAdminAuthenticationDefaults.AuthenticationScheme)
+            .AddAuthenticationSchemes(PlatformOperationsAuthenticationDefaults.AuthenticationScheme)
             .RequireAuthenticatedUser()
-            .RequireRole("SuperAdmin"));
+            .RequireRole("PlatformOperations"));
     foreach (var permission in new[] { "read", "edit", "secrets", "import", "admin" })
     {
         options.AddPolicy($"Configuration:{permission}", policy => policy
-            .AddAuthenticationSchemes(SuperAdminAuthenticationDefaults.AuthenticationScheme)
+            .AddAuthenticationSchemes(PlatformOperationsAuthenticationDefaults.AuthenticationScheme)
             .RequireAuthenticatedUser()
-            .RequireClaim("vennu:configuration_permission", permission));
+            .RequireClaim("vennusign:configuration_permission", permission));
     }
     options.AddPolicy(
-        VenueAdminAuthenticationDefaults.AuthorizationPolicy,
+        BackOfficeAuthenticationDefaults.AuthorizationPolicy,
         policy => policy
             .AddAuthenticationSchemes(
-                VenueAdminAuthenticationDefaults.CustomerAuthenticationScheme,
-                VenueAdminAuthenticationDefaults.AuthenticationScheme)
+                BackOfficeAuthenticationDefaults.CustomerAuthenticationScheme,
+                BackOfficeAuthenticationDefaults.AuthenticationScheme)
             .RequireAuthenticatedUser()
-            .RequireRole("VenueAdmin")
-            .RequireClaim(VenueAdminAuthenticationDefaults.VenueIdClaim));
+            .RequireRole("BackOffice")
+            .RequireClaim(BackOfficeAuthenticationDefaults.VenueIdClaim));
     options.AddPolicy(
         CustomerAuthenticationDefaults.AuthorizationPolicy,
         policy => policy
@@ -258,18 +263,20 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-if (adminCorsEnabled)
+if (administrativeCorsEnabled)
 {
-    app.UseCors("AdminPortal");
+    app.UseCors("AdministrativePortals");
 }
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<AdministrativeCompatibilityMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<VennuHub>("/hubs/vennusign");
 app.MapHub<VennuHub>("/hubs/vennu");
-app.MapGet("/", () => Results.Ok(new { status = "ok", service = "Vennu.Api" }));
+app.MapGet("/", () => Results.Ok(new { status = "ok", service = "Vennusign.Api" }));
 
 app.Run();
 

@@ -87,7 +87,7 @@ export default function PairingPage({ platform, appVersion }: PairingPageProps) 
   return <main className="pairing-page">
     <p className="eyebrow">Vennusign TV setup</p>
     <h1>Pair this screen</h1>
-    <p>In Vennusign Admin, open the venue’s Screens section and enter:</p>
+    <p>In Vennusign Back Office, open the venue’s Screens section and enter:</p>
     <strong className="pairing-code" aria-label={`Pairing code ${state.code.split('').join(' ')}`}>{state.code}</strong>
     <p className="pairing-expiry">This code refreshes automatically every 10 minutes.</p>
   </main>;

@@ -10,7 +10,7 @@ public sealed class SquareOAuthOptions
     public string TokenEndpoint { get; set; } = "https://connect.squareup.com/oauth2/token";
     public string RevokeEndpoint { get; set; } = "https://connect.squareup.com/oauth2/revoke";
     public string CallbackUrl { get; set; } = string.Empty;
-    public string VenueAdminReturnUrl { get; set; } = string.Empty;
+    public string BackOfficeReturnUrl { get; set; } = string.Empty;
     public string ApiVersion { get; set; } = "2026-07-15";
     public string[] Scopes { get; set; } = [];
 }

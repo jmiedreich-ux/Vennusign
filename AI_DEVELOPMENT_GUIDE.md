@@ -10,8 +10,8 @@
 - `Vennu.Core.Models`: shared domain models.
 - `Vennu.Data`: Vennusign repositories, persistence behavior, and DbUp migrations.
 - `Vennu.DataAccess`: generic reusable provider infrastructure.
-- `src/admin`: internal Super Admin application.
-- `src/venue-admin`: customer and venue operations application.
+- `src/platform-operations`: internal Platform Operations application.
+- `src/back-office`: customer and venue operations application.
 - `src/display`: hosted player SPA.
 - `src/tv`: platform wrappers and distribution packages.
 

@@ -118,7 +118,7 @@
     <main>
       <section id="summary">
         <h2>Executive conclusion</h2>
-        <p>Vennu has substantial operational capability for internally provisioned venues: Super Admin operations, Venue Admin content management, display pairing, billing foundations, realtime behavior, and POS integrations are all represented in the codebase.</p>
+        <p>Vennu has substantial operational capability for internally provisioned venues: Platform Operations operations, Back Office content management, display pairing, billing foundations, realtime behavior, and POS integrations are all represented in the codebase.</p>
         <div class="callout warning">
           <strong>Primary product gap</strong>
           A new customer cannot independently create an account, select a trial or paid tier, create a venue, obtain authorized access, activate a first screen, and return later through a normal identity/session model.
@@ -136,9 +136,9 @@
           <table>
             <thead><tr><th>Domain</th><th>State</th><th>Assessment</th></tr></thead>
             <tbody>
-              <tr><td>Super Admin operations</td><td><span class="tag implemented">Implemented</span></td><td>Venue directory, tiers, features, dashboard, support detail, and operational controls exist.</td></tr>
+              <tr><td>Platform Operations operations</td><td><span class="tag implemented">Implemented</span></td><td>Venue directory, tiers, features, dashboard, support detail, and operational controls exist.</td></tr>
               <tr><td>Venue creation</td><td><span class="tag partial">Partial</span></td><td>Provisioning exists, but it is not connected to customer ownership, selected tier, or self-service access.</td></tr>
-              <tr><td>Venue Admin</td><td><span class="tag partial">Partial</span></td><td>Operational functionality is broad, but entry depends on a configured access token.</td></tr>
+              <tr><td>Back Office</td><td><span class="tag partial">Partial</span></td><td>Operational functionality is broad, but entry depends on a configured access token.</td></tr>
               <tr><td>Screen/display pairing</td><td><span class="tag partial">Partial</span></td><td>Pairing and player behavior exist, but they are not part of a first-run customer journey.</td></tr>
               <tr><td>Billing and entitlements</td><td><span class="tag partial">Partial</span></td><td>Stripe Checkout, Billing Portal, subscription tiers, and feature resolution exist after venue access is established.</td></tr>
               <tr><td>Trials</td><td><span class="tag partial">Partial</span></td><td>Provisioning starts a hardcoded Starter trial; tier-defined trial policy is not represented in the tier model.</td></tr>
@@ -166,10 +166,10 @@
             <thead><tr><th>Journey step</th><th>Current state</th><th>Gap</th></tr></thead>
             <tbody>
               <tr><td>Discover and sign up</td><td>No public customer frontend located</td><td>There is no customer acquisition entry point.</td></tr>
-              <tr><td>Create/verify account</td><td>Super Admin key and Venue Admin token only</td><td>No customer identity provider, passkey, TOTP, or recovery flow.</td></tr>
+              <tr><td>Create/verify account</td><td>Platform Operations key and Back Office token only</td><td>No customer identity provider, passkey, TOTP, or recovery flow.</td></tr>
               <tr><td>Choose trial or tier</td><td>Tiers and billing exist internally</td><td>No self-service tier selection or tier-defined no-card trial activation.</td></tr>
-              <tr><td>Paid Checkout</td><td>Existing Venue Admin flow</td><td>Checkout requires a pre-existing venue and Venue Admin authorization.</td></tr>
-              <tr><td>Create venue</td><td>API/Super Admin provisioning exists</td><td>No customer owner, organization, membership, or lifecycle connection.</td></tr>
+              <tr><td>Paid Checkout</td><td>Existing Back Office flow</td><td>Checkout requires a pre-existing venue and Back Office authorization.</td></tr>
+              <tr><td>Create venue</td><td>API/Platform Operations provisioning exists</td><td>No customer owner, organization, membership, or lifecycle connection.</td></tr>
               <tr><td>Activate first screen</td><td>Screen pairing exists</td><td>No connected onboarding handoff, entitlement state, or customer recovery path.</td></tr>
               <tr><td>Return later</td><td>Browser-stored raw access token</td><td>No normal customer session, provider login, or account recovery.</td></tr>
             </tbody>
@@ -184,8 +184,8 @@
             <thead><tr><th>ID</th><th>Priority</th><th>Gap</th><th>Evidence</th><th>Planned owner</th></tr></thead>
             <tbody>
               <tr><td>GAP-13-01</td><td><span class="tag p0">P0</span></td><td>No customer identity and tenancy model</td><td>No user, organization, membership, external identity, session, passkey, or TOTP model/migration located.</td><td>WP-13.01</td></tr>
-              <tr><td>GAP-13-02</td><td><span class="tag p0">P0</span></td><td>Config-backed Venue Admin token login</td><td><code>VenueAdminAuthenticationHandler</code> compares submitted token with configured session entries.</td><td>WP-13.09</td></tr>
-              <tr><td>GAP-13-03</td><td><span class="tag p0">P0</span></td><td>No public signup/sign-in</td><td>Only internal Super Admin and token-based Venue Admin entry surfaces were located.</td><td>WP-13.02, WP-13.05</td></tr>
+              <tr><td>GAP-13-02</td><td><span class="tag p0">P0</span></td><td>Config-backed Back Office token login</td><td><code>BackOfficeAuthenticationHandler</code> compares submitted token with configured session entries.</td><td>WP-13.09</td></tr>
+              <tr><td>GAP-13-03</td><td><span class="tag p0">P0</span></td><td>No public signup/sign-in</td><td>Only internal Platform Operations and token-based Back Office entry surfaces were located.</td><td>WP-13.02, WP-13.05</td></tr>
               <tr><td>GAP-13-04</td><td><span class="tag p0">P0</span></td><td>Venue provisioning disconnected from owner and selected tier</td><td><code>VenueProvisioningService</code> starts the hardcoded <code>starter</code> tier and has no customer owner input.</td><td>WP-13.01, WP-13.04, WP-13.05</td></tr>
               <tr><td>GAP-13-05</td><td><span class="tag p0">P0</span></td><td>Credential-like configuration values are committed</td><td>Default API settings include API key, Stripe key/webhook secret, and connection configuration.</td><td>Security preflight</td></tr>
               <tr><td>GAP-13-06</td><td><span class="tag p0">P0</span></td><td>Public venue creation endpoint requires security decision</td><td><code>POST /api/venues</code> has no authorization attribute and directly creates a venue.</td><td>Security preflight</td></tr>
@@ -193,7 +193,7 @@
               <tr><td>GAP-13-08</td><td><span class="tag p1">P1</span></td><td>Trial policy is not tier-defined</td><td><code>SubscriptionTier</code> has price/screen fields but no visible trial-policy fields.</td><td>WP-13.04</td></tr>
               <tr><td>GAP-13-09</td><td><span class="tag p1">P1</span></td><td>No persisted onboarding state</td><td>No onboarding model, migration, API, or resume UI was located.</td><td>WP-13.05</td></tr>
               <tr><td>GAP-13-10</td><td><span class="tag p1">P1</span></td><td>No connected first-screen activation journey</td><td>Screen pairing exists but is not connected to customer acquisition or entitlement progression.</td><td>WP-13.06, WP-13.07</td></tr>
-              <tr><td>GAP-13-11</td><td><span class="tag p1">P1</span></td><td>No Super Admin onboarding visibility</td><td>Venue detail shows support context but no onboarding identity/plan/screen lifecycle timeline.</td><td>WP-13.08</td></tr>
+              <tr><td>GAP-13-11</td><td><span class="tag p1">P1</span></td><td>No Platform Operations onboarding visibility</td><td>Venue detail shows support context but no onboarding identity/plan/screen lifecycle timeline.</td><td>WP-13.08</td></tr>
               <tr><td>GAP-13-12</td><td><span class="tag p1">P1</span></td><td>No team membership lifecycle</td><td>No invite, role, organization membership, venue membership, or revoke flows located.</td><td>WP-13.01 scope decision</td></tr>
               <tr><td>GAP-13-13</td><td><span class="tag p2">P2</span></td><td>No recovery or step-up authentication UX</td><td>No passkey, TOTP, recovery-code, recent-authentication, or account-recovery surface located.</td><td>WP-13.03</td></tr>
               <tr><td>GAP-13-14</td><td><span class="tag p2">P2</span></td><td>No privacy/account lifecycle surface identified</td><td>No customer account deletion, export, ownership transfer, or privacy-management flow located.</td><td>Phase 13 decision/follow-up</td></tr>
@@ -207,12 +207,12 @@
         <h2>Product-surface findings</h2>
         <div class="grid">
           <article class="card">
-            <h3>Super Admin</h3>
+            <h3>Platform Operations</h3>
             <p><strong>Strengths:</strong> dashboard, venue support, tier/feature management, operational controls, and support context.</p>
             <p><strong>Missing lifecycle support:</strong> customer identity, owner/membership context, onboarding queue, onboarding timeline, verification/invite/passkey recovery actions, and customer activation diagnostics.</p>
           </article>
           <article class="card">
-            <h3>Venue Admin</h3>
+            <h3>Back Office</h3>
             <p><strong>Strengths:</strong> menu, screens, themes, schedules, tap list, billing, capability-aware routes, and upgrade guidance.</p>
             <p><strong>Missing lifecycle support:</strong> real sign-in, first-run onboarding, account/team settings, recovery, provider management, and an Account ? Plan ? Venue ? First Screen ? Go Live timeline.</p>
           </article>
@@ -248,11 +248,11 @@
 
       <section id="testing">
         <h2>Test coverage assessment</h2>
-        <p>The current test inventory is strong for implemented operations: Super Admin authorization, billing/webhooks, venue provisioning, screens/pairing, menus, themes, schedules, HaaS, POS providers, migrations, and Phase 12 critical journeys.</p>
+        <p>The current test inventory is strong for implemented operations: Platform Operations authorization, billing/webhooks, venue provisioning, screens/pairing, menus, themes, schedules, HaaS, POS providers, migrations, and Phase 12 critical journeys.</p>
         <p>The following tests are absent because the corresponding product capabilities are absent:</p>
         <div class="grid">
           <div class="card"><h3>Identity tests</h3><ul><li>Google/Apple callback and account linking</li><li>Email verification and collision handling</li><li>Passkey enrollment/assertion</li><li>TOTP enrollment, recovery, and step-up</li><li>Session revoke and cross-device behavior</li></ul></div>
-          <div class="card"><h3>Onboarding tests</h3><ul><li>No-card tier-defined trial lifecycle</li><li>Checkout pending and webhook-confirmed activation</li><li>Abandoned onboarding resume</li><li>First-screen entitlement and pairing</li><li>Super Admin/customer timeline states</li></ul></div>
+          <div class="card"><h3>Onboarding tests</h3><ul><li>No-card tier-defined trial lifecycle</li><li>Checkout pending and webhook-confirmed activation</li><li>Abandoned onboarding resume</li><li>First-screen entitlement and pairing</li><li>Platform Operations/customer timeline states</li></ul></div>
         </div>
       </section>
 
@@ -266,7 +266,7 @@
           <li><strong>WP-13.05:</strong> Public Signup and Resumable Onboarding</li>
           <li><strong>WP-13.06:</strong> Venue Setup and First-Screen Activation</li>
           <li><strong>WP-13.07:</strong> Customer Onboarding Timeline</li>
-          <li><strong>WP-13.08:</strong> Super Admin Onboarding Visibility</li>
+          <li><strong>WP-13.08:</strong> Platform Operations Onboarding Visibility</li>
           <li><strong>WP-13.09:</strong> Legacy Venue Access Token Migration</li>
           <li><strong>WP-13.10:</strong> Phase 13 Validation and Closure</li>
         </ol>

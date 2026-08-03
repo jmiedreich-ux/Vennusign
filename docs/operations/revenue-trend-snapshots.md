@@ -9,7 +9,7 @@
 
 ## Trend
 
-- `GET /api/admin/dashboard/revenue/trend?months=12` returns 1 to 24 months.
+- `GET /api/platform-operations/dashboard/revenue/trend?months=12` returns 1 to 24 months.
 - The latest daily snapshot in each UTC calendar month represents that month.
 - Results are ordered oldest to newest.
 - MRR percentage change is returned only when an immediately preceding calendar month exists and its MRR is nonzero.

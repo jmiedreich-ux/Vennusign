@@ -32,13 +32,13 @@ WP-13.05 owns the account and plan transitions. WP-13.06 owns the venue and firs
 
 ## Browser boundary
 
-The Venue Admin frontend exposes `/signup`, `/signin`, and `/onboarding` as public customer-entry routes. Google and Apple use the established external-provider endpoints. Returning customers can use the established email-link and passkey flows. All API requests use credentialed cookies, and hosted Checkout navigation passes the existing HTTPS Stripe-origin allowlist.
+The Back Office frontend exposes `/signup`, `/signin`, and `/onboarding` as public customer-entry routes. Google and Apple use the established external-provider endpoints. Returning customers can use the established email-link and passkey flows. All API requests use credentialed cookies, and hosted Checkout navigation passes the existing HTTPS Stripe-origin allowlist.
 
 The UI provides loading, error, empty-plan, sign-in, saved-progress, Checkout-canceled, webhook-pending, and entitlement-confirmed states. Native form constraints, semantic labels, status/alert regions, visible focus, ordered progress, and a responsive single-column layout support keyboard, assistive-technology, and narrow-screen use.
 
 ## Security and operational boundaries
 
-- No provider secret, private key, recovery code, or legacy Venue Admin token is stored in onboarding state or returned to the browser.
+- No provider secret, private key, recovery code, or legacy Back Office token is stored in onboarding state or returned to the browser.
 - Cross-origin customer-session use is limited to configured CORS origins with credentials; wildcard origins are not enabled.
 - No destructive onboarding action exists in WP-13.05. Sign-out revokes only the current session and leaves durable progress intact.
 - Integration, Azure SQL, live identity-provider, live Stripe, hosted-infrastructure, container, and physical-device validation remains skipped under the standing owner exception. Focused unit, migration-contract, frontend source-contract, TypeScript, and production-build validation cover this package.
@@ -59,12 +59,12 @@ Expired codes leave durable venue progress unchanged and the UI instructs the us
 
 ## WP-13.07 customer timeline projection
 
-The customer/Venue Admin timeline is a read-only projection of `CustomerOnboardingSnapshot`; it does not persist, infer, or mutate progress. It always renders Account, Plan, Venue, First Screen, and Go Live in that order, labels every step Complete, Current, or Upcoming, and places `aria-current="step"` only on the incomplete server-selected current step. A fully Online journey has five completed steps and no artificial current mutation.
+The customer/Back Office timeline is a read-only projection of `CustomerOnboardingSnapshot`; it does not persist, infer, or mutate progress. It always renders Account, Plan, Venue, First Screen, and Go Live in that order, labels every step Complete, Current, or Upcoming, and places `aria-current="step"` only on the incomplete server-selected current step. A fully Online journey has five completed steps and no artificial current mutation.
 
 The component shows completed count, current-step explanation, and the snapshot's last-saved time. One in-page link moves keyboard focus to the current task, avoiding duplicate app navigation or misleading edit affordances on completed steps. Desktop uses a connected horizontal sequence; narrow layouts retain the same ordered semantics in stacked cards. Signed-out, loading, and unavailable behavior stays owned by the surrounding customer-entry surface.
 
-## WP-13.08 Super Admin support projection
+## WP-13.08 Platform Operations support projection
 
-Super Admin onboarding visibility is a separate protected read projection over the persisted onboarding, customer, organization, organization-subscription/tier, venue, and screen authorities. It exposes no Stripe customer/subscription identifiers, credentials, provider subjects, recovery data, or mutation route. The support UI may search, select, refresh, and copy a bounded non-secret diagnostic summary; it cannot change identity, membership, entitlement, progress, pairing, or subscription state.
+Platform Operations onboarding visibility is a separate protected read projection over the persisted onboarding, customer, organization, organization-subscription/tier, venue, and screen authorities. It exposes no Stripe customer/subscription identifiers, credentials, provider subjects, recovery data, or mutation route. The support UI may search, select, refresh, and copy a bounded non-secret diagnostic summary; it cannot change identity, membership, entitlement, progress, pairing, or subscription state.
 
 The internal timeline uses the same five ordered labels but computes presentation from the returned authoritative identifiers and Online screen status. This is support visibility only and never becomes a second onboarding state machine.

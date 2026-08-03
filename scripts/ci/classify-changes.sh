@@ -8,8 +8,8 @@ docs_only=true
 full="${CI_FULL_VALIDATION:-false}"
 dotnet_api=false
 dotnet_data_access=false
-admin=false
-venue_admin=false
+platform_operations=false
+back_office=false
 display=false
 android_tv=false
 tizen=false
@@ -45,11 +45,11 @@ while IFS= read -r path || [[ -n "$path" ]]; do
       dotnet_api=true
       dotnet_data_access=true
       ;;
-    src/admin/*)
-      admin=true
+    src/platform-operations/*)
+      platform_operations=true
       ;;
-    src/venue-admin/*)
-      venue_admin=true
+    src/back-office/*)
+      back_office=true
       ;;
     src/display/*)
       display=true
@@ -66,7 +66,7 @@ while IFS= read -r path || [[ -n "$path" ]]; do
     tools/Vennu.DevControl/*|tools/Vennu.DevControl.Tests/*)
       dev_control=true
       ;;
-    scripts/set-super-admin-key.ps1)
+    scripts/set-platform-operations-key.ps1)
       dev_control=true
       ;;
   esac
@@ -78,7 +78,7 @@ while IFS= read -r path || [[ -n "$path" ]]; do
   esac
 
   case "$path" in
-    docs/*|ai/handoffs/*|PROJECT_STATUS.md|tracker/assignments.json|AGENTS.md|AI_DEVELOPMENT_GUIDE.md|.github/pull_request_template.md|.github/copilot-instructions.md|.github/ISSUE_TEMPLATE/*|*.md|.github/workflows/*|scripts/ci/*|scripts/set-super-admin-key.ps1|Vennusign.sln|Directory.*|src/Vennu.Api/*|tests/Vennu.Api.Tests/*|src/Vennu.Core.Models/*|src/Vennu.Data/*|src/Vennu.DataAccess/*|src/DataAcess.sql/*|tests/Vennu.DataAccess.Tests/*|src/admin/*|src/venue-admin/*|src/display/*|src/tv/android/*|src/tv/tizen/*|src/tv/webos/*|tools/Vennu.DevControl/*|tools/Vennu.DevControl.Tests/*)
+    docs/*|ai/handoffs/*|PROJECT_STATUS.md|tracker/assignments.json|AGENTS.md|AI_DEVELOPMENT_GUIDE.md|.github/pull_request_template.md|.github/copilot-instructions.md|.github/ISSUE_TEMPLATE/*|*.md|.github/workflows/*|scripts/ci/*|scripts/set-platform-operations-key.ps1|Vennusign.sln|Directory.*|src/Vennu.Api/*|tests/Vennu.Api.Tests/*|src/Vennu.Core.Models/*|src/Vennu.Data/*|src/Vennu.DataAccess/*|src/DataAcess.sql/*|tests/Vennu.DataAccess.Tests/*|src/platform-operations/*|src/back-office/*|src/display/*|src/tv/android/*|src/tv/tizen/*|src/tv/webos/*|tools/Vennu.DevControl/*|tools/Vennu.DevControl.Tests/*)
       ;;
     *)
       # New or cross-cutting paths must fail safe until their affected-area mapping is explicit.
@@ -91,8 +91,8 @@ if [[ "$full" == true ]]; then
   docs_only=false
   dotnet_api=true
   dotnet_data_access=true
-  admin=true
-  venue_admin=true
+  platform_operations=true
+  back_office=true
   display=true
   android_tv=true
   tizen=true
@@ -105,8 +105,8 @@ fi
   echo "full=$full"
   echo "dotnet_api=$dotnet_api"
   echo "dotnet_data_access=$dotnet_data_access"
-  echo "admin=$admin"
-  echo "venue_admin=$venue_admin"
+  echo "platform_operations=$platform_operations"
+  echo "back_office=$back_office"
   echo "display=$display"
   echo "android_tv=$android_tv"
   echo "tizen=$tizen"
