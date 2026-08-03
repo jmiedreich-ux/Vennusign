@@ -38,6 +38,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IScreenRepository, ScreenRepository>();
         services.AddScoped<IScreenPairingCodeRepository, ScreenPairingCodeRepository>();
         services.AddScoped<IScreenReplacementService, ScreenReplacementService>();
+        services.AddScoped<IScreenContentDeliveryService, ScreenContentDeliveryService>();
         services.AddScoped<IFeatureRepository, FeatureRepository>();
         services.AddScoped<SubscriptionTierRepository>();
         services.AddScoped<ISubscriptionTierRepository>(provider => provider.GetRequiredService<SubscriptionTierRepository>());
