@@ -5,9 +5,19 @@
 - Item: RWP-00.04 — Deployment Component Versioning and Release Manifest / issue #437
 - Mode: Sequential
 - Branch: not yet claimed
-- Status: Approved and next in queue
+- Status: Approved and first of five queued RWPs
 
-## Approved outcome
+## Approved Queue
+
+1. RWP-00.04 / #437 — deployment component versioning and release manifest
+2. RWP-05.07 / #439 — atomic screen replacement and pairing recovery
+3. RWP-08.02 / #440 — daylight-saving-safe scheduling resolution
+4. RWP-10.02 / #441 — durable player content receipts and delivery reconciliation
+5. RWP-00.05 / #442 — affected-screen action completeness and recovery
+
+Each package must be claimed, implemented, validated, merged, and released before the next package is claimed. The scheduled run may complete up to five packages.
+
+## RWP-00.04 Approved Outcome
 
 - One semantic product release version identifies an approved immutable combination of independently versioned components.
 - Back Office, Platform Operations, API, deployable services, hosted display SPA, TV shells, native bridge, database schema/procedure contracts, infrastructure, and configuration schema retain the version models defined by the active package.
@@ -17,15 +27,11 @@
 
 ## Boundaries
 
-- This package implements the version foundation and release manifest, not the broader deployment control plane.
-- Do not implement customer maintenance schedules, rollout waves, environment provisioning/decommissioning, or full Platform Operations deployment orchestration.
+- Do not broaden RWP-00.04 into the full deployment control plane.
+- Do not merge the scopes of the later remediation packages into RWP-00.04.
 - Do not resume Phase 14+.
 - Azure SQL, external-service, credentialed, hosted-infrastructure, container, physical-device, signing/store, cross-system, and all other integration-type tests remain skipped.
 
 ## Exact Next Action
 
-The Sequential agent may claim RWP-00.04 / issue #437, create `rwp/00.04-deployment-component-versioning`, and implement the active package in `docs/work-packages/RWP-00.04-deployment-component-versioning.md`.
-
-## Do Not Redo
-
-Do not reopen completed remediation, redesign player runtime behavior, or broaden this RWP into customer cutover orchestration.
+The Sequential agent may claim RWP-00.04 / issue #437, create `rwp/00.04-deployment-component-versioning`, and implement `docs/work-packages/RWP-00.04-deployment-component-versioning.md`. After merge and claim release, continue in the recorded queue order.
