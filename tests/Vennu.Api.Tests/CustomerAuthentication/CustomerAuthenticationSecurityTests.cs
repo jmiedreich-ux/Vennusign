@@ -124,6 +124,30 @@ public sealed class CustomerAuthenticationSecurityTests : IClassFixture<VennuApi
     }
 
     [Fact]
+    public void ProductionPasskeys_RejectLocalhostSettings()
+    {
+        var options = new CustomerAuthenticationOptions
+        {
+            FrontendOrigin = new Uri("https://app.vennu.com"),
+            Passkeys = new CustomerPasskeyOptions { ServerDomain = "localhost", Origins = ["https://localhost:5174"] }
+        };
+        var result = new CustomerAuthenticationOptionsValidator(false).Validate(null, options);
+        Assert.True(result.Failed);
+        Assert.Contains(result.Failures!, failure => failure.Contains("Development", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void DevelopmentPasskeys_AcceptDocumentedLocalhostOrigin()
+    {
+        var options = new CustomerAuthenticationOptions
+        {
+            FrontendOrigin = new Uri("https://localhost:5174"),
+            Passkeys = new CustomerPasskeyOptions { ServerDomain = "localhost", Origins = ["https://localhost:5174"] }
+        };
+        Assert.False(new CustomerAuthenticationOptionsValidator(true).Validate(null, options).Failed);
+    }
+
+    [Fact]
     public void SessionCookie_IsSecureHttpOnlyHostScopedAndSameSiteLax()
     {
         var context = new DefaultHttpContext();

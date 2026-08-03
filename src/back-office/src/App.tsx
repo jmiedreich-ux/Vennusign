@@ -36,6 +36,7 @@ import SidebarUpgradeNudge from "./SidebarUpgradeNudge";
 import UpgradeModal, { type BillingInterval } from "./UpgradeModal";
 import BillingStatusCard from "./BillingStatusCard";
 import TierDecisionDialog from "./TierDecisionDialog";
+import AccountSecurity from "./AccountSecurity";
 import {
   clearPendingTierDecision,
   readPendingTierDecision,
@@ -468,6 +469,8 @@ export default function App() {
             haasError={haasError}
             onStartHaas={startHaasCheckout}
           />
+        : allowed && route.path === "security"
+        ? <AccountSecurity configuration={configuration} customerSession={accessToken === customerSessionAccess} />
         : allowed && route.path === "pos"
         ? <PosIntegrationAdministration key={session.venueId} configuration={configuration} accessToken={accessToken} />
         : allowed && route.path === "menu"

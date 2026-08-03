@@ -1,0 +1,53 @@
+import { useEffect, useState, type FormEvent } from "react";
+import type { BackOfficeConfiguration } from "./config";
+import { listPasskeys, registerPasskey, removePasskey, renamePasskey, type PasskeySummary } from "./passkeyManagement";
+
+export default function AccountSecurity({ configuration, customerSession }: { configuration: BackOfficeConfiguration; customerSession: boolean }) {
+  const [passkeys, setPasskeys] = useState<PasskeySummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState<string>();
+  const [notice, setNotice] = useState<string>();
+  const [error, setError] = useState<string>();
+
+  const refresh = async () => { setPasskeys(await listPasskeys(configuration)); };
+  useEffect(() => {
+    if (!customerSession) { setLoading(false); return; }
+    refresh().catch(reason => setError(reason instanceof Error ? reason.message : "Passkeys could not be loaded.")).finally(() => setLoading(false));
+  }, [configuration, customerSession]);
+
+  const run = async (key: string, action: () => Promise<void>, success: string) => {
+    setBusy(key); setError(undefined); setNotice(undefined);
+    try { await action(); await refresh(); setNotice(success); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "Vennusign could not update passkey security."); }
+    finally { setBusy(undefined); }
+  };
+
+  const add = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault(); const form = event.currentTarget;
+    const name = String(new FormData(form).get("passkeyName") ?? "").trim();
+    void run("add", () => registerPasskey(configuration, name), "Passkey added. You can use it the next time you sign in.").then(() => form.reset());
+  };
+
+  if (!customerSession) return <section className="account-security" aria-labelledby="account-security-heading"><p>Account</p><h2 id="account-security-heading">Security requires a customer session</h2><p>Sign out of the temporary legacy venue link, then sign in with your customer account to manage passkeys.</p></section>;
+  return <section className="account-security" aria-labelledby="account-security-heading">
+    <p>Account</p><h2 id="account-security-heading">Passkeys and recovery</h2>
+    <p>Passkeys use your device screen lock. Vennusign stores only the public verification credential and safe device metadata—not your private key.</p>
+    {notice ? <p role="status" aria-live="polite" className="account-security__notice">{notice}</p> : null}
+    {error ? <p role="alert" className="account-security__error">{error}</p> : null}
+    <form className="account-security__add" onSubmit={add}>
+      <label htmlFor="passkey-name">Passkey name</label>
+      <input id="passkey-name" name="passkeyName" maxLength={100} placeholder="Work laptop" required />
+      <button type="submit" disabled={Boolean(busy)}>{busy === "add" ? "Waiting for your device…" : "Add a passkey"}</button>
+      <small>Recent sign-in is required. If prompted to recover, sign in again by email, Google, or Apple and return here.</small>
+    </form>
+    <h3>Your passkeys</h3>
+    {loading ? <p role="status">Loading passkeys…</p> : passkeys.length === 0 ? <p>No passkeys yet. Keep another verified sign-in method available before relying on a new passkey.</p> : <ul className="account-security__list">{passkeys.map(passkey => <li key={passkey.id}>
+      <form onSubmit={event => { event.preventDefault(); const name = String(new FormData(event.currentTarget).get("displayName") ?? "").trim(); void run(`rename-${passkey.id}`, () => renamePasskey(configuration, passkey.id, name), "Passkey name updated."); }}>
+        <label htmlFor={`passkey-${passkey.id}`}>Passkey name</label><input id={`passkey-${passkey.id}`} name="displayName" defaultValue={passkey.displayName} maxLength={100} required />
+        <span>Added {new Date(passkey.createdUtc).toLocaleDateString()}{passkey.lastUsedUtc ? ` · Last used ${new Date(passkey.lastUsedUtc).toLocaleDateString()}` : " · Not used yet"}</span>
+        <div><button type="submit" disabled={Boolean(busy)}>Save name</button><button className="danger" type="button" disabled={Boolean(busy)} onClick={() => { if (window.confirm(`Remove ${passkey.displayName}? You cannot undo this action.`)) void run(`remove-${passkey.id}`, () => removePasskey(configuration, passkey.id), "Passkey removed."); }}>Remove passkey</button></div>
+      </form>
+    </li>)}</ul>}
+    <aside><strong>Recovery</strong><p>Removing your last passkey is blocked unless your verified email recovery remains available. TOTP and recovery codes keep their existing separate enrollment and step-up boundaries.</p></aside>
+  </section>;
+}

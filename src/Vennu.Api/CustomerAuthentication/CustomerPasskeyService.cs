@@ -8,6 +8,7 @@ using Vennu.Data.Services;
 namespace Vennu.Api.CustomerAuthentication;
 
 public sealed record PasskeyChallenge<TOptions>(Guid ChallengeId, TOptions Options);
+public sealed record CustomerPasskeySummary(Guid Id, string DisplayName, DateTime CreatedUtc, DateTime? LastUsedUtc);
 
 public interface ICustomerPasskeyService
 {
@@ -15,6 +16,9 @@ public interface ICustomerPasskeyService
     Task CompleteRegistrationAsync(Guid userId, Guid challengeId, string displayName, AuthenticatorAttestationRawResponse response, CancellationToken cancellationToken = default);
     Task<PasskeyChallenge<AssertionOptions>?> BeginAssertionAsync(string email, CancellationToken cancellationToken = default);
     Task<CustomerSessionIssue?> CompleteAssertionAsync(Guid challengeId, AuthenticatorAssertionRawResponse response, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<CustomerPasskeySummary>> ListAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task RenameAsync(Guid userId, Guid id, string displayName, CancellationToken cancellationToken = default);
+    Task RemoveAsync(Guid userId, Guid id, CancellationToken cancellationToken = default);
 }
 
 public sealed class CustomerPasskeyService(
@@ -96,6 +100,36 @@ public sealed class CustomerPasskeyService(
         if (!await authenticationRepository.UpdatePasskeyCounterAsync(credential.Id, result.SignCount, timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false)) return null;
         return await sessionService.IssueStrongAsync(credential.UserId, CustomerAuthenticationMethod.Passkey, cancellationToken).ConfigureAwait(false);
     }
+
+    public async Task<IReadOnlyList<CustomerPasskeySummary>> ListAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        await RequireUserAsync(userId, cancellationToken).ConfigureAwait(false);
+        return (await authenticationRepository.GetPasskeysAsync(userId, cancellationToken).ConfigureAwait(false))
+            .Select(value => new CustomerPasskeySummary(value.Id, value.DisplayName, value.CreatedUtc, value.LastUsedUtc)).ToArray();
+    }
+
+    public async Task RenameAsync(Guid userId, Guid id, string displayName, CancellationToken cancellationToken = default)
+    {
+        await RequireUserAsync(userId, cancellationToken).ConfigureAwait(false);
+        if (!await authenticationRepository.RenamePasskeyAsync(userId, id, PasskeyName(displayName), cancellationToken).ConfigureAwait(false))
+            throw new KeyNotFoundException("That passkey is no longer available.");
+    }
+
+    public async Task RemoveAsync(Guid userId, Guid id, CancellationToken cancellationToken = default)
+    {
+        var user = await RequireUserAsync(userId, cancellationToken).ConfigureAwait(false);
+        var existing = await authenticationRepository.GetPasskeysAsync(userId, cancellationToken).ConfigureAwait(false);
+        if (existing.All(value => value.Id != id)) throw new KeyNotFoundException("That passkey is no longer available.");
+        if (existing.Count == 1 && user.EmailVerifiedUtc is null)
+            throw new InvalidOperationException("Add a verified recovery method before removing your last passkey.");
+        if (!await authenticationRepository.RevokePasskeyAsync(userId, id, timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false))
+            throw new KeyNotFoundException("That passkey is no longer available.");
+    }
+
+    private static string PasskeyName(string value) =>
+        !string.IsNullOrWhiteSpace(value) && value.Trim().Length <= 100
+            ? value.Trim()
+            : throw new ArgumentException("Enter a passkey name up to 100 characters.", nameof(value));
 
     private async Task<CustomerUser> RequireUserAsync(Guid userId, CancellationToken cancellationToken)
     {

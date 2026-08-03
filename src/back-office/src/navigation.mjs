@@ -6,6 +6,7 @@ export const backOfficeRoutes = [
   { path: "tap-list", label: "Tap list", description: "Draft board operations", capability: "tap_list", upgradeFeature: "all_layouts" },
   { path: "pos", label: "POS integrations", description: "Catalog and availability sync", capability: "pos_integration", upgradeFeature: "pos_integration" },
   { path: "billing", label: "Billing", description: "Plan and payments" },
+  { path: "security", label: "Account & security", description: "Passkeys and recovery" },
 ];
 
 export function resolveBackOfficeRoute(hash) {

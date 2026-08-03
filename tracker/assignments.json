@@ -1,11 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-03T12:58:00Z",
+  "updatedUtc": "2026-08-03T13:35:00Z",
   "activeAssignments": [],
-  "nextAvailableWorkPackage": "RWP-13.02",
-  "approvedSequentialQueue": [
-    { "id": "RWP-13.02", "issue": 420 }
-  ],
+  "nextAvailableWorkPackage": null,
+  "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

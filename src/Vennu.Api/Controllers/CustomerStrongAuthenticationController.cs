@@ -15,6 +15,36 @@ public sealed class CustomerStrongAuthenticationController(
     ICustomerSessionService sessions) : ControllerBase
 {
     [Authorize(Policy = CustomerAuthenticationDefaults.AuthorizationPolicy)]
+    [HttpGet("passkeys")]
+    public async Task<IActionResult> ListPasskeys(CancellationToken cancellationToken)
+    {
+        var identity = await RequireSessionAsync(cancellationToken).ConfigureAwait(false);
+        return identity is null ? Unauthorized() : Ok(await passkeys.ListAsync(identity.User.Id, cancellationToken).ConfigureAwait(false));
+    }
+
+    [Authorize(Policy = CustomerAuthenticationDefaults.AuthorizationPolicy)]
+    [HttpPut("passkeys/{id:guid}")]
+    public async Task<IActionResult> RenamePasskey(Guid id, PasskeyNameRequest request, CancellationToken cancellationToken)
+    {
+        var identity = await RequireRecentSessionAsync(cancellationToken).ConfigureAwait(false);
+        if (identity is null) return StatusCode(StatusCodes.Status428PreconditionRequired, "Recent authentication is required.");
+        try { await passkeys.RenameAsync(identity.User.Id, id, request.DisplayName, cancellationToken).ConfigureAwait(false); return NoContent(); }
+        catch (KeyNotFoundException exception) { return NotFound(exception.Message); }
+        catch (ArgumentException exception) { return BadRequest(exception.Message); }
+    }
+
+    [Authorize(Policy = CustomerAuthenticationDefaults.AuthorizationPolicy)]
+    [HttpDelete("passkeys/{id:guid}")]
+    public async Task<IActionResult> RemovePasskey(Guid id, CancellationToken cancellationToken)
+    {
+        var identity = await RequireRecentSessionAsync(cancellationToken).ConfigureAwait(false);
+        if (identity is null) return StatusCode(StatusCodes.Status428PreconditionRequired, "Recent authentication is required.");
+        try { await passkeys.RemoveAsync(identity.User.Id, id, cancellationToken).ConfigureAwait(false); return NoContent(); }
+        catch (KeyNotFoundException exception) { return NotFound(exception.Message); }
+        catch (InvalidOperationException exception) { return Conflict(exception.Message); }
+    }
+
+    [Authorize(Policy = CustomerAuthenticationDefaults.AuthorizationPolicy)]
     [HttpPost("passkeys/registration/options")]
     public async Task<IActionResult> BeginPasskeyRegistration(CancellationToken cancellationToken)
     {
@@ -29,8 +59,14 @@ public sealed class CustomerStrongAuthenticationController(
     {
         var identity = await RequireRecentSessionAsync(cancellationToken).ConfigureAwait(false);
         if (identity is null) return StatusCode(StatusCodes.Status428PreconditionRequired, "Recent authentication is required.");
-        await passkeys.CompleteRegistrationAsync(identity.Session.UserId, request.ChallengeId, request.DisplayName, request.Response, cancellationToken).ConfigureAwait(false);
-        return NoContent();
+        try
+        {
+            await passkeys.CompleteRegistrationAsync(identity.Session.UserId, request.ChallengeId, request.DisplayName, request.Response, cancellationToken).ConfigureAwait(false);
+            return NoContent();
+        }
+        catch (ArgumentException exception) { return BadRequest(exception.Message); }
+        catch (UnauthorizedAccessException) { return Unauthorized("The passkey request expired or is no longer valid. Start again."); }
+        catch (Fido2VerificationException) { return Unauthorized("The passkey could not be verified. Start again or use account recovery."); }
     }
 
     [HttpPost("passkeys/assertion/options")]
@@ -40,7 +76,10 @@ public sealed class CustomerStrongAuthenticationController(
     [HttpPost("passkeys/assertion/complete")]
     public async Task<IActionResult> CompletePasskeyAssertion(PasskeyAssertionRequest request, CancellationToken cancellationToken)
     {
-        var result = await passkeys.CompleteAssertionAsync(request.ChallengeId, request.Response, cancellationToken).ConfigureAwait(false);
+        CustomerSessionIssue? result;
+        try { result = await passkeys.CompleteAssertionAsync(request.ChallengeId, request.Response, cancellationToken).ConfigureAwait(false); }
+        catch (UnauthorizedAccessException) { return Unauthorized("The passkey request expired or is no longer valid. Start again."); }
+        catch (Fido2VerificationException) { return Unauthorized("The passkey could not be verified. Start again or use account recovery."); }
         if (result is null) return Unauthorized();
         CustomerSessionCookie.Append(Response, result.Token, result.Session.ExpiresUtc);
         return Ok(new { result.User.Id, result.User.Email, result.User.DisplayName, AuthenticationMethod = "Passkey", Assurance = "Strong" });
@@ -94,6 +133,7 @@ public sealed class CustomerStrongAuthenticationController(
 }
 
 public sealed record PasskeyRegistrationRequest(Guid ChallengeId, string DisplayName, AuthenticatorAttestationRawResponse Response);
+public sealed record PasskeyNameRequest(string DisplayName);
 public sealed record PasskeyAssertionOptionsRequest(string Email);
 public sealed record PasskeyAssertionRequest(Guid ChallengeId, AuthenticatorAssertionRawResponse Response);
 public sealed record CodeRequest(string Code);

@@ -2,14 +2,29 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [app, timeline, api, passkey, main, styles] = await Promise.all([
+const [app, timeline, api, passkey, passkeyManagement, security, navigation, main, styles] = await Promise.all([
   readFile(new URL("../src/CustomerOnboardingApp.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/CustomerOnboardingTimeline.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/customerOnboardingApi.ts", import.meta.url), "utf8"),
   readFile(new URL("../src/passkeySignIn.ts", import.meta.url), "utf8"),
+  readFile(new URL("../src/passkeyManagement.ts", import.meta.url), "utf8"),
+  readFile(new URL("../src/AccountSecurity.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../src/navigation.mjs", import.meta.url), "utf8"),
   readFile(new URL("../src/main.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/styles.css", import.meta.url), "utf8")
 ]);
+
+test("account security exposes discoverable passkey lifecycle and recovery states", () => {
+  assert.match(navigation, /path: "security"/);
+  assert.match(security, /Add a passkey/);
+  assert.match(security, /Remove passkey/);
+  assert.match(security, /window\.confirm/);
+  assert.match(security, /role="status"/);
+  assert.match(security, /role="alert"/);
+  assert.match(passkeyManagement, /navigator\.credentials\.create/);
+  assert.match(passkeyManagement, /Recent authentication is required/);
+  assert.match(passkey, /canceled or timed out/);
+});
 
 test("public entry exposes passwordless routes and returning-user recovery", () => {
   assert.match(app, /Continue with Google/);
