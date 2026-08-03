@@ -3,6 +3,7 @@ import App from './App';
 import ErrorBoundary from './ErrorBoundary';
 import { registerDisplayMediaCache } from './mediaCache.mjs';
 import { preloadNotoFonts } from './notoFonts.mjs';
+import './player.css';
 
 if (import.meta.env.PROD) {
   void registerDisplayMediaCache();

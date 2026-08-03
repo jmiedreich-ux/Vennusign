@@ -31,6 +31,8 @@ type DisplayState =
   | { kind: 'not-found'; message: string }
   | { kind: 'api-error'; message: string };
 
+export const DISPLAY_CONTENT_RECOVERY_INTERVAL_MS = 60_000;
+
 export default function DisplayPage({ screenId, platform, appVersion }: DisplayPageProps) {
   const [state, setState] = useState<DisplayState>({ kind: 'loading' });
   const [connectionState, setConnectionState] = useState<DisplayConnectionState>('connecting');
@@ -55,6 +57,7 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
     const abortController = new AbortController();
     let realtimeConnection: DisplayRealtimeConnection | undefined;
     let heartbeat: { stop: () => void } | undefined;
+    let recoveryTimer: ReturnType<typeof setInterval> | undefined;
     let disposed = false;
     let liveServicesStarted = false;
 
@@ -98,6 +101,9 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
           }
         }
       );
+      recoveryTimer = window.setInterval(() => {
+        if (!disposed) void loadAndActivate();
+      }, DISPLAY_CONTENT_RECOVERY_INTERVAL_MS);
     };
 
     const loadAndActivate = async () => {
@@ -160,6 +166,7 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
       window.removeEventListener('online', recoverOnline);
       abortController.abort();
       heartbeat?.stop();
+      if (recoveryTimer) window.clearInterval(recoveryTimer);
       void realtimeConnection?.stop();
     };
   }, [appVersion, platform, screenId]);
@@ -195,9 +202,9 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
 
   return (
     <>
-      <p aria-live="polite">Real-time connection: {connectionState}</p>
+      <p className="player-status" aria-live="polite">Real-time connection: {connectionState}</p>
       {state.source === 'cache' && (
-        <p aria-live="polite">Offline — showing the last saved menu.</p>
+        <p className="player-status player-status--offline" aria-live="polite">Offline — showing the last saved menu.</p>
       )}
       <EmergencyBroadcastOverlay content={content}>
         <PlaylistRotation content={content}><DisplayLayout content={content} /></PlaylistRotation>

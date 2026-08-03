@@ -5,14 +5,15 @@ import test from 'node:test';
 const source = (name) => readFile(new URL(`../src/${name}`, import.meta.url), 'utf8');
 const publicSource = (name) => readFile(new URL(`../public/${name}`, import.meta.url), 'utf8');
 
-const [page, frame, photo, diner, cache, realtime, worker] = await Promise.all([
+const [page, frame, photo, diner, cache, realtime, worker, playerCss] = await Promise.all([
   source('DisplayPage.tsx'),
   source('layouts/DisplayLayout.tsx'),
   source('layouts/PhotoGridLayout.tsx'),
   source('layouts/ClassicDinerLayout.tsx'),
   source('displayCache.mjs'),
   source('displayRealtime.mjs'),
-  publicSource('vennu-media-sw.js')
+  publicSource('vennu-media-sw.js'),
+  source('player.css')
 ]);
 
 test('player composes both Phase 06 layouts through one registry path', () => {
@@ -52,6 +53,9 @@ test('offline content is screen-bound versioned and recoverable', () => {
   assert.match(cache, /displayContentCacheMaxAgeMs/);
   assert.match(page, /window\.addEventListener\('online', recoverOnline\)/);
   assert.match(page, /Offline — showing the last saved menu/);
+  assert.match(page, /DISPLAY_CONTENT_RECOVERY_INTERVAL_MS/);
+  assert.match(playerCss, /html, body, #root[\s\S]*overflow: hidden/);
+  assert.match(playerCss, /overscroll-behavior: none/);
 });
 
 test('media cache invalidates old versions and falls back only for supported media', () => {

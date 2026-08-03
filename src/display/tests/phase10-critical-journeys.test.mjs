@@ -68,6 +68,7 @@ test('Android Fire Tizen and webOS retain bounded recovery and operator escape b
   assert.match(webosLauncher, /keyCode === 461/);
   assert.match(webosLauncher, /webOSRelaunch/);
   assert.match(webosLauncher, /visibilitychange/);
+  assert.match(android, /kioskController\.enterFullscreen\(\)/);
 });
 
 test('GitHub Actions reproduces package validation and explicitly skips integration tests', () => {
