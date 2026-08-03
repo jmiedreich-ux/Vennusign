@@ -2,32 +2,30 @@
 
 ## Current State
 
-- Item: RWP-00.03 — Administrative Surface and Technical Identity Migration / issue #422
+- Item: RWP-04.02 — Platform Operations Safety and Support Workflows / issue #343
 - Mode: Sequential
-- Branch: `rwp/00.03-administrative-technical-identity`
+- Branch: `rwp/04.02-platform-operations-safety`
 - Status: Complete in the proposed merge state
 
 ## Result
 
-- The customer administrative application is canonically **Back Office** and the internal console is **Platform Operations** in page titles, navigation landmarks, project paths, local tooling, CI labels, API namespaces, contracts, controllers, authentication schemes/policies/roles/claims, and configuration scopes.
-- Canonical API prefixes are `/api/back-office` and `/api/platform-operations`; canonical authentication headers use `X-Vennusign-*` names.
-- Legacy routes, headers, configuration sections, and customer session cookies remain bounded aliases. Conflicting canonical/legacy credentials fail closed, successful legacy HTTP use returns `Deprecation: true`, and telemetry records only a non-sensitive contract category.
-- DbUp migration 052 safely moves persisted administrative scopes and provider keys with duplicate preconditions, an ordered transaction, canonical constraint replacement, and post-migration verification. Historical migration resource names and published package/domain identifiers remain unchanged compatibility boundaries.
-- RWP-05.06 / issue #419 continues to own the full Back Office organization/venue context indicator and selector; it was not duplicated here.
+- Platform Operations dashboard metrics, fleet entries, and commercial events now drill into filtered venue support context.
+- Dashboard, revenue, trend, and event reads expose scoped errors, retry actions, refresh progress, and freshness rather than silently collapsing failed states.
+- Venue search, tier/status/health filters, result counts, empty states, retry behavior, and screen support evidence are explicit.
+- Tier switches, feature overrides, bulk feature-matrix edits, and tier create/edit/archive actions now provide impact review and a separate confirmation step.
+- Existing protected API, role, tenant, commercial, audit-event, and entitlement enforcement remains authoritative. RWP-04.02 adds no integration or provider behavior.
+- The UI/function gap analysis and acceptance evidence are recorded in `docs/work-packages/RWP-04.02-platform-operations-safety.md`.
 
 ## Validation
 
-- Local Platform Operations tests: 83 passed.
-- Local Back Office tests: 42 passed.
-- Local Display tests: 123 passed.
-- Change-classifier scenarios, patch whitespace, and assignment JSON validation passed.
-- Local production builds and .NET unit tests were unavailable because dependency installation/local .NET tooling was unavailable; exact-head full non-integration GitHub Actions is authoritative because workflows, authentication, migrations, projects, and shared contracts changed.
+- Focused Platform Operations Node tests and production build pass locally.
+- Exact-head affected-area GitHub Actions is authoritative for the proposed merge.
 - Azure SQL, external-service, credentialed, hosted-infrastructure, container, physical-device, signing/store, cross-system, and all other integration-type tests remain skipped.
 
 ## Exact Next Action
 
-After this RWP merges and its claim is released, reassess and claim only RWP-04.02 / issue #343 in Sequential mode if it has no active owner.
+After this RWP merges and its claim is released, reassess and claim only RWP-05.04 / issue #344 in Sequential mode if it has no active owner.
 
 ## Do Not Redo
 
-Do not remove compatibility aliases without the documented observation evidence, rename historical DbUp resource names or published package/domain identities, absorb RWP-05.06 context selection, skip the recorded queue, or resume Phase 14+.
+Do not weaken Platform Operations authorization, trust client-side impact previews as enforcement, remove server audit/reconciliation behavior, skip the recorded queue, or resume Phase 14+.
