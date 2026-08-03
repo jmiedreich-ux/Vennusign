@@ -18,7 +18,7 @@
 - API and Display are listening on ports 7138 and 5175.
 
 ## Exact Next Action
-- Reload `http://localhost:5175/pair` and confirm the six-digit code appears, then validate and merge Issue #404.
+- Reload `http://localhost:5175/pair` and confirm the six-digit code appears, then validate and merge PR #405.
 
 ## Do Not Redo or Reverse
 - Do not use wildcard CORS or add localhost to production configuration.

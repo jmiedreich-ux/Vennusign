@@ -8,7 +8,7 @@
 ## Git State
 - Branch: `issue/404-display-pairing-cors`
 - Issue: #404
-- Pull request: pending
+- Pull request: #405
 - CI state: pending
 
 ## Completed This Session
@@ -27,7 +27,7 @@
 
 ## Remaining Work
 - Reload `http://localhost:5175/pair` and confirm the six-digit code appears.
-- Open, validate, review, and merge the Issue #404 PR, then release the claim.
+- Validate, review, and merge PR #405, then release the claim.
 
 ## Known Risks or Blockers
 - A physical device using a LAN hostname/IP requires separate HTTPS hostname and production-style explicit-origin configuration; this fix targets the current localhost simulation.
