@@ -66,6 +66,11 @@ assert_output dev-control full false
 assert_output dev-control dev_control true
 assert_output dev-control dotnet_api false
 
+run_scenario key-helper scripts/set-super-admin-key.ps1
+assert_output key-helper full false
+assert_output key-helper dev_control true
+assert_output key-helper dotnet_api false
+
 run_scenario unknown config/new-runtime-policy.json
 assert_output unknown full true
 assert_output unknown dotnet_api true

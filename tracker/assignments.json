@@ -11,6 +11,9 @@
       "claimedUtc": "2026-08-03T09:00:00Z",
       "writableScope": [
         "scripts/set-super-admin-key.ps1",
+        "scripts/ci/classify-changes.sh",
+        "scripts/ci/test-classify-changes.sh",
+        ".github/workflows/phase02-tests.yml",
         "docs/work-packages/Issue-389-super-admin-key-helper.md",
         "PROJECT_STATUS.md",
         "tracker/assignments.json",

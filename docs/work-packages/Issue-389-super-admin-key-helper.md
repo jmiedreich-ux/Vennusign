@@ -20,4 +20,5 @@ Collaborative
 
 - PowerShell parser validation passed.
 - The script executed successfully, stored the user environment value, and copied it to the clipboard without console disclosure.
+- The Windows development-control CI gate validates helper syntax without executing or generating a key.
 - GitHub Actions validation pending.

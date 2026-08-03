@@ -204,6 +204,13 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
       - name: Build and test Vennu Development Control
         run: dotnet test tools/Vennu.DevControl.Tests/Vennu.DevControl.Tests.csproj --configuration Release --logger "console;verbosity=normal"
+      - name: Validate local key helper syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'scripts/set-super-admin-key.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { throw ($errors | Out-String) }
 
   build-and-test:
     if: always()
