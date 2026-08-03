@@ -28,3 +28,12 @@ Replacing a physical player preserves the selected logical screen, its supported
 - Sequential; follows RWP-00.04 and precedes RWP-08.02.
 - Phase 14+ remains paused.
 - Integration-type tests remain skipped under the standing owner instruction.
+
+## Implementation and UI/function analysis
+
+- Status: implemented; pending exact-head CI, review, and merge.
+- The Back Office replacement panel deliberately separates replacement from new pairing and unpairing. It provides target selection, six-digit validation, preview, configuration/history/video-wall impact, explicit confirmation, cancel, busy, success, and recoverable error states.
+- The API rejects missing, expired, claimed, assigned, archived, cross-venue, self-replacement, and stale-preview attempts. A repeated successful request returns its durable prior result.
+- One SQL transaction locks the pairing code and both screen records, rotates the logical screen credential, preserves logical configuration/history/wall identity, redirects pairing status to the logical screen, retires the temporary registration screen, and writes audit evidence.
+- Capacity is unchanged because replacement retains one active logical screen rather than adding another.
+- Azure SQL, browser/device, credentialed, hosted, and all other integration-type tests remain skipped.
