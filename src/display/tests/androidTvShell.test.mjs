@@ -33,6 +33,8 @@ test('keeps kiosk opt-in with lock-task and immersive fallback paths', () => {
   assert.match(kiosk, /PINNING_REQUESTED/);
   assert.match(kiosk, /IMMERSIVE_FALLBACK/);
   assert.match(kiosk, /IMMERSIVE_STICKY/);
+  assert.match(activity, /kioskController\.enterFullscreen\(\)/);
+  assert.match(kiosk, /fun enterFullscreen\(\)/);
 });
 
 test('protects operator escape with Android device credential', () => {

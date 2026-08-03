@@ -12,13 +12,19 @@ const initialContent = {
   layout: 'default'
 };
 
-test('ContentUpdated replaces the complete display payload', () => {
+test('ContentUpdated replaces only a validated complete display payload', () => {
   const replacement = { ...initialContent, layout: 'promotions' };
 
   assert.equal(
     applyRealtimeEvent(initialContent, displayRealtimeEvents.contentUpdated, replacement),
     replacement
   );
+});
+
+test('manual push and command payloads reload authoritative content instead of rendering raw text', () => {
+  const command = { change: 'manual-push', correlationId: 'push-1' };
+  assert.equal(requiresContentReload(displayRealtimeEvents.contentUpdated, command), true);
+  assert.equal(applyRealtimeEvent(initialContent, displayRealtimeEvents.contentUpdated, command), initialContent);
 });
 
 test('schedule and promotion transitions request an authoritative content reload', () => {

@@ -33,6 +33,11 @@ class KioskController(private val activity: Activity) {
         }
     }
 
+    fun enterFullscreen() {
+        activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        hideSystemUi()
+    }
+
     fun deactivate() {
         val activityManager = activity.getSystemService(ActivityManager::class.java)
         if (activityManager.lockTaskModeState != ActivityManager.LOCK_TASK_MODE_NONE) {

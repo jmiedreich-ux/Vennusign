@@ -117,6 +117,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         webView.onResume()
+        kioskController.enterFullscreen()
         if (KioskController.isEnabled(this)) kioskController.activate()
         if (!networkCallbackRegistered) {
             connectivityManager.registerDefaultNetworkCallback(networkCallback)
@@ -126,7 +127,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus && KioskController.isEnabled(this)) kioskController.hideSystemUi()
+        if (hasFocus) kioskController.enterFullscreen()
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {

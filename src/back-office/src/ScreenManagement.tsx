@@ -4,7 +4,6 @@ import {
   createManagedScreen,
   loadScreenOverflow,
   loadManagedScreens,
-  pushAllManagedScreens,
   pushManagedScreen,
   resetManagedScreen,
   setManagedScreenArchived,
@@ -57,13 +56,26 @@ export default function ScreenManagement({
   const [pairingCode, setPairingCode] = useState("");
   const [screenSearch, setScreenSearch] = useState("");
   const [healthFilter, setHealthFilter] = useState("all");
+  const [selectedScreenId, setSelectedScreenId] = useState("");
+  const [delivery, setDelivery] = useState<{ screenId: string; state: "pending" | "queued" | "offline" | "failed"; requestedUtc: string; reason?: string }>();
 
-  const refresh = () => loadManagedScreens(configuration, apiKey, venueId).then(setScreens);
+  const refresh = async () => {
+    const current = await loadManagedScreens(configuration, apiKey, venueId);
+    setScreens(current);
+    setSelectedScreenId(selected => current.some(screen => screen.id === selected && screen.status.toLowerCase() !== "archived") ? selected : "");
+  };
   useEffect(() => {
     setScreensLoading(true);
     refresh()
       .catch(() => setError("Screens could not be loaded."))
       .finally(() => setScreensLoading(false));
+  }, [apiKey, configuration, venueId]);
+  useEffect(() => {
+    const poll = () => { if (document.visibilityState === "visible") void refresh().catch(() => undefined); };
+    const timer = window.setInterval(poll, 10_000);
+    window.addEventListener("online", poll);
+    document.addEventListener("visibilitychange", poll);
+    return () => { window.clearInterval(timer); window.removeEventListener("online", poll); document.removeEventListener("visibilitychange", poll); };
   }, [apiKey, configuration, venueId]);
   useEffect(() => {
     loadScreenOverflow(configuration, apiKey, venueId, capacity)
@@ -89,9 +101,10 @@ export default function ScreenManagement({
     event.preventDefault();
     setBusyId("pair"); setError(undefined); setNotice(undefined);
     try {
-      await claimPairingCode(configuration, apiKey, venueId, pairingCode);
+      const claimed = await claimPairingCode(configuration, apiKey, venueId, pairingCode);
       setPairingCode("");
-      setNotice("Screen paired successfully.");
+      setSelectedScreenId(claimed.screenId);
+      setNotice("Screen paired successfully. Pairing is complete; Online appears only after the authoritative player heartbeat arrives.");
       await refresh();
     } catch (reason: unknown) {
       const status = reason instanceof BackOfficeApiError ? reason.status : 0;
@@ -127,24 +140,19 @@ export default function ScreenManagement({
   };
 
   const push = async (screen: ManagedScreen) => {
+    if (screen.id !== selectedScreenId) { setError("Select this screen as the delivery target before pushing content."); return; }
+    const requestedUtc = new Date().toISOString();
+    setDelivery({ screenId: screen.id, state: "pending", requestedUtc });
     setBusyId(screen.id); setError(undefined); setNotice(undefined);
     try {
       await pushManagedScreen(configuration, apiKey, venueId, screen.id);
-      setNotice(screen.status.toLowerCase() === "online"
-        ? `Update queued for ${screen.name}.`
-        : `Update queued for ${screen.name}; it will apply when the player reconnects.`);
-    } catch { setError("Content could not be pushed to the screen."); }
-    finally { setBusyId(undefined); }
-  };
-
-  const pushAll = async () => {
-    setBusyId("all"); setError(undefined); setNotice(undefined);
-    try {
-      const result = await pushAllManagedScreens(configuration, apiKey, venueId);
-      setNotice(result.screenCount
-        ? `Content pushed to all ${result.screenCount} screens.`
-        : "No assigned screens to push.");
-    } catch { setError("Content could not be pushed to all screens."); }
+      const online = screen.status.toLowerCase() === "online" && !isStale(screen);
+      setDelivery({ screenId: screen.id, state: online ? "queued" : "offline", requestedUtc,
+        reason: online ? "Authoritative content reload queued; player acknowledgement is pending." : "Player is offline or stale; latest persisted content will recover after reconnect." });
+      setNotice(online
+        ? `Structured content reload queued for ${screen.name}. Acceptance is not reported until a future acknowledgement contract is available.`
+        : `${screen.name} is offline or stale. Its latest persisted content will apply when the player reconnects.`);
+    } catch { setDelivery({ screenId: screen.id, state: "failed", requestedUtc, reason: "The API rejected or could not queue this selected-target delivery." }); setError("Content could not be pushed to the selected screen. Retry without changing the target."); }
     finally { setBusyId(undefined); }
   };
 
@@ -199,11 +207,12 @@ export default function ScreenManagement({
     : maxScreens < 0
       ? `${activeScreens.length} active screens · Unlimited by plan`
       : `${activeScreens.length} of ${maxScreens} active screens${screenLimitReached ? " · Plan limit reached" : ""}`;
+  const selectedScreen = activeScreens.find(screen => screen.id === selectedScreenId);
 
   return <article className="screen-management">
     <div className="screen-management-heading">
       <div><p>Display fleet</p><h3>Screens ({activeScreens.length} active · {screens.length - activeScreens.length} archived)</h3></div>
-      <button className="push-all" disabled={busyId === "all" || activeScreens.length === 0} onClick={pushAll}>Push to all active screens</button>
+      <span>{selectedScreen ? `Target: ${selectedScreen.name}` : "No delivery target selected"}</span>
     </div>
     {error ? <p className="state error" role="alert">{error}</p> : null}
     {notice ? <p className="screen-notice" role="status">{notice}</p> : null}
@@ -229,6 +238,12 @@ export default function ScreenManagement({
       <button aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "pair" || screenLimitReached}>Pair screen</button>
     </form>
     <p className="screen-notice" role="status">{busyId === "pair" ? "Pairing pending… keep this page and the player open." : "Pairing codes expire and can be used once. If pairing fails, generate a fresh code on the player before retrying."}</p>
+    <section className="screen-delivery-target" aria-labelledby="screen-target-heading">
+      <div><p>Authorized delivery</p><h4 id="screen-target-heading">Select one screen target</h4><span>Preview and Push remain disabled until you deliberately choose an active venue screen.</span></div>
+      <label>Target screen<select value={selectedScreenId} onChange={event => { setSelectedScreenId(event.target.value); setDelivery(undefined); }}><option value="">Choose a screen</option>{activeScreens.map(screen => <option key={screen.id} value={screen.id}>{screen.name} · {isStale(screen) ? "Stale" : screen.status}</option>)}</select></label>
+      <button disabled={!selectedScreen || busyId === selectedScreenId} onClick={() => selectedScreen && push(selectedScreen)}>Push structured content</button>
+      {delivery && delivery.screenId === selectedScreenId ? <div className={`delivery-state ${delivery.state}`} role="status"><strong>Delivery: {delivery.state}</strong><span>{delivery.reason ?? "Request in progress."}</span><small>Requested {new Date(delivery.requestedUtc).toLocaleString()}</small>{delivery.state === "failed" && selectedScreen ? <button onClick={() => push(selectedScreen)}>Retry selected target</button> : null}</div> : null}
+    </section>
     <div className="screen-create">
       <input aria-label="Search screens" value={screenSearch} onChange={event => setScreenSearch(event.target.value)} placeholder="Search name, location, or platform" />
       <label>Health<select value={healthFilter} onChange={event => setHealthFilter(event.target.value)}><option value="all">All screens</option><option value="online">Online</option><option value="offline">Offline</option><option value="stale">Stale</option><option value="archived">Archived</option></select></label>
@@ -310,12 +325,12 @@ export default function ScreenManagement({
         </label> : null}
         <div className="screen-actions">
           <a href={screen.registrationUrl} target="_blank" rel="noreferrer">Open registration URL</a>
-          <button type="button" disabled={busyId === screen.id || screen.status.toLowerCase() === "archived"} onClick={() => push(screen)}>Push content</button>
+          <button type="button" aria-pressed={selectedScreenId === screen.id} disabled={busyId === screen.id || screen.status.toLowerCase() === "archived"} onClick={() => { setSelectedScreenId(screen.id); setDelivery(undefined); }}>Select target</button>
           {screen.status.toLowerCase() === "archived"
             ? <button type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, false)}>Restore</button>
             : <><button type="button" disabled={busyId === screen.id} onClick={() => reset(screen)}>Reset connection</button><button type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, true)}>Archive</button><button type="button" disabled={busyId === screen.id} onClick={() => unpair(screen)}>Unpair for replacement</button></>}
         </div>
-        {screen.status.toLowerCase() !== "archived" && ["split_layout", "daily_special_hero", "classic_chalkboard", "tap_strips", "digital_tap_board"].includes(screen.displayLayout) ? <div className="split-layout-preview">
+        {screen.id === selectedScreenId && screen.status.toLowerCase() !== "archived" && ["split_layout", "daily_special_hero", "classic_chalkboard", "tap_strips", "digital_tap_board"].includes(screen.displayLayout) ? <div className="split-layout-preview">
           <div><strong>Exact TV preview</strong><span>Uses this screen’s saved menu, theme, and layout settings.</span></div>
           <iframe
             key={`${screen.id}-${screen.displayLayout}-${screen.splitRatio}-${screen.heroDwellSeconds}-${previewRevision}`}

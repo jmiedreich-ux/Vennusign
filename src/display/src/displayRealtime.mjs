@@ -6,9 +6,11 @@ export const displayRealtimeEvents = Object.freeze({
 });
 
 export function requiresContentReload(eventName, payload) {
-  return eventName === displayRealtimeEvents.contentUpdated
-    && ['date-range-promotions', 'date-range-promotion-transition', 'scheduled-content-transition']
-      .includes(payload?.change);
+  if (eventName !== displayRealtimeEvents.contentUpdated) return false;
+  if (['date-range-promotions', 'date-range-promotion-transition', 'scheduled-content-transition',
+    'manual-push', 'tap-list', 'playlist', 'screen-configuration'].includes(payload?.change)) return true;
+  if (payload?.change === 'happy-hour-transition' || payload?.change === 'emergency-broadcast') return false;
+  return !payload?.screenId;
 }
 
 export function applyRealtimeEvent(content, eventName, ...args) {
@@ -25,7 +27,7 @@ export function applyRealtimeEvent(content, eventName, ...args) {
       if (args[0]?.change === 'emergency-broadcast') {
         return { ...content, emergencyBroadcast: args[0].emergencyBroadcast ?? null };
       }
-      return args[0];
+      return args[0]?.screenId ? args[0] : content;
 
     case displayRealtimeEvents.themeUpdated:
       return {

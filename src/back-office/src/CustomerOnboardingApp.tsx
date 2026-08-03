@@ -56,6 +56,23 @@ export default function CustomerOnboardingApp() {
     return () => controller.abort();
   }, [configuration, returnPath]);
 
+  useEffect(() => {
+    if (!session || !onboarding?.firstScreenId) return;
+    let stopped = false;
+    const refreshPresence = async () => {
+      try {
+        const current = await loadCustomerOnboarding(configuration);
+        if (!stopped) setOnboarding(current);
+      } catch {
+        // Preserve the last authoritative state; the visible manual retry remains available.
+      }
+    };
+    const timer = window.setInterval(() => void refreshPresence(), 10_000);
+    const onVisible = () => { if (document.visibilityState === "visible") void refreshPresence(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { stopped = true; window.clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
+  }, [configuration, onboarding?.firstScreenId, session]);
+
   const run = async (key: string, action: () => Promise<void>) => {
     setBusy(key); setError(undefined); setNotice(undefined);
     try { await action(); }
@@ -243,7 +260,7 @@ export default function CustomerOnboardingApp() {
         <p className="customer-onboarding__help">Expired or already used? Return to the display and request a fresh code; your saved venue is unchanged.</p>
       </form> : <section className="customer-onboarding__panel">
         <span>Go Live</span><h2>{onboarding.firstScreenStatus === "online" ? "Your first display is online" : "Your first display is paired"}</h2>
-        <p>{onboarding.firstScreenStatus === "online" ? "Vennusign received the player heartbeat. This onboarding journey is ready for the next timeline release." : "The screen record is linked, but pairing alone does not mean the device is active. Start the player and keep it connected until it reports Online."}</p>
+        <p>{onboarding.firstScreenStatus === "online" ? "Vennusign received the player heartbeat. Status continues to update automatically." : "The screen record is linked, but pairing alone does not mean the device is active. Start the player and keep it connected; this status updates automatically when its heartbeat arrives."}</p>
         <dl className="customer-onboarding__device-status"><div><dt>Pairing</dt><dd>Linked</dd></div><div><dt>Device</dt><dd>{onboarding.firstScreenStatus === "online" ? "Online" : "Offline / waiting"}</dd></div>{onboarding.firstScreenLastSeenUtc ? <div><dt>Last seen</dt><dd>{new Date(onboarding.firstScreenLastSeenUtc).toLocaleString()}</dd></div> : null}</dl>
         <button type="button" onClick={refreshOnboarding} disabled={busy === "refresh"}>{busy === "refresh" ? "Refreshing…" : "Refresh device status"}</button>
       </section>}</div>
