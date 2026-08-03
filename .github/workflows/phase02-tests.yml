@@ -34,6 +34,7 @@ jobs:
       android_tv: ${{ steps.classify.outputs.android_tv }}
       tizen: ${{ steps.classify.outputs.tizen }}
       webos: ${{ steps.classify.outputs.webos }}
+      dev_control: ${{ steps.classify.outputs.dev_control }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -187,9 +188,26 @@ jobs:
           node-version: 22.x
       - run: node src/tv/webos/scripts/validate.mjs
 
+  dev-control:
+    if: needs.classify.outputs.dev_control == 'true'
+    needs: classify
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - name: Build and test Vennu Development Control
+        run: dotnet test tools/Vennu.DevControl.Tests/Vennu.DevControl.Tests.csproj --configuration Release --logger "console;verbosity=normal"
+
   build-and-test:
     if: always()
-    needs: [classify, docs-validation, dotnet-api, dotnet-data-access, frontend, android-tv, tizen, webos]
+    needs: [classify, docs-validation, dotnet-api, dotnet-data-access, frontend, android-tv, tizen, webos, dev-control]
     runs-on: ubuntu-latest
     steps:
       - name: Require every applicable affected-area check
