@@ -14,6 +14,10 @@ Read only the files listed in `AGENTS.md`: current policy, handoff, tracker, sta
 - component README files under `src/`: read only when changing that component.
 - `AI_DEVELOPMENT_GUIDE.md`: concise architecture and implementation guidance.
 
+## Creation and Updates
+
+Update existing living documents before creating new Markdown. Desktop Collaborative sessions batch documentation at publish checkpoints and do not create files per local branch, issue, experiment, test run, or intermediate handoff. New package, architecture, decision, or operations documents require a durable purpose that no current document can serve. Archive snapshots are reserved for major milestones, durable audit history, or explicit owner request.
+
 ## Deliberate Research Only
 
 - `docs/archive/work-packages/`: completed WP/RWP and maintenance records.
