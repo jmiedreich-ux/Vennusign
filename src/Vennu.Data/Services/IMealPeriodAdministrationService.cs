@@ -45,7 +45,8 @@ public sealed record MealPeriodAdministrationSnapshot(
     DateTimeOffset? VenueLocalNow = null,
     Guid? ActiveMealPeriodId = null,
     Guid? NextMealPeriodId = null,
-    DateTimeOffset? NextStartsLocal = null);
+    DateTimeOffset? NextStartsLocal = null,
+    LocalTimeOccurrenceAdjustment? NextStartAdjustment = null);
 
 public sealed record MealPeriodConflict(
     Guid FirstId,

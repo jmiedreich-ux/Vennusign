@@ -116,7 +116,7 @@ public sealed class QuickUpdateService(
         }
 
         var localNow = TimeZoneInfo.ConvertTime(utcNow, timezone);
-        var localMidnight = DateTime.SpecifyKind(localNow.Date.AddDays(1), DateTimeKind.Unspecified);
-        return TimeZoneInfo.ConvertTimeToUtc(localMidnight, timezone);
+        return LocalTimeOccurrenceResolver.Resolve(timezone, localNow.Date.AddDays(1))
+            .ResolvedLocalTime.UtcDateTime;
     }
 }

@@ -30,6 +30,27 @@ public sealed class HappyHourScheduleResolverTests
         Assert.Equal(expected, resolver.Resolve("UTC", new DateTimeOffset(2026, 7, 30, 8, 0, 0, TimeSpan.Zero), schedule).IsActive);
     }
 
+    [Fact]
+    public void Resolve_AdvancesInvalidSpringGapEndWithoutThrowing()
+    {
+        var schedule = Schedule(1, 2, DayOfWeek.Sunday);
+        schedule.EndLocalTime = new TimeSpan(2, 30, 0);
+        var result = resolver.Resolve("America/New_York",
+            new DateTimeOffset(2026, 3, 8, 6, 30, 0, TimeSpan.Zero), schedule);
+        Assert.True(result.IsActive);
+        Assert.Equal(new DateTimeOffset(2026, 3, 8, 7, 0, 0, TimeSpan.Zero), result.EndsAtUtc);
+    }
+
+    [Fact]
+    public void Resolve_UsesEarlierUtcOccurrenceForAmbiguousFallBackEnd()
+    {
+        var schedule = Schedule(0, 1, DayOfWeek.Sunday);
+        schedule.EndLocalTime = new TimeSpan(1, 30, 0);
+        var result = resolver.Resolve("America/New_York",
+            new DateTimeOffset(2026, 11, 1, 4, 30, 0, TimeSpan.Zero), schedule);
+        Assert.Equal(new DateTimeOffset(2026, 11, 1, 5, 30, 0, TimeSpan.Zero), result.EndsAtUtc);
+    }
+
     private static HappyHourSchedule Schedule(int start, int end, DayOfWeek day) => new()
     {
         VenueId = Guid.NewGuid(),

@@ -14,4 +14,5 @@ public sealed record MealPeriodScheduleResolution(
     DateTimeOffset LocalNow,
     MealPeriod? ActiveMealPeriod,
     MealPeriod? NextMealPeriod,
-    DateTimeOffset? NextStartsLocal);
+    DateTimeOffset? NextStartsLocal,
+    LocalTimeOccurrenceAdjustment? NextStartAdjustment = null);

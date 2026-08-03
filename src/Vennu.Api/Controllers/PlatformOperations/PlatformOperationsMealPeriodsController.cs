@@ -21,7 +21,8 @@ public sealed class PlatformOperationsMealPeriodsController(
         {
             var snapshot = await service.GetAsync(venueId, cancellationToken).ConfigureAwait(false);
             return Ok(new MealPeriodAdministrationResponse(snapshot.MealPeriods, snapshot.Conflicts,
-                snapshot.VenueLocalNow, snapshot.ActiveMealPeriodId, snapshot.NextMealPeriodId, snapshot.NextStartsLocal));
+                snapshot.VenueLocalNow, snapshot.ActiveMealPeriodId, snapshot.NextMealPeriodId, snapshot.NextStartsLocal,
+                snapshot.NextStartAdjustment));
         }
         catch (KeyNotFoundException) { return NotFound(); }
         catch (ArgumentException exception)

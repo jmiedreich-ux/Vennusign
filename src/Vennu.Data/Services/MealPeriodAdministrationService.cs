@@ -32,7 +32,7 @@ public sealed class MealPeriodAdministrationService(
         var resolution = scheduleResolver.Resolve(venue.Timezone, timeProvider.GetUtcNow(), periods);
         return new MealPeriodAdministrationSnapshot(
             periods, conflicts, resolution.LocalNow, resolution.ActiveMealPeriod?.Id,
-            resolution.NextMealPeriod?.Id, resolution.NextStartsLocal);
+            resolution.NextMealPeriod?.Id, resolution.NextStartsLocal, resolution.NextStartAdjustment);
     }
 
     public async Task<MealPeriod> CreateAsync(

@@ -20,23 +20,13 @@ public sealed class HappyHourScheduleResolver : IHappyHourScheduleResolver
         var mode = HappyHourOverrideMode.Normalize(schedule.OverrideMode);
         if (mode == HappyHourOverrideMode.ForceOn) return new(true, localNow, null, mode);
         if (mode == HappyHourOverrideMode.ForceOff) return new(false, localNow, null, mode);
-        var active = IsActive(schedule, localNow);
+        var active = IsActive(schedule, localNow, timezone);
         return new(active, localNow, active ? ResolveEndUtc(schedule, localNow, timezone) : null, mode);
     }
 
-    private static bool IsActive(HappyHourSchedule schedule, DateTimeOffset localNow)
-    {
-        if (schedule.StartLocalTime == schedule.EndLocalTime) return false;
-        var time = localNow.TimeOfDay;
-        if (schedule.StartLocalTime < schedule.EndLocalTime)
-        {
-            return IsActiveDay(schedule.ActiveDaysMask, localNow.DayOfWeek)
-                && time >= schedule.StartLocalTime && time < schedule.EndLocalTime;
-        }
-        return time >= schedule.StartLocalTime
-            ? IsActiveDay(schedule.ActiveDaysMask, localNow.DayOfWeek)
-            : time < schedule.EndLocalTime && IsActiveDay(schedule.ActiveDaysMask, localNow.AddDays(-1).DayOfWeek);
-    }
+    private static bool IsActive(HappyHourSchedule schedule, DateTimeOffset localNow, TimeZoneInfo timezone) =>
+        LocalTimeOccurrenceResolver.IsWindowActive(
+            timezone, localNow, schedule.StartLocalTime, schedule.EndLocalTime, schedule.ActiveDaysMask);
 
     private static DateTimeOffset ResolveEndUtc(
         HappyHourSchedule schedule,
@@ -48,11 +38,9 @@ public sealed class HappyHourScheduleResolver : IHappyHourScheduleResolver
         {
             endDate = endDate.AddDays(1);
         }
-        var localEnd = DateTime.SpecifyKind(endDate.Add(schedule.EndLocalTime), DateTimeKind.Unspecified);
-        return new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(localEnd, timezone), TimeSpan.Zero);
+        var occurrence = LocalTimeOccurrenceResolver.Resolve(timezone, endDate.Add(schedule.EndLocalTime));
+        return occurrence.ResolvedLocalTime.ToUniversalTime();
     }
-
-    private static bool IsActiveDay(int mask, DayOfWeek day) => (mask & (1 << (int)day)) != 0;
 
     private static TimeZoneInfo ResolveTimezone(string timezoneId)
     {
