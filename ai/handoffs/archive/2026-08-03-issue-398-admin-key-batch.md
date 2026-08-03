@@ -16,7 +16,7 @@
 - Existing key remained unchanged and clipboard matched.
 
 ## Exact Next Action
-- Open, validate, review, and merge the Issue #398 PR.
+- Validate, review, and merge PR #399.
 
 ## Do Not Redo or Reverse
 - Do not print, commit, or rotate the existing key through the root batch helper.

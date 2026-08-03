@@ -8,7 +8,7 @@
 ## Git State
 - Branch: `issue/398-admin-key-batch-helper`
 - Issue: #398
-- Pull request: pending
+- Pull request: #399
 - CI state: pending
 
 ## Completed This Session
@@ -23,7 +23,7 @@
 - GitHub Actions pending.
 
 ## Remaining Work
-- Open, validate, review, and merge the Issue #398 PR, then release the claim.
+- Validate, review, and merge PR #399, then release the claim.
 
 ## Known Risks or Blockers
 - Clipboard and Windows user environment are user-readable local storage.
