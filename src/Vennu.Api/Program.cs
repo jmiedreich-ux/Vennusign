@@ -166,7 +166,7 @@ builder.Services.AddScoped<ICustomerPasskeyService, CustomerPasskeyService>();
 builder.Services.AddFido2(options =>
 {
     options.ServerDomain = customerAuthentication.Passkeys.ServerDomain;
-    options.ServerName = "Vennu";
+    options.ServerName = "Vennusign";
     options.Origins = customerAuthentication.Passkeys.Origins;
 });
 builder.Services.AddHttpClient<IEmailLoginDelivery, ConfiguredEmailLoginDelivery>();

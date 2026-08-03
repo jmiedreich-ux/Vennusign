@@ -64,7 +64,7 @@ export default function App() {
   );
   const [checkoutReturnNotice, setCheckoutReturnNotice] = useState(() =>
     checkoutReturn === "success"
-      ? "Stripe returned successfully. Your plan and feature access are being confirmed from Vennu."
+      ? "Stripe returned successfully. Your plan and feature access are being confirmed from Vennusign."
       : "Checkout was canceled. Your current plan and features were not changed."
   );
 
@@ -109,10 +109,10 @@ export default function App() {
           setSession(nextSession);
           setBilling(nextBilling);
         }
-        setCheckoutReturnNotice("Your current plan and feature access were refreshed from Vennu. Stripe webhooks remain authoritative if processing is still finishing.");
+        setCheckoutReturnNotice("Your current plan and feature access were refreshed from Vennusign. Stripe webhooks remain authoritative if processing is still finishing.");
       } catch (reason: unknown) {
         if (reason instanceof DOMException && reason.name === "AbortError") return;
-        setCheckoutReturnNotice("Stripe returned successfully, but Vennu could not refresh your plan yet. No access was changed from the return URL; refresh this page shortly.");
+        setCheckoutReturnNotice("Stripe returned successfully, but Vennusign could not refresh your plan yet. No access was changed from the return URL; refresh this page shortly.");
       }
     };
     void refreshAuthoritativeState();
@@ -155,9 +155,9 @@ export default function App() {
 
   if (!accessToken || error) {
     return <main className="centered"><section className="access-card venue-access-choice" aria-labelledby="venue-access-heading">
-        <span>Vennu Venue Admin</span>
+        <span>Vennusign Venue Admin</span>
         <h1 id="venue-access-heading">Open your venue</h1>
-        <p>{error ?? "Sign in with your Vennu customer account to continue."}</p>
+        <p>{error ?? "Sign in with your Vennusign customer account to continue."}</p>
         <a className="customer-sign-in" href="/signin?returnPath=/">Sign in with your customer account</a>
         <details><summary>Use a temporary legacy venue link</summary><form onSubmit={authorize}>
           <p>Legacy links are available only during migration and may be revoked or retired.</p>
@@ -262,7 +262,7 @@ export default function App() {
 
   return <div className="shell">
     <aside>
-      <div className="brand"><span>V</span><div><strong>Vennu</strong><small>Venue Admin</small></div></div>
+      <div className="brand"><span>V</span><div><strong>Vennusign</strong><small>Venue Admin</small></div></div>
       <nav aria-label="Venue Admin">
         {venueAdminRoutes.map(item => {
           const unlocked = canOpenVenueAdminRoute(item, session.capabilities);

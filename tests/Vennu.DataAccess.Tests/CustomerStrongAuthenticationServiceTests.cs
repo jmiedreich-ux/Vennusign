@@ -23,7 +23,7 @@ public sealed class CustomerStrongAuthenticationServiceTests
         var code = Totp(protector.LastSecret!, UtcNow.ToUnixTimeSeconds() / 30);
         var recoveryCodes = await service.CompleteTotpEnrollmentAsync(repository.UserId, code);
 
-        Assert.StartsWith("otpauth://totp/Vennu%3Auser%40example.com", enrollment.OtpAuthUri, StringComparison.Ordinal);
+        Assert.StartsWith("otpauth://totp/Vennusign%3Auser%40example.com", enrollment.OtpAuthUri, StringComparison.Ordinal);
         Assert.NotEqual(enrollment.Secret, repository.Authenticator!.ProtectedSecret);
         Assert.Equal(10, recoveryCodes!.Count);
         Assert.Equal(10, repository.Codes.Count);

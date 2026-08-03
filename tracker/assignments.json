@@ -1,16 +1,21 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-03T06:10:00Z",
+  "updatedUtc": "2026-08-03T07:29:10Z",
   "activeAssignments": [],
-  "nextAvailableWorkPackage": "RWP-04.02",
+  "nextAvailableWorkPackage": "RWP-00.03",
   "approvedSequentialQueue": [
+    { "id": "RWP-00.03", "issue": 422 },
     { "id": "RWP-04.02", "issue": 343 },
     { "id": "RWP-05.04", "issue": 344 },
     { "id": "RWP-05.05", "issue": 345 },
+    { "id": "RWP-05.06", "issue": 419 },
     { "id": "RWP-08.01", "issue": 346 },
     { "id": "RWP-09.01", "issue": 414 },
+    { "id": "RWP-10.01", "issue": 423 },
     { "id": "RWP-11.02", "issue": 348 },
-    { "id": "RWP-13.01", "issue": 416 }
+    { "id": "RWP-13.03", "issue": 421 },
+    { "id": "RWP-13.01", "issue": 416 },
+    { "id": "RWP-13.02", "issue": 420 }
   ],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

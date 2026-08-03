@@ -24,8 +24,8 @@ public sealed class CustomerStrongAuthenticationService(
         {
             Id = Guid.NewGuid(), UserId = userId, ProtectedSecret = protector.Protect(secret), CreatedUtc = utcNow
         }, cancellationToken).ConfigureAwait(false);
-        var label = Uri.EscapeDataString($"Vennu:{email.Trim().ToLowerInvariant()}");
-        return new TotpEnrollment(encoded, $"otpauth://totp/{label}?secret={encoded}&issuer=Vennu&algorithm=SHA1&digits=6&period=30");
+        var label = Uri.EscapeDataString($"Vennusign:{email.Trim().ToLowerInvariant()}");
+        return new TotpEnrollment(encoded, $"otpauth://totp/{label}?secret={encoded}&issuer=Vennusign&algorithm=SHA1&digits=6&period=30");
     }
 
     public async Task<IReadOnlyList<string>?> CompleteTotpEnrollmentAsync(Guid userId, string code, CancellationToken cancellationToken = default)

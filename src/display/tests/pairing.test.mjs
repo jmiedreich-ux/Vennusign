@@ -31,7 +31,7 @@ test('registers and requests a code using the existing pairing APIs', async () =
   const code = await createPairingCode('https://api.example.com/', screen.screenId, fetchImpl);
   assert.equal(requests[0].input, 'https://api.example.com/api/screens');
   assert.deepEqual(JSON.parse(requests[0].init.body), {
-    name: 'Vennu TV', platform: 'android_tv', appVersion: '2.1.0'
+    name: 'Vennusign TV', platform: 'android_tv', appVersion: '2.1.0'
   });
   assert.equal(requests[1].input, 'https://api.example.com/api/screens/pairing-code');
   assert.equal(code.code, '123456');

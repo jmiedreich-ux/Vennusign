@@ -1,10 +1,10 @@
 {
   "id": "com.vennu.tv.webos",
   "version": "0.1.0",
-  "vendor": "Vennu",
+  "vendor": "Vennusign",
   "type": "web",
   "main": "index.html",
-  "title": "Vennu TV",
+  "title": "Vennusign TV",
   "icon": "icon.png",
   "largeIcon": "large-icon.png",
   "requiredMemory": 64,

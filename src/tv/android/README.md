@@ -1,6 +1,6 @@
-# Vennu Android TV / Fire TV shell
+# Vennusign Android TV / Fire TV shell
 
-This is a thin Kotlin WebView host for the authoritative hosted Vennu display player. It supplies platform and app-version metadata at document start; display layouts, pairing, realtime behavior, scheduling, and offline player behavior remain in `src/display`.
+This is a thin Kotlin WebView host for the authoritative hosted Vennusign display player. It supplies platform and app-version metadata at document start; display layouts, pairing, realtime behavior, scheduling, and offline player behavior remain in `src/display`.
 
 ## Build
 
@@ -17,7 +17,7 @@ The `googleTv` flavor uses application ID `com.vennu.tv.googletv` and platform `
 The shell:
 
 - exposes a TV launcher entry and requires Leanback while making touch optional;
-- permits only HTTPS navigation to the configured Vennu display origin;
+- permits only HTTPS navigation to the configured Vennusign display origin;
 - provides deterministic loading, error, and D-pad-focusable retry states;
 - injects `window.__VENNU_PLATFORM__` before the player document executes.
 

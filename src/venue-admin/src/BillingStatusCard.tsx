@@ -33,7 +33,7 @@ export default function BillingStatusCard({ currentTier, subscription, isOpening
           {isOpening ? "Opening secure billing…" : "Manage billing in Stripe"}
         </button>
       : <p className="billing-status__support">Billing management is unavailable for this subscription state.</p>}
-    <small>Payments and payment methods are managed securely by Stripe. Vennu does not collect card details.</small>
+    <small>Payments and payment methods are managed securely by Stripe. Vennusign does not collect card details.</small>
     <div className="haas-billing" aria-labelledby="haas-billing-title">
       <div><p>Hardware as a Service</p><h3 id="haas-billing-title">Managed screen bundles</h3></div>
       {haasContract

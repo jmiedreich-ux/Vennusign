@@ -167,7 +167,7 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
   if (state.kind === 'loading') {
     return (
       <main aria-busy="true" aria-live="polite">
-        <h1>Vennu Display</h1>
+        <h1>Vennusign Display</h1>
         <p>Loading display…</p>
       </main>
     );

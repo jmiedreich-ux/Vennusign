@@ -18,7 +18,7 @@ export async function registerPairingScreen(baseUrl, platform = 'browser', appVe
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      name: 'Vennu TV',
+      name: 'Vennusign TV',
       platform,
       appVersion
     })
