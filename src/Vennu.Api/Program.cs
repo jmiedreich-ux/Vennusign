@@ -20,6 +20,7 @@ using Azure.Identity;
 using Vennu.Data.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+IConfigurationSecretProtector? databaseSecretProtector = null;
 
 var configurationEnvironment = Environment.GetEnvironmentVariable("VENU_CONFIGURATION_ENVIRONMENT");
 if (!string.IsNullOrWhiteSpace(configurationEnvironment))
@@ -28,7 +29,7 @@ if (!string.IsNullOrWhiteSpace(configurationEnvironment))
         ?? builder.Configuration.GetConnectionString("VennuDatabase")
         ?? throw new InvalidOperationException("VENU_CONFIGURATION_CONNECTION_STRING or ConnectionStrings:VennuDatabase is required when database configuration is enabled.");
     DatabaseMigrator.Run(configurationConnectionString);
-    IConfigurationSecretProtector? secretProtector = Environment.GetEnvironmentVariable("VENU_CONFIGURATION_KEY_PROVIDER") switch
+    databaseSecretProtector = Environment.GetEnvironmentVariable("VENU_CONFIGURATION_KEY_PROVIDER") switch
     {
         "AzureKeyVault" => new AzureKeyVaultConfigurationSecretProtector(
             new Uri(Environment.GetEnvironmentVariable("VENU_CONFIGURATION_KEY_ID")
@@ -45,7 +46,7 @@ if (!string.IsNullOrWhiteSpace(configurationEnvironment))
         ConnectionString = configurationConnectionString,
         EnvironmentName = configurationEnvironment,
         ApplicationScope = "API",
-        SecretProtector = secretProtector
+        SecretProtector = databaseSecretProtector
     });
     builder.Configuration.AddEnvironmentVariables();
     builder.Configuration.AddCommandLine(args);
@@ -66,6 +67,7 @@ if (builder.Environment.IsDevelopment() && (adminCorsOrigins is null || adminCor
 var adminCorsEnabled = adminCorsOrigins is { Length: > 0 };
 
 builder.Services.AddControllers();
+if (databaseSecretProtector is not null) builder.Services.AddSingleton<IConfigurationSecretProtector>(databaseSecretProtector);
 builder.Services
     .AddOptions<CustomerAuthenticationOptions>()
     .Bind(builder.Configuration.GetSection(CustomerAuthenticationOptions.SectionName))
@@ -133,6 +135,13 @@ builder.Services.AddAuthorization(options =>
             .AddAuthenticationSchemes(SuperAdminAuthenticationDefaults.AuthenticationScheme)
             .RequireAuthenticatedUser()
             .RequireRole("SuperAdmin"));
+    foreach (var permission in new[] { "read", "edit", "secrets", "import", "admin" })
+    {
+        options.AddPolicy($"Configuration:{permission}", policy => policy
+            .AddAuthenticationSchemes(SuperAdminAuthenticationDefaults.AuthenticationScheme)
+            .RequireAuthenticatedUser()
+            .RequireClaim("vennu:configuration_permission", permission));
+    }
     options.AddPolicy(
         VenueAdminAuthenticationDefaults.AuthorizationPolicy,
         policy => policy

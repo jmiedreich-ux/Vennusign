@@ -55,7 +55,7 @@ public sealed class VennuDatabaseConfigurationProvider : ConfigurationProvider, 
         const string sql = """
             WITH candidates AS
             (
-                SELECT d.[Key], d.IsSecret, d.DefaultValue, v.ValuePayload, v.IsEncrypted,
+                SELECT d.[Key], d.IsSecret, d.DefaultValue, CASE WHEN v.IsDeleted = 1 THEN NULL ELSE v.ValuePayload END AS ValuePayload, v.IsEncrypted,
                     ROW_NUMBER() OVER (PARTITION BY d.[Key] ORDER BY CASE WHEN d.ApplicationScope = @ApplicationScope THEN 0 ELSE 1 END) AS precedence
                 FROM dbo.SystemConfigurationDefinitions d
                 LEFT JOIN dbo.SystemConfigurationValues v ON v.DefinitionId = d.Id AND v.EnvironmentName = @EnvironmentName

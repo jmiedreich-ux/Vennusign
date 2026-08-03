@@ -56,7 +56,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.044_create_organization_subscriptions.sql",
                 "Vennu.Data.Scripts.045_create_customer_onboarding_states.sql",
                 "Vennu.Data.Scripts.046_create_system_configuration.sql",
-                "Vennu.Data.Scripts.047_seed_system_configuration_definitions.sql"
+                "Vennu.Data.Scripts.047_seed_system_configuration_definitions.sql",
+                "Vennu.Data.Scripts.048_add_system_configuration_clear_state.sql"
             ],
             scriptNames);
     }
