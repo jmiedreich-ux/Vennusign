@@ -145,11 +145,11 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 - CFG-001.02 — Super Admin Configuration Management
 - CFG-001.03 — Configuration Import and Export
 - CFG-001.04 — Provider Setting Migration
-- CFG-001.05 — Configuration Operations and Closure (proposed PR #384 merge state)
+- CFG-001.05 — Configuration Operations and Closure
 
 ## Active Work Package
 
-**CFG-001.05 — Configuration Operations and Closure** is in final review through PR #384. The configuration platform is complete in the proposed merge state; Phase 14 remains paused.
+No implementation package is active. The CFG-001 environment-scoped configuration platform is complete through PR #384. Phase 14 remains paused.
 
 ## Phase 04 Result
 
