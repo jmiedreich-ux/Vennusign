@@ -1,7 +1,31 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-03T16:00:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-03T17:00:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "Issue-401",
+      "executionMode": "Collaborative",
+      "owner": "GitHub Copilot",
+      "issue": 401,
+      "branch": "issue/401-configuration-search-sizing",
+      "claimedUtc": "2026-08-03T17:00:00Z",
+      "writableScope": [
+        "src/admin/src/SystemConfiguration.tsx",
+        "src/admin/src/styles.css",
+        "src/admin/tests/system-configuration.test.mjs",
+        "docs/work-packages/Issue-401-configuration-search-sizing.md",
+        "PROJECT_STATUS.md",
+        "tracker/assignments.json",
+        "ai/handoffs/current.md",
+        "ai/handoffs/archive"
+      ],
+      "prohibitedScope": [
+        "Configuration API or database behavior",
+        "Secret values",
+        "Unrelated local workspace changes"
+      ]
+    }
+  ],
   "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
