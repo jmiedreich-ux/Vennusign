@@ -25,16 +25,19 @@ public sealed class ScreenTargetingService(
             return 0;
         }
 
+        var revisions = new Dictionary<Guid, long>();
         foreach (var screen in activeScreens.OrderBy(item => item.Id))
         {
             var delivery = deliveryService is null ? null : await deliveryService.IssueAsync(venueId, screen.Id, cancellationToken).ConfigureAwait(false);
-            await notifier.NotifyScreenContentUpdatedAsync(screen.Id, new
-            {
-                change = "manual-push",
-                requestedUtc = delivery?.RequestedUtc ?? timeProvider.GetUtcNow().UtcDateTime,
-                revision = delivery?.AuthoritativeRevision
-            }, cancellationToken).ConfigureAwait(false);
+            if (delivery is not null) revisions[screen.Id] = delivery.AuthoritativeRevision;
         }
+        await notifier.NotifyVenueContentUpdatedAsync(venueId, new
+        {
+            change = "manual-push-all",
+            screenCount = activeScreens.Length,
+            requestedUtc = timeProvider.GetUtcNow().UtcDateTime,
+            revisions
+        }, cancellationToken).ConfigureAwait(false);
         return activeScreens.Length;
     }
 
