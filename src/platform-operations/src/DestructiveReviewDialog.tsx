@@ -48,7 +48,7 @@ function DestructiveReviewDialog({ pending, onDecision }: Readonly<{
       </label> : null}
       <div className="destructive-review-dialog__actions">
         <button type="button" autoFocus onClick={() => onDecision(false)}>Cancel</button>
-        <button className="danger" type="submit" disabled={!confirmationMatches}>{request.confirmLabel}</button>
+        <button className={request.tone === "caution" ? "caution" : "danger"} type="submit" disabled={!confirmationMatches}>{request.confirmLabel}</button>
       </div>
     </form>
   </dialog>;
@@ -66,7 +66,9 @@ export function useDestructiveReview(): Readonly<{
 
   const review = useCallback((request: DestructiveReviewRequest) => new Promise<boolean>(resolve => {
     pendingRef.current?.resolve(false);
-    setPending({ request, resolve });
+    const next = { request, resolve };
+    pendingRef.current = next;
+    setPending(next);
   }), []);
   const decide = useCallback((confirmed: boolean) => {
     const current = pendingRef.current;

@@ -30,6 +30,9 @@ test("admin applications use one accessible destructive-review contract instead 
   assert.match(backOfficeDialog, /onCancel=/);
   assert.match(backOfficeDialog, /autoFocus/);
   assert.match(backOfficeDialog, /confirmation === request\.typedConfirmation/);
+  assert.match(backOfficeDialog, /request\.tone === "caution" \? "caution" : "danger"/);
+  assert.match(backOfficeDialog, /pendingRef\.current\?\.resolve\(false\)/);
+  assert.match(backOfficeDialog, /pendingRef\.current = next/);
 });
 
 test("irreversible screen unpair requires the exact screen name", async () => {
