@@ -1,4 +1,6 @@
-:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #173d32; background: #f7f4ec; font-synthesis: none; }
+@import "./sky-ui-tokens.css";
+
+:root { font-family: var(--sky-font-family); color: var(--sky-text-primary); background: var(--sky-page-background); font-synthesis: none; }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; min-height: 100vh; }
 button, input, select { font: inherit; }
