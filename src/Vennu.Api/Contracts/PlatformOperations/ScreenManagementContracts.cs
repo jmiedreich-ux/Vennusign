@@ -22,7 +22,16 @@ public sealed record ScreenManagementItem(
     DateTime? LastSeen,
     string? Platform,
     string? AppVersion,
-    string RegistrationUrl);
+    string RegistrationUrl,
+    long? AuthoritativeRevision = null,
+    long? AppliedRevision = null,
+    string? DeliveryState = null,
+    DateTime? DeliveryRequestedUtc = null,
+    DateTime? DeliveryAppliedUtc = null,
+    string? DeliveryFailureCode = null,
+    string? DeliveryFailureDetail = null);
+
+public sealed record ScreenPushResult(long Revision, string State, DateTime RequestedUtc);
 
 public sealed record ScreenLifecycleRequest(bool Archived);
 

@@ -85,6 +85,8 @@ export type ManagedScreen = {
   splitRatio: "40_60" | "50_50";
   heroDwellSeconds: number;
   lastSeen?: string; platform?: string; appVersion?: string; registrationUrl: string;
+  authoritativeRevision?: number; appliedRevision?: number; deliveryState?: "Requested" | "Received" | "Applied" | "Failed" | "Superseded" | "Recovered";
+  deliveryRequestedUtc?: string; deliveryAppliedUtc?: string; deliveryFailureCode?: string; deliveryFailureDetail?: string;
 };
 export type ManagedScreenWrite = {
   name: string;

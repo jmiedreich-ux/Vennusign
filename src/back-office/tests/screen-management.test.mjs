@@ -16,7 +16,8 @@ test("venue operations compose screen targeting pairing and video walls", () => 
   assert.match(screens, /Select one screen target/);
   assert.match(screens, /selectedScreenId/);
   assert.match(screens, /Push structured content/);
-  assert.match(screens, /player acknowledgement is pending/);
+  assert.match(screens, /acknowledgement pending/);
+  assert.match(screens, /player stale\/offline/);
   assert.match(screens, /window\.setInterval\(poll, 10_000\)/);
   assert.doesNotMatch(screens, /pushAllManagedScreens/);
   assert.match(screens, /loadScreenOverflow/);
@@ -55,6 +56,15 @@ test("screen replacement preserves a logical screen through preview and confirma
   assert.match(screens, /old player credential will stop working immediately/);
   assert.match(screens, /Unpair screen/);
   assert.doesNotMatch(screens, /Unpair for replacement/);
+});
+
+test("content delivery distinguishes request receipt application recovery and failure", () => {
+  assert.match(screens, /authoritativeRevision/);
+  assert.match(screens, /appliedRevision/);
+  assert.match(screens, /deliveryState/);
+  assert.match(screens, /acknowledgement pending/);
+  assert.match(screens, /deliveryFailureCode/);
+  assert.doesNotMatch(screens, /future acknowledgement contract/);
 });
 
 test("video wall editing and removal require deliberate recovery-safe actions", () => {

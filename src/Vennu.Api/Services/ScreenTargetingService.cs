@@ -1,6 +1,7 @@
 using Vennu.Api.Contracts.PlatformOperations;
 using Vennu.Api.Notifications;
 using Vennu.Data.Repositories;
+using Vennu.Data.Services;
 
 namespace Vennu.Api.Services;
 
@@ -9,7 +10,8 @@ public sealed class ScreenTargetingService(
     IVenueRepository venueRepository,
     IMenuRepository menuRepository,
     IScreenUpdateNotifier notifier,
-    TimeProvider timeProvider) : IScreenTargetingService
+    TimeProvider timeProvider,
+    IScreenContentDeliveryService? deliveryService = null) : IScreenTargetingService
 {
     private static readonly int[] SupportedCapacities = [4, 6, 8, 9];
 
@@ -23,10 +25,19 @@ public sealed class ScreenTargetingService(
             return 0;
         }
 
-        await notifier.NotifyVenueContentUpdatedAsync(
-            venueId,
-            new { change = "manual-push-all", screenCount = activeScreens.Length, requestedUtc = timeProvider.GetUtcNow().UtcDateTime },
-            cancellationToken).ConfigureAwait(false);
+        var revisions = new Dictionary<Guid, long>();
+        foreach (var screen in activeScreens.OrderBy(item => item.Id))
+        {
+            var delivery = deliveryService is null ? null : await deliveryService.IssueAsync(venueId, screen.Id, cancellationToken).ConfigureAwait(false);
+            if (delivery is not null) revisions[screen.Id] = delivery.AuthoritativeRevision;
+        }
+        await notifier.NotifyVenueContentUpdatedAsync(venueId, new
+        {
+            change = "manual-push-all",
+            screenCount = activeScreens.Length,
+            requestedUtc = timeProvider.GetUtcNow().UtcDateTime,
+            revisions
+        }, cancellationToken).ConfigureAwait(false);
         return activeScreens.Length;
     }
 

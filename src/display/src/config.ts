@@ -9,4 +9,5 @@ const signalRHubUrl =
 export const displayConfig = Object.freeze({
   apiBaseUrl,
   signalRHubUrl,
+  playerVersion: import.meta.env.VITE_APP_VERSION ?? '0.0.0-development'
 });

@@ -63,7 +63,7 @@ export default function ScreenManagement({
   const [screenSearch, setScreenSearch] = useState("");
   const [healthFilter, setHealthFilter] = useState("all");
   const [selectedScreenId, setSelectedScreenId] = useState("");
-  const [delivery, setDelivery] = useState<{ screenId: string; state: "pending" | "queued" | "offline" | "failed"; requestedUtc: string; reason?: string }>();
+  const [delivery, setDelivery] = useState<{ screenId: string; state: "pending" | "requested" | "received" | "applied" | "recovered" | "superseded" | "offline" | "failed"; requestedUtc: string; reason?: string }>();
 
   const refresh = async () => {
     const current = await loadManagedScreens(configuration, apiKey, venueId);
@@ -175,12 +175,12 @@ export default function ScreenManagement({
     setBusyId(screen.id); setError(undefined); setNotice(undefined);
     try {
       await pushManagedScreen(configuration, apiKey, venueId, screen.id);
+      const current = await loadManagedScreens(configuration, apiKey, venueId); setScreens(current);
+      const updated = current.find(item => item.id === screen.id);
       const online = screen.status.toLowerCase() === "online" && !isStale(screen);
-      setDelivery({ screenId: screen.id, state: online ? "queued" : "offline", requestedUtc,
-        reason: online ? "Authoritative content reload queued; player acknowledgement is pending." : "Player is offline or stale; latest persisted content will recover after reconnect." });
-      setNotice(online
-        ? `Structured content reload queued for ${screen.name}. Acceptance is not reported until a future acknowledgement contract is available.`
-        : `${screen.name} is offline or stale. Its latest persisted content will apply when the player reconnects.`);
+      const state = (updated?.deliveryState?.toLowerCase() ?? (online ? "requested" : "offline")) as "requested" | "received" | "applied" | "recovered" | "superseded" | "offline" | "failed";
+      setDelivery({ screenId: screen.id, state, requestedUtc, reason: online ? `Revision ${updated?.authoritativeRevision ?? "new"} is awaiting player application.` : "Player is offline or stale; the latest revision will recover after reconnect." });
+      setNotice(online ? `Revision ${updated?.authoritativeRevision ?? "new"} requested for ${screen.name}.` : `${screen.name} will apply revision ${updated?.authoritativeRevision ?? "new"} after reconnecting.`);
     } catch { setDelivery({ screenId: screen.id, state: "failed", requestedUtc, reason: "The API rejected or could not queue this selected-target delivery." }); setError("Content could not be pushed to the selected screen. Retry without changing the target."); }
     finally { setBusyId(undefined); }
   };
@@ -374,6 +374,11 @@ export default function ScreenManagement({
             ? <button type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, false)}>Restore</button>
             : <><button type="button" disabled={busyId === screen.id} onClick={() => reset(screen)}>Reset connection</button><button type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, true)}>Archive</button><button type="button" disabled={busyId === screen.id} onClick={() => unpair(screen)}>Unpair screen</button></>}
         </div>
+        {screen.authoritativeRevision ? <p className={`delivery-state ${(screen.deliveryState ?? "Requested").toLowerCase()}`} role="status">
+          Revision {screen.authoritativeRevision}: {screen.deliveryState ?? "Requested"}{screen.appliedRevision ? ` · applied ${screen.appliedRevision}` : " · acknowledgement pending"}
+          {isStale(screen) ? " · player stale/offline" : ""}
+          {screen.deliveryFailureCode ? ` · ${screen.deliveryFailureCode}${screen.deliveryFailureDetail ? `: ${screen.deliveryFailureDetail}` : ""}` : ""}
+        </p> : null}
         {screen.id === selectedScreenId && screen.status.toLowerCase() !== "archived" && ["split_layout", "daily_special_hero", "classic_chalkboard", "tap_strips", "digital_tap_board"].includes(screen.displayLayout) ? <div className="split-layout-preview">
           <div><strong>Exact TV preview</strong><span>Uses this screen’s saved menu, theme, and layout settings.</span></div>
           <iframe
