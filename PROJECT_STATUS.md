@@ -146,10 +146,11 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 - CFG-001.03 — Configuration Import and Export
 - CFG-001.04 — Provider Setting Migration
 - CFG-001.05 — Configuration Operations and Closure
+- Issue-386 — Development Control Bootstrap Editor
 
 ## Active Work Package
 
-**Issue-386 — Development Control Bootstrap Editor** is in Collaborative implementation. It adds secure local bootstrap entry and API-process injection to the WPF development control panel. Phase 14 remains paused.
+No implementation package is active. Issue-386 completed secure local bootstrap entry and API-process injection through PR #387. Phase 14 remains paused.
 
 ## Phase 04 Result
 
