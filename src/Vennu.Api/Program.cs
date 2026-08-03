@@ -12,6 +12,7 @@ using Vennu.Api.VenueAdmin;
 using Vennu.Api.Infrastructure;
 using Vennu.Api.Pos;
 using Vennu.Api.CustomerAuthentication;
+using Vennu.Api.Configuration;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Options;
@@ -58,13 +59,7 @@ if (!string.IsNullOrWhiteSpace(configurationEnvironment))
 var adminCorsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
 if (builder.Environment.IsDevelopment() && (adminCorsOrigins is null || adminCorsOrigins.Length == 0))
 {
-    adminCorsOrigins =
-    [
-        "http://localhost:5173",
-        "https://localhost:5173",
-        "http://localhost:5174",
-        "https://localhost:5174"
-    ];
+    adminCorsOrigins = DevelopmentCorsOrigins.Values;
 }
 
 var adminCorsEnabled = adminCorsOrigins is { Length: > 0 };

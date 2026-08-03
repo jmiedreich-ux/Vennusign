@@ -150,7 +150,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-No implementation package is active. Issue-401 completed hierarchical configuration search and consistent field sizing through PR #402. Phase 14 remains paused.
+**Issue-404 — Display Pairing CORS** is in review after correcting and validating the local player pairing origin. Phase 14 remains paused.
 
 ## Phase 04 Result
 

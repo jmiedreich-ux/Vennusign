@@ -1,39 +1,41 @@
 # Vennu Session Handoff
 
 ## Work Package
-- ID: Issue-401
-- Status: Complete through PR #402
+- ID: Issue-404
+- Status: In Review
 - Execution mode: Collaborative
 
 ## Git State
-- Branch: `master`
-- Issue: #401
-- Pull request: #402
-- CI state: all applicable checks passed on reviewed head `11d8c7b`; PR #402 merged
+- Branch: `issue/404-display-pairing-cors`
+- Issue: #404
+- Pull request: #405
+- CI state: pending
 
 ## Completed This Session
-- Added immediate client-side configuration search across full hierarchical key, key segments, description, scope, and value type.
-- Added multi-term matching, result count, distinct empty states, and clear-search action.
-- Preserved environment/application filtering, drafts, secrets, and setting actions.
-- Standardized text, password, and number inputs to one responsive value-column width and height.
-- Restored and verified the complete configuration CSS block after catching an intermediate style-edit regression.
+- Reproduced Display pairing failure as a missing browser CORS response rather than an API registration failure.
+- Added exact HTTP/HTTPS localhost Display origins to the Development-only allowlist.
+- Kept production configuration and pairing contracts unchanged and avoided wildcard origins.
+- Added focused preflight tests and validated actual preflight plus screen registration.
+- Rebuilt Debug API; API and Display are listening for immediate `/pair` reload.
 
 ## Validation
-- Admin tests passed 82/82.
-- Admin production build passed.
-- WCAG AA filter-panel review reported no issues.
+- API unit tests passed 331/331, including 2 focused CORS tests.
+- Debug API build passed.
+- Actual preflight returned allowed origin.
+- Browser-equivalent registration returned 201 and screen ID.
 - GitHub Actions pending.
 
 ## Remaining Work
-- None for Issue-401.
+- Reload `http://localhost:5175/pair` and confirm the six-digit code appears.
+- Validate, review, and merge PR #405, then release the claim.
 
 ## Known Risks or Blockers
-- Search is intentionally client-side over the currently selected environment/application result set.
+- A physical device using a LAN hostname/IP requires separate HTTPS hostname and production-style explicit-origin configuration; this fix targets the current localhost simulation.
 
 ## Exact Next Action
-- Refresh Super Admin Configuration and search for `CustomerAuthentication`, `EmailDelivery`, or any partial key/description term.
+- Reload `http://localhost:5175/pair`; after the code appears, validate and merge Issue #404.
 
 ## Do Not Redo or Reverse
-- Do not search configured values or secret content.
-- Do not replace immediate search with a server request on every keystroke.
+- Do not replace explicit CORS origins with a wildcard.
+- Do not add localhost origins to production configuration.
 - Do not commit the unrelated local `UserSecretsId` change.
