@@ -2,7 +2,7 @@
 
 ## Status
 
-Owner manual testing approved. Implementation PR preparation is active on Collaborative issue #407.
+In Review on Collaborative issue #407 and PR #408. Owner manual testing is approved; exact-head CI and ChatGPT review are pending.
 
 ## Execution Mode
 

@@ -150,7 +150,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-Issue-407 is active in Collaborative mode on `issue/407-screen-quota-gating`. Owner manual testing is approved and implementation PR preparation is active for screen fleet loading, tier-limit enforcement, quota feedback, video-wall feature gating, and stale Display pairing recovery. Phase 14 remains paused.
+Issue-407 is active in Collaborative review on `issue/407-screen-quota-gating` and PR #408. Owner manual testing is approved; exact-head CI and ChatGPT review are pending for screen fleet loading, tier-limit enforcement, quota feedback, video-wall feature gating, and stale Display pairing recovery. Phase 14 remains paused.
 
 ## Phase 04 Result
 

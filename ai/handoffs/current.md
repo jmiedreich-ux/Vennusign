@@ -2,14 +2,14 @@
 
 ## Work Package
 - ID: Issue-407
-- Status: Owner Manual Testing Approved; PR Preparation Active
+- Status: In Review
 - Execution mode: Collaborative
 
 ## Git State
 - Branch: `issue/407-screen-quota-gating`
 - Issue: #407
-- Pull request: pending creation
-- CI state: not started
+- Pull request: #408
+- CI state: pending on head `ca14e01`
 
 ## Completed This Session
 - Confirmed the Screens GET path incorrectly calls the add-screen entitlement guard and hides assigned screens at quota.
