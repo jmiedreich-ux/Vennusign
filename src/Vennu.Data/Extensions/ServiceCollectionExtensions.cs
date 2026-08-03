@@ -14,6 +14,7 @@ public static class ServiceCollectionExtensions
         services.AddMemoryCache();
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
+        services.AddScoped<ISystemConfigurationTransferService, SystemConfigurationTransferService>();
         services.AddScoped<IVenueRepository, VenueRepository>();
         services.AddScoped<IVenueThemeRepository, VenueThemeRepository>();
         services.AddScoped<IMenuRepository, MenuRepository>();

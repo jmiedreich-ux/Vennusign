@@ -4,6 +4,14 @@ export type AdminSession = {
   displayName: string;
   capabilities: string[];
 };
+export type SystemConfigurationManifest = {
+  schemaVersion: number; sourceEnvironment: string; exportedUtc: string;
+  settings: Array<{ key: string; applicationScope: string; valueType: string; requiresRestart: boolean; value?: string }>;
+};
+export type SystemConfigurationImportPreview = {
+  operationId: string; targetEnvironment: string;
+  settings: Array<{ key: string; applicationScope: string; status: "New" | "Conflict" | "Unchanged" | "NoValue" | "Invalid"; value?: string; expectedVersion?: string; message?: string }>;
+};
 export type SystemConfigurationSetting = {
   definitionId: string; key: string; applicationScope: string; description: string; valueType: string;
   isRequired: boolean; isSecret: boolean; value?: string; hasConfiguredValue: boolean;
@@ -17,6 +25,24 @@ async function configurationRequest(configuration: AdminConfiguration, apiKey: s
   });
   if (!response.ok) throw new AdminApiError(response.status, response.status === 409 ? "This setting changed. Reload before saving again." : "Unable to manage configuration.");
   return response;
+}
+
+export async function exportSystemConfiguration(configuration: AdminConfiguration, apiKey: string, environmentName: string): Promise<SystemConfigurationManifest> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/configuration-transfer/export?environmentName=${encodeURIComponent(environmentName)}`, { headers: { "X-Vennu-Admin-Key": apiKey } });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to export configuration.");
+  return response.json() as Promise<SystemConfigurationManifest>;
+}
+
+export async function previewSystemConfigurationImport(configuration: AdminConfiguration, apiKey: string, targetEnvironment: string, manifest: SystemConfigurationManifest): Promise<SystemConfigurationImportPreview> {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/configuration-transfer/preview`, { method: "POST", headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey }, body: JSON.stringify({ targetEnvironment, manifest }) });
+  if (!response.ok) throw new AdminApiError(response.status, "Unable to preview configuration import.");
+  return response.json() as Promise<SystemConfigurationImportPreview>;
+}
+
+export async function applySystemConfigurationImport(configuration: AdminConfiguration, apiKey: string, preview: SystemConfigurationImportPreview, selected: string[]): Promise<void> {
+  const settings = preview.settings.filter(item => selected.includes(`${item.applicationScope}:${item.key}`));
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/configuration-transfer/apply`, { method: "POST", headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey }, body: JSON.stringify({ operationId: preview.operationId, targetEnvironment: preview.targetEnvironment, settings }) });
+  if (!response.ok) throw new AdminApiError(response.status, response.status === 409 ? "The import preview is stale. Preview the file again." : "Unable to apply configuration import.");
 }
 
 export async function loadSystemConfiguration(configuration: AdminConfiguration, apiKey: string, environmentName: string, applicationScope?: string): Promise<SystemConfigurationSetting[]> {

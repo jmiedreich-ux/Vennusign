@@ -1,33 +1,28 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-03T02:00:00Z",
+  "updatedUtc": "2026-08-03T03:00:00Z",
   "activeAssignments": [
     {
-      "workPackage": "CFG-001.02",
+      "workPackage": "CFG-001.03",
       "executionMode": "Collaborative",
       "owner": "GitHub Copilot",
-      "issue": 377,
-      "branch": "issue/377-super-admin-configuration",
-      "claimedUtc": "2026-08-03T02:00:00Z",
+      "issue": 379,
+      "branch": "issue/379-configuration-transfer",
+      "claimedUtc": "2026-08-03T03:00:00Z",
       "writableScope": [
-        "src/Vennu.Data/Configuration/SystemConfigurationService.cs",
-        "src/Vennu.Data/Configuration/SystemConfigurationModels.cs",
-        "src/Vennu.Data/Configuration/ISystemConfigurationService.cs",
-        "src/Vennu.Data/Scripts",
+        "src/Vennu.Data/Configuration/SystemConfigurationTransferService.cs",
+        "src/Vennu.Data/Configuration/SystemConfigurationTransferModels.cs",
+        "src/Vennu.Data/Configuration/ISystemConfigurationTransferService.cs",
         "src/Vennu.Data/Extensions/ServiceCollectionExtensions.cs",
-        "src/Vennu.Api/Admin",
-        "src/Vennu.Api/Controllers/Admin/SystemConfigurationController.cs",
-        "src/Vennu.Api/Contracts/Admin/SystemConfigurationContracts.cs",
-        "src/Vennu.Api/Program.cs",
+        "src/Vennu.Api/Controllers/Admin/SystemConfigurationTransferController.cs",
+        "src/Vennu.Api/Contracts/Admin/SystemConfigurationTransferContracts.cs",
         "src/admin",
-        "tests/Vennu.Data.IntegrationTests/DatabaseMigratorTests.cs",
-        "docs/work-packages/CFG-001.02-super-admin-configuration.md",
+        "docs/work-packages/CFG-001.03-configuration-transfer.md",
         "PROJECT_STATUS.md",
         "tracker/assignments.json",
         "ai/handoffs/current.md"
       ],
       "prohibitedScope": [
-        "Configuration import/export",
         "Provider-specific consumer migration",
         "Production credentials"
       ]
