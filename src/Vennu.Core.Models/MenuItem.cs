@@ -28,6 +28,8 @@ public sealed class MenuItem
 
     public bool IsPopular { get; set; }
 
+    public bool IsActive { get; set; } = true;
+
     public int SortOrder { get; set; }
 
     public DateTime CreatedUtc { get; set; }

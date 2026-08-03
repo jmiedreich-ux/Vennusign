@@ -22,7 +22,7 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
 
     private const string ItemsSql = """
         SELECT Id, VenueId, MenuSectionId, Name, Description, Price, HappyHourPrice,
-               IsAvailable, AvailabilityResetUtc, QuantityAvailable, Tags, ImageUrl, IsPopular, SortOrder,
+               IsAvailable, AvailabilityResetUtc, QuantityAvailable, Tags, ImageUrl, IsPopular, IsActive, SortOrder,
                CreatedUtc, UpdatedUtc
         FROM dbo.MenuItems
         WHERE VenueId = @VenueId AND MenuSectionId = @MenuSectionId
@@ -112,6 +112,66 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
         SELECT @ExpectedCount AS ChangedCount;
         """;
 
+    private const string ReorderItemsSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        DECLARE @Requested TABLE
+        (
+            Id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+            SortOrder INT NOT NULL UNIQUE
+        );
+
+        INSERT INTO @Requested (Id, SortOrder)
+        SELECT Id, SortOrder
+        FROM OPENJSON(@ItemsJson)
+        WITH (Id UNIQUEIDENTIFIER '$.id', SortOrder INT '$.sortOrder');
+
+        DECLARE @ExpectedCount INT =
+        (
+            SELECT COUNT(*)
+            FROM dbo.MenuItems
+            WHERE VenueId = @VenueId AND MenuSectionId = @MenuSectionId
+        );
+
+        IF @ExpectedCount <> (SELECT COUNT(*) FROM @Requested)
+           OR EXISTS (SELECT 1 FROM @Requested WHERE SortOrder < 0 OR SortOrder >= @ExpectedCount)
+           OR EXISTS
+           (
+               SELECT 1
+               FROM @Requested requested
+               LEFT JOIN dbo.MenuItems item
+                 ON item.Id = requested.Id
+                AND item.VenueId = @VenueId
+                AND item.MenuSectionId = @MenuSectionId
+               WHERE item.Id IS NULL
+           )
+        BEGIN
+            THROW 51000, 'Item order must contain every venue menu item exactly once.', 1;
+        END;
+
+        DECLARE @Offset INT =
+        (
+            SELECT ISNULL(MAX(SortOrder), 0) + @ExpectedCount + 1
+            FROM dbo.MenuItems
+            WHERE VenueId = @VenueId AND MenuSectionId = @MenuSectionId
+        );
+
+        UPDATE dbo.MenuItems
+        SET SortOrder = SortOrder + @Offset
+        WHERE VenueId = @VenueId AND MenuSectionId = @MenuSectionId;
+
+        UPDATE item
+        SET SortOrder = requested.SortOrder,
+            UpdatedUtc = @UpdatedUtc
+        FROM dbo.MenuItems item
+        INNER JOIN @Requested requested ON requested.Id = item.Id
+        WHERE item.VenueId = @VenueId AND item.MenuSectionId = @MenuSectionId;
+
+        COMMIT TRANSACTION;
+        SELECT @ExpectedCount AS ChangedCount;
+        """;
+
     public Task<Guid> CreateMenuAsync(Menu menu, CancellationToken cancellationToken = default) =>
         InsertAsync(menu, cancellationToken);
 
@@ -174,6 +234,30 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
                 VenueId = RequireId(venueId, nameof(venueId)),
                 MenuId = RequireId(menuId, nameof(menuId)),
                 SectionsJson = sectionsJson,
+                UpdatedUtc = updatedUtc
+            },
+            cancellationToken).ConfigureAwait(false)).Single();
+        return result.ChangedCount;
+    }
+
+    public async Task<int> ReorderItemsAsync(
+        Guid venueId,
+        Guid sectionId,
+        IReadOnlyCollection<Guid> itemIds,
+        DateTime updatedUtc,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(itemIds);
+        var itemsJson = JsonSerializer.Serialize(
+            itemIds.Select((id, sortOrder) => new { id, sortOrder }),
+            JsonSerializerOptions.Web);
+        var result = (await dataAccess.ExecuteSqlQueryAsync<SectionOrderResult, object>(
+            ReorderItemsSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                MenuSectionId = RequireId(sectionId, nameof(sectionId)),
+                ItemsJson = itemsJson,
                 UpdatedUtc = updatedUtc
             },
             cancellationToken).ConfigureAwait(false)).Single();

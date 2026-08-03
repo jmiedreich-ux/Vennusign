@@ -23,6 +23,7 @@ import {
   type BackOfficeRoute
 } from "./navigation.mjs";
 import MenuSectionsEditor from "./MenuSectionsEditor";
+import PosIntegrationAdministration from "./PosIntegrationAdministration";
 import VenueOperations from "./VenueOperations";
 import InlineFeatureHint from "./InlineFeatureHint";
 import LockedNavigationItem from "./LockedNavigationItem";
@@ -333,6 +334,8 @@ export default function App() {
             haasError={haasError}
             onStartHaas={startHaasCheckout}
           />
+        : allowed && route.path === "pos"
+        ? <PosIntegrationAdministration configuration={configuration} accessToken={accessToken} />
         : allowed && route.path === "menu"
         ? <MenuSectionsEditor
             configuration={configuration}

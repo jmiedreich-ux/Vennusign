@@ -60,7 +60,7 @@ public sealed class QuickUpdateService(
         {
             return null;
         }
-        var items = await menuRepository.GetItemsAsync(venueId, sectionId, cancellationToken).ConfigureAwait(false);
+        var items = await menuRepository.GetActiveItemsAsync(venueId, sectionId, cancellationToken).ConfigureAwait(false);
         var item = items.SingleOrDefault(candidate => candidate.Id == itemId);
         if (item is null)
         {

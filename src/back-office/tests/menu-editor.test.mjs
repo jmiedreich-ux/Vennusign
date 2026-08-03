@@ -16,7 +16,12 @@ test("Back Office composes the migrated menu and quick-update workflows", () => 
   assert.match(sections, /MenuItemsEditor/);
   assert.match(sections, /QuickUpdateMode/);
   assert.match(sections, /reorderMenuSections/);
+  assert.match(sections, /createMenu/);
+  assert.match(sections, /Confirm archive/);
   assert.match(items, /updateMenuItemPresentation/);
+  assert.match(items, /reorderMenuItems/);
+  assert.match(items, /updateMenuItemLifecycle/);
+  assert.match(items, /Save failed/);
   assert.match(quick, /updateQuickAvailability/);
 });
 

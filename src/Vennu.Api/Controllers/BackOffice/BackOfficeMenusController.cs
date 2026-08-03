@@ -25,6 +25,22 @@ public sealed class BackOfficeMenusController(
     public Task<MenuEditorSnapshot> Get(CancellationToken cancellationToken) =>
         sectionService.GetAsync(VenueId, cancellationToken);
 
+    [HttpPost]
+    public async Task<ActionResult<Menu>> CreateMenu(
+        MenuCreateRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var menu = await sectionService.CreateMenuAsync(VenueId, request.Name, cancellationToken).ConfigureAwait(false);
+            return CreatedAtAction(nameof(Get), menu);
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+    }
+
     [HttpPost("{menuId:guid}/sections")]
     public async Task<ActionResult<MenuSection>> CreateSection(
         Guid menuId,
@@ -226,6 +242,46 @@ public sealed class BackOfficeMenusController(
                     cancellationToken)
                 .ConfigureAwait(false);
             return item is null ? NotFound() : Ok(item);
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+    }
+
+    [HttpPut("{menuId:guid}/sections/{sectionId:guid}/items/{itemId:guid}/lifecycle")]
+    public async Task<ActionResult<MenuItem>> UpdateItemLifecycle(
+        Guid menuId,
+        Guid sectionId,
+        Guid itemId,
+        MenuItemLifecycleRequest request,
+        CancellationToken cancellationToken)
+    {
+        var item = await itemService.SetActiveAsync(
+            VenueId, menuId, sectionId, itemId, request.IsActive, cancellationToken).ConfigureAwait(false);
+        return item is null ? NotFound() : Ok(item);
+    }
+
+    [HttpPut("{menuId:guid}/sections/{sectionId:guid}/items/order")]
+    public async Task<ActionResult> ReorderItems(
+        Guid menuId,
+        Guid sectionId,
+        MenuItemOrderRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (request.ItemIds is null)
+            {
+                return ValidationProblem("Item identifiers are required.");
+            }
+            await itemService.ReorderAsync(
+                VenueId, menuId, sectionId, request.ItemIds, cancellationToken).ConfigureAwait(false);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
         }
         catch (ArgumentException exception)
         {

@@ -44,7 +44,7 @@ export type MenuItem = {
   id: string; venueId: string; menuSectionId: string; name: string;
   description?: string; price: number; happyHourPrice?: number;
   sortOrder: number; isAvailable: boolean; availabilityResetUtc?: string; quantityAvailable?: number;
-  tags?: string; isPopular: boolean; createdUtc: string; updatedUtc: string;
+  tags?: string; isPopular: boolean; isActive: boolean; createdUtc: string; updatedUtc: string;
 };
 export type MenuItemWrite = {
   name: string; description?: string; price: number; happyHourPrice?: number;
@@ -56,6 +56,13 @@ export type MenuEditorSnapshot = {
   }>;
   itemGroups: Array<{ sectionId: string; items: MenuItem[] }>;
   capabilities: { happyHour: boolean; allergenBadges: boolean; quickUpdate: boolean };
+};
+export type PosProvider = "square" | "toast" | "clover";
+export type PosProviderStatus = {
+  provider: PosProvider;
+  connection?: { status: string; externalMerchantId: string; updatedUtc: string; accessTokenExpiresUtc?: string };
+  guidance?: string;
+  externalActionRequired?: boolean;
 };
 export type ManagedScreen = {
   id: string; name: string; location?: string; status: string;
@@ -302,6 +309,17 @@ export async function loadMenuEditor(
   return (await menuRequest(configuration, accessToken)).json() as Promise<MenuEditorSnapshot>;
 }
 
+export async function createMenu(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  name: string
+): Promise<MenuEditorSnapshot["menus"][number]["menu"]> {
+  return (await menuRequest(configuration, accessToken, "", {
+    method: "POST",
+    body: JSON.stringify({ name })
+  })).json() as Promise<MenuEditorSnapshot["menus"][number]["menu"]>;
+}
+
 export async function createMenuSection(
   configuration: BackOfficeConfiguration,
   accessToken: string,
@@ -393,6 +411,35 @@ export async function updateMenuItemPresentation(
   )).json() as Promise<MenuItem>;
 }
 
+export async function updateMenuItemLifecycle(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  _venueId: string,
+  menuId: string,
+  sectionId: string,
+  itemId: string,
+  isActive: boolean
+): Promise<MenuItem> {
+  return (await menuRequest(configuration, accessToken, `/${menuId}/sections/${sectionId}/items/${itemId}/lifecycle`, {
+    method: "PUT",
+    body: JSON.stringify({ isActive })
+  })).json() as Promise<MenuItem>;
+}
+
+export async function reorderMenuItems(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  _venueId: string,
+  menuId: string,
+  sectionId: string,
+  itemIds: string[]
+): Promise<void> {
+  await menuRequest(configuration, accessToken, `/${menuId}/sections/${sectionId}/items/order`, {
+    method: "PUT",
+    body: JSON.stringify({ itemIds })
+  });
+}
+
 export async function updateQuickDailySpecial(
   configuration: BackOfficeConfiguration,
   accessToken: string,
@@ -421,6 +468,69 @@ export async function updateQuickAvailability(
     `/${menuId}/sections/${sectionId}/items/${itemId}/quick-availability`,
     { method: "PUT", body: JSON.stringify({ isAvailable }) }
   );
+}
+
+async function posRequest(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  provider: PosProvider,
+  path: string,
+  init?: RequestInit
+) {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/back-office/pos/${provider}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      "X-Vennusign-Back-Office-Token": accessToken,
+      ...init?.headers
+    }
+  });
+  if (!response.ok) throw new BackOfficeApiError(response.status, `The ${provider} operation could not be completed.`);
+  return response;
+}
+
+export async function loadPosProviderStatus(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  provider: PosProvider
+): Promise<PosProviderStatus> {
+  const payload = await (await posRequest(configuration, accessToken, provider, "/status")).json() as Record<string, unknown> | null;
+  if (!payload) return { provider };
+  const connection = ("connection" in payload ? payload.connection : payload) as PosProviderStatus["connection"] | undefined;
+  return {
+    provider,
+    connection: connection ?? undefined,
+    guidance: typeof payload.guidance === "string" ? payload.guidance : undefined,
+    externalActionRequired: payload.externalActionRequired === true
+  };
+}
+
+export async function beginPosConnection(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  provider: "square" | "clover"
+): Promise<string> {
+  const payload = await (await posRequest(configuration, accessToken, provider, "/connect", { method: "POST" })).json() as { authorizationUrl?: string };
+  const url = new URL(payload.authorizationUrl ?? "");
+  if (url.protocol !== "https:") throw new BackOfficeApiError(502, "The provider returned an invalid authorization URL.");
+  return url.href;
+}
+
+export async function importPosCatalog(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  provider: PosProvider
+): Promise<{ sectionsCreated: number; itemsCreated: number; itemsUpdated: number }> {
+  const result = await (await posRequest(configuration, accessToken, provider, "/catalog/import", { method: "POST" })).json() as { categoriesCreated: number; itemsCreated: number; itemsUpdated: number };
+  return { sectionsCreated: result.categoriesCreated, itemsCreated: result.itemsCreated, itemsUpdated: result.itemsUpdated };
+}
+
+export async function disconnectPosProvider(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  provider: "square" | "clover"
+): Promise<void> {
+  await posRequest(configuration, accessToken, provider, "/connection", { method: "DELETE" });
 }
 
 async function venueOperationRequest(

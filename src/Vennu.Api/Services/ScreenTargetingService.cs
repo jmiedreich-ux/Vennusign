@@ -60,7 +60,7 @@ public sealed class ScreenTargetingService(
         var items = new List<ScreenOverflowItem>();
         foreach (var section in orderedSections)
         {
-            var sectionItems = await menuRepository.GetItemsAsync(venueId, section.Id, cancellationToken).ConfigureAwait(false);
+            var sectionItems = await menuRepository.GetActiveItemsAsync(venueId, section.Id, cancellationToken).ConfigureAwait(false);
             foreach (var item in sectionItems
                 .Where(item => item.IsAvailable)
                 .OrderBy(item => item.SortOrder)

@@ -26,6 +26,33 @@ public sealed class MenuSectionManagementService(
         return new MenuEditorSnapshot(sections, itemGroups, new MenuEditorCapabilities(happyHour, allergenBadges, quickUpdate));
     }
 
+    public async Task<Menu> CreateMenuAsync(
+        Guid venueId,
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        RequireId(venueId, nameof(venueId));
+        var normalizedName = NormalizeMenuName(name);
+        var menus = await repository.GetMenusAsync(venueId, cancellationToken).ConfigureAwait(false);
+        if (menus.Any(menu => string.Equals(menu.Name, normalizedName, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException("A menu with that name already exists.", nameof(name));
+        }
+
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var menu = new Menu
+        {
+            Id = Guid.NewGuid(),
+            VenueId = venueId,
+            Name = normalizedName,
+            IsActive = true,
+            CreatedUtc = now,
+            UpdatedUtc = now
+        };
+        await repository.CreateMenuAsync(menu, cancellationToken).ConfigureAwait(false);
+        return menu;
+    }
+
     public async Task<MenuSection> CreateAsync(
         Guid venueId,
         Guid menuId,
@@ -116,6 +143,17 @@ public sealed class MenuSectionManagementService(
         if (normalized.Length > 120)
         {
             throw new ArgumentException("Section name cannot exceed 120 characters.", nameof(name));
+        }
+        return normalized;
+    }
+
+    private static string NormalizeMenuName(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        var normalized = name.Trim();
+        if (normalized.Length > 200)
+        {
+            throw new ArgumentException("Menu name cannot exceed 200 characters.", nameof(name));
         }
         return normalized;
     }

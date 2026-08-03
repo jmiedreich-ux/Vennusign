@@ -1,10 +1,16 @@
 namespace Vennu.Api.Contracts.PlatformOperations;
 
+public sealed record MenuCreateRequest(string Name);
+
 public sealed record MenuSectionCreateRequest(string Name);
 
 public sealed record MenuSectionUpdateRequest(string Name, bool IsActive);
 
 public sealed record MenuSectionOrderRequest(IReadOnlyCollection<Guid>? SectionIds);
+
+public sealed record MenuItemOrderRequest(IReadOnlyCollection<Guid>? ItemIds);
+
+public sealed record MenuItemLifecycleRequest(bool IsActive);
 
 public sealed record MenuItemWriteRequest(
     string Name,

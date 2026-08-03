@@ -29,11 +29,27 @@ public interface IMenuRepository
         DateTime updatedUtc,
         CancellationToken cancellationToken = default);
 
+    Task<int> ReorderItemsAsync(
+        Guid venueId,
+        Guid sectionId,
+        IReadOnlyCollection<Guid> itemIds,
+        DateTime updatedUtc,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException();
+
     Task<IReadOnlyCollection<Menu>> GetMenusAsync(Guid venueId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyCollection<MenuSection>> GetSectionsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyCollection<MenuItem>> GetItemsAsync(Guid venueId, Guid sectionId, CancellationToken cancellationToken = default);
+
+    async Task<IReadOnlyCollection<MenuItem>> GetActiveItemsAsync(
+        Guid venueId,
+        Guid sectionId,
+        CancellationToken cancellationToken = default) =>
+        (await GetItemsAsync(venueId, sectionId, cancellationToken).ConfigureAwait(false))
+            .Where(item => item.IsActive)
+            .ToArray();
 
     Task<IReadOnlyCollection<MenuItemTranslation>> GetTranslationsAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken = default);
 }

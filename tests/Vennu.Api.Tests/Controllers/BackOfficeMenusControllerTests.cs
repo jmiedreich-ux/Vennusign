@@ -62,6 +62,9 @@ public sealed class BackOfficeMenusControllerTests : IClassFixture<VennuApiFacto
             return Task.FromResult(new MenuEditorSnapshot([], [], new MenuEditorCapabilities(false, false, false)));
         }
 
+        public Task<Menu> CreateMenuAsync(Guid venueId, string name, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
         public Task<MenuSection> CreateAsync(Guid venueId, Guid menuId, string name, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
