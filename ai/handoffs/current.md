@@ -2,14 +2,14 @@
 
 ## Work Package
 - ID: Issue-398
-- Status: In Review
+- Status: Complete through PR #399
 - Execution mode: Collaborative
 
 ## Git State
-- Branch: `issue/398-admin-key-batch-helper`
+- Branch: `master`
 - Issue: #398
 - Pull request: #399
-- CI state: pending
+- CI state: all 12 required checks passed on reviewed head `b8785d5`; PR #399 merged
 
 ## Completed This Session
 - Added root `get-super-admin-access-key.cmd`.
@@ -24,13 +24,13 @@
 - GitHub Actions pending.
 
 ## Remaining Work
-- Validate, review, and merge PR #399, then release the claim.
+- None for Issue-398.
 
 ## Known Risks or Blockers
 - Clipboard and Windows user environment are user-readable local storage.
 
 ## Exact Next Action
-- Open and validate the Issue #398 PR.
+- Double-click `get-super-admin-access-key.cmd` whenever the existing local Super Admin key needs to be copied to the clipboard.
 
 ## Do Not Redo or Reverse
 - Do not print or commit the access key.
