@@ -3,6 +3,7 @@ namespace Vennu.Api.Contracts.BackOffice;
 public sealed record BackOfficeBillingPresentationResponse(
     BackOfficeTierSummary? CurrentTier,
     BackOfficeSubscriptionSummary? Subscription,
+    BackOfficeBillingUsageSummary Usage,
     IReadOnlyCollection<BackOfficeTierSummary> AvailableTiers,
     IReadOnlyDictionary<string, BackOfficeFeatureSummary> EffectiveFeatures,
     IReadOnlyCollection<BackOfficeHaasBundleSummary> HaasBundles,
@@ -13,7 +14,18 @@ public sealed record BackOfficeTierSummary(
     string Name,
     string Slug,
     decimal MonthlyPrice,
-    int MaxScreens);
+    int MaxScreens,
+    int MaxVenues,
+    string Direction,
+    bool CanSelect,
+    IReadOnlyCollection<string> BlockingReasons,
+    IReadOnlyCollection<string> LostFeatures);
+
+public sealed record BackOfficeBillingUsageSummary(
+    int ActiveScreens,
+    int CurrentScreenLimit,
+    int OrganizationVenues,
+    int CurrentVenueLimit);
 
 public sealed record BackOfficeSubscriptionSummary(
     string Status,

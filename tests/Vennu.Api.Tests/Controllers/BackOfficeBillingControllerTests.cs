@@ -57,6 +57,18 @@ public sealed class BackOfficeBillingControllerTests : IClassFixture<VennuApiFac
     }
 
     [Fact]
+    public async Task TierPortalSession_ReturnsUnauthorized_WhenVenueTokenIsMissing()
+    {
+        using var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/back-office/billing/tier-portal-session",
+            new { targetTierId = Guid.NewGuid() });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task HaasCheckoutSession_ReturnsUnauthorized_WhenVenueTokenIsMissing()
     {
         using var client = factory.CreateClient();

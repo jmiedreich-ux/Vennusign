@@ -2,31 +2,31 @@
 
 ## Current State
 
-- Item: RWP-10.01 — Player Runtime, Targeting, and Realtime Delivery Reliability / issue #423
+- Item: RWP-11.02 — Billing Tier and Downgrade Safety / issue #348
 - Mode: Sequential
-- Branch: `rwp/10.01-player-runtime-reliability`
+- Branch: `rwp/11.02-billing-tier-downgrade-safety`
 - Status: Complete in the proposed merge state
 
 ## Result
 
-- Back Office onboarding and screen management poll the authoritative screen state every ten seconds and refresh after visibility recovery, so paired screens become Online without a manual page refresh.
-- Screen management requires one explicit active-screen target before a structured push and preserves that target for retry; venue authorization remains server-authoritative.
-- The UI distinguishes pending, queued, offline, and failed delivery. It never presents API acceptance as player acknowledgement.
-- Manual-push and other persistent content notifications now trigger an authoritative reload instead of replacing display content with command metadata.
-- Web, Android, Tizen, and webOS player shells enforce fullscreen/immersive, overflow-free presentation and recover current content periodically after missed realtime events.
-- The durable contract and UI/function gap analysis are recorded in `docs/architecture/player-delivery-reliability.md` and `docs/archive/work-packages/RWP-10.01-player-runtime-reliability.md`.
+- Back Office presents active screen and organization venue usage against current and target tier limits.
+- Server decisions identify start/current/upgrade/downgrade, disclose known feature losses, and block unsafe targets in both presentation and action endpoints.
+- Existing subscriptions use a targeted Stripe Billing Portal launch; first-time plans use hosted Checkout. Browser returns and pending records never infer access before refreshed webhook-authoritative state.
+- The financial review dialog focuses “Keep current plan”, lists operational impact, and supports keyboard, status-announcement, error, and narrow-screen states.
+- HaaS remains a separate contract, endpoint, and persistence path.
+- The durable contract and UI/function gap analysis are recorded in `docs/architecture/billing-tier-decisions.md` and `docs/archive/work-packages/RWP-11.02-billing-tier-downgrade-safety.md`.
 
 ## Validation
 
-- Back Office Node tests pass locally (55/55), and the production build passes.
-- Display Node tests pass locally (124/124).
-- The local Display production build is delegated to exact-head affected-area GitHub Actions because the local TypeScript compiler is unavailable.
+- Back Office Node tests and the production build pass locally.
+- Focused API authorization, data decision-evaluator, and browser pending-state tests are included for affected-area Actions.
+- Exact-head affected-area GitHub Actions is authoritative for .NET build and unit validation.
 - Azure SQL, external-service, credentialed, hosted-infrastructure, container, physical-device, signing/store, cross-system, and all other integration-type tests remain skipped.
 
 ## Exact Next Action
 
-After this RWP merges and its claim is released, reassess and claim only RWP-11.02 / issue #348 in Sequential mode if it has no active owner.
+After this RWP merges and its claim is released, reassess and claim only RWP-13.03 / issue #421 in Sequential mode if it has no active owner.
 
 ## Do Not Redo
 
-Do not infer player acknowledgement from a queued notification, send raw command text as display content, push without an explicit target, reintroduce player scrollbars, disable automatic status/content recovery, skip the recorded queue, or resume Phase 14+.
+Do not infer entitlement changes from a browser return, rely on client-only eligibility, bypass active screen or venue limits, mix HaaS terms into software-tier selection, skip the recorded queue, or resume Phase 14+.

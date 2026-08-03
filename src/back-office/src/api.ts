@@ -18,11 +18,15 @@ export type BackOfficeSession = {
   }>;
 };
 export type BackOfficeTierSummary = {
-  id: string; name: string; slug: string; monthlyPrice: number; maxScreens: number;
+  id: string; name: string; slug: string; monthlyPrice: number; maxScreens: number; maxVenues: number;
+  direction: "start" | "current" | "upgrade" | "downgrade";
+  canSelect: boolean; blockingReasons: string[]; lostFeatures: string[];
 };
+export type BackOfficeBillingUsage = { activeScreens: number; currentScreenLimit: number; organizationVenues: number; currentVenueLimit: number };
 export type BackOfficeBillingPresentation = {
   currentTier?: BackOfficeTierSummary;
   subscription?: BackOfficeSubscriptionSummary;
+  usage: BackOfficeBillingUsage;
   availableTiers: BackOfficeTierSummary[];
   effectiveFeatures: Record<string, { enabled: boolean; limitValue?: string }>;
   haasBundles: BackOfficeHaasBundleSummary[];
@@ -306,6 +310,25 @@ export async function createBillingPortalSession(
   } catch {
     throw new BackOfficeApiError(502, "Secure billing management returned an invalid response.");
   }
+}
+
+export async function createTierBillingPortalSession(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  targetTierId: string,
+  signal?: AbortSignal
+): Promise<string> {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/back-office/billing/tier-portal-session`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Vennusign-Back-Office-Token": accessToken },
+    body: JSON.stringify({ targetTierId }),
+    signal
+  });
+  if (!response.ok) throw new BackOfficeApiError(response.status, "This plan change is unavailable until its usage conflicts are resolved.");
+  const payload = await response.json() as { portalUrl?: string };
+  if (!payload.portalUrl) throw new BackOfficeApiError(502, "Secure billing management returned an invalid response.");
+  try { return requireHostedBillingPortalUrl(payload.portalUrl); }
+  catch { throw new BackOfficeApiError(502, "Secure billing management returned an invalid response."); }
 }
 
 export async function createHaasCheckoutSession(
