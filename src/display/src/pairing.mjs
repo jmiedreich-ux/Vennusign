@@ -33,6 +33,29 @@ export async function createPairingCode(baseUrl, screenId, fetchImpl = fetch) {
   }, fetchImpl);
 }
 
+export async function preparePairingScreen(
+  baseUrl,
+  screenId,
+  platform = 'browser',
+  appVersion = 'web',
+  fetchImpl = fetch
+) {
+  if (screenId) {
+    try {
+      const pairing = await createPairingCode(baseUrl, screenId, fetchImpl);
+      return { ...pairing, screenId };
+    } catch (error) {
+      if (!(error instanceof Error && 'status' in error && error.status === 404)) {
+        throw error;
+      }
+    }
+  }
+
+  const registration = await registerPairingScreen(baseUrl, platform, appVersion, fetchImpl);
+  const pairing = await createPairingCode(baseUrl, registration.screenId, fetchImpl);
+  return { ...pairing, screenId: registration.screenId };
+}
+
 export async function loadPairingStatus(baseUrl, code, fetchImpl = fetch) {
   return jsonRequest(
     apiUrl(baseUrl, `/api/screens/pairing/${encodeURIComponent(code)}/status`),

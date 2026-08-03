@@ -2,6 +2,7 @@ using Vennu.Api.Notifications;
 using Vennu.Api.Services;
 using Vennu.Api.Tests.TestDoubles;
 using Vennu.Core.Models;
+using Vennu.Data.Services;
 
 namespace Vennu.Api.Tests.Services;
 
@@ -45,6 +46,40 @@ public sealed class ScreenManagementServiceTests
         var result = await service.GetAsync(venueId);
 
         Assert.Equal(["bar", "Lobby"], result.Select(screen => screen.Name));
+    }
+
+    [Fact]
+    public async Task GetAsync_DoesNotRequirePermissionToAddAnotherScreen()
+    {
+        var venueId = Guid.NewGuid();
+        var screens = new FakeScreenRepository
+        {
+            GetByVenueIdAsyncHandler = (id, _) => Task.FromResult<IReadOnlyCollection<Screen>>(
+                [new Screen { Id = Guid.NewGuid(), VenueId = id, Name = "Onboarding screen" }])
+        };
+        var entitlement = new RecordingEntitlement { RejectScreenAdds = true };
+        var service = CreateService(venueId, screens, new RecordingNotifier(), entitlement);
+
+        var result = await service.GetAsync(venueId);
+
+        Assert.Single(result);
+        Assert.Equal("Onboarding screen", result.Single().Name);
+        Assert.Equal(0, entitlement.ScreenAddChecks);
+    }
+
+    [Fact]
+    public async Task CreateAsync_RequiresPermissionBeforePersistingScreen()
+    {
+        var venueId = Guid.NewGuid();
+        var screens = new FakeScreenRepository();
+        var entitlement = new RecordingEntitlement { RejectScreenAdds = true };
+        var service = CreateService(venueId, screens, new RecordingNotifier(), entitlement);
+
+        await Assert.ThrowsAsync<TierScreenLimitReachedException>(
+            () => service.CreateAsync(venueId, "Extra screen", null));
+
+        Assert.Equal(1, entitlement.ScreenAddChecks);
+        Assert.Null(screens.LastCreatedScreen);
     }
 
     [Fact]
@@ -176,7 +211,8 @@ public sealed class ScreenManagementServiceTests
     private static ScreenManagementService CreateService(
         Guid venueId,
         FakeScreenRepository screens,
-        RecordingNotifier notifier) =>
+        RecordingNotifier notifier,
+        IVenueEntitlementService? entitlement = null) =>
         new(
             screens,
             new FakeVenueRepository
@@ -185,7 +221,25 @@ public sealed class ScreenManagementServiceTests
                     id == venueId ? new Venue { Id = id, Name = "Cafe" } : null)
             },
             notifier,
-            new FixedTimeProvider());
+            new FixedTimeProvider(),
+            entitlement);
+
+    private sealed class RecordingEntitlement : IVenueEntitlementService
+    {
+        public int ScreenAddChecks { get; private set; }
+        public bool RejectScreenAdds { get; init; }
+
+        public Task EnsureCanAddScreenAsync(Guid venueId, CancellationToken cancellationToken = default)
+        {
+            ScreenAddChecks++;
+            return RejectScreenAdds
+                ? Task.FromException(new TierScreenLimitReachedException())
+                : Task.CompletedTask;
+        }
+
+        public Task EnsureCanAddVenueAsync(Guid organizationId, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+    }
 
     private sealed class FixedTimeProvider : TimeProvider
     {

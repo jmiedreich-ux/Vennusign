@@ -2,6 +2,11 @@ using Vennu.Data.Repositories;
 
 namespace Vennu.Data.Services;
 
+public sealed class TierScreenLimitReachedException : InvalidOperationException
+{
+    public TierScreenLimitReachedException() : base("The tier screen limit has been reached.") { }
+}
+
 public interface IVenueEntitlementService
 {
     Task EnsureCanAddScreenAsync(Guid venueId, CancellationToken cancellationToken = default);
@@ -38,7 +43,7 @@ public sealed class VenueEntitlementService(
             ?? throw new InvalidOperationException("The subscribed tier no longer exists.");
         if (tier.MaxScreens < 0) return;
         var current = await screens.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
-        if (current.Count >= tier.MaxScreens) throw new InvalidOperationException("The tier screen limit has been reached.");
+        if (current.Count >= tier.MaxScreens) throw new TierScreenLimitReachedException();
     }
 
     public async Task EnsureCanAddVenueAsync(Guid organizationId, CancellationToken cancellationToken = default)

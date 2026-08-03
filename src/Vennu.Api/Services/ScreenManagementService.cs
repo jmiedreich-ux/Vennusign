@@ -18,8 +18,6 @@ public sealed class ScreenManagementService(
         CancellationToken cancellationToken = default)
     {
         await RequireVenueAsync(venueId, cancellationToken).ConfigureAwait(false);
-        if (entitlementService is not null)
-            await entitlementService.EnsureCanAddScreenAsync(venueId, cancellationToken).ConfigureAwait(false);
         var screens = await screenRepository.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
         return screens
             .OrderBy(screen => screen.Name, StringComparer.OrdinalIgnoreCase)
@@ -35,6 +33,8 @@ public sealed class ScreenManagementService(
         CancellationToken cancellationToken = default)
     {
         await RequireVenueAsync(venueId, cancellationToken).ConfigureAwait(false);
+        if (entitlementService is not null)
+            await entitlementService.EnsureCanAddScreenAsync(venueId, cancellationToken).ConfigureAwait(false);
         var screen = new Screen
         {
             VenueId = venueId,

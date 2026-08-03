@@ -150,7 +150,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-No implementation package is active. Issue-404 completed the localhost Display pairing CORS correction through PR #405. Phase 14 remains paused.
+Issue-407 is active in Collaborative mode on `issue/407-screen-quota-gating`. Owner manual testing is approved and implementation PR preparation is active for screen fleet loading, tier-limit enforcement, quota feedback, video-wall feature gating, and stale Display pairing recovery. Phase 14 remains paused.
 
 ## Phase 04 Result
 
@@ -226,7 +226,7 @@ No implementation package is active. Issue-404 completed the localhost Display p
 
 ## Next Action
 
-No future-phase WP is active. Phase 14 and later remain paused pending explicit owner approval.
+Commit and push Issue-407, open its implementation PR, run affected-area GitHub Actions, obtain ChatGPT approval on the exact head, merge, and synchronize completion records. Phase 14 and later remain paused pending explicit owner approval.
 
 ## Phase 05 Work Packages
 
