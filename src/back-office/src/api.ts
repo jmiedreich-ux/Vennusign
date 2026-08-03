@@ -6,6 +6,16 @@ export type BackOfficeSession = {
   venueId: string;
   displayName: string;
   capabilities: string[];
+  organizationId?: string;
+  organizationName: string;
+  venueName: string;
+  account: { userId?: string; displayName: string; email?: string };
+  contexts: Array<{
+    organizationId: string;
+    organizationName: string;
+    venueId: string;
+    venueName: string;
+  }>;
 };
 export type BackOfficeTierSummary = {
   id: string; name: string; slug: string; monthlyPrice: number; maxScreens: number;
@@ -156,12 +166,33 @@ export class BackOfficeApiError extends Error {
   }
 }
 
+const venueContextStorageKey = "vennusign.back-office.venue-id";
+
+export function clearBackOfficeVenueContext() {
+  localStorage.removeItem(venueContextStorageKey);
+}
+
 function venueFetch(input: RequestInfo | URL, init?: RequestInit) {
   const headers = new Headers(init?.headers);
   if (headers.get("X-Vennusign-Back-Office-Token") === "customer-session") {
     headers.delete("X-Vennusign-Back-Office-Token");
+    const selectedVenueId = localStorage.getItem(venueContextStorageKey);
+    if (selectedVenueId && !headers.has("X-Vennusign-Venue-Id")) {
+      headers.set("X-Vennusign-Venue-Id", selectedVenueId);
+    }
   }
   return fetch(input, { ...init, headers, credentials: "include" });
+}
+
+async function requestBackOfficeSession(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  signal?: AbortSignal,
+  selectedVenueId?: string
+) {
+  const headers: Record<string, string> = { "X-Vennusign-Back-Office-Token": accessToken };
+  if (selectedVenueId) headers["X-Vennusign-Venue-Id"] = selectedVenueId;
+  return venueFetch(`${configuration.apiBaseUrl}/api/back-office/session`, { headers, signal });
 }
 
 export async function loadBackOfficeSession(
@@ -169,19 +200,42 @@ export async function loadBackOfficeSession(
   accessToken: string,
   signal?: AbortSignal
 ): Promise<BackOfficeSession> {
-  const response = await venueFetch(`${configuration.apiBaseUrl}/api/back-office/session`, {
-    headers: { "X-Vennusign-Back-Office-Token": accessToken },
-    signal
-  });
+  let response = await requestBackOfficeSession(configuration, accessToken, signal);
+  if (response.status === 401 && accessToken === "customer-session" && localStorage.getItem(venueContextStorageKey)) {
+    clearBackOfficeVenueContext();
+    response = await requestBackOfficeSession(configuration, accessToken, signal);
+  }
   if (!response.ok) {
     throw new BackOfficeApiError(
       response.status,
       response.status === 401
-        ? "That venue access link is invalid or has expired."
+        ? accessToken === "customer-session"
+          ? "No authorized venue workspace is available. Finish venue setup or ask an organization owner to restore your access."
+          : "That venue access link is invalid or has expired."
         : "The venue workspace is unavailable."
     );
   }
   return response.json() as Promise<BackOfficeSession>;
+}
+
+export async function selectBackOfficeVenue(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  venueId: string,
+  signal?: AbortSignal
+): Promise<BackOfficeSession> {
+  const response = await requestBackOfficeSession(configuration, accessToken, signal, venueId);
+  if (!response.ok) {
+    throw new BackOfficeApiError(
+      response.status,
+      response.status === 401
+        ? "You no longer have access to that venue. Your current workspace was not changed."
+        : "Vennusign could not switch venue workspaces."
+    );
+  }
+  const session = await response.json() as BackOfficeSession;
+  localStorage.setItem(venueContextStorageKey, session.venueId);
+  return session;
 }
 
 export async function loadVenueBillingPresentation(

@@ -47,6 +47,10 @@ public sealed class BackOfficeSessionControllerTests : IClassFixture<VennuApiFac
         Assert.Equal(Guid.Parse("11111111-1111-1111-1111-111111111111"), session.VenueId);
         Assert.Equal("Harbor Owner", session.DisplayName);
         Assert.Equal(["menus", "screens"], session.Capabilities);
+        Assert.Equal("Harbor Owner", session.Account.DisplayName);
+        Assert.Equal("Legacy venue access", session.OrganizationName);
+        Assert.Equal("Current venue", session.VenueName);
+        Assert.Single(session.Contexts);
     }
 
     [Fact]

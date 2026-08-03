@@ -17,6 +17,7 @@ public sealed class CustomerBackOfficeAuthenticationHandler : AuthenticationHand
     private readonly ICustomerOnboardingRepository onboarding;
     private readonly IVenueRepository venues;
     private readonly IOrganizationMembershipRepository memberships;
+    private readonly IBackOfficeContextRepository contexts;
     private readonly IMembershipCapabilityResolver membershipCapabilities;
     private readonly IFeatureResolutionService features;
 
@@ -28,6 +29,7 @@ public sealed class CustomerBackOfficeAuthenticationHandler : AuthenticationHand
         ICustomerOnboardingRepository onboarding,
         IVenueRepository venues,
         IOrganizationMembershipRepository memberships,
+        IBackOfficeContextRepository contexts,
         IMembershipCapabilityResolver membershipCapabilities,
         IFeatureResolutionService features) : base(options, logger, encoder)
     {
@@ -35,6 +37,7 @@ public sealed class CustomerBackOfficeAuthenticationHandler : AuthenticationHand
         this.onboarding = onboarding;
         this.venues = venues;
         this.memberships = memberships;
+        this.contexts = contexts;
         this.membershipCapabilities = membershipCapabilities;
         this.features = features;
     }
@@ -48,16 +51,18 @@ public sealed class CustomerBackOfficeAuthenticationHandler : AuthenticationHand
 
         var state = await onboarding.GetByUserIdAsync(customer.User.Id, Context.RequestAborted).ConfigureAwait(false);
         var venueId = ResolveVenueId(state);
-        if (venueId is null) return AuthenticateResult.Fail("No authorized venue was selected.");
-        var venue = await venues.GetByIdAsync(venueId.Value, Context.RequestAborted).ConfigureAwait(false);
-        if (venue?.OrganizationId is not Guid organizationId) return AuthenticateResult.Fail("The selected venue has no customer organization.");
-
-        var organizationMembership = await memberships.GetOrganizationMembershipAsync(organizationId, customer.User.Id, Context.RequestAborted).ConfigureAwait(false);
-        var venueMembership = await memberships.GetVenueMembershipAsync(organizationId, venue.Id, customer.User.Id, Context.RequestAborted).ConfigureAwait(false);
-        var organizationRole = organizationMembership?.RevokedUtc is null ? organizationMembership?.Role : null;
-        var venueRole = venueMembership?.RevokedUtc is null ? venueMembership?.Role : null;
-        if (!membershipCapabilities.HasCapability(organizationRole, venueRole, MembershipCapability.ManageVenueContent))
-            return AuthenticateResult.Fail("The customer is not authorized to manage this venue.");
+        var authorized = venueId is Guid requestedVenueId
+            ? await ResolveAuthorizedVenueAsync(requestedVenueId, customer.User.Id).ConfigureAwait(false)
+            : null;
+        if (authorized is null && !HasExplicitVenueSelection())
+        {
+            var fallback = (await contexts.GetAuthorizedAsync(customer.User.Id, Context.RequestAborted).ConfigureAwait(false))
+                .FirstOrDefault();
+            if (fallback is not null)
+                authorized = await ResolveAuthorizedVenueAsync(fallback.VenueId, customer.User.Id).ConfigureAwait(false);
+        }
+        if (authorized is null) return AuthenticateResult.Fail("The customer is not authorized to manage the selected venue.");
+        var venue = authorized.Value.Venue;
 
         var effectiveFeatures = await features.GetFeatureSetAsync(venue.Id, Context.RequestAborted).ConfigureAwait(false);
         var capabilityValues = CoreContentCapabilities
@@ -87,5 +92,26 @@ public sealed class CustomerBackOfficeAuthenticationHandler : AuthenticationHand
         if ((canonicalPresent || legacyPresent) && Guid.TryParse(values.ToString(), out var selected) && selected != Guid.Empty)
             return selected;
         return state?.VenueId;
+    }
+
+    private bool HasExplicitVenueSelection() =>
+        Request.Headers.ContainsKey(BackOfficeAuthenticationDefaults.VenueSelectionHeaderName) ||
+        Request.Headers.ContainsKey(BackOfficeAuthenticationDefaults.LegacyVenueSelectionHeaderName);
+
+    private async Task<(Venue Venue, OrganizationMembershipRole? OrganizationRole, VenueMembershipRole? VenueRole)?> ResolveAuthorizedVenueAsync(
+        Guid venueId,
+        Guid userId)
+    {
+        var venue = await venues.GetByIdAsync(venueId, Context.RequestAborted).ConfigureAwait(false);
+        if (venue?.OrganizationId is not Guid organizationId) return null;
+        var organizationMembership = await memberships.GetOrganizationMembershipAsync(
+            organizationId, userId, Context.RequestAborted).ConfigureAwait(false);
+        var venueMembership = await memberships.GetVenueMembershipAsync(
+            organizationId, venue.Id, userId, Context.RequestAborted).ConfigureAwait(false);
+        var organizationRole = organizationMembership?.RevokedUtc is null ? organizationMembership?.Role : null;
+        var venueRole = venueMembership?.RevokedUtc is null ? venueMembership?.Role : null;
+        return membershipCapabilities.HasCapability(organizationRole, venueRole, MembershipCapability.ManageVenueContent)
+            ? (venue, organizationRole, venueRole)
+            : null;
     }
 }

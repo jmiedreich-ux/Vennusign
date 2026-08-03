@@ -5,6 +5,8 @@ import {
   createHaasCheckoutSession,
   loadBackOfficeSession,
   loadVenueBillingPresentation,
+  selectBackOfficeVenue,
+  clearBackOfficeVenueContext,
   BackOfficeApiError,
   type BackOfficeBillingPresentation,
   type BackOfficeSession
@@ -61,6 +63,8 @@ export default function App() {
   const [billingPortalError, setBillingPortalError] = useState<string>();
   const [haasOpening, setHaasOpening] = useState<string>();
   const [haasError, setHaasError] = useState<string>();
+  const [contextSwitching, setContextSwitching] = useState(false);
+  const [contextNotice, setContextNotice] = useState<string>();
   const [checkoutReturn, setCheckoutReturn] = useState<CheckoutReturnState | undefined>(
     () => readCheckoutReturnState(window.location.search)
   );
@@ -158,14 +162,16 @@ export default function App() {
     setBillingPortalError(undefined);
     setHaasOpening(undefined);
     setHaasError(undefined);
+    clearBackOfficeVenueContext();
   };
 
   if (!accessToken || error) {
     return <main className="centered"><section className="access-card venue-access-choice" aria-labelledby="venue-access-heading">
         <span>Vennusign Back Office</span>
         <h1 id="venue-access-heading">Open your venue</h1>
-        <p>{error ?? "Sign in with your Vennusign customer account to continue."}</p>
+        <p role={error ? "alert" : undefined}>{error ?? "Sign in with your Vennusign customer account to continue."}</p>
         <a className="customer-sign-in" href="/signin?returnPath=/">Sign in with your customer account</a>
+        {error ? <a className="customer-recovery" href="/onboarding">Set up or recover an organization and venue</a> : null}
         <details><summary>Use a temporary legacy venue link</summary><form onSubmit={authorize}>
           <p>Legacy links are available only during migration and may be revoked or retired.</p>
           <label htmlFor="accessToken">Legacy venue access token</label>
@@ -266,6 +272,38 @@ export default function App() {
       setHaasOpening(undefined);
     }
   };
+  const switchVenue = async (venueId: string) => {
+    if (venueId === session.venueId || contextSwitching) return;
+    const destination = session.contexts.find(context => context.venueId === venueId);
+    if (!destination) {
+      setContextNotice("That venue is no longer available in this account.");
+      return;
+    }
+    const confirmed = window.confirm(
+      `Switch to ${destination.organizationName} — ${destination.venueName}? Save any unfinished changes before switching workspaces.`
+    );
+    if (!confirmed) return;
+
+    setContextSwitching(true);
+    setContextNotice(`Checking access to ${destination.venueName}…`);
+    try {
+      const nextSession = await selectBackOfficeVenue(configuration, accessToken, venueId);
+      setSession(nextSession);
+      setBilling(undefined);
+      setContextNotice(`Now working in ${nextSession.organizationName} — ${nextSession.venueName}.`);
+      try {
+        setBilling(await loadVenueBillingPresentation(configuration, accessToken));
+      } catch {
+        setContextNotice(`Now working in ${nextSession.organizationName} — ${nextSession.venueName}. Billing details are temporarily unavailable.`);
+      }
+    } catch (reason: unknown) {
+      setContextNotice(reason instanceof BackOfficeApiError
+        ? reason.message
+        : "Vennusign could not switch venue workspaces.");
+    } finally {
+      setContextSwitching(false);
+    }
+  };
 
   return <div className="shell">
     <aside>
@@ -306,6 +344,34 @@ export default function App() {
     </aside>
     <main>
       <header><div><p>Venue workspace</p><h1>{route.label}</h1></div><span>Secure session</span></header>
+      <section className="workspace-context" aria-labelledby="workspace-context-heading">
+        <div className="workspace-context__active">
+          <p id="workspace-context-heading">Active workspace</p>
+          <strong title={`${session.organizationName} — ${session.venueName}`}>{session.organizationName}</strong>
+          <span>{session.venueName}</span>
+        </div>
+        <div className="workspace-context__controls">
+          {session.contexts.length > 1 ? <label htmlFor="workspace-context-select">
+            Organization and venue
+            <select
+              id="workspace-context-select"
+              value={session.venueId}
+              disabled={contextSwitching}
+              onChange={event => void switchVenue(event.currentTarget.value)}
+            >
+              {session.contexts.map(context => <option key={context.venueId} value={context.venueId}>
+                {context.organizationName} — {context.venueName}
+              </option>)}
+            </select>
+          </label> : <span className="workspace-context__single">Only authorized workspace</span>}
+          <div className="workspace-context__account">
+            <small>Signed in as</small>
+            <strong>{session.account.displayName}</strong>
+            {session.account.email ? <span>{session.account.email}</span> : null}
+          </div>
+        </div>
+      </section>
+      {contextNotice ? <p className="workspace-context__notice" role="status" aria-live="polite">{contextNotice}</p> : null}
       {checkoutReturn ? <section className={`checkout-return checkout-return--${checkoutReturn}`} role="status">
         <div>
           <strong>{checkoutReturn === "success" ? "Confirming your plan" : "Checkout canceled"}</strong>
@@ -335,15 +401,17 @@ export default function App() {
             onStartHaas={startHaasCheckout}
           />
         : allowed && route.path === "pos"
-        ? <PosIntegrationAdministration configuration={configuration} accessToken={accessToken} />
+        ? <PosIntegrationAdministration key={session.venueId} configuration={configuration} accessToken={accessToken} />
         : allowed && route.path === "menu"
         ? <MenuSectionsEditor
+            key={session.venueId}
             configuration={configuration}
             apiKey={accessToken}
             venueId={session.venueId}
           />
         : allowed && ["screens", "themes", "schedules", "tap-list"].includes(route.path)
         ? <VenueOperations
+            key={session.venueId}
             configuration={configuration}
             accessToken={accessToken}
             venueId={session.venueId}
