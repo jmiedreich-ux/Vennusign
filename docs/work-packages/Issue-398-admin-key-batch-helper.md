@@ -21,4 +21,5 @@ Collaborative
 - Root batch execution passed.
 - Existing user key remained unchanged.
 - Clipboard matched the stored key without printing it.
+- Development Control Windows tests passed 9/9, including root batch wiring and no direct environment-variable echo.
 - GitHub Actions pending.

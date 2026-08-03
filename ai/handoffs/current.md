@@ -20,6 +20,7 @@
 ## Validation
 - PowerShell parser validation passed.
 - Batch execution passed; key unchanged and clipboard matched.
+- Development Control Windows tests passed 9/9.
 - GitHub Actions pending.
 
 ## Remaining Work

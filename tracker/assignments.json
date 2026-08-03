@@ -12,6 +12,7 @@
       "writableScope": [
         "get-super-admin-access-key.cmd",
         "scripts/set-super-admin-key.ps1",
+        "tools/Vennu.DevControl.Tests/RootAdminKeyBatchTests.cs",
         "docs/work-packages/Issue-398-admin-key-batch-helper.md",
         "PROJECT_STATUS.md",
         "tracker/assignments.json",

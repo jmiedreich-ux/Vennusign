@@ -14,6 +14,7 @@
 - PowerShell syntax passed.
 - Batch execution passed.
 - Existing key remained unchanged and clipboard matched.
+- Development Control Windows tests passed 9/9.
 
 ## Exact Next Action
 - Validate, review, and merge PR #399.
