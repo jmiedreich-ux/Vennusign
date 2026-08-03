@@ -186,7 +186,7 @@ export default function ScreenManagement({
   const visibleScreens = screens.filter(screen => {
     const normalizedStatus = screen.status.toLowerCase();
     const matchesHealth = healthFilter === "all"
-      || healthFilter === "stale" && isStale(screen)
+      || healthFilter === "stale" && normalizedStatus !== "archived" && isStale(screen)
       || healthFilter === "archived" && normalizedStatus === "archived"
       || healthFilter === normalizedStatus;
     const query = screenSearch.trim().toLowerCase();
@@ -263,6 +263,7 @@ export default function ScreenManagement({
         </label>
         {screen.displayLayout === "photo_grid" ? <label>Photo Grid density
           <select
+            disabled={screen.status.toLowerCase() === "archived"}
             value={screen.photoGridDensity}
             onChange={event => {
               const updated = { ...screen, photoGridDensity: event.target.value as ManagedScreen["photoGridDensity"] };
@@ -278,6 +279,7 @@ export default function ScreenManagement({
         </label> : null}
         {screen.displayLayout === "daily_special_hero" ? <label>Hero rotation
           <select
+            disabled={screen.status.toLowerCase() === "archived"}
             value={screen.heroDwellSeconds}
             onChange={event => {
               const updated = { ...screen, heroDwellSeconds: Number(event.target.value) };
@@ -294,6 +296,7 @@ export default function ScreenManagement({
         </label> : null}
         {screen.displayLayout === "split_layout" ? <label>Split ratio
           <select
+            disabled={screen.status.toLowerCase() === "archived"}
             value={screen.splitRatio}
             onChange={event => {
               const updated = { ...screen, splitRatio: event.target.value as ManagedScreen["splitRatio"] };
