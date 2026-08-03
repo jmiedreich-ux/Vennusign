@@ -8,13 +8,15 @@ import TierManagement from "./TierManagement";
 import FeatureMatrix from "./FeatureMatrix";
 import OperationalDashboard from "./OperationalDashboard";
 import OnboardingSupport from "./OnboardingSupport";
+import SystemConfiguration from "./SystemConfiguration";
 
 const routes = [
   { path: "dashboard", label: "Dashboard", description: "Revenue and operational health" },
   { path: "venues", label: "Venues", description: "Venue directory and support context" },
   { path: "onboarding", label: "Onboarding", description: "Customer journey support visibility" },
   { path: "tiers", label: "Tiers", description: "Tier catalogue and billing mapping" },
-  { path: "features", label: "Features", description: "Feature access matrix" }
+  { path: "features", label: "Features", description: "Feature access matrix" },
+  { path: "configuration", label: "Configuration", description: "Environment and application settings" }
 ] as const;
 
 function currentRoute() {
@@ -90,6 +92,8 @@ export default function App() {
             ? <OnboardingSupport configuration={configuration} apiKey={apiKey} />
           : route.path === "features"
             ? <FeatureMatrix configuration={configuration} apiKey={apiKey} />
+          : route.path === "configuration"
+            ? <SystemConfiguration configuration={configuration} apiKey={apiKey} />
           : null}
       </main>
     </div>

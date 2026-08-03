@@ -4,6 +4,34 @@ export type AdminSession = {
   displayName: string;
   capabilities: string[];
 };
+export type SystemConfigurationSetting = {
+  definitionId: string; key: string; applicationScope: string; description: string; valueType: string;
+  isRequired: boolean; isSecret: boolean; value?: string; hasConfiguredValue: boolean;
+  requiresRestart: boolean; exportPolicy: string; version?: string;
+};
+
+async function configurationRequest(configuration: AdminConfiguration, apiKey: string, path: string, init?: RequestInit) {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/admin/configuration${path}`, {
+    ...init,
+    headers: { "Content-Type": "application/json", "X-Vennu-Admin-Key": apiKey, ...init?.headers }
+  });
+  if (!response.ok) throw new AdminApiError(response.status, response.status === 409 ? "This setting changed. Reload before saving again." : "Unable to manage configuration.");
+  return response;
+}
+
+export async function loadSystemConfiguration(configuration: AdminConfiguration, apiKey: string, environmentName: string, applicationScope?: string): Promise<SystemConfigurationSetting[]> {
+  const query = new URLSearchParams({ environmentName });
+  if (applicationScope) query.set("applicationScope", applicationScope);
+  return (await configurationRequest(configuration, apiKey, `?${query}`)).json() as Promise<SystemConfigurationSetting[]>;
+}
+
+export async function saveSystemConfiguration(configuration: AdminConfiguration, apiKey: string, setting: SystemConfigurationSetting, environmentName: string, value: string): Promise<SystemConfigurationSetting> {
+  return (await configurationRequest(configuration, apiKey, `/${setting.definitionId}`, { method: "PUT", body: JSON.stringify({ environmentName, value, expectedVersion: setting.version }) })).json() as Promise<SystemConfigurationSetting>;
+}
+
+export async function clearSystemConfiguration(configuration: AdminConfiguration, apiKey: string, setting: SystemConfigurationSetting, environmentName: string): Promise<SystemConfigurationSetting> {
+  return (await configurationRequest(configuration, apiKey, `/${setting.definitionId}`, { method: "DELETE", body: JSON.stringify({ environmentName, expectedVersion: setting.version }) })).json() as Promise<SystemConfigurationSetting>;
+}
 
 export type VenueDirectoryQuery = { search?: string; tier?: string; status?: string; health?: string };
 export type CreateVenueRequest = {

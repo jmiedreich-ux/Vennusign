@@ -37,6 +37,9 @@ public sealed class SuperAdminAuthenticationHandler : AuthenticationHandler<Supe
                 new Claim(ClaimTypes.Role, "SuperAdmin")
             ],
             Scheme.Name);
+        identity.AddClaims(Options.ConfigurationPermissions
+            .Where(permission => !string.IsNullOrWhiteSpace(permission))
+            .Select(permission => new Claim("vennu:configuration_permission", permission.Trim().ToLowerInvariant())));
         var principal = new ClaimsPrincipal(identity);
         var ticket = new AuthenticationTicket(principal, Scheme.Name);
         return Task.FromResult(AuthenticateResult.Success(ticket));

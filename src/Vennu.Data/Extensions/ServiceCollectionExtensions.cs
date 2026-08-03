@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Vennu.DataAccess.DependencyInjection;
+using Vennu.Data.Configuration;
 using Vennu.Data.Repositories;
 using Vennu.Data.Services;
 
@@ -12,6 +13,7 @@ public static class ServiceCollectionExtensions
         services.AddSqlDataAccess();
         services.AddMemoryCache();
         services.AddSingleton(TimeProvider.System);
+        services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
         services.AddScoped<IVenueRepository, VenueRepository>();
         services.AddScoped<IVenueThemeRepository, VenueThemeRepository>();
         services.AddScoped<IMenuRepository, MenuRepository>();
