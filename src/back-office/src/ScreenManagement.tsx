@@ -376,6 +376,7 @@ export default function ScreenManagement({
         </div>
         {screen.authoritativeRevision ? <p className={`delivery-state ${(screen.deliveryState ?? "Requested").toLowerCase()}`} role="status">
           Revision {screen.authoritativeRevision}: {screen.deliveryState ?? "Requested"}{screen.appliedRevision ? ` · applied ${screen.appliedRevision}` : " · acknowledgement pending"}
+          {isStale(screen) ? " · player stale/offline" : ""}
           {screen.deliveryFailureCode ? ` · ${screen.deliveryFailureCode}${screen.deliveryFailureDetail ? `: ${screen.deliveryFailureDetail}` : ""}` : ""}
         </p> : null}
         {screen.id === selectedScreenId && screen.status.toLowerCase() !== "archived" && ["split_layout", "daily_special_hero", "classic_chalkboard", "tap_strips", "digital_tap_board"].includes(screen.displayLayout) ? <div className="split-layout-preview">
