@@ -2,23 +2,23 @@
 
 ## Current State
 
-- Item: RWP-10.02 — Durable Player Content Receipts and Delivery Reconciliation / issue #441
+- Item: RWP-00.05 — Affected-Screen Action Completeness and Recovery / issue #442
 - Mode: Sequential
-- Branch: `rwp/10.02-content-delivery-receipts`
+- Branch: `rwp/00.05-screen-action-completeness`
 - Status: Implemented; pending exact-head CI, review, and merge
 
 ## Approved Queue
 
-1. RWP-00.05 / #442 — affected-screen action completeness and recovery
+No further WP/RWP is approved. Phase 14+ remains paused.
 
 Each package must be claimed, implemented, validated, merged, and released before the next package is claimed. The scheduled run may complete up to five packages.
 
-## RWP-10.02 Proposed Outcome
+## RWP-00.05 Proposed Outcome
 
-- Pushes issue a durable authoritative per-screen revision and supersede obsolete pending work.
-- Snapshots and realtime events agree on the target revision; players report received/applied/failed and recovered states idempotently.
-- Current screen credentials and revision ordering prevent cross-screen or regressive receipts.
-- Back Office reconciles authoritative and applied revisions with operator-visible delivery states.
+- Selected active screens have an explicit read-only Preview action.
+- Name/location identity edits use visible drafts with Save, Cancel, failure retention, and retry.
+- Account Security and Theme Builder distinguish load failure and provide deliberate Retry actions.
+- The affected-screen action matrix records completed coverage and approved exclusions.
 
 ## Boundaries
 
@@ -29,4 +29,4 @@ Each package must be claimed, implemented, validated, merged, and released befor
 
 ## Exact Next Action
 
-Review RWP-10.02 at its exact PR head, require affected-area GitHub Actions, merge and close issue #441, then claim RWP-00.05. Continue in recorded queue order only after the prior claim is released.
+Review RWP-00.05 at its exact PR head, require affected-area GitHub Actions, merge and close issue #442, verify the queue is empty, and stop. Do not begin Phase 14 or invent new work.
