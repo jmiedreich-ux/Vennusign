@@ -5,6 +5,7 @@ using Vennu.Api.Configuration;
 
 namespace Vennu.Api.Tests.Screens;
 
+[Collection(DisplayPairingCorsCollection.Name)]
 [Trait("Category", "Unit")]
 public sealed class DisplayPairingCorsTests : IClassFixture<DisplayPairingCorsFactory>
 {
@@ -38,6 +39,12 @@ public sealed class DisplayPairingCorsTests : IClassFixture<DisplayPairingCorsFa
         Assert.Contains("https://localhost:5175", DevelopmentCorsOrigins.Values);
         Assert.DoesNotContain("*", DevelopmentCorsOrigins.Values);
     }
+}
+
+[CollectionDefinition(DisplayPairingCorsCollection.Name, DisableParallelization = true)]
+public sealed class DisplayPairingCorsCollection
+{
+    public const string Name = "Display pairing CORS factory";
 }
 
 public sealed class DisplayPairingCorsFactory : WebApplicationFactory<Program>
