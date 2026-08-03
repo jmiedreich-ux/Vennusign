@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-03T05:40:00Z",
+  "updatedUtc": "2026-08-03T05:55:00Z",
   "activeAssignments": [],
   "nextAvailableWorkPackage": null,
   "rules": {
@@ -9,8 +9,9 @@
     "sharedFilesAreOrchestratorOwned": true,
     "deleteBranchesAfterMerge": true,
     "executionModes": {
-      "Sequential": "Work owned outside the collaborative session. Collaborative agents must not modify it.",
-      "Collaborative": "Work being driven interactively in the current session and owned by the active collaborative claim."
+      "Sequential": "GitHub-first queue execution; claim and complete exactly one approved WP/RWP at a time.",
+      "MobileCollaborative": "Existing GitHub-first interactive orchestration with one remotely visible claim and bounded lanes.",
+      "DesktopCollaborative": "Visual Studio or VS Code local-first session with sequential work paused, one visible session lock, local logical branches, and checkpoint publishing."
     }
   }
 }

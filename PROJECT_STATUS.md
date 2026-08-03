@@ -5,7 +5,7 @@
 - Phase 13 — Customer Identity, Signup, and Onboarding: complete.
 - Phase 14 and later: paused pending explicit owner approval.
 - Active product WP/RWP: none.
-- Active maintenance: DOC-MAINT-001 / issue #410 is complete in the proposed merge state.
+- Active maintenance: PROC-001 / issue #412 is complete in the proposed merge state.
 - Research program `INT-TESTING-001` remains documented but is not authorized by this maintenance item.
 
 ## Completed Delivery
@@ -33,4 +33,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-Do not create or begin a future-phase package until the owner explicitly resumes planning or implementation. Process maintenance and issue-first research may proceed only when separately approved and claimed.
+Do not create or begin a future-phase package until the owner explicitly resumes planning or implementation. Process maintenance and issue-first research may proceed only when separately approved and claimed. Desktop Collaborative sessions must keep sequential execution paused until their visible session lock is explicitly released.

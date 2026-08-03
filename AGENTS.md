@@ -24,14 +24,29 @@ Read `AI_DEVELOPMENT_GUIDE.md`, component README files, architecture, or operati
 
 ## Issue, Claim, and Package Workflow
 
-- Every change starts from one approved GitHub issue, explicit execution mode, claim in `tracker/assignments.json`, branch, and PR.
+- Every change starts from approved scope and one explicit execution mode. Sequential and Mobile Collaborative work require a GitHub issue, claim, branch, and PR before editing; Desktop Collaborative work uses the session lock and local branch model below.
 - Implementation work maps to one approved WP/RWP. Documentation or bounded maintenance may use its approved issue identifier.
 - Check issues, branches, PRs, tracker, status, and handoff before claiming. Stop on ownership conflict.
 - Sequential mode owns one queue item until it is merged, closed, and released; never skip ahead.
-- Collaborative mode uses one orchestrator-owned claim. Lanes require declared writable/read-only/prohibited paths and may not claim other roadmap work.
-- Branches use `wp/<id>-<short-name>`, `rwp/<id>-<short-name>`, or `issue/<number>-<short-name>` as applicable.
+- Mobile Collaborative mode preserves the GitHub-first orchestrator workflow: one remotely visible claim, bounded remote branch/PR, and declared writable/read-only/prohibited lanes. It may not claim unrelated roadmap work.
+- Desktop Collaborative mode is local-first for an interactive Visual Studio or VS Code session. Before code changes, pause every sequential schedule and publish one visible desktop-session lock identifying the owner, scope, session integration branch, and start time. An active desktop lock blocks all Sequential claims.
+- In Desktop Collaborative mode, pull the default branch once, create `collab/desktop/<topic>` as the local session integration branch, and use short-lived local logical branches beneath it. Merge reviewed logical branches locally into the session branch; a logical branch may resolve multiple coherently related issues.
+- Do not repeat repository-wide GitHub, tracker, status, or handoff scans between local logical branches. Recheck remote ownership and default-branch drift at publish checkpoints and before final merge.
+- At a meaningful Desktop Collaborative checkpoint, reconcile issue links once, update controlled records once, push the session branch, open one coherent PR, and run affected-area Actions once. Publishing a checkpoint does not end the desktop session.
+- End Desktop Collaborative mode only on explicit owner direction: publish or preserve remaining work, release the desktop lock, then resume sequential schedules. Never resume them merely because a checkpoint PR merged.
+- Published item branches use `wp/<id>-<short-name>`, `rwp/<id>-<short-name>`, or `issue/<number>-<short-name>` as applicable. Desktop session integration branches use `collab/desktop/<topic>`; their logical child branches remain local.
 - Keep changes bounded; do not refactor unrelated code or begin dependent/future work.
 - Delete completed branches unless retention is documented.
+
+## Documentation Control
+
+- Treat Markdown as a maintained interface, not a work log. Update an existing authoritative document before creating a new `.md` file.
+- During Desktop Collaborative work, do not create Markdown per local branch, issue, experiment, prompt, test run, or intermediate handoff. Keep temporary reasoning in the session or issue discussion, not the repository.
+- The controlled living records are `AGENTS.md`, `PROJECT_STATUS.md`, `ai/handoffs/current.md`, the tracker, the active approved package when one is required, and affected durable architecture/operations documents.
+- Batch living-record updates at publish checkpoints. Do not edit tracker, status, or handoff after every local commit or logical merge.
+- A new Markdown file requires a durable audience and purpose not served by an existing file. Work-package records are created only for approved WP/RWP work; architecture/decision/operations records are created only when the durable system contract or procedure truly needs a separate document.
+- Archive snapshots are optional, not per-merge output. Create one only for phase closure, a major release or process transition, a durable decision needing audit history, or explicit owner request.
+- Keep historical material under `docs/archive/` or `ai/handoffs/archive/` and read it only for deliberate research.
 
 ## Shared-File and Multi-Agent Safety
 
@@ -80,10 +95,9 @@ Before merge, synchronize:
 - `PROJECT_STATUS.md`
 - `tracker/assignments.json`
 - `ai/handoffs/current.md`
-- a dated immutable handoff in `ai/handoffs/archive/`
 - affected architecture, API, database, operational, or CI documentation
 
-The proposed merge state must release the claim and name one exact next action. Completion evidence belongs in the implementation PR when practical; unavoidable evidence-only PRs remain documentation-only.
+For Desktop Collaborative checkpoint PRs, synchronize these records once for the checkpoint and keep the desktop lock active. At final session completion, the proposed merge state must release the lock and name one exact next action. Other modes release their claim at item completion. Completion evidence belongs in the implementation PR; do not create an evidence-only Markdown file or PR when the existing PR, issue, status, or current handoff can hold it.
 
 ## Code and Repository Quality
 
