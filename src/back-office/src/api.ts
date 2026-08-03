@@ -70,7 +70,7 @@ export type ManagedScreen = {
   displayLayout: "photo_grid" | "classic_diner" | "neon_chalkboard" | "split_layout" | "daily_special_hero" | "classic_chalkboard" | "tap_strips" | "digital_tap_board";
   splitRatio: "40_60" | "50_50";
   heroDwellSeconds: number;
-  lastSeen?: string; registrationUrl: string;
+  lastSeen?: string; platform?: string; appVersion?: string; registrationUrl: string;
 };
 export type ManagedScreenWrite = {
   name: string;
@@ -581,6 +581,15 @@ export async function pushManagedScreen(configuration: BackOfficeConfiguration, 
 export async function pushAllManagedScreens(configuration: BackOfficeConfiguration, accessToken: string, venueId: string): Promise<{ screenCount: number }> {
   return (await screenRequest(configuration, accessToken, venueId, "/push-all", { method: "POST" })).json() as Promise<{ screenCount: number }>;
 }
+export async function setManagedScreenArchived(configuration: BackOfficeConfiguration, accessToken: string, venueId: string, screenId: string, archived: boolean): Promise<ManagedScreen> {
+  return (await screenRequest(configuration, accessToken, venueId, `/${screenId}/lifecycle`, { method: "PUT", body: JSON.stringify({ archived }) })).json() as Promise<ManagedScreen>;
+}
+export async function resetManagedScreen(configuration: BackOfficeConfiguration, accessToken: string, venueId: string, screenId: string): Promise<ManagedScreen> {
+  return (await screenRequest(configuration, accessToken, venueId, `/${screenId}/reset`, { method: "POST" })).json() as Promise<ManagedScreen>;
+}
+export async function unpairManagedScreen(configuration: BackOfficeConfiguration, accessToken: string, venueId: string, screenId: string): Promise<void> {
+  await screenRequest(configuration, accessToken, venueId, `/${screenId}/pairing`, { method: "DELETE" });
+}
 export async function loadScreenOverflow(configuration: BackOfficeConfiguration, accessToken: string, venueId: string, capacity: number): Promise<ScreenOverflowPreview> {
   return (await screenRequest(configuration, accessToken, venueId, `/overflow?capacity=${capacity}`)).json() as Promise<ScreenOverflowPreview>;
 }
@@ -618,6 +627,9 @@ export async function saveAdvancedVenueTheme(configuration: BackOfficeConfigurat
 }
 export async function applyVenueThemePreset(configuration: BackOfficeConfiguration, accessToken: string, venueId: string, presetKey: string): Promise<VenueTheme> {
   return (await themeRequest(configuration, accessToken, venueId, `/presets/${encodeURIComponent(presetKey)}`, { method: "PUT" })).json() as Promise<VenueTheme>;
+}
+export async function resetVenueTheme(configuration: BackOfficeConfiguration, accessToken: string, venueId: string): Promise<VenueTheme> {
+  return (await themeRequest(configuration, accessToken, venueId, "", { method: "DELETE" })).json() as Promise<VenueTheme>;
 }
 
 const areaRequest = (area: string, configuration: BackOfficeConfiguration, accessToken: string, venueId: string, path = "", init?: RequestInit) =>

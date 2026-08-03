@@ -4,10 +4,12 @@ import {
   loadManagedScreens,
   loadVenueTheme,
   loadVenueThemePresets,
+  resetVenueTheme,
   saveAdvancedVenueTheme,
   saveVenueTheme,
   type VenueTheme,
-  type VenueThemePreset
+  type VenueThemePreset,
+  type ManagedScreen
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
 
@@ -31,10 +33,21 @@ const swatches: Array<{ name: string; backgroundColor: string; accentColor: stri
 const titleFonts: DraftTheme["titleFont"][] = ["Pacifico", "Lobster", "Righteous", "Fredoka One", "Bungee", "Permanent Marker"];
 const itemFonts: DraftTheme["itemFont"][] = ["Caveat", "Kalam", "Patrick Hand", "Permanent Marker"];
 
+function contrastRatio(first: string, second: string) {
+  const luminance = (color: string) => {
+    const channels = color.slice(1).match(/.{2}/g)?.map(value => parseInt(value, 16) / 255) ?? [0, 0, 0];
+    const [red, green, blue] = channels.map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+  };
+  const [lighter, darker] = [luminance(first), luminance(second)].sort((left, right) => right - left);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 export default function ThemeBuilder({ configuration, apiKey, venueId, advancedEnabled, showUpgradePrompt = true }: Props) {
   const [theme, setTheme] = useState<DraftTheme>();
   const [presets, setPresets] = useState<VenueThemePreset[]>([]);
   const [screenId, setScreenId] = useState<string>();
+  const [screens, setScreens] = useState<ManagedScreen[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string>();
 
@@ -46,7 +59,9 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
     ])
       .then(([value, screens, availablePresets]) => {
         setTheme(value);
-        setScreenId(screens[0]?.id);
+        const activeScreens = screens.filter(screen => screen.status.toLowerCase() !== "archived");
+        setScreens(activeScreens);
+        setScreenId(activeScreens[0]?.id);
         setPresets(availablePresets);
       })
       .catch(() => setMessage("Theme controls could not be loaded."));
@@ -118,21 +133,39 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
     }
   };
 
+  const resetTheme = async () => {
+    if (!window.confirm("Reset the venue-wide theme to Vennusign defaults? All active screens will receive the reset.")) return;
+    setBusy(true); setMessage(undefined);
+    try {
+      const saved = await resetVenueTheme(configuration, apiKey, venueId);
+      setTheme(saved);
+      setMessage("Venue-wide theme reset and queued for all active screens.");
+    } catch {
+      setMessage("The theme could not be reset.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const patchSectionColor = (index: number, color: string) =>
     patchAdvanced({ sectionColors: theme?.sectionColors.map((value, position) => position === index ? color : value) });
   const addSectionColor = () =>
     patchAdvanced({ sectionColors: [...(theme?.sectionColors ?? []), theme?.glowColor ?? "#00E5FF"] });
   const removeSectionColor = (index: number) =>
     patchAdvanced({ sectionColors: theme?.sectionColors.filter((_, position) => position !== index) });
+  const basicContrast = theme ? contrastRatio(theme.accentColor, theme.backgroundColor) : 0;
+  const titleContrast = theme ? contrastRatio(theme.titleColor, theme.boardBackgroundColor) : 0;
 
   return <article className="theme-builder">
     <div className="theme-builder__heading">
       <div><p>All-tier styling</p><h3>Theme builder</h3></div>
-      <button disabled={busy || !theme} onClick={saveBasic}>Save basic theme</button>
+      <div><button disabled={busy || !theme} onClick={saveBasic}>Save basic theme</button><button disabled={busy || !theme} onClick={resetTheme}>Reset theme</button></div>
     </div>
     {message ? <p className="screen-notice" role="status">{message}</p> : null}
     {theme ? <div className="theme-builder__workspace">
       <div className="theme-builder__controls">
+        <p className="screen-notice" role="status"><strong>Venue-wide scope:</strong> saved changes apply to every active screen. The screen selector changes only the preview target.</p>
+        <label>Preview screen<select value={screenId ?? ""} onChange={event => setScreenId(event.target.value)} disabled={screens.length === 0}><option value="" disabled>Select a screen</option>{screens.map(screen => <option key={screen.id} value={screen.id}>{screen.name}{screen.location ? ` · ${screen.location}` : ""}</option>)}</select></label>
         <fieldset>
           <legend>Quick swatches</legend>
           <div className="theme-swatches">{swatches.map(swatch =>
@@ -153,6 +186,7 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
             <option value="Arial">Arial</option>
           </select>
         </label>
+        <p className={basicContrast >= 4.5 ? "screen-notice" : "state error"} role="status">Basic text contrast: {basicContrast.toFixed(2)}:1 {basicContrast >= 4.5 ? "· readable" : "· increase contrast to at least 4.5:1"}</p>
         <section className="advanced-theme">
           <div><p>Pro styling</p><h4>Full theme controls</h4></div>
           {showUpgradePrompt && !advancedEnabled ? <aside className="tier-prompt" role="status"><div><strong>Full themes require All Layouts</strong><p>The controls remain visible for evaluation. Upgrade to Pro or add a venue override to save presets and advanced values.</p></div></aside> : null}
@@ -191,6 +225,7 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
             <label>Item font<select value={theme.itemFont} onChange={event => patchAdvanced({ itemFont: event.target.value as DraftTheme["itemFont"] })}>{itemFonts.map(font => <option key={font}>{font}</option>)}</select></label>
           </fieldset>
           <button disabled={!advancedEnabled || busy} onClick={saveAdvanced}>Save full theme</button>
+          <p className={titleContrast >= 4.5 ? "screen-notice" : "state error"} role="status">Title-to-board contrast: {titleContrast.toFixed(2)}:1 {titleContrast >= 4.5 ? "· readable" : "· increase contrast to at least 4.5:1"}</p>
         </section>
       </div>
       <div className="theme-preview">

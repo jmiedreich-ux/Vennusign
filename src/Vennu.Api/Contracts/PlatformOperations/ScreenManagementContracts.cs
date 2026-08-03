@@ -20,7 +20,11 @@ public sealed record ScreenManagementItem(
     int HeroDwellSeconds,
     string Status,
     DateTime? LastSeen,
+    string? Platform,
+    string? AppVersion,
     string RegistrationUrl);
+
+public sealed record ScreenLifecycleRequest(bool Archived);
 
 public sealed record ScreenPushAllResult(int ScreenCount);
 

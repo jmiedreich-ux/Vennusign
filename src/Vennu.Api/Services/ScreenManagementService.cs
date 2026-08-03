@@ -65,7 +65,7 @@ public sealed class ScreenManagementService(
         CancellationToken cancellationToken = default)
     {
         var screen = await GetOwnedScreenAsync(venueId, screenId, cancellationToken).ConfigureAwait(false);
-        if (screen is null)
+        if (screen is null || IsArchived(screen))
         {
             return null;
         }
@@ -88,7 +88,7 @@ public sealed class ScreenManagementService(
         CancellationToken cancellationToken = default)
     {
         var screen = await GetOwnedScreenAsync(venueId, screenId, cancellationToken).ConfigureAwait(false);
-        if (screen is null)
+        if (screen is null || IsArchived(screen))
         {
             return false;
         }
@@ -100,6 +100,69 @@ public sealed class ScreenManagementService(
         return true;
     }
 
+    public async Task<ScreenManagementItem?> SetArchivedAsync(
+        Guid venueId,
+        Guid screenId,
+        bool archived,
+        CancellationToken cancellationToken = default)
+    {
+        var screen = await GetOwnedScreenAsync(venueId, screenId, cancellationToken).ConfigureAwait(false);
+        if (screen is null)
+        {
+            return null;
+        }
+
+        screen.Status = archived ? "Archived" : "Offline";
+        if (archived)
+        {
+            screen.WallGroup = null;
+            screen.WallPosition = null;
+        }
+        screen.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
+        return await screenRepository.UpdateAsync(screen, cancellationToken).ConfigureAwait(false)
+            ? ToItem(screen)
+            : null;
+    }
+
+    public async Task<ScreenManagementItem?> ResetAsync(
+        Guid venueId,
+        Guid screenId,
+        CancellationToken cancellationToken = default)
+    {
+        var screen = await GetOwnedScreenAsync(venueId, screenId, cancellationToken).ConfigureAwait(false);
+        if (screen is null || IsArchived(screen))
+        {
+            return null;
+        }
+
+        screen.Status = "Offline";
+        screen.LastSeen = null;
+        screen.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
+        return await screenRepository.UpdateAsync(screen, cancellationToken).ConfigureAwait(false)
+            ? ToItem(screen)
+            : null;
+    }
+
+    public async Task<bool> UnpairAsync(
+        Guid venueId,
+        Guid screenId,
+        CancellationToken cancellationToken = default)
+    {
+        var screen = await GetOwnedScreenAsync(venueId, screenId, cancellationToken).ConfigureAwait(false);
+        if (screen is null)
+        {
+            return false;
+        }
+
+        screen.VenueId = null;
+        screen.Status = "Unpaired";
+        screen.LastSeen = null;
+        screen.WallGroup = null;
+        screen.WallPosition = null;
+        screen.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
+        return await screenRepository.UpdateAsync(screen, cancellationToken).ConfigureAwait(false);
+    }
+
     private async Task<Venue> RequireVenueAsync(Guid venueId, CancellationToken cancellationToken) =>
         await venueRepository.GetByIdAsync(venueId, cancellationToken).ConfigureAwait(false)
             ?? throw new KeyNotFoundException("Venue does not exist.");
@@ -109,6 +172,9 @@ public sealed class ScreenManagementService(
         var screen = await screenRepository.GetByIdAsync(screenId, cancellationToken).ConfigureAwait(false);
         return screen?.VenueId == venueId ? screen : null;
     }
+
+    private static bool IsArchived(Screen screen) =>
+        string.Equals(screen.Status, "Archived", StringComparison.OrdinalIgnoreCase);
 
     private async Task<string> GenerateUniqueScreenKeyAsync(CancellationToken cancellationToken)
     {
@@ -159,5 +225,7 @@ public sealed class ScreenManagementService(
             HeroDwellSeconds.Normalize(screen.HeroDwellSeconds),
             screen.Status,
             screen.LastSeen,
+            screen.Platform,
+            screen.AppVersion,
             $"/display/{screen.Id}");
 }

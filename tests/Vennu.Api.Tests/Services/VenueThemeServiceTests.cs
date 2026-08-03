@@ -139,6 +139,22 @@ public sealed class VenueThemeServiceTests
         await Assert.ThrowsAsync<KeyNotFoundException>(() => service.GetAsync(venueId));
     }
 
+    [Fact]
+    public async Task ResetAsync_RestoresAllVenueWideDefaultsAndNotifiesPlayers()
+    {
+        var themes = new ThemeRepository();
+        var notifier = new ThemeNotifier();
+        var service = new VenueThemeService(new VenueRepository(new Venue { Id = venueId }), themes, TimeProvider.System, notifier);
+        await service.UpdateAsync(venueId, "#010203", "#AABBCC", "Georgia");
+
+        var reset = await service.ResetAsync(venueId);
+
+        Assert.Equal("#111315", reset.BackgroundColor);
+        Assert.Equal("#FFB74D", reset.AccentColor);
+        Assert.Equal("bar_classic", reset.PresetKey);
+        Assert.Equal(venueId, notifier.VenueId);
+    }
+
     private VenueThemeService CreateService(ThemeRepository? themes = null) =>
         new(
             new VenueRepository(new Venue { Id = venueId }),

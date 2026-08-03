@@ -93,6 +93,14 @@ public sealed partial class VenueThemeService(
         return await SaveAsync(theme, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<VenueThemeResponse> ResetAsync(
+        Guid venueId,
+        CancellationToken cancellationToken = default)
+    {
+        await RequireVenueAsync(venueId, cancellationToken).ConfigureAwait(false);
+        return await SaveAsync(new VenueTheme { VenueId = venueId }, cancellationToken).ConfigureAwait(false);
+    }
+
     private async Task RequireVenueAsync(Guid venueId, CancellationToken cancellationToken)
     {
         if (await venueRepository.GetByIdAsync(venueId, cancellationToken).ConfigureAwait(false) is null)

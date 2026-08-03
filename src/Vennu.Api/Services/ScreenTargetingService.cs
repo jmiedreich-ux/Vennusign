@@ -17,16 +17,17 @@ public sealed class ScreenTargetingService(
     {
         await RequireVenueAsync(venueId, cancellationToken).ConfigureAwait(false);
         var screens = await screenRepository.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
-        if (screens.Count == 0)
+        var activeScreens = screens.Where(screen => !string.Equals(screen.Status, "Archived", StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (activeScreens.Length == 0)
         {
             return 0;
         }
 
         await notifier.NotifyVenueContentUpdatedAsync(
             venueId,
-            new { change = "manual-push-all", screenCount = screens.Count, requestedUtc = timeProvider.GetUtcNow().UtcDateTime },
+            new { change = "manual-push-all", screenCount = activeScreens.Length, requestedUtc = timeProvider.GetUtcNow().UtcDateTime },
             cancellationToken).ConfigureAwait(false);
-        return screens.Count;
+        return activeScreens.Length;
     }
 
     public async Task<ScreenOverflowPreview> GetOverflowAsync(

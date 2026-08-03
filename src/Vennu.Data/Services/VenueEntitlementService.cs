@@ -43,7 +43,8 @@ public sealed class VenueEntitlementService(
             ?? throw new InvalidOperationException("The subscribed tier no longer exists.");
         if (tier.MaxScreens < 0) return;
         var current = await screens.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
-        if (current.Count >= tier.MaxScreens) throw new TierScreenLimitReachedException();
+        if (current.Count(screen => !string.Equals(screen.Status, "Archived", StringComparison.OrdinalIgnoreCase)) >= tier.MaxScreens)
+            throw new TierScreenLimitReachedException();
     }
 
     public async Task EnsureCanAddVenueAsync(Guid organizationId, CancellationToken cancellationToken = default)
