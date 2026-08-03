@@ -251,19 +251,21 @@ export default function App() {
     if (!upgradeContext || !targetTier || checkoutLaunching) return;
     setCheckoutLaunching(true);
     setCheckoutError(undefined);
-    setUpgradeNotice(`Opening secure checkout for ${upgradeContext.title} with ${interval} billing…`);
+    const usesPortal = Boolean(billing?.subscription?.canManageBilling);
+    setUpgradeNotice(`Opening secure ${usesPortal ? "Stripe review" : "checkout"} for ${upgradeContext.title}${usesPortal ? "" : ` with ${interval} billing`}…`);
+    const pending = writePendingTierDecision(targetTier);
+    setPendingTier(pending);
     try {
-      const checkoutUrl = await createCheckoutSession(
-        configuration,
-        accessToken,
-        targetTier.id,
-        interval
-      );
-      window.location.assign(checkoutUrl);
+      const hostedUrl = usesPortal
+        ? await createTierBillingPortalSession(configuration, accessToken, targetTier.id)
+        : await createCheckoutSession(configuration, accessToken, targetTier.id, interval);
+      window.location.assign(hostedUrl);
     } catch (reason: unknown) {
+      clearPendingTierDecision();
+      setPendingTier(undefined);
       const message = reason instanceof BackOfficeApiError
         ? reason.message
-        : "Secure checkout could not be opened.";
+        : "Secure billing review could not be opened.";
       setCheckoutError(message);
       setUpgradeNotice(message);
       setCheckoutLaunching(false);
