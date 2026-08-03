@@ -2,7 +2,7 @@
 
 ## Status
 
-In Review on Collaborative issue #407 and PR #408. Owner manual testing is approved and required affected-area CI passed; final exact-head ChatGPT review is pending.
+Complete through PR #408, merged as `50eb67377d8af5afbc927034d9f93916896147ec`.
 
 ## Execution Mode
 
@@ -88,3 +88,6 @@ The Form Validation and Button patterns were consulted. Applicable guidance:
 - Owner-approved local cleanup ran through `sqlcmd` in one transaction: 3 venues, 4 venue-assigned screens, and their venue-owned dependent records were deleted; onboarding `VenueId` and `FirstScreenId` links were reset.
 - Post-cleanup verification returned zero venues, zero venue-assigned screens, and zero onboarding venue/screen links. One organization, one customer user, and five subscription tiers were preserved.
 - Manual testing recreated screen `69d83590-10b9-49ad-a4fd-c13795d296f3` for venue `E50CF53B-DFF3-461F-9048-3125BA799970`; SQL verification showed Online status and the correct Restaurant Starter usage of 1/1. The observed GET exception came from a stale pre-fix API process, which was stopped and rebuilt/restarted from the active branch on ports 7138/5192.
+- Final exact-head GitHub Actions `phase02-tests` run #30784846933 passed on `8104747c2a4263fffa6aa877e66c3eb41b72beb4`.
+- ChatGPT recorded `CHATGPT APPROVED` on the reviewed head with no blocking findings or unresolved comments.
+- PR #408 merged on 2026-08-03; issue #407 closed and the implementation branch was deleted.
