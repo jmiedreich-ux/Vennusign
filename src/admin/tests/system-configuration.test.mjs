@@ -16,6 +16,18 @@ test("configuration is a dedicated Super Admin route", () => {
   assert.match(page, /Application/);
 });
 
+test("configuration transfer is secret-safe reviewable and transactional", () => {
+  assert.match(page, /Export/);
+  assert.match(page, /Import JSON/);
+  assert.match(page, /Import preview/);
+  assert.match(page, /Secrets are excluded/);
+  assert.match(page, /window\.confirm/);
+  assert.match(page, /Apply selected changes/);
+  assert.match(page, /applied transactionally/);
+  assert.match(api, /configuration-transfer\/preview/);
+  assert.match(api, /configuration-transfer\/apply/);
+});
+
 test("secret configuration is write-only with explicit clear confirmation", () => {
   assert.match(page, /Secrets are write-only/);
   assert.match(page, /type=\{setting\.isSecret \? "password"/);
