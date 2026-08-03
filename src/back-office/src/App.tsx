@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   createCheckoutSession,
   createBillingPortalSession,
+  createTierBillingPortalSession,
   createHaasCheckoutSession,
   loadBackOfficeSession,
   loadVenueBillingPresentation,
@@ -9,6 +10,7 @@ import {
   clearBackOfficeVenueContext,
   BackOfficeApiError,
   type BackOfficeBillingPresentation,
+  type BackOfficeTierSummary,
   type BackOfficeSession
 } from "./api";
 import {
@@ -33,6 +35,14 @@ import LockedSectionPreview from "./LockedSectionPreview";
 import SidebarUpgradeNudge from "./SidebarUpgradeNudge";
 import UpgradeModal, { type BillingInterval } from "./UpgradeModal";
 import BillingStatusCard from "./BillingStatusCard";
+import TierDecisionDialog from "./TierDecisionDialog";
+import {
+  clearPendingTierDecision,
+  readPendingTierDecision,
+  resolvePendingTierDecision,
+  writePendingTierDecision,
+  type PendingTierDecision
+} from "./billingDecision.mjs";
 import {
   dismissUpgradeFeature,
   listUpgradeOpportunities,
@@ -61,6 +71,11 @@ export default function App() {
   const [checkoutError, setCheckoutError] = useState<string>();
   const [billingPortalOpening, setBillingPortalOpening] = useState(false);
   const [billingPortalError, setBillingPortalError] = useState<string>();
+  const [tierDecision, setTierDecision] = useState<BackOfficeTierSummary>();
+  const [tierDecisionOpening, setTierDecisionOpening] = useState(false);
+  const [tierDecisionError, setTierDecisionError] = useState<string>();
+  const [pendingTier, setPendingTier] = useState<PendingTierDecision | undefined>(() => readPendingTierDecision());
+  const [pendingTierNotice, setPendingTierNotice] = useState<string>();
   const [haasOpening, setHaasOpening] = useState<string>();
   const [haasError, setHaasError] = useState<string>();
   const [contextSwitching, setContextSwitching] = useState(false);
@@ -138,6 +153,20 @@ export default function App() {
     if (!upgradeContext) setCheckoutError(undefined);
   }, [upgradeContext]);
 
+  useEffect(() => {
+    if (!pendingTier || !billing) return;
+    const resolution = resolvePendingTierDecision(pendingTier, billing.currentTier?.id);
+    if (resolution === "applied") {
+      clearPendingTierDecision();
+      setPendingTier(undefined);
+      setPendingTierNotice(`${pendingTier.targetTierName} is now authoritative in Vennusign.`);
+    } else if (resolution === "stale") {
+      setPendingTierNotice(`The ${pendingTier.targetTierName} request is still not confirmed. Refresh from Vennusign or reopen Stripe; no access is inferred from the earlier return.`);
+    } else {
+      setPendingTierNotice(`Waiting for Stripe webhook confirmation of ${pendingTier.targetTierName}. Your current Vennusign entitlements remain active meanwhile.`);
+    }
+  }, [billing, pendingTier]);
+
   const authorize = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const token = String(new FormData(event.currentTarget).get("accessToken") ?? "").trim();
@@ -160,6 +189,11 @@ export default function App() {
     setCheckoutError(undefined);
     setBillingPortalOpening(false);
     setBillingPortalError(undefined);
+    setTierDecision(undefined);
+    setTierDecisionError(undefined);
+    setPendingTier(undefined);
+    setPendingTierNotice(undefined);
+    clearPendingTierDecision();
     setHaasOpening(undefined);
     setHaasError(undefined);
     clearBackOfficeVenueContext();
@@ -254,6 +288,29 @@ export default function App() {
       setBillingPortalOpening(false);
     }
   };
+  const refreshBillingDecision = async () => {
+    try {
+      setBilling(await loadVenueBillingPresentation(configuration, accessToken));
+    } catch { setPendingTierNotice("Vennusign could not refresh billing state. Your existing entitlements remain unchanged."); }
+  };
+  const continueTierDecision = async (interval: BillingInterval) => {
+    if (!tierDecision || tierDecisionOpening) return;
+    setTierDecisionOpening(true);
+    setTierDecisionError(undefined);
+    const pending = writePendingTierDecision(tierDecision);
+    setPendingTier(pending);
+    try {
+      const url = billing?.subscription?.canManageBilling
+        ? await createTierBillingPortalSession(configuration, accessToken, tierDecision.id)
+        : await createCheckoutSession(configuration, accessToken, tierDecision.id, interval);
+      window.location.assign(url);
+    } catch (reason: unknown) {
+      clearPendingTierDecision();
+      setPendingTier(undefined);
+      setTierDecisionError(reason instanceof BackOfficeApiError ? reason.message : "Secure plan review could not be opened.");
+      setTierDecisionOpening(false);
+    }
+  };
   const startHaasCheckout = async (bundle: NonNullable<typeof billing>["haasBundles"][number]) => {
     if (haasOpening) return;
     setHaasOpening(bundle.key);
@@ -290,6 +347,11 @@ export default function App() {
       const nextSession = await selectBackOfficeVenue(configuration, accessToken, venueId);
       setSession(nextSession);
       setBilling(undefined);
+      clearPendingTierDecision();
+      setPendingTier(undefined);
+      setPendingTierNotice(undefined);
+      setTierDecision(undefined);
+      setTierDecisionError(undefined);
       setContextNotice(`Now working in ${nextSession.organizationName} — ${nextSession.venueName}.`);
       try {
         setBilling(await loadVenueBillingPresentation(configuration, accessToken));
@@ -379,6 +441,7 @@ export default function App() {
         </div>
         <button type="button" onClick={dismissCheckoutReturn}>Dismiss</button>
       </section> : null}
+      {pendingTierNotice ? <section className="billing-pending" role="status" aria-live="polite"><div><strong>Plan confirmation</strong><p>{pendingTierNotice}</p></div><button type="button" onClick={() => void refreshBillingDecision()}>Refresh authoritative state</button></section> : null}
       {inlineOpportunity && !upgradeContext
         ? <InlineFeatureHint
             key={`${inlineOpportunity.featureKey}-${dismissalVersion}`}
@@ -394,6 +457,9 @@ export default function App() {
             isOpening={billingPortalOpening}
             error={billingPortalError}
             onManage={openBillingPortal}
+            usage={billing.usage}
+            availableTiers={billing.availableTiers}
+            onSelectTier={tier => { setTierDecision(tier); setTierDecisionError(undefined); }}
             haasBundles={billing.haasBundles}
             haasContract={billing.haasContract}
             haasOpening={haasOpening}
@@ -438,6 +504,16 @@ export default function App() {
       onUpgrade={continueUpgrade}
       isSubmitting={checkoutLaunching}
       error={checkoutError}
+    /> : null}
+    {tierDecision && billing ? <TierDecisionDialog
+      currentTier={billing.currentTier}
+      targetTier={tierDecision}
+      usage={billing.usage}
+      usesPortal={Boolean(billing.subscription?.canManageBilling)}
+      isSubmitting={tierDecisionOpening}
+      error={tierDecisionError}
+      onClose={() => { if (!tierDecisionOpening) { setTierDecision(undefined); setTierDecisionError(undefined); } }}
+      onConfirm={continueTierDecision}
     /> : null}
   </div>;
 }

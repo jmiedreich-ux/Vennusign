@@ -16,6 +16,8 @@ namespace Vennu.Api.Controllers.BackOffice;
 public sealed class BackOfficeBillingController(
     IVenueSupportDetailService supportDetailService,
     ISubscriptionTierRepository tierRepository,
+    IFeatureRepository featureRepository,
+    IVenueRepository venueRepository,
     ICheckoutSessionService checkoutSessionService,
     IBillingPortalSessionService billingPortalSessionService,
     IHaasBillingService haasBillingService) : ControllerBase
@@ -36,10 +38,43 @@ public sealed class BackOfficeBillingController(
             return NotFound();
         }
 
-        var tiers = await tierRepository.GetAllAsync(cancellationToken).ConfigureAwait(false);
+        var tiers = (await tierRepository.GetAllAsync(cancellationToken).ConfigureAwait(false))
+            .Where(tier => tier.IsActive && tier.IsPublic)
+            .OrderBy(tier => tier.Price)
+            .ThenBy(tier => tier.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var featureLabels = (await featureRepository.GetAllAsync(cancellationToken).ConfigureAwait(false))
+            .Where(feature => feature.IsActive)
+            .ToDictionary(feature => feature.Id, feature => feature.Label, EqualityComparer<Guid>.Default);
+        var currentFeatures = detail.Tier is null
+            ? new HashSet<Guid>()
+            : (await tierRepository.GetFeaturesAsync(detail.Tier.Id, cancellationToken).ConfigureAwait(false))
+                .Select(item => item.FeatureId)
+                .ToHashSet();
+        var activeScreens = detail.Screens.Count(screen =>
+            !string.Equals(screen.Status, "Archived", StringComparison.OrdinalIgnoreCase));
+        var organizationVenues = detail.Venue.OrganizationId is Guid organizationId
+            ? (await venueRepository.GetAllAsync(cancellationToken).ConfigureAwait(false))
+                .Count(venue => venue.OrganizationId == organizationId)
+            : 1;
+        var decisions = new List<BackOfficeTierSummary>(tiers.Length);
+        foreach (var tier in tiers)
+        {
+            var targetFeatures = (await tierRepository.GetFeaturesAsync(tier.Id, cancellationToken).ConfigureAwait(false))
+                .Select(item => item.FeatureId)
+                .ToHashSet();
+            var lostFeatures = currentFeatures
+                .Where(featureId => !targetFeatures.Contains(featureId))
+                .Select(featureId => featureLabels.GetValueOrDefault(featureId, "A current feature"))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            decisions.Add(ToSummary(tier, BillingTierDecisionEvaluator.Evaluate(
+                detail.Tier, tier, activeScreens, organizationVenues, lostFeatures)));
+        }
         var haas = await haasBillingService.GetPresentationAsync(venueId, cancellationToken).ConfigureAwait(false);
         return Ok(new BackOfficeBillingPresentationResponse(
-            detail.Tier is null ? null : ToSummary(detail.Tier),
+            detail.Tier is null ? null : ToSummary(detail.Tier, BillingTierDecisionEvaluator.Evaluate(
+                detail.Tier, detail.Tier, activeScreens, organizationVenues)),
             detail.Subscription is null ? null : new BackOfficeSubscriptionSummary(
                 detail.Subscription.Status,
                 detail.Subscription.TrialEndsAt,
@@ -47,12 +82,12 @@ public sealed class BackOfficeBillingController(
                 detail.Subscription.CancelAtPeriodEnd,
                 !string.IsNullOrWhiteSpace(detail.Subscription.StripeSubscriptionId) &&
                     !string.Equals(detail.Subscription.Status, "canceled", StringComparison.OrdinalIgnoreCase)),
-            tiers
-                .Where(tier => tier.IsActive && tier.IsPublic)
-                .OrderBy(tier => tier.Price)
-                .ThenBy(tier => tier.Name, StringComparer.OrdinalIgnoreCase)
-                .Select(ToSummary)
-                .ToArray(),
+            new BackOfficeBillingUsageSummary(
+                activeScreens,
+                detail.Tier?.MaxScreens ?? 0,
+                organizationVenues,
+                detail.Tier?.MaxVenues ?? 0),
+            decisions,
             detail.Features.ToDictionary(
                 pair => pair.Key,
                 pair => new BackOfficeFeatureSummary(
@@ -77,6 +112,30 @@ public sealed class BackOfficeBillingController(
                 haas.Contract.EstimatedBuyoutAmount,
                 haas.Contract.CancelAtPeriodEnd,
                 haas.Contract.EndedUtc)));
+    }
+
+    [HttpPost("tier-portal-session")]
+    [ProducesResponseType<CreateBillingPortalSessionResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<CreateBillingPortalSessionResponse>> CreateTierBillingPortalSession(
+        CreateTierBillingPortalSessionRequest request,
+        CancellationToken cancellationToken)
+    {
+        var venueId = Guid.Parse(User.FindFirstValue(BackOfficeAuthenticationDefaults.VenueIdClaim)!);
+        try
+        {
+            await EnsureTierCanBeSelectedAsync(venueId, request.TargetTierId, cancellationToken).ConfigureAwait(false);
+            var result = await billingPortalSessionService.CreateAsync(venueId, cancellationToken).ConfigureAwait(false);
+            return Ok(new CreateBillingPortalSessionResponse(result.PortalUrl.AbsoluteUri));
+        }
+        catch (ArgumentException exception) { return ValidationProblem(exception.Message); }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new ProblemDetails { Status = StatusCodes.Status409Conflict, Title = "Plan change could not be opened.", Detail = exception.Message });
+        }
     }
 
     [HttpPost("portal-session")]
@@ -132,6 +191,7 @@ public sealed class BackOfficeBillingController(
             User.FindFirstValue(BackOfficeAuthenticationDefaults.VenueIdClaim)!);
         try
         {
+            await EnsureTierCanBeSelectedAsync(venueId, request.TargetTierId, cancellationToken).ConfigureAwait(false);
             var result = await checkoutSessionService.CreateAsync(
                 venueId,
                 request.TargetTierId,
@@ -197,6 +257,23 @@ public sealed class BackOfficeBillingController(
         }
     }
 
-    private static BackOfficeTierSummary ToSummary(SubscriptionTier tier) =>
-        new(tier.Id, tier.Name, tier.Slug, tier.Price, tier.MaxScreens);
+    private async Task EnsureTierCanBeSelectedAsync(Guid venueId, Guid targetTierId, CancellationToken cancellationToken)
+    {
+        if (targetTierId == Guid.Empty) throw new ArgumentException("Target tier ID is required.", nameof(targetTierId));
+        var detail = await supportDetailService.GetAsync(venueId, cancellationToken).ConfigureAwait(false)
+            ?? throw new KeyNotFoundException();
+        var target = await tierRepository.GetByIdAsync(targetTierId, cancellationToken).ConfigureAwait(false)
+            ?? throw new KeyNotFoundException();
+        if (!target.IsActive || !target.IsPublic) throw new InvalidOperationException("The target plan is unavailable.");
+        var activeScreens = detail.Screens.Count(screen => !string.Equals(screen.Status, "Archived", StringComparison.OrdinalIgnoreCase));
+        var organizationVenues = detail.Venue.OrganizationId is Guid organizationId
+            ? (await venueRepository.GetAllAsync(cancellationToken).ConfigureAwait(false)).Count(venue => venue.OrganizationId == organizationId)
+            : 1;
+        var decision = BillingTierDecisionEvaluator.Evaluate(detail.Tier, target, activeScreens, organizationVenues);
+        if (!decision.CanSelect) throw new InvalidOperationException(string.Join(" ", decision.BlockingReasons));
+    }
+
+    private static BackOfficeTierSummary ToSummary(SubscriptionTier tier, BillingTierDecision decision) =>
+        new(tier.Id, tier.Name, tier.Slug, tier.Price, tier.MaxScreens, tier.MaxVenues,
+            decision.Direction, decision.CanSelect, decision.BlockingReasons, decision.LostFeatures);
 }
