@@ -32,5 +32,5 @@ test("launches hosted portal with pending and error states", () => {
   assert.match(app, /window\.location\.assign\(portalUrl\)/);
   assert.match(card, /disabled=\{isOpening\}/);
   assert.match(card, /role="alert"/);
-  assert.match(card, /Vennu does not collect card details/);
+  assert.match(card, /Vennusign does not collect card details/);
 });

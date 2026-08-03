@@ -14,13 +14,17 @@ assert.match(manifest, /tizen:profile name="tv-samsung"/);
 assert.match(manifest, /package="VennuTvPkg"/);
 assert.match(manifest, /https:\/\/display\.vennu\.app/);
 assert.match(manifest, /tv\.inputdevice/);
+assert.match(manifest, /<name>Vennusign TV<\/name>/);
 assert.match(html, /launcher\.config\.js/);
 assert.match(html, /launcher\.js/);
+assert.match(html, /<title>Vennusign TV<\/title>/);
+assert.match(html, /Starting Vennusign TV/);
 assert.match(config, /https:\/\/display\.vennu\.app/);
 assert.match(launcher, /origin\.protocol !== 'https:'?/);
 assert.match(launcher, /vennuPlatform', 'tizen'/);
 assert.match(launcher, /vennuVersion/);
 assert.match(launcher, /keyCode === 10009/);
+assert.match(launcher, /Vennusign player origin must use HTTPS/);
 assert.match(ignore, /\*\.wgt/);
 assert.doesNotMatch(`${manifest}\n${config}\n${launcher}`, /certificate-profile|password|private.key/i);
 

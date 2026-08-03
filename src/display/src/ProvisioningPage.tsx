@@ -20,6 +20,6 @@ export default function ProvisioningPage({ token, platform, appVersion }: Props)
   }, [appVersion, platform, token]);
 
   return failed
-    ? <main role="alert"><h1>Provisioning unavailable</h1><p>Contact Vennu support for a new delivery token.</p></main>
+    ? <main role="alert"><h1>Provisioning unavailable</h1><p>Contact Vennusign support for a new delivery token.</p></main>
     : <main aria-busy="true"><p>Preparing this pre-registered TV…</p></main>;
 }

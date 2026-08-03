@@ -37,7 +37,7 @@ public sealed class VenueAdminToastPosController(
             connection is null ? null : ToResponse(connection),
             "manual_provider_registration_required",
             true,
-            "Register the HTTPS menus and stock webhook endpoint in the Toast developer portal after Toast approves the integration. Vennu does not claim registration until Toast confirms it.",
+            "Register the HTTPS menus and stock webhook endpoint in the Toast developer portal after Toast approves the integration. Vennusign does not claim registration until Toast confirms it.",
             connection is null ? null : new VenueAdminToastPollingHealthResponse(
                 PollingState(connection),
                 connection.LastSyncAttemptUtc,

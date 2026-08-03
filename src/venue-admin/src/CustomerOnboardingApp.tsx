@@ -48,10 +48,10 @@ export default function CustomerOnboardingApp() {
       }
       if (activeSession) setOnboarding(await loadCustomerOnboarding(configuration, controller.signal));
       const returned = new URLSearchParams(window.location.search).get("checkout");
-      if (returned === "success") setNotice("Stripe returned successfully. Your plan will complete only after Vennu receives the verified webhook.");
+      if (returned === "success") setNotice("Stripe returned successfully. Your plan will complete only after Vennusign receives the verified webhook.");
       if (returned === "canceled") setNotice("Checkout was canceled. Your onboarding progress is saved and no entitlement was changed.");
     }).catch(reason => {
-      if (!(reason instanceof DOMException && reason.name === "AbortError")) setError("Vennu signup is temporarily unavailable.");
+      if (!(reason instanceof DOMException && reason.name === "AbortError")) setError("Vennusign signup is temporarily unavailable.");
     }).finally(() => setLoading(false));
     return () => controller.abort();
   }, [configuration, returnPath]);
@@ -59,7 +59,7 @@ export default function CustomerOnboardingApp() {
   const run = async (key: string, action: () => Promise<void>) => {
     setBusy(key); setError(undefined); setNotice(undefined);
     try { await action(); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "Vennu could not complete that request."); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "Vennusign could not complete that request."); }
     finally { setBusy(undefined); }
   };
 
@@ -144,7 +144,7 @@ export default function CustomerOnboardingApp() {
 
   return <main className="customer-entry">
     <header className="customer-entry__header">
-      <a className="customer-entry__brand" href="/">Vennu</a>
+      <a className="customer-entry__brand" href="/">Vennusign</a>
       {session ? <button className="customer-entry__signout" type="button" onClick={signOut} disabled={busy === "signout"}>Sign out</button> : null}
     </header>
     {notice ? <p className="customer-entry__notice" role="status">{notice}</p> : null}
@@ -191,7 +191,7 @@ export default function CustomerOnboardingApp() {
       <div className="customer-onboarding__welcome">
         <span>Welcome, {session.displayName}</span>
         <h1 id="onboarding-heading">Your opening checklist</h1>
-        <p>Progress saves automatically. Entitlement always comes from Vennu’s verified subscription state.</p>
+        <p>Progress saves automatically. Entitlement always comes from Vennusign’s verified subscription state.</p>
       </div>
       <CustomerOnboardingTimeline onboarding={onboarding} />
 
@@ -235,15 +235,15 @@ export default function CustomerOnboardingApp() {
         <button type="submit" disabled={busy === "venue"}>{busy === "venue" ? "Saving venue…" : "Save venue and continue"}</button>
       </form> : !onboarding.firstScreenId ? <form className="customer-onboarding__panel" onSubmit={claimFirstScreen}>
         <span>First Screen</span><h2>Pair your physical display</h2>
-        <p>Open the Vennu player on the display. The player creates its screen record and shows a six-digit code that expires after 10 minutes.</p>
-        <ol className="customer-onboarding__pairing-steps"><li>Start Vennu on the display.</li><li>Wait for its six-digit code.</li><li>Enter that code here to link it to this venue.</li></ol>
+        <p>Open the Vennusign player on the display. The player creates its screen record and shows a six-digit code that expires after 10 minutes.</p>
+        <ol className="customer-onboarding__pairing-steps"><li>Start Vennusign on the display.</li><li>Wait for its six-digit code.</li><li>Enter that code here to link it to this venue.</li></ol>
         <label htmlFor="pairingCode">Six-digit pairing code</label>
         <input id="pairingCode" name="pairingCode" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" minLength={6} maxLength={6} required />
         <button type="submit" disabled={busy === "pairing"}>{busy === "pairing" ? "Pairing display…" : "Pair this display"}</button>
         <p className="customer-onboarding__help">Expired or already used? Return to the display and request a fresh code; your saved venue is unchanged.</p>
       </form> : <section className="customer-onboarding__panel">
         <span>Go Live</span><h2>{onboarding.firstScreenStatus === "online" ? "Your first display is online" : "Your first display is paired"}</h2>
-        <p>{onboarding.firstScreenStatus === "online" ? "Vennu received the player heartbeat. This onboarding journey is ready for the next timeline release." : "The screen record is linked, but pairing alone does not mean the device is active. Start the player and keep it connected until it reports Online."}</p>
+        <p>{onboarding.firstScreenStatus === "online" ? "Vennusign received the player heartbeat. This onboarding journey is ready for the next timeline release." : "The screen record is linked, but pairing alone does not mean the device is active. Start the player and keep it connected until it reports Online."}</p>
         <dl className="customer-onboarding__device-status"><div><dt>Pairing</dt><dd>Linked</dd></div><div><dt>Device</dt><dd>{onboarding.firstScreenStatus === "online" ? "Online" : "Offline / waiting"}</dd></div>{onboarding.firstScreenLastSeenUtc ? <div><dt>Last seen</dt><dd>{new Date(onboarding.firstScreenLastSeenUtc).toLocaleString()}</dd></div> : null}</dl>
         <button type="button" onClick={refreshOnboarding} disabled={busy === "refresh"}>{busy === "refresh" ? "Refreshing…" : "Refresh device status"}</button>
       </section>}</div>

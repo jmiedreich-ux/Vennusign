@@ -36,13 +36,13 @@ android {
             dimension = "distribution"
             applicationIdSuffix = ".googletv"
             buildConfigField("String", "TV_PLATFORM", quotedBuildConfig("android_tv"))
-            manifestPlaceholders["appLabel"] = "Vennu TV"
+            manifestPlaceholders["appLabel"] = "Vennusign TV"
         }
         create("fireTv") {
             dimension = "distribution"
             applicationIdSuffix = ".firetv"
             buildConfigField("String", "TV_PLATFORM", quotedBuildConfig("fire_tv"))
-            manifestPlaceholders["appLabel"] = "Vennu Fire TV"
+            manifestPlaceholders["appLabel"] = "Vennusign Fire TV"
         }
     }
 

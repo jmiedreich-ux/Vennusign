@@ -1,4 +1,4 @@
-# Vennu Display
+# Vennusign Display
 
 The display client is a standalone React and Vite application. Run it independently from the .NET solution.
 

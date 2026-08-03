@@ -1,12 +1,13 @@
-# Vennu Project Status
+# Vennusign Project Status
 
 ## Current State
 
 - Phase 13 — Customer Identity, Signup, and Onboarding: complete.
 - Phase 14 and later: paused pending explicit owner approval.
 - Active product WP/RWP: none claimed.
-- Approved Sequential remediation queue: RWP-04.02, RWP-05.04, RWP-05.05, RWP-08.01, RWP-09.01, RWP-11.02, then RWP-13.01.
-- Next available package: RWP-04.02 / issue #343.
+- RWP-00.02 — User-Facing Product Name Standardization: complete in the proposed merge state.
+- Approved Sequential remediation queue: RWP-00.03, RWP-04.02, RWP-05.04, RWP-05.05, RWP-05.06, RWP-08.01, RWP-09.01, RWP-10.01, RWP-11.02, RWP-13.03, RWP-13.01, then RWP-13.02.
+- Next available package: RWP-00.03 / issue #422.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
 ## Completed Delivery
@@ -26,6 +27,8 @@
 | 12 | Square, Toast, and Clover integrations through a shared POS model |
 | 13 | Customer identity, organization entitlements, signup, onboarding, and legacy-token migration |
 
+Cross-cutting remediation completed after Phase 13 includes RWP-00.02, which standardizes the visible product name as Vennusign across internal, customer-facing, player, TV-package, authentication, and provider-guidance surfaces. Technical identifiers remain intentionally unchanged for the separately approved RWP-00.03 migration.
+
 Completed WP/RWP details, phase plans, validation evidence, and earlier status snapshots are retained under `docs/archive/` for deliberate research.
 
 ## Validation Policy
@@ -34,4 +37,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-Claim RWP-04.02 / issue #343 in Sequential mode, complete and release it, then continue in the recorded queue without skipping. Phase 14 and later remain paused and must not be planned, claimed, or implemented.
+Claim RWP-00.03 / issue #422 in Sequential mode, complete and release it, then continue in the recorded queue without skipping. Phase 14 and later remain paused and must not be planned, claimed, or implemented.

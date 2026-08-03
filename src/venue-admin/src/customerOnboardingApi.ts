@@ -44,7 +44,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, credentials: "include" });
   if (!response.ok) {
     const text = await response.text();
-    throw new CustomerOnboardingApiError(response.status, text || "Vennu could not complete that request.");
+    throw new CustomerOnboardingApiError(response.status, text || "Vennusign could not complete that request.");
   }
   return response.status === 204 ? undefined as T : response.json() as Promise<T>;
 }

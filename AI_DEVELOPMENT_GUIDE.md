@@ -1,4 +1,4 @@
-# Vennu AI Development Guide
+# Vennusign AI Development Guide
 
 ## Purpose
 
@@ -8,7 +8,7 @@
 
 - `Vennu.Api`: HTTP contracts, controllers, authentication composition, SignalR, and hosted services.
 - `Vennu.Core.Models`: shared domain models.
-- `Vennu.Data`: Vennu repositories, persistence behavior, and DbUp migrations.
+- `Vennu.Data`: Vennusign repositories, persistence behavior, and DbUp migrations.
 - `Vennu.DataAccess`: generic reusable provider infrastructure.
 - `src/admin`: internal Super Admin application.
 - `src/venue-admin`: customer and venue operations application.

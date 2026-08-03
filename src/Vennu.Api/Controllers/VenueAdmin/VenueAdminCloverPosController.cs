@@ -32,7 +32,7 @@ public sealed class VenueAdminCloverPosController(
             summary,
             "external_configuration_required",
             true,
-            "Register the HTTPS Clover webhook URL in the Clover Developer Dashboard, complete its verification-code step through an operator-controlled receiver, subscribe to inventory events, and configure the resulting X-Clover-Auth key. Vennu does not claim registration until Clover confirms it.",
+            "Register the HTTPS Clover webhook URL in the Clover Developer Dashboard, complete its verification-code step through an operator-controlled receiver, subscribe to inventory events, and configure the resulting X-Clover-Auth key. Vennusign does not claim registration until Clover confirms it.",
             connection?.LastSyncedUtc,
             connection?.LastSyncAttemptUtc,
             connection?.ConsecutiveSyncFailures ?? 0,

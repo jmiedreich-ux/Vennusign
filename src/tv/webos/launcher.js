@@ -3,7 +3,7 @@
 
   const config = window.VENNU_WEBOS_CONFIG;
   const origin = new URL(config.playerOrigin);
-  if (origin.protocol !== 'https:') throw new Error('Vennu player origin must use HTTPS.');
+  if (origin.protocol !== 'https:') throw new Error('Vennusign player origin must use HTTPS.');
 
   let launchStarted = false;
 

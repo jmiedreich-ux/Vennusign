@@ -63,7 +63,7 @@ export default function App() {
   };
 
   if (!apiKey || error) {
-    return <main className="centered"><form className="access-card" onSubmit={authorize}><span>Vennu Internal</span><h1>Super Admin access</h1><p>{error ?? "Enter the access key supplied through the protected operations channel."}</p><label htmlFor="adminKey">Access key</label><input id="adminKey" name="adminKey" type="password" autoComplete="current-password" required /><button type="submit">Open workspace</button></form></main>;
+    return <main className="centered"><form className="access-card" onSubmit={authorize}><span>Vennusign Internal</span><h1>Super Admin access</h1><p>{error ?? "Enter the access key supplied through the protected operations channel."}</p><label htmlFor="adminKey">Access key</label><input id="adminKey" name="adminKey" type="password" autoComplete="current-password" required /><button type="submit">Open workspace</button></form></main>;
   }
   if (!session) {
     return <main className="centered"><p className="loading">Opening secure workspace…</p></main>;
@@ -72,7 +72,7 @@ export default function App() {
   return (
     <div className="shell">
       <aside>
-        <div className="brand"><span>V</span><div><strong>Vennu</strong><small>Super Admin</small></div></div>
+        <div className="brand"><span>V</span><div><strong>Vennusign</strong><small>Super Admin</small></div></div>
         <nav aria-label="Super Admin">
           {routes.map(item => <a className={route.path === item.path ? "active" : ""} href={`#/${item.path}`} key={item.path}><strong>{item.label}</strong><small>{item.description}</small></a>)}
         </nav>

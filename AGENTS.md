@@ -1,4 +1,4 @@
-# Vennu Development Instructions
+# Vennusign Development Instructions
 
 ## Startup and Source of Truth
 
@@ -16,7 +16,7 @@ Read `AI_DEVELOPMENT_GUIDE.md`, component README files, architecture, or operati
 ## Architecture
 
 - Target `.NET 9`.
-- Keep `Vennu.DataAccess` generic; Vennu persistence belongs in `Vennu.Data` and shared domain models in `Vennu.Core.Models`.
+- Keep `Vennu.DataAccess` generic; Vennusign persistence belongs in `Vennu.Data` and shared domain models in `Vennu.Core.Models`.
 - Keep HTTP, SignalR, API composition, and hosted services in `Vennu.Api` unless an established boundary requires otherwise.
 - Keep `src/display` independent and never add it as a Visual Studio Website project.
 - Apply schema changes only through ordered DbUp migrations.
