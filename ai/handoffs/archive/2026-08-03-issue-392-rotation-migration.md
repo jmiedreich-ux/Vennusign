@@ -20,7 +20,7 @@
 - Supplemental API process was stopped after validation.
 
 ## Exact Next Action
-- Open, validate, review, and merge the Issue #392 PR, release the claim, then start API from Development Control.
+- Validate, review, and merge PR #393, release the claim, then start API from Development Control.
 
 ## Do Not Redo or Reverse
 - Do not restore direct same-batch references to `RotationReminderDays`.

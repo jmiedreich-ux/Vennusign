@@ -8,7 +8,7 @@
 ## Git State
 - Branch: `issue/392-fix-rotation-migration`
 - Issue: #392
-- Pull request: pending
+- Pull request: #393
 - CI state: pending
 
 ## Completed This Session
@@ -26,7 +26,7 @@
 - GitHub Actions pending.
 
 ## Remaining Work
-- Open, validate, review, and merge the Issue #392 PR, then release the claim.
+- Validate, review, and merge PR #393, then release the claim.
 
 ## Known Risks or Blockers
 - Azure SQL integration remains skipped; LocalDB execution is supplemental evidence.
