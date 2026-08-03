@@ -67,6 +67,15 @@ test("content delivery distinguishes request receipt application recovery and fa
   assert.doesNotMatch(screens, /future acknowledgement contract/);
 });
 
+test("screen actions expose deliberate preview and identity save cancellation", () => {
+  assert.match(screens, /Preview selected screen/);
+  assert.match(screens, /Close preview/);
+  assert.match(screens, /Unsaved screen identity changes/);
+  assert.match(screens, /Save changes/);
+  assert.match(screens, /Cancel changes/);
+  assert.doesNotMatch(screens, /onBlur=\{\(\) => save\(screen\)\}/);
+});
+
 test("video wall editing and removal require deliberate recovery-safe actions", () => {
   assert.match(walls, /editingName/);
   assert.match(walls, /Edit wall/);
