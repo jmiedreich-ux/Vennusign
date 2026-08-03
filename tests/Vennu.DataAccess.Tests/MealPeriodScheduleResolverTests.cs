@@ -94,6 +94,48 @@ public sealed class MealPeriodScheduleResolverTests
         Assert.Equal(new DateTimeOffset(2026, 7, 30, 17, 0, 0, TimeSpan.FromHours(-4)), result.NextStartsLocal);
     }
 
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Resolve_AdvancesSpringGapStartToFirstValidLocalInstant()
+    {
+        var period = Period("Gap", 2, 4, DayOfWeek.Sunday);
+        period.StartLocalTime = new TimeSpan(2, 30, 0);
+
+        var result = resolver.Resolve("America/New_York",
+            new DateTimeOffset(2026, 3, 8, 6, 0, 0, TimeSpan.Zero), [period]);
+
+        Assert.Same(period, result.NextMealPeriod);
+        Assert.Equal(new DateTimeOffset(2026, 3, 8, 3, 0, 0, TimeSpan.FromHours(-4)), result.NextStartsLocal);
+        Assert.Equal(LocalTimeOccurrenceAdjustment.AdvancedAfterGap, result.NextStartAdjustment);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Resolve_ChoosesEarlierUtcOccurrenceForFallBackStart()
+    {
+        var period = Period("Repeated", 1, 3, DayOfWeek.Sunday);
+        period.StartLocalTime = new TimeSpan(1, 30, 0);
+
+        var result = resolver.Resolve("America/New_York",
+            new DateTimeOffset(2026, 11, 1, 4, 0, 0, TimeSpan.Zero), [period]);
+
+        Assert.Equal(new DateTimeOffset(2026, 11, 1, 1, 30, 0, TimeSpan.FromHours(-4)), result.NextStartsLocal);
+        Assert.Equal(LocalTimeOccurrenceAdjustment.EarlierAmbiguousOccurrence, result.NextStartAdjustment);
+    }
+
+    [Theory]
+    [Trait("Category", "Unit")]
+    [InlineData(5, 45)]
+    [InlineData(6, 15)]
+    [InlineData(6, 45)]
+    public void Resolve_KeepsWindowActiveContinuouslyAcrossFallBack(int utcHour, int minute)
+    {
+        var period = Period("Repeated", 1, 2, DayOfWeek.Sunday);
+        var result = resolver.Resolve("America/New_York",
+            new DateTimeOffset(2026, 11, 1, utcHour, minute, 0, TimeSpan.Zero), [period]);
+        Assert.Same(period, result.ActiveMealPeriod);
+    }
+
     private static MealPeriod Period(
         string name,
         int startHour,
