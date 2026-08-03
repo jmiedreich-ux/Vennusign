@@ -1,25 +1,7 @@
 # Contributing
 
-## Project Phase
-- The project is currently in Phase 2.
-- Phase planning and scope are referenced in `Vennu_overview.pdf` and `Vennue_Roadmap.pdf`.
+Read `AGENTS.md` before changing the repository. Every change requires an approved issue, explicit claim, bounded branch and PR, appropriate non-integration validation, review, and synchronized completion records.
 
-## Coding Standards
-- Follow the coding standards and guidelines established for the project.
-- Write clean, maintainable, and well-documented code.
-- Use meaningful variable and function names to improve readability.
-- Implement error handling and input validation where necessary.
-- Ensure code is modular and reusable to support scalability.
-- Conduct regular code reviews to maintain quality and consistency.
+Use `AI_DEVELOPMENT_GUIDE.md` for architecture and coding context and `docs/README.md` to locate task-specific material. Historical roadmaps, completed packages, archived handoffs, and validation records are research-only.
 
-## C# Style Requirements
-- Keep constructor definitions on one line.
-- Avoid splitting constructors across multiple lines unless a project standard is updated to explicitly allow it.
-
-## Quality Expectations
-- Prefer small, focused changes that integrate cleanly with the existing codebase.
-- Preserve consistency with existing architecture and naming.
-- Add documentation when behavior, assumptions, or usage are not obvious.
-
-## Poject Structure
-- When adding new projects to the solution, always include them.
+Keep changes focused, preserve established project boundaries, add tests for behavior, and never commit secrets, generated output, runtime logs, or machine-specific configuration.

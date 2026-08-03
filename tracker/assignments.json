@@ -1,18 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-03T05:22:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "DOC-MAINT-001",
-      "title": "Reduce routine agent Markdown context",
-      "owner": "ChatGPT collaborative session",
-      "executionMode": "Collaborative",
-      "issue": 410,
-      "branch": "issue/410-agent-doc-routing",
-      "status": "In Progress",
-      "claimedUtc": "2026-08-03T05:22:00Z"
-    }
-  ],
+  "updatedUtc": "2026-08-03T05:40:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
