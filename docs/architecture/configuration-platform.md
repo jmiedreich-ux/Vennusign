@@ -30,6 +30,8 @@ try { $rng.GetBytes($key) } finally { $rng.Dispose() }
 
 Supply the database connection through the existing `ConnectionStrings__VennuDatabase` bootstrap variable or `VENU_CONFIGURATION_CONNECTION_STRING`. Restart the API after changing user environment variables.
 
+For first-time setup, provide `SuperAdmin__ApiKey` as a user environment variable. Use that bootstrap access to store the encrypted `SuperAdmin:ApiKey` value in the Development environment, restart the API, and then remove the bootstrap override if desired.
+
 ## Hosted environments
 
 Use `VENU_CONFIGURATION_KEY_PROVIDER=AzureKeyVault`, set `VENU_CONFIGURATION_KEY_ID` to a versioned or versionless RSA key URI, and grant the workload identity wrap/unwrap permissions. Each secret uses a random AES-256 data key; only the Key Vault-wrapped data key and AES-GCM ciphertext are stored.
