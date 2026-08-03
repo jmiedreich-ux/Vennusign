@@ -36,6 +36,15 @@ export function validateManifest(manifest, previous = null) {
   }
   for (const id of requiredComponents) if (!ids.has(id)) errors.push(`Missing required component '${id}'.`);
 
+  const bridge = components.find(component => component.id === 'native-bridge');
+  if (bridge && semver.test(bridge.version ?? '')) {
+    for (const component of components.filter(candidate => ['tv-shell', 'player'].includes(candidate.kind))) {
+      if (validRange(component.compatibility) && !rangeIncludes(component.compatibility, bridge.version)) {
+        errors.push(`${component.id}: compatibility does not include native-bridge ${bridge.version}.`);
+      }
+    }
+  }
+
   for (const procedure of manifest?.database?.procedureContracts ?? []) {
     if (!/^[A-Za-z][A-Za-z0-9_]*$/.test(procedure.name ?? '') || !contract.test(procedure.version ?? '')) errors.push('Stored-procedure contracts require a valid name and major.minor version.');
   }
@@ -48,6 +57,15 @@ function validRange(value) {
   const match = range.exec(value ?? '');
   if (!match) return false;
   return Number(match[1]) < Number(match[3]) || Number(match[1]) === Number(match[3]) && Number(match[2]) < Number(match[4]);
+}
+
+function rangeIncludes(value, version) {
+  const match = range.exec(value);
+  const [major, minor] = version.split('.').map(Number);
+  const lower = Number(match[1]) * 1_000_000 + Number(match[2]);
+  const upper = Number(match[3]) * 1_000_000 + Number(match[4]);
+  const current = major * 1_000_000 + minor;
+  return current >= lower && current < upper;
 }
 
 function validateProgression(current, previous, errors) {
