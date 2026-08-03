@@ -8,7 +8,7 @@
 ## Git State
 - Branch: `issue/395-google-signup-local-https`
 - Issue: #395
-- Pull request: pending
+- Pull request: #396
 - CI state: pending
 
 ## Completed
@@ -26,7 +26,7 @@
 - Migration inventory tests: 3/3 passed.
 
 ## Remaining Work
-- Open, validate, review, and merge the Issue #395 PR.
+- Validate, review, and merge PR #396.
 - Operator must enter Google credentials through Super Admin, enable Google, restart API, and complete live consent.
 
 ## Exact Next Action

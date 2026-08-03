@@ -8,7 +8,7 @@
 ## Git State
 - Branch: `issue/395-google-signup-local-https`
 - Issue: #395
-- Pull request: pending
+- Pull request: #396
 - CI state: pending
 
 ## Completed This Session
@@ -28,7 +28,7 @@
 - GitHub Actions pending.
 
 ## Remaining Work
-- Open, validate, review, and merge the Issue #395 PR.
+- Validate, review, and merge PR #396.
 - Operator must enter the Google web client ID and secret through Super Admin, enable Google, restart API, and complete live consent.
 
 ## Known Risks or Blockers
