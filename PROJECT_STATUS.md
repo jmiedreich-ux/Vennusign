@@ -9,9 +9,9 @@
 - RWP-00.04 — Deployment Component Versioning and Release Manifest (#437) is complete.
 - RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439) is complete.
 - RWP-08.02 — Daylight-Saving-Safe Scheduling Resolution (#440) is complete.
-- RWP-10.02 — Durable Player Content Receipts and Delivery Reconciliation (#441) is implemented, pending exact-head CI and merge.
-- One follow-up RWP remains approved: RWP-00.05 — Affected-Screen Action Completeness and Recovery (#442).
-- Next available work package after RWP-10.02 merges: RWP-00.05.
+- RWP-10.02 — Durable Player Content Receipts and Delivery Reconciliation (#441) is complete.
+- RWP-00.05 — Affected-Screen Action Completeness and Recovery (#442) is implemented, pending exact-head CI and merge.
+- No further WP/RWP is approved in the Sequential queue.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
 ## Completed Delivery
@@ -41,4 +41,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-Complete exact-head review, CI, and merge for RWP-10.02 / issue #441, then claim RWP-00.05. Continue in exact queue order only. Phase 14 and later remain paused.
+Complete exact-head review, CI, and merge for RWP-00.05 / issue #442, then stop with the approved Sequential queue empty. Phase 14 and later remain paused.
