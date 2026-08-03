@@ -22,8 +22,9 @@ public sealed class PlaylistAdministrationService(
         var venue = await venues.GetByIdAsync(venueId, cancellationToken).ConfigureAwait(false)
             ?? throw new KeyNotFoundException("Venue does not exist.");
         var slides = await GetAsync(venueId, screenId, cancellationToken).ConfigureAwait(false);
-        var localNow = TimeZoneInfo.ConvertTime(utcNow.ToUniversalTime(), ResolveTimezone(venue.Timezone));
-        return slides.Where(slide => IsActive(slide, localNow)).ToArray();
+        var timezone = ResolveTimezone(venue.Timezone);
+        var localNow = TimeZoneInfo.ConvertTime(utcNow.ToUniversalTime(), timezone);
+        return slides.Where(slide => IsActive(slide, localNow, timezone)).ToArray();
     }
 
     public async Task<PlaylistSlide> CreateAsync(
@@ -113,19 +114,13 @@ public sealed class PlaylistAdministrationService(
         return slide;
     }
 
-    private static bool IsActive(PlaylistSlide slide, DateTimeOffset localNow)
+    private static bool IsActive(PlaylistSlide slide, DateTimeOffset localNow, TimeZoneInfo timezone)
     {
         if (!slide.IsEnabled) return false;
         if (!slide.StartLocalTime.HasValue) return true;
-        var start = slide.StartLocalTime.Value; var end = slide.EndLocalTime!.Value;
-        return start < end
-            ? IsDay(slide.ActiveDaysMask!.Value, localNow.DayOfWeek) && localNow.TimeOfDay >= start && localNow.TimeOfDay < end
-            : localNow.TimeOfDay >= start
-                ? IsDay(slide.ActiveDaysMask!.Value, localNow.DayOfWeek)
-                : localNow.TimeOfDay < end && IsDay(slide.ActiveDaysMask!.Value, localNow.AddDays(-1).DayOfWeek);
+        return LocalTimeOccurrenceResolver.IsWindowActive(
+            timezone, localNow, slide.StartLocalTime.Value, slide.EndLocalTime!.Value, slide.ActiveDaysMask!.Value);
     }
-
-    private static bool IsDay(int mask, DayOfWeek day) => (mask & (1 << (int)day)) != 0;
     private static string? Normalize(string? value, int max) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim().Length <= max ? value.Trim() : throw new ArgumentException($"Value cannot exceed {max} characters.");
     private static Guid Require(Guid id) => id == Guid.Empty ? throw new ArgumentException("Identifier cannot be empty.") : id;
