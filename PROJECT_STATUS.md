@@ -150,7 +150,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-No implementation package is active. Issue-386 completed secure local bootstrap entry and API-process injection through PR #387. Phase 14 remains paused.
+**Issue-389 — Super Admin Key Helper** is in review. It adds a local secret-safe PowerShell helper for first-use Super Admin access. Phase 14 remains paused.
 
 ## Phase 04 Result
 
