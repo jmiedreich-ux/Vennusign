@@ -17,15 +17,26 @@ public sealed class TapListAdministrationServiceTests
 
         var created = await service.CreateItemAsync(venueId, new TapItem
         {
-            TapCategoryId = category.Id, Name = "  480B  ", Style = "  West Coast IPA ",
+            TapCategoryId = category.Id, Name = "  480B  ", Style = "  West Coast IPA ", Description = "  Citrus and pine  ",
             Price = 7m, Abv = 8.2m, Ibu = 65, GlassColor = "#f5c842", NameColor = "#ffd700",
             IsAvailable = true
         });
 
         Assert.Equal("480B", created.Name);
         Assert.Equal("West Coast IPA", created.Style);
+        Assert.Equal("Citrus and pine", created.Description);
         Assert.Equal("#F5C842", created.GlassColor);
         Assert.Same(created, repository.Items.Single());
+    }
+
+    [Fact]
+    public async Task CreateItemAsync_RejectsOverlongDescription()
+    {
+        var venueId = Guid.NewGuid();
+        var service = new TapListAdministrationService(new FakeTapListRepository(), new FakeVenueRepository(venueId), TimeProvider.System);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.CreateItemAsync(
+            venueId, new TapItem { Name = "Beer", Description = new string('x', 1001), Price = 5m }));
     }
 
     [Fact]
