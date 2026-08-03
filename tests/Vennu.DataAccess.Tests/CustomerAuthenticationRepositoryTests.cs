@@ -71,6 +71,9 @@ public sealed class CustomerAuthenticationRepositoryTests
         Assert.False(await new CustomerAuthenticationRepository(data).RevokePasskeyAsync(userId, Guid.NewGuid(), DateTime.UtcNow));
         Assert.Contains("UserId=@UserId", sql, StringComparison.Ordinal);
         Assert.Contains("RevokedUtc IS NULL", sql, StringComparison.Ordinal);
+        Assert.Contains("SERIALIZABLE", sql, StringComparison.Ordinal);
+        Assert.Contains("COUNT(*)", sql, StringComparison.Ordinal);
+        Assert.Contains("EmailVerifiedUtc IS NOT NULL", sql, StringComparison.Ordinal);
         Assert.Equal(userId, Property<Guid>(parameters!, "UserId"));
     }
 
