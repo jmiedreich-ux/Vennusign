@@ -1,30 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-03T11:00:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "Issue-392",
-      "executionMode": "Collaborative",
-      "owner": "GitHub Copilot",
-      "issue": 392,
-      "branch": "issue/392-fix-rotation-migration",
-      "claimedUtc": "2026-08-03T11:00:00Z",
-      "writableScope": [
-        "src/Vennu.Data/Scripts/050_add_configuration_rotation_metadata.sql",
-        "tests/Vennu.Data.IntegrationTests/DatabaseMigratorTests.cs",
-        "docs/work-packages/Issue-392-fix-rotation-migration.md",
-        "PROJECT_STATUS.md",
-        "tracker/assignments.json",
-        "ai/handoffs/current.md",
-        "ai/handoffs/archive"
-      ],
-      "prohibitedScope": [
-        "Generated credentials and local machine values",
-        "Other migrations or schema",
-        "Unrelated local workspace changes"
-      ]
-    }
-  ],
+  "updatedUtc": "2026-08-03T12:00:00Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
