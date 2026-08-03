@@ -2,14 +2,14 @@
 
 ## Work Package
 - ID: Issue-386
-- Status: In Review
+- Status: Complete through PR #387
 - Execution mode: Collaborative
 
 ## Git State
-- Branch: `issue/386-dev-control-bootstrap`
+- Branch: `master`
 - Issue: #386
 - Pull request: #387
-- CI state: pending
+- CI state: all 12 required checks passed on reviewed head `b033db4`; PR #387 merged
 
 ## Completed This Session
 - Added environment, connection-string, and key-provider bootstrap entry to Vennu Development Control.
@@ -25,14 +25,15 @@
 - GitHub Actions validation pending.
 
 ## Remaining Work
-- Commit, push, open the Issue #386 PR, run required checks, review, merge, release the claim, and synchronize completion records.
+- Build the updated control panel once locally before using `--no-build`.
+- Enter or generate the Development bootstrap values and restart the API from the panel.
 
 ## Known Risks or Blockers
 - Windows user environment variables are user-readable storage, not a secrets vault; persistence is explicit and local-development-only.
 - Hosted Key Vault behavior is unchanged and live testing remains excluded.
 
 ## Exact Next Action
-- Run the Issue #386 PR checks, review the exact head, and merge when approved.
+- Run `dotnet build tools/Vennu.DevControl/Vennu.DevControl.csproj -c Release`, open the panel, save or apply valid Development bootstrap values, and restart API.
 
 ## Do Not Redo or Reverse
 - Do not persist bootstrap values to repository files.
