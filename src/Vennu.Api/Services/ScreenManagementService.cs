@@ -3,6 +3,7 @@ using Vennu.Api.Infrastructure;
 using Vennu.Api.Notifications;
 using Vennu.Core.Models;
 using Vennu.Data.Repositories;
+using Vennu.Data.Services;
 
 namespace Vennu.Api.Services;
 
@@ -11,7 +12,8 @@ public sealed class ScreenManagementService(
     IVenueRepository venueRepository,
     IScreenUpdateNotifier notifier,
     TimeProvider timeProvider,
-    Vennu.Data.Services.IVenueEntitlementService? entitlementService = null) : IScreenManagementService
+    IVenueEntitlementService? entitlementService = null,
+    IScreenContentDeliveryService? deliveryService = null) : IScreenManagementService
 {
     public async Task<IReadOnlyCollection<ScreenManagementItem>> GetAsync(
         Guid venueId,
@@ -19,10 +21,13 @@ public sealed class ScreenManagementService(
     {
         await RequireVenueAsync(venueId, cancellationToken).ConfigureAwait(false);
         var screens = await screenRepository.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var deliveries = deliveryService is null
+            ? new Dictionary<Guid, ScreenContentDelivery>()
+            : await deliveryService.GetLatestByVenueAsync(venueId, cancellationToken).ConfigureAwait(false);
         return screens
             .OrderBy(screen => screen.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(screen => screen.Id)
-            .Select(ToItem)
+            .Select(screen => ToItem(screen, deliveries.GetValueOrDefault(screen.Id)))
             .ToArray();
     }
 
@@ -93,10 +98,16 @@ public sealed class ScreenManagementService(
             return false;
         }
 
-        await notifier.NotifyScreenContentUpdatedAsync(
-            screen.Id,
-            new { change = "manual-push", requestedUtc = timeProvider.GetUtcNow().UtcDateTime },
-            cancellationToken).ConfigureAwait(false);
+        var delivery = deliveryService is null
+            ? null
+            : await deliveryService.IssueAsync(venueId, screen.Id, cancellationToken).ConfigureAwait(false);
+        if (deliveryService is not null && delivery is null) return false;
+        await notifier.NotifyScreenContentUpdatedAsync(screen.Id, new
+        {
+            change = "manual-push",
+            requestedUtc = delivery?.RequestedUtc ?? timeProvider.GetUtcNow().UtcDateTime,
+            revision = delivery?.AuthoritativeRevision
+        }, cancellationToken).ConfigureAwait(false);
         return true;
     }
 
@@ -214,7 +225,7 @@ public sealed class ScreenManagementService(
             : throw new ArgumentException("Screen location cannot exceed 200 characters.", parameterName);
     }
 
-    private static ScreenManagementItem ToItem(Screen screen) =>
+    private static ScreenManagementItem ToItem(Screen screen, ScreenContentDelivery? delivery = null) =>
         new(
             screen.Id,
             screen.Name,
@@ -227,5 +238,12 @@ public sealed class ScreenManagementService(
             screen.LastSeen,
             screen.Platform,
             screen.AppVersion,
-            $"/display/{screen.Id}");
+            $"/display/{screen.Id}",
+            delivery?.AuthoritativeRevision,
+            delivery?.AppliedRevision,
+            delivery?.State,
+            delivery?.RequestedUtc,
+            delivery?.AppliedUtc,
+            delivery?.FailureCode,
+            delivery?.FailureDetail);
 }
