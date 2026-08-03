@@ -41,7 +41,7 @@ Organization ownership transfer uses serializable isolation and verifies both th
 
 ## Compatibility and follow-on work
 
-- Existing venue-admin token authentication remains unchanged until WP-13.09 performs the approved compatibility migration.
+- Existing back-office token authentication remains unchanged until WP-13.09 performs the approved compatibility migration.
 - WP-13.02 will use these identity and membership contracts for customer authentication and session authorization.
 - WP-13.03 will add passkey, TOTP, and recovery artifacts without changing this tenancy boundary.
 - Trial, signup, onboarding, and customer-facing screens remain assigned to WP-13.04 through WP-13.08.

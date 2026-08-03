@@ -20,8 +20,7 @@ public sealed class CustomerSessionAuthenticationHandler : AuthenticationHandler
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        if (!Request.Cookies.TryGetValue(CustomerAuthenticationDefaults.SessionCookieName, out var token) ||
-            string.IsNullOrWhiteSpace(token))
+        if (!CustomerSessionCookie.TryRead(Request, out var token))
             return AuthenticateResult.NoResult();
         var identity = await sessionService.AuthenticateAsync(token, Context.RequestAborted).ConfigureAwait(false);
         if (identity is null) return AuthenticateResult.Fail("The customer session is invalid or expired.");

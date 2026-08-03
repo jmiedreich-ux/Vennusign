@@ -6,7 +6,7 @@ namespace Vennu.Data.Configuration;
 public sealed class VennuDatabaseConfigurationProvider : ConfigurationProvider, IDisposable
 {
     private static readonly HashSet<string> Environments = ["Development", "Test", "Staging", "Production"];
-    private static readonly HashSet<string> Scopes = ["API", "Admin", "VenueAdmin", "Display", "Background"];
+    private static readonly HashSet<string> Scopes = ["API", "PlatformOperations", "BackOffice", "Display", "Background"];
     private readonly VennuDatabaseConfigurationOptions options;
     private Timer? reloadTimer;
     private int loading;

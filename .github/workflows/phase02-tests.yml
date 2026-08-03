@@ -28,8 +28,8 @@ jobs:
       full: ${{ steps.classify.outputs.full }}
       dotnet_api: ${{ steps.classify.outputs.dotnet_api }}
       dotnet_data_access: ${{ steps.classify.outputs.dotnet_data_access }}
-      admin: ${{ steps.classify.outputs.admin }}
-      venue_admin: ${{ steps.classify.outputs.venue_admin }}
+      platform_operations: ${{ steps.classify.outputs.platform_operations }}
+      back_office: ${{ steps.classify.outputs.back_office }}
       display: ${{ steps.classify.outputs.display }}
       android_tv: ${{ steps.classify.outputs.android_tv }}
       tizen: ${{ steps.classify.outputs.tizen }}
@@ -116,17 +116,17 @@ jobs:
         run: dotnet test tests/Vennu.DataAccess.Tests/Vennu.DataAccess.Tests.csproj --configuration Release --no-restore --filter "Category=Unit" --logger "console;verbosity=normal"
 
   frontend:
-    if: needs.classify.outputs.admin == 'true' || needs.classify.outputs.venue_admin == 'true' || needs.classify.outputs.display == 'true'
+    if: needs.classify.outputs.platform_operations == 'true' || needs.classify.outputs.back_office == 'true' || needs.classify.outputs.display == 'true'
     needs: classify
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - app: admin
-            enabled: ${{ needs.classify.outputs.admin }}
-          - app: venue-admin
-            enabled: ${{ needs.classify.outputs.venue_admin }}
+          - app: platform-operations
+            enabled: ${{ needs.classify.outputs.platform_operations }}
+          - app: back-office
+            enabled: ${{ needs.classify.outputs.back_office }}
           - app: display
             enabled: ${{ needs.classify.outputs.display }}
     steps:
@@ -209,7 +209,7 @@ jobs:
         run: |
           $tokens = $null
           $errors = $null
-          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'scripts/set-super-admin-key.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'scripts/set-platform-operations-key.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
           if ($errors.Count -gt 0) { throw ($errors | Out-String) }
 
   build-and-test:

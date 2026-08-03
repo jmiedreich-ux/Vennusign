@@ -1,4 +1,4 @@
-using Vennu.Api.Contracts.Admin;
+using Vennu.Api.Contracts.PlatformOperations;
 using Vennu.Api.Notifications;
 using Vennu.Core.Models;
 using Vennu.Data.Repositories;

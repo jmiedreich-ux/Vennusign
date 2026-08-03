@@ -1,0 +1,23 @@
+namespace Vennu.Api.Contracts.PlatformOperations;
+
+public sealed record MenuSectionCreateRequest(string Name);
+
+public sealed record MenuSectionUpdateRequest(string Name, bool IsActive);
+
+public sealed record MenuSectionOrderRequest(IReadOnlyCollection<Guid>? SectionIds);
+
+public sealed record MenuItemWriteRequest(
+    string Name,
+    string? Description,
+    decimal Price,
+    decimal? HappyHourPrice);
+
+public sealed record MenuItemPresentationRequest(
+    bool IsAvailable,
+    int? QuantityAvailable,
+    IReadOnlyCollection<string>? Tags,
+    bool IsPopular);
+
+public sealed record QuickDailySpecialRequest(string? DailySpecial);
+
+public sealed record QuickAvailabilityRequest(bool IsAvailable);

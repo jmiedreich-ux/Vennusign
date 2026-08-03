@@ -83,7 +83,7 @@ public class ApiE2ETests : IClassFixture<VennuApiFactory>
         Assert.Null(beforeClaim.ScreenId);
 
         using var claimRequest = new HttpRequestMessage(HttpMethod.Post, $"/api/screens/pairing/{pairing.Code}/claim");
-        claimRequest.Headers.Add("X-Vennu-Admin-Key", "test-admin-key");
+        claimRequest.Headers.Add("X-Vennusign-Platform-Operations-Key", "test-admin-key");
         claimRequest.Content = JsonContent.Create(new ClaimScreenPairingCodeRequest { VenueId = venue.VenueId });
         var claimResponse = await client.SendAsync(claimRequest);
 
@@ -165,13 +165,13 @@ public sealed class VennuApiFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
-        builder.UseSetting("SuperAdmin:ApiKey", "test-admin-key");
-        builder.UseSetting("VenueAdmin:Sessions:0:AccessToken", "test-venue-token");
-        builder.UseSetting("VenueAdmin:Sessions:0:VenueId", "11111111-1111-1111-1111-111111111111");
-        builder.UseSetting("VenueAdmin:Sessions:0:UserId", "venue-owner");
-        builder.UseSetting("VenueAdmin:Sessions:0:DisplayName", "Harbor Owner");
-        builder.UseSetting("VenueAdmin:Sessions:0:Capabilities:0", "menus");
-        builder.UseSetting("VenueAdmin:Sessions:0:Capabilities:1", "screens");
+        builder.UseSetting("PlatformOperations:ApiKey", "test-admin-key");
+        builder.UseSetting("BackOffice:Sessions:0:AccessToken", "test-venue-token");
+        builder.UseSetting("BackOffice:Sessions:0:VenueId", "11111111-1111-1111-1111-111111111111");
+        builder.UseSetting("BackOffice:Sessions:0:UserId", "venue-owner");
+        builder.UseSetting("BackOffice:Sessions:0:DisplayName", "Harbor Owner");
+        builder.UseSetting("BackOffice:Sessions:0:Capabilities:0", "menus");
+        builder.UseSetting("BackOffice:Sessions:0:Capabilities:1", "screens");
         builder.UseSetting("Stripe:Webhook:SigningSecret", "whsec_test");
 
         builder.ConfigureServices(services =>

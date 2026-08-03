@@ -30,7 +30,7 @@ try { $rng.GetBytes($key) } finally { $rng.Dispose() }
 
 Supply the database connection through the existing `ConnectionStrings__VennuDatabase` bootstrap variable or `VENU_CONFIGURATION_CONNECTION_STRING`. Restart the API after changing user environment variables.
 
-For first-time setup, provide `SuperAdmin__ApiKey` as a user environment variable. Use that bootstrap access to store the encrypted `SuperAdmin:ApiKey` value in the Development environment, restart the API, and then remove the bootstrap override if desired.
+For first-time setup, provide `PlatformOperations__ApiKey` as a user environment variable. Use that bootstrap access to store the encrypted `PlatformOperations:ApiKey` value in the Development environment, restart the API, and then remove the bootstrap override if desired.
 
 ## Hosted environments
 
@@ -38,7 +38,7 @@ Use `VENU_CONFIGURATION_KEY_PROVIDER=AzureKeyVault`, set `VENU_CONFIGURATION_KEY
 
 ## Management
 
-Super Admin `Configuration` supports environment/application filtering, typed values, write-only secret replacement/clear, restart notices, secret-safe export, dry-run import, conflict review, and atomic apply. Secrets are never returned or included in standard exports.
+Platform Operations `Configuration` supports environment/application filtering, typed values, write-only secret replacement/clear, restart notices, secret-safe export, dry-run import, conflict review, and atomic apply. Secrets are never returned or included in standard exports.
 
 The page also reports provider load health, last successful load, sanitized failure type, secret replacement age, and 90-day rotation reminders. Revision history exposes metadata and fingerprints only; secret payloads remain protected and are never returned. Rollback copies the selected stored payload into a new immutable revision and audit record rather than rewriting history.
 
@@ -53,4 +53,4 @@ The page also reports provider load health, last successful load, sanitized fail
 
 ## Migrated settings
 
-Registered API definitions cover customer Google/Apple/email authentication, Stripe revenue/webhook/checkout/portal settings, Square OAuth/webhooks, Toast catalog/inventory/polling/webhooks, Clover OAuth/catalog/webhooks, and the Super Admin key. Existing options consumers require no alternate code path because the provider participates in normal .NET configuration binding.
+Registered API definitions cover customer Google/Apple/email authentication, Stripe revenue/webhook/checkout/portal settings, Square OAuth/webhooks, Toast catalog/inventory/polling/webhooks, Clover OAuth/catalog/webhooks, and the Platform Operations key. Existing options consumers require no alternate code path because the provider participates in normal .NET configuration binding.

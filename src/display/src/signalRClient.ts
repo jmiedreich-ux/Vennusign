@@ -20,7 +20,7 @@ export type DisplayRealtimeConnection = {
 };
 
 function buildHubUrl(apiBaseUrl: string) {
-  return `${apiBaseUrl.replace(/\/$/, '')}/hubs/vennu`;
+  return `${apiBaseUrl.replace(/\/$/, '')}/hubs/vennusign`;
 }
 
 export async function connectDisplayRealtime(

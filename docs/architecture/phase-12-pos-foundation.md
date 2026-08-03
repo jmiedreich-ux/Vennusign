@@ -20,7 +20,7 @@ WP-12.01 makes no provider call and performs no menu mutation. OAuth, import, we
 
 ## Square OAuth boundary
 
-WP-12.02 uses a ten-minute, Data Protection-backed, single-use OAuth state to correlate the anonymous Square callback to the venue that initiated the flow. Only authenticated Venue Admin requests may start or disconnect a connection. Square transport is isolated behind `ISquareOAuthGateway`; authorization, token, and revoke endpoints are restricted to official HTTPS Square hosts, while callback and Venue Admin return destinations are server-owned HTTPS configuration. Tokens flow only from the gateway into the established credential-protection service.
+WP-12.02 uses a ten-minute, Data Protection-backed, single-use OAuth state to correlate the anonymous Square callback to the venue that initiated the flow. Only authenticated Back Office requests may start or disconnect a connection. Square transport is isolated behind `ISquareOAuthGateway`; authorization, token, and revoke endpoints are restricted to official HTTPS Square hosts, while callback and Back Office return destinations are server-owned HTTPS configuration. Tokens flow only from the gateway into the established credential-protection service.
 
 ## Square catalog import boundary
 
@@ -52,7 +52,7 @@ Poll health is persisted on the POS connection as last attempt/success, consecut
 
 ## Clover OAuth and catalog boundary
 
-WP-12.08 implements Clover's high-trust v2 authorization-code flow. Only an authenticated Venue Admin venue claim can mint the existing ten-minute, protected, single-use state; the anonymous callback must return that state, the configured Clover client ID, a bounded merchant ID, and an authorization code. Authorization and token exchange accept only the documented Clover sandbox or regional production HTTPS hosts and exact `/oauth/v2/authorize` and `/oauth/v2/token` paths. Access and refresh tokens are protected through the shared credential service, while both provider-supplied Unix expirations are persisted explicitly. Status responses expose merchant, state, and access-token expiry only—never either token.
+WP-12.08 implements Clover's high-trust v2 authorization-code flow. Only an authenticated Back Office venue claim can mint the existing ten-minute, protected, single-use state; the anonymous callback must return that state, the configured Clover client ID, a bounded merchant ID, and an authorization code. Authorization and token exchange accept only the documented Clover sandbox or regional production HTTPS hosts and exact `/oauth/v2/authorize` and `/oauth/v2/token` paths. Access and refresh tokens are protected through the shared credential service, while both provider-supplied Unix expirations are persisted explicitly. Status responses expose merchant, state, and access-token expiry only—never either token.
 
 `CloverCatalogGateway` scopes category, item, and modifier reads to the connected merchant under `/v3/merchants/{mId}` and accepts only official Clover API host roots. It expands item categories and modifier groups, resolves modifiers by their owning group, converts fixed prices from cents, and uses a deterministic synthetic category only for genuinely uncategorized items. Variable prices remain import conflicts through the shared importer rather than being guessed. `CloverPosProvider` exposes the result through `IPosProvider`; the shared venue/provider-owned mapping and menu mutation boundary remains unchanged. Clover inventory webhooks and realtime availability/price mutations remain exclusively WP-12.09.
 

@@ -25,7 +25,7 @@
   <header class="hero">
     <p class="eyebrow">Deep page and function audit</p>
     <h1>Operational UI &amp; Function Gap Analysis</h1>
-    <p>Assessment of existing Vennu operational surfaces only: Super Admin, Venue Admin, display pairing/player, billing, menu, screen, theme, schedule, tap-list, and POS-management accessibility. Customer identity, public signup, no-card trials, and onboarding are intentionally excluded because they are covered by Phase 13 planning.</p>
+    <p>Assessment of existing Vennu operational surfaces only: Platform Operations, Back Office, display pairing/player, billing, menu, screen, theme, schedule, tap-list, and POS-management accessibility. Customer identity, public signup, no-card trials, and onboarding are intentionally excluded because they are covered by Phase 13 planning.</p>
     <div class="pills"><span class="pill">Static source and API review</span><span class="pill">Existing product surfaces</span><span class="pill">Phase 13 excluded</span><span class="pill">No implementation changes</span></div>
   </header>
 
@@ -35,8 +35,8 @@
       <a href="#purpose">Purpose and method</a>
       <a href="#summary">Executive findings</a>
       <a href="#cross">Cross-surface gaps</a>
-      <a href="#super-admin">Super Admin audit</a>
-      <a href="#venue-admin">Venue Admin audit</a>
+      <a href="#platform-operations">Platform Operations audit</a>
+      <a href="#back-office">Back Office audit</a>
       <a href="#display">Display audit</a>
       <a href="#pos">POS management gap</a>
       <a href="#register">Remediation register</a>
@@ -57,8 +57,8 @@
       <section id="summary">
         <h2>Executive findings</h2>
         <div class="grid">
-          <div class="card"><div class="metric">2</div><div class="metric-label">Venue Admin routes that are currently placeholders: Home and Settings</div></div>
-          <div class="card"><div class="metric">3</div><div class="metric-label">Implemented POS provider families without a Venue Admin Integrations route</div></div>
+          <div class="card"><div class="metric">2</div><div class="metric-label">Back Office routes that are currently placeholders: Home and Settings</div></div>
+          <div class="card"><div class="metric">3</div><div class="metric-label">Implemented POS provider families without a Back Office Integrations route</div></div>
           <div class="card"><div class="metric">5</div><div class="metric-label">Distinct schedule functions compressed into one Schedules route</div></div>
           <div class="card"><div class="metric">0</div><div class="metric-label">Observed menu-item delete or menu-item reorder controls</div></div>
         </div>
@@ -77,15 +77,15 @@
             <tr><td>Incomplete lifecycle management</td><td>Several editors support create and edit but omit delete, archive, unpair, restore, or reorder actions.</td><td>Users accumulate stale data and need support or database intervention to correct mistakes.</td><td>Define complete object lifecycle per domain: create, view, edit, reorder where meaningful, archive/delete, recovery/undo, and audit.</td></tr>
             <tr><td>Destructive actions without confirmation</td><td>Meal-period deletion, tap category/item deletion, playlist removal, video-wall removal, promotion archive, and broadcast cancellation act immediately.</td><td>Accidental loss or interruption is likely, especially in busy venue operations.</td><td>Add confirmation with object name and impact; prefer undo/soft-delete when practical; announce success/failure.</td></tr>
             <tr><td>Silent or ambiguous save behavior</td><td>Menu sections/items and screens save on blur or selection change; some local state changes resemble persisted updates.</td><td>Users cannot reliably tell whether a change is saved, failed, or only staged locally.</td><td>Use clear Save/Cancel or robust autosave status; preserve drafts/retry on failure; distinguish local from persisted state.</td></tr>
-            <tr><td>Feature exists without discoverable route</td><td>Square, Toast, and Clover controllers/services exist, but Venue Admin navigation has no Integrations route.</td><td>Delivered provider functionality is unavailable to the intended operator.</td><td>Add a coherent Integrations surface or explicitly defer/hide APIs until UI workflow exists.</td></tr>
+            <tr><td>Feature exists without discoverable route</td><td>Square, Toast, and Clover controllers/services exist, but Back Office navigation has no Integrations route.</td><td>Delivered provider functionality is unavailable to the intended operator.</td><td>Add a coherent Integrations surface or explicitly defer/hide APIs until UI workflow exists.</td></tr>
             <tr><td>Operational error recovery is weak</td><td>Most pages show a generic error string; few expose retry, diagnostics, last successful state, or support context.</td><td>Venue users cannot self-resolve API, connection, or configuration problems.</td><td>Provide retry controls, retain previous data, show actionable error context, and expose safe support diagnostics.</td></tr>
             <tr><td>Route density is uneven</td><td>Home/Settings are placeholders while Schedules combines five substantial tools.</td><td>Navigation is simultaneously sparse and overloaded.</td><td>Replace placeholders with useful dashboards/settings; give high-complexity schedule tools sub-navigation or clear sections/deep links.</td></tr>
           </tbody>
         </table></div>
       </section>
 
-      <section id="super-admin">
-        <h2>Super Admin page audit</h2>
+      <section id="platform-operations">
+        <h2>Platform Operations page audit</h2>
 
         <article class="audit">
           <div class="audit-head"><div><h3>Dashboard</h3><p class="subtle">Primary job: assess commercial and fleet health, then drill into an actionable venue or screen problem.</p></div><span class="tag good">Strong read model</span></div>
@@ -111,13 +111,13 @@
 
         <article class="audit">
           <div class="audit-head"><div><h3>Venue Detail</h3><p class="subtle">Primary job: understand a venue, safely support it, and reach the right operational surface.</p></div><span class="tag high">Incomplete support lifecycle</span></div>
-          <h4>Existing functions</h4><p>Shows basic venue profile, subscription/tier, screen limit, effective features, active feature overrides, tier switching, and override creation/removal. It includes links toward Venue Admin.</p>
+          <h4>Existing functions</h4><p>Shows basic venue profile, subscription/tier, screen limit, effective features, active feature overrides, tier switching, and override creation/removal. It includes links toward Back Office.</p>
           <h4>Functional gaps</h4>
           <div class="finding"><strong><span class="tag critical">Critical</span> The API type includes screens, but the page does not render the screen list.</strong> Support staff cannot inspect individual screen status, platform, version, last-seen, pairing state, or navigate to a screen remediation action from the venue detail page.</div>
           <div class="finding"><strong><span class="tag high">High</span> No venue profile edit, archive, or lifecycle action.</strong> Profile is read-only despite venue creation. There is no visible correction path for name, timezone, type, languages, status, or archive/decommission.</div>
           <div class="finding"><strong><span class="tag high">High</span> Tier switching is high-impact with limited safety context.</strong> It lacks explicit plan-impact preview, feature/screen-limit conflict warning, confirmation, Stripe processing state explanation, or history.</div>
           <div class="finding"><strong><span class="tag high">High</span> Feature-override removal has no confirmation or visible audit history.</strong> The page shows active overrides but only recent matrix-wide audit elsewhere; a support operator cannot see venue-specific override history, actor, or impact.</div>
-          <div class="finding"><strong><span class="tag medium">Medium</span> Venue Admin links do not establish an operational handoff.</strong> They send the browser to a token-authenticated workspace without an authenticated support/impersonation model or clear explanation if access fails.</div>
+          <div class="finding"><strong><span class="tag medium">Medium</span> Back Office links do not establish an operational handoff.</strong> They send the browser to a token-authenticated workspace without an authenticated support/impersonation model or clear explanation if access fails.</div>
           <h4>Recommended outcome</h4><p>Render the existing screen support data, add guarded venue edit/archive flows, show tier/override impact and audit history, and create safe support handoffs rather than raw workspace links.</p>
         </article>
 
@@ -143,8 +143,8 @@
         </article>
       </section>
 
-      <section id="venue-admin">
-        <h2>Venue Admin page audit</h2>
+      <section id="back-office">
+        <h2>Back Office page audit</h2>
 
         <article class="audit">
           <div class="audit-head"><div><h3>Home and Settings routes</h3><p class="subtle">Primary job: orient the operator and manage venue-level configuration.</p></div><span class="tag critical">Placeholder routes</span></div>
@@ -303,16 +303,16 @@
 
       <section id="pos">
         <h2>POS management accessibility gap</h2>
-        <div class="callout warning"><strong>Implemented backend capability is not a usable product capability until an operator can reach it.</strong> The API/controller inventory includes Venue Admin Square, Toast, and Clover POS controllers and provider services, but current Venue Admin navigation has no Integrations/POS route.</div>
+        <div class="callout warning"><strong>Implemented backend capability is not a usable product capability until an operator can reach it.</strong> The API/controller inventory includes Back Office Square, Toast, and Clover POS controllers and provider services, but current Back Office navigation has no Integrations/POS route.</div>
         <div class="table-wrap"><table>
           <thead><tr><th>Existing provider capability</th><th>Observed user-surface gap</th><th>Operational consequence</th></tr></thead>
           <tbody>
-            <tr><td>Square OAuth, catalog import, webhooks, inventory/price sync</td><td>No visible Integrations route or connection/import status page in Venue Admin navigation.</td><td>A venue operator cannot discover, connect, monitor, import, disconnect, or troubleshoot Square through the intended workspace.</td></tr>
-            <tr><td>Toast connection, catalog, webhook, polling resilience</td><td>No visible Venue Admin workflow for connection status, provider approval guidance, catalog import, sync health, or polling diagnostics.</td><td>Operationally delivered provider behavior is inaccessible or requires unsupported direct API/internal action.</td></tr>
+            <tr><td>Square OAuth, catalog import, webhooks, inventory/price sync</td><td>No visible Integrations route or connection/import status page in Back Office navigation.</td><td>A venue operator cannot discover, connect, monitor, import, disconnect, or troubleshoot Square through the intended workspace.</td></tr>
+            <tr><td>Toast connection, catalog, webhook, polling resilience</td><td>No visible Back Office workflow for connection status, provider approval guidance, catalog import, sync health, or polling diagnostics.</td><td>Operationally delivered provider behavior is inaccessible or requires unsupported direct API/internal action.</td></tr>
             <tr><td>Clover OAuth, catalog, inventory/webhook conformance</td><td>No visible integration-management workflow.</td><td>Same discoverability, support, and lifecycle gap applies.</td></tr>
           </tbody>
         </table></div>
-        <p><strong>Required remediation boundary:</strong> create a dedicated Venue Admin Integrations surface with provider list, connect/disconnect, status, last sync, import action/result, error/retry guidance, webhook/poll health, ownership boundaries, and clear provider-specific operational instructions. This is distinct from Phase 13 customer identity work.</p>
+        <p><strong>Required remediation boundary:</strong> create a dedicated Back Office Integrations surface with provider list, connect/disconnect, status, last sync, import action/result, error/retry guidance, webhook/poll health, ownership boundaries, and clear provider-specific operational instructions. This is distinct from Phase 13 customer identity work.</p>
       </section>
 
       <section id="register">
@@ -321,14 +321,14 @@
         <div class="table-wrap"><table>
           <thead><tr><th>Finding</th><th>Priority</th><th>Suggested remediation boundary</th><th>Why it matters</th></tr></thead>
           <tbody>
-            <tr><td>Venue Admin Home and Settings are placeholders</td><td><span class="tag critical">Critical</span></td><td>Venue Admin operational dashboard and settings remediation</td><td>Primary navigation leads to non-functional pages; essential venue configuration has no home.</td></tr>
-            <tr><td>POS integrations have no visible user workflow</td><td><span class="tag critical">Critical</span></td><td>Venue Admin POS integrations reconciliation</td><td>Phase 12 delivered backend capability that venue operators cannot access.</td></tr>
+            <tr><td>Back Office Home and Settings are placeholders</td><td><span class="tag critical">Critical</span></td><td>Back Office operational dashboard and settings remediation</td><td>Primary navigation leads to non-functional pages; essential venue configuration has no home.</td></tr>
+            <tr><td>POS integrations have no visible user workflow</td><td><span class="tag critical">Critical</span></td><td>Back Office POS integrations reconciliation</td><td>Phase 12 delivered backend capability that venue operators cannot access.</td></tr>
             <tr><td>Menu editor lacks deletion, item ordering, and menu lifecycle</td><td><span class="tag critical">Critical</span></td><td>Menu editor functional-completeness remediation</td><td>Core customer data cannot be fully maintained through the product.</td></tr>
             <tr><td>Screen lifecycle lacks unpair/archive/replace and pairing recovery</td><td><span class="tag critical">Critical</span></td><td>Screen fleet lifecycle remediation</td><td>Physical displays inevitably fail, move, or need replacement.</td></tr>
             <tr><td>Meal-period precedence cannot be controlled</td><td><span class="tag critical">Critical</span></td><td>Scheduling precedence remediation</td><td>The product warns that first listed period wins but offers no way to set the order.</td></tr>
             <tr><td>Emergency broadcast lacks confirmation/delivery/history</td><td><span class="tag high">High</span></td><td>Emergency operations hardening</td><td>Safety-critical broadcast changes need guarded, auditable delivery controls.</td></tr>
             <tr><td>Schedules route combines five complex tools</td><td><span class="tag high">High</span></td><td>Schedule information architecture remediation</td><td>Navigation and precedence are difficult to understand and operate.</td></tr>
-            <tr><td>Super Admin venue detail omits existing screen support data and venue lifecycle actions</td><td><span class="tag high">High</span></td><td>Super Admin support-detail completion</td><td>Support staff cannot complete common diagnosis/correction workflows.</td></tr>
+            <tr><td>Platform Operations venue detail omits existing screen support data and venue lifecycle actions</td><td><span class="tag high">High</span></td><td>Platform Operations support-detail completion</td><td>Support staff cannot complete common diagnosis/correction workflows.</td></tr>
             <tr><td>Feature matrix has unsafe bulk actions and no limit management</td><td><span class="tag high">High</span></td><td>Entitlement administration hardening</td><td>Matrix-wide mistakes can affect customer access without impact review.</td></tr>
             <tr><td>Playlist cannot edit/disable existing slides and uses numeric day mask</td><td><span class="tag high">High</span></td><td>Playlist lifecycle and scheduling completion</td><td>Core scheduled content cannot be safely maintained.</td></tr>
             <tr><td>Billing lacks plan comparison, usage/limit clarity, and recovery guidance</td><td><span class="tag medium">Medium</span></td><td>Billing UX reconciliation</td><td>Existing customers cannot confidently understand or change service.</td></tr>
@@ -355,7 +355,7 @@
           <li>Create overlapping meal periods, set precedence, preview next activation, disable/enable, and delete with confirmation.</li>
           <li>Create/edit/disable/reorder/remove playlist slides with named-day scheduling and display preview.</li>
           <li>Activate, confirm, deliver, replace, cancel, and audit an emergency broadcast across one and all screens.</li>
-          <li>Connect, import, monitor, retry, disconnect, and diagnose each supported POS provider from Venue Admin.</li>
+          <li>Connect, import, monitor, retry, disconnect, and diagnose each supported POS provider from Back Office.</li>
           <li>Change tier/features with impact preview, confirmation, audit, and resulting entitlement visibility.</li>
           <li>Use dashboard/directory/detail drill-down to identify and resolve a degraded or offline screen.</li>
         </ul>

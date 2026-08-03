@@ -4,7 +4,7 @@ function trimTrailingSlash(value: string): string {
 
 const apiBaseUrl = trimTrailingSlash(import.meta.env.VITE_API_BASE_URL ?? '');
 const signalRHubUrl =
-  import.meta.env.VITE_SIGNALR_HUB_URL ?? `${apiBaseUrl}/hubs/vennu`;
+  import.meta.env.VITE_SIGNALR_HUB_URL ?? `${apiBaseUrl}/hubs/vennusign`;
 
 export const displayConfig = Object.freeze({
   apiBaseUrl,

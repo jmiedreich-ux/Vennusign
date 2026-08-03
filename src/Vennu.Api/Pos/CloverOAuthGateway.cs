@@ -57,7 +57,7 @@ public sealed class CloverOAuthGateway(HttpClient httpClient, IOptions<CloverOAu
     {
         var value = RequireOptions();
         return new Uri(QueryHelpers.AddQueryString(
-            RequireHttps(value.VenueAdminReturnUrl, "Venue Admin return").AbsoluteUri,
+            RequireHttps(value.BackOfficeReturnUrl, "Back Office return").AbsoluteUri,
             "pos",
             outcome));
     }

@@ -41,10 +41,10 @@ public sealed class FeatureMatrixServiceTests
 
         var changed = await service.ApplyAsync(
             [new FeatureMatrixChange(tierId, featureId, true)],
-            " super-admin ");
+            " platform-operations ");
 
         Assert.Equal(1, changed);
-        Assert.Equal("super-admin", matrix.AdminId);
+        Assert.Equal("platform-operations", matrix.AdminId);
         Assert.Equal(new DateTime(2026, 7, 28, 22, 0, 0, DateTimeKind.Utc), matrix.ChangedUtc);
         Assert.Equal(venueId, Assert.Single(resolver.InvalidatedVenueIds));
     }
