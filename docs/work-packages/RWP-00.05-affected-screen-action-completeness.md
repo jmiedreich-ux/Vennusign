@@ -29,3 +29,12 @@ Screens affected by the completed remediation round expose the necessary deliber
 - Sequential; follows RWP-10.02 and is fifth in the scheduled queue.
 - Phase 14+ remains paused.
 - Browser/device/Azure and other integration-type tests remain skipped under the standing owner instruction.
+
+## Implementation and UI/function analysis
+
+- Screen Management now requires an active selected screen before the explicit `Preview selected screen` action opens the read-only player surface. Preview has a deliberate close action and never invokes push.
+- Name/location edits are isolated drafts with visible dirty state, explicit Save and Cancel, and disabled invalid save. A failed save retains the draft for retry; polling cannot silently erase it.
+- Account Security uses separate loading, failed, confirmed-empty, and loaded inventory states. Failed inventory disables passkey enrollment and exposes `Retry passkey inventory` rather than claiming no passkeys exist.
+- Theme Builder separates initial loading failure from ordinary messages and exposes `Retry theme controls` without a browser refresh.
+- The bounded action matrix is recorded in `docs/architecture/affected-screen-action-matrix.md`; all other audited action surfaces were complete or explicitly excluded.
+- Focused frontend state-transition tests exercise identity draft/revert and passkey inventory state selection. Browser/device, hosted preview, credentialed passkey, Azure, and all other integration-type tests remain skipped.
