@@ -9,6 +9,7 @@ import {
   loadDisplayContentResilient
 } from './displayCache.mjs';
 import { startDisplayHeartbeat } from './displayHeartbeat.mjs';
+import { reportContentReceipt } from './displayReceipts.mjs';
 import { applyRealtimeEvent, requiresContentReload } from './displayRealtime.mjs';
 import {
   connectDisplayRealtime,
@@ -60,6 +61,7 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
     let recoveryTimer: ReturnType<typeof setInterval> | undefined;
     let disposed = false;
     let liveServicesStarted = false;
+    let recoveringFromCache = false;
 
     setState({ kind: 'loading' });
     setConnectionState('connecting');
@@ -121,6 +123,13 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
 
       const { content, source } = result;
       const themedContent = previewTheme ? { ...content, theme: previewTheme } : content;
+      if (!previewTheme && source === 'network' && content.contentRevision) {
+        const metadata = { playerVersion: displayConfig.playerVersion, shellVersion: appVersion, platform, recovered: recoveringFromCache };
+        await reportContentReceipt(displayConfig.apiBaseUrl, screenId, content, 'Received', metadata).catch(() => undefined);
+        window.requestAnimationFrame(() => {
+          void reportContentReceipt(displayConfig.apiBaseUrl, screenId, content, 'Applied', metadata).catch(() => undefined);
+        });
+      }
       setState({ kind: 'ready', content: themedContent, source });
 
       if (previewTheme) {
@@ -128,6 +137,7 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
       } else if (result.source === 'network') {
         await startLiveServices();
       } else {
+        recoveringFromCache = true;
         setConnectionState('degraded');
       }
     };
