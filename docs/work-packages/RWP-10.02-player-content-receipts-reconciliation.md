@@ -28,3 +28,13 @@ Operators can distinguish a queued push from content actually received and appli
 - Sequential; follows RWP-08.02 and precedes RWP-00.05.
 - Phase 14+ remains paused.
 - Integration-type tests remain skipped under the standing owner instruction.
+
+## Implementation and UI/function analysis
+
+- Every selected-screen push atomically issues the next per-screen revision and supersedes older pending/received revisions. Realtime reload events and content snapshots carry that same authoritative revision.
+- The hosted player reports `Received`, then `Applied` after cache/state activation. A reconnect that had used cached content reports `Recovered`; safe `Failed` receipts may include bounded codes/details.
+- Receipts require the current screen credential, are limited to an existing revision, cannot advance another screen, and cannot regress an already-applied or newer authoritative revision. Duplicate receipts are idempotent.
+- Back Office shows requested, received, applied, recovered, superseded, offline, and failed delivery states, the authoritative/applied revision comparison, and bounded failure guidance. The existing selected-target guard, retry path, and screen refresh remain available.
+- Player, hosted-SPA, shell, and platform versions are captured separately for release-manifest compatibility review. No content body or secret is stored in the delivery ledger.
+- Delivery history is retained for 90 days when a newer revision is issued; the newest record and applied reconciliation remain durable.
+- Azure SQL, real SignalR, hosted player, physical device/shell, credentialed, cross-system, and all other integration-type tests remain skipped.
