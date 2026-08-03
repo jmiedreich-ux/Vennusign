@@ -9,12 +9,14 @@ const [navigation, preview, venue, styles] = await Promise.all([
   readFile(new URL('../src/styles.css', import.meta.url), 'utf8')
 ]);
 
-test('locked navigation stays visible subdued and opens shared upgrade context', () => {
+test('locked navigation stays visible, labeled, and opens shared upgrade context', () => {
   assert.match(navigation, /locked-navigation-item/);
   assert.match(navigation, /<TierBadge tier=\{opportunity\.requiredTier\}/);
   assert.match(navigation, /onUpgrade\(opportunity\)/);
   assert.doesNotMatch(navigation, /disabled|href=/);
-  assert.match(styles, /\.locked-navigation-item[\s\S]*opacity: \.5/);
+  assert.match(navigation, /locked-navigation-item__lock/);
+  assert.match(navigation, /aria-hidden="true"/);
+  assert.doesNotMatch(styles, /\.locked-navigation-item\s*\{[^}]*opacity:/);
 });
 
 test('locked section preview shows one concrete benefit and keeps its mockup non-interactive', () => {

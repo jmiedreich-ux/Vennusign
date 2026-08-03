@@ -36,6 +36,7 @@
   --sky-text-primary: var(--sky-color-ink);
   --sky-text-secondary: var(--sky-color-text-secondary);
   --sky-text-muted: var(--sky-color-text-muted);
+  --sky-small-text: var(--sky-color-text-muted);
   --sky-action-primary-background: var(--sky-color-primary);
   --sky-action-primary-text: var(--sky-color-ink);
   --sky-action-dark-background: var(--sky-color-ink);
