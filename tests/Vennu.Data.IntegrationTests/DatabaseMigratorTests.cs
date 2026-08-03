@@ -71,4 +71,19 @@ public class DatabaseMigratorTests
 
         Assert.Empty(scriptNames);
     }
+
+    [Fact]
+    public void RotationMetadataMigration_DefersNewColumnReferenceUntilExecution()
+    {
+        const string resourceName = "Vennu.Data.Scripts.050_add_configuration_rotation_metadata.sql";
+        using var stream = typeof(DatabaseMigrator).Assembly.GetManifestResourceStream(resourceName);
+        Assert.NotNull(stream);
+        using var reader = new StreamReader(stream);
+        var script = reader.ReadToEnd().Replace("\r\n", "\n", StringComparison.Ordinal);
+
+        Assert.Contains("RotationReminderDays INT NULL;\nEXEC sys.sp_executesql N'ALTER TABLE", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("\nALTER TABLE dbo.SystemConfigurationDefinitions ADD CONSTRAINT", script, StringComparison.Ordinal);
+        Assert.Contains("EXEC sys.sp_executesql N'UPDATE dbo.SystemConfigurationDefinitions", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("\nUPDATE dbo.SystemConfigurationDefinitions SET RotationReminderDays", script, StringComparison.Ordinal);
+    }
 }
