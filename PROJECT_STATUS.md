@@ -4,21 +4,22 @@
 
 - Phase 13 — Customer Identity, Signup, and Onboarding: complete.
 - Phase 14 and later: paused pending explicit owner approval.
-- Active product WP/RWP: none claimed in the proposed merge state.
+- Active product WP/RWP: none claimed.
 - RWP-00.03 — Administrative Surface and Technical Identity Migration: complete.
 - RWP-04.02 — Platform Operations Safety and Support Workflows: complete.
 - RWP-05.04 — Back Office Navigation and Menu Lifecycle: complete.
-- RWP-05.05 — Screen, Theme, and Pairing Lifecycle Recovery: complete in the proposed merge state.
-- RWP-05.06 — Back Office Organization and Venue Context: complete in the proposed merge state.
-- RWP-08.01 — Scheduling and Live-Control Safety: complete in the proposed merge state.
-- RWP-09.01 — Tap-List Lifecycle and Operational Scale: complete in the proposed merge state.
-- RWP-10.01 — Player Runtime, Targeting, and Realtime Delivery Reliability: complete in the proposed merge state.
-- RWP-11.02 — Billing Tier and Downgrade Safety: complete in the proposed merge state.
-- RWP-13.03 — Onboarding Ownership and Navigation Unification: complete in the proposed merge state.
-- RWP-13.01 — Organization Profile and Onboarding-to-Back-Office Transition: complete in the proposed merge state.
-- RWP-13.02 — Passkey Enrollment, Management, and Local Development: complete in the proposed merge state.
-- Approved Sequential product queue: empty; development is paused.
-- Next available work package: none. Owner approval is required before any new WP/RWP or phase work.
+- RWP-05.05 — Screen, Theme, and Pairing Lifecycle Recovery: complete.
+- RWP-05.06 — Back Office Organization and Venue Context: complete.
+- RWP-08.01 — Scheduling and Live-Control Safety: complete.
+- RWP-09.01 — Tap-List Lifecycle and Operational Scale: complete.
+- RWP-10.01 — Player Runtime, Targeting, and Realtime Delivery Reliability: complete.
+- RWP-11.02 — Billing Tier and Downgrade Safety: complete.
+- RWP-13.03 — Onboarding Ownership and Navigation Unification: complete.
+- RWP-13.01 — Organization Profile and Onboarding-to-Back-Office Transition: complete.
+- RWP-13.02 — Passkey Enrollment, Management, and Local Development: complete.
+- RWP-00.04 — Deployment Component Versioning and Release Manifest: approved and next in the Sequential queue; issue #437.
+- Approved Sequential product queue: RWP-00.04.
+- Next available work package: RWP-00.04. It is approved but not yet claimed.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
 ## Completed Delivery
@@ -48,4 +49,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-After RWP-13.02 merges and releases, stop. The approved product queue is empty. Phase 14 and later remain paused and must not be planned, claimed, or implemented without explicit owner approval.
+The Sequential agent may claim and implement RWP-00.04 / issue #437. Complete it as one bounded RWP before any other product work. Phase 14 and later remain paused.
