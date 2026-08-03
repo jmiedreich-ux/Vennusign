@@ -147,10 +147,11 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 - CFG-001.04 — Provider Setting Migration
 - CFG-001.05 — Configuration Operations and Closure
 - Issue-386 — Development Control Bootstrap Editor
+- Issue-407 — Screen Quota Enforcement and Pairing Recovery
 
 ## Active Work Package
 
-Issue-407 is active in Collaborative review on `issue/407-screen-quota-gating` and PR #408. Owner manual testing and required affected-area CI passed; final exact-head ChatGPT review is pending for screen fleet loading, tier-limit enforcement, quota feedback, video-wall feature gating, and stale Display pairing recovery. Phase 14 remains paused.
+No implementation package is active. Issue-407 completed screen fleet loading, tier-limit enforcement, quota feedback, video-wall feature gating, and stale Display pairing recovery through PR #408. Phase 14 remains paused.
 
 ## Phase 04 Result
 
@@ -226,7 +227,7 @@ Issue-407 is active in Collaborative review on `issue/407-screen-quota-gating` a
 
 ## Next Action
 
-Commit and push Issue-407, open its implementation PR, run affected-area GitHub Actions, obtain ChatGPT approval on the exact head, merge, and synchronize completion records. Phase 14 and later remain paused pending explicit owner approval.
+No future-phase WP is active. Phase 14 and later remain paused pending explicit owner approval.
 
 ## Phase 05 Work Packages
 

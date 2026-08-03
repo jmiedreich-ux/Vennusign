@@ -1,15 +1,16 @@
 # Vennu Session Handoff
+# Vennu Session Handoff
 
 ## Work Package
 - ID: Issue-407
-- Status: In Review
+- Status: Complete through PR #408
 - Execution mode: Collaborative
 
 ## Git State
-- Branch: `issue/407-screen-quota-gating`
-- Issue: #407
-- Pull request: #408
-- CI state: required affected-area `phase02-tests` run #30784731394 passed on `689d06e`; final documentation reconciliation rerun pending
+- Branch: `master` after completion reconciliation
+- Issue: #407 closed
+- Pull request: #408 merged as `50eb67377d8af5afbc927034d9f93916896147ec`
+- CI state: `phase02-tests` run #30784846933 passed on reviewed head `8104747c2a4263fffa6aa877e66c3eb41b72beb4`
 
 ## Completed This Session
 - Confirmed the Screens GET path incorrectly calls the add-screen entitlement guard and hides assigned screens at quota.
@@ -33,18 +34,15 @@
 - Affected Release builds passed during test execution; only pre-existing unrelated nullable warnings were emitted.
 - UX accessibility check passed applicable semantics, keyboard, focus, label, contrast, and control-name checks.
 - Integration tests remain excluded under the standing owner instruction.
-- GitHub Actions and ChatGPT review are intentionally not started.
+- GitHub Actions and ChatGPT review completed successfully on the exact reviewed head.
 - Local database verification: venues 0, assigned screens 0, onboarding venue/screen links 0, organizations 1, customer users 1, subscription tiers 5.
 - Focused Display pairing tests passed 4/4 and the Display production build passed.
 - SQL verified the newly paired screen is Online and assigned to the correct 1-screen Restaurant Starter trial; the stale pre-fix API process was rebuilt and restarted from the active branch on ports 7138/5192.
-- GitHub Actions run #30784731394 passed all applicable API, data-access, Display, Venue Admin, docs, and stable `build-and-test` gates on `689d06e`; unrelated checks were correctly skipped.
+- GitHub Actions run #30784846933 passed all applicable API, data-access, Display, Venue Admin, docs, and stable `build-and-test` gates on `8104747c2a4263fffa6aa877e66c3eb41b72beb4`; unrelated checks were correctly skipped.
+- ChatGPT recorded `CHATGPT APPROVED` against that exact head with no blocking findings or unresolved comments.
 
 ## Remaining Work
-- Owner repeats onboarding from venue setup, pairs the first display, and verifies the new screen appears in Screens.
-- Owner verifies quota text and disabled add/pair controls at the plan limit.
-- Owner verifies video-wall UI is absent without `video_wall` and appears when enabled.
-- Apply any owner corrections on this same branch.
-- Only after the owner explicitly says “do number 4”, commit, push, open the PR, run CI, obtain ChatGPT review, merge, and finalize records.
+- No Issue-407 implementation work remains.
 
 ## Known Risks or Blockers
 - Client quota state is anticipatory; server entitlement checks must remain authoritative.
@@ -52,10 +50,10 @@
 - Existing unrelated local changes in `src/Vennu.Api/Vennu.Api.csproj` and `docs/Google/` must remain untouched.
 
 ## Exact Next Action
-- Reload `http://localhost:5175/pair`, resume onboarding at venue setup, pair the replacement display, then verify fleet visibility, quota blocking, and video-wall capability visibility.
+- Await explicit owner approval before starting any future-phase package.
 
 ## Do Not Redo or Reverse
 - Do not alter public player registration or onboarding progression.
 - Do not add lifecycle behavior from issue #345.
-- Do not commit, push, open a PR, or run CI before owner manual testing approval.
 - Do not include the unrelated `src/Vennu.Api/Vennu.Api.csproj` or `docs/Google/` changes in Issue #407.
+- Do not reopen Issue #407 or recreate its deleted implementation branch.
