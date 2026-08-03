@@ -5,7 +5,7 @@
 - Phase 13 — Customer Identity, Signup, and Onboarding: complete.
 - Phase 14 and later: paused pending explicit owner approval.
 - Active product WP/RWP: none claimed.
-- Approved Sequential remediation queue: RWP-04.02, RWP-05.04, RWP-05.05, RWP-08.01, RWP-09.01, then RWP-11.02.
+- Approved Sequential remediation queue: RWP-04.02, RWP-05.04, RWP-05.05, RWP-08.01, RWP-09.01, RWP-11.02, then RWP-13.01.
 - Next available package: RWP-04.02 / issue #343.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
