@@ -2,24 +2,23 @@
 
 ## Current State
 
-- Item: RWP-08.02 — Daylight-Saving-Safe Scheduling Resolution / issue #440
+- Item: RWP-10.02 — Durable Player Content Receipts and Delivery Reconciliation / issue #441
 - Mode: Sequential
-- Branch: `rwp/08.02-dst-safe-scheduling`
+- Branch: `rwp/10.02-content-delivery-receipts`
 - Status: Implemented; pending exact-head CI, review, and merge
 
 ## Approved Queue
 
-1. RWP-10.02 / #441 — durable player content receipts and delivery reconciliation
-2. RWP-00.05 / #442 — affected-screen action completeness and recovery
+1. RWP-00.05 / #442 — affected-screen action completeness and recovery
 
 Each package must be claimed, implemented, validated, merged, and released before the next package is claimed. The scheduled run may complete up to five packages.
 
-## RWP-08.02 Proposed Outcome
+## RWP-10.02 Proposed Outcome
 
-- Skipped spring-forward wall times advance to the first valid local instant.
-- Duplicated fall-back wall times use the earlier UTC occurrence deterministically.
-- Meal periods, happy-hour ends, and quick-update reset conversions share one policy; playlist and promotion wall-clock comparisons remain safe.
-- A failing venue evaluation cannot terminate the remaining scheduled-content loop.
+- Pushes issue a durable authoritative per-screen revision and supersede obsolete pending work.
+- Snapshots and realtime events agree on the target revision; players report received/applied/failed and recovered states idempotently.
+- Current screen credentials and revision ordering prevent cross-screen or regressive receipts.
+- Back Office reconciles authoritative and applied revisions with operator-visible delivery states.
 
 ## Boundaries
 
@@ -30,4 +29,4 @@ Each package must be claimed, implemented, validated, merged, and released befor
 
 ## Exact Next Action
 
-Review RWP-08.02 at its exact PR head, require affected-area GitHub Actions, merge and close issue #440, then claim RWP-10.02. Continue in recorded queue order only after the prior claim is released.
+Review RWP-10.02 at its exact PR head, require affected-area GitHub Actions, merge and close issue #441, then claim RWP-00.05. Continue in recorded queue order only after the prior claim is released.
