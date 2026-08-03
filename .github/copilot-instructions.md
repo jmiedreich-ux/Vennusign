@@ -5,20 +5,20 @@ Follow the repository-root `AGENTS.md` as the authoritative rulebook before prop
 ## Required startup
 
 1. Read `AGENTS.md`, the current handoff, project status, assignment tracker, and the approved WP/RWP.
-2. Check the linked issue, active branches, open pull requests, and current queue.
-3. Work only on one claimed, approved issue and stay inside its documented scope.
-4. Use `docs/README.md` for task-scoped routing; never load `docs/archive/` or `ai/handoffs/archive/` routinely.
+2. Select the execution mode explicitly. Visual Studio and VS Code interactive work defaults to `Desktop Collaborative`; chat/mobile collaboration remains `Mobile Collaborative` and is unchanged.
+3. In Desktop Collaborative mode, confirm sequential schedules are paused and a visible desktop-session lock exists before editing. Read GitHub state once at session start and again only at publish checkpoints or when ownership/drift may have changed.
+4. Work only inside approved session scope. Desktop logical branches may combine coherently related issues and merge locally into the session integration branch.
+5. Use `docs/README.md` for task-scoped routing; never load `docs/archive/` or `ai/handoffs/archive/` routinely.
 
 ## Coordination
 
 - Testing and review findings are GitHub issues first. Do not create or reprioritize WPs/RWPs.
-- Every change, including documentation-only work and local-only development configuration work, still requires its own approved issue, branch, and pull request.
-- Every active work item must be claimed in `tracker/assignments.json` before changes begin.
-- Every tracker claim must identify whether the work is `Sequential` or `Collaborative`; do not edit work claimed as `Sequential` from a collaborative session.
+- Sequential and Mobile Collaborative changes require their own approved issue, branch, and PR. Desktop Collaborative work uses one session lock, one local session integration branch, local logical branches, and checkpoint PRs.
+- Every active claim or lock must identify its execution mode. Never edit Sequential work from a collaborative session.
 - Only the designated planning agent may promote a finding into an RWP or change queue order.
 - Do not edit files owned by another active agent.
-- Use one branch and PR per WP/RWP.
-- Treat `Sequential` and `Collaborative` as execution modes only; they do not replace the underlying WP/RWP workflow.
+- Mobile Collaborative keeps one branch and PR per WP/RWP. Desktop Collaborative may close multiple coherently related issues in one checkpoint PR while preserving issue traceability.
+- Do not create Markdown for local branches, experiments, routine test results, or intermediate handoffs. Update existing living documents once per publish checkpoint; create a new Markdown file only for an approved package or a durable architecture/operations need that has no suitable existing home.
 - Do not merge or declare completion until required affected-area non-integration GitHub Actions checks pass and ChatGPT approval is recorded; after those gates pass, the active agent may perform the merge.
 - For every normal WP/RWP, build only affected areas and run only explicitly affected unit-test projects. Do not run the full unit-test suite or unrelated TV/frontend checks.
 - Include completion evidence in the implementation PR when practical. Documentation-only completion follow-ups use lightweight validation.
