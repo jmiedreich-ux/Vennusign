@@ -150,7 +150,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-**Issue-389 — Super Admin Key Helper** is in review. It adds a local secret-safe PowerShell helper for first-use Super Admin access. Phase 14 remains paused.
+No implementation package is active. Issue-389 completed the local secret-safe Super Admin key helper through PR #390. Phase 14 remains paused.
 
 ## Phase 04 Result
 

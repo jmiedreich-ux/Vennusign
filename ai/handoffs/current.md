@@ -2,14 +2,14 @@
 
 ## Work Package
 - ID: Issue-389
-- Status: In Review
+- Status: Complete through PR #390
 - Execution mode: Collaborative
 
 ## Git State
-- Branch: `issue/389-super-admin-key-helper`
+- Branch: `master`
 - Issue: #389
 - Pull request: #390
-- CI state: pending
+- CI state: all 12 required checks passed on reviewed head `9cb4a42`; PR #390 merged
 
 ## Completed This Session
 - Added `scripts/set-super-admin-key.ps1` to generate a random 256-bit temporary Super Admin key.
@@ -23,7 +23,8 @@
 - GitHub Actions pending.
 
 ## Remaining Work
-- Validate, review, and merge PR #390, then release the claim.
+- Close and reopen Vennu Development Control so it inherits the new user environment value.
+- Restart API and paste the current clipboard value into Super Admin access.
 
 ## Known Risks or Blockers
 - The Windows user environment is user-readable storage and this key is for temporary local bootstrap only.
