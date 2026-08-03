@@ -18,6 +18,7 @@ public sealed record MealPeriodAdministrationResponse(
     DateTimeOffset? VenueLocalNow,
     Guid? ActiveMealPeriodId,
     Guid? NextMealPeriodId,
-    DateTimeOffset? NextStartsLocal);
+    DateTimeOffset? NextStartsLocal,
+    LocalTimeOccurrenceAdjustment? NextStartAdjustment);
 
 public sealed record MealPeriodReorderRequest(IReadOnlyCollection<Guid> OrderedIds);
