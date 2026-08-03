@@ -150,7 +150,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-**Issue-398 — Super Admin Access Key Batch Helper** is in review. It adds a root helper that copies the existing local key without rotating or displaying it. Phase 14 remains paused.
+No implementation package is active. Issue-398 completed the root Super Admin access-key batch helper through PR #399. Phase 14 remains paused.
 
 ## Phase 04 Result
 
