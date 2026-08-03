@@ -28,6 +28,7 @@ run_scenario docs docs/work-packages/WP-13.01-example.md PROJECT_STATUS.md
 assert_output docs docs_only true
 assert_output docs dotnet_api false
 assert_output docs display false
+assert_output docs dev_control false
 
 run_scenario api src/Vennu.Api/Controllers/VenuesController.cs
 assert_output api docs_only false
@@ -58,6 +59,12 @@ assert_output closure android_tv true
 run_scenario workflow .github/workflows/phase02-tests.yml
 assert_output workflow full true
 assert_output workflow webos true
+assert_output workflow dev_control true
+
+run_scenario dev-control tools/Vennu.DevControl/MainWindow.xaml tools/Vennu.DevControl.Tests/BootstrapConfigurationTests.cs
+assert_output dev-control full false
+assert_output dev-control dev_control true
+assert_output dev-control dotnet_api false
 
 run_scenario unknown config/new-runtime-policy.json
 assert_output unknown full true

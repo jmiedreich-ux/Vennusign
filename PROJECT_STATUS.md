@@ -149,7 +149,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-No implementation package is active. The CFG-001 environment-scoped configuration platform is complete through PR #384. Phase 14 remains paused.
+**Issue-386 — Development Control Bootstrap Editor** is in Collaborative implementation. It adds secure local bootstrap entry and API-process injection to the WPF development control panel. Phase 14 remains paused.
 
 ## Phase 04 Result
 

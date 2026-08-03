@@ -11,28 +11,28 @@
 - Pull request: #387
 - CI state: pending
 
-## Completed This Session
+## Completed
 - Added environment, connection-string, and key-provider bootstrap entry to Vennu Development Control.
 - Added masked local-key/connection inputs, provider-dependent Key Vault input, and cryptographic local-key generation.
 - Added session apply, explicit Windows user-environment save, confirmed clear, validation, and restart feedback.
-- API Start/Restart now receives only current validated bootstrap values; invalid combinations block API startup.
-- Added a focused Windows test project with 6 passing validation/injection tests.
+- API Start/Restart receives only current validated bootstrap values; invalid combinations block API startup.
+- Added a focused Windows test project with 6 passing tests.
 - Verified the Release WPF process launches and completed a WCAG AA settings-form review with no issues.
 
 ## Validation
 - `dotnet test tools/Vennu.DevControl.Tests/Vennu.DevControl.Tests.csproj -c Release`: 6/6 passed.
 - Release WPF launch check passed.
-- GitHub Actions validation pending.
+- GitHub Actions pending.
 
 ## Remaining Work
-- Commit, push, open the Issue #386 PR, run required checks, review, merge, release the claim, and synchronize completion records.
+- Run PR #387 checks, review, merge, release the claim, and synchronize completion records.
 
-## Known Risks or Blockers
+## Known Risks
 - Windows user environment variables are user-readable storage, not a secrets vault; persistence is explicit and local-development-only.
 - Hosted Key Vault behavior is unchanged and live testing remains excluded.
 
 ## Exact Next Action
-- Run the Issue #386 PR checks, review the exact head, and merge when approved.
+- Run PR #387 affected WPF/tooling validation and review the exact head.
 
 ## Do Not Redo or Reverse
 - Do not persist bootstrap values to repository files.

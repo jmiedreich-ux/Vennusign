@@ -1,7 +1,33 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-03T06:00:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-03T07:00:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "Issue-386",
+      "executionMode": "Collaborative",
+      "owner": "GitHub Copilot",
+      "issue": 386,
+      "branch": "issue/386-dev-control-bootstrap",
+      "claimedUtc": "2026-08-03T07:00:00Z",
+      "writableScope": [
+        "tools/Vennu.DevControl",
+        "tools/Vennu.DevControl.Tests",
+        "scripts/ci/classify-changes.sh",
+        "scripts/ci/test-classify-changes.sh",
+        ".github/workflows/phase02-tests.yml",
+        "docs/work-packages/Issue-386-dev-control-bootstrap.md",
+        "PROJECT_STATUS.md",
+        "tracker/assignments.json",
+        "ai/handoffs/current.md",
+        "ai/handoffs/archive"
+      ],
+      "prohibitedScope": [
+        "Repository configuration files and credentials",
+        "Production configuration behavior",
+        "Application services outside local development tooling"
+      ]
+    }
+  ],
   "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
