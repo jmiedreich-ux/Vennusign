@@ -16,7 +16,7 @@ test("venue operations compose screen targeting pairing and video walls", () => 
   assert.match(screens, /Select one screen target/);
   assert.match(screens, /selectedScreenId/);
   assert.match(screens, /Push structured content/);
-  assert.match(screens, /player acknowledgement is pending/);
+  assert.match(screens, /acknowledgement pending/);
   assert.match(screens, /window\.setInterval\(poll, 10_000\)/);
   assert.doesNotMatch(screens, /pushAllManagedScreens/);
   assert.match(screens, /loadScreenOverflow/);
