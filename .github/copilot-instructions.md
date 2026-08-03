@@ -7,6 +7,7 @@ Follow the repository-root `AGENTS.md` as the authoritative rulebook before prop
 1. Read `AGENTS.md`, the current handoff, project status, assignment tracker, and the approved WP/RWP.
 2. Check the linked issue, active branches, open pull requests, and current queue.
 3. Work only on one claimed, approved issue and stay inside its documented scope.
+4. Use `docs/README.md` for task-scoped routing; never load `docs/archive/` or `ai/handoffs/archive/` routinely.
 
 ## Coordination
 
