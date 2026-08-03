@@ -23,10 +23,19 @@ public sealed class ScheduledContentActivationService(
         var transitions = 0;
         foreach (var venue in venues.OrderBy(item => item.Id))
         {
-            var resolution = resolver.Resolve(
-                venue.Timezone,
-                timeProvider.GetUtcNow(),
-                await periods.GetByVenueIdAsync(venue.Id, cancellationToken).ConfigureAwait(false));
+            MealPeriodScheduleResolution resolution;
+            try
+            {
+                resolution = resolver.Resolve(
+                    venue.Timezone,
+                    timeProvider.GetUtcNow(),
+                    await periods.GetByVenueIdAsync(venue.Id, cancellationToken).ConfigureAwait(false));
+            }
+            catch (Exception exception) when (exception is ArgumentException or InvalidTimeZoneException)
+            {
+                logger.LogError(exception, "Skipped scheduled-content evaluation for venue {VenueId}.", venue.Id);
+                continue;
+            }
             var next = resolution.ActiveMealPeriod;
             var nextId = next?.Id ?? Guid.Empty;
             if (activePeriods.TryGetValue(venue.Id, out var previous) && previous == nextId)
