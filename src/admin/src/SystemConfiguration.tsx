@@ -25,6 +25,7 @@ const scopes = ["", "Shared", "API", "Admin", "VenueAdmin", "Display", "Backgrou
 export default function SystemConfiguration({ configuration, apiKey }: Props) {
   const [environmentName, setEnvironmentName] = useState("Development");
   const [scope, setScope] = useState("");
+  const [search, setSearch] = useState("");
   const [settings, setSettings] = useState<SystemConfigurationSetting[]>([]);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(true);
@@ -34,6 +35,12 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
   const [selectedImport, setSelectedImport] = useState<string[]>([]);
   const [health, setHealth] = useState<SystemConfigurationHealth>();
   const [history, setHistory] = useState<{ setting: SystemConfigurationSetting; revisions: SystemConfigurationRevision[] }>();
+  const searchTerms = search.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  const filteredSettings = searchTerms.length === 0 ? settings : settings.filter(setting => {
+    const searchable = [setting.key, setting.description, setting.applicationScope, setting.valueType]
+      .join(" ").toLocaleLowerCase();
+    return searchTerms.every(term => searchable.includes(term));
+  });
 
   const refresh = async () => {
     setBusy(true); setError(undefined);
@@ -112,17 +119,20 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
     <div className="configuration-heading">
       <div><p>Environment-owned settings</p><h2 id="configuration-heading">Application configuration</h2><p>Secrets are write-only and never displayed after storage.</p></div>
       <div className="configuration-filters">
+        <label className="configuration-search">Search settings<input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Key, section, or description" autoComplete="off" /></label>
         <label>Environment<select value={environmentName} onChange={event => setEnvironmentName(event.target.value)}>{environments.map(value => <option key={value}>{value}</option>)}</select></label>
         <label>Application<select value={scope} onChange={event => setScope(event.target.value)}>{scopes.map(value => <option key={value} value={value}>{value || "All"}</option>)}</select></label>
         <button type="button" onClick={() => void exportSettings()}>Export</button>
         <label className="configuration-import">Import JSON<input type="file" accept="application/json" onChange={event => void selectImport(event.target.files?.[0])} /></label>
       </div>
     </div>
+    <p className="configuration-results" role="status">Showing {filteredSettings.length} of {settings.length} settings{searchTerms.length > 0 ? ` for “${search.trim()}”` : ""}.</p>
     {notice ? <p className="state" role="status">{notice}</p> : null}
     {error ? <p className="state error" role="alert">{error}</p> : null}
     {health ? <p className={`configuration-health ${health.healthy ? "healthy" : "unhealthy"}`} role="status">Database provider: {health.enabled ? health.healthy ? "Healthy" : "Attention required" : "Disabled"}{health.lastSuccessfulLoadUtc ? ` · last loaded ${new Date(health.lastSuccessfulLoadUtc).toLocaleString()}` : ""}{health.lastFailure ? ` · ${health.lastFailure}` : ""}</p> : null}
     {busy && settings.length === 0 ? <p className="state" role="status">Loading configuration…</p> : null}
-    {!busy && settings.length === 0 ? <p className="state">No registered settings match these filters.</p> : null}
+    {!busy && settings.length === 0 ? <p className="state">No registered settings match these environment and application filters.</p> : null}
+    {!busy && settings.length > 0 && filteredSettings.length === 0 ? <div className="state"><p>No settings match this search.</p><button type="button" onClick={() => setSearch("")}>Clear search</button></div> : null}
     {preview ? <section className="configuration-preview" aria-labelledby="import-preview-heading"><h3 id="import-preview-heading">Import preview</h3><p>Secrets are excluded. Select reviewed changes to apply atomically.</p>
       {preview.settings.map(item => { const id = `${item.applicationScope}:${item.key}`; const selectable = item.status === "New" || item.status === "Conflict"; return <label key={id}><input type="checkbox" disabled={!selectable} checked={selectedImport.includes(id)} onChange={event => setSelectedImport(current => event.target.checked ? [...current, id] : current.filter(value => value !== id))} /><span><strong>{item.status}</strong> {id}{item.message ? ` — ${item.message}` : ""}</span></label>; })}
       <div className="configuration-actions"><button type="button" disabled={selectedImport.length === 0 || busy} onClick={() => void applyImport()}>Apply selected changes</button><button type="button" onClick={() => setPreview(undefined)}>Cancel</button></div>
@@ -131,7 +141,7 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
       {history.revisions.length === 0 ? <p>No revisions are available.</p> : history.revisions.map((revision, index) => <div className="configuration-revision" key={revision.revisionNumber}><span>Revision {revision.revisionNumber} · {new Date(revision.createdUtc).toLocaleString()} · {revision.changeSource}{revision.isClear ? " · cleared" : ""}</span>{index > 0 ? <button type="button" disabled={busy} onClick={() => void rollback(revision.revisionNumber)}>Roll back</button> : null}</div>)}
       <button type="button" onClick={() => setHistory(undefined)}>Close history</button>
     </section> : null}
-    <div className="configuration-list">{settings.map(setting => <form key={setting.definitionId} className="configuration-card" onSubmit={save(setting)}>
+    <div className="configuration-list">{filteredSettings.map(setting => <form key={setting.definitionId} className="configuration-card" onSubmit={save(setting)}>
       <div className="configuration-card__description">
         <span>{setting.applicationScope} · {setting.valueType}{setting.requiresRestart ? " · Restart required" : ""}</span>
         <h3>{setting.key}</h3><p>{setting.description}</p>

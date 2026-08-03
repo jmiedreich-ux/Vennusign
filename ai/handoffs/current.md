@@ -1,38 +1,39 @@
 # Vennu Session Handoff
 
 ## Work Package
-- ID: Issue-398
-- Status: Complete through PR #399
+- ID: Issue-401
+- Status: In Review
 - Execution mode: Collaborative
 
 ## Git State
-- Branch: `master`
-- Issue: #398
-- Pull request: #399
-- CI state: all 12 required checks passed on reviewed head `b8785d5`; PR #399 merged
+- Branch: `issue/401-configuration-search-sizing`
+- Issue: #401
+- Pull request: #402
+- CI state: pending
 
 ## Completed This Session
-- Added root `get-super-admin-access-key.cmd`.
-- Added `-ReuseExisting` support to the PowerShell helper.
-- Existing keys are copied to the clipboard without rotation or display; a key is generated only when absent.
-- Verified the current key remained unchanged and matched the clipboard.
+- Added immediate client-side configuration search across full hierarchical key, key segments, description, scope, and value type.
+- Added multi-term matching, result count, distinct empty states, and clear-search action.
+- Preserved environment/application filtering, drafts, secrets, and setting actions.
+- Standardized text, password, and number inputs to one responsive value-column width and height.
+- Restored and verified the complete configuration CSS block after catching an intermediate style-edit regression.
 
 ## Validation
-- PowerShell parser validation passed.
-- Batch execution passed; key unchanged and clipboard matched.
-- Development Control Windows tests passed 9/9.
+- Admin tests passed 82/82.
+- Admin production build passed.
+- WCAG AA filter-panel review reported no issues.
 - GitHub Actions pending.
 
 ## Remaining Work
-- None for Issue-398.
+- Validate, review, and merge PR #402, then release the claim.
 
 ## Known Risks or Blockers
-- Clipboard and Windows user environment are user-readable local storage.
+- Search is intentionally client-side over the currently selected environment/application result set.
 
 ## Exact Next Action
-- Double-click `get-super-admin-access-key.cmd` whenever the existing local Super Admin key needs to be copied to the clipboard.
+- Open and validate the Issue #401 PR.
 
 ## Do Not Redo or Reverse
-- Do not print or commit the access key.
-- Do not rotate an existing key when the root batch helper runs.
+- Do not search configured values or secret content.
+- Do not replace immediate search with a server request on every keystroke.
 - Do not commit the unrelated local `UserSecretsId` change.

@@ -2,10 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [app, page, api] = await Promise.all([
+const [app, page, api, styles] = await Promise.all([
   readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/SystemConfiguration.tsx", import.meta.url), "utf8"),
-  readFile(new URL("../src/api.ts", import.meta.url), "utf8")
+  readFile(new URL("../src/api.ts", import.meta.url), "utf8"),
+  readFile(new URL("../src/styles.css", import.meta.url), "utf8")
 ]);
 
 test("configuration is a dedicated Super Admin route", () => {
@@ -14,6 +15,22 @@ test("configuration is a dedicated Super Admin route", () => {
   assert.match(page, /Development/);
   assert.match(page, /Production/);
   assert.match(page, /Application/);
+});
+
+test("configuration search matches hierarchical keys and provides clear results", () => {
+  assert.match(page, /Search settings/);
+  assert.match(page, /Key, section, or description/);
+  assert.match(page, /searchTerms\.every/);
+  assert.match(page, /setting\.key, setting\.description, setting\.applicationScope, setting\.valueType/);
+  assert.match(page, /Showing \{filteredSettings\.length\} of \{settings\.length\}/);
+  assert.match(page, /No settings match this search/);
+  assert.match(page, /Clear search/);
+});
+
+test("configuration value inputs share one responsive width", () => {
+  assert.match(styles, /grid-template-columns:\s*minmax\(260px, 1fr\) minmax\(280px, 360px\) auto/);
+  assert.match(styles, /\.configuration-card > label, \.configuration-card > label input \{ width: 100%/);
+  assert.match(styles, /\.configuration-card > label input \{ min-height: 42px/);
 });
 
 test("configuration operations expose health rotation history and audited rollback", () => {
