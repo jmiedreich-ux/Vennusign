@@ -13,6 +13,7 @@ using Vennu.Api.Infrastructure;
 using Vennu.Api.Pos;
 using Vennu.Api.CustomerAuthentication;
 using Vennu.Api.Configuration;
+using Vennu.Api.Release;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Options;
@@ -277,6 +278,7 @@ app.MapControllers();
 app.MapHub<VennuHub>("/hubs/vennusign");
 app.MapHub<VennuHub>("/hubs/vennu");
 app.MapGet("/", () => Results.Ok(new { status = "ok", service = "Vennusign.Api" }));
+app.MapGet("/health/version", () => Results.Ok(ReleaseVersionMetadata.FromEnvironment()));
 
 app.Run();
 
