@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "productVersion": "0.1.0",
+  "configurationSchemaVersion": "1.0",
+  "database": {
+    "schemaVersion": "20260803.01",
+    "compatibility": "expand-and-contract",
+    "procedureContracts": []
+  },
+  "components": [
+    { "id": "back-office", "kind": "web", "version": "0.1.0", "state": "changed", "artifact": { "sourceCommit": "${SOURCE_COMMIT}", "buildId": "${BUILD_ID}", "immutable": true } },
+    { "id": "platform-operations", "kind": "web", "version": "0.1.0", "state": "changed", "artifact": { "sourceCommit": "${SOURCE_COMMIT}", "buildId": "${BUILD_ID}", "immutable": true } },
+    { "id": "api", "kind": "api", "version": "0.1.0", "contractMajor": 1, "state": "changed", "artifact": { "sourceCommit": "${SOURCE_COMMIT}", "buildId": "${BUILD_ID}", "immutable": true } },
+    { "id": "heartbeat-monitor", "kind": "service", "version": "0.1.0", "state": "changed", "artifact": { "sourceCommit": "${SOURCE_COMMIT}", "buildId": "${BUILD_ID}", "immutable": true } },
+    { "id": "scheduled-content", "kind": "service", "version": "0.1.0", "state": "changed", "artifact": { "sourceCommit": "${SOURCE_COMMIT}", "buildId": "${BUILD_ID}", "immutable": true } },
+    { "id": "hosted-player", "kind": "player", "version": "0.1.0", "compatibility": ">=1.0 <2.0", "state": "changed", "artifact": { "sourceCommit": "${SOURCE_COMMIT}", "buildId": "${BUILD_ID}", "immutable": true } },
+    { "id": "android-fire-shell", "kind": "tv-shell", "version": "0.1.0", "buildNumber": 1, "compatibility": ">=1.0 <2.0", "state": "changed", "artifact": { "sourceCommit": "${SOURCE_COMMIT}", "buildId": "${BUILD_ID}", "immutable": true } },
+    { "id": "tizen-shell", "kind": "tv-shell", "version": "0.1.0", "buildNumber": 1, "compatibility": ">=1.0 <2.0", "state": "changed", "artifact": { "sourceCommit": "${SOURCE_COMMIT}", "buildId": "${BUILD_ID}", "immutable": true } },
+    { "id": "webos-shell", "kind": "tv-shell", "version": "0.1.0", "buildNumber": 1, "compatibility": ">=1.0 <2.0", "state": "changed", "artifact": { "sourceCommit": "${SOURCE_COMMIT}", "buildId": "${BUILD_ID}", "immutable": true } },
+    { "id": "native-bridge", "kind": "contract", "version": "1.0.0", "state": "changed", "artifact": { "sourceCommit": "${SOURCE_COMMIT}", "buildId": "${BUILD_ID}", "immutable": true } },
+    { "id": "database", "kind": "database", "version": "0.1.0", "state": "changed", "artifact": { "sourceCommit": "${SOURCE_COMMIT}", "buildId": "${BUILD_ID}", "immutable": true } },
+    { "id": "infrastructure", "kind": "infrastructure", "version": "0.1.0", "state": "changed", "artifact": { "sourceCommit": "${SOURCE_COMMIT}", "buildId": "${BUILD_ID}", "immutable": true } },
+    { "id": "configuration-schema", "kind": "configuration", "version": "1.0.0", "state": "changed", "artifact": { "sourceCommit": "${SOURCE_COMMIT}", "buildId": "${BUILD_ID}", "immutable": true } }
+  ]
+}
