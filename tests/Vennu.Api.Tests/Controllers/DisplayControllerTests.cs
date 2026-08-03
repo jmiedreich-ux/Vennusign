@@ -378,6 +378,33 @@ public class DisplayControllerTests
         Assert.Equal("Online", capturedStatus);
     }
 
+    [Fact]
+    public async Task GetContent_AndReceipt_UseSameAuthoritativeRevision()
+    {
+        var screen = new Screen { Id = Guid.NewGuid(), VenueId = Guid.NewGuid(), ScreenKey = "ABC123XYZ" };
+        var delivery = new DeliveryFake(new(screen.Id, screen.VenueId.Value, 7, 6, "Requested", DateTime.UtcNow));
+        var screens = new FakeScreenRepository { GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(screen) };
+        var sut = new DisplayController(screens, new FakeVenueRepository(), new FakeMenuRepository(), deliveryService: delivery);
+
+        var content = Assert.IsType<DisplayContentResponse>(Assert.IsType<OkObjectResult>((await sut.GetContent(screen.Id, default)).Result).Value);
+        var receipt = await sut.ContentReceipt(screen.Id, new ScreenContentReceiptRequest
+        {
+            Revision = 7, State = "Applied", ScreenKey = screen.ScreenKey, PlayerVersion = "1.7.0", ShellVersion = "2.1.0", Platform = "tizen"
+        }, default);
+
+        Assert.Equal(7, content.ContentRevision);
+        Assert.Equal(7, Assert.IsType<ScreenContentReceiptResponse>(Assert.IsType<OkObjectResult>(receipt.Result).Value).AppliedRevision);
+        Assert.Equal(screen.ScreenKey, delivery.Receipt?.ScreenKey);
+    }
+
+    [Fact]
+    public async Task ContentReceipt_ReturnsNotFoundForRejectedIdentityOrRevision()
+    {
+        var sut = new DisplayController(new FakeScreenRepository(), new FakeVenueRepository(), new FakeMenuRepository(), deliveryService: new DeliveryFake(null));
+        var result = await sut.ContentReceipt(Guid.NewGuid(), new ScreenContentReceiptRequest { Revision = 99, State = "Applied", ScreenKey = "FORGEDKEY" }, default);
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
     private static DisplayController CreateController(IScreenRepository screenRepository) =>
         new(screenRepository, new FakeVenueRepository(), new FakeMenuRepository());
 
@@ -388,5 +415,18 @@ public class DisplayControllerTests
 
         public Task UpsertAsync(VenueTheme value, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
+    }
+
+    private sealed class DeliveryFake(ScreenContentDelivery? value) : IScreenContentDeliveryService
+    {
+        public ScreenContentReceipt? Receipt { get; private set; }
+        public Task<ScreenContentDelivery?> IssueAsync(Guid venueId, Guid screenId, CancellationToken cancellationToken = default) => Task.FromResult(value);
+        public Task<ScreenContentDelivery?> GetLatestAsync(Guid screenId, CancellationToken cancellationToken = default) => Task.FromResult(value);
+        public Task<IReadOnlyDictionary<Guid, ScreenContentDelivery>> GetLatestByVenueAsync(Guid venueId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyDictionary<Guid, ScreenContentDelivery>>(new Dictionary<Guid, ScreenContentDelivery>());
+        public Task<ScreenContentDelivery?> AcknowledgeAsync(Guid screenId, ScreenContentReceipt receipt, CancellationToken cancellationToken = default)
+        {
+            Receipt = receipt;
+            return Task.FromResult(value is null ? null : value with { AppliedRevision = receipt.Revision, State = receipt.Recovered ? "Recovered" : receipt.State, AppliedUtc = DateTime.UtcNow });
+        }
     }
 }
