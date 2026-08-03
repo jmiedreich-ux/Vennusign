@@ -6,13 +6,13 @@
 - Phase 14 and later: paused pending explicit owner approval.
 - Active product WP/RWP: none claimed.
 - The 13-package retrospective remediation round is complete.
-- Five follow-up RWPs are approved in this exact Sequential order:
-  1. RWP-00.04 — Deployment Component Versioning and Release Manifest (#437)
-  2. RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439)
-  3. RWP-08.02 — Daylight-Saving-Safe Scheduling Resolution (#440)
-  4. RWP-10.02 — Durable Player Content Receipts and Delivery Reconciliation (#441)
-  5. RWP-00.05 — Affected-Screen Action Completeness and Recovery (#442)
-- Next available work package: RWP-00.04. It is approved but not yet claimed.
+- RWP-00.04 — Deployment Component Versioning and Release Manifest (#437) is implemented, pending exact-head CI and merge.
+- Four follow-up RWPs remain approved in this exact Sequential order:
+  1. RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439)
+  2. RWP-08.02 — Daylight-Saving-Safe Scheduling Resolution (#440)
+  3. RWP-10.02 — Durable Player Content Receipts and Delivery Reconciliation (#441)
+  4. RWP-00.05 — Affected-Screen Action Completeness and Recovery (#442)
+- Next available work package after RWP-00.04 merges: RWP-05.07.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
 ## Completed Delivery
@@ -42,4 +42,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-The Sequential agent may claim and implement RWP-00.04 / issue #437. After each RWP merges and releases its claim, continue with the next approved package in the exact queue order, up to the scheduled five-package run limit. Phase 14 and later remain paused.
+Complete exact-head review, CI, and merge for RWP-00.04 / issue #437, then claim RWP-05.07. Continue in exact queue order, up to the five-package run limit. Phase 14 and later remain paused.
