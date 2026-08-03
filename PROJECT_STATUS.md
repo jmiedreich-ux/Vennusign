@@ -139,10 +139,17 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 - WP-13.09 — Legacy Venue Access Token Migration
 - WP-13.10 — Phase 13 Validation and Closure
 - Phase 13 — Customer Identity, Signup, and Onboarding
+- Issue-370 — Canonical Customer Root Routes
+- Issue-371 — Local Development Control Panel
+- CFG-001.01 — Configuration Provider Core
+- CFG-001.02 — Super Admin Configuration Management
+- CFG-001.03 — Configuration Import and Export
+- CFG-001.04 — Provider Setting Migration
+- CFG-001.05 — Configuration Operations and Closure (proposed PR #384 merge state)
 
 ## Active Work Package
 
-**INT-TESTING-001 — Azure SQL Integration Testing Program** is active in Collaborative mode. Azure SQL integration runs remain skipped and non-blocking outside explicitly recorded collaborative execution.
+**CFG-001.05 — Configuration Operations and Closure** is in final review through PR #384. The configuration platform is complete in the proposed merge state; Phase 14 remains paused.
 
 ## Phase 04 Result
 
