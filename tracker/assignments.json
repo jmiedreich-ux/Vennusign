@@ -1,7 +1,32 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-03T08:00:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-03T09:00:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "Issue-389",
+      "executionMode": "Collaborative",
+      "owner": "GitHub Copilot",
+      "issue": 389,
+      "branch": "issue/389-super-admin-key-helper",
+      "claimedUtc": "2026-08-03T09:00:00Z",
+      "writableScope": [
+        "scripts/set-super-admin-key.ps1",
+        "scripts/ci/classify-changes.sh",
+        "scripts/ci/test-classify-changes.sh",
+        ".github/workflows/phase02-tests.yml",
+        "docs/work-packages/Issue-389-super-admin-key-helper.md",
+        "PROJECT_STATUS.md",
+        "tracker/assignments.json",
+        "ai/handoffs/current.md",
+        "ai/handoffs/archive"
+      ],
+      "prohibitedScope": [
+        "Generated keys and credentials",
+        "Application authentication behavior",
+        "Unrelated local workspace changes"
+      ]
+    }
+  ],
   "nextAvailableWorkPackage": null,
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
