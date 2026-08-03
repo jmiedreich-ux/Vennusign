@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { displayConfig } from './config';
 import { claimPreRegisteredScreen } from './provisioning.mjs';
+import PlayerStateScreen from './PlayerStateScreen';
+import { getDisplayStatePresentation } from './displayPresentation.mjs';
 
 type Props = { token: string; platform: string; appVersion: string };
 
@@ -20,6 +22,6 @@ export default function ProvisioningPage({ token, platform, appVersion }: Props)
   }, [appVersion, platform, token]);
 
   return failed
-    ? <main role="alert"><h1>Provisioning unavailable</h1><p>Contact Vennusign support for a new delivery token.</p></main>
-    : <main aria-busy="true"><p>Preparing this pre-registered TV…</p></main>;
+    ? <PlayerStateScreen {...getDisplayStatePresentation('provisioning-error')} />
+    : <PlayerStateScreen {...getDisplayStatePresentation('provisioning')} />;
 }

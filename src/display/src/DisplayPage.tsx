@@ -19,6 +19,12 @@ import {
 import { DisplayLayout } from './layouts/DisplayLayout';
 import PlaylistRotation from './PlaylistRotation';
 import EmergencyBroadcastOverlay from './EmergencyBroadcastOverlay';
+import PlayerStateScreen from './PlayerStateScreen';
+import {
+  describeCachedContent,
+  getConnectionPresentation,
+  getDisplayStatePresentation
+} from './displayPresentation.mjs';
 
 type DisplayPageProps = {
   screenId: string;
@@ -28,7 +34,7 @@ type DisplayPageProps = {
 
 type DisplayState =
   | { kind: 'loading' }
-  | { kind: 'ready'; content: DisplayContent; source: 'network' | 'cache' }
+  | { kind: 'ready'; content: DisplayContent; source: 'network' | 'cache'; cachedAt: number }
   | { kind: 'not-found'; message: string }
   | { kind: 'api-error'; message: string };
 
@@ -37,6 +43,7 @@ export const DISPLAY_CONTENT_RECOVERY_INTERVAL_MS = 60_000;
 export default function DisplayPage({ screenId, platform, appVersion }: DisplayPageProps) {
   const [state, setState] = useState<DisplayState>({ kind: 'loading' });
   const [connectionState, setConnectionState] = useState<DisplayConnectionState>('connecting');
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
     const preview = new URLSearchParams(window.location.search);
@@ -98,7 +105,7 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
 
               const content = applyRealtimeEvent(currentState.content, eventName, ...args);
               cacheDisplayContent(screenId, content);
-              return { kind: 'ready', content, source: 'network' };
+              return { kind: 'ready', content, source: 'network', cachedAt: Date.now() };
             });
           }
         }
@@ -121,7 +128,7 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
         return;
       }
 
-      const { content, source } = result;
+      const { content, source, cachedAt } = result;
       const themedContent = previewTheme ? { ...content, theme: previewTheme } : content;
       if (!previewTheme && source === 'network' && content.contentRevision) {
         const metadata = { playerVersion: displayConfig.playerVersion, shellVersion: appVersion, platform, recovered: recoveringFromCache };
@@ -130,7 +137,7 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
           void reportContentReceipt(displayConfig.apiBaseUrl, screenId, content, 'Applied', metadata).catch(() => undefined);
         });
       }
-      setState({ kind: 'ready', content: themedContent, source });
+      setState({ kind: 'ready', content: themedContent, source, cachedAt });
 
       if (previewTheme) {
         setConnectionState('connected');
@@ -179,42 +186,36 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
       if (recoveryTimer) window.clearInterval(recoveryTimer);
       void realtimeConnection?.stop();
     };
-  }, [appVersion, platform, screenId]);
+  }, [appVersion, loadAttempt, platform, screenId]);
 
   if (state.kind === 'loading') {
-    return (
-      <main aria-busy="true" aria-live="polite">
-        <h1>Vennusign Display</h1>
-        <p>Loading display…</p>
-      </main>
-    );
+    return <PlayerStateScreen {...getDisplayStatePresentation('loading')} />;
   }
 
   if (state.kind === 'not-found') {
-    return (
-      <main role="alert">
-        <h1>Display not found</h1>
-        <p>{state.message}</p>
-      </main>
-    );
+    const presentation = getDisplayStatePresentation('not-found');
+    return <PlayerStateScreen {...presentation} message={state.message || presentation.message} onAction={() => setLoadAttempt(value => value + 1)} />;
   }
 
   if (state.kind === 'api-error') {
-    return (
-      <main role="alert">
-        <h1>Display unavailable</h1>
-        <p>{state.message}</p>
-      </main>
-    );
+    const presentation = getDisplayStatePresentation('api-error');
+    return <PlayerStateScreen {...presentation} message={state.message || presentation.message} onAction={() => setLoadAttempt(value => value + 1)} />;
   }
 
   const { content } = state;
+  const connection = getConnectionPresentation(connectionState);
 
   return (
     <>
-      <p className="player-status" aria-live="polite">Real-time connection: {connectionState}</p>
+      <p className={`player-status${connection.visible && state.source === 'network' ? ' player-status--connection' : ''}`} aria-live="polite">
+        <span className={`player-status__heartbeat player-status__heartbeat--${connection.tone}`} aria-hidden="true" />
+        {connection.label}
+      </p>
       {state.source === 'cache' && (
-        <p className="player-status player-status--offline" aria-live="polite">Offline — showing the last saved menu.</p>
+        <p className="player-status player-status--offline" aria-live="polite">
+          <span className="player-status__heartbeat player-status__heartbeat--offline" aria-hidden="true" />
+          {describeCachedContent(state.cachedAt)}
+        </p>
       )}
       <EmergencyBroadcastOverlay content={content}>
         <PlaylistRotation content={content}><DisplayLayout content={content} /></PlaylistRotation>

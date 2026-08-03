@@ -2,31 +2,33 @@
 
 ## Current State
 
-- Item: RWP-00.05 — Affected-Screen Action Completeness and Recovery / issue #442
+- Item: RWP-02.01 — Display Player State-Screen Presentation / issue #448
 - Mode: Sequential
-- Branch: `rwp/00.05-screen-action-completeness`
-- Status: Implemented; pending exact-head CI, review, and merge
+- Branch: `rwp/02.01-display-state-screens`
+- Status: Implemented and locally validated; pending exact-head Actions, review, and merge
 
 ## Approved Queue
 
-No further WP/RWP is approved. Phase 14+ remains paused.
+RWP-00.06 / issue #449 is next after RWP-02.01 fully merges, closes, verifies, and releases its claim. The remaining approved queue continues through RWP-11.04 / issue #465. RWP-13.06 / issue #466 is held and excluded. Phase 14+ remains paused.
 
 Each package must be claimed, implemented, validated, merged, and released before the next package is claimed. The scheduled run may complete up to five packages.
 
-## RWP-00.05 Proposed Outcome
+## RWP-02.01 Proposed Outcome
 
-- Selected active screens have an explicit read-only Preview action.
-- Name/location identity edits use visible drafts with Save, Cancel, failure retention, and retry.
-- Account Security and Theme Builder distinguish load failure and provide deliberate Retry actions.
-- The affected-screen action matrix records completed coverage and approved exclusions.
+- Loading, route, provisioning, content-load, and unexpected-error surfaces use one high-contrast TV-safe state presentation.
+- Recoverable player content errors provide a deliberate retry without clearing cache, pairing, or device state.
+- Offline display content reports its saved age and explains automatic recovery.
+- Connecting, reconnecting, and degraded live-update states are truthful without obscuring menu content.
+- Heartbeat motion is restrained and disabled when reduced motion is preferred.
 
 ## Boundaries
 
-- Do not broaden RWP-00.04 into the full deployment control plane.
-- Do not merge the scopes of the later remediation packages into RWP-00.04.
+- Do not broaden RWP-02.01 into shared admin design tokens, full player-shell lifecycle changes, or later fleet/onboarding work.
+- Do not claim RWP-00.06 or any later item before the current claim is fully released.
+- Do not claim or implement held RWP-13.06 / issue #466.
 - Do not resume Phase 14+.
 - Azure SQL, external-service, credentialed, hosted-infrastructure, container, physical-device, signing/store, cross-system, and all other integration-type tests remain skipped.
 
 ## Exact Next Action
 
-Review RWP-00.05 at its exact PR head, require affected-area GitHub Actions, merge and close issue #442, verify the queue is empty, and stop. Do not begin Phase 14 or invent new work.
+Publish the RWP-02.01 implementation PR, require affected-display GitHub Actions on the exact reviewed head, review and merge it, close issue #448, verify `master`, and release the claim. RWP-00.06 / issue #449 is the next approved item only after that sequence completes.

@@ -52,7 +52,7 @@ test('offline content is screen-bound versioned and recoverable', () => {
   assert.match(cache, /cached\.content\?\.screenId === screenId/);
   assert.match(cache, /displayContentCacheMaxAgeMs/);
   assert.match(page, /window\.addEventListener\('online', recoverOnline\)/);
-  assert.match(page, /Offline — showing the last saved menu/);
+  assert.match(page, /describeCachedContent\(state\.cachedAt\)/);
   assert.match(page, /DISPLAY_CONTENT_RECOVERY_INTERVAL_MS/);
   assert.match(playerCss, /html, body, #root[\s\S]*overflow: hidden/);
   assert.match(playerCss, /overscroll-behavior: none/);
