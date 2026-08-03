@@ -23,6 +23,7 @@ export type PublicOnboardingPlan = {
 export type CustomerOnboardingSnapshot = {
   userId: string;
   organizationId?: string;
+  organization?: { name: string; legalName?: string; primaryContactName?: string; contactEmail?: string; contactPhone?: string; mailingAddress?: string };
   selectedTierId?: string;
   venueId?: string;
   firstScreenId?: string;
@@ -69,11 +70,13 @@ export function requestEmailLink(configuration: BackOfficeConfiguration, email: 
   });
 }
 
-export function createOnboardingOrganization(configuration: BackOfficeConfiguration, name: string) {
+export function createOnboardingOrganization(configuration: BackOfficeConfiguration, organization: {
+  name: string; legalName?: string; primaryContactName: string; contactEmail: string; contactPhone?: string; mailingAddress: string;
+}) {
   return request<CustomerOnboardingSnapshot>(`${configuration.apiBaseUrl}/api/customer-onboarding/organization`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name })
+    body: JSON.stringify(organization)
   });
 }
 

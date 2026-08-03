@@ -6,6 +6,16 @@ namespace Vennu.Data.Repositories;
 public sealed class OrganizationMembershipRepository(ISqlDataAccess dataAccess)
     : IOrganizationMembershipRepository
 {
+    private const string OrganizationSql = """
+        SELECT Id, Name, LegalName, PrimaryContactName, ContactEmail, ContactPhone, MailingAddress,
+            OwnerUserId, CreatedUtc, UpdatedUtc
+        FROM dbo.Organizations WHERE Id = @OrganizationId;
+        """;
+
+    public async Task<Organization?> GetOrganizationAsync(Guid organizationId, CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<Organization, object>(OrganizationSql,
+            new { OrganizationId = RequireId(organizationId, nameof(organizationId)) }, cancellationToken).ConfigureAwait(false)).SingleOrDefault();
+
     private const string OrganizationMembershipSql = """
         SELECT Id, OrganizationId, UserId, Role, JoinedUtc, RevokedUtc, CreatedUtc, UpdatedUtc
         FROM dbo.OrganizationMemberships
@@ -52,20 +62,28 @@ public sealed class OrganizationMembershipRepository(ISqlDataAccess dataAccess)
         var result = await dataAccess.ExecuteSqlQueryAsync<Organization, object>(
             """
             SET XACT_ABORT ON; BEGIN TRANSACTION;
-            INSERT dbo.Organizations (Id, Name, OwnerUserId, CreatedUtc, UpdatedUtc)
-            VALUES (@OrganizationId, @Name, @OwnerUserId, @OccurredUtc, @OccurredUtc);
+            INSERT dbo.Organizations
+                (Id, Name, LegalName, PrimaryContactName, ContactEmail, ContactPhone, MailingAddress, OwnerUserId, CreatedUtc, UpdatedUtc)
+            VALUES
+                (@OrganizationId, @Name, @LegalName, @PrimaryContactName, @ContactEmail, @ContactPhone, @MailingAddress, @OwnerUserId, @OccurredUtc, @OccurredUtc);
             INSERT dbo.OrganizationMemberships (Id, OrganizationId, UserId, Role, JoinedUtc, CreatedUtc, UpdatedUtc)
             VALUES (@MembershipId, @OrganizationId, @OwnerUserId, @OwnerRole, @OccurredUtc, @OccurredUtc, @OccurredUtc);
             INSERT dbo.MembershipAuditEntries
                 (Id, OrganizationId, VenueId, ActorUserId, SubjectUserId, Scope, Action, PreviousRole, NewRole, OccurredUtc)
             VALUES (@AuditId, @OrganizationId, NULL, @OwnerUserId, @OwnerUserId, @Scope, @Action, NULL, @NewRole, @OccurredUtc);
             COMMIT;
-            SELECT Id, Name, OwnerUserId, CreatedUtc, UpdatedUtc FROM dbo.Organizations WHERE Id = @OrganizationId;
+            SELECT Id, Name, LegalName, PrimaryContactName, ContactEmail, ContactPhone, MailingAddress,
+                OwnerUserId, CreatedUtc, UpdatedUtc FROM dbo.Organizations WHERE Id = @OrganizationId;
             """,
             new
             {
                 OrganizationId = organization.Id,
                 organization.Name,
+                organization.LegalName,
+                organization.PrimaryContactName,
+                organization.ContactEmail,
+                organization.ContactPhone,
+                organization.MailingAddress,
                 organization.OwnerUserId,
                 MembershipId = ownerMembership.Id,
                 OwnerRole = (int)ownerMembership.Role,

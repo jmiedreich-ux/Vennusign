@@ -29,6 +29,23 @@ public sealed class IdentityMembershipServiceTests
     }
 
     [Fact]
+    public async Task CreateOrganizationAsync_NormalizesRequiredBusinessProfile()
+    {
+        var identities = new FakeIdentityRepository { User = new CustomerUser { Id = OwnerId, Status = CustomerUserStatus.Active } };
+        var memberships = new FakeMembershipRepository();
+        var service = CreateService(identities, memberships);
+
+        var organization = await service.CreateOrganizationAsync(
+            new OrganizationProfile(" Vennusign Cafe ", " Vennusign Cafe LLC ", " Alex Owner ", " OWNER@EXAMPLE.COM ", " 555-0100 ", " 1 Main St, New York, NY 10001 "), OwnerId);
+
+        Assert.Equal("Vennusign Cafe", organization.Name);
+        Assert.Equal("Vennusign Cafe LLC", organization.LegalName);
+        Assert.Equal("Alex Owner", organization.PrimaryContactName);
+        Assert.Equal("owner@example.com", organization.ContactEmail);
+        Assert.Equal("1 Main St, New York, NY 10001", organization.MailingAddress);
+    }
+
+    [Fact]
     public async Task Admin_AddsOrganizationMember_WithImmutableAuditEvidence()
     {
         var identities = new FakeIdentityRepository { User = new CustomerUser { Id = SubjectId, Status = CustomerUserStatus.Active } };
@@ -135,6 +152,7 @@ public sealed class IdentityMembershipServiceTests
 
     private sealed class FakeMembershipRepository : IOrganizationMembershipRepository
     {
+        public Task<Organization?> GetOrganizationAsync(Guid organizationId, CancellationToken cancellationToken = default) => Task.FromResult<Organization?>(null);
         public Func<Guid, OrganizationMembership?> OrganizationMembershipHandler { get; set; } = _ => null;
         public Func<Guid, VenueMembership?> VenueMembershipHandler { get; set; } = _ => null;
         public OrganizationMembership? SavedOrganizationMembership { get; private set; }
