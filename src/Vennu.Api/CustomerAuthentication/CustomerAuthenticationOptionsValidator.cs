@@ -7,6 +7,8 @@ public sealed class CustomerAuthenticationOptionsValidator : IValidateOptions<Cu
     public ValidateOptionsResult Validate(string? name, CustomerAuthenticationOptions options)
     {
         var failures = new List<string>();
+        if (!CustomerReturnUri.IsValidOrigin(options.FrontendOrigin))
+            failures.Add("CustomerAuthentication:FrontendOrigin must be an absolute HTTPS origin without a path, query, fragment, or user information.");
         ValidateProvider(options.Google, "Google", failures);
         ValidateProvider(options.Apple, "Apple", failures);
         if (options.EmailDelivery.Enabled &&

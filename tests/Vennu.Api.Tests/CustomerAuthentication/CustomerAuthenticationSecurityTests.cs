@@ -60,6 +60,36 @@ public sealed class CustomerAuthenticationSecurityTests : IClassFixture<VennuApi
     }
 
     [Fact]
+    public void TrustedFrontendReturn_CombinesOriginWithBoundedLocalPath()
+    {
+        var valid = CustomerReturnUri.TryCreate(
+            new Uri("https://localhost:5174"),
+            "/onboarding?step=organization",
+            out var result);
+
+        Assert.True(valid);
+        Assert.Equal("https://localhost:5174/onboarding?step=organization", result.AbsoluteUri);
+    }
+
+    [Theory]
+    [InlineData("https://attacker.example")]
+    [InlineData("//attacker.example")]
+    [InlineData("/\\attacker.example")]
+    public void TrustedFrontendReturn_RejectsNonLocalPaths(string returnPath)
+    {
+        Assert.False(CustomerReturnUri.TryCreate(new Uri("https://localhost:5174"), returnPath, out _));
+    }
+
+    [Theory]
+    [InlineData("http://localhost:5174")]
+    [InlineData("https://localhost:5174/base/")]
+    [InlineData("https://user@localhost:5174")]
+    public void TrustedFrontendReturn_RejectsInvalidOrigins(string origin)
+    {
+        Assert.False(CustomerReturnUri.IsValidOrigin(new Uri(origin)));
+    }
+
+    [Fact]
     public async Task DisabledProvider_ReturnsServiceUnavailableWithoutRedirect()
     {
         using var client = factory.CreateClient();
@@ -80,6 +110,17 @@ public sealed class CustomerAuthenticationSecurityTests : IClassFixture<VennuApi
         Assert.True(result.Failed);
         Assert.Contains(result.Failures!, failure => failure.Contains("Google:ClientId", StringComparison.Ordinal));
         Assert.Contains(result.Failures!, failure => failure.Contains("Google:ClientSecret", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void InvalidFrontendOrigin_FailsConfigurationValidation()
+    {
+        var options = new CustomerAuthenticationOptions { FrontendOrigin = new Uri("http://localhost:5174") };
+
+        var result = new CustomerAuthenticationOptionsValidator().Validate(null, options);
+
+        Assert.True(result.Failed);
+        Assert.Contains(result.Failures!, failure => failure.Contains("FrontendOrigin", StringComparison.Ordinal));
     }
 
     [Fact]

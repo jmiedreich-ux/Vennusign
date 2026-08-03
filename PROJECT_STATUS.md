@@ -150,7 +150,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-No implementation package is active. Issue-392 corrected and validated the LocalDB configuration migration startup failure through PR #393. Phase 14 remains paused.
+**Issue-395 — Google Signup Local HTTPS** is in review with trusted frontend return handling, HTTPS local hosting, and Google challenge validation complete. Phase 14 remains paused.
 
 ## Phase 04 Result
 

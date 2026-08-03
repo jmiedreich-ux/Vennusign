@@ -59,7 +59,8 @@ public class DatabaseMigratorTests
                 "Vennu.Data.Scripts.047_seed_system_configuration_definitions.sql",
                 "Vennu.Data.Scripts.048_add_system_configuration_clear_state.sql",
                 "Vennu.Data.Scripts.049_seed_provider_configuration_definitions.sql",
-                "Vennu.Data.Scripts.050_add_configuration_rotation_metadata.sql"
+                "Vennu.Data.Scripts.050_add_configuration_rotation_metadata.sql",
+                "Vennu.Data.Scripts.051_seed_customer_frontend_origin.sql"
             ],
             scriptNames);
     }

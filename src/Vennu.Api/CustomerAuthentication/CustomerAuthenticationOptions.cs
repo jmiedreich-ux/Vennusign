@@ -8,6 +8,7 @@ public sealed class CustomerAuthenticationOptions
     public TimeSpan SessionTouchInterval { get; set; } = TimeSpan.FromMinutes(5);
     public TimeSpan EmailLinkLifetime { get; set; } = TimeSpan.FromMinutes(15);
     public TimeSpan RecentAuthenticationWindow { get; set; } = TimeSpan.FromMinutes(10);
+    public Uri FrontendOrigin { get; set; } = new("https://app.vennu.com");
     public CustomerOidcProviderOptions Google { get; set; } = new();
     public CustomerOidcProviderOptions Apple { get; set; } = new();
     public CustomerEmailDeliveryOptions EmailDelivery { get; set; } = new();
