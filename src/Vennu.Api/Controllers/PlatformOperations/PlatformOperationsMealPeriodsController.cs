@@ -20,8 +20,10 @@ public sealed class PlatformOperationsMealPeriodsController(
         try
         {
             var snapshot = await service.GetAsync(venueId, cancellationToken).ConfigureAwait(false);
-            return Ok(new MealPeriodAdministrationResponse(snapshot.MealPeriods, snapshot.Conflicts));
+            return Ok(new MealPeriodAdministrationResponse(snapshot.MealPeriods, snapshot.Conflicts,
+                snapshot.VenueLocalNow, snapshot.ActiveMealPeriodId, snapshot.NextMealPeriodId, snapshot.NextStartsLocal));
         }
+        catch (KeyNotFoundException) { return NotFound(); }
         catch (ArgumentException exception)
         {
             return ValidationProblem(exception.Message);
@@ -82,5 +84,13 @@ public sealed class PlatformOperationsMealPeriodsController(
         {
             return ValidationProblem(exception.Message);
         }
+    }
+
+    [HttpPut("order")]
+    public async Task<ActionResult<IReadOnlyCollection<MealPeriod>>> Reorder(
+        Guid venueId, MealPeriodReorderRequest request, CancellationToken cancellationToken)
+    {
+        try { return Ok(await service.ReorderAsync(venueId, request.OrderedIds, cancellationToken).ConfigureAwait(false)); }
+        catch (ArgumentException exception) { return ValidationProblem(exception.Message); }
     }
 }

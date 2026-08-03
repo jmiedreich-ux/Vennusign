@@ -12,16 +12,19 @@ export default function DateRangePromotionAdministration({ configuration, apiKey
   const [draft, setDraft] = useState<Draft>(initial);
   const [editingId, setEditingId] = useState<string>();
   const [error, setError] = useState<string>();
+  const [notice, setNotice] = useState<string>();
   const [busy, setBusy] = useState(false);
   const refresh = () => loadDateRangePromotions(configuration, apiKey, venueId).then(setRows);
   useEffect(() => { refresh().catch(() => setError("Promotions could not be loaded.")); }, [apiKey, configuration, venueId]);
   const save = async (event: FormEvent) => {
-    event.preventDefault(); if (!enabled) return; setBusy(true); setError(undefined);
-    try { await saveDateRangePromotion(configuration, apiKey, venueId, draft, editingId); setDraft(initial); setEditingId(undefined); await refresh(); }
+    event.preventDefault(); if (!enabled) return; setBusy(true); setError(undefined); setNotice(undefined);
+    try { await saveDateRangePromotion(configuration, apiKey, venueId, draft, editingId); setDraft(initial); setEditingId(undefined); await refresh(); setNotice("Promotion saved. The server will apply the highest-priority eligible promotion in venue-local time."); }
     catch { setError("The promotion could not be saved."); } finally { setBusy(false); }
   };
   const archive = async (id: string) => {
-    setBusy(true); try { await archiveDateRangePromotion(configuration, apiKey, venueId, id); await refresh(); }
+    const row = rows.find(item => item.id === id);
+    if (!row || !window.confirm(`Archive ${row.name}? It will stop being eligible for display.`)) return;
+    setBusy(true); setError(undefined); setNotice(undefined); try { await archiveDateRangePromotion(configuration, apiKey, venueId, id); await refresh(); setNotice(`${row.name} archived.`); }
     catch { setError("The promotion could not be archived."); } finally { setBusy(false); }
   };
   const edit = (row: DateRangePromotion) => {
@@ -41,7 +44,9 @@ export default function DateRangePromotionAdministration({ configuration, apiKey
   return <article className="promotion-admin">
     <div className="promotion-heading"><div><p>Scheduling</p><h3>Date-range promotions</h3></div><span>{rows.filter(row => row.isEnabled).length} enabled</span></div>
     {showUpgradePrompt && !enabled ? <p className="tier-notice">Promotion scheduling is visible as a preview. Enable Basic Scheduling to edit it.</p> : null}
-    {error ? <p className="state error">{error}</p> : null}
+    <p>Dates use the venue timezone. When eligible promotions overlap, the highest numeric priority wins; ties are resolved deterministically by the server.</p>
+    {error ? <p className="state error" role="alert">{error}</p> : null}
+    {notice ? <p className="state success" role="status">{notice}</p> : null}
     <form onSubmit={save}>
       <input aria-label="Promotion name" disabled={!enabled} maxLength={160} required placeholder="Holiday menu" value={draft.name} onChange={event => setDraft(value => ({ ...value, name: event.target.value }))} />
       <label>Start<input disabled={!enabled} required type="date" value={draft.startLocalDate.slice(0, 10)} onChange={event => setDraft(value => ({ ...value, startLocalDate: event.target.value }))} /></label>

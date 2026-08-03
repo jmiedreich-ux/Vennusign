@@ -120,6 +120,7 @@ export type MealPeriodWrite = Pick<MealPeriod, "name" | "startLocalTime" | "endL
 export type MealPeriodSnapshot = {
   mealPeriods: MealPeriod[];
   conflicts: Array<{ firstId: string; firstName: string; secondId: string; secondName: string }>;
+  venueLocalNow?: string; activeMealPeriodId?: string; nextMealPeriodId?: string; nextStartsLocal?: string;
 };
 export type HappyHourSnapshot = {
   schedule?: {
@@ -697,6 +698,9 @@ export async function createMealPeriod(configuration: BackOfficeConfiguration, a
 export async function updateMealPeriod(configuration: BackOfficeConfiguration, accessToken: string, venueId: string, value: MealPeriod): Promise<MealPeriod> {
   return (await areaRequest("meal-periods", configuration, accessToken, venueId, `/${value.id}`, { method: "PUT", body: JSON.stringify(value) })).json() as Promise<MealPeriod>;
 }
+export async function reorderMealPeriods(configuration: BackOfficeConfiguration, accessToken: string, venueId: string, orderedIds: string[]): Promise<MealPeriod[]> {
+  return (await areaRequest("meal-periods", configuration, accessToken, venueId, "/order", { method: "PUT", body: JSON.stringify({ orderedIds }) })).json() as Promise<MealPeriod[]>;
+}
 export async function deleteMealPeriod(configuration: BackOfficeConfiguration, accessToken: string, venueId: string, id: string): Promise<void> {
   await areaRequest("meal-periods", configuration, accessToken, venueId, `/${id}`, { method: "DELETE" });
 }
@@ -711,6 +715,9 @@ export async function loadPlaylist(configuration: BackOfficeConfiguration, acces
 }
 export async function createPlaylistSlide(configuration: BackOfficeConfiguration, accessToken: string, venueId: string, screenId: string, value: PlaylistSlideWrite): Promise<PlaylistSlide> {
   return (await areaRequest(`screens/${screenId}/playlist`, configuration, accessToken, venueId, "", { method: "POST", body: JSON.stringify(value) })).json() as Promise<PlaylistSlide>;
+}
+export async function updatePlaylistSlide(configuration: BackOfficeConfiguration, accessToken: string, venueId: string, screenId: string, slideId: string, value: PlaylistSlideWrite): Promise<PlaylistSlide> {
+  return (await areaRequest(`screens/${screenId}/playlist`, configuration, accessToken, venueId, `/${slideId}`, { method: "PUT", body: JSON.stringify(value) })).json() as Promise<PlaylistSlide>;
 }
 export async function reorderPlaylist(configuration: BackOfficeConfiguration, accessToken: string, venueId: string, screenId: string, orderedIds: string[]): Promise<PlaylistSlide[]> {
   return (await areaRequest(`screens/${screenId}/playlist`, configuration, accessToken, venueId, "/order", { method: "PUT", body: JSON.stringify({ orderedIds }) })).json() as Promise<PlaylistSlide[]>;

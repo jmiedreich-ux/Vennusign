@@ -5,7 +5,9 @@ namespace Vennu.Data.Services;
 
 public sealed class MealPeriodAdministrationService(
     IMealPeriodRepository repository,
-    TimeProvider timeProvider) : IMealPeriodAdministrationService
+    TimeProvider timeProvider,
+    IVenueRepository? venueRepository = null,
+    IMealPeriodScheduleResolver? scheduleResolver = null) : IMealPeriodAdministrationService
 {
     private const int MinutesPerDay = 1440;
     private const int MinutesPerWeek = MinutesPerDay * 7;
@@ -21,7 +23,16 @@ public sealed class MealPeriodAdministrationService(
                 .Where(second => first.IsEnabled && second.IsEnabled && Overlaps(first, second))
                 .Select(second => new MealPeriodConflict(first.Id, first.Name, second.Id, second.Name)))
             .ToArray();
-        return new MealPeriodAdministrationSnapshot(periods, conflicts);
+        if (venueRepository is null || scheduleResolver is null)
+        {
+            return new MealPeriodAdministrationSnapshot(periods, conflicts);
+        }
+        var venue = await venueRepository.GetByIdAsync(venueId, cancellationToken).ConfigureAwait(false);
+        if (venue is null) throw new KeyNotFoundException($"Venue '{venueId}' was not found.");
+        var resolution = scheduleResolver.Resolve(venue.Timezone, timeProvider.GetUtcNow(), periods);
+        return new MealPeriodAdministrationSnapshot(
+            periods, conflicts, resolution.LocalNow, resolution.ActiveMealPeriod?.Id,
+            resolution.NextMealPeriod?.Id, resolution.NextStartsLocal);
     }
 
     public async Task<MealPeriod> CreateAsync(
@@ -104,6 +115,36 @@ public sealed class MealPeriodAdministrationService(
         RequireId(venueId, nameof(venueId));
         RequireId(mealPeriodId, nameof(mealPeriodId));
         return repository.DeleteAsync(venueId, mealPeriodId, cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<MealPeriod>> ReorderAsync(
+        Guid venueId,
+        IReadOnlyCollection<Guid> orderedIds,
+        CancellationToken cancellationToken = default)
+    {
+        RequireId(venueId, nameof(venueId));
+        ArgumentNullException.ThrowIfNull(orderedIds);
+        var periods = (await repository.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false)).ToArray();
+        if (orderedIds.Count != periods.Length || orderedIds.Distinct().Count() != orderedIds.Count
+            || orderedIds.Any(id => periods.All(period => period.Id != id)))
+        {
+            throw new ArgumentException("Order must contain every meal period exactly once.", nameof(orderedIds));
+        }
+
+        var byId = periods.ToDictionary(period => period.Id);
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var ordered = orderedIds.Select((id, index) =>
+        {
+            var period = byId[id];
+            period.SortOrder = index;
+            period.UpdatedUtc = now;
+            return period;
+        }).ToArray();
+        foreach (var period in ordered)
+        {
+            await repository.UpdateAsync(period, cancellationToken).ConfigureAwait(false);
+        }
+        return ordered;
     }
 
     private static void Validate(

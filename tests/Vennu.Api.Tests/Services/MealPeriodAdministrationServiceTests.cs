@@ -61,6 +61,34 @@ public sealed class MealPeriodAdministrationServiceTests
             service.CreateAsync(Guid.NewGuid(), "Breakfast", TimeSpan.FromHours(7), TimeSpan.FromHours(11), 0, true));
     }
 
+    [Fact]
+    public async Task ReorderAsync_PersistsCompleteVenueOrder()
+    {
+        var venueId = Guid.NewGuid();
+        var first = Period(venueId, "Breakfast", 7, 11, DayOfWeek.Monday, 0);
+        var second = Period(venueId, "Lunch", 11, 15, DayOfWeek.Monday, 1);
+        var repository = new RepositoryFake(first, second);
+        var service = new MealPeriodAdministrationService(repository, new FixedTimeProvider());
+
+        var result = await service.ReorderAsync(venueId, [second.Id, first.Id]);
+
+        Assert.Collection(result,
+            item => { Assert.Same(second, item); Assert.Equal(0, item.SortOrder); },
+            item => { Assert.Same(first, item); Assert.Equal(1, item.SortOrder); });
+        Assert.Equal(2, repository.UpdateCount);
+    }
+
+    [Fact]
+    public async Task ReorderAsync_RejectsPartialOrder()
+    {
+        var venueId = Guid.NewGuid();
+        var first = Period(venueId, "Breakfast", 7, 11, DayOfWeek.Monday, 0);
+        var second = Period(venueId, "Lunch", 11, 15, DayOfWeek.Monday, 1);
+        var service = new MealPeriodAdministrationService(new RepositoryFake(first, second), new FixedTimeProvider());
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.ReorderAsync(venueId, [first.Id]));
+    }
+
     private static MealPeriod Period(Guid venueId, string name, int start, int end, DayOfWeek day, int order) => new()
     {
         Id = Guid.NewGuid(),
@@ -83,6 +111,7 @@ public sealed class MealPeriodAdministrationServiceTests
         private readonly List<MealPeriod> values = [.. periods];
         public MealPeriod? Created { get; private set; }
         public MealPeriod? Updated { get; private set; }
+        public int UpdateCount { get; private set; }
 
         public Task<Guid> CreateAsync(MealPeriod mealPeriod, CancellationToken cancellationToken = default)
         {
@@ -90,7 +119,7 @@ public sealed class MealPeriodAdministrationServiceTests
         }
         public Task<bool> UpdateAsync(MealPeriod mealPeriod, CancellationToken cancellationToken = default)
         {
-            Updated = mealPeriod; return Task.FromResult(true);
+            Updated = mealPeriod; UpdateCount++; return Task.FromResult(true);
         }
         public Task<bool> DeleteAsync(Guid venueId, Guid mealPeriodId, CancellationToken cancellationToken = default) =>
             Task.FromResult(values.RemoveAll(item => item.VenueId == venueId && item.Id == mealPeriodId) > 0);
