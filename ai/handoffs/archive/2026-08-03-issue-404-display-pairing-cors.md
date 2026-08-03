@@ -11,7 +11,7 @@
 - Preserved production configuration, pairing contracts, and explicit-origin security.
 
 ## Validation
-- Focused API CORS tests passed 3/3.
+- API unit tests passed 331/331, including 2 focused CORS tests.
 - Debug API build passed.
 - Actual preflight returned 204 with the Display allow-origin header.
 - Browser-equivalent registration returned 201 with a screen ID.

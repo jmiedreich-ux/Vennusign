@@ -19,7 +19,7 @@
 - Rebuilt Debug API; API and Display are listening for immediate `/pair` reload.
 
 ## Validation
-- Focused API CORS tests passed 3/3.
+- API unit tests passed 331/331, including 2 focused CORS tests.
 - Debug API build passed.
 - Actual preflight returned allowed origin.
 - Browser-equivalent registration returned 201 and screen ID.

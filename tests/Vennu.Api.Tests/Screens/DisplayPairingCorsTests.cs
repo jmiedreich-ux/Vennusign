@@ -12,22 +12,23 @@ public sealed class DisplayPairingCorsTests : IClassFixture<DisplayPairingCorsFa
 
     public DisplayPairingCorsTests(DisplayPairingCorsFactory factory) => this.factory = factory;
 
-    [Theory]
-    [InlineData("http://localhost:5175")]
-    [InlineData("https://localhost:5175")]
-    public async Task PairingPreflight_AllowsLocalDisplayOrigin(string origin)
+    [Fact]
+    public async Task PairingPreflight_AllowsLocalDisplayOrigins()
     {
         using var client = factory.CreateClient();
-        using var request = new HttpRequestMessage(HttpMethod.Options, "/api/screens");
-        request.Headers.Add("Origin", origin);
-        request.Headers.Add("Access-Control-Request-Method", "POST");
-        request.Headers.Add("Access-Control-Request-Headers", "content-type");
+        foreach (var origin in new[] { "http://localhost:5175", "https://localhost:5175" })
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Options, "/api/screens");
+            request.Headers.Add("Origin", origin);
+            request.Headers.Add("Access-Control-Request-Method", "POST");
+            request.Headers.Add("Access-Control-Request-Headers", "content-type");
 
-        using var response = await client.SendAsync(request);
+            using var response = await client.SendAsync(request);
 
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Equal(origin, Assert.Single(response.Headers.GetValues("Access-Control-Allow-Origin")));
-        Assert.Contains("POST", response.Headers.GetValues("Access-Control-Allow-Methods"));
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            Assert.Equal(origin, Assert.Single(response.Headers.GetValues("Access-Control-Allow-Origin")));
+            Assert.Contains("POST", response.Headers.GetValues("Access-Control-Allow-Methods"));
+        }
     }
 
     [Fact]
