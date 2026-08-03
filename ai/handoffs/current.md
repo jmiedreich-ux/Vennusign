@@ -2,32 +2,32 @@
 
 ## Current State
 
-- Item: DOC-MAINT-001 / issue #410
-- Mode: Collaborative
-- Branch: `issue/410-agent-doc-routing`
+- Item: PROC-001 / issue #412
+- Mode: Mobile Collaborative
+- Branch: `issue/412-desktop-collaboration`
 - Status: Complete in the proposed merge state
 
 ## Goal
 
-Reduce routine agent Markdown context while preserving historical material for deliberate research.
+Define a local-first Desktop Collaborative mode without changing the successful Mobile Collaborative workflow, and prevent Markdown proliferation during desktop sessions.
 
 ## Result
 
-- Routine startup guidance is current and reduced.
-- Completed records and superseded guidance are preserved under `docs/archive/`.
-- `docs/work-packages/` contains only the unfinished `INT-TESTING-001` record and its routing README.
-- No application behavior or future-phase plan changed.
+- Sequential, Mobile Collaborative, and Desktop Collaborative modes are explicitly separated.
+- Desktop sessions pause sequential work, use one visible lock, merge logical branches locally, and publish at meaningful checkpoints.
+- Markdown is controlled: update living records first, batch checkpoint updates, and create archive snapshots only for durable milestones or explicit requests.
+- No application behavior or future-phase plan changes.
 
 ## Validation
 
-- Markdown inventory, active-path routing, stale-phase scan, JSON parsing, and repository diff checks pass locally.
+- JSON parsing, Markdown policy review, and repository diff checks are required locally.
 - Documentation-only GitHub Actions validation is required on the exact PR head.
 - Integration and application tests are not applicable.
 
 ## Exact Next Action
 
-Validate the exact PR head, complete ChatGPT review, merge issue #410, and retain Phase 14+ as paused.
+Validate the exact PR head, review, merge PROC-001, close issue #412, and retain Phase 14+ as paused.
 
 ## Do Not Redo
 
-Do not move `INT-TESTING-001` into the archive while it remains unfinished, and do not treat archived statements as current authority.
+Do not reinterpret Mobile Collaborative behavior, resume Phase 14+, or create per-session/per-branch Markdown records.
