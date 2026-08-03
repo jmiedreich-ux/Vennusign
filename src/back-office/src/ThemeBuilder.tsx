@@ -50,21 +50,26 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
   const [screens, setScreens] = useState<ManagedScreen[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string>();
+  const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
-  useEffect(() => {
-    Promise.all([
+  const load = async () => {
+    setLoading(true); setLoadFailed(false); setMessage(undefined);
+    try {
+      const [value, loadedScreens, availablePresets] = await Promise.all([
       loadVenueTheme(configuration, apiKey, venueId),
       loadManagedScreens(configuration, apiKey, venueId),
       loadVenueThemePresets(configuration, apiKey, venueId)
-    ])
-      .then(([value, screens, availablePresets]) => {
-        setTheme(value);
-        const activeScreens = screens.filter(screen => screen.status.toLowerCase() !== "archived");
-        setScreens(activeScreens);
-        setScreenId(activeScreens[0]?.id);
-        setPresets(availablePresets);
-      })
-      .catch(() => setMessage("Theme controls could not be loaded."));
+      ]);
+      setTheme(value);
+      const activeScreens = loadedScreens.filter(screen => screen.status.toLowerCase() !== "archived");
+      setScreens(activeScreens); setScreenId(activeScreens[0]?.id); setPresets(availablePresets);
+    } catch {
+      setTheme(undefined); setLoadFailed(true); setMessage("Theme controls could not be loaded.");
+    } finally { setLoading(false); }
+  };
+  useEffect(() => {
+    void load();
   }, [apiKey, configuration, venueId]);
 
   const previewUrl = useMemo(() => {
@@ -234,6 +239,6 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
           ? <iframe key={previewUrl} src={previewUrl} title="Exact TV theme preview" />
           : <p>Add a venue screen to enable the player-backed preview.</p>}
       </div>
-    </div> : <p>Loading theme…</p>}
+    </div> : loadFailed ? <div className="state error" role="alert"><p>Theme state is unavailable.</p><button type="button" disabled={loading} onClick={() => void load()}>Retry theme controls</button></div> : <p role="status">Loading theme…</p>}
   </article>;
 }
