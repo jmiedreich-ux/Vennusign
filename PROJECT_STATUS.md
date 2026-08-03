@@ -150,7 +150,7 @@ The next milestone is frictionless customer identity, signup, tier-defined entit
 
 ## Active Work Package
 
-No implementation package is active. Issue-389 completed the local secret-safe Super Admin key helper through PR #390. Phase 14 remains paused.
+**Issue-392 — Fix Configuration Rotation Migration** is in review after reproducing and correcting the LocalDB startup failure. Phase 14 remains paused.
 
 ## Phase 04 Result
 
