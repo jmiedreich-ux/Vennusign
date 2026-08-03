@@ -46,6 +46,7 @@ public sealed class VenueDirectoryService : IVenueDirectoryService
             subscriptionByVenue.TryGetValue(venue.Id, out var subscription);
             var tier = subscription is null ? null : tierById.GetValueOrDefault(subscription.TierId);
             var screens = await screenRepository.GetByVenueIdAsync(venue.Id, cancellationToken).ConfigureAwait(false);
+            screens = screens.Where(screen => !string.Equals(screen.Status, "Archived", StringComparison.OrdinalIgnoreCase)).ToArray();
             var overrides = await overrideRepository.GetActiveByVenueAsync(venue.Id, now, cancellationToken).ConfigureAwait(false);
             var item = new VenueDirectoryItem(
                 venue.Id,
@@ -91,4 +92,3 @@ public sealed class VenueDirectoryService : IVenueDirectoryService
                 string.Equals(item.Health, query.Health.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 }
-

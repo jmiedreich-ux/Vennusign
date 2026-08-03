@@ -1,6 +1,8 @@
 using System.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Vennu.Api.Configuration;
 
 namespace Vennu.Api.Tests.Screens;
@@ -56,5 +58,6 @@ public sealed class DisplayPairingCorsFactory : WebApplicationFactory<Program>
         {
             builder.UseSetting($"Cors:AllowedOrigins:{index}", DevelopmentCorsOrigins.Values[index]);
         }
+        builder.ConfigureServices(services => services.RemoveAll<IHostedService>());
     }
 }

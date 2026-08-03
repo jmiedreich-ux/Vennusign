@@ -64,6 +64,21 @@ public sealed class VideoWallServiceTests
         Assert.Contains("Video Wall", error.Message);
     }
 
+    [Fact]
+    public async Task SaveAsync_RejectsArchivedScreen()
+    {
+        var venueId = Guid.NewGuid();
+        var active = new Screen { Id = Guid.NewGuid(), VenueId = venueId, Name = "Active" };
+        var archived = new Screen { Id = Guid.NewGuid(), VenueId = venueId, Name = "Old", Status = "Archived" };
+        var screens = new FakeScreenRepository
+        {
+            GetByVenueIdAsyncHandler = (_, _) => Task.FromResult<IReadOnlyCollection<Screen>>([active, archived])
+        };
+        var service = CreateService(venueId, screens, true, new RecordingNotifier());
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.SaveAsync(venueId, "Wall", "2x1", [active.Id, archived.Id]));
+    }
+
     private static VideoWallService CreateService(
         Guid venueId,
         FakeScreenRepository screens,

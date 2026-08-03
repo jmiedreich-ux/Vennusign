@@ -25,7 +25,7 @@ public sealed class VideoWallService(
         await RequireVenueAsync(venueId, cancellationToken).ConfigureAwait(false);
         var screens = await screenRepository.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
         var groups = screens
-            .Where(screen => !string.IsNullOrWhiteSpace(screen.WallGroup) && screen.WallPosition.HasValue)
+            .Where(screen => !IsArchived(screen) && !string.IsNullOrWhiteSpace(screen.WallGroup) && screen.WallPosition.HasValue)
             .GroupBy(screen => screen.WallGroup!, StringComparer.OrdinalIgnoreCase)
             .OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
             .Select(group =>
@@ -61,7 +61,7 @@ public sealed class VideoWallService(
         }
 
         var screens = await screenRepository.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
-        var byId = screens.ToDictionary(screen => screen.Id);
+        var byId = screens.Where(screen => !IsArchived(screen)).ToDictionary(screen => screen.Id);
         if (screenIds.Any(screenId => !byId.ContainsKey(screenId)))
         {
             throw new ArgumentException("Every selected screen must belong to the venue.", nameof(screenIds));
@@ -156,4 +156,7 @@ public sealed class VideoWallService(
         4 => "2x2",
         _ => $"{count}-screen"
     };
+
+    private static bool IsArchived(Screen screen) =>
+        string.Equals(screen.Status, "Archived", StringComparison.OrdinalIgnoreCase);
 }

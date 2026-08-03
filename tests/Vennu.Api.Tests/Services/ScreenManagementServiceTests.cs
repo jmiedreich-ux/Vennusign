@@ -208,6 +208,64 @@ public sealed class ScreenManagementServiceTests
         Assert.Equal(1, notifier.ScreenContentCount);
     }
 
+    [Fact]
+    public async Task Lifecycle_ArchivesRestoresAndResetsOwnedScreen()
+    {
+        var venueId = Guid.NewGuid();
+        var screen = new Screen
+        {
+            Id = Guid.NewGuid(), VenueId = venueId, Name = "Patio", Status = "Online",
+            LastSeen = new DateTime(2026, 7, 29, 23, 20, 0, DateTimeKind.Utc), WallGroup = "Main", WallPosition = 1
+        };
+        var screens = new FakeScreenRepository { GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(screen) };
+        var service = CreateService(venueId, screens, new RecordingNotifier());
+
+        var archived = await service.SetArchivedAsync(venueId, screen.Id, true);
+        Assert.Equal("Archived", archived?.Status);
+        Assert.Null(screen.WallGroup);
+        Assert.False(await service.PushAsync(venueId, screen.Id));
+
+        var restored = await service.SetArchivedAsync(venueId, screen.Id, false);
+        Assert.Equal("Offline", restored?.Status);
+        var reset = await service.ResetAsync(venueId, screen.Id);
+        Assert.Equal("Offline", reset?.Status);
+        Assert.Null(reset?.LastSeen);
+    }
+
+    [Fact]
+    public async Task UnpairAsync_ReleasesOwnershipWithoutDeletingDeviceIdentity()
+    {
+        var venueId = Guid.NewGuid();
+        var screen = new Screen
+        {
+            Id = Guid.NewGuid(), VenueId = venueId, ScreenKey = "sc-device", Name = "Replacement",
+            Status = "Offline", WallGroup = "Main", WallPosition = 2
+        };
+        var screens = new FakeScreenRepository { GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(screen) };
+        var service = CreateService(venueId, screens, new RecordingNotifier());
+
+        Assert.True(await service.UnpairAsync(venueId, screen.Id));
+        Assert.Null(screen.VenueId);
+        Assert.Equal("Unpaired", screen.Status);
+        Assert.Equal("sc-device", screen.ScreenKey);
+        Assert.Null(screen.WallGroup);
+    }
+
+    [Fact]
+    public async Task Lifecycle_RejectsCrossVenueMutation()
+    {
+        var venueId = Guid.NewGuid();
+        var screens = new FakeScreenRepository
+        {
+            GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(new Screen { Id = Guid.NewGuid(), VenueId = Guid.NewGuid() })
+        };
+        var service = CreateService(venueId, screens, new RecordingNotifier());
+
+        Assert.Null(await service.SetArchivedAsync(venueId, Guid.NewGuid(), true));
+        Assert.Null(await service.ResetAsync(venueId, Guid.NewGuid()));
+        Assert.False(await service.UnpairAsync(venueId, Guid.NewGuid()));
+    }
+
     private static ScreenManagementService CreateService(
         Guid venueId,
         FakeScreenRepository screens,

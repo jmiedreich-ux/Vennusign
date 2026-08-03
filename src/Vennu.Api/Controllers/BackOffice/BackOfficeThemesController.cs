@@ -96,4 +96,19 @@ public sealed class BackOfficeThemesController(IVenueThemeService service) : Con
             return ValidationProblem(exception.Message);
         }
     }
+
+    [HttpDelete]
+    public async Task<ActionResult<VenueThemeResponse>> Reset(
+        Guid venueId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await service.ResetAsync(venueId, cancellationToken).ConfigureAwait(false));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
 }

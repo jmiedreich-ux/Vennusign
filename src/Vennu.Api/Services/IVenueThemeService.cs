@@ -22,4 +22,8 @@ public interface IVenueThemeService
         Guid venueId,
         string presetKey,
         CancellationToken cancellationToken = default);
+
+    Task<VenueThemeResponse> ResetAsync(
+        Guid venueId,
+        CancellationToken cancellationToken = default);
 }

@@ -48,6 +48,16 @@ public class DisplayController : ControllerBase
             return NotFound(new ProblemDetails { Title = "Screen not found.", Detail = $"Screen '{screenId}' was not found.", Status = StatusCodes.Status404NotFound });
         }
 
+        if (string.Equals(screen.Status, "Archived", StringComparison.OrdinalIgnoreCase))
+        {
+            return StatusCode(StatusCodes.Status410Gone, new ProblemDetails
+            {
+                Title = "Screen archived.",
+                Detail = "Restore this screen in Back Office before using the player.",
+                Status = StatusCodes.Status410Gone
+            });
+        }
+
         var response = new DisplayContentResponse
         {
             ScreenId = screen.Id,
@@ -200,7 +210,8 @@ public class DisplayController : ControllerBase
         }
 
         var wallScreens = (await screenRepository.GetByVenueIdAsync(venueId, cancellationToken))
-            .Where(candidate => string.Equals(candidate.WallGroup, screen.WallGroup, StringComparison.Ordinal))
+            .Where(candidate => !string.Equals(candidate.Status, "Archived", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(candidate.WallGroup, screen.WallGroup, StringComparison.Ordinal))
             .OrderBy(candidate => candidate.WallPosition ?? int.MaxValue)
             .ThenBy(candidate => candidate.Id)
             .ToArray();

@@ -56,5 +56,14 @@ public sealed class BackOfficeScreensControllerTests
 
         public Task<bool> PushAsync(Guid venueId, Guid screenId, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
+
+        public Task<ScreenManagementItem?> SetArchivedAsync(Guid venueId, Guid screenId, bool archived, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<ScreenManagementItem?> ResetAsync(Guid venueId, Guid screenId, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<bool> UnpairAsync(Guid venueId, Guid screenId, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
     }
 }

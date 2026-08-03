@@ -95,4 +95,19 @@ public sealed class PlatformOperationsThemesController(IVenueThemeService servic
             return ValidationProblem(exception.Message);
         }
     }
+
+    [HttpDelete]
+    public async Task<ActionResult<VenueThemeResponse>> Reset(
+        Guid venueId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await service.ResetAsync(venueId, cancellationToken).ConfigureAwait(false));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
 }

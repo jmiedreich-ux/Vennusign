@@ -38,6 +38,19 @@ public class DisplayControllerTests
         Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
     }
 
+    [Fact]
+    public async Task GetContent_ReturnsGone_WhenScreenIsArchived()
+    {
+        var screen = new Screen { Id = Guid.NewGuid(), VenueId = Guid.NewGuid(), Status = "Archived" };
+        var screens = new FakeScreenRepository { GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(screen) };
+        var sut = CreateController(screens);
+
+        var result = await sut.GetContent(screen.Id, CancellationToken.None);
+
+        var gone = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status410Gone, gone.StatusCode);
+    }
+
     private sealed class HappyHourFake : IHappyHourService
     {
         public Task<HappyHourSnapshot> GetAsync(Guid venueId, DateTimeOffset utcNow, CancellationToken cancellationToken = default) =>

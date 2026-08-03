@@ -74,6 +74,21 @@ public class ScreenRepositoryTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    public async Task UpdateHeartbeatAsync_DoesNotReactivateArchivedScreen()
+    {
+        var screen = new Screen { Id = Guid.NewGuid(), Status = "Archived" };
+        var dataAccess = new FakeSqlDataAccess { QueryHandler = _ => screen, UpdateResult = 1 };
+        var sut = new ScreenRepository(dataAccess);
+
+        var updated = await sut.UpdateHeartbeatAsync(screen.Id, DateTime.UtcNow, "Online");
+
+        Assert.False(updated);
+        Assert.Equal("Archived", screen.Status);
+        Assert.Empty(dataAccess.UpdatedEntities);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
     public async Task MarkStaleOnlineScreensOfflineAsync_OnlyUpdatesScreensOlderThanCutoff()
     {
         var cutoff = new DateTime(2026, 7, 25, 1, 0, 0, DateTimeKind.Utc);

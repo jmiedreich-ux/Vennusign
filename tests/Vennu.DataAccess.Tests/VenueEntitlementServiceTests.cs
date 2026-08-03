@@ -20,6 +20,20 @@ public sealed class VenueEntitlementServiceTests
         await Assert.ThrowsAsync<TierScreenLimitReachedException>(() => service.EnsureCanAddScreenAsync(venueId));
     }
 
+    [Fact]
+    public async Task EnsureCanAddScreen_DoesNotCountArchivedRecoveryRecords()
+    {
+        var venueId = Guid.NewGuid(); var tierId = Guid.NewGuid();
+        var subscription = new VenueSubscription { VenueId=venueId, TierId=tierId, Status="active" };
+        var service = new VenueEntitlementService(
+            new SubscriptionFake(subscription),
+            new TierFake(new SubscriptionTier { Id=tierId, MaxScreens=1 }),
+            new ScreenFake([new Screen { Id=Guid.NewGuid(), VenueId=venueId, Status="Archived" }]),
+            TimeProvider.System);
+
+        await service.EnsureCanAddScreenAsync(venueId);
+    }
+
     private sealed class SubscriptionFake(VenueSubscription value) : IVenueSubscriptionRepository
     {
         public Task<VenueSubscription?> GetByVenueIdAsync(Guid id,CancellationToken ct=default)=>Task.FromResult<VenueSubscription?>(value);

@@ -126,6 +126,38 @@ public sealed class BackOfficeScreensController(
             ? NoContent()
             : NotFound();
 
+    [HttpPut("{screenId:guid}/lifecycle")]
+    public async Task<ActionResult<ScreenManagementItem>> SetLifecycle(
+        Guid venueId,
+        Guid screenId,
+        ScreenLifecycleRequest request,
+        CancellationToken cancellationToken)
+    {
+        var screen = await screenService
+            .SetArchivedAsync(venueId, screenId, request.Archived, cancellationToken)
+            .ConfigureAwait(false);
+        return screen is null ? NotFound() : Ok(screen);
+    }
+
+    [HttpPost("{screenId:guid}/reset")]
+    public async Task<ActionResult<ScreenManagementItem>> Reset(
+        Guid venueId,
+        Guid screenId,
+        CancellationToken cancellationToken)
+    {
+        var screen = await screenService.ResetAsync(venueId, screenId, cancellationToken).ConfigureAwait(false);
+        return screen is null ? NotFound() : Ok(screen);
+    }
+
+    [HttpDelete("{screenId:guid}/pairing")]
+    public async Task<IActionResult> Unpair(
+        Guid venueId,
+        Guid screenId,
+        CancellationToken cancellationToken) =>
+        await screenService.UnpairAsync(venueId, screenId, cancellationToken).ConfigureAwait(false)
+            ? NoContent()
+            : NotFound();
+
     [HttpPost("push-all")]
     public async Task<ActionResult<ScreenPushAllResult>> PushAll(
         Guid venueId,

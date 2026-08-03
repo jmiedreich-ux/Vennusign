@@ -22,11 +22,30 @@ test("venue operations compose screen targeting pairing and video walls", () => 
 test("screen creation and pairing expose the subscribed screen quota", () => {
   assert.match(app, /maxScreens=\{billing\?\.currentTier\?\.maxScreens\}/);
   assert.match(operations, /maxScreens=\{maxScreens\}/);
-  assert.match(screens, /screens\.length >= maxScreens/);
+  assert.match(screens, /activeScreens\.length >= maxScreens/);
   assert.match(screens, /busyId === "new" \|\| screenLimitReached/);
   assert.match(screens, /busyId === "pair" \|\| screenLimitReached/);
   assert.match(screens, /reason\.status === 409/);
   assert.match(screens, /Plan limit reached/);
+});
+
+test("screen lifecycle recovery is explicit safe and capacity-aware", () => {
+  assert.match(screens, /setManagedScreenArchived/);
+  assert.match(screens, /resetManagedScreen/);
+  assert.match(screens, /unpairManagedScreen/);
+  assert.match(screens, /window\.confirm/);
+  assert.match(screens, /healthFilter/);
+  assert.match(screens, /expired/);
+  assert.match(screens, /already claimed/);
+  assert.match(api, /setManagedScreenArchived/);
+  assert.match(api, /unpairManagedScreen/);
+});
+
+test("video wall editing and removal require deliberate recovery-safe actions", () => {
+  assert.match(walls, /editingName/);
+  assert.match(walls, /Edit wall/);
+  assert.match(walls, /window\.confirm/);
+  assert.match(walls, /Cancel edit/);
 });
 
 test("video wall builder follows the effective video_wall capability", () => {

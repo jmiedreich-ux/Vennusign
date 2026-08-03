@@ -118,6 +118,11 @@ public class ScreenRepository : IScreenRepository
             return false;
         }
 
+        if (string.Equals(screen.Status, "Archived", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
         screen.LastSeen = lastSeenUtc;
         screen.Status = status;
         if (!string.IsNullOrWhiteSpace(platform))
