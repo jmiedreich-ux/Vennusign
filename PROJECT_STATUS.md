@@ -4,9 +4,10 @@
 
 - Phase 13 — Customer Identity, Signup, and Onboarding: complete.
 - Phase 14 and later: paused pending explicit owner approval.
-- Active product WP/RWP: none.
-- Active maintenance: PROC-001 / issue #412 is complete in the proposed merge state.
-- Research program `INT-TESTING-001` remains documented but is not authorized by this maintenance item.
+- Active product WP/RWP: none claimed.
+- Approved Sequential remediation queue: RWP-04.02, RWP-05.04, RWP-05.05, RWP-08.01, RWP-09.01, then RWP-11.02.
+- Next available package: RWP-04.02 / issue #343.
+- Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
 ## Completed Delivery
 
@@ -33,4 +34,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-Do not create or begin a future-phase package until the owner explicitly resumes planning or implementation. Process maintenance and issue-first research may proceed only when separately approved and claimed. Desktop Collaborative sessions must keep sequential execution paused until their visible session lock is explicitly released.
+Claim RWP-04.02 / issue #343 in Sequential mode, complete and release it, then continue in the recorded queue without skipping. Phase 14 and later remain paused and must not be planned, claimed, or implemented.
