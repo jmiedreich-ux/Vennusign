@@ -61,3 +61,12 @@ Vennusign has one product release version that identifies an approved, immutable
 - Mode: Sequential
 - Depends on the current component/project structure and completed RWP-10.01 player runtime work.
 - Queue position: next approved product item.
+
+## Implementation
+
+- Status: implemented; pending exact-head CI and merge.
+- Canonical template and JSON schema: `docs/operations/release/`.
+- Manifest validation/materialization: `src/display/scripts/releaseManifest.mjs`.
+- Safe API runtime metadata: `GET /health/version`.
+- Focused coverage: release-manifest validation/progression tests and API metadata unit test.
+- Integration-type validation remains intentionally skipped.

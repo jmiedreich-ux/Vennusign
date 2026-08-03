@@ -4,16 +4,15 @@
 
 - Item: RWP-00.04 — Deployment Component Versioning and Release Manifest / issue #437
 - Mode: Sequential
-- Branch: not yet claimed
-- Status: Approved and first of five queued RWPs
+- Branch: `rwp/00.04-deployment-component-versioning`
+- Status: Implemented; pending exact-head CI, review, and merge
 
 ## Approved Queue
 
-1. RWP-00.04 / #437 — deployment component versioning and release manifest
-2. RWP-05.07 / #439 — atomic screen replacement and pairing recovery
-3. RWP-08.02 / #440 — daylight-saving-safe scheduling resolution
-4. RWP-10.02 / #441 — durable player content receipts and delivery reconciliation
-5. RWP-00.05 / #442 — affected-screen action completeness and recovery
+1. RWP-05.07 / #439 — atomic screen replacement and pairing recovery
+2. RWP-08.02 / #440 — daylight-saving-safe scheduling resolution
+3. RWP-10.02 / #441 — durable player content receipts and delivery reconciliation
+4. RWP-00.05 / #442 — affected-screen action completeness and recovery
 
 Each package must be claimed, implemented, validated, merged, and released before the next package is claimed. The scheduled run may complete up to five packages.
 
@@ -34,4 +33,4 @@ Each package must be claimed, implemented, validated, merged, and released befor
 
 ## Exact Next Action
 
-The Sequential agent may claim RWP-00.04 / issue #437, create `rwp/00.04-deployment-component-versioning`, and implement `docs/work-packages/RWP-00.04-deployment-component-versioning.md`. After merge and claim release, continue in the recorded queue order.
+Review RWP-00.04 at its exact PR head, require affected-area GitHub Actions, merge and close issue #437, then claim RWP-05.07. Continue in recorded queue order only after the prior claim is released.
