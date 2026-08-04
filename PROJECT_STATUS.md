@@ -4,7 +4,7 @@
 
 - Phase 13 — Customer Identity, Signup, and Onboarding: complete.
 - Phase 14 and later: paused pending explicit owner approval.
-- Active product WP/RWP: RWP-07.01 / issue #456 is complete in this proposed merge state.
+- Active product WP/RWP: RWP-00.11 / issue #457 is complete in this proposed merge state.
 - The 13-package retrospective remediation round is complete.
 - RWP-00.04 — Deployment Component Versioning and Release Manifest (#437) is complete.
 - RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439) is complete.
@@ -20,8 +20,9 @@
 - RWP-04.03 — Platform Operations Mobile and Console Polish (#453) is complete and merged.
 - RWP-00.09 — Transient Feedback System (#454) is complete and merged.
 - RWP-00.10 — Iconography, Empty States, and Loading Skeletons (#455) is complete and merged.
-- RWP-07.01 — Display Theme Font Bundling (#456) packages all non-system player theme fonts locally and removes the runtime Google Fonts dependency.
-- RWP-00.11 — Midnight Admin Theme (#457) is next only after RWP-07.01 merges and releases its claim.
+- RWP-07.01 — Display Theme Font Bundling (#456) is complete and merged.
+- RWP-00.11 — Midnight Admin Theme (#457) adds one persistent, accessible Sky/Midnight switch and semantic dark palette across both admin applications.
+- RWP-00.12 — Sky UI Visual Standard (#458) is next only after RWP-00.11 merges and releases its claim.
 - RWP-13.06 — Trial-First Onboarding (#466) remains held pending an explicit owner decision and is not part of the executable queue.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
@@ -52,4 +53,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-Complete exact-head Actions, review, and merge for RWP-07.01 / issue #456; close the issue, verify `master`, and release the claim. RWP-00.11 / issue #457 is the next approved package only after that sequence completes. Phase 14 and later remain paused.
+Complete exact-head Actions, review, and merge for RWP-00.11 / issue #457; close the issue, verify `master`, and release the claim. RWP-00.12 / issue #458 is the next approved package only after that sequence completes. Phase 14 and later remain paused.

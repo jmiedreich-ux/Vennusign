@@ -29,6 +29,12 @@
   --sky-color-warning-surface: #fdf1dc;
   --sky-color-emergency: #c22e26;
   --sky-color-promotion: #7c5cbf;
+  --sky-label-accent: #267252;
+  --sky-positive-text: #18603f;
+  --sky-danger-text: #8a2929;
+  --sky-warning-text: #7d5911;
+  --sky-danger-solid: #991b1b;
+  --sky-warning-solid: #854d0e;
 
   /* Semantic color aliases used by components. */
   --sky-page-background: var(--sky-color-surface);
@@ -83,4 +89,30 @@
   --sky-badge-radius: var(--sky-radius-sm);
   --sky-card-border: 1px solid var(--sky-color-border);
   --sky-page-gradient: radial-gradient(circle at top right, var(--sky-color-secondary), var(--sky-color-background-base) 54%);
+}
+
+:root[data-sky-theme="midnight"] {
+  color-scheme: dark;
+  --sky-color-surface: #111827;
+  --sky-color-surface-raised: #1e293b;
+  --sky-color-ink: #f8fafc;
+  --sky-color-secondary: #17344a;
+  --sky-color-border: #475569;
+  --sky-color-background-base: #0b1120;
+  --sky-color-text-secondary: #cbd5e1;
+  --sky-color-text-muted: #94a3b8;
+  --sky-color-live: #65d99c;
+  --sky-color-live-surface: #123d2d;
+  --sky-color-off: #ff8a83;
+  --sky-color-off-surface: #4a2024;
+  --sky-color-warning: #f4c15d;
+  --sky-color-warning-surface: #493518;
+  --sky-label-accent: #87ceeb;
+  --sky-positive-text: #65d99c;
+  --sky-danger-text: #ff8a83;
+  --sky-warning-text: #f4c15d;
+  --sky-action-primary-text: #0f172a;
+  --sky-action-dark-background: #e2e8f0;
+  --sky-action-dark-text: #0f172a;
+  --sky-page-gradient: radial-gradient(circle at top right, #17344a, #0b1120 54%);
 }
