@@ -27,6 +27,16 @@ function currentRoute() {
   return routes.find(route => route.path === value) ?? routes[0];
 }
 
+function accessFailureMessage(reason: unknown) {
+  if (reason instanceof PlatformOperationsApiError) {
+    if (reason.status === 401) return "That access key was rejected or has expired. Request a current key through the protected operations channel, then try again.";
+    if (reason.status === 403) return "That key is valid but does not grant Platform Operations access. Ask an administrator to verify your operations permission.";
+    return reason.message;
+  }
+  if (reason instanceof DOMException && reason.name === "AbortError") return undefined;
+  return "The Platform Operations API is unavailable. Check the service status, then try again.";
+}
+
 export default function App() {
   const [selectedVenueId, setSelectedVenueId] = useState<string>();
   const configuration = useMemo(loadPlatformOperationsConfiguration, []);
@@ -45,8 +55,7 @@ export default function App() {
         sessionStorage.removeItem(accessKeyStorageKey);
         sessionStorage.removeItem(legacyAccessKeyStorageKey);
         setApiKey("");
-        if (reason instanceof PlatformOperationsApiError) setError(reason.message);
-        else if (!(reason instanceof DOMException && reason.name === "AbortError")) setError("The admin API is unavailable.");
+        setError(accessFailureMessage(reason));
       });
     return () => controller.abort();
   }, [apiKey, configuration]);
@@ -74,8 +83,16 @@ export default function App() {
     window.location.hash = "/venues";
   };
 
+  const signOut = () => {
+    sessionStorage.removeItem(accessKeyStorageKey);
+    sessionStorage.removeItem(legacyAccessKeyStorageKey);
+    setError(undefined);
+    setSession(undefined);
+    setApiKey("");
+  };
+
   if (!apiKey || error) {
-    return <main className="centered"><form className="access-card" onSubmit={authorize}><span>Vennusign Internal</span><h1>Platform Operations access</h1><p>{error ?? "Enter the access key supplied through the protected operations channel."}</p><label htmlFor="platformOperationsKey">Access key</label><input id="platformOperationsKey" name="platformOperationsKey" type="password" autoComplete="current-password" required /><button type="submit">Open workspace</button></form></main>;
+    return <main className="centered"><form className="access-card" onSubmit={authorize}><span>Vennusign Internal</span><h1>Platform Operations access</h1><p id="access-guidance" className={error ? "access-error" : undefined} role={error ? "alert" : undefined}>{error ?? "Enter the access key supplied through the protected operations channel."}</p><label htmlFor="platformOperationsKey">Access key</label><input id="platformOperationsKey" name="platformOperationsKey" type="password" autoComplete="current-password" aria-describedby="access-guidance" aria-invalid={error ? true : undefined} required /><button type="submit">Open workspace</button></form></main>;
   }
   if (!session) {
     return <main className="centered"><p className="loading">Opening secure workspace…</p></main>;
@@ -88,10 +105,10 @@ export default function App() {
         <nav aria-label="Platform Operations">
           {routes.map(item => <a className={route.path === item.path ? "active" : ""} href={`#/${item.path}`} key={item.path}><strong>{item.label}</strong><small>{item.description}</small></a>)}
         </nav>
-        <button className="identity" type="button" onClick={() => { sessionStorage.removeItem(accessKeyStorageKey); sessionStorage.removeItem(legacyAccessKeyStorageKey); setSession(undefined); setApiKey(""); }}><span>{session.displayName.slice(0, 1)}</span><div><strong>{session.displayName}</strong><small>Sign out</small></div></button>
+        <button className="identity" type="button" onClick={signOut}><span>{session.displayName.slice(0, 1)}</span><div><strong>{session.displayName}</strong><small>Sign out</small></div></button>
       </aside>
       <main>
-        <header><div><p>Internal operations</p><h1>{route.label}</h1></div><span className="environment">Live workspace</span></header>
+        <header><div><p>Internal operations</p><h1>{route.label}</h1></div><div className="header-actions"><span className="environment">Live workspace</span><button className="mobile-signout" type="button" onClick={signOut}>Sign out</button></div></header>
         {route.path === "dashboard"
           ? <OperationalDashboard configuration={configuration} apiKey={apiKey} onOpenVenues={openVenues} />
           : route.path === "venues"
