@@ -2,10 +2,10 @@
 
 ## Current State
 
-- Item: RWP-00.14 — Project-Local Impeccable Codex Design Skill / issue #486
-- Mode: Sequential
-- Branch: `rwp/00.14-impeccable-codex-skill`
-- Status: Official v4.0.4 project-local skill and advisory hook installed; pending exact-head Actions, review, and merge
+- Item: none after the proposed RWP-00.14 merge
+- Mode: paused
+- Branch: none after merge
+- Status: RWP-00.14 complete; claim released in the proposed merge state
 
 ## Approved Queue
 
@@ -16,6 +16,7 @@ The approved 18-item product remediation queue is complete. RWP-00.14 / issue #4
 - Codex discovers the complete official Impeccable v4.0.4 skill from `.agents/skills/impeccable`.
 - `.codex/hooks.json` runs the project-local advisory detector after UI edits and at stop on Node 22 or newer, with POSIX and Windows paths.
 - `AGENTS.md` requires the skill's routed, bounded UX workflow for every changed UI surface.
+- Actions run #932 passed the complete non-integration suite on installation head `103bbcab82344d641015281909e64c43c46d1621`; final completion-record head validation remains required before merge.
 
 ## Boundaries
 
@@ -27,4 +28,4 @@ The approved 18-item product remediation queue is complete. RWP-00.14 / issue #4
 
 ## Exact Next Action
 
-Publish the RWP-00.14 implementation PR, require affected tooling/documentation GitHub Actions on the exact reviewed head, review and merge it, close issue #486, verify `master`, and release the claim. Then stop with the approved product queue complete.
+Validate and review the final completion-record head, merge PR #487, close issue #486, and verify `master`. Then stop with no approved next item.
