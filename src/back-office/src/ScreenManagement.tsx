@@ -199,7 +199,7 @@ export default function ScreenManagement({
   };
 
   const push = async (screen: ManagedScreen) => {
-    if (screen.id !== selectedScreenId) { setError("Select this screen as the delivery target before pushing content."); return; }
+    setSelectedScreenId(screen.id);
     const requestedUtc = new Date().toISOString();
     setDelivery({ screenId: screen.id, state: "pending", requestedUtc });
     setBusyId(screen.id); setError(undefined); setNotice(undefined);
@@ -332,13 +332,46 @@ export default function ScreenManagement({
           <input aria-label="Search screens" value={screenSearch} onChange={event => setScreenSearch(event.target.value)} placeholder="Search name, location, or platform" />
           <label>Health<select value={healthFilter} onChange={event => setHealthFilter(event.target.value)}><option value="all">All screens</option><option value="online">Online</option><option value="offline">Offline</option><option value="stale">Stale</option><option value="archived">Archived</option></select></label>
         </div>
-    {screensLoading ? <LoadingSkeleton label="Loading screens…" rows={4} /> : visibleScreens.length ? <div className="managed-screen-list">{visibleScreens.map(screen => {
+    {screensLoading ? <LoadingSkeleton label="Loading screens…" rows={4} /> : visibleScreens.length ? <div className="managed-screen-list screen-fleet-grid">{visibleScreens.map(screen => {
       const presentation = presentationDrafts[screen.id] ?? screen;
-      return <section key={screen.id}>
+      const archived = screen.status.toLowerCase() === "archived";
+      return <section className="screen-fleet-card" data-selected={selectedScreenId === screen.id} key={screen.id}>
+        <div className="screen-fleet-thumbnail">
+          {archived
+            ? <div className="screen-fleet-thumbnail__unavailable"><span>Archived</span><small>Restore this screen to load its live preview.</small></div>
+            : <iframe loading="lazy" tabIndex={-1} aria-hidden="true" src={`${configuration.displayBaseUrl}/display/${screen.id}`} title="" />}
+          <span className={`screen-fleet-thumbnail__status ${isStale(screen) && !archived ? "stale" : screen.status.toLowerCase()}`}>{isStale(screen) && !archived ? "Stale" : screen.status}</span>
+        </div>
+        <header className="screen-fleet-card__heading">
+          <div><h5>{screen.name}</h5><span>{screen.location || screen.displayLayout.replaceAll("_", " ")}</span></div>
+          <small>{screen.platform ? `${screen.platform}${screen.appVersion ? ` ${screen.appVersion}` : ""}` : "Platform not reported"}</small>
+        </header>
+        <div className="screen-actions action-surface" aria-label={`${screen.name} delivery actions`}>
+          <button className="action-secondary" type="button" disabled={busyId === screen.id || archived} onClick={() => { setSelectedScreenId(screen.id); setDelivery(undefined); setPreviewScreenId(screen.id); }}>Preview</button>
+          <button className="action-primary" type="button" disabled={busyId === screen.id || archived} onClick={() => void push(screen)}>Push</button>
+          <details className="action-overflow"><summary>More actions</summary><div>
+            <a href={screen.registrationUrl} target="_blank" rel="noreferrer">Open registration URL</a>
+            {archived
+              ? <button className="action-secondary" type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, false)}>Restore screen</button>
+              : <><button className="action-secondary" type="button" disabled={busyId === screen.id} onClick={() => reset(screen)}>Reset connection</button><button className="action-danger" type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, true)}>Archive</button><button className="action-danger" type="button" disabled={busyId === screen.id} onClick={() => unpair(screen)}>Unpair screen</button></>}
+          </div></details>
+        </div>
+        {screen.id === previewScreenId && !archived ? <div className="split-layout-preview screen-fleet-card__expanded-preview">
+          <div><strong>Exact TV preview</strong><span>Uses this screen’s saved menu, theme, and layout settings.</span></div>
+          <button type="button" onClick={() => setPreviewScreenId("")}>Close preview</button>
+          <iframe
+            key={`${screen.id}-${screen.displayLayout}-${screen.splitRatio}-${screen.heroDwellSeconds}-${previewRevision}`}
+            src={`${configuration.displayBaseUrl}/display/${screen.id}`}
+            title={previewTitle(screen)}
+          />
+        </div> : null}
         <div className="managed-screen-health">
           <span className={screen.status.toLowerCase()} />
           <div><strong>{isStale(screen) && screen.status.toLowerCase() !== "archived" ? "Stale" : screen.status}</strong><small>{screen.lastSeen ? `Last seen ${new Date(screen.lastSeen).toLocaleString()}` : "Never seen"}{screen.platform ? ` · ${screen.platform}${screen.appVersion ? ` ${screen.appVersion}` : ""}` : ""}</small></div>
         </div>
+        <details className="screen-fleet-card__settings">
+          <summary>Edit display and identity</summary>
+          <div>
         <label>Name<input disabled={screen.status.toLowerCase() === "archived"} maxLength={200} value={identityDrafts[screen.id]?.name ?? screen.name} onChange={event => patchIdentity(screen, { name: event.target.value })} /></label>
         <label>Location<input disabled={screen.status.toLowerCase() === "archived"} maxLength={200} value={identityDrafts[screen.id]?.location ?? screen.location ?? ""} onChange={event => patchIdentity(screen, { location: event.target.value })} /></label>
         {identityHasChanges(screen, identityDrafts[screen.id]) ? <div className="screen-actions" role="status">
@@ -402,27 +435,13 @@ export default function ScreenManagement({
           <button className="action-primary" type="button" disabled={busyId === screen.id} onClick={() => void save({ ...screen, ...presentation }, "presentation")}>Apply to TV</button>
           <button className="action-secondary" type="button" disabled={busyId === screen.id} onClick={() => cancelPresentation(screen.id)}>Discard changes</button>
         </div> : null}
-        <div className="screen-actions action-surface">
-          <a href={screen.registrationUrl} target="_blank" rel="noreferrer">Open registration URL</a>
-          <button className="action-primary" type="button" aria-pressed={selectedScreenId === screen.id} disabled={busyId === screen.id || screen.status.toLowerCase() === "archived"} onClick={() => { setSelectedScreenId(screen.id); setDelivery(undefined); }}>Select target</button>
-          {screen.status.toLowerCase() === "archived"
-            ? <button className="action-secondary" type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, false)}>Restore</button>
-            : <details className="action-overflow"><summary>More actions</summary><div><button className="action-secondary" type="button" disabled={busyId === screen.id} onClick={() => reset(screen)}>Reset connection</button><button className="action-danger" type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, true)}>Archive</button><button className="action-danger" type="button" disabled={busyId === screen.id} onClick={() => unpair(screen)}>Unpair screen</button></div></details>}
-        </div>
+          </div>
+        </details>
         {screen.authoritativeRevision ? <p className={`delivery-state ${(screen.deliveryState ?? "Requested").toLowerCase()}`} role="status">
           Revision {screen.authoritativeRevision}: {screen.deliveryState ?? "Requested"}{screen.appliedRevision ? ` · applied ${screen.appliedRevision}` : " · acknowledgement pending"}
           {isStale(screen) ? " · player stale/offline" : ""}
           {screen.deliveryFailureCode ? ` · ${screen.deliveryFailureCode}${screen.deliveryFailureDetail ? `: ${screen.deliveryFailureDetail}` : ""}` : ""}
         </p> : null}
-        {screen.id === previewScreenId && screen.id === selectedScreenId && screen.status.toLowerCase() !== "archived" ? <div className="split-layout-preview">
-          <div><strong>Exact TV preview</strong><span>Uses this screen’s saved menu, theme, and layout settings.</span></div>
-          <button type="button" onClick={() => setPreviewScreenId("")}>Close preview</button>
-          <iframe
-            key={`${screen.id}-${screen.displayLayout}-${screen.splitRatio}-${screen.heroDwellSeconds}-${previewRevision}`}
-            src={`${configuration.displayBaseUrl}/display/${screen.id}`}
-            title={previewTitle(screen)}
-          />
-        </div> : null}
       </section>;
     })}</div> : <EmptyState icon={screens.length ? "search" : "screen"} title={screens.length ? "No matching screens" : "No screens assigned"} message={screens.length ? "Adjust the search or health filter to return to the fleet." : "Add or pair the first venue screen from Setup before sending content."} action={<button type="button" onClick={() => screens.length ? (setScreenSearch(""), setHealthFilter("all")) : setSetupOpen(true)}>{screens.length ? "Clear screen filters" : "Open screen setup"}</button>} />}
       </div>
