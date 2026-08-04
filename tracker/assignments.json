@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-04T23:45:00Z",
+  "updatedUtc": "2026-08-04T23:48:00Z",
   "activeAssignments": [
     {
       "workPackage": "RWP-00.40",
@@ -8,7 +8,7 @@
       "owner": "ChatGPT",
       "issue": 515,
       "branch": "rwp/00.40-food-truck-concession-venue-subtypes",
-      "pullRequest": null,
+      "pullRequest": 566,
       "claimedUtc": "2026-08-04T23:45:00Z",
       "writableScope": [
         "track0/industries/food-truck-concession.md",
