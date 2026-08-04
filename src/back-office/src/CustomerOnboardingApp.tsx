@@ -18,6 +18,7 @@ import {
 } from "./customerOnboardingApi";
 import { signInWithPasskey } from "./passkeySignIn";
 import CustomerOnboardingTimeline from "./CustomerOnboardingTimeline";
+import SignupMarketingExperience from "./SignupMarketingExperience";
 import { authenticatedCustomerDestination, canonicalOnboardingPath, safeLocalReturnPath } from "./customerEntryRouting.mjs";
 
 export default function CustomerOnboardingApp() {
@@ -185,22 +186,14 @@ export default function CustomerOnboardingApp() {
     {notice ? <p className="customer-entry__notice" role="status">{notice}</p> : null}
     {error ? <p className="customer-entry__error" role="alert">{error}</p> : null}
 
-    {!session ? <section className="customer-entry__auth" aria-labelledby="signup-heading">
-      <div className="customer-entry__intro">
-        <span>{entryPath === "/signin" ? "Return to your Vennusign workspace" : "Digital menus, without the friction"}</span>
-        <h1 id="signup-heading">{entryPath === "/signin" ? "Welcome back." : "Put your first screen live."}</h1>
-        <p>{entryPath === "/signin" ? "Sign in to resume an unfinished opening checklist or enter your authorized Back Office workspace." : "Sign in first. Then name your organization, choose a plan, and resume at any time."}</p>
-        <ol><li>Secure account</li><li>Tier-defined trial or paid plan</li><li>Venue and first screen</li></ol>
-        <section className="customer-entry__plan-preview" aria-labelledby="available-plans-heading">
-          <h2 id="available-plans-heading">Available plans</h2>
-          {plans.length ? <ul>{plans.map(plan => <li key={plan.id}>
-            <strong>{plan.name}</strong>
-            <span>${plan.monthlyPrice} / month</span>
-            {plan.trialDays > 0 ? <span>{plan.trialDays}-day trial available</span> : null}
-          </li>)}</ul> : <p>No public plans are available right now. You can still sign in and return later.</p>}
-        </section>
-      </div>
-      <div className="customer-entry__auth-card">
+    {!session ? <>
+      {entryPath === "/signin" ? <section className="customer-entry__signin-intro" aria-labelledby="signup-heading">
+        <span>Return to your Vennusign workspace</span>
+        <h1 id="signup-heading">Welcome back.</h1>
+        <p>Sign in to resume an unfinished opening checklist or enter your authorized Back Office workspace.</p>
+      </section> : <SignupMarketingExperience plans={plans} />}
+      <section className="customer-entry__auth" aria-label="Secure account access">
+      <div className="customer-entry__auth-card" id="signup-auth-card">
         <h2>{entryPath === "/signin" ? "Sign in to Vennusign" : "Start with your account"}</h2>
         <p>No password to remember.</p>
         <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}>Continue with Google</a>
@@ -217,7 +210,8 @@ export default function CustomerOnboardingApp() {
           <button className="quiet" type="submit" disabled={busy === "email"}>{busy === "email" ? "Sending…" : "Email me a sign-in link"}</button>
         </form>
       </div>
-    </section> : !onboarding ? <section className="customer-onboarding customer-onboarding__panel" aria-labelledby="onboarding-unavailable-heading">
+      </section>
+    </> : !onboarding ? <section className="customer-onboarding customer-onboarding__panel" aria-labelledby="onboarding-unavailable-heading">
       <span>Progress unavailable</span>
       <h1 id="onboarding-unavailable-heading">We could not safely load your onboarding yet.</h1>
       <p>Your saved progress has not been changed and Vennusign did not create a replacement journey. Refresh, sign in again, or contact support if your organization access changed.</p>
