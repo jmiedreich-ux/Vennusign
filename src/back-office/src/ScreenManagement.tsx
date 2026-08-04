@@ -397,17 +397,17 @@ export default function ScreenManagement({
             <option value="50_50">50% hero · 50% menu</option>
           </select>
         </label> : null}
-        {screenPresentationHasChanges(screen, presentationDrafts[screen.id]) ? <div className="screen-presentation-draft" role="status">
+        {screenPresentationHasChanges(screen, presentationDrafts[screen.id]) ? <div className="screen-presentation-draft sticky-action-bar" role="status">
           <span><strong>Draft layout</strong> · Nothing changes on the TV until you apply.</span>
-          <button type="button" disabled={busyId === screen.id} onClick={() => void save({ ...screen, ...presentation }, "presentation")}>Apply to TV</button>
-          <button type="button" disabled={busyId === screen.id} onClick={() => cancelPresentation(screen.id)}>Discard changes</button>
+          <button className="action-primary" type="button" disabled={busyId === screen.id} onClick={() => void save({ ...screen, ...presentation }, "presentation")}>Apply to TV</button>
+          <button className="action-secondary" type="button" disabled={busyId === screen.id} onClick={() => cancelPresentation(screen.id)}>Discard changes</button>
         </div> : null}
-        <div className="screen-actions">
+        <div className="screen-actions action-surface">
           <a href={screen.registrationUrl} target="_blank" rel="noreferrer">Open registration URL</a>
-          <button type="button" aria-pressed={selectedScreenId === screen.id} disabled={busyId === screen.id || screen.status.toLowerCase() === "archived"} onClick={() => { setSelectedScreenId(screen.id); setDelivery(undefined); }}>Select target</button>
+          <button className="action-primary" type="button" aria-pressed={selectedScreenId === screen.id} disabled={busyId === screen.id || screen.status.toLowerCase() === "archived"} onClick={() => { setSelectedScreenId(screen.id); setDelivery(undefined); }}>Select target</button>
           {screen.status.toLowerCase() === "archived"
-            ? <button type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, false)}>Restore</button>
-            : <><button type="button" disabled={busyId === screen.id} onClick={() => reset(screen)}>Reset connection</button><button type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, true)}>Archive</button><button type="button" disabled={busyId === screen.id} onClick={() => unpair(screen)}>Unpair screen</button></>}
+            ? <button className="action-secondary" type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, false)}>Restore</button>
+            : <details className="action-overflow"><summary>More actions</summary><div><button className="action-secondary" type="button" disabled={busyId === screen.id} onClick={() => reset(screen)}>Reset connection</button><button className="action-danger" type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, true)}>Archive</button><button className="action-danger" type="button" disabled={busyId === screen.id} onClick={() => unpair(screen)}>Unpair screen</button></div></details>}
         </div>
         {screen.authoritativeRevision ? <p className={`delivery-state ${(screen.deliveryState ?? "Requested").toLowerCase()}`} role="status">
           Revision {screen.authoritativeRevision}: {screen.deliveryState ?? "Requested"}{screen.appliedRevision ? ` · applied ${screen.appliedRevision}` : " · acknowledgement pending"}

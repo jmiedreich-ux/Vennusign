@@ -36,6 +36,7 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
   const [screenId, setScreenId] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string>();
+  const [undoTheme, setUndoTheme] = useState<DraftTheme>();
 
   useEffect(() => {
     Promise.all([
@@ -77,10 +78,12 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
 
   const saveBasic = async () => {
     if (!theme) return;
+    const previous = theme;
     setBusy(true); setMessage(undefined);
     try {
       const saved = await saveVenueTheme(configuration, apiKey, venueId, theme);
       setTheme(saved);
+      setUndoTheme(previous);
       setMessage("Theme saved and pushed to all venue screens.");
     } catch {
       setMessage("The theme could not be saved.");
@@ -91,10 +94,12 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
 
   const saveAdvanced = async () => {
     if (!theme || !advancedEnabled) return;
+    const previous = theme;
     setBusy(true); setMessage(undefined);
     try {
       const saved = await saveAdvancedVenueTheme(configuration, apiKey, venueId, theme);
       setTheme(saved);
+      setUndoTheme(previous);
       setMessage("Advanced theme saved and pushed to all venue screens.");
     } catch {
       setMessage("The advanced theme could not be saved.");
@@ -105,16 +110,30 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
 
   const applyPreset = async (preset: VenueThemePreset) => {
     if (!advancedEnabled) return;
+    const previous = theme;
     setBusy(true); setMessage(undefined);
     try {
       const saved = await applyVenueThemePreset(configuration, apiKey, venueId, preset.key);
       setTheme(saved);
+      setUndoTheme(previous);
       setMessage(`${preset.label} applied and pushed to all venue screens.`);
     } catch {
       setMessage("The preset could not be applied.");
     } finally {
       setBusy(false);
     }
+  };
+
+  const undoAppliedTheme = async () => {
+    if (!undoTheme) return;
+    setBusy(true); setMessage(undefined);
+    try {
+      const restored = advancedEnabled
+        ? await saveAdvancedVenueTheme(configuration, apiKey, venueId, undoTheme)
+        : await saveVenueTheme(configuration, apiKey, venueId, undoTheme);
+      setTheme(restored); setUndoTheme(undefined); setMessage("Previous venue theme restored and queued for active screens.");
+    } catch { setMessage("The previous theme could not be restored. The applied theme remains active."); }
+    finally { setBusy(false); }
   };
 
   const patchSectionColor = (index: number, color: string) =>
@@ -127,9 +146,10 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
   return <article className="theme-builder">
     <div className="theme-builder__heading">
       <div><p>All-tier styling</p><h3>Theme builder</h3></div>
-      <button disabled={busy || !theme} onClick={saveBasic}>Save basic theme</button>
+      <div className="sticky-action-bar" aria-label="Theme actions"><button className="action-primary" disabled={busy || !theme} onClick={saveBasic}>Save basic theme</button></div>
     </div>
     {message ? <p className="screen-notice" role="status">{message}</p> : null}
+    {undoTheme ? <div className="applied-state-undo" role="status"><span>Theme change applied to venue screens.</span><button type="button" disabled={busy} onClick={() => void undoAppliedTheme()}>Undo applied theme</button></div> : null}
     {theme ? <div className="theme-builder__workspace">
       <div className="theme-builder__controls">
         <fieldset>
@@ -189,7 +209,7 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
             <label>Title font<select value={theme.titleFont} onChange={event => patchAdvanced({ titleFont: event.target.value as DraftTheme["titleFont"] })}>{titleFonts.map(font => <option key={font}>{font}</option>)}</select></label>
             <label>Item font<select value={theme.itemFont} onChange={event => patchAdvanced({ itemFont: event.target.value as DraftTheme["itemFont"] })}>{itemFonts.map(font => <option key={font}>{font}</option>)}</select></label>
           </fieldset>
-          <button disabled={!advancedEnabled || busy} onClick={saveAdvanced}>Save full theme</button>
+          <button className="action-secondary" disabled={!advancedEnabled || busy} onClick={saveAdvanced}>Save full theme</button>
         </section>
       </div>
       <div className="theme-preview">

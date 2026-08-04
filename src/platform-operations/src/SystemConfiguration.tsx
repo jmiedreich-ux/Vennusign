@@ -139,7 +139,7 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
     {!busy && settings.length > 0 && filteredSettings.length === 0 ? <div className="state"><p>No settings match this search.</p><button type="button" onClick={() => setSearch("")}>Clear search</button></div> : null}
     {preview ? <section className="configuration-preview" aria-labelledby="import-preview-heading"><h3 id="import-preview-heading">Import preview</h3><p>Secrets are excluded. Select reviewed changes to apply atomically.</p>
       {preview.settings.map(item => { const id = `${item.applicationScope}:${item.key}`; const selectable = item.status === "New" || item.status === "Conflict"; return <label key={id}><input type="checkbox" disabled={!selectable} checked={selectedImport.includes(id)} onChange={event => setSelectedImport(current => event.target.checked ? [...current, id] : current.filter(value => value !== id))} /><span><strong>{item.status}</strong> {id}{item.message ? ` — ${item.message}` : ""}</span></label>; })}
-      <div className="configuration-actions"><button type="button" disabled={selectedImport.length === 0 || busy} onClick={() => void applyImport()}>Apply selected changes</button><button type="button" onClick={() => setPreview(undefined)}>Cancel</button></div>
+      <div className="configuration-actions sticky-action-bar"><button className="action-primary" type="button" disabled={selectedImport.length === 0 || busy} onClick={() => void applyImport()}>Apply selected changes</button><button className="action-secondary" type="button" onClick={() => setPreview(undefined)}>Cancel</button></div>
     </section> : null}
     {history ? <section className="configuration-preview" aria-labelledby="history-heading"><h3 id="history-heading">History — {history.setting.key}</h3><p>Secret payloads are never returned. Rollback copies the protected revision into a new audited revision.</p>
       {history.revisions.length === 0 ? <p>No revisions are available.</p> : history.revisions.map((revision, index) => <div className="configuration-revision" key={revision.revisionNumber}><span>Revision {revision.revisionNumber} · {new Date(revision.createdUtc).toLocaleString()} · {revision.changeSource}{revision.isClear ? " · cleared" : ""}</span>{index > 0 ? <button type="button" disabled={busy} onClick={() => void rollback(revision.revisionNumber)}>Roll back</button> : null}</div>)}
@@ -159,9 +159,11 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
           onChange={event => setDrafts(current => ({ ...current, [setting.definitionId]: event.target.value }))}
           autoComplete={setting.isSecret ? "new-password" : "off"} />
       </label>
-      <div className="configuration-actions"><button disabled={busy} type="submit">{setting.isSecret ? "Replace secret" : "Save"}</button>
-        {setting.hasConfiguredValue && !setting.isRequired ? <button disabled={busy} type="button" onClick={() => void clear(setting)}>Clear</button> : null}
-        {setting.hasConfiguredValue ? <button disabled={busy} type="button" onClick={() => void viewHistory(setting)}>History</button> : null}</div>
+      <div className="configuration-actions action-surface"><button className="action-primary" disabled={busy} type="submit">{setting.isSecret ? "Replace secret" : "Save"}</button>
+        {setting.hasConfiguredValue ? <details className="action-overflow"><summary>More actions</summary><div>
+          {!setting.isRequired ? <button className="action-danger" disabled={busy} type="button" onClick={() => void clear(setting)}>Clear value</button> : null}
+          <button className="action-secondary" disabled={busy} type="button" onClick={() => void viewHistory(setting)}>View history</button>
+        </div></details> : null}</div>
     </form>)}</div>
   </section>;
 }
