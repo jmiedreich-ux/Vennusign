@@ -264,3 +264,16 @@ td small { display: block; color: var(--sky-text-secondary); margin-top: 3px; }
 .detail-heading small { display: block; margin-top: 5px; color: var(--sky-text-secondary); }.screen-support-list li > div { display: grid; }.screen-support-list small { margin-top: 4px; color: var(--sky-text-secondary); }.tier-catalog { display: grid; gap: 14px; }
 @media (max-width: 1180px) { .directory-toolbar { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 760px) { .dashboard-toolbar, .detail-actions, .panel-heading { align-items: stretch; flex-direction: column; }.directory-toolbar { grid-template-columns: 1fr; }.impact-preview > div { flex-direction: column; }.impact-preview button { width: 100%; }.back-office-handoff { align-items: stretch; flex-direction: column; }.back-office-handoff a { text-align: center; } }
+
+/* Sky UI visual standard: shared hierarchy, actions, badges, and focus behavior. */
+body, .shell > main { background: var(--sky-page-gradient); }
+aside { color: var(--sky-sidebar-text); background: var(--sky-sidebar-background); }
+:where(button, a, input, select, textarea, summary):focus-visible { outline: var(--sky-focus-ring); outline-offset: var(--sky-focus-offset); }
+:where(input, select, textarea) { border-color: var(--sky-control-border); color: var(--sky-text-primary); background: var(--sky-card-background); }
+:where(.access-card, .placeholder, .venue-create, .table-wrap, .configuration-card, .venue-detail article, .screen-map, .event-feed, .metric-grid article, .revenue-trend) { border-color: var(--sky-control-border); border-radius: var(--sky-card-radius); background: var(--sky-card-background); box-shadow: var(--sky-panel-shadow); }
+:where(.access-card button, .create-venue-action, .venue-create > button, .configuration-actions button:first-child, .screen-create button, .screen-actions button, .screen-management-heading .push-all, .video-wall-builder form > button, .wall-groups button, .theme-builder__heading button, .back-office-handoff a) { border-color: var(--sky-action-primary-background); color: var(--sky-action-primary-text); background: var(--sky-action-primary-background); }
+:where(.access-card button, .create-venue-action, .venue-create > button, .configuration-actions button:first-child, .screen-create button, .screen-actions button, .screen-management-heading .push-all, .video-wall-builder form > button, .wall-groups button, .theme-builder__heading button, .back-office-handoff a):hover { filter: brightness(.96); }
+:where(.environment, .health, .event-type, .upgrade-tier-badge) { border-radius: var(--sky-radius-pill); color: var(--sky-badge-text); background: var(--sky-badge-background); }
+.health.online { color: var(--sky-positive-text); background: var(--sky-color-live-surface); }.health.degraded { color: var(--sky-warning-text); background: var(--sky-color-warning-surface); }.health.offline { color: var(--sky-danger-text); background: var(--sky-color-off-surface); }
+.sky-icon { stroke-width: 1.8; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }

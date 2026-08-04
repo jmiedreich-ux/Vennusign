@@ -49,6 +49,11 @@
   --sky-action-dark-text: var(--sky-color-surface);
   --sky-control-hover-background: var(--sky-color-secondary);
   --sky-control-border: var(--sky-color-border);
+  --sky-sidebar-background: var(--sky-color-ink);
+  --sky-sidebar-text: var(--sky-color-surface);
+  --sky-badge-background: var(--sky-color-secondary);
+  --sky-badge-text: var(--sky-color-ink);
+  --sky-panel-shadow: 0 18px 52px rgb(15 23 42 / 0.12);
   --sky-focus-color: var(--sky-color-primary);
   --sky-focus-width: 3px;
   --sky-focus-offset: 2px;
@@ -114,5 +119,9 @@
   --sky-action-primary-text: #0f172a;
   --sky-action-dark-background: #e2e8f0;
   --sky-action-dark-text: #0f172a;
+  --sky-sidebar-background: #0b1120;
+  --sky-sidebar-text: #f8fafc;
+  --sky-badge-text: #f8fafc;
+  --sky-panel-shadow: 0 18px 52px rgb(0 0 0 / 0.34);
   --sky-page-gradient: radial-gradient(circle at top right, #17344a, #0b1120 54%);
 }
