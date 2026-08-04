@@ -4,16 +4,16 @@
 
 - **Industry:** Bar, Brewery & Nightlife
 - **RWP range:** RWP-00.15 through RWP-00.26
-- **Current status:** Industry definition complete; subtype definition is next
+- **Current status:** Industry definition and venue-subtype model complete
 - **Baseline:** Restaurant
-- **Current RWP:** RWP-00.15
-- **Next sequential RWP:** RWP-00.16 — Venue Subtypes
+- **Current completed RWP:** RWP-00.16
+- **Next sequential RWP:** RWP-00.17 — Business Terminology
 
 ## Purpose
 
 This profile covers beverage-led venues whose daily customer experience depends on accurate drink information, rapid operational changes, venue atmosphere, and time-sensitive event or entertainment communication.
 
-It inherits the complete Restaurant baseline. This document records only the differences needed to establish the industry boundary and guide later subtype, terminology, operations, capability, packaging, onboarding, dashboard, and analytics RWPs.
+It inherits the complete Restaurant baseline. This document records only the differences needed to establish the industry boundary and guide subtype, terminology, operations, capability, packaging, onboarding, dashboard, and analytics work.
 
 ## Primary customer outcomes
 
@@ -28,7 +28,7 @@ In addition to the Restaurant baseline outcomes, operators must be able to:
 
 ## Inherited unchanged from Restaurant
 
-Unless a later Bar, Brewery & Nightlife RWP records a meaningful exception, this industry inherits:
+Unless a later Bar, Brewery & Nightlife RWP records a meaningful exception, this industry and every subtype inherit:
 
 - content, category, item, price, description, image, and label management;
 - manual availability and Quick Update;
@@ -39,7 +39,7 @@ Unless a later Bar, Brewery & Nightlife RWP records a meaningful exception, this
 - permissions, product-state separation, limit separation, and packaging discipline;
 - candidate scheduling, campaign, multi-screen, multi-venue, approval, history, analytics, identity, AI, hardware, and integration capabilities.
 
-Food menus, kitchen-led service, dietary information, and restaurant-style dayparts remain inherited where a venue actually uses them; they are not assumed to be the dominant operating model.
+Food menus, kitchen-led service, dietary information, and restaurant-style dayparts remain inherited where a venue uses them. They are not assumed to be the dominant operating model for every subtype.
 
 ## Meaningful differences from Restaurant
 
@@ -53,11 +53,11 @@ Products and offers can change repeatedly during a service period because of keg
 
 ### Event and atmosphere as first-class context
 
-Live music, DJs, trivia, sports, tastings, release events, guest lists, private events, and similar programming may be as important as the drink catalog. Detailed operating and capability treatment is deferred to RWP-00.18 onward.
+Live music, DJs, trivia, sports, tastings, release events, guest lists, private events, and similar programming may be as important as the drink catalog. Detailed operating and capability treatment is deferred to later approved RWPs.
 
 ### Late and irregular service periods
 
-Operating days may cross midnight, vary by event, or include different access and service conditions during the same calendar day. Exact scheduling behavior is not defined in this RWP, but later work must avoid assuming that a business day ends at midnight.
+Operating days may cross midnight, vary by event, or include different access and service conditions during the same calendar day. Later work must avoid assuming that a business day ends at midnight.
 
 ### Distinct screen-purpose mix
 
@@ -67,20 +67,7 @@ A venue may combine beverage menus, rotating tap lists, promotional screens, eve
 
 ### Included as native concepts
 
-The profile is intended to support beverage-led concepts including:
-
-- bars and taverns;
-- pubs and gastropubs where beverage service is the defining experience;
-- sports bars;
-- cocktail bars;
-- wine bars;
-- brewery taprooms;
-- brewpubs;
-- lounges;
-- nightclubs with on-premise beverage service;
-- related hybrid concepts where beverage-led service is a primary operating identity.
-
-The exact supported subtype list, subtype definitions, and hybrid rules belong to RWP-00.16.
+The profile supports beverage-led bars, pubs, sports bars, cocktail bars, wine bars, guest-facing breweries, brewpubs, taprooms, lounges, nightclubs with beverage service, and related mixed concepts.
 
 ### Included through venue-level mixed-industry behavior
 
@@ -88,99 +75,187 @@ A venue may use this business type even when its parent organization has another
 
 ### Outside the canonical boundary
 
-The following are not treated as native Bar, Brewery & Nightlife concepts unless an included on-premise venue operation is also present:
+The following are not native Bar, Brewery & Nightlife concepts unless an included on-premise service venue is also present:
 
-- packaged alcohol retail without meaningful on-premise service;
-- beverage manufacturing or distribution operations with no guest-facing taproom or service venue;
+- packaged beverage retail without meaningful on-premise service;
+- beverage manufacturing or distribution with no guest-facing service venue;
 - food-led restaurants whose bar is secondary to the Restaurant operating model;
-- entertainment or dance venues without beverage-led service;
-- private clubs whose membership model, rather than venue service, is the defining product need.
+- entertainment or dance venues whose operating identity is not beverage-led;
+- membership organizations whose membership administration, rather than venue service, defines the primary product need.
 
-These boundaries determine defaults and profile selection only. They are not legal, licensing, tax, or regulatory classifications.
+These boundaries determine product defaults and profile selection only. They are not legal, licensing, tax, or regulatory classifications.
 
-## Organization and venue behavior
+## Canonical venue subtypes
+
+Subtype is venue-level product/domain configuration. It selects defaults, terminology candidates, starter-content suggestions, screen-purpose recommendations, and operational guidance. It is not a tier, entitlement, permission, usage allowance, rollout flag, legal classification, or substitute for the venue's real content.
+
+A venue may remain **Unspecified / General Bar** when no supported subtype is clearly dominant. This is a neutral fallback state rather than a tenth commercial package.
+
+| Primary subtype | Bounded definition and inclusion rule | Exclusion or neighboring-profile rule | Meaningful defaults and presentation differences |
+| --- | --- | --- | --- |
+| **Pub** | A casual, community-oriented beverage-led venue where beer, cider, spirits, conversation, recurring social activity, and optional food are central. Includes taverns and beverage-led gastropubs. | Use Restaurant when meal service and food discovery are the defining customer journey. Do not use Pub merely because a restaurant contains a bar. | Favor drink lists, house or rotating specials, recurring events, familiar categories, optional food menus, and clear available/unavailable updates. Tone may be approachable and local rather than highly technical. |
+| **Sports Bar** | A beverage-led venue where watching scheduled sports across one or more viewing areas is a defining reason to visit. Food may be substantial but game-day programming and drink service remain central. | Use Pub when sports are incidental. Use Restaurant when food service is the dominant operating identity and sports viewing is secondary. | Favor fixture or event schedules, viewing-area or zone guidance, game-day offers, drink and food menus, and rapid event-state changes. Multiple physical displays do not create a separate capability or entitlement. |
+| **Cocktail Bar** | A beverage-led venue centered on made-to-order cocktails, spirits, signature recipes, classics, seasonal lists, and bartender-led craft. Alcohol-free cocktail concepts may use this subtype when the operating model otherwise matches. | Use Lounge when seated atmosphere and reservation-led social service are more defining than the cocktail program. Use Restaurant when drinks support a food-led experience. | Favor signature/classic/seasonal groupings, concise ingredient or flavor guidance, spirit highlights, premium presentation, and unavailable-substitution clarity. Readability and price remain more important than decorative atmosphere on operational lists. |
+| **Wine Bar** | A beverage-led venue centered on wine by the glass, bottle, tasting pour, or flight, often using region, producer, varietal, vintage, style, or pairing context. Food may be present but secondary. | Use Restaurant when the meal and pairing journey is primarily food-led. Packaged wine retail without meaningful on-premise service is outside the profile. | Favor by-glass/by-bottle organization, tasting flights, concise producer or origin context, current vintage where useful, and rapid sold-out or replacement handling. |
+| **Brewery** | A guest-facing venue whose brewery production identity, house portfolio, releases, packaged product, tours, or producer story materially shapes the on-premise experience. A guest-facing service operation must exist. | Manufacturing-only, wholesale-only, or distribution-only operations are outside the profile. Use Taproom when service from the taps is dominant and production context is secondary. | Favor house portfolio, tap and packaged formats, release status, tours or events, take-home availability, and producer-led storytelling. Production data is not assumed to be automatically integrated. |
+| **Brewpub** | A brewery-identified venue combining on-site or closely associated brewing with substantial prepared-food and meal service. Both the beverage program and restaurant operation are material. | Use Restaurant when food and meal discovery clearly dominate and brewery identity is secondary. Use Brewery or Taproom when food is limited or incidental. | Favor coordinated tap and food menus, pairing or service-period recommendations, releases, events, and both beverage and kitchen availability. It inherits Restaurant food capabilities without creating a special bundle. |
+| **Taproom** | A beverage service venue centered on a rotating tap list, pours, flights, releases, and direct consumption from a producer or curated tap program, commonly with limited or partner-provided food. | Use Brewery when production identity, tours, packaged portfolio, and releases are broader than the service room. Use Pub when community tavern behavior is more defining than a tap-led catalog. | Favor current taps, pour sizes, flights, styles, strength or other approved descriptors, release state, keg-change availability, and optional food-source guidance. |
+| **Nightclub** | A late-night venue where dancing, DJs, live entertainment, admission conditions, and beverage service together define the operating experience. Beverage service must be a material part of the venue model. | Use Entertainment & Attractions when beverage service is incidental or absent. Membership administration or ticketing complexity beyond venue communication remains outside this subtype decision. | Favor event lineup, start and door times, entry or cover information, venue zones, bar menus, safety or access guidance, and fast changes for delays, sell-outs, room moves, or cancellations. |
+| **Lounge** | A beverage-led social venue characterized by seated service, atmosphere, conversation, reservations or table context, and a curated cocktail, wine, or premium beverage program. | Use Cocktail Bar when the cocktail catalog and bartender craft are dominant. Use Nightclub when dancing, high-volume entertainment, and admission operations dominate. | Favor concise curated lists, reservations or seating guidance where supported, events, table or area context, premium presentation, and low-light readability. |
+
+## Hybrid and ambiguous concepts
+
+Hybrid concepts are supported through one primary subtype plus optional descriptive operating traits. The traits tune recommendations and future terminology; they do not stack entitlements, increase limits, or create multiple commercial identities.
+
+### Selection rules
+
+1. Choose the subtype that best describes the venue's **dominant guest journey and daily operating rhythm**, not its building form, license, ownership structure, marketing phrase, or one occasional event.
+2. When two models are materially equal, select the one that should control default terminology and first-run recommendations, then record the other as a descriptive trait.
+3. When neither model clearly dominates, leave the subtype neutral rather than forcing a misleading choice.
+4. Organization primary industry may seed the first suggestion but never overrides the venue's own subtype.
+5. Subtype does not determine whether a capability is commercially available.
+
+### Canonical ambiguous cases
+
+- **Gastropub:** Pub when beverage-led community service and drink discovery dominate; Restaurant when meals and food discovery dominate.
+- **Sports pub:** Sports Bar when fixtures, viewing zones, and game-day operations dominate; otherwise Pub with a sports trait.
+- **Brewery taproom:** Brewery when producer identity, tours, releases, and packaged portfolio are central; Taproom when current taps, pours, and room service dominate.
+- **Winery, cidery, meadery, or distillery tasting room:** supported as Wine Bar, Taproom, Cocktail Bar, or Brewery according to the actual guest-service model, with a producer/tasting-room trait. RWP-00.16 does not create separate entitlements or first-class subtype values for each producer category.
+- **Alcohol-free bar or nightlife venue:** included when beverage-led service and the operating model match Cocktail Bar, Lounge, Pub, Sports Bar, or Nightclub. Alcohol sale is not required for product classification.
+- **Private or membership club:** included only when the guest-facing beverage-service workflow fits this profile and membership administration does not define the primary product need.
+- **Hotel, casino, resort, food hall, or entertainment-complex bar:** model the bar as a venue or outlet with the appropriate Bar subtype inside the mixed-industry organization. The parent property keeps its own primary industry.
+- **Bottle shop with tasting area:** included only when the on-premise tasting/service operation is meaningful enough to require its own venue content and screens; otherwise remain outside this profile.
+
+## Restaurant capability inheritance by subtype
+
+Every subtype inherits the Restaurant baseline. The table records only where the inherited capability is emphasized or where starter recommendations differ.
+
+| Subtype | Restaurant capabilities most visibly inherited | Additional emphasis, not a separate capability |
+| --- | --- | --- |
+| Pub | menu and category editing, food labels where used, Quick Update, hours, screens, publishing | rotating drinks, recurring events, house specials, optional food menu |
+| Sports Bar | food and drink menus, promotions, scheduling candidates, multi-screen targeting | game schedule, viewing-zone guidance, game-day state and offers |
+| Cocktail Bar | item descriptions, prices, images where useful, availability, themes | signature lists, ingredients/flavor cues, seasonal rotation, substitutions |
+| Wine Bar | categories, descriptions, prices, labels, availability | by-glass/by-bottle views, flights, producer/origin context, vintage where useful |
+| Brewery | menus, availability, events, venue information, publishing | house portfolio, releases, packaged formats, tours, take-home status |
+| Brewpub | full food-menu and beverage-menu inheritance, dayparts where used, availability | coordinated tap/food experience, releases, kitchen and beverage state |
+| Taproom | menus, Quick Update, events, hours, explicit screen targeting | live tap list, pours, flights, keg changes, limited food-source guidance |
+| Nightclub | events, promotions, hours, venue information, targeting, emergency communication | door/entry information, lineup, zones, late-night state changes |
+| Lounge | curated menus, reservations candidate where later approved, events, themes | table/area context, premium lists, atmosphere with low-light clarity |
+
+No subtype automatically receives scheduling, reservations, identity, analytics, AI, integration, advanced themes, hardware, or any other candidate capability. Those capabilities keep their independent Track 0 classification and later packaging decision.
+
+## Organization, venue, selection, and change behavior
 
 ### Organization primary industry
 
 - An organization may select Bar, Brewery & Nightlife as its primary industry.
-- Primary industry seeds organization-level terminology, recommendations, starter content, and the first-venue setup experience.
-- Primary industry is product/domain configuration, not a subscription entitlement.
-- Changing primary industry must not silently add or remove commercial access.
+- Primary industry seeds organization-level neutral terminology, recommendations, starter content, and first-venue suggestions.
+- It does not force every venue to use the same subtype.
+- Changing primary industry must not silently add, remove, or reprice commercial access.
 
-### Venue business type
+### Venue subtype selection
 
-- Every venue may select its own business type and, later, a supported subtype.
-- Venue business type controls local defaults, labels, screen-purpose recommendations, starter content, and operational guidance.
-- Venue business type does not override organization-level entitlement authority.
-- Changing a venue type must preserve existing customer content and require an explicit review before replacing defaults.
+- Each venue selects its own primary subtype or remains neutral.
+- A venue may record a small set of descriptive traits for hybrid handling; traits must not be used as hidden feature flags.
+- Selection changes venue-local defaults, future terminology suggestions, starter-content recommendations, screen-purpose suggestions, and guidance only.
+- Organization-wide surfaces use neutral language when venues differ.
+- Selection must explain that all existing customer content and commercial access remain intact.
 
-### Mixed organizations
+### Venue subtype change
 
-- Restaurant, Bar, Brewery & Nightlife, Hospitality, and other venue types may coexist within one organization.
-- Shared libraries, brand controls, users, analytics, and commercial access remain organization concerns unless a later policy explicitly defines venue scope.
-- Venue-specific terminology and defaults must remain local so one venue cannot make another venue's interface misleading.
-- Organization-wide views must use neutral language when subtype-specific terms would be ambiguous.
+A later implementation must treat subtype change as a deliberate product-state update:
 
-## Impeccable planning guardrails
+- preserve menus, items, images, prices, screens, targeting, schedules, themes, publication history, and custom terminology;
+- preview which defaults, suggestions, and future starter content would change;
+- never overwrite existing customer-authored content automatically;
+- require explicit confirmation from an authorized user;
+- record enough change history for support and future analytics interpretation;
+- provide safe cancellation before apply and a clear way to restore the prior subtype configuration;
+- avoid implying that the change upgrades, downgrades, unlocks, or removes paid functionality.
 
-RWP-00.15 is definition work rather than a detailed UI specification, but it establishes UI-facing constraints for later RWPs using the project-local Impeccable `shape` guidance:
+### Mixed organizations and multi-venue operators
 
-- **Operator surfaces use Operate mode:** prioritize rapid scanning, state confidence, frequent updates, and recovery over decorative expression.
-- **Guest-facing screens choose mode by purpose:** informational lists favor Read; atmosphere-led promotional screens may favor Experience while preserving legibility and essential facts.
-- **Hierarchy:** current availability, price, active service period, event timing, and delivery status must outrank optional promotional detail when operationally relevant.
-- **States:** later specifications must cover first-run, empty, scheduled, active, sold-out or unavailable, outdated, offline, permission-restricted, and recovery conditions.
-- **Responsive and environmental behavior:** later work must consider mobile operator use, desktop administration, television displays, low-light venues, long viewing distances, and crowded visual environments.
-- **Accessibility:** color alone must not communicate availability or status; hierarchy and text must remain understandable under glare, low light, motion, and reduced visual acuity.
-- **Recovery:** high-frequency changes need clear confirmation, undo or restoration, and confidence that intended screens received the change.
-- **Visual direction:** preserve the approved Sky Blue direction for Vennusign administrative surfaces. Venue content themes may express the venue brand without weakening operational clarity.
+- Different venues in one organization may use different industries and subtypes.
+- Shared users, brand assets, content libraries, analytics, and commercial access remain organization concerns unless later policy explicitly defines venue scope.
+- Venue-specific labels, recommendations, and defaults remain local.
+- Aggregate views use neutral terms such as venue, content, item, event, and screen when subtype-specific language would be misleading.
+- Copying content between unlike subtypes must preserve the source content and allow the destination venue to review terminology and presentation rather than silently transforming it.
 
-These guardrails shape planning only and authorize no UI implementation.
+## Screen-purpose guidance by subtype
 
-## Initial capability-matrix deltas
+The following are recommendation inputs, not entitlements or required screens:
 
-RWP-00.15 establishes three classification rules for later detailed work:
+- **Pub:** drinks, food where used, specials, recurring events, venue information.
+- **Sports Bar:** game schedule, viewing zones, drinks, food, game-day offers, venue information.
+- **Cocktail Bar:** signature cocktails, classics, seasonal lists, spirit highlights, events.
+- **Wine Bar:** by-glass, by-bottle, flights, producer or region highlights, events.
+- **Brewery:** tap and packaged portfolio, releases, tours, events, take-home information.
+- **Brewpub:** tap list, food menu, pairings or specials, releases, events.
+- **Taproom:** current taps, pour/flight options, releases, events, food-source guidance.
+- **Nightclub:** event lineup, door/cover information, venue zones, bar menu, access and safety guidance.
+- **Lounge:** curated beverage list, reservations or seating guidance where supported, events, venue information.
 
-1. Organization primary industry is **product/domain state** that selects defaults and recommendations.
-2. Venue business type or subtype is **product/domain state** that selects venue-local defaults and terminology.
-3. Rapid manual beverage availability changes remain an inherited **core capability** acting on item availability state; the higher frequency of use does not turn availability into a tier gate.
+## Impeccable shape brief for subtype selection and change
 
-Detailed required, optional, packaging, onboarding, dashboard, and analytics classifications are intentionally deferred to their approved RWPs.
+The project-local Impeccable skill and `shape` playbook were consulted because subtype selection affects future onboarding and administration.
 
-## Owner decisions and deferred questions
+- **Job and audience:** an owner or authorized manager in Operate mode chooses the closest operating model during onboarding or venue settings, often while uncertain about overlapping terms.
+- **Outcome and proof:** the user can compare bounded “best when” definitions, select one primary subtype or remain neutral, understand the venue-local defaults that will change, and see an explicit statement that plan access and existing content do not change.
+- **Hierarchy and interaction:** show primary subtype choices before optional hybrid traits; prioritize dominant guest journey, example screen purposes, and changed defaults; keep legal, licensing, and marketing language out of the decision. A change flow previews effects, preserves content, requires confirmation, and supports restoration.
+- **States and ranges:** support first-run with no selection, one current subtype, neutral fallback, ambiguous/hybrid classification, a multi-venue organization with different subtypes, permission-restricted viewing, validation failure, saved success, and safe cancellation or recovery. The bounded catalog is nine primary subtypes plus neutral state and optional traits.
+- **Responsive and accessibility constraints:** choices must remain scannable on phone and desktop, work without color-only distinctions, use plain-language comparisons, expose selection and confirmation to keyboard and assistive technology, and preserve the approved Sky Blue administrative direction.
 
-The following are intentionally carried into RWP-00.16 rather than decided here:
+This brief is planning only. It authorizes no UI, API, schema, migration, or product implementation.
 
-- whether winery and distillery tasting rooms are first-class subtypes or related hybrid concepts;
-- whether alcohol-free nightlife venues belong here or under Entertainment & Attractions;
-- how private membership clubs should be classified when beverage service is operationally dominant;
-- the exact distinction among pub, gastropub, brewpub, taproom, lounge, and nightclub subtypes;
-- the default business type for a mixed organization when no single venue type is dominant.
+## Capability-matrix classification resulting from RWP-00.16
+
+1. Venue subtype, neutral subtype state, and hybrid descriptive traits are **product/domain state**.
+2. Subtype changes defaults, terminology candidates, starter recommendations, and capability presentation only.
+3. Subtype never grants capability access, raises limits, changes permissions, or acts as a rollout flag.
+4. All subtype-specific screen purposes are recommendations using inherited or later-classified capabilities, not new entitlements.
+5. Counts of venues, screens, users, integrations, or content remain limits independent of subtype.
+
+## Deferred to RWP-00.17 and later
+
+- the canonical operator-facing and guest-facing glossary;
+- exact subtype-specific labels and fallback wording;
+- detailed event, entry, cover, reservation, tap, pour, flight, and service-period semantics;
+- required and optional capability decisions;
+- packaging, onboarding, dashboard, analytics, and implementation design.
 
 ## Reference anchors
 
-These references inform the boundary but do not replace Vennusign's product model:
+These references informed the original profile boundary but do not replace Vennusign's product model:
 
-- The U.S. Census Bureau's 2022 NAICS definition for Drinking Places includes bars, taverns, nightclubs, cocktail lounges, tap rooms, and beverage-led brewpubs, while distinguishing food-led restaurants, packaged retail, manufacturing-only operations, and dance clubs without alcoholic beverage service: https://www.census.gov/naics/?details=722410&input=722410&year=2022
-- The Brewers Association distinguishes brewpubs with significant food service from taproom breweries without significant food service, supporting subtype separation in RWP-00.16: https://www.brewersassociation.org/statistics-and-data/craft-beer-industry-market-segments/
+- U.S. Census Bureau 2022 NAICS 722410 boundary for drinking places;
+- Brewers Association distinction among brewpub and taproom brewery market segments.
 
-## RWP-00.15 completion and handoff
+They are boundary evidence only, not Vennusign entitlement, legal, licensing, tax, or regulatory classifications.
+
+## RWP-00.15 completion summary
+
+RWP-00.15 established the industry purpose, Restaurant inheritance, meaningful deltas, native boundary, organization and venue behavior, initial capability classifications, and Impeccable planning guardrails.
+
+## RWP-00.16 completion and handoff
 
 ### Completed
 
-- Defined the profile purpose and additional customer outcomes.
-- Recorded Restaurant inheritance and meaningful deltas only.
-- Established included, mixed-industry, and excluded boundaries.
-- Defined organization primary-industry and venue business-type behavior.
-- Identified mixed-organization rules.
-- Applied Impeccable planning guardrails where the definition affects future UI-facing work.
-- Added the initial classification deltas to the Track 0 capability matrix.
+- Defined nine bounded primary subtypes plus a neutral fallback.
+- Established inclusion, exclusion, neighboring-profile, and ambiguous-case rules.
+- Mapped every subtype to inherited Restaurant capabilities and meaningful deltas only.
+- Defined subtype-specific operational, content, screen-purpose, and presentation recommendations.
+- Resolved hybrid concepts through one primary subtype plus optional descriptive traits.
+- Defined organization, venue, subtype selection, subtype change, mixed-organization, and multi-venue behavior.
+- Resolved producer tasting rooms, alcohol-free concepts, private clubs, gastropubs, brewery taprooms, and mixed-property bars without creating separate entitlement models.
+- Applied the Impeccable `shape` guidance to future subtype selection and change flows.
+- Updated the Track 0 capability classification for venue subtype and hybrid traits.
 
 ### Not performed
 
-- No product, UI, API, schema, migration, billing, entitlement, feature-gate, or rollout implementation.
+- No product, UI, API, schema, migration, billing, entitlement, permission, feature-gate, limit, rollout, or pricing implementation.
 - No integration or external-system testing.
-- No subtype, terminology, detailed operations, packaging, onboarding, dashboard, or analytics decisions beyond the boundary required by this RWP.
+- No canonical terminology glossary or detailed operational-capability design beyond what was required to distinguish subtypes.
 
 ### Next sequential RWP
 
-**RWP-00.16 — Bar, Brewery & Nightlife Venue Subtypes** must define the supported subtype catalog, inclusion and exclusion rules, subtype-specific deltas, selection and change behavior, and hybrid scenarios before RWP-00.17 begins.
+**RWP-00.17 — Bar, Brewery & Nightlife Business Terminology** (#492) must define the canonical glossary, inherited and subtype-specific wording, operator versus guest language, neutral fallbacks, and hybrid terminology behavior before RWP-00.18 begins.
