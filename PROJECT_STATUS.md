@@ -4,7 +4,7 @@
 
 - Phase 13 — Customer Identity, Signup, and Onboarding: complete.
 - Phase 14 and later: paused pending explicit owner approval.
-- Active product WP/RWP: RWP-00.08 / issue #451 is complete in this proposed merge state.
+- Active product WP/RWP: RWP-05.08 / issue #452 is complete in this proposed merge state.
 - The 13-package retrospective remediation round is complete.
 - RWP-00.04 — Deployment Component Versioning and Release Manifest (#437) is complete.
 - RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439) is complete.
@@ -15,8 +15,9 @@
 - RWP-02.01 — Display Player State-Screen Presentation (#448) is complete and merged.
 - RWP-00.06 — Shared Design Tokens and Palette Consolidation (#449) is complete and merged.
 - RWP-00.07 — Small-Text Contrast Remediation (#450) is complete and merged.
-- RWP-00.08 — Destructive-Action Confirmation Standardization (#451) replaces all browser prompts with accessible consequence-review dialogs and requires exact-name typing for irreversible screen unpairing.
-- RWP-05.08 — Screens Page Information Architecture (#452) is next and remains unclaimed until RWP-00.08 merges and releases its claim.
+- RWP-00.08 — Destructive-Action Confirmation Standardization (#451) is complete and merged.
+- RWP-05.08 — Screens Page Information Architecture (#452) separates Daily, Setup, and Capacity & walls workflows and makes screen presentation changes explicit drafts before TV application.
+- RWP-04.03 — Platform Operations Mobile and Console Polish (#453) is next and remains unclaimed until RWP-05.08 merges and releases its claim.
 - RWP-13.06 — Trial-First Onboarding (#466) remains held pending an explicit owner decision and is not part of the executable queue.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
@@ -47,4 +48,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-Complete exact-head Actions, review, and merge for RWP-00.08 / issue #451; close the issue, verify `master`, and release the claim. Only then may this run claim RWP-05.08 / issue #452. Phase 14 and later remain paused.
+Complete exact-head Actions, review, and merge for RWP-05.08 / issue #452; close the issue, verify `master`, and release the claim. RWP-04.03 / issue #453 is the next approved package for a later run. Phase 14 and later remain paused.

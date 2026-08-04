@@ -18,7 +18,14 @@ import {
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
 import VideoWallBuilder from "./VideoWallBuilder";
-import { identityHasChanges, updateIdentityDraft, type ScreenIdentityDraft } from "./actionRecovery.mjs";
+import {
+  identityHasChanges,
+  screenPresentationHasChanges,
+  updateIdentityDraft,
+  updateScreenPresentationDraft,
+  type ScreenIdentityDraft,
+  type ScreenPresentationDraft
+} from "./actionRecovery.mjs";
 import { useDestructiveReview } from "./DestructiveReviewDialog";
 
 type Props = {
@@ -60,6 +67,7 @@ export default function ScreenManagement({
   const [previewRevision, setPreviewRevision] = useState(0);
   const [previewScreenId, setPreviewScreenId] = useState("");
   const [identityDrafts, setIdentityDrafts] = useState<Record<string, ScreenIdentityDraft>>({});
+  const [presentationDrafts, setPresentationDrafts] = useState<Record<string, ScreenPresentationDraft>>({});
   const [pairingCode, setPairingCode] = useState("");
   const [replacementCode, setReplacementCode] = useState("");
   const [replacementTargetId, setReplacementTargetId] = useState("");
@@ -68,16 +76,19 @@ export default function ScreenManagement({
   const [healthFilter, setHealthFilter] = useState("all");
   const [selectedScreenId, setSelectedScreenId] = useState("");
   const [delivery, setDelivery] = useState<{ screenId: string; state: "pending" | "requested" | "received" | "applied" | "recovered" | "superseded" | "offline" | "failed"; requestedUtc: string; reason?: string }>();
+  const [setupOpen, setSetupOpen] = useState(true);
   const { review, reviewDialog } = useDestructiveReview();
 
   const refresh = async () => {
     const current = await loadManagedScreens(configuration, apiKey, venueId);
     setScreens(current);
     setSelectedScreenId(selected => current.some(screen => screen.id === selected && screen.status.toLowerCase() !== "archived") ? selected : "");
+    return current;
   };
   useEffect(() => {
     setScreensLoading(true);
     refresh()
+      .then(current => setSetupOpen(!current.some(screen => screen.status.toLowerCase() !== "archived")))
       .catch(() => setError("Screens could not be loaded."))
       .finally(() => setScreensLoading(false));
   }, [apiKey, configuration, venueId]);
@@ -99,7 +110,7 @@ export default function ScreenManagement({
     setBusyId("new"); setError(undefined); setNotice(undefined);
     try {
       await createManagedScreen(configuration, apiKey, venueId, { name: newName, location: newLocation || undefined });
-      setNewName(""); setNewLocation(""); await refresh();
+      setNewName(""); setNewLocation(""); await refresh(); setSetupOpen(false);
     } catch (reason: unknown) {
       setError(reason instanceof BackOfficeApiError && reason.status === 409
         ? "Your plan's screen limit has been reached. Upgrade before adding another screen."
@@ -116,7 +127,7 @@ export default function ScreenManagement({
       setPairingCode("");
       setSelectedScreenId(claimed.screenId);
       setNotice("Screen paired successfully. Pairing is complete; Online appears only after the authoritative player heartbeat arrives.");
-      await refresh();
+      await refresh(); setSetupOpen(false);
     } catch (reason: unknown) {
       const status = reason instanceof BackOfficeApiError ? reason.status : 0;
       setError(status === 404
@@ -153,16 +164,19 @@ export default function ScreenManagement({
     finally { setBusyId(undefined); }
   };
 
-  const patch = (screenId: string, value: Partial<ManagedScreen>) =>
-    setScreens(current => current.map(screen => screen.id === screenId ? { ...screen, ...value } : screen));
-
   const patchIdentity = (screen: ManagedScreen, value: Partial<ScreenIdentityDraft>) =>
     setIdentityDrafts(current => ({ ...current, [screen.id]: updateIdentityDraft(current[screen.id], screen, value) }));
 
   const cancelIdentity = (screenId: string) =>
     setIdentityDrafts(current => { const next = { ...current }; delete next[screenId]; return next; });
 
-  const save = async (screen: ManagedScreen) => {
+  const patchPresentation = (screen: ManagedScreen, value: Partial<ScreenPresentationDraft>) =>
+    setPresentationDrafts(current => ({ ...current, [screen.id]: updateScreenPresentationDraft(current[screen.id], screen, value) }));
+
+  const cancelPresentation = (screenId: string) =>
+    setPresentationDrafts(current => { const next = { ...current }; delete next[screenId]; return next; });
+
+  const save = async (screen: ManagedScreen, completedDraft: "identity" | "presentation") => {
     setBusyId(screen.id); setError(undefined); setNotice(undefined);
     try {
       await updateManagedScreen(configuration, apiKey, venueId, screen.id, {
@@ -173,7 +187,8 @@ export default function ScreenManagement({
         splitRatio: screen.splitRatio,
         heroDwellSeconds: screen.heroDwellSeconds
       });
-      cancelIdentity(screen.id);
+      if (completedDraft === "identity") cancelIdentity(screen.id);
+      else cancelPresentation(screen.id);
       await refresh();
       setPreviewRevision(current => current + 1);
     } catch { setError("The screen details could not be saved."); }
@@ -260,54 +275,63 @@ export default function ScreenManagement({
     {notice ? <p className="screen-notice" role="status">{notice}</p> : null}
     {screenUsage ? <p className="screen-notice" id="screen-quota-status">{screenUsage}</p> : null}
     {showUpgradePrompt && !allLayoutsEnabled ? <aside className="tier-prompt" role="status"><div><strong>Bar layouts require All Layouts</strong><p>Neon Chalkboard and Split Layout remain visible in the selector. Daily Special Hero remains visible too. Upgrade to Pro or add a venue override to choose them.</p></div></aside> : null}
-    <form className="screen-create" onSubmit={create}>
-      <input aria-label="New screen name" maxLength={200} required value={newName} onChange={event => setNewName(event.target.value)} placeholder="Screen name" />
-      <input aria-label="New screen location" maxLength={200} value={newLocation} onChange={event => setNewLocation(event.target.value)} placeholder="Location (optional)" />
-      <button aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "new" || screenLimitReached}>Add screen</button>
-    </form>
-    <form className="screen-create" onSubmit={claim}>
-      <input
-        aria-label="Six-digit pairing code"
-        inputMode="numeric"
-        maxLength={6}
-        minLength={6}
-        pattern="[0-9]{6}"
-        required
-        value={pairingCode}
-        onChange={event => setPairingCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-        placeholder="TV pairing code"
-      />
-      <button aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "pair" || screenLimitReached}>Pair screen</button>
-    </form>
-    <p className="screen-notice" role="status">{busyId === "pair" ? "Pairing pending… keep this page and the player open." : "Pairing codes expire and can be used once. If pairing fails, generate a fresh code on the player before retrying."}</p>
-    <section className="screen-delivery-target" aria-labelledby="replacement-heading">
-      <div><p>Player lifecycle</p><h4 id="replacement-heading">Replace a player</h4><span>Keeps the logical screen, content settings, history, and video-wall position. This is separate from adding or unpairing a screen.</span></div>
-      <form className="screen-create" onSubmit={previewReplacement}>
-        <label>Logical screen<select required value={replacementTargetId} onChange={event => { setReplacementTargetId(event.target.value); setReplacementPreview(undefined); }}><option value="">Choose the screen to preserve</option>{activeScreens.map(screen => <option key={screen.id} value={screen.id}>{screen.name}</option>)}</select></label>
-        <input aria-label="Replacement player pairing code" inputMode="numeric" maxLength={6} minLength={6} pattern="[0-9]{6}" required value={replacementCode} onChange={event => { setReplacementCode(event.target.value.replace(/\D/g, "").slice(0, 6)); setReplacementPreview(undefined); }} placeholder="Replacement code" />
-        <button disabled={busyId === "replacement-preview" || !replacementTargetId}>Review replacement</button>
-      </form>
-      {replacementPreview ? <div className="delivery-state queued" role="status">
-        <strong>Ready to replace {replacementPreview.targetName}</strong>
-        <span>New player: {replacementPreview.replacementPlatform ?? "Unknown platform"}{replacementPreview.replacementAppVersion ? ` ${replacementPreview.replacementAppVersion}` : ""}</span>
-        <span>Preserves configuration and history{replacementPreview.preservesVideoWall ? ` · Video wall ${replacementPreview.wallGroup ?? "assignment"} position ${replacementPreview.wallPosition ?? "preserved"}` : " · No video-wall assignment"}.</span>
-        <button type="button" disabled={busyId === "replacement-complete"} onClick={completeReplacement}>Confirm player replacement</button>
-        <button type="button" disabled={busyId === "replacement-complete"} onClick={() => { setReplacementPreview(undefined); setReplacementCode(""); }}>Cancel</button>
-      </div> : null}
-    </section>
-    <section className="screen-delivery-target" aria-labelledby="screen-target-heading">
-      <div><p>Authorized delivery</p><h4 id="screen-target-heading">Select one screen target</h4><span>Preview and Push remain disabled until you deliberately choose an active venue screen.</span></div>
-      <label>Target screen<select value={selectedScreenId} onChange={event => { setSelectedScreenId(event.target.value); setDelivery(undefined); }}><option value="">Choose a screen</option>{activeScreens.map(screen => <option key={screen.id} value={screen.id}>{screen.name} · {isStale(screen) ? "Stale" : screen.status}</option>)}</select></label>
-      <button type="button" disabled={!selectedScreen || busyId === selectedScreenId} onClick={() => selectedScreen && setPreviewScreenId(selectedScreen.id)}>Preview selected screen</button>
-      <button disabled={!selectedScreen || busyId === selectedScreenId} onClick={() => selectedScreen && push(selectedScreen)}>Push structured content</button>
-      {delivery && delivery.screenId === selectedScreenId ? <div className={`delivery-state ${delivery.state}`} role="status"><strong>Delivery: {delivery.state}</strong><span>{delivery.reason ?? "Request in progress."}</span><small>Requested {new Date(delivery.requestedUtc).toLocaleString()}</small>{delivery.state === "failed" && selectedScreen ? <button onClick={() => push(selectedScreen)}>Retry selected target</button> : null}</div> : null}
-    </section>
-    <div className="screen-create">
-      <input aria-label="Search screens" value={screenSearch} onChange={event => setScreenSearch(event.target.value)} placeholder="Search name, location, or platform" />
-      <label>Health<select value={healthFilter} onChange={event => setHealthFilter(event.target.value)}><option value="all">All screens</option><option value="online">Online</option><option value="offline">Offline</option><option value="stale">Stale</option><option value="archived">Archived</option></select></label>
-    </div>
-    {screensLoading ? <p role="status">Loading screens…</p> : visibleScreens.length ? <div className="managed-screen-list">{visibleScreens.map(screen =>
-      <section key={screen.id}>
+    <details className="screen-workflow-section screen-workflow-section--setup" open={setupOpen} onToggle={event => setSetupOpen(event.currentTarget.open)}>
+      <summary><span>Setup</span><strong>Add, pair, or replace a player</strong><small>{activeScreens.length ? "Collapsed after your first active screen; expand when hardware changes." : "Start here to connect the first display."}</small></summary>
+      <div className="screen-workflow-section__body">
+        <form className="screen-create" onSubmit={create}>
+          <input aria-label="New screen name" maxLength={200} required value={newName} onChange={event => setNewName(event.target.value)} placeholder="Screen name" />
+          <input aria-label="New screen location" maxLength={200} value={newLocation} onChange={event => setNewLocation(event.target.value)} placeholder="Location (optional)" />
+          <button aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "new" || screenLimitReached}>Add screen</button>
+        </form>
+        <form className="screen-create" onSubmit={claim}>
+          <input
+            aria-label="Six-digit pairing code"
+            inputMode="numeric"
+            maxLength={6}
+            minLength={6}
+            pattern="[0-9]{6}"
+            required
+            value={pairingCode}
+            onChange={event => setPairingCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="TV pairing code"
+          />
+          <button aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "pair" || screenLimitReached}>Pair screen</button>
+        </form>
+        <p className="screen-notice" role="status">{busyId === "pair" ? "Pairing pending… keep this page and the player open." : "Pairing codes expire and can be used once. If pairing fails, generate a fresh code on the player before retrying."}</p>
+        <section className="screen-delivery-target" aria-labelledby="replacement-heading">
+          <div><p>Player lifecycle</p><h4 id="replacement-heading">Replace a player</h4><span>Keeps the logical screen, content settings, history, and video-wall position. This is separate from adding or unpairing a screen.</span></div>
+          <form className="screen-create" onSubmit={previewReplacement}>
+            <label>Logical screen<select required value={replacementTargetId} onChange={event => { setReplacementTargetId(event.target.value); setReplacementPreview(undefined); }}><option value="">Choose the screen to preserve</option>{activeScreens.map(screen => <option key={screen.id} value={screen.id}>{screen.name}</option>)}</select></label>
+            <input aria-label="Replacement player pairing code" inputMode="numeric" maxLength={6} minLength={6} pattern="[0-9]{6}" required value={replacementCode} onChange={event => { setReplacementCode(event.target.value.replace(/\D/g, "").slice(0, 6)); setReplacementPreview(undefined); }} placeholder="Replacement code" />
+            <button disabled={busyId === "replacement-preview" || !replacementTargetId}>Review replacement</button>
+          </form>
+          {replacementPreview ? <div className="delivery-state queued" role="status">
+            <strong>Ready to replace {replacementPreview.targetName}</strong>
+            <span>New player: {replacementPreview.replacementPlatform ?? "Unknown platform"}{replacementPreview.replacementAppVersion ? ` ${replacementPreview.replacementAppVersion}` : ""}</span>
+            <span>Preserves configuration and history{replacementPreview.preservesVideoWall ? ` · Video wall ${replacementPreview.wallGroup ?? "assignment"} position ${replacementPreview.wallPosition ?? "preserved"}` : " · No video-wall assignment"}.</span>
+            <button type="button" disabled={busyId === "replacement-complete"} onClick={completeReplacement}>Confirm player replacement</button>
+            <button type="button" disabled={busyId === "replacement-complete"} onClick={() => { setReplacementPreview(undefined); setReplacementCode(""); }}>Cancel</button>
+          </div> : null}
+        </section>
+      </div>
+    </details>
+    <section className="screen-workflow-section" aria-labelledby="daily-screens-heading">
+      <header><span>Daily</span><h4 id="daily-screens-heading">Operate and monitor screens</h4><p>Choose one delivery target, preview or push content, and review health without opening setup.</p></header>
+      <div className="screen-workflow-section__body">
+        <section className="screen-delivery-target" aria-labelledby="screen-target-heading">
+          <div><p>Authorized delivery</p><h4 id="screen-target-heading">Select one screen target</h4><span>Preview and Push remain disabled until you deliberately choose an active venue screen.</span></div>
+          <label>Target screen<select value={selectedScreenId} onChange={event => { setSelectedScreenId(event.target.value); setDelivery(undefined); }}><option value="">Choose a screen</option>{activeScreens.map(screen => <option key={screen.id} value={screen.id}>{screen.name} · {isStale(screen) ? "Stale" : screen.status}</option>)}</select></label>
+          <button type="button" disabled={!selectedScreen || busyId === selectedScreenId} onClick={() => selectedScreen && setPreviewScreenId(selectedScreen.id)}>Preview selected screen</button>
+          <button disabled={!selectedScreen || busyId === selectedScreenId} onClick={() => selectedScreen && push(selectedScreen)}>Push structured content</button>
+          {delivery && delivery.screenId === selectedScreenId ? <div className={`delivery-state ${delivery.state}`} role="status"><strong>Delivery: {delivery.state}</strong><span>{delivery.reason ?? "Request in progress."}</span><small>Requested {new Date(delivery.requestedUtc).toLocaleString()}</small>{delivery.state === "failed" && selectedScreen ? <button onClick={() => push(selectedScreen)}>Retry selected target</button> : null}</div> : null}
+        </section>
+        <div className="screen-create">
+          <input aria-label="Search screens" value={screenSearch} onChange={event => setScreenSearch(event.target.value)} placeholder="Search name, location, or platform" />
+          <label>Health<select value={healthFilter} onChange={event => setHealthFilter(event.target.value)}><option value="all">All screens</option><option value="online">Online</option><option value="offline">Offline</option><option value="stale">Stale</option><option value="archived">Archived</option></select></label>
+        </div>
+    {screensLoading ? <p role="status">Loading screens…</p> : visibleScreens.length ? <div className="managed-screen-list">{visibleScreens.map(screen => {
+      const presentation = presentationDrafts[screen.id] ?? screen;
+      return <section key={screen.id}>
         <div className="managed-screen-health">
           <span className={screen.status.toLowerCase()} />
           <div><strong>{isStale(screen) && screen.status.toLowerCase() !== "archived" ? "Stale" : screen.status}</strong><small>{screen.lastSeen ? `Last seen ${new Date(screen.lastSeen).toLocaleString()}` : "Never seen"}{screen.platform ? ` · ${screen.platform}${screen.appVersion ? ` ${screen.appVersion}` : ""}` : ""}</small></div>
@@ -316,18 +340,14 @@ export default function ScreenManagement({
         <label>Location<input disabled={screen.status.toLowerCase() === "archived"} maxLength={200} value={identityDrafts[screen.id]?.location ?? screen.location ?? ""} onChange={event => patchIdentity(screen, { location: event.target.value })} /></label>
         {identityHasChanges(screen, identityDrafts[screen.id]) ? <div className="screen-actions" role="status">
           <span>Unsaved screen identity changes</span>
-          <button type="button" disabled={busyId === screen.id || !identityDrafts[screen.id]?.name.trim()} onClick={() => void save({ ...screen, name: identityDrafts[screen.id].name, location: identityDrafts[screen.id].location || undefined })}>Save changes</button>
+          <button type="button" disabled={busyId === screen.id || !identityDrafts[screen.id]?.name.trim()} onClick={() => void save({ ...screen, name: identityDrafts[screen.id].name, location: identityDrafts[screen.id].location || undefined }, "identity")}>Save changes</button>
           <button type="button" disabled={busyId === screen.id} onClick={() => cancelIdentity(screen.id)}>Cancel changes</button>
         </div> : null}
         <label>Display layout
           <select
             disabled={screen.status.toLowerCase() === "archived"}
-            value={screen.displayLayout}
-            onChange={event => {
-              const updated = { ...screen, displayLayout: event.target.value as ManagedScreen["displayLayout"] };
-              patch(screen.id, { displayLayout: updated.displayLayout });
-              void save(updated);
-            }}
+            value={presentation.displayLayout}
+            onChange={event => patchPresentation(screen, { displayLayout: event.target.value as ManagedScreen["displayLayout"] })}
           >
             <option value="photo_grid">Photo Grid</option>
             <option value="classic_diner">Classic Diner</option>
@@ -339,15 +359,11 @@ export default function ScreenManagement({
             <option disabled={!allLayoutsEnabled} value="digital_tap_board">Digital Tap Board · Pro</option>
           </select>
         </label>
-        {screen.displayLayout === "photo_grid" ? <label>Photo Grid density
+        {presentation.displayLayout === "photo_grid" ? <label>Photo Grid density
           <select
             disabled={screen.status.toLowerCase() === "archived"}
-            value={screen.photoGridDensity}
-            onChange={event => {
-              const updated = { ...screen, photoGridDensity: event.target.value as ManagedScreen["photoGridDensity"] };
-              patch(screen.id, { photoGridDensity: updated.photoGridDensity });
-              void save(updated);
-            }}
+            value={presentation.photoGridDensity}
+            onChange={event => patchPresentation(screen, { photoGridDensity: event.target.value as ManagedScreen["photoGridDensity"] })}
           >
             <option value="2x2">2 × 2 · 4 items</option>
             <option value="3x2">3 × 2 · 6 items</option>
@@ -355,15 +371,11 @@ export default function ScreenManagement({
             <option value="3x3">3 × 3 · 9 items</option>
           </select>
         </label> : null}
-        {screen.displayLayout === "daily_special_hero" ? <label>Hero rotation
+        {presentation.displayLayout === "daily_special_hero" ? <label>Hero rotation
           <select
             disabled={screen.status.toLowerCase() === "archived"}
-            value={screen.heroDwellSeconds}
-            onChange={event => {
-              const updated = { ...screen, heroDwellSeconds: Number(event.target.value) };
-              patch(screen.id, { heroDwellSeconds: updated.heroDwellSeconds });
-              void save(updated);
-            }}
+            value={presentation.heroDwellSeconds}
+            onChange={event => patchPresentation(screen, { heroDwellSeconds: Number(event.target.value) })}
           >
             <option value={4}>Every 4 seconds</option>
             <option value={8}>Every 8 seconds · default</option>
@@ -372,20 +384,21 @@ export default function ScreenManagement({
             <option value={30}>Every 30 seconds</option>
           </select>
         </label> : null}
-        {screen.displayLayout === "split_layout" ? <label>Split ratio
+        {presentation.displayLayout === "split_layout" ? <label>Split ratio
           <select
             disabled={screen.status.toLowerCase() === "archived"}
-            value={screen.splitRatio}
-            onChange={event => {
-              const updated = { ...screen, splitRatio: event.target.value as ManagedScreen["splitRatio"] };
-              patch(screen.id, { splitRatio: updated.splitRatio });
-              void save(updated);
-            }}
+            value={presentation.splitRatio}
+            onChange={event => patchPresentation(screen, { splitRatio: event.target.value as ManagedScreen["splitRatio"] })}
           >
             <option value="40_60">40% hero · 60% menu</option>
             <option value="50_50">50% hero · 50% menu</option>
           </select>
         </label> : null}
+        {screenPresentationHasChanges(screen, presentationDrafts[screen.id]) ? <div className="screen-presentation-draft" role="status">
+          <span><strong>Draft layout</strong> · Nothing changes on the TV until you apply.</span>
+          <button type="button" disabled={busyId === screen.id} onClick={() => void save({ ...screen, ...presentation }, "presentation")}>Apply to TV</button>
+          <button type="button" disabled={busyId === screen.id} onClick={() => cancelPresentation(screen.id)}>Discard changes</button>
+        </div> : null}
         <div className="screen-actions">
           <a href={screen.registrationUrl} target="_blank" rel="noreferrer">Open registration URL</a>
           <button type="button" aria-pressed={selectedScreenId === screen.id} disabled={busyId === screen.id || screen.status.toLowerCase() === "archived"} onClick={() => { setSelectedScreenId(screen.id); setDelivery(undefined); }}>Select target</button>
@@ -407,7 +420,13 @@ export default function ScreenManagement({
             title={previewTitle(screen)}
           />
         </div> : null}
-      </section>)}</div> : <p>{screens.length ? "No screens match the current filters." : "No screens assigned."}</p>}
+      </section>;
+    })}</div> : <p>{screens.length ? "No screens match the current filters." : "No screens assigned. Expand Setup to add or pair your first screen."}</p>}
+      </div>
+    </section>
+    <section className="screen-workflow-section" aria-labelledby="capacity-walls-heading">
+      <header><span>Capacity &amp; walls</span><h4 id="capacity-walls-heading">Plan content fit and multi-screen layouts</h4><p>Preview deterministic overflow and manage video walls separately from daily delivery.</p></header>
+      <div className="screen-workflow-section__body">
     <section className="overflow-preview">
       <div>
         <p>Layout capacity</p>
@@ -430,7 +449,9 @@ export default function ScreenManagement({
         <li className={item.visible ? "" : "overflow"} key={item.itemId}>
           <span>{item.itemName}</span><small>{item.sectionName} · {item.visible ? "Visible" : "Overflow"}</small>
         </li>)}</ol> : <p>No available menu items to preview.</p>}
-      </section>
-    {videoWallEnabled ? <VideoWallBuilder configuration={configuration} apiKey={apiKey} venueId={venueId} screens={activeScreens} showUpgradePrompt={showUpgradePrompt} /> : null}
+    </section>
+    {videoWallEnabled ? <VideoWallBuilder configuration={configuration} apiKey={apiKey} venueId={venueId} screens={activeScreens} showUpgradePrompt={showUpgradePrompt} /> : <p className="screen-capability-note">Video walls are not enabled for this venue. Layout capacity remains available for every plan.</p>}
+      </div>
+    </section>
   </article>;
 }

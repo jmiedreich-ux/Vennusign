@@ -76,6 +76,25 @@ test("screen actions expose deliberate preview and identity save cancellation", 
   assert.doesNotMatch(screens, /onBlur=\{\(\) => save\(screen\)\}/);
 });
 
+test("screens workflows separate daily setup and capacity work", () => {
+  assert.match(screens, />Setup</);
+  assert.match(screens, />Daily</);
+  assert.match(screens, /Capacity &amp; walls/);
+  assert.match(screens, /open=\{setupOpen\}/);
+  assert.match(screens, /setSetupOpen\(!current\.some/);
+  assert.match(screens, /await refresh\(\); setSetupOpen\(false\)/);
+  assert.match(screens, /Collapsed after your first active screen/);
+});
+
+test("layout controls stay draft-only until the operator applies them", () => {
+  assert.match(screens, /presentationDrafts/);
+  assert.match(screens, /screenPresentationHasChanges/);
+  assert.match(screens, /Nothing changes on the TV until you apply/);
+  assert.match(screens, />Apply to TV</);
+  assert.match(screens, />Discard changes</);
+  assert.doesNotMatch(screens, /onChange=\{event => \{[\s\S]{0,180}void save\(updated\)/);
+});
+
 test("video wall editing and removal require deliberate recovery-safe actions", () => {
   assert.match(walls, /editingName/);
   assert.match(walls, /Edit wall/);
