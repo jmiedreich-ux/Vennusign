@@ -4,7 +4,8 @@
 
 - Phase 13 — Customer Identity, Signup, and Onboarding: complete.
 - Phase 14 and later: paused pending explicit owner approval.
-- Active product or maintenance WP/RWP: none.
+- Active implementation WP/RWP: none.
+- Active planning track: Track 0 — Capability, Packaging, and Entitlement Architecture (#488). Product implementation remains paused.
 - The 13-package retrospective remediation round is complete.
 - RWP-00.04 — Deployment Component Versioning and Release Manifest (#437) is complete.
 - RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439) is complete.
@@ -31,8 +32,8 @@
 - RWP-11.03 — Unified Entitlement Experience (#464) is complete and merged.
 - RWP-11.04 — Personalized Locked Previews (#465) presents the active venue's authorized menu content inside read-only locked theme/layout previews.
 - The 18-item approved Sequential remediation queue is complete in this proposed merge state.
-- RWP-00.14 — Project-Local Impeccable Codex Design Skill (#486) is complete in this proposed merge state. It installs the official v4.0.4 skill, its advisory edit/stop hook, and the repository rule requiring it for UI work without changing product runtime or UI.
-- RWP-13.06 — Trial-First Onboarding (#466) remains held pending an explicit owner decision and is not part of the executable queue.
+- RWP-00.14 — Project-Local Impeccable Codex Design Skill (#486) is complete and merged. It installs the official v4.0.4 skill, its advisory edit/stop hook, and the repository rule requiring it for UI work without changing product runtime or UI.
+- RWP-13.06 — Trial-First Onboarding (#466) implementation is paused while Track 0 establishes the supported-industry, capability, packaging, and entitlement model.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
 ## Completed Delivery
@@ -62,4 +63,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-Merge the reviewed RWP-00.14 / issue #486 exact head after final Actions, close the issue, and verify `master`. Then stop: no product or maintenance package is approved, RWP-13.06 / issue #466 remains held, and Phase 14 and later remain paused.
+Continue owner-led Track 0 planning in issue #488. Restaurant is the first approved native-industry profile and its capabilities are classified. Next, profile **Bar, brewery, and nightlife** using Restaurant as the baseline and document only meaningful differences. Do not implement onboarding, billing, entitlements, feature gates, UI, API, schema, or migrations until the owner approves the completed capability matrix and resulting packages. Phase 14 and later remain paused.

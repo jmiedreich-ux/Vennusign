@@ -2,30 +2,60 @@
 
 ## Current State
 
-- Item: none after the proposed RWP-00.14 merge
-- Mode: paused
-- Branch: none after merge
-- Status: RWP-00.14 complete; claim released in the proposed merge state
+- Item: Track 0 — Capability, Packaging, and Entitlement Architecture (#488)
+- Mode: owner-led planning; implementation paused
+- Branch/PR: documentation record only; no product implementation claim
+- Active implementation WP/RWP: none
+- Phase 14 and later: paused
 
-## Approved Queue
+## Why Track 0 Exists
 
-The approved 18-item product remediation queue is complete. RWP-00.14 / issue #486 is a bounded maintenance package and does not authorize product work. RWP-13.06 / issue #466 is held and excluded. Phase 14+ remains paused.
+The completed WP/RWP inventory does not yet produce consistent end-to-end customer journeys. Vennusign has also mixed domain state, permissions, commercial entitlements, quantity limits, add-ons, and internal rollout flags under the broad idea of “features.” Track 0 resolves that product architecture before more onboarding or feature implementation.
 
-## RWP-00.14 Proposed Outcome
+WP/RWP records remain bounded implementation units inside completion tracks; their completion alone does not prove that an entire product area is complete.
 
-- Codex discovers the complete official Impeccable v4.0.4 skill from `.agents/skills/impeccable`.
-- `.codex/hooks.json` runs the project-local advisory detector after UI edits and at stop on Node 22 or newer, with POSIX and Windows paths.
-- `AGENTS.md` requires the skill's routed, bounded UX workflow for every changed UI surface.
-- Actions run #932 passed the complete non-integration suite on installation head `103bbcab82344d641015281909e64c43c46d1621`; final completion-record head validation remains required before merge.
+## Approved Classification Model
 
-## Boundaries
+Every capability must have one primary classification:
 
-- No product UI, API, server persistence, authorization, entitlement, schema, or data-contract changes.
-- `PRODUCT.md` and `DESIGN.md` are not invented during installation; a future explicit Impeccable `init` or `document` request owns those artifacts.
-- No later product package is approved.
-- Do not claim or implement held RWP-13.06 / issue #466 or resume Phase 14+.
-- Azure SQL, live Stripe, hosted browser, external-service, credentialed, hosted-infrastructure, container, physical-device, signing/store, cross-system, and all other integration-type tests remain skipped.
+1. Core capability
+2. Permission
+3. Product/domain state
+4. Tier entitlement
+5. Independent add-on
+6. Usage or quantity limit
+7. Internal rollout flag
+
+Example: manually marking a menu item unavailable is a core operational capability acting on product state. It is not a commercial feature flag. The permission system controls who may perform the action. POS-driven automatic availability may be an add-on or tier-bundled integration.
+
+## Supported-Industry Direction
+
+Native profiles are developed first for Restaurant; Bar, brewery, and nightlife; Café, bakery, and dessert; Food truck and concession; Hospitality; and Entertainment and attractions. Other approved industries initially remain compatible through the shared signage foundation.
+
+Industry affects defaults, terminology, starter content, recommendations, and relevant capability presentation. Industry is not itself a tier or entitlement. Organizations have a primary industry, while venues may have their own business type to support mixed organizations.
+
+## Completed Industry Profile
+
+Restaurant is the first approved native profile.
+
+Core restaurant operations include menu/category/item management; prices, descriptions, images, and dietary labels; manual availability; mobile and desktop Quick Update; basic specials; pairing and screen management; explicit screen targeting; preview and immediate publish; delivery confirmation; online/outdated detection; recovery/restore; basic restaurant layouts/themes; business hours; and understandable error recovery.
+
+Candidate tier capabilities include scheduling, dayparts, recurring specials, advanced presentation, campaigns, coordinated screens/video walls, multi-venue sharing, brand controls, reusable libraries, approvals, advanced permissions, history, analytics, and organization dashboards.
+
+Candidate add-ons include POS synchronization, AI-assisted content/design, managed hardware coverage, premium analytics/data, custom integrations, and enterprise identity where independently justified.
+
+Venue/screen/user counts, storage, retained history, AI usage, and integration connections are limits rather than feature flags.
 
 ## Exact Next Action
 
-Validate and review the final completion-record head, merge PR #487, close issue #486, and verify `master`. Then stop with no approved next item.
+Profile **Bar, brewery, and nightlife** using Restaurant as the baseline. Document only its distinct business types, goals, daily operations, content, screen purposes, roles, integrations, and capability-classification differences.
+
+After all native profiles are approved, inventory and classify every existing feature key, entitlement check, permission, override, limit, and locked UI surface. Then propose tiers and add-ons for owner approval.
+
+## Boundaries
+
+- Do not start product implementation from issue #488.
+- Do not resume RWP-13.06 implementation until Track 0 produces an owner-approved capability and packaging model.
+- Do not start Phase 14+.
+- Preserve the Sky Blue visual direction.
+- Integration and external-system tests remain skipped under the standing owner instruction.
