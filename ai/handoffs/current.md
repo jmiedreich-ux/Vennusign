@@ -9,74 +9,50 @@
 - RWP-13.06: paused pending the owner-approved Track 0 model
 - Restaurant: canonical approved baseline
 - Bar, Brewery & Nightlife: RWP-00.16 merged; RWP-00.17 is next
-- Café, Bakery & Dessert: RWP-00.28 complete in this proposed merge state; RWP-00.29 is next
+- Café, Bakery & Dessert: RWP-00.28 merged; RWP-00.29 is next
 - Food Truck & Concession: RWP-00.39 merged; RWP-00.40 is next
 - Hospitality: RWP-00.51 merged; RWP-00.52 is next
+- Entertainment & Attractions: RWP-00.63 complete in this proposed merge state; RWP-00.64 is next
 
-## Café, Bakery & Dessert Subtype Result
+## Entertainment & Attractions Definition Result
 
-The canonical subtype model is documented in `track0/industries/cafe-bakery-dessert.md` as a delta from Restaurant.
+The canonical profile is documented at `track0/industries/entertainment-attractions.md` as a delta from Restaurant.
 
-Nine bounded primary subtypes are approved:
+It covers destination-, program-, exhibition-, performance-, recreation-, and attraction-led venues whose visitor experience depends on accurate schedules, admissions guidance, wayfinding, availability, queue, venue-state, safety, accessibility, and event information across changing operating periods and physical areas.
 
-- Café
-- Coffee Shop
-- Tea Shop
-- Bakery
-- Patisserie
-- Bakery-Café
-- Dessert Shop
-- Frozen Dessert Shop
-- Juice & Smoothie Bar
+Initial native concepts include cinemas, performing-arts and live-performance venues, museums and non-retail galleries, science centers and planetariums, zoos and aquariums, botanical gardens, theme and amusement parks, family entertainment centers, arcades, bowling centers, spectator sports venues, attractions, tours, heritage sites, and related hybrids where entertainment, exhibition, performance, recreation, or attraction attendance is the primary identity. Exact subtype boundaries are deferred to RWP-00.64.
 
-A venue may remain Unspecified / General Café when no subtype is clearly dominant. This is a neutral product-state fallback rather than a commercial package.
+Venue, building or area, attraction, exhibit, event, performance, screening, session, queue, admission window, capacity state, delay, closure, relocation, and related values are product/domain state when represented. Manual program, showtime, admissions, wayfinding, queue, capacity, delay, closure, relocation, accessibility, safety, targeting, publishing, delivery confirmation, offline awareness, and recovery remain core capabilities. Organization primary industry and venue subtype remain product/domain configuration rather than commercial entitlements. Counts remain limits. Authorization, audience, admission, privacy, and content authority remain distinct from commercial access. Automatic ticketing, admissions, access-control, queue, venue, cinema, show-control, collection, event, sports, attraction, or other synchronization remains a later packaging question.
 
-Hybrid concepts use one primary subtype plus optional descriptive operating traits. The primary subtype follows the dominant guest journey and daily operating rhythm. Traits tune future terminology and recommendations only; they do not stack entitlements, alter permissions, or increase limits.
-
-The model resolves bubble-tea shops, specialty doughnut/bagel/pretzel/cookie concepts, commercial bakeries with retail counters, meal-heavy bakery-cafés, custom-order cake studios, chocolatiers and confectioners, hotel or entertainment-property outlets, preorder-led businesses, and mobile concepts. Meal-led concepts remain Restaurant, mobile/event-led concepts remain Food Truck & Concession, packaged retail and manufacturing-only operations remain outside the profile, and mixed properties use venue-level subtype configuration.
-
-Each subtype inherits Restaurant capabilities. Differences are limited to defaults, terminology candidates, starter content, screen-purpose suggestions, operational emphasis, and presentation guidance. Subtype-specific screen purposes remain recommendations, not entitlements.
-
-## Classification Result
-
-- Primary venue subtype is product/domain state.
-- Neutral subtype state is product/domain state.
-- Optional hybrid traits are product/domain state.
-- Subtype does not grant capabilities, change plan access, alter permissions, increase limits, or control rollout.
-- Counts of venues, screens, users, connections, content, storage, history, or AI consumption remain independent limits.
-- Batch, freshness, limited-quantity, expected-return, preorder, pickup, and production values keep their own product-state or later integration classifications independent of subtype.
-- A future subtype-change implementation must preserve all customer-authored content and preview changed defaults before explicit confirmation.
+Restaurant menu semantics remain inherited for concessions and food-and-beverage outlets that use them but do not define the primary content model for an entertainment venue or attraction as a whole.
 
 ## Impeccable Planning Result
 
-The project-local Impeccable skill and `shape` guidance were consulted for future subtype selection and change flows.
+The project-local Impeccable skill and `shape` guidance were consulted for future UI-facing work.
 
-Because the run was non-interactive, the brief records explicit assumptions: the user is an owner or authorized manager, selection is venue-local, overlapping concepts are common, and existing content and commercial access must be preserved.
-
-- The surface is an Operate experience for an owner or authorized manager.
-- Bounded “best when” definitions, dominant guest journey, example products and screen purposes, and changed defaults outrank legal, manufacturing, or marketing language.
-- One primary subtype, a neutral fallback, and optional hybrid traits must be understandable without implying plan differences.
-- A change flow must preview effects, preserve content, require confirmation, support safe cancellation and restoration, and cover permission, validation-failure, and success states.
-- Phone and desktop layouts must remain scannable, keyboard and assistive-technology usable, plain-language, and independent of color-only distinctions.
-- Preserve the approved Sky Blue direction for Vennusign administrative surfaces.
+- Administrative surfaces use Operate mode and prioritize exact scope, current program and operating information, intended targets, delivery state, and recovery.
+- Visitor schedules, admissions guidance, wayfinding, exhibit interpretation, and operational information use Read mode; Experience mode is appropriate only when it does not obscure essential guidance.
+- Later specifications must cover realistic single-screen through multi-site ranges and first-run, empty, on-sale, available, limited, sold-out, full, preparing, boarding, active, intermission, delayed, paused, relocated, canceled, weather-affected, unavailable, closed, maintenance, emergency, offline, outdated, permission, admission, privacy, publish-failure, success, and recovery states.
+- Phone use while walking the venue, box-office and desktop administration, portrait and landscape displays, large-format boards, bright outdoor queues, dim auditoriums and galleries, crowded concourses, long viewing distances, localization, accessibility, and intermittent connectivity are binding conditions.
+- High-impact or venue-wide changes require explicit scope and target confirmation, visible delivery state, stale/offline distinction, safe restoration, and plain escalation guidance.
+- Preserve the Sky Blue direction for Vennusign administrative surfaces.
 
 No UI, API, schema, migration, or product implementation was authorized or performed.
 
-## Exact Next Café, Bakery & Dessert Action
+## Exact Next Entertainment & Attractions Action
 
-After RWP-00.28 is merged, verified on `master`, issue #503 is closed, and the claim is released, execute **RWP-00.29 — Café, Bakery & Dessert Business Terminology** (#504).
+After RWP-00.63 is merged, verified on `master`, issue #538 is closed, and the claim is released, execute **RWP-00.64 — Entertainment & Attractions Venue Subtypes** (#539).
 
-RWP-00.29 must:
+RWP-00.64 must:
 
-- define canonical operator and guest terminology for products, sizes, modifiers, batches, freshness, availability, preorders, pickup, and service periods;
-- identify terms inherited unchanged from Restaurant;
-- define subtype-specific terminology overrides;
-- distinguish operator-facing and guest-facing language;
-- define neutral wording for organization-wide and ambiguous contexts;
-- define hybrid fallback behavior using the approved primary-subtype-plus-traits model;
-- keep terminology separate from entitlements and permissions;
-- update the Track 0 capability documentation;
-- remain documentation-only and hand off to RWP-00.30.
+- define cinema, theater, museum, gallery, zoo or aquarium, theme or amusement park, family entertainment center, arcade, bowling, sports venue, live-event venue, attraction or tour, and hybrid subtypes;
+- establish inclusion, exclusion, neighboring-profile, and ambiguous-boundary rules;
+- map meaningful subtype differences without duplicating Restaurant inheritance;
+- define venue subtype selection, change, mixed-organization, and multi-venue behavior;
+- distinguish entertainment operating model from building form, ownership, promoter, presenter, tenant, sponsor, team, performer, distributor, or rights-holder structure;
+- keep subtypes separate from tiers, entitlements, permissions, audience scope, admissions scope, and limits;
+- consult Impeccable for any UI-facing subtype selection or change-flow planning;
+- remain documentation-only and hand off to RWP-00.65.
 
 ## Parallel-Stream Rule
 
@@ -87,5 +63,5 @@ The owner approved independently scheduled native-industry streams. Each industr
 - Do not start product implementation from Track 0 issues.
 - Do not resume RWP-13.06 until Track 0 produces an owner-approved capability and packaging model.
 - Do not start Phase 14+.
-- Do not implement UI, API, schema, migrations, billing, entitlements, feature gates, limits, or rollout controls during industry planning.
+- Do not implement UI, API, schema, migrations, billing, entitlements, feature gates, limits, admissions systems, privacy systems, or rollout controls during industry planning.
 - Integration and external-system tests remain skipped under the standing owner instruction.
