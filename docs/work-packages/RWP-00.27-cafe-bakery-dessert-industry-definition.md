@@ -25,7 +25,8 @@ The owner explicitly authorized the native-industry schedules to proceed indepen
 - Confirmed rapid manual sold-out and available-again changes remain core operations acting on product state.
 - Updated `track0/CAPABILITY_MATRIX.md` with bounded Café, Bakery & Dessert deltas.
 - Consulted the project-local Impeccable skill and its `shape` guidance for future operator and guest-facing surfaces.
-- Updated the project status, current handoff, and tracker to identify RWP-00.28 as the next Café, Bakery & Dessert item.
+- Updated the project status and current handoff to identify RWP-00.28 as the next Café, Bakery & Dessert item.
+- Synchronized the tracker with no remaining RWP-00.27 claim while preserving the owner-approved parallel industry scheduling model.
 
 ## Impeccable planning record
 
