@@ -1,5 +1,15 @@
 @import "../../back-office/src/sky-ui-tokens.css";
 
+.transient-feedback-region { position: fixed; right: 24px; bottom: 24px; z-index: 50; width: min(420px, calc(100vw - 32px)); pointer-events: none; }
+.transient-feedback { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 11px; align-items: start; border: 1px solid #86c9aa; border-radius: var(--sky-radius-lg); padding: 14px 15px; color: #174b36; background: #effbf5; box-shadow: 0 16px 44px rgb(15 23 42 / .2); pointer-events: auto; animation: transient-feedback-in .18s ease-out; }
+.transient-feedback > span { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: white; background: #207a52; font-weight: 900; }
+.transient-feedback p { margin: 2px 0 0; line-height: 1.45; overflow-wrap: anywhere; }
+.transient-feedback button { width: 32px; height: 32px; border: 0; border-radius: 8px; padding: 0; color: #315d4c; background: transparent; font-size: 1.25rem; cursor: pointer; }
+.transient-feedback button:hover { background: #d9f3e6; }.transient-feedback button:focus-visible { outline: var(--sky-focus-ring); outline-offset: var(--sky-focus-offset); }
+@keyframes transient-feedback-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 600px) { .transient-feedback-region { right: 16px; bottom: 16px; } }
+@media (prefers-reduced-motion: reduce) { .transient-feedback { animation: none; } }
+
 :root { color: var(--sky-text-primary); background: var(--sky-page-background); font-family: var(--sky-font-family); font-synthesis: none; }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; min-height: 100vh; }

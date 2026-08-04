@@ -12,6 +12,7 @@ import {
 } from "./api";
 import type { PlatformOperationsConfiguration } from "./config";
 import VideoWallBuilder from "./VideoWallBuilder";
+import TransientFeedback from "./TransientFeedback";
 
 type Props = { configuration: PlatformOperationsConfiguration; apiKey: string; venueId: string; allLayoutsEnabled: boolean };
 
@@ -111,7 +112,7 @@ export default function ScreenManagement({ configuration, apiKey, venueId, allLa
       <button className="push-all" disabled={busyId === "all"} onClick={pushAll}>Push to all screens</button>
     </div>
     {error ? <p className="state error">{error}</p> : null}
-    {notice ? <p className="screen-notice" role="status">{notice}</p> : null}
+    {notice ? <TransientFeedback message={notice} onDismiss={() => setNotice(undefined)} /> : null}
     {!allLayoutsEnabled ? <aside className="tier-prompt" role="status"><div><strong>Bar layouts require All Layouts</strong><p>Neon Chalkboard and Split Layout remain visible in the selector. Daily Special Hero remains visible too. Upgrade to Pro or add a venue override to choose them.</p></div></aside> : null}
     <form className="screen-create" onSubmit={create}>
       <input aria-label="New screen name" maxLength={200} required value={newName} onChange={event => setNewName(event.target.value)} placeholder="Screen name" />

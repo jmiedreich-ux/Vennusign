@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { updateQuickAvailability, updateQuickDailySpecial, type MenuEditorSnapshot } from "./api";
 import type { BackOfficeConfiguration } from "./config";
+import TransientFeedback from "./TransientFeedback";
 
 type Props = { configuration: BackOfficeConfiguration; apiKey: string; venueId: string; snapshot: MenuEditorSnapshot; menuId: string; onChanged: () => Promise<void> };
 type QuickItem = { sectionId: string; sectionName: string; id: string; name: string; isAvailable: boolean; isActive: boolean };
@@ -39,7 +40,7 @@ export default function QuickUpdateMode({ configuration, apiKey, venueId, snapsh
 
   return <section className="quick-update">
     <div><p>Mobile service controls</p><h3>Quick Update</h3><span>Unavailable items restore at venue-local midnight. Bulk changes are limited to {bulkLimit} items.</span></div>
-    {error ? <p className="state error" role="alert">{error}</p> : null}{notice ? <p className="state" role="status">{notice}</p> : null}
+    {error ? <p className="state error" role="alert">{error}</p> : null}{notice ? <TransientFeedback message={notice} onDismiss={() => setNotice(undefined)} /> : null}
     <form onSubmit={saveSpecial}><label>Daily special<input aria-label="Daily special" maxLength={240} placeholder="Tonight: smoked brisket tacos" value={dailySpecial} onChange={event => setDailySpecial(event.target.value)} /></label><button disabled={busy}>Save and push special</button></form>
     <div className="quick-filter-bar"><input type="search" aria-label="Search quick-update items" placeholder="Search items" value={search} onChange={event => setSearch(event.target.value)} /><select aria-label="Filter quick-update section" value={sectionFilter} onChange={event => setSectionFilter(event.target.value)}><option value="">All sections</option>{sections.map(section => <option key={section.id} value={section.id}>{section.name}</option>)}</select><select aria-label="Filter quick-update availability" value={availabilityFilter} onChange={event => setAvailabilityFilter(event.target.value as typeof availabilityFilter)}><option value="all">All availability</option><option value="live">Live only</option><option value="off">Off only</option></select></div>
     <div className="bulk-toolbar"><span role="status">{visible.length} results · {selected.size} selected</span><button type="button" disabled={busy || visible.length === 0} onClick={selectVisible}>Select visible (max {bulkLimit})</button><button type="button" disabled={busy || selected.size === 0} onClick={() => void bulk(true)}>Mark selected live</button><button type="button" disabled={busy || selected.size === 0} onClick={() => void bulk(false)}>Mark selected off</button>{undo.length ? <button type="button" disabled={busy} onClick={() => void undoLast()}>Undo last change</button> : null}</div>

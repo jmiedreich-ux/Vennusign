@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { loadVideoWalls, removeVideoWall, saveVideoWall, type ManagedScreen, type VideoWallSnapshot } from "./api";
 import type { BackOfficeConfiguration } from "./config";
 import { useDestructiveReview } from "./DestructiveReviewDialog";
+import TransientFeedback from "./TransientFeedback";
 
 type Props = { configuration: BackOfficeConfiguration; apiKey: string; venueId: string; screens: ManagedScreen[]; showUpgradePrompt?: boolean };
 const layoutSizes: Record<string, number> = { "2x1": 2, "3x1": 3, "2x2": 4 };
@@ -62,7 +63,7 @@ export default function VideoWallBuilder({ configuration, apiKey, venueId, scree
     <div className="video-wall-heading"><div><p>Pro layout</p><h4>Video wall builder</h4></div><span>2×1 · 3×1 · 2×2</span></div>
     {showUpgradePrompt && snapshot && !snapshot.enabled ? <aside className="tier-prompt" role="status"><div><strong>Video Wall is a higher-tier feature</strong><p>The builder stays visible so you can preview the workflow. Upgrade or add a venue override to configure walls.</p></div></aside> : null}
     {error ? <p className="state error" role="alert">{error}</p> : null}
-    {notice ? <p className="screen-notice" role="status">{notice}</p> : null}
+    {notice ? <TransientFeedback message={notice} onDismiss={() => setNotice(undefined)} /> : null}
     <form onSubmit={save}>
       <label>Wall name<input maxLength={100} required value={name} onChange={event => setName(event.target.value)} disabled={!snapshot?.enabled || Boolean(editingName)} /></label>
       <label>Configuration<select value={layout} onChange={event => { setLayout(event.target.value); setSelected([]); }} disabled={!snapshot?.enabled}><option value="2x1">2 × 1</option><option value="3x1">3 × 1</option><option value="2x2">2 × 2</option></select></label>

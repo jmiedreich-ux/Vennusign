@@ -5,6 +5,7 @@ import {
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
 import { useDestructiveReview } from "./DestructiveReviewDialog";
+import TransientFeedback from "./TransientFeedback";
 
 type Props = { configuration: BackOfficeConfiguration; apiKey: string; venueId: string; enabled: boolean; showUpgradePrompt?: boolean };
 const newItem = (): Omit<TapItem, "id" | "venueId" | "sortOrder"> => ({
@@ -89,7 +90,7 @@ export default function TapListAdministration({ configuration, apiKey, venueId, 
       {data.items.length > tapStripsCapacity ? ` · positions ${tapStripsCapacity + 1}–${data.items.length} overflow` : " · no overflow"}
     </p>
     {error ? <div className="state error" role="alert"><span>{error}</span>{retry ? <button disabled={busy} onClick={retryLast}>Retry last change</button> : null}</div> : null}
-    {notice ? <p className="state success" role="status">{notice}</p> : null}
+    {notice ? <TransientFeedback message={notice} onDismiss={() => setNotice(undefined)} /> : null}
     <section><div className="tap-section-heading"><div><h4>Categories</h4><span>Groups and optional shared price</span></div></div>
       <form onSubmit={addCategory}><input required disabled={!enabled} maxLength={120} placeholder="Import Beer" value={category.name} onChange={event => setCategory(value => ({ ...value, name: event.target.value }))} /><input disabled={!enabled} min={0} step=".01" type="number" placeholder="Category price" value={category.categoryPrice ?? ""} onChange={event => setCategory(value => ({ ...value, categoryPrice: event.target.value ? Number(event.target.value) : undefined }))} /><button disabled={!enabled || busy}>Add category</button></form>
       {!data.categories.length ? <p className="state">No categories yet. Taps can remain uncategorized.</p> : null}

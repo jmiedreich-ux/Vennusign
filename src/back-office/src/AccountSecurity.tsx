@@ -3,6 +3,7 @@ import type { BackOfficeConfiguration } from "./config";
 import { listPasskeys, registerPasskey, removePasskey, renamePasskey, type PasskeySummary } from "./passkeyManagement";
 import { passkeyInventoryView } from "./actionRecovery.mjs";
 import { useDestructiveReview } from "./DestructiveReviewDialog";
+import TransientFeedback from "./TransientFeedback";
 
 export default function AccountSecurity({ configuration, customerSession }: { configuration: BackOfficeConfiguration; customerSession: boolean }) {
   const [passkeys, setPasskeys] = useState<PasskeySummary[]>([]);
@@ -47,7 +48,7 @@ export default function AccountSecurity({ configuration, customerSession }: { co
     {reviewDialog}
     <p>Account</p><h2 id="account-security-heading">Passkeys and recovery</h2>
     <p>Passkeys use your device screen lock. Vennusign stores only the public verification credential and safe device metadata—not your private key.</p>
-    {notice ? <p role="status" aria-live="polite" className="account-security__notice">{notice}</p> : null}
+    {notice ? <TransientFeedback message={notice} onDismiss={() => setNotice(undefined)} /> : null}
     {error ? <p role="alert" className="account-security__error">{error}</p> : null}
     <form className="account-security__add" onSubmit={add}>
       <label htmlFor="passkey-name">Passkey name</label>
