@@ -175,3 +175,15 @@ nav { display: grid; gap: 8px; }nav a { display: grid; gap: 3px; padding: 13px; 
   .customer-onboarding__language-grid { grid-template-columns: 1fr; }
   .account-security__list form > div { align-items: stretch; flex-direction: column; }
 }
+
+/* Sky UI visual standard: shared hierarchy, actions, badges, and focus behavior. */
+body, .shell > main, .customer-entry { background: var(--sky-page-gradient); }
+aside { color: var(--sky-sidebar-text); background: var(--sky-sidebar-background); }
+:where(button, a, input, select, textarea, summary):focus-visible { outline: var(--sky-focus-ring); outline-offset: var(--sky-focus-offset); }
+:where(input, select, textarea) { border-color: var(--sky-control-border); color: var(--sky-text-primary); background: var(--sky-card-background); }
+:where(.access-card, .workspace-context, .placeholder, .menu-editor, .operations-stack > article, .operations-stack > section, .customer-entry__auth-card, .customer-onboarding__panel, .account-security__add, .account-security__list form) { border-color: var(--sky-control-border); border-radius: var(--sky-card-radius); background: var(--sky-card-background); box-shadow: var(--sky-panel-shadow); }
+:where(.access-card button, .customer-sign-in, .section-create button, .menu-item-create button, .quick-update form button, .screen-create button, .screen-actions button, .screen-management-heading .push-all, .video-wall-builder form > button, .wall-groups button, .theme-builder__heading button, .back-office-handoff a, .customer-entry__signout, .customer-entry button:not(.quiet):not(.danger), .customer-timeline__resume a, .customer-onboarding__completion-actions a, .account-security button:not(.danger)) { border-color: var(--sky-action-primary-background); color: var(--sky-action-primary-text); background: var(--sky-action-primary-background); }
+:where(.access-card button, .customer-sign-in, .section-create button, .menu-item-create button, .quick-update form button, .screen-create button, .screen-actions button, .screen-management-heading .push-all, .video-wall-builder form > button, .wall-groups button, .theme-builder__heading button, .back-office-handoff a, .customer-entry button:not(.quiet):not(.danger), .customer-timeline__resume a, .customer-onboarding__completion-actions a, .account-security button:not(.danger)):hover { filter: brightness(.96); }
+:where(header > span, .menu-badges span, .feature-badge, .upgrade-tier-badge, .workspace-context__single) { border-radius: var(--sky-radius-pill); color: var(--sky-badge-text); background: var(--sky-badge-background); }
+.sky-icon { stroke-width: 1.8; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
