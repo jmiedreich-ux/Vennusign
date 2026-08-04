@@ -142,6 +142,7 @@ nav { display: grid; gap: 8px; }nav a { display: grid; gap: 3px; padding: 13px; 
 .customer-onboarding__language-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .customer-onboarding__language-grid label { display: grid; gap: 8px; }
 .customer-onboarding__pairing-steps { margin: 0 0 18px; padding-left: 22px; color: #4f665d; line-height: 1.7; }
+.customer-onboarding__pairing-code { width: min(100%, 360px); font-size: clamp(1.8rem, 8vw, 3rem); font-variant-numeric: tabular-nums; font-weight: var(--sky-font-weight-bold); letter-spacing: .32em; text-align: center; }.customer-onboarding__pairing-progress { margin: 0 !important; color: var(--sky-text-secondary); font-size: var(--sky-font-size-xs); }
 .customer-onboarding__help { margin: 4px 0 0 !important; font-size: .86rem; }
 .customer-onboarding__device-status { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0 0 22px; }
 .customer-onboarding__device-status > div { border: 1px solid #d7e0db; border-radius: 13px; padding: 13px; background: #f8fbf9; }
@@ -150,6 +151,10 @@ nav { display: grid; gap: 8px; }nav a { display: grid; gap: 3px; padding: 13px; 
 .customer-onboarding__completion-actions { display: flex; align-items: center; gap: 10px; margin-top: 18px; }
 .customer-onboarding__completion-actions a { border-radius: 10px; padding: 11px 14px; color: #fff; background: #174f3c; font-weight: 850; text-decoration: none; }
 .customer-onboarding__completion-actions button { margin: 0; }
+.customer-onboarding__go-live { position: relative; overflow: hidden; }.customer-onboarding__go-live.is-online { border-color: var(--sky-color-live); }.customer-onboarding__celebration { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; margin: -8px 0 24px; border-radius: var(--sky-radius-lg); padding: 16px; color: var(--sky-positive-text); background: var(--sky-color-live-surface); animation: go-live-arrive .36s ease-out; }.customer-onboarding__celebration > span { grid-row: 1 / 3; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; color: white; background: var(--sky-color-live); font-size: 1.3rem; font-weight: var(--sky-font-weight-bold); }.customer-onboarding__celebration strong { font-size: 1.2rem; }.customer-onboarding__celebration small { color: var(--sky-positive-text); }.customer-onboarding__starter-menus, .customer-onboarding__next-steps { margin: 22px 0 0; border-top: var(--sky-card-border); padding-top: 22px; }.customer-onboarding__starter-menus h3, .customer-onboarding__starter-menus p, .customer-onboarding__next-steps h3 { margin: 0; }.customer-onboarding__starter-menus > div:first-child { display: grid; gap: 5px; }.customer-onboarding__starter-menus > div:first-child > span { color: var(--sky-label-accent); font-size: var(--sky-font-size-xs); font-weight: var(--sky-font-weight-bold); letter-spacing: .08em; text-transform: uppercase; }.customer-onboarding__starter-menus > div:first-child p { color: var(--sky-text-secondary); font-size: var(--sky-font-size-sm); }.customer-onboarding__starter-menus > div:last-child { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-top: 14px; }.customer-onboarding__starter-menus a { min-height: 82px; display: grid; align-content: center; gap: 4px; border: var(--sky-card-border); border-radius: var(--sky-radius-md); padding: 12px; color: var(--sky-text-primary); background: var(--sky-page-background); text-decoration: none; }.customer-onboarding__starter-menus a:hover { border-color: var(--sky-color-primary); }.customer-onboarding__starter-menus a span { color: var(--sky-text-secondary); font-size: var(--sky-font-size-xs); }.customer-onboarding__next-steps ol { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin: 14px 0 0; padding: 0; list-style: none; }.customer-onboarding__next-steps li { display: flex; gap: 8px; align-items: flex-start; }.customer-onboarding__next-steps li > span { flex: 0 0 25px; height: 25px; display: grid; place-items: center; border-radius: 50%; color: var(--sky-action-primary-text); background: var(--sky-action-primary-background); font-size: var(--sky-font-size-xs); font-weight: var(--sky-font-weight-bold); }.customer-onboarding__next-steps a { color: var(--sky-text-primary); font-size: var(--sky-font-size-sm); font-weight: var(--sky-font-weight-bold); }.customer-onboarding__go-live.is-waiting .customer-onboarding__completion-actions > a { display: none; }
+@keyframes go-live-arrive { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+.customer-onboarding__go-live.is-waiting .customer-onboarding__completion-actions > a { display: inline-flex; }
+@media (prefers-reduced-motion: reduce) { .customer-onboarding__celebration { animation: none; } }
 .account-security { max-width: 880px; display: grid; gap: 16px; }
 .account-security > p, .account-security h2, .account-security h3 { margin: 0; }
 .account-security__add, .account-security__list form { display: grid; gap: 9px; border: 1px solid #d5dfda; border-radius: 16px; padding: 18px; background: var(--sky-card-background); }
@@ -175,6 +180,7 @@ nav { display: grid; gap: 8px; }nav a { display: grid; gap: 3px; padding: 13px; 
   .customer-timeline__summary, .customer-timeline__resume { align-items: flex-start; flex-direction: column; }
   .customer-onboarding__device-status { grid-template-columns: 1fr; }
   .customer-onboarding__completion-actions { align-items: stretch; flex-direction: column; }
+  .customer-onboarding__starter-menus > div:last-child, .customer-onboarding__next-steps ol { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 520px) {
   .customer-entry { padding-inline: 16px; }
@@ -184,6 +190,7 @@ nav { display: grid; gap: 8px; }nav a { display: grid; gap: 3px; padding: 13px; 
   .signup-marketing__hero h1 { font-size: 3.6rem; }.signup-demo__tabs { grid-template-columns: 1fr; }.signup-demo__tabs button { grid-template-columns: 1fr auto; align-items: center; text-align: left; }.signup-demo__screen { min-height: 270px; padding: 24px; }
   .customer-onboarding__language-grid { grid-template-columns: 1fr; }
   .account-security__list form > div { align-items: stretch; flex-direction: column; }
+  .customer-onboarding__starter-menus > div:last-child, .customer-onboarding__next-steps ol { grid-template-columns: 1fr; }
 }
 
 /* Sky UI visual standard: shared hierarchy, actions, badges, and focus behavior. */

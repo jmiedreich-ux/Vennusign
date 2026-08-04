@@ -4,10 +4,12 @@ import type { BackOfficeConfiguration } from "./config";
 import MenuItemsEditor from "./MenuItemsEditor";
 import QuickUpdateMode from "./QuickUpdateMode";
 
-type Props = { configuration: BackOfficeConfiguration; apiKey: string; venueId: string };
+type Props = { configuration: BackOfficeConfiguration; apiKey: string; venueId: string; starterMenu?: "restaurant" | "cafe" | "bar" };
 type FailedSectionAction = { label: string; run: () => Promise<void> };
 
-export default function MenuSectionsEditor({ configuration, apiKey, venueId }: Props) {
+const starterNames = { restaurant: "Lunch & Dinner", cafe: "Cafe Menu", bar: "Drinks & Tap List" } as const;
+
+export default function MenuSectionsEditor({ configuration, apiKey, venueId, starterMenu }: Props) {
   const storageKey = `vennusign.menu.sections.${venueId}`;
   const [snapshot, setSnapshot] = useState<MenuEditorSnapshot>();
   const [selectedMenuId, setSelectedMenuId] = useState("");
@@ -15,7 +17,7 @@ export default function MenuSectionsEditor({ configuration, apiKey, venueId }: P
     try { return JSON.parse(localStorage.getItem(storageKey) ?? "{}") as Record<string, boolean>; }
     catch { return {}; }
   });
-  const [newMenuName, setNewMenuName] = useState("");
+  const [newMenuName, setNewMenuName] = useState(starterMenu ? starterNames[starterMenu] : "");
   const [newSectionName, setNewSectionName] = useState("");
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
@@ -68,6 +70,7 @@ export default function MenuSectionsEditor({ configuration, apiKey, venueId }: P
 
   return <article className="menu-editor">
     <div className="menu-editor-heading"><div><p>Venue menus</p><h2>Menu lifecycle</h2></div><span role="status">{busy ? "Saving…" : notice ?? `${snapshot.menus.length} menus`}</span></div>
+    {starterMenu ? <p className="state" role="status"><strong>{starterNames[starterMenu]} starter selected.</strong> Review the draft name, then choose Create menu. No content has been created yet.</p> : null}
     {error ? <div className="state error" role="alert"><p>{error}</p>{failedAction ? <button type="button" onClick={() => void run(failedAction.label, failedAction.run)}>Retry last change</button> : <button type="button" onClick={() => void refresh()}>Retry menus</button>}</div> : null}
     {tierPrompt ? <aside className="tier-prompt" role="status"><div><strong>{tierPrompt.title}</strong><p>{tierPrompt.message}</p></div><button aria-label="Dismiss tier prompt" onClick={() => setTierPrompt(undefined)}>×</button></aside> : null}
     <div className="menu-lifecycle-toolbar">

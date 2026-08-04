@@ -38,6 +38,7 @@ export default function CustomerOnboardingApp() {
   const [busy, setBusy] = useState<string>();
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
+  const [pairingCode, setPairingCode] = useState("");
   const detectedTimezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", []);
 
   useEffect(() => {
@@ -158,9 +159,9 @@ export default function CustomerOnboardingApp() {
 
   const claimFirstScreen = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const code = String(new FormData(event.currentTarget).get("pairingCode") ?? "").trim();
     void run("pairing", async () => {
-      setOnboarding(await claimOnboardingFirstScreen(configuration, code));
+      setOnboarding(await claimOnboardingFirstScreen(configuration, pairingCode));
+      setPairingCode("");
       setNotice("Display paired. It becomes active when the player reports Online.");
     });
   };
@@ -273,18 +274,29 @@ export default function CustomerOnboardingApp() {
           <label htmlFor="secondaryLanguage">Secondary language code (optional)<input id="secondaryLanguage" name="secondaryLanguage" pattern="[A-Za-z]{2}" maxLength={2} /></label>
         </div>
         <button type="submit" disabled={busy === "venue"}>{busy === "venue" ? "Saving venue…" : "Save venue and continue"}</button>
-      </form> : !onboarding.firstScreenId ? <form className="customer-onboarding__panel" onSubmit={claimFirstScreen}>
+      </form> : !onboarding.firstScreenId ? <form className="customer-onboarding__panel customer-onboarding__pairing" onSubmit={claimFirstScreen}>
         <span>First Screen</span><h2>Pair your physical display</h2>
         <p>Open the Vennusign player on the display. The player creates its screen record and shows a six-digit code that expires after 10 minutes.</p>
         <ol className="customer-onboarding__pairing-steps"><li>Start Vennusign on the display.</li><li>Wait for its six-digit code.</li><li>Enter that code here to link it to this venue.</li></ol>
         <label htmlFor="pairingCode">Six-digit pairing code</label>
-        <input id="pairingCode" name="pairingCode" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" minLength={6} maxLength={6} required />
-        <button type="submit" disabled={busy === "pairing"}>{busy === "pairing" ? "Pairing display…" : "Pair this display"}</button>
-        <p className="customer-onboarding__help">Expired or already used? Return to the display and request a fresh code; your saved venue is unchanged.</p>
-      </form> : <section className="customer-onboarding__panel">
+        <input id="pairingCode" className="customer-onboarding__pairing-code" name="pairingCode" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" minLength={6} maxLength={6} required aria-describedby="pairing-code-progress pairing-code-help" value={pairingCode} onChange={event => setPairingCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" />
+        <p id="pairing-code-progress" className="customer-onboarding__pairing-progress" role="status">{pairingCode.length === 6 ? "Code ready to pair" : `${pairingCode.length} of 6 digits entered`}</p>
+        <button type="submit" disabled={busy === "pairing" || pairingCode.length !== 6}>{busy === "pairing" ? "Pairing display…" : "Pair this display"}</button>
+        <p id="pairing-code-help" className="customer-onboarding__help">Expired or already used? Return to the display and request a fresh code; your saved venue is unchanged.</p>
+      </form> : <section className={`customer-onboarding__panel customer-onboarding__go-live ${onboarding.firstScreenStatus === "online" ? "is-online" : "is-waiting"}`}>
+        {onboarding.firstScreenStatus === "online" ? <div className="customer-onboarding__celebration" role="status"><span aria-hidden="true">✓</span><strong>You’re live</strong><small>Confirmed by the player heartbeat</small></div> : null}
         <span>Go Live</span><h2>{onboarding.firstScreenStatus === "online" ? "Your first display is online" : "Your first display is paired"}</h2>
         <p>{onboarding.firstScreenStatus === "online" ? "Vennusign received the player heartbeat. Status continues to update automatically." : "The screen record is linked, but pairing alone does not mean the device is active. Start the player and keep it connected; this status updates automatically when its heartbeat arrives."}</p>
         <dl className="customer-onboarding__device-status"><div><dt>Pairing</dt><dd>Linked</dd></div><div><dt>Device</dt><dd>{onboarding.firstScreenStatus === "online" ? "Online" : "Offline / waiting"}</dd></div>{onboarding.firstScreenLastSeenUtc ? <div><dt>Last seen</dt><dd>{new Date(onboarding.firstScreenLastSeenUtc).toLocaleString()}</dd></div> : null}</dl>
+        {onboarding.firstScreenStatus === "online" ? <>
+          <section className="customer-onboarding__starter-menus" aria-labelledby="starter-menus-heading"><div><span>Optional starting point</span><h3 id="starter-menus-heading">Choose a starter menu</h3><p>Open a named draft starting point. Nothing is created until you review and submit it in Back Office.</p></div><div>
+            <a href="/?starterMenu=restaurant#/menu"><strong>Restaurant</strong><span>Lunch & dinner menu</span></a>
+            <a href="/?starterMenu=cafe#/menu"><strong>Cafe</strong><span>Drinks & counter menu</span></a>
+            <a href="/?starterMenu=bar#/menu"><strong>Bar or brewery</strong><span>Drinks & tap list</span></a>
+            <a href="/#/menu"><strong>Start blank</strong><span>Build your own structure</span></a>
+          </div></section>
+          <section className="customer-onboarding__next-steps" aria-labelledby="first-run-next-heading"><h3 id="first-run-next-heading">Your first-run checklist</h3><ol><li><span>1</span><a href="/#/menu">Add and review menu content</a></li><li><span>2</span><a href="/#/themes">Apply your venue theme</a></li><li><span>3</span><a href="/#/schedules">Set service dayparts</a></li><li><span>4</span><a href="/#/screens">Preview and push to the display</a></li></ol></section>
+        </> : null}
         <div className="customer-onboarding__completion-actions"><a href="/">Open Back Office</a><button className="quiet" type="button" onClick={refreshOnboarding} disabled={busy === "refresh"}>{busy === "refresh" ? "Refreshing…" : "Refresh device status"}</button></div>
         <p className="customer-onboarding__help">Back Office rechecks your organization membership and saved venue before it opens. A paired but offline display does not block venue setup.</p>
       </section>}</div>

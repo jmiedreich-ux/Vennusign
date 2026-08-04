@@ -62,6 +62,10 @@ const customerSessionAccess = "customer-session";
 
 export default function App() {
   const configuration = useMemo(loadBackOfficeConfiguration, []);
+  const starterMenu = useMemo(() => {
+    const value = new URLSearchParams(window.location.search).get("starterMenu");
+    return value && ["restaurant", "cafe", "bar"].includes(value) ? value as "restaurant" | "cafe" | "bar" : undefined;
+  }, []);
   const [accessToken, setAccessToken] = useState(() => sessionStorage.getItem(tokenStorageKey) ?? sessionStorage.getItem(legacyTokenStorageKey) ?? customerSessionAccess);
   const [session, setSession] = useState<BackOfficeSession>();
   const [billing, setBilling] = useState<BackOfficeBillingPresentation>();
@@ -497,6 +501,7 @@ export default function App() {
             configuration={configuration}
             apiKey={accessToken}
             venueId={session.venueId}
+            starterMenu={starterMenu}
           />
         : allowed && ["screens", "themes", "schedules", "tap-list"].includes(route.path)
         ? <VenueOperations
