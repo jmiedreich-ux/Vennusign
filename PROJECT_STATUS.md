@@ -6,6 +6,11 @@
 - Phase 14 and later: paused pending explicit owner approval.
 - Active implementation WP/RWP: none.
 - Active planning track: Track 0 — Capability, Packaging, and Entitlement Architecture (#488). Product implementation remains paused.
+- The owner approved independent native-industry Track 0 schedules. Each industry remains sequential inside its own approved RWP range and must avoid shared-file ownership conflicts.
+- Restaurant is the canonical approved baseline inherited by later native-industry profiles.
+- RWP-00.15 — Bar, Brewery & Nightlife Industry Definition (#490) is complete and merged.
+- RWP-00.27 — Café, Bakery & Dessert Industry Definition (#502) is complete in this proposed merge state. Its canonical profile defines Restaurant inheritance, industry boundaries, initial capability classifications, mixed-organization behavior, and Impeccable planning guardrails.
+- The next Café, Bakery & Dessert item is RWP-00.28 — Venue Subtypes (#503).
 - The 13-package retrospective remediation round is complete.
 - RWP-00.04 — Deployment Component Versioning and Release Manifest (#437) is complete.
 - RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439) is complete.
@@ -31,10 +36,10 @@
 - RWP-05.10 — Visual-First Screens Fleet (#463) is complete and merged.
 - RWP-11.03 — Unified Entitlement Experience (#464) is complete and merged.
 - RWP-11.04 — Personalized Locked Previews (#465) presents the active venue's authorized menu content inside read-only locked theme/layout previews.
-- The 18-item approved Sequential remediation queue is complete in this proposed merge state.
+- The 18-item approved Sequential remediation queue is complete.
 - RWP-00.14 — Project-Local Impeccable Codex Design Skill (#486) is complete and merged. It installs the official v4.0.4 skill, its advisory edit/stop hook, and the repository rule requiring it for UI work without changing product runtime or UI.
 - RWP-13.06 — Trial-First Onboarding (#466) implementation is paused while Track 0 establishes the supported-industry, capability, packaging, and entitlement model.
-- Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
+- Research program `INT-TESTING-001` remains documented but is not part of Track 0 planning.
 
 ## Completed Delivery
 
@@ -53,14 +58,22 @@
 | 12 | Square, Toast, and Clover integrations through a shared POS model |
 | 13 | Customer identity, organization entitlements, signup, onboarding, and legacy-token migration |
 
-Cross-cutting remediation completed after Phase 13 includes RWP-00.02, RWP-00.03, RWP-04.02, RWP-05.04, RWP-05.05, RWP-05.06, RWP-08.01, RWP-09.01, RWP-10.01, RWP-11.02, RWP-13.03, RWP-13.01, and RWP-13.02. A retrospective requirements/code/test audit identified the bounded follow-up packages now recorded in the approved queue.
+Cross-cutting remediation completed after Phase 13 includes RWP-00.02, RWP-00.03, RWP-04.02, RWP-05.04, RWP-05.05, RWP-05.06, RWP-08.01, RWP-09.01, RWP-10.01, RWP-11.02, RWP-13.03, RWP-13.01, and RWP-13.02. Completed WP/RWP details, phase plans, validation evidence, and earlier status snapshots are retained under `docs/archive/` for deliberate research.
 
-Completed WP/RWP details, phase plans, validation evidence, and earlier status snapshots are retained under `docs/archive/` for deliberate research.
+## Track 0 Classification Policy
+
+Every capability must have one primary classification: core capability, permission, product/domain state, tier entitlement, independent add-on, usage or quantity limit, or internal rollout flag.
+
+The Café, Bakery & Dessert definition confirms that manual sold-out and available-again changes remain a core capability acting on product state. Batch, freshness, limited-quantity, and expected-return values are product/domain state when represented. Automatic POS, order, inventory, production, or pickup synchronization remains a later integration-packaging question and cannot replace the manual core operation.
 
 ## Validation Policy
 
-Normal work uses affected-area non-integration validation. Full non-integration validation is reserved for phase closure and the exceptions defined in `AGENTS.md`. Integration and external-system tests remain skipped under the standing owner instruction unless separately approved.
+Normal work uses affected-area non-integration validation. Full non-integration validation is reserved for phase closure and the exceptions defined in `AGENTS.md`. Documentation-only Track 0 changes use lightweight repository validation. Integration and external-system tests remain skipped under the standing owner instruction unless separately approved.
 
 ## Next Action
 
-Continue owner-led Track 0 planning in issue #488. Restaurant is the first approved native-industry profile and its capabilities are classified. Next, profile **Bar, brewery, and nightlife** using Restaurant as the baseline and document only meaningful differences. Do not implement onboarding, billing, entitlements, feature gates, UI, API, schema, or migrations until the owner approves the completed capability matrix and resulting packages. Phase 14 and later remain paused.
+After this RWP is merged, verified on `master`, and issue #502 is closed, continue the Café, Bakery & Dessert queue with **RWP-00.28 — Venue Subtypes** (#503). Define the supported subtype catalog, inclusion and exclusion rules, subtype-specific deltas, selection and change behavior, and mixed-concept handling.
+
+Other owner-approved native-industry schedules may continue independently inside their own sequential queues. They must use Restaurant as the canonical baseline, treat only merged work as authoritative, and avoid concurrent edits to shared controlled files.
+
+Do not implement onboarding, billing, entitlements, feature gates, UI, API, schema, or migrations until the owner approves the completed capability matrix and implementation packages. RWP-13.06 and Phase 14+ remain paused.
