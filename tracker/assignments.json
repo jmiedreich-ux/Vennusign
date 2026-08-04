@@ -1,7 +1,30 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-04T23:44:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-04T23:45:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "RWP-00.40",
+      "executionMode": "Sequential",
+      "owner": "ChatGPT",
+      "issue": 515,
+      "branch": "rwp/00.40-food-truck-concession-venue-subtypes",
+      "pullRequest": null,
+      "claimedUtc": "2026-08-04T23:45:00Z",
+      "writableScope": [
+        "track0/industries/food-truck-concession.md",
+        "track0/CAPABILITY_MATRIX.md",
+        "PROJECT_STATUS.md",
+        "ai/handoffs/current.md",
+        "docs/work-packages/RWP-00.40-food-truck-concession-venue-subtypes.md",
+        "tracker/assignments.json"
+      ],
+      "prohibitedScope": [
+        "Product, UI, API, schema, migration, billing, entitlement, permission, feature-gate, limit, rollout, pricing, ordering, payment, inventory, route, event, host-venue, or integration implementation",
+        "RWP-13.06 and Phase 14 or later work",
+        "Any other native-industry RWP"
+      ]
+    }
+  ],
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
   "rules": {
