@@ -23,7 +23,7 @@ import { loadBackOfficeConfiguration } from "./config";
 import {
   canOpenBackOfficeRoute,
   resolveBackOfficeRoute,
-  backOfficeRoutes,
+  backOfficeNavigationGroups,
   type BackOfficeRoute
 } from "./navigation.mjs";
 import MenuSectionsEditor from "./MenuSectionsEditor";
@@ -37,6 +37,7 @@ import UpgradeModal, { type BillingInterval } from "./UpgradeModal";
 import BillingStatusCard from "./BillingStatusCard";
 import TierDecisionDialog from "./TierDecisionDialog";
 import AccountSecurity from "./AccountSecurity";
+import DaypartHome from "./DaypartHome";
 import { useDestructiveReview } from "./DestructiveReviewDialog";
 import {
   clearPendingTierDecision,
@@ -379,8 +380,10 @@ export default function App() {
     {reviewDialog}
     <aside>
       <div className="brand"><span>V</span><div><strong>Vennusign</strong><small>Back Office</small></div></div>
-      <nav aria-label="Back Office">
-        {backOfficeRoutes.map(item => {
+      <nav className="grouped-navigation" aria-label="Back Office">
+        {backOfficeNavigationGroups.map(group => <details key={group.label} open={group.routes.some(item => item.path === route.path) || group.label === "Operate"}>
+          <summary>{group.label}</summary>
+          <div>{group.routes.map(item => {
           const unlocked = canOpenBackOfficeRoute(item, session.capabilities);
           const opportunity = !unlocked
             ? opportunities.find(candidate => candidate.featureKey === item.upgradeFeature)
@@ -398,7 +401,7 @@ export default function App() {
             <strong>{item.label}{unlocked ? "" : " · Locked"}</strong>
             <small>{item.description}</small>
           </a>;
-        })}
+        })}</div></details>)}
       </nav>
       {billing && allowed && !inlineOpportunity && !upgradeContext
         ? <SidebarUpgradeNudge
@@ -459,7 +462,16 @@ export default function App() {
             onUpgrade={setUpgradeContext}
           />
         : null}
-      {allowed && route.path === "billing" && billing
+      {allowed && route.path === "home"
+        ? <DaypartHome
+            key={session.venueId}
+            configuration={configuration}
+            accessToken={accessToken}
+            venueId={session.venueId}
+            venueName={session.venueName}
+            capabilities={session.capabilities}
+          />
+        : allowed && route.path === "billing" && billing
         ? <BillingStatusCard
             currentTier={billing.currentTier}
             subscription={billing.subscription}

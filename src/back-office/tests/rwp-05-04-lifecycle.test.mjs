@@ -8,8 +8,10 @@ const [app, navigation, pos, sections, items, quick, api] = await Promise.all([
   source("MenuSectionsEditor.tsx"), source("MenuItemsEditor.tsx"), source("QuickUpdateMode.tsx"), source("api.ts")
 ]);
 
-test("navigation removes placeholders and exposes entitled POS administration", () => {
-  assert.doesNotMatch(navigation, /path: "home"|path: "settings"/);
+test("navigation exposes only implemented home, account, and POS administration", () => {
+  assert.match(navigation, /path: "home"/);
+  assert.doesNotMatch(navigation, /path: "settings"/);
+  assert.match(app, /DaypartHome/);
   assert.match(navigation, /path: "pos"/);
   assert.match(navigation, /capability: "pos_integration"/);
   assert.match(app, /PosIntegrationAdministration/);

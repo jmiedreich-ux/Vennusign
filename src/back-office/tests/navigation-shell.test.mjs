@@ -3,16 +3,18 @@ import test from "node:test";
 import {
   canOpenBackOfficeRoute,
   resolveBackOfficeRoute,
-  backOfficeRoutes
+  backOfficeRoutes,
+  backOfficeNavigationGroups
 } from "../src/navigation.mjs";
 
 test("Back Office shell exposes only implemented customer routes", () => {
   assert.deepEqual(
     backOfficeRoutes.map(route => route.path),
-    ["menu", "screens", "themes", "schedules", "tap-list", "pos", "billing", "security"]
+    ["home", "menu", "schedules", "tap-list", "screens", "themes", "pos", "billing", "security"]
   );
   assert.equal(resolveBackOfficeRoute("#/screens").path, "screens");
-  assert.equal(resolveBackOfficeRoute("#/unknown").path, "menu");
+  assert.equal(resolveBackOfficeRoute("#/unknown").path, "home");
+  assert.deepEqual(backOfficeNavigationGroups.map(group => group.label), ["Operate", "Design & delivery", "Connect", "Account"]);
 });
 
 test("capability routes retain deterministic locked and unlocked states", () => {
