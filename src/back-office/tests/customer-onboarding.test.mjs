@@ -2,8 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [app, timeline, api, passkey, passkeyManagement, security, navigation, main, styles] = await Promise.all([
+const [app, marketing, timeline, api, passkey, passkeyManagement, security, navigation, main, styles] = await Promise.all([
   readFile(new URL("../src/CustomerOnboardingApp.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../src/SignupMarketingExperience.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/CustomerOnboardingTimeline.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/customerOnboardingApi.ts", import.meta.url), "utf8"),
   readFile(new URL("../src/passkeySignIn.ts", import.meta.url), "utf8"),
@@ -31,8 +32,8 @@ test("public entry exposes passwordless routes and returning-user recovery", () 
   assert.match(app, /Continue with Apple/);
   assert.match(app, /Use a passkey/);
   assert.match(app, /Email me a sign-in link/);
-  assert.match(app, /Available plans/);
-  assert.match(app, /No public plans are available right now/);
+  assert.match(marketing, /Public pricing/);
+  assert.match(marketing, /No public plans are available right now/);
   assert.match(main, /\/signup/);
   assert.match(main, /\/signin/);
   assert.match(main, /\/onboarding/);
