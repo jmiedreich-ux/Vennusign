@@ -1,10 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-04T02:05:00Z",
+  "updatedUtc": "2026-08-04T02:30:00Z",
   "activeAssignments": [],
-  "nextAvailableWorkPackage": "RWP-00.13",
+  "nextAvailableWorkPackage": "RWP-05.10",
   "approvedSequentialQueue": [
-    "RWP-00.13",
     "RWP-05.10",
     "RWP-11.03",
     "RWP-11.04"
