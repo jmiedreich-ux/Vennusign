@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import SkyIcon from "./SkyIcon";
 
 type Props = { message: string; onDismiss: () => void; timeoutMs?: number };
 
@@ -13,9 +14,9 @@ export default function TransientFeedback({ message, onDismiss, timeoutMs = 7000
 
   return <div className="transient-feedback-region" aria-live="polite" aria-atomic="true">
     <div className="transient-feedback" role="status">
-      <span aria-hidden="true">✓</span>
+      <span><SkyIcon name="check" size={16} /></span>
       <p>{message}</p>
-      <button type="button" aria-label="Dismiss success message" onClick={onDismiss}>×</button>
+      <button type="button" aria-label="Dismiss success message" onClick={onDismiss}><SkyIcon name="close" size={18} /></button>
     </div>
   </div>;
 }

@@ -10,6 +10,17 @@
 @media (max-width: 600px) { .transient-feedback-region { right: 16px; bottom: 16px; } }
 @media (prefers-reduced-motion: reduce) { .transient-feedback { animation: none; } }
 
+.sky-icon { flex: 0 0 auto; }
+.sky-empty-state { min-height: 148px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px; align-items: center; border: 1px dashed var(--sky-control-border); border-radius: var(--sky-radius-lg); padding: 22px; color: var(--sky-text-primary); background: var(--sky-page-background); }
+.sky-empty-state__icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; color: var(--sky-text-primary); background: var(--sky-color-secondary); }
+.sky-empty-state strong { display: block; font-size: 1rem; }.sky-empty-state p { margin: 5px 0 0; color: var(--sky-text-secondary); line-height: 1.5; }
+.sky-empty-state__action button { white-space: nowrap; }
+.sky-loading-skeleton { min-height: 148px; display: grid; gap: 12px; align-content: center; border: 1px solid var(--sky-control-border); border-radius: var(--sky-radius-lg); padding: 22px; background: var(--sky-card-background); overflow: hidden; }
+.sky-loading-skeleton__row { display: block; height: 18px; border-radius: 999px; background: linear-gradient(90deg, var(--sky-page-background) 25%, var(--sky-color-secondary) 50%, var(--sky-page-background) 75%); background-size: 200% 100%; animation: sky-skeleton-shift 1.4s ease-in-out infinite; }.sky-loading-skeleton__row:nth-of-type(2) { width: 72%; }.sky-loading-skeleton__row:nth-of-type(3) { width: 88%; }.sky-loading-skeleton__row:nth-of-type(4) { width: 64%; }
+@keyframes sky-skeleton-shift { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@media (max-width: 600px) { .sky-empty-state { grid-template-columns: auto 1fr; align-items: start; }.sky-empty-state__action { grid-column: 1 / -1; }.sky-empty-state__action button { width: 100%; white-space: normal; } }
+@media (prefers-reduced-motion: reduce) { .sky-loading-skeleton__row { animation: none; } }
+
 :root { color: var(--sky-text-primary); background: var(--sky-page-background); font-family: var(--sky-font-family); font-synthesis: none; }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; min-height: 100vh; }

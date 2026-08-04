@@ -28,6 +28,8 @@ import {
 } from "./actionRecovery.mjs";
 import { useDestructiveReview } from "./DestructiveReviewDialog";
 import TransientFeedback from "./TransientFeedback";
+import EmptyState from "./EmptyState";
+import LoadingSkeleton from "./LoadingSkeleton";
 
 type Props = {
   configuration: BackOfficeConfiguration;
@@ -330,7 +332,7 @@ export default function ScreenManagement({
           <input aria-label="Search screens" value={screenSearch} onChange={event => setScreenSearch(event.target.value)} placeholder="Search name, location, or platform" />
           <label>Health<select value={healthFilter} onChange={event => setHealthFilter(event.target.value)}><option value="all">All screens</option><option value="online">Online</option><option value="offline">Offline</option><option value="stale">Stale</option><option value="archived">Archived</option></select></label>
         </div>
-    {screensLoading ? <p role="status">Loading screens…</p> : visibleScreens.length ? <div className="managed-screen-list">{visibleScreens.map(screen => {
+    {screensLoading ? <LoadingSkeleton label="Loading screens…" rows={4} /> : visibleScreens.length ? <div className="managed-screen-list">{visibleScreens.map(screen => {
       const presentation = presentationDrafts[screen.id] ?? screen;
       return <section key={screen.id}>
         <div className="managed-screen-health">
@@ -422,7 +424,7 @@ export default function ScreenManagement({
           />
         </div> : null}
       </section>;
-    })}</div> : <p>{screens.length ? "No screens match the current filters." : "No screens assigned. Expand Setup to add or pair your first screen."}</p>}
+    })}</div> : <EmptyState icon={screens.length ? "search" : "screen"} title={screens.length ? "No matching screens" : "No screens assigned"} message={screens.length ? "Adjust the search or health filter to return to the fleet." : "Add or pair the first venue screen from Setup before sending content."} action={<button type="button" onClick={() => screens.length ? (setScreenSearch(""), setHealthFilter("all")) : setSetupOpen(true)}>{screens.length ? "Clear screen filters" : "Open screen setup"}</button>} />}
       </div>
     </section>
     <section className="screen-workflow-section" aria-labelledby="capacity-walls-heading">

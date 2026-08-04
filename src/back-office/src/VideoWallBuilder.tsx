@@ -3,6 +3,8 @@ import { loadVideoWalls, removeVideoWall, saveVideoWall, type ManagedScreen, typ
 import type { BackOfficeConfiguration } from "./config";
 import { useDestructiveReview } from "./DestructiveReviewDialog";
 import TransientFeedback from "./TransientFeedback";
+import EmptyState from "./EmptyState";
+import LoadingSkeleton from "./LoadingSkeleton";
 
 type Props = { configuration: BackOfficeConfiguration; apiKey: string; venueId: string; screens: ManagedScreen[]; showUpgradePrompt?: boolean };
 const layoutSizes: Record<string, number> = { "2x1": 2, "3x1": 3, "2x2": 4 };
@@ -73,6 +75,6 @@ export default function VideoWallBuilder({ configuration, apiKey, venueId, scree
       {editingName ? <button type="button" disabled={busy} onClick={cancelEdit}>Cancel edit</button> : null}
     </form>
     {snapshot?.groups.length ? <div className="wall-groups">{snapshot.groups.map(group =>
-      <article key={group.name}><div><strong>{group.name}</strong><span>{group.layout}</span></div><ol>{group.screens.map(screen => <li key={screen.id}><span>{screen.position}</span>{screen.name}</li>)}</ol><button type="button" disabled={busy || !snapshot.enabled} onClick={() => edit(group.name)}>Edit wall</button><button type="button" disabled={busy || !snapshot.enabled} onClick={() => remove(group.name)}>Remove wall</button></article>)}</div> : <p>{snapshot ? "No video walls configured." : "Loading video walls…"}</p>}
+      <article key={group.name}><div><strong>{group.name}</strong><span>{group.layout}</span></div><ol>{group.screens.map(screen => <li key={screen.id}><span>{screen.position}</span>{screen.name}</li>)}</ol><button type="button" disabled={busy || !snapshot.enabled} onClick={() => edit(group.name)}>Edit wall</button><button type="button" disabled={busy || !snapshot.enabled} onClick={() => remove(group.name)}>Remove wall</button></article>)}</div> : snapshot ? <EmptyState icon="screen" title="No video walls configured" message="Choose a layout and assign the required screens above to create the first wall." /> : <LoadingSkeleton label="Loading video walls…" rows={2} />}
   </section>;
 }
