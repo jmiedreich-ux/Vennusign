@@ -8,8 +8,9 @@
 - Phase 14 and later: paused
 - RWP-13.06: paused pending the owner-approved Track 0 model
 - Restaurant: canonical approved baseline
-- Bar, Brewery & Nightlife: RWP-00.15 industry definition merged
-- Café, Bakery & Dessert: RWP-00.27 industry definition complete in this proposed merge state
+- Bar, Brewery & Nightlife: RWP-00.15 industry definition merged; RWP-00.16 is next
+- Café, Bakery & Dessert: RWP-00.27 industry definition merged; RWP-00.28 is next
+- Food Truck & Concession: RWP-00.39 industry definition complete in this proposed merge state; RWP-00.40 is next
 
 ## Why Track 0 Exists
 
@@ -25,48 +26,41 @@ Every capability must have one primary classification:
 6. Usage or quantity limit
 7. Internal rollout flag
 
-## Café, Bakery & Dessert Definition Result
+## Food Truck & Concession Definition Result
 
-The canonical profile is documented at `track0/industries/cafe-bakery-dessert.md` as a delta from Restaurant.
+The canonical profile is documented at `track0/industries/food-truck-concession.md` as a delta from Restaurant.
 
-It covers guest-facing concepts centered on prepared nonalcoholic beverages, bakery products, desserts, specialty snacks, and closely related counter-service experiences. Initial native concepts include cafés, coffee and tea shops, bakeries and patisseries, baked-specialty shops, dessert and frozen-dessert shops, juice and smoothie bars, and related hybrids.
+It covers mobile, temporary, event-based, and concession-led food-service concepts where the defining needs include current operating location or event information, temporary service windows, rapid setup and teardown, compact menus, queue surges, sell-outs, outdoor readability, intermittent connectivity, explicit screen targeting, delivery confidence, and recovery.
 
-Meaningful differences include:
+Initial native concepts include food trucks, trailers, carts, mobile snack or beverage units, temporary festival and market vendors, kiosks, booths, stalls, temporary concession stands, and host-venue concessions where stand- or unit-level food service is the primary Vennusign context. Exact subtype boundaries are deferred to RWP-00.40.
 
-- stronger product-size-option presentation;
-- batch, freshness, limited-quantity, and sold-out rhythms;
-- queue and counter-service scanning needs;
-- preorder and pickup communication;
-- prepared-service and packaged-retail overlap;
-- early, seasonal, and demand-driven service periods;
-- menu, display-case, pickup, queue, retail, promotional, and venue-information screen purposes.
-
-Manual sold-out and available-again changes remain a core capability acting on product state. Batch, freshness, limited-quantity, and expected-return values are product/domain state when represented. Industry and venue subtype remain product/domain configuration rather than commercial entitlements. Automatic POS, order, inventory, production, or pickup synchronization remains a future integration-packaging question.
+Current operating location, event, service window, relocation, closure, and related operational values are product/domain state when represented. Manual menu availability, location and closure communication, screen targeting, publishing, delivery confirmation, offline awareness, and recovery remain core capabilities. Organization primary industry and venue, unit, stand, or subtype remain product/domain configuration rather than commercial entitlements. Counts remain limits. Automatic POS, order, inventory, route, event, host-venue, or location synchronization remains a later integration-packaging question.
 
 ## Impeccable Planning Result
 
 The project-local Impeccable skill and `shape` guidance were consulted for future UI-facing work.
 
-- Operator surfaces use Operate mode with rapid scanning, confident state changes, publishing feedback, and recovery.
-- Guest-facing operational screens use Read mode; selective Experience treatment must not obscure ordering facts.
-- Later specifications must cover realistic product ranges and first-run, empty, limited, sold-out, available-again, next-batch, seasonal, preorder, offline, outdated, permission, publish-failure, success, and recovery states.
-- Accessibility requires non-color status communication, strong distance legibility, restrained motion, and understandable hierarchy.
-- Responsive planning must cover mobile counter use, desktop administration, portrait and landscape displays, glare, queues, and crowded service environments.
+- Operator surfaces use Operate mode and prioritize location, readiness, menu state, intended targets, delivery state, and recovery.
+- Guest-facing operational screens use Read mode and prioritize location or stand identity, open/closed state, current offerings, prices, and collection instructions.
+- Later specifications must cover realistic one-unit through multi-unit ranges and first-run, no-location, upcoming, setup, ready, open, paused, limited, sold-out, relocated, canceled, closed, offline, outdated, permission, publish-failure, success, and recovery states.
+- Outdoor glare, weather, vibration, crowds, long viewing distances, touch use, small workspaces, and intermittent connectivity are binding conditions.
+- Accessibility requires non-color status communication, strong distance legibility, restrained motion, and plain recovery guidance.
 - Preserve the Sky Blue direction for Vennusign administrative surfaces.
 
-## Exact Next Café Action
+## Exact Next Food Truck & Concession Action
 
-After RWP-00.27 is merged, verified on `master`, and issue #502 is closed, execute **RWP-00.28 — Café, Bakery & Dessert Venue Subtypes** (#503).
+After RWP-00.39 is merged, verified on `master`, issue #514 is closed, and the claim is released, execute **RWP-00.40 — Food Truck & Concession Venue Subtypes** (#515).
 
-RWP-00.28 must:
+RWP-00.40 must:
 
-- define the supported café, coffee-shop, tea-shop, bakery, patisserie, dessert-shop, frozen-dessert, juice-or-smoothie, baked-specialty, and hybrid subtype catalog;
+- define food truck, trailer, cart, kiosk, stadium or arena concession, festival vendor, market stall, pop-up, catering concession, and hybrid subtypes;
 - establish inclusion, exclusion, and ambiguous-boundary rules;
+- distinguish operating model from physical form when classifying semi-permanent or long-term units;
 - map meaningful subtype differences without duplicating Restaurant inheritance;
-- define venue subtype selection, change, and mixed-concept behavior;
-- keep subtypes separate from tiers and entitlements;
-- consult Impeccable for any UI-facing selection or change-flow planning;
-- remain documentation-only and hand off to RWP-00.29.
+- define selection, change, and mixed-concept behavior;
+- keep subtypes separate from tiers, entitlements, permissions, and limits;
+- consult Impeccable for any UI-facing subtype selection or change-flow planning;
+- remain documentation-only and hand off to RWP-00.41.
 
 ## Parallel-Stream Rule
 
