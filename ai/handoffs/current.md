@@ -10,49 +10,75 @@
 - Restaurant: canonical approved baseline
 - Bar, Brewery & Nightlife: RWP-00.16 merged; RWP-00.17 is next
 - Café, Bakery & Dessert: RWP-00.28 merged; RWP-00.29 is next
-- Food Truck & Concession: RWP-00.39 merged; RWP-00.40 is next
+- Food Truck & Concession: RWP-00.40 complete in this proposed merge state; RWP-00.41 is next
 - Hospitality: RWP-00.51 merged; RWP-00.52 is next
-- Entertainment & Attractions: RWP-00.63 complete in this proposed merge state; RWP-00.64 is next
+- Entertainment & Attractions: RWP-00.63 merged; RWP-00.64 is next
 
-## Entertainment & Attractions Definition Result
+## Food Truck & Concession Subtype Result
 
-The canonical profile is documented at `track0/industries/entertainment-attractions.md` as a delta from Restaurant.
+The canonical subtype model is documented at `track0/industries/food-truck-concession.md` as a delta from Restaurant.
 
-It covers destination-, program-, exhibition-, performance-, recreation-, and attraction-led venues whose visitor experience depends on accurate schedules, admissions guidance, wayfinding, availability, queue, venue-state, safety, accessibility, and event information across changing operating periods and physical areas.
+Nine bounded primary subtypes are approved:
 
-Initial native concepts include cinemas, performing-arts and live-performance venues, museums and non-retail galleries, science centers and planetariums, zoos and aquariums, botanical gardens, theme and amusement parks, family entertainment centers, arcades, bowling centers, spectator sports venues, attractions, tours, heritage sites, and related hybrids where entertainment, exhibition, performance, recreation, or attraction attendance is the primary identity. Exact subtype boundaries are deferred to RWP-00.64.
+- Food Truck
+- Food Trailer
+- Food Cart
+- Kiosk
+- Stadium / Arena Concession
+- Festival Vendor
+- Market Stall
+- Pop-Up
+- Catering Concession
 
-Venue, building or area, attraction, exhibit, event, performance, screening, session, queue, admission window, capacity state, delay, closure, relocation, and related values are product/domain state when represented. Manual program, showtime, admissions, wayfinding, queue, capacity, delay, closure, relocation, accessibility, safety, targeting, publishing, delivery confirmation, offline awareness, and recovery remain core capabilities. Organization primary industry and venue subtype remain product/domain configuration rather than commercial entitlements. Counts remain limits. Authorization, audience, admission, privacy, and content authority remain distinct from commercial access. Automatic ticketing, admissions, access-control, queue, venue, cinema, show-control, collection, event, sports, attraction, or other synchronization remains a later packaging question.
+A local operation may remain **Unspecified / General Mobile or Concession Operation** when no supported subtype clearly controls its daily operating rhythm. This is a neutral product-state fallback rather than a commercial package.
 
-Restaurant menu semantics remain inherited for concessions and food-and-beverage outlets that use them but do not define the primary content model for an entertainment venue or attraction as a whole.
+The catalog intentionally includes physical forms and operating contexts. Hybrid concepts use one primary subtype plus optional descriptive physical-form, operating-context, host-relationship, product-focus, recurring-route, seasonal, sponsor, or service-model traits. Selection follows the model that most consistently controls daily setup, service, guest communication, and local defaults. Traits do not stack entitlements, transfer ownership, alter permissions, or increase limits.
+
+The model resolves recurring fixed-pitch trucks, seasonal trailers, food-hall counters, mobile coffee or dessert units, stadium food trucks, festival truck and trailer hybrids, market vendors attending festivals, temporary restaurant or chef residencies, catering trucks, host-operated concessions, mixed-property outlets, and one unit with multiple service windows without creating separate commercial models.
+
+Every subtype inherits Restaurant capabilities. Differences are limited to defaults, terminology candidates, starter content, screen-purpose suggestions, operational emphasis, location or event context, host guidance, and presentation recommendations. Subtype-specific screen purposes remain recommendations, not entitlements.
+
+## Classification Result
+
+- Primary subtype is product/domain state.
+- Neutral subtype state is product/domain state.
+- Optional physical-form, operating-context, host-relationship, product-focus, and service-model traits are product/domain state.
+- Subtype does not grant capabilities, change plan access, transfer authority, alter permissions, increase limits, control rollout, or determine venue counting.
+- Current operating location, event, service window, relocation, closure, availability, and related operational values keep their own product-state classifications.
+- Manual location, event, closure, relocation, availability, targeting, publishing, delivery confirmation, offline awareness, and recovery remain core.
+- Counts of venues, units, stands, service points, screens, users, integrations, storage, retained history, or AI consumption remain independent limits.
+- Automatic POS, order, inventory, route, event, host-venue, location, or catering synchronization remains a later integration-packaging question and cannot replace manual core operation.
+- A future subtype-change implementation must preserve all customer-authored content, screen assignments, pairing, targeting, publication history, current operational state, host/operator boundaries, and commercial access.
 
 ## Impeccable Planning Result
 
-The project-local Impeccable skill and `shape` guidance were consulted for future UI-facing work.
+The project-local Impeccable skill and `shape` guidance were consulted for future subtype selection and change flows.
 
-- Administrative surfaces use Operate mode and prioritize exact scope, current program and operating information, intended targets, delivery state, and recovery.
-- Visitor schedules, admissions guidance, wayfinding, exhibit interpretation, and operational information use Read mode; Experience mode is appropriate only when it does not obscure essential guidance.
-- Later specifications must cover realistic single-screen through multi-site ranges and first-run, empty, on-sale, available, limited, sold-out, full, preparing, boarding, active, intermission, delayed, paused, relocated, canceled, weather-affected, unavailable, closed, maintenance, emergency, offline, outdated, permission, admission, privacy, publish-failure, success, and recovery states.
-- Phone use while walking the venue, box-office and desktop administration, portrait and landscape displays, large-format boards, bright outdoor queues, dim auditoriums and galleries, crowded concourses, long viewing distances, localization, accessibility, and intermittent connectivity are binding conditions.
-- High-impact or venue-wide changes require explicit scope and target confirmation, visible delivery state, stale/offline distinction, safe restoration, and plain escalation guidance.
-- Preserve the Sky Blue direction for Vennusign administrative surfaces.
+Because the run was non-interactive, the brief records explicit assumptions: the user is an owner or authorized manager; selection is local to a venue, unit, stand, or service point; physical form and operating context frequently overlap; host and operator authority may differ; and existing content and commercial access must be preserved.
 
-No UI, API, schema, migration, or product implementation was authorized or performed.
+- The surface is an **Operate** experience, often used from a phone during setup, relocation, or active service.
+- Bounded “best when” definitions, dominant daily rhythm, mobility or permanence, host relationship, event cadence, example screen purposes, and changed defaults outrank legal, permit, vehicle-registration, tax, or marketing language.
+- One primary subtype, a neutral fallback, and optional descriptive traits must be understandable without implying plan differences.
+- A change flow must preview effects, preserve content and authority boundaries, require explicit confirmation, support safe cancellation and restoration, and cover permission, validation-failure, interrupted-save, and success states.
+- Phone and desktop layouts must remain scannable, progressively disclose overlap detail, support keyboard and assistive technology, use plain language, and avoid color-only distinctions.
+- Preserve the approved Sky Blue direction for Vennusign administrative surfaces.
 
-## Exact Next Entertainment & Attractions Action
+No UI, API, schema, migration, limit-counting, host-authority, or product implementation was authorized or performed.
 
-After RWP-00.63 is merged, verified on `master`, issue #538 is closed, and the claim is released, execute **RWP-00.64 — Entertainment & Attractions Venue Subtypes** (#539).
+## Exact Next Food Truck & Concession Action
 
-RWP-00.64 must:
+After RWP-00.40 is merged, verified on `master`, issue #515 is closed, and the claim is released, execute **RWP-00.41 — Food Truck & Concession Business Terminology** (#516).
 
-- define cinema, theater, museum, gallery, zoo or aquarium, theme or amusement park, family entertainment center, arcade, bowling, sports venue, live-event venue, attraction or tour, and hybrid subtypes;
-- establish inclusion, exclusion, neighboring-profile, and ambiguous-boundary rules;
-- map meaningful subtype differences without duplicating Restaurant inheritance;
-- define venue subtype selection, change, mixed-organization, and multi-venue behavior;
-- distinguish entertainment operating model from building form, ownership, promoter, presenter, tenant, sponsor, team, performer, distributor, or rights-holder structure;
-- keep subtypes separate from tiers, entitlements, permissions, audience scope, admissions scope, and limits;
-- consult Impeccable for any UI-facing subtype selection or change-flow planning;
-- remain documentation-only and hand off to RWP-00.65.
+RWP-00.41 must:
+
+- define canonical operator and guest terminology for locations, stops, events, service windows, stands, service points, menus, combos, sell-outs, service periods, pickup, and queues;
+- identify terms inherited unchanged from Restaurant;
+- define subtype-specific terminology overrides and neutral organization-wide fallbacks;
+- resolve language when physical form and operating context differ;
+- distinguish operator-facing and guest-facing language;
+- keep terminology separate from entitlements, permissions, ownership, host authority, and limits;
+- update the Track 0 capability documentation;
+- remain documentation-only and hand off to RWP-00.42.
 
 ## Parallel-Stream Rule
 
@@ -63,5 +89,5 @@ The owner approved independently scheduled native-industry streams. Each industr
 - Do not start product implementation from Track 0 issues.
 - Do not resume RWP-13.06 until Track 0 produces an owner-approved capability and packaging model.
 - Do not start Phase 14+.
-- Do not implement UI, API, schema, migrations, billing, entitlements, feature gates, limits, admissions systems, privacy systems, or rollout controls during industry planning.
+- Do not implement UI, API, schema, migrations, billing, entitlements, feature gates, limits, rollout controls, ordering, payments, inventory, routing, event management, host-venue management, catering management, or integrations during industry planning.
 - Integration and external-system tests remain skipped under the standing owner instruction.
