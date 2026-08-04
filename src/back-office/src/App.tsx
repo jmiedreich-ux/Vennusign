@@ -519,6 +519,10 @@ export default function App() {
         ? <LockedSectionPreview
             key={`${lockedOpportunity.featureKey}-${dismissalVersion}`}
             opportunity={lockedOpportunity}
+            configuration={configuration}
+            accessToken={accessToken}
+            venueId={session.venueId}
+            venueName={session.venueName}
             onDismiss={dismiss}
             onUpgrade={setUpgradeContext}
           />
