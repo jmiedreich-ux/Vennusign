@@ -9,11 +9,12 @@
 - The owner approved independent native-industry Track 0 schedules. Each industry remains sequential inside its own approved RWP range and must avoid shared-file ownership conflicts.
 - Restaurant is the canonical approved baseline inherited by later native-industry profiles.
 - RWP-00.15 — Bar, Brewery & Nightlife Industry Definition (#490) is complete and merged.
-- RWP-00.16 — Bar, Brewery & Nightlife Venue Subtypes (#491) is complete in this proposed merge state. It defines nine bounded primary subtypes, a neutral fallback, hybrid traits, boundary rules, subtype selection/change behavior, Restaurant inheritance, and Impeccable planning guidance. Its next item is RWP-00.17 — Business Terminology (#492).
+- RWP-00.16 — Bar, Brewery & Nightlife Venue Subtypes (#491) is complete and merged. Its next item is RWP-00.17 — Business Terminology (#492).
 - RWP-00.27 — Café, Bakery & Dessert Industry Definition (#502) is complete and merged.
-- RWP-00.28 — Café, Bakery & Dessert Venue Subtypes (#503) is complete in this proposed merge state. It defines nine bounded primary subtypes, a neutral fallback, hybrid traits, boundary rules, subtype selection/change behavior, Restaurant inheritance, and Impeccable planning guidance. Its next item is RWP-00.29 — Business Terminology (#504).
+- RWP-00.28 — Café, Bakery & Dessert Venue Subtypes (#503) is complete and merged. It defines nine bounded primary subtypes, a neutral fallback, hybrid traits, boundary rules, subtype selection/change behavior, Restaurant inheritance, and Impeccable planning guidance. Its next item is RWP-00.29 — Business Terminology (#504).
 - RWP-00.39 — Food Truck & Concession Industry Definition (#514) is complete and merged. Its next item is RWP-00.40 — Venue Subtypes (#515).
 - RWP-00.51 — Hospitality Industry Definition (#526) is complete and merged. Its next item is RWP-00.52 — Venue Subtypes (#527).
+- RWP-00.63 — Entertainment & Attractions Industry Definition (#538) is complete in this proposed merge state. It defines Restaurant inheritance, entertainment- and attraction-led venue boundaries, organization and local-venue behavior, initial capability classifications, privacy and audience constraints, and Impeccable planning guardrails. Its next item is RWP-00.64 — Venue Subtypes (#539).
 - The 13-package retrospective remediation round is complete.
 - RWP-00.04 — Deployment Component Versioning and Release Manifest (#437) is complete.
 - RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439) is complete.
@@ -75,15 +76,17 @@ The Food Truck & Concession definition confirms that current operating location,
 
 The Hospitality definition confirms that property, building or area, outlet, room or event, amenity, service window, closure, relocation, and similar operational values are product/domain state. Manual guest-information, wayfinding, event, amenity, service, changed-hours, targeting, publishing, delivery confirmation, offline awareness, and recovery operations remain core. Authorization and privacy scope remain separate from commercial access. Automatic property-management, event, room-booking, transport, guest-service, or other external synchronization remains a later packaging question.
 
+The Entertainment & Attractions definition confirms that venue, building or area, attraction, exhibit, event, performance, screening, session, queue, admission window, capacity state, delay, closure, relocation, and similar operational values are product/domain state. Manual program, showtime, admissions, wayfinding, queue, capacity, delay, closure, relocation, accessibility, safety, targeting, publishing, delivery confirmation, offline awareness, and recovery operations remain core. Authorization, audience, admission, privacy, and content authority remain separate from commercial access. Automatic ticketing, admissions, access-control, queue, venue, cinema, show-control, collection, event, sports, attraction, or other external synchronization remains a later packaging question.
+
 ## Validation Policy
 
 Normal work uses affected-area non-integration validation. Full non-integration validation is reserved for phase closure and the exceptions defined in `AGENTS.md`. Documentation-only Track 0 changes use lightweight repository validation. Integration and external-system tests remain skipped under the standing owner instruction unless separately approved.
 
 ## Next Action
 
-After RWP-00.28 is merged, verified on `master`, issue #503 is closed, and the claim is released, continue the Café, Bakery & Dessert queue with **RWP-00.29 — Business Terminology** (#504).
+After RWP-00.63 is merged, verified on `master`, issue #538 is closed, and the claim is released, continue the Entertainment & Attractions queue with **RWP-00.64 — Venue Subtypes** (#539).
 
-RWP-00.29 must define canonical operator and guest terminology for products, sizes, modifiers, batches, freshness, availability, preorders, pickup, and service periods; identify inherited Restaurant terms, subtype overrides, and hybrid fallbacks; keep terminology separate from permissions and entitlements; and remain documentation-only.
+RWP-00.64 must define cinema, theater, museum, gallery, zoo or aquarium, theme or amusement park, family entertainment center, arcade, bowling, sports venue, live-event venue, attraction or tour, and hybrid subtypes; establish inclusion, exclusion, and ambiguous-boundary rules; map meaningful subtype differences without duplicating Restaurant inheritance; and keep subtype separate from tiers, permissions, audience scope, and limits.
 
 Other owner-approved native-industry schedules may continue independently inside their own sequential queues. They must use Restaurant as the canonical baseline, treat only merged work as authoritative, and avoid concurrent edits to shared controlled files.
 
