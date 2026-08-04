@@ -4,6 +4,8 @@ import { listPasskeys, registerPasskey, removePasskey, renamePasskey, type Passk
 import { passkeyInventoryView } from "./actionRecovery.mjs";
 import { useDestructiveReview } from "./DestructiveReviewDialog";
 import TransientFeedback from "./TransientFeedback";
+import EmptyState from "./EmptyState";
+import LoadingSkeleton from "./LoadingSkeleton";
 
 export default function AccountSecurity({ configuration, customerSession }: { configuration: BackOfficeConfiguration; customerSession: boolean }) {
   const [passkeys, setPasskeys] = useState<PasskeySummary[]>([]);
@@ -57,9 +59,9 @@ export default function AccountSecurity({ configuration, customerSession }: { co
       <small>Recent sign-in is required. If prompted to recover, sign in again by email, Google, or Apple and return here.</small>
     </form>
     <h3>Your passkeys</h3>
-    {inventoryView === "loading" ? <p role="status">Loading passkeys…</p>
+    {inventoryView === "loading" ? <LoadingSkeleton label="Loading passkeys…" rows={2} />
       : inventoryView === "failed" ? <div className="account-security__error" role="alert"><p>Passkey inventory is unknown. No empty-state assumption has been made.</p><button type="button" onClick={() => void refresh().catch(() => undefined)}>Retry passkey inventory</button></div>
-      : inventoryView === "empty" ? <p>No passkeys yet. Keep another verified sign-in method available before relying on a new passkey.</p> : <ul className="account-security__list">{passkeys.map(passkey => <li key={passkey.id}>
+      : inventoryView === "empty" ? <div role="status"><EmptyState icon="key" title="No passkeys yet" message="Add a named passkey above, and keep another verified sign-in method available for recovery." /></div> : <ul className="account-security__list">{passkeys.map(passkey => <li key={passkey.id}>
       <form onSubmit={event => { event.preventDefault(); const name = String(new FormData(event.currentTarget).get("displayName") ?? "").trim(); void run(`rename-${passkey.id}`, () => renamePasskey(configuration, passkey.id, name), "Passkey name updated."); }}>
         <label htmlFor={`passkey-${passkey.id}`}>Passkey name</label><input id={`passkey-${passkey.id}`} name="displayName" defaultValue={passkey.displayName} maxLength={100} required />
         <span>Added {new Date(passkey.createdUtc).toLocaleDateString()}{passkey.lastUsedUtc ? ` · Last used ${new Date(passkey.lastUsedUtc).toLocaleDateString()}` : " · Not used yet"}</span>
