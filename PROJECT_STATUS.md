@@ -10,7 +10,8 @@
 - Restaurant is the canonical approved baseline inherited by later native-industry profiles.
 - RWP-00.15 — Bar, Brewery & Nightlife Industry Definition (#490) is complete and merged.
 - RWP-00.16 — Bar, Brewery & Nightlife Venue Subtypes (#491) is complete in this proposed merge state. It defines nine bounded primary subtypes, a neutral fallback, hybrid traits, boundary rules, subtype selection/change behavior, Restaurant inheritance, and Impeccable planning guidance. Its next item is RWP-00.17 — Business Terminology (#492).
-- RWP-00.27 — Café, Bakery & Dessert Industry Definition (#502) is complete and merged. Its next item is RWP-00.28 — Venue Subtypes (#503).
+- RWP-00.27 — Café, Bakery & Dessert Industry Definition (#502) is complete and merged.
+- RWP-00.28 — Café, Bakery & Dessert Venue Subtypes (#503) is complete in this proposed merge state. It defines nine bounded primary subtypes, a neutral fallback, hybrid traits, boundary rules, subtype selection/change behavior, Restaurant inheritance, and Impeccable planning guidance. Its next item is RWP-00.29 — Business Terminology (#504).
 - RWP-00.39 — Food Truck & Concession Industry Definition (#514) is complete and merged. Its next item is RWP-00.40 — Venue Subtypes (#515).
 - RWP-00.51 — Hospitality Industry Definition (#526) is complete and merged. Its next item is RWP-00.52 — Venue Subtypes (#527).
 - The 13-package retrospective remediation round is complete.
@@ -68,7 +69,7 @@ Every capability must have one primary classification: core capability, permissi
 
 The Bar, Brewery & Nightlife subtype model confirms that primary subtype, neutral subtype state, and optional hybrid descriptive traits are product/domain state. Nine primary subtypes are approved: Pub, Sports Bar, Cocktail Bar, Wine Bar, Brewery, Brewpub, Taproom, Nightclub, and Lounge. Subtype changes venue-local defaults, terminology candidates, starter recommendations, screen-purpose suggestions, and guidance only. It does not grant capabilities, alter permissions, increase limits, or change commercial access. Existing content must be preserved through a later subtype-change implementation.
 
-The Café, Bakery & Dessert definition confirms that manual sold-out and available-again changes remain a core capability acting on product state. Batch, freshness, limited-quantity, and expected-return values are product/domain state when represented. Automatic POS, order, inventory, production, or pickup synchronization remains a later integration-packaging question and cannot replace the manual core operation.
+The Café, Bakery & Dessert subtype model confirms that primary subtype, neutral subtype state, and optional hybrid descriptive traits are product/domain state. Nine primary subtypes are approved: Café, Coffee Shop, Tea Shop, Bakery, Patisserie, Bakery-Café, Dessert Shop, Frozen Dessert Shop, and Juice & Smoothie Bar. Subtype changes venue-local defaults, terminology candidates, starter recommendations, screen-purpose suggestions, and guidance only. It does not grant capabilities, alter permissions, increase limits, or change commercial access. Existing content must be preserved through a later subtype-change implementation. Manual sold-out and available-again changes remain core; batch, freshness, limited-quantity, and expected-return values remain product/domain state; external synchronization remains a later integration-packaging question.
 
 The Food Truck & Concession definition confirms that current operating location, event, service window, relocation, closure, and related operational values are product/domain state. Manual location and closure communication, rapid availability changes, explicit screen targeting, publishing, delivery confirmation, offline awareness, and recovery remain core. Counts of venues, units, stands, screens, users, connections, storage, history, or AI consumption remain limits rather than capabilities. Automatic route, event, host-venue, POS, order, inventory, or location synchronization remains a later packaging question.
 
@@ -80,9 +81,9 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-After RWP-00.16 is merged, verified on `master`, issue #491 is closed, and the claim is released, continue the Bar, Brewery & Nightlife queue with **RWP-00.17 — Business Terminology** (#492).
+After RWP-00.28 is merged, verified on `master`, issue #503 is closed, and the claim is released, continue the Café, Bakery & Dessert queue with **RWP-00.29 — Business Terminology** (#504).
 
-RWP-00.17 must define the canonical operator-facing and guest-facing glossary; identify Restaurant-inherited language; define subtype-specific wording and neutral organization-wide fallbacks; resolve ambiguous terms for hybrid venues; and remain separate from entitlements and permissions.
+RWP-00.29 must define canonical operator and guest terminology for products, sizes, modifiers, batches, freshness, availability, preorders, pickup, and service periods; identify inherited Restaurant terms, subtype overrides, and hybrid fallbacks; keep terminology separate from permissions and entitlements; and remain documentation-only.
 
 Other owner-approved native-industry schedules may continue independently inside their own sequential queues. They must use Restaurant as the canonical baseline, treat only merged work as authoritative, and avoid concurrent edits to shared controlled files.
 
