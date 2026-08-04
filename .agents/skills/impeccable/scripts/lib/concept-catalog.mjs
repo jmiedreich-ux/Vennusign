@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { WELL_TIERS } from './roll-selection.mjs';
+
 export const CONCEPT_STATUSES = new Set(['approved', 'rejected']);
 
 // What a concept is actually strong at. Worlds carry a durable visual
@@ -380,3 +381,4 @@ export function approvedPoolRevision(concepts) {
     .join('\n');
   return crypto.createHash('sha256').update(payload).digest('hex').slice(0, 12);
 }
+

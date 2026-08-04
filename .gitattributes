@@ -3,6 +3,11 @@
 ###############################################################################
 * text=auto
 
+# Preserve the project-local Impeccable vendor source byte-for-byte. Its
+# upstream examples intentionally include whitespace that `git diff --check`
+# would otherwise reject when the complete skill is first added.
+.agents/skills/impeccable/** -whitespace
+
 ###############################################################################
 # Set default behavior for command prompt diff.
 #
