@@ -8,11 +8,11 @@
 - Active planning track: Track 0 — Capability, Packaging, and Entitlement Architecture (#488). Product implementation remains paused.
 - The owner approved independent native-industry Track 0 schedules. Each industry remains sequential inside its own approved RWP range and must avoid shared-file ownership conflicts.
 - Restaurant is the canonical approved baseline inherited by later native-industry profiles.
-- RWP-00.15 — Bar, Brewery & Nightlife Industry Definition (#490) is complete and merged. Its next item is RWP-00.16 — Venue Subtypes (#491).
+- RWP-00.15 — Bar, Brewery & Nightlife Industry Definition (#490) is complete and merged.
+- RWP-00.16 — Bar, Brewery & Nightlife Venue Subtypes (#491) is complete in this proposed merge state. It defines nine bounded primary subtypes, a neutral fallback, hybrid traits, boundary rules, subtype selection/change behavior, Restaurant inheritance, and Impeccable planning guidance. Its next item is RWP-00.17 — Business Terminology (#492).
 - RWP-00.27 — Café, Bakery & Dessert Industry Definition (#502) is complete and merged. Its next item is RWP-00.28 — Venue Subtypes (#503).
 - RWP-00.39 — Food Truck & Concession Industry Definition (#514) is complete and merged. Its next item is RWP-00.40 — Venue Subtypes (#515).
-- RWP-00.51 — Hospitality Industry Definition (#526) is complete in this proposed merge state. Its canonical profile defines Restaurant inheritance, lodging-led property boundaries, property and local-venue behavior, initial capability classifications, privacy constraints, and Impeccable planning guardrails.
-- The next Hospitality item is RWP-00.52 — Venue Subtypes (#527).
+- RWP-00.51 — Hospitality Industry Definition (#526) is complete and merged. Its next item is RWP-00.52 — Venue Subtypes (#527).
 - The 13-package retrospective remediation round is complete.
 - RWP-00.04 — Deployment Component Versioning and Release Manifest (#437) is complete.
 - RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439) is complete.
@@ -66,6 +66,8 @@ Cross-cutting remediation completed after Phase 13 includes RWP-00.02, RWP-00.03
 
 Every capability must have one primary classification: core capability, permission, product/domain state, tier entitlement, independent add-on, usage or quantity limit, or internal rollout flag.
 
+The Bar, Brewery & Nightlife subtype model confirms that primary subtype, neutral subtype state, and optional hybrid descriptive traits are product/domain state. Nine primary subtypes are approved: Pub, Sports Bar, Cocktail Bar, Wine Bar, Brewery, Brewpub, Taproom, Nightclub, and Lounge. Subtype changes venue-local defaults, terminology candidates, starter recommendations, screen-purpose suggestions, and guidance only. It does not grant capabilities, alter permissions, increase limits, or change commercial access. Existing content must be preserved through a later subtype-change implementation.
+
 The Café, Bakery & Dessert definition confirms that manual sold-out and available-again changes remain a core capability acting on product state. Batch, freshness, limited-quantity, and expected-return values are product/domain state when represented. Automatic POS, order, inventory, production, or pickup synchronization remains a later integration-packaging question and cannot replace the manual core operation.
 
 The Food Truck & Concession definition confirms that current operating location, event, service window, relocation, closure, and related operational values are product/domain state. Manual location and closure communication, rapid availability changes, explicit screen targeting, publishing, delivery confirmation, offline awareness, and recovery remain core. Counts of venues, units, stands, screens, users, connections, storage, history, or AI consumption remain limits rather than capabilities. Automatic route, event, host-venue, POS, order, inventory, or location synchronization remains a later packaging question.
@@ -78,7 +80,9 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-After this RWP is merged, verified on `master`, and issue #526 is closed, continue the Hospitality queue with **RWP-00.52 — Venue Subtypes** (#527). Define hotel, resort, motel, hostel, extended-stay, serviced-apartment, conference-property, casino-resort, boutique-lodging, and hybrid subtypes; establish boundary and ambiguous-case rules; map subtype-specific deltas; and keep subtype separate from tiers, permissions, and limits.
+After RWP-00.16 is merged, verified on `master`, issue #491 is closed, and the claim is released, continue the Bar, Brewery & Nightlife queue with **RWP-00.17 — Business Terminology** (#492).
+
+RWP-00.17 must define the canonical operator-facing and guest-facing glossary; identify Restaurant-inherited language; define subtype-specific wording and neutral organization-wide fallbacks; resolve ambiguous terms for hybrid venues; and remain separate from entitlements and permissions.
 
 Other owner-approved native-industry schedules may continue independently inside their own sequential queues. They must use Restaurant as the canonical baseline, treat only merged work as authoritative, and avoid concurrent edits to shared controlled files.
 
