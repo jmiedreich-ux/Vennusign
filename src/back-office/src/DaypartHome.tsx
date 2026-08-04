@@ -24,6 +24,8 @@ type Props = {
 };
 
 type HomeState = { mealPeriods: MealPeriodSnapshot; screens: ManagedScreen[]; menu: MenuEditorSnapshot };
+const unavailableMealPeriods: MealPeriodSnapshot = { mealPeriods: [], conflicts: [] };
+const unavailableMenu: MenuEditorSnapshot = { menus: [], itemGroups: [], capabilities: { happyHour: false, allergenBadges: false, quickUpdate: false } };
 
 const localTime = (value?: string) => value
   ? new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" }).format(new Date(value))
@@ -40,9 +42,9 @@ export default function DaypartHome({ configuration, accessToken, venueId, venue
     setError(undefined);
     try {
       const [mealPeriods, screens, menu] = await Promise.all([
-        loadMealPeriods(configuration, accessToken, venueId),
-        loadManagedScreens(configuration, accessToken, venueId),
-        loadMenuEditor(configuration, accessToken, venueId)
+        capabilities.includes("scheduling") ? loadMealPeriods(configuration, accessToken, venueId) : Promise.resolve(unavailableMealPeriods),
+        capabilities.includes("screens") ? loadManagedScreens(configuration, accessToken, venueId) : Promise.resolve([]),
+        capabilities.includes("menus") ? loadMenuEditor(configuration, accessToken, venueId) : Promise.resolve(unavailableMenu)
       ]);
       setState({ mealPeriods, screens, menu });
       setSpecial(menu.menus.find(entry => entry.menu.isActive)?.menu.dailySpecial ?? "");
@@ -51,7 +53,7 @@ export default function DaypartHome({ configuration, accessToken, venueId, venue
     }
   };
 
-  useEffect(() => { void load(); }, [accessToken, configuration, venueId]);
+  useEffect(() => { void load(); }, [accessToken, capabilities, configuration, venueId]);
 
   const activePeriod = state?.mealPeriods.mealPeriods.find(period => period.id === state.mealPeriods.activeMealPeriodId);
   const nextPeriod = state?.mealPeriods.mealPeriods.find(period => period.id === state.mealPeriods.nextMealPeriodId);
@@ -93,12 +95,14 @@ export default function DaypartHome({ configuration, accessToken, venueId, venue
     {error ? <p className="state error" role="alert">{error}</p> : null}
 
     <section className="daypart-timeline" aria-labelledby="daypart-timeline-heading"><div><p>Venue timeline</p><h3 id="daypart-timeline-heading">Today’s dayparts</h3></div>
-      {state.mealPeriods.mealPeriods.length ? <ol>{state.mealPeriods.mealPeriods.filter(period => period.isEnabled).map(period => <li key={period.id} data-active={period.id === activePeriod?.id}><strong>{period.name}</strong><span>{period.startLocalTime}–{period.endLocalTime}</span>{period.id === activePeriod?.id ? <em>Now</em> : null}</li>)}</ol>
+      {!capabilities.includes("scheduling") ? <p className="state">Daypart scheduling is unavailable for this venue.</p>
+      : state.mealPeriods.mealPeriods.length ? <ol>{state.mealPeriods.mealPeriods.filter(period => period.isEnabled).map(period => <li key={period.id} data-active={period.id === activePeriod?.id}><strong>{period.name}</strong><span>{period.startLocalTime}–{period.endLocalTime}</span>{period.id === activePeriod?.id ? <em>Now</em> : null}</li>)}</ol>
       : <EmptyState icon="refresh" title="No dayparts yet" message="Normal venue content remains active." action={<a href="?schedule=meal-periods#/schedules">Set up dayparts</a>} />}</section>
 
     <div className="daypart-grid">
       <section aria-labelledby="live-screens-heading"><header><div><p>Live screens</p><h3 id="live-screens-heading">Fleet at a glance</h3></div><a href="#/screens">Manage</a></header>
-        {state.screens.length ? <ul className="screen-miniatures">{state.screens.slice(0, 6).map(screen => <li key={screen.id}><span aria-hidden="true"><SkyIcon name="screen" size={22} /></span><div><strong>{screen.name}</strong><small>{screen.location || screen.displayLayout.replaceAll("_", " ")}</small></div><em data-online={screen.status.toLowerCase() === "online"}>{screen.status}</em></li>)}</ul>
+        {!capabilities.includes("screens") ? <p className="state">Screen status is unavailable for this venue.</p>
+        : state.screens.length ? <ul className="screen-miniatures">{state.screens.slice(0, 6).map(screen => <li key={screen.id}><span aria-hidden="true"><SkyIcon name="screen" size={22} /></span><div><strong>{screen.name}</strong><small>{screen.location || screen.displayLayout.replaceAll("_", " ")}</small></div><em data-online={screen.status.toLowerCase() === "online"}>{screen.status}</em></li>)}</ul>
         : <EmptyState icon="screen" title="No screens paired" message="Pair a screen to see live venue status." action={<a href="#/screens">Pair a screen</a>} />}</section>
 
       <section aria-labelledby="availability-heading"><header><div><p>86 board</p><h3 id="availability-heading">Quick availability</h3></div><a href="#/menu">Open menu</a></header>

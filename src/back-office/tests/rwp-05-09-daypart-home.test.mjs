@@ -7,9 +7,12 @@ test("daypart home composes venue-authoritative operations and essential states"
   const app = await readFile(new URL("../src/App.tsx", import.meta.url), "utf8");
   const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
 
-  assert.match(home, /Promise\.all\(\[\s*loadMealPeriods/);
+  assert.match(home, /Promise\.all\(\[/);
   assert.match(home, /loadManagedScreens/);
   assert.match(home, /loadMenuEditor/);
+  assert.match(home, /capabilities\.includes\("scheduling"\) \? loadMealPeriods/);
+  assert.match(home, /capabilities\.includes\("screens"\) \? loadManagedScreens/);
+  assert.match(home, /capabilities\.includes\("menus"\) \? loadMenuEditor/);
   assert.match(home, /updateQuickAvailability/);
   assert.match(home, /updateQuickDailySpecial/);
   assert.match(home, /\?schedule=emergency#\/schedules/);
