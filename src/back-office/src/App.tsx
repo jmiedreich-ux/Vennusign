@@ -33,7 +33,7 @@ import InlineFeatureHint from "./InlineFeatureHint";
 import LockedNavigationItem from "./LockedNavigationItem";
 import LockedSectionPreview from "./LockedSectionPreview";
 import SidebarUpgradeNudge from "./SidebarUpgradeNudge";
-import UpgradeModal, { type BillingInterval } from "./UpgradeModal";
+import UpgradeSheet, { type BillingInterval } from "./UpgradeSheet";
 import BillingStatusCard from "./BillingStatusCard";
 import TierDecisionDialog from "./TierDecisionDialog";
 import AccountSecurity from "./AccountSecurity";
@@ -524,7 +524,7 @@ export default function App() {
           />
         : <section className="placeholder locked-panel"><p>Upgrade available</p><h2>{route.label} is locked</h2><span>Your current venue access does not include this capability.</span></section>}
     </main>
-    {upgradeContext && billing && targetTier ? <UpgradeModal
+    {upgradeContext && billing && targetTier ? <UpgradeSheet
       opportunity={upgradeContext}
       currentTier={billing.currentTier}
       targetTier={targetTier}

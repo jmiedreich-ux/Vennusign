@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import TierBadge from "./TierBadge";
+import EntitlementLockChip from "./EntitlementLockChip";
 import {
   dismissUpgradeFeature,
   listUpgradeOpportunities,
@@ -52,10 +52,9 @@ export default function SidebarUpgradeNudge({ effectiveFeatures, onUpgrade }: Pr
         aria-label={`Dismiss ${opportunity.title} suggestion`}
         onClick={dismiss}
       >×</button>
-      <TierBadge tier={opportunity.requiredTier} />
-      <strong id={`sidebar-upgrade-${opportunity.featureKey}`}>{opportunity.title}</strong>
+      <EntitlementLockChip opportunity={opportunity} onOpen={onUpgrade} compact />
+      <strong className="sr-only" id={`sidebar-upgrade-${opportunity.featureKey}`}>{opportunity.title}</strong>
       <p>{opportunity.benefit}</p>
-      <button className="sidebar-upgrade-nudge__cta" type="button" onClick={() => onUpgrade(opportunity)}>See upgrade options</button>
       {opportunities.length > 1 ? (
         <div className="sidebar-upgrade-nudge__dots" aria-label="Upgrade suggestions">
           {opportunities.map((item, index) => (
