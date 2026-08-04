@@ -16,6 +16,7 @@ import {
   type SystemConfigurationRevision,
   type SystemConfigurationSetting
 } from "./api";
+import TransientFeedback from "./TransientFeedback";
 import type { PlatformOperationsConfiguration } from "./config";
 import { useDestructiveReview } from "./DestructiveReviewDialog";
 
@@ -130,7 +131,7 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
       </div>
     </div>
     <p className="configuration-results" role="status">Showing {filteredSettings.length} of {settings.length} settings{searchTerms.length > 0 ? ` for “${search.trim()}”` : ""}.</p>
-    {notice ? <p className="state" role="status">{notice}</p> : null}
+    {notice ? <TransientFeedback message={notice} onDismiss={() => setNotice(undefined)} /> : null}
     {error ? <p className="state error" role="alert">{error}</p> : null}
     {health ? <p className={`configuration-health ${health.healthy ? "healthy" : "unhealthy"}`} role="status">Database provider: {health.enabled ? health.healthy ? "Healthy" : "Attention required" : "Disabled"}{health.lastSuccessfulLoadUtc ? ` · last loaded ${new Date(health.lastSuccessfulLoadUtc).toLocaleString()}` : ""}{health.lastFailure ? ` · ${health.lastFailure}` : ""}</p> : null}
     {busy && settings.length === 0 ? <p className="state" role="status">Loading configuration…</p> : null}

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PlatformOperationsApiError, loadOnboardingSupport, type OnboardingSupportItem } from "./api";
 import type { PlatformOperationsConfiguration } from "./config";
+import TransientFeedback from "./TransientFeedback";
 
 const steps = ["Account", "Plan", "Venue", "First Screen", "Go Live"] as const;
 
@@ -48,7 +49,7 @@ export default function OnboardingSupport({ configuration, apiKey }: { configura
   return <section className="onboarding-support" aria-labelledby="onboarding-support-heading">
     <div className="onboarding-support__heading"><div><p>Customer success · Platform Operations support</p><h2 id="onboarding-support-heading">Onboarding journeys</h2><span>Read-only operational context from persisted customer state. Customer forms remain in Back Office; this surface never enters or impersonates a customer workspace.</span></div><button type="button" onClick={() => { setNotice(undefined); setRefreshVersion(value => value + 1); }}>Refresh</button></div>
     <label className="onboarding-support__search" htmlFor="onboarding-search">Find customer, organization, or venue<input id="onboarding-search" maxLength={100} value={search} onChange={event => setSearch(event.target.value)} placeholder="Search by name or email…" /></label>
-    {notice ? <p className="onboarding-support__notice" role="status">{notice}</p> : null}
+    {notice ? <TransientFeedback message={notice} onDismiss={() => setNotice(undefined)} /> : null}
     {loading ? <p className="state" role="status">Loading onboarding journeys…</p> : error ? <p className="state error" role="alert">{error}</p> : items.length === 0 ? <p className="state">No onboarding journeys match this search.</p> : <div className="onboarding-support__layout">
       <div className="onboarding-support__list" role="list" aria-label="Customer onboarding journeys">{items.map(item => <div role="listitem" key={item.userId}><button type="button" className={selected?.userId === item.userId ? "selected" : ""} onClick={() => { setSelectedId(item.userId); setNotice(undefined); }}><strong>{item.organizationName ?? item.customerName}</strong><span>{item.customerEmail}</span><small>{completedSteps(item).filter(Boolean).length}/5 · {item.subscriptionStatus}</small></button></div>)}</div>
       {selected ? <article className="onboarding-support__detail">

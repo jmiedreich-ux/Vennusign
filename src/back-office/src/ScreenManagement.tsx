@@ -27,6 +27,7 @@ import {
   type ScreenPresentationDraft
 } from "./actionRecovery.mjs";
 import { useDestructiveReview } from "./DestructiveReviewDialog";
+import TransientFeedback from "./TransientFeedback";
 
 type Props = {
   configuration: BackOfficeConfiguration;
@@ -272,7 +273,7 @@ export default function ScreenManagement({
       <span>{selectedScreen ? `Target: ${selectedScreen.name}` : "No delivery target selected"}</span>
     </div>
     {error ? <p className="state error" role="alert">{error}</p> : null}
-    {notice ? <p className="screen-notice" role="status">{notice}</p> : null}
+    {notice ? <TransientFeedback message={notice} onDismiss={() => setNotice(undefined)} /> : null}
     {screenUsage ? <p className="screen-notice" id="screen-quota-status">{screenUsage}</p> : null}
     {showUpgradePrompt && !allLayoutsEnabled ? <aside className="tier-prompt" role="status"><div><strong>Bar layouts require All Layouts</strong><p>Neon Chalkboard and Split Layout remain visible in the selector. Daily Special Hero remains visible too. Upgrade to Pro or add a venue override to choose them.</p></div></aside> : null}
     <details className="screen-workflow-section screen-workflow-section--setup" open={setupOpen} onToggle={event => setSetupOpen(event.currentTarget.open)}>

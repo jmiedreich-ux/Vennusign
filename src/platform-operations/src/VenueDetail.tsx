@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { loadFeatureMatrix, loadVenueSupportDetail, removeVenueFeatureOverride, saveVenueFeatureOverride, switchVenueTier, type FeatureMatrixSnapshot, type VenueSupportDetail } from "./api";
 import type { PlatformOperationsConfiguration } from "./config";
 import { buildTierSwitchImpact } from "./operatorSafety.mjs";
+import TransientFeedback from "./TransientFeedback";
 
 type Props = { configuration: PlatformOperationsConfiguration; apiKey: string; venueId: string; onBack: () => void };
 type PendingAction =
@@ -66,7 +67,7 @@ export default function VenueDetail({ configuration, apiKey, venueId, onBack }: 
   return <section className="venue-detail">
     <div className="detail-actions"><button className="back" onClick={onBack}>← Back to venues</button><button type="button" disabled={loading} onClick={() => setVersion(value => value + 1)}>{loading ? "Refreshing…" : "Refresh support detail"}</button></div>
     <div className="detail-heading"><div><p>{detail.venue.type}</p><h2>{detail.venue.name}</h2><small role="status">{lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : "Not yet refreshed"}</small></div><span className="health">{detail.subscription?.status ?? "unsubscribed"}</span></div>
-    {actionError ? <p className="matrix-message error" role="alert">{actionError}</p> : null}{notice ? <p className="matrix-message" role="status">{notice}</p> : null}
+    {actionError ? <p className="matrix-message error" role="alert">{actionError}</p> : null}{notice ? <TransientFeedback message={notice} onDismiss={() => setNotice(undefined)} /> : null}
     {pending ? <section className="impact-preview" aria-labelledby="support-impact-title"><p>Review required</p><h3 id="support-impact-title">Confirm support impact</h3>
       {pending.kind === "tier" && tierImpact ? <><p><strong>{tierImpact.currentTierName}</strong> → <strong>{tierImpact.targetTierName}</strong>. This updates the linked Stripe subscription and effective entitlements.</p><ul><li>{tierImpact.screenCount} screens; target limit {tierImpact.targetScreenLimit === -1 ? "unlimited" : tierImpact.targetScreenLimit}{tierImpact.screenLimitExceeded ? " — limit would be exceeded" : ""}</li><li>{tierImpact.enabled.length} features enabled; {tierImpact.disabled.length} disabled</li>{tierImpact.disabled.length ? <li>Disabled: {tierImpact.disabled.join(", ")}</li> : null}</ul></> : null}
       {pending.kind === "override" ? <p>{pending.enabled ? "Unlock" : "Block"} <strong>{selectedFeature?.label ?? pending.featureId}</strong> for {detail.venue.name}. Reason: {pending.reason}{pending.expiresAt ? `; expires ${new Date(pending.expiresAt).toLocaleString()}` : "; no expiry"}.</p> : null}
