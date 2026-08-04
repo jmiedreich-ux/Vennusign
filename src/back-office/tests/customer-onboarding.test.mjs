@@ -18,7 +18,7 @@ test("account security exposes discoverable passkey lifecycle and recovery state
   assert.match(navigation, /path: "security"/);
   assert.match(security, /Add a passkey/);
   assert.match(security, /Remove passkey/);
-  assert.match(security, /window\.confirm/);
+  assert.match(security, /useDestructiveReview/);
   assert.match(security, /role="status"/);
   assert.match(security, /role="alert"/);
   assert.match(passkeyManagement, /navigator\.credentials\.create/);

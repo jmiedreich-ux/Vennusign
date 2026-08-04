@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { createPlaylistSlide, deletePlaylistSlide, loadPlaylist, reorderPlaylist, updatePlaylistSlide, type PlaylistSlide, type PlaylistSlideWrite } from "./api";
 import type { BackOfficeConfiguration } from "./config";
+import { useDestructiveReview } from "./DestructiveReviewDialog";
 
 type Props = {
   configuration: BackOfficeConfiguration; apiKey: string; venueId: string; enabled: boolean;
@@ -19,6 +20,7 @@ export default function PlaylistAdministration({ configuration, apiKey, venueId,
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
+  const { review, reviewDialog } = useDestructiveReview();
 
   useEffect(() => {
     if (!screens.some(screen => screen.id === screenId)) setScreenId(screens[0]?.id ?? "");
@@ -64,7 +66,7 @@ export default function PlaylistAdministration({ configuration, apiKey, venueId,
     finally { setBusy(false); }
   };
   const remove = async (slide: PlaylistSlide) => {
-    if (!window.confirm(`Remove ${slide.title || slide.slideType} from this screen playlist?`)) return;
+    if (!await review({ title: `Remove ${slide.title || slide.slideType}?`, consequence: `The slide will be removed from ${screenName ?? "the selected screen"}'s playlist. Other slides and normal screen content remain unchanged.`, confirmLabel: "Remove slide", tone: "caution" })) return;
     setBusy(true); setError(undefined);
     try { await deletePlaylistSlide(configuration, apiKey, venueId, screenId, slide.id); await reload(); setNotice("Slide removed."); }
     catch { setError("Slide could not be removed."); }
@@ -74,6 +76,7 @@ export default function PlaylistAdministration({ configuration, apiKey, venueId,
   const screenName = screens.find(screen => screen.id === screenId)?.name;
 
   return <article className="menu-editor playlist-admin">
+    {reviewDialog}
     <div className="menu-editor-heading"><div><p>Pro scheduling</p><h3>Screen playlist</h3></div><span>{slides.length} slides</span></div>
     <p>Choose one screen before editing. Eligible enabled slides rotate in this saved order using venue-local windows.</p>
     {showUpgradePrompt && !enabled ? <aside className="tier-prompt"><div><strong>Playlist Rotation requires Pro</strong><p>Controls remain visible while editing is soft locked.</p></div></aside> : null}

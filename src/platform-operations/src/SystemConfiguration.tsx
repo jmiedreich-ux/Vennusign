@@ -17,6 +17,7 @@ import {
   type SystemConfigurationSetting
 } from "./api";
 import type { PlatformOperationsConfiguration } from "./config";
+import { useDestructiveReview } from "./DestructiveReviewDialog";
 
 type Props = { configuration: PlatformOperationsConfiguration; apiKey: string };
 const environments = ["Development", "Test", "Staging", "Production"];
@@ -35,6 +36,7 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
   const [selectedImport, setSelectedImport] = useState<string[]>([]);
   const [health, setHealth] = useState<SystemConfigurationHealth>();
   const [history, setHistory] = useState<{ setting: SystemConfigurationSetting; revisions: SystemConfigurationRevision[] }>();
+  const { review, reviewDialog } = useDestructiveReview();
   const searchTerms = search.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
   const filteredSettings = searchTerms.length === 0 ? settings : settings.filter(setting => {
     const searchable = [setting.key, setting.description, setting.applicationScope, setting.valueType]
@@ -59,7 +61,7 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
     catch { setError("Configuration history could not be loaded."); }
   };
   const rollback = async (revisionNumber: number) => {
-    if (!history || !window.confirm(`Roll back ${history.setting.key} to revision ${revisionNumber}? A new audited revision will be created.`)) return;
+    if (!history || !await review({ title: `Roll back ${history.setting.key}?`, consequence: `Revision ${revisionNumber} will be copied into a new audited revision for ${environmentName}. The existing history remains intact.`, confirmLabel: "Create rollback revision", tone: "caution" })) return;
     setBusy(true); setError(undefined);
     try { await rollbackSystemConfiguration(configuration, apiKey, history.setting, environmentName, revisionNumber); setHistory(undefined); setNotice("Configuration rollback created a new audited revision."); await refresh(); }
     catch (reason) { setError(reason instanceof PlatformOperationsApiError ? reason.message : "The configuration rollback failed."); }
@@ -82,7 +84,7 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
     } catch { setError("The configuration file could not be previewed."); }
   };
   const applyImport = async () => {
-    if (!preview || selectedImport.length === 0 || !window.confirm(`Apply ${selectedImport.length} configuration change(s) to ${environmentName}?`)) return;
+    if (!preview || selectedImport.length === 0 || !await review({ title: `Apply ${selectedImport.length} configuration change(s)?`, consequence: `The reviewed changes will be applied transactionally to ${environmentName}. Secret values remain excluded from this import.`, confirmLabel: "Apply selected changes", tone: "caution" })) return;
     setBusy(true); setError(undefined);
     try { await applySystemConfigurationImport(configuration, apiKey, preview, selectedImport); setPreview(undefined); setSelectedImport([]); setNotice("Configuration import applied transactionally."); await refresh(); }
     catch (reason) { setError(reason instanceof PlatformOperationsApiError ? reason.message : "The configuration import failed without applying changes."); }
@@ -104,7 +106,7 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
   };
 
   const clear = async (setting: SystemConfigurationSetting) => {
-    if (!window.confirm(`Clear ${setting.key} for ${environmentName}?`)) return;
+    if (!await review({ title: `Clear ${setting.key}?`, consequence: `The configured value will be cleared for ${environmentName}.${setting.requiresRestart ? " The affected application must restart before the change takes effect." : ""}`, confirmLabel: "Clear value" })) return;
     setBusy(true); setError(undefined); setNotice(undefined);
     try {
       await clearSystemConfiguration(configuration, apiKey, setting, environmentName);
@@ -116,6 +118,7 @@ export default function SystemConfiguration({ configuration, apiKey }: Props) {
   };
 
   return <section className="system-configuration" aria-labelledby="configuration-heading">
+    {reviewDialog}
     <div className="configuration-heading">
       <div><p>Environment-owned settings</p><h2 id="configuration-heading">Application configuration</h2><p>Secrets are write-only and never displayed after storage.</p></div>
       <div className="configuration-filters">

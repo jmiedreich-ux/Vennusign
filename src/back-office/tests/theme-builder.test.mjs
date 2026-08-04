@@ -20,7 +20,7 @@ test("theme workflow states scope preview reset and readability feedback", () =>
   assert.match(theme, /Venue-wide scope/);
   assert.match(theme, /Preview screen/);
   assert.match(theme, /resetVenueTheme/);
-  assert.match(theme, /window\.confirm/);
+  assert.match(theme, /useDestructiveReview/);
   assert.match(theme, /contrastRatio/);
   assert.match(api, /method: "DELETE"/);
 });

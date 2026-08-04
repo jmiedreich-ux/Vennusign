@@ -4,6 +4,7 @@ import {
   type TapCategory, type TapItem, type TapListSnapshot
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
+import { useDestructiveReview } from "./DestructiveReviewDialog";
 
 type Props = { configuration: BackOfficeConfiguration; apiKey: string; venueId: string; enabled: boolean; showUpgradePrompt?: boolean };
 const newItem = (): Omit<TapItem, "id" | "venueId" | "sortOrder"> => ({
@@ -23,6 +24,7 @@ export default function TapListAdministration({ configuration, apiKey, venueId, 
   const [notice, setNotice] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [retry, setRetry] = useState<(() => Promise<unknown>)>();
+  const { review, reviewDialog } = useDestructiveReview();
   const refresh = () => loadTapList(configuration, apiKey, venueId).then(setData);
   useEffect(() => { refresh().catch(() => setError("Tap list could not be loaded. Retry after checking the venue connection.")); }, [apiKey, configuration, venueId]);
 
@@ -52,15 +54,15 @@ export default function TapListAdministration({ configuration, apiKey, venueId, 
     setData(current => ({ ...current, items: current.items.map(row => row.id === id ? { ...row, ...value } : row) }));
   const patchCategory = (id: string, value: Partial<TapCategory>) =>
     setData(current => ({ ...current, categories: current.categories.map(row => row.id === id ? { ...row, ...value } : row) }));
-  const removeCategory = (row: TapCategory) => {
+  const removeCategory = async (row: TapCategory) => {
     const dependencyCount = data.items.filter(value => value.tapCategoryId === row.id).length;
     if (dependencyCount) { setError(`${row.name} contains ${dependencyCount} tap${dependencyCount === 1 ? "" : "s"}. Move or delete them before deleting the category.`); return; }
-    if (!window.confirm(`Delete empty category “${row.name}”? This cannot be undone.`)) return;
+    if (!await review({ title: `Delete category “${row.name}”?`, consequence: "This empty category will be permanently deleted. It cannot be restored.", confirmLabel: "Delete category" })) return;
     void run(() => deleteTapCategory(configuration, apiKey, venueId, row.id), `${row.name} deleted and screens queued to refresh.`);
   };
-  const removeItem = (row: TapItem) => {
+  const removeItem = async (row: TapItem) => {
     const position = data.items.findIndex(value => value.id === row.id) + 1;
-    if (!window.confirm(`Delete “${row.name}” from tap position ${position}? This cannot be undone.`)) return;
+    if (!await review({ title: `Delete “${row.name}”?`, consequence: `This tap will be permanently removed from position ${position}, and venue screens will be queued to refresh.`, confirmLabel: "Delete tap" })) return;
     void run(() => deleteTapItem(configuration, apiKey, venueId, row.id), `${row.name} deleted and screens queued to refresh.`);
   };
   const toggleSelected = (id: string) => setSelected(current => current.includes(id) ? current.filter(value => value !== id) : current.length < bulkLimit ? [...current, id] : current);
@@ -79,6 +81,7 @@ export default function TapListAdministration({ configuration, apiKey, venueId, 
   const categoryName = (id?: string) => data.categories.find(row => row.id === id)?.name ?? "Uncategorized";
 
   return <article className="tap-list-admin">
+    {reviewDialog}
     <div className="promotion-heading"><div><p>Breweries & bars</p><h3>Tap list</h3></div><span>{data.items.length} taps</span></div>
     {showUpgradePrompt && !enabled ? <p className="tier-notice">Tap List controls remain visible. Enable All Layouts to edit them.</p> : null}
     <p className={data.items.length > tapStripsCapacity ? "state error" : "state"} role="status">

@@ -39,7 +39,7 @@ test("screen lifecycle recovery is explicit safe and capacity-aware", () => {
   assert.match(screens, /setManagedScreenArchived/);
   assert.match(screens, /resetManagedScreen/);
   assert.match(screens, /unpairManagedScreen/);
-  assert.match(screens, /window\.confirm/);
+  assert.match(screens, /useDestructiveReview/);
   assert.match(screens, /healthFilter/);
   assert.match(screens, /expired/);
   assert.match(screens, /already claimed/);
@@ -79,7 +79,7 @@ test("screen actions expose deliberate preview and identity save cancellation", 
 test("video wall editing and removal require deliberate recovery-safe actions", () => {
   assert.match(walls, /editingName/);
   assert.match(walls, /Edit wall/);
-  assert.match(walls, /window\.confirm/);
+  assert.match(walls, /useDestructiveReview/);
   assert.match(walls, /Cancel edit/);
 });
 

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { archiveDateRangePromotion, loadDateRangePromotions, saveDateRangePromotion, type DateRangePromotion } from "./api";
 import type { BackOfficeConfiguration } from "./config";
+import { useDestructiveReview } from "./DestructiveReviewDialog";
 
 type Props = { configuration: BackOfficeConfiguration; apiKey: string; venueId: string; enabled: boolean; showUpgradePrompt?: boolean };
 type Draft = Omit<DateRangePromotion, "id" | "venueId">;
@@ -14,6 +15,7 @@ export default function DateRangePromotionAdministration({ configuration, apiKey
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const { review, reviewDialog } = useDestructiveReview();
   const refresh = () => loadDateRangePromotions(configuration, apiKey, venueId).then(setRows);
   useEffect(() => { refresh().catch(() => setError("Promotions could not be loaded.")); }, [apiKey, configuration, venueId]);
   const save = async (event: FormEvent) => {
@@ -23,7 +25,7 @@ export default function DateRangePromotionAdministration({ configuration, apiKey
   };
   const archive = async (id: string) => {
     const row = rows.find(item => item.id === id);
-    if (!row || !window.confirm(`Archive ${row.name}? It will stop being eligible for display.`)) return;
+    if (!row || !await review({ title: `Archive ${row.name}?`, consequence: "This promotion will stop being eligible for display. Its existing record remains available for audit history.", confirmLabel: "Archive promotion", tone: "caution" })) return;
     setBusy(true); setError(undefined); setNotice(undefined); try { await archiveDateRangePromotion(configuration, apiKey, venueId, id); await refresh(); setNotice(`${row.name} archived.`); }
     catch { setError("The promotion could not be archived."); } finally { setBusy(false); }
   };
@@ -42,6 +44,7 @@ export default function DateRangePromotionAdministration({ configuration, apiKey
   };
   const cancelEdit = () => { setEditingId(undefined); setDraft(initial); };
   return <article className="promotion-admin">
+    {reviewDialog}
     <div className="promotion-heading"><div><p>Scheduling</p><h3>Date-range promotions</h3></div><span>{rows.filter(row => row.isEnabled).length} enabled</span></div>
     {showUpgradePrompt && !enabled ? <p className="tier-notice">Promotion scheduling is visible as a preview. Enable Basic Scheduling to edit it.</p> : null}
     <p>Dates use the venue timezone. When eligible promotions overlap, the highest numeric priority wins; ties are resolved deterministically by the server.</p>

@@ -17,7 +17,7 @@ test("venue operations retain tier-visible ordered tap management", () => {
   assert.match(tapList, /Search taps/);
   assert.match(tapList, /bulkLimit = 25/);
   assert.match(tapList, /Retry last change/);
-  assert.match(tapList, /window\.confirm/);
+  assert.match(tapList, /useDestructiveReview/);
   assert.match(tapList, /positions.*overflow/s);
 });
 
