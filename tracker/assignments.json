@@ -1,21 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-04T22:08:00Z",
+  "updatedUtc": "2026-08-04T22:10:00Z",
   "activeAssignments": [],
-  "nextAvailableWorkPackage": "RWP-00.28",
-  "approvedSequentialQueue": [
-    "RWP-00.28",
-    "RWP-00.29",
-    "RWP-00.30",
-    "RWP-00.31",
-    "RWP-00.32",
-    "RWP-00.33",
-    "RWP-00.34",
-    "RWP-00.35",
-    "RWP-00.36",
-    "RWP-00.37",
-    "RWP-00.38"
-  ],
+  "nextAvailableWorkPackage": null,
+  "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
