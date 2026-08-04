@@ -4,7 +4,7 @@
 
 - Phase 13 — Customer Identity, Signup, and Onboarding: complete.
 - Phase 14 and later: paused pending explicit owner approval.
-- Active product WP/RWP: RWP-11.04 / issue #465 is complete in this proposed merge state.
+- Active product or maintenance WP/RWP: none.
 - The 13-package retrospective remediation round is complete.
 - RWP-00.04 — Deployment Component Versioning and Release Manifest (#437) is complete.
 - RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439) is complete.
@@ -31,6 +31,7 @@
 - RWP-11.03 — Unified Entitlement Experience (#464) is complete and merged.
 - RWP-11.04 — Personalized Locked Previews (#465) presents the active venue's authorized menu content inside read-only locked theme/layout previews.
 - The 18-item approved Sequential remediation queue is complete in this proposed merge state.
+- RWP-00.14 — Project-Local Impeccable Codex Design Skill (#486) is complete in this proposed merge state. It installs the official v4.0.4 skill, its advisory edit/stop hook, and the repository rule requiring it for UI work without changing product runtime or UI.
 - RWP-13.06 — Trial-First Onboarding (#466) remains held pending an explicit owner decision and is not part of the executable queue.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
@@ -61,4 +62,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-Complete exact-head Actions, review, and merge for RWP-11.04 / issue #465; close the issue, verify `master`, and release the claim. Then stop: no later package is approved, RWP-13.06 / issue #466 remains held, and Phase 14 and later remain paused.
+Merge the reviewed RWP-00.14 / issue #486 exact head after final Actions, close the issue, and verify `master`. Then stop: no product or maintenance package is approved, RWP-13.06 / issue #466 remains held, and Phase 14 and later remain paused.

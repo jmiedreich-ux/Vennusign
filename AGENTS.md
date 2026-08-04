@@ -75,7 +75,8 @@ Read `AI_DEVELOPMENT_GUIDE.md`, component README files, architecture, or operati
 
 ## UI Completeness
 
-- Before changing a page or screen, consult the available UX best-practices capability.
+- Before changing a page or screen, load the project-local Impeccable skill at `.agents/skills/impeccable/SKILL.md` and follow its routing and bounded verification rules. Use `shape` before substantial new surfaces, `critique` for design review, and the applicable `audit`, `adapt`, `harden`, or `polish` pass before completion.
+- The Impeccable hook in `.codex/hooks.json` is an advisory design detector for Codex edits. Address applicable findings or record why a finding is out of scope; it does not replace focused builds, tests, accessibility review, or the GitHub Actions merge gate.
 - Record goals, hierarchy/navigation, CRUD actions, loading/empty/error/success/permission states, validation, destructive-action safety, feedback, accessibility/responsiveness, and required API/data/auth/entitlement support.
 - Resolve required gaps in scope or document an approved exclusion/follow-up. Do not ship necessary actions or states as silent omissions.
 
