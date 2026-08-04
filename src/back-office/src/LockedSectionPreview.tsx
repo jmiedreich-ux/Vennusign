@@ -1,4 +1,4 @@
-import TierBadge from './TierBadge';
+import EntitlementLockChip from './EntitlementLockChip';
 import type { UpgradeOpportunity } from './upgradeExperience.mjs';
 
 type Props = {
@@ -14,11 +14,10 @@ export default function LockedSectionPreview({ opportunity, onDismiss, onUpgrade
         <span /><span /><span />
       </div>
       <div className="locked-section-copy">
-        <TierBadge tier={opportunity.requiredTier} />
+        <EntitlementLockChip opportunity={opportunity} onOpen={onUpgrade} />
         <h3 id={`locked-${opportunity.featureKey}`}>{opportunity.title}</h3>
         <p>{opportunity.benefit}</p>
         <div>
-          <button type="button" onClick={() => onUpgrade(opportunity)}>See upgrade options</button>
           <button className="quiet" type="button" onClick={() => onDismiss(opportunity.featureKey)}>Not now</button>
         </div>
       </div>

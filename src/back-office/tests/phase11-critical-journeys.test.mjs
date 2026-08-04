@@ -5,7 +5,7 @@ import test from "node:test";
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
 const [app, navigation, prompts, sidebar, modal, checkout, portal, billing, haas, controller, webhook, migration, checkoutRequest, haasRequest] = await Promise.all([
   read("../src/App.tsx"), read("../src/navigation.mjs"), read("../src/upgradeExperience.mjs"),
-  read("../src/SidebarUpgradeNudge.tsx"), read("../src/UpgradeModal.tsx"), read("../src/checkoutFlow.mjs"),
+  read("../src/SidebarUpgradeNudge.tsx"), read("../src/UpgradeSheet.tsx"), read("../src/checkoutFlow.mjs"),
   read("../src/billingPortal.mjs"), read("../src/BillingStatusCard.tsx"), read("../tests/haas-billing.test.mjs"),
   read("../../Vennu.Api/Controllers/BackOffice/BackOfficeBillingController.cs"),
   read("../../Vennu.Api/Controllers/StripeWebhooksController.cs"),
@@ -25,7 +25,7 @@ test("upgrade prompts remain deterministic dismissible and non-blocking", () => 
   assert.match(sidebar, /prefers-reduced-motion/);
 });
 
-test("the upgrade journey remains one modal and one hosted Checkout CTA", () => {
+test("the upgrade journey remains one sheet and one hosted Checkout CTA", () => {
   assert.match(modal, /role="dialog"/);
   assert.match(modal, /Maybe later/);
   assert.match(modal, /Monthly/);

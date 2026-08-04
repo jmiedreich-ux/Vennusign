@@ -8,10 +8,10 @@ import {
   tierPresentation
 } from "../src/upgradeExperience.mjs";
 
-const [app, api, modal, sidebar, operations, platformOperationsApp, platformOperationsVenue] = await Promise.all([
+const [app, api, sheet, sidebar, operations, platformOperationsApp, platformOperationsVenue] = await Promise.all([
   readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/api.ts", import.meta.url), "utf8"),
-  readFile(new URL("../src/UpgradeModal.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../src/UpgradeSheet.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/SidebarUpgradeNudge.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/VenueOperations.tsx", import.meta.url), "utf8"),
   readFile(new URL("../../platform-operations/src/App.tsx", import.meta.url), "utf8"),
@@ -44,24 +44,24 @@ test("canonical opportunities and dismissals remain deterministic in Back Office
   assert.deepEqual([...readDismissedUpgradeFeatures(storage)], ["happy_hour"]);
 });
 
-test("Back Office coordinates one prompt surface and one upgrade modal", () => {
+test("Back Office coordinates one prompt surface and one upgrade sheet", () => {
   assert.match(app, /allowed && !inlineOpportunity && !upgradeContext/);
   assert.match(app, /inlineOpportunity && !upgradeContext/);
   assert.match(app, /<LockedNavigationItem/);
   assert.match(app, /<LockedSectionPreview/);
-  assert.match(app, /<UpgradeModal/);
+  assert.match(app, /<UpgradeSheet/);
   assert.match(sidebar, /prefers-reduced-motion: reduce/);
   assert.equal((operations.match(/showUpgradePrompt=\{false\}/g) ?? []).length, 7);
 });
 
 test("tier value uses the established ten-month annual rule without changing entitlement", () => {
-  assert.match(modal, /targetTier\.monthlyPrice \* 10/);
-  assert.match(modal, /Annual · two months included/);
-  assert.doesNotMatch(modal, /fetch|effectiveFeatures|enabled\s*=/);
+  assert.match(sheet, /targetTier\.monthlyPrice \* 10/);
+  assert.match(sheet, /Annual · two months included/);
+  assert.doesNotMatch(sheet, /fetch|effectiveFeatures|enabled\s*=/);
 });
 
 test("Platform Operations retains support controls but no customer upgrade orchestration", () => {
-  assert.doesNotMatch(platformOperationsApp, /SidebarUpgradeNudge|UpgradeModal|continueUpgrade/);
+  assert.doesNotMatch(platformOperationsApp, /SidebarUpgradeNudge|UpgradeSheet|continueUpgrade/);
   assert.doesNotMatch(platformOperationsVenue, /InlineFeatureHint|LockedSectionPreview|upgradeOpportunity/);
   assert.match(platformOperationsVenue, /Switch tier/);
   assert.match(platformOperationsVenue, /Active overrides/);

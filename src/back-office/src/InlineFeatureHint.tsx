@@ -1,4 +1,4 @@
-import TierBadge from './TierBadge';
+import EntitlementLockChip from './EntitlementLockChip';
 import type { UpgradeOpportunity } from './upgradeExperience.mjs';
 
 type Props = {
@@ -11,10 +11,9 @@ export default function InlineFeatureHint({ opportunity, onDismiss, onUpgrade }:
   return (
     <aside className="inline-feature-hint" aria-labelledby={`hint-${opportunity.featureKey}`}>
       <div>
-        <TierBadge tier={opportunity.requiredTier} />
+        <EntitlementLockChip opportunity={opportunity} onOpen={onUpgrade} compact />
         <strong id={`hint-${opportunity.featureKey}`}>{opportunity.title}</strong>
         <p>{opportunity.benefit}</p>
-        <button type="button" onClick={() => onUpgrade(opportunity)}>See what it unlocks →</button>
       </div>
       <button className="inline-feature-hint__dismiss" type="button" aria-label={`Dismiss ${opportunity.title} suggestion`} onClick={() => onDismiss(opportunity.featureKey)}>×</button>
     </aside>

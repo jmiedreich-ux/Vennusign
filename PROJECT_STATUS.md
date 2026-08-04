@@ -4,7 +4,7 @@
 
 - Phase 13 — Customer Identity, Signup, and Onboarding: complete.
 - Phase 14 and later: paused pending explicit owner approval.
-- Active product WP/RWP: RWP-05.10 / issue #463 is complete in this proposed merge state.
+- Active product WP/RWP: RWP-11.03 / issue #464 is complete in this proposed merge state.
 - The 13-package retrospective remediation round is complete.
 - RWP-00.04 — Deployment Component Versioning and Release Manifest (#437) is complete.
 - RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439) is complete.
@@ -27,8 +27,9 @@
 - RWP-13.04 — Signup and Marketing Page with Live Demo (#460) is complete and merged.
 - RWP-13.05 — Go-Live and First-Run Experience (#461) is complete and merged.
 - RWP-00.13 — Action Hierarchy and Button Placement Standard (#462) is complete and merged.
-- RWP-05.10 — Visual-First Screens Fleet (#463) adds responsive live-thumbnail cards with visible Preview and Push actions and secondary management disclosures.
-- RWP-11.03 — Unified Entitlement Experience (#464) is next only after RWP-05.10 merges and releases its claim.
+- RWP-05.10 — Visual-First Screens Fleet (#463) is complete and merged.
+- RWP-11.03 — Unified Entitlement Experience (#464) consolidates locked navigation, previews, hints, and nudges around one lock chip, shared tier badge, and accessible upgrade sheet.
+- RWP-11.04 — Personalized Locked Previews (#465) is next only after RWP-11.03 merges and releases its claim.
 - RWP-13.06 — Trial-First Onboarding (#466) remains held pending an explicit owner decision and is not part of the executable queue.
 - Research program `INT-TESTING-001` remains documented but is not part of this remediation queue.
 
@@ -59,4 +60,4 @@ Normal work uses affected-area non-integration validation. Full non-integration 
 
 ## Next Action
 
-Complete exact-head Actions, review, and merge for RWP-05.10 / issue #463; close the issue, verify `master`, and release the claim. RWP-11.03 / issue #464 is the next approved package only after that sequence completes. Phase 14 and later remain paused.
+Complete exact-head Actions, review, and merge for RWP-11.03 / issue #464; close the issue, verify `master`, and release the claim. RWP-11.04 / issue #465 is the next and final approved package only after that sequence completes. Phase 14 and later remain paused.

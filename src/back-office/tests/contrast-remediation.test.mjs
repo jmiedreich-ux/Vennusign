@@ -30,13 +30,13 @@ test("small text uses the contrast-safe shared token", async () => {
 
 test("locked navigation keeps readable text and a non-color lock cue", async () => {
   const [navigation, styles, app] = await Promise.all([
-    readFile(new URL("src/LockedNavigationItem.tsx", root), "utf8"),
+    readFile(new URL("src/EntitlementLockChip.tsx", root), "utf8"),
     readFile(new URL("src/styles.css", root), "utf8"),
     readFile(new URL("src/App.tsx", root), "utf8")
   ]);
 
   assert.ok(contrastRatio("a9c5b9", "123b30") >= 4.5);
-  assert.match(navigation, /locked-navigation-item__lock/);
+  assert.match(navigation, /entitlement-lock-chip__icon/);
   assert.match(navigation, /aria-hidden="true"/);
   assert.match(app, /Locked/);
   assert.doesNotMatch(styles, /nav a\.locked\s*\{[^}]*opacity:/);

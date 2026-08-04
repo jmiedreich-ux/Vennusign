@@ -8,10 +8,10 @@ import {
   stripCheckoutReturnParameter
 } from "../src/checkoutFlow.mjs";
 
-const [app, api, modal] = await Promise.all([
+const [app, api, sheet] = await Promise.all([
   readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/api.ts", import.meta.url), "utf8"),
-  readFile(new URL("../src/UpgradeModal.tsx", import.meta.url), "utf8")
+  readFile(new URL("../src/UpgradeSheet.tsx", import.meta.url), "utf8")
 ]);
 
 test("accepts only bounded checkout return states", () => {
@@ -36,8 +36,8 @@ test("launches checkout with pending and error states", () => {
   assert.match(api, /requireHostedCheckoutUrl\(payload\.checkoutUrl\)/);
   assert.match(app, /createCheckoutSession\(/);
   assert.match(app, /window\.location\.assign\(checkoutUrl\)/);
-  assert.match(modal, /disabled=\{isSubmitting\}/);
-  assert.match(modal, /role="alert"/);
+  assert.match(sheet, /disabled=\{isSubmitting\}/);
+  assert.match(sheet, /role="alert"/);
 });
 
 test("refreshes authoritative state after success without optimistic entitlements", () => {
