@@ -2,7 +2,7 @@
 
 ## Status
 
-Complete — awaiting PR validation and merge.
+Complete.
 
 ## Issue
 
