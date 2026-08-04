@@ -1,34 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-04T22:28:28Z",
-  "activeAssignments": [
-    {
-      "workPackage": "RWP-00.39",
-      "issueNumber": 514,
-      "mode": "Sequential",
-      "owner": "Food Truck Track 0 scheduled run",
-      "branch": "rwp/00.39-food-truck-concession-industry-definition",
-      "startedUtc": "2026-08-04T22:28:28Z",
-      "writableFiles": [
-        "track0/industries/food-truck-concession.md",
-        "track0/CAPABILITY_MATRIX.md",
-        "docs/work-packages/RWP-00.39-food-truck-concession-industry-definition.md",
-        "PROJECT_STATUS.md",
-        "ai/handoffs/current.md",
-        "tracker/assignments.json"
-      ],
-      "prohibitedLanes": [
-        "product runtime",
-        "UI implementation",
-        "API or schema changes",
-        "migrations",
-        "billing, entitlement, or feature-gate implementation",
-        "RWP-13.06",
-        "Phase 14+",
-        "integration and external-system tests"
-      ]
-    }
-  ],
+  "updatedUtc": "2026-08-04T22:35:30Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
   "rules": {
