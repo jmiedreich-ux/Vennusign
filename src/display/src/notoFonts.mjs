@@ -5,6 +5,20 @@ export const notoFontFamilies = Object.freeze([
   Object.freeze({ key: 'arabic', family: 'Noto Sans Arabic', fallback: '"Noto Sans Arabic", Tahoma, sans-serif' })
 ]);
 
+export const themeFontFamilies = Object.freeze([
+  Object.freeze({ family: 'Inter', weights: [400, 700] }),
+  Object.freeze({ family: 'Pacifico', weights: [400] }),
+  Object.freeze({ family: 'Lobster', weights: [400] }),
+  Object.freeze({ family: 'Righteous', weights: [400] }),
+  Object.freeze({ family: 'Fredoka One', weights: [400] }),
+  Object.freeze({ family: 'Bungee', weights: [400] }),
+  Object.freeze({ family: 'Permanent Marker', weights: [400] }),
+  Object.freeze({ family: 'Caveat', weights: [400, 700] }),
+  Object.freeze({ family: 'Kalam', weights: [400, 700] }),
+  Object.freeze({ family: 'Patrick Hand', weights: [400] }),
+  ...notoFontFamilies.map(({ family }) => Object.freeze({ family, weights: [400, 700] }))
+]);
+
 export async function preloadNotoFonts(fontSet = globalThis.document?.fonts) {
   if (!fontSet) {
     return [];
@@ -16,4 +30,10 @@ export async function preloadNotoFonts(fontSet = globalThis.document?.fonts) {
       fontSet.load(`700 1em "${family}"`)
     ])
   );
+}
+
+export async function preloadThemeFonts(fontSet = globalThis.document?.fonts) {
+  if (!fontSet) return [];
+  return Promise.all(themeFontFamilies.flatMap(({ family, weights }) =>
+    weights.map(weight => fontSet.load(`${weight} 1em "${family}"`))));
 }
