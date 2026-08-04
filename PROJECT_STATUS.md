@@ -8,9 +8,10 @@
 - Active planning track: Track 0 — Capability, Packaging, and Entitlement Architecture (#488). Product implementation remains paused.
 - The owner approved independent native-industry Track 0 schedules. Each industry remains sequential inside its own approved RWP range and must avoid shared-file ownership conflicts.
 - Restaurant is the canonical approved baseline inherited by later native-industry profiles.
-- RWP-00.15 — Bar, Brewery & Nightlife Industry Definition (#490) is complete and merged.
-- RWP-00.27 — Café, Bakery & Dessert Industry Definition (#502) is complete in this proposed merge state. Its canonical profile defines Restaurant inheritance, industry boundaries, initial capability classifications, mixed-organization behavior, and Impeccable planning guardrails.
-- The next Café, Bakery & Dessert item is RWP-00.28 — Venue Subtypes (#503).
+- RWP-00.15 — Bar, Brewery & Nightlife Industry Definition (#490) is complete and merged. Its next item is RWP-00.16 — Venue Subtypes (#491).
+- RWP-00.27 — Café, Bakery & Dessert Industry Definition (#502) is complete and merged. Its next item is RWP-00.28 — Venue Subtypes (#503).
+- RWP-00.39 — Food Truck & Concession Industry Definition (#514) is complete in this proposed merge state. Its canonical profile defines Restaurant inheritance, mobile and temporary venue boundaries, current operating location and event state, mixed-organization behavior, initial capability classifications, and Impeccable planning guardrails.
+- The next Food Truck & Concession item is RWP-00.40 — Venue Subtypes (#515).
 - The 13-package retrospective remediation round is complete.
 - RWP-00.04 — Deployment Component Versioning and Release Manifest (#437) is complete.
 - RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439) is complete.
@@ -66,13 +67,15 @@ Every capability must have one primary classification: core capability, permissi
 
 The Café, Bakery & Dessert definition confirms that manual sold-out and available-again changes remain a core capability acting on product state. Batch, freshness, limited-quantity, and expected-return values are product/domain state when represented. Automatic POS, order, inventory, production, or pickup synchronization remains a later integration-packaging question and cannot replace the manual core operation.
 
+The Food Truck & Concession definition confirms that current operating location, event, service window, relocation, closure, and related operational values are product/domain state. Manual location and closure communication, rapid availability changes, explicit screen targeting, publishing, delivery confirmation, offline awareness, and recovery remain core. Counts of venues, units, stands, screens, users, connections, storage, history, or AI consumption remain limits rather than capabilities. Automatic route, event, host-venue, POS, order, inventory, or location synchronization remains a later packaging question.
+
 ## Validation Policy
 
 Normal work uses affected-area non-integration validation. Full non-integration validation is reserved for phase closure and the exceptions defined in `AGENTS.md`. Documentation-only Track 0 changes use lightweight repository validation. Integration and external-system tests remain skipped under the standing owner instruction unless separately approved.
 
 ## Next Action
 
-After this RWP is merged, verified on `master`, and issue #502 is closed, continue the Café, Bakery & Dessert queue with **RWP-00.28 — Venue Subtypes** (#503). Define the supported subtype catalog, inclusion and exclusion rules, subtype-specific deltas, selection and change behavior, and mixed-concept handling.
+After this RWP is merged, verified on `master`, and issue #514 is closed, continue the Food Truck & Concession queue with **RWP-00.40 — Venue Subtypes** (#515). Define food truck, trailer, cart, kiosk, stadium or arena concession, festival vendor, market stall, pop-up, catering concession, and hybrid subtypes; establish boundary and ambiguous-case rules; map subtype-specific deltas; and keep subtype separate from tiers and entitlements.
 
 Other owner-approved native-industry schedules may continue independently inside their own sequential queues. They must use Restaurant as the canonical baseline, treat only merged work as authoritative, and avoid concurrent edits to shared controlled files.
 
