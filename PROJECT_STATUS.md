@@ -3,36 +3,28 @@
 ## Current State
 
 - Phase 13: complete.
-- Phase 14 and later: paused pending explicit owner approval.
+- Phase 14 and later: paused.
 - Product implementation: paused.
-- Active planning track: Track 0 — Capability, Packaging, and Entitlement Architecture (#488).
-- RWP-13.06: paused until the consolidated Track 0 model and implementation packages are approved.
+- Active planning track: Track 0 (#488).
+- RWP-13.06: paused.
 - Native-industry gate: complete.
 
 ## Consolidation Progress
 
-- RWP-00.75 — Cross-Industry Normalization: complete and merged.
-- **RWP-00.76 — Existing Product Feature, Gate & Limit Inventory: complete in proposed merge state.**
+- RWP-00.75 — Cross-Industry Normalization: merged.
+- RWP-00.76 — Existing Product Feature, Gate & Limit Inventory: merged.
+- **RWP-00.77 — Capability Reconciliation & Gap Analysis: complete in proposed merge state.**
 
-The factual inventory is recorded in `track0/consolidation/EXISTING_PRODUCT_INVENTORY.md`.
+The reconciliation at `track0/consolidation/RECONCILIATION_GAP_ANALYSIS.md` finds that the current product has strong server-authoritative billing, venue-scoped sessions, separate HaaS contracts, and explicit delivery state, but relies on flat and overloaded identifiers that mix capability, entitlement, permission, product state, add-on, and limit concerns.
 
-Current product mechanisms include:
+Critical planning corrections include preserving essential manual rapid update/scheduling/language operation as core, decomposing overloaded keys, introducing typed capability decisions/reasons/add-ons/limits, separating authorized multi-venue context from advanced portfolio outcomes, and defining organization/local inheritance and overrides.
 
-- session capability keys for Back Office routes;
-- effective feature keys and locked/upgrade presentation;
-- current tier and subscription presentation with server-authoritative provider confirmation;
-- `MaxScreens` and `MaxVenues` downgrade checks;
-- organization/venue claims and server-validated context switching;
-- support tier/override authority;
-- separate domain state for availability, schedule, source, delivery, screen, subscription, and HaaS status;
-- separate Stripe, POS, HaaS, player/delivery, and source synchronization boundaries.
-
-The inventory records exact known identifiers and current consumers. It does not approve their classification or change a live gate.
+No remediation is implemented by RWP-00.77.
 
 ## Exact Next Action
 
-After RWP-00.76 merges, closes, verifies, and releases, execute **RWP-00.77 — Capability Reconciliation & Gap Analysis (#553)**. Map the factual product inventory to the normalized model, identify missing, duplicate, obsolete, or incorrectly classified mechanisms, and recommend bounded remediation without implementation.
+After RWP-00.77 merges, closes, verifies, and releases, execute **RWP-00.78 — Unified Tier & Add-On Architecture (#554)**. Propose customer-outcome tier bundles and an independent add-on catalog while preserving universal core operation and all classification boundaries. Do not set prices or implement packaging.
 
 ## Validation Policy
 
-Documentation-only Track 0 changes use lightweight repository validation. GitHub Actions is authoritative on the exact reviewed PR head. Azure SQL, live Stripe, and all integration/external-system tests remain skipped.
+Documentation-only validation is authoritative through GitHub Actions on the exact reviewed head. Azure SQL, live Stripe, and all integration/external-system tests remain skipped.

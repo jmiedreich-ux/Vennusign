@@ -2,38 +2,39 @@
 
 ## Current State
 
-- Track: Track 0 — Capability, Packaging, and Entitlement Architecture (#488)
+- Track: Track 0 (#488)
 - Native-industry gate: complete
-- RWP-00.75: merged and verified
-- RWP-00.76: complete in proposed merge state
-- Product implementation: paused
-- RWP-13.06 and Phase 14+: paused
+- RWP-00.75 and RWP-00.76: merged and verified
+- RWP-00.77: complete in proposed merge state
+- Product implementation, RWP-13.06, and Phase 14+: paused
 
-## RWP-00.76 Result
+## RWP-00.77 Result
 
-The factual current-product inventory is at `track0/consolidation/EXISTING_PRODUCT_INVENTORY.md`.
+`track0/consolidation/RECONCILIATION_GAP_ANALYSIS.md` maps the current product to the normalized model.
 
-It records the current session capability keys, effective feature keys, route and locked-surface consumers, browser tier slugs, billing/provider authority, tier selection and downgrade checks, screen/venue limits, feature limit values, HaaS contract terms, claims/context authority, support overrides, product-state controls, external service boundaries, and rollout/configuration evidence.
+Preserve these aligned foundations:
 
-Key factual ambiguities carried into reconciliation include:
+- server/provider-authoritative billing and entitlement refresh;
+- venue-scoped authenticated sessions and server-validated context switching;
+- HaaS separated from software subscription access;
+- explicit source, screen, revision, delivery, and provider state;
+- reusable accessible locked/upgrade surface patterns.
 
-- `pos_integration` is both a route capability and effective feature key;
-- Menu access checks `menus` while its prompt uses `quick_update`;
-- `all_layouts` is reused across Tap list, Screens, and Themes;
-- `happy_hour` and `video_wall` each have commercial-feature and product-state representations;
-- `multi_location` coexists with permission-bound authorized venue contexts;
-- screen/venue plan limits, feature `limitValue`, layout capacity, and HaaS term limits govern different domains;
-- the browser receives flat session capabilities rather than a normalized per-action permission model;
-- locked UI does not receive one structured reason model for entitlement, permission, limit, state, source, support, or rollout conditions.
+Correct these planning gaps before implementation:
 
-These are observations, not remediation decisions.
+- flat session capability strings collapse commercial access, permission, scope, and reason;
+- essential manual rapid update, schedules, and language support are combined with advanced automation;
+- `all_layouts`, `pos_integration`, `multi_location`, `video_wall`, and `happy_hour` overload multiple concepts;
+- limits require typed units/scope/enforcement and separation from layout capacity or contract terms;
+- add-on attachment/configuration/connection and organization/local inheritance are not normalized;
+- locked surfaces need structured reasons for upgrade, permission, limit, source, state, unsupported context, restriction, and rollout.
 
 ## Exact Next Action
 
-Execute **RWP-00.77 — Capability Reconciliation & Gap Analysis (#553)** after RWP-00.76 is merged, issue #552 is closed, `master` is verified, and the claim is released.
+Execute **RWP-00.78 — Unified Tier & Add-On Architecture (#554)** after RWP-00.77 merges, issue #553 closes, `master` verifies, and the claim releases.
 
-Map `EXISTING_PRODUCT_INVENTORY.md` to `CROSS_INDUSTRY_MODEL.md`. Identify missing, duplicate, obsolete, or misclassified mechanisms, including permissions represented as entitlements, product state represented as feature flags, and inconsistent organization/venue inheritance. Record recommendations only.
+The architecture must keep the full essential manual core in the base outcome, separate advanced native workflow from external/managed add-ons, keep permissions and state independent, avoid pricing values, and document upgrade/downgrade and mixed-industry behavior.
 
 ## Boundaries
 
-Do not change product behavior, keys, gates, permissions, limits, billing, rollout, API, schema, migrations, or integrations. Do not resume RWP-13.06 or Phase 14+. Azure SQL, live Stripe, and all integration/external-system tests remain skipped.
+Recommendations only until owner approval. Do not change keys, gates, permissions, limits, billing, UI, API, schema, migrations, integrations, RWP-13.06, or Phase 14+. Azure SQL, live Stripe, and integration/external-system tests remain skipped.

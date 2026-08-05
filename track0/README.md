@@ -1,64 +1,41 @@
 # Track 0 Execution Packet
 
-## Purpose
+## Required consolidation context
 
-This directory is the compact context packet for Track 0 industry-planning and consolidation RWPs.
+1. `track0/CAPABILITY_MODEL.md`
+2. `track0/RESTAURANT_BASELINE.md`
+3. `track0/CAPABILITY_MATRIX.md`
+4. `track0/consolidation/CROSS_INDUSTRY_MODEL.md`
+5. `track0/consolidation/EXISTING_PRODUCT_INVENTORY.md`
+6. `track0/consolidation/RECONCILIATION_GAP_ANALYSIS.md` after RWP-00.77
+7. Current issue and work package
 
-## Required reading for consolidation
+## Rules
 
-1. `track0/README.md`
-2. `track0/CAPABILITY_MODEL.md`
-3. `track0/RESTAURANT_BASELINE.md`
-4. `track0/CAPABILITY_MATRIX.md`
-5. `track0/consolidation/CROSS_INDUSTRY_MODEL.md`
-6. `track0/consolidation/EXISTING_PRODUCT_INVENTORY.md` after RWP-00.76
-7. The current issue and work-package record
+Complete one RWP at a time with issue, claim, branch, PR, review, merge, verification, and release. Work is documentation/planning only. RWP-13.06 and Phase 14+ remain paused. Shared files use short transactional write windows. Azure SQL and integration/external-system tests remain skipped.
 
-Read broader repository material only when the current issue requires factual product evidence not available in this packet.
+## Completion
 
-## Execution model
+The five native industries are complete. Consolidation status:
 
-- Complete one RWP at a time in strict sequence.
-- Use a dedicated issue, claim, branch, PR, review, merge, verification, and release.
-- Work remains documentation and product planning until explicit owner approval authorizes implementation.
-- RWP-13.06 and Phase 14+ remain paused.
-- Azure SQL and integration/external-system tests remain skipped.
-- Shared living records use queued semantic updates and short transactional write windows.
+- RWP-00.75 normalization: merged.
+- RWP-00.76 factual inventory: merged.
+- **RWP-00.77 reconciliation/gap analysis: complete in proposed merge state.**
+- **RWP-00.78 unified tier/add-on architecture: exact next item after merge and release.**
+- RWP-00.79 limits/scope/inheritance.
+- RWP-00.80 customer-journey validation.
+- RWP-00.81 owner approval and implementation handoff.
 
-## Native-industry completion
+## Classification contract
 
-RWP-00.26, RWP-00.38, RWP-00.50, RWP-00.62, and RWP-00.74 are complete.
+One primary classification per concern: core capability, permission, product/domain state, tier entitlement candidate, independent add-on candidate, usage/quantity limit, or internal rollout flag.
 
-## Consolidation sequence
+Essential manual operation remains core. Industry/subtype are non-commercial. Permission is not entitlement. Product state is not a feature flag. Add-ons are independently attachable. Limits are typed allowances, not capabilities. Rollout remains internal.
 
-- RWP-00.75 — Cross-Industry Normalization: merged and verified.
-- **RWP-00.76 — Existing Product Feature, Gate & Limit Inventory: complete in proposed merge state.**
-- **RWP-00.77 — Capability Reconciliation & Gap Analysis: exact next item after RWP-00.76 merge and release.**
-- RWP-00.78 — Unified Tier & Add-On Architecture.
-- RWP-00.79 — Limits, Scope & Inheritance Policy.
-- RWP-00.80 — Cross-Industry Customer Journey Validation.
-- RWP-00.81 — Owner Approval & Implementation Handoff.
+## Reconciliation contract
 
-Do not skip or combine items.
+Future architecture must preserve server/provider authority, venue-scoped authorization, HaaS separation, and explicit delivery/source state while replacing overloaded flat identifiers with stable capability decisions and structured reason semantics. Recommendations do not authorize implementation.
 
-## Normalization contract
+## Impeccable
 
-Every concern has one primary classification: core capability, permission, product/domain state, tier entitlement candidate, independent add-on candidate, usage or quantity limit, or internal rollout flag.
-
-Essential manual operation remains core. Industry and subtype are non-commercial configuration. Permission is not entitlement. Product state is not a feature flag. External systems and separately delivered services are add-on candidates. Counts and consumption are limits. Rollout remains internal.
-
-## Current-product inventory contract
-
-RWP-00.76 is factual, not prescriptive. It records exact known keys, authority, scope, source location, and consumers and explicitly marks unknown or non-normalized mechanisms. Reclassification and remediation recommendations begin only in RWP-00.77.
-
-## Impeccable requirement
-
-Apply project-local Impeccable guidance to UI-facing planning. Locked, permission-restricted, unavailable, disconnected, stale, unsupported, limited, privacy/rights-restricted, and rollout-controlled states require distinct semantics, truthful explanations, accessible actions, responsive behavior, and recovery paths. Browser presentation never becomes authorization authority.
-
-## Expected outputs
-
-- update the current consolidation artifact;
-- update the capability matrix when classification decisions change;
-- record unresolved owner decisions;
-- synchronize status, tracker, current handoff, packet, and affected records at the completion checkpoint;
-- keep all changes bounded to the current issue.
+UI planning must distinguish upgrade, permission, limit, source/configuration, product state, unsupported context, privacy/rights restriction, and temporary rollout/support conditions. Every state requires truthful text, a specific action, accessible semantics, responsive behavior, and recovery. Browser presentation never becomes authority.
