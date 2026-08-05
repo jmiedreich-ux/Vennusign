@@ -4,10 +4,10 @@
 
 - **Industry:** Café, Bakery & Dessert
 - **RWP range:** RWP-00.27 through RWP-00.38
-- **Current status:** Industry definition and venue-subtype model complete
+- **Current status:** Industry definition, venue-subtype model, and business terminology complete
 - **Baseline:** Restaurant
-- **Current completed RWP:** RWP-00.28
-- **Next sequential RWP:** RWP-00.29 — Business Terminology
+- **Current completed RWP:** RWP-00.29
+- **Next sequential RWP:** RWP-00.30 — Operating Characteristics
 
 ## Purpose
 
@@ -49,7 +49,7 @@ The primary content model often emphasizes beverages, bakery products, desserts,
 
 ### Batch, freshness, and sell-out rhythm
 
-Products may become available in batches, sell out during a service period, return later, or have a short freshness window. Manual availability remains an inherited core capability. Batch and freshness values are product/domain state, not commercial gates. Detailed state vocabulary and operating rules belong to RWP-00.29 and RWP-00.30.
+Products may become available in batches, sell out during a service period, return later, or have a short freshness window. Manual availability remains an inherited core capability. Batch and freshness values are product/domain state, not commercial gates. Canonical vocabulary is defined below; detailed operating rules belong to RWP-00.30.
 
 ### Counter-service speed and queue context
 
@@ -66,6 +66,109 @@ A venue may sell packaged beans, tea, bottled drinks, merchandise, or take-home 
 ### Early, seasonal, and demand-driven service periods
 
 Daily operation may begin very early, vary by weekday, and change around holidays, school or commuter patterns, weather, seasonal products, or production capacity. Detailed scheduling and analytics treatment is deferred to later RWPs.
+
+## Canonical business terminology
+
+Terminology is UI-facing product/domain configuration. It selects default labels, starter recommendations, help text, analytics presentation, and guest wording. It does not grant capabilities, alter permissions, increase limits, control rollout, change commercial access, or authorize ordering and fulfillment implementation.
+
+### Language layers and fallback rules
+
+- **Operator language** names stable product objects and actions used across setup, editing, Quick Update, publishing, support, and analytics.
+- **Guest language** uses the clearest known product or service noun for the venue and immediate context.
+- **Organization-wide language** remains neutral when venues use different industries or subtypes.
+- **Customer-authored names** remain authoritative. A subtype or profile change may suggest alternatives but must not silently rename existing content.
+- **Unknown operational facts** remain unknown. Copy must not invent quantity, freshness, production time, expected return, pickup readiness, or preorder acceptance.
+
+### Restaurant terms inherited unchanged
+
+Content, category, item, price, description, image, dietary label, screen, preview, publish, restore, venue, availability, business hours, and service period remain valid neutral operator terms. Menu remains appropriate when the content is a menu. Restaurant ordering, table-service, and kitchen nouns are used only where the venue actually operates those models.
+
+### Canonical glossary
+
+| Concept | Canonical operator term | Preferred guest-facing treatment | Boundary and usage rule |
+| --- | --- | --- | --- |
+| Cross-industry body of managed material | **Content** | Use the known menu, list, case, collection, promotion, or information name | Content is the neutral umbrella; it is not a guest label when a clearer noun exists. |
+| Presented product offering | **Menu** or the known content name | Drink menu, coffee menu, tea menu, bakery case, today's selection, dessert menu, current flavors, juice and smoothie menu | Do not force menu onto every display-case, flavor, pickup, retail, or information surface. |
+| Sellable or displayable product object | **Item** | Use the product name or a known noun such as drink, coffee, tea, pastry, bread, cake, dessert, flavor, smoothie, bowl, or take-home item | Product may be used in explanatory copy; item remains the stable neutral operator object. |
+| Group of related items | **Category** | Section, collection, case group, menu group, or flavor group when clearer | Collection may describe a curated product range; it must not be confused with order pickup in the same flow. |
+| Quantity or format choice | **Size** | Use the venue's actual size name or measured amount | Portion, serving, scoop, slice, cup, cone, pack, and take-home format are used only when they describe the actual product format. |
+| Selectable item choice | **Option** | Name the actual choice, such as size, temperature, milk choice, sweetness, ice, flavor, topping, or add-in | Modifier is acceptable operator or integration language but should not be the default guest label. |
+| Hot, iced, frozen, or similar preparation choice | **Temperature** | Hot, iced, frozen, or venue-authored labels | Do not combine temperature with size or flavor when guests must understand them separately. |
+| Liquid, milk, tea, juice, or bowl foundation | **Milk choice** or **base** | Use the actual choice label | Use milk choice only for milk choices; base is the neutral term for broader beverage or bowl foundations. |
+| Primary taste or named variety | **Flavor** | Use the authored flavor name | Flavor is not a universal substitute for ingredient, tea style, coffee roast, syrup, filling, or topping. |
+| Added ingredient mixed into or served with an item | **Add-in** | Use the actual add-in name | Add-on may imply commercial packaging; use add-in for product configuration. |
+| Added finishing ingredient | **Topping** | Use the actual topping name | Topping and add-in remain distinct where preparation or display depends on the difference. |
+| Produced group made available together | **Batch** | Next batch, fresh batch, or available again when known | Batch is product/domain state; do not infer production time or freshness. |
+| Product-age or production guidance | **Freshness guidance** | Use venue-authored claims such as baked today only when authoritative | Vennusign must not invent freshness, shelf life, safety, or production claims. |
+| Current ability to offer an item | **Availability** | Available, unavailable, sold out, limited, next batch, or available again as applicable | State words are not feature flags or commercial-access labels. |
+| Finite or time-bounded supply | **Limited** | Limited quantity, limited today, seasonal, or while available when authored | Limited does not imply a known remaining count and must not be used to create false urgency. |
+| Known future return | **Expected return** | Next batch at, available again at, or returns on when known | Never display a time or date that is not authoritative. |
+| Request made before pickup or fulfillment | **Preorder** | Preorder available, preorder by, preorder closed, or authored instructions | This terminology does not authorize order capture, payment, production, or fulfillment implementation. |
+| Guest-specific produced request | **Custom order** | Custom cake, custom pastry, catering tray, or authored service name | Use only when guest-specific configuration or production is actually supported. |
+| Guest collection of prepared goods | **Pickup** | Pickup, pickup window, pickup instructions, pickup area | Collection may replace pickup only where established venue language requires it; do not alternate both in one flow. |
+| Bounded operating interval | **Service period** | Morning, breakfast, lunch, afternoon, evening, late night, pickup hours, or authored names | Service period is neutral operator language; guest labels should be recognizable. |
+| Promoted or time-bound item or offer | **Special** | Seasonal drink, daily special, featured pastry, limited flavor, collection, or release when context supports it | Special is presentation and content state, not a separate capability or entitlement. |
+| Visible products in a physical merchandising area | **Display case** or **today's selection** | Use the actual case or selection name | A case list is not assumed to be a complete inventory count or continuously available menu. |
+
+### Availability and timing distinctions
+
+- **Available:** the item can currently be offered through the represented service context.
+- **Unavailable:** the item cannot currently be offered and the more specific reason is unknown, not communicated, or not depletion.
+- **Sold out:** the currently sellable quantity or current batch is exhausted.
+- **Limited:** quantity or offer duration is intentionally constrained; it does not imply a known remaining count.
+- **Next batch:** another produced group is expected. Include a time only when it is known and authoritative.
+- **Available again:** an expected return is known. Do not invent timing.
+- **Preorder available / preorder closed:** describes the preorder window only, not general item availability.
+- **Pickup available / pickup paused:** describes the represented pickup channel or instructions only.
+
+Sold out, unavailable, and preorder closed are not interchangeable. Unknown state must remain unknown.
+
+### Operator actions and state labels
+
+Future operator-facing language should prefer explicit verb-object actions such as:
+
+- `Add item`;
+- `Add size`;
+- `Add option`;
+- `Mark sold out`;
+- `Mark available`;
+- `Mark unavailable`;
+- `Add next-batch time`;
+- `Set expected return`;
+- `Add preorder instructions`;
+- `Add pickup instructions`;
+- `Publish menu` or the known subtype-specific content name;
+- `Restore previous version`.
+
+Use menu-specific verbs only when the object is truly a menu. Do not label an action `Update`, `Manage`, `Submit`, or `Save changes` when a more specific outcome is known.
+
+### Subtype terminology preferences
+
+| Subtype | Preferred context terms | Terms that must remain conditional |
+| --- | --- | --- |
+| **Café** | menu, drinks, food, daily or seasonal specials, service periods, pickup, venue information | breakfast, lunch, table service, or bakery-case language only when used |
+| **Coffee Shop** | coffee menu, espresso drinks, brewed coffee, hot or iced, size, milk choice, extra shot, flavor or syrup, seasonal drinks, pastries | roast, origin, brew method, or pickup state only when supported |
+| **Tea Shop** | tea menu, tea base or style, hot or iced, size, sweetness, ice, toppings, add-ins, seasonal drinks | bubble tea, matcha, milk tea, fruit tea, or tea-service terms only when applicable |
+| **Bakery** | today's selection, bakery case or display case, bread, pastry, baked goods, batch, next batch, sold out, preorder, pickup | fresh, baked today, remaining quantity, or next-batch time only when authoritative |
+| **Patisserie** | pastry or cake collection, flavor, size or servings where known, custom order, preorder, pickup, seasonal collection, limited availability | collection must not mean both product range and pickup in one flow |
+| **Bakery-Café** | bakery case, beverage menu, breakfast or lunch where used, service period, daily specials, pickup, available and sold-out state | Restaurant meal and table-service language only when the venue operates those models |
+| **Dessert Shop** | dessert menu, portion or format, flavor, toppings, add-ins, combinations, made to order, seasonal or limited item | production time, pickup readiness, or quantity only when known |
+| **Frozen Dessert Shop** | current flavors, scoop or serving format, size, cup or cone, toppings, take-home, limited or rotating flavor | scoop, cone, cup, self-serve, or take-home terms only when offered |
+| **Juice & Smoothie Bar** | juice and smoothie menu, size, base, ingredients, add-ins, boosts where locally used, bowls, seasonal produce, pickup | wellness, nutrition, fresh, or functional claims only when authored and supported |
+| **Unspecified / General Café** | menu, item, category, size, options, availability, special, preorder where supported, pickup, service period | subtype-specific nouns remain suggestions, not defaults |
+
+### Mixed organizations and hybrid fallback
+
+- Organization-wide and cross-industry surfaces use organization, venue, content, item, category, option, availability, service period, screen, publish, and restore.
+- Venue-scoped surfaces may use subtype terminology when the subtype and content type are known.
+- Hybrid traits may influence suggestions but must not silently rename customer-authored content.
+- When a venue combines equal concepts, use the term that describes the immediate task rather than forcing one subtype noun across the entire venue.
+- Copying content between unlike subtypes preserves source names and presents destination terminology as reviewable suggestions only.
+- Local custom labels remain authoritative until an authorized user changes them.
+
+### Analytics terminology
+
+Core operational views use neutral dimensions such as venue, content type, item, category, availability state, service period, screen, and publish state. Subtype-specific drill-downs may use drink type, product type, size, option type, batch state, preorder state, pickup context, flavor, or format when the data actually exists. Analytics labels must not imply inventory precision, freshness guarantees, production timing, fulfillment status, or paid access that the source data does not support.
 
 ## Content and screen-purpose differences
 
@@ -229,26 +332,48 @@ Because this is a non-interactive planning run, assumptions are explicit: the us
 - **Scope and boundaries:** planning covers subtype selection, review, change preview, confirmation, cancellation, success, permission restriction, validation failure, and restoration. It does not design pricing, entitlement, billing, schema, or implementation behavior.
 - **States and ranges:** support first-run with no selection, one current subtype, neutral fallback, ambiguous/hybrid classification, a multi-venue organization with different subtypes, permission-restricted viewing, validation failure, saved success, and safe cancellation or recovery. The bounded catalog is nine primary subtypes plus neutral state and optional traits.
 - **Interaction and layout:** keep comparisons scannable on phone and desktop; reveal detail progressively; preview changed defaults before confirmation; preserve content; provide visible feedback; avoid color-only distinctions; expose selection and confirmation to keyboard and assistive technology.
-- **Constraints and open decisions:** canonical operator and guest terminology belongs to RWP-00.29. A builder must not invent new subtype values, commercial consequences, automatic content transformation, or hidden trait-based feature gates.
+- **Constraints and open decisions:** canonical operator and guest terminology is now defined by RWP-00.29. A builder must not invent new subtype values, commercial consequences, automatic content transformation, or hidden trait-based feature gates.
 
 This brief is planning only. It authorizes no UI, API, schema, migration, or product implementation.
 
-## Capability-matrix classification resulting from RWP-00.28
+## Impeccable planning for terminology
 
-1. Venue subtype, neutral subtype state, and hybrid descriptive traits are **product/domain state**.
-2. Subtype changes defaults, terminology candidates, starter recommendations, and capability presentation only.
-3. Subtype never grants capability access, raises limits, changes permissions, or acts as a rollout flag.
-4. All subtype-specific screen purposes are recommendations using inherited or later-classified capabilities, not new entitlements.
-5. Counts of venues, screens, users, integrations, content, storage, history, or AI consumption remain limits independent of subtype.
-6. Batch, freshness, limited-quantity, expected-return, preorder, pickup, and production values keep their own product-state or later integration classifications independent of subtype.
+The project-local Impeccable skill and `clarify` playbook were consulted because terminology affects future onboarding, navigation, forms, editor labels, state messages, help text, analytics, and guest-facing screens.
 
-## Deferred to RWP-00.29 and later
+The future UI must:
 
-- the canonical operator-facing and guest-facing glossary;
-- exact subtype-specific labels and neutral fallback wording;
-- detailed batch, freshness, availability, preorder, pickup, size, modifier, and service-period semantics;
-- required and optional capability decisions;
-- packaging, onboarding, dashboard, analytics, and implementation design.
+- keep one noun and one verb for the same concept throughout a flow;
+- use specific verb-object actions and name the affected item or content;
+- use persistent labels and examples rather than placeholders as labels;
+- distinguish first use, no results, filters, permissions, failure, empty content, sold-out state, unavailable state, and unknown timing;
+- explain what failed and how to recover without exposing internal codes as the primary message;
+- avoid promising freshness, quantity, production time, return time, pickup readiness, or preorder acceptance without authoritative data;
+- use complete translatable messages rather than concatenated fragments;
+- keep visible labels and accessible names aligned;
+- support long product, category, option, venue, and collection names, localization expansion, pluralization, dynamic values, keyboard access, assistive technology, and 200% zoom;
+- avoid color-only meaning and unnecessary abbreviations;
+- preserve customer-authored terminology through profile and subtype changes;
+- preserve the established Vennusign administrative visual world and approved Sky Blue direction.
+
+Because this is planning only, no UI strings, components, routes, schemas, APIs, analytics implementation, ordering, pickup automation, or localization resources were changed.
+
+## Capability-matrix classification through RWP-00.29
+
+1. Industry, venue subtype, neutral subtype state, hybrid descriptive traits, and terminology preference are **product/domain state**.
+2. Terminology changes defaults, labels, help text, starter recommendations, analytics presentation, and guest wording only.
+3. Terminology never grants capability access, raises limits, changes permissions, controls rollout, or changes commercial access.
+4. Batch, freshness, limited-quantity, expected-return, availability, preorder-window, pickup-context, service-period, size, and option values retain product/domain-state treatment where represented.
+5. Manual item editing, manual availability changes, publishing, delivery confirmation, offline awareness, and recovery remain inherited core capabilities.
+6. Ordering, payment, production management, fulfillment, inventory, POS, pickup-source, or other synchronization remains a later capability and integration-packaging decision.
+7. Counts of venues, screens, users, integrations, content, storage, history, or AI consumption remain limits independent of subtype and terminology.
+8. Customer-authored names and custom labels must be preserved through future profile or subtype changes.
+
+## Deferred to RWP-00.30 and later
+
+- detailed early-hours, business-day, service-period, batch-production, freshness-window, rotating-product, sell-out, preorder, pickup, seasonal-demand, table-service, and counter-service operating rules;
+- required and optional capability decisions beyond inherited core manual operations;
+- packaging, onboarding, dashboard, analytics, and implementation design;
+- ordering, payments, production, fulfillment, inventory, POS, and external-source behavior.
 
 ## Reference anchors
 
@@ -263,26 +388,29 @@ They are boundary evidence only, not Vennusign entitlement, subtype, legal, lice
 
 RWP-00.27 established the industry purpose, Restaurant inheritance, meaningful deltas, native boundary, organization and venue behavior, initial capability classifications, and Impeccable planning guardrails.
 
-## RWP-00.28 completion and handoff
+## RWP-00.28 completion summary
+
+RWP-00.28 defined nine bounded primary subtypes plus a neutral fallback; established inclusion, exclusion, neighboring-profile, hybrid, subtype-selection, subtype-change, mixed-organization, multi-venue, screen-purpose, and Restaurant-inheritance rules; and applied Impeccable `shape` guidance to future subtype selection and change.
+
+## RWP-00.29 completion and handoff
 
 ### Completed
 
-- Defined nine bounded primary subtypes plus a neutral fallback.
-- Established inclusion, exclusion, neighboring-profile, and ambiguous-case rules.
-- Mapped every subtype to inherited Restaurant capabilities and meaningful deltas only.
-- Defined subtype-specific operational, content, screen-purpose, and presentation recommendations.
-- Resolved hybrid concepts through one primary subtype plus optional descriptive traits.
-- Defined organization, venue, subtype selection, subtype change, mixed-organization, and multi-venue behavior.
-- Resolved bubble-tea shops, specialty baked-good shops, retail-counter bakeries, meal-heavy bakery-cafés, custom-order studios, confectionery concepts, mobile concepts, and mixed-property outlets without creating separate entitlement models.
-- Applied the Impeccable `shape` guidance to future subtype selection and change flows.
-- Updated the Track 0 capability classification for venue subtype and hybrid traits.
+- Defined the canonical operator-facing and guest-facing terminology glossary.
+- Defined inherited Restaurant terms, subtype preferences, mixed-organization neutral terms, and hybrid fallback behavior.
+- Distinguished product, category, size, option, temperature, milk or base, flavor, add-in, topping, batch, freshness, availability, preorder, custom-order, pickup, special, and service-period terms.
+- Distinguished available, unavailable, sold out, limited, next batch, available again, preorder-window, and pickup-context language.
+- Defined explicit operator actions, state labels, analytics labels, and source-authority boundaries.
+- Applied the Impeccable `clarify` guidance to future UI copy, accessibility, localization, errors, empty states, success, and recovery.
+- Preserved the previously approved Impeccable `shape` brief for subtype selection and change.
+- Updated the Track 0 capability classification for terminology preference and Café-specific operational values.
 
 ### Not performed
 
-- No product, UI, API, schema, migration, billing, entitlement, permission, feature-gate, limit, rollout, pricing, ordering, payment, production, inventory, or integration implementation.
+- No product, UI, API, schema, migration, billing, entitlement, permission, feature-gate, limit, rollout, pricing, ordering, payment, production, fulfillment, inventory, pickup automation, analytics, localization, or integration implementation.
 - No integration or external-system testing.
-- No canonical terminology glossary or detailed operational-capability design beyond what was required to distinguish subtypes.
+- No detailed operating-characteristic or capability-packaging design beyond what was required to define terminology boundaries.
 
 ### Next sequential RWP
 
-**RWP-00.29 — Café, Bakery & Dessert Business Terminology** (#504) must define canonical operator and guest terminology for products, sizes, modifiers, batches, freshness, availability, preorders, pickup, and service periods; identify Restaurant inheritance, subtype overrides, and hybrid fallbacks; keep terminology separate from permissions and entitlements; and hand off to RWP-00.30.
+**RWP-00.30 — Café, Bakery & Dessert Operating Characteristics** (#505) must document early hours, business-day and service-period behavior, batch production, freshness windows, rotating daily products, sell-outs, preorders, pickup, seasonal demand, table and counter service, and subtype-specific operating differences. It must tie each difference to defaults, terminology, content, screen purposes, or capability classification; remain documentation-only; and avoid jurisdiction-specific invention.
