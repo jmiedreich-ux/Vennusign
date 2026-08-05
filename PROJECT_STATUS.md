@@ -16,54 +16,51 @@
 | --- | --- | --- | --- |
 | Bar, Brewery & Nightlife | **RWP-00.17** | Industry definition, nine venue subtypes plus neutral fallback, hybrid rules, canonical business terminology, subtype terminology, neutral fallbacks, operator/guest language, analytics labels, and Impeccable clarification guidance are documented. | **RWP-00.18 — Operating Characteristics (#493)** |
 | Café, Bakery & Dessert | **RWP-00.29** | Industry definition, nine venue subtypes plus neutral fallback, hybrid rules, canonical product, size, option, batch, freshness, availability, preorder, pickup, and service-period terminology, subtype preferences, neutral fallbacks, operator/guest language, analytics labels, and Impeccable clarification guidance are documented. | **RWP-00.30 — Operating Characteristics (#505)** |
-| Food Truck & Concession | **RWP-00.41** | Industry definition, nine venue subtypes plus neutral fallback, physical-form and operating-context traits, host boundaries, canonical operation, unit, service-point, location, stop, pitch, event, service-window, menu, combo, availability, pickup, queue, last-order, relocation, and operating-state terminology, subtype preferences, neutral fallbacks, operator/guest language, analytics labels, and Impeccable clarification guidance are documented. | **RWP-00.42 — Operating Characteristics (#517)** |
-| Hospitality | **RWP-00.51** | Industry definition is documented. | **RWP-00.52 — Venue Subtypes (#527)** |
+| Food Truck & Concession | **RWP-00.41** | Industry definition, nine venue subtypes plus neutral fallback, physical-form and operating-context traits, host boundaries, canonical operation, location, event, menu, combo, availability, pickup, queue, relocation, and operating-state terminology, subtype preferences, neutral fallbacks, operator/guest language, analytics labels, and Impeccable clarification guidance are documented. | **RWP-00.42 — Operating Characteristics (#517)** |
+| Hospitality | **RWP-00.52** | Industry definition, nine bounded property subtypes plus neutral fallback, hybrid traits, inclusion/exclusion rules, Restaurant inheritance, mixed-property and multi-property behavior, subtype-change preservation, classification, and Impeccable planning guidance are documented in this proposed merge state. | **RWP-00.53 — Business Terminology (#528)** |
 | Entertainment & Attractions | **RWP-00.63** | Industry definition is documented. | **RWP-00.64 — Venue Subtypes (#539)** |
 
 Only merged documents are authoritative. An industry may advance only after its current RWP is merged, verified, closed, and released.
 
-## Food Truck & Concession Terminology Result
+## Hospitality Venue-Subtype Result
 
-RWP-00.41 establishes a stable language model for onboarding, navigation, content editing, Quick Update, location and event communication, help text, analytics, starter content, and guest-facing displays.
+RWP-00.52 establishes nine primary Hospitality property subtypes:
 
-### Neutral cross-industry terms
+1. Hotel
+2. Resort
+3. Motel
+4. Hostel
+5. Extended-Stay
+6. Serviced Apartment
+7. Conference Property
+8. Casino Resort
+9. Boutique Lodging
 
-Organization, venue, operation, content, item, category, availability, location, event, service point, service period, screen, publish, and restore remain the preferred neutral terms when a surface spans industries, venue subtypes, hosts, or physical forms.
+A property may remain **Unspecified / General Hospitality Property** when no supported subtype clearly controls its daily operating rhythm. The fallback is neutral product state, not a commercial package.
 
-### Context-specific Food Truck & Concession terms
+### Selection and hybrid rules
 
-Operation-scoped surfaces may use truck, trailer, cart, kiosk, concession stand, stand, stall, pop-up, station, current location, stop, next stop, pitch, host location, event, service window, compact menu, event menu, combo, special, pickup, collection, queue, lane, last orders, service paused, canceled, relocating, or serving again when the context makes the meaning clear.
-
-### Important distinctions
-
-- **Operation** is the neutral Food Truck & Concession local context; **venue** remains the cross-industry local business unit.
-- **Unit** is a neutral physical or operational instance; it does not decide entitlement or venue counting.
-- **Service point** is where guest service occurs; stand, stall, kiosk, station, counter, or window is used only when accurate.
-- **Service window** is a physical opening; **service period** is a bounded time interval.
-- **Current location**, **stop**, **pitch**, **host location**, and **event** are distinct location and context concepts.
-- **Combo** is a named item grouping; it does not imply POS, inventory, discount, or ordering behavior.
-- **Pickup** is the neutral guest collection term; collection may be used consistently where established.
-- **Queue** is the neutral waiting-line concept; **lane** is a distinct order, express, pickup, or collection path.
-- **Available**, **unavailable**, **sold out**, **limited**, **open**, **service paused**, **closed**, **canceled**, and **relocating** are distinct product or operating states.
-- **Last orders** communicates an authoritative order cutoff; **service ends at** communicates the end of service.
-
-Unknown location, destination, timing, quantity, queue, pickup, and reopening information remains unknown. Guest copy must not promise a destination, arrival time, remaining quantity, queue length, wait time, pickup readiness, or reopening time without authoritative data.
+- Select the subtype that best describes the dominant daily guest journey and information rhythm, not legal status, brand, star rating, room count, ownership, management, tax treatment, architecture, or marketing language.
+- When models overlap, use one primary subtype and retain secondary destination, recreation, wellness, conference, wedding, gaming, heritage, lifestyle, apartment-style, extended-stay, campus, seasonal, or mixed-use characteristics as descriptive traits.
+- Traits tune defaults and future terminology only. They do not stack entitlements, increase limits, transfer authority, or become hidden feature flags.
+- Organization primary industry may seed a suggestion but cannot override the property's local subtype.
+- Different properties in one organization may select different subtypes; distinct restaurants, bars, cafés, concessions, attractions, retail, spas, and event venues may use their own approved local business types.
 
 ### Classification
 
-- Industry, subtype, hybrid traits, and terminology preference are **product/domain state**.
-- Terminology changes defaults, labels, help text, starter recommendations, analytics presentation, and guest wording only.
-- Terminology does not grant capabilities, alter permissions, transfer host or operator authority, increase limits, control rollout, or change commercial access.
-- Operation, unit, service-point, location, stop, pitch, host-location, event, service-window, service-period, operating-state, availability, queue-context, pickup-context, combo, and last-order values retain product/domain-state treatment where represented.
-- Customer-authored names and custom labels must be preserved through future profile, subtype, host, event, or location changes.
-- Manual menu and availability editing, location and event communication, closure and relocation communication, publishing, delivery confirmation, offline awareness, and restoration remain inherited core capabilities.
-- Routing, ordering, payments, inventory, queue measurement, event management, host-venue, catering, pickup-source, and related synchronization remain later capability and integration-packaging decisions.
+- Organization primary industry, primary Hospitality subtype, neutral subtype state, and optional descriptive traits are **product/domain state**.
+- Subtype changes terminology candidates, starter recommendations, screen-purpose suggestions, operating emphasis, and presentation guidance only.
+- Subtype does not grant capabilities, alter permissions, change plan access, increase limits, control rollout, transfer authority, or change commercial access.
+- Property, building, tower, wing, floor, area, outlet, room, event, amenity, service-window, closure, relocation, and similar values keep independent product-state classifications.
+- Manual guest information, wayfinding, event, amenity, service, closure, relocation, changed-hours, targeting, publishing, delivery confirmation, offline awareness, and recovery remain core.
+- Counts remain limits. Property-management, event, room-booking, transport, guest-service, access, gaming, and related synchronization remain later integration-packaging questions.
+- Guest-specific, reservation-specific, room-specific, member-specific, and sensitive operational information remains subject to later privacy and authorization decisions.
 
 ### Impeccable planning
 
-The project-local Impeccable `clarify` guidance applies to future UI copy. One noun and verb must represent the same concept across a flow; actions must name the affected item, combo, service point, stop, location, event, or service period; labels must persist; first-use, empty, filtered, permission, error, sold-out, unavailable, paused, closed, canceled, relocating, unknown-timing, success, and recovery states must remain distinct; visible and accessible names must align; copy must support localization expansion, long names, pluralization, keyboard access, assistive technology, and 200% zoom; and the Sky Blue administrative direction remains intact.
+The project-local Impeccable `shape` guidance applies to future subtype selection and change flows. The surface is an Operate experience for an owner or authorized property manager. It must compare bounded “best when” definitions; support one primary subtype, a neutral fallback, and optional traits; preview changed defaults; preserve all customer-authored content, screens, state, history, authority, privacy boundaries, and commercial access; cover first-run, neutral, recommended, no-match, change-preview, permission, failure, success, and restoration states; remain scannable on phone and desktop; support keyboard, assistive technology, localization expansion, and 200% zoom; avoid color-only meaning; and preserve the approved Sky Blue administrative direction.
 
-No UI, API, schema, migration, billing, entitlement, feature-gate, routing, ordering, payment, inventory, event-management, host-venue, catering, pickup, analytics, localization, or integration implementation was performed.
+No UI, API, schema, migration, billing, entitlement, feature-gate, limit-counting, privacy-system, property-management, event, room-booking, transport, guest-service, gaming, or integration implementation was performed.
 
 ## Track 0 Classification Policy
 
@@ -89,10 +86,10 @@ Documentation-only Track 0 changes use lightweight repository validation. GitHub
 
 ## Next Action
 
-After RWP-00.41 is merged, verified on `master`, issue #516 is closed, and the claim is released, continue the Food Truck & Concession queue with **RWP-00.42 — Operating Characteristics** (#517).
+After RWP-00.52 is merged, verified on `master`, issue #527 is closed, and the claim is released, continue the Hospitality queue with **RWP-00.53 — Business Terminology** (#528).
 
-RWP-00.42 must document operating-day and service-period behavior, setup and teardown, routes and stops, event and host schedules, relocation, weather and cancellation, rapid sell-outs, queue surges, last orders, pickup patterns, intermittent connectivity, multi-window or multi-stand operation, and subtype-specific operating differences. It must tie each difference to defaults, terminology, content, screen purposes, or capability classification; remain documentation-only; and avoid jurisdiction-specific invention.
+RWP-00.53 must define canonical terminology for property, guest, stay, room, amenity, venue, outlet, event, meeting space, wayfinding, service hours, notices, and subtype overrides; identify Restaurant inheritance and neutral organization-wide fallbacks; keep language separate from permissions and entitlements; remain documentation-only; and hand off to RWP-00.54.
 
 Other owner-approved native-industry schedules may continue independently inside their own sequential queues. They must use Restaurant as the canonical baseline, treat only merged work as authoritative, and avoid concurrent edits to shared controlled files.
 
-Do not implement onboarding, billing, entitlements, feature gates, UI, API, schema, migrations, routing, ordering, payments, inventory, event management, host-venue behavior, catering, pickup automation, or later-phase work until the owner approves the completed capability matrix and implementation packages.
+Do not implement onboarding, billing, entitlements, feature gates, UI, API, schema, migrations, privacy systems, property-management behavior, event or room-booking behavior, transport or guest-service automation, gaming behavior, or later-phase work until the owner approves the completed capability matrix and implementation packages.
