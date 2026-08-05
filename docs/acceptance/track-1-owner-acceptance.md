@@ -156,7 +156,7 @@ Track 1.05 runs full affected-area validation through GitHub Actions. Integratio
 ## Bounded gaps corrected in Track 1.05
 
 - Screen create/pair controls no longer use billing-tier `maxScreens` as browser authority. They use the structured server `screen.device.pair` decision and fail closed when it is absent.
-- The Back Office session projection now preserves structured decision parameters and conditions, allowing the UI to explain `used` and `limit` without recreating the rule.
+- The Back Office session projection now preserves message keys, structured parameters, correlation IDs, resolved locales and conditions, allowing the UI to explain `used` and `limit` without recreating the rule.
 - Customer-facing configured-access and placeholder copy no longer promises a migration or legacy-preservation path.
 
 No additional Track 1 RWP is required by the automated validation result. Owner feedback may still add Track 1 RWPs before closure.

@@ -11,7 +11,7 @@ Combined Track 1 implementation validation complete in the proposed branch state
 ## Delivered
 
 - Combined capability, decision, permission/scope, essential-core, allowance, UI and player-path validation.
-- Structured Back Office decision parameters and conditions preserved through the session API.
+- Structured Back Office message keys, parameters, correlation IDs, locales and conditions preserved through the session API.
 - Screen create/pair affordances switched from client billing-tier authority to the server `screen.device.pair` decision.
 - Obsolete customer-facing migration/legacy wording removed from the affected Back Office path.
 - Focused Track 1 UI contract regression coverage.

@@ -32,7 +32,7 @@ Integration, Azure SQL, live-provider, hosted-infrastructure, credentialed, phys
 ## Track 1.05 Corrected Gaps
 
 - Screen create/pair UI now consumes the server `screen.device.pair` decision instead of billing-tier `maxScreens` as browser authority.
-- Session decisions preserve structured parameters and conditions through the Back Office API so allowance explanations include server-owned `used` and `limit` details.
+- Session decisions preserve message keys, structured parameters, correlation IDs, resolved locales and conditions through the Back Office API so allowance explanations include server-owned `used` and `limit` details.
 - A focused Track 1 UI contract test protects canonical navigation, server decision projection and removal of client capacity authority.
 - A deterministic local fixture and launcher provide Owner, Content Editor and Publisher review profiles plus Offline, allowance, unavailable, temporary-block and locale-fallback scenarios.
 - Affected customer copy contains no new migration or legacy-preservation promise.

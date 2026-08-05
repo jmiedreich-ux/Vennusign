@@ -15,8 +15,11 @@ public sealed record BackOfficeCapabilityDecisionResponse(
     string Decision,
     string ReasonCode,
     string Category,
+    string MessageKey,
     string Message,
     IReadOnlyDictionary<string, string> Parameters,
+    string CorrelationId,
+    string Locale,
     string? Resolution,
     int? RetryAfterSeconds,
     IReadOnlyCollection<BackOfficeCapabilityDecisionConditionResponse> Conditions)
@@ -27,6 +30,7 @@ public sealed record BackOfficeCapabilityDecisionResponse(
 public sealed record BackOfficeCapabilityDecisionConditionResponse(
     string Category,
     string ReasonCode,
+    string MessageKey,
     string Message,
     IReadOnlyDictionary<string, string> Parameters,
     string? Resolution);
