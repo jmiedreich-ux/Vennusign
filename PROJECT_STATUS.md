@@ -16,20 +16,20 @@
 | Bar, Brewery & Nightlife | **RWP-00.17** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.18 — Operating Characteristics (#493)** |
 | Café, Bakery & Dessert | **RWP-00.29** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.30 — Operating Characteristics (#505)** |
 | Food Truck & Concession | **RWP-00.42** | Industry definition, subtypes, terminology, and operating characteristics are documented. | **RWP-00.43 — Required Capabilities (#518)** |
-| Hospitality | **RWP-00.53** | Industry definition, nine property subtypes plus neutral fallback, hybrid rules, and canonical business terminology are complete in this proposed merge state. | **RWP-00.54 — Operating Characteristics (#529)** |
+| Hospitality | **RWP-00.54** | Industry definition, nine property subtypes plus neutral fallback, canonical terminology, and operating characteristics are complete in this proposed merge state. | **RWP-00.55 — Required Capabilities (#530)** |
 | Entertainment & Attractions | **RWP-00.65** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.66 — Operating Characteristics (#541)** |
 
 Only merged documents are authoritative. An industry advances only after its current RWP is merged, verified, closed, and released.
 
-## Hospitality Terminology Result
+## Hospitality Operating Result
 
-RWP-00.53 defines neutral and subtype-aware language for property, property group, guest, visitor, stay, room or accommodation, building hierarchy, venue, outlet, amenity, service, event, meeting and function space, schedules, service and access hours, notices, wayfinding, destinations, screens, publishing, and restoration.
+RWP-00.54 defines Hospitality as a continuously operating property environment with independently changing buildings, areas, accommodations, desks, amenities, services, outlets, events, meeting spaces, routes, notices, screens, languages, and sources.
 
-Public state wording now distinguishes available, limited, open, closed, temporarily closed, unavailable, out of service, paused, delayed, canceled, relocated, maintenance-affected, weather-affected, restricted, and unknown conditions. Expected reopening, scheduled reopening, unconfirmed timing, and next-update wording remain separate so the product does not invent certainty.
+The operating model now covers shift handoffs; arrival, stay, departure, and overnight rhythms; privacy-safe guest notices; amenity, service, and outlet state; meetings and event changes; operational wayfinding; authorized urgent messaging; multilingual publication; property-group coordination; subtype-specific defaults; and safe recovery from stale sources, failed publication, partial delivery, and outdated screens.
 
-Manual public terminology, notices, hours, wayfinding, and state communication remain core. Customer-authored and imported labels, hierarchy, schedules, destinations, and operating values remain product/domain state. Permissions control editing, approval, publishing, restoration, and restricted information. Advanced brand, localization, approval, analytics, AI, and integration capabilities remain later tier or add-on candidates. Counts remain limits, and rollout controls remain internal.
+Manual property information, notices, hours and states, event and meeting display, wayfinding, language variants, explicit targeting, publishing, confirmation, correction, expiration, supersession, and restoration remain core. Advanced shift workflow, group coordination, approvals, campaigns, interactive mapping, localization workflow, analytics, and managed monitoring remain tier candidates. Property, event, room-booking, transport, point-of-sale, guest-service, access, gaming, translation, AI, weather, emergency-management, map, positioning, and similar synchronization remain independent add-on candidates where integration is required. Quantities remain limits.
 
-Public signage must not expose guest identity, room assignments tied to a person, reservation codes, loyalty or access status, payment state, stay dates, service requests, itineraries, or other guest-specific information by default.
+Public information must not expose guest identity or private stay data, and no surface may infer room readiness, eligibility, access, capacity, timing, route, translation quality, or source freshness that is not authoritative.
 
 ## Track 0 Classification Policy
 
@@ -43,7 +43,7 @@ Documentation-only Track 0 changes use lightweight repository validation. GitHub
 
 ## Next Action
 
-After RWP-00.53 is merged, verified on `master`, issue #528 is closed, and the claim is released, execute **RWP-00.54 — Hospitality Operating Characteristics** (#529).
+After RWP-00.54 is merged, verified on `master`, issue #529 is closed, and the claim is released, execute **RWP-00.55 — Hospitality Required Capabilities** (#530).
 
 Other owner-approved industry streams may proceed only when their owned paths do not conflict with the active assignment.
 
