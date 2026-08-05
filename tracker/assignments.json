@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T04:05:00Z",
+  "updatedUtc": "2026-08-05T04:08:00Z",
   "activeAssignments": [
     {
       "workPackage": "RWP-00.35",
@@ -10,17 +10,6 @@
       "ownedPaths": [
         "track0/industries/cafe-bakery-dessert-onboarding-experience.md",
         "docs/work-packages/RWP-00.35-cafe-bakery-dessert-onboarding-experience.md"
-      ],
-      "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
-    },
-    {
-      "workPackage": "RWP-00.72",
-      "branch": "rwp/00.72-entertainment-attractions-default-dashboard",
-      "orchestrator": "ChatGPT",
-      "status": "In Progress",
-      "ownedPaths": [
-        "track0/industries/entertainment-attractions-default-dashboard.md",
-        "docs/work-packages/RWP-00.72-entertainment-attractions-default-dashboard.md"
       ],
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     }
