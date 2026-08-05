@@ -4,8 +4,8 @@
 
 - Track 0 industry and product architecture: complete and closed.
 - Track 1 product and architecture discussion: complete.
-- Track 1 implementation: active; Track 1.01 and 1.02 are merged and verified, and Track 1.03 implementation is complete in the proposed branch state.
-- Active implementation claim: Track 1.03 / issue #642 on `rwp/01.03-scoped-permission-authority`.
+- Track 1 implementation: active; Track 1.01 through 1.04 are merged and verified, and Track 1.05 validation and owner-handoff preparation are active.
+- Active implementation claim: Track 1.05 / issue #644 on `rwp/01.05-track-validation-handoff`.
 - Next-track implementation: blocked pending execution, validation and owner approval of the current track. Light planning for any future track may begin, but cannot be marked complete until potential changes from the current and earlier tracks are evaluated.
 - RWP-13.06: held; do not resume unchanged.
 - Phase 14 and later: paused.
@@ -87,7 +87,7 @@ Full onboarding belongs to Track 8. Track 1 only supplies the authority and deci
 - Focused non-integration tests cover every decision dimension, priority, conditions, failure closure, batch evaluation, mutation-time reevaluation, structured denial, and locale fallback.
 - Exact-head Actions run 31044938623 passed affected API, data-access and documentation validation. PR #646 merged as `06e12569b4f4ecb196a3dbf49a4a924798626376`; issue #641 is closed and `master` is verified. Integration/external-system tests were skipped.
 
-## Track 1.03 Proposed Outcome
+## Track 1.03 and 1.04 Completed Outcome
 
 - `PermissionId`, scope and assignment types keep actor authority independent from capability availability, commercial access and product state.
 - Platform, organization, venue-group, venue, resource and self scopes have explicit downward-only inheritance; future, expired and revoked assignments fail closed.
@@ -96,15 +96,25 @@ Full onboarding belongs to Track 8. Track 1 only supplies the authority and deci
 - `ScopedPermissionEvaluator` and `ScopedPermissionDecisionDimensionFactory` provide exact actor/action/scope enforcement for the Track 1.02 decision engine.
 - Support context requires a platform Support Operator assignment plus an explicit, reasoned, approved, time-bounded customer grant; every entry or denial is audited and successful context requires prominent indication.
 - Focused non-integration tests cover scope inheritance, non-inheritance upward, protected-role boundaries, time/revocation behavior, self-scope isolation, permission decision details, support grant/role intersection, audit evidence and migration contracts.
-- The local runtime has no .NET SDK. Exact-head GitHub Actions is required before merge; Azure SQL and all integration/external-system tests remain skipped.
+- Track 1.03 merged through PR #647 and Track 1.04 merged through PR #648; `master` is verified at `58dcf33`.
+- Track 1.04 replaced the old generic feature authority with typed commercial capability, permission, allowance, add-on, rollout, state and structured decision inputs while preserving essential core operations and recovery.
+
+## Track 1.05 Proposed Outcome
+
+- Combined Track 1 completeness, customer UI and player behavior have been reviewed against issue #644.
+- Back Office tests pass 105/105 and display/player tests pass 136/136 locally.
+- `docs/work-packages/RWP-01.05-track-validation-handoff.md` provides the scenario identities, local routes, reset guidance, offline controls, exact owner steps, expected outcomes, result recording and deferred-interface list.
+- The repository does not contain shared hosted acceptance credentials. Scenario accounts must be provisioned securely in the selected test environment before owner testing.
+- Exact-head GitHub Actions remains required for affected .NET, migration and documentation validation. Azure SQL and integration/external-system tests remain skipped.
 
 ## Exact Next Action
 
-1. Create and review the Track 1.03 PR against `master`.
-2. Require exact-head affected Release build and focused non-integration tests.
-3. Merge, close issue #642, verify `master`, and release the claim.
-4. Claim Track 1.04 / issue #643 only after that verification.
-5. Keep all future-track implementation blocked. Light planning may remain provisional under the governing acceptance rule.
+1. Publish and review the Track 1.05 PR against `master`.
+2. Require exact-head affected Release build, focused non-integration tests and documentation validation.
+3. Merge, close issue #644, verify `master`, and release the claim.
+4. Provision the named scenario identities in the selected test environment and conduct the numbered owner tests.
+5. Close Track 1 only after explicit owner approval; otherwise prepare additional Track 1 RWPs in the next scheduled chunk.
+6. Keep all future-track implementation blocked. Light planning may remain provisional under the governing acceptance rule.
 
 ## Boundaries
 
