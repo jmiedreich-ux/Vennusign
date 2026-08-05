@@ -4,58 +4,70 @@
 
 - Track 0 native-industry planning: complete.
 - Track 0 consolidation RWP-00.75 through RWP-00.81: complete.
-- RWP-00.79 owner tier/screen/trial/lifecycle decisions: recorded on the synchronization branch.
+- Final onboarding, dashboard, KPI, Free/trial, screen-capacity, tier-lifecycle, billing-continuity, and migration decisions: consolidated in the final validation/handoff record.
 - Product implementation: paused.
 - RWP-13.06: held; do not resume unchanged.
 - Phase 14 and later: paused.
 - Active implementation claim: none.
 
-## Final Package
+## Final Track 0 Records
 
-Review:
+- `track0/consolidation/OWNER_APPROVAL_AND_IMPLEMENTATION_HANDOFF.md`
+- `track0/consolidation/RWP-00.79_OWNER_TIER_LIFECYCLE_DECISIONS.md`
+- `track0/consolidation/FINAL_INDUSTRY_PLANNING_VALIDATION_HANDOFF.md`
 
-- `track0/consolidation/OWNER_APPROVAL_AND_IMPLEMENTATION_HANDOFF.md`;
-- `track0/consolidation/RWP-00.79_OWNER_TIER_LIFECYCLE_DECISIONS.md`;
-- the preceding Track 0 consolidation artifacts.
+## Completed Industry Subject Sequence
 
-## Recorded Owner Decisions
+1. Industry Definition
+2. Venue Subtypes
+3. Business Terminology
+4. Operating Characteristics
+5. Required Capabilities
+6. Optional Capabilities
+7. Capability Classification
+8. Subscription Tier Mapping
+9. Onboarding Experience
+10. Default Dashboard
+11. KPIs and Analytics
+12. Validation, Review and Handoff
 
-- Working tier ladder: Free, Operate, Coordinate, Portfolio, Enterprise.
-- Free is one organization, one venue, one user, one active screen, and one active static image with a complete safe publish/replace/remove loop.
-- Free and paid trials coexist.
-- Trial configuration is independent of base tier definition and must fall back safely at expiry.
-- Tier determines software outcomes; screen capacity is a separate typed allowance.
-- Paid tiers include base screen capacity, with future packs, pools, or committed-volume extensions.
-- Industry determines recommendation and presentation, not entitlement.
+## Approved Direction
+
+- Working ladder: Free, Operate, Coordinate, Portfolio, Enterprise.
+- Free provides one organization, one venue, one user, one active screen, and one active static image with a complete publish/replace/remove loop.
+- Free and paid trials coexist with safe fallback at expiry.
+- Tier determines outcomes; active screen capacity is a separate typed commercial allowance.
+- Industry affects recommendations and presentation, not entitlement.
 - Default first paid recommendation: Restaurant/Café/Bar/Food Truck → Operate; Hospitality/Entertainment → Coordinate, adjusted by actual complexity.
-- Promotions and specials overlay subscriptions/cohorts rather than rewriting sold tiers.
-- Once a tier version has ever been sold or assigned, it cannot be physically deleted or reused.
-- Sold tier versions may be hidden, stopped from new sales, retired, and eventually archived while retained for billing, entitlement, audit, refunds, disputes, reporting, and legal retention.
-- Promoting a new tier version makes it the default for new sales only.
-- Existing customers move only through explicit migration campaigns.
-- Billing uses the exact assigned tier version plus screen capacity, add-ons, promotions, contract overrides, migration effective date, and provider-confirmed state.
-- The public catalog is not billing authority.
-- Upgrades and downgrades require explicit effective timing, billing impact, capability/allowance changes, add-on compatibility, conflict evaluation, safe remediation, and provider/server confirmation.
+- The first-value journey reaches one confirmed live screen before forced plan selection or external integration.
+- One shared dashboard structure uses tier and industry overlays.
+- KPIs require a trustworthy source, explicit definition, authoritative scope/time, freshness handling, and reconciliation.
+- Promotions overlay subscriptions or cohorts rather than rewriting sold tiers.
+- Sold tier versions cannot be deleted or reused and remain valid for billing when hidden or retired.
+- Promoting a new version affects new sales only; existing customers move through explicit migration campaigns.
 - Essential correction, unpublish, active-screen safety, approved export, and recovery remain protected.
 
 ## Remaining Commercial Decisions
 
 - final customer-facing names;
-- prices, taxes, annual rules, contracts, and promotions policy;
-- exact screen and other allowance values;
+- prices, taxes, annual rules, contracts, discounts, and public packaging;
+- exact screen and other allowance quantities;
 - exact trial durations and eligibility;
-- pooling, overage, warning, and grace values;
-- provider/service commitments;
-- retention, export, and deletion durations.
-
-These undecided values do not block capability, catalog-versioning, typed allowance, billing-continuity, promotion, trial, migration, or downgrade architecture planning.
+- pooling, overage, warning, grace, and inactivity values;
+- provider, region, rights, service-level, and support commitments;
+- retention, export, deletion, and legal-hold durations;
+- final native-industry implementation order.
 
 ## Exact Next Action
 
-Merge the owner-decision synchronization. Then create the first bounded implementation RWP from the approved foundation sequence. Do not create a mega-RWP, resume RWP-13.06 unchanged, or start Phase 14+.
+After the final closure PR merges, create the bounded implementation roadmap beginning with:
 
-Recommended first implementation dependency remains the canonical capability registry and legacy alias foundation, followed by server capability decisions/reasons and scoped permissions. Commercial tier/version, Free/trial, screen capacity, promotion, billing continuity, and migration work should be created only with their prerequisite foundations explicit.
+1. canonical capability registry and legacy aliases;
+2. server capability decision and reason contract;
+3. scoped permission and authority model.
+
+Do not create a mega-RWP, resume RWP-13.06 unchanged, or start Phase 14+.
 
 ## Boundaries
 
-No implementation, final pricing, billing mutation, entitlement mutation, numeric limit values, provider commitments, legal/privacy/safety policy, or Phase 14+ work is authorized by this synchronization. Azure SQL, live Stripe, devices, hosted/browser, and integration/external-system tests remain skipped.
+No implementation, final pricing, billing mutation, entitlement mutation, numeric limit values, provider commitments, legal/privacy/safety policy, or Phase 14+ work is authorized. Azure SQL, live Stripe, devices, hosted/browser, and integration/external-system tests remain skipped.

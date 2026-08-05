@@ -8,41 +8,43 @@
 - RWP-13.06 — Trial-First Onboarding: held and must not resume unchanged.
 - Native-industry Track 0 gate: complete.
 - Track 0 consolidation: complete through RWP-00.81.
-- RWP-00.79 owner tier/screen/trial/lifecycle decisions: recorded for repository synchronization.
+- Final Track 0 industry planning validation and handoff: complete in this proposed merge.
 
 ## Track 0 Deliverables
 
-- normalized cross-industry capability model;
-- current-product feature/gate/limit inventory;
-- capability reconciliation and gap analysis;
-- unified tier and independent add-on architecture;
-- limits, scope, inheritance, downgrade, and exception policy;
-- cross-industry customer journey validation;
-- owner approval checklist and recommended bounded implementation sequence;
-- owner decision supplement for Free, paid tiers, industry recommendations, screen capacity, trials, promotions, sold-tier immutability, versioning, billing continuity, and customer migration.
+- industry definitions, subtypes, terminology, operating characteristics, required and optional capabilities;
+- capability classification and cross-industry normalization;
+- current-product feature/gate/limit inventory and reconciliation;
+- unified Free/Operate/Coordinate/Portfolio/Enterprise direction;
+- independent add-on architecture;
+- typed limits, scope, inheritance, downgrade, exception, and active-output protection policy;
+- tier and screen-capacity separation;
+- Free plus paid-trial model;
+- sold-tier version immutability, retirement, billing continuity, promotions, upgrades, downgrades, and migration campaigns;
+- onboarding first-value journey;
+- shared tier/industry dashboard direction and compact wireframe baseline;
+- native and source-dependent KPI/analytics rules;
+- cross-industry journey validation and implementation handoff.
 
-The final package is `track0/consolidation/OWNER_APPROVAL_AND_IMPLEMENTATION_HANDOFF.md`.
-The owner decision supplement is `track0/consolidation/RWP-00.79_OWNER_TIER_LIFECYCLE_DECISIONS.md`.
+Primary records:
 
-## Recorded Owner Direction
+- `track0/consolidation/OWNER_APPROVAL_AND_IMPLEMENTATION_HANDOFF.md`
+- `track0/consolidation/RWP-00.79_OWNER_TIER_LIFECYCLE_DECISIONS.md`
+- `track0/consolidation/FINAL_INDUSTRY_PLANNING_VALIDATION_HANDOFF.md`
 
-- Working ladder: Free, Operate, Coordinate, Portfolio, Enterprise.
-- Free provides one complete static-image outcome on one active screen.
-- Free and paid trials coexist; trial expiry falls back safely without destroying the customer’s only active public output.
-- Tier determines software outcomes; active screen capacity is a separate commercial allowance.
-- Industry affects recommendations and presentation, not entitlement.
-- Restaurant, Café, Bar, and Food Truck normally begin at Operate; Hospitality and Entertainment normally begin at Coordinate, subject to actual operating complexity.
-- A sold tier version cannot be physically deleted or silently rewritten.
-- Hidden or retired tier versions continue to support existing billing and entitlement.
-- Promoting a tier version changes the default for new sales only.
-- Existing customers move only through an explicit optional, scheduled mandatory, or controlled administrative migration.
-- Billing uses the assigned tier version, screen capacity, add-ons, promotions, contract overrides, migration effective date, and provider-confirmed state—not the public catalog.
+## Final Result
 
-Pricing, final numeric allowances, exact trial duration, taxes, contracts, provider commitments, and final names remain intentionally undecided.
+Track 0 industry planning is complete. Industry affects terminology, defaults, starter content, recommendations, dashboard emphasis, and suggested add-ons, but does not grant entitlement. Essential manual operation remains universal. Tier outcomes, active screen capacity, permissions, product state, add-ons, typed limits, privacy/rights/safety, exceptions, and rollout remain separate.
+
+The approved first-value journey is signup, industry/subtype selection, organization and venue setup, starter content, one-screen pairing, explicit preview/publish, heartbeat plus expected-content acknowledgement, and then a recommended Free, trial, or paid path.
+
+One shared dashboard structure is approved with Free, Operate, Coordinate, Portfolio, Enterprise, and industry overlays. KPIs require a trustworthy source, explicit definition, scope, freshness, and reconciliation.
+
+Pricing, final names, numeric allowances, exact trial duration, taxes, contracts, provider commitments, retention durations, and final implementation order remain intentionally undecided.
 
 ## Exact Next Action
 
-Complete review and merge of the RWP-00.79 owner-decision synchronization. After merge, create only bounded implementation RWPs for approved dependencies; do not resume RWP-13.06 unchanged or start Phase 14+.
+Review and merge the final Track 0 industry planning closure. After merge, create and approve the bounded implementation roadmap beginning with the canonical capability registry and legacy aliases. Do not resume RWP-13.06 unchanged or begin Phase 14+.
 
 ## Validation Policy
 
