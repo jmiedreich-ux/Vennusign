@@ -35,7 +35,7 @@ Read additional repository documents only when the current issue explicitly requ
 | Hospitality | RWP-00.62 | Complete and verified. |
 | Entertainment & Attractions | RWP-00.74 | Complete and verified. |
 
-The all-industry gate is satisfied. RWP-00.75 may begin only in the separately approved consolidation stream. Completed industry streams must not invent more work, start product implementation, or begin consolidation themselves.
+The all-industry gate is satisfied. RWP-00.75 may begin only in the separately approved consolidation stream. That stream must refresh current `master`, verify every endpoint and released claim, and then proceed strictly sequentially. Completed industry streams must not invent more work, start product implementation, or begin consolidation themselves.
 
 ## Delta rule
 
