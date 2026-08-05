@@ -1,23 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:07:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "RWP-00.54",
-      "branch": "rwp/00.54-hospitality-operating-characteristics",
-      "orchestrator": "ChatGPT",
-      "status": "In Progress",
-      "ownedPaths": [
-        "track0/industries/hospitality.md",
-        "track0/CAPABILITY_MATRIX.md",
-        "docs/work-packages/RWP-00.54-hospitality-operating-characteristics.md",
-        "PROJECT_STATUS.md",
-        "ai/handoffs/current.md",
-        "tracker/assignments.json"
-      ]
-    }
-  ],
-  "nextAvailableWorkPackage": null,
+  "updatedUtc": "2026-08-05T03:13:00Z",
+  "activeAssignments": [],
+  "nextAvailableWorkPackage": "RWP-00.55",
   "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
