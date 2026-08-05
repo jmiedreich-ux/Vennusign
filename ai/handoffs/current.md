@@ -10,49 +10,55 @@
 - Bar, Brewery & Nightlife: RWP-00.17 merged; RWP-00.18 is next
 - Café, Bakery & Dessert: RWP-00.29 merged; RWP-00.30 is next
 - Food Truck & Concession: RWP-00.42 merged; RWP-00.43 is next
-- Hospitality: RWP-00.54 complete in this proposed merge state; RWP-00.55 is next
+- Hospitality: RWP-00.55 complete in this proposed merge state; RWP-00.56 is next
 - Entertainment & Attractions: RWP-00.65 merged; RWP-00.66 is next
 
-## Hospitality Operating Result
+## Hospitality Required-Capability Result
 
-RWP-00.54 establishes:
+RWP-00.55 defines eleven required core groups:
 
-- continuous property operation with independent property, area, amenity, service, outlet, event, route, notice, screen, language, and source states;
-- explicit shift and handoff visibility for active notices, overrides, stale sources, unpublished changes, failed deliveries, outdated screens, recovery points, and unresolved actions;
-- arrival, check-in, stay, departure, check-out, and overnight presentation rhythms without exposing private guest state;
-- guest-notice scope, audience, priority, effective time, source, target, publication, expiration, correction, supersession, and recovery boundaries;
-- independent amenity, service, outlet, meeting-space, event, transport, access, and wayfinding operation;
-- public and authorized meeting/event directories, room changes, delays, cancellations, relocations, registration, and route changes;
-- operational wayfinding with verified destinations, routes, accessibility information, temporary changes, and no invented distance or travel claims;
-- authorized urgent-message planning without defining emergency policy, alarm behavior, dispatch, or life-safety implementation;
-- basic manual multilingual operation, per-language preview and delivery state, missing-language visibility, expansion, right-to-left readiness, and local date/time clarity;
-- property-group scope, local overrides, mixed-state visibility, safe bulk action, and separation of brand, ownership, management, permission, authority, entitlement, and limits;
-- subtype-specific operating rhythms and presentation priorities;
-- one primary Track 0 classification for every operating concern.
+1. property and local-context information;
+2. guest notices and operating-state communication;
+3. amenity, service, and outlet hours and availability;
+4. meetings, events, and directories;
+5. manual wayfinding and temporary routes;
+6. basic multilingual and accessible content;
+7. explicit screen targeting and preview;
+8. publishing and delivery confidence;
+9. offline, outdated, conflict, and recovery awareness;
+10. permissions and privacy-safe audiences;
+11. required operational states.
 
-Manual guest communication and recovery remain core. Advanced workflow and coordination remain tier candidates. External property, event, room, transport, point-of-sale, guest-service, access, gaming, translation, AI, weather, emergency, map, positioning, and related synchronization remain add-on candidates where an integration is required.
+Essential manual operation remains available without premium tiers or paid integrations. Required behavior includes explicit property and object scope, local dates and times, effective periods, public and restricted audiences, source and freshness, high-impact previews, honest unknown timing, correction, expiration, supersession, safe retry, partial-delivery visibility, offline and outdated awareness, last-known-good state, undo or restoration, and privacy-safe public wording.
 
-Public information must remain privacy-safe and must not infer room readiness, eligibility, access, capacity, timing, route, translation quality, or source freshness.
+Automated synchronization, guest-specific personalization, live operational data, advanced shift and portfolio workflow, premium analytics, optimization, prediction, translation automation, and AI remain outside required core. They may not replace manual editing, targeting, publishing, confirmation, and recovery.
+
+## Classification Result
+
+- The eleven groups are **core capabilities**.
+- Property, hierarchy, audience, language, source, freshness, hours, schedules, notices, operating states, targets, delivery, and content versions are **product/domain state** where represented.
+- Edit, view, approve, publish, schedule, restore, screen, template, language, and bulk-action authority are **permissions**.
+- Advanced workflow, governance, coordination, analytics, monitoring, localization, personalization, and optimization are **tier candidates**.
+- External systems and automatic synchronization are **add-on candidates**.
+- Quantities are **limits** and temporary delivery controls are **rollout flags**.
 
 ## Impeccable Planning Result
 
-Future Hospitality surfaces are **Operate** experiences for authorized property teams.
+Future Hospitality Operate surfaces must present the smallest task-relevant subset for quick communication, hours, event changes, wayfinding changes, screen health, and portfolio review.
 
-They prioritize exceptions, active notices, changed hours and states, stale or conflicting sources, publication failures, partial delivery, outdated screens, language gaps, affected scope, explicit targets, and recovery. During arrival/departure peaks they emphasize reception, access, parking, transport, amenities, outlets, wayfinding, notices, and screen health. During events they emphasize directories, meeting spaces, session changes, registration, routes, languages, and publication result. Across properties they surface local dates and times, mixed states, excluded targets, and safe bulk actions.
-
-Required planning states include first use, empty, loading, permission, validation, stale source, source conflict, offline, outdated, publish failure, partial delivery, success, undo, restoration, missing translation, long names, overnight date boundaries, keyboard and assistive-technology operation, non-color status, 200% zoom, and phone through large-desktop layouts. Preserve the approved Sky Blue administrative direction.
+Every high-impact task requires explicit scope, current state, effective time, public wording, targets, preview, delivery result, and recovery. Required states include first use, empty, loading, permission, validation, stale source, source conflict, offline, outdated, publish failure, partial delivery, scheduled, active, expired, superseded, restored, success, undo, long names, overnight dates, language expansion, 200% zoom, keyboard, assistive technology, and non-color-only status. Preserve the approved Sky Blue administrative direction.
 
 No UI, API, schema, migration, billing, entitlement, permission, privacy-system, localization, analytics, property-management, event, room-booking, transport, point-of-sale, guest-service, access, gaming, emergency, map, AI, hardware, or integration implementation was authorized or performed.
 
 ## Exact Next Hospitality Action
 
-After RWP-00.54 is merged, verified on `master`, issue #529 is closed, and the claim is released, execute **RWP-00.55 — Hospitality Required Capabilities** (#530).
+After RWP-00.55 is merged, verified on `master`, issue #530 is closed, and the claim is released, execute **RWP-00.56 — Hospitality Optional Capabilities** (#531).
 
-RWP-00.55 must define the smallest viable core set for guest information, wayfinding, amenity and outlet hours, events and meetings, notices, property context, language variants, explicit targeting, publish confirmation, offline and outdated awareness, correction, recovery, permissions, and required states. It remains documentation-only and hands off to RWP-00.56.
+RWP-00.56 must define advanced optional workflows and integration candidates without weakening required manual core operation. It remains documentation-only and hands off to RWP-00.57.
 
 ## Parallel-Stream Rule
 
-Each industry remains sequential inside its approved RWP range. Restaurant is the canonical baseline, only merged documents are authoritative, and no two runs may concurrently modify the same shared controlled file.
+Each industry remains sequential inside its approved RWP range. Restaurant is the canonical baseline, only merged industry-specific documents are authoritative, and shared living records follow `docs/process/SHARED_FILE_WRITE_PROTOCOL.md` with queued semantic updates and short transactional write windows.
 
 ## Boundaries
 
