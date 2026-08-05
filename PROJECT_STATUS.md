@@ -17,7 +17,7 @@
 | Café, Bakery & Dessert | **RWP-00.29** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.30 — Operating Characteristics (#505)** |
 | Food Truck & Concession | **RWP-00.42** | Industry definition, subtypes, terminology, and operating characteristics are documented. | **RWP-00.43 — Required Capabilities (#518)** |
 | Hospitality | **RWP-00.55** | Industry definition, subtypes, terminology, operating characteristics, and the smallest viable required capability set are complete in this proposed merge state. | **RWP-00.56 — Optional Capabilities (#531)** |
-| Entertainment & Attractions | **RWP-00.65** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.66 — Operating Characteristics (#541)** |
+| Entertainment & Attractions | **RWP-00.66** | Industry definition, venue subtypes, terminology, and operating characteristics are complete in this proposed merge state. | **RWP-00.67 — Required Capabilities (#542)** |
 
 Only merged documents are authoritative. An industry advances only after its current RWP is merged, verified, closed, and released.
 
@@ -29,6 +29,12 @@ Manual operation remains available without premium tiers or paid integrations. P
 
 Automated synchronization, personalization, live operational data, advanced workflow, premium analytics, optimization, prediction, and AI remain outside required core and cannot replace manual editing, targeting, publishing, confirmation, correction, expiration, supersession, retry, and restoration.
 
+## Entertainment Operating-Characteristics Result
+
+RWP-00.66 separates venue operating days, timed occurrences, continuously available experiences, last-entry behavior, queues and wait times, capacity and admissions, attractions and exhibits, closures and recovery, safety and accessibility notices, multilingual content, event surges, source freshness, and subtype-specific operating rhythms.
+
+Essential manual schedule, state, queue, wait, capacity, wayfinding, notice, targeting, publishing, confirmation, offline-awareness, and restoration operation remains core. Operating values are product/domain state. Authority is permission. External synchronization, advanced coordination, analytics, premium localization, identity, AI, and managed hardware remain later tier or add-on candidates. Quantities remain limits and temporary release control remains a rollout flag.
+
 ## Track 0 Classification Policy
 
 Every concern has exactly one primary classification: core capability, permission, product/domain state, tier entitlement, independent add-on, usage or quantity limit, or internal rollout flag.
@@ -39,9 +45,10 @@ Industry and subtype affect defaults, terminology, starter content, recommendati
 
 Documentation-only Track 0 changes use lightweight repository validation. GitHub Actions is authoritative on the exact reviewed PR head. Integration and external-system tests remain skipped under the standing owner instruction.
 
-## Next Action
+## Next Actions
 
-After RWP-00.55 is merged, verified on `master`, issue #530 is closed, and the claim is released, execute **RWP-00.56 — Hospitality Optional Capabilities** (#531).
+- After RWP-00.55 is merged, verified on `master`, issue #530 is closed, and its claim is released, execute **RWP-00.56 — Hospitality Optional Capabilities** (#531).
+- After RWP-00.66 is merged, verified on `master`, issue #541 is closed, and its claim is released, execute **RWP-00.67 — Entertainment & Attractions Required Capabilities** (#542).
 
 Other owner-approved industry streams may proceed under the queued short-lived shared-file write protocol.
 
