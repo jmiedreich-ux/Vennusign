@@ -23,7 +23,7 @@ The owner-approved sequence is:
 7. Revalidate after correction.
 8. Stop only when a new owner decision, major scope expansion, conflicting requirement, unavailable dependency, high-risk action, or unresolved repeated failure prevents a confident correction.
 9. Conduct one owner acceptance review after the five-RWP batch.
-10. Do not start the next track until the owner approves track closure.
+10. Light planning for the next track may begin while owner acceptance testing for the current track is underway or has not yet started. That next-track planning must not be marked complete until all potential changes arising from the current and earlier tracks have been evaluated and incorporated or explicitly ruled out. Implementation of the next track remains blocked until the owner approves closure of the current track.
 
 A fixable gap must not be deferred into a later cleanup cycle.
 
@@ -301,7 +301,7 @@ Before owner review, provide:
 - automated evidence for checks the owner need not repeat;
 - explicit deferred-interface list with future track ownership.
 
-Track 2 remains blocked until the owner explicitly approves Track 1 closure.
+Track 2 implementation remains blocked until the owner explicitly approves Track 1 closure. Light Track 2 planning may begin before or during Track 1 owner acceptance testing, but Track 2 planning cannot be marked complete until all potential changes arising from Track 1 and earlier tracks have been evaluated and incorporated or explicitly ruled out.
 
 ## Onboarding Boundary
 
@@ -324,7 +324,7 @@ At the next session:
 ## Current Boundaries
 
 - Track 1 implementation is not yet authorized merely by this handoff.
-- Do not start Track 2.
+- Do not start Track 2 implementation before owner approval of Track 1 closure. Light Track 2 planning may begin, but it cannot be marked complete until potential changes from Track 1 and earlier tracks have been evaluated.
 - Do not resume RWP-13.06 unchanged.
 - Phase 14 and later remain paused.
 - No full onboarding, billing-management UI, tier-management UI, role-management UI, allowance-management UI or add-on-management UI should be claimed as delivered by Track 1 unless explicitly added and approved.
