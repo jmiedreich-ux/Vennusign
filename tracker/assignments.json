@@ -1,18 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:57:00Z",
+  "updatedUtc": "2026-08-05T03:58:00Z",
   "activeAssignments": [
-    {
-      "workPackage": "RWP-00.62",
-      "branch": "rwp/00.62-hospitality-validation-review-handoff",
-      "orchestrator": "ChatGPT",
-      "status": "In Progress",
-      "ownedPaths": [
-        "track0/industries/hospitality-validation.md",
-        "docs/work-packages/RWP-00.62-hospitality-validation-review-handoff.md"
-      ],
-      "sharedWriteProtocol": "Final Hospitality shared-record checkpoint after validation"
-    },
     {
       "workPackage": "RWP-00.33",
       "branch": "rwp/00.33-cafe-bakery-dessert-capability-classification",
