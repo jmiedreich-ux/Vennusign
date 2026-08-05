@@ -1,18 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T04:17:00Z",
+  "updatedUtc": "2026-08-05T04:18:00Z",
   "activeAssignments": [
-    {
-      "workPackage": "RWP-00.38",
-      "branch": "rwp/00.38-cafe-bakery-dessert-validation-review-handoff",
-      "orchestrator": "ChatGPT",
-      "status": "In Progress",
-      "ownedPaths": [
-        "track0/industries/cafe-bakery-dessert-validation.md",
-        "docs/work-packages/RWP-00.38-cafe-bakery-dessert-validation-review-handoff.md"
-      ],
-      "sharedWriteProtocol": "Final Café shared-record checkpoint after validation"
-    },
     {
       "workPackage": "RWP-00.72",
       "branch": "rwp/00.72-entertainment-attractions-default-dashboard",
