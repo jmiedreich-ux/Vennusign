@@ -5,22 +5,21 @@
 - Phase 13 complete; Phase 14+ paused.
 - Product implementation and RWP-13.06 paused.
 - Native-industry gate complete.
-- Active planning track: Track 0 (#488).
+- Track 0 consolidation active.
 
 ## Consolidation Progress
 
-- RWP-00.75 normalization: merged.
-- RWP-00.76 inventory: merged.
-- RWP-00.77 reconciliation: merged.
-- RWP-00.78 tier/add-on architecture: merged.
-- **RWP-00.79 limits/scope/inheritance policy: complete in proposed merge state.**
+- RWP-00.75 through RWP-00.79: merged.
+- **RWP-00.80 cross-industry customer journey validation: complete in proposed merge state.**
 
-`track0/consolidation/LIMITS_SCOPE_INHERITANCE_POLICY.md` defines typed allowances, attachment and pool scopes, inheritance precedence, local overrides, enforcement modes, downgrade/add-on removal safety, exception governance, and active-public-output protection. No numeric values or implementation are approved.
+The validation at `track0/consolidation/CUSTOMER_JOURNEY_VALIDATION.md` passes representative signup, first-screen, daily operation, permission, source recovery, upgrade, add-on, limit, downgrade, multi-venue/mixed-industry, support, and restriction journeys, with implementation gaps explicitly recorded.
+
+The major remaining implementation foundation is a normalized server capability-decision/reason contract and UI state system. RWP-00.80 does not implement it.
 
 ## Exact Next Action
 
-After RWP-00.79 merges, closes, verifies, and releases, execute **RWP-00.80 — Cross-Industry Customer Journey Validation (#556)**. Validate representative signup through support journeys across capabilities, plans, add-ons, permissions, limits, mixed-industry inheritance, failure, and recovery.
+After RWP-00.80 merges, closes, verifies, and releases, execute **RWP-00.81 — Owner Approval & Implementation Handoff (#557)**. Assemble the final decision package, approval points, and recommended bounded implementation sequence. Do not authorize implementation or resume RWP-13.06/Phase 14+ without owner approval.
 
 ## Validation Policy
 
-Documentation validation is GitHub Actions-authoritative. Azure SQL, live Stripe, and integration/external-system tests remain skipped.
+Documentation validation is GitHub Actions-authoritative. Azure SQL, live Stripe, devices, hosted/browser, and integration/external-system tests remain skipped.
