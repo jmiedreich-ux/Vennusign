@@ -58,7 +58,6 @@ import "./styles.css";
 import { revokeCustomerSession } from "./customerOnboardingApi";
 
 const tokenStorageKey = "vennusign.back-office.token";
-const legacyTokenStorageKey = "vennu.back-office.token";
 const customerSessionAccess = "customer-session";
 
 export default function App() {
@@ -67,7 +66,7 @@ export default function App() {
     const value = new URLSearchParams(window.location.search).get("starterMenu");
     return value && ["restaurant", "cafe", "bar"].includes(value) ? value as "restaurant" | "cafe" | "bar" : undefined;
   }, []);
-  const [accessToken, setAccessToken] = useState(() => sessionStorage.getItem(tokenStorageKey) ?? sessionStorage.getItem(legacyTokenStorageKey) ?? customerSessionAccess);
+  const [accessToken, setAccessToken] = useState(() => sessionStorage.getItem(tokenStorageKey) ?? customerSessionAccess);
   const [session, setSession] = useState<BackOfficeSession>();
   const [billing, setBilling] = useState<BackOfficeBillingPresentation>();
   const [route, setRoute] = useState<BackOfficeRoute>(() => resolveBackOfficeRoute(window.location.hash));
@@ -117,7 +116,6 @@ export default function App() {
         if (reason instanceof DOMException && reason.name === "AbortError") return;
         if (accessToken !== customerSessionAccess) {
           sessionStorage.removeItem(tokenStorageKey);
-          sessionStorage.removeItem(legacyTokenStorageKey);
         }
         setAccessToken("");
         setSession(undefined);
@@ -181,7 +179,6 @@ export default function App() {
     const token = String(new FormData(event.currentTarget).get("accessToken") ?? "").trim();
     if (!token) return;
     sessionStorage.setItem(tokenStorageKey, token);
-    sessionStorage.removeItem(legacyTokenStorageKey);
     setError(undefined);
     setAccessToken(token);
   };
@@ -189,7 +186,6 @@ export default function App() {
   const signOut = () => {
     if (accessToken === customerSessionAccess) void revokeCustomerSession(configuration).catch(() => undefined);
     sessionStorage.removeItem(tokenStorageKey);
-    sessionStorage.removeItem(legacyTokenStorageKey);
     setAccessToken("");
     setSession(undefined);
     setBilling(undefined);
@@ -215,11 +211,11 @@ export default function App() {
         <p role={error ? "alert" : undefined}>{error ?? "Sign in with your Vennusign customer account to continue."}</p>
         <a className="customer-sign-in" href="/signin?returnPath=/">Sign in with your customer account</a>
         {error ? <a className="customer-recovery" href="/onboarding">Set up or recover an organization and venue</a> : null}
-        <details><summary>Use a temporary legacy venue link</summary><form onSubmit={authorize}>
-          <p>Legacy links are available only during migration and may be revoked or retired.</p>
-          <label htmlFor="accessToken">Legacy venue access token</label>
+        <details><summary>Use configured venue access</summary><form onSubmit={authorize}>
+          <p>Use a configured access token supplied for this venue. Customer sign-in remains the standard entry.</p>
+          <label htmlFor="accessToken">Configured venue access token</label>
           <input id="accessToken" name="accessToken" type="password" autoComplete="current-password" required />
-          <button type="submit">Use legacy access</button>
+          <button type="submit">Open venue</button>
         </form></details>
       </section>
     </main>;
@@ -517,11 +513,11 @@ export default function App() {
             accessToken={accessToken}
             venueId={session.venueId}
             capabilities={allowedCapabilityIds}
-             maxScreens={billing?.currentTier?.maxScreens}
+            decisions={session.capabilityDecisions}
             area={route.path as "screens" | "themes" | "schedules" | "tap-list"}
           />
         : allowed
-        ? <section className="placeholder"><p>Foundation ready</p><h2>{route.label}</h2><span>This protected venue-scoped area is ready for the next migration package.</span></section>
+        ? <section className="placeholder"><p>Foundation ready</p><h2>{route.label}</h2><span>This protected venue-scoped area is ready for its planned product package.</span></section>
         : lockedOpportunity
         ? <LockedSectionPreview
             key={`${lockedOpportunity.featureKey}-${dismissalVersion}`}

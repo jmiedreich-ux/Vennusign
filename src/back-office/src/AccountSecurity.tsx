@@ -44,7 +44,7 @@ export default function AccountSecurity({ configuration, customerSession }: { co
     await run(`remove-${passkey.id}`, () => removePasskey(configuration, passkey.id), "Passkey removed.");
   };
 
-  if (!customerSession) return <section className="account-security" aria-labelledby="account-security-heading"><p>Account</p><h2 id="account-security-heading">Security requires a customer session</h2><p>Sign out of the temporary legacy venue link, then sign in with your customer account to manage passkeys.</p></section>;
+  if (!customerSession) return <section className="account-security" aria-labelledby="account-security-heading"><p>Account</p><h2 id="account-security-heading">Security requires a customer session</h2><p>Sign out of configured venue access, then sign in with your customer account to manage passkeys.</p></section>;
   const inventoryView = passkeyInventoryView({ loading, failed: inventoryFailed, count: passkeys.length });
   return <section className="account-security" aria-labelledby="account-security-heading">
     {reviewDialog}

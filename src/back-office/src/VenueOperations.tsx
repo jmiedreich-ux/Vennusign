@@ -7,7 +7,7 @@ import PlaylistAdministration from "./PlaylistAdministration";
 import ScreenManagement from "./ScreenManagement";
 import TapListAdministration from "./TapListAdministration";
 import ThemeBuilder from "./ThemeBuilder";
-import { loadManagedScreens, type ManagedScreen } from "./api";
+import { loadManagedScreens, type BackOfficeCapabilityDecision, type ManagedScreen } from "./api";
 import type { BackOfficeConfiguration } from "./config";
 import "./operations.css";
 
@@ -16,7 +16,7 @@ type Props = {
   accessToken: string;
   venueId: string;
   capabilities: string[];
-  maxScreens?: number;
+  decisions: BackOfficeCapabilityDecision[];
   area: "screens" | "themes" | "schedules" | "tap-list";
 };
 
@@ -25,7 +25,7 @@ export default function VenueOperations({
   accessToken,
   venueId,
   capabilities,
-  maxScreens,
+  decisions,
   area
 }: Props) {
   const [screens, setScreens] = useState<ManagedScreen[]>([]);
@@ -55,7 +55,7 @@ export default function VenueOperations({
         apiKey={accessToken}
         venueId={venueId}
         allLayoutsEnabled={allLayouts}
-        maxScreens={maxScreens}
+        pairDecision={decisions.find(decision => decision.capabilityId === "screen.device.pair")}
         videoWallEnabled={capabilities.includes("screen.wall.coordinate")}
         showUpgradePrompt={false}
       />

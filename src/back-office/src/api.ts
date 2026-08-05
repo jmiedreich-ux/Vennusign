@@ -23,8 +23,16 @@ export type BackOfficeCapabilityDecision = {
   reasonCode: string;
   category: string;
   message: string;
+  parameters: Record<string, string>;
   resolution?: string;
   retryAfterSeconds?: number;
+  conditions: Array<{
+    category: string;
+    reasonCode: string;
+    message: string;
+    parameters: Record<string, string>;
+    resolution?: string;
+  }>;
   isAllowed: boolean;
 };
 export type BackOfficeTierSummary = {

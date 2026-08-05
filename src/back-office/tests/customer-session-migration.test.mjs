@@ -42,6 +42,7 @@ test("legacy compatibility is explicitly bounded and secondary", () => {
   assert.match(options, /RevokedUtc/);
   assert.match(legacy, /FixedTimeEquals/);
   assert.match(legacy, /Legacy venue access has been retired/);
-  assert.match(app, /temporary legacy venue link/);
-  assert.match(app, /Legacy venue access token/);
+  assert.match(app, /Use configured venue access/);
+  assert.match(app, /Configured venue access token/);
+  assert.doesNotMatch(app, /temporary legacy venue link|during migration|next migration package/);
 });

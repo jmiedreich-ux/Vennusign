@@ -1,19 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T21:25:00Z",
-  "activeAssignments": [
-    {
-      "id": "TRACK-1.05",
-      "issue": 644,
-      "mode": "Sequential",
-      "branch": "rwp/01.05-track-validation-handoff",
-      "status": "claimed"
-    }
-  ],
+  "updatedUtc": "2026-08-05T21:28:20Z",
+  "activeAssignments": [],
   "nextAvailableWorkPackage": null,
-  "approvedSequentialQueue": [
-    "TRACK-1.05"
-  ],
+  "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

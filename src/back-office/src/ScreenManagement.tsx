@@ -12,6 +12,7 @@ import {
   unpairManagedScreen,
   updateManagedScreen,
   BackOfficeApiError,
+  type BackOfficeCapabilityDecision,
   type ManagedScreen,
   type ScreenOverflowPreview,
   type ScreenReplacementResult
@@ -36,7 +37,7 @@ type Props = {
   apiKey: string;
   venueId: string;
   allLayoutsEnabled: boolean;
-  maxScreens?: number;
+  pairDecision?: BackOfficeCapabilityDecision;
   videoWallEnabled: boolean;
   showUpgradePrompt?: boolean;
 };
@@ -54,7 +55,7 @@ export default function ScreenManagement({
   apiKey,
   venueId,
   allLayoutsEnabled,
-  maxScreens,
+  pairDecision,
   videoWallEnabled,
   showUpgradePrompt = true
 }: Props) {
@@ -116,7 +117,7 @@ export default function ScreenManagement({
       setNewName(""); setNewLocation(""); await refresh(); setSetupOpen(false);
     } catch (reason: unknown) {
       setError(reason instanceof BackOfficeApiError && reason.status === 409
-        ? "Your plan's screen limit has been reached. Upgrade before adding another screen."
+        ? "Screen capacity changed before this request completed. Refresh the session, then remove a screen or review the current allowance."
         : "The screen could not be created.");
     }
     finally { setBusyId(undefined); }
@@ -138,7 +139,7 @@ export default function ScreenManagement({
         : status === 410
           ? "That pairing code expired. Return to the player and generate a new code."
           : status === 409
-            ? "That code was already claimed, or the plan limit was reached. Generate a new code or review screen capacity."
+            ? "That code was already claimed, or screen capacity changed. Generate a new code or review the current allowance."
             : "Pairing failed. Keep the player on its pairing screen, check the connection, and try again.");
     }
     finally { setBusyId(undefined); }
@@ -259,13 +260,13 @@ export default function ScreenManagement({
     const query = screenSearch.trim().toLowerCase();
     return matchesHealth && (!query || `${screen.name} ${screen.location ?? ""} ${screen.platform ?? ""}`.toLowerCase().includes(query));
   });
-  const hasFiniteScreenLimit = typeof maxScreens === "number" && maxScreens >= 0;
-  const screenLimitReached = hasFiniteScreenLimit && activeScreens.length >= maxScreens;
-  const screenUsage = screensLoading || typeof maxScreens !== "number"
-    ? undefined
-    : maxScreens < 0
-      ? `${activeScreens.length} active screens · Unlimited by plan`
-      : `${activeScreens.length} of ${maxScreens} active screens${screenLimitReached ? " · Plan limit reached" : ""}`;
+  const pairingAllowed = pairDecision?.isAllowed ?? false;
+  const screenLimitReached = pairDecision?.reasonCode === "allowance.reached";
+  const screenUsage = screenLimitReached
+    ? `${pairDecision?.parameters.used ?? activeScreens.length} of ${pairDecision?.parameters.limit ?? "the allowed"} active screens · ${pairDecision?.message ?? "The current allowance has been reached."}`
+    : !pairingAllowed && pairDecision
+      ? pairDecision.message
+      : undefined;
   const selectedScreen = activeScreens.find(screen => screen.id === selectedScreenId);
 
   return <article className="screen-management">
@@ -284,7 +285,7 @@ export default function ScreenManagement({
         <form className="screen-create" onSubmit={create}>
           <input aria-label="New screen name" maxLength={200} required value={newName} onChange={event => setNewName(event.target.value)} placeholder="Screen name" />
           <input aria-label="New screen location" maxLength={200} value={newLocation} onChange={event => setNewLocation(event.target.value)} placeholder="Location (optional)" />
-          <button aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "new" || screenLimitReached}>Add screen</button>
+          <button aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "new" || !pairingAllowed}>Add screen</button>
         </form>
         <form className="screen-create" onSubmit={claim}>
           <input
@@ -298,7 +299,7 @@ export default function ScreenManagement({
             onChange={event => setPairingCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
             placeholder="TV pairing code"
           />
-          <button aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "pair" || screenLimitReached}>Pair screen</button>
+          <button aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "pair" || !pairingAllowed}>Pair screen</button>
         </form>
         <p className="screen-notice" role="status">{busyId === "pair" ? "Pairing pending… keep this page and the player open." : "Pairing codes expire and can be used once. If pairing fails, generate a fresh code on the player before retrying."}</p>
         <section className="screen-delivery-target" aria-labelledby="replacement-heading">
