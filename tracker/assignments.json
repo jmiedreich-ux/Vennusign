@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:51:00Z",
+  "updatedUtc": "2026-08-05T03:52:00Z",
   "activeAssignments": [
     {
-      "workPackage": "RWP-00.60",
-      "branch": "rwp/00.60-hospitality-default-dashboard",
+      "workPackage": "RWP-00.61",
+      "branch": "rwp/00.61-hospitality-kpis-analytics",
       "orchestrator": "ChatGPT",
       "status": "In Progress",
       "ownedPaths": [
-        "track0/industries/hospitality-default-dashboard.md",
-        "docs/work-packages/RWP-00.60-hospitality-default-dashboard.md"
+        "track0/industries/hospitality-kpis-analytics.md",
+        "docs/work-packages/RWP-00.61-hospitality-kpis-analytics.md"
       ],
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     },
