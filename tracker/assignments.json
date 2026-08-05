@@ -1,21 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:23:00Z",
+  "updatedUtc": "2026-08-05T03:25:00Z",
   "activeAssignments": [
-    {
-      "workPackage": "RWP-00.55",
-      "branch": "rwp/00.55-hospitality-required-capabilities",
-      "orchestrator": "ChatGPT",
-      "status": "In Progress",
-      "ownedPaths": [
-        "track0/industries/hospitality-required-capabilities.md",
-        "track0/CAPABILITY_MATRIX.md",
-        "docs/work-packages/RWP-00.55-hospitality-required-capabilities.md",
-        "PROJECT_STATUS.md",
-        "ai/handoffs/current.md",
-        "tracker/assignments.json"
-      ]
-    },
     {
       "workPackage": "RWP-00.30",
       "branch": "rwp/00.30-cafe-operating-characteristics",
@@ -50,7 +36,7 @@
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     }
   ],
-  "nextAvailableWorkPackage": null,
+  "nextAvailableWorkPackage": "RWP-00.56",
   "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
@@ -61,7 +47,7 @@
     "executionModes": {
       "Sequential": "GitHub-first queue execution; claim and complete exactly one approved WP/RWP at a time.",
       "MobileCollaborative": "Existing GitHub-first interactive orchestration with one remotely visible claim and bounded lanes.",
-      "DesktopCollaborative": "Visual Studio or VS Code local-first session with sequential work paused, one visible session lock, local logical branches, and checkpoint publishing."
+      "DesktopCollaborative": "Visual Studio or VS Code local-first session with sequential work paused, one visible session lock, and checkpoint publishing."
     }
   }
 }
