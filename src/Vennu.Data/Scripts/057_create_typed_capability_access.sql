@@ -144,6 +144,12 @@ CREATE OR ALTER PROCEDURE dbo.SyncScreenPairAllowanceForOrganization
 AS
 BEGIN
     SET NOCOUNT ON;
+    DELETE usage
+    FROM dbo.CapabilityAllowanceUsage usage
+    INNER JOIN dbo.CapabilityAllowances allowance ON allowance.Id = usage.AllowanceId
+    WHERE allowance.OrganizationId = @OrganizationId
+      AND allowance.CapabilityId = 'screen.device.pair';
+
     DELETE allowance
     FROM dbo.CapabilityAllowances allowance
     WHERE allowance.OrganizationId = @OrganizationId
