@@ -2,74 +2,63 @@
 
 ## Purpose
 
-This directory is the compact context packet for Track 0 industry-planning and consolidation RWPs. Agents should use it instead of repeatedly loading broad repository history.
+This directory is the compact context packet for Track 0 industry-planning and consolidation RWPs.
 
-## Required reading for every Track 0 RWP
+## Required reading for consolidation
 
 1. `track0/README.md`
 2. `track0/CAPABILITY_MODEL.md`
 3. `track0/RESTAURANT_BASELINE.md`
-4. `track0/INDUSTRY_TEMPLATE.md`
-5. `track0/CAPABILITY_MATRIX.md`
-6. `track0/consolidation/CROSS_INDUSTRY_MODEL.md` after RWP-00.75
-7. The current GitHub RWP issue
-8. The current industry or consolidation file under `track0/`
+4. `track0/CAPABILITY_MATRIX.md`
+5. `track0/consolidation/CROSS_INDUSTRY_MODEL.md`
+6. `track0/consolidation/EXISTING_PRODUCT_INVENTORY.md` after RWP-00.76
+7. The current issue and work-package record
 
-Read additional repository documents only when the current issue explicitly requires them or when a conflict cannot be resolved from this packet.
+Read broader repository material only when the current issue requires factual product evidence not available in this packet.
 
 ## Execution model
 
 - Complete one RWP at a time in strict sequence.
-- Use a dedicated branch and PR.
-- Merge, close, verify, and release the claim before starting the next RWP.
-- Industry and consolidation work are documentation and product-planning only until explicit owner approval authorizes implementation.
-- RWP-13.06 and Phase 14+ remain paused during Track 0.
-- Integration and external-system tests remain skipped under the standing owner instruction.
-- Shared living records follow `docs/process/SHARED_FILE_WRITE_PROTOCOL.md` using queued semantic updates and short transactional write windows.
+- Use a dedicated issue, claim, branch, PR, review, merge, verification, and release.
+- Work remains documentation and product planning until explicit owner approval authorizes implementation.
+- RWP-13.06 and Phase 14+ remain paused.
+- Azure SQL and integration/external-system tests remain skipped.
+- Shared living records use queued semantic updates and short transactional write windows.
 
 ## Native-industry completion
 
-The five native-industry endpoints are complete:
-
-- Bar, Brewery & Nightlife — RWP-00.26
-- Café, Bakery & Dessert — RWP-00.38
-- Food Truck & Concession — RWP-00.50
-- Hospitality — RWP-00.62
-- Entertainment & Attractions — RWP-00.74
+RWP-00.26, RWP-00.38, RWP-00.50, RWP-00.62, and RWP-00.74 are complete.
 
 ## Consolidation sequence
 
-- **RWP-00.75 — Cross-Industry Normalization:** complete in proposed merge state; durable model at `track0/consolidation/CROSS_INDUSTRY_MODEL.md`.
-- **RWP-00.76 — Existing Product Feature, Gate & Limit Inventory:** exact next item after RWP-00.75 merge and release.
-- RWP-00.77 — Capability Reconciliation & Gap Analysis.
+- RWP-00.75 — Cross-Industry Normalization: merged and verified.
+- **RWP-00.76 — Existing Product Feature, Gate & Limit Inventory: complete in proposed merge state.**
+- **RWP-00.77 — Capability Reconciliation & Gap Analysis: exact next item after RWP-00.76 merge and release.**
 - RWP-00.78 — Unified Tier & Add-On Architecture.
 - RWP-00.79 — Limits, Scope & Inheritance Policy.
 - RWP-00.80 — Cross-Industry Customer Journey Validation.
 - RWP-00.81 — Owner Approval & Implementation Handoff.
 
-Do not skip, combine, or begin a later item before the current item is merged, closed, verified, and released.
+Do not skip or combine items.
 
 ## Normalization contract
 
 Every concern has one primary classification: core capability, permission, product/domain state, tier entitlement candidate, independent add-on candidate, usage or quantity limit, or internal rollout flag.
 
-Essential manual operation remains core. Industry and subtype are non-commercial configuration. Permissions do not grant commercial access. Product state is not a feature flag. Limits are not capabilities. External systems and separately delivered managed services remain add-on candidates. Rollout flags remain internal.
+Essential manual operation remains core. Industry and subtype are non-commercial configuration. Permission is not entitlement. Product state is not a feature flag. External systems and separately delivered services are add-on candidates. Counts and consumption are limits. Rollout remains internal.
 
-## Delta rule
+## Current-product inventory contract
 
-Every native industry inherits the Restaurant baseline. Document only meaningful differences in business and venue types, terminology, operations, content/screen purposes, roles/permissions, integrations, defaults/recommendations, classification, onboarding, dashboard, and analytics needs.
+RWP-00.76 is factual, not prescriptive. It records exact known keys, authority, scope, source location, and consumers and explicitly marks unknown or non-normalized mechanisms. Reclassification and remediation recommendations begin only in RWP-00.77.
 
 ## Impeccable requirement
 
-The project-local Impeccable skill applies whenever an RWP defines or reviews UI-facing behavior, including onboarding, dashboards, navigation, screen presentation, locked states, action hierarchy, responsive behavior, accessibility, or customer journeys.
+Apply project-local Impeccable guidance to UI-facing planning. Locked, permission-restricted, unavailable, disconnected, stale, unsupported, limited, privacy/rights-restricted, and rollout-controlled states require distinct semantics, truthful explanations, accessible actions, responsive behavior, and recovery paths. Browser presentation never becomes authorization authority.
 
-Use its vocabulary and bounded workflow to shape, audit, adapt, harden, and polish the specification. Record hierarchy, state, feedback, accessibility, responsiveness, recovery, realistic content, localization expansion, and approved Sky Blue direction. Impeccable consultation does not authorize implementation.
+## Expected outputs
 
-## Expected outputs per RWP
-
-- Update the current industry or consolidation document.
-- Update `CAPABILITY_MATRIX.md` when classifications, packaging candidates, or final validation results change.
-- Record unresolved owner decisions.
-- Update the next handoff reference.
-- Synchronize project status, tracker, current handoff, packet, and affected shared records in one short completion checkpoint.
-- Keep changes bounded to the current issue.
+- update the current consolidation artifact;
+- update the capability matrix when classification decisions change;
+- record unresolved owner decisions;
+- synchronize status, tracker, current handoff, packet, and affected records at the completion checkpoint;
+- keep all changes bounded to the current issue.
