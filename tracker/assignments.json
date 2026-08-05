@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:31:00Z",
+  "updatedUtc": "2026-08-05T03:32:00Z",
   "activeAssignments": [
     {
-      "workPackage": "RWP-00.56",
-      "branch": "rwp/00.56-hospitality-optional-capabilities",
+      "workPackage": "RWP-00.57",
+      "branch": "rwp/00.57-hospitality-capability-classification",
       "orchestrator": "ChatGPT",
       "status": "In Progress",
       "ownedPaths": [
-        "track0/industries/hospitality-optional-capabilities.md",
-        "docs/work-packages/RWP-00.56-hospitality-optional-capabilities.md"
+        "track0/industries/hospitality-capability-classification.md",
+        "docs/work-packages/RWP-00.57-hospitality-capability-classification.md"
       ],
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     },
