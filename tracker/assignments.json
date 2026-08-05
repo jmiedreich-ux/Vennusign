@@ -1,7 +1,22 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T02:25:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-05T02:32:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "RWP-00.65",
+      "branch": "rwp/00.65-entertainment-attractions-business-terminology",
+      "orchestrator": "ChatGPT",
+      "status": "In Progress",
+      "ownedPaths": [
+        "track0/industries/entertainment-attractions.md",
+        "track0/CAPABILITY_MATRIX.md",
+        "docs/work-packages/RWP-00.65-entertainment-attractions-business-terminology.md",
+        "PROJECT_STATUS.md",
+        "ai/handoffs/current.md",
+        "tracker/assignments.json"
+      ]
+    }
+  ],
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
   "rules": {
