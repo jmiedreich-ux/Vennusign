@@ -16,20 +16,18 @@
 | Bar, Brewery & Nightlife | **RWP-00.17** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.18 — Operating Characteristics (#493)** |
 | Café, Bakery & Dessert | **RWP-00.29** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.30 — Operating Characteristics (#505)** |
 | Food Truck & Concession | **RWP-00.42** | Industry definition, subtypes, terminology, and operating characteristics are documented. | **RWP-00.43 — Required Capabilities (#518)** |
-| Hospitality | **RWP-00.54** | Industry definition, nine property subtypes plus neutral fallback, canonical terminology, and operating characteristics are complete in this proposed merge state. | **RWP-00.55 — Required Capabilities (#530)** |
+| Hospitality | **RWP-00.55** | Industry definition, subtypes, terminology, operating characteristics, and the smallest viable required capability set are complete in this proposed merge state. | **RWP-00.56 — Optional Capabilities (#531)** |
 | Entertainment & Attractions | **RWP-00.65** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.66 — Operating Characteristics (#541)** |
 
 Only merged documents are authoritative. An industry advances only after its current RWP is merged, verified, closed, and released.
 
-## Hospitality Operating Result
+## Hospitality Required-Capability Result
 
-RWP-00.54 defines Hospitality as a continuously operating property environment with independently changing buildings, areas, accommodations, desks, amenities, services, outlets, events, meeting spaces, routes, notices, screens, languages, and sources.
+RWP-00.55 keeps essential daily operation core across eleven groups: property and local-context information; guest notices and operating-state communication; amenity, service, and outlet hours and availability; meetings, events, and directories; manual wayfinding; basic multilingual and accessible content; explicit screen targeting and preview; publishing and delivery confidence; offline, outdated, conflict, and recovery awareness; permissions and privacy-safe audiences; and required operational states.
 
-The operating model now covers shift handoffs; arrival, stay, departure, and overnight rhythms; privacy-safe guest notices; amenity, service, and outlet state; meetings and event changes; operational wayfinding; authorized urgent messaging; multilingual publication; property-group coordination; subtype-specific defaults; and safe recovery from stale sources, failed publication, partial delivery, and outdated screens.
+Manual operation remains available without premium tiers or paid integrations. Product values, source, freshness, audience, targets, delivery state, permissions, commercial packaging, add-ons, limits, privacy, and rollout remain separate. Public operation does not assume guest-specific data, room readiness, eligibility, access, capacity, wait, quantity, route, translation quality, or source freshness.
 
-Manual property information, notices, hours and states, event and meeting display, wayfinding, language variants, explicit targeting, publishing, confirmation, correction, expiration, supersession, and restoration remain core. Advanced shift workflow, group coordination, approvals, campaigns, interactive mapping, localization workflow, analytics, and managed monitoring remain tier candidates. Property, event, room-booking, transport, point-of-sale, guest-service, access, gaming, translation, AI, weather, emergency-management, map, positioning, and similar synchronization remain independent add-on candidates where integration is required. Quantities remain limits.
-
-Public information must not expose guest identity or private stay data, and no surface may infer room readiness, eligibility, access, capacity, timing, route, translation quality, or source freshness that is not authoritative.
+Automated synchronization, personalization, live operational data, advanced workflow, premium analytics, optimization, prediction, and AI remain outside required core and cannot replace manual editing, targeting, publishing, confirmation, correction, expiration, supersession, retry, and restoration.
 
 ## Track 0 Classification Policy
 
@@ -43,8 +41,8 @@ Documentation-only Track 0 changes use lightweight repository validation. GitHub
 
 ## Next Action
 
-After RWP-00.54 is merged, verified on `master`, issue #529 is closed, and the claim is released, execute **RWP-00.55 — Hospitality Required Capabilities** (#530).
+After RWP-00.55 is merged, verified on `master`, issue #530 is closed, and the claim is released, execute **RWP-00.56 — Hospitality Optional Capabilities** (#531).
 
-Other owner-approved industry streams may proceed only when their owned paths do not conflict with the active assignment.
+Other owner-approved industry streams may proceed under the queued short-lived shared-file write protocol.
 
 Do not implement onboarding, billing, entitlements, feature gates, UI, API, schema, migrations, privacy systems, localization, analytics, property-management, event, room-booking, transport, guest-service, access, gaming, integrations, or later-phase work until the owner approves the completed Track 0 model and implementation packages.
