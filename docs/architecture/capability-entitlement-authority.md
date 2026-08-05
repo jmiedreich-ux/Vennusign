@@ -91,3 +91,28 @@ Focused tests enforce:
 - navigation classification for all current route keys.
 
 The registry is deterministic and requires no database or external service. Track 1.02 consumes it as the sole capability identifier source.
+
+## Server decision and reason contract
+
+`CapabilityDecisionResult` is the server-owned action decision. It returns:
+
+- `allowed`, `allowed_with_conditions`, `denied`, `unavailable`, or `temporarily_blocked`;
+- one stable primary reason code and category;
+- the canonical capability ID;
+- a locale-neutral message key and structured parameters;
+- a request correlation ID and locale;
+- applicable resolution, retry guidance, and non-blocking conditions.
+
+The decision engine requires exactly one result for identity/context, rollout, entitlement, permission, add-on, allowance, resource state, and request validity. Missing or duplicate dimensions fail closed as `decision.input_incomplete`. An unknown capability fails closed as `capability.unknown`.
+
+The ordered primary-reason selection is deterministic: identity/context, rollout, entitlement, permission, add-on, allowance, resource state, then request validity. The order does not combine the dimensions; it selects the first customer-actionable blocking result while retaining the typed category. In particular, a permission restriction is never described as product state, and an add-on or state problem is never described as a tier upgrade.
+
+Batch evaluation accepts multiple canonical capabilities and preserves input order and correlation. It is the contract used by navigation and dashboard projections. A preview improves presentation only; it never authorizes a mutation.
+
+`CapabilityActionAuthorizer.RequireAllowedAsync` deliberately calls the input provider on every invocation. A state-changing endpoint calls it immediately before changing data, so an earlier browser preview or session result cannot grant authority. Blocked mutations receive `CapabilityDecisionDeniedException` with the complete structured decision. Track 1.03 supplies scoped permissions to the permission dimension, and Track 1.04 connects the authorizer to the affected endpoints and removes the generic gate as authority.
+
+## Repository message catalogs
+
+Capability decision messages are embedded from `Vennu.Data/Resources/CapabilityMessages`. Server results return stable message keys and parameters; presentation may resolve those keys using `ICapabilityMessageCatalog`.
+
+Locale fallback is deterministic. For example, `fr-CA` resolves through `fr-CA`, then `fr`, then `en-US`. Unknown or invalid locales use `en-US`. If no catalog contains a key, the key itself is returned instead of inventing or silently substituting unrelated copy. Customer-authored multilingual screen content remains separate from these product-interface catalogs.

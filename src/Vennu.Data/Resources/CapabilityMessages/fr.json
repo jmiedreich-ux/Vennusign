@@ -1,0 +1,5 @@
+{
+  "decisions.allowed": "Cette action est disponible.",
+  "decisions.allowed_with_conditions": "Cette action est disponible avec les conditions indiquées.",
+  "decisions.permission.required": "Demandez à un administrateur l’autorisation d’effectuer cette action."
+}

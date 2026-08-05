@@ -9,7 +9,8 @@
 - Native-industry Track 0 gate: complete.
 - Track 0 consolidation: complete through RWP-00.81.
 - Final Track 0 industry planning validation and handoff: complete in this proposed merge.
-- Track 1.01 — Canonical Capability Model and Current-Code Reconciliation (#640): implementation and focused tests are complete in the proposed branch state; exact-head Actions and merge validation are pending.
+- Track 1.01 — Canonical Capability Model and Current-Code Reconciliation (#640): complete, merged and verified on `master` through PR #645.
+- Track 1.02 — Server Capability Decision and Reason Contract (#641): implementation and focused tests are complete in the proposed branch state; exact-head Actions and merge validation are pending.
 
 ## Track 0 Deliverables
 
@@ -45,7 +46,7 @@ Pricing, final names, numeric allowances, exact trial duration, taxes, contracts
 
 ## Exact Next Action
 
-Validate and review the exact Track 1.01 branch head, merge it, close issue #640, and verify `master`. Only then claim Track 1.02 (#641). Do not resume RWP-13.06 or begin implementation of a future track.
+Validate and review the exact Track 1.02 branch head, merge it, close issue #641, and verify `master`. Only then claim Track 1.03 (#642). Do not resume RWP-13.06 or begin implementation of a future track.
 
 ## Validation Policy
 

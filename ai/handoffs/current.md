@@ -4,8 +4,8 @@
 
 - Track 0 industry and product architecture: complete and closed.
 - Track 1 product and architecture discussion: complete.
-- Track 1 implementation: active; Track 1.01 implementation is complete in the proposed branch state.
-- Active implementation claim: Track 1.01 / issue #640 on `rwp/01.01-canonical-capability-model`.
+- Track 1 implementation: active; Track 1.01 is merged and verified, and Track 1.02 implementation is complete in the proposed branch state.
+- Active implementation claim: Track 1.02 / issue #641 on `rwp/01.02-server-capability-decisions`.
 - Next-track implementation: blocked pending execution, validation and owner approval of the current track. Light planning for any future track may begin, but cannot be marked complete until potential changes from the current and earlier tracks are evaluated.
 - RWP-13.06: held; do not resume unchanged.
 - Phase 14 and later: paused.
@@ -67,7 +67,7 @@ Automation proves technical permutations and enforcement. The owner tests custom
 
 Full onboarding belongs to Track 8. Track 1 only supplies the authority and decision foundations needed by onboarding.
 
-## Track 1.01 Proposed Outcome
+## Track 1.01 Completed Outcome
 
 - `CapabilityId` enforces stable lowercase `domain.resource.action` identifiers.
 - `Version1CapabilityRegistry` is the deterministic source for Version 1 product actions and outcomes across all 11 approved domains.
@@ -75,14 +75,24 @@ Full onboarding belongs to Track 8. Track 1 only supplies the authority and deci
 - `CurrentConceptReconciliation` gives every seeded generic feature key exactly one typed disposition or removal decision.
 - `docs/architecture/capability-entitlement-authority.md` records the durable contract and the disposition of route/session gates, membership claims, generic feature persistence, usage strings, states, add-ons, layouts, allowances, rollout controls, and support tooling.
 - Focused non-integration tests cover identifier rules, uniqueness, domain separation, prohibited identity coupling, dispositions, and registered targets.
-- Local .NET execution was unavailable because this runtime does not contain the SDK. Exact-head GitHub Actions is required before merge. Integration/external-system tests remain skipped.
+- Exact-head Actions run 31044305223 passed affected .NET and documentation validation. PR #645 merged as `a729f4dd75468c1f69570d53f44b81dcd86a4945`; issue #640 is closed and `master` is verified. Integration/external-system tests were skipped.
+
+## Track 1.02 Proposed Outcome
+
+- `CapabilityDecisionResult` implements allowed, allowed-with-conditions, denied, unavailable, and temporarily-blocked outcomes with stable reason, category, capability, message key, structured parameters, correlation, locale, resolution, retry, and condition fields.
+- `CapabilityDecisionEngine` evaluates identity/context, rollout, entitlement, permission, add-on, allowance, resource state, and request validity independently and fails closed for unknown capabilities or incomplete inputs.
+- Batch evaluation preserves capability order and correlation for navigation and dashboard projections.
+- `CapabilityActionAuthorizer` requires a fresh input-provider resolution immediately before every mutation authorization; blocked calls throw the full structured decision.
+- Embedded `en-US`, `fr`, and `fr-CA` product-message catalogs establish repository ownership and deterministic `fr-CA` → `fr` → `en-US` fallback.
+- Focused non-integration tests cover every decision dimension, priority, conditions, failure closure, batch evaluation, mutation-time reevaluation, structured denial, and locale fallback.
+- The local runtime does not contain the .NET SDK. Exact-head GitHub Actions is required before merge; integration/external-system tests remain skipped.
 
 ## Exact Next Action
 
-1. Create and review the Track 1.01 PR against `master`.
+1. Create and review the Track 1.02 PR against `master`.
 2. Require exact-head affected Release build and focused non-integration tests.
-3. Merge, close issue #640, verify `master`, and release the claim.
-4. Claim Track 1.02 / issue #641 only after that verification.
+3. Merge, close issue #641, verify `master`, and release the claim.
+4. Claim Track 1.03 / issue #642 only after that verification.
 5. Keep all future-track implementation blocked. Light planning may remain provisional under the governing acceptance rule.
 
 ## Boundaries

@@ -13,6 +13,8 @@ public static class ServiceCollectionExtensions
         services.AddSqlDataAccess();
         services.AddMemoryCache();
         services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<ICapabilityDecisionEngine, CapabilityDecisionEngine>();
+        services.AddSingleton<ICapabilityMessageCatalog, RepositoryCapabilityMessageCatalog>();
         services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
         services.AddScoped<ISystemConfigurationTransferService, SystemConfigurationTransferService>();
         services.AddScoped<ISystemConfigurationOperationsService, SystemConfigurationOperationsService>();
