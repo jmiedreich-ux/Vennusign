@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:46:00Z",
+  "updatedUtc": "2026-08-05T03:47:00Z",
   "activeAssignments": [
     {
-      "workPackage": "RWP-00.59",
-      "branch": "rwp/00.59-hospitality-onboarding-experience",
+      "workPackage": "RWP-00.60",
+      "branch": "rwp/00.60-hospitality-default-dashboard",
       "orchestrator": "ChatGPT",
       "status": "In Progress",
       "ownedPaths": [
-        "track0/industries/hospitality-onboarding-experience.md",
-        "docs/work-packages/RWP-00.59-hospitality-onboarding-experience.md"
+        "track0/industries/hospitality-default-dashboard.md",
+        "docs/work-packages/RWP-00.60-hospitality-default-dashboard.md"
       ],
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     },
