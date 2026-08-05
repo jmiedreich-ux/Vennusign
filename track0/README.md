@@ -11,9 +11,10 @@ This directory is the compact context packet for Track 0 industry-planning and c
 3. `track0/RESTAURANT_BASELINE.md`
 4. `track0/INDUSTRY_TEMPLATE.md`
 5. `track0/CAPABILITY_MATRIX.md`
-6. `track0/consolidation/CROSS_INDUSTRY_MODEL.md` after RWP-00.75
-7. The current GitHub RWP issue
-8. The current industry or consolidation file under `track0/`
+6. `track0/consolidation/CROSS_INDUSTRY_MODEL.md`
+7. `track0/consolidation/EXISTING_PRODUCT_FEATURE_GATE_LIMIT_INVENTORY.md` after RWP-00.76
+8. The current GitHub RWP issue
+9. The current industry or consolidation file under `track0/`
 
 Read additional repository documents only when the current issue explicitly requires them or when a conflict cannot be resolved from this packet.
 
@@ -39,9 +40,9 @@ The five native-industry endpoints are complete:
 
 ## Consolidation sequence
 
-- **RWP-00.75 — Cross-Industry Normalization:** complete in proposed merge state; durable model at `track0/consolidation/CROSS_INDUSTRY_MODEL.md`.
-- **RWP-00.76 — Existing Product Feature, Gate & Limit Inventory:** exact next item after RWP-00.75 merge and release.
-- RWP-00.77 — Capability Reconciliation & Gap Analysis.
+- **RWP-00.75 — Cross-Industry Normalization:** complete and merged; durable model at `track0/consolidation/CROSS_INDUSTRY_MODEL.md`.
+- **RWP-00.76 — Existing Product Feature, Gate & Limit Inventory:** complete in proposed merge state; durable inventory at `track0/consolidation/EXISTING_PRODUCT_FEATURE_GATE_LIMIT_INVENTORY.md`.
+- **RWP-00.77 — Capability Reconciliation & Gap Analysis:** exact next item after RWP-00.76 merge and release.
 - RWP-00.78 — Unified Tier & Add-On Architecture.
 - RWP-00.79 — Limits, Scope & Inheritance Policy.
 - RWP-00.80 — Cross-Industry Customer Journey Validation.
