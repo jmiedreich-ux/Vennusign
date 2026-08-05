@@ -40,6 +40,12 @@ This is the cross-industry normalization record. Industry RWPs add or amend rows
 | Subtype or terminology change | Restaurant type changes may alter defaults | Changes may preview terminology, starter recommendations, screen purposes, operating guidance, and presentation emphasis while preserving authored content, screens, state, history, authority, privacy, integrations, limits, and commercial access. | Core capability | No | No | No | Permission, confirmation, validation, undo, and restoration apply | Planning contract; implementation not authorized |
 | Counts of operations, units, stands, stalls, service points, windows, screens, users, events, schedules, integrations, history, transactions, storage, or AI use | Organization/venue allowances vary | Food Truck physical form and operating context do not decide which object consumes an allowance. | Usage or quantity limit | No | No | Yes | Limits do not grant capabilities or authority | Exact counting requires owner decision after normalization |
 
+## Hospitality Track 0 completion
+
+RWP-00.62 validates the Hospitality rows and related boundaries above as one coherent profile through RWP-00.51–00.61. Essential manual property and guest communication, explicit targeting, publication, per-target delivery confidence, source/freshness visibility, correction, expiry, supersession, retry, undo, restoration, and current operational-health visibility remain core. Industry and subtype remain non-commercial product configuration. Permissions, represented state, tier candidates, independent add-ons, limits, privacy/source authority, and rollout controls remain separate.
+
+The Hospitality profile is ready for cross-industry normalization once the all-industry gate is satisfied. Final tier names, prices, numeric limits, trials, contracts, add-on prerequisites, property-group inheritance, downgrade behavior, privacy/security/data policy, external metric definitions, emergency/legal obligations, and implementation sequencing remain owner decisions.
+
 ## Matrix rules
 
 - Do not create a new row merely to restate inherited Restaurant behavior.
