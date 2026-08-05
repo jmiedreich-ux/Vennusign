@@ -116,3 +116,38 @@ Batch evaluation accepts multiple canonical capabilities and preserves input ord
 Capability decision messages are embedded from `Vennu.Data/Resources/CapabilityMessages`. Server results return stable message keys and parameters; presentation may resolve those keys using `ICapabilityMessageCatalog`.
 
 Locale fallback is deterministic. For example, `fr-CA` resolves through `fr-CA`, then `fr`, then `en-US`. Unknown or invalid locales use `en-US`. If no catalog contains a key, the key itself is returned instead of inventing or silently substituting unrelated copy. Customer-authored multilingual screen content remains separate from these product-interface catalogs.
+
+## Scoped permission and authority model
+
+A capability says that Vennusign can perform an action. A `PermissionId` says that an actor may perform that action. The identifiers may share the same canonical text, but they are different types and are evaluated independently. Commercial access or product state never creates a permission.
+
+Authority supports platform, organization, venue-group, venue, resource, and self scopes. An `AuthorityTarget` contains the exact target and its verified ancestors. Platform assignments apply downward. Organization assignments apply to verified descendant venue groups, venues, and resources. Venue-group and venue assignments apply only to their verified descendants. Resource assignments are exact. Self assignments apply only when the assignment, actor, and target are the same user. Authority never inherits upward.
+
+Assignments have explicit start, optional expiry, and optional revocation timestamps. Expired, future, and revoked assignments are ignored. The evaluator fails closed when no active assignment contains the requested permission at the target scope.
+
+### Protected Version 1 roles
+
+| Role | Bounded purpose |
+| --- | --- |
+| Organization Owner | Customer permissions across the organization; support permissions remain excluded. |
+| Organization Administrator | Organization administration without security-management authority. |
+| Venue Administrator | Venue content, publishing, screen, schedule, localization, delivery-health and theme work. |
+| Content Manager | Content, publishing, schedules, localization and branding within the assigned scope. |
+| Content Editor | Content editing and preview without publication authority. |
+| Publisher | Preview, publish, confirm, replace, unpublish and delivery recovery without general editing. |
+| Viewer | Read-only preview, device/delivery health, core evidence and billing visibility. |
+| Support Operator | Platform support permissions only; it is not customer membership. |
+
+These initial roles are protected system definitions. A role contains permissions only. `ScopedRoleAssignment` attaches the role to an actor and scope. Capability availability, commercial access, allowances, state and add-on status remain separate inputs to the final decision.
+
+### Support access
+
+Support access requires both a platform-scoped Support Operator assignment and an explicit active grant for the customer context. A grant records the support actor, organization, optional venue, reason, approver, start, expiry and revocation. The bounded Version 1 maximum is eight hours.
+
+Every entry attempt writes an audit record, including denied attempts. Successful contexts carry the reason and expiry and set `RequiresProminentIndicator`, so customer context can never look like ordinary membership. Support permissions do not appear in customer roles, and a support role without a customer grant cannot enter customer context.
+
+### Persistence and decision integration
+
+DbUp script `053_create_scoped_authority.sql` creates and deterministically seeds canonical permissions, protected roles and role-permission collections. It also creates scoped assignments, support grants and support access audit records with active-context indexes and database constraints for scope, time windows, reasons and the eight-hour support maximum. `ScopedAuthorityRepository` validates and persists assignments, grants and audit evidence.
+
+`ScopedPermissionDecisionDimensionFactory` converts an authority result into the decision engine's permission dimension while retaining permission and target scope details. Track 1.04 uses that dimension together with capability availability before every affected state-changing endpoint.
