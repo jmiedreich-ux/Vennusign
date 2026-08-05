@@ -17,7 +17,7 @@
 | Café, Bakery & Dessert | **RWP-00.29** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.30 — Operating Characteristics (#505)** |
 | Food Truck & Concession | **RWP-00.42** | Industry definition, subtypes, terminology, and operating characteristics are documented. | **RWP-00.43 — Required Capabilities (#518)** |
 | Hospitality | **RWP-00.56** | Industry, subtypes, terminology, operating characteristics, required core, and optional capability candidates are complete in this proposed merge state. | **RWP-00.57 — Capability Classification (#532)** |
-| Entertainment & Attractions | **RWP-00.68** | Industry, subtypes, terminology, operating characteristics, required core, and optional capability candidates are complete in this proposed merge state. | **RWP-00.69 — Capability Classification (#544)** |
+| Entertainment & Attractions | **RWP-00.69** | Industry profile, required and optional capabilities, and one-primary-classification mapping are complete in this proposed merge state. | **RWP-00.70 — Subscription Tier Mapping (#545)** |
 
 Only merged documents are authoritative. An industry advances only after its current RWP is merged, verified, closed, and released.
 
@@ -35,11 +35,11 @@ Tier candidates include advanced wayfinding, brand libraries, centralized proper
 
 The required manual core remains unchanged. Every optional candidate must define manual fallback, source authority and freshness, privacy and audience, permissions, limits and consumption, failure and disconnect behavior, correction, delivery confidence, downgrade or cancellation, data retention, and recovery before implementation.
 
-## Entertainment Optional-Capability Result
+## Entertainment Capability-Classification Result
 
-RWP-00.68 defines fourteen optional families: ticketing/admissions/access synchronization; venue, cinema, show-control, collection, attraction, event, and sports synchronization; dynamic queues, wait, occupancy, capacity, and footfall; advanced maps and wayfinding; coordinated screens and event moments; campaigns, membership, sponsorship, and merchandising; multi-venue coordination; brand and template governance; approvals and audit workflow; premium localization; premium analytics and optimization; AI assistance; enterprise identity; and managed hardware, connectivity, deployment, and support.
+RWP-00.69 assigns one primary classification to every Entertainment & Attractions concern. Industry, subtype, terminology, hierarchy, schedules, content, operating values, source/freshness, targets, delivery, and versions are product/domain state. Essential manual operation, targeting, publication confidence, correction, and recovery are core. Authority is permission. Recurring native advanced outcomes are tier candidates. Independent integrations and managed services are add-ons. Quantities and consumption are limits. Temporary release control is rollout only.
 
-Native recurring outcomes are tier candidates. Independent integrations and managed services are add-on candidates. Quantities and consumption are limits. Permissions remain authority, imported values remain product/domain state, and temporary release controls remain rollout flags. Required manual visitor communication, targeting, publishing, delivery confirmation, correction, and recovery remain available without premium packaging.
+The classification resolves recurring ambiguities around manual versus automated wait time, capacity versus sold out, maps versus wayfinding, approval versus permission, basic health versus managed monitoring, multilingual versus premium localization, analytics versus source data, AI access versus generated state, enterprise identity versus authorization, and subtype versus packaging.
 
 ## Track 0 Classification Policy
 
@@ -55,7 +55,7 @@ Documentation-only Track 0 changes use lightweight repository validation. GitHub
 
 - Execute **RWP-00.19 — Bar, Brewery & Nightlife Required Capabilities** (#494).
 - After RWP-00.56 is merged, verified, closed, and released, execute **RWP-00.57 — Hospitality Capability Classification** (#532).
-- After RWP-00.68 is merged, verified, closed, and released, execute **RWP-00.69 — Entertainment & Attractions Capability Classification** (#544).
+- After RWP-00.69 is merged, verified, closed, and released, execute **RWP-00.70 — Entertainment & Attractions Subscription Tier Mapping** (#545).
 
 Other owner-approved industry streams may proceed under the queued short-lived shared-file write protocol.
 
