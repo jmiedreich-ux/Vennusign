@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:14:00Z",
+  "updatedUtc": "2026-08-05T03:18:00Z",
   "activeAssignments": [
     {
       "workPackage": "RWP-00.55",
@@ -15,6 +15,17 @@
         "ai/handoffs/current.md",
         "tracker/assignments.json"
       ]
+    },
+    {
+      "workPackage": "RWP-00.30",
+      "branch": "rwp/00.30-cafe-operating-characteristics",
+      "orchestrator": "ChatGPT",
+      "status": "In Progress",
+      "ownedPaths": [
+        "track0/industries/cafe-bakery-dessert.md",
+        "docs/work-packages/RWP-00.30-cafe-bakery-dessert-operating-characteristics.md"
+      ],
+      "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     }
   ],
   "nextAvailableWorkPackage": null,
