@@ -25,6 +25,18 @@ Read additional repository documents only when the current issue explicitly requ
 - RWP-13.06 and Phase 14+ remain paused during Track 0.
 - Integration and external-system tests remain skipped under the standing owner instruction.
 
+## Native-industry roadmap and consolidation gate
+
+| Industry | Final validation RWP | State |
+| --- | --- | --- |
+| Bar, Brewery & Nightlife | RWP-00.26 | Complete in this proposed merge state; no additional Bar RWP is approved. |
+| Café, Bakery & Dessert | RWP-00.38 | Continue from the first unfinished approved Café RWP shown by current GitHub state. |
+| Food Truck & Concession | RWP-00.50 | Complete and waiting for the all-industry gate. |
+| Hospitality | RWP-00.62 | Complete and waiting for the all-industry gate. |
+| Entertainment & Attractions | RWP-00.74 | Continue from the first unfinished approved Entertainment RWP shown by current GitHub state. |
+
+RWP-00.75 may begin only after RWP-00.26, RWP-00.38, RWP-00.50, RWP-00.62, and RWP-00.74 are all merged, verified, closed, and released. A completed industry must not invent more work or start implementation while waiting for the gate.
+
 ## Delta rule
 
 Every native industry inherits the Restaurant baseline. Document only meaningful differences in:
