@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T04:10:00Z",
+  "updatedUtc": "2026-08-05T04:12:00Z",
   "activeAssignments": [
     {
-      "workPackage": "RWP-00.36",
-      "branch": "rwp/00.36-cafe-bakery-dessert-default-dashboard",
+      "workPackage": "RWP-00.37",
+      "branch": "rwp/00.37-cafe-bakery-dessert-kpis-analytics",
       "orchestrator": "ChatGPT",
       "status": "In Progress",
       "ownedPaths": [
-        "track0/industries/cafe-bakery-dessert-default-dashboard.md",
-        "docs/work-packages/RWP-00.36-cafe-bakery-dessert-default-dashboard.md"
+        "track0/industries/cafe-bakery-dessert-kpis-analytics.md",
+        "docs/work-packages/RWP-00.37-cafe-bakery-dessert-kpis-analytics.md"
       ],
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     },
