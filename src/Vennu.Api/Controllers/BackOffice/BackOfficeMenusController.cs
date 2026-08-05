@@ -13,6 +13,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Route("api/back-office/menus")]
 [Route("api/venue-admin/menus")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
+[RequireCapability("content.item.update")]
 public sealed class BackOfficeMenusController(
     IMenuSectionManagementService sectionService,
     IMenuItemManagementService itemService,

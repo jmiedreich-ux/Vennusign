@@ -11,7 +11,9 @@ public sealed class BackOfficeAuthenticationOptionsValidator : IValidateOptions<
         {
             if (string.IsNullOrWhiteSpace(session.AccessToken)) failures.Add("Every enabled legacy venue session requires an access token.");
             if (session.VenueId == Guid.Empty) failures.Add("Every enabled legacy venue session requires a venue ID.");
+            if (session.OrganizationId == Guid.Empty) failures.Add("Every enabled configured venue session requires an organization ID.");
             if (string.IsNullOrWhiteSpace(session.UserId)) failures.Add("Every enabled legacy venue session requires a user ID.");
+            if (!Vennu.Core.Models.SystemRoleRegistry.Roles.ContainsKey(session.SystemRole)) failures.Add("Every enabled configured venue session requires a registered protected system role.");
         }
         var duplicateTokens = options.Sessions.Where(session => session.Enabled && !string.IsNullOrWhiteSpace(session.AccessToken))
             .GroupBy(session => session.AccessToken, StringComparer.Ordinal).Any(group => group.Count() > 1);

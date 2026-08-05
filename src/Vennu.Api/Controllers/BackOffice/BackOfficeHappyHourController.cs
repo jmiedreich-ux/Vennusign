@@ -11,6 +11,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Route("api/venue-admin/venues/{venueId:guid}/happy-hour")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
 [BackOfficeVenueScope]
+[RequireCapability("schedule.promotion.automate")]
 public sealed class BackOfficeHappyHourController(
     IHappyHourService service,
     TimeProvider timeProvider) : ControllerBase

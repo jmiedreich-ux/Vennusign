@@ -14,6 +14,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Route("api/venue-admin/venues/{venueId:guid}/emergency-broadcasts")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
 [BackOfficeVenueScope]
+[RequireCapability("publishing.release.publish")]
 public sealed class BackOfficeEmergencyBroadcastsController(
     IEmergencyBroadcastService service,
     IScreenUpdateNotifier notifier,

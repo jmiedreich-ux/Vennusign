@@ -8,7 +8,7 @@ namespace Vennu.Api.Services;
 public sealed class MenuItemManagementService(
     IMenuRepository repository,
     IScreenUpdateNotifier notifier,
-    IFeatureResolutionService featureResolution,
+    ICapabilityActionAuthorizer capabilityAuthorizer,
     TimeProvider timeProvider) : IMenuItemManagementService
 {
     public async Task<MenuItem> CreateAsync(
@@ -22,9 +22,8 @@ public sealed class MenuItemManagementService(
         CancellationToken cancellationToken = default)
     {
         await RequireSectionAsync(venueId, menuId, sectionId, cancellationToken).ConfigureAwait(false);
-        await RequireFeatureChangeAsync(
-            venueId,
-            "happy_hour",
+        await RequireCapabilityChangeAsync(
+            "schedule.promotion.automate",
             happyHourPrice is not null,
             "Happy-hour pricing",
             cancellationToken).ConfigureAwait(false);
@@ -74,9 +73,8 @@ public sealed class MenuItemManagementService(
             return null;
         }
 
-        await RequireFeatureChangeAsync(
-            venueId,
-            "happy_hour",
+        await RequireCapabilityChangeAsync(
+            "schedule.promotion.automate",
             item.HappyHourPrice != happyHourPrice,
             "Happy-hour pricing",
             cancellationToken).ConfigureAwait(false);
@@ -119,9 +117,8 @@ public sealed class MenuItemManagementService(
             return null;
         }
 
-        await RequireFeatureChangeAsync(
-            venueId,
-            "allergen_badges",
+        await RequireCapabilityChangeAsync(
+            "content.item.dietary_information_manage",
             !string.Equals(item.Tags, normalizedTags, StringComparison.Ordinal),
             "Dietary and allergen badges",
             cancellationToken).ConfigureAwait(false);
@@ -252,17 +249,26 @@ public sealed class MenuItemManagementService(
             new { change, menuId, sectionId, itemId },
             cancellationToken);
 
-    private async Task RequireFeatureChangeAsync(
-        Guid venueId,
-        string featureKey,
+    private async Task RequireCapabilityChangeAsync(
+        string capabilityId,
         bool isChanging,
         string label,
         CancellationToken cancellationToken)
     {
-        if (isChanging &&
-            !await featureResolution.HasFeatureAsync(venueId, featureKey, cancellationToken).ConfigureAwait(false))
+        if (isChanging)
         {
-            throw new ArgumentException($"{label} requires the corresponding venue feature.");
+            try
+            {
+                await capabilityAuthorizer.RequireAllowedAsync(
+                    CapabilityId.Parse(capabilityId),
+                    Guid.NewGuid().ToString("N"),
+                    "en-US",
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch (CapabilityDecisionDeniedException exception)
+            {
+                throw new ArgumentException($"{label} is unavailable: {exception.Decision.ReasonCode}.", exception);
+            }
         }
     }
 

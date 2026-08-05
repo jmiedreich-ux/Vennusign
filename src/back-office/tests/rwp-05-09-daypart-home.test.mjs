@@ -10,9 +10,9 @@ test("daypart home composes venue-authoritative operations and essential states"
   assert.match(home, /Promise\.all\(\[/);
   assert.match(home, /loadManagedScreens/);
   assert.match(home, /loadMenuEditor/);
-  assert.match(home, /capabilities\.includes\("scheduling"\) \? loadMealPeriods/);
-  assert.match(home, /capabilities\.includes\("screens"\) \? loadManagedScreens/);
-  assert.match(home, /capabilities\.includes\("menus"\) \? loadMenuEditor/);
+  assert.match(home, /capabilities\.includes\("schedule\.entry\.manage"\) \? loadMealPeriods/);
+  assert.match(home, /capabilities\.includes\("screen\.device\.view"\) \? loadManagedScreens/);
+  assert.match(home, /capabilities\.includes\("content\.item\.update"\) \? loadMenuEditor/);
   assert.match(home, /updateQuickAvailability/);
   assert.match(home, /updateQuickDailySpecial/);
   assert.match(home, /\?schedule=emergency#\/schedules/);

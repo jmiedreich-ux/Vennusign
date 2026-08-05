@@ -14,6 +14,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Route("api/venue-admin/venues/{venueId:guid}/date-range-promotions")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
 [BackOfficeVenueScope]
+[RequireCapability("schedule.promotion.automate")]
 public sealed class BackOfficeDateRangePromotionsController(
     IDateRangePromotionService service,
     IScreenUpdateNotifier notifier,

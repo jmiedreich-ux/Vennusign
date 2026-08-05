@@ -5,7 +5,7 @@ namespace Vennu.Data.Services;
 
 public sealed class MenuSectionManagementService(
     IMenuRepository repository,
-    IFeatureResolutionService featureResolution,
+    ICapabilityDecisionService decisions,
     TimeProvider timeProvider) : IMenuSectionManagementService
 {
     public async Task<MenuEditorSnapshot> GetAsync(Guid venueId, CancellationToken cancellationToken = default)
@@ -20,9 +20,19 @@ public sealed class MenuSectionManagementService(
             .Select(async section => new MenuEditorItemGroup(
                 section.Id,
                 await repository.GetItemsAsync(venueId, section.Id, cancellationToken).ConfigureAwait(false))));
-        var happyHour = await featureResolution.HasFeatureAsync(venueId, "happy_hour", cancellationToken).ConfigureAwait(false);
-        var allergenBadges = await featureResolution.HasFeatureAsync(venueId, "allergen_badges", cancellationToken).ConfigureAwait(false);
-        var quickUpdate = await featureResolution.HasFeatureAsync(venueId, "quick_update", cancellationToken).ConfigureAwait(false);
+        var capabilityResults = await decisions.EvaluateBatchAsync(
+            [
+                CapabilityId.Parse("schedule.promotion.automate"),
+                CapabilityId.Parse("content.item.dietary_information_manage"),
+                CapabilityId.Parse("content.item.availability_update")
+            ],
+            Guid.NewGuid().ToString("N"),
+            "en-US",
+            cancellationToken).ConfigureAwait(false);
+        var allowed = capabilityResults.Where(result => result.IsAllowed).Select(result => result.Capability.Value).ToHashSet(StringComparer.Ordinal);
+        var happyHour = allowed.Contains("schedule.promotion.automate");
+        var allergenBadges = allowed.Contains("content.item.dietary_information_manage");
+        var quickUpdate = allowed.Contains("content.item.availability_update");
         return new MenuEditorSnapshot(sections, itemGroups, new MenuEditorCapabilities(happyHour, allergenBadges, quickUpdate));
     }
 

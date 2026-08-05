@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Vennu.Api.Contracts.BackOffice;
 using Vennu.Api.BackOffice;
 using Vennu.Data.Repositories;
+using Vennu.Data.Services;
+using Vennu.Core.Models;
 
 namespace Vennu.Api.Controllers.BackOffice;
 
@@ -13,7 +15,9 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
 public sealed class BackOfficeSessionController(
     IBackOfficeContextRepository contexts,
-    IVenueRepository venues) : ControllerBase
+    IVenueRepository venues,
+    ICapabilityDecisionService decisions,
+    ICapabilityMessageCatalog messages) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType<BackOfficeSessionResponse>(StatusCodes.Status200OK)]
@@ -26,11 +30,6 @@ public sealed class BackOfficeSessionController(
             return Unauthorized();
         }
 
-        var capabilities = User.FindAll(BackOfficeAuthenticationDefaults.CapabilitiesClaim)
-            .Select(claim => claim.Value)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(capability => capability, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
         var displayName = User.Identity?.Name ?? "Back Office";
         var source = User.FindFirstValue(BackOfficeAuthenticationDefaults.AuthenticationSourceClaim);
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -52,22 +51,43 @@ public sealed class BackOfficeSessionController(
         else
         {
             var venue = await venues.GetByIdAsync(venueId, cancellationToken).ConfigureAwait(false);
+            var claimOrganizationId = Guid.TryParse(
+                User.FindFirstValue(BackOfficeAuthenticationDefaults.OrganizationIdClaim),
+                out var parsedOrganizationId) ? parsedOrganizationId : Guid.Empty;
             authorized = [new BackOfficeContextResponse(
-                venue?.OrganizationId ?? Guid.Empty,
-                "Legacy venue access",
+                venue?.OrganizationId ?? claimOrganizationId,
+                "Configured venue access",
                 venueId,
                 venue?.Name ?? "Current venue")];
         }
 
         var active = authorized.Single(context => context.VenueId == venueId);
+        var locale = Request.GetTypedHeaders().AcceptLanguage?.FirstOrDefault()?.Value.Value ?? "en-US";
+        var correlationId = HttpContext.TraceIdentifier;
+        var evaluated = await decisions.EvaluateBatchAsync(
+            Version1CapabilityRegistry.Definitions.Select(definition => definition.Id).ToArray(),
+            correlationId,
+            locale,
+            cancellationToken).ConfigureAwait(false);
+        var capabilityDecisions = evaluated.Select(decision => new BackOfficeCapabilityDecisionResponse(
+            decision.Capability.Value,
+            ToApiValue(decision.Decision),
+            decision.ReasonCode,
+            ToApiValue(decision.Category),
+            messages.Resolve(decision.Locale, decision.MessageKey, decision.Parameters),
+            decision.Resolution,
+            decision.RetryAfter is TimeSpan retry ? (int)Math.Ceiling(retry.TotalSeconds) : null)).ToArray();
         return Ok(new BackOfficeSessionResponse(
             venueId,
             displayName,
-            capabilities,
+            capabilityDecisions,
             active.OrganizationId == Guid.Empty ? null : active.OrganizationId,
             active.OrganizationName,
             active.VenueName,
             new BackOfficeAccountResponse(userId, displayName, email),
             authorized));
     }
+
+    private static string ToApiValue<T>(T value) where T : Enum =>
+        System.Text.RegularExpressions.Regex.Replace(value.ToString(), "([a-z0-9])([A-Z])", "$1-$2").ToLowerInvariant();
 }

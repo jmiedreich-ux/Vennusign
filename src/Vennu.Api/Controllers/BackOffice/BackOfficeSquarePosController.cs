@@ -12,6 +12,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Route("api/back-office/pos/square")]
 [Route("api/venue-admin/pos/square")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
+[RequireCapability("content.source.synchronize")]
 public sealed class BackOfficeSquarePosController(
     ISquareOAuthConnectionService service,
     Vennu.Data.Services.IPosCatalogImportService catalogImportService) : ControllerBase

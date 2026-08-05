@@ -46,9 +46,12 @@ public sealed class BackOfficeSessionControllerTests : IClassFixture<VennuApiFac
         Assert.NotNull(session);
         Assert.Equal(Guid.Parse("11111111-1111-1111-1111-111111111111"), session.VenueId);
         Assert.Equal("Harbor Owner", session.DisplayName);
-        Assert.Equal(["menus", "screens"], session.Capabilities);
+        Assert.Contains(session.CapabilityDecisions, decision =>
+            decision.CapabilityId == "content.item.update" && decision.IsAllowed);
+        Assert.Contains(session.CapabilityDecisions, decision =>
+            decision.CapabilityId == "content.source.synchronize" && decision.Decision == "unavailable");
         Assert.Equal("Harbor Owner", session.Account.DisplayName);
-        Assert.Equal("Legacy venue access", session.OrganizationName);
+        Assert.Equal("Configured venue access", session.OrganizationName);
         Assert.Equal("Current venue", session.VenueName);
         Assert.Single(session.Contexts);
     }

@@ -37,14 +37,15 @@ export default function DaypartHome({ configuration, accessToken, venueId, venue
   const [notice, setNotice] = useState<string>();
   const [busyItem, setBusyItem] = useState<string>();
   const [special, setSpecial] = useState("");
+  const capabilityKey = capabilities.join("|");
 
   const load = async () => {
     setError(undefined);
     try {
       const [mealPeriods, screens, menu] = await Promise.all([
-        capabilities.includes("scheduling") ? loadMealPeriods(configuration, accessToken, venueId) : Promise.resolve(unavailableMealPeriods),
-        capabilities.includes("screens") ? loadManagedScreens(configuration, accessToken, venueId) : Promise.resolve([]),
-        capabilities.includes("menus") ? loadMenuEditor(configuration, accessToken, venueId) : Promise.resolve(unavailableMenu)
+        capabilities.includes("schedule.entry.manage") ? loadMealPeriods(configuration, accessToken, venueId) : Promise.resolve(unavailableMealPeriods),
+        capabilities.includes("screen.device.view") ? loadManagedScreens(configuration, accessToken, venueId) : Promise.resolve([]),
+        capabilities.includes("content.item.update") ? loadMenuEditor(configuration, accessToken, venueId) : Promise.resolve(unavailableMenu)
       ]);
       setState({ mealPeriods, screens, menu });
       setSpecial(menu.menus.find(entry => entry.menu.isActive)?.menu.dailySpecial ?? "");
@@ -53,7 +54,7 @@ export default function DaypartHome({ configuration, accessToken, venueId, venue
     }
   };
 
-  useEffect(() => { void load(); }, [accessToken, capabilities, configuration, venueId]);
+  useEffect(() => { void load(); }, [accessToken, capabilityKey, configuration, venueId]);
 
   const activePeriod = state?.mealPeriods.mealPeriods.find(period => period.id === state.mealPeriods.activeMealPeriodId);
   const nextPeriod = state?.mealPeriods.mealPeriods.find(period => period.id === state.mealPeriods.nextMealPeriodId);
@@ -86,7 +87,7 @@ export default function DaypartHome({ configuration, accessToken, venueId, venue
   return <div className="daypart-home">
     <section className="daypart-hero" aria-labelledby="daypart-home-heading">
       <div><p>Right now · {localTime(state.mealPeriods.venueLocalNow)}</p><h2 id="daypart-home-heading">{activePeriod ? activePeriod.name : "Normal service"} at {venueName}</h2><span>{nextPeriod && state.mealPeriods.nextStartsLocal ? `${nextPeriod.name} begins ${localTime(state.mealPeriods.nextStartsLocal)}` : "No later daypart is scheduled."}</span></div>
-      {capabilities.includes("scheduling")
+      {capabilities.includes("schedule.entry.manage")
         ? <a href="?schedule=emergency#/schedules" className="emergency-home-action"><SkyIcon name="refresh" size={18} />Open emergency controls</a>
         : <span className="emergency-home-action" aria-disabled="true"><SkyIcon name="refresh" size={18} />Emergency controls locked</span>}
     </section>
@@ -95,18 +96,18 @@ export default function DaypartHome({ configuration, accessToken, venueId, venue
     {error ? <p className="state error" role="alert">{error}</p> : null}
 
     <section className="daypart-timeline" aria-labelledby="daypart-timeline-heading"><div><p>Venue timeline</p><h3 id="daypart-timeline-heading">Today’s dayparts</h3></div>
-      {!capabilities.includes("scheduling") ? <p className="state">Daypart scheduling is unavailable for this venue.</p>
+      {!capabilities.includes("schedule.entry.manage") ? <p className="state">Daypart scheduling is unavailable for this venue.</p>
       : state.mealPeriods.mealPeriods.length ? <ol>{state.mealPeriods.mealPeriods.filter(period => period.isEnabled).map(period => <li key={period.id} data-active={period.id === activePeriod?.id}><strong>{period.name}</strong><span>{period.startLocalTime}–{period.endLocalTime}</span>{period.id === activePeriod?.id ? <em>Now</em> : null}</li>)}</ol>
       : <EmptyState icon="refresh" title="No dayparts yet" message="Normal venue content remains active." action={<a href="?schedule=meal-periods#/schedules">Set up dayparts</a>} />}</section>
 
     <div className="daypart-grid">
       <section aria-labelledby="live-screens-heading"><header><div><p>Live screens</p><h3 id="live-screens-heading">Fleet at a glance</h3></div><a href="#/screens">Manage</a></header>
-        {!capabilities.includes("screens") ? <p className="state">Screen status is unavailable for this venue.</p>
+        {!capabilities.includes("screen.device.view") ? <p className="state">Screen status is unavailable for this venue.</p>
         : state.screens.length ? <ul className="screen-miniatures">{state.screens.slice(0, 6).map(screen => <li key={screen.id}><span aria-hidden="true"><SkyIcon name="screen" size={22} /></span><div><strong>{screen.name}</strong><small>{screen.location || screen.displayLayout.replaceAll("_", " ")}</small></div><em data-online={screen.status.toLowerCase() === "online"}>{screen.status}</em></li>)}</ul>
         : <EmptyState icon="screen" title="No screens paired" message="Pair a screen to see live venue status." action={<a href="#/screens">Pair a screen</a>} />}</section>
 
       <section aria-labelledby="availability-heading"><header><div><p>86 board</p><h3 id="availability-heading">Quick availability</h3></div><a href="#/menu">Open menu</a></header>
-        {!capabilities.includes("menus") ? <p className="state">Menu availability is unavailable for this venue.</p>
+        {!capabilities.includes("content.item.update") ? <p className="state">Menu availability is unavailable for this venue.</p>
         : quickItems.length ? <ul className="availability-list">{quickItems.map(item => <li key={item.id}><span><strong>{item.name}</strong><small>{item.quantityAvailable == null ? "Manual availability" : `${item.quantityAvailable} remaining`}</small></span><button type="button" disabled={busyItem === item.id || !state.menu.capabilities.quickUpdate} aria-pressed={!item.isAvailable} onClick={() => void toggleAvailability(item)}>{item.isAvailable ? "86 item" : "Restore"}</button></li>)}</ul>
         : <EmptyState icon="search" title="No menu items" message="Add menu items before using the 86 board." action={<a href="#/menu">Open menu</a>} />}</section>
     </div>

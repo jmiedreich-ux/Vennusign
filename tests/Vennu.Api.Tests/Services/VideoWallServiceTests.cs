@@ -22,7 +22,7 @@ public sealed class VideoWallServiceTests
             GetByVenueIdAsyncHandler = (_, _) => Task.FromResult<IReadOnlyCollection<Screen>>([first, second, displaced, replaced])
         };
         var notifier = new RecordingNotifier();
-        var service = CreateService(venueId, screens, true, notifier);
+        var service = CreateService(venueId, screens, notifier);
 
         var group = await service.SaveAsync(venueId, " Main ", "2x1", [first.Id, second.Id]);
 
@@ -45,7 +45,7 @@ public sealed class VideoWallServiceTests
         {
             GetByVenueIdAsyncHandler = (_, _) => Task.FromResult<IReadOnlyCollection<Screen>>([owned])
         };
-        var service = CreateService(venueId, screens, true, new RecordingNotifier());
+        var service = CreateService(venueId, screens, new RecordingNotifier());
 
         await Assert.ThrowsAsync<ArgumentException>(() => service.SaveAsync(venueId, "Wall", "4x4", [owned.Id]));
         await Assert.ThrowsAsync<ArgumentException>(() => service.SaveAsync(venueId, "Wall", "2x1", [owned.Id, owned.Id]));
@@ -53,17 +53,6 @@ public sealed class VideoWallServiceTests
     }
 
     [Fact]
-    public async Task Mutation_IsBlockedWhenVideoWallFeatureIsUnavailable()
-    {
-        var venueId = Guid.NewGuid();
-        var service = CreateService(venueId, new FakeScreenRepository(), false, new RecordingNotifier());
-
-        var error = await Assert.ThrowsAsync<ArgumentException>(
-            () => service.SaveAsync(venueId, "Wall", "2x1", [Guid.NewGuid(), Guid.NewGuid()]));
-
-        Assert.Contains("Video Wall", error.Message);
-    }
-
     [Fact]
     public async Task SaveAsync_RejectsArchivedScreen()
     {
@@ -74,7 +63,7 @@ public sealed class VideoWallServiceTests
         {
             GetByVenueIdAsyncHandler = (_, _) => Task.FromResult<IReadOnlyCollection<Screen>>([active, archived])
         };
-        var service = CreateService(venueId, screens, true, new RecordingNotifier());
+        var service = CreateService(venueId, screens, new RecordingNotifier());
 
         await Assert.ThrowsAsync<ArgumentException>(() => service.SaveAsync(venueId, "Wall", "2x1", [active.Id, archived.Id]));
     }
@@ -82,7 +71,6 @@ public sealed class VideoWallServiceTests
     private static VideoWallService CreateService(
         Guid venueId,
         FakeScreenRepository screens,
-        bool enabled,
         RecordingNotifier notifier) =>
         new(
             screens,
@@ -91,19 +79,7 @@ public sealed class VideoWallServiceTests
                 GetByIdAsyncHandler = (id, _) => Task.FromResult<Venue?>(
                     id == venueId ? new Venue { Id = id, Name = "Cafe" } : null)
             },
-            new FakeFeatureResolutionService(enabled),
             notifier);
-
-    private sealed class FakeFeatureResolutionService(bool enabled) : IFeatureResolutionService
-    {
-        public Task<bool> HasFeatureAsync(Guid venueId, string featureKey, CancellationToken cancellationToken = default) =>
-            Task.FromResult(enabled && featureKey == "video_wall");
-        public Task<FeatureEntitlement?> GetFeatureAsync(Guid venueId, string featureKey, CancellationToken cancellationToken = default) =>
-            Task.FromResult<FeatureEntitlement?>(null);
-        public Task<IReadOnlyDictionary<string, FeatureEntitlement>> GetFeatureSetAsync(Guid venueId, CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyDictionary<string, FeatureEntitlement>>(new Dictionary<string, FeatureEntitlement>());
-        public void Invalidate(Guid venueId) { }
-    }
 
     private sealed class RecordingNotifier : IScreenUpdateNotifier
     {

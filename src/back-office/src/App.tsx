@@ -22,6 +22,7 @@ import {
 import { loadBackOfficeConfiguration } from "./config";
 import {
   canOpenBackOfficeRoute,
+  decisionForBackOfficeRoute,
   resolveBackOfficeRoute,
   backOfficeNavigationGroups,
   type BackOfficeRoute
@@ -228,7 +229,11 @@ export default function App() {
     return <main className="centered"><p className="loading">Opening your venue…</p></main>;
   }
 
-  const allowed = canOpenBackOfficeRoute(route, session.capabilities);
+  const allowed = canOpenBackOfficeRoute(route, session.capabilityDecisions);
+  const routeDecision = decisionForBackOfficeRoute(route, session.capabilityDecisions);
+  const allowedCapabilityIds = session.capabilityDecisions
+    .filter(decision => decision.decision === "allowed" || decision.decision === "allowed-with-conditions")
+    .map(decision => decision.capabilityId);
   const opportunities = billing
     ? listUpgradeOpportunities(
         billing.effectiveFeatures,
@@ -245,7 +250,7 @@ export default function App() {
   const inlineOpportunity = allowed
     ? opportunities.find(item => upgradePanelForFeature(item.featureKey) === routePanel)
     : undefined;
-  const lockedOpportunity = !allowed
+  const lockedOpportunity = !allowed && routeDecision?.resolution === "review_product_access"
     ? opportunities.find(item => item.featureKey === route.upgradeFeature) ?? opportunities[0]
     : undefined;
   const dismiss = (featureKey: string) => {
@@ -388,8 +393,9 @@ export default function App() {
         {backOfficeNavigationGroups.map(group => <details key={group.label} open={group.routes.some(item => item.path === route.path) || group.label === "Operate"}>
           <summary>{group.label}</summary>
           <div>{group.routes.map(item => {
-          const unlocked = canOpenBackOfficeRoute(item, session.capabilities);
-          const opportunity = !unlocked
+          const unlocked = canOpenBackOfficeRoute(item, session.capabilityDecisions);
+          const navigationDecision = decisionForBackOfficeRoute(item, session.capabilityDecisions);
+          const opportunity = !unlocked && navigationDecision?.resolution === "review_product_access"
             ? opportunities.find(candidate => candidate.featureKey === item.upgradeFeature)
             : undefined;
           return opportunity ? <LockedNavigationItem
@@ -401,6 +407,7 @@ export default function App() {
             href={`#/${item.path}`}
             key={item.path}
             aria-disabled={!unlocked}
+            title={unlocked ? undefined : navigationDecision?.message}
           >
             <strong>{item.label}{unlocked ? "" : " · Locked"}</strong>
             <small>{item.description}</small>
@@ -473,7 +480,7 @@ export default function App() {
             accessToken={accessToken}
             venueId={session.venueId}
             venueName={session.venueName}
-            capabilities={session.capabilities}
+            capabilities={allowedCapabilityIds}
           />
         : allowed && route.path === "billing" && billing
         ? <BillingStatusCard
@@ -509,7 +516,7 @@ export default function App() {
             configuration={configuration}
             accessToken={accessToken}
             venueId={session.venueId}
-            capabilities={session.capabilities}
+            capabilities={allowedCapabilityIds}
              maxScreens={billing?.currentTier?.maxScreens}
             area={route.path as "screens" | "themes" | "schedules" | "tap-list"}
           />
@@ -526,7 +533,7 @@ export default function App() {
             onDismiss={dismiss}
             onUpgrade={setUpgradeContext}
           />
-        : <section className="placeholder locked-panel"><p>Upgrade available</p><h2>{route.label} is locked</h2><span>Your current venue access does not include this capability.</span></section>}
+        : <section className="placeholder locked-panel" role="status"><p>{routeDecision?.decision === "temporarily-blocked" ? "Temporarily unavailable" : routeDecision?.category === "permission" ? "Permission required" : "Unavailable"}</p><h2>{route.label} is not available</h2><span>{routeDecision?.message ?? "Vennusign could not verify access to this area. Refresh the session and try again."}</span>{routeDecision?.resolution === "sign_in_again" ? <button type="button" onClick={signOut}>Sign in again</button> : null}</section>}
     </main>
     {upgradeContext && billing && targetTier ? <UpgradeSheet
       opportunity={upgradeContext}
