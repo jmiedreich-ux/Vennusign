@@ -4,11 +4,12 @@
 
 - Phase 13: complete.
 - Phase 14 and later: paused.
-- Product implementation: paused.
+- Product implementation: Track 1 execution is active in Sequential mode.
 - RWP-13.06 — Trial-First Onboarding: held and must not resume unchanged.
 - Native-industry Track 0 gate: complete.
 - Track 0 consolidation: complete through RWP-00.81.
 - Final Track 0 industry planning validation and handoff: complete in this proposed merge.
+- Track 1.01 — Canonical Capability Model and Current-Code Reconciliation (#640): implementation and focused tests are complete in the proposed branch state; exact-head Actions and merge validation are pending.
 
 ## Track 0 Deliverables
 
@@ -44,7 +45,7 @@ Pricing, final names, numeric allowances, exact trial duration, taxes, contracts
 
 ## Exact Next Action
 
-Review and merge the final Track 0 industry planning closure. After merge, create and approve the bounded implementation roadmap beginning with the canonical capability registry and legacy aliases. Do not resume RWP-13.06 unchanged or begin Phase 14+.
+Validate and review the exact Track 1.01 branch head, merge it, close issue #640, and verify `master`. Only then claim Track 1.02 (#641). Do not resume RWP-13.06 or begin implementation of a future track.
 
 ## Validation Policy
 

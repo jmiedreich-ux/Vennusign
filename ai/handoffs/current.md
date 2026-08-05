@@ -4,8 +4,8 @@
 
 - Track 0 industry and product architecture: complete and closed.
 - Track 1 product and architecture discussion: complete.
-- Track 1 implementation: not started.
-- Active implementation claim: none.
+- Track 1 implementation: active; Track 1.01 implementation is complete in the proposed branch state.
+- Active implementation claim: Track 1.01 / issue #640 on `rwp/01.01-canonical-capability-model`.
 - Next-track implementation: blocked pending execution, validation and owner approval of the current track. Light planning for any future track may begin, but cannot be marked complete until potential changes from the current and earlier tracks are evaluated.
 - RWP-13.06: held; do not resume unchanged.
 - Phase 14 and later: paused.
@@ -67,19 +67,27 @@ Automation proves technical permutations and enforcement. The owner tests custom
 
 Full onboarding belongs to Track 8. Track 1 only supplies the authority and decision foundations needed by onboarding.
 
+## Track 1.01 Proposed Outcome
+
+- `CapabilityId` enforces stable lowercase `domain.resource.action` identifiers.
+- `Version1CapabilityRegistry` is the deterministic source for Version 1 product actions and outcomes across all 11 approved domains.
+- Capability metadata is independent of tier, industry, provider, route, and display wording.
+- `CurrentConceptReconciliation` gives every seeded generic feature key exactly one typed disposition or removal decision.
+- `docs/architecture/capability-entitlement-authority.md` records the durable contract and the disposition of route/session gates, membership claims, generic feature persistence, usage strings, states, add-ons, layouts, allowances, rollout controls, and support tooling.
+- Focused non-integration tests cover identifier rules, uniqueness, domain separation, prohibited identity coupling, dispositions, and registered targets.
+- Local .NET execution was unavailable because this runtime does not contain the SDK. Exact-head GitHub Actions is required before merge. Integration/external-system tests remain skipped.
+
 ## Exact Next Action
 
-1. Review the detailed handoff.
-2. Revise existing Track 1 issue titles/descriptions to remove migration and legacy framing.
-3. Create detailed RWP records and completeness checklists for Track 1.01 through Track 1.05.
-4. Present all five for owner confirmation.
-5. After confirmation, execute the sequential five-RWP batch with automatic bounded remediation.
-6. Prepare and conduct the Track 1 owner acceptance review.
-7. Light planning for any future track may proceed in parallel, but it must remain provisional and cannot be marked complete until acceptance findings from the current track and effects from any earlier tracks are evaluated.
+1. Create and review the Track 1.01 PR against `master`.
+2. Require exact-head affected Release build and focused non-integration tests.
+3. Merge, close issue #640, verify `master`, and release the claim.
+4. Claim Track 1.02 / issue #641 only after that verification.
+5. Keep all future-track implementation blocked. Light planning may remain provisional under the governing acceptance rule.
 
 ## Boundaries
 
-- This handoff does not itself authorize Track 1 implementation.
+- Only the approved Track 1.01 through Track 1.05 sequential chunk is authorized for implementation.
 - Do not start implementation of the next track before owner approval of the current track's closure. Light planning for any future track may begin, but it cannot be marked complete until potential changes from the current and earlier tracks have been evaluated.
 - Do not resume RWP-13.06 unchanged.
 - Do not claim full onboarding or unbuilt management interfaces as Track 1 deliverables.
