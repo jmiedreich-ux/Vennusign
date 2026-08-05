@@ -11,7 +11,7 @@
 - Café, Bakery & Dessert: RWP-00.29 merged; RWP-00.30 is next
 - Food Truck & Concession: RWP-00.42 merged; RWP-00.43 is next
 - Hospitality: RWP-00.56 complete in this proposed merge state; RWP-00.57 is next
-- Entertainment & Attractions: RWP-00.69 complete in this proposed merge state; RWP-00.70 is next
+- Entertainment & Attractions: RWP-00.70 complete in this proposed merge state; RWP-00.71 is next
 
 ## Bar Operating-Characteristics Result
 
@@ -25,27 +25,24 @@ RWP-00.56 preserves the required manual core and defines optional candidates for
 
 Tier candidates include advanced wayfinding, brand libraries, property-group coordination, campaigns, approvals and advanced workflows, localization workflow, advanced analytics, enterprise administration, and selected advanced operational workflow. Independent add-on candidates include property-management, event, room-booking, transport, parking, access, guest-service, gaming, maps, positioning, weather, emergency, translation, AI, identity providers, managed hardware, connectivity, monitoring, and related external systems or services.
 
-## Entertainment Capability-Classification Result
+## Entertainment Tier-Mapping Result
 
-RWP-00.69 gives every Entertainment & Attractions concern one primary Track 0 classification.
+RWP-00.70 proposes four customer-outcome tier archetypes:
 
-- Industry, subtype, terminology, hierarchy, schedules, content, operational values, sources, targets, delivery, and versions are **product/domain state**.
-- Essential manual operation, exact targeting, publication confidence, correction, and recovery are **core capabilities**.
-- Authority is **permission**.
-- Recurring native advanced outcomes are **tier entitlement candidates**.
-- Independent integrations and managed services are **add-on candidates**.
-- Quantity and consumption boundaries are **limits**.
-- Temporary exposure control is an **internal rollout flag** only.
+- **Operate:** complete required manual daily visitor communication.
+- **Coordinate:** richer event, team, screen, journey, language, campaign, and workflow coordination.
+- **Portfolio:** multi-venue, campus, district, park, cinema, museum, sports, touring, franchise, and brand governance with local control.
+- **Enterprise:** enterprise identity administration, audit, governance, risk, service, and complex-portfolio workflow.
 
-The classification resolves manual versus automated wait, capacity versus sold out, maps versus wayfinding, approval versus permission, basic health versus managed monitoring, manual languages versus premium localization, analytics versus source data, AI access versus generated content state, enterprise identity versus authorization, and subtype versus packaging.
+Independent ticketing, admissions, access, venue, cinema, queue, footfall, map, translation, AI, identity-provider, hardware, connectivity, and managed-service connections remain add-ons. Quantities remain limits. Industry and subtype remain non-commercial configuration.
 
-Future commercial and administrative surfaces must keep the included manual path visible and distinguish not purchased, not permitted, not configured, disconnected, stale, unsupported, limit reached, and internally disabled states. Preserve the approved Sky Blue administrative direction.
+Upgrade must preserve current data and public operation and activate outcomes deliberately. Downgrade must preserve essential communication, manual fallback, source/freshness context, recovery, and customer-authored content through a clear grace, conversion, export, or read-only policy. Contextual upgrade prompts should follow operational value and preferably first-screen activation rather than interrupting initial setup.
 
 ## Exact Next Actions
 
 - Execute **RWP-00.19 — Bar, Brewery & Nightlife Required Capabilities** (#494).
 - After RWP-00.56 is merged, verified, closed, and released, execute **RWP-00.57 — Hospitality Capability Classification** (#532).
-- After RWP-00.69 is merged, verified, closed, and released, execute **RWP-00.70 — Entertainment & Attractions Subscription Tier Mapping** (#545).
+- After RWP-00.70 is merged, verified, closed, and released, execute **RWP-00.71 — Entertainment & Attractions Onboarding Experience** (#546).
 
 ## Parallel-Stream Rule
 
