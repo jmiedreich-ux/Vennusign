@@ -1,0 +1,16 @@
+{
+  "decisions.allowed": "This action is available.",
+  "decisions.allowed_with_conditions": "This action is available with the listed conditions.",
+  "decisions.capability.unknown": "This action is not available in this version of Vennusign.",
+  "decisions.input_incomplete": "Vennusign could not verify every requirement for this action.",
+  "decisions.identity.required": "Sign in again to continue.",
+  "decisions.rollout.unavailable": "This action is not available here.",
+  "decisions.rollout.temporary": "This action is temporarily unavailable. Try again later.",
+  "decisions.entitlement.required": "Your current access does not include this action.",
+  "decisions.permission.required": "Ask an administrator for permission to complete this action.",
+  "decisions.add_on.required": "Connect or activate the required service to continue.",
+  "decisions.allowance.reached": "The current allowance has been reached.",
+  "decisions.resource_state.blocked": "Update the current item state before continuing.",
+  "decisions.request.invalid": "Review the highlighted information and try again.",
+  "decisions.satisfied": "This requirement is satisfied."
+}
