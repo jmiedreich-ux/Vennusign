@@ -3,6 +3,7 @@ using Vennu.Api.Services;
 using Vennu.Core.Models;
 using Vennu.Data.Repositories;
 using Vennu.Data.Services;
+using Vennu.Api.Tests.TestDoubles;
 
 namespace Vennu.Api.Tests.Services;
 
@@ -26,7 +27,7 @@ public sealed class QuickUpdateServiceTests
         var service = new QuickUpdateService(
             menus,
             new FakeVenueRepository(new Venue { Id = venueId, Name = "Cafe", Timezone = "America/New_York" }),
-            new FakeFeatureResolutionService(true),
+            new FakeCapabilityDecisionServices("content.item.update", "content.item.availability_update"),
             notifier,
             new FixedTimeProvider());
 
@@ -49,7 +50,7 @@ public sealed class QuickUpdateServiceTests
         var service = new QuickUpdateService(
             menus,
             new FakeVenueRepository(new Venue { Id = venueId, Name = "Cafe" }),
-            new FakeFeatureResolutionService(true),
+            new FakeCapabilityDecisionServices("content.item.update", "content.item.availability_update"),
             notifier,
             new FixedTimeProvider());
 
@@ -77,7 +78,7 @@ public sealed class QuickUpdateServiceTests
         var service = new QuickUpdateService(
             menus,
             new FakeVenueRepository(new Venue { Id = venueId, Name = "Cafe" }),
-            new FakeFeatureResolutionService(true),
+            new FakeCapabilityDecisionServices("content.item.update", "content.item.availability_update"),
             notifier,
             new FixedTimeProvider());
 
@@ -89,35 +90,24 @@ public sealed class QuickUpdateServiceTests
     }
 
     [Fact]
-    public async Task QuickUpdate_BlocksWhenEffectiveFeatureIsUnavailable()
+    public async Task QuickUpdate_BlocksWhenServerDecisionIsDenied()
     {
         var service = new QuickUpdateService(
             new FakeMenuRepository(),
             new FakeVenueRepository(null),
-            new FakeFeatureResolutionService(false),
+            new FakeCapabilityDecisionServices(),
             new RecordingNotifier(),
             new FixedTimeProvider());
 
-        var error = await Assert.ThrowsAsync<ArgumentException>(
+        var error = await Assert.ThrowsAsync<CapabilityDecisionDeniedException>(
             () => service.UpdateDailySpecialAsync(Guid.NewGuid(), Guid.NewGuid(), "Special"));
 
-        Assert.Contains("Quick Update", error.Message);
+        Assert.Equal("permission.required", error.Decision.ReasonCode);
     }
 
     private sealed class FixedTimeProvider : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => new(2026, 7, 29, 23, 30, 0, TimeSpan.Zero);
-    }
-
-    private sealed class FakeFeatureResolutionService(bool enabled) : IFeatureResolutionService
-    {
-        public Task<bool> HasFeatureAsync(Guid venueId, string featureKey, CancellationToken cancellationToken = default) =>
-            Task.FromResult(enabled && featureKey == "quick_update");
-        public Task<FeatureEntitlement?> GetFeatureAsync(Guid venueId, string featureKey, CancellationToken cancellationToken = default) =>
-            Task.FromResult<FeatureEntitlement?>(null);
-        public Task<IReadOnlyDictionary<string, FeatureEntitlement>> GetFeatureSetAsync(Guid venueId, CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyDictionary<string, FeatureEntitlement>>(new Dictionary<string, FeatureEntitlement>());
-        public void Invalidate(Guid venueId) { }
     }
 
     private sealed class FakeVenueRepository(Venue? venue) : IVenueRepository

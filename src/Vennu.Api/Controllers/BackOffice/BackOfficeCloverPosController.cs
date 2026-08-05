@@ -13,6 +13,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Route("api/back-office/pos/clover")]
 [Route("api/venue-admin/pos/clover")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
+[RequireCapability("content.source.synchronize")]
 public sealed class BackOfficeCloverPosController(
     ICloverOAuthConnectionService service,
     IPosCatalogImportService catalogImportService) : ControllerBase

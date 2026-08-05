@@ -14,11 +14,11 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Route("api/back-office/screens/pairing")]
 [Route("api/venue-admin/screens/pairing")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
+[RequireCapability("screen.device.pair")]
 public sealed class BackOfficePairingController(
     IScreenRepository screenRepository,
     IScreenPairingCodeRepository pairingCodeRepository,
     IVenueRepository venueRepository,
-    IVenueEntitlementService entitlementService,
     IScreenReplacementService? replacementService = null) : ControllerBase
 {
     [HttpPost("{code}/claim")]
@@ -28,19 +28,6 @@ public sealed class BackOfficePairingController(
     {
         var venueId = Guid.Parse(
             User.FindFirstValue(BackOfficeAuthenticationDefaults.VenueIdClaim)!);
-        try
-        {
-            await entitlementService.EnsureCanAddScreenAsync(venueId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (TierScreenLimitReachedException exception)
-        {
-            return Conflict(new ProblemDetails
-            {
-                Title = "Screen limit reached.",
-                Detail = exception.Message,
-                Status = StatusCodes.Status409Conflict
-            });
-        }
         var controller = new ScreensController(
             screenRepository,
             pairingCodeRepository,

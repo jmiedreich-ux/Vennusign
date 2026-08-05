@@ -37,8 +37,8 @@ export default function VenueOperations({
     schedulePanels.includes(requestedPanel as SchedulePanel) ? requestedPanel as SchedulePanel : "overview"
   );
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const allLayouts = capabilities.includes("all_layouts");
-  const scheduling = capabilities.includes("scheduling");
+  const allLayouts = capabilities.includes("branding.layout.manage");
+  const scheduling = capabilities.includes("schedule.entry.manage");
 
   useEffect(() => {
     if (area !== "schedules") return;
@@ -56,7 +56,7 @@ export default function VenueOperations({
         venueId={venueId}
         allLayoutsEnabled={allLayouts}
         maxScreens={maxScreens}
-        videoWallEnabled={capabilities.includes("video_wall")}
+        videoWallEnabled={capabilities.includes("screen.wall.coordinate")}
         showUpgradePrompt={false}
       />
     </div>;
@@ -130,7 +130,7 @@ export default function VenueOperations({
       configuration={configuration}
       apiKey={accessToken}
       venueId={venueId}
-      enabled={capabilities.includes("happy_hour")}
+      enabled={capabilities.includes("schedule.promotion.automate")}
       showUpgradePrompt={false}
     /> : null}
     {schedulePanel === "playlists" ? <PlaylistAdministration

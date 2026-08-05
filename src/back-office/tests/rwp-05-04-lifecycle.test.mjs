@@ -13,7 +13,7 @@ test("navigation exposes only implemented home, account, and POS administration"
   assert.doesNotMatch(navigation, /path: "settings"/);
   assert.match(app, /DaypartHome/);
   assert.match(navigation, /path: "pos"/);
-  assert.match(navigation, /capability: "pos_integration"/);
+  assert.match(navigation, /capabilityId: "content\.source\.synchronize"/);
   assert.match(app, /PosIntegrationAdministration/);
   assert.match(pos, /Refresh status/);
   assert.match(pos, /Import catalog/);

@@ -17,11 +17,11 @@ test("Back Office shell exposes only implemented customer routes", () => {
   assert.deepEqual(backOfficeNavigationGroups.map(group => group.label), ["Operate", "Design & delivery", "Connect", "Account"]);
 });
 
-test("capability routes retain deterministic locked and unlocked states", () => {
+test("navigation consumes structured server decisions using canonical capability IDs", () => {
   const menu = backOfficeRoutes.find(route => route.path === "menu");
   assert.equal(canOpenBackOfficeRoute(menu, []), false);
-  assert.equal(canOpenBackOfficeRoute(menu, ["menus"]), true);
+  assert.equal(canOpenBackOfficeRoute(menu, [{ capabilityId: "content.item.update", decision: "allowed" }]), true);
   const pos = backOfficeRoutes.find(route => route.path === "pos");
   assert.equal(canOpenBackOfficeRoute(pos, []), false);
-  assert.equal(canOpenBackOfficeRoute(pos, ["pos_integration"]), true);
+  assert.equal(canOpenBackOfficeRoute(pos, [{ capabilityId: "content.source.synchronize", decision: "unavailable" }]), false);
 });

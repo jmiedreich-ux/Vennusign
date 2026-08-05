@@ -18,11 +18,13 @@ public sealed class BackOfficeSessionOptions
 
     public Guid VenueId { get; set; }
 
+    public Guid OrganizationId { get; set; }
+
     public string UserId { get; set; } = string.Empty;
 
     public string DisplayName { get; set; } = string.Empty;
 
-    public List<string> Capabilities { get; set; } = [];
+    public string SystemRole { get; set; } = "organization_owner";
     public bool Enabled { get; set; } = true;
     public DateTime? ExpiresUtc { get; set; }
     public DateTime? RevokedUtc { get; set; }

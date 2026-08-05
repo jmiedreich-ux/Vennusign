@@ -102,7 +102,7 @@ test("video wall editing and removal require deliberate recovery-safe actions", 
   assert.match(walls, /Cancel edit/);
 });
 
-test("video wall builder follows the effective video_wall capability", () => {
-  assert.match(operations, /capabilities\.includes\("video_wall"\)/);
+test("video wall builder follows the typed screen wall capability", () => {
+  assert.match(operations, /capabilities\.includes\("screen\.wall\.coordinate"\)/);
   assert.match(screens, /videoWallEnabled \? <VideoWallBuilder/);
 });

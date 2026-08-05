@@ -11,6 +11,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Route("api/venue-admin/venues/{venueId:guid}/theme")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
 [BackOfficeVenueScope]
+[RequireCapability("branding.theme.manage")]
 public sealed class BackOfficeThemesController(IVenueThemeService service) : ControllerBase
 {
     [HttpGet("presets")]
@@ -58,6 +59,7 @@ public sealed class BackOfficeThemesController(IVenueThemeService service) : Con
     }
 
     [HttpPut("advanced")]
+    [RequireCapability("branding.layout.manage")]
     public async Task<ActionResult<VenueThemeResponse>> UpdateAdvanced(
         Guid venueId,
         VenueAdvancedThemeUpdateRequest request,

@@ -12,6 +12,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Route("api/venue-admin/venues/{venueId:guid}/screens")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
 [BackOfficeVenueScope]
+[RequireCapability("screen.device.view")]
 public sealed class BackOfficeScreensController(
     IScreenManagementService screenService,
     IHaasPreRegistrationService preRegistrationService,
@@ -19,6 +20,7 @@ public sealed class BackOfficeScreensController(
     IVideoWallService videoWallService) : ControllerBase
 {
     [HttpPost("pre-registrations")]
+    [RequireCapability("screen.device.pair")]
     public async Task<ActionResult<HaasPreRegistrationResponse>> PreRegister(
         Guid venueId,
         HaasPreRegistrationRequest request,
@@ -57,6 +59,7 @@ public sealed class BackOfficeScreensController(
     }
 
     [HttpPost]
+    [RequireCapability("screen.device.pair")]
     public async Task<ActionResult<ScreenManagementItem>> Create(
         Guid venueId,
         ScreenCreateRequest request,
@@ -195,6 +198,7 @@ public sealed class BackOfficeScreensController(
     }
 
     [HttpGet("video-walls")]
+    [RequireCapability("screen.wall.coordinate")]
     public async Task<ActionResult<VideoWallSnapshot>> GetVideoWalls(
         Guid venueId,
         CancellationToken cancellationToken)
@@ -210,6 +214,7 @@ public sealed class BackOfficeScreensController(
     }
 
     [HttpPut("video-walls")]
+    [RequireCapability("screen.wall.coordinate")]
     public async Task<ActionResult<VideoWallGroup>> SaveVideoWall(
         Guid venueId,
         VideoWallSaveRequest request,
@@ -235,6 +240,7 @@ public sealed class BackOfficeScreensController(
     }
 
     [HttpDelete("video-walls/{name}")]
+    [RequireCapability("screen.wall.coordinate")]
     public async Task<IActionResult> RemoveVideoWall(
         Guid venueId,
         string name,

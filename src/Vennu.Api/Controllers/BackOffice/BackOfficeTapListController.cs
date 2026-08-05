@@ -13,6 +13,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Route("api/venue-admin/venues/{venueId:guid}/tap-list")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
 [BackOfficeVenueScope]
+[RequireCapability("content.item.update")]
 public sealed class BackOfficeTapListController(
     ITapListAdministrationService service,
     IScreenUpdateNotifier notifier) : ControllerBase

@@ -12,14 +12,12 @@ public sealed class CustomerBackOfficeAuthenticationOptions : AuthenticationSche
 
 public sealed class CustomerBackOfficeAuthenticationHandler : AuthenticationHandler<CustomerBackOfficeAuthenticationOptions>
 {
-    private static readonly string[] CoreContentCapabilities = ["menus", "screens", "themes", "tap_list"];
     private readonly ICustomerSessionService sessions;
     private readonly ICustomerOnboardingRepository onboarding;
     private readonly IVenueRepository venues;
     private readonly IOrganizationMembershipRepository memberships;
     private readonly IBackOfficeContextRepository contexts;
     private readonly IMembershipCapabilityResolver membershipCapabilities;
-    private readonly IFeatureResolutionService features;
 
     public CustomerBackOfficeAuthenticationHandler(
         IOptionsMonitor<CustomerBackOfficeAuthenticationOptions> options,
@@ -30,8 +28,7 @@ public sealed class CustomerBackOfficeAuthenticationHandler : AuthenticationHand
         IVenueRepository venues,
         IOrganizationMembershipRepository memberships,
         IBackOfficeContextRepository contexts,
-        IMembershipCapabilityResolver membershipCapabilities,
-        IFeatureResolutionService features) : base(options, logger, encoder)
+        IMembershipCapabilityResolver membershipCapabilities) : base(options, logger, encoder)
     {
         this.sessions = sessions;
         this.onboarding = onboarding;
@@ -39,7 +36,6 @@ public sealed class CustomerBackOfficeAuthenticationHandler : AuthenticationHand
         this.memberships = memberships;
         this.contexts = contexts;
         this.membershipCapabilities = membershipCapabilities;
-        this.features = features;
     }
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -64,10 +60,7 @@ public sealed class CustomerBackOfficeAuthenticationHandler : AuthenticationHand
         if (authorized is null) return AuthenticateResult.Fail("The customer is not authorized to manage the selected venue.");
         var venue = authorized.Value.Venue;
 
-        var effectiveFeatures = await features.GetFeatureSetAsync(venue.Id, Context.RequestAborted).ConfigureAwait(false);
-        var capabilityValues = CoreContentCapabilities
-            .Concat(effectiveFeatures.Values.Where(feature => feature.Enabled).Select(feature => feature.Key))
-            .Distinct(StringComparer.OrdinalIgnoreCase);
+        var systemRole = ResolveSystemRole(authorized.Value.OrganizationRole, authorized.Value.VenueRole);
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, customer.User.Id.ToString()),
@@ -75,12 +68,28 @@ public sealed class CustomerBackOfficeAuthenticationHandler : AuthenticationHand
             new(ClaimTypes.Email, customer.User.Email),
             new(ClaimTypes.Role, "BackOffice"),
             new(BackOfficeAuthenticationDefaults.VenueIdClaim, venue.Id.ToString()),
+            new(BackOfficeAuthenticationDefaults.OrganizationIdClaim, venue.OrganizationId!.Value.ToString()),
+            new(BackOfficeAuthenticationDefaults.SystemRoleClaim, systemRole),
             new(BackOfficeAuthenticationDefaults.AuthenticationSourceClaim, "customer-session")
         };
-        claims.AddRange(capabilityValues.Select(value => new Claim(BackOfficeAuthenticationDefaults.CapabilitiesClaim, value)));
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, Scheme.Name));
         return AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme.Name));
     }
+
+    private static string ResolveSystemRole(
+        OrganizationMembershipRole? organizationRole,
+        VenueMembershipRole? venueRole) => organizationRole switch
+    {
+        OrganizationMembershipRole.Owner => "organization_owner",
+        OrganizationMembershipRole.Admin => "organization_administrator",
+        _ => venueRole switch
+        {
+            VenueMembershipRole.Manager => "venue_administrator",
+            VenueMembershipRole.Editor => "content_editor",
+            VenueMembershipRole.Viewer => "viewer",
+            _ => throw new InvalidOperationException("An authorized venue context requires a protected system role.")
+        }
+    };
 
     private Guid? ResolveVenueId(Vennu.Core.Models.CustomerOnboardingState? state)
     {

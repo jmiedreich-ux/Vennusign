@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
+using Vennu.Core.Models;
 
 namespace Vennu.Api.BackOffice;
 
@@ -53,13 +54,10 @@ public sealed class BackOfficeAuthenticationHandler : AuthenticationHandler<Back
             new(ClaimTypes.Name, session.DisplayName),
             new(ClaimTypes.Role, "BackOffice"),
             new(BackOfficeAuthenticationDefaults.VenueIdClaim, session.VenueId.ToString()),
+            new(BackOfficeAuthenticationDefaults.OrganizationIdClaim, session.OrganizationId.ToString()),
+            new(BackOfficeAuthenticationDefaults.SystemRoleClaim, session.SystemRole),
             new(BackOfficeAuthenticationDefaults.AuthenticationSourceClaim, "legacy-config")
         };
-        claims.AddRange(session.Capabilities
-            .Where(capability => !string.IsNullOrWhiteSpace(capability))
-            .Select(capability => new Claim(
-                BackOfficeAuthenticationDefaults.CapabilitiesClaim,
-                capability.Trim().ToLowerInvariant())));
 
         var identity = new ClaimsIdentity(claims, Scheme.Name);
         var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name);

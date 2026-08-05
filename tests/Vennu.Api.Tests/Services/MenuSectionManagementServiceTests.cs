@@ -1,6 +1,7 @@
 using Vennu.Core.Models;
 using Vennu.Data.Repositories;
 using Vennu.Data.Services;
+using Vennu.Api.Tests.TestDoubles;
 
 namespace Vennu.Api.Tests.Services;
 
@@ -15,7 +16,7 @@ public sealed class MenuSectionManagementServiceTests
         {
             Menus = [new Menu { Id = Guid.NewGuid(), VenueId = venueId, Name = "Dinner" }]
         };
-        var service = new MenuSectionManagementService(repository, new FakeFeatureResolutionService(), new FixedTimeProvider());
+        var service = CreateService(repository);
 
         var created = await service.CreateMenuAsync(venueId, "  Lunch  ");
         var error = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateMenuAsync(venueId, " dinner "));
@@ -35,7 +36,7 @@ public sealed class MenuSectionManagementServiceTests
             Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Main" }],
             Sections = [new MenuSection { Id = Guid.NewGuid(), VenueId = venueId, MenuId = menuId, Name = "Food", SortOrder = 0 }]
         };
-        var service = new MenuSectionManagementService(repository, new FakeFeatureResolutionService(), new FixedTimeProvider());
+        var service = CreateService(repository);
 
         var created = await service.CreateAsync(venueId, menuId, "  Drinks  ");
 
@@ -51,7 +52,7 @@ public sealed class MenuSectionManagementServiceTests
         {
             Menus = [new Menu { Id = Guid.NewGuid(), VenueId = Guid.NewGuid(), Name = "Other" }]
         };
-        var service = new MenuSectionManagementService(repository, new FakeFeatureResolutionService(), new FixedTimeProvider());
+        var service = CreateService(repository);
 
         var result = await service.UpdateAsync(Guid.NewGuid(), Guid.NewGuid(), "Changed", false);
 
@@ -69,7 +70,7 @@ public sealed class MenuSectionManagementServiceTests
         {
             Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Food" }]
         };
-        var service = new MenuSectionManagementService(repository, new FakeFeatureResolutionService(), new FixedTimeProvider());
+        var service = CreateService(repository);
 
         var error = await Assert.ThrowsAsync<ArgumentException>(
             () => service.ReorderAsync(venueId, menuId, [Guid.NewGuid()]));
@@ -92,7 +93,7 @@ public sealed class MenuSectionManagementServiceTests
                 new MenuSection { Id = second, VenueId = venueId, MenuId = menuId, Name = "Second" }
             ]
         };
-        var service = new MenuSectionManagementService(repository, new FakeFeatureResolutionService(), new FixedTimeProvider());
+        var service = CreateService(repository);
 
         var changed = await service.ReorderAsync(venueId, menuId, [second, first]);
 
@@ -101,11 +102,11 @@ public sealed class MenuSectionManagementServiceTests
     }
 
     [Fact]
-    public async Task GetAsync_UsesEffectiveFeatureResolutionForCapabilities()
+    public async Task GetAsync_UsesTypedServerDecisionsForActionAvailability()
     {
         var service = new MenuSectionManagementService(
             new FakeMenuRepository(),
-            new FakeFeatureResolutionService("happy_hour"),
+            new FakeCapabilityDecisionServices("schedule.promotion.automate"),
             new FixedTimeProvider());
 
         var snapshot = await service.GetAsync(Guid.NewGuid());
@@ -119,17 +120,11 @@ public sealed class MenuSectionManagementServiceTests
         public override DateTimeOffset GetUtcNow() => new(2026, 7, 29, 22, 20, 0, TimeSpan.Zero);
     }
 
-    private sealed class FakeFeatureResolutionService(params string[] enabledFeatures) : IFeatureResolutionService
-    {
-        private readonly HashSet<string> enabled = new(enabledFeatures, StringComparer.OrdinalIgnoreCase);
-
-        public Task<bool> HasFeatureAsync(Guid venueId, string featureKey, CancellationToken cancellationToken = default) => Task.FromResult(enabled.Contains(featureKey));
-        public Task<FeatureEntitlement?> GetFeatureAsync(Guid venueId, string featureKey, CancellationToken cancellationToken = default) =>
-            Task.FromResult<FeatureEntitlement?>(enabled.Contains(featureKey) ? new(featureKey, true, null, "test") : null);
-        public Task<IReadOnlyDictionary<string, FeatureEntitlement>> GetFeatureSetAsync(Guid venueId, CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyDictionary<string, FeatureEntitlement>>(enabled.ToDictionary(key => key, key => new FeatureEntitlement(key, true, null, "test")));
-        public void Invalidate(Guid venueId) { }
-    }
+    private static MenuSectionManagementService CreateService(FakeMenuRepository repository) =>
+        new(repository, new FakeCapabilityDecisionServices(
+            "schedule.promotion.automate",
+            "content.item.dietary_information_manage",
+            "content.item.availability_update"), new FixedTimeProvider());
 
     private sealed class FakeMenuRepository : IMenuRepository
     {

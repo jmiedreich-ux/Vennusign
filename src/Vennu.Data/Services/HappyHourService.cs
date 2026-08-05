@@ -6,7 +6,6 @@ namespace Vennu.Data.Services;
 public sealed class HappyHourService(
     IHappyHourScheduleRepository repository,
     IVenueRepository venues,
-    IFeatureResolutionService features,
     IHappyHourScheduleResolver resolver) : IHappyHourService
 {
     public async Task<HappyHourSnapshot> GetAsync(
@@ -17,12 +16,9 @@ public sealed class HappyHourService(
         RequireVenueId(venueId);
         var venue = await venues.GetByIdAsync(venueId, cancellationToken).ConfigureAwait(false)
             ?? throw new KeyNotFoundException("Venue does not exist.");
-        var entitled = await features.HasFeatureAsync(venueId, "happy_hour", cancellationToken).ConfigureAwait(false);
         var schedule = await repository.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
-        var state = entitled
-            ? resolver.Resolve(venue.Timezone, utcNow, schedule)
-            : resolver.Resolve(venue.Timezone, utcNow, null);
-        return new(schedule, state, entitled);
+        var state = resolver.Resolve(venue.Timezone, utcNow, schedule);
+        return new(schedule, state, true);
     }
 
     public async Task<HappyHourSnapshot> UpdateAsync(
@@ -36,10 +32,6 @@ public sealed class HappyHourService(
         CancellationToken cancellationToken = default)
     {
         RequireVenueId(venueId);
-        if (!await features.HasFeatureAsync(venueId, "happy_hour", cancellationToken).ConfigureAwait(false))
-        {
-            throw new ArgumentException("Happy hour scheduling requires the happy_hour feature.");
-        }
         ValidateWindow(startLocalTime, endLocalTime, activeDaysMask);
         var schedule = new HappyHourSchedule
         {

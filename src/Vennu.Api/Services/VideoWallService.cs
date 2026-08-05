@@ -9,7 +9,6 @@ namespace Vennu.Api.Services;
 public sealed class VideoWallService(
     IScreenRepository screenRepository,
     IVenueRepository venueRepository,
-    IFeatureResolutionService featureResolution,
     IScreenUpdateNotifier notifier) : IVideoWallService
 {
     private static readonly IReadOnlyDictionary<string, int> LayoutSizes =
@@ -38,8 +37,7 @@ public sealed class VideoWallService(
                 return new VideoWallGroup(group.Key, LayoutForCount(members.Length), members);
             })
             .ToArray();
-        var enabled = await featureResolution.HasFeatureAsync(venueId, "video_wall", cancellationToken).ConfigureAwait(false);
-        return new VideoWallSnapshot(enabled, groups);
+        return new VideoWallSnapshot(true, groups);
     }
 
     public async Task<VideoWallGroup> SaveAsync(
@@ -49,7 +47,7 @@ public sealed class VideoWallService(
         IReadOnlyCollection<Guid> screenIds,
         CancellationToken cancellationToken = default)
     {
-        await RequireFeatureAsync(venueId, cancellationToken).ConfigureAwait(false);
+        await RequireVenueAsync(venueId, cancellationToken).ConfigureAwait(false);
         var normalizedName = NormalizeName(name);
         if (!LayoutSizes.TryGetValue(layout.Trim(), out var requiredScreens))
         {
@@ -99,7 +97,7 @@ public sealed class VideoWallService(
 
     public async Task<bool> RemoveAsync(Guid venueId, string name, CancellationToken cancellationToken = default)
     {
-        await RequireFeatureAsync(venueId, cancellationToken).ConfigureAwait(false);
+        await RequireVenueAsync(venueId, cancellationToken).ConfigureAwait(false);
         var normalizedName = NormalizeName(name);
         var screens = await screenRepository.GetByVenueIdAsync(venueId, cancellationToken).ConfigureAwait(false);
         var members = screens.Where(screen => string.Equals(screen.WallGroup, normalizedName, StringComparison.OrdinalIgnoreCase)).ToArray();
@@ -125,15 +123,6 @@ public sealed class VideoWallService(
         if (await venueRepository.GetByIdAsync(venueId, cancellationToken).ConfigureAwait(false) is null)
         {
             throw new KeyNotFoundException("Venue does not exist.");
-        }
-    }
-
-    private async Task RequireFeatureAsync(Guid venueId, CancellationToken cancellationToken)
-    {
-        await RequireVenueAsync(venueId, cancellationToken).ConfigureAwait(false);
-        if (!await featureResolution.HasFeatureAsync(venueId, "video_wall", cancellationToken).ConfigureAwait(false))
-        {
-            throw new ArgumentException("Video Wall requires the corresponding venue feature.");
         }
     }
 

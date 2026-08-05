@@ -8,7 +8,7 @@ namespace Vennu.Api.Services;
 public sealed class QuickUpdateService(
     IMenuRepository menuRepository,
     IVenueRepository venueRepository,
-    IFeatureResolutionService featureResolution,
+    ICapabilityActionAuthorizer capabilityAuthorizer,
     IScreenUpdateNotifier notifier,
     TimeProvider timeProvider) : IQuickUpdateService
 {
@@ -18,7 +18,7 @@ public sealed class QuickUpdateService(
         string? dailySpecial,
         CancellationToken cancellationToken = default)
     {
-        await RequireFeatureAsync(venueId, cancellationToken).ConfigureAwait(false);
+        await RequireCapabilityAsync("content.item.update", cancellationToken).ConfigureAwait(false);
         var menu = (await menuRepository.GetMenusAsync(venueId, cancellationToken).ConfigureAwait(false))
             .SingleOrDefault(candidate => candidate.Id == menuId);
         if (menu is null)
@@ -49,7 +49,7 @@ public sealed class QuickUpdateService(
         bool isAvailable,
         CancellationToken cancellationToken = default)
     {
-        await RequireFeatureAsync(venueId, cancellationToken).ConfigureAwait(false);
+        await RequireCapabilityAsync("content.item.availability_update", cancellationToken).ConfigureAwait(false);
         var menus = await menuRepository.GetMenusAsync(venueId, cancellationToken).ConfigureAwait(false);
         if (menus.All(menu => menu.Id != menuId))
         {
@@ -86,13 +86,12 @@ public sealed class QuickUpdateService(
         return item;
     }
 
-    private async Task RequireFeatureAsync(Guid venueId, CancellationToken cancellationToken)
-    {
-        if (!await featureResolution.HasFeatureAsync(venueId, "quick_update", cancellationToken).ConfigureAwait(false))
-        {
-            throw new ArgumentException("Quick Update requires the corresponding venue feature.");
-        }
-    }
+    private Task<CapabilityDecisionResult> RequireCapabilityAsync(string capabilityId, CancellationToken cancellationToken) =>
+        capabilityAuthorizer.RequireAllowedAsync(
+            CapabilityId.Parse(capabilityId),
+            Guid.NewGuid().ToString("N"),
+            "en-US",
+            cancellationToken);
 
     private async Task<DateTime> GetNextLocalMidnightUtcAsync(
         Guid venueId,

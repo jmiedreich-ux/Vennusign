@@ -166,6 +166,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddDataProtection();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CustomerOidcEvents>();
 builder.Services.AddSingleton<ICustomerSecretProtector, DataProtectionCustomerSecretProtector>();
 builder.Services.AddScoped<ICustomerPasskeyService, CustomerPasskeyService>();
@@ -242,6 +243,9 @@ builder.Services.AddScoped<IStripeBillingPortalSessionGateway, StripeBillingPort
 builder.Services.AddScoped<IStripeHaasCheckoutSessionGateway, StripeHaasCheckoutSessionGateway>();
 builder.Services.AddHostedService<HeartbeatMonitor>();
 builder.Services.AddVennuData();
+builder.Services.AddScoped<ICapabilityDecisionInputProvider, BackOfficeCapabilityDecisionInputProvider>();
+builder.Services.AddScoped<ICapabilityDecisionService, CapabilityDecisionService>();
+builder.Services.AddScoped<ICapabilityActionAuthorizer, CapabilityActionAuthorizer>();
 builder.Services.AddScoped<IVenueThemeService, VenueThemeService>();
 
 if (!builder.Environment.IsEnvironment("Testing"))

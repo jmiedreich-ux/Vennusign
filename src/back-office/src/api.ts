@@ -5,7 +5,7 @@ import { requireHostedBillingPortalUrl } from "./billingPortal.mjs";
 export type BackOfficeSession = {
   venueId: string;
   displayName: string;
-  capabilities: string[];
+  capabilityDecisions: BackOfficeCapabilityDecision[];
   organizationId?: string;
   organizationName: string;
   venueName: string;
@@ -16,6 +16,16 @@ export type BackOfficeSession = {
     venueId: string;
     venueName: string;
   }>;
+};
+export type BackOfficeCapabilityDecision = {
+  capabilityId: string;
+  decision: "allowed" | "allowed-with-conditions" | "denied" | "unavailable" | "temporarily-blocked";
+  reasonCode: string;
+  category: string;
+  message: string;
+  resolution?: string;
+  retryAfterSeconds?: number;
+  isAllowed: boolean;
 };
 export type BackOfficeTierSummary = {
   id: string; name: string; slug: string; monthlyPrice: number; maxScreens: number; maxVenues: number;

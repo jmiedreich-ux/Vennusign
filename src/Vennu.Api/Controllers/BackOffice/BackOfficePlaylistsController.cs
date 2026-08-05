@@ -12,6 +12,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Route("api/venue-admin/venues/{venueId:guid}/screens/{screenId:guid}/playlist")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
 [BackOfficeVenueScope]
+[RequireCapability("schedule.rotation.manage")]
 public sealed class BackOfficePlaylistsController(IPlaylistAdministrationService service) : ControllerBase
 {
     [HttpGet]

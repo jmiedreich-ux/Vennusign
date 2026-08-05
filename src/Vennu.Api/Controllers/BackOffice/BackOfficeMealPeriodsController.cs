@@ -12,6 +12,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Route("api/venue-admin/venues/{venueId:guid}/meal-periods")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
 [BackOfficeVenueScope]
+[RequireCapability("schedule.entry.manage")]
 public sealed class BackOfficeMealPeriodsController(
     IMealPeriodAdministrationService service) : ControllerBase
 {

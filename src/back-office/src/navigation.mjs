@@ -1,13 +1,13 @@
 export const backOfficeRoutes = [
   { path: "home", label: "Home", description: "Today at your venue", group: "Operate" },
-  { path: "menu", label: "Menu", description: "Items and quick updates", group: "Operate", capability: "menus", upgradeFeature: "quick_update" },
-  { path: "schedules", label: "Schedules", description: "Timing and broadcasts", group: "Operate", capability: "scheduling", upgradeFeature: "meal_periods" },
-  { path: "tap-list", label: "Tap list", description: "Draft board operations", group: "Operate", capability: "tap_list", upgradeFeature: "all_layouts" },
-  { path: "screens", label: "Screens", description: "Boards and playback", group: "Design & delivery", capability: "screens", upgradeFeature: "all_layouts" },
-  { path: "themes", label: "Themes", description: "Brand and layouts", group: "Design & delivery", capability: "themes", upgradeFeature: "all_layouts" },
-  { path: "pos", label: "POS integrations", description: "Catalog and availability sync", group: "Connect", capability: "pos_integration", upgradeFeature: "pos_integration" },
-  { path: "billing", label: "Billing", description: "Plan and payments", group: "Account" },
-  { path: "security", label: "Account & security", description: "Passkeys and recovery", group: "Account" },
+  { path: "menu", label: "Menu", description: "Items and quick updates", group: "Operate", capabilityId: "content.item.update", upgradeFeature: "quick_update" },
+  { path: "schedules", label: "Schedules", description: "Timing and broadcasts", group: "Operate", capabilityId: "schedule.entry.manage", upgradeFeature: "meal_periods" },
+  { path: "tap-list", label: "Tap list", description: "Draft board operations", group: "Operate", capabilityId: "content.item.update", upgradeFeature: "all_layouts" },
+  { path: "screens", label: "Screens", description: "Boards and playback", group: "Design & delivery", capabilityId: "screen.device.view", upgradeFeature: "all_layouts" },
+  { path: "themes", label: "Themes", description: "Brand and layouts", group: "Design & delivery", capabilityId: "branding.theme.manage", upgradeFeature: "all_layouts" },
+  { path: "pos", label: "POS integrations", description: "Catalog and availability sync", group: "Connect", capabilityId: "content.source.synchronize", upgradeFeature: "pos_integration" },
+  { path: "billing", label: "Billing", description: "Plan and payments", group: "Account", capabilityId: "account.billing.view" },
+  { path: "security", label: "Account & security", description: "Passkeys and recovery", group: "Account", capabilityId: "account.security.manage" },
 ];
 
 export const backOfficeNavigationGroups = ["Operate", "Design & delivery", "Connect", "Account"].map(label => ({
@@ -20,6 +20,12 @@ export function resolveBackOfficeRoute(hash) {
   return backOfficeRoutes.find(route => route.path === value) ?? backOfficeRoutes[0];
 }
 
-export function canOpenBackOfficeRoute(route, capabilities) {
-  return !route.capability || capabilities.includes(route.capability);
+export function decisionForBackOfficeRoute(route, decisions) {
+  return route.capabilityId ? decisions.find(decision => decision.capabilityId === route.capabilityId) : undefined;
+}
+
+export function canOpenBackOfficeRoute(route, decisions) {
+  if (!route.capabilityId) return true;
+  const decision = decisionForBackOfficeRoute(route, decisions);
+  return decision?.decision === "allowed" || decision?.decision === "allowed-with-conditions";
 }

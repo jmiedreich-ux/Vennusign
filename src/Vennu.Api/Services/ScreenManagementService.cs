@@ -12,7 +12,6 @@ public sealed class ScreenManagementService(
     IVenueRepository venueRepository,
     IScreenUpdateNotifier notifier,
     TimeProvider timeProvider,
-    IVenueEntitlementService? entitlementService = null,
     IScreenContentDeliveryService? deliveryService = null) : IScreenManagementService
 {
     public async Task<IReadOnlyCollection<ScreenManagementItem>> GetAsync(
@@ -38,8 +37,6 @@ public sealed class ScreenManagementService(
         CancellationToken cancellationToken = default)
     {
         await RequireVenueAsync(venueId, cancellationToken).ConfigureAwait(false);
-        if (entitlementService is not null)
-            await entitlementService.EnsureCanAddScreenAsync(venueId, cancellationToken).ConfigureAwait(false);
         var screen = new Screen
         {
             VenueId = venueId,

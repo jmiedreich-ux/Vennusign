@@ -19,7 +19,8 @@ test("persisted customer sessions are the primary membership-checked venue path"
   assert.match(handler, /GetOrganizationMembershipAsync/);
   assert.match(handler, /GetVenueMembershipAsync/);
   assert.match(handler, /MembershipCapability\.ManageVenueContent/);
-  assert.match(handler, /GetFeatureSetAsync/);
+  assert.match(handler, /SystemRoleClaim/);
+  assert.doesNotMatch(handler, /GetFeatureSetAsync/);
   assert.match(handler, /AuthenticationSourceClaim, "customer-session"/);
   assert.match(api, /credentials: "include"/);
   assert.match(api, /headers\.delete\("X-Vennusign-Back-Office-Token"\)/);

@@ -12,6 +12,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Route("api/back-office/pos/toast")]
 [Route("api/venue-admin/pos/toast")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
+[RequireCapability("content.source.synchronize")]
 public sealed class BackOfficeToastPosController(
     IPosConnectionService connections,
     IPosCatalogImportService catalogImport) : ControllerBase

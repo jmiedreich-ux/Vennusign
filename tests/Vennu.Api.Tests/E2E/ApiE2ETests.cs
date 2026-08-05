@@ -168,10 +168,10 @@ public sealed class VennuApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("PlatformOperations:ApiKey", "test-admin-key");
         builder.UseSetting("BackOffice:Sessions:0:AccessToken", "test-venue-token");
         builder.UseSetting("BackOffice:Sessions:0:VenueId", "11111111-1111-1111-1111-111111111111");
-        builder.UseSetting("BackOffice:Sessions:0:UserId", "venue-owner");
+        builder.UseSetting("BackOffice:Sessions:0:OrganizationId", "22222222-2222-2222-2222-222222222222");
+        builder.UseSetting("BackOffice:Sessions:0:UserId", "33333333-3333-3333-3333-333333333333");
         builder.UseSetting("BackOffice:Sessions:0:DisplayName", "Harbor Owner");
-        builder.UseSetting("BackOffice:Sessions:0:Capabilities:0", "menus");
-        builder.UseSetting("BackOffice:Sessions:0:Capabilities:1", "screens");
+        builder.UseSetting("BackOffice:Sessions:0:SystemRole", "organization_owner");
         builder.UseSetting("Stripe:Webhook:SigningSecret", "whsec_test");
 
         builder.ConfigureServices(services =>
@@ -179,13 +179,37 @@ public sealed class VennuApiFactory : WebApplicationFactory<Program>
             services.RemoveAll<IVenueRepository>();
             services.RemoveAll<IScreenRepository>();
             services.RemoveAll<IScreenPairingCodeRepository>();
+            services.RemoveAll<ICapabilityAccessPolicyRepository>();
+            services.RemoveAll<IScopedAuthorityRepository>();
 
             services.AddSingleton<InMemoryApiStore>();
             services.AddScoped<IVenueRepository, InMemoryVenueRepository>();
             services.AddScoped<IScreenRepository, InMemoryScreenRepository>();
             services.AddScoped<IScreenPairingCodeRepository, InMemoryScreenPairingCodeRepository>();
+            services.AddScoped<ICapabilityAccessPolicyRepository, InMemoryCapabilityAccessPolicyRepository>();
+            services.AddScoped<IScopedAuthorityRepository, InMemoryScopedAuthorityRepository>();
         });
     }
+}
+
+internal sealed class InMemoryScopedAuthorityRepository : IScopedAuthorityRepository
+{
+    public Task<IReadOnlyCollection<ScopedRoleAssignment>> GetActiveAssignmentsAsync(Guid actorUserId, DateTime utcNow, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyCollection<ScopedRoleAssignment>>([]);
+    public Task SaveAssignmentAsync(ScopedRoleAssignment assignment, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task<SupportAccessGrant?> GetActiveSupportGrantAsync(Guid supportUserId, Guid organizationId, Guid? venueId, DateTime utcNow, CancellationToken cancellationToken = default) => Task.FromResult<SupportAccessGrant?>(null);
+    public Task SaveSupportGrantAsync(SupportAccessGrant grant, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task AppendSupportAuditAsync(SupportAccessAuditEntry entry, CancellationToken cancellationToken = default) => Task.CompletedTask;
+}
+
+internal sealed class InMemoryCapabilityAccessPolicyRepository : ICapabilityAccessPolicyRepository
+{
+    public Task<CapabilityAccessPolicy> GetAsync(
+        Guid organizationId,
+        Guid venueId,
+        CapabilityId capability,
+        DateTime utcNow,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(CapabilityAccessPolicy.DefaultFor(Version1CapabilityRegistry.Get(capability)));
 }
 
 internal sealed class InMemoryApiStore
