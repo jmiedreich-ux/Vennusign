@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:32:00Z",
+  "updatedUtc": "2026-08-05T03:35:00Z",
   "activeAssignments": [
     {
       "workPackage": "RWP-00.57",
@@ -25,13 +25,13 @@
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     },
     {
-      "workPackage": "RWP-00.45",
-      "branch": "rwp/00.45-food-truck-concession-capability-classification",
+      "workPackage": "RWP-00.46",
+      "branch": "rwp/00.46-food-truck-concession-subscription-tier-mapping",
       "orchestrator": "ChatGPT",
       "status": "In Progress",
       "ownedPaths": [
-        "track0/industries/food-truck-concession-capability-classification.md",
-        "docs/work-packages/RWP-00.45-food-truck-concession-capability-classification.md"
+        "track0/industries/food-truck-concession-subscription-tier-mapping.md",
+        "docs/work-packages/RWP-00.46-food-truck-concession-subscription-tier-mapping.md"
       ],
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     },
