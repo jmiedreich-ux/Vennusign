@@ -1,7 +1,18 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:25:00Z",
+  "updatedUtc": "2026-08-05T03:26:00Z",
   "activeAssignments": [
+    {
+      "workPackage": "RWP-00.56",
+      "branch": "rwp/00.56-hospitality-optional-capabilities",
+      "orchestrator": "ChatGPT",
+      "status": "In Progress",
+      "ownedPaths": [
+        "track0/industries/hospitality-optional-capabilities.md",
+        "docs/work-packages/RWP-00.56-hospitality-optional-capabilities.md"
+      ],
+      "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
+    },
     {
       "workPackage": "RWP-00.30",
       "branch": "rwp/00.30-cafe-operating-characteristics",
@@ -36,7 +47,7 @@
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     }
   ],
-  "nextAvailableWorkPackage": "RWP-00.56",
+  "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
