@@ -11,7 +11,9 @@
 - Final Track 0 industry planning validation and handoff: complete in this proposed merge.
 - Track 1.01 — Canonical Capability Model and Current-Code Reconciliation (#640): complete, merged and verified on `master` through PR #645.
 - Track 1.02 — Server Capability Decision and Reason Contract (#641): complete, merged and verified on `master` through PR #646.
-- Track 1.03 — Scoped Permission and Authority Model (#642): implementation, deterministic persistence and focused tests are complete in the proposed branch state; exact-head Actions and merge validation are pending.
+- Track 1.03 — Scoped Permission and Authority Model (#642): complete, merged and verified through PR #647.
+- Track 1.04 — Essential Core and Current Gate Replacement (#643): complete, merged and verified through PR #648.
+- Track 1.05 — Track Validation and Handoff (#644): active; combined validation and owner acceptance material are prepared in the proposed branch state.
 
 ## Track 0 Deliverables
 
@@ -47,7 +49,7 @@ Pricing, final names, numeric allowances, exact trial duration, taxes, contracts
 
 ## Exact Next Action
 
-Validate and review the exact Track 1.03 branch head, merge it, close issue #642, and verify `master`. Only then claim Track 1.04 (#643). Do not resume RWP-13.06 or begin implementation of a future track.
+Validate the exact Track 1.05 branch head in GitHub Actions, review and merge it, then conduct the owner acceptance journeys in `docs/work-packages/RWP-01.05-track-validation-handoff.md`. Track 1 closes only after explicit owner approval; otherwise prepare the next scheduled Track 1 chunk. Do not resume RWP-13.06 or begin implementation of a future track.
 
 ## Validation Policy
 

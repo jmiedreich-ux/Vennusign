@@ -1,19 +1,17 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T20:41:00Z",
+  "updatedUtc": "2026-08-05T21:25:00Z",
   "activeAssignments": [
     {
-      "id": "TRACK-1.03",
-      "issue": 642,
+      "id": "TRACK-1.05",
+      "issue": 644,
       "mode": "Sequential",
-      "branch": "rwp/01.03-scoped-permission-authority",
+      "branch": "rwp/01.05-track-validation-handoff",
       "status": "claimed"
     }
   ],
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [
-    "TRACK-1.03",
-    "TRACK-1.04",
     "TRACK-1.05"
   ],
   "rules": {
