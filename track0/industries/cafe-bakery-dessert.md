@@ -320,6 +320,22 @@ The following are recommendation inputs, not entitlements or required screens:
 - **Frozen Dessert Shop:** current flavors, sizes, cones or vessels, toppings, take-home formats, queue guidance.
 - **Juice & Smoothie Bar:** drinks, bases and add-ins, bowls, dietary cues, seasonal produce, pickup.
 
+## Impeccable shape brief for subtype selection and change
+
+The project-local Impeccable skill and `shape` playbook were consulted because subtype selection affects future onboarding and administration.
+
+Because this is a non-interactive planning run, assumptions are explicit: the user is an owner or authorized manager, selection is venue-local, overlap between concepts is common, and preservation of existing content is mandatory.
+
+- **Job and audience:** an owner or authorized manager in Operate mode chooses the closest operating model during onboarding or venue settings, often while uncertain about overlapping café, bakery, beverage, and dessert concepts.
+- **Outcome and proof:** the user can compare bounded “best when” definitions, select one primary subtype or remain neutral, understand the venue-local defaults that will change, and see an explicit statement that plan access and existing content do not change.
+- **Selected direction:** use the established Vennusign administrative visual world and approved Sky Blue direction. Present primary subtype choices before optional hybrid traits; use dominant guest journey, example products, screen purposes, and changed defaults as the comparison evidence.
+- **Scope and boundaries:** planning covers subtype selection, review, change preview, confirmation, cancellation, success, permission restriction, validation failure, and restoration. It does not design pricing, entitlement, billing, schema, or implementation behavior.
+- **States and ranges:** support first-run with no selection, one current subtype, neutral fallback, ambiguous/hybrid classification, a multi-venue organization with different subtypes, permission-restricted viewing, validation failure, saved success, and safe cancellation or recovery. The bounded catalog is nine primary subtypes plus neutral state and optional traits.
+- **Interaction and layout:** keep comparisons scannable on phone and desktop; reveal detail progressively; preview changed defaults before confirmation; preserve content; provide visible feedback; avoid color-only distinctions; expose selection and confirmation to keyboard and assistive technology.
+- **Constraints and open decisions:** canonical operator and guest terminology is now defined by RWP-00.29. A builder must not invent new subtype values, commercial consequences, automatic content transformation, or hidden trait-based feature gates.
+
+This brief is planning only. It authorizes no UI, API, schema, migration, or product implementation.
+
 ## Impeccable planning for terminology
 
 The project-local Impeccable skill and `clarify` playbook were consulted because terminology affects future onboarding, navigation, forms, editor labels, state messages, help text, analytics, and guest-facing screens.
@@ -386,6 +402,7 @@ RWP-00.28 defined nine bounded primary subtypes plus a neutral fallback; establi
 - Distinguished available, unavailable, sold out, limited, next batch, available again, preorder-window, and pickup-context language.
 - Defined explicit operator actions, state labels, analytics labels, and source-authority boundaries.
 - Applied the Impeccable `clarify` guidance to future UI copy, accessibility, localization, errors, empty states, success, and recovery.
+- Preserved the previously approved Impeccable `shape` brief for subtype selection and change.
 - Updated the Track 0 capability classification for terminology preference and Café-specific operational values.
 
 ### Not performed
