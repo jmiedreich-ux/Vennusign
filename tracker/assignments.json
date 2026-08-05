@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:50:00Z",
+  "updatedUtc": "2026-08-05T03:51:00Z",
   "activeAssignments": [
     {
       "workPackage": "RWP-00.60",
@@ -36,13 +36,13 @@
       "sharedWriteProtocol": "Queued semantic updates; final shared-record checkpoint after validation"
     },
     {
-      "workPackage": "RWP-00.71",
-      "branch": "rwp/00.71-entertainment-attractions-onboarding-experience",
+      "workPackage": "RWP-00.72",
+      "branch": "rwp/00.72-entertainment-attractions-default-dashboard",
       "orchestrator": "ChatGPT",
       "status": "In Progress",
       "ownedPaths": [
-        "track0/industries/entertainment-attractions-onboarding-experience.md",
-        "docs/work-packages/RWP-00.71-entertainment-attractions-onboarding-experience.md"
+        "track0/industries/entertainment-attractions-default-dashboard.md",
+        "docs/work-packages/RWP-00.72-entertainment-attractions-default-dashboard.md"
       ],
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     }
