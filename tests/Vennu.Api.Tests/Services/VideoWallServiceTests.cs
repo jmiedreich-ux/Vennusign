@@ -53,7 +53,6 @@ public sealed class VideoWallServiceTests
     }
 
     [Fact]
-    [Fact]
     public async Task SaveAsync_RejectsArchivedScreen()
     {
         var venueId = Guid.NewGuid();
