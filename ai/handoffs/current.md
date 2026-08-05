@@ -2,72 +2,84 @@
 
 ## Current State
 
-- Track 0 native-industry planning: complete.
-- Track 0 consolidation RWP-00.75 through RWP-00.81: complete.
-- Final onboarding, dashboard, KPI, Free/trial, screen-capacity, tier-lifecycle, billing-continuity, and migration decisions: consolidated in the final validation/handoff record.
-- Product implementation: paused.
+- Track 0 industry and product architecture: complete and closed.
+- Track 1 product and architecture discussion: complete.
+- Track 1 implementation: not started.
+- Active implementation claim: none.
+- Track 2: blocked pending Track 1 execution, validation and owner approval.
 - RWP-13.06: held; do not resume unchanged.
 - Phase 14 and later: paused.
-- Active implementation claim: none.
 
-## Final Track 0 Records
+## Detailed Current Handoff
 
-- `track0/consolidation/OWNER_APPROVAL_AND_IMPLEMENTATION_HANDOFF.md`
-- `track0/consolidation/RWP-00.79_OWNER_TIER_LIFECYCLE_DECISIONS.md`
-- `track0/consolidation/FINAL_INDUSTRY_PLANNING_VALIDATION_HANDOFF.md`
+Read first:
 
-## Completed Industry Subject Sequence
+- `ai/handoffs/2026-08-05-track-1-planning-handoff.md`
 
-1. Industry Definition
-2. Venue Subtypes
-3. Business Terminology
-4. Operating Characteristics
-5. Required Capabilities
-6. Optional Capabilities
-7. Capability Classification
-8. Subscription Tier Mapping
-9. Onboarding Experience
-10. Default Dashboard
-11. KPIs and Analytics
-12. Validation, Review and Handoff
+That record contains the complete approved Track 1 decisions, execution model, completion standard, demonstration boundary and owner acceptance responsibilities.
 
-## Approved Direction
+## Track 1 RWPs
 
-- Working ladder: Free, Operate, Coordinate, Portfolio, Enterprise.
-- Free provides one organization, one venue, one user, one active screen, and one active static image with a complete publish/replace/remove loop.
-- Free and paid trials coexist with safe fallback at expiry.
-- Tier determines outcomes; active screen capacity is a separate typed commercial allowance.
-- Industry affects recommendations and presentation, not entitlement.
-- Default first paid recommendation: Restaurant/Café/Bar/Food Truck → Operate; Hospitality/Entertainment → Coordinate, adjusted by actual complexity.
-- The first-value journey reaches one confirmed live screen before forced plan selection or external integration.
-- One shared dashboard structure uses tier and industry overlays.
-- KPIs require a trustworthy source, explicit definition, authoritative scope/time, freshness handling, and reconciliation.
-- Promotions overlay subscriptions or cohorts rather than rewriting sold tiers.
-- Sold tier versions cannot be deleted or reused and remain valid for billing when hidden or retired.
-- Promoting a new version affects new sales only; existing customers move through explicit migration campaigns.
-- Essential correction, unpublish, active-screen safety, approved export, and recovery remain protected.
+1. Track 1.01 — Canonical Capability Model and Current-Code Reconciliation
+2. Track 1.02 — Server Capability Decision and Reason Contract
+3. Track 1.03 — Scoped Permission and Authority Model
+4. Track 1.04 — Essential Core and Current Gate Replacement
+5. Track 1.05 — Track Validation and Handoff
 
-## Remaining Commercial Decisions
+## Critical Governing Rules
 
-- final customer-facing names;
-- prices, taxes, annual rules, contracts, discounts, and public packaging;
-- exact screen and other allowance quantities;
-- exact trial durations and eligibility;
-- pooling, overage, warning, grace, and inactivity values;
-- provider, region, rights, service-level, and support commitments;
-- retention, export, deletion, and legal-hold durations;
-- final native-industry implementation order.
+- Discussion and owner agreement occur before repository/process execution work.
+- Up to five fully planned and approved RWPs may execute sequentially as one batch.
+- Each RWP must complete and validate its full vertical slice before the next begins.
+- Every clear, bounded implementation gap must be corrected inside the same RWP and revalidated; do not defer fixable gaps into later cleanup work.
+- Stop only for a new owner decision, major scope expansion, conflict, unavailable dependency, high-risk action or unresolved repeated failure.
+- Conduct one owner acceptance review after the five-RWP batch.
+- Do not start Track 2 until the owner approves Track 1 closure.
+
+## Pre-Production Replacement Rule
+
+Vennusign is a pre-production Version 1 system. Existing code, tables, SQL scripts, APIs, routes, services and tests may be changed or deleted as needed.
+
+There is no migration requirement and no compatibility obligation. Do not use migration or legacy framing for this work.
+
+## Approved Track 1 Foundation
+
+- Capability IDs use `domain.resource.action`.
+- Capabilities represent actual product actions/outcomes only.
+- Permissions, roles, role assignments, states, allowances, add-ons, layouts and rollout controls are separate typed models.
+- `publishing.*` remains a distinct capability domain.
+- The server is authoritative for action decisions.
+- Decision results support allowed, allowed-with-conditions, denied, unavailable and temporarily-blocked outcomes.
+- Results include stable reason codes, message keys, structured parameters, resolution guidance and correlation IDs.
+- Product system messages use repository-based translation catalogs and locale fallback.
+- Capability, permission and scope are evaluated separately.
+- Roles contain permissions; assignments are scoped and normally inherit downward.
+- Track 1.04 fully replaces the current generic feature-gating architecture.
+- Essential Free/core create, preview, pair, publish, confirm, replace, unpublish and recovery paths must remain usable subject to permission, state and allowance.
+
+## Demonstration Boundary
+
+Track 1 must not assume complete management UIs exist for roles, tiers, allowances, add-ons, rollout controls or locale administration.
+
+Use deterministic seeds, fixtures, direct setup and test adapters for those scenarios. Use real customer-facing UI only for Track 1 surfaces actually built or affected.
+
+Automation proves technical permutations and enforcement. The owner tests customer-visible clarity, usefulness, navigation, messaging, recovery and product intent using prepared accounts and exact test steps.
+
+Full onboarding belongs to Track 8. Track 1 only supplies the authority and decision foundations needed by onboarding.
 
 ## Exact Next Action
 
-After the final closure PR merges, create the bounded implementation roadmap beginning with:
-
-1. canonical capability registry and legacy aliases;
-2. server capability decision and reason contract;
-3. scoped permission and authority model.
-
-Do not create a mega-RWP, resume RWP-13.06 unchanged, or start Phase 14+.
+1. Review the detailed handoff.
+2. Revise existing Track 1 issue titles/descriptions to remove migration and legacy framing.
+3. Create detailed RWP records and completeness checklists for Track 1.01 through Track 1.05.
+4. Present all five for owner confirmation.
+5. After confirmation, execute the sequential five-RWP batch with automatic bounded remediation.
+6. Prepare and conduct the Track 1 owner acceptance review.
 
 ## Boundaries
 
-No implementation, final pricing, billing mutation, entitlement mutation, numeric limit values, provider commitments, legal/privacy/safety policy, or Phase 14+ work is authorized. Azure SQL, live Stripe, devices, hosted/browser, and integration/external-system tests remain skipped.
+- This handoff does not itself authorize Track 1 implementation.
+- Do not start Track 2.
+- Do not resume RWP-13.06 unchanged.
+- Do not claim full onboarding or unbuilt management interfaces as Track 1 deliverables.
+- Integration/external-system tests remain skipped unless separately authorized.
