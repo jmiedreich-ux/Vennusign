@@ -4,10 +4,10 @@
 
 - **Industry:** Food Truck & Concession
 - **RWP range:** RWP-00.39 through RWP-00.50
-- **Current status:** Industry definition and venue-subtype model complete
+- **Current status:** Industry definition, venue-subtype model, and business terminology complete
 - **Baseline:** Restaurant
-- **Current completed RWP:** RWP-00.40
-- **Next sequential RWP:** RWP-00.41 — Business Terminology
+- **Current completed RWP:** RWP-00.41
+- **Next sequential RWP:** RWP-00.42 — Operating Characteristics
 
 ## Purpose
 
@@ -49,7 +49,7 @@ A mobile or temporary operation may serve from a different stop, market, festiva
 
 ### Temporary and changeable service windows
 
-Service may exist only for a short event window, change with permits or venue access, start after setup, end when stock is depleted, or move because of weather, traffic, event conditions, or host requirements. Detailed status vocabulary and scheduling rules belong to RWP-00.41 and RWP-00.42, but later work must not assume a permanent address or stable weekly schedule.
+Service may exist only for a short event window, change with permits or venue access, start after setup, end when stock is depleted, or move because of weather, traffic, event conditions, or host requirements. RWP-00.41 establishes the canonical language; detailed transition and scheduling rules belong to RWP-00.42. Later work must not assume a permanent address or stable weekly schedule.
 
 ### Rapid setup, teardown, and relocation
 
@@ -239,6 +239,123 @@ The following are recommendation inputs, not entitlements or required screens:
 - **Pop-Up:** temporary concept, host collaboration, limited menu, dates, special hours, launch, final day, temporary closure.
 - **Catering Concession:** event and station identity, menu or offerings, dietary guidance, service window, collection, queue, host-approved notices.
 
+## Canonical business terminology
+
+### Neutral cross-industry and organization-wide terms
+
+Use **organization**, **venue**, **operation**, **content**, **item**, **category**, **availability**, **location**, **event**, **service point**, **service period**, **screen**, **publish**, and **restore** when a surface spans industries, subtypes, hosts, or physical forms.
+
+Neutral terminology is a presentation fallback. It does not determine ownership, permissions, entitlements, commercial access, or quantity-limit counting.
+
+### Physical and operating-context nouns
+
+- **Operation:** one locally managed Food Truck & Concession context.
+- **Unit:** a neutral physical or operational instance when the exact form is unknown or mixed.
+- **Service point:** a guest-facing place where service occurs.
+- **Stand:** a bounded concession or event service point.
+- **Stall:** the preferred market-context service point.
+- **Kiosk:** the approved subtype or a real kiosk only.
+- **Service window:** a physical ordering, payment, pickup, or service opening.
+- **Service period:** a bounded time interval.
+
+Do not alternate truck, trailer, cart, kiosk, stand, stall, booth, counter, station, and service point for variety. Use the most specific accurate term or the neutral fallback.
+
+### Location, host, and event nouns
+
+- **Current location:** the authoritative place where the operation is serving now.
+- **Stop:** a mobile route or scheduled visit.
+- **Next stop:** a known and approved future stop.
+- **Pitch:** an assigned vendor position or setup site when that is the established local term.
+- **Host location:** the containing property, venue, campus, arena, market, festival, or event site.
+- **Host:** the organization or venue providing the larger location or event context.
+- **Event:** a bounded program or occasion shaping the operation.
+
+Host and event terminology describes context only. It does not imply ownership, sponsor authority, permissions, or commercial access.
+
+### Menu, combo, and offer nouns
+
+- **Menu** remains the inherited guest-facing food and drink offering.
+- **Compact menu**, **event menu**, **stand menu**, **station menu**, **today's menu**, or **limited menu** may clarify scope.
+- **Combo** is a named grouping of items presented or sold together.
+- **Special** is the neutral operator term for a promoted item or offer.
+
+Combo, special, and menu wording must not imply ordering, discount calculation, inventory linkage, or POS synchronization.
+
+### Pickup and queue nouns
+
+- **Pickup** is the neutral guest term for collecting an order or item.
+- **Collection** may replace pickup where the venue or region uses it consistently.
+- **Queue** is the neutral waiting-line concept.
+- **Lane** is a distinct path such as order, express, pickup, or collection.
+- **Wait time** appears only when authoritative.
+
+### Availability and operating-state labels
+
+- **Available:** can currently be offered in the represented context.
+- **Unavailable:** cannot currently be offered and the more specific reason is unknown, not communicated, or not depletion.
+- **Sold out:** currently sellable quantity is exhausted for the represented scope.
+- **Limited:** quantity or duration is constrained without implying a known remaining count.
+- **Open:** currently serving.
+- **Service paused:** temporarily not serving; reopening may or may not be known.
+- **Closed:** not serving for the remainder of the applicable period unless an authoritative update changes it.
+- **Canceled:** a planned stop, appearance, or service period will not occur.
+- **Relocating:** moving or preparing to move and not serving at the represented location.
+- **Reopened / serving again:** service has resumed when authoritative.
+- **Last orders / orders close at:** the final accepted-order cutoff when known.
+- **Service ends at:** the end of service.
+
+A whole operation must not be labeled sold out when only an item or combo is exhausted. An item must not be labeled closed when sold out or unavailable is intended. Unknown location, timing, quantity, queue, pickup, and reopening information remains unknown.
+
+### Subtype terminology preferences
+
+- **Food Truck:** truck or operation, current location, stop, next stop, service window, compact menu, combos, pickup, queue, sold out, relocating, now serving at.
+- **Food Trailer:** trailer or operation, current pitch, setup location, service side or service window, menu, pickup, queue, weather notice, closing, relocating.
+- **Food Cart:** cart or operation, current location, short menu, size or option, queue, pickup, sold out, open, closed.
+- **Kiosk:** kiosk or service point, host location, area or landmark, counter or service window where accurate, menu, pickup, queue, hours, host notice.
+- **Stadium / Arena Concession:** concession stand, stand, section, gate, concourse, event, game or match, event menu, combo, express lane, pickup lane, period-based service, sold out, closed.
+- **Festival Vendor:** vendor or operation, festival or event, zone, pitch, booth or stand where accurate, event menu, service period, queue, weather delay, canceled, closing.
+- **Market Stall:** market stall, stall, market, market day, aisle, row or zone, today's menu or selection, limited, sold out, pickup, closing.
+- **Pop-Up:** pop-up, temporary location, host or collaborator, dates, limited menu, special hours, launch, final day, sold out, closed, moved.
+- **Catering Concession:** service point, station, counter, buffet station where accurate, private or catered event, service period, menu or offerings, dietary guidance, pickup or collection, queue.
+- **Neutral subtype:** operation, venue, service point, current location, event, menu, item, combo, availability, pickup, queue, service period, publish, restore.
+
+### Operator actions
+
+Prefer specific verb-object actions:
+
+- `Set current location`;
+- `Add next stop`;
+- `Change event`;
+- `Set service period`;
+- `Add service window`;
+- `Mark item sold out`;
+- `Mark combo sold out`;
+- `Mark available`;
+- `Pause service`;
+- `Resume service`;
+- `Mark closed`;
+- `Cancel stop` or `Cancel service period`;
+- `Set new location`;
+- `Add pickup instructions`;
+- `Add queue guidance`;
+- `Publish menu` or the known subtype-specific content name;
+- `Restore previous version`.
+
+Name the affected scope. Do not use vague labels such as `Update`, `Manage`, `Move`, `Close`, `Submit`, or `Save changes` when a specific outcome is known.
+
+### Mixed-organization, host, and hybrid fallback
+
+- Operation-scoped surfaces may use subtype terminology when the subtype and real context are known.
+- Host-scoped labels distinguish the operator's service point from the containing property or event.
+- A host relationship must not silently rename customer-authored service-point, menu, location, or event names.
+- Hybrid traits influence suggestions only and must not silently transform existing terminology.
+- Copying content between unlike subtypes preserves source names and presents destination terminology as reviewable suggestions.
+- Local custom labels remain authoritative until an authorized user changes them.
+
+### Analytics terminology
+
+Core operational views use venue, operation, subtype, service point, current location, host location, event, service period, content type, item, combo, availability state, operating state, screen, and publish state. Subtype-specific drill-downs may use stop, pitch, stand, stall, section, gate, concourse, zone, aisle, station, service window, pickup lane, or queue context when the data exists. Labels must not imply route accuracy, live inventory, remaining quantity, queue length, wait time, order status, ticket status, host authority, or paid access that the source data does not support.
+
 ## Impeccable shape brief for subtype selection and change
 
 The project-local Impeccable skill and `shape` playbook were consulted because subtype selection affects future onboarding and administration.
@@ -251,34 +368,55 @@ Because this is a non-interactive planning run, assumptions are explicit: the us
 - **Scope and boundaries:** planning covers first selection, review, change preview, confirmation, cancellation, permission restriction, validation failure, save success, and restoration. It does not design pricing, entitlement, billing, schema, limit counting, external synchronization, physical-unit migration, or implementation behavior.
 - **States and ranges:** support first-run with no selection, neutral fallback, one current subtype, ambiguous physical-form/context overlap, optional traits, one unit and one screen through multi-unit and multi-stand organizations, mixed host relationships, permission-restricted viewing, validation failure, offline or interrupted save where later supported, saved success, and safe restoration.
 - **Interaction and layout:** keep comparisons scannable on phone and desktop; show the primary subtype before optional traits; preview changed defaults and retained content; make target scope explicit; provide visible feedback; avoid color-only distinctions; expose selection and confirmation to keyboard and assistive technology.
-- **Constraints and open decisions:** canonical operator and guest terminology belongs to RWP-00.41. Future builders must not invent subtype values, commercial consequences, automatic content transformation, host-authority transfer, venue-counting rules, or trait-based feature gates.
+- **Constraints and open decisions:** future builders must use the canonical RWP-00.41 terminology, preserve customer-authored names, and must not invent subtype values, commercial consequences, automatic content transformation, host-authority transfer, venue-counting rules, or trait-based feature gates.
 
 This brief is planning only. It authorizes no UI, API, schema, migration, or product implementation.
+
+## Impeccable clarification guidance
+
+The project-local Impeccable skill and `clarify` playbook were consulted because the terminology will appear in future onboarding, navigation, forms, Quick Update, location and event controls, state messages, help text, analytics, and guest-facing screens.
+
+Future UI copy must:
+
+- keep one noun and one verb for the same concept throughout a flow;
+- use specific verb-object actions and name the affected item, combo, service point, stop, location, event, or service period;
+- use persistent labels and examples rather than placeholders as labels;
+- distinguish first use, no results, filters, permissions, failures, empty content, sold-out state, unavailable state, paused service, closure, cancellation, relocation, and unknown timing;
+- explain what failed and how to recover without exposing internal codes as the primary message;
+- avoid promising a destination, arrival time, remaining quantity, queue length, wait time, pickup readiness, reopening time, or external synchronization without authoritative data;
+- use complete translatable messages rather than concatenated fragments;
+- keep visible labels and accessible names aligned;
+- support long organization, host, event, location, service-point, item, combo, and menu names, localization expansion, pluralization, dynamic values, keyboard access, assistive technology, and 200% zoom;
+- avoid color-only meaning and unnecessary abbreviations;
+- preserve customer-authored terminology through subtype, host, event, or location changes;
+- preserve the approved Sky Blue administrative direction.
+
+This guidance is planning only. It authorizes no UI strings, components, routes, schema, API, analytics, routing, ordering, pickup automation, event-management, or localization implementation.
 
 ## Capability-classification decisions
 
 1. Organization primary industry is **product/domain state** that selects defaults and recommendations.
 2. Local primary subtype and neutral subtype state are **product/domain state**.
 3. Optional physical-form, operating-context, host-relationship, product-focus, and service-model traits are **product/domain state**.
-4. Current operating location, event, service window, relocation, closure, and availability values keep their independent **product/domain state** classification.
-5. Manual menu availability, operating-location communication, closure or relocation communication, screen targeting, publishing, delivery confirmation, offline awareness, and recovery remain **core capabilities** required for viable daily operation.
-6. Subtype-specific screen purposes are recommendations using inherited or later-classified capabilities, not entitlements.
-7. Automatic POS, order, inventory, route, event, host-venue, location, or catering synchronization remains a future integration-packaging question and must not replace manual core operation.
-8. Counts of venues, units, stands, service points, screens, users, integrations, retained history, storage, or AI consumption are **usage or quantity limits**, not capabilities.
-9. Physical form, subtype, host relationship, ownership, permission, commercial access, and limit counting remain separate concerns.
+4. Terminology preference is **product/domain state** that affects defaults, labels, help text, analytics presentation, and guest wording only.
+5. Operation, unit, service-point, current-location, stop, pitch, host-location, event, service-window, service-period, operating-state, availability, queue-context, pickup-context, combo, and last-order values retain **product/domain state** treatment where represented.
+6. Manual menu availability, operating-location and event communication, closure or relocation communication, screen targeting, publishing, delivery confirmation, offline awareness, and recovery remain **core capabilities** required for viable daily operation.
+7. Subtype-specific screen purposes and terminology are recommendations using inherited or later-classified capabilities, not entitlements.
+8. Automatic POS, order, payment, inventory, route, queue, event, host-venue, location, catering, or pickup-source synchronization remains a future integration-packaging question and must not replace manual core operation.
+9. Counts of venues, operations, units, stands, stalls, service points, windows, screens, users, events, integrations, retained history, storage, transactions, or AI consumption are **usage or quantity limits**, not capabilities.
+10. Physical form, subtype, terminology, host relationship, ownership, permission, commercial access, and limit counting remain separate concerns.
 
 ## Owner decisions and deferred questions
 
-The following remain intentionally deferred to RWP-00.41 or later RWPs:
+The following remain intentionally deferred to RWP-00.42 or later RWPs:
 
-- canonical operator and guest terminology for venue, operation, unit, truck, trailer, cart, kiosk, stand, stall, service point, window, stop, pitch, event, host, menu, combo, pickup, queue, and service period;
-- detailed status vocabulary and transition rules for setup, open, paused, sold out, relocating, canceled, closed, teardown, and recovery;
-- exact hierarchy among organization, venue, unit, stand, service point, screen, host location, event, and current operating location;
+- detailed transition rules for setup, open, service paused, sold out, relocating, canceled, closed, teardown, reopening, and recovery;
+- exact hierarchy among organization, venue, operation, unit, stand, service point, screen, host location, event, and current operating location;
 - whether one mobile unit with simultaneous counters or windows is one venue or multiple future limit-counting units;
 - how shared or rotating host screens preserve operator content, sponsor content, and authority;
 - detailed host, sponsor, promoter, caterer, venue, and operator approval boundaries;
-- packaging and limits for routing, scheduling, ordering, payments, inventory, event, host-venue, catering, and location integrations;
-- neutral organization-wide language when no single physical form or operating context dominates.
+- packaging and limits for routing, scheduling, ordering, payments, inventory, queue, event, host-venue, catering, pickup, and location integrations;
+- operating-day boundaries, setup and teardown, route and stop cadence, event and host scheduling, weather and cancellation behavior, queue surges, last orders, and intermittent connectivity.
 
 ## Reference anchors
 
@@ -294,39 +432,46 @@ These references are boundary evidence only. They do not define Vennusign entitl
 
 RWP-00.39 established the industry purpose, Restaurant inheritance, meaningful deltas, native boundary, organization and local-operation behavior, initial capability classifications, and Impeccable planning guardrails.
 
-## RWP-00.40 completion and handoff
+## RWP-00.40 completion summary
+
+RWP-00.40 defined nine bounded primary subtypes plus a neutral fallback; established physical-form, operating-context, host, hybrid, and ambiguous-case rules; mapped subtype deltas; defined organization and local-operation behavior; and applied Impeccable `shape` guidance.
+
+## RWP-00.41 completion and handoff
 
 ### Completed
 
-- Defined nine bounded primary subtypes plus a neutral fallback.
-- Established inclusion, exclusion, neighboring-profile, physical-form, operating-context, and ambiguous-case rules.
-- Mapped every subtype to inherited Restaurant capabilities and meaningful deltas only.
-- Defined subtype-specific operational, content, screen-purpose, and presentation recommendations.
-- Resolved physical-form and operating-context overlap through one primary subtype plus optional descriptive traits.
-- Defined organization, local operation, subtype selection, subtype change, host-venue, mixed-organization, multi-unit, and content-copy behavior.
-- Kept subtype, traits, current location, event state, ownership, permissions, commercial access, and quantity limits separate.
-- Applied Impeccable `shape` guidance to future subtype selection and change flows.
-- Updated the Track 0 capability classification for primary subtype, neutral state, and descriptive traits.
+- Defined canonical operator and guest terminology for operations, units, service points, locations, stops, pitches, hosts, events, service windows, menus, combos, specials, sell-outs, service periods, pickup, queues, lanes, last orders, relocation, cancellation, and reopening.
+- Defined subtype-specific terminology for all nine subtypes plus the neutral fallback.
+- Defined neutral mixed-organization, host-venue, and hybrid-operation fallbacks.
+- Distinguished physical-place, operating-context, and time-window nouns.
+- Distinguished item, combo, service-point, and whole-operation availability and operating states.
+- Defined explicit operator actions and neutral analytics dimensions.
+- Preserved customer-authored names and separated terminology from permissions, entitlements, ownership, commercial access, and quantity limits.
+- Applied Impeccable `clarify` guidance to future UI labels, actions, errors, empty states, accessibility, localization, responsive copy, and recovery messaging.
+- Updated the Track 0 capability classification for terminology preference and represented location, event, service, availability, queue, pickup, combo, and operating-state values.
 
 ### Not performed
 
-- No product, UI, API, schema, migration, billing, entitlement, permission, feature-gate, limit, rollout, pricing, ordering, payment, inventory, route, event, host-venue, catering, or integration implementation.
+- No product, UI, API, schema, migration, billing, entitlement, permission, feature-gate, limit, rollout, pricing, routing, ordering, payment, inventory, event-management, host-venue, catering, pickup, analytics, localization, or integration implementation.
 - No integration or external-system testing.
-- No canonical terminology glossary or detailed operational-capability design beyond what was required to distinguish subtypes.
+- No detailed operational transition, scheduling, route, queue, weather, or cancellation design beyond the terminology required by RWP-00.41.
 
 ### Next sequential RWP
 
-**RWP-00.41 — Food Truck & Concession Business Terminology** (#516) must define canonical operator and guest terminology for locations, stops, events, service windows, stands, menus, combos, sell-outs, service periods, pickup, queues, and venue/subtype overrides; identify Restaurant inheritance and neutral fallbacks; keep language separate from permissions and entitlements; and hand off to RWP-00.42.
+**RWP-00.42 — Food Truck & Concession Operating Characteristics** (#517) must document operating-day and service-period behavior, setup and teardown, routes and stops, event and host schedules, relocation, weather and cancellation, rapid sell-outs, queue surges, last orders, pickup patterns, intermittent connectivity, multi-window or multi-stand operation, and subtype-specific operating differences. It must tie each difference to defaults, terminology, content, screen purposes, or capability classification; remain documentation-only; and hand off to RWP-00.43.
 
 ## Validation checklist
 
 - [x] Restaurant inheritance is explicit.
-- [x] Only meaningful subtype deltas are documented.
-- [x] Every issue-listed subtype has a bounded definition.
-- [x] Physical-form and operating-context overlap uses one primary subtype plus optional descriptive traits.
-- [x] Subtype, state, permissions, entitlements, limits, and rollout remain separate.
-- [x] Essential manual availability, location communication, publishing, offline awareness, and recovery operations remain core.
-- [x] Existing content, screen authority, host boundaries, and commercial access are preserved through future subtype change.
-- [x] Impeccable `shape` guidance covers job, audience, outcome, hierarchy, states, realistic ranges, accessibility, responsive behavior, feedback, and recovery.
+- [x] Only meaningful industry, subtype, and terminology deltas are documented.
+- [x] Every issue-listed terminology area has a canonical term or bounded fallback.
+- [x] Operator-facing and guest-facing language are distinguished.
+- [x] Physical-place, host, event, and time-window terms are not conflated.
+- [x] Item, combo, service-point, and whole-operation states remain distinct.
+- [x] Mixed organizations, host venues, hybrid operations, and neutral subtype state have safe fallback terminology.
+- [x] Terminology, product state, permissions, entitlements, limits, ownership, and rollout remain separate.
+- [x] Essential manual availability, location and event communication, publishing, offline awareness, and recovery operations remain core.
+- [x] Customer-authored terminology, content, screen authority, host boundaries, and commercial access are preserved.
+- [x] Impeccable `clarify` guidance covers actions, forms, states, errors, accessibility, localization, responsive behavior, feedback, and recovery.
 - [x] No product implementation was performed.
-- [x] The next sequential RWP is identified as RWP-00.41.
+- [x] The next sequential RWP is identified as RWP-00.42.
