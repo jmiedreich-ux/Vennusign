@@ -2,25 +2,46 @@
 
 ## Current State
 
-- Track 0 native-industry gate complete.
-- RWP-00.75 through RWP-00.79 merged and verified.
-- RWP-00.80 complete in proposed merge state.
-- Product implementation, RWP-13.06, and Phase 14+ paused.
+- Track 0 native-industry planning: complete.
+- Track 0 consolidation RWP-00.75 through RWP-00.81: complete in proposed merge state.
+- Product implementation: paused.
+- RWP-13.06: held; do not resume unchanged.
+- Phase 14 and later: paused.
+- Active implementation claim: none.
 
-## RWP-00.80 Result
+## Final Package
 
-`track0/consolidation/CUSTOMER_JOURNEY_VALIDATION.md` returns **PASS WITH IMPLEMENTATION GAPS RECORDED**.
+Review `track0/consolidation/OWNER_APPROVAL_AND_IMPLEMENTATION_HANDOFF.md` and the preceding six consolidation artifacts.
 
-The normalized architecture supports coherent signup, first-screen onboarding, daily industry-aware operation, permission restriction, source/add-on recovery, software upgrade, add-on attachment, limit remediation, downgrade, add-on removal, multi-venue/mixed-industry operation, support exceptions, and privacy/rights/safety restriction journeys.
+The final package asks the owner to explicitly approve, reject, or amend:
 
-The primary implementation gap is a server-resolved capability decision/reason contract and matching UI state system. Bounded packages are also required for canonical industry objects/states, scoped permissions, typed add-on/source decisions, typed allowances, inheritance/overrides, exceptions, and restrictions.
+A. universal essential manual core;
+B. non-commercial industry/subtype behavior;
+C. working software outcome architecture;
+D. independent add-on architecture;
+E. permission/authority separation;
+F. typed limits direction;
+G. inheritance/local override direction;
+H. downgrade/cancellation/public-output protection;
+I. locked/unavailable reason system;
+J. server/provider authority;
+K. legacy compatibility migration;
+L. rewrite/replace RWP-13.06 rather than resume it unchanged.
+
+## Recommended Implementation Direction After Approval
+
+Create bounded packages for canonical capability registry/legacy aliases, server capability decisions/reasons, scoped permissions, essential-core/overloaded-key migration, typed allowances, add-on/source instances, inheritance/overrides/exceptions, unified access-state UI, industry configuration and vertical slices, commercial catalog migration, rewritten onboarding/trial integration, and final journey/migration validation.
+
+These are proposed packages only. None is approved or active.
 
 ## Exact Next Action
 
-Execute **RWP-00.81 — Owner Approval & Implementation Handoff (#557)** after RWP-00.80 merges, issue #556 closes, `master` verifies, and the claim releases.
+Owner review of decision groups A–L. Record partial or complete approval explicitly. Create implementation RWPs only for approved dependencies and place them into an owner-approved sequence.
 
-RWP-00.81 must assemble the final Track 0 package, identify explicit owner approvals, propose bounded implementation packages and sequence only after approval, and decide whether RWP-13.06 should resume, be rewritten, or be replaced. It must not itself authorize implementation.
+## RWP-13.06 Recommendation
+
+Do not resume issue #466 as written. Rewrite or replace it after prerequisite capability, permission, limit, add-on, inheritance, and access-state foundations are approved and implemented. The future package must reach one confirmed useful screen before forced pricing/integration and consume server-authoritative normalized decisions.
 
 ## Boundaries
 
-Do not resume RWP-13.06 or Phase 14+, change product behavior, set prices/limits, create implementation RWPs as active work, or represent recommendations as owner approval. Azure SQL, live Stripe, devices, hosted/browser, and integration/external-system tests remain skipped.
+No implementation, final pricing, billing, entitlement, limit values, provider commitments, legal/privacy/safety policy, or Phase 14+ work is authorized. Azure SQL, live Stripe, devices, hosted/browser, and integration/external-system tests remain skipped.
