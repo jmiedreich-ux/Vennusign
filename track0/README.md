@@ -11,8 +11,9 @@ This directory is the compact context packet for Track 0 industry-planning and c
 3. `track0/RESTAURANT_BASELINE.md`
 4. `track0/INDUSTRY_TEMPLATE.md`
 5. `track0/CAPABILITY_MATRIX.md`
-6. The current GitHub RWP issue
-7. The current industry or consolidation file under `track0/`
+6. `track0/consolidation/CROSS_INDUSTRY_MODEL.md` after RWP-00.75
+7. The current GitHub RWP issue
+8. The current industry or consolidation file under `track0/`
 
 Read additional repository documents only when the current issue explicitly requires them or when a conflict cannot be resolved from this packet.
 
@@ -26,49 +27,43 @@ Read additional repository documents only when the current issue explicitly requ
 - Integration and external-system tests remain skipped under the standing owner instruction.
 - Shared living records follow `docs/process/SHARED_FILE_WRITE_PROTOCOL.md` using queued semantic updates and short transactional write windows.
 
-## Native-industry roadmap and consolidation gate
+## Native-industry completion
 
-Each native-industry queue closes at its validation, review, and handoff endpoint:
+The five native-industry endpoints are complete:
 
-- Bar, Brewery & Nightlife — **RWP-00.26**
-- Café, Bakery & Dessert — **RWP-00.38**
-- Food Truck & Concession — **RWP-00.50**
-- Hospitality — **RWP-00.62**
-- Entertainment & Attractions — **RWP-00.74**
+- Bar, Brewery & Nightlife — RWP-00.26
+- Café, Bakery & Dessert — RWP-00.38
+- Food Truck & Concession — RWP-00.50
+- Hospitality — RWP-00.62
+- Entertainment & Attractions — RWP-00.74
 
-All five endpoints are merged, validated, closed, verified, and released. The native-industry gate is complete.
+## Consolidation sequence
 
-The exact next approved item is **RWP-00.75 — Cross-Industry Capability Inventory**. RWP-00.75 begins consolidation and owner review; it does not authorize product implementation, resume RWP-13.06, or start Phase 14+.
+- **RWP-00.75 — Cross-Industry Normalization:** complete in proposed merge state; durable model at `track0/consolidation/CROSS_INDUSTRY_MODEL.md`.
+- **RWP-00.76 — Existing Product Feature, Gate & Limit Inventory:** exact next item after RWP-00.75 merge and release.
+- RWP-00.77 — Capability Reconciliation & Gap Analysis.
+- RWP-00.78 — Unified Tier & Add-On Architecture.
+- RWP-00.79 — Limits, Scope & Inheritance Policy.
+- RWP-00.80 — Cross-Industry Customer Journey Validation.
+- RWP-00.81 — Owner Approval & Implementation Handoff.
+
+Do not skip, combine, or begin a later item before the current item is merged, closed, verified, and released.
+
+## Normalization contract
+
+Every concern has one primary classification: core capability, permission, product/domain state, tier entitlement candidate, independent add-on candidate, usage or quantity limit, or internal rollout flag.
+
+Essential manual operation remains core. Industry and subtype are non-commercial configuration. Permissions do not grant commercial access. Product state is not a feature flag. Limits are not capabilities. External systems and separately delivered managed services remain add-on candidates. Rollout flags remain internal.
 
 ## Delta rule
 
-Every native industry inherits the Restaurant baseline. Document only meaningful differences in:
-
-- business and venue types;
-- terminology;
-- daily operations;
-- content and screen purposes;
-- roles and permissions;
-- integrations;
-- defaults and recommendations;
-- capability classifications;
-- onboarding, dashboard, and analytics needs.
-
-Do not restate inherited behavior unless the current industry changes, removes, or qualifies it.
+Every native industry inherits the Restaurant baseline. Document only meaningful differences in business and venue types, terminology, operations, content/screen purposes, roles/permissions, integrations, defaults/recommendations, classification, onboarding, dashboard, and analytics needs.
 
 ## Impeccable requirement
 
-The project-local Impeccable skill applies to Track 0 planning whenever an RWP defines or changes UI-facing behavior, including onboarding, dashboards, navigation, screen presentation, locked states, action hierarchy, responsive behavior, accessibility, or customer journeys.
+The project-local Impeccable skill applies whenever an RWP defines or reviews UI-facing behavior, including onboarding, dashboards, navigation, screen presentation, locked states, action hierarchy, responsive behavior, accessibility, or customer journeys.
 
-For those RWPs, the agent must:
-
-- consult the project-local Impeccable skill before drafting UI-facing recommendations;
-- use its vocabulary and workflow to shape, audit, adapt, harden, and polish the specification;
-- record the relevant accessibility, responsive, hierarchy, state, and recovery considerations in the RWP output;
-- preserve the approved Sky Blue direction;
-- avoid inventing implementation details that are not required for planning.
-
-Impeccable consultation does not authorize product implementation.
+Use its vocabulary and bounded workflow to shape, audit, adapt, harden, and polish the specification. Record hierarchy, state, feedback, accessibility, responsiveness, recovery, realistic content, localization expansion, and approved Sky Blue direction. Impeccable consultation does not authorize implementation.
 
 ## Expected outputs per RWP
 
@@ -76,5 +71,5 @@ Impeccable consultation does not authorize product implementation.
 - Update `CAPABILITY_MATRIX.md` when classifications, packaging candidates, or final validation results change.
 - Record unresolved owner decisions.
 - Update the next handoff reference.
-- At an industry endpoint, update project status, tracker release, current handoff, capability matrix, and this roadmap/gate record in one short shared-record checkpoint.
+- Synchronize project status, tracker, current handoff, packet, and affected shared records in one short completion checkpoint.
 - Keep changes bounded to the current issue.
