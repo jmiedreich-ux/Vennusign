@@ -1,14 +1,14 @@
 # Vennusign Track 1 Planning Handoff
 
 **Date:** 2026-08-05  
-**Status:** Track 1.01 through 1.04 implemented and merged; Track 1.05 complete in proposed state; owner acceptance follows exact-head validation and merge
+**Status:** Track 1.01 through 1.05 implemented, merged and exact-head validated; owner acceptance pending
 **Owner review:** Required after the five-RWP execution batch
 
 ## Current Position
 
 Track 0 industry and product architecture is complete and closed. Track 1 has now been discussed and approved at the product/architecture level.
 
-Track 1.01 through 1.04 are implemented and merged. Track 1.05 has validated the combined foundation, corrected bounded cross-RWP gaps and prepared the owner acceptance gate. The implementation handoff is `docs/work-packages/RWP-01.05-track-validation-handoff.md`; the executable owner package is `docs/acceptance/track-1-owner-acceptance.md`.
+Track 1.01 through 1.05 are implemented and merged. Track 1.05 validated the combined foundation, corrected bounded cross-RWP gaps and prepared the owner acceptance gate. The implementation handoff is `docs/work-packages/RWP-01.05-track-validation-handoff.md`; the executable owner package is `docs/acceptance/track-1-owner-acceptance.md`.
 
 ## Governing Working Process
 
@@ -315,7 +315,7 @@ Full signup, guided setup, industry selection, starter content, first-publish gu
 
 Track 1.01 through Track 1.05 executed sequentially in the first scheduled chunk. Track 1.05 found and corrected bounded gaps in the combined path: screen capacity no longer uses client billing data as action authority, structured decision parameters and conditions survive the session projection, and affected customer copy no longer promises migration/legacy preservation.
 
-After Track 1.05 exact-head Actions, review, merge, issue closure and `master` verification, implementation stops. The owner then runs `docs/acceptance/track-1-owner-acceptance.md` and records Pass / Fail / Needs Adjustment. Track 1 closes only on explicit owner approval. Any larger adjustment becomes an additional Track 1 RWP in a later scheduled chunk of up to five.
+Track 1.05 passed exact-head Actions, review, merge, issue closure and `master` verification; implementation is stopped. The owner now runs `docs/acceptance/track-1-owner-acceptance.md` and records Pass / Fail / Needs Adjustment. Track 1 closes only on explicit owner approval. Any larger adjustment becomes an additional Track 1 RWP in a later scheduled chunk of up to five.
 
 ## Current Boundaries
 

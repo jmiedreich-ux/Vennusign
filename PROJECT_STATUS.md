@@ -4,7 +4,7 @@
 
 - Phase 13: complete.
 - Phase 14 and later: paused.
-- Product implementation: the first scheduled Track 1 chunk is complete in the proposed Track 1.05 state; exact-head validation and merge remain before owner acceptance.
+- Product implementation: the first scheduled Track 1 chunk is complete, merged and exact-head validated; implementation is stopped for owner acceptance.
 - RWP-13.06 — Trial-First Onboarding: held and must not resume unchanged.
 - Native-industry Track 0 gate: complete.
 - Track 0 consolidation: complete through RWP-00.81.
@@ -13,7 +13,7 @@
 - Track 1.02 — Server Capability Decision and Reason Contract (#641): complete, merged and verified on `master` through PR #646.
 - Track 1.03 — Scoped Permission and Authority Model (#642): complete, merged and verified on `master` through PR #647.
 - Track 1.04 — Essential Core and Current Gate Replacement (#643): complete, merged and verified on `master` through PR #648.
-- Track 1.05 — Track Validation and Handoff (#644): combined validation, bounded corrections, deterministic owner fixtures and the acceptance package are complete in the proposed branch state.
+- Track 1.05 — Track Validation and Handoff (#644): complete, merged and verified on `master` through PR #650 and Actions run 31049451685.
 - Track 1 closure: owner acceptance pending after Track 1.05 merges.
 
 ## Track 0 Deliverables
@@ -56,7 +56,7 @@ Track 1.05 corrected two combined-foundation gaps: screen capacity was still pro
 
 ## Exact Next Action
 
-Validate and review the exact Track 1.05 branch head, merge it, close issue #644 and verify `master`. Then stop implementation and conduct the owner acceptance review. Track 1 closes only after explicit owner approval. Do not resume RWP-13.06 or implement a future track.
+Conduct `docs/acceptance/track-1-owner-acceptance.md` and record Pass / Fail / Needs Adjustment. Track 1 closes only after explicit owner approval; otherwise prepare additional Track 1 RWPs for a later scheduled chunk. Do not resume RWP-13.06 or implement a future track.
 
 ## Validation Policy
 
