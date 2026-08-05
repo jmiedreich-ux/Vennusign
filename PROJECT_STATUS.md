@@ -15,24 +15,29 @@ Bar through RWP-00.26, Café through RWP-00.38, Food Truck through RWP-00.50, Ho
 
 ## Consolidation Progress
 
-**RWP-00.75 — Cross-Industry Normalization** is complete in the proposed merge state.
+- **RWP-00.75 — Cross-Industry Normalization:** complete and merged.
+- **RWP-00.76 — Existing Product Feature, Gate & Limit Inventory:** complete in the proposed merge state.
 
-The normalized model is recorded in `track0/consolidation/CROSS_INDUSTRY_MODEL.md` and establishes:
+The factual implementation inventory is recorded in `track0/consolidation/EXISTING_PRODUCT_FEATURE_GATE_LIMIT_INVENTORY.md`.
 
-- one primary classification per concern: core, permission, product/domain state, tier candidate, independent add-on candidate, usage/quantity limit, or internal rollout flag;
-- essential manual operation, targeting, publication, delivery confidence, correction, and recovery as universal core;
-- industry and subtype as non-commercial configuration affecting defaults and terminology only;
-- permissions as authority rather than commercial access;
-- external systems, managed services, HaaS, and separately delivered services as add-on candidates;
-- counts and consumption as limits rather than capabilities;
-- distinct customer states for locked, permission-restricted, unavailable, disconnected, stale, unsupported, limit-reached, and rollout-controlled conditions;
-- safe mixed-industry inheritance and local override behavior.
+It records:
 
-No pricing, numeric limits, commercial approval, or implementation is authorized by RWP-00.75.
+- the 18 seeded feature keys and their initial tier assignments;
+- organization-first commercial authority with legacy venue fallback;
+- feature resolution, master-switch, venue-override, cache, and usage-metering behavior;
+- direct runtime checks for Quick Update, Happy Hour, allergen badges, and Video Wall;
+- screen, venue, and monthly feature-usage limits;
+- Back Office, Platform Operations, configuration, and secret-value authorization boundaries;
+- feature-matrix administration and audit behavior;
+- locked, preview, nudge, billing, and tier-decision UI surfaces;
+- factual keys and surfaces with no direct feature-resolution consumer found;
+- system configuration as the closest implemented rollout-like control family.
+
+No live feature, entitlement, permission, override, limit, configuration, rollout, UI, API, schema, migration, or billing behavior changed.
 
 ## Exact Next Action
 
-After RWP-00.75 merges, closes, verifies, and releases, execute **RWP-00.76 — Existing Product Feature, Gate & Limit Inventory (#552)**. Inventory factual current product keys, checks, overrides, limits, locked surfaces, rollout/configuration controls, authority, scope, and consumers. Do not skip to reconciliation or implementation.
+After RWP-00.76 merges, issue #552 closes, `master` is verified, and the claim is released, execute **RWP-00.77 — Capability Reconciliation & Gap Analysis (#553)**. Map the factual inventory to the normalized model and record recommendations only; do not implement remediation.
 
 ## Validation Policy
 
