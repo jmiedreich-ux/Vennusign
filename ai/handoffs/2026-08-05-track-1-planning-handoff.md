@@ -301,7 +301,7 @@ Before owner review, provide:
 - automated evidence for checks the owner need not repeat;
 - explicit deferred-interface list with future track ownership.
 
-Track 2 implementation remains blocked until the owner explicitly approves Track 1 closure. Light Track 2 planning may begin before or during Track 1 owner acceptance testing, but Track 2 planning cannot be marked complete until all potential changes arising from Track 1 and earlier tracks have been evaluated and incorporated or explicitly ruled out.
+Implementation of the next track remains blocked until the owner explicitly approves closure of the current track. Light planning for any future track may begin before or during owner acceptance testing of the current track, but that planning cannot be marked complete until all potential changes arising from the current and earlier tracks have been evaluated and incorporated or explicitly ruled out.
 
 ## Onboarding Boundary
 
@@ -324,7 +324,7 @@ At the next session:
 ## Current Boundaries
 
 - Track 1 implementation is not yet authorized merely by this handoff.
-- Do not start Track 2 implementation before owner approval of Track 1 closure. Light Track 2 planning may begin, but it cannot be marked complete until potential changes from Track 1 and earlier tracks have been evaluated.
+- Do not start implementation of the next track before owner approval of the current track's closure. Light planning for any future track may begin, but it cannot be marked complete until potential changes from the current and earlier tracks have been evaluated.
 - Do not resume RWP-13.06 unchanged.
 - Phase 14 and later remain paused.
 - No full onboarding, billing-management UI, tier-management UI, role-management UI, allowance-management UI or add-on-management UI should be claimed as delivered by Track 1 unless explicitly added and approved.
