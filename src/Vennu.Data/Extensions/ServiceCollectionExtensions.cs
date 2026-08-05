@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<ICapabilityDecisionEngine, CapabilityDecisionEngine>();
         services.AddSingleton<ICapabilityMessageCatalog, RepositoryCapabilityMessageCatalog>();
+        services.AddSingleton<IScopedPermissionEvaluator, ScopedPermissionEvaluator>();
         services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
         services.AddScoped<ISystemConfigurationTransferService, SystemConfigurationTransferService>();
         services.AddScoped<ISystemConfigurationOperationsService, SystemConfigurationOperationsService>();
@@ -86,6 +87,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRevenueTrendService, RevenueTrendService>();
         services.AddScoped<ICustomerIdentityRepository, CustomerIdentityRepository>();
         services.AddScoped<IOrganizationMembershipRepository, OrganizationMembershipRepository>();
+        services.AddScoped<IScopedAuthorityRepository, ScopedAuthorityRepository>();
+        services.AddScoped<ISupportAccessService, SupportAccessService>();
         services.AddScoped<IBackOfficeContextRepository, BackOfficeContextRepository>();
         services.AddSingleton<IMembershipCapabilityResolver, MembershipCapabilityResolver>();
         services.AddScoped<IIdentityMembershipService, IdentityMembershipService>();

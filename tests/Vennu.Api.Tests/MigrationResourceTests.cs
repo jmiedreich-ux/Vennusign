@@ -6,6 +6,27 @@ namespace Vennu.Api.Tests;
 public sealed class MigrationResourceTests
 {
     [Fact]
+    public void ScopedAuthorityMigration_IsEmbeddedInOrderAndSeedsProtectedContracts()
+    {
+        var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
+        var scriptName = Assert.Single(
+            scripts.Where(name => name.EndsWith(".Scripts.053_create_scoped_authority.sql", StringComparison.Ordinal)));
+        Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
+
+        var assembly = typeof(DatabaseMigrator).Assembly;
+        using var stream = Assert.IsAssignableFrom<Stream>(assembly.GetManifestResourceStream(scriptName));
+        using var reader = new StreamReader(stream);
+        var script = reader.ReadToEnd();
+
+        Assert.Contains("CREATE TABLE dbo.AuthorityPermissions", script, StringComparison.Ordinal);
+        Assert.Contains("CREATE TABLE dbo.ScopedRoleAssignments", script, StringComparison.Ordinal);
+        Assert.Contains("CREATE TABLE dbo.SupportAccessGrants", script, StringComparison.Ordinal);
+        Assert.Contains("CREATE TABLE dbo.SupportAccessAuditEntries", script, StringComparison.Ordinal);
+        Assert.Contains("DATEDIFF(MINUTE, StartsUtc, ExpiresUtc) <= 480", script, StringComparison.Ordinal);
+        Assert.Contains("'support_operator', 'roles.support_operator.name', 1, 1", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AdministrativeIdentityMigration_IsEmbeddedInOrder()
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();

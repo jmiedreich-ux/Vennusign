@@ -4,8 +4,8 @@
 
 - Track 0 industry and product architecture: complete and closed.
 - Track 1 product and architecture discussion: complete.
-- Track 1 implementation: active; Track 1.01 is merged and verified, and Track 1.02 implementation is complete in the proposed branch state.
-- Active implementation claim: Track 1.02 / issue #641 on `rwp/01.02-server-capability-decisions`.
+- Track 1 implementation: active; Track 1.01 and 1.02 are merged and verified, and Track 1.03 implementation is complete in the proposed branch state.
+- Active implementation claim: Track 1.03 / issue #642 on `rwp/01.03-scoped-permission-authority`.
 - Next-track implementation: blocked pending execution, validation and owner approval of the current track. Light planning for any future track may begin, but cannot be marked complete until potential changes from the current and earlier tracks are evaluated.
 - RWP-13.06: held; do not resume unchanged.
 - Phase 14 and later: paused.
@@ -77,7 +77,7 @@ Full onboarding belongs to Track 8. Track 1 only supplies the authority and deci
 - Focused non-integration tests cover identifier rules, uniqueness, domain separation, prohibited identity coupling, dispositions, and registered targets.
 - Exact-head Actions run 31044305223 passed affected .NET and documentation validation. PR #645 merged as `a729f4dd75468c1f69570d53f44b81dcd86a4945`; issue #640 is closed and `master` is verified. Integration/external-system tests were skipped.
 
-## Track 1.02 Proposed Outcome
+## Track 1.02 Completed Outcome
 
 - `CapabilityDecisionResult` implements allowed, allowed-with-conditions, denied, unavailable, and temporarily-blocked outcomes with stable reason, category, capability, message key, structured parameters, correlation, locale, resolution, retry, and condition fields.
 - `CapabilityDecisionEngine` evaluates identity/context, rollout, entitlement, permission, add-on, allowance, resource state, and request validity independently and fails closed for unknown capabilities or incomplete inputs.
@@ -85,14 +85,25 @@ Full onboarding belongs to Track 8. Track 1 only supplies the authority and deci
 - `CapabilityActionAuthorizer` requires a fresh input-provider resolution immediately before every mutation authorization; blocked calls throw the full structured decision.
 - Embedded `en-US`, `fr`, and `fr-CA` product-message catalogs establish repository ownership and deterministic `fr-CA` → `fr` → `en-US` fallback.
 - Focused non-integration tests cover every decision dimension, priority, conditions, failure closure, batch evaluation, mutation-time reevaluation, structured denial, and locale fallback.
-- The local runtime does not contain the .NET SDK. Exact-head GitHub Actions is required before merge; integration/external-system tests remain skipped.
+- Exact-head Actions run 31044938623 passed affected API, data-access and documentation validation. PR #646 merged as `06e12569b4f4ecb196a3dbf49a4a924798626376`; issue #641 is closed and `master` is verified. Integration/external-system tests were skipped.
+
+## Track 1.03 Proposed Outcome
+
+- `PermissionId`, scope and assignment types keep actor authority independent from capability availability, commercial access and product state.
+- Platform, organization, venue-group, venue, resource and self scopes have explicit downward-only inheritance; future, expired and revoked assignments fail closed.
+- Eight protected system roles provide deterministic customer and support permission collections; content editing and publishing remain separate authorities.
+- DbUp script 053 creates and seeds permissions, protected roles and role-permission collections and adds scoped assignments, bounded support grants and support audit persistence.
+- `ScopedPermissionEvaluator` and `ScopedPermissionDecisionDimensionFactory` provide exact actor/action/scope enforcement for the Track 1.02 decision engine.
+- Support context requires a platform Support Operator assignment plus an explicit, reasoned, approved, time-bounded customer grant; every entry or denial is audited and successful context requires prominent indication.
+- Focused non-integration tests cover scope inheritance, non-inheritance upward, protected-role boundaries, time/revocation behavior, self-scope isolation, permission decision details, support grant/role intersection, audit evidence and migration contracts.
+- The local runtime has no .NET SDK. Exact-head GitHub Actions is required before merge; Azure SQL and all integration/external-system tests remain skipped.
 
 ## Exact Next Action
 
-1. Create and review the Track 1.02 PR against `master`.
+1. Create and review the Track 1.03 PR against `master`.
 2. Require exact-head affected Release build and focused non-integration tests.
-3. Merge, close issue #641, verify `master`, and release the claim.
-4. Claim Track 1.03 / issue #642 only after that verification.
+3. Merge, close issue #642, verify `master`, and release the claim.
+4. Claim Track 1.04 / issue #643 only after that verification.
 5. Keep all future-track implementation blocked. Light planning may remain provisional under the governing acceptance rule.
 
 ## Boundaries

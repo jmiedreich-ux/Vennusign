@@ -1,18 +1,17 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T20:32:00Z",
+  "updatedUtc": "2026-08-05T20:41:00Z",
   "activeAssignments": [
     {
-      "id": "TRACK-1.02",
-      "issue": 641,
+      "id": "TRACK-1.03",
+      "issue": 642,
       "mode": "Sequential",
-      "branch": "rwp/01.02-server-capability-decisions",
+      "branch": "rwp/01.03-scoped-permission-authority",
       "status": "claimed"
     }
   ],
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [
-    "TRACK-1.02",
     "TRACK-1.03",
     "TRACK-1.04",
     "TRACK-1.05"
