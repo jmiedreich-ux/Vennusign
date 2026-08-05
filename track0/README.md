@@ -29,13 +29,13 @@ Read additional repository documents only when the current issue explicitly requ
 
 | Industry | Final validation RWP | State |
 | --- | --- | --- |
-| Bar, Brewery & Nightlife | RWP-00.26 | Complete in this proposed merge state; no additional Bar RWP is approved. |
-| Café, Bakery & Dessert | RWP-00.38 | Continue from the first unfinished approved Café RWP shown by current GitHub state. |
-| Food Truck & Concession | RWP-00.50 | Complete and waiting for the all-industry gate. |
-| Hospitality | RWP-00.62 | Complete and waiting for the all-industry gate. |
-| Entertainment & Attractions | RWP-00.74 | Continue from the first unfinished approved Entertainment RWP shown by current GitHub state. |
+| Bar, Brewery & Nightlife | RWP-00.26 | Complete and verified. |
+| Café, Bakery & Dessert | RWP-00.38 | Complete and verified. |
+| Food Truck & Concession | RWP-00.50 | Complete and verified. |
+| Hospitality | RWP-00.62 | Complete and verified. |
+| Entertainment & Attractions | RWP-00.74 | Complete and verified. |
 
-RWP-00.75 may begin only after RWP-00.26, RWP-00.38, RWP-00.50, RWP-00.62, and RWP-00.74 are all merged, verified, closed, and released. A completed industry must not invent more work or start implementation while waiting for the gate.
+The all-industry gate is satisfied. RWP-00.75 may begin only in the separately approved consolidation stream. Completed industry streams must not invent more work, start product implementation, or begin consolidation themselves.
 
 ## Delta rule
 
