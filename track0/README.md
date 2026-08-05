@@ -2,32 +2,23 @@
 
 ## Consolidation context
 
-Read the capability model, Restaurant baseline, normalized capability matrix, and the consolidation artifacts in order:
-
-1. `CROSS_INDUSTRY_MODEL.md`
-2. `EXISTING_PRODUCT_INVENTORY.md`
-3. `RECONCILIATION_GAP_ANALYSIS.md`
-4. `TIER_AND_ADDON_ARCHITECTURE.md` after RWP-00.78
-5. current issue and work package
+Read the normalized model, factual inventory, reconciliation, tier/add-on architecture, and `LIMITS_SCOPE_INHERITANCE_POLICY.md` in sequence, then the current issue/work package.
 
 ## Rules
 
-One RWP at a time with issue, claim, branch, PR, review, merge, verification, and release. Documentation/planning only. RWP-13.06 and Phase 14+ paused. Shared files use transactional writes. Integration/external-system tests skipped.
+One RWP at a time with complete GitHub claim/PR/review/merge/verification/release. Documentation/planning only. RWP-13.06 and Phase 14+ paused. Shared writes transactional. Integration/external-system tests skipped.
 
 ## Progress
 
-- RWP-00.75 through RWP-00.77: merged.
-- **RWP-00.78: complete in proposed merge state.**
-- **RWP-00.79: exact next item after merge/release.**
-- RWP-00.80 customer-journey validation.
-- RWP-00.81 owner approval and implementation handoff.
+- RWP-00.75 through RWP-00.78: merged.
+- **RWP-00.79: complete in proposed merge state.**
+- **RWP-00.80: exact next item after merge/release.**
+- RWP-00.81: owner approval and implementation handoff.
 
-## Commercial architecture contract
+## Limit and inheritance contract
 
-The full essential manual core remains in every software tier. Working outcome archetypes are Operate, Coordinate, Portfolio, and Enterprise. External systems, separately metered services, HaaS/hardware, connectivity, installation, monitoring, and managed services remain independent add-ons. Permissions, state, limits, privacy/rights, and rollout remain separate.
-
-No working tier name, capability placement, price, contract, or allowance is final before owner approval.
+Allowances have typed units, sources, scopes, pool modes, periods, usage, enforcement, exceptions, and recovery. Limits never grant capabilities or permissions. Organization defaults, local overrides, add-on attachments, provider state, and product state are independently visible. Active public output, essential correction, unpublish, export where approved, and recovery receive downgrade/limit protection.
 
 ## Impeccable
 
-Commercial presentation must distinguish plan, add-on, limit increase, permission, product state, source/configuration, restriction, and rollout. Show outcomes and consequences with accessible, responsive, truthful actions; never imply an upgrade fixes the wrong condition.
+Show effective scope/source, counted usage, impact, inherited versus local value, and least-destructive actions before commercial review. Limit, permission, product state, source, add-on, privacy/rights, and rollout conditions remain distinct and accessible.
