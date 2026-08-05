@@ -1,18 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T04:54:00Z",
-  "activeAssignments": [
-    {
-      "workPackage": "RWP-00.76",
-      "issue": 552,
-      "mode": "Sequential",
-      "branch": "rwp/00.76-existing-product-gate-limit-inventory",
-      "owner": "ChatGPT",
-      "scope": "Existing product feature, gate, permission, override, limit, rollout/configuration, and locked-surface inventory",
-      "claimedUtc": "2026-08-05T04:54:00Z"
-    }
-  ],
-  "nextAvailableWorkPackage": null,
+  "updatedUtc": "2026-08-05T05:08:00Z",
+  "activeAssignments": [],
+  "nextAvailableWorkPackage": "RWP-00.77",
   "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
