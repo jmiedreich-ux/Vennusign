@@ -7,11 +7,19 @@
 - Phase 14 and later: paused
 - RWP-13.06: paused pending the owner-approved Track 0 model
 - Restaurant: canonical approved baseline
-- Bar, Brewery & Nightlife: RWP-00.17 merged; RWP-00.18 is next
+- Bar, Brewery & Nightlife: RWP-00.18 merged; RWP-00.19 is next
 - Café, Bakery & Dessert: RWP-00.29 merged; RWP-00.30 is next
 - Food Truck & Concession: RWP-00.42 merged; RWP-00.43 is next
 - Hospitality: RWP-00.56 complete in this proposed merge state; RWP-00.57 is next
 - Entertainment & Attractions: RWP-00.67 complete in this proposed merge state; RWP-00.68 is next
+
+## Bar Operating-Characteristics Result
+
+RWP-00.18 defines cross-midnight operating and service periods; separate kitchen, bar, doors, event, last-entry, and locally authored last-call timing; high-frequency tap, item, release, and temporary-offer changes; table, bar, counter, and hybrid service models; bounded responsible-content and age/access presentation; entertainment and sports operations; and distinct reservation, guest-list, cover, ticket, and private-event state.
+
+Essential manual availability, hours, specials, events, public guidance, targeting, preview, publishing, delivery confirmation, correction, offline/outdated awareness, supersession, and restoration remain core. Operating values are product/domain state. Authority is permission. Advanced workflow is a tier candidate. External synchronization is an add-on candidate. Quantities are limits and temporary delivery controls are rollout flags.
+
+Future Bar Operate surfaces must make venue and area scope, current state, effective local time, source, audience, targets, public wording, publication result, and recovery path explicit. Required states include first use, empty, loading, permission, validation, stale source, conflict, offline, outdated, partial delivery, success, undo, and restoration. Support phone and desktop, local-time clarity, long names, keyboard and assistive technology, 200% zoom, non-color distinctions, restrained motion, and the approved Sky Blue administrative direction.
 
 ## Hospitality Optional-Capability Result
 
@@ -35,6 +43,7 @@ Essential manual operation remains available without premium tiers or paid integ
 
 ## Exact Next Actions
 
+- Execute **RWP-00.19 — Bar, Brewery & Nightlife Required Capabilities** (#494).
 - After RWP-00.56 is merged, verified, closed, and released, execute **RWP-00.57 — Hospitality Capability Classification** (#532).
 - After RWP-00.67 is merged, verified, closed, and released, execute **RWP-00.68 — Entertainment & Attractions Optional Capabilities** (#543).
 
@@ -46,5 +55,5 @@ Each industry remains sequential inside its approved RWP range. Restaurant is th
 
 - Do not start product implementation from Track 0 issues.
 - Do not resume RWP-13.06 or Phase 14+.
-- Do not implement UI, API, schema, migrations, billing, entitlements, feature gates, limits, rollout controls, privacy systems, localization, analytics, property-management, event, room-booking, transport, point-of-sale, guest-service, access, gaming, emergency, mapping, AI, hardware, managed services, or integrations during industry planning.
+- Do not implement UI, API, schema, migrations, billing, entitlements, feature gates, limits, rollout controls, privacy systems, localization, analytics, inventory, tap-management, reservation, ticketing, admissions, access, identity, sports, property-management, event, room-booking, transport, point-of-sale, guest-service, gaming, emergency, mapping, AI, hardware, managed services, or integrations during industry planning.
 - Integration and external-system tests remain skipped under the standing owner instruction.
