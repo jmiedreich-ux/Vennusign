@@ -2,66 +2,39 @@
 
 ## Current State
 
-- Item: Track 0 — Capability, Packaging, and Entitlement Architecture (#488)
+- Track: Track 0 — Capability, Packaging, and Entitlement Architecture (#488)
+- Native-industry gate: complete through RWP-00.26, 00.38, 00.50, 00.62, and 00.74
+- Current consolidation result: RWP-00.75 complete in proposed merge state
 - Product implementation: paused
+- RWP-13.06: paused
 - Phase 14 and later: paused
-- RWP-13.06: paused pending owner approval of the consolidated Track 0 model
-- Restaurant: canonical approved baseline
-- Bar, Brewery & Nightlife: complete through **RWP-00.26**
-- Café, Bakery & Dessert: complete through **RWP-00.38**
-- Food Truck & Concession: complete through **RWP-00.50**
-- Hospitality: complete through **RWP-00.62**
-- Entertainment & Attractions: complete through **RWP-00.74**
 
-All five native-industry completion gates are satisfied. No native-industry claim remains active.
+## RWP-00.75 Result
 
-## Entertainment & Attractions Final Result
+Restaurant and the five native-industry profiles are normalized in `track0/consolidation/CROSS_INDUSTRY_MODEL.md`.
 
-RWP-00.74 validates RWP-00.63 through RWP-00.73 as one coherent Entertainment & Attractions Track 0 profile.
+The model requires one primary classification per concern: core capability, permission, product/domain state, tier entitlement candidate, independent add-on candidate, usage or quantity limit, or internal rollout flag.
 
-Restaurant remains the inherited baseline. Entertainment adds bounded venue, area, attraction, exhibit, habitat, program, experience, event, performance, screening, game, session, queue, admission, route, gate, source, screen, delivery, and recovery context without turning subtype, operating state, or an external connection into commercial entitlement.
+Essential manual operation remains core. Industry and subtype remain non-commercial configuration. Permissions govern authority. Represented configuration and operational facts remain product/domain state. Advanced native Vennusign workflows are tier candidates. External systems, managed services, HaaS, hardware/service contracts, and separately metered services are add-on candidates. Counts and consumption are limits. Rollout flags remain internal.
 
-Essential manual visitor communication remains core:
-
-- venue, experience, attraction, exhibit, program, event, session, schedule, occurrence, and visitor information;
-- available, limited, full, sold out, delayed, paused, closed, canceled, relocated, restricted, weather-affected, reopening, and unknown states;
-- manual queue, wait, capacity, admission, boarding, seating, check-in, last-entry, wayfinding, route, notice, language, and accessibility guidance;
-- exact target selection and preview;
-- publication and per-target delivery confirmation;
-- offline, outdated, stale-source, conflict, override, and last-known-good awareness;
-- correction, supersession, expiry, unpublish, retry, undo, and restoration;
-- required accessibility, responsive, empty, loading, permission, failure, partial-delivery, success, and recovery states.
-
-Industry and subtype remain non-commercial product configuration. Permissions determine authority. Represented values remain product/domain state. Advanced native coordination, workflow, maps, localization, analytics, portfolio governance, and enterprise administration remain tier candidates. Ticketing, admissions, access, queue/occupancy/footfall, cinema, venue, show-control, collection, attraction, event, sports, CRM, POS, mapping, translation, AI, identity-provider, hardware, connectivity, monitoring, and managed services remain independent add-on candidates. Counts and consumption remain limits. Rollout controls remain internal.
-
-Entertainment onboarding reaches one confirmed active screen before forced pricing or integrations. The dashboard is exception-first and task-first. Analytics separates publication, delivery, visitor measurement, attendance, conversion, and revenue and requires source, authority, freshness, coverage, uncertainty, privacy, retention, export, and reconciliation.
-
-## Owner Decisions Still Open
-
-- final cross-industry tier names and exact capability placement;
-- pricing, trials, contracts, grandfathering, numeric limits, pooling, and overage;
-- add-on prerequisites, providers, regions, rights, support, and administration requirements;
-- multi-venue inheritance and local-override policy;
-- downgrade grace, read-only, conversion, export, retention, deletion, and active-screen protection;
-- privacy, camera, biometric, child, accessibility, legal, safety, gambling, alcohol, licensing, sponsor, advertising, and content-rights obligations;
-- player pairing, full-screen, online-state, theme/content refresh, hardware, connectivity, monitoring, installation, replacement, and support behavior;
-- external metric definitions, thresholds, alerts, prediction, data agreements, BI, and export;
-- implementation packages and sequencing after Track 0 approval.
+Unavailable product state, missing permission, absent entitlement, unconfigured add-on, disconnected or stale source, exceeded limit, unsupported context, and rollout restriction must remain distinct in future product presentation.
 
 ## Exact Next Action
 
-Execute **RWP-00.75 — Cross-Industry Capability Inventory** as the first consolidation item. It must reconcile the five completed industry profiles; it does not authorize product implementation or resume RWP-13.06.
+Execute **RWP-00.76 — Existing Product Feature, Gate & Limit Inventory (#552)** only after RWP-00.75 is merged, issue #551 is closed, `master` is verified, and the claim is released.
 
-RWP-00.75 was not started during the Entertainment & Attractions completion run.
+RWP-00.76 must inventory factual current-product feature keys, capability checks, permissions, support overrides, limits, locked UI surfaces, configuration/rollout controls, authority, scope, and known consumers. It must not change a live gate or begin reconciliation recommendations reserved for RWP-00.77.
 
-## Parallel-Stream Rule
+## Open Owner Decisions
 
-Shared living records follow `docs/process/SHARED_FILE_WRITE_PROTOCOL.md` using queued semantic updates, short transactional write windows, reconciliation against current `master`, retry on concurrent updates, and immediate release.
+- final tier names, capability placement, pricing, trials, contracts, grandfathering, numeric limits, pooling, overage, and grace;
+- add-on prerequisites, providers, regions, rights, administration, and support commitments;
+- organization/venue inheritance and override policy;
+- downgrade, read-only, export, retention, deletion, and active-screen protection;
+- regulated, privacy, safety, accessibility, rights, sponsor, advertising, camera, biometric, child, alcohol, and gambling obligations;
+- player, hardware, monitoring, installation, replacement, and support commitments;
+- metric definitions and implementation sequence.
 
 ## Boundaries
 
-- Do not start product implementation merely because the industry gate is complete.
-- Do not resume RWP-13.06 or Phase 14+.
-- Do not skip RWP-00.75 or combine consolidation RWPs.
-- Do not implement UI, API, schema, migrations, billing, entitlements, feature gates, limits, rollout controls, privacy systems, localization, analytics pipelines, ticketing, admissions, access, property-management, event, room-booking, transport, point-of-sale, guest-service, gaming, emergency, mapping, AI, identity, player, hardware, managed services, or integrations until specifically approved.
-- Integration and external-system tests remain skipped under the standing owner instruction.
+Do not resume RWP-13.06, start Phase 14+, implement product behavior, approve pricing, or treat candidate packaging as final. Azure SQL and all integration/external-system tests remain skipped under the standing owner instruction.
