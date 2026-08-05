@@ -17,7 +17,7 @@
 | Café, Bakery & Dessert | **RWP-00.29** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.30 — Operating Characteristics (#505)** |
 | Food Truck & Concession | **RWP-00.42** | Industry definition, subtypes, terminology, and operating characteristics are documented. | **RWP-00.43 — Required Capabilities (#518)** |
 | Hospitality | **RWP-00.55** | Industry definition, subtypes, terminology, operating characteristics, and the smallest viable required capability set are complete in this proposed merge state. | **RWP-00.56 — Optional Capabilities (#531)** |
-| Entertainment & Attractions | **RWP-00.66** | Industry definition, venue subtypes, terminology, and operating characteristics are complete in this proposed merge state. | **RWP-00.67 — Required Capabilities (#542)** |
+| Entertainment & Attractions | **RWP-00.67** | Industry definition, venue subtypes, terminology, operating characteristics, and the smallest viable required capability set are complete in this proposed merge state. | **RWP-00.68 — Optional Capabilities (#543)** |
 
 Only merged documents are authoritative. An industry advances only after its current RWP is merged, verified, closed, and released.
 
@@ -29,11 +29,13 @@ Manual operation remains available without premium tiers or paid integrations. P
 
 Automated synchronization, personalization, live operational data, advanced workflow, premium analytics, optimization, prediction, and AI remain outside required core and cannot replace manual editing, targeting, publishing, confirmation, correction, expiration, supersession, retry, and restoration.
 
-## Entertainment Operating-Characteristics Result
+## Entertainment Required-Capability Result
 
-RWP-00.66 separates venue operating days, timed occurrences, continuously available experiences, last-entry behavior, queues and wait times, capacity and admissions, attractions and exhibits, closures and recovery, safety and accessibility notices, multilingual content, event surges, source freshness, and subtype-specific operating rhythms.
+RWP-00.67 defines eleven required core groups: venue and visitor context; programs, schedules, shows, screenings, events, sessions, and experiences; closures and disruptions; queue, wait, capacity, and admission communication; manual wayfinding; notices and safety-related communication; basic multilingual and accessible content; targeting, preview, scheduling, and publication; delivery confidence and screen health; source, freshness, conflict, override, and recovery; and permissions, privacy-safe audiences, and authority boundaries.
 
-Essential manual schedule, state, queue, wait, capacity, wayfinding, notice, targeting, publishing, confirmation, offline-awareness, and restoration operation remains core. Operating values are product/domain state. Authority is permission. External synchronization, advanced coordination, analytics, premium localization, identity, AI, and managed hardware remain later tier or add-on candidates. Quantities remain limits and temporary release control remains a rollout flag.
+Essential manual operation remains available without premium tiers or paid integrations. Product values, source, freshness, audience, targets, delivery state, permissions, commercial packaging, add-ons, limits, privacy, and rollout remain separate. Public operation does not assume visitor-specific data, exact wait, capacity, admission, accessibility, safety, route, reopening, translation quality, or source freshness when unknown.
+
+Automated synchronization, live occupancy or ticket inventory, advanced mapping, coordinated workflow, premium analytics, prediction, optimization, translation automation, enterprise identity, AI, managed connectivity, and managed hardware remain outside required core and cannot replace manual editing, targeting, publishing, confirmation, correction, expiration, supersession, retry, and restoration.
 
 ## Track 0 Classification Policy
 
@@ -48,8 +50,8 @@ Documentation-only Track 0 changes use lightweight repository validation. GitHub
 ## Next Actions
 
 - After RWP-00.55 is merged, verified on `master`, issue #530 is closed, and its claim is released, execute **RWP-00.56 — Hospitality Optional Capabilities** (#531).
-- After RWP-00.66 is merged, verified on `master`, issue #541 is closed, and its claim is released, execute **RWP-00.67 — Entertainment & Attractions Required Capabilities** (#542).
+- After RWP-00.67 is merged, verified on `master`, issue #542 is closed, and its claim is released, execute **RWP-00.68 — Entertainment & Attractions Optional Capabilities** (#543).
 
 Other owner-approved industry streams may proceed under the queued short-lived shared-file write protocol.
 
-Do not implement onboarding, billing, entitlements, feature gates, UI, API, schema, migrations, privacy systems, localization, analytics, property-management, event, room-booking, transport, guest-service, access, gaming, integrations, or later-phase work until the owner approves the completed Track 0 model and implementation packages.
+Do not implement onboarding, billing, entitlements, feature gates, UI, API, schema, migrations, privacy systems, localization, analytics, ticketing, admissions, queue measurement, mapping, venue management, show control, collection management, attraction management, event systems, sports systems, AI, managed hardware, integrations, or later-phase work until the owner approves the completed Track 0 model and implementation packages.
