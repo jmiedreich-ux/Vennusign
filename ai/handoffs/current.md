@@ -11,7 +11,7 @@
 - Café, Bakery & Dessert: RWP-00.30 merged; RWP-00.31 is next
 - Food Truck & Concession: RWP-00.42 merged; RWP-00.43 is next
 - Hospitality: RWP-00.56 complete in this proposed merge state; RWP-00.57 is next
-- Entertainment & Attractions: RWP-00.71 complete in this proposed merge state; RWP-00.72 is next
+- Entertainment & Attractions: RWP-00.72 complete in this proposed merge state; RWP-00.73 is next
 
 ## Café Operating-Characteristics Result
 
@@ -31,22 +31,20 @@ RWP-00.56 preserves the required manual core and defines optional candidates for
 
 Tier candidates include advanced wayfinding, brand libraries, property-group coordination, campaigns, approvals and advanced workflows, localization workflow, advanced analytics, enterprise administration, and selected advanced operational workflow. Independent add-on candidates include property-management, event, room-booking, transport, parking, access, guest-service, gaming, maps, positioning, weather, emergency, translation, AI, identity providers, managed hardware, connectivity, monitoring, and related external systems or services.
 
-## Entertainment Onboarding Result
+## Entertainment Dashboard Result
 
-RWP-00.71 defines the aha moment as accurate venue-specific visitor information visibly delivered to the first paired online screen with clear update, verification, and restoration confidence.
+RWP-00.72 defines an exception-first, task-first dashboard. Operators see selected organization/venue/area/experience, local operating time, current state, public-impact exceptions, affected targets, source/freshness, safest next action, and recovery before analytics or promotion.
 
-The minimum real-product journey is venue identity and subtype, simple venue structure, first screen purpose, pairing or selecting a screen, subtype-aware starter content, one useful live update, contextual preview, publication, and delivery confirmation. Complete campus modeling, external integrations, advanced features, and forced pricing are deferred.
+The dashboard hierarchy covers quick updates; now/today/next; schedule health; queues, waits, capacity, admission, boarding, seating, and check-in; wayfinding; notices; screen and publication health; source conflicts; upcoming work; and multi-venue oversight. Healthy aggregate state cannot hide failed, outdated, excluded, or unknown targets.
 
-The plan supports new organizations, existing organizations, invited operators, returning incomplete setup, and experienced users; durable save/resume; optional guidance; role-aware permissions; pairing and publish recovery; sample-content safety; phone and desktop; accessibility; low-light and crowded environments; and contextual optional-capability discovery. Pricing remains deliberately accessible but should not interrupt setup and is preferably introduced after first-screen activation.
-
-RWP-13.06 remains paused. No onboarding, player, pairing, pricing, publication, or product behavior was implemented.
+Role-aware presentation supports front-line operators, editors, publishers, venue administrators, portfolio/enterprise administrators, and limited collaborators. Mobile prioritizes context, the highest-impact exception, Quick Update, retry/restore, and compact now/next/health. Desktop may show more panels without becoming a dense control center. Manual core remains visible, optional prompts remain contextual, and state, permission, tier, add-on, limit, source, privacy, and rollout remain separate.
 
 ## Exact Next Actions
 
 - Execute **RWP-00.19 — Bar, Brewery & Nightlife Required Capabilities** (#494).
 - Execute **RWP-00.31 — Café, Bakery & Dessert Required Capabilities** (#506).
 - After RWP-00.56 is merged, verified, closed, and released, execute **RWP-00.57 — Hospitality Capability Classification** (#532).
-- After RWP-00.71 is merged, verified, closed, and released, execute **RWP-00.72 — Entertainment & Attractions Default Dashboard** (#547).
+- After RWP-00.72 is merged, verified, closed, and released, execute **RWP-00.73 — Entertainment & Attractions KPIs & Analytics** (#548).
 
 ## Parallel-Stream Rule
 
