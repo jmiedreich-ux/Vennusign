@@ -14,12 +14,18 @@
 | Industry | Completed through | Result | Next approved item |
 | --- | --- | --- | --- |
 | Bar, Brewery & Nightlife | **RWP-00.18** | Industry definition, venue subtypes, hybrid rules, terminology, and operating characteristics are documented. | **RWP-00.19 — Required Capabilities (#494)** |
-| Café, Bakery & Dessert | **RWP-00.29** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.30 — Operating Characteristics (#505)** |
+| Café, Bakery & Dessert | **RWP-00.30** | Industry definition, venue subtypes, hybrid rules, business terminology, and operating characteristics are documented. | **RWP-00.31 — Required Capabilities (#506)** |
 | Food Truck & Concession | **RWP-00.42** | Industry definition, subtypes, terminology, and operating characteristics are documented. | **RWP-00.43 — Required Capabilities (#518)** |
 | Hospitality | **RWP-00.56** | Industry, subtypes, terminology, operating characteristics, required core, and optional capability candidates are complete in this proposed merge state. | **RWP-00.57 — Capability Classification (#532)** |
 | Entertainment & Attractions | **RWP-00.71** | Industry model, classification, tier architecture, and first-value onboarding experience are complete in this proposed merge state. | **RWP-00.72 — Default Dashboard (#547)** |
 
 Only merged documents are authoritative. An industry advances only after its current RWP is merged, verified, closed, and released.
+
+## Café Operating-Characteristics Result
+
+RWP-00.30 defines early and cross-midnight business days; independently active service, preorder, pickup, counter, table, and mixed-service contexts; batch-led availability; source-authoritative freshness guidance; rotating and seasonal products; rapid sell-out and return transitions; public preorder and pickup information; screen-purpose and source-conflict behavior; multi-venue safeguards; and subtype-specific operating rhythms.
+
+Essential manual product and content management, rapid availability updates, explicit targeting, preview, immediate publishing, per-target confirmation, correction, supersession, undo, offline/outdated awareness, conflict handling, and restoration remain core. Represented operating facts are product/domain state. Authority is permission. Advanced workflow is a tier candidate. External systems and managed services are add-on candidates. Counts and retention are limits; temporary delivery controls are rollout flags.
 
 ## Bar Operating-Characteristics Result
 
@@ -50,6 +56,7 @@ Documentation-only Track 0 changes use lightweight repository validation. GitHub
 ## Next Actions
 
 - Execute **RWP-00.19 — Bar, Brewery & Nightlife Required Capabilities** (#494).
+- Execute **RWP-00.31 — Café, Bakery & Dessert Required Capabilities** (#506).
 - After RWP-00.56 is merged, verified, closed, and released, execute **RWP-00.57 — Hospitality Capability Classification** (#532).
 - After RWP-00.71 is merged, verified, closed, and released, execute **RWP-00.72 — Entertainment & Attractions Default Dashboard** (#547).
 
