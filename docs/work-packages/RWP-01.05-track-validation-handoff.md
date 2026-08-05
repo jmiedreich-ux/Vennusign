@@ -6,7 +6,7 @@
 
 ## Status
 
-Combined Track 1 implementation validation complete in the proposed branch state. Exact-head GitHub Actions, merge and default-branch verification remain before implementation handoff. Track closure then waits for owner acceptance.
+Complete, merged and verified on `master` through PR #650. Track closure now waits for owner acceptance.
 
 ## Delivered
 
@@ -23,8 +23,8 @@ Combined Track 1 implementation validation complete in the proposed branch state
 
 - Local Back Office clean production build: passed.
 - Local Back Office tests: 108 passed.
-- PowerShell acceptance launcher: exact-head Windows validation required.
-- .NET API/data-access, remaining frontends, player shells and documentation: exact-head GitHub Actions required because the local runtime has no .NET SDK or target device toolchains.
+- Full non-integration GitHub Actions run 31049451685 passed API, data access, Back Office, Display, Platform Operations, Android TV, Tizen, webOS, Windows Dev Control/acceptance-launcher syntax, documentation and the aggregate gate on reviewed head `67e04ead824c81e3b56ef8440132533eb7eec24a`.
+- PR #650 merged as `6915ef2b402ce146d8ff01bf7ad767e3cbb1295e`; `master` is verified.
 - Integration, Azure SQL, live-provider, hosted-infrastructure, credentialed, device and cross-system tests: intentionally skipped under the approved boundary.
 
 ## Additional Track 1 work
@@ -33,4 +33,4 @@ No additional RWP is required by automated validation. Every clear bounded gap f
 
 ## Handoff
 
-After merge, issue closure and default-branch verification, implementation execution stops. The exact next action is the owner review in `docs/acceptance/track-1-owner-acceptance.md`. Future-track implementation remains blocked pending explicit Track 1 closure approval. Light future-track planning may remain provisional but cannot be marked complete until Track 1 feedback is evaluated.
+Implementation execution has stopped. The exact next action is the owner review in `docs/acceptance/track-1-owner-acceptance.md`. Future-track implementation remains blocked pending explicit Track 1 closure approval. Light future-track planning may remain provisional but cannot be marked complete until Track 1 feedback is evaluated.

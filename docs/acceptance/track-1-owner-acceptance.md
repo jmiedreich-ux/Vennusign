@@ -2,7 +2,7 @@
 
 ## Review state
 
-- Implementation status: Track 1.01 through Track 1.05 complete after the Track 1.05 exact-head checks pass.
+- Implementation status: Track 1.01 through Track 1.05 complete, merged and exact-head validated.
 - Closure status: **owner acceptance pending**. Track 1 does not close automatically when this package merges.
 - Future work: implementation of every future track remains blocked until the owner approves Track 1 closure. Light planning may remain provisional, but cannot be marked complete until Track 1 feedback is evaluated.
 
@@ -149,9 +149,9 @@ Any failed or adjustment item is evaluated as a Track 1 change. A clear bounded 
 | 1.02 | [#641](https://github.com/jmiedreich-ux/Vennusign/issues/641) | [#646](https://github.com/jmiedreich-ux/Vennusign/pull/646) | `06e12569b4f4ecb196a3dbf49a4a924798626376` | [31044938623](https://github.com/jmiedreich-ux/Vennusign/actions/runs/31044938623) |
 | 1.03 | [#642](https://github.com/jmiedreich-ux/Vennusign/issues/642) | [#647](https://github.com/jmiedreich-ux/Vennusign/pull/647) | `cd12f25a58bed509c2082f94b3bafe8974228cdc` | [31045701930](https://github.com/jmiedreich-ux/Vennusign/actions/runs/31045701930) |
 | 1.04 | [#643](https://github.com/jmiedreich-ux/Vennusign/issues/643) | [#648](https://github.com/jmiedreich-ux/Vennusign/pull/648) | `58dcf33a62d391275cfb985301aa5e9544c91262` | [31047859910](https://github.com/jmiedreich-ux/Vennusign/actions/runs/31047859910) |
-| 1.05 | [#644](https://github.com/jmiedreich-ux/Vennusign/issues/644) | Recorded after PR creation | Recorded after merge | Recorded after final exact-head validation |
+| 1.05 | [#644](https://github.com/jmiedreich-ux/Vennusign/issues/644) | [#650](https://github.com/jmiedreich-ux/Vennusign/pull/650) | `6915ef2b402ce146d8ff01bf7ad767e3cbb1295e` | [31049451685](https://github.com/jmiedreich-ux/Vennusign/actions/runs/31049451685) |
 
-Track 1.05 runs full affected-area validation through GitHub Actions. Integration, Azure SQL, live-provider, hosted-infrastructure, credentialed, device and cross-system tests remain intentionally skipped.
+Track 1.05 full affected-area validation passed through GitHub Actions. Integration, Azure SQL, live-provider, hosted-infrastructure, credentialed, device and cross-system tests remain intentionally skipped.
 
 ## Bounded gaps corrected in Track 1.05
 
