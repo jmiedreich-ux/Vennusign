@@ -2,39 +2,30 @@
 
 ## Current State
 
-- Track: Track 0 (#488)
-- Native-industry gate: complete
-- RWP-00.75 and RWP-00.76: merged and verified
-- RWP-00.77: complete in proposed merge state
-- Product implementation, RWP-13.06, and Phase 14+: paused
+- Track 0 consolidation active; native-industry gate complete.
+- RWP-00.75 through RWP-00.77 merged and verified.
+- RWP-00.78 complete in proposed merge state.
+- Product implementation, RWP-13.06, and Phase 14+ paused.
 
-## RWP-00.77 Result
+## RWP-00.78 Result
 
-`track0/consolidation/RECONCILIATION_GAP_ANALYSIS.md` maps the current product to the normalized model.
+`track0/consolidation/TIER_AND_ADDON_ARCHITECTURE.md` proposes working software outcomes:
 
-Preserve these aligned foundations:
+- **Operate:** complete essential manual industry-aware operation, targeting, publishing, delivery confidence, correction, and recovery.
+- **Coordinate:** advanced schedules, templates, campaigns, presentation, workflow, localization, and native analytics.
+- **Portfolio:** inheritance, local overrides, safe bulk action, multi-site governance, and portfolio analytics.
+- **Enterprise:** identity, policy, data, retention, assurance, and enterprise administration candidates.
 
-- server/provider-authoritative billing and entitlement refresh;
-- venue-scoped authenticated sessions and server-validated context switching;
-- HaaS separated from software subscription access;
-- explicit source, screen, revision, delivery, and provider state;
-- reusable accessible locked/upgrade surface patterns.
+Independent add-on families cover commerce/POS, Hospitality systems, Entertainment systems, data/environment/communications, translation/AI, enterprise connections, hardware/HaaS, connectivity, installation, monitoring, managed services, and support.
 
-Correct these planning gaps before implementation:
-
-- flat session capability strings collapse commercial access, permission, scope, and reason;
-- essential manual rapid update, schedules, and language support are combined with advanced automation;
-- `all_layouts`, `pos_integration`, `multi_location`, `video_wall`, and `happy_hour` overload multiple concepts;
-- limits require typed units/scope/enforcement and separation from layout capacity or contract terms;
-- add-on attachment/configuration/connection and organization/local inheritance are not normalized;
-- locked surfaces need structured reasons for upgrade, permission, limit, source, state, unsupported context, restriction, and rollout.
+Tier, add-on, permission, state, limit, privacy/rights, and rollout remain separate. No final names, prices, contracts, limits, or commercial approval are implied.
 
 ## Exact Next Action
 
-Execute **RWP-00.78 — Unified Tier & Add-On Architecture (#554)** after RWP-00.77 merges, issue #553 closes, `master` verifies, and the claim releases.
+Execute **RWP-00.79 — Limits, Scope & Inheritance Policy (#555)** after RWP-00.78 merges, issue #554 closes, `master` verifies, and the claim releases.
 
-The architecture must keep the full essential manual core in the base outcome, separate advanced native workflow from external/managed add-ons, keep permissions and state independent, avoid pricing values, and document upgrade/downgrade and mixed-industry behavior.
+Define typed allowance dimensions, organization/venue attachment and inheritance, local overrides, mixed-industry behavior, pooling, enforcement, downgrade/cancellation safety, and exception governance. Do not choose numeric values or implement billing/entitlement behavior.
 
 ## Boundaries
 
-Recommendations only until owner approval. Do not change keys, gates, permissions, limits, billing, UI, API, schema, migrations, integrations, RWP-13.06, or Phase 14+. Azure SQL, live Stripe, and integration/external-system tests remain skipped.
+No implementation, pricing, billing, entitlement, key, gate, API, schema, migration, integration, or later-phase work. Azure SQL, live Stripe, and integration/external-system tests remain skipped.
