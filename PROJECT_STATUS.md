@@ -17,7 +17,7 @@
 | Café, Bakery & Dessert | **RWP-00.29** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.30 — Operating Characteristics (#505)** |
 | Food Truck & Concession | **RWP-00.42** | Industry definition, subtypes, terminology, and operating characteristics are documented. | **RWP-00.43 — Required Capabilities (#518)** |
 | Hospitality | **RWP-00.56** | Industry, subtypes, terminology, operating characteristics, required core, and optional capability candidates are complete in this proposed merge state. | **RWP-00.57 — Capability Classification (#532)** |
-| Entertainment & Attractions | **RWP-00.69** | Industry profile, required and optional capabilities, and one-primary-classification mapping are complete in this proposed merge state. | **RWP-00.70 — Subscription Tier Mapping (#545)** |
+| Entertainment & Attractions | **RWP-00.70** | Industry model, classification, and proposed customer-outcome tier architecture are complete in this proposed merge state. | **RWP-00.71 — Onboarding Experience (#546)** |
 
 Only merged documents are authoritative. An industry advances only after its current RWP is merged, verified, closed, and released.
 
@@ -29,17 +29,13 @@ Essential manual availability, hours, specials, events, public guidance, explici
 
 ## Hospitality Optional-Capability Result
 
-RWP-00.56 separates optional Hospitality capabilities into advanced Vennusign workflow and governance tier candidates, independent external or managed-service add-ons, permissions, represented product state, quantity or consumption limits, and internal rollout controls.
+RWP-00.56 separates optional Hospitality capabilities into advanced native workflow and governance tier candidates, independent external or managed-service add-ons, represented product state, permissions, limits, and rollout controls. Required manual core remains unchanged, and every optional candidate requires manual fallback, source/freshness, privacy, safe failure, cancellation, downgrade, retention, delivery confidence, and recovery.
 
-Tier candidates include advanced wayfinding, brand libraries, centralized property-group coordination, campaigns, approvals, advanced localization workflow, advanced analytics, enterprise administration, and selected advanced operational workflows. Add-on candidates include property, event, room, transport, guest-service, access, gaming, mapping, positioning, emergency, weather, translation, AI, identity-provider, managed hardware, connectivity, monitoring, and related external connections or services.
+## Entertainment Tier-Mapping Result
 
-The required manual core remains unchanged. Every optional candidate must define manual fallback, source authority and freshness, privacy and audience, permissions, limits and consumption, failure and disconnect behavior, correction, delivery confidence, downgrade or cancellation, data retention, and recovery before implementation.
+RWP-00.70 proposes four working outcome tiers: **Operate**, **Coordinate**, **Portfolio**, and **Enterprise**. Operate includes the complete required core. Higher tiers add native coordination, maps, campaigns, workflow, localization, analytics, portfolio governance, and enterprise administration.
 
-## Entertainment Capability-Classification Result
-
-RWP-00.69 assigns one primary classification to every Entertainment & Attractions concern. Industry, subtype, terminology, hierarchy, schedules, content, operating values, source/freshness, targets, delivery, and versions are product/domain state. Essential manual operation, targeting, publication confidence, correction, and recovery are core. Authority is permission. Recurring native advanced outcomes are tier candidates. Independent integrations and managed services are add-ons. Quantities and consumption are limits. Temporary release control is rollout only.
-
-The classification resolves recurring ambiguities around manual versus automated wait time, capacity versus sold out, maps versus wayfinding, approval versus permission, basic health versus managed monitoring, multilingual versus premium localization, analytics versus source data, AI access versus generated state, enterprise identity versus authorization, and subtype versus packaging.
+Ticketing, admissions, access, venue, cinema, queue, footfall, map, translation, AI, identity-provider, hardware, connectivity, and managed-service connections remain independent add-ons. Quantities and consumption remain limits. Industry and subtype remain non-commercial product configuration. Upgrade and downgrade must preserve customer-authored data, current safe delivery, source/freshness context, manual fallback, and recovery.
 
 ## Track 0 Classification Policy
 
@@ -55,7 +51,7 @@ Documentation-only Track 0 changes use lightweight repository validation. GitHub
 
 - Execute **RWP-00.19 — Bar, Brewery & Nightlife Required Capabilities** (#494).
 - After RWP-00.56 is merged, verified, closed, and released, execute **RWP-00.57 — Hospitality Capability Classification** (#532).
-- After RWP-00.69 is merged, verified, closed, and released, execute **RWP-00.70 — Entertainment & Attractions Subscription Tier Mapping** (#545).
+- After RWP-00.70 is merged, verified, closed, and released, execute **RWP-00.71 — Entertainment & Attractions Onboarding Experience** (#546).
 
 Other owner-approved industry streams may proceed under the queued short-lived shared-file write protocol.
 
