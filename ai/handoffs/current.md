@@ -8,10 +8,16 @@
 - RWP-13.06: paused pending the owner-approved Track 0 model
 - Restaurant: canonical approved baseline
 - Bar, Brewery & Nightlife: RWP-00.18 merged; RWP-00.19 is next
-- Café, Bakery & Dessert: RWP-00.30 merged; RWP-00.31 is next
+- Café, Bakery & Dessert: RWP-00.31 merged; RWP-00.32 is next
 - Food Truck & Concession: complete through RWP-00.50; no further industry RWP is open
 - Hospitality: RWP-00.56 complete in this proposed merge state; RWP-00.57 is next
 - Entertainment & Attractions: RWP-00.72 complete in this proposed merge state; RWP-00.73 is next
+
+## Café Required-Capability Result
+
+RWP-00.31 defines the smallest viable Café capability set that remains available without a premium tier or paid integration. The required core covers venue and operating information; menu/product management; rapid availability, sell-out, batch, freshness, and return updates; preorder/custom-order/pickup presentation; screen pairing and purpose; explicit targeting and preview; immediate publish and per-target confirmation; correction, supersession, undo, restoration, source/freshness/conflict awareness, manual fallback, permissions, accessibility, responsive operation, localization readiness, and complete feedback/recovery states.
+
+Every subtype receives the complete core. Product facts remain state, authority remains permission, advanced native workflow remains a tier candidate, external or managed services remain add-on candidates, quantities remain limits, and temporary exposure remains rollout only. Required actions must never be hidden behind an upgrade prompt.
 
 ## Café Operating-Characteristics Result
 
@@ -50,7 +56,7 @@ No further Food Truck RWP is approved. Remaining questions are owner-level cross
 ## Exact Next Actions
 
 - Execute **RWP-00.19 — Bar, Brewery & Nightlife Required Capabilities** (#494).
-- Execute **RWP-00.31 — Café, Bakery & Dessert Required Capabilities** (#506).
+- Execute **RWP-00.32 — Café, Bakery & Dessert Optional Capabilities** (#507).
 - After RWP-00.56 is merged, verified, closed, and released, execute **RWP-00.57 — Hospitality Capability Classification** (#532).
 - After RWP-00.72 is merged, verified, closed, and released, execute **RWP-00.73 — Entertainment & Attractions KPIs & Analytics** (#548).
 - Keep Food Truck & Concession complete through **RWP-00.50**. Begin RWP-00.75 only after RWP-00.26, RWP-00.38, RWP-00.50, RWP-00.62, and RWP-00.74 are all complete.
@@ -63,5 +69,5 @@ Each industry remains sequential inside its approved RWP range. Restaurant is th
 
 - Do not start product implementation from Track 0 issues.
 - Do not resume RWP-13.06 or Phase 14+.
-- Do not implement UI, API, schema, migrations, billing, entitlements, feature gates, limits, rollout controls, privacy systems, localization, analytics, inventory, tap-management, reservation, ticketing, admissions, access, identity, sports, property-management, event, room-booking, transport, point-of-sale, guest-service, gaming, emergency, mapping, AI, hardware, managed services, or integrations during industry planning.
+- Do not implement UI, API, schema, migrations, billing, entitlements, feature gates, limits, rollout controls, privacy systems, localization, analytics, inventory, production, ordering, payment, fulfillment, loyalty, tap-management, reservation, ticketing, admissions, access, identity, sports, property-management, event, room-booking, transport, point-of-sale, guest-service, gaming, emergency, mapping, AI, hardware, managed services, or integrations during industry planning.
 - Integration and external-system tests remain skipped under the standing owner instruction.
