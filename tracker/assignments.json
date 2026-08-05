@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T05:00:00Z",
+  "updatedUtc": "2026-08-05T05:08:00Z",
   "activeAssignments": [],
-  "nextAvailableWorkPackage": "RWP-00.77",
+  "nextAvailableWorkPackage": "RWP-00.78",
   "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
