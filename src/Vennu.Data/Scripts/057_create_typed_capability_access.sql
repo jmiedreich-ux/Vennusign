@@ -124,3 +124,79 @@ VALUES
 ('classic_chalkboard', 'layouts.classic_chalkboard.name', 'branding.layout.manage', 1, 1),
 ('tap_strips', 'layouts.tap_strips.name', 'branding.layout.manage', 1, 1),
 ('digital_tap_board', 'layouts.digital_tap_board.name', 'branding.layout.manage', 1, 1);
+
+-- Convert the unchanged billing tier quantity into the new typed allowance. The
+-- generic tier-feature matrix is deliberately not copied: it is no longer an
+-- action-authority source. Unlimited tiers need no allowance row.
+INSERT dbo.CapabilityAllowances
+    (Id, OrganizationId, VenueId, CapabilityId, LimitValue, StartsUtc, EndsUtc)
+SELECT NEWID(), v.OrganizationId, v.Id, 'screen.device.pair', tier.MaxScreens, SYSUTCDATETIME(), NULL
+FROM dbo.Venues v
+LEFT JOIN dbo.OrganizationSubscriptions os ON os.OrganizationId = v.OrganizationId
+LEFT JOIN dbo.VenueSubscriptions vs ON vs.VenueId = v.Id AND os.OrganizationId IS NULL
+INNER JOIN dbo.SubscriptionTiers tier ON tier.Id = COALESCE(os.TierId, vs.TierId)
+WHERE v.OrganizationId IS NOT NULL AND tier.MaxScreens >= 0;
+
+GO
+
+CREATE OR ALTER PROCEDURE dbo.SyncScreenPairAllowanceForOrganization
+    @OrganizationId uniqueidentifier
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DELETE allowance
+    FROM dbo.CapabilityAllowances allowance
+    WHERE allowance.OrganizationId = @OrganizationId
+      AND allowance.CapabilityId = 'screen.device.pair';
+
+    INSERT dbo.CapabilityAllowances
+        (Id, OrganizationId, VenueId, CapabilityId, LimitValue, StartsUtc, EndsUtc)
+    SELECT NEWID(), venue.OrganizationId, venue.Id, 'screen.device.pair', tier.MaxScreens, SYSUTCDATETIME(), NULL
+    FROM dbo.Venues venue
+    INNER JOIN dbo.OrganizationSubscriptions subscription ON subscription.OrganizationId = venue.OrganizationId
+    INNER JOIN dbo.SubscriptionTiers tier ON tier.Id = subscription.TierId
+    WHERE venue.OrganizationId = @OrganizationId AND tier.MaxScreens >= 0;
+END;
+
+GO
+
+CREATE TRIGGER dbo.TR_OrganizationSubscriptions_SyncScreenPairAllowance
+ON dbo.OrganizationSubscriptions
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @OrganizationId uniqueidentifier;
+    DECLARE changed CURSOR LOCAL FAST_FORWARD FOR SELECT DISTINCT OrganizationId FROM inserted;
+    OPEN changed;
+    FETCH NEXT FROM changed INTO @OrganizationId;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        EXEC dbo.SyncScreenPairAllowanceForOrganization @OrganizationId;
+        FETCH NEXT FROM changed INTO @OrganizationId;
+    END;
+    CLOSE changed;
+    DEALLOCATE changed;
+END;
+
+GO
+
+CREATE TRIGGER dbo.TR_Venues_SyncScreenPairAllowance
+ON dbo.Venues
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @OrganizationId uniqueidentifier;
+    DECLARE changed CURSOR LOCAL FAST_FORWARD FOR
+        SELECT DISTINCT OrganizationId FROM inserted WHERE OrganizationId IS NOT NULL;
+    OPEN changed;
+    FETCH NEXT FROM changed INTO @OrganizationId;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        EXEC dbo.SyncScreenPairAllowanceForOrganization @OrganizationId;
+        FETCH NEXT FROM changed INTO @OrganizationId;
+    END;
+    CLOSE changed;
+    DEALLOCATE changed;
+END;

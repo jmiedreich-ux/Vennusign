@@ -24,7 +24,10 @@ public sealed record CapabilityAccessPolicy(
             ? CapabilityRolloutState.Unavailable
             : CapabilityRolloutState.Available,
         definition.Classification is CapabilityClassification.UniversalCore or CapabilityClassification.Governance,
-        definition.Classification != CapabilityClassification.AdvancedNative,
+        !RequiresAddOn(definition.Id),
         null,
         0);
+
+    public static bool RequiresAddOn(CapabilityId capability) => capability.Value is
+        "content.source.synchronize" or "localization.translation.automate";
 }

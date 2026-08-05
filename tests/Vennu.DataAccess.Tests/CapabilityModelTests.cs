@@ -4,6 +4,17 @@ namespace Vennu.DataAccess.Tests;
 
 public sealed class CapabilityModelTests
 {
+    [Fact]
+    public void AdvancedNativeCapabilities_DoNotImplicitlyBecomeAddOns()
+    {
+        var layout = Version1CapabilityRegistry.Get(CapabilityId.Parse("branding.layout.manage"));
+        var pos = Version1CapabilityRegistry.Get(CapabilityId.Parse("content.source.synchronize"));
+
+        Assert.True(CapabilityAccessPolicy.DefaultFor(layout).AddOnAttached);
+        Assert.False(CapabilityAccessPolicy.DefaultFor(pos).AddOnAttached);
+        Assert.True(CapabilityAccessPolicy.RequiresAddOn(CapabilityId.Parse("localization.translation.automate")));
+    }
+
     [Theory]
     [InlineData("screen.device.pair")]
     [InlineData("content.item.availability_update")]

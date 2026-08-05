@@ -31,9 +31,13 @@ public sealed class CapabilityAccessPolicyRepository(ISqlDataAccess dataAccess) 
                 d.CapabilityId,
                 COALESCE(r.RolloutState, CASE WHEN d.Classification = 4 THEN 2 ELSE 1 END) AS RolloutState,
                 CASE WHEN d.Classification IN (1, 3) OR e.Id IS NOT NULL THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END AS Entitled,
-                CASE WHEN d.Classification <> 2 OR a.Id IS NOT NULL THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END AS AddOnAttached,
+                CASE WHEN d.CapabilityId NOT IN ('content.source.synchronize', 'localization.translation.automate')
+                    OR a.Id IS NOT NULL THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END AS AddOnAttached,
                 l.LimitValue AS AllowanceLimit,
-                COALESCE(u.UsedValue, 0) AS AllowanceUsed,
+                CASE WHEN d.CapabilityId = 'screen.device.pair' THEN
+                    (SELECT COUNT(*) FROM dbo.Screens s
+                     WHERE s.VenueId = @VenueId AND s.Status <> 'Archived')
+                    ELSE COALESCE(u.UsedValue, 0) END AS AllowanceUsed,
                 r.RetryAfterUtc
             FROM dbo.CapabilityDefinitions d
             LEFT JOIN dbo.CapabilityRollouts r ON r.CapabilityId = d.CapabilityId
