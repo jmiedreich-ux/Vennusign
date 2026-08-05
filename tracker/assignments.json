@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:52:00Z",
+  "updatedUtc": "2026-08-05T03:53:00Z",
   "activeAssignments": [
     {
       "workPackage": "RWP-00.61",
@@ -23,17 +23,6 @@
         "docs/work-packages/RWP-00.31-cafe-bakery-dessert-required-capabilities.md"
       ],
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
-    },
-    {
-      "workPackage": "RWP-00.50",
-      "branch": "rwp/00.50-food-truck-concession-validation-handoff",
-      "orchestrator": "ChatGPT",
-      "status": "In Progress",
-      "ownedPaths": [
-        "track0/industries/food-truck-concession-validation.md",
-        "docs/work-packages/RWP-00.50-food-truck-concession-validation-handoff.md"
-      ],
-      "sharedWriteProtocol": "Queued semantic updates; final shared-record checkpoint after validation"
     },
     {
       "workPackage": "RWP-00.72",
