@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:58:00Z",
+  "updatedUtc": "2026-08-05T04:02:00Z",
   "activeAssignments": [
     {
-      "workPackage": "RWP-00.33",
-      "branch": "rwp/00.33-cafe-bakery-dessert-capability-classification",
+      "workPackage": "RWP-00.34",
+      "branch": "rwp/00.34-cafe-bakery-dessert-subscription-tier-mapping",
       "orchestrator": "ChatGPT",
       "status": "In Progress",
       "ownedPaths": [
-        "track0/industries/cafe-bakery-dessert-capability-classification.md",
-        "docs/work-packages/RWP-00.33-cafe-bakery-dessert-capability-classification.md"
+        "track0/industries/cafe-bakery-dessert-subscription-tier-mapping.md",
+        "docs/work-packages/RWP-00.34-cafe-bakery-dessert-subscription-tier-mapping.md"
       ],
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     },
