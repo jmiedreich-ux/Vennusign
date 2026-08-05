@@ -44,11 +44,23 @@ This is the cross-industry normalization record. Industry RWPs add or amend rows
 | Café external and managed services | External automation candidate | POS, inventory, production, ordering, payment, fulfillment, loyalty, supplier, calendar, weather, event, traffic, translation, identity, AI, hardware, connectivity, monitoring, installation, managed content, and support are independent service candidates. | Independent add-on candidate | Possible bundles | Yes | Connection, sync, transaction, storage, support, translation, monitoring, and AI-consumption limits may apply | Source/freshness, privacy, permission, disconnect, manual fallback, correction, downgrade, and recovery remain required | Approved candidate catalog in RWP-00.32; commercial packaging deferred |
 | Café resource and consumption allowances | Restaurant organization/venue allowances | Café may separately count venues, screens, users, products, options, menus, layouts, languages, schedules, campaigns, approvals, integrations, publications, storage, exports, history, support, and AI usage. | Usage or quantity limit | No | No | Yes | Limit reached is distinct from permission, entitlement, source health, unsupported context, rollout, and operating state; essential correction/recovery cannot be trapped behind optional exhaustion | Exact allowances require owner decision during consolidation |
 
+## Bar, Brewery & Nightlife Track 0 completion
+
+RWP-00.26 validates the Bar rows and relationships above as one coherent profile through RWP-00.15–00.25. The canonical primary subtypes are Pub, Sports Bar, Cocktail Bar, Wine Bar, Brewery, Brewpub, Taproom, Nightclub, and Lounge, with Unspecified / General Bar as the neutral fallback. Music/live entertainment and similar hybrid characteristics remain descriptive traits or operating emphases rather than additional primary subtypes or entitlements.
+
+Essential manual beverage, optional-food, availability, hours, event, entry, public-guidance, screen-targeting, publication, per-target delivery-confidence, correction, retry, supersession, undo, and restoration operation remains core. Industry, subtype, terminology, availability, schedule, event, source, freshness, publication, and delivery values remain product/domain state. Permissions remain authority. Advanced schedules, campaigns, richer presentation, shared libraries, approvals, organization coordination, audit/history, and native analytics remain tier candidates. POS, inventory, tap-management, reservations, guest lists, ticketing, payment, identity, access, sports/event feeds, AI, managed hardware/connectivity/monitoring/support, and custom integrations remain independent add-on candidates. Counts and consumption remain limits. Experiments and staged delivery remain internal rollout controls.
+
+The Bar profile is ready for cross-industry normalization. Final tier names, prices, trial rules, numeric limits, overage, downgrade/data-preservation policy, legal/policy ownership, provider selection, privacy/data contracts, managed-service structure, and implementation sequencing remain owner decisions.
+
 ## Hospitality Track 0 completion
 
 RWP-00.62 validates the Hospitality rows and related boundaries above as one coherent profile through RWP-00.51–00.61. Essential manual property and guest communication, explicit targeting, publication, per-target delivery confidence, source/freshness visibility, correction, expiry, supersession, retry, undo, restoration, and current operational-health visibility remain core. Industry and subtype remain non-commercial product configuration. Permissions, represented state, tier candidates, independent add-ons, limits, privacy/source authority, and rollout controls remain separate.
 
 The Hospitality profile is ready for cross-industry normalization once the all-industry gate is satisfied. Final tier names, prices, numeric limits, trials, contracts, add-on prerequisites, property-group inheritance, downgrade behavior, privacy/security/data policy, external metric definitions, emergency/legal obligations, and implementation sequencing remain owner decisions.
+
+## Native-industry gate
+
+RWP-00.26, RWP-00.38, RWP-00.50, RWP-00.62, and RWP-00.74 are complete. RWP-00.75 is the next available consolidation item. This matrix remains a planning record; completing the gate does not authorize product implementation.
 
 ## Matrix rules
 
