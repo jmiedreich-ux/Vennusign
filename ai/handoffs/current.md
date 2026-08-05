@@ -9,14 +9,14 @@
 - RWP-13.06: paused pending the owner-approved Track 0 model
 - Restaurant: canonical approved baseline
 - Bar, Brewery & Nightlife: RWP-00.17 merged; RWP-00.18 is next
-- Café, Bakery & Dessert: RWP-00.29 complete in this proposed merge state; RWP-00.30 is next
-- Food Truck & Concession: RWP-00.40 merged; RWP-00.41 is next
+- Café, Bakery & Dessert: RWP-00.29 merged; RWP-00.30 is next
+- Food Truck & Concession: RWP-00.41 complete in this proposed merge state; RWP-00.42 is next
 - Hospitality: RWP-00.51 merged; RWP-00.52 is next
 - Entertainment & Attractions: RWP-00.63 merged; RWP-00.64 is next
 
-## Café, Bakery & Dessert Terminology Result
+## Food Truck & Concession Terminology Result
 
-The canonical terminology model is documented at `track0/industries/cafe-bakery-dessert.md`.
+The canonical terminology model is documented at `track0/industries/food-truck-concession.md`.
 
 ### Neutral terms
 
@@ -24,107 +24,102 @@ Mixed-organization and cross-industry surfaces use:
 
 - organization;
 - venue;
+- operation;
 - content;
 - item;
 - category;
-- option;
 - availability;
+- location;
+- event;
+- service point;
 - service period;
 - screen;
 - publish;
 - restore.
 
-### Venue-scoped terms
+### Operation-scoped terms
 
-Subtype and content context may select drink menu, coffee menu, tea menu, bakery case, today's selection, dessert menu, current flavors, juice and smoothie menu, size, temperature, milk choice, base, flavor, add-in, topping, batch, next batch, freshness guidance, limited, sold out, preorder, custom order, pickup, seasonal item, or guest-recognizable service-period names.
+Subtype and operating context may select truck, trailer, cart, kiosk, concession stand, stand, stall, pop-up, station, current location, stop, next stop, pitch, host location, event, service window, compact menu, event menu, combo, special, pickup, collection, queue, lane, last orders, service paused, canceled, relocating, or serving again.
 
 ### Important distinctions
 
-- **Item** is the neutral operator object; guest copy uses the product name or a known product noun.
-- **Category** is the neutral grouping term; section, collection, case group, menu group, or flavor group is used only when clearer.
-- **Size** is the canonical quantity or format choice. Portion, serving, scoop, slice, cup, cone, and pack remain contextual formats.
-- **Option** is the neutral guest-facing choice. Modifier is operator or integration language, not the default guest label.
-- **Temperature**, **milk or base choice**, **flavor**, **add-in**, and **topping** are distinct option types.
-- **Batch** is a produced group that becomes available together. Next-batch timing is shown only when known.
-- **Freshness guidance** must be venue-authored or source-authoritative. Vennusign must not infer freshness, shelf life, safety, or production time.
-- **Available**, **unavailable**, **sold out**, and **limited** are distinct product states or presentation values.
-- **Preorder** means a request before pickup or fulfillment; **custom order** means guest-specific configuration or production. Neither authorizes ordering, payment, production, or fulfillment implementation.
-- **Pickup** is the neutral guest collection term. Use collection only where the venue's established language requires it, and do not alternate both terms in one flow.
-- **Service period** is operator language; guest copy uses recognizable names such as morning, breakfast, lunch, afternoon, evening, late night, or pickup hours.
+- **Operation** is the neutral Food Truck & Concession local context; **venue** remains the neutral cross-industry local business unit.
+- **Unit** is a neutral physical or operational instance and does not settle entitlement or quantity-limit counting.
+- **Service point** is a guest-facing place where service occurs; stand, stall, kiosk, station, counter, or window is used only when accurate.
+- **Service window** is a physical service opening; **service period** is a bounded time interval.
+- **Current location** is where the operation is serving now; **stop** is a mobile visit; **pitch** is an assigned vendor position; **host location** is the containing property or event site.
+- **Host** describes context and does not imply ownership, permissions, sponsor authority, or commercial access.
+- **Combo** is a named grouping of items and does not imply ordering, pricing, inventory, or POS integration.
+- **Pickup** is the neutral guest collection term; collection may be used consistently where established.
+- **Queue** is the neutral waiting-line concept; **lane** is a distinct order, express, pickup, or collection path.
+- **Last orders** communicates an authoritative order cutoff; **service ends at** communicates the end of service.
+- **Available**, **unavailable**, **sold out**, **limited**, **open**, **service paused**, **closed**, **canceled**, **relocating**, and **serving again** are distinct product or operating states.
 
-### Availability and timing language
-
-- Available: currently offered through the represented service context.
-- Unavailable: cannot currently be offered and the more specific reason is unknown, not communicated, or not depletion.
-- Sold out: the current sellable quantity or current batch is exhausted.
-- Limited: quantity or duration is constrained; it does not imply a known remaining count.
-- Next batch or available again: use only when the return is known and authoritative.
-- Preorder available or closed: describes the preorder window only.
-- Pickup available or paused: describes the represented pickup context only.
-
-Unknown state remains unknown. Guest copy must not promise exact quantity, freshness, production time, return timing, pickup readiness, or preorder acceptance without authoritative data.
+Unknown location, destination, timing, quantity, queue, pickup, and reopening information remains unknown. Guest copy must not promise a destination, arrival time, remaining quantity, queue length, wait time, pickup readiness, or reopening time without authoritative data.
 
 ### Subtype preferences
 
-- Café: menu, drinks, food, daily or seasonal specials, service periods, pickup, venue information.
-- Coffee Shop: coffee menu, espresso drinks, brewed coffee, hot or iced, size, milk choice, extra shot, flavor or syrup, seasonal drinks, pastries.
-- Tea Shop: tea menu, tea base or style, hot or iced, size, sweetness, ice, toppings, add-ins, seasonal drinks.
-- Bakery: today's selection, bakery case or display case, bread, pastry, baked goods, batch, next batch, sold out, preorder, pickup.
-- Patisserie: pastry or cake collection, flavor, size or servings where known, custom order, preorder, pickup, seasonal collection, limited availability.
-- Bakery-Café: bakery case, beverage menu, breakfast or lunch where used, service period, daily specials, pickup, available and sold-out state.
-- Dessert Shop: dessert menu, portion or format, flavor, toppings, add-ins, combinations, made to order, seasonal or limited item.
-- Frozen Dessert Shop: current flavors, scoop or serving format, size, cup or cone, toppings, take-home, limited or rotating flavor.
-- Juice & Smoothie Bar: juice and smoothie menu, size, base, ingredients, add-ins, boosts where locally used, bowls, seasonal produce, pickup.
-- Neutral subtype: menu, item, category, size, options, availability, special, preorder where supported, pickup, service period.
+- Food Truck: truck or operation, current location, stop, next stop, service window, compact menu, combos, pickup, queue, sold out, relocating, now serving at.
+- Food Trailer: trailer or operation, current pitch, setup location, service side or service window, menu, pickup, queue, weather notice, closing, relocating.
+- Food Cart: cart or operation, current location, short menu, size or option, queue, pickup, sold out, open, closed.
+- Kiosk: kiosk or service point, host location, area or landmark, counter or service window where accurate, menu, pickup, queue, hours, host notice.
+- Stadium / Arena Concession: concession stand, stand, section, gate, concourse, event, game or match, event menu, combo, express lane, pickup lane, period-based service, sold out, closed.
+- Festival Vendor: vendor or operation, festival or event, zone, pitch, booth or stand where accurate, event menu, service period, queue, weather delay, canceled, closing.
+- Market Stall: market stall, stall, market, market day, aisle, row or zone, today's menu or selection, limited, sold out, pickup, closing.
+- Pop-Up: pop-up, temporary location, host or collaborator, dates, limited menu, special hours, launch, final day, sold out, closed, moved.
+- Catering Concession: service point, station, counter, buffet station where accurate, private or catered event, service period, menu or offerings, dietary guidance, pickup or collection, queue.
+- Neutral subtype: operation, venue, service point, current location, event, menu, item, combo, availability, pickup, queue, service period, publish, restore.
 
 ## Classification Result
 
 - Industry, subtype, hybrid traits, and terminology preference are product/domain state.
 - Terminology changes defaults, labels, starter recommendations, help text, analytics presentation, and guest wording only.
-- Terminology does not grant capabilities, change plan access, alter permissions, increase limits, control rollout, or change commercial access.
-- Batch, freshness, limited-quantity, expected-return, availability, preorder-window, pickup-context, service-period, size, and option values retain product/domain-state treatment where represented.
-- Customer-authored names and custom labels must be preserved through future profile or subtype changes.
-- Manual item editing, manual availability changes, publishing, delivery confirmation, offline awareness, and restoration remain core.
-- Ordering, payment, production management, fulfillment, inventory, POS, pickup-source, and related synchronization remain later capability and integration-packaging decisions.
+- Terminology does not grant capabilities, change plan access, alter permissions, transfer host or operator authority, increase limits, control rollout, or change commercial access.
+- Operation, unit, service-point, current-location, stop, pitch, host-location, event, service-window, service-period, operating-state, availability, queue-context, pickup-context, combo, and last-order values retain product/domain-state treatment where represented.
+- Customer-authored names and custom labels must be preserved through future profile, subtype, host, event, or location changes.
+- Manual menu and availability editing, operating-location and event communication, closure and relocation communication, screen targeting, publishing, delivery confirmation, offline awareness, and restoration remain core.
+- Routing, ordering, payments, inventory, queue measurement, event management, host-venue, location-source, catering, pickup-source, and related synchronization remain later capability and integration-packaging decisions.
+- Counts of venues, operations, units, stands, stalls, service points, windows, screens, events, integrations, or transactions remain usage or quantity limits, not terminology or capability grants.
 
 ## Impeccable Planning Result
 
-The project-local Impeccable skill and `clarify` guidance were consulted for future onboarding, navigation, forms, editor labels, state messages, help text, analytics, and guest-facing copy.
+The project-local Impeccable skill and `clarify` guidance were consulted for future onboarding, navigation, forms, Quick Update, location and event controls, state messages, help text, analytics, and guest-facing copy.
 
 Future UI copy must:
 
 - keep one noun and verb for the same concept throughout a flow;
-- use specific verb-object actions;
+- use specific verb-object actions and name the affected item, combo, service point, stop, location, event, or service period;
 - use persistent labels rather than placeholders as labels;
-- distinguish first use, no results, filters, permissions, failures, empty content, sold-out state, unavailable state, and unknown timing;
+- distinguish first use, no results, filters, permissions, failures, empty content, sold-out state, unavailable state, paused service, closure, cancellation, relocation, and unknown timing;
 - explain what failed and how to recover;
-- avoid unsupported promises about freshness, quantity, production time, return time, pickup readiness, or preorder acceptance;
+- avoid unsupported promises about destinations, arrival time, remaining quantity, queue length, wait time, pickup readiness, reopening, or external synchronization;
 - use complete translatable messages;
 - align visible labels and accessible names;
-- support long product, category, option, venue, and collection names, localization expansion, pluralization, dynamic values, keyboard access, assistive technology, and 200% zoom;
+- support long organization, host, event, location, service-point, item, combo, and menu names, localization expansion, pluralization, dynamic values, keyboard access, assistive technology, and 200% zoom;
 - avoid color-only meaning and unnecessary abbreviations;
 - preserve customer-authored terminology;
 - preserve the approved Sky Blue administrative direction.
 
-No UI, API, schema, migration, localization, analytics, ordering, payment, production, fulfillment, inventory, pickup automation, or product implementation was authorized or performed.
+No UI, API, schema, migration, localization, analytics, routing, ordering, payment, inventory, event-management, host-venue, catering, pickup automation, or product implementation was authorized or performed.
 
-## Exact Next Café, Bakery & Dessert Action
+## Exact Next Food Truck & Concession Action
 
-After RWP-00.29 is merged, verified on `master`, issue #504 is closed, and the claim is released, execute **RWP-00.30 — Café, Bakery & Dessert Operating Characteristics** (#505).
+After RWP-00.41 is merged, verified on `master`, issue #516 is closed, and the claim is released, execute **RWP-00.42 — Food Truck & Concession Operating Characteristics** (#517).
 
-RWP-00.30 must:
+RWP-00.42 must:
 
-- document early hours and business-day boundaries;
-- define service periods and rotating daily-product behavior;
-- document batch production, freshness windows, sell-outs, and expected returns;
-- document preorder, custom-order, pickup, and collection operating considerations without implementing ordering or fulfillment;
-- document seasonal demand and temporary availability;
-- distinguish counter, table, mixed, and pickup-led service patterns;
+- document operating-day and service-period behavior;
+- define setup and teardown patterns;
+- document routes, stops, pitches, host locations, event schedules, and relocation behavior;
+- document weather, delay, cancellation, reopening, and closure considerations;
+- document rapid sell-outs, queue surges, last orders, pickup, and collection patterns;
+- document intermittent connectivity and recovery considerations;
+- distinguish single-window, multi-window, single-stand, and multi-stand operating patterns without deciding limit counting;
 - distinguish subtype-specific operating patterns;
 - tie each difference to defaults, terminology, content, screen purposes, or capability classification;
 - avoid jurisdiction-specific invention;
 - update the Track 0 capability documentation;
-- remain documentation-only and hand off to RWP-00.31.
+- remain documentation-only and hand off to RWP-00.43.
 
 ## Parallel-Stream Rule
 
@@ -135,5 +130,5 @@ The owner approved independently scheduled native-industry streams. Each industr
 - Do not start product implementation from Track 0 issues.
 - Do not resume RWP-13.06 until Track 0 produces an owner-approved capability and packaging model.
 - Do not start Phase 14+.
-- Do not implement UI, API, schema, migrations, billing, entitlements, feature gates, limits, rollout controls, ordering, payments, production, fulfillment, inventory, pickup automation, analytics, localization, or integrations during industry planning.
+- Do not implement UI, API, schema, migrations, billing, entitlements, feature gates, limits, rollout controls, routing, ordering, payments, inventory, event management, host-venue behavior, catering, pickup automation, analytics, localization, or integrations during industry planning.
 - Integration and external-system tests remain skipped under the standing owner instruction.
