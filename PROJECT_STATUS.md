@@ -13,13 +13,13 @@
 
 | Industry | Completed through | Result | Next approved item |
 | --- | --- | --- | --- |
-| Bar, Brewery & Nightlife | **RWP-00.26** | Complete industry profile validated and ready for cross-industry consolidation. | **Complete — await the RWP-00.75 consolidation gate** |
-| Café, Bakery & Dessert | **RWP-00.36** | Industry, capabilities, tier proposal, onboarding, and default dashboard are documented. | **RWP-00.37 — KPIs & Analytics (#512)** |
-| Food Truck & Concession | **RWP-00.50** | Complete industry profile validated and ready for cross-industry consolidation. | **Complete — await the RWP-00.75 consolidation gate** |
-| Hospitality | **RWP-00.62** | Complete industry profile validated and ready for cross-industry consolidation. | **Complete — await the RWP-00.75 consolidation gate** |
-| Entertainment & Attractions | **RWP-00.72** | Industry model, packaging, onboarding, and exception-first default dashboard are documented. | **RWP-00.73 — KPIs & Analytics (#548)** |
+| Bar, Brewery & Nightlife | **RWP-00.26** | Complete industry profile validated and ready for cross-industry consolidation. | **Complete — consolidation gate satisfied** |
+| Café, Bakery & Dessert | **RWP-00.38** | Complete industry profile validated and ready for cross-industry consolidation. | **Complete — consolidation gate satisfied** |
+| Food Truck & Concession | **RWP-00.50** | Complete industry profile validated and ready for cross-industry consolidation. | **Complete — consolidation gate satisfied** |
+| Hospitality | **RWP-00.62** | Complete industry profile validated and ready for cross-industry consolidation. | **Complete — consolidation gate satisfied** |
+| Entertainment & Attractions | **RWP-00.74** | Complete industry profile validated and ready for cross-industry consolidation. | **Complete — consolidation gate satisfied** |
 
-Only merged documents are authoritative. An industry advances only after its current RWP is merged, verified, closed, and released.
+Only merged documents are authoritative. All five native-industry validation endpoints are now merged and verified. RWP-00.75 is eligible for a separate approved consolidation run; this Bar stream does not start consolidation.
 
 ## Bar, Brewery & Nightlife Final Validation Result
 
@@ -33,23 +33,23 @@ The proposed Operate Today, Plan & Promote, and Scale & Govern outcomes are owne
 
 Bar onboarding reaches a real first screen with useful content and target-level delivery confirmation before full pricing, tier comparison, or add-on presentation. Pairing deferral preserves work and supplies an exact next action; it does not substitute pricing for first value. The default dashboard is exception-first and venue-time-aware. Analytics separates operational evidence from external or inferred commercial outcomes.
 
-No further Bar industry RWP is open. Bar must wait for the all-industry completion gate before RWP-00.75.
+No further Bar industry RWP is open.
 
-## Café Current Result
+## Café Final Validation Result
 
-RWP-00.30 through RWP-00.36 document the Café operating model, required and optional capabilities, primary classifications, outcome-tier proposal, first-value onboarding, and exception-first default dashboard. Café remains sequentially active at RWP-00.37.
+RWP-00.38 validates RWP-00.27 through RWP-00.37 as one coherent Café, Bakery & Dessert profile. Essential manual venue and menu management, rapid availability and freshness updates, operating information, preorder/pickup presentation, screen pairing and purpose, explicit targeting, preview, publication, per-target confirmation, source/freshness visibility, correction, retry, undo, restoration, permissions, complete operating states, accessibility, responsive operation, and manual fallback remain core.
 
-## Hospitality Final Validation Result
-
-RWP-00.62 validates RWP-00.51 through RWP-00.61 as one coherent Hospitality profile. Essential manual property information, hours, states, notices, amenities, services, outlets, meetings, events, directories, wayfinding, language variants, explicit targeting, publication, delivery confirmation, correction, retry, undo, restoration, and shift-handoff visibility remain core. Permissions, product state, tier entitlements, independent add-ons, limits, privacy/source authority, and rollout controls remain separate.
-
-## Food Truck & Concession Validation Result
+## Food Truck & Concession Final Validation Result
 
 RWP-00.50 validates RWP-00.39 through RWP-00.49 as one coherent profile. Essential manual menu, availability, current-context, service-state, targeting, preview, publishing, per-target delivery confidence, correction, retry, and restoration remain core. Product state, permission, tier entitlement, independent add-on, limit, source/privacy, and rollout remain separate.
 
-## Entertainment Current Result
+## Hospitality Final Validation Result
 
-RWP-00.72 defines an exception-first task dashboard. The persistent context shows organization, venue, area or experience, local operating time, current state, and scoped authority. Urgent public-impact and recovery exceptions appear before analytics or promotion. Entertainment continues from its first unfinished approved item.
+RWP-00.62 validates RWP-00.51 through RWP-00.61 as one coherent profile. Essential manual property information, hours, states, notices, amenities, services, outlets, meetings, events, directories, wayfinding, language variants, explicit targeting, publication, delivery confirmation, correction, retry, undo, restoration, and shift-handoff visibility remain core. Permissions, product state, tier entitlements, independent add-ons, limits, privacy/source authority, and rollout controls remain separate.
+
+## Entertainment & Attractions Final Validation Result
+
+RWP-00.74 validates RWP-00.63 through RWP-00.73 as one coherent profile. Required manual visitor communication, schedules, operating state, queue/wait/capacity/admission guidance, wayfinding, notices, targeting, publication, delivery confidence, correction, and recovery remain core. State, permission, tier, independent add-on, limit, privacy/source/rights, and rollout remain separate.
 
 ## Track 0 Classification Policy
 
@@ -64,12 +64,10 @@ Documentation-only Track 0 changes use lightweight repository validation. GitHub
 ## Next Actions
 
 - Keep Bar, Brewery & Nightlife complete through **RWP-00.26**.
-- Execute **RWP-00.37 — Café, Bakery & Dessert KPIs & Analytics** (#512) or the first unfinished later Café RWP shown by current GitHub state.
-- Execute **RWP-00.73 — Entertainment & Attractions KPIs & Analytics** (#548) or the first unfinished later Entertainment RWP shown by current GitHub state.
+- Keep Café, Bakery & Dessert complete through **RWP-00.38**.
 - Keep Food Truck & Concession complete through **RWP-00.50**.
 - Keep Hospitality complete through **RWP-00.62**.
-- Do not begin consolidation until RWP-00.26, RWP-00.38, RWP-00.50, RWP-00.62, and RWP-00.74 are all complete.
+- Keep Entertainment & Attractions complete through **RWP-00.74**.
+- The all-industry gate is satisfied. RWP-00.75 may begin only in the separately approved consolidation stream.
 
-Other owner-approved industry streams may proceed under the queued short-lived shared-file write protocol.
-
-Do not implement onboarding, billing, entitlements, feature gates, UI, API, schema, migrations, privacy systems, localization, analytics pipelines, ticketing, admissions, property-management, event, room-booking, transport, guest-service, access, gaming, mapping, AI, managed hardware, integrations, consolidation, or later-phase work until the owner approves the completed Track 0 model and bounded implementation packages.
+Do not implement onboarding, billing, entitlements, feature gates, UI, API, schema, migrations, privacy systems, localization, analytics pipelines, ticketing, admissions, property-management, event, room-booking, transport, guest-service, access, gaming, mapping, AI, managed hardware, integrations, consolidation, or later-phase work from this Bar stream.
