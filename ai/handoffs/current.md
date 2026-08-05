@@ -9,7 +9,7 @@
 - Restaurant: canonical approved baseline
 - Bar, Brewery & Nightlife: RWP-00.18 merged; RWP-00.19 is next
 - Café, Bakery & Dessert: RWP-00.30 merged; RWP-00.31 is next
-- Food Truck & Concession: RWP-00.42 merged; RWP-00.43 is next
+- Food Truck & Concession: complete through RWP-00.50; no further industry RWP is open
 - Hospitality: RWP-00.56 complete in this proposed merge state; RWP-00.57 is next
 - Entertainment & Attractions: RWP-00.72 complete in this proposed merge state; RWP-00.73 is next
 
@@ -39,12 +39,21 @@ The dashboard hierarchy covers quick updates; now/today/next; schedule health; q
 
 Role-aware presentation supports front-line operators, editors, publishers, venue administrators, portfolio/enterprise administrators, and limited collaborators. Mobile prioritizes context, the highest-impact exception, Quick Update, retry/restore, and compact now/next/health. Desktop may show more panels without becoming a dense control center. Manual core remains visible, optional prompts remain contextual, and state, permission, tier, add-on, limit, source, privacy, and rollout remain separate.
 
+## Food Truck & Concession Final Result
+
+RWP-00.50 validates the full RWP-00.39–00.49 package. The profile preserves Restaurant inheritance while defining the mobile, temporary, host-venue, event, compact-service, rapid-availability, service-window, pickup/queue, relocation, cancellation, intermittent-connectivity, targeting, delivery, correction, and recovery differences required by Food Truck & Concession operations.
+
+The required manual baseline remains core and usable without integrations or premium access. Product state, permission, tier, add-on, limit, privacy/source authority, and rollout are separate. Onboarding reaches a useful first published screen before optional commercial prompts. The dashboard is role-aware, mobile-first, and exception-first. KPI/analytics planning requires evidence, source, freshness, coverage, formula, privacy, retention, correction, and export disclosure and does not infer unsupported sales, inventory, demand, attendance, wait, or attribution.
+
+No further Food Truck RWP is approved. Remaining questions are owner-level cross-industry packaging and later implementation decisions.
+
 ## Exact Next Actions
 
 - Execute **RWP-00.19 — Bar, Brewery & Nightlife Required Capabilities** (#494).
 - Execute **RWP-00.31 — Café, Bakery & Dessert Required Capabilities** (#506).
 - After RWP-00.56 is merged, verified, closed, and released, execute **RWP-00.57 — Hospitality Capability Classification** (#532).
 - After RWP-00.72 is merged, verified, closed, and released, execute **RWP-00.73 — Entertainment & Attractions KPIs & Analytics** (#548).
+- Keep Food Truck & Concession complete through **RWP-00.50**. Begin RWP-00.75 only after RWP-00.26, RWP-00.38, RWP-00.50, RWP-00.62, and RWP-00.74 are all complete.
 
 ## Parallel-Stream Rule
 
