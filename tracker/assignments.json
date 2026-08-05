@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:18:00Z",
+  "updatedUtc": "2026-08-05T03:19:00Z",
   "activeAssignments": [
     {
       "workPackage": "RWP-00.55",
@@ -24,6 +24,17 @@
       "ownedPaths": [
         "track0/industries/cafe-bakery-dessert.md",
         "docs/work-packages/RWP-00.30-cafe-bakery-dessert-operating-characteristics.md"
+      ],
+      "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
+    },
+    {
+      "workPackage": "RWP-00.43",
+      "branch": "rwp/00.43-food-truck-concession-required-capabilities",
+      "orchestrator": "ChatGPT",
+      "status": "In Progress",
+      "ownedPaths": [
+        "track0/industries/food-truck-concession-required-capabilities.md",
+        "docs/work-packages/RWP-00.43-food-truck-concession-required-capabilities.md"
       ],
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     }
