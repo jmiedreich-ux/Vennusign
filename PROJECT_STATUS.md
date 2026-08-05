@@ -14,20 +14,26 @@
 | Industry | Completed through | Result | Next approved item |
 | --- | --- | --- | --- |
 | Bar, Brewery & Nightlife | **RWP-00.18** | Industry definition, venue subtypes, hybrid rules, terminology, and operating characteristics are documented. | **RWP-00.19 — Required Capabilities (#494)** |
-| Café, Bakery & Dessert | **RWP-00.31** | Industry model, terminology, operating characteristics, and the required manual core are documented. | **RWP-00.32 — Optional Capabilities (#507)** |
+| Café, Bakery & Dessert | **RWP-00.38** | The complete Café profile is validated and ready for cross-industry consolidation. | **Complete — await the RWP-00.75 consolidation gate** |
 | Food Truck & Concession | **RWP-00.50** | The complete industry profile is validated and ready for cross-industry consolidation. | **Complete — await the RWP-00.75 consolidation gate** |
 | Hospitality | **RWP-00.62** | The complete Hospitality profile is validated and ready for cross-industry consolidation. | **Complete — await the RWP-00.75 consolidation gate** |
 | Entertainment & Attractions | **RWP-00.72** | Industry model, packaging, onboarding, and exception-first default dashboard are documented. | **RWP-00.73 — KPIs & Analytics (#548)** |
 
 Only merged documents are authoritative. An industry advances only after its current RWP is merged, verified, closed, and released.
 
-## Café Required-Capability Result
+## Café Final Validation Result
 
-RWP-00.31 defines the required manual Café core covering venue information, menu/product management, rapid availability, sell-out, batch, freshness and return updates, preorder/custom-order/pickup presentation, screen purpose, explicit targeting and preview, immediate publication and per-target confirmation, correction, supersession, undo, restoration, source/freshness/conflict awareness, manual fallback, permissions, accessibility, responsiveness, localization readiness, and complete operational feedback states.
+RWP-00.38 validates RWP-00.27 through RWP-00.37 as one coherent Café, Bakery & Dessert profile. Restaurant inheritance is preserved while Café adds bounded subtype, terminology, early/cross-midnight operation, batch, freshness-guidance, rotating-product, sell-out, expected-return, preorder, pickup, service-context, dashboard, and measurement differences.
 
-## Café Operating-Characteristics Result
+Essential manual venue and menu management, rapid availability and freshness updates, operating information, preorder/pickup presentation, screen pairing and purpose, explicit targeting, preview, immediate publication, per-target confirmation, source/freshness visibility, correction, retry, undo, restoration, permissions, complete operating states, accessibility, responsive operation, and manual fallback remain core.
 
-RWP-00.30 defines early and cross-midnight business days; independently active service, preorder, pickup, counter, table, and mixed-service contexts; batch-led availability; source-authoritative freshness guidance; rotating and seasonal products; rapid sell-out and return transitions; public preorder and pickup information; screen-purpose and source-conflict behavior; multi-venue safeguards; and subtype-specific operating rhythms.
+Industry and subtype remain non-commercial product configuration. Product/domain state, permission, tier entitlement, independent add-on, limits, privacy/source relationships, and rollout controls remain separate. The proposed Operate, Coordinate, Portfolio, and Enterprise outcome archetypes are planning candidates only. POS, inventory, production, ordering, payment, fulfillment, loyalty, messaging, translation, AI, managed hardware, connectivity, monitoring, support, and other external or managed services remain independent add-on candidates.
+
+Café onboarding reaches one confirmed first-screen update before prominent pricing or optional-capability prompts. The default dashboard is exception-first and task-first. Analytics separates Vennusign operational evidence from sales, demand, inventory, conversion, readiness, queue, customer-behavior, and attribution claims that require authoritative external data.
+
+The current cross-industry capability matrix already represents the meaningful normalized Café deltas; the detailed RWP-00.33 record provides the Café-specific classification expansion without duplicating matrix rows.
+
+No further Café industry RWP is open. Café must wait for the all-industry completion gate before RWP-00.75.
 
 ## Bar Operating-Characteristics Result
 
@@ -66,7 +72,7 @@ Documentation-only Track 0 changes use lightweight repository validation. GitHub
 ## Next Actions
 
 - Execute **RWP-00.19 — Bar, Brewery & Nightlife Required Capabilities** (#494).
-- Execute **RWP-00.32 — Café, Bakery & Dessert Optional Capabilities** (#507).
+- Keep Café, Bakery & Dessert complete through **RWP-00.38**.
 - Execute **RWP-00.73 — Entertainment & Attractions KPIs & Analytics** (#548) after RWP-00.72 is merged, verified, closed, and released.
 - Keep Food Truck & Concession complete through **RWP-00.50**.
 - Keep Hospitality complete through **RWP-00.62**.
