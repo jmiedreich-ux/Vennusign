@@ -1,8 +1,23 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:13:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "RWP-00.55",
+  "updatedUtc": "2026-08-05T03:14:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "RWP-00.55",
+      "branch": "rwp/00.55-hospitality-required-capabilities",
+      "orchestrator": "ChatGPT",
+      "status": "In Progress",
+      "ownedPaths": [
+        "track0/industries/hospitality-required-capabilities.md",
+        "track0/CAPABILITY_MATRIX.md",
+        "docs/work-packages/RWP-00.55-hospitality-required-capabilities.md",
+        "PROJECT_STATUS.md",
+        "ai/handoffs/current.md",
+        "tracker/assignments.json"
+      ]
+    }
+  ],
+  "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
