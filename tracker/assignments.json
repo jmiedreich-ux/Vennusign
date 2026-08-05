@@ -1,9 +1,23 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T05:49:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "OWNER-APPROVAL-TRACK0",
-  "approvedSequentialQueue": [],
+  "updatedUtc": "2026-08-05T20:22:00Z",
+  "activeAssignments": [
+    {
+      "id": "TRACK-1.01",
+      "issue": 640,
+      "mode": "Sequential",
+      "branch": "rwp/01.01-canonical-capability-model",
+      "status": "claimed"
+    }
+  ],
+  "nextAvailableWorkPackage": null,
+  "approvedSequentialQueue": [
+    "TRACK-1.01",
+    "TRACK-1.02",
+    "TRACK-1.03",
+    "TRACK-1.04",
+    "TRACK-1.05"
+  ],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
