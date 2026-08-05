@@ -1,23 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T02:39:30Z",
-  "activeAssignments": [
-    {
-      "workPackage": "RWP-00.42",
-      "branch": "rwp/00.42-food-truck-concession-operating-characteristics",
-      "orchestrator": "ChatGPT",
-      "status": "In Progress",
-      "ownedPaths": [
-        "track0/industries/food-truck-concession.md",
-        "track0/CAPABILITY_MATRIX.md",
-        "docs/work-packages/RWP-00.42-food-truck-concession-operating-characteristics.md",
-        "PROJECT_STATUS.md",
-        "ai/handoffs/current.md",
-        "tracker/assignments.json"
-      ]
-    }
-  ],
-  "nextAvailableWorkPackage": null,
+  "updatedUtc": "2026-08-05T02:50:00Z",
+  "activeAssignments": [],
+  "nextAvailableWorkPackage": "RWP-00.43",
   "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
