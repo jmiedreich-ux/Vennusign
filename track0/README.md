@@ -25,6 +25,20 @@ Read additional repository documents only when the current issue explicitly requ
 - RWP-13.06 and Phase 14+ remain paused during Track 0.
 - Integration and external-system tests remain skipped under the standing owner instruction.
 
+## Native-industry roadmap and consolidation gate
+
+Each industry closes at its validation, review, and handoff endpoint:
+
+- Bar, Brewery & Nightlife — RWP-00.26
+- Café, Bakery & Dessert — RWP-00.38
+- Food Truck & Concession — RWP-00.50
+- Hospitality — RWP-00.62
+- Entertainment & Attractions — RWP-00.74
+
+Food Truck & Concession is complete through RWP-00.50. Hospitality is complete through RWP-00.62. Entertainment & Attractions is complete through RWP-00.74. Their industry queues are closed and must not invent additional industry RWPs.
+
+Do not start cross-industry consolidation until all five endpoints are merged, verified, closed, and released. When the gate is satisfied, the exact next approved item is **RWP-00.75 — Cross-Industry Capability Inventory**. RWP-00.75 begins consolidation and owner review; it does not authorize product implementation or resume RWP-13.06.
+
 ## Delta rule
 
 Every native industry inherits the Restaurant baseline. Document only meaningful differences in:
@@ -58,7 +72,8 @@ Impeccable consultation does not authorize product implementation.
 ## Expected outputs per RWP
 
 - Update the current industry document.
-- Update `CAPABILITY_MATRIX.md` when classifications or packaging candidates change.
+- Update `CAPABILITY_MATRIX.md` when classifications, packaging candidates, or final validation results change.
 - Record unresolved owner decisions.
 - Update the next handoff reference.
+- At an industry endpoint, update project status, tracker release, current handoff, capability matrix, and this roadmap/gate record in one short shared-record checkpoint.
 - Keep changes bounded to the current issue.
