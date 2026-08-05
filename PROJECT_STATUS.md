@@ -14,12 +14,18 @@
 | Industry | Completed through | Result | Next approved item |
 | --- | --- | --- | --- |
 | Bar, Brewery & Nightlife | **RWP-00.18** | Industry definition, venue subtypes, hybrid rules, terminology, and operating characteristics are documented. | **RWP-00.19 — Required Capabilities (#494)** |
-| Café, Bakery & Dessert | **RWP-00.30** | Industry definition, venue subtypes, hybrid rules, business terminology, and operating characteristics are documented. | **RWP-00.31 — Required Capabilities (#506)** |
+| Café, Bakery & Dessert | **RWP-00.31** | Industry model, terminology, operating characteristics, and the required manual core are documented. | **RWP-00.32 — Optional Capabilities (#507)** |
 | Food Truck & Concession | **RWP-00.50** | The complete industry profile is validated and ready for cross-industry consolidation. | **Complete — await the RWP-00.75 consolidation gate** |
 | Hospitality | **RWP-00.56** | Industry, subtypes, terminology, operating characteristics, required core, and optional capability candidates are complete in this proposed merge state. | **RWP-00.57 — Capability Classification (#532)** |
 | Entertainment & Attractions | **RWP-00.72** | Industry model, packaging, onboarding, and exception-first default dashboard are complete in this proposed merge state. | **RWP-00.73 — KPIs & Analytics (#548)** |
 
 Only merged documents are authoritative. An industry advances only after its current RWP is merged, verified, closed, and released.
+
+## Café Required-Capability Result
+
+RWP-00.31 defines eleven required groups covering venue and operating information; menu/product management; rapid availability, sell-out, batch, freshness, and return updates; preorder/custom-order/pickup presentation; screen pairing and purpose; explicit targeting and preview; immediate publication and per-target confirmation; correction, supersession, undo, restoration, source/freshness/conflict awareness, manual fallback, permissions, accessibility, responsiveness, localization readiness, and complete operational feedback states.
+
+All approved Café subtypes receive the complete required core. Industry and subtype change defaults and emphasis only. Represented facts are product/domain state, authority is permission, advanced native workflow is a tier candidate, external or managed services are add-on candidates, quantities and retention are limits, and temporary exposure control is rollout only.
 
 ## Café Operating-Characteristics Result
 
@@ -64,7 +70,7 @@ Documentation-only Track 0 changes use lightweight repository validation. GitHub
 ## Next Actions
 
 - Execute **RWP-00.19 — Bar, Brewery & Nightlife Required Capabilities** (#494).
-- Execute **RWP-00.31 — Café, Bakery & Dessert Required Capabilities** (#506).
+- Execute **RWP-00.32 — Café, Bakery & Dessert Optional Capabilities** (#507).
 - After RWP-00.56 is merged, verified, closed, and released, execute **RWP-00.57 — Hospitality Capability Classification** (#532).
 - After RWP-00.72 is merged, verified, closed, and released, execute **RWP-00.73 — Entertainment & Attractions KPIs & Analytics** (#548).
 - Keep Food Truck & Concession closed through RWP-00.50. Do not begin consolidation until RWP-00.26, RWP-00.38, RWP-00.50, RWP-00.62, and RWP-00.74 are all complete.
