@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:55:00Z",
+  "updatedUtc": "2026-08-05T03:57:00Z",
   "activeAssignments": [
     {
       "workPackage": "RWP-00.62",
@@ -14,13 +14,13 @@
       "sharedWriteProtocol": "Final Hospitality shared-record checkpoint after validation"
     },
     {
-      "workPackage": "RWP-00.32",
-      "branch": "rwp/00.32-cafe-bakery-dessert-optional-capabilities",
+      "workPackage": "RWP-00.33",
+      "branch": "rwp/00.33-cafe-bakery-dessert-capability-classification",
       "orchestrator": "ChatGPT",
       "status": "In Progress",
       "ownedPaths": [
-        "track0/industries/cafe-bakery-dessert-optional-capabilities.md",
-        "docs/work-packages/RWP-00.32-cafe-bakery-dessert-optional-capabilities.md"
+        "track0/industries/cafe-bakery-dessert-capability-classification.md",
+        "docs/work-packages/RWP-00.33-cafe-bakery-dessert-capability-classification.md"
       ],
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     },
