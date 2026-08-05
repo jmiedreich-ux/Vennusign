@@ -3,38 +3,37 @@
 ## Current State
 
 - Track: Track 0 — Capability, Packaging, and Entitlement Architecture (#488)
-- Native-industry gate: complete through RWP-00.26, 00.38, 00.50, 00.62, and 00.74
-- Current consolidation result: RWP-00.75 complete in proposed merge state
+- Native-industry gate: complete
+- RWP-00.75: merged and verified
+- RWP-00.76: complete in proposed merge state
 - Product implementation: paused
-- RWP-13.06: paused
-- Phase 14 and later: paused
+- RWP-13.06 and Phase 14+: paused
 
-## RWP-00.75 Result
+## RWP-00.76 Result
 
-Restaurant and the five native-industry profiles are normalized in `track0/consolidation/CROSS_INDUSTRY_MODEL.md`.
+The factual current-product inventory is at `track0/consolidation/EXISTING_PRODUCT_INVENTORY.md`.
 
-The model requires one primary classification per concern: core capability, permission, product/domain state, tier entitlement candidate, independent add-on candidate, usage or quantity limit, or internal rollout flag.
+It records the current session capability keys, effective feature keys, route and locked-surface consumers, browser tier slugs, billing/provider authority, tier selection and downgrade checks, screen/venue limits, feature limit values, HaaS contract terms, claims/context authority, support overrides, product-state controls, external service boundaries, and rollout/configuration evidence.
 
-Essential manual operation remains core. Industry and subtype remain non-commercial configuration. Permissions govern authority. Represented configuration and operational facts remain product/domain state. Advanced native Vennusign workflows are tier candidates. External systems, managed services, HaaS, hardware/service contracts, and separately metered services are add-on candidates. Counts and consumption are limits. Rollout flags remain internal.
+Key factual ambiguities carried into reconciliation include:
 
-Unavailable product state, missing permission, absent entitlement, unconfigured add-on, disconnected or stale source, exceeded limit, unsupported context, and rollout restriction must remain distinct in future product presentation.
+- `pos_integration` is both a route capability and effective feature key;
+- Menu access checks `menus` while its prompt uses `quick_update`;
+- `all_layouts` is reused across Tap list, Screens, and Themes;
+- `happy_hour` and `video_wall` each have commercial-feature and product-state representations;
+- `multi_location` coexists with permission-bound authorized venue contexts;
+- screen/venue plan limits, feature `limitValue`, layout capacity, and HaaS term limits govern different domains;
+- the browser receives flat session capabilities rather than a normalized per-action permission model;
+- locked UI does not receive one structured reason model for entitlement, permission, limit, state, source, support, or rollout conditions.
+
+These are observations, not remediation decisions.
 
 ## Exact Next Action
 
-Execute **RWP-00.76 — Existing Product Feature, Gate & Limit Inventory (#552)** only after RWP-00.75 is merged, issue #551 is closed, `master` is verified, and the claim is released.
+Execute **RWP-00.77 — Capability Reconciliation & Gap Analysis (#553)** after RWP-00.76 is merged, issue #552 is closed, `master` is verified, and the claim is released.
 
-RWP-00.76 must inventory factual current-product feature keys, capability checks, permissions, support overrides, limits, locked UI surfaces, configuration/rollout controls, authority, scope, and known consumers. It must not change a live gate or begin reconciliation recommendations reserved for RWP-00.77.
-
-## Open Owner Decisions
-
-- final tier names, capability placement, pricing, trials, contracts, grandfathering, numeric limits, pooling, overage, and grace;
-- add-on prerequisites, providers, regions, rights, administration, and support commitments;
-- organization/venue inheritance and override policy;
-- downgrade, read-only, export, retention, deletion, and active-screen protection;
-- regulated, privacy, safety, accessibility, rights, sponsor, advertising, camera, biometric, child, alcohol, and gambling obligations;
-- player, hardware, monitoring, installation, replacement, and support commitments;
-- metric definitions and implementation sequence.
+Map `EXISTING_PRODUCT_INVENTORY.md` to `CROSS_INDUSTRY_MODEL.md`. Identify missing, duplicate, obsolete, or misclassified mechanisms, including permissions represented as entitlements, product state represented as feature flags, and inconsistent organization/venue inheritance. Record recommendations only.
 
 ## Boundaries
 
-Do not resume RWP-13.06, start Phase 14+, implement product behavior, approve pricing, or treat candidate packaging as final. Azure SQL and all integration/external-system tests remain skipped under the standing owner instruction.
+Do not change product behavior, keys, gates, permissions, limits, billing, rollout, API, schema, migrations, or integrations. Do not resume RWP-13.06 or Phase 14+. Azure SQL, live Stripe, and all integration/external-system tests remain skipped.
