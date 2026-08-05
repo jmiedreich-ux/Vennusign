@@ -6,7 +6,7 @@
 - Track 1 product and architecture discussion: complete.
 - Track 1 implementation: not started.
 - Active implementation claim: none.
-- Track 2: blocked pending Track 1 execution, validation and owner approval.
+- Track 2 implementation: blocked pending Track 1 execution, validation and owner approval. Light planning may begin, but cannot be marked complete until potential changes from Track 1 and earlier tracks are evaluated.
 - RWP-13.06: held; do not resume unchanged.
 - Phase 14 and later: paused.
 
@@ -34,7 +34,7 @@ That record contains the complete approved Track 1 decisions, execution model, c
 - Every clear, bounded implementation gap must be corrected inside the same RWP and revalidated; do not defer fixable gaps into later cleanup work.
 - Stop only for a new owner decision, major scope expansion, conflict, unavailable dependency, high-risk action or unresolved repeated failure.
 - Conduct one owner acceptance review after the five-RWP batch.
-- Do not start Track 2 until the owner approves Track 1 closure.
+- Light Track 2 planning may begin before or during Track 1 owner acceptance testing. It cannot be marked complete until all potential changes arising from Track 1 and earlier tracks have been evaluated and incorporated or explicitly ruled out. Track 2 implementation remains blocked until the owner approves Track 1 closure.
 
 ## Pre-Production Replacement Rule
 
@@ -75,11 +75,12 @@ Full onboarding belongs to Track 8. Track 1 only supplies the authority and deci
 4. Present all five for owner confirmation.
 5. After confirmation, execute the sequential five-RWP batch with automatic bounded remediation.
 6. Prepare and conduct the Track 1 owner acceptance review.
+7. Light Track 2 planning may proceed in parallel, but it must remain provisional and cannot be marked complete until Track 1 acceptance findings and any earlier-track effects are evaluated.
 
 ## Boundaries
 
 - This handoff does not itself authorize Track 1 implementation.
-- Do not start Track 2.
+- Do not start Track 2 implementation before owner approval of Track 1 closure. Light Track 2 planning may begin, but it cannot be marked complete until potential changes from Track 1 and earlier tracks have been evaluated.
 - Do not resume RWP-13.06 unchanged.
 - Do not claim full onboarding or unbuilt management interfaces as Track 1 deliverables.
 - Integration/external-system tests remain skipped unless separately authorized.
