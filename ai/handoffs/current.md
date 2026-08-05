@@ -11,7 +11,7 @@
 - Café, Bakery & Dessert: RWP-00.29 merged; RWP-00.30 is next
 - Food Truck & Concession: RWP-00.42 merged; RWP-00.43 is next
 - Hospitality: RWP-00.56 complete in this proposed merge state; RWP-00.57 is next
-- Entertainment & Attractions: RWP-00.70 complete in this proposed merge state; RWP-00.71 is next
+- Entertainment & Attractions: RWP-00.71 complete in this proposed merge state; RWP-00.72 is next
 
 ## Bar Operating-Characteristics Result
 
@@ -25,24 +25,21 @@ RWP-00.56 preserves the required manual core and defines optional candidates for
 
 Tier candidates include advanced wayfinding, brand libraries, property-group coordination, campaigns, approvals and advanced workflows, localization workflow, advanced analytics, enterprise administration, and selected advanced operational workflow. Independent add-on candidates include property-management, event, room-booking, transport, parking, access, guest-service, gaming, maps, positioning, weather, emergency, translation, AI, identity providers, managed hardware, connectivity, monitoring, and related external systems or services.
 
-## Entertainment Tier-Mapping Result
+## Entertainment Onboarding Result
 
-RWP-00.70 proposes four customer-outcome tier archetypes:
+RWP-00.71 defines the aha moment as accurate venue-specific visitor information visibly delivered to the first paired online screen with clear update, verification, and restoration confidence.
 
-- **Operate:** complete required manual daily visitor communication.
-- **Coordinate:** richer event, team, screen, journey, language, campaign, and workflow coordination.
-- **Portfolio:** multi-venue, campus, district, park, cinema, museum, sports, touring, franchise, and brand governance with local control.
-- **Enterprise:** enterprise identity administration, audit, governance, risk, service, and complex-portfolio workflow.
+The minimum real-product journey is venue identity and subtype, simple venue structure, first screen purpose, pairing or selecting a screen, subtype-aware starter content, one useful live update, contextual preview, publication, and delivery confirmation. Complete campus modeling, external integrations, advanced features, and forced pricing are deferred.
 
-Independent ticketing, admissions, access, venue, cinema, queue, footfall, map, translation, AI, identity-provider, hardware, connectivity, and managed-service connections remain add-ons. Quantities remain limits. Industry and subtype remain non-commercial configuration.
+The plan supports new organizations, existing organizations, invited operators, returning incomplete setup, and experienced users; durable save/resume; optional guidance; role-aware permissions; pairing and publish recovery; sample-content safety; phone and desktop; accessibility; low-light and crowded environments; and contextual optional-capability discovery. Pricing remains deliberately accessible but should not interrupt setup and is preferably introduced after first-screen activation.
 
-Upgrade must preserve current data and public operation and activate outcomes deliberately. Downgrade must preserve essential communication, manual fallback, source/freshness context, recovery, and customer-authored content through a clear grace, conversion, export, or read-only policy. Contextual upgrade prompts should follow operational value and preferably first-screen activation rather than interrupting initial setup.
+RWP-13.06 remains paused. No onboarding, player, pairing, pricing, publication, or product behavior was implemented.
 
 ## Exact Next Actions
 
 - Execute **RWP-00.19 — Bar, Brewery & Nightlife Required Capabilities** (#494).
 - After RWP-00.56 is merged, verified, closed, and released, execute **RWP-00.57 — Hospitality Capability Classification** (#532).
-- After RWP-00.70 is merged, verified, closed, and released, execute **RWP-00.71 — Entertainment & Attractions Onboarding Experience** (#546).
+- After RWP-00.71 is merged, verified, closed, and released, execute **RWP-00.72 — Entertainment & Attractions Default Dashboard** (#547).
 
 ## Parallel-Stream Rule
 
