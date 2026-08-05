@@ -15,7 +15,7 @@
 | --- | --- | --- | --- |
 | Bar, Brewery & Nightlife | **RWP-00.18** | Industry definition, venue subtypes, hybrid rules, terminology, and operating characteristics are documented. | **RWP-00.19 — Required Capabilities (#494)** |
 | Café, Bakery & Dessert | **RWP-00.30** | Industry definition, venue subtypes, hybrid rules, business terminology, and operating characteristics are documented. | **RWP-00.31 — Required Capabilities (#506)** |
-| Food Truck & Concession | **RWP-00.42** | Industry definition, subtypes, terminology, and operating characteristics are documented. | **RWP-00.43 — Required Capabilities (#518)** |
+| Food Truck & Concession | **RWP-00.50** | The complete industry profile is validated and ready for cross-industry consolidation. | **Complete — await the RWP-00.75 consolidation gate** |
 | Hospitality | **RWP-00.56** | Industry, subtypes, terminology, operating characteristics, required core, and optional capability candidates are complete in this proposed merge state. | **RWP-00.57 — Capability Classification (#532)** |
 | Entertainment & Attractions | **RWP-00.72** | Industry model, packaging, onboarding, and exception-first default dashboard are complete in this proposed merge state. | **RWP-00.73 — KPIs & Analytics (#548)** |
 
@@ -43,6 +43,14 @@ RWP-00.72 defines an exception-first task dashboard. The persistent context show
 
 The planned hierarchy covers quick operational actions; now/today/next; schedule health; queue, wait, capacity, and admission; wayfinding; notices; per-target screen and publication health; source/freshness; upcoming work; and multi-venue oversight. It includes role-aware mobile and desktop presentation, explicit mixed states, safe bulk actions, full empty/permission/tier/add-on/integration/limit/privacy/failure/recovery states, and manual fallback. Healthy aggregate state cannot hide one failed, outdated, excluded, or unknown target.
 
+## Food Truck & Concession Validation Result
+
+RWP-00.50 validates RWP-00.39 through RWP-00.49 as one coherent profile. Restaurant inheritance is preserved; the bounded subtype and terminology models cover mobile, temporary, event, host-venue, compact-service, rapid-availability, service-window, pickup/queue, and intermittent-connectivity deltas without turning subtype into entitlement.
+
+Essential manual menu, availability, current-context, service-state, targeting, preview, publishing, per-target delivery confidence, correction, retry, and restoration remain core. Product state, permission, tier entitlement, independent add-on, limit, source/privacy, and rollout remain separate. Onboarding reaches useful value before pricing or add-on prompts; the default dashboard is exception-first and mobile-first; analytics distinguishes operational evidence from inference and requires source, freshness, coverage, formula, privacy, retention, correction, and export disclosure.
+
+The remaining decisions are owner-level consolidation and implementation choices rather than industry-profile gaps. The Food Truck stream has no further open RWP and must wait for the all-industry gate before RWP-00.75.
+
 ## Track 0 Classification Policy
 
 Every concern has exactly one primary classification: core capability, permission, product/domain state, tier entitlement, independent add-on, usage or quantity limit, or internal rollout flag.
@@ -59,6 +67,7 @@ Documentation-only Track 0 changes use lightweight repository validation. GitHub
 - Execute **RWP-00.31 — Café, Bakery & Dessert Required Capabilities** (#506).
 - After RWP-00.56 is merged, verified, closed, and released, execute **RWP-00.57 — Hospitality Capability Classification** (#532).
 - After RWP-00.72 is merged, verified, closed, and released, execute **RWP-00.73 — Entertainment & Attractions KPIs & Analytics** (#548).
+- Keep Food Truck & Concession closed through RWP-00.50. Do not begin consolidation until RWP-00.26, RWP-00.38, RWP-00.50, RWP-00.62, and RWP-00.74 are all complete.
 
 Other owner-approved industry streams may proceed under the queued short-lived shared-file write protocol.
 
