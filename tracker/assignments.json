@@ -1,8 +1,23 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T02:50:00Z",
-  "activeAssignments": [],
-  "nextAvailableWorkPackage": "RWP-00.43",
+  "updatedUtc": "2026-08-05T02:52:00Z",
+  "activeAssignments": [
+    {
+      "workPackage": "RWP-00.53",
+      "branch": "rwp/00.53-hospitality-business-terminology",
+      "orchestrator": "ChatGPT",
+      "status": "In Progress",
+      "ownedPaths": [
+        "track0/industries/hospitality-terminology.md",
+        "docs/work-packages/RWP-00.53-hospitality-business-terminology.md",
+        "track0/CAPABILITY_MATRIX.md",
+        "PROJECT_STATUS.md",
+        "ai/handoffs/current.md",
+        "tracker/assignments.json"
+      ]
+    }
+  ],
+  "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
