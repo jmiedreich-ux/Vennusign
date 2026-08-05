@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:19:00Z",
+  "updatedUtc": "2026-08-05T03:20:00Z",
   "activeAssignments": [
     {
       "workPackage": "RWP-00.55",
@@ -37,6 +37,17 @@
         "docs/work-packages/RWP-00.43-food-truck-concession-required-capabilities.md"
       ],
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
+    },
+    {
+      "workPackage": "RWP-00.66",
+      "branch": "rwp/00.66-entertainment-attractions-operating-characteristics",
+      "orchestrator": "ChatGPT",
+      "status": "In Progress",
+      "ownedPaths": [
+        "track0/industries/entertainment-attractions-operating-characteristics.md",
+        "docs/work-packages/RWP-00.66-entertainment-attractions-operating-characteristics.md"
+      ],
+      "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     }
   ],
   "nextAvailableWorkPackage": null,
@@ -44,7 +55,8 @@
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,
-    "sharedFilesAreOrchestratorOwned": true,
+    "sharedFilesAreOrchestratorOwned": false,
+    "sharedFilesUseTransactionalWrites": true,
     "deleteBranchesAfterMerge": true,
     "executionModes": {
       "Sequential": "GitHub-first queue execution; claim and complete exactly one approved WP/RWP at a time.",
