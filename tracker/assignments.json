@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-05T03:27:30Z",
+  "updatedUtc": "2026-08-05T03:31:00Z",
   "activeAssignments": [
     {
       "workPackage": "RWP-00.56",
@@ -36,13 +36,13 @@
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     },
     {
-      "workPackage": "RWP-00.67",
-      "branch": "rwp/00.67-entertainment-attractions-required-capabilities",
+      "workPackage": "RWP-00.68",
+      "branch": "rwp/00.68-entertainment-attractions-optional-capabilities",
       "orchestrator": "ChatGPT",
       "status": "In Progress",
       "ownedPaths": [
-        "track0/industries/entertainment-attractions-required-capabilities.md",
-        "docs/work-packages/RWP-00.67-entertainment-attractions-required-capabilities.md"
+        "track0/industries/entertainment-attractions-optional-capabilities.md",
+        "docs/work-packages/RWP-00.68-entertainment-attractions-optional-capabilities.md"
       ],
       "sharedWriteProtocol": "Queued semantic updates; no whole-RWP shared-file ownership"
     }
