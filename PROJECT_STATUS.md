@@ -13,13 +13,19 @@
 
 | Industry | Completed through | Result | Next approved item |
 | --- | --- | --- | --- |
-| Bar, Brewery & Nightlife | **RWP-00.17** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.18 — Operating Characteristics (#493)** |
+| Bar, Brewery & Nightlife | **RWP-00.18** | Industry definition, venue subtypes, hybrid rules, terminology, and operating characteristics are documented. | **RWP-00.19 — Required Capabilities (#494)** |
 | Café, Bakery & Dessert | **RWP-00.29** | Industry definition, venue subtypes, hybrid rules, and business terminology are documented. | **RWP-00.30 — Operating Characteristics (#505)** |
 | Food Truck & Concession | **RWP-00.42** | Industry definition, subtypes, terminology, and operating characteristics are documented. | **RWP-00.43 — Required Capabilities (#518)** |
 | Hospitality | **RWP-00.56** | Industry, subtypes, terminology, operating characteristics, required core, and optional capability candidates are complete in this proposed merge state. | **RWP-00.57 — Capability Classification (#532)** |
 | Entertainment & Attractions | **RWP-00.67** | Industry definition, venue subtypes, terminology, operating characteristics, and the smallest viable required capability set are complete in this proposed merge state. | **RWP-00.68 — Optional Capabilities (#543)** |
 
 Only merged documents are authoritative. An industry advances only after its current RWP is merged, verified, closed, and released.
+
+## Bar Operating-Characteristics Result
+
+RWP-00.18 defines cross-midnight venue and service periods; separate kitchen, bar, doors, event, last-entry, and locally authored last-call timing; high-frequency tap, item, release, and temporary-offer changes; table, bar, counter, and hybrid service models; bounded age/access and responsible-content presentation; entertainment and sports operations; reservations, guest lists, cover, tickets, and private-event distinctions; and subtype-specific operating rhythms.
+
+Essential manual availability, hours, specials, events, public guidance, explicit targeting, preview, publishing, delivery confirmation, correction, offline/outdated awareness, supersession, and restoration remain core. Operating values are product/domain state. Authority is permission. Advanced workflow is a tier candidate. External synchronization is an add-on candidate. Quantities are limits and temporary delivery controls are rollout flags.
 
 ## Hospitality Optional-Capability Result
 
@@ -49,6 +55,7 @@ Documentation-only Track 0 changes use lightweight repository validation. GitHub
 
 ## Next Actions
 
+- Execute **RWP-00.19 — Bar, Brewery & Nightlife Required Capabilities** (#494).
 - After RWP-00.56 is merged, verified, closed, and released, execute **RWP-00.57 — Hospitality Capability Classification** (#532).
 - After RWP-00.67 is merged, verified, closed, and released, execute **RWP-00.68 — Entertainment & Attractions Optional Capabilities** (#543).
 
