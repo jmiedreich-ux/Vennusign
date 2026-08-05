@@ -10,36 +10,35 @@ Complete in this proposed merge state.
 
 ## Scope completed
 
-- Reviewed RWP-00.15 through RWP-00.25 as one coherent Bar, Brewery & Nightlife profile.
-- Validated Restaurant inheritance and removed no approved baseline capability.
-- Reconciled the canonical nine primary subtypes plus the neutral fallback; music/live entertainment remains a trait, and Brewery and Brewpub remain distinct.
-- Validated terminology, operating characteristics, required/optional capabilities, primary classifications, tier proposal, onboarding, dashboard, KPIs, and analytics.
-- Confirmed essential manual daily operation remains core.
-- Confirmed permission, represented state, tier entitlement, independent add-on, limit, privacy/source authority, and rollout remain separate.
-- Validated first-screen, daily operation, publishing, delivery, recovery, event, private-function, mixed-organization, upgrade, downgrade, add-on, and analytics journeys.
-- Confirmed first-screen value precedes full pricing, tier comparison, or add-on presentation; deliberate pairing deferral does not substitute pricing for first value.
-- Validated Impeccable, accessibility, responsive, state, failure, and recovery requirements.
-- Recorded unresolved owner decisions without treating them as industry-profile gaps.
-- Prepared the final shared-record checkpoint and consolidation-gate handoff.
+- Reviewed RWP-00.15 through RWP-00.25 as one coherent industry profile.
+- Validated Restaurant inheritance and identified no duplicate commercial baseline.
+- Validated terminology, operating model, required/optional capability inventory, classification, tier proposal, onboarding, dashboard, and analytics.
+- Reconciled the authoritative subtype set and documented later aliases that must not become new primary subtypes or entitlements.
+- Confirmed every inventoried concern has one primary Track 0 classification.
+- Confirmed essential manual operation is not tier-gated.
+- Confirmed permissions, product/domain state, tier candidates, independent add-ons, limits, privacy, connections, and rollout flags remain separate.
+- Clarified that full pricing/tier/add-on presentation follows first-screen activation and does not replace first value when pairing is deferred.
+- Validated representative setup, daily operation, publishing/recovery, event, private-function, disconnect/manual-fallback, upgrade/downgrade, and mixed-industry journeys.
+- Recorded all unresolved owner decisions and a recommendation for later cross-industry consolidation.
+- Prepared queued semantic updates for Track 0 status, capability matrix, current handoff, and Bar claim release.
 
-## Result
+## Validation outcome
 
-The Bar, Brewery & Nightlife profile is complete, internally consistent, and ready for owner review and cross-industry consolidation. No blocking industry-profile gap or classification conflict remains.
+The Bar, Brewery & Nightlife profile is complete, internally coherent under the canonical resolutions in the final validation record, and ready for owner approval as a planning package. No product implementation is authorized.
 
-## Validation
+## Final canonical corrections
 
-Documentation-only review against issue #501, the merged Bar records through RWP-00.25, the Restaurant baseline, Track 0 classification rules, the queued short-lived shared-file write protocol, and project-local Impeccable guidance. GitHub Actions is authoritative. Integration and external-system tests remain skipped under the standing owner instruction.
+- Primary subtypes remain Pub, Sports Bar, Cocktail Bar, Wine Bar, Brewery, Brewpub, Taproom, Nightclub, Lounge, plus Unspecified / General Bar.
+- Music/live-entertainment remains a descriptive trait and event emphasis, not another primary subtype.
+- Brewery and Brewpub remain distinct primary subtypes.
+- Full pricing and tier comparison follows a first screen being up and showing useful content; pairing deferral does not trigger pricing as a substitute for first value.
 
-## Boundaries
+## Validation and review
 
-No product behavior, UI, API, schema, migration, billing, pricing, entitlement, trial, limit, rollout, analytics pipeline, integration, AI, player, hardware, managed-service, or consolidation implementation. RWP-13.06 and Phase 14+ remain paused.
+Reviewed against issue #501, all merged Bar industry/work-package records, the Restaurant baseline, Track 0 classification policy, queued shared-file protocol, and project-local Impeccable guidance. The final PR requires exact-head documentation validation and ChatGPT review. Integration and external-system tests remain skipped.
 
-## Final handoff
+## Handoff
 
-After merge, issue closure, default-branch verification, and claim release:
+After merge, default-branch verification, issue closure, final shared-record synchronization, and claim release, the Bar, Brewery & Nightlife queue is complete through RWP-00.26.
 
-- Bar, Brewery & Nightlife is complete through **RWP-00.26**.
-- No additional Bar RWP is approved.
-- Do not start Bar implementation or consolidation.
-- RWP-00.75 may begin only after RWP-00.26, RWP-00.38, RWP-00.50, RWP-00.62, and RWP-00.74 are all merged, verified, closed, and released.
-- Continue other valid industry streams only from their first unfinished approved RWP.
+The next approved Track 0 work is the Café, Bakery & Dessert queue at its first unfinished approved RWP according to current GitHub state. Do not start consolidation until every native-industry validation RWP is complete and the consolidation gate is satisfied. RWP-13.06 and Phase 14+ remain paused.
