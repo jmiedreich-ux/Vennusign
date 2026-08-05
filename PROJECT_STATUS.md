@@ -6,89 +6,78 @@
 - Phase 14 and later: paused pending explicit owner approval.
 - Active implementation WP/RWP: none.
 - Active planning track: Track 0 — Capability, Packaging, and Entitlement Architecture (#488). Product implementation remains paused.
-- The owner approved independent native-industry Track 0 schedules. Each industry remains sequential inside its own approved RWP range and must avoid shared-file ownership conflicts.
+- The owner approved independent native-industry Track 0 schedules. Each industry remains sequential inside its own RWP range and must avoid shared-file conflicts.
 - Restaurant is the canonical approved baseline inherited by later native-industry profiles.
-- RWP-00.15 — Bar, Brewery & Nightlife Industry Definition (#490) is complete and merged.
-- RWP-00.16 — Bar, Brewery & Nightlife Venue Subtypes (#491) is complete and merged. Its next item is RWP-00.17 — Business Terminology (#492).
-- RWP-00.27 — Café, Bakery & Dessert Industry Definition (#502) is complete and merged.
-- RWP-00.28 — Café, Bakery & Dessert Venue Subtypes (#503) is complete and merged. It defines nine bounded primary subtypes, a neutral fallback, hybrid traits, boundary rules, subtype selection/change behavior, Restaurant inheritance, and Impeccable planning guidance. Its next item is RWP-00.29 — Business Terminology (#504).
-- RWP-00.39 — Food Truck & Concession Industry Definition (#514) is complete and merged.
-- RWP-00.40 — Food Truck & Concession Venue Subtypes (#515) is complete in this proposed merge state. It defines nine bounded primary subtypes, a neutral fallback, physical-form and operating-context traits, host and mixed-organization boundaries, subtype selection/change behavior, Restaurant inheritance, and Impeccable planning guidance. Its next item is RWP-00.41 — Business Terminology (#516).
-- RWP-00.51 — Hospitality Industry Definition (#526) is complete and merged. Its next item is RWP-00.52 — Venue Subtypes (#527).
-- RWP-00.63 — Entertainment & Attractions Industry Definition (#538) is complete and merged. Its next item is RWP-00.64 — Venue Subtypes (#539).
-- The 13-package retrospective remediation round is complete.
-- RWP-00.04 — Deployment Component Versioning and Release Manifest (#437) is complete.
-- RWP-05.07 — Atomic Screen Replacement and Pairing Recovery (#439) is complete.
-- RWP-08.02 — Daylight-Saving-Safe Scheduling Resolution (#440) is complete.
-- RWP-10.02 — Durable Player Content Receipts and Delivery Reconciliation (#441) is complete.
-- RWP-00.05 — Affected-Screen Action Completeness and Recovery (#442) is complete.
-- A new 18-item Sequential remediation queue is approved through issues #448–#465.
-- RWP-02.01 — Display Player State-Screen Presentation (#448) is complete and merged.
-- RWP-00.06 — Shared Design Tokens and Palette Consolidation (#449) is complete and merged.
-- RWP-00.07 — Small-Text Contrast Remediation (#450) is complete and merged.
-- RWP-00.08 — Destructive-Action Confirmation Standardization (#451) is complete and merged.
-- RWP-05.08 — Screens Page Information Architecture (#452) is complete and merged.
-- RWP-04.03 — Platform Operations Mobile and Console Polish (#453) is complete and merged.
-- RWP-00.09 — Transient Feedback System (#454) is complete and merged.
-- RWP-00.10 — Iconography, Empty States, and Loading Skeletons (#455) is complete and merged.
-- RWP-07.01 — Display Theme Font Bundling (#456) is complete and merged.
-- RWP-00.11 — Midnight Admin Theme (#457) is complete and merged.
-- RWP-00.12 — Sky UI Visual Standard (#458) is complete and merged.
-- RWP-05.09 — Daypart Home and Navigation Shell (#459) is complete and merged.
-- RWP-13.04 — Signup and Marketing Page with Live Demo (#460) is complete and merged.
-- RWP-13.05 — Go-Live and First-Run Experience (#461) is complete and merged.
-- RWP-00.13 — Action Hierarchy and Button Placement Standard (#462) is complete and merged.
-- RWP-05.10 — Visual-First Screens Fleet (#463) is complete and merged.
-- RWP-11.03 — Unified Entitlement Experience (#464) is complete and merged.
-- RWP-11.04 — Personalized Locked Previews (#465) presents the active venue's authorized menu content inside read-only locked theme/layout previews.
-- The 18-item approved Sequential remediation queue is complete.
-- RWP-00.14 — Project-Local Impeccable Codex Design Skill (#486) is complete and merged. It installs the official v4.0.4 skill, its advisory edit/stop hook, and the repository rule requiring it for UI work without changing product runtime or UI.
-- RWP-13.06 — Trial-First Onboarding (#466) implementation is paused while Track 0 establishes the supported-industry, capability, packaging, and entitlement model.
-- Research program `INT-TESTING-001` remains documented but is not part of Track 0 planning.
+- RWP-13.06 — Trial-First Onboarding (#466) remains paused until Track 0 produces an owner-approved capability and packaging model.
 
-## Completed Delivery
+## Native-Industry Track 0 Progress
 
-| Phase | Result |
-| --- | --- |
-| 02 | Core backend, display boot, realtime updates, and heartbeat lifecycle |
-| 03 | Tier, feature, subscription, Stripe, and usage foundations |
-| 04 | Protected Platform Operations CRM, support, commercial, and revenue workflows |
-| 05 | Back Office CMS, menus, quick update, screens, and video walls |
-| 06 | Restaurant/cafe layouts, themes, overflow, and offline media |
-| 07 | Bar layouts, advanced themes, motion, and multilingual font delivery |
-| 08 | Scheduling, playlists, promotions, and emergency broadcast |
-| 09 | Tap administration, brewery layouts, and pairing registration |
-| 10 | Android/Fire TV, Tizen, webOS, HaaS provisioning, and fleet health |
-| 11 | Upgrade UX, Checkout, Billing Portal, and HaaS billing guardrails |
-| 12 | Square, Toast, and Clover integrations through a shared POS model |
-| 13 | Customer identity, organization entitlements, signup, onboarding, and legacy-token migration |
+| Industry | Completed through | Result | Next approved item |
+| --- | --- | --- | --- |
+| Bar, Brewery & Nightlife | **RWP-00.17** | Industry definition, nine venue subtypes plus neutral fallback, hybrid rules, canonical business terminology, subtype terminology, neutral fallbacks, operator/guest language, analytics labels, and Impeccable clarification guidance are documented. | **RWP-00.18 — Operating Characteristics (#493)** |
+| Café, Bakery & Dessert | **RWP-00.28** | Industry definition and nine venue subtypes plus neutral fallback are documented. | **RWP-00.29 — Business Terminology (#504)** |
+| Food Truck & Concession | **RWP-00.40** | Industry definition and nine venue subtypes plus neutral fallback, physical-form and operating-context traits, and host boundaries are documented. | **RWP-00.41 — Business Terminology (#516)** |
+| Hospitality | **RWP-00.51** | Industry definition is documented. | **RWP-00.52 — Venue Subtypes (#527)** |
+| Entertainment & Attractions | **RWP-00.63** | Industry definition is documented. | **RWP-00.64 — Venue Subtypes (#539)** |
 
-Cross-cutting remediation completed after Phase 13 includes RWP-00.02, RWP-00.03, RWP-04.02, RWP-05.04, RWP-05.05, RWP-05.06, RWP-08.01, RWP-09.01, RWP-10.01, RWP-11.02, RWP-13.03, RWP-13.01, and RWP-13.02. Completed WP/RWP details, phase plans, validation evidence, and earlier status snapshots are retained under `docs/archive/` for deliberate research.
+Only merged documents are authoritative. An industry may advance only after its current RWP is merged, verified, closed, and released.
+
+## Bar, Brewery & Nightlife Terminology Result
+
+RWP-00.17 establishes a stable language model for onboarding, navigation, content editing, help text, analytics, starter content, and guest-facing displays.
+
+### Neutral cross-industry terms
+
+Organization, venue, content, item, category, screen, area, event, service period, special, availability, publish, and restore remain the preferred neutral terms when a surface spans industries or different venue subtypes.
+
+### Context-specific Bar terms
+
+Venue-scoped surfaces may use drink menu, tap list, cocktail list, wine list, current taps, pour size, flight, bottle, can, release, happy hour, game or match, viewing area, doors, entry information, cover, guest list, reservation, table, room, patio, venue zone, last call, and sold out when the context makes the meaning clear.
+
+### Classification
+
+- Industry, subtype, hybrid traits, and terminology preference are **product/domain state**.
+- Terminology changes defaults, labels, help text, starter recommendations, analytics presentation, and guest wording only.
+- Terminology does not grant capabilities, alter permissions, increase limits, control rollout, or change commercial access.
+- Customer-authored names and custom labels must be preserved through future subtype or profile changes.
+- Available, unavailable, sold out, event, reservation, entry, service-period, and area values retain their own product-state classifications.
+- Manual editing, availability changes, publishing, delivery confirmation, and restoration remain inherited core capabilities.
+- Automatic POS, inventory, tap-management, reservation, ticketing, event, or related synchronization remains a later integration-packaging decision.
+
+### Impeccable planning
+
+The project-local Impeccable `clarify` guidance applies to future UI copy. One noun and verb must represent the same concept across a flow; actions must describe outcomes; labels must persist; state, permission, error, empty, success, and recovery messages must remain distinct; visible and accessible names must align; copy must support localization expansion, long names, pluralization, keyboard access, assistive technology, and 200% zoom; and the Sky Blue administrative direction remains intact.
+
+No UI, API, schema, migration, billing, entitlement, feature-gate, analytics, localization, or integration implementation was performed.
 
 ## Track 0 Classification Policy
 
-Every capability must have one primary classification: core capability, permission, product/domain state, tier entitlement, independent add-on, usage or quantity limit, or internal rollout flag.
+Every concern has exactly one primary classification:
 
-The Bar, Brewery & Nightlife subtype model confirms that primary subtype, neutral subtype state, and optional hybrid descriptive traits are product/domain state. Nine primary subtypes are approved: Pub, Sports Bar, Cocktail Bar, Wine Bar, Brewery, Brewpub, Taproom, Nightclub, and Lounge. Subtype changes venue-local defaults, terminology candidates, starter recommendations, screen-purpose suggestions, and guidance only. It does not grant capabilities, alter permissions, increase limits, or change commercial access. Existing content must be preserved through a later subtype-change implementation.
+1. Core capability
+2. Permission
+3. Product/domain state
+4. Tier entitlement
+5. Independent add-on
+6. Usage or quantity limit
+7. Internal rollout flag
 
-The Café, Bakery & Dessert subtype model confirms that primary subtype, neutral subtype state, and optional hybrid descriptive traits are product/domain state. Nine primary subtypes are approved: Café, Coffee Shop, Tea Shop, Bakery, Patisserie, Bakery-Café, Dessert Shop, Frozen Dessert Shop, and Juice & Smoothie Bar. Subtype changes venue-local defaults, terminology candidates, starter recommendations, screen-purpose suggestions, and guidance only. It does not grant capabilities, alter permissions, increase limits, or change commercial access. Existing content must be preserved through a later subtype-change implementation. Manual sold-out and available-again changes remain core; batch, freshness, limited-quantity, and expected-return values remain product/domain state; external synchronization remains a later integration-packaging question.
+Industry and subtype affect defaults, terminology, starter content, recommendations, and capability presentation. They are not entitlements. Essential daily operation remains core. Permissions do not determine commercial access. Product state is not a feature flag. Limits are not capabilities.
 
-The Food Truck & Concession subtype model confirms that primary subtype, neutral subtype state, and optional physical-form, operating-context, host-relationship, product-focus, and service-model traits are product/domain state. Nine primary subtypes are approved: Food Truck, Food Trailer, Food Cart, Kiosk, Stadium / Arena Concession, Festival Vendor, Market Stall, Pop-Up, and Catering Concession. Subtype changes local defaults, terminology candidates, starter recommendations, screen-purpose suggestions, and guidance only. It does not grant capabilities, transfer authority, alter permissions, increase limits, decide venue counting, or change commercial access. Current location, event, service window, relocation, closure, and availability remain independent product state. Manual location and closure communication, rapid availability changes, explicit targeting, publishing, delivery confirmation, offline awareness, and recovery remain core. Automatic route, event, host-venue, POS, order, inventory, location, or catering synchronization remains a later packaging question.
+## Completed Delivery
 
-The Hospitality definition confirms that property, building or area, outlet, room or event, amenity, service window, closure, relocation, and similar operational values are product/domain state. Manual guest-information, wayfinding, event, amenity, service, changed-hours, targeting, publishing, delivery confirmation, offline awareness, and recovery operations remain core. Authorization and privacy scope remain separate from commercial access. Automatic property-management, event, room-booking, transport, guest-service, or other external synchronization remains a later packaging question.
-
-The Entertainment & Attractions definition confirms that venue, building or area, attraction, exhibit, event, performance, screening, session, queue, admission window, capacity state, delay, closure, relocation, and similar operational values are product/domain state. Manual program, showtime, admissions, wayfinding, queue, capacity, delay, closure, relocation, accessibility, safety, targeting, publishing, delivery confirmation, offline awareness, and recovery operations remain core. Authorization, audience, admission, privacy, and content authority remain separate from commercial access. Automatic ticketing, admissions, access-control, queue, venue, cinema, show-control, collection, event, sports, attraction, or other external synchronization remains a later packaging question.
+Phases 02 through 13 are complete. The retrospective remediation queues through RWP-11.04 are complete. RWP-00.14 installed the project-local Impeccable Codex design skill. Earlier package details, validation evidence, and status snapshots remain under `docs/archive/` for deliberate research.
 
 ## Validation Policy
 
-Normal work uses affected-area non-integration validation. Full non-integration validation is reserved for phase closure and the exceptions defined in `AGENTS.md`. Documentation-only Track 0 changes use lightweight repository validation. Integration and external-system tests remain skipped under the standing owner instruction unless separately approved.
+Documentation-only Track 0 changes use lightweight repository validation. GitHub Actions is authoritative on the exact reviewed PR head. Integration and external-system tests requiring Azure SQL, external services, credentials, hosted infrastructure, containers, devices, signing/store access, or cross-system integration remain skipped under the standing owner instruction.
 
 ## Next Action
 
-After RWP-00.40 is merged, verified on `master`, issue #515 is closed, and the claim is released, continue the Food Truck & Concession queue with **RWP-00.41 — Business Terminology** (#516).
+After RWP-00.17 is merged, verified on `master`, issue #492 is closed, and the claim is released, continue the Bar, Brewery & Nightlife queue with **RWP-00.18 — Operating Characteristics** (#493).
 
-RWP-00.41 must define canonical operator and guest terminology for locations, stops, events, service windows, stands, menus, combos, sell-outs, service periods, pickup, queues, and venue/subtype overrides; identify terms inherited unchanged from Restaurant; define subtype-specific and neutral organization-wide fallbacks; keep terminology separate from permissions and entitlements; and remain documentation-only.
+RWP-00.18 must define late-night hours and business-day behavior, service periods, happy hour, rotating taps, limited releases, last call, bar/table/counter/hybrid service, age and responsible-display considerations, entertainment and event operations, reservations, guest lists, cover and ticketing considerations, inventory volatility, and subtype-specific operating differences. It remains documentation-only.
 
 Other owner-approved native-industry schedules may continue independently inside their own sequential queues. They must use Restaurant as the canonical baseline, treat only merged work as authoritative, and avoid concurrent edits to shared controlled files.
 
-Do not implement onboarding, billing, entitlements, feature gates, UI, API, schema, or migrations until the owner approves the completed capability matrix and implementation packages. RWP-13.06 and Phase 14+ remain paused.
+Do not implement onboarding, billing, entitlements, feature gates, UI, API, schema, migrations, or later-phase work until the owner approves the completed capability matrix and implementation packages.
