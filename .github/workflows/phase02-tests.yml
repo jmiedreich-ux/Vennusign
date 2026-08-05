@@ -207,10 +207,12 @@ jobs:
       - name: Validate local key helper syntax
         shell: pwsh
         run: |
-          $tokens = $null
-          $errors = $null
-          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'scripts/set-platform-operations-key.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
-          if ($errors.Count -gt 0) { throw ($errors | Out-String) }
+          foreach ($script in @('scripts/set-platform-operations-key.ps1', 'scripts/start-track1-acceptance.ps1')) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $script), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) { throw "$script`n$($errors | Out-String)" }
+          }
 
   build-and-test:
     if: always()

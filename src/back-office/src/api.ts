@@ -22,9 +22,21 @@ export type BackOfficeCapabilityDecision = {
   decision: "allowed" | "allowed-with-conditions" | "denied" | "unavailable" | "temporarily-blocked";
   reasonCode: string;
   category: string;
+  messageKey: string;
   message: string;
+  parameters: Record<string, string>;
+  correlationId: string;
+  locale: string;
   resolution?: string;
   retryAfterSeconds?: number;
+  conditions: Array<{
+    category: string;
+    reasonCode: string;
+    messageKey: string;
+    message: string;
+    parameters: Record<string, string>;
+    resolution?: string;
+  }>;
   isAllowed: boolean;
 };
 export type BackOfficeTierSummary = {

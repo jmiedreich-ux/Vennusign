@@ -15,12 +15,25 @@ public sealed record BackOfficeCapabilityDecisionResponse(
     string Decision,
     string ReasonCode,
     string Category,
+    string MessageKey,
     string Message,
+    IReadOnlyDictionary<string, string> Parameters,
+    string CorrelationId,
+    string Locale,
     string? Resolution,
-    int? RetryAfterSeconds)
+    int? RetryAfterSeconds,
+    IReadOnlyCollection<BackOfficeCapabilityDecisionConditionResponse> Conditions)
 {
     public bool IsAllowed => Decision is "allowed" or "allowed-with-conditions";
 }
+
+public sealed record BackOfficeCapabilityDecisionConditionResponse(
+    string Category,
+    string ReasonCode,
+    string MessageKey,
+    string Message,
+    IReadOnlyDictionary<string, string> Parameters,
+    string? Resolution);
 
 public sealed record BackOfficeAccountResponse(Guid? UserId, string DisplayName, string? Email);
 

@@ -25,14 +25,16 @@ test("venue operations compose screen targeting pairing and video walls", () => 
   assert.match(api, /api\/back-office\/screens\/pairing/);
 });
 
-test("screen creation and pairing expose the subscribed screen quota", () => {
-  assert.match(app, /maxScreens=\{billing\?\.currentTier\?\.maxScreens\}/);
-  assert.match(operations, /maxScreens=\{maxScreens\}/);
-  assert.match(screens, /activeScreens\.length >= maxScreens/);
-  assert.match(screens, /busyId === "new" \|\| screenLimitReached/);
-  assert.match(screens, /busyId === "pair" \|\| screenLimitReached/);
+test("screen creation and pairing use the structured server allowance decision", () => {
+  assert.match(app, /decisions=\{session\.capabilityDecisions\}/);
+  assert.match(operations, /decision\.capabilityId === "screen\.device\.pair"/);
+  assert.match(screens, /pairDecision\?\.reasonCode === "allowance\.reached"/);
+  assert.match(screens, /pairDecision\?\.parameters\.used/);
+  assert.match(screens, /pairDecision\?\.parameters\.limit/);
+  assert.match(screens, /busyId === "new" \|\| !pairingAllowed/);
+  assert.match(screens, /busyId === "pair" \|\| !pairingAllowed/);
   assert.match(screens, /reason\.status === 409/);
-  assert.match(screens, /Plan limit reached/);
+  assert.doesNotMatch(app, /maxScreens=\{billing\?\.currentTier\?\.maxScreens\}/);
 });
 
 test("screen lifecycle recovery is explicit safe and capacity-aware", () => {

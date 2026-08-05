@@ -74,9 +74,20 @@ public sealed class BackOfficeSessionController(
             ToApiValue(decision.Decision),
             decision.ReasonCode,
             ToApiValue(decision.Category),
+            decision.MessageKey,
             messages.Resolve(decision.Locale, decision.MessageKey, decision.Parameters),
+            decision.Parameters,
+            decision.CorrelationId,
+            decision.Locale,
             decision.Resolution,
-            decision.RetryAfter is TimeSpan retry ? (int)Math.Ceiling(retry.TotalSeconds) : null)).ToArray();
+            decision.RetryAfter is TimeSpan retry ? (int)Math.Ceiling(retry.TotalSeconds) : null,
+            decision.Conditions.Select(condition => new BackOfficeCapabilityDecisionConditionResponse(
+                ToApiValue(condition.Category),
+                condition.ReasonCode,
+                condition.MessageKey,
+                messages.Resolve(decision.Locale, condition.MessageKey, condition.Parameters),
+                condition.Parameters,
+                condition.Resolution)).ToArray())).ToArray();
         return Ok(new BackOfficeSessionResponse(
             venueId,
             displayName,
