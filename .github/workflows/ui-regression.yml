@@ -46,6 +46,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          # Restores the npm download cache across runs; all three lockfiles key it.
+          cache: 'npm'
+          cache-dependency-path: |
+            src/back-office/package-lock.json
+            src/display/package-lock.json
+            tests/ui/package-lock.json
 
       - name: Install Back Office dependencies
         working-directory: src/back-office
@@ -59,9 +65,27 @@ jobs:
         working-directory: tests/ui
         run: npm ci
 
+      # Chromium is ~130MB and dominates setup time. Keyed on the UI suite lockfile so
+      # it is re-downloaded only when the Playwright version actually changes.
+      - name: Restore cached Chromium
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('tests/ui/package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
       - name: Install Chromium
         working-directory: tests/ui
-        run: npx playwright install --with-deps chromium
+        # --with-deps still runs on a hit: the cache holds the browser, not OS packages.
+        run: |
+          if ("${{ steps.playwright-cache.outputs.cache-hit }}" -eq "true") {
+            npx playwright install chromium
+          } else {
+            npx playwright install --with-deps chromium
+          }
+        shell: pwsh
 
       - name: Start LocalDB and create the VennuSign database
         shell: pwsh
