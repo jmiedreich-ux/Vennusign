@@ -88,6 +88,17 @@ Read `AI_DEVELOPMENT_GUIDE.md`, component README files, architecture, or operati
 - New commits invalidate prior approval. Never merge with incomplete/failing required checks or unresolved material comments.
 - If GitHub blocks self-approval, record `CHATGPT APPROVED`, reviewed SHA, validation status, and residual risks in a top-level PR comment.
 
+## Track Acceptance, Retrospective, and Closure Gate
+
+- Automated validation completion does not close a track. The owner must first complete acceptance and reach an acceptable result.
+- After owner acceptance becomes acceptable, every track requires a lessons-learned and retrospective review before closure.
+- The retrospective reviews original information and assumptions, planning, implementation, automated testing, owner testing, defects, rework, repeated test cycles, labor, and the final owner report using repository and GitHub evidence.
+- The output must distinguish symptoms from root causes and define concrete improvements to planning, completeness, UX review, implementation sequencing, test ownership, acceptance preparation, evidence, and quality gates.
+- Approved product or technical changes discovered during the retrospective become explicit issues/WPs/RWPs; they are not silently implemented inside the retrospective.
+- Light planning for a future track may begin while acceptance or the retrospective is pending, but cannot be marked complete until required retrospective changes are incorporated or explicitly ruled out.
+- Future-track implementation remains blocked until the owner explicitly approves closure of the current track.
+- A track closes only when owner acceptance is acceptable, the retrospective is owner-approved, follow-up work is recorded, and controlled records are synchronized.
+
 ## Completion and Handoff
 
 Before merge, synchronize:
