@@ -1,16 +1,10 @@
 {
     "schemaVersion":  1,
-    "updatedUtc":  "2026-08-06T04:26:08Z",
+    "updatedUtc":  "2026-08-06T04:47:52Z",
     "activeAssignments":  [
 
                           ],
-    "desktopSessionLock":  {
-                               "owner":  "Codex for JeremyPC",
-                               "scope":  "Track 1 review remediation for PR #654",
-                               "branch":  "collab/desktop/track1-qa-automation",
-                               "startedUtc":  "2026-08-06T04:26:08Z",
-                               "sequentialSchedulesPaused":  true
-                           },
+    "desktopSessionLock":  null,
     "nextAvailableWorkPackage":  null,
     "approvedSequentialQueue":  [
 
@@ -29,11 +23,10 @@
               },
     "lastDesktopSession":  {
                                "owner":  "Codex for JeremyPC",
-                               "scope":  "Track 1 acceptance QA automation and shared owner acceptance workbook",
+                               "scope":  "Track 1 acceptance QA automation",
                                "branch":  "collab/desktop/track1-qa-automation",
-                               "startedUtc":  "2026-08-05T23:31:46Z",
-                               "releasedUtc":  "2026-08-06T04:16:26Z",
-                               "releasedBy":  "owner direction",
-                               "openPullRequest":  654
+                               "releasedUtc":  "2026-08-06T04:47:52Z",
+                               "mergedPullRequest":  654,
+                               "mergeCommit":  "b16d849"
                            }
 }

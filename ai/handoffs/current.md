@@ -5,7 +5,8 @@
 - Track 0 industry and product architecture: complete and closed.
 - Track 1.01 through Track 1.04: implemented, merged, exact-head validated and closed.
 - Track 1.05: complete, merged through PR #650, exact-head validated by Actions run 31049451685 and verified on `master` at `6915ef2b402ce146d8ff01bf7ad767e3cbb1295e`.
-- **Exact next action: ChatGPT reviews PR #654.** The desktop session lock is released and no agent holds Track 1. Do not push to `collab/desktop/track1-qa-automation` until that review records a decision.
+- **Exact next action: the owner runs Track 1 acceptance against `master`.** PR #654 is merged as `b16d849`, the desktop session lock is released, and no agent holds Track 1. Sequential schedules may resume.
+- Start the acceptance environment with `scripts/start-ui-test-env.ps1`, then open `docs/acceptance/track-1-owner-acceptance.html`. Its Start here section now offers a one-click sign-in per role; the token travels in the URL fragment and is removed before the page renders.
 - Track 1 closure: blocked only on owner acceptance after Track 1.05 merges. The acceptance QA gate now passes all 19 cases, so owner judgment is the only remaining step.
 - PR #654 carries the Track 1 acceptance QA automation and nine defect fixes. All 13 required checks are green on `d77dae5` and the branch is mergeable. It has had no independent review: the review recorded in-session was written by the agent that authored the diff and did not read the full change, which is tracked as issue #659.
 - Seven follow-up issues (#656 to #662) are labelled `before-track-2`. None block Track 1 closure.
