@@ -1,4 +1,4 @@
-﻿@import "./sky-ui-tokens.css";
+@import "./sky-ui-tokens.css";
 
 .transient-feedback-region { position: fixed; right: 24px; bottom: 24px; z-index: 50; width: min(420px, calc(100vw - 32px)); pointer-events: none; }
 .transient-feedback { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 11px; align-items: start; border: 1px solid #86c9aa; border-radius: var(--sky-radius-lg); padding: 14px 15px; color: #174b36; background: #effbf5; box-shadow: 0 16px 44px rgb(15 23 42 / .2); pointer-events: auto; animation: transient-feedback-in .18s ease-out; }
