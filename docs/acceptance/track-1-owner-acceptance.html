@@ -73,11 +73,11 @@ a.sign-in:focus-visible{outline:3px solid #d49d22;outline-offset:2px}
 
       <div class="quick-sign-in">
         <h3>Sign in without typing a token</h3>
-        <p>Each button opens the Back Office in a new tab already signed in as that role. The token is handed over once and removed from the address bar immediately, so nothing is left in a copied link. Typing the token by hand still works and is what the cases below describe.</p>
+        <p>Each button opens the Back Office in a new tab already signed in as that role. The token travels in the URL fragment, which browsers never send to a server, and is removed from the address bar before the page renders, so it reaches neither a request log nor a copied link. Typing the token by hand still works and is what the cases below describe.</p>
         <ul class="sign-in-actions">
-          <li><a class="sign-in" href="https://localhost:5174/?accessToken=track1-owner-review#/home" target="_blank" rel="noreferrer">Open as Track 1 Owner Review<small>track1-owner-review</small></a></li>
-          <li><a class="sign-in" href="https://localhost:5174/?accessToken=track1-content-editor#/home" target="_blank" rel="noreferrer">Open as Track 1 Content Editor<small>track1-content-editor</small></a></li>
-          <li><a class="sign-in" href="https://localhost:5174/?accessToken=track1-publisher#/home" target="_blank" rel="noreferrer">Open as Track 1 Publisher<small>track1-publisher</small></a></li>
+          <li><a class="sign-in" href="https://localhost:5174/#/home?accessToken=track1-owner-review" target="_blank" rel="noreferrer">Open as Track 1 Owner Review<small>track1-owner-review</small></a></li>
+          <li><a class="sign-in" href="https://localhost:5174/#/home?accessToken=track1-content-editor" target="_blank" rel="noreferrer">Open as Track 1 Content Editor<small>track1-content-editor</small></a></li>
+          <li><a class="sign-in" href="https://localhost:5174/#/home?accessToken=track1-publisher" target="_blank" rel="noreferrer">Open as Track 1 Publisher<small>track1-publisher</small></a></li>
         </ul>
         <p class="sign-in-note">These links assume the Back Office is on <code>https://localhost:5174</code>. If you started the environment with a different host or port, sign in by typing the token instead.</p>
       </div>

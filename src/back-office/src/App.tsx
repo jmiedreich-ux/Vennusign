@@ -61,25 +61,34 @@ const tokenStorageKey = "vennusign.back-office.token";
 const customerSessionAccess = "customer-session";
 
 /**
- * Accepts a configured venue-access token from the query string so the owner
+ * Accepts a configured venue-access token from the URL *fragment* so the owner
  * acceptance workbook can offer a one-click sign-in for each role.
  *
- * The token is moved straight into session storage and stripped from the URL, so it
- * does not linger in the address bar, in history, or in a copied link. Only tokens
- * the API already has configured are accepted, so this grants nothing new; it just
- * saves typing one during a review.
+ * The fragment is deliberate: browsers never transmit it, so the token cannot reach
+ * server, proxy or CDN request logs. A query string would be sent with the very first
+ * request, and stripping it afterwards in script would already be too late.
+ *
+ * Expected shape is `#/route?accessToken=...`. The token is moved into session storage
+ * and the fragment rewritten to the bare route before anything renders, so nothing is
+ * left in the address bar, in history, or in a copied link. Only tokens the API already
+ * has configured are accepted, so this grants no new access.
  */
 function consumeAccessTokenFromUrl(): string | undefined {
-  const parameters = new URLSearchParams(window.location.search);
+  const fragment = window.location.hash.replace(/^#/, "");
+  const separator = fragment.indexOf("?");
+  if (separator < 0) return undefined;
+
+  const parameters = new URLSearchParams(fragment.slice(separator + 1));
   const supplied = parameters.get("accessToken");
   if (!supplied) return undefined;
 
   parameters.delete("accessToken");
-  const query = parameters.toString();
+  const remaining = parameters.toString();
+  const route = fragment.slice(0, separator);
   window.history.replaceState(
     null,
     "",
-    `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`
+    `${window.location.pathname}${window.location.search}#${route}${remaining ? `?${remaining}` : ""}`
   );
   sessionStorage.setItem(tokenStorageKey, supplied);
   return supplied;

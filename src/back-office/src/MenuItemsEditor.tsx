@@ -11,27 +11,48 @@ export default function MenuItemsEditor({ configuration, apiKey, venueId, menuId
   const [newItem, setNewItem] = useState<MenuItemWrite>(emptyItem);
   const [states, setStates] = useState<Record<string, SaveState>>({});
   const [pendingArchive, setPendingArchive] = useState<MenuItem>();
-  // Items with unsaved edits or a save in flight. A refresh must not overwrite their
-  // drafts, and a second save must not start while the first is still running:
-  // blurring an input to click Save fires both onBlur->save and onClick->save, and a
-  // refresh landing between them used to persist the pre-edit value.
-  const pendingEdits = useRef(new Set<string>());
+  /**
+   * Per-item edit revision, bumped on every keystroke-level change.
+   *
+   * A plain "is pending" flag is not enough. Blurring an input to click Save fires
+   * both onBlur->save and onClick->save, and an edit made while a request is still in
+   * flight would previously have its pending marker cleared by the *older* request
+   * completing; the refresh that followed then replaced the newer draft with the
+   * server's stale value. Saves now capture the revision they sent and clear the
+   * marker only if nothing has changed since, so a newer edit always survives.
+   */
+  const draftRevisions = useRef(new Map<string, number>());
   const savingItems = useRef(new Set<string>());
+  const isPending = (itemId: string) => draftRevisions.current.has(itemId);
+  const settleSave = (itemId: string, savedRevision: number) => {
+    if (draftRevisions.current.get(itemId) === savedRevision) {
+      draftRevisions.current.delete(itemId);
+      return true;
+    }
+    return false;
+  };
   useEffect(() => {
     setDrafts(current => items.map(item => {
-      const draft = pendingEdits.current.has(item.id) ? current.find(entry => entry.id === item.id) : undefined;
+      const draft = isPending(item.id) ? current.find(entry => entry.id === item.id) : undefined;
       return draft ?? item;
     }));
   }, [items]);
-  const patch = (itemId: string, values: Partial<MenuItem>) => { pendingEdits.current.add(itemId); setDrafts(current => current.map(item => item.id === itemId ? { ...item, ...values } : item)); setStates(current => ({ ...current, [itemId]: "draft" })); };
+  const patch = (itemId: string, values: Partial<MenuItem>) => {
+    draftRevisions.current.set(itemId, (draftRevisions.current.get(itemId) ?? 0) + 1);
+    setDrafts(current => current.map(item => item.id === itemId ? { ...item, ...values } : item));
+    setStates(current => ({ ...current, [itemId]: "draft" }));
+  };
   const save = async (item: MenuItem) => {
     if (savingItems.current.has(item.id)) return;
     savingItems.current.add(item.id);
+    const sentRevision = draftRevisions.current.get(item.id) ?? 0;
     setStates(current => ({ ...current, [item.id]: "saving" }));
     try {
       await updateMenuItem(configuration, apiKey, venueId, menuId, sectionId, item.id, { name: item.name, description: item.description, price: item.price, happyHourPrice: item.happyHourPrice });
-      pendingEdits.current.delete(item.id);
-      setStates(current => ({ ...current, [item.id]: "saved" }));
+      const settled = settleSave(item.id, sentRevision);
+      // Only report "saved" when nothing changed while the request was in flight;
+      // otherwise the newer edit is still unsaved and must keep saying so.
+      setStates(current => ({ ...current, [item.id]: settled ? "saved" : "draft" }));
       await onChanged();
     }
     catch { setStates(current => ({ ...current, [item.id]: "failed" })); onError(`${item.name || "Menu item"} could not be saved. Correct the values or retry.`); }
@@ -41,11 +62,12 @@ export default function MenuItemsEditor({ configuration, apiKey, venueId, menuId
   const savePresentation = async (item: MenuItem) => {
     if (savingItems.current.has(item.id)) return;
     savingItems.current.add(item.id);
+    const sentRevision = draftRevisions.current.get(item.id) ?? 0;
     setStates(current => ({ ...current, [item.id]: "saving" }));
     try {
       await updateMenuItemPresentation(configuration, apiKey, venueId, menuId, sectionId, item);
-      pendingEdits.current.delete(item.id);
-      setStates(current => ({ ...current, [item.id]: "saved" }));
+      const settled = settleSave(item.id, sentRevision);
+      setStates(current => ({ ...current, [item.id]: settled ? "saved" : "draft" }));
       await onChanged();
     }
     catch { setStates(current => ({ ...current, [item.id]: "failed" })); onError(`${item.name} presentation could not be saved. Retry the item.`); }

@@ -47,6 +47,14 @@ test("1-1 preview selects a screen without changing it", async ({ page }) => {
   // Preview is a read-only affordance: selecting must not write anything.
   expect(mutations, "preview must not mutate").toHaveLength(0);
   await expect(card).toHaveAttribute("data-authoritative-revision", revisionBefore ?? "");
+
+  // The expanded preview embeds the real display. It must load in observer mode, or
+  // opening it heartbeats the screen and changes authoritative health from what is
+  // supposed to be a read-only action.
+  const previewFrame = card.locator("iframe").last();
+  await expect(previewFrame).toHaveAttribute("src", /preview=observer/);
+  await expect(card, "an unconnected screen must not be reported Online by previewing it")
+    .not.toHaveAttribute("data-status", "online");
 });
 
 test("1-4 reset connection requires deliberate confirmation", async ({ page }) => {

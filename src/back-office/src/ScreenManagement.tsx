@@ -362,7 +362,11 @@ export default function ScreenManagement({
           <button type="button" onClick={() => setPreviewScreenId("")}>Close preview</button>
           <iframe
             key={`${screen.id}-${screen.displayLayout}-${screen.splitRatio}-${screen.heroDwellSeconds}-${previewRevision}`}
-            src={`${configuration.displayBaseUrl}/display/${screen.id}`}
+            // Observer mode, exactly as the fleet thumbnail. An administrative preview
+            // must never start the player's live services: without this, opening a
+            // preview heartbeats the screen and reports it Online when no player is
+            // connected, changing authoritative health from a read-only action.
+            src={`${configuration.displayBaseUrl}/display/${screen.id}?preview=observer`}
             title={previewTitle(screen)}
           />
         </div> : null}
