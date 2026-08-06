@@ -147,6 +147,36 @@ Track 1 is not yet closed. The current owner record remains 17 Pass, 1 Needs Adj
 
 **Required change:** All future handoffs must state the proof boundary, untested risks and confidence level. Only owner approval plus retrospective closure may use the word complete for a track.
 
+### 10. Front-end design happened during implementation and rework
+
+**Evidence:** Owner testing found that current screens were difficult to understand and use. Alternative mockups were then solicited from other agents to explore clearer screens and workflows after implementation already existed.
+
+**Root cause:** The process treated UI completeness as an implementation checklist but did not include a formal, owner-approved front-end design and workflow phase before customer-facing code began.
+
+**Labor effect:** Workflow, hierarchy, terminology and interaction decisions were repeatedly made during coding, testing and rework. Each design correction forced additional implementation and regression testing.
+
+**Required change:** Customer-facing work must pass a repository-first Front-End Design and Workflow Gate before implementation. The gate requires workflow documentation, screen/state coverage, responsive and accessible behavior, a reviewable HTML/CSS prototype or mockup, and explicit owner approval. Approved artifacts under `docs/design/approved/` become implementation authority; Figma is optional and not required.
+
+### 11. Architectural focus did not provide functional focus
+
+**Evidence:** Track 1 had a coherent capability and authority theme, yet implementation and testing moved repeatedly among menus, Home, screens, navigation, permissions, mobile behavior and other areas.
+
+**Root cause:** The track was sliced by shared architecture rather than by complete customer-facing functions. A broad foundation legitimately affected many surfaces, but no rule required one functional area to reach a near-complete state before attention moved elsewhere.
+
+**Labor effect:** Context switching expanded acceptance scope, made progress harder to judge and caused the owner to test scattered pieces rather than complete workflows.
+
+**Required change:** Future implementation tracks must be organized as bounded functional vertical slices. Each slice completes its workflow, affected screens, navigation, authority, states, responsive/accessibility behavior, focused automation, internal usability review and owner checkpoint before the next functional area begins. Broad foundation work may support several slices but may not define the acceptance boundary.
+
+### 12. Release sequencing and tier promises were not reconciled
+
+**Evidence:** Track 1 established typed entitlement and starting-tier foundations, but there is not yet an approved statement of which complete capabilities belong in V1, V1.1, V2 or later, nor how those release commitments align with tiers, add-ons, rollout controls and product states.
+
+**Root cause:** Release planning and commercial packaging were treated as related architecture inputs rather than as one explicit product decision matrix.
+
+**Labor effect:** Without alignment, teams can implement scattered feature fragments, expose future capability inconsistently, or create a tier promise that the target release cannot deliver as a coherent experience.
+
+**Required change:** Before detailed planning of the next implementation track is complete, approve a living Release–Capability–Tier Matrix. Releases answer when a capability is ready; tiers and add-ons answer who receives it; rollout controls answer who receives it during deployment; product state answers how it appears now. A release must contain complete valuable workflows across the applicable tiers rather than equating a version with a tier.
+
 ## Labor drivers
 
 The repository does not provide reliable person-hour totals, so this report does not invent them. The avoidable labor is evidenced by:
@@ -165,7 +195,10 @@ Track 2 should record cycle counts and effort at each gate so the next retrospec
 
 | Improvement | Adoption point | Owner | Verification |
 |---|---|---|---|
+| Approve the Release–Capability–Tier Matrix and coherent V1 boundary | Before detailed planning completes | Product owner + planner | Every capability has a release, tier/add-on treatment, launch state and workflow dependency |
 | Define owner-visible outcomes, examples and rejection criteria | Before detailed planning completes | Product owner + planner | Owner approval recorded in Track 2 plan |
+| Approve repository-first workflow, screen/state coverage and prototype | Before implementation | Product owner + product/UX reviewer | Approved artifacts exist under `docs/design/approved/` and are linked by the RWP |
+| Bound the track into one or more sequential functional vertical slices | Before implementation | Planner | Each slice has a near-complete definition and a focused acceptance boundary |
 | Map every RWP to happy, denial, recovery, mobile and keyboard journeys | Before implementation | RWP author | Completeness matrix contains executable cases and links |
 | Scaffold deterministic acceptance tests with the RWP | Before implementation | Implementer | Tests exist or are explicitly marked pending against approved behavior |
 | Add focused tests at the owning layer for every behavior/fix | Before RWP completion | Implementer | Review maps each behavior to unit/contract/E2E ownership |
@@ -194,20 +227,21 @@ The 1 Needs Adjustment and 2 Fail owner results must also be individually linked
 
 ## Recommended Track 2 process
 
-1. Agree on the intended customer outcome and explicit non-goals.
-2. Approve representative owner-visible examples and rejection criteria.
-3. Build the completeness and journey matrix.
-4. Assign each requirement to its narrowest test layer.
-5. Scaffold deterministic journey tests and safe fixtures.
-6. Implement sequentially.
-7. Validate the first customer-visible vertical slice with a short product walkthrough.
-8. Complete focused, contract and end-to-end tests for each RWP.
-9. Run independent review and exact-head Actions.
-10. Perform a combined-track journey and architecture validation.
-11. Conduct an internal product/UX readiness review.
-12. Give the owner a concise, change-focused acceptance package.
-13. Resolve findings and retest only the affected risks plus a stable smoke suite.
-14. Produce the retrospective and obtain explicit closure approval.
+1. Approve the release boundary and Release–Capability–Tier Matrix.
+2. Select the next customer-facing function and define its near-complete boundary.
+3. Agree on the intended customer outcome and explicit non-goals.
+4. Complete the repository-first Front-End Design and Workflow Phase and obtain owner approval.
+5. Build the completeness and executable journey matrix.
+6. Assign each requirement to its narrowest test layer and scaffold deterministic cases.
+7. Implement one functional vertical slice at a time.
+8. Validate the first customer-visible slice with a short product walkthrough.
+9. Complete focused, contract and end-to-end tests for each RWP.
+10. Run independent review and exact-head Actions.
+11. Perform combined-track journey and architecture validation.
+12. Conduct an internal product/UX readiness review.
+13. Give the owner a concise, change-focused acceptance package.
+14. Resolve findings and retest affected risks plus a stable smoke suite.
+15. Produce the retrospective and obtain explicit closure approval.
 
 ## Owner decision
 
