@@ -1,17 +1,10 @@
 {
     "schemaVersion":  1,
-    "updatedUtc":  "2026-08-06T03:14:30Z",
+    "updatedUtc":  "2026-08-06T04:16:26Z",
     "activeAssignments":  [
 
                           ],
-    "desktopSessionLock":  {
-                               "owner":  "Codex for JeremyPC",
-                               "scope":  "Track 1 acceptance QA automation and shared owner acceptance workbook",
-                               "branch":  "collab/desktop/track1-qa-automation",
-                               "startedUtc":  "2026-08-05T23:31:46Z",
-                               "sequentialSchedulesPaused":  true,
-                               "lastCheckpointUtc":  "2026-08-06T03:14:30Z"
-                           },
+    "desktopSessionLock":  null,
     "nextAvailableWorkPackage":  null,
     "approvedSequentialQueue":  [
 
@@ -27,5 +20,14 @@
                                          "MobileCollaborative":  "Existing GitHub-first interactive orchestration with one remotely visible claim and bounded lanes.",
                                          "DesktopCollaborative":  "Visual Studio or VS Code local-first session with sequential work paused, one visible session lock, and checkpoint publishing."
                                      }
-              }
+              },
+    "lastDesktopSession":  {
+                               "owner":  "Codex for JeremyPC",
+                               "scope":  "Track 1 acceptance QA automation and shared owner acceptance workbook",
+                               "branch":  "collab/desktop/track1-qa-automation",
+                               "startedUtc":  "2026-08-05T23:31:46Z",
+                               "releasedUtc":  "2026-08-06T04:16:26Z",
+                               "releasedBy":  "owner direction",
+                               "openPullRequest":  654
+                           }
 }

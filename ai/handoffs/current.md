@@ -5,7 +5,10 @@
 - Track 0 industry and product architecture: complete and closed.
 - Track 1.01 through Track 1.04: implemented, merged, exact-head validated and closed.
 - Track 1.05: complete, merged through PR #650, exact-head validated by Actions run 31049451685 and verified on `master` at `6915ef2b402ce146d8ff01bf7ad767e3cbb1295e`.
+- **Exact next action: ChatGPT reviews PR #654.** The desktop session lock is released and no agent holds Track 1. Do not push to `collab/desktop/track1-qa-automation` until that review records a decision.
 - Track 1 closure: blocked only on owner acceptance after Track 1.05 merges. The acceptance QA gate now passes all 19 cases, so owner judgment is the only remaining step.
+- PR #654 carries the Track 1 acceptance QA automation and nine defect fixes. All 13 required checks are green on `d77dae5` and the branch is mergeable. It has had no independent review: the review recorded in-session was written by the agent that authored the diff and did not read the full change, which is tracked as issue #659.
+- Seven follow-up issues (#656 to #662) are labelled `before-track-2`. None block Track 1 closure.
 - Track 1 acceptance QA is automated in two halves. `tests/ui` (Playwright, 44 tests) asserts the 14 mechanical cases on every commit at no cost and is gated in CI by `.github/workflows/ui-regression.yml`. `scripts/run-track1-qa.ps1` retains only the 5 subjective cases (4-1, 5-0, 6-1, 6-2, 6-3) on hosted agents, at roughly $1.70 a run against $9.40 before the split.
 - Use `scripts/start-ui-test-env.ps1` for Playwright work; it is local-only. `run-track1-qa.ps1` publishes cloudflared tunnels and sets CORS to those public origins, which blocks a browser running on localhost. The two environments cannot be shared, and both bind ports 7138/5174/5175/5176.
 - Test data isolation: `POST /api/test/seed` (Development only) creates a private menu, section, item and optional screen so specs run in parallel without sharing rows. Seeded rows are pruned by `scripts/start-ui-test-env.ps1 -PruneSeed`, which the Playwright global setup runs automatically.
