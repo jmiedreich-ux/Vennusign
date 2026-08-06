@@ -56,6 +56,9 @@ export default function VenueOperations({
         venueId={venueId}
         allLayoutsEnabled={allLayouts}
         pairDecision={decisions.find(decision => decision.capabilityId === "screen.device.pair")}
+        targetDecision={decisions.find(decision => decision.capabilityId === "screen.content.target")}
+        recoverDecision={decisions.find(decision => decision.capabilityId === "screen.delivery.recover")}
+        unpairDecision={decisions.find(decision => decision.capabilityId === "screen.device.unpair")}
         videoWallEnabled={capabilities.includes("screen.wall.coordinate")}
         showUpgradePrompt={false}
       />

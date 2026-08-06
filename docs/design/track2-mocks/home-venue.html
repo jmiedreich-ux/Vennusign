@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home (venue floor) — VennuSign mock</title>
+<link rel="stylesheet" href="bench.css">
+<style>
+  /* ------------------------------------------------ the floor ------------ */
+  .floor {
+    position: relative;
+    height: 500px;
+    border: 6px solid #c3d4e0;           /* the venue's walls */
+    border-radius: 14px;
+    background: linear-gradient(180deg, #f7fbfd, #eef5fa);
+    box-shadow: var(--shadow-panel), inset 0 0 0 1px #fff;
+    overflow: hidden;
+  }
+  .zone { position: absolute; }
+  .zone .zone-name {
+    position: absolute;
+    left: 14px; bottom: 10px;
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: #8aa0b2; text-shadow: 0 1px 0 #fff;
+  }
+  .zone-bar    { left: 0; top: 0; width: 56%; height: 62%; border-right: 2px dashed #d5e2ec; }
+  .zone-dining { right: 0; top: 0; width: 44%; height: 62%; }
+  .zone-patio  { left: 0; bottom: 0; width: 100%; height: 38%;
+                 border-top: 3px dashed #b9cbd9;
+                 background: repeating-linear-gradient(45deg, rgba(135,206,235,0.06) 0 14px, transparent 14px 28px); }
+
+  /* furniture hints — enough to say "this is my room", nothing more */
+  .counter { position: absolute; left: 24px; top: 84px; width: 46%; height: 26px;
+             border-radius: 13px; background: linear-gradient(180deg, #dde9f1, #cfdfeb);
+             box-shadow: 0 2px 4px rgba(15,23,42,0.08), inset 0 1px 0 #fff; }
+  .stool { position: absolute; width: 14px; height: 14px; border-radius: 50%;
+           background: #dbe7f0; box-shadow: inset 0 1px 2px rgba(15,23,42,0.12); }
+  .table { position: absolute; width: 26px; height: 26px; border-radius: 50%;
+           background: #e3edf4; box-shadow: inset 0 1px 2px rgba(15,23,42,0.1), 0 1px 2px rgba(15,23,42,0.06); }
+  .booth { position: absolute; width: 54px; height: 16px; border-radius: 4px;
+           background: #dbe7f0; box-shadow: inset 0 1px 2px rgba(15,23,42,0.12); }
+
+  /* a TV hanging on a wall, showing exactly what it is showing ------------ */
+  .tv-spot { position: absolute; width: 200px; display: grid; gap: 0.4rem; justify-items: center; }
+  .tv-spot .glass { width: 100%; aspect-ratio: 16 / 9; }
+  .tv-spot .board { font-size: 6.5px; inset: 6% 7%; }
+  .tv-tag {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    background: var(--enamel); border: 1px solid var(--hairline);
+    border-radius: 999px; padding: 0.25rem 0.7rem;
+    font-size: 0.76rem; box-shadow: var(--shadow-raise); white-space: nowrap;
+  }
+  .tv-tag b { letter-spacing: 0.02em; }
+  .tv-tag span { color: var(--ink-3); }
+  .tv-spot .status-line { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; }
+  .tv-spot .status-line.ok { color: var(--live-deep); }
+  .tv-spot .status-line.warn { color: var(--warn-deep); }
+
+  .spot-bar    { left: 6%; top: 18px; }
+  .spot-dining { right: 4%; top: 96px; }
+  .spot-patio  { left: 38%; bottom: 22px; }
+
+  /* mount point: where a TV could hang if the plan allowed another -------- */
+  .mount-free {
+    position: absolute; right: 6%; bottom: 26px;
+    width: 130px; aspect-ratio: 16/9;
+    border: 2px dashed #b9cbd9; border-radius: 8px;
+    display: grid; place-items: center;
+    color: #8aa0b2; font-size: 0.66rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; text-align: center;
+  }
+
+  .below { display: grid; grid-template-columns: minmax(320px, 1.2fr) minmax(300px, 1fr); gap: 1rem; margin-top: 1.6rem; align-items: start; }
+
+  @media (max-width: 900px) {
+    /* the floor unfolds into a column of zones on a phone */
+    .floor { height: auto; display: grid; gap: 0; border-width: 4px; }
+    .zone { position: static; width: auto; height: auto; padding: 1rem 1rem 2.2rem; position: relative; }
+    .zone-bar { border-right: 0; border-bottom: 2px dashed #d5e2ec; }
+    .zone-dining { border-bottom: 3px dashed #b9cbd9; }
+    .counter, .stool, .table, .booth { display: none; }
+    .tv-spot { position: static; width: min(340px, 100%); margin: 0 auto; }
+    .mount-free { position: static; margin: 0.8rem auto 0; }
+    .below { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<!--
+THESIS: Home is the venue itself — every TV drawn where it hangs, showing what it is
+showing, so state is a place you glance at rather than a dashboard you decode.
+OWN-WORLD: the binding sky identity; walls, zones and furniture hints in pale sky
+tints, TVs as dark glass only, enamel tags and lamps carried over from the bench.
+STORY: the owner recognises their own room, reads each wall's TV at a glance, and the
+things needing them sit directly beneath the floor.
+FIRST VIEWPORT: masthead, then the floor plan with three TVs in place and one free
+mount shown dashed; needs-you and the day's next event directly below.
+FORM: venue floor map — round-1 assigned direction, rebuilt at the owner's request
+after seeing the built alternative; seed key b1c6ccfe.
+FINISH: example mock for direction comparison; reviewed by the owner directly.
+-->
+<div class="bench">
+
+  <aside class="rail">
+    <div class="wordmark">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+        <rect x="1.5" y="4" width="23" height="14" rx="2.5" stroke="#2c7da0" stroke-width="1.5"/>
+        <path d="M8 21.5h10" stroke="#2c7da0" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M7 9.5l3.2 4.5L13 9.5" stroke="#87ceeb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="18.5" cy="12" r="1.6" fill="#87ceeb"/>
+      </svg>
+      <div><strong>VENNUSIGN</strong><small>Harbor Acceptance Venue</small></div>
+    </div>
+    <nav aria-label="Back Office destinations">
+      <a class="dest" href="home-venue.html" aria-current="page">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke-width="1.5"><path d="M2 7.5 7.5 2.5 13 7.5v5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg>
+        Home</a>
+      <a class="dest" href="menu.html">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke-width="1.5"><path d="M2.5 3h10M2.5 7.5h10M2.5 12h6" stroke-linecap="round"/></svg>
+        Menu</a>
+      <a class="dest" href="screens.html">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke-width="1.5"><rect x="1.5" y="2.5" width="12" height="8" rx="1"/><path d="M5 12.5h5" stroke-linecap="round"/></svg>
+        Screens</a>
+      <a class="dest" href="#schedules">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke-width="1.5"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M7.5 4.5v3l2 1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Schedules</a>
+      <a class="dest" href="#themes">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke-width="1.5"><path d="M7.5 1.8a5.7 5.7 0 1 0 0 11.4c1 0 1.3-.7.8-1.3-.6-.8-.2-1.9.9-1.9h1.4c1.4 0 2.6-1.2 2.6-2.5 0-3.2-2.9-5.7-5.7-5.7z"/><circle cx="5" cy="6" r="0.9" fill="currentColor" stroke="none"/><circle cx="8.6" cy="4.6" r="0.9" fill="currentColor" stroke="none"/></svg>
+        Themes</a>
+      <span class="dest-blank" role="note" aria-label="POS sync is not fitted on this plan. Available on Pro.">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="#8fa5b5" stroke-width="1.5"><path d="M2.5 5.5h10v6a1 1 0 0 1-1 1h-8a1 1 0 0 1-1-1zM5 5.5v-2a2.5 2.5 0 0 1 5 0v2"/></svg>
+        POS sync
+        <small>Not fitted · Pro</small>
+      </span>
+      <a class="dest" href="#billing">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke-width="1.5"><rect x="1.5" y="3.5" width="12" height="8.5" rx="1"/><path d="M1.5 6.5h12" /></svg>
+        Billing</a>
+      <a class="dest" href="#security">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke-width="1.5"><path d="M7.5 1.8 12.5 4v3.5c0 3-2.1 5-5 6-2.9-1-5-3-5-6V4z" stroke-linejoin="round"/></svg>
+        Security</a>
+    </nav>
+    <div class="rail-foot">
+      <div class="key-plate">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="3.5" stroke="#2c7da0" stroke-width="1.5"/><path d="M9 9l5.5 5.5M12.5 12.5l1.5-1.5M14 14l1.5-1.5" stroke="#2c7da0" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <div><b>Alex Harbor</b><span>Owner key</span></div>
+        <a href="#switch">Switch</a>
+      </div>
+    </div>
+  </aside>
+
+  <main class="deck">
+    <header class="masthead">
+      <h1>Today at the venue</h1>
+      <span class="venue">Harbor Acceptance Venue · Bar</span>
+      <span class="clock">Wednesday 2:26 PM</span>
+    </header>
+
+    <section aria-labelledby="floor-label">
+      <h2 class="bench-label" id="floor-label">Your floor</h2>
+      <div class="floor">
+
+        <div class="zone zone-bar">
+          <div class="counter"></div>
+          <span class="stool" style="left:40px;  top:122px;"></span>
+          <span class="stool" style="left:84px;  top:122px;"></span>
+          <span class="stool" style="left:128px; top:122px;"></span>
+          <span class="stool" style="left:172px; top:122px;"></span>
+          <span class="zone-name">Bar</span>
+        </div>
+
+        <div class="zone zone-dining">
+          <span class="booth" style="right:18px; top:34px;"></span>
+          <span class="booth" style="right:18px; top:60px;"></span>
+          <span class="table" style="left:36px; top:120px;"></span>
+          <span class="table" style="left:96px; top:150px;"></span>
+          <span class="table" style="left:48px; top:196px;"></span>
+          <span class="zone-name">Dining</span>
+        </div>
+
+        <div class="zone zone-patio">
+          <span class="table" style="left:60px;  top:56px;"></span>
+          <span class="table" style="left:130px; top:96px;"></span>
+          <span class="table" style="left:210px; top:52px;"></span>
+          <span class="zone-name">Patio</span>
+        </div>
+
+        <div class="tv-spot spot-bar">
+          <div class="glass">
+            <div class="board">
+              <h4>DRAFT &amp; BOTTLES</h4>
+              <div class="li"><i>Harbor Lemonade</i><span class="dots"></span><i>4.50</i></div>
+              <div class="li"><i>Sea Salt Margarita</i><span class="dots"></span><i>9.00</i></div>
+              <div class="li"><i>Dockside Old Fashioned</i><span class="dots"></span><i>11.00</i></div>
+              <span class="tag">HAPPY HOUR 4–6</span>
+            </div>
+          </div>
+          <span class="tv-tag"><span class="lamp live" aria-hidden="true"></span><b>Bar</b><span>North wall</span></span>
+          <span class="status-line ok">Showing the latest menu</span>
+        </div>
+
+        <div class="tv-spot spot-dining">
+          <div class="glass">
+            <div class="dark-note"><b>NO SIGNAL</b><span>Last seen 1:58 PM</span></div>
+          </div>
+          <span class="tv-tag"><span class="lamp warn pulse" aria-hidden="true"></span><b>Dining</b><span>Booth wall</span></span>
+          <span class="status-line warn">Offline 28 min · catches up on reconnect</span>
+        </div>
+
+        <div class="tv-spot spot-patio">
+          <div class="glass">
+            <div class="board">
+              <h4>KITCHEN</h4>
+              <div class="li"><i>Harbor Fish &amp; Chips</i><span class="dots"></span><i>14.00</i></div>
+              <div class="li"><i>Dockside Wings</i><span class="dots"></span><i>12.00</i></div>
+              <div class="li"><i>Lighthouse Burger</i><span class="dots"></span><i>13.50</i></div>
+            </div>
+          </div>
+          <span class="tv-tag"><span class="lamp live" aria-hidden="true"></span><b>Patio</b><span>Service window</span></span>
+          <span class="status-line ok">Showing the latest menu</span>
+        </div>
+
+        <div class="mount-free">Free wall<br>plan allows 1 more TV</div>
+
+      </div>
+    </section>
+
+    <div class="below">
+      <section aria-labelledby="needs-label">
+        <h2 class="bench-label" id="needs-label">Needs you</h2>
+        <div class="annunciator" style="grid-template-columns: 1fr;">
+          <article class="alarm">
+            <span class="lamp warn pulse" aria-hidden="true"></span>
+            <div>
+              <b>The Dining TV lost its connection at 1:58 PM</b>
+              <p>Check its power and network. When it reconnects it catches up to the latest menu by itself.</p>
+              <a href="screens.html">Go to the Dining TV</a>
+            </div>
+          </article>
+          <article class="alarm">
+            <span class="lamp warn" aria-hidden="true"></span>
+            <div>
+              <b>2 menu changes are not on your TVs</b>
+              <p>Harbor Lemonade's new price and the Dockside Wings 86 are saved but not sent.</p>
+              <a href="menu.html">Review and send</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="today-label">
+        <h2 class="bench-label" id="today-label">Coming up</h2>
+        <div class="panel" style="padding: 1rem 1.2rem; display: grid; gap: 0.7rem;">
+          <div style="display:flex; gap:0.6rem; align-items:baseline;">
+            <b style="font-variant-numeric: tabular-nums;">4:00 PM</b>
+            <div>
+              <b>Happy hour</b>
+              <p style="font-size:0.8rem; color:var(--ink-2);">Automatic pricing is off for maintenance today; your menus stay as they are. Try again after 4:00 PM.</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:0.6rem; align-items:baseline;">
+            <b style="font-variant-numeric: tabular-nums;">Fri</b>
+            <div>
+              <b>Waterfront Weekend promotion starts</b>
+              <p style="font-size:0.8rem; color:var(--ink-2);">Scheduled on all TVs, Friday 11:00 AM.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <p class="bench-note">Design mock — not wired. The room layout, two of the three TVs and the promotion are demonstration data; Harbor Lemonade 4.50 is the acceptance fixture item.</p>
+  </main>
+</div>
+</body>
+</html>

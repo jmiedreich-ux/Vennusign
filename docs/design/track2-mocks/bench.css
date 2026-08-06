@@ -1,0 +1,756 @@
+/* ============================================================================
+   THE INSTRUMENT BENCH — shared world for the Track 2 Back Office mocks.
+   Sky identity (binding): pale sky ground, white enamel panels, slate ink,
+   sky-blue #87ceeb as the lit accent. Instrument grammar (chosen world):
+   quantities as physical instruments, dark confined inside display glass,
+   engraved plate labels, lamps, guarded switches, visible state changes.
+   ========================================================================== */
+
+/* Self-hosted world face: Saira SemiCondensed (OFL), an engineered condensed
+   sans in the DIN instrument tradition. Same face carries labels and digits,
+   so the ghost "8" shares the lit numeral's skeleton.                       */
+@font-face {
+  font-family: "Saira SemiCondensed";
+  src: url("saira-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Saira SemiCondensed";
+  src: url("saira-700.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --ground: #eef5fa;
+  --enamel: #ffffff;
+  --enamel-low: #f6fafd;
+  --hairline: #d5e2ec;
+  --hairline-strong: #b9cbd9;
+  --ink: #0f172a;
+  --ink-2: #43546a;
+  --ink-3: #64748b;
+  --engrave: #5b6b7a;
+  --sky: #87ceeb;
+  --sky-deep: #2c7da0;
+  --sky-glow: rgba(135, 206, 235, 0.55);
+  --glass-hi: #16222f;
+  --glass-lo: #0a121c;
+  --digit-lit: #a8ddf4;
+  --digit-ghost: #24384a;
+  --live: #178a52;
+  --live-deep: #18603f;
+  --live-surface: #e0f4e9;
+  --off: #b03a33;
+  --off-deep: #8f2c26;
+  --off-surface: #fbe7e5;
+  --warn: #c9871a;
+  --warn-deep: #8a5a00;
+  --warn-surface: #fdf1dc;
+  --radius: 10px;
+  --shadow-panel: 0 1px 2px rgba(15, 23, 42, 0.05), 0 6px 18px rgba(15, 23, 42, 0.07);
+  --shadow-raise: 0 1px 1px rgba(15, 23, 42, 0.08), 0 3px 8px rgba(15, 23, 42, 0.1);
+  --font-bench: "Saira SemiCondensed", "Bahnschrift", "Segoe UI", system-ui, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scrollbar-color: var(--hairline-strong) var(--ground); }
+
+body {
+  font-family: var(--font-bench);
+  background:
+    radial-gradient(1200px 500px at 70% -10%, rgba(135, 206, 235, 0.14), transparent 60%),
+    var(--ground);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.55;
+  min-height: 100vh;
+  caret-color: var(--sky-deep);
+}
+
+::selection { background: var(--sky); color: var(--ink); }
+
+:focus-visible { outline: 2px solid var(--sky-deep); outline-offset: 2px; border-radius: 4px; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--ground); }
+::-webkit-scrollbar-thumb { background: var(--hairline-strong); border-radius: 5px; border: 2px solid var(--ground); }
+
+a { color: var(--sky-deep); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--ink); }
+
+button { font: inherit; cursor: pointer; }
+
+/* ---------------------------------------------------------------- shell -- */
+
+.bench {
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+/* Navigation rail: one tall enamel plate, destinations engraved into it.   */
+.rail {
+  background: linear-gradient(180deg, var(--enamel) 0%, var(--enamel-low) 100%);
+  border-right: 1px solid var(--hairline);
+  padding: 1.4rem 0.9rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.wordmark {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.65rem 1.1rem;
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: 0.9rem;
+}
+
+.wordmark svg { flex: none; }
+
+.wordmark strong {
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--ink);
+}
+
+.wordmark small {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  font-weight: 400;
+}
+
+.rail nav { display: grid; gap: 2px; }
+
+.rail a.dest {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.52rem 0.65rem;
+  border-radius: 7px;
+  color: var(--ink-2);
+  text-decoration: none;
+  font-size: 0.86rem;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+}
+
+.rail a.dest svg { stroke: currentColor; flex: none; opacity: 0.75; }
+
+.rail a.dest:hover { background: rgba(135, 206, 235, 0.14); color: var(--ink); }
+
+.rail a.dest[aria-current="page"] {
+  background: linear-gradient(180deg, rgba(135, 206, 235, 0.28), rgba(135, 206, 235, 0.16));
+  border-color: rgba(44, 125, 160, 0.25);
+  color: var(--ink);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+  font-weight: 700;
+}
+
+.rail a.dest[aria-current="page"]::before {
+  content: "";
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--sky-deep);
+  box-shadow: 0 0 6px 1px var(--sky-glow);
+  margin-left: -2px;
+}
+
+/* A destination that is not fitted on this plan: the slot holds a blanking
+   plate instead of a control. Deliberately inert-looking, never an error.  */
+.rail .dest-blank {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 7px;
+  font-size: 0.86rem;
+  color: var(--ink-3);
+  background: repeating-linear-gradient(135deg, #eef3f7 0 6px, #e7edf3 6px 12px);
+  border: 1px dashed var(--hairline-strong);
+}
+
+.rail .dest-blank small {
+  margin-left: auto;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  color: var(--engrave);
+  text-transform: uppercase;
+}
+
+.rail-foot { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--hairline); }
+
+/* The owner's key: the signed-in identity as the inserted key, with the
+   switch action beside it rather than buried in a subtitle.               */
+.key-plate {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--enamel);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  box-shadow: var(--shadow-raise);
+}
+
+.key-plate svg { flex: none; }
+
+.key-plate b { display: block; font-size: 0.8rem; letter-spacing: 0.02em; }
+
+.key-plate span { display: block; font-size: 0.66rem; color: var(--ink-3); letter-spacing: 0.08em; text-transform: uppercase; }
+
+.key-plate a { margin-left: auto; font-size: 0.72rem; }
+
+/* ----------------------------------------------------------------- main -- */
+
+main.deck { padding: 1.6rem 2rem 2.4rem; max-width: 1240px; }
+
+.masthead {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1.4rem;
+}
+
+.masthead h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: 0.01em; }
+
+.masthead .venue { color: var(--ink-3); font-size: 0.9rem; }
+
+.masthead .clock {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+section + section { margin-top: 1.6rem; }
+
+/* Section labels sit a full register above component engravings: heading
+   scale, deeper letterpress, and a machined rule that ends in a screw.     */
+h2.bench-label {
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #46586a;
+  text-shadow: 0 1px 0 #fff, 0 2px 2px rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.85rem;
+}
+
+h2.bench-label::after {
+  content: "";
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.08), rgba(255, 255, 255, 0.9));
+  border-bottom: 1px solid #fff;
+}
+
+/* ---------------------------------------------------------------- panel -- */
+
+.panel {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.51 0 0 0 0 0.58 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23g)'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, var(--enamel) 0%, var(--enamel-low) 100%);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-panel), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+/* Engraved plate: a label that reads as machined into the enamel.          */
+.plate {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: linear-gradient(180deg, #f2f7fa, #e8eff5);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--engrave);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.07);
+}
+
+.plate::before, .plate::after {
+  content: "";
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background:
+    linear-gradient(115deg, transparent 44%, rgba(70, 90, 105, 0.55) 45%, rgba(70, 90, 105, 0.55) 55%, transparent 56%),
+    radial-gradient(circle at 35% 30%, #fdfeff 0 20%, #c3d3df 55%, #8fa5b5 100%);
+  box-shadow: 0 1px 1px rgba(255, 255, 255, 0.9), inset 0 0 1px rgba(15, 23, 42, 0.55);
+}
+
+/* ---------------------------------------------------------------- glass -- */
+
+.glass {
+  position: relative;
+  background: linear-gradient(168deg, var(--glass-hi) 0%, var(--glass-lo) 78%);
+  border-radius: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.55);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.55),
+    inset 0 -1px 0 rgba(135, 206, 235, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.8);
+  overflow: hidden;
+}
+
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 28%, transparent 45%);
+  pointer-events: none;
+}
+
+/* Digit bank: fixed cells; the unlit mechanism shows as a ghost "8" behind
+   the lit numeral, so every reading is visibly a machine, not text.        */
+.bank {
+  display: inline-flex;
+  gap: 0.32rem;
+  padding: 0.5rem 0.6rem;
+}
+
+/* Each digit owns a cell: its own envelope, mesh, and ghost mechanism.
+   The reading is a machine of digits, never glowing text on a rectangle.   */
+.digit {
+  position: relative;
+  min-width: 1.6ch;
+  padding: 0.08em 0.14em;
+  text-align: center;
+  font-size: 1.9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(0deg, rgba(135, 206, 235, 0.05) 0 1px, transparent 1px 3px),
+    linear-gradient(172deg, rgba(135, 206, 235, 0.08), rgba(10, 18, 28, 0.2) 60%);
+  border: 1px solid rgba(135, 206, 235, 0.16);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.55),
+    inset 0 -1px 0 rgba(135, 206, 235, 0.1);
+}
+
+.digit::before {
+  content: "8";
+  position: absolute;
+  inset: 0.08em 0.14em;
+  color: var(--digit-ghost);
+  opacity: 0.55;
+}
+
+.digit span {
+  position: relative;
+  color: var(--digit-lit);
+  text-shadow: 0 0 5px var(--sky-glow), 0 0 16px rgba(135, 206, 235, 0.35);
+}
+
+.digit.dim span { color: #4a6377; text-shadow: none; }
+
+.digit.dim { border-color: rgba(135, 206, 235, 0.08); }
+
+.bank .sep {
+  align-self: center;
+  color: #3d5468;
+  font-size: 1.4rem;
+  font-weight: 700;
+  padding: 0 0.05rem;
+}
+
+.bank-sm .digit { font-size: 1.15rem; width: 1.5ch; }
+.bank-sm { padding: 0.3rem 0.45rem; gap: 0.2rem; }
+
+/* ---------------------------------------------------------------- lamps -- */
+
+.lamp {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  flex: none;
+  border: 1px solid rgba(15, 23, 42, 0.25);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  background: radial-gradient(circle at 35% 30%, #fbfdfe, #cfdce6 70%);
+}
+
+.lamp.live {
+  background: radial-gradient(circle at 35% 30%, #b8f0d2, var(--live) 75%);
+  box-shadow: 0 0 8px 1px rgba(23, 138, 82, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+.lamp.off {
+  background: radial-gradient(circle at 35% 30%, #f6c4bf, var(--off) 75%);
+  box-shadow: 0 0 8px 1px rgba(176, 58, 51, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+.lamp.warn {
+  background: radial-gradient(circle at 35% 30%, #ffe2ae, var(--warn) 75%);
+  box-shadow: 0 0 8px 1px rgba(201, 135, 26, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+/* The one authored motion on the bench: an annunciator lamp breathing.     */
+@keyframes annunciate {
+  0%, 100% { box-shadow: 0 0 4px 0 rgba(201, 135, 26, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.6); }
+  50% { box-shadow: 0 0 12px 3px rgba(201, 135, 26, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.6); }
+}
+
+.lamp.pulse { animation: annunciate 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+
+@media (prefers-reduced-motion: reduce) { .lamp.pulse { animation: none; } }
+
+.readout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.readout.live { color: var(--live-deep); }
+.readout.off { color: var(--off-deep); }
+.readout.warn { color: var(--warn-deep); }
+.readout.idle { color: var(--ink-3); }
+
+/* -------------------------------------------------------------- buttons -- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: 8px;
+  border: 1px solid var(--hairline-strong);
+  background: linear-gradient(180deg, #ffffff, #eef4f8);
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  box-shadow: var(--shadow-raise);
+}
+
+.btn:hover { background: linear-gradient(180deg, #ffffff, #e3eef5); }
+
+.btn:active { box-shadow: inset 0 2px 4px rgba(15, 23, 42, 0.12); transform: translateY(1px); }
+
+.btn.primary {
+  background: linear-gradient(180deg, #a3dcf3, var(--sky));
+  border-color: #5fb3d4;
+  color: var(--ink);
+}
+
+.btn.primary:hover { background: linear-gradient(180deg, #b4e3f6, #93d4ee); }
+
+.btn:disabled {
+  cursor: not-allowed;
+  color: var(--ink-3);
+  background: #eef2f6;
+  border-color: var(--hairline);
+  box-shadow: none;
+  opacity: 0.85;
+}
+
+.btn svg { stroke: currentColor; flex: none; }
+
+/* Destructive controls live behind a guard: the striped cover IS the
+   confirmation step, so danger is visible before it is reachable.          */
+.guarded { position: relative; display: inline-flex; }
+
+.guarded .btn { border-color: #d9a5a1; color: var(--off-deep); }
+
+.guard-cover {
+  position: absolute;
+  inset: -3px;
+  border-radius: 10px;
+  background: repeating-linear-gradient(135deg, rgba(201, 135, 26, 0.16) 0 8px, rgba(201, 135, 26, 0.05) 8px 16px);
+  border: 1px solid rgba(201, 135, 26, 0.5);
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------- annunciator - */
+
+.annunciator {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+
+.alarm {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(201, 135, 26, 0.45);
+  background: linear-gradient(180deg, #fffdf7, var(--warn-surface));
+  box-shadow: var(--shadow-panel);
+}
+
+.alarm .lamp { margin-top: 0.2rem; }
+
+.alarm b { display: block; font-size: 0.88rem; letter-spacing: 0.02em; }
+
+.alarm p { font-size: 0.8rem; color: var(--ink-2); margin: 0.15rem 0 0.45rem; }
+
+.alarm a { font-size: 0.8rem; font-weight: 700; }
+
+.alarm.clear {
+  border-color: rgba(23, 138, 82, 0.35);
+  background: linear-gradient(180deg, #fbfffd, var(--live-surface));
+}
+
+/* ------------------------------------------------------------- register -- */
+
+.register { padding: 1rem 1.25rem 1.15rem; }
+
+.register ol {
+  list-style: none;
+  position: relative;
+  border-left: 1px solid var(--hairline-strong);
+  margin-left: 0.4rem;
+}
+
+.register li {
+  position: relative;
+  padding: 0.32rem 0 0.32rem 1.15rem;
+  display: flex;
+  gap: 0.9rem;
+  align-items: baseline;
+  font-size: 0.84rem;
+}
+
+.register li::before {
+  content: "";
+  position: absolute;
+  left: -3.5px;
+  top: 0.85em;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--sky-deep);
+  box-shadow: 0 0 5px var(--sky-glow);
+}
+
+.register li.quiet::before { background: var(--hairline-strong); box-shadow: none; }
+
+.register time {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+  font-size: 0.76rem;
+  letter-spacing: 0.05em;
+  flex: none;
+  width: 4.4rem;
+}
+
+.register .who { color: var(--ink-3); font-size: 0.76rem; margin-left: auto; }
+
+/* -------------------------------------------------------- tv instrument -- */
+
+.tv-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.tv {
+  padding: 0.9rem 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.tv .glass { aspect-ratio: 16 / 9; }
+
+.tv-id { display: flex; align-items: center; gap: 0.6rem; }
+
+.tv-id .lamp { margin-left: auto; }
+
+.tv-id b { font-size: 0.95rem; letter-spacing: 0.01em; }
+
+.tv-id span { color: var(--ink-3); font-size: 0.78rem; }
+
+.tv-meta { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+
+/* Paired revision counters: agreement between AUTH and APPLIED is the only
+   thing this product ever calls "applied", so the pairing is structural.   */
+.rev-pair { display: flex; align-items: center; gap: 0.55rem; }
+
+.rev-pair .glass { display: flex; align-items: center; }
+
+.rev-pair .rev-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--engrave);
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 0.3rem;
+}
+
+.rev-agree { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; }
+
+.rev-agree.match { color: var(--live-deep); }
+
+.rev-agree.behind { color: var(--warn-deep); }
+
+/* Mini menu board rendered inside a TV's glass. Authored content, tiny.    */
+.board {
+  position: absolute;
+  inset: 7% 8%;
+  color: #d9ecf6;
+  font-size: clamp(6px, 1.05vw, 10px);
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+}
+
+.board h4 {
+  font-size: 1.35em;
+  letter-spacing: 0.3em;
+  font-weight: 700;
+  color: var(--digit-lit);
+  text-shadow: 0 0 6px var(--sky-glow);
+  border-bottom: 1px solid rgba(135, 206, 235, 0.35);
+  padding-bottom: 0.35em;
+  margin-bottom: 0.5em;
+}
+
+.board .li { display: flex; justify-content: space-between; gap: 1em; }
+
+.board .li i { font-style: normal; color: #9db8c8; }
+
+.board .li .dots { flex: 1; border-bottom: 1px dotted rgba(157, 184, 200, 0.4); margin-bottom: 0.3em; }
+
+.board .tag {
+  margin-top: auto;
+  align-self: flex-start;
+  font-size: 0.85em;
+  letter-spacing: 0.2em;
+  color: var(--warn);
+  border: 1px solid rgba(201, 135, 26, 0.6);
+  padding: 0.15em 0.6em;
+  border-radius: 3px;
+}
+
+.glass .dark-note {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  color: #7d95a7;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+}
+
+.glass .dark-note b { color: #b7cbd9; letter-spacing: 0.18em; font-size: 0.72rem; }
+
+/* --------------------------------------------------------------- ticket -- */
+
+.ticket { display: flex; flex-direction: column; }
+
+.ticket-head {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px dashed var(--hairline-strong);
+}
+
+.ticket-head .glass { margin-left: auto; }
+
+.ticket ul { list-style: none; padding: 0.4rem 0; }
+
+.ticket li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.86rem;
+  border-bottom: 1px solid var(--enamel-low);
+}
+
+.ticket li .delta { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--ink-2); white-space: nowrap; }
+
+.ticket li .delta b { color: var(--ink); }
+
+.ticket li .delta svg { vertical-align: -2px; margin: 0 2px; stroke: var(--sky-deep); }
+
+.ticket-foot { padding: 0.9rem 1.1rem 1.1rem; border-top: 1px dashed var(--hairline-strong); display: grid; gap: 0.8rem; }
+
+.ticket-foot .btn { justify-content: center; }
+
+.confirm-lamps { display: grid; gap: 0.45rem; }
+
+.confirm-lamps .readout { font-weight: 400; font-size: 0.8rem; }
+
+.confirm-lamps .readout b { font-weight: 700; margin-right: 0.2rem; }
+
+/* ----------------------------------------------------------------- misc -- */
+
+.bench-note {
+  margin-top: 2rem;
+  font-size: 0.72rem;
+  color: var(--ink-3);
+  letter-spacing: 0.05em;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.bench-note::before { content: ""; width: 24px; height: 1px; background: var(--hairline-strong); }
+
+/* ----------------------------------------------------------- responsive -- */
+
+@media (max-width: 900px) {
+  .bench { grid-template-columns: 1fr; }
+
+  .rail {
+    flex-direction: row;
+    align-items: center;
+    border-right: 0;
+    border-bottom: 1px solid var(--hairline);
+    padding: 0.6rem 0.9rem;
+    gap: 0.4rem;
+    overflow-x: auto;
+  }
+
+  .wordmark { border-bottom: 0; margin-bottom: 0; padding: 0 0.6rem 0 0; border-right: 1px solid var(--hairline); }
+
+  .wordmark small { display: none; }
+
+  .rail nav { display: flex; gap: 2px; }
+
+  .rail a.dest { padding: 0.4rem 0.55rem; white-space: nowrap; }
+
+  .rail a.dest svg { display: none; }
+
+  .rail .dest-blank { white-space: nowrap; }
+
+  .rail .dest-blank small { display: none; }
+
+  .rail-foot { margin: 0 0 0 auto; padding: 0; border-top: 0; }
+
+  .key-plate span { display: none; }
+
+  main.deck { padding: 1.1rem 1rem 2rem; }
+
+  .masthead { flex-wrap: wrap; row-gap: 0.2rem; }
+
+  .masthead .clock { flex-basis: 100%; margin-left: 0; }
+}

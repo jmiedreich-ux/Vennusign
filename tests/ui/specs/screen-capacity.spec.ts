@@ -18,6 +18,18 @@ test("3-0 an exhausted screen allowance is explained and blocks pairing up front
   // The refusal must state the numbers, not just that something went wrong.
   await expect(quota).toContainText(/\d+ of \d+ active screens/);
 
+  // And the numbers have to describe the fleet rendered beside them. Asserting only the
+  // shape let the banner disagree with the page: owner acceptance recorded a Fail here
+  // because a differently-worded banner satisfied the old assertion. The server counts
+  // non-archived screens for this allowance, so used must equal the visible active count.
+  await expect
+    .poll(async () => {
+      const banner = (await quota.innerText()).match(/(\d+) of (\d+) active screens/);
+      const active = await page.getByTestId("screen-fleet-count").getAttribute("data-active-count");
+      return banner && active ? `${banner[1]}/${active}` : "unreadable";
+    }, { timeout: 10_000 })
+    .toMatch(/^(\d+)\/\1$/);
+
   // The control is disabled before submission, and describes itself for assistive tech.
   const pair = page.getByTestId("pair-screen");
   await expect(pair).toBeDisabled();

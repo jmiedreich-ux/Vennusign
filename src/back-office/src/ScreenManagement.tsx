@@ -38,6 +38,9 @@ type Props = {
   venueId: string;
   allLayoutsEnabled: boolean;
   pairDecision?: BackOfficeCapabilityDecision;
+  targetDecision?: BackOfficeCapabilityDecision;
+  recoverDecision?: BackOfficeCapabilityDecision;
+  unpairDecision?: BackOfficeCapabilityDecision;
   videoWallEnabled: boolean;
   showUpgradePrompt?: boolean;
 };
@@ -56,6 +59,9 @@ export default function ScreenManagement({
   venueId,
   allLayoutsEnabled,
   pairDecision,
+  targetDecision,
+  recoverDecision,
+  unpairDecision,
   videoWallEnabled,
   showUpgradePrompt = true
 }: Props) {
@@ -268,16 +274,33 @@ export default function ScreenManagement({
       ? pairDecision.message
       : undefined;
   const selectedScreen = activeScreens.find(screen => screen.id === selectedScreenId);
+  // Per-screen authority is separate from the pairing allowance: a role can be allowed to
+  // see the fleet and still be refused targeting, recovery or unpairing. The server is the
+  // authority and refuses these itself; disabling here is what stops the owner discovering
+  // the refusal only after selecting an action. An absent decision leaves the action alone.
+  const targetingAllowed = targetDecision?.isAllowed ?? true;
+  const recoveryAllowed = recoverDecision?.isAllowed ?? true;
+  const unpairingAllowed = unpairDecision?.isAllowed ?? true;
+  const restrictions = [
+    targetingAllowed ? undefined : { action: "Push", message: targetDecision?.message },
+    recoveryAllowed ? undefined : { action: "Reset connection", message: recoverDecision?.message },
+    unpairingAllowed ? undefined : { action: "Unpair screen", message: unpairDecision?.message }
+  ].filter(entry => entry !== undefined);
+  const restrictionDescription = restrictions.length ? "screen-action-restrictions" : undefined;
 
   return <article className="screen-management">
     {reviewDialog}
     <div className="screen-management-heading">
-      <div><p>Display fleet</p><h3>Screens ({activeScreens.length} active · {screens.length - activeScreens.length} archived)</h3></div>
+      <div><p>Display fleet</p><h3 data-testid="screen-fleet-count" data-active-count={activeScreens.length}>Screens ({activeScreens.length} active · {screens.length - activeScreens.length} archived)</h3></div>
       <span>{selectedScreen ? `Target: ${selectedScreen.name}` : "No delivery target selected"}</span>
     </div>
     {error ? <p className="state error" role="alert">{error}</p> : null}
     {notice ? <TransientFeedback message={notice} onDismiss={() => setNotice(undefined)} /> : null}
     {screenUsage ? <p className="screen-notice" id="screen-quota-status" data-testid="screen-quota" data-limit-reached={screenLimitReached} data-reason={pairDecision?.reasonCode}>{screenUsage}</p> : null}
+    {restrictions.length ? <div className="screen-notice" id="screen-action-restrictions" data-testid="screen-action-restrictions" role="status">
+      <strong>Some screen actions are unavailable with your current access</strong>
+      <ul>{restrictions.map(entry => <li key={entry.action}>{entry.action}: {entry.message ?? "Ask an administrator for permission to complete this action."}</li>)}</ul>
+    </div> : null}
     {showUpgradePrompt && !allLayoutsEnabled ? <aside className="tier-prompt" role="status"><div><strong>Bar layouts require All Layouts</strong><p>Neon Chalkboard and Split Layout remain visible in the selector. Daily Special Hero remains visible too. Upgrade to Pro or add a venue override to choose them.</p></div></aside> : null}
     <details className="screen-workflow-section screen-workflow-section--setup" open={setupOpen} onToggle={event => setSetupOpen(event.currentTarget.open)}>
       <summary><span>Setup</span><strong>Add, pair, or replace a player</strong><small>{activeScreens.length ? "Collapsed after your first active screen; expand when hardware changes." : "Start here to connect the first display."}</small></summary>
@@ -349,12 +372,12 @@ export default function ScreenManagement({
         </header>
         <div className="screen-actions action-surface" aria-label={`${screen.name} delivery actions`}>
           <button className="action-secondary" type="button" data-testid="screen-preview" disabled={busyId === screen.id || archived} onClick={() => { setSelectedScreenId(screen.id); setDelivery(undefined); setPreviewScreenId(screen.id); }}>Preview</button>
-          <button className="action-primary" type="button" data-testid="screen-push" disabled={busyId === screen.id || archived} onClick={() => void push(screen)}>Push</button>
+          <button className="action-primary" type="button" data-testid="screen-push" aria-describedby={targetingAllowed ? undefined : restrictionDescription} disabled={busyId === screen.id || archived || !targetingAllowed} onClick={() => void push(screen)}>Push</button>
           <details className="action-overflow" data-testid="screen-more-actions"><summary>More actions</summary><div>
             <a href={screen.registrationUrl} target="_blank" rel="noreferrer">Open registration URL</a>
             {archived
               ? <button className="action-secondary" type="button" data-testid="screen-restore" disabled={busyId === screen.id} onClick={() => setArchived(screen, false)}>Restore screen</button>
-              : <><button className="action-secondary" type="button" data-testid="screen-reset" disabled={busyId === screen.id} onClick={() => reset(screen)}>Reset connection</button><button className="action-danger" type="button" data-testid="screen-archive" disabled={busyId === screen.id} onClick={() => setArchived(screen, true)}>Archive</button><button className="action-danger" type="button" data-testid="screen-unpair" disabled={busyId === screen.id} onClick={() => unpair(screen)}>Unpair screen</button></>}
+              : <><button className="action-secondary" type="button" data-testid="screen-reset" aria-describedby={recoveryAllowed ? undefined : restrictionDescription} disabled={busyId === screen.id || !recoveryAllowed} onClick={() => reset(screen)}>Reset connection</button><button className="action-danger" type="button" data-testid="screen-archive" disabled={busyId === screen.id} onClick={() => setArchived(screen, true)}>Archive</button><button className="action-danger" type="button" data-testid="screen-unpair" aria-describedby={unpairingAllowed ? undefined : restrictionDescription} disabled={busyId === screen.id || !unpairingAllowed} onClick={() => unpair(screen)}>Unpair screen</button></>}
           </div></details>
         </div>
         {screen.id === previewScreenId && !archived ? <div className="split-layout-preview screen-fleet-card__expanded-preview">

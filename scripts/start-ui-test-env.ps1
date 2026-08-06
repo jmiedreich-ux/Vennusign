@@ -131,7 +131,10 @@ for ($index = 0; $index -lt $roles.Count; $index++) {
     Set-Item "env:BackOffice__Sessions__${index}__VenueId" (& $guid '73000000-0000-0000-0000-000000000001')
     Set-Item "env:BackOffice__Sessions__${index}__OrganizationId" (& $guid '72000000-0000-0000-0000-000000000001')
     Set-Item "env:BackOffice__Sessions__${index}__UserId" (& $guid $role.Base)
-    Set-Item "env:BackOffice__Sessions__${index}__DisplayName" "$($role.Name) [$IsolationTag]"
+    # The baseline dataset is what the owner acceptance workbook describes, so its display
+    # name has to read exactly as the workbook says. Only extra isolated datasets are tagged.
+    $displayName = if ($IsolationTag -eq '0000') { $role.Name } else { "$($role.Name) [$IsolationTag]" }
+    Set-Item "env:BackOffice__Sessions__${index}__DisplayName" $displayName
     Set-Item "env:BackOffice__Sessions__${index}__SystemRole" $role.Role
 }
 

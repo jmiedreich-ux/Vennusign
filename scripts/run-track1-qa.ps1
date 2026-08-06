@@ -461,7 +461,9 @@ try {
             Set-Item "env:BackOffice__Sessions__${sessionIndex}__VenueId" $identity.VenueId
             Set-Item "env:BackOffice__Sessions__${sessionIndex}__OrganizationId" $identity.OrganizationId
             Set-Item "env:BackOffice__Sessions__${sessionIndex}__UserId" $role.UserId
-            Set-Item "env:BackOffice__Sessions__${sessionIndex}__DisplayName" "$($role.Name) [$tag]"
+            # Tag 0000 is the baseline dataset the owner acceptance workbook describes; its
+            # display name must match the workbook exactly. Only extra datasets are tagged.
+            Set-Item "env:BackOffice__Sessions__${sessionIndex}__DisplayName" $(if ($tag -eq '0000') { $role.Name } else { "$($role.Name) [$tag]" })
             Set-Item "env:BackOffice__Sessions__${sessionIndex}__SystemRole" $role.Role
             $sessionIndex++
         }
