@@ -67,13 +67,19 @@ a.sign-in.ghost small{color:var(--muted);opacity:1}
       <h2>Start here: prepare the exact acceptance environment</h2>
       <ol>
         <li>Open PowerShell in <code>C:\Development\VennuSign</code>.</li>
-        <li>Start the API, Back Office, and Display using the acceptance launcher:</li>
+        <li>Start the API, Back Office and Display, and load the fixture, with one command:</li>
       </ol>
-      <div class="command"><code>powershell -ExecutionPolicy Bypass -File scripts/start-track1-acceptance.ps1</code><button class="copy" type="button" data-copy="powershell -ExecutionPolicy Bypass -File scripts/start-track1-acceptance.ps1">Copy</button></div>
-      <ol start="3"><li>Wait until the API reports <code>https://localhost:7138</code> and the Back Office is available at <code>https://localhost:5174</code>.</li><li>Open a second PowerShell window in the same repository folder and apply the fixture:</li></ol>
-      <div class="command"><code>sqlcmd -S "(localdb)\MSSQLLocalDB" -d VennuSign -E -b -I -i docs\acceptance\track-1-owner-fixture.sql</code><button class="copy" type="button" data-copy='sqlcmd -S "(localdb)\MSSQLLocalDB" -d VennuSign -E -b -I -i docs\acceptance\track-1-owner-fixture.sql'>Copy</button></div>
-      <p><strong>Important:</strong> capital <code>-I</code> enables <code>QUOTED_IDENTIFIER</code>. If the fixture previously stopped with a MERGE error, rerun this command; the fixture is idempotent.</p>
-      <p>Keep the launcher windows open for the entire review. Use the exact tokens shown in each sign-in case; they are configured-access tokens, not email addresses or passwords.</p>
+      <div class="command"><code>powershell -ExecutionPolicy Bypass -File scripts/start-ui-test-env.ps1</code><button class="copy" type="button" data-copy="powershell -ExecutionPolicy Bypass -File scripts/start-ui-test-env.ps1">Copy</button></div>
+      <ol start="3"><li>Wait for it to print <code>API:</code>, <code>Back Office:</code> and <code>Display:</code> addresses. It applies the deterministic fixture itself, so there is no separate database step.</li></ol>
+      <p>To reset to clean fixture data at any point, stop and start it again; every start reseeds:</p>
+      <div class="command"><code>powershell -ExecutionPolicy Bypass -File scripts/start-ui-test-env.ps1 -Stop</code><button class="copy" type="button" data-copy="powershell -ExecutionPolicy Bypass -File scripts/start-ui-test-env.ps1 -Stop">Copy</button></div>
+      <p>Leave the window open for the entire review. Use the exact tokens shown in each sign-in case; they are configured-access tokens, not email addresses or passwords.</p>
+      <details>
+        <summary>Previous launcher (<code>start-track1-acceptance.ps1</code>)</summary>
+        <p>The earlier launcher opened a window per service and only printed the fixture command for you to run yourself. It also did not allow <code>localhost</code> as a browser origin, so the one-click sign-in below could not work with it. If you use it, apply the fixture manually:</p>
+        <div class="command"><code>sqlcmd -S "(localdb)\MSSQLLocalDB" -d VennuSign -E -b -I -i docs\acceptance\track-1-owner-fixture.sql</code><button class="copy" type="button" data-copy='sqlcmd -S "(localdb)\MSSQLLocalDB" -d VennuSign -E -b -I -i docs\acceptance\track-1-owner-fixture.sql'>Copy</button></div>
+        <p>Capital <code>-I</code> enables <code>QUOTED_IDENTIFIER</code>. The fixture is idempotent, so rerunning it is safe.</p>
+      </details>
 
       <div class="quick-sign-in">
         <h3>Sign in without typing a token</h3>
