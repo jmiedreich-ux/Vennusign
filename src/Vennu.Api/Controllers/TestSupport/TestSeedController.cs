@@ -24,7 +24,11 @@ public sealed class TestSeedController(
 {
     public sealed record SeedRequest
     {
-        /// <summary>Access token whose venue the seeded data belongs to. Defaults to the first enabled session.</summary>
+        /// <summary>
+        /// Access token whose venue the seeded data belongs to. Required: it is the
+        /// credential for this endpoint as well as the venue selector, so seeding is
+        /// not possible without already knowing a configured session token.
+        /// </summary>
         public string? AccessToken { get; init; }
 
         /// <summary>Seed a screen as well as menu content. Screens are only needed by delivery cases.</summary>
@@ -71,12 +75,20 @@ public sealed class TestSeedController(
             return Problem("No enabled Back Office sessions are configured, so there is no venue to seed into.", statusCode: StatusCodes.Status409Conflict);
         }
 
-        var session = string.IsNullOrWhiteSpace(request.AccessToken)
-            ? sessions[0]
-            : sessions.FirstOrDefault(candidate => string.Equals(candidate.AccessToken, request.AccessToken, StringComparison.Ordinal));
+        // Defence in depth behind the Development gate, and it removes an easy mistake:
+        // defaulting to the first session silently seeded a different venue than the
+        // caller expected. An unmatched or absent token is reported identically so the
+        // endpoint does not confirm which tokens exist.
+        if (string.IsNullOrWhiteSpace(request.AccessToken))
+        {
+            return NotFound();
+        }
+
+        var session = sessions.FirstOrDefault(candidate =>
+            string.Equals(candidate.AccessToken, request.AccessToken, StringComparison.Ordinal));
         if (session is null)
         {
-            return Problem($"No enabled Back Office session matches the supplied access token.", statusCode: StatusCodes.Status404NotFound);
+            return NotFound();
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
