@@ -189,9 +189,41 @@ export type TapItem = {
 };
 export type TapListSnapshot = { categories: TapCategory[]; items: TapItem[] };
 
+/** Shape the API returns when a capability check refuses a request (HTTP 403). */
+export type BackOfficeCapabilityDenial = {
+  capabilityId?: string;
+  decision?: "denied" | "unavailable" | "temporarily-blocked" | string;
+  reasonCode?: string;
+  category?: string;
+  message?: string;
+  resolution?: string;
+  retryAfterSeconds?: number;
+  correlationId?: string;
+};
+
 export class BackOfficeApiError extends Error {
-  constructor(public readonly status: number, message: string) {
+  constructor(
+    public readonly status: number,
+    message: string,
+    /** Present when the API refused on capability grounds rather than failing. */
+    public readonly denial?: BackOfficeCapabilityDenial
+  ) {
     super(message);
+  }
+}
+
+/**
+ * A capability refusal carries the reason, the resolution and any retry-after window.
+ * Reading it here is what lets callers separate "temporarily blocked by a rollout" from
+ * "this failed to load", which are very different things to tell a user.
+ */
+async function readCapabilityDenial(response: Response): Promise<BackOfficeCapabilityDenial | undefined> {
+  if (response.status !== 403) return undefined;
+  try {
+    const payload = await response.clone().json() as BackOfficeCapabilityDenial | undefined;
+    return payload?.decision ? payload : undefined;
+  } catch {
+    return undefined;
   }
 }
 
@@ -655,7 +687,10 @@ async function venueOperationRequest(
     }
   );
   if (!response.ok) {
-    throw new BackOfficeApiError(response.status, "Unable to manage this venue operation.");
+    throw new BackOfficeApiError(
+      response.status,
+      "Unable to manage this venue operation.",
+      await readCapabilityDenial(response));
   }
   return response;
 }

@@ -47,6 +47,10 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
 
   useEffect(() => {
     const preview = new URLSearchParams(window.location.search);
+    // A thumbnail is an observer, not a player. Without this, every embedded preview
+    // heartbeats and reports its screen Online, so the Back Office fleet view fakes
+    // player presence for screens that were never connected.
+    const observerOnly = preview.get('preview') === 'observer';
     const previewTheme = preview.get('preview') === 'theme'
       ? {
           backgroundColor: preview.get('background') ?? '#111315',
@@ -74,7 +78,7 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
     setConnectionState('connecting');
 
     const startLiveServices = async () => {
-      if (liveServicesStarted || disposed || previewTheme) {
+      if (liveServicesStarted || disposed || previewTheme || observerOnly) {
         return;
       }
 

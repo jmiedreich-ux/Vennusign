@@ -1,0 +1,137 @@
+name: UI regression
+
+# Playwright gate for the Back Office. Runs on every push touching the UI, the API
+# surfaces it drives, or the suite itself. Hosted Browser Use lanes are deliberately
+# NOT part of this workflow: they cost money per run and are reserved for the handful
+# of subjective cases a deterministic assertion cannot judge.
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'src/back-office/**'
+      - 'src/Vennu.Api/**'
+      - 'src/Vennu.Data/**'
+      - 'src/Vennu.DataAccess/**'
+      - 'src/Vennu.Core.Models/**'
+      - 'tests/ui/**'
+      - '.github/workflows/ui-regression.yml'
+  pull_request:
+    paths:
+      - 'src/back-office/**'
+      - 'src/Vennu.Api/**'
+      - 'src/Vennu.Data/**'
+      - 'src/Vennu.DataAccess/**'
+      - 'src/Vennu.Core.Models/**'
+      - 'tests/ui/**'
+      - '.github/workflows/ui-regression.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ui-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    # windows-latest carries SQL Server LocalDB, which the fixture and seed endpoint need.
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          # Restores the npm download cache across runs; all three lockfiles key it.
+          cache: 'npm'
+          cache-dependency-path: |
+            src/back-office/package-lock.json
+            src/display/package-lock.json
+            tests/ui/package-lock.json
+
+      - name: Install Back Office dependencies
+        working-directory: src/back-office
+        run: npm ci
+
+      - name: Install Display dependencies
+        working-directory: src/display
+        run: npm ci
+
+      - name: Install UI suite dependencies
+        working-directory: tests/ui
+        run: npm ci
+
+      # Chromium is ~130MB and dominates setup time. Keyed on the UI suite lockfile so
+      # it is re-downloaded only when the Playwright version actually changes.
+      - name: Restore cached Chromium
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('tests/ui/package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
+      - name: Install Chromium
+        working-directory: tests/ui
+        # --with-deps still runs on a hit: the cache holds the browser, not OS packages.
+        run: |
+          if ("${{ steps.playwright-cache.outputs.cache-hit }}" -eq "true") {
+            npx playwright install chromium
+          } else {
+            npx playwright install --with-deps chromium
+          }
+        shell: pwsh
+
+      - name: Start LocalDB and create the VennuSign database
+        shell: pwsh
+        run: |
+          # The runner ships LocalDB but leaves the instance stopped, so a bare
+          # sqlcmd fails with "delay in opening server connection".
+          & sqllocaldb info
+          & sqllocaldb start MSSQLLocalDB
+          & sqllocaldb info MSSQLLocalDB
+
+          $connected = $false
+          foreach ($attempt in 1..12) {
+            & sqlcmd -S '(localdb)\MSSQLLocalDB' -E -b -Q "SELECT 1;" | Out-Null
+            if ($LASTEXITCODE -eq 0) { $connected = $true; break }
+            Start-Sleep -Seconds 5
+          }
+          if (-not $connected) { throw 'LocalDB did not accept connections.' }
+
+          & sqlcmd -S '(localdb)\MSSQLLocalDB' -E -b -Q "IF DB_ID('VennuSign') IS NULL CREATE DATABASE VennuSign;"
+          if ($LASTEXITCODE -ne 0) { throw 'Could not create the VennuSign database.' }
+
+      # Startup and the test run must share one step. The runner tears down a step's
+      # background processes when it ends, so starting the API and front ends in their
+      # own step left every request refused by the time the suite ran.
+      - name: Start the environment and run the UI suite
+        shell: pwsh
+        # The API applies DbUp migrations on first start, which the fixture depends on.
+        run: |
+          ./scripts/start-ui-test-env.ps1
+          try {
+            Push-Location tests/ui
+            npx playwright test
+            $suiteExitCode = $LASTEXITCODE
+          }
+          finally {
+            Pop-Location
+            ./scripts/start-ui-test-env.ps1 -Stop
+          }
+          if ($suiteExitCode -ne 0) { throw "The UI suite failed with exit code $suiteExitCode." }
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            tests/ui/playwright-report
+            tests/ui/test-results
+          retention-days: 7

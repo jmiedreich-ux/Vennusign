@@ -125,6 +125,58 @@ public partial class SqlDataAccess : ISqlDataAccess
                 .Entity<EmailLoginToken>()
                 .Table("dbo.EmailLoginTokens", true);
 
+            // Entities below are persisted through the generic Insert/Update paths.
+            // Without a table mapping RepoDb resolves the singular class name, finds no
+            // such table, cannot load the schema, and emits SQL whose key parameter is
+            // never bound ("Must declare the scalar variable @Id").
+            FluentMapper
+                .Entity<Menu>()
+                .Table("dbo.Menus", true);
+
+            FluentMapper
+                .Entity<MenuSection>()
+                .Table("dbo.MenuSections", true);
+
+            FluentMapper
+                .Entity<MenuItem>()
+                .Table("dbo.MenuItems", true);
+
+            FluentMapper
+                .Entity<MenuItemTranslation>()
+                .Table("dbo.MenuItemTranslations", true);
+
+            FluentMapper
+                .Entity<TapCategory>()
+                .Table("dbo.TapCategories", true);
+
+            FluentMapper
+                .Entity<TapItem>()
+                .Table("dbo.TapItems", true);
+
+            FluentMapper
+                .Entity<MealPeriod>()
+                .Table("dbo.MealPeriods", true);
+
+            FluentMapper
+                .Entity<DateRangePromotion>()
+                .Table("dbo.DateRangePromotions", true);
+
+            FluentMapper
+                .Entity<EmergencyBroadcast>()
+                .Table("dbo.EmergencyBroadcasts", true);
+
+            FluentMapper
+                .Entity<PlaylistSlide>()
+                .Table("dbo.PlaylistSlides", true);
+
+            FluentMapper
+                .Entity<PosConnection>()
+                .Table("dbo.PosConnections", true);
+
+            FluentMapper
+                .Entity<PosCatalogMapping>()
+                .Table("dbo.PosCatalogMappings", true);
+
             tableMappingsConfigured = true;
         }
     }

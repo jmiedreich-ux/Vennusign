@@ -66,4 +66,4 @@ foreach ($session in $sessions) {
 }
 Write-Host ''
 Write-Host 'After the API applies migrations, load/reset the local fixture with:'
-Write-Host 'sqlcmd -S "(localdb)\MSSQLLocalDB" -d VennuSign -E -b -i docs\acceptance\track-1-owner-fixture.sql'
+Write-Host 'sqlcmd -S "(localdb)\MSSQLLocalDB" -d VennuSign -E -b -I -i docs\acceptance\track-1-owner-fixture.sql'

@@ -1,9 +1,25 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { loadHappyHour, saveHappyHour, type HappyHourWrite } from "./api";
+import { BackOfficeApiError, loadHappyHour, saveHappyHour, type BackOfficeCapabilityDenial, type HappyHourWrite } from "./api";
 import type { BackOfficeConfiguration } from "./config";
 
 type Props = { configuration: BackOfficeConfiguration; apiKey: string; venueId: string; enabled: boolean; showUpgradePrompt?: boolean };
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/**
+ * The API's `resolution` field is a machine code for the client to act on, not copy.
+ * Only codes with a genuine user-facing instruction get sentence text; everything
+ * else renders nothing rather than leaking an identifier into the UI.
+ */
+const resolutionCopy = (resolution?: string) => {
+  switch (resolution) {
+    case "review_product_access": return "Review your plan to enable it.";
+    case "ask_scope_administrator": return "Ask an administrator to grant access.";
+    case "sign_in_again": return "Sign in again to refresh your access.";
+    case "remove_or_increase_allowance": return "Remove an existing item or increase the allowance.";
+    // retry_later adds nothing beyond the retry-timing sentence that follows.
+    default: return undefined;
+  }
+};
 const time = (value: string) => value.slice(0, 5);
 const wireTime = (value: string) => `${value}:00`;
 
@@ -16,6 +32,7 @@ export default function HappyHourAdministration({ configuration, apiKey, venueId
   const [endsAtUtc, setEndsAtUtc] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  const [denial, setDenial] = useState<BackOfficeCapabilityDenial>();
 
   useEffect(() => {
     loadHappyHour(configuration, apiKey, venueId)
@@ -29,8 +46,24 @@ export default function HappyHourAdministration({ configuration, apiKey, venueId
           overrideMode: snapshot.schedule.overrideMode
         });
       })
-      .catch(() => setError("Happy hour could not be loaded."));
+      .catch((reason: unknown) => {
+        // A capability refusal is not a load failure. Reporting a temporary rollout
+        // block as "could not be loaded" tells the user something is broken when the
+        // feature is simply not switched on for them yet.
+        const refusal = reason instanceof BackOfficeApiError ? reason.denial : undefined;
+        if (refusal) { setDenial(refusal); setError(undefined); }
+        else { setDenial(undefined); setError("Happy hour could not be loaded."); }
+      });
   }, [apiKey, configuration, venueId]);
+
+  const retryLabel = (seconds?: number) => {
+    if (!seconds || seconds <= 0) return undefined;
+    if (seconds < 60) return `Try again in about ${seconds} seconds.`;
+    const minutes = Math.ceil(seconds / 60);
+    if (minutes < 60) return `Try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`;
+    const hours = Math.ceil(minutes / 60);
+    return `Try again in about ${hours} hour${hours === 1 ? "" : "s"}.`;
+  };
 
   const save = async (event: FormEvent) => {
     event.preventDefault(); setBusy(true); setError(undefined);
@@ -47,7 +80,15 @@ export default function HappyHourAdministration({ configuration, apiKey, venueId
   return <article className="menu-editor happy-hour-admin">
     <div className="menu-editor-heading"><div><p>Pro scheduling</p><h3>Happy hour</h3></div><span>{active ? "Active" : "Inactive"}</span></div>
     {showUpgradePrompt && !enabled ? <aside className="tier-prompt"><div><strong>Happy Hour requires Pro</strong><p>Your schedule stays visible. Upgrade or apply an override to edit it.</p></div></aside> : null}
-    {error ? <p className="state error">{error}</p> : null}
+    {denial ? <p className={`state ${denial.decision === "temporarily-blocked" ? "blocked" : "denied"}`} role="status" data-testid="capability-denial" data-decision={denial.decision} data-capability={denial.capabilityId} data-retry-after={denial.retryAfterSeconds}>
+      <strong>{denial.decision === "temporarily-blocked" ? "Temporarily unavailable" : "Not available"}</strong>
+      {" "}{denial.message ?? "Happy hour is not available for this venue right now."}
+      {/* denial.resolution is a machine code (retry_later, review_product_access);
+          never render it. Map the ones that carry user-facing meaning instead. */}
+      {resolutionCopy(denial.resolution) ? ` ${resolutionCopy(denial.resolution)}` : ""}
+      {denial.decision === "temporarily-blocked" ? ` ${retryLabel(denial.retryAfterSeconds) ?? "This is temporary - your schedule is unchanged."}` : ""}
+    </p> : null}
+    {error ? <p className="state error" role="alert">{error}</p> : null}
     <form onSubmit={save}>
       <fieldset disabled={!enabled || busy}>
         <label>Start<input type="time" value={time(draft.startLocalTime)} onChange={event => setDraft(value => ({ ...value, startLocalTime: wireTime(event.target.value) }))} /></label>

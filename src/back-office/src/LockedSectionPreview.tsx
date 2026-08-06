@@ -36,7 +36,7 @@ export default function LockedSectionPreview({ opportunity, configuration, acces
   const preview = snapshot ? buildPersonalizedLockedPreview(snapshot) : undefined;
 
   return (
-    <section className="locked-section-preview" aria-labelledby={`locked-${opportunity.featureKey}`}>
+    <section className="locked-section-preview" data-testid="locked-preview" data-feature={opportunity.featureKey} aria-labelledby={`locked-${opportunity.featureKey}`}>
       {personalized ? <div className="locked-section-glimpse personalized-locked-preview" aria-label={`Preview using ${venueName} menu content`}>
         {previewState === 'loading' ? <p role="status">Loading your venue preview…</p>
           : previewState === 'error' ? <div className="personalized-locked-preview__state" role="status"><strong>Preview unavailable</strong><span>Your content is unchanged. Open this page again to retry.</span></div>
