@@ -6,7 +6,7 @@
 
 ## Status
 
-Complete, merged and verified on `master` through PR #650. Track closure now waits for owner acceptance.
+Complete, merged and verified on `master` through PR #650. Track closure now waits for acceptable owner acceptance followed by RWP-01.06 lessons learned and retrospective.
 
 ## Delivered
 
@@ -29,8 +29,8 @@ Complete, merged and verified on `master` through PR #650. Track closure now wai
 
 ## Additional Track 1 work
 
-No additional RWP is required by automated validation. Every clear bounded gap found by RWP-01.05 was corrected in this RWP. Owner acceptance feedback may add Track 1 RWPs before closure; tracks are open-ended and later work is grouped into scheduled chunks of up to five.
+No additional RWP is required by automated validation. Every clear bounded gap found by RWP-01.05 was corrected in this RWP. Owner acceptance feedback may add Track 1 RWPs before closure; tracks are open-ended and later work is grouped into scheduled chunks of up to five. After acceptance reaches an acceptable state, RWP-01.06 reviews the complete Track 1 lifecycle and defines required next-track process improvements.
 
 ## Handoff
 
-Implementation execution has stopped. The exact next action is the owner review in `docs/acceptance/track-1-owner-acceptance.md`. Future-track implementation remains blocked pending explicit Track 1 closure approval. Light future-track planning may remain provisional but cannot be marked complete until Track 1 feedback is evaluated.
+Implementation execution has stopped. The exact next action is the owner review in `docs/acceptance/track-1-owner-acceptance.md`. Future-track implementation remains blocked pending explicit Track 1 closure approval. Light future-track planning may remain provisional but cannot be marked complete until Track 1 feedback and the approved RWP-01.06 retrospective changes are evaluated and incorporated or explicitly ruled out.
