@@ -63,10 +63,25 @@ jobs:
         working-directory: tests/ui
         run: npx playwright install --with-deps chromium
 
-      - name: Create the VennuSign database
+      - name: Start LocalDB and create the VennuSign database
         shell: pwsh
         run: |
+          # The runner ships LocalDB but leaves the instance stopped, so a bare
+          # sqlcmd fails with "delay in opening server connection".
+          & sqllocaldb info
+          & sqllocaldb start MSSQLLocalDB
+          & sqllocaldb info MSSQLLocalDB
+
+          $connected = $false
+          foreach ($attempt in 1..12) {
+            & sqlcmd -S '(localdb)\MSSQLLocalDB' -E -b -Q "SELECT 1;" | Out-Null
+            if ($LASTEXITCODE -eq 0) { $connected = $true; break }
+            Start-Sleep -Seconds 5
+          }
+          if (-not $connected) { throw 'LocalDB did not accept connections.' }
+
           & sqlcmd -S '(localdb)\MSSQLLocalDB' -E -b -Q "IF DB_ID('VennuSign') IS NULL CREATE DATABASE VennuSign;"
+          if ($LASTEXITCODE -ne 0) { throw 'Could not create the VennuSign database.' }
 
       - name: Start the local test environment
         shell: pwsh
