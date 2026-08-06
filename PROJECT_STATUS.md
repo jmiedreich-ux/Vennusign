@@ -15,6 +15,8 @@
 - Track 1.04 — Essential Core and Current Gate Replacement (#643): complete, merged and verified on `master` through PR #648.
 - Track 1.05 — Track Validation and Handoff (#644): complete, merged and verified on `master` through PR #650 and Actions run 31049451685.
 - Track 1 closure: owner acceptance pending after Track 1.05 merges.
+- Track 1 acceptance QA: all 19 owner-acceptance cases pass. Fourteen are asserted deterministically by the Playwright suite in `tests/ui`; five subjective cases (4-1, 5-0, 6-1, 6-2, 6-3) are judged by hosted agents through `scripts/run-track1-qa.ps1`. Latest gate record: `artifacts/track1-qa/20260806T030415Z/track-1-owner-acceptance.qa.json` (0 attention, 0 manual review, 0 lane failures).
+- Defects found and fixed during Track 1 QA: menu item updates failing with an unbound `@Id` (missing RepoDb table mappings); the POS webhook worker terminating the whole API host; a `SERIALIZABLE` isolation level leaking onto pooled connections; an unscoped `aside` rule covering page content; capability refusals rendering as generic load failures; a menu save race persisting pre-edit values; screen thumbnails heartbeating their own screens Online; a destructive dialog that did not trap focus; and mobile navigation with no collapse control.
 
 ## Track 0 Deliverables
 

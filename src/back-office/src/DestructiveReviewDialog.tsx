@@ -26,6 +26,33 @@ function DestructiveReviewDialog({ pending, onDecision }: Readonly<{
     if (request && dialog.current && !dialog.current.open) dialog.current.showModal();
   }, [request]);
 
+  /**
+   * showModal() is supposed to confine Tab to the dialog, but focus was observed
+   * escaping after two presses. A destructive confirmation that leaks focus lets a
+   * keyboard user operate the page behind it, so the cycle is enforced explicitly.
+   */
+  const trapFocus = useCallback((event: React.KeyboardEvent<HTMLDialogElement>) => {
+    if (event.key !== "Tab" || !dialog.current) return;
+    const focusable = Array.from(
+      dialog.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter(element => element.offsetParent !== null || element === document.activeElement);
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement as HTMLElement | null;
+
+    if (event.shiftKey && (active === first || !dialog.current.contains(active))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (active === last || !dialog.current.contains(active))) {
+      event.preventDefault();
+      first.focus();
+    }
+  }, []);
+
   if (!request) return null;
   const confirmationMatches = request.typedConfirmation === undefined || confirmation === request.typedConfirmation;
   const titleId = "destructive-review-title";
@@ -34,9 +61,12 @@ function DestructiveReviewDialog({ pending, onDecision }: Readonly<{
   return <dialog
     ref={dialog}
     className={`destructive-review-dialog destructive-review-dialog--${request.tone ?? "danger"}`}
+    data-testid="destructive-review-dialog"
+    data-tone={request.tone ?? "danger"}
     aria-labelledby={titleId}
     aria-describedby={descriptionId}
     onCancel={event => { event.preventDefault(); onDecision(false); }}
+    onKeyDown={trapFocus}
   >
     <form method="dialog" onSubmit={event => { event.preventDefault(); if (confirmationMatches) onDecision(true); }}>
       <p className="destructive-review-dialog__eyebrow">Review impact</p>
@@ -47,8 +77,8 @@ function DestructiveReviewDialog({ pending, onDecision }: Readonly<{
         <input autoComplete="off" value={confirmation} onChange={event => setConfirmation(event.target.value)} />
       </label> : null}
       <div className="destructive-review-dialog__actions">
-        <button type="button" autoFocus onClick={() => onDecision(false)}>Cancel</button>
-        <button className={request.tone === "caution" ? "caution" : "danger"} type="submit" disabled={!confirmationMatches}>{request.confirmLabel}</button>
+        <button type="button" data-testid="destructive-cancel" autoFocus onClick={() => onDecision(false)}>Cancel</button>
+        <button className={request.tone === "caution" ? "caution" : "danger"} data-testid="destructive-confirm" type="submit" disabled={!confirmationMatches}>{request.confirmLabel}</button>
       </div>
     </form>
   </dialog>;

@@ -1,0 +1,94 @@
+name: UI regression
+
+# Playwright gate for the Back Office. Runs on every push touching the UI, the API
+# surfaces it drives, or the suite itself. Hosted Browser Use lanes are deliberately
+# NOT part of this workflow: they cost money per run and are reserved for the handful
+# of subjective cases a deterministic assertion cannot judge.
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'src/back-office/**'
+      - 'src/Vennu.Api/**'
+      - 'src/Vennu.Data/**'
+      - 'src/Vennu.DataAccess/**'
+      - 'src/Vennu.Core.Models/**'
+      - 'tests/ui/**'
+      - '.github/workflows/ui-regression.yml'
+  pull_request:
+    paths:
+      - 'src/back-office/**'
+      - 'src/Vennu.Api/**'
+      - 'src/Vennu.Data/**'
+      - 'src/Vennu.DataAccess/**'
+      - 'src/Vennu.Core.Models/**'
+      - 'tests/ui/**'
+      - '.github/workflows/ui-regression.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ui-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    # windows-latest carries SQL Server LocalDB, which the fixture and seed endpoint need.
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Back Office dependencies
+        working-directory: src/back-office
+        run: npm ci
+
+      - name: Install Display dependencies
+        working-directory: src/display
+        run: npm ci
+
+      - name: Install UI suite dependencies
+        working-directory: tests/ui
+        run: npm ci
+
+      - name: Install Chromium
+        working-directory: tests/ui
+        run: npx playwright install --with-deps chromium
+
+      - name: Create the VennuSign database
+        shell: pwsh
+        run: |
+          & sqlcmd -S '(localdb)\MSSQLLocalDB' -E -b -Q "IF DB_ID('VennuSign') IS NULL CREATE DATABASE VennuSign;"
+
+      - name: Start the local test environment
+        shell: pwsh
+        # The API applies DbUp migrations on first start, which the fixture depends on.
+        run: ./scripts/start-ui-test-env.ps1
+
+      - name: Run the UI suite
+        working-directory: tests/ui
+        shell: pwsh
+        run: npx playwright test
+
+      - name: Stop the local test environment
+        if: always()
+        shell: pwsh
+        run: ./scripts/start-ui-test-env.ps1 -Stop
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            tests/ui/playwright-report
+            tests/ui/test-results
+          retention-days: 7

@@ -20,8 +20,10 @@ public sealed class LegacyBackOfficeAuthenticationTests
         var result = new BackOfficeAuthenticationOptionsValidator().Validate(null, options);
 
         Assert.False(result.Succeeded);
+        Assert.NotNull(result.Failures);
         Assert.Contains(result.Failures, failure => failure.Contains("unique", StringComparison.OrdinalIgnoreCase));
         Assert.Contains(result.Failures, failure => failure.Contains("venue ID", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(result.Failures, failure => failure.Contains("organization ID", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

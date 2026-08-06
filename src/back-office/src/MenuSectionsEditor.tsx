@@ -74,7 +74,7 @@ export default function MenuSectionsEditor({ configuration, apiKey, venueId, sta
     {error ? <div className="state error" role="alert"><p>{error}</p>{failedAction ? <button type="button" onClick={() => void run(failedAction.label, failedAction.run)}>Retry last change</button> : <button type="button" onClick={() => void refresh()}>Retry menus</button>}</div> : null}
     {tierPrompt ? <aside className="tier-prompt" role="status"><div><strong>{tierPrompt.title}</strong><p>{tierPrompt.message}</p></div><button aria-label="Dismiss tier prompt" onClick={() => setTierPrompt(undefined)}>×</button></aside> : null}
     <div className="menu-lifecycle-toolbar">
-      <label>Select menu<select value={selectedMenuId} onChange={event => setSelectedMenuId(event.target.value)}>{snapshot.menus.map(entry => <option key={entry.menu.id} value={entry.menu.id}>{entry.menu.name}{entry.menu.isActive ? "" : " (archived)"}</option>)}</select></label>
+      <label>Select menu<select data-testid="menu-picker" value={selectedMenuId} onChange={event => setSelectedMenuId(event.target.value)}>{snapshot.menus.map(entry => <option key={entry.menu.id} value={entry.menu.id}>{entry.menu.name}{entry.menu.isActive ? "" : " (archived)"}</option>)}</select></label>
       <form onSubmit={createNewMenu}><label>New menu<input maxLength={200} required value={newMenuName} onChange={event => setNewMenuName(event.target.value)} placeholder="Lunch menu" /></label><button disabled={busy}>Create menu</button></form>
     </div>
     {!selectedMenu ? <section className="state"><p>No menu exists for this venue. Create one to begin.</p></section> : <>

@@ -277,7 +277,7 @@ export default function ScreenManagement({
     </div>
     {error ? <p className="state error" role="alert">{error}</p> : null}
     {notice ? <TransientFeedback message={notice} onDismiss={() => setNotice(undefined)} /> : null}
-    {screenUsage ? <p className="screen-notice" id="screen-quota-status">{screenUsage}</p> : null}
+    {screenUsage ? <p className="screen-notice" id="screen-quota-status" data-testid="screen-quota" data-limit-reached={screenLimitReached} data-reason={pairDecision?.reasonCode}>{screenUsage}</p> : null}
     {showUpgradePrompt && !allLayoutsEnabled ? <aside className="tier-prompt" role="status"><div><strong>Bar layouts require All Layouts</strong><p>Neon Chalkboard and Split Layout remain visible in the selector. Daily Special Hero remains visible too. Upgrade to Pro or add a venue override to choose them.</p></div></aside> : null}
     <details className="screen-workflow-section screen-workflow-section--setup" open={setupOpen} onToggle={event => setSetupOpen(event.currentTarget.open)}>
       <summary><span>Setup</span><strong>Add, pair, or replace a player</strong><small>{activeScreens.length ? "Collapsed after your first active screen; expand when hardware changes." : "Start here to connect the first display."}</small></summary>
@@ -299,7 +299,7 @@ export default function ScreenManagement({
             onChange={event => setPairingCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
             placeholder="TV pairing code"
           />
-          <button aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "pair" || !pairingAllowed}>Pair screen</button>
+          <button data-testid="pair-screen" aria-describedby={screenUsage ? "screen-quota-status" : undefined} disabled={busyId === "pair" || !pairingAllowed}>Pair screen</button>
         </form>
         <p className="screen-notice" role="status">{busyId === "pair" ? "Pairing pending… keep this page and the player open." : "Pairing codes expire and can be used once. If pairing fails, generate a fresh code on the player before retrying."}</p>
         <section className="screen-delivery-target" aria-labelledby="replacement-heading">
@@ -327,7 +327,7 @@ export default function ScreenManagement({
           <label>Target screen<select value={selectedScreenId} onChange={event => { setSelectedScreenId(event.target.value); setDelivery(undefined); }}><option value="">Choose a screen</option>{activeScreens.map(screen => <option key={screen.id} value={screen.id}>{screen.name} · {isStale(screen) ? "Stale" : screen.status}</option>)}</select></label>
           <button type="button" disabled={!selectedScreen || busyId === selectedScreenId} onClick={() => selectedScreen && setPreviewScreenId(selectedScreen.id)}>Preview selected screen</button>
           <button disabled={!selectedScreen || busyId === selectedScreenId} onClick={() => selectedScreen && push(selectedScreen)}>Push structured content</button>
-          {delivery && delivery.screenId === selectedScreenId ? <div className={`delivery-state ${delivery.state}`} role="status"><strong>Delivery: {delivery.state}</strong><span>{delivery.reason ?? "Request in progress."}</span><small>Requested {new Date(delivery.requestedUtc).toLocaleString()}</small>{delivery.state === "failed" && selectedScreen ? <button onClick={() => push(selectedScreen)}>Retry selected target</button> : null}</div> : null}
+          {delivery && delivery.screenId === selectedScreenId ? <div className={`delivery-state ${delivery.state}`} role="status" data-testid="delivery-state" data-state={delivery.state} data-screen-id={delivery.screenId}><strong>Delivery: {delivery.state}</strong><span>{delivery.reason ?? "Request in progress."}</span><small>Requested {new Date(delivery.requestedUtc).toLocaleString()}</small>{delivery.state === "failed" && selectedScreen ? <button onClick={() => push(selectedScreen)}>Retry selected target</button> : null}</div> : null}
         </section>
         <div className="screen-create">
           <input aria-label="Search screens" value={screenSearch} onChange={event => setScreenSearch(event.target.value)} placeholder="Search name, location, or platform" />
@@ -336,11 +336,11 @@ export default function ScreenManagement({
     {screensLoading ? <LoadingSkeleton label="Loading screens…" rows={4} /> : visibleScreens.length ? <div className="managed-screen-list screen-fleet-grid">{visibleScreens.map(screen => {
       const presentation = presentationDrafts[screen.id] ?? screen;
       const archived = screen.status.toLowerCase() === "archived";
-      return <section className="screen-fleet-card" data-selected={selectedScreenId === screen.id} key={screen.id}>
+      return <section className="screen-fleet-card" data-testid="screen-card" data-screen-id={screen.id} data-status={(isStale(screen) && !archived ? "Stale" : screen.status).toLowerCase()} data-archived={archived} data-applied-revision={screen.appliedRevision ?? ""} data-authoritative-revision={screen.authoritativeRevision ?? ""} data-delivery-state={(screen.deliveryState ?? "").toLowerCase()} data-selected={selectedScreenId === screen.id} key={screen.id}>
         <div className="screen-fleet-thumbnail">
           {archived
             ? <div className="screen-fleet-thumbnail__unavailable"><span>Archived</span><small>Restore this screen to load its live preview.</small></div>
-            : <iframe loading="lazy" tabIndex={-1} aria-hidden="true" src={`${configuration.displayBaseUrl}/display/${screen.id}`} title="" />}
+            : <iframe loading="lazy" tabIndex={-1} aria-hidden="true" src={`${configuration.displayBaseUrl}/display/${screen.id}?preview=observer`} title="" />}
           <span className={`screen-fleet-thumbnail__status ${isStale(screen) && !archived ? "stale" : screen.status.toLowerCase()}`}>{isStale(screen) && !archived ? "Stale" : screen.status}</span>
         </div>
         <header className="screen-fleet-card__heading">
@@ -348,13 +348,13 @@ export default function ScreenManagement({
           <small>{screen.platform ? `${screen.platform}${screen.appVersion ? ` ${screen.appVersion}` : ""}` : "Platform not reported"}</small>
         </header>
         <div className="screen-actions action-surface" aria-label={`${screen.name} delivery actions`}>
-          <button className="action-secondary" type="button" disabled={busyId === screen.id || archived} onClick={() => { setSelectedScreenId(screen.id); setDelivery(undefined); setPreviewScreenId(screen.id); }}>Preview</button>
-          <button className="action-primary" type="button" disabled={busyId === screen.id || archived} onClick={() => void push(screen)}>Push</button>
-          <details className="action-overflow"><summary>More actions</summary><div>
+          <button className="action-secondary" type="button" data-testid="screen-preview" disabled={busyId === screen.id || archived} onClick={() => { setSelectedScreenId(screen.id); setDelivery(undefined); setPreviewScreenId(screen.id); }}>Preview</button>
+          <button className="action-primary" type="button" data-testid="screen-push" disabled={busyId === screen.id || archived} onClick={() => void push(screen)}>Push</button>
+          <details className="action-overflow" data-testid="screen-more-actions"><summary>More actions</summary><div>
             <a href={screen.registrationUrl} target="_blank" rel="noreferrer">Open registration URL</a>
             {archived
-              ? <button className="action-secondary" type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, false)}>Restore screen</button>
-              : <><button className="action-secondary" type="button" disabled={busyId === screen.id} onClick={() => reset(screen)}>Reset connection</button><button className="action-danger" type="button" disabled={busyId === screen.id} onClick={() => setArchived(screen, true)}>Archive</button><button className="action-danger" type="button" disabled={busyId === screen.id} onClick={() => unpair(screen)}>Unpair screen</button></>}
+              ? <button className="action-secondary" type="button" data-testid="screen-restore" disabled={busyId === screen.id} onClick={() => setArchived(screen, false)}>Restore screen</button>
+              : <><button className="action-secondary" type="button" data-testid="screen-reset" disabled={busyId === screen.id} onClick={() => reset(screen)}>Reset connection</button><button className="action-danger" type="button" data-testid="screen-archive" disabled={busyId === screen.id} onClick={() => setArchived(screen, true)}>Archive</button><button className="action-danger" type="button" data-testid="screen-unpair" disabled={busyId === screen.id} onClick={() => unpair(screen)}>Unpair screen</button></>}
           </div></details>
         </div>
         {screen.id === previewScreenId && !archived ? <div className="split-layout-preview screen-fleet-card__expanded-preview">

@@ -26,6 +26,9 @@ public sealed class PosWebhookEventRepository(ISqlDataAccess dataAccess, TimePro
 
     private const string ClaimSql = """
         SET XACT_ABORT ON;
+        -- READPAST is only legal under READ COMMITTED or REPEATABLE READ. Without this
+        -- the claim throws whenever the ambient isolation level is anything else.
+        SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
         BEGIN TRANSACTION;
 
         DECLARE @Id UNIQUEIDENTIFIER;

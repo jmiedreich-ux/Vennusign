@@ -153,7 +153,11 @@ public sealed class OrganizationMembershipRepository(ISqlDataAccess dataAccess)
             INSERT dbo.MembershipAuditEntries
                 (Id, OrganizationId, VenueId, ActorUserId, SubjectUserId, Scope, Action, PreviousRole, NewRole, OccurredUtc)
             VALUES (@AuditId, @OrganizationId, NULL, @CurrentOwnerUserId, @NewOwnerUserId, @Scope, @Action, @PreviousRole, @NewRole, @OccurredUtc);
-            COMMIT; SELECT CAST(1 AS BIT) Applied;
+            COMMIT;
+            -- Isolation level outlives the batch and rides the pooled connection to the
+            -- next caller. Leaving it SERIALIZABLE breaks unrelated queries downstream.
+            SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+            SELECT CAST(1 AS BIT) Applied;
             """,
             new
             {

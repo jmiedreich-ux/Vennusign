@@ -366,3 +366,16 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Playwright UI suite
+test-results/
+playwright-report/
+blob-report/
+.last-run.json
+/tests/ui/node_modules/
+
+
+# Local Google OAuth client secrets and signup notes - never commit
+docs/Google/
+**/client_secret_*.json
+

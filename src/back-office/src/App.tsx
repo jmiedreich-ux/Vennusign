@@ -70,6 +70,7 @@ export default function App() {
   const [session, setSession] = useState<BackOfficeSession>();
   const [billing, setBilling] = useState<BackOfficeBillingPresentation>();
   const [route, setRoute] = useState<BackOfficeRoute>(() => resolveBackOfficeRoute(window.location.hash));
+  const [navigationOpen, setNavigationOpen] = useState(false);
   const [error, setError] = useState<string>();
   const [dismissalVersion, setDismissalVersion] = useState(0);
   const [upgradeContext, setUpgradeContext] = useState<Readonly<UpgradeOpportunity>>();
@@ -151,7 +152,8 @@ export default function App() {
   }, [accessToken, checkoutReturn, configuration]);
 
   useEffect(() => {
-    const onHashChange = () => setRoute(resolveBackOfficeRoute(window.location.hash));
+    // Choosing a destination must dismiss the drawer, or the selected page stays hidden behind it.
+    const onHashChange = () => { setRoute(resolveBackOfficeRoute(window.location.hash)); setNavigationOpen(false); };
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
@@ -383,7 +385,20 @@ export default function App() {
 
   return <div className="shell">
     {reviewDialog}
-    <aside>
+    {/* Below the sidebar breakpoint the nav collapses behind this control, so page
+        content starts at the top of the viewport instead of below a full-height nav. */}
+    <button
+      type="button"
+      className="app-nav-toggle"
+      data-testid="nav-toggle"
+      aria-expanded={navigationOpen}
+      aria-controls="app-sidebar"
+      onClick={() => setNavigationOpen(open => !open)}
+    >
+      <span aria-hidden="true">{navigationOpen ? "✕" : "☰"}</span>
+      {navigationOpen ? "Close menu" : "Menu"}
+    </button>
+    <aside className="app-sidebar" id="app-sidebar" data-open={navigationOpen}>
       <div className="brand"><span>V</span><div><strong>Vennusign</strong><small>Back Office</small></div></div>
       <nav className="grouped-navigation" aria-label="Back Office">
         {backOfficeNavigationGroups.map(group => <details key={group.label} open={group.routes.some(item => item.path === route.path) || group.label === "Operate"}>
@@ -398,10 +413,15 @@ export default function App() {
             key={item.path}
             opportunity={opportunity}
             onUpgrade={setUpgradeContext}
+            route={item.path}
           /> : <a
             className={`${route.path === item.path ? "active " : ""}${unlocked ? "" : "locked"}`.trim()}
             href={`#/${item.path}`}
             key={item.path}
+            data-testid="nav-item"
+            data-route={item.path}
+            data-unlocked={unlocked}
+            data-active={route.path === item.path}
             aria-disabled={!unlocked}
             title={unlocked ? undefined : navigationDecision?.message}
           >
@@ -529,7 +549,7 @@ export default function App() {
             onDismiss={dismiss}
             onUpgrade={setUpgradeContext}
           />
-        : <section className="placeholder locked-panel" role="status"><p>{routeDecision?.decision === "temporarily-blocked" ? "Temporarily unavailable" : routeDecision?.category === "permission" ? "Permission required" : "Unavailable"}</p><h2>{route.label} is not available</h2><span>{routeDecision?.message ?? "Vennusign could not verify access to this area. Refresh the session and try again."}</span>{routeDecision?.resolution === "sign_in_again" ? <button type="button" onClick={signOut}>Sign in again</button> : null}</section>}
+        : <section className="placeholder locked-panel" role="status" data-testid="locked-panel" data-decision={routeDecision?.decision} data-category={routeDecision?.category} data-route={route.path}><p>{routeDecision?.decision === "temporarily-blocked" ? "Temporarily unavailable" : routeDecision?.category === "permission" ? "Permission required" : "Unavailable"}</p><h2>{route.label} is not available</h2><span>{routeDecision?.message ?? "Vennusign could not verify access to this area. Refresh the session and try again."}</span>{routeDecision?.resolution === "sign_in_again" ? <button type="button" onClick={signOut}>Sign in again</button> : null}</section>}
     </main>
     {upgradeContext && billing && targetTier ? <UpgradeSheet
       opportunity={upgradeContext}

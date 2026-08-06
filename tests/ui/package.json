@@ -1,0 +1,16 @@
+{
+  "name": "vennusign-ui-tests",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Playwright UI regression suite for the Vennusign Back Office.",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:desktop": "playwright test --project=desktop",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}

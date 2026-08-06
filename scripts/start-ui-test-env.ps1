@@ -1,0 +1,177 @@
+<#
+.SYNOPSIS
+    Starts a purely local environment for the Playwright UI suite in tests/ui.
+
+.DESCRIPTION
+    Deliberately does NOT create cloudflared tunnels. The hosted-agent QA harness
+    (run-track1-qa.ps1) has to expose public URLs and therefore configures CORS for
+    those tunnel origins, which blocks a browser running on localhost. Playwright
+    drives a real browser locally, so it needs localhost in the allowed origins and
+    the front end pointed at the localhost API.
+
+    Leaves services running. Stop them with -Stop.
+#>
+[CmdletBinding()]
+param(
+    [string]$IsolationTag = '0000',
+    [switch]$SkipFixture,
+    [switch]$Stop,
+    [switch]$PruneSeed
+)
+
+$ErrorActionPreference = 'Stop'
+$repoRoot = Split-Path -Parent $PSScriptRoot
+$logRoot = Join-Path $repoRoot 'artifacts\ui-test-env'
+$apiOrigin = 'https://localhost:7138'
+$backOfficeOrigin = 'https://localhost:5174'
+$displayOrigin = 'http://localhost:5175'
+$ports = @(7138, 5174, 5175)
+
+function Stop-UiTestEnv {
+    foreach ($port in $ports) {
+        $listener = Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue
+        foreach ($owner in ($listener.OwningProcess | Select-Object -Unique)) {
+            & taskkill.exe /PID $owner /T /F 2>$null | Out-Null
+            Write-Host "Stopped PID $owner on port $port"
+        }
+    }
+}
+
+if ($Stop) { Stop-UiTestEnv; return }
+
+if ($PruneSeed) {
+    # Rows created by POST /api/test/seed accumulate with every run. They are
+    # identifiable: seeded screens use a 't' + 8 hex ScreenKey and seeded menus end
+    # with the same 8 hex suffix. Deliberately kept out of the API so the deployed
+    # system carries no delete-by-pattern endpoint.
+    $prune = @"
+SET NOCOUNT ON;
+DECLARE @Menus TABLE (Id uniqueidentifier);
+INSERT INTO @Menus (Id)
+SELECT Id FROM dbo.Menus WHERE Name LIKE '% menu [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]';
+
+DELETE i FROM dbo.MenuItems i
+INNER JOIN dbo.MenuSections s ON s.Id = i.MenuSectionId
+INNER JOIN @Menus m ON m.Id = s.MenuId;
+
+DELETE s FROM dbo.MenuSections s INNER JOIN @Menus m ON m.Id = s.MenuId;
+DELETE m FROM dbo.Menus m INNER JOIN @Menus t ON t.Id = m.Id;
+
+DECLARE @Screens TABLE (Id uniqueidentifier);
+INSERT INTO @Screens (Id)
+SELECT Id FROM dbo.Screens
+WHERE ScreenKey LIKE 't[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]';
+
+-- Every table with an FK to dbo.Screens must be cleared first.
+UPDATE dbo.CustomerOnboardingStates SET FirstScreenId = NULL
+WHERE FirstScreenId IN (SELECT Id FROM @Screens);
+DELETE d FROM dbo.ScreenContentDeliveries d INNER JOIN @Screens s ON s.Id = d.ScreenId;
+DELETE p FROM dbo.ScreenPairingCodes p INNER JOIN @Screens s ON s.Id = p.ScreenId;
+DELETE b FROM dbo.EmergencyBroadcasts b INNER JOIN @Screens s ON s.Id = b.ScreenId;
+DELETE l FROM dbo.PlaylistSlides l INNER JOIN @Screens s ON s.Id = l.ScreenId;
+DELETE a FROM dbo.ScreenReplacementAudits a INNER JOIN @Screens s ON s.Id IN (a.TargetScreenId, a.SourceScreenId);
+DELETE x FROM dbo.Screens x INNER JOIN @Screens s ON s.Id = x.Id;
+
+SELECT (SELECT COUNT(*) FROM dbo.Menus) AS MenusLeft, (SELECT COUNT(*) FROM dbo.Screens) AS ScreensLeft;
+"@
+    Write-Host 'Pruning seeded UI-test rows...'
+    & sqlcmd -S '(localdb)\MSSQLLocalDB' -d VennuSign -E -b -I -Q $prune
+    if ($LASTEXITCODE -ne 0) { throw "Seed prune failed with exit code $LASTEXITCODE." }
+    return
+}
+
+foreach ($command in @('dotnet', 'npm', 'sqlcmd')) {
+    if (-not (Get-Command $command -ErrorAction SilentlyContinue)) { throw "Required command '$command' is not on PATH." }
+}
+foreach ($port in $ports) {
+    $listener = Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue
+    if ($listener) { throw "Port $port is already in use by PID(s) $(($listener.OwningProcess | Select-Object -Unique) -join ', '). Run with -Stop first." }
+}
+
+New-Item -ItemType Directory -Force -Path $logRoot | Out-Null
+
+function Start-EnvProcess {
+    param([string]$Name, [string]$FilePath, [string[]]$ArgumentList, [string]$WorkingDirectory)
+    Start-Process -FilePath $FilePath -ArgumentList $ArgumentList -WorkingDirectory $WorkingDirectory -WindowStyle Hidden `
+        -RedirectStandardOutput (Join-Path $logRoot "$Name.out.log") `
+        -RedirectStandardError (Join-Path $logRoot "$Name.err.log") -PassThru
+}
+
+function Wait-ForHttp {
+    param([string]$Url, [int]$TimeoutSeconds = 120)
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    do {
+        $status = & curl.exe --insecure --silent --output NUL --write-out '%{http_code}' --max-time 5 $Url
+        if ($LASTEXITCODE -eq 0 -and [int]$status -ge 200 -and [int]$status -lt 500) { return }
+        Start-Sleep -Milliseconds 500
+    } while ((Get-Date) -lt $deadline)
+    throw "Timed out waiting for $Url."
+}
+
+# Seeded identities match run-track1-qa.ps1 so both harnesses share one fixture.
+$guid = { param($base) $base -replace '-0000-0000-0000-', "-0000-0000-$IsolationTag-" }
+$roles = @(
+    @{ Key = 'owner';     Base = '71000000-0000-0000-0000-000000000001'; Name = 'Track 1 Owner Review';   Role = 'organization_owner' },
+    @{ Key = 'editor';    Base = '71000000-0000-0000-0000-000000000002'; Name = 'Track 1 Content Editor'; Role = 'content_editor' },
+    @{ Key = 'publisher'; Base = '71000000-0000-0000-0000-000000000003'; Name = 'Track 1 Publisher';      Role = 'publisher' }
+)
+
+$env:ASPNETCORE_ENVIRONMENT = 'Development'
+$env:ASPNETCORE_URLS = $apiOrigin
+# The whole point of this script: localhost is the browser's origin.
+$env:Cors__AllowedOrigins__0 = $backOfficeOrigin
+$env:Cors__AllowedOrigins__1 = $displayOrigin
+
+for ($index = 0; $index -lt $roles.Count; $index++) {
+    $role = $roles[$index]
+    Set-Item "env:BackOffice__Sessions__${index}__AccessToken" "track1-$($role.Key)-$IsolationTag"
+    Set-Item "env:BackOffice__Sessions__${index}__VenueId" (& $guid '73000000-0000-0000-0000-000000000001')
+    Set-Item "env:BackOffice__Sessions__${index}__OrganizationId" (& $guid '72000000-0000-0000-0000-000000000001')
+    Set-Item "env:BackOffice__Sessions__${index}__UserId" (& $guid $role.Base)
+    Set-Item "env:BackOffice__Sessions__${index}__DisplayName" "$($role.Name) [$IsolationTag]"
+    Set-Item "env:BackOffice__Sessions__${index}__SystemRole" $role.Role
+}
+
+Write-Host 'Starting API...'
+$null = Start-EnvProcess -Name 'api' -FilePath 'dotnet' -ArgumentList @('run', '--no-launch-profile', '--project', '.\src\Vennu.Api\Vennu.Api.csproj') -WorkingDirectory $repoRoot
+
+$env:VITE_VENNUSIGN_API_BASE_URL = $apiOrigin
+$env:VITE_VENNUSIGN_DISPLAY_BASE_URL = $displayOrigin
+Write-Host 'Starting Back Office...'
+$null = Start-EnvProcess -Name 'back-office' -FilePath 'npm.cmd' -ArgumentList @('run', 'dev', '--', '--host', 'localhost', '--port', '5174') -WorkingDirectory (Join-Path $repoRoot 'src\back-office')
+
+$env:VITE_API_BASE_URL = $apiOrigin
+$env:VITE_SIGNALR_HUB_URL = "$apiOrigin/hubs/vennusign"
+Write-Host 'Starting Display...'
+$null = Start-EnvProcess -Name 'display' -FilePath 'npm.cmd' -ArgumentList @('run', 'dev', '--', '--host', 'localhost', '--port', '5175') -WorkingDirectory (Join-Path $repoRoot 'src\display')
+
+Wait-ForHttp "$apiOrigin/health/version"
+Wait-ForHttp $backOfficeOrigin
+Wait-ForHttp $displayOrigin
+
+if (-not $SkipFixture) {
+    $fixture = Join-Path $repoRoot 'docs\acceptance\track-1-owner-fixture.sql'
+    $sql = Get-Content -LiteralPath $fixture -Raw
+    if ($IsolationTag -ne '0000') {
+        $sql = $sql -replace '-0000-0000-0000-', "-0000-0000-$IsolationTag-"
+        foreach ($role in $roles) {
+            $sql = $sql -creplace "track1-$($role.Key)@local\.vennu\.test", "track1-$($role.Key)-$IsolationTag@local.vennu.test"
+            $sql = $sql -creplace "TRACK1-$($role.Key.ToUpperInvariant())@LOCAL\.VENNU\.TEST", "TRACK1-$($role.Key.ToUpperInvariant())-$IsolationTag@LOCAL.VENNU.TEST"
+        }
+        $sql = $sql -replace "N'sc-t1demo'", "N'sc-t1d$($IsolationTag.Substring($IsolationTag.Length - 3))'"
+    }
+    $generated = Join-Path $logRoot "fixture-$IsolationTag.sql"
+    Set-Content -LiteralPath $generated -Value $sql -Encoding utf8
+    Write-Host "Applying fixture for isolation tag $IsolationTag..."
+    & sqlcmd -S '(localdb)\MSSQLLocalDB' -d VennuSign -E -b -I -i $generated | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Fixture failed with exit code $LASTEXITCODE." }
+}
+
+Write-Host ''
+Write-Host "API:         $apiOrigin"
+Write-Host "Back Office: $backOfficeOrigin"
+Write-Host "Display:     $displayOrigin"
+Write-Host "Logs:        $logRoot"
+Write-Host ''
+Write-Host 'Run the UI suite:  cd tests\ui; npx playwright test'
+Write-Host 'Stop services:     scripts\start-ui-test-env.ps1 -Stop'

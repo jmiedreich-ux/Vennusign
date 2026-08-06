@@ -147,6 +147,9 @@ public sealed class CustomerAuthenticationRepository(ISqlDataAccess dataAccess)
               AND ((SELECT COUNT(*) FROM dbo.CustomerPasskeyCredentials WITH (UPDLOCK, HOLDLOCK) WHERE UserId=@UserId AND RevokedUtc IS NULL) > 1
                    OR EXISTS (SELECT 1 FROM dbo.CustomerUsers WHERE Id=@UserId AND EmailVerifiedUtc IS NOT NULL));
             COMMIT;
+            -- Isolation level outlives the batch and rides the pooled connection to the
+            -- next caller. Leaving it SERIALIZABLE breaks unrelated queries downstream.
+            SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
             """,
             new { UserId = RequireId(userId, nameof(userId)), Id = RequireId(id, nameof(id)), RevokedUtc = RequireUtc(revokedUtc, nameof(revokedUtc)) }, cancellationToken).ConfigureAwait(false)).SingleOrDefault()?.Applied ?? false;
 
