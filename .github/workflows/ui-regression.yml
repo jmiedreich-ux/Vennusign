@@ -83,20 +83,24 @@ jobs:
           & sqlcmd -S '(localdb)\MSSQLLocalDB' -E -b -Q "IF DB_ID('VennuSign') IS NULL CREATE DATABASE VennuSign;"
           if ($LASTEXITCODE -ne 0) { throw 'Could not create the VennuSign database.' }
 
-      - name: Start the local test environment
+      # Startup and the test run must share one step. The runner tears down a step's
+      # background processes when it ends, so starting the API and front ends in their
+      # own step left every request refused by the time the suite ran.
+      - name: Start the environment and run the UI suite
         shell: pwsh
         # The API applies DbUp migrations on first start, which the fixture depends on.
-        run: ./scripts/start-ui-test-env.ps1
-
-      - name: Run the UI suite
-        working-directory: tests/ui
-        shell: pwsh
-        run: npx playwright test
-
-      - name: Stop the local test environment
-        if: always()
-        shell: pwsh
-        run: ./scripts/start-ui-test-env.ps1 -Stop
+        run: |
+          ./scripts/start-ui-test-env.ps1
+          try {
+            Push-Location tests/ui
+            npx playwright test
+            $suiteExitCode = $LASTEXITCODE
+          }
+          finally {
+            Pop-Location
+            ./scripts/start-ui-test-env.ps1 -Stop
+          }
+          if ($suiteExitCode -ne 0) { throw "The UI suite failed with exit code $suiteExitCode." }
 
       - name: Upload Playwright report
         if: always()
