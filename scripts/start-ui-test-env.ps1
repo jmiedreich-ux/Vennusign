@@ -110,10 +110,12 @@ function Wait-ForHttp {
 
 # Seeded identities match run-track1-qa.ps1 so both harnesses share one fixture.
 $guid = { param($base) $base -replace '-0000-0000-0000-', "-0000-0000-$IsolationTag-" }
+# BaselineToken matches the owner acceptance workbook. Only non-default datasets get a
+# tag suffix, so a reviewer can sign in with exactly what the workbook prints.
 $roles = @(
-    @{ Key = 'owner';     Base = '71000000-0000-0000-0000-000000000001'; Name = 'Track 1 Owner Review';   Role = 'organization_owner' },
-    @{ Key = 'editor';    Base = '71000000-0000-0000-0000-000000000002'; Name = 'Track 1 Content Editor'; Role = 'content_editor' },
-    @{ Key = 'publisher'; Base = '71000000-0000-0000-0000-000000000003'; Name = 'Track 1 Publisher';      Role = 'publisher' }
+    @{ Key = 'owner';     BaselineToken = 'track1-owner-review';   Base = '71000000-0000-0000-0000-000000000001'; Name = 'Track 1 Owner Review';   Role = 'organization_owner' },
+    @{ Key = 'editor';    BaselineToken = 'track1-content-editor'; Base = '71000000-0000-0000-0000-000000000002'; Name = 'Track 1 Content Editor'; Role = 'content_editor' },
+    @{ Key = 'publisher'; BaselineToken = 'track1-publisher';      Base = '71000000-0000-0000-0000-000000000003'; Name = 'Track 1 Publisher';      Role = 'publisher' }
 )
 
 $env:ASPNETCORE_ENVIRONMENT = 'Development'
@@ -124,7 +126,8 @@ $env:Cors__AllowedOrigins__1 = $displayOrigin
 
 for ($index = 0; $index -lt $roles.Count; $index++) {
     $role = $roles[$index]
-    Set-Item "env:BackOffice__Sessions__${index}__AccessToken" "track1-$($role.Key)-$IsolationTag"
+    $token = if ($IsolationTag -eq '0000') { $role.BaselineToken } else { "track1-$($role.Key)-$IsolationTag" }
+    Set-Item "env:BackOffice__Sessions__${index}__AccessToken" $token
     Set-Item "env:BackOffice__Sessions__${index}__VenueId" (& $guid '73000000-0000-0000-0000-000000000001')
     Set-Item "env:BackOffice__Sessions__${index}__OrganizationId" (& $guid '72000000-0000-0000-0000-000000000001')
     Set-Item "env:BackOffice__Sessions__${index}__UserId" (& $guid $role.Base)

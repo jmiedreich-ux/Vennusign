@@ -14,7 +14,16 @@
     button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
     main{width:min(1180px,calc(100% - 2rem));margin:2rem auto 5rem}.summary{display:grid;grid-template-columns:repeat(4,1fr);overflow:hidden;border:1px solid var(--line);border-radius:14px;background:var(--line);gap:1px}.summary div{padding:1rem 1.15rem;background:#fff}.summary strong{display:block;color:var(--navy);font-size:1.65rem;line-height:1.2}.summary span{color:var(--muted);font-size:.9rem}
     .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.2rem 0 2rem}label{font-weight:700}input,select,textarea{width:100%;margin-top:.35rem;border:1px solid #929e97;border-radius:8px;padding:.7rem;background:#fff;color:var(--ink);font:inherit}textarea{min-height:95px;resize:vertical}
-    .start-here{margin-bottom:2rem;padding:1.4rem;border:2px solid var(--navy);border-radius:14px;background:#fff}.start-here h2{margin:0 0 .5rem;color:var(--navy)}.start-here ol{margin-bottom:0}.command{display:flex;gap:.6rem;align-items:flex-start;margin:.75rem 0;padding:.8rem 1rem;border-radius:9px;background:#122536;color:#f5fbff}.command code{flex:1}.copy{min-height:34px;padding:.3rem .65rem;border-color:#a8bed0;background:#fff;color:var(--navy);font-size:.86rem}
+    .start-here{margin-bottom:2rem;padding:1.4rem;border:2px solid var(--navy);border-radius:14px;background:#fff}.start-here h2{margin:0 0 .5rem;color:var(--navy)}.start-here ol{margin-bottom:0}
+.quick-sign-in{margin-top:1.2rem;padding-top:1.1rem;border-top:1px dashed var(--navy)}.quick-sign-in h3{margin:0 0 .4rem;color:var(--navy);font-size:1rem}.quick-sign-in p{margin:.4rem 0}
+.sign-in-actions{display:flex;flex-wrap:wrap;gap:.7rem;margin:.9rem 0 .5rem;padding:0;list-style:none}
+.sign-in-actions li{margin:0}
+a.sign-in{display:grid;gap:.15rem;padding:.65rem .95rem;border-radius:10px;background:var(--navy);color:#fff;text-decoration:none;font-weight:700}
+a.sign-in small{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:400;font-size:.72rem;opacity:.82}
+a.sign-in:hover{filter:brightness(1.15)}
+a.sign-in:focus-visible{outline:3px solid #d49d22;outline-offset:2px}
+.sign-in-note{font-size:.82rem;opacity:.85}
+@media (max-width:640px){.sign-in-actions{flex-direction:column}a.sign-in{text-align:center}}.command{display:flex;gap:.6rem;align-items:flex-start;margin:.75rem 0;padding:.8rem 1rem;border-radius:9px;background:#122536;color:#f5fbff}.command code{flex:1}.copy{min-height:34px;padding:.3rem .65rem;border-color:#a8bed0;background:#fff;color:var(--navy);font-size:.86rem}
     .toc{margin:0 0 2rem;padding:1rem 1.25rem;border:1px solid var(--line);border-radius:12px;background:#fff}.toc h2{margin:0 0 .5rem;font-size:1.2rem}.toc ol{columns:2;margin:.4rem 0;padding-inline-start:1.3rem}.toc li{margin:.35rem 0}
     .journey{margin:0 0 2rem}.journey-head{display:flex;gap:1rem;justify-content:space-between;align-items:flex-end;margin-bottom:.75rem;border-bottom:2px solid var(--navy);padding-bottom:.65rem}.journey h2{margin:0;color:var(--navy);font-size:1.6rem}.journey-head p{max-width:66ch;margin:.25rem 0 0;color:var(--muted)}.journey-state{flex:0 0 auto;font-weight:800;color:var(--navy)}
     .case{margin:.9rem 0;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}.case summary{display:grid;grid-template-columns:auto 1fr auto;gap:.8rem;align-items:center;padding:1rem 1.1rem;cursor:pointer;list-style:none}.case summary::-webkit-details-marker{display:none}.case summary::before{content:'+';display:grid;place-items:center;width:1.8rem;height:1.8rem;border-radius:50%;background:var(--soft);color:var(--navy);font-weight:900}.case[open] summary::before{content:'−'}.case-title{font-weight:800}.case-status{font-size:.86rem;font-weight:800;color:var(--muted)}.case-body{padding:0 1.2rem 1.25rem;border-top:1px solid var(--line)}
@@ -61,6 +70,17 @@
       <div class="command"><code>sqlcmd -S "(localdb)\MSSQLLocalDB" -d VennuSign -E -b -I -i docs\acceptance\track-1-owner-fixture.sql</code><button class="copy" type="button" data-copy='sqlcmd -S "(localdb)\MSSQLLocalDB" -d VennuSign -E -b -I -i docs\acceptance\track-1-owner-fixture.sql'>Copy</button></div>
       <p><strong>Important:</strong> capital <code>-I</code> enables <code>QUOTED_IDENTIFIER</code>. If the fixture previously stopped with a MERGE error, rerun this command; the fixture is idempotent.</p>
       <p>Keep the launcher windows open for the entire review. Use the exact tokens shown in each sign-in case; they are configured-access tokens, not email addresses or passwords.</p>
+
+      <div class="quick-sign-in">
+        <h3>Sign in without typing a token</h3>
+        <p>Each button opens the Back Office in a new tab already signed in as that role. The token is handed over once and removed from the address bar immediately, so nothing is left in a copied link. Typing the token by hand still works and is what the cases below describe.</p>
+        <ul class="sign-in-actions">
+          <li><a class="sign-in" href="https://localhost:5174/?accessToken=track1-owner-review#/home" target="_blank" rel="noreferrer">Open as Track 1 Owner Review<small>track1-owner-review</small></a></li>
+          <li><a class="sign-in" href="https://localhost:5174/?accessToken=track1-content-editor#/home" target="_blank" rel="noreferrer">Open as Track 1 Content Editor<small>track1-content-editor</small></a></li>
+          <li><a class="sign-in" href="https://localhost:5174/?accessToken=track1-publisher#/home" target="_blank" rel="noreferrer">Open as Track 1 Publisher<small>track1-publisher</small></a></li>
+        </ul>
+        <p class="sign-in-note">These links assume the Back Office is on <code>https://localhost:5174</code>. If you started the environment with a different host or port, sign in by typing the token instead.</p>
+      </div>
     </section>
 
     <nav class="toc" aria-label="Acceptance journeys"><h2>Journeys</h2><ol id="toc"></ol></nav>

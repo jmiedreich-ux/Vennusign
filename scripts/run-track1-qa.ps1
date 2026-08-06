@@ -29,10 +29,13 @@ $script:activeRunIds = [System.Collections.Generic.List[string]]::new()
 $baseOrganizationId = '72000000-0000-0000-0000-000000000001'
 $baseVenueId = '73000000-0000-0000-0000-000000000001'
 $baseScreenId = '74000000-0000-0000-0000-000000000001'
+# BaselineToken is what the owner acceptance workbook tells a reviewer to type, so the
+# default dataset must keep those exact names. Only the extra isolated datasets get a
+# tag suffix, which is enough to stop concurrent lanes sharing an identity.
 $baseRoles = @(
-    @{ Key = 'owner';     BaseUserId = '71000000-0000-0000-0000-000000000001'; Name = 'Track 1 Owner Review';   Role = 'organization_owner' },
-    @{ Key = 'editor';    BaseUserId = '71000000-0000-0000-0000-000000000002'; Name = 'Track 1 Content Editor'; Role = 'content_editor' },
-    @{ Key = 'publisher'; BaseUserId = '71000000-0000-0000-0000-000000000003'; Name = 'Track 1 Publisher';      Role = 'publisher' }
+    @{ Key = 'owner';     BaselineToken = 'track1-owner-review';   BaseUserId = '71000000-0000-0000-0000-000000000001'; Name = 'Track 1 Owner Review';   Role = 'organization_owner' },
+    @{ Key = 'editor';    BaselineToken = 'track1-content-editor'; BaseUserId = '71000000-0000-0000-0000-000000000002'; Name = 'Track 1 Content Editor'; Role = 'content_editor' },
+    @{ Key = 'publisher'; BaselineToken = 'track1-publisher';      BaseUserId = '71000000-0000-0000-0000-000000000003'; Name = 'Track 1 Publisher';      Role = 'publisher' }
 )
 
 # Only cases a deterministic assertion cannot honestly judge belong here. Everything
@@ -79,7 +82,7 @@ function Get-LaneIdentity {
     $roles = @($baseRoles | ForEach-Object {
         [pscustomobject]@{
             Key = $_.Key
-            Token = "track1-$($_.Key)-$Tag"
+            Token = if ($Tag -eq '0000') { $_.BaselineToken } else { "track1-$($_.Key)-$Tag" }
             UserId = Get-LaneGuid -BaseGuid $_.BaseUserId -Tag $Tag
             Name = $_.Name
             Role = $_.Role

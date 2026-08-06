@@ -60,13 +60,39 @@ import { revokeCustomerSession } from "./customerOnboardingApi";
 const tokenStorageKey = "vennusign.back-office.token";
 const customerSessionAccess = "customer-session";
 
+/**
+ * Accepts a configured venue-access token from the query string so the owner
+ * acceptance workbook can offer a one-click sign-in for each role.
+ *
+ * The token is moved straight into session storage and stripped from the URL, so it
+ * does not linger in the address bar, in history, or in a copied link. Only tokens
+ * the API already has configured are accepted, so this grants nothing new; it just
+ * saves typing one during a review.
+ */
+function consumeAccessTokenFromUrl(): string | undefined {
+  const parameters = new URLSearchParams(window.location.search);
+  const supplied = parameters.get("accessToken");
+  if (!supplied) return undefined;
+
+  parameters.delete("accessToken");
+  const query = parameters.toString();
+  window.history.replaceState(
+    null,
+    "",
+    `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`
+  );
+  sessionStorage.setItem(tokenStorageKey, supplied);
+  return supplied;
+}
+
 export default function App() {
   const configuration = useMemo(loadBackOfficeConfiguration, []);
   const starterMenu = useMemo(() => {
     const value = new URLSearchParams(window.location.search).get("starterMenu");
     return value && ["restaurant", "cafe", "bar"].includes(value) ? value as "restaurant" | "cafe" | "bar" : undefined;
   }, []);
-  const [accessToken, setAccessToken] = useState(() => sessionStorage.getItem(tokenStorageKey) ?? customerSessionAccess);
+  const [accessToken, setAccessToken] = useState(() =>
+    consumeAccessTokenFromUrl() ?? sessionStorage.getItem(tokenStorageKey) ?? customerSessionAccess);
   const [session, setSession] = useState<BackOfficeSession>();
   const [billing, setBilling] = useState<BackOfficeBillingPresentation>();
   const [route, setRoute] = useState<BackOfficeRoute>(() => resolveBackOfficeRoute(window.location.hash));

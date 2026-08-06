@@ -12,10 +12,24 @@ export type VennuRole = "owner" | "editor" | "publisher";
 /** Isolation tag of the seeded dataset this run targets. See run-track1-qa.ps1. */
 const tag = process.env.VENNU_ISOLATION_TAG ?? "0000";
 
+/**
+ * The default dataset keeps the token names the owner acceptance workbook prints, so a
+ * reviewer can sign in with exactly what it says. Only extra isolated datasets carry a
+ * tag suffix, which is all that is needed to stop lanes sharing an identity.
+ */
+const baselineTokens: Record<VennuRole, string> = {
+  owner: "track1-owner-review",
+  editor: "track1-content-editor",
+  publisher: "track1-publisher"
+};
+
+const tokenFor = (role: VennuRole) =>
+  tag === "0000" ? baselineTokens[role] : `track1-${role}-${tag}`;
+
 export const tokens: Record<VennuRole, string> = {
-  owner: process.env.VENNU_OWNER_TOKEN ?? `track1-owner-${tag}`,
-  editor: process.env.VENNU_EDITOR_TOKEN ?? `track1-editor-${tag}`,
-  publisher: process.env.VENNU_PUBLISHER_TOKEN ?? `track1-publisher-${tag}`
+  owner: process.env.VENNU_OWNER_TOKEN ?? tokenFor("owner"),
+  editor: process.env.VENNU_EDITOR_TOKEN ?? tokenFor("editor"),
+  publisher: process.env.VENNU_PUBLISHER_TOKEN ?? tokenFor("publisher")
 };
 
 export const apiBaseUrl = process.env.VENNU_API_URL ?? "https://localhost:7138";
