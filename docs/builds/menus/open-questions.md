@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** sitting 3 in progress (2026-08-07) — minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150 resolved (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
+- **Status:** sitting 3 in progress (2026-08-07) — minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206 resolved (30 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -1847,6 +1847,8 @@ The toast shows "4 seconds ago" implying it lingers; nothing is ever lost since 
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): ~10-second toast with live age counting up; a new toggle replaces the current toast; after expiry "undo" is simply the toggle itself.
+
 <sub>M3 toast [wf-additems]</sub>
 
 ## At scale (X1–X4)
@@ -2037,6 +2039,8 @@ The designer explicitly left them undesigned at scale; history depth is bounded 
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): plain unbounded scrolling lists, no extra scale treatment; revisit only if real data hurts.
+
 <sub>Menus at Scale footer [wf-scale]</sub>
 
 ## Copy, tokens and small details
@@ -2141,6 +2145,8 @@ Read literally, criterion 4 fails whenever criterion 1 passes; the checklist is 
 
 *Recommended:* Yes — record the exceptions now.
 
+*Answer:* Accepted recommended (2026-08-07): criterion 4 reworded to "No screen content changes without a deliberate act — a publish, an accept, an availability toggle, or a confirmed Take off the screens."
+
 <sub>README criteria 1/4; decisions.md 3/36 [decisions-doc, readme-handoff]</sub>
 
 ### Q188 · minor
@@ -2150,6 +2156,8 @@ Read literally, criterion 4 fails whenever criterion 1 passes; the checklist is 
 The acceptance test needs a number; reviewers proposed 5 or 10 — 10 is comfortably "seconds" and won't flake on busy networks.
 
 *Recommended:* Yes — 10 seconds online.
+
+*Answer:* Accepted recommended (2026-08-07): 10 seconds on an online screen is the pass line for criterion 1; offline screens catch up on reconnect.
 
 <sub>README criterion 1; slice-4 workbook [decisions-doc, readme-handoff]</sub>
 
@@ -2161,6 +2169,8 @@ With no auto-reset, "86'd 6:40pm" turns ambiguous the next morning.
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): older 86s gain the day — "86'd yesterday 6:40pm", then "86'd Mon 6:40pm" — same sentence shape.
+
 <sub>README verbatim; build-decisions 14 [readme-handoff]</sub>
 
 ### Q190 · minor
@@ -2170,6 +2180,8 @@ With no auto-reset, "86'd 6:40pm" turns ambiguous the next morning.
 Nothing defines a symbol or format and the codebase has no currency field; the hi-fi boards show none.
 
 *Recommended:* Yes — bare numbers.
+
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): a currency setting is a backlog item (venue-level decision later). This build renders prices as bare numbers exactly as typed (12, 9.5, MP) — no symbol, no format.
 
 <sub>README board rendering; M2c prices [readme-handoff, m2-hifi]</sub>
 
@@ -2181,6 +2193,8 @@ A 16:9 render in a 16/7.75 box must do one of three things; each looks different
 
 *Recommended:* Top-aligned crop.
 
+*Answer:* Accepted recommended (2026-08-07): top-aligned crop — the 16:9 render scales to full width and crops at the bottom; never squished or letterboxed.
+
 <sub>README pending-changes bar [readme-handoff]</sub>
 
 ### Q192 · minor
@@ -2190,6 +2204,8 @@ A 16:9 render in a 16/7.75 box must do one of three things; each looks different
 No single canonical offline string exists across the bundle.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): both strings coexist deliberately — time-anchored on status surfaces, reassurance form on publish-chip surfaces, each exactly as its wireframe draws.
 
 <sub>X1 vs README state vocabulary [wf-scale]</sub>
 
@@ -2222,6 +2238,8 @@ The slice plan's authority pointer targets files not in the repo yet, and the "(
 Your decision 16 said "sixth item" without a position; the bundle's menu is verbatim copy, so the insertion point needs your word.
 
 *Recommended:* Yes — as the slice plan has it; the destructive action stays isolated last.
+
+*Answer:* Accepted recommended (2026-08-07): "Put away" sits directly after Duplicate in the middle group; "Take off the screens" stays alone below the last divider.
 
 <sub>build-decisions 16; slice-plan slice 2; M1b verbatim menu [record-consistency]</sub>
 
@@ -2334,6 +2352,8 @@ The shared render engine must run on whatever browser the venues' actual screen 
 The build renders beautiful boards, and someone will eventually hit Ctrl+P on the builder expecting a printable menu. No artifact designs for print, and an accidental browser-print of the builder would produce chrome-filled pages.
 
 *Recommended:* Yes — out of scope, one line of debt; the shared engine makes a real print feature cheap later.
+
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): print is fully out of scope this build — no print button, no Ctrl+P promise; "print this board" from the shared render engine is a backlog candidate.
 
 <sub>Design bundle — no print affordance or print stylesheet appears in any artifact; restaurants also hand physical menus to guests</sub>
 
