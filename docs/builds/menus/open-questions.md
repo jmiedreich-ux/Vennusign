@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** paused after sitting 3 (2026-08-07). BLOCKING lane complete (16/16, sitting 2); minor lane COMPLETE (32/32, sitting 3). important lane in progress (sitting 4): Q87–Q92, Q99–Q102 resolved (10 of 78); RESUME AT Q103. Sitting 3 minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
+- **Status:** paused after sitting 3 (2026-08-07). BLOCKING lane complete (16/16, sitting 2); minor lane COMPLETE (32/32, sitting 3). important lane in progress (sitting 4): Q87–Q92, Q99–Q112 resolved (20 of 78); RESUME AT Q113. Sitting 3 minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -1259,6 +1259,8 @@ As drawn only the selected item has a handle, and One-section view makes cross-s
 
 *Recommended:* Yes to both.
 
+*Answer:* Accepted recommended (2026-08-07): drag pill on hover as well as selection; cross-section moves wait for Board view in slice 5 — until then remove-and-re-add (two draft changes).
+
 <sub>M2 hi-fi canvas pill; wireframe annotation [m2-hifi]</sub>
 
 ### Q104 · important
@@ -1268,6 +1270,8 @@ As drawn only the selected item has a handle, and One-section view makes cross-s
 The inspector is only ever drawn in its green on-state.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): an 86'd item is selectable and fully editable; the availability panel flips to a red-tinted "Off right now — 86'd 6:40pm" state, switch off, copy stating turning it on shows it immediately.
 
 <sub>M2 hi-fi Berry Fizz row + inspector [m2-hifi]</sub>
 
@@ -1279,6 +1283,8 @@ Wine's 12 items would clip in the fixed-height card as drawn.
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): One-section view grows and scrolls for editing; real pagination appears only in Whole board, Play and on the TV.
+
 <sub>M2 hi-fi overflow:hidden card; M2c split card [m2-hifi]</sub>
 
 ### Q106 · important
@@ -1288,6 +1294,8 @@ Wine's 12 items would clip in the fixed-height card as drawn.
 The inspector is only drawn with an item selected; ✕, empty-canvas clicks and fresh opens all deselect.
 
 *Recommended:* Yes.
+
+*Answer:* Owner confirmed recommended (2026-08-07): the inspector keeps its place with a quiet "Select an item on the board to edit it" placeholder plus the theme footer; the canvas never resizes with selection.
 
 <sub>M2 hi-fi inspector ✕ [m2-hifi]</sub>
 
@@ -1299,6 +1307,8 @@ No board render anywhere shows a featured item; shipping the control would make 
 
 *Recommended:* Yes — absent, not dead; added back the moment the treatment is specified.
 
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): the "Feature on the board" checkbox stays out of the editor until the featured-item board treatment is specified; the flag stays in the schema. Backlog item tracks specifying the treatment.
+
 <sub>M2 inspector checkbox; no featured render in bundle [m2-hifi]</sub>
 
 ### Q108 · important
@@ -1308,6 +1318,8 @@ No board render anywhere shows a featured item; shipping the control would make 
 No upload endpoint exists, no flow is drawn, and the TV board spec never mentions photo placeholders on "the real render".
 
 *Recommended:* Yes — omit both, keep the field.
+
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): item photos deferred entirely — no "Add a photo" checkbox, no dashed photo squares; the schema keeps the photo field. Backlog item tracks the upload flow + "With photos" theme work.
 
 <sub>M2 inspector + dashed squares; MenuItem.ImageUrl; no upload in Vennu.Api [m2-hifi, readme-handoff]</sub>
 
@@ -1319,6 +1331,8 @@ The destination is never drawn and the wireframe promises "changeable from the b
 
 *Recommended:* Yes.
 
+*Answer:* Owner confirmed recommended (2026-08-07, after clarification): the theme footer link opens a small picker over the canvas offering only the shipped looks; changing theme queues as a draft change; never navigates to the undesigned Themes area.
+
 <sub>M2 inspector footer; Menus.dc.html themes note [m2-hifi]</sub>
 
 ### Q110 · important
@@ -1328,6 +1342,8 @@ The destination is never drawn and the wireframe promises "changeable from the b
 An inline link that can destroy several people's work with one click, no dialog drawn; the one irreversible act in the draft model.
 
 *Recommended:* Yes.
+
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): the discard-draft dialog spec is backlogged. Provisional default per protocol (the link itself ships in slice 3 and cannot ship bare): the recommended one-step confirmation naming count and authors, then clearing the queue with no undo — flagged in the slice-3 acceptance workbook.
 
 <sub>M2/X1 publish bar "discard draft" [readme-handoff, m2-hifi, wf-scale]</sub>
 
@@ -1339,6 +1355,8 @@ The bar is only ever drawn dirty; the after-publish chip sentences are specified
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): clean state — "Everything is on your screens · published Tue 4:12pm by Dana · go back to…", Publish and Review first absent, chips remain; brief busy state during publish, then chips flip to arrived/offline sentences.
+
 <sub>M2 publish bar; Menus.dc.html after-publish slots [m2-hifi]</sub>
 
 ### Q112 · important
@@ -1348,6 +1366,8 @@ The bar is only ever drawn dirty; the after-publish chip sentences are specified
 Scope is unstated and stopping duplicates is the design's stated goal.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): add-row search covers the whole venue library including 86'd items; an item already on this board appears labelled "already on this board · Small Plates" and picking it jumps to it instead of placing a duplicate.
 
 <sub>Menus.dc.html M2a dropdown [wf-additems]</sub>
 
