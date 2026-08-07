@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** sitting 1 complete (2026-08-07) — Q1–Q82 resolved or deferred; RESUME AT Q83 (needs a plainer re-explanation), then Q84 onward. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
+- **Status:** sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -1017,7 +1017,7 @@ The crop-beside-question pattern is the confirm step's signature and the shared 
 
 *Recommended:* Amber dot + "we guessed this" note on the item and in its inspector; the guess renders normally (better than a hole); Publish allowed with one quiet publish-bar line ("2 items still flagged").
 
-*Answer:* PENDING — owner answered "I don't understand" at the sitting pause (2026-08-07). Re-explain in plainer terms at the next sitting before recording anything.
+*Answer:* Owner (2026-08-07): flagged/guessed items are resolved **at import** — "when items get imported they are flagged after the fact and should never reach this point." A machine guess must never render on a live board. Stronger than the recommendation (which allowed publishing with a rendered guess). FLAG — reconciliation needed with the drawn "Skip these for now" path (README M1a): skipping must force resolution before publish or the skip path goes; design pass required before slice 6 builds the confirm step.
 
 <sub>Menus.dc.html confirm footer [wf-import-actions]</sub>
 
@@ -1029,6 +1029,8 @@ Decision 32's replace-by-import is in scope for slice 6 but no drawn surface sta
 
 *Recommended:* A destination line on the route surface itself — "This will be a new menu · or replace one you have ▾" — keeping one import flow and the six-item ⋯ menu.
 
+*Answer:* Accepted recommended (2026-08-07): destination line on the import route surface itself — "This will be a new menu · or replace one you have ▾" — one import flow, six-item ⋯ menu unchanged.
+
 <sub>decisions.md 32; build-decisions 16; slice-plan slice 6 [wf-import-actions]</sub>
 
 ### Q85 · BLOCKING
@@ -1039,6 +1041,8 @@ Zero drawn frames for a route that ships this build; zero-section boards need ne
 
 *Recommended:* Yes — exactly that, Coastal default theme.
 
+*Answer:* Accepted recommended (2026-08-07): full flow — New menu draft, Pick-a-look, builder with one empty renameable section and the add-item row focused; shelf card exists at once as "Never published · not on a screen"; Coastal default theme.
+
 <sub>Menus.dc.html "or start from a blank board"; build-decisions 5 [wf-import-actions]</sub>
 
 ### Q86 · BLOCKING
@@ -1048,6 +1052,8 @@ Zero drawn frames for a route that ships this build; zero-section boards need ne
 The Pick-a-look step and the slice-2 render engine both need the exact list; "With photos" implies photo support the plan never mentions, and the picker must show only looks that exist (decision-4 style).
 
 *Recommended:* Two this build — Coastal (the light paper look in the hi-fis) and Classic dark; "With photos" arrives with photo support.
+
+*Answer:* DEFERRED (2026-08-07). Provisional per recommendation: Coastal + Classic dark this build; "With photos" arrives with photo support. Flagged in the slice-2 acceptance workbook.
 
 <sub>Menus.dc.html "Pick a look" vs slice-plan slice 2 vs M2 inspector [wf-import-actions, record-consistency]</sub>
 
@@ -1141,6 +1147,8 @@ The hi-fi's plus reads as add-a-section, the wireframe reassigns it to the bulk 
 
 *Recommended:* Split them as described — '+' adds a section; the drawer moves to the add-item row.
 
+*Answer:* Accepted recommended (2026-08-07): split them — '+' adds a section (inline row at the rail's foot, typing mode, lands last on the board as a draft change); the bulk drawer opens from an "Add many at once" link on the add-item row.
+
 <sub>M2 hi-fi rail vs Menus.dc.html M2a annotation [m2-hifi, wf-additems]</sub>
 
 ### Q96 · BLOCKING
@@ -1150,6 +1158,8 @@ The hi-fi's plus reads as add-a-section, the wireframe reassigns it to the bulk 
 No rename or delete control is drawn anywhere, and the rail is explicitly "a navigator, not a second editor".
 
 *Recommended:* Accept the proposal.
+
+*Answer:* Accepted recommended (2026-08-07): rename by clicking the canvas heading and typing over it; quiet delete control with the heading; deleted sections release their items back to the library; all queued as draft changes; an empty board shows just the add affordance.
 
 <sub>M2 hi-fi rail + canvas; Menus.dc.html [m2-hifi]</sub>
 
@@ -1161,6 +1171,8 @@ Nothing anywhere removes an item; 86 hides but keeps it, and the six-control ins
 
 *Recommended:* Accept.
 
+*Answer:* Accepted recommended (2026-08-07): Delete/Backspace with the item selected plus a quiet "Remove from this board" link at the inspector's foot — queued as a draft change, item stays in the library.
+
 <sub>M2 hi-fi inspector; README "six controls" [m2-hifi]</sub>
 
 ### Q98 · BLOCKING
@@ -1170,6 +1182,8 @@ Nothing anywhere removes an item; 86 hides but keeps it, and the six-control ins
 It appears in the rail with no item count and as page 1 in Play, undefined everywhere; one reviewer proposed a built-in title panel, but the header strip already covers branding without inventing an unauthorable object.
 
 *Recommended:* Accept — ordinary sections only; empty sections don't render; header strip is the theme-generated title.
+
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): no special panel type this build. Provisional default where the render engine touches it: ordinary sections only, a zero-item section doesn't render on the TV, and the theme-generated venue-name header strip is the branded title (always present, not editable). The built-in title-panel idea goes to the backlog.
 
 <sub>M2 hi-fi rail; M2c "1 · Welcome"; Menus.dc.html M2b header strip [m2-hifi, code-display, wf-additems]</sub>
 
@@ -1505,6 +1519,8 @@ Only one problem type is ever drawn; the inspector's text-wrap warning is a sepa
 
 *Recommended:* Yes — splits only.
 
+*Answer:* Accepted recommended (2026-08-07): splits only this build — one card per affected section, stacked; absent at zero problems, no green all-clear.
+
 <sub>M2c problem card [m2c-hifi]</sub>
 
 ### Q132 · BLOCKING
@@ -1515,6 +1531,8 @@ No formula is stated anywhere and the number must be reproducible for acceptance
 
 *Recommended:* Accept the ×10 signage rule as described.
 
+*Answer:* Accepted recommended (2026-08-07): cap-height-in-inches × 10 ft, headline driven by the smallest common text (item names); larger roles supply the "holds" comparison; formula written into the slice-5 acceptance workbook.
+
 <sub>M2c "Readable from 18 ft" + provenance [m2c-hifi]</sub>
 
 ### Q133 · BLOCKING
@@ -1524,6 +1542,8 @@ No formula is stated anywhere and the number must be reproducible for acceptance
 The sentence references data with no origin and no artifact adds a way to enter it.
 
 *Recommended:* Drop it.
+
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): the room-comparison sentence is dropped this build — show only the distance, the holds/won't line, and the provenance line. Backlog: an optional per-screen viewing-distance field under Screens restores it later.
 
 <sub>M2c sidebar [m2c-hifi, code-display, record-consistency]</sub>
 
@@ -1799,6 +1819,8 @@ The design distinguishes stale from offline; the server stores only Online/Offli
 
 *Recommended:* Yes on all — keep the 5-minute rule.
 
+*Answer:* Accepted recommended (2026-08-07): yes on all — stale stays a distinct client-derived amber state (Online but silent 5 minutes, from last-seen; nothing new stored server-side), shown as its own exception, excluded from the "ready" count, still publishable-to so it catches up. Owner probed collapsing stale into Offline; the distinction is kept deliberately so a quiet-but-showing screen does not read as down.
+
 <sub>X1 "stale — no reply since 6:20pm"; ScreenManagement.tsx:253; ScreenManagementService.cs [wf-scale]</sub>
 
 ### Q161 · BLOCKING
@@ -1808,6 +1830,8 @@ The design distinguishes stale from offline; the server stores only Online/Offli
 Reviewers proposed 5 or 6; six is the file's own recurring boundary. Two label formulas exist for one button.
 
 *Recommended:* Yes — collapse above 6; one label formula everywhere.
+
+*Answer:* Accepted recommended (2026-08-07): chips per screen at six targets or fewer; count-plus-exception-cards above six; the button reads "Publish N changes" in both forms (X1's "Publish to 12 screens" treated as a slip).
 
 <sub>M2 chips; X1 note + button; decisions.md scale rule [decisions-doc, readme-handoff, m2-hifi, wf-scale]</sub>
 
@@ -1819,6 +1843,8 @@ The other two have no flow drawn anywhere and aren't in the slice plan; buttons 
 
 *Recommended:* Yes — dwell fix only.
 
+*Answer:* Accepted recommended (2026-08-07): "Shorten the dwell" ships as the only live fix action this build; split-across-screens and move-sections wait for designed flows — no buttons into unfinished journeys.
+
 <sub>X4 fix buttons; slice-plan [wf-scale]</sub>
 
 ### Q163 · BLOCKING
@@ -1828,6 +1854,8 @@ The other two have no flow drawn anywhere and aren't in the slice plan; buttons 
 Three artifacts hint at three behaviors; "past six" needs a hard boundary and a stated counting rule.
 
 *Recommended:* Yes — one cutover at 7, everything included in the count.
+
+*Answer:* Accepted recommended (2026-08-07): one cutover at ≥7 total menus (Not-in-use included in the count; search also matches put-away menus tagged "not in use"); at ≤6 the shelf is exactly M1, growing rows and scrolling, no collapse.
 
 <sub>X2; Menus.dc.html search note; M1 Hi-Fi grid [m1-hifi, wf-import-actions, wf-scale]</sub>
 
@@ -1980,6 +2008,8 @@ The designer explicitly left them undesigned at scale; history depth is bounded 
 Decision 8 says components consume variables, never raw values — but many component-sheet values (type sizes, borders, the board palette) have no token, forcing either a broken rule or a changed look.
 
 *Recommended:* Yes — batch-2 under the same approval; board colors live in the theme definitions.
+
+*Answer:* Accepted recommended (2026-08-07): batch-2 token additions under the same approval, preserving the exact hi-fi values (including a selection-blue token for #2a78d6); the board palette lives in board-theme definitions, not UI tokens.
 
 <sub>proposed-token-additions.css; README component sheet; build-decisions 8 [readme-handoff]</sub>
 
