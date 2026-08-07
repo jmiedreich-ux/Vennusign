@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** paused after sitting 3 (2026-08-07). BLOCKING lane complete (16/16, sitting 2); minor lane COMPLETE (32/32, sitting 3). important lane in progress (sitting 4): Q87–Q92, Q99–Q115, Q125–Q128, Q134–Q136 resolved (30 of 78); RESUME AT Q137. Sitting 3 minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
+- **Status:** paused after sitting 3 (2026-08-07). BLOCKING lane complete (16/16, sitting 2); minor lane COMPLETE (32/32, sitting 3). important lane in progress (sitting 4): Q87–Q92, Q99–Q115, Q125–Q128, Q134–Q143, Q151–Q153 resolved (40 of 78); RESUME AT Q154. Sitting 3 minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -1671,6 +1671,8 @@ A guest sees page 4 alone for 8 seconds; page 4 is never drawn.
 
 *Recommended:* Yes to both.
 
+*Answer:* Owner agreed (2026-08-07): heading repeats for guests on every surface; "2 OF 2" counter in back-office surfaces only. Owner condition — the page dwell must be configurable: already settled by Q9 (per-menu dwell setting, default 8s), cross-referenced here.
+
 <sub>M2c "WINE 1 OF 2" [m2c-hifi]</sub>
 
 ### Q138 · important
@@ -1680,6 +1682,8 @@ A guest sees page 4 alone for 8 seconds; page 4 is never drawn.
 The lo-fi says offline still renders from its last report; the hi-fi never shows it selected; criterion 9 bans only unpaired screens.
 
 *Recommended:* Yes — selectable with the honest note.
+
+*Answer:* Accepted recommended (2026-08-07): offline and stale screens stay selectable in Play as pure simulation against last-reported geometry; provenance switches to "last seen 4:12pm — offline"; only never-reported screens are excluded.
 
 <sub>M2c chips; Menus.dc.html M2c annotation; criterion 9 [m2c-hifi, wf-scale]</sub>
 
@@ -1691,6 +1695,8 @@ Many platforms hide panel inches; the degraded state is never drawn; decision 5 
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): with resolution but no physical size, the Readable-from panel stays with a plain reason ("Bar doesn't report its panel size, so we can't estimate reading distance"); never guesses a size.
+
 <sub>M2c provenance; slice-plan slice 4 degrade note [m2c-hifi, readme-handoff, code-display]</sub>
 
 ### Q140 · important
@@ -1700,6 +1706,8 @@ Many platforms hide panel inches; the degraded state is never drawn; decision 5 
 The hi-fi is a mid-cycle snapshot; the start state is unspecified.
 
 *Recommended:* Yes — matches the play–spot–fix–play-again loop.
+
+*Answer:* Accepted recommended (2026-08-07): Play auto-plays on entry from page 1 on the screen currently selected in M2's "Viewing as" control.
 
 <sub>M2c snapshot; M2 top bar [m2c-hifi]</sub>
 
@@ -1711,6 +1719,8 @@ Only the 3-changes state is drawn.
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): the draft pill disappears entirely when the queue is empty and is purely informational, never clickable.
+
 <sub>M2c pill [m2c-hifi]</sub>
 
 ### Q142 · important
@@ -1721,6 +1731,8 @@ Only the 3-changes state is drawn.
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): an 86 applies live in Play (at the next page turn, re-paginating); colleagues' draft edits appear only on next Play entry.
+
 <sub>M2c "read-only… including your unpublished draft" [m2c-hifi]</sub>
 
 ### Q143 · important
@@ -1730,6 +1742,8 @@ Only the 3-changes state is drawn.
 The hi-fi only shows Play for a fully-assigned menu.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): Play on an unassigned menu offers all paired screens with reported geometry; previewing never requires assigning first.
 
 <sub>M2c picker; "Late Night not on a screen" [code-display]</sub>
 
@@ -1827,6 +1841,8 @@ An 86 toggle on a draft-only item changes no screen, contradicting the toggle's 
 
 *Recommended:* Yes — published content only; drafts live in the builder.
 
+*Answer:* Accepted recommended (2026-08-07): Quick Update lists the menu as published — what's actually on screens; draft-only items stay out until their menu publishes.
+
 <sub>decisions.md 3/15; verbatim toggle copy [decisions-doc]</sub>
 
 ### Q152 · important
@@ -1837,6 +1853,8 @@ The 11pm bartender doesn't know which menu holds the item, and availability is v
 
 *Recommended:* Yes — adds findability, no new model.
 
+*Answer:* Accepted recommended (2026-08-07): M3 search also matches on-air items from the venue's other menus, labelled ("on Late Night") and toggleable in place; the list stays scoped to the open menu.
+
 <sub>Menus.dc.html M3; M1b ⋯ menu [wf-additems]</sub>
 
 ### Q153 · important
@@ -1846,6 +1864,8 @@ The 11pm bartender doesn't know which menu holds the item, and availability is v
 Only the happy footer is drawn; decision 14 exists exactly for this case.
 
 *Recommended:* Yes — the list itself is the reminder.
+
+*Answer:* Accepted recommended (2026-08-07): rows off more than a day switch their "since" line to amber with a day count; the footer names the oldest instead of the all-clear; no banners or emails — the list itself is the reminder.
 
 <sub>M3 "Off right now" footer; build-decisions 14 [wf-additems]</sub>
 
