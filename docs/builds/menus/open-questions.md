@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** paused after sitting 3 (2026-08-07). BLOCKING lane complete (16/16, sitting 2); minor lane COMPLETE (32/32, sitting 3). important lane in progress (sitting 4): Q87–Q92, Q99–Q115, Q125–Q128, Q134–Q143, Q151–Q153 resolved (40 of 78); RESUME AT Q154. Sitting 3 minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
+- **Status:** paused after sitting 3 (2026-08-07). BLOCKING lane complete (16/16, sitting 2); minor lane COMPLETE (32/32, sitting 3). important lane in progress (sitting 4): Q87–Q92, Q99–Q115, Q125–Q128, Q134–Q143, Q151–Q158, Q164–Q168 resolved (50 of 78); RESUME AT Q169. Sitting 3 minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -1877,6 +1877,8 @@ X4 draws the unplaced row without the one control the screen exists for; availab
 
 *Recommended:* Yes — toggle present.
 
+*Answer:* Accepted recommended (2026-08-07): the toggle is present on an unplaced item, with a sub-line explaining no screen will change — availability is a fact about the venue, not the board.
+
 <sub>X4 "Snapper Crudo · not on any board" [wf-scale]</sub>
 
 ### Q155 · important
@@ -1886,6 +1888,8 @@ X4 draws the unplaced row without the one control the screen exists for; availab
 Placement grouping and expand behavior are both undefined; the badge guides, it doesn't filter.
 
 *Recommended:* Yes to both.
+
+*Answer:* Accepted recommended (2026-08-07): an item appears under every section it's placed in; unplaced items collect in a final "Not on any board" group; expanding a badged section shows all its items with toggles, off items pinned first.
 
 <sub>X4 browse; "only surface what is off" note [wf-scale]</sub>
 
@@ -1897,6 +1901,8 @@ M3 shows a flat list at 41 items; X4 collapses at 250.
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): browse sections collapse past six sections, expanded at six or fewer — the file's recurring boundary.
+
 <sub>X4 "7 sections, collapsed" vs M3 flat list [wf-scale]</sub>
 
 ### Q157 · important
@@ -1907,6 +1913,8 @@ End-of-night bulk operations become one tap per item.
 
 *Recommended:* Yes — ship as designed, watch for the miss.
 
+*Answer:* Accepted recommended (2026-08-07): per-row toggles only; losing today's bulk 86 is accepted; a "turn off this whole section" affordance is a later addition if the workbook shows it missed.
+
 <sub>QuickUpdateMode.tsx:46; README M3 [code-backoffice]</sub>
 
 ### Q158 · important
@@ -1916,6 +1924,8 @@ End-of-night bulk operations become one tap per item.
 The designer explicitly refused to guess a phone layout; slice 6's acceptance is this path.
 
 *Recommended:* Yes — accept and flag.
+
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): mobile is out of scope this build — M3 merely stacks below ~900px without claiming mobile; a designed phone layout for Quick Update is the first mobile candidate, tracked as a backlog issue.
 
 <sub>README mobile note [wf-additems]</sub>
 
@@ -1989,6 +1999,8 @@ Sky fill means active elsewhere, but an active "On a screen · 3" filter contrad
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): single-select click-to-filter chips, none active on load, click again to clear; the sketch's sky fill was styling, not a default.
+
 <sub>X2 chips vs grid [wf-scale]</sub>
 
 ### Q165 · important
@@ -1998,6 +2010,8 @@ Sky fill means active elsewhere, but an active "On a screen · 3" filter contrad
 Which cards earn visibility and what ▾ does are unstated.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): every on-screen menu always visible; remaining first-row slots fill with most-recently-edited others; the rest behind an inline "N more ▾" expanding in place and staying open for the session.
 
 <sub>X2 six cards + "4 more" [wf-scale]</sub>
 
@@ -2009,6 +2023,8 @@ X2's compact grid has no add affordance anywhere.
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): once the shelf compacts, "Add a menu" becomes a plain button beside the search field; the dashed tile remains at ≤6 menus.
+
 <sub>X2 grid vs M1 tile [wf-scale]</sub>
 
 ### Q167 · important
@@ -2019,6 +2035,8 @@ The governing rule says list length tracks what is wrong.
 
 *Recommended:* Yes — it grows.
 
+*Answer:* Accepted recommended (2026-08-07): the publish bar grows and wraps when exceptions outnumber one row — every exception drawn, never summarized behind a count.
+
 <sub>X1 note "however many exceptions" [wf-scale]</sub>
 
 ### Q168 · important
@@ -2028,6 +2046,8 @@ The governing rule says list length tracks what is wrong.
 The strip mixes designer annotation with what reads as real UI.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): the footer strip ships with only the "See all 12 →" link, opening a read-only panel listing all target screens with their state; the surrounding prose was annotation.
 
 <sub>X1 footer strip [wf-scale]</sub>
 
