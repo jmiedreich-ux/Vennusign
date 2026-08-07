@@ -24,6 +24,17 @@ The unit of work is a **build**, named by product area. A build is delivered in 
 | 10 | Board font | **Playfair Display, self-hosted** (default pending owner objection). Font files bundled in the repo so boards render identically on offline displays; used only in board content, never UI chrome. |
 | 11 | Track 1 tail | **Retrospective folded in** (approved and merged); **everything else archived.** PR #663 closed unmerged with dispositions recorded on the PR. Acceptance results 2-1/3-1 superseded by the redesign; 3-0 / `screen.content.target` enforcement remains a known gap on master, tracked as a hygiene item for builds touching Screens. |
 
+## Decisions — round 2 (2026-08-07, planning Q&A)
+
+| # | Question | Decision |
+|---|---|---|
+| 12 | App shell | **New 76px icon nav rail app-wide.** The rail from the hi-fis becomes the shell for the whole back office; other areas keep their current content inside it unchanged. Decision 19's nav gating is built once, in the shell. |
+| 13 | TV player | **Board renderer included in this build.** The render engine is shared between M2's canvas, M2c Play, and the display player, so a published board is literally what the TV shows. Without it, Publish would update a board the player cannot render. |
+| 14 | 86 reset | **Stays off until a person turns it back on.** No automatic morning reset. The "Off right now" list carries the age so nothing is forgotten. The legacy `AvailabilityResetUtc` concept does not migrate. |
+| 15 | Happy hour | **Parked.** Dropping `HappyHourPrice` means items cannot show a happy-hour price until Schedules-owned pricing is designed (decision 35). The schedule machinery itself stays. Accepted consequence. |
+| 16 | "Not in use" | **Manual action.** The card ⋯ menu gains a sixth, plain-language item ("Put away") that moves a menu to the Not-in-use strip. *Approved deviation:* the design's verbatim ⋯ menu was five items; it is now six. Opening a put-away menu works like any other; putting it on a screen returns it to the shelf. |
+| 17 | Acceptance cadence | **Per slice.** Every slice ends with a short owner workbook (5–10 minutes) before the next slice starts; the schema-only slice gets a demo script instead. |
+
 ## Known gaps carried into planning
 
 - `screen.content.target` is declared but enforced nowhere on master (was fixed only on archived #663).
