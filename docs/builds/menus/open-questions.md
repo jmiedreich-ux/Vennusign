@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** paused after sitting 3 (2026-08-07). BLOCKING lane complete (16/16, sitting 2); minor lane COMPLETE (32/32, sitting 3). important lane in progress (sitting 4): Q87–Q92, Q99–Q115, Q125–Q128, Q134–Q143, Q151–Q158, Q164–Q176, Q179, Q180 resolved (60 of 78); RESUME AT Q181. Sitting 3 minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
+- **Status:** COMPLETE (2026-08-07) — all 208 questions resolved across four sittings. Sitting 1: Q1–Q82. Sitting 2: 16 BLOCKING. Sitting 3: 32 minor. Sitting 4: 78 important. Owner deviations of note: Q83 resolve-at-import, Q94 match picker, Q115/Q190 as-typed prices, Q147 no possessive copy, Q175/Q201 tier-/setting-configurable thresholds and ceilings, Q185 lucide-react icons, Q196 venue-local timestamps. Backlog issues: #670–#682. Deferred: Q86 (board looks). Next: reconcile slice-plan.md with all recorded answers, then slice 1.
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -2205,6 +2205,8 @@ With real data the counts hit 1 and 0; "1 changes" and "on all 1 screens" are br
 
 *Recommended:* Yes — standard variants.
 
+*Answer:* Accepted recommended (2026-08-07): natural singular and zero forms for all verbatim strings ("1 change not published", "on your screen", "· 0" counts hidden); approved shapes keep for 2+.
+
 <sub>README verbatim-copy rule [readme-handoff]</sub>
 
 ### Q182 · important
@@ -2214,6 +2216,8 @@ With real data the counts hit 1 and 0; "1 changes" and "on all 1 screens" are br
 The unit is undefined: edits-since-publish vs current diff give different numbers.
 
 *Recommended:* Current diff — latest state per field/item.
+
+*Answer:* Accepted recommended (2026-08-07): "3 changes" counts the current diff — latest state per field/item, exactly what Publish ships and Review lists.
 
 <sub>README pending bar; DraftChange model [code-api-data]</sub>
 
@@ -2225,6 +2229,8 @@ The drawn sentences classify the change type, implying generated summaries with 
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): generic after-publish forms this build; typed phrasing only when the whole draft is one kind of change; shapes reviewed in the slice workbook.
+
 <sub>Menus.dc.html one-screen publish bar [wf-import-actions]</sub>
 
 ### Q184 · important
@@ -2234,6 +2240,8 @@ The drawn sentences classify the change type, implying generated summaries with 
 The README's own M1 spec makes the exact substitution its token section forbids.
 
 *Recommended:* Yes — the accessibility rule outranks the layout spec.
+
+*Answer:* Accepted recommended (2026-08-07): the venue-name eyebrow uses #64748b — the accessibility rule outranks the layout spec's #94a3b8.
 
 <sub>README M1 vs README tokens [readme-handoff]</sub>
 
@@ -2245,6 +2253,8 @@ The README's own M1 spec makes the exact substitution its token section forbids.
 
 *Recommended:* Extend SkyIcon in-house.
 
+*Answer:* Owner (2026-08-07): adopt **lucide-react** for the icon set rather than extending SkyIcon in-house. New dependency — to be documented per repository policy; one consistent style across the new surfaces.
+
 <sub>SkyIcon.tsx; README assets [readme-handoff, code-backoffice]</sub>
 
 ### Q186 · important
@@ -2254,6 +2264,8 @@ The README's own M1 spec makes the exact substitution its token section forbids.
 Wireframes draw a dropdown caret; the hi-fi and README say not clickable; single-venue scope makes a switcher here meaningless.
 
 *Recommended:* Yes — static, no caret.
+
+*Answer:* Accepted recommended (2026-08-07): the venue name is a plain static label everywhere this build — no caret, never clickable; the wireframes' caret is stale.
 
 <sub>Menus.dc.html/X2 carets vs README M1; decision 29 [wf-import-actions, wf-scale, m2-hifi]</sub>
 
@@ -2339,6 +2351,8 @@ The slice plan's authority pointer targets files not in the repo yet, and the "(
 
 *Recommended:* Yes — copy it in now so the authority pointer is real before code is written.
 
+*Answer:* Owner confirmed (2026-08-07): the bundle landed in docs/design/approved/menus/ by PR #669 (at-scale and compare sheets included) is the approved version; the authority pointer is real.
+
 <sub>build-decisions authority line; docs/design/approved/menus/ contents [record-consistency]</sub>
 
 ### Q194 · important
@@ -2348,6 +2362,8 @@ The slice plan's authority pointer targets files not in the repo yet, and the "(
 18 is precisely this build's no-leak guardrail and is testable now; 11/14–17 can never flip in this build.
 
 *Recommended:* Yes to both.
+
+*Answer:* Accepted recommended (2026-08-07): criterion 18 asserted by a named slice-2 spec and re-checked each UI slice; criteria 11 and 14–17 stamped "deferred to a later build".
 
 <sub>README criteria; slice-plan acceptance lines [readme-handoff, record-consistency]</sub>
 
@@ -2373,6 +2389,8 @@ Every drawn timestamp ("Draft saved 10:42am", "86'd 6:40pm", "published Tue 4:12
 
 *Recommended:* Viewer's device clock this build — it matches the rest of the app and single-venue users are almost always on site; the venue Timezone field stays untouched for a later remote-management pass.
 
+*Answer:* Owner (2026-08-07): timestamps render in the **venue's local time** (from the venue's stored Timezone), not the viewer's device clock — "86'd 6:40pm" is a shift-time fact and must read the same from anywhere. Deviation from today's toLocaleString behavior; applies to all Menus surfaces this build.
+
 <sub>M2 Hi-Fi - Menu builder.dc.html publish bar "Draft saved 10:42am by Alex"; src/Vennu.Core.Models/Venue.cs "public string Timezone { get; set; } = \"UTC\""</sub>
 
 ### Q197 · important
@@ -2382,6 +2400,8 @@ Every drawn timestamp ("Draft saved 10:42am", "86'd 6:40pm", "published Tue 4:12
 Every edit saves to the server the moment it's made (merged Q99), but no artifact draws what happens when that save fails — network drop, API down. The byline would keep claiming "Draft saved" while an edit silently never reached the shared queue, and a colleague's Publish could then ship a draft missing it.
 
 *Recommended:* The byline flips to an amber "Couldn't save your last change — retrying…" and retries automatically; Publish is unavailable until the queue is confirmed saved; the byline never shows "Draft saved" unless it's true.
+
+*Answer:* Accepted recommended (2026-08-07): on a failed save the byline flips to amber "Couldn't save your last change — retrying…", retries automatically, and Publish is unavailable until the queue is confirmed saved.
 
 <sub>M2 Hi-Fi - Menu builder.dc.html byline "Draft saved 10:42am by Alex" — no failure state drawn anywhere in the bundle</sub>
 
@@ -2393,6 +2413,8 @@ The publish bar's busy state and the per-screen delivery chips are specified, bu
 
 *Recommended:* Yes — publish is atomic on the server; on failure the bar returns with "Publish didn't go through — nothing changed on your screens. Try again." and the draft queue is untouched; per-screen delivery trouble after a successful publish stays the chips' job.
 
+*Answer:* Accepted recommended (2026-08-07): publish is atomic on the server; on failure the bar returns with "Publish didn't go through — nothing changed on your screens. Try again." and the draft queue is untouched.
+
 <sub>M2 Hi-Fi - Menu builder.dc.html "Publish 3 changes" button; merged Q111 covers only the busy state, not failure</sub>
 
 ### Q199 · important
@@ -2402,6 +2424,8 @@ The publish bar's busy state and the per-screen delivery chips are specified, bu
 Edits save to the server per keystroke-commit, so an expired session mid-shift means save calls start returning 401. Today the app has no silent re-auth; the code throws a terminal error message. Nothing in the design covers a bartender's 86 or an editor's price change hitting an expired session.
 
 *Recommended:* Yes — on a 401 during a save, show a sign-back-in prompt over the page, hold the unsent change, and send it once re-authenticated; the change is never silently dropped and the byline shows the amber unsaved state meanwhile.
+
+*Answer:* Accepted recommended (2026-08-07): on a 401 during a save, a sign-back-in prompt appears over the page, the unsent change is held, and it sends automatically after sign-in — nothing lost, no terminal error.
 
 <sub>src/back-office/src/api.ts 401 handling: "That venue access link is invalid or has expired." — no re-auth flow, no drawn state in the bundle</sub>
 
@@ -2413,6 +2437,8 @@ The build drops per-item translations and the bilingual/AI-translation features,
 
 *Recommended:* Yes to all three — English-only UI, language fields dormant (logged as debt for a future localization pass), onboarding copy trimmed in the same slice that retires the starter links.
 
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): the language question is backlogged. Provisional this build: the new Menus UI ships English-only; the venue language fields stay but drive nothing; the onboarding "language defaults" promise is recorded as copy debt in the backlog issue.
+
 <sub>src/Vennu.Core.Models/Venue.cs "PrimaryLanguage = \"en\" / SecondaryLanguage"; CustomerOnboardingApp.tsx "These details control schedules and language defaults."; build-decisions 6 drops per-item translations</sub>
 
 ### Q201 · important
@@ -2422,6 +2448,8 @@ The build drops per-item translations and the bilingual/AI-translation features,
 Merged Q119 carries per-field length limits, but nothing anywhere caps counts: how many menus a venue can have, items per menu, or what happens when someone pastes a 10,000-line document into the paste box. Unbounded input is where parsers and boards fall over, and any limit message must follow decision 5's name-the-reason rule.
 
 *Recommended:* Yes — generous hard caps with honest sentences; numbers are engineering guardrails, not plan features, and can be raised without design work.
+
+*Answer:* Owner (2026-08-07): ceilings must be **configurable per tier** in the entitlement/allowance model (like history retention), not constants. The recommended numbers (~50 menus/venue, ~500 items/menu, ~2,000-line paste) become the defaults; every refusal names the reason in a plain sentence.
 
 <sub>Menus.dc.html paste route "Looks like 2 sections and 6 items"; Menus at Scale.dc.html tops out at 13 menus / 250 items — no cap named anywhere</sub>
 
@@ -2433,6 +2461,8 @@ Merged Q120 restores keyboard reordering for rail rows, but two surfaces still h
 
 *Recommended:* Yes — one convention (focus = selection, Alt+arrows = reorder) across canvas, rail, and Board view; costs little in slice 3/5 and avoids an accessibility retrofit.
 
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): canvas keyboard reachability (focus-as-selection) and Board-view keyboard moves join the keyboard-access backlog (extends issue #672). Accessibility trade-off noted: drag/click remain the only paths on those surfaces this build.
+
 <sub>M2 Hi-Fi - Menu builder.dc.html (items selected only by clicking the canvas); Menus.dc.html M2b "sections as draggable blocks" — no focus order drawn for either</sub>
 
 ### Q203 · important
@@ -2442,6 +2472,8 @@ Merged Q120 restores keyboard reordering for rail rows, but two surfaces still h
 When a publish or an 86 reaches a TV that is mid-way through showing a page to guests, the design never says whether the board changes under the reader's eyes or at the next page turn. "Instant 86 removal" and "don't yank content mid-read" pull opposite ways, and repagination can reshuffle every page.
 
 *Recommended:* Yes — 86 is immediate everywhere including mid-page; publishes swap at the next page boundary (seconds away at an 8s dwell) so guests never see a layout jump mid-read.
+
+*Answer:* Accepted recommended (2026-08-07): an 86 takes the item down immediately, even mid-page; a publish swaps at the next page turn and restarts the cycle at page 1 with the new version.
 
 <sub>slice-plan.md slice 4 "pages, dwell cycle, instant 86 removal"; merged Q142 settles this for Play only</sub>
 
@@ -2453,6 +2485,8 @@ The slice-4 workbook asks the owner to "watch the TV change," but nothing says w
 
 *Recommended:* Yes — browser-tab screen for the workbook (it exercises the identical player code), plus one real-device smoke check before build close; please say what device that would be.
 
+*Answer:* Accepted recommended (2026-08-07): a paired browser tab is the TV for the slice-4 workbook (window size = reported geometry), with one check on a real TV device before the build closes if available.
+
 <sub>slice-plan.md slice 4 "Acceptance workbook: publish → watch the TV change; 86 → watch it vanish"; src/display PairingPage.tsx (player runs in a browser)</sub>
 
 ### Q205 · important
@@ -2462,6 +2496,8 @@ The slice-4 workbook asks the owner to "watch the TV change," but nothing says w
 The shared render engine must run on whatever browser the venues' actual screen hardware ships — TV browsers and signage boxes often run old Chromium builds that lack modern CSS. The display app today builds for modern browsers with no explicit floor, and nobody has stated what hardware the fleet actually is.
 
 *Recommended:* Yes — no new floor, same reach as the current player, verified on one real device during slice 4; if the fleet includes older TV browsers, name the oldest model now so the engine avoids CSS it lacks.
+
+*Answer:* Accepted recommended (2026-08-07): no new browser floor — the engine must run wherever the current display app already runs, proven on one real device in slice 4. Fleet hardware inventory remains unknown; capture it when the real-device check happens.
 
 <sub>src/display (no browserslist/target set — Vite modern-browser default); build-decisions 13 "the render engine is shared… so a published board is literally what the TV shows"</sub>
 
