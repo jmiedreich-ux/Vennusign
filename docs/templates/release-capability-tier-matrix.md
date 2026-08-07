@@ -1,8 +1,8 @@
 # Release–Capability–Tier Matrix
 
-**Owner:**  
-**Last approved:**  
-**Release horizon:** V1 / V1.1 / V2 / Later
+- **Owner:**
+- **Last approved:**
+- **Release horizon:** V1 / V1.1 / V2 / Later
 
 ## Release outcomes
 

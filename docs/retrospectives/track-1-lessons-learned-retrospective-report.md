@@ -1,10 +1,10 @@
 # Track 1 Lessons Learned and Retrospective Report
 
-**Track:** Track 1 — Capability, Entitlement and Authority Foundation  
-**RWP:** [RWP-01.06 / issue #665](https://github.com/jmiedreich-ux/Vennusign/issues/665)  
-**Report date:** 2026-08-06  
-**Evidence cutoff:** 2026-08-06  
-**Owner decision:** Pending — Approved / Needs Adjustment / Rejected
+- **Track:** Track 1 — Capability, Entitlement and Authority Foundation
+- **RWP:** [RWP-01.06 / issue #665](https://github.com/jmiedreich-ux/Vennusign/issues/665)
+- **Report date:** 2026-08-06
+- **Evidence cutoff:** 2026-08-06
+- **Owner decision:** Approved — 2026-08-07, owner directive: fold the retrospective into our processes
 
 ## Executive conclusion
 

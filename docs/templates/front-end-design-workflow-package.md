@@ -1,9 +1,9 @@
 # Front-End Design and Workflow Package
 
-**Functional area:**  
-**Track/RWP:**  
-**Owner:**  
-**Status:** Proposed / Approved / Superseded
+- **Functional area:**
+- **Track/RWP:**
+- **Owner:**
+- **Status:** Proposed / Approved / Superseded
 
 ## Customer outcome
 
