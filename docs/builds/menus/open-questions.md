@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
+- **Status:** sitting 1 complete (2026-08-07) — Q1–Q82 resolved or deferred; RESUME AT Q83 (needs a plainer re-explanation), then Q84 onward. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -703,6 +703,8 @@ Exactly one headline scenario is drawn; the sub-line "All 3 screens are set to S
 
 *Recommended:* Yes — engineer drafts, owner approves exact wording before it ships.
 
+*Answer:* Accepted recommended (2026-08-07): full headline sentence catalogue drafted by the engineer; owner approves exact wording at the slice-2 workbook.
+
 <sub>M1 Hi-Fi v2 headline; decisions.md 12 [m1-hifi, wf-import-actions]</sub>
 
 ### Q58 · BLOCKING
@@ -712,6 +714,8 @@ Exactly one headline scenario is drawn; the sub-line "All 3 screens are set to S
 An upgrade-discovery affordance drawn inside Menus directly conflicts with your decision 9 deferring upgrade discovery.
 
 *Recommended:* Yes — plain sentence only; the link returns with the marketing rework.
+
+*Answer:* Owner (2026-08-07): say nothing there for now — the Go back to… panel carries neither the retention sentence nor any upsell link. (Retention messaging returns with the retention discussion / marketing rework.)
 
 <sub>Menus.dc.html Go-back footer vs build-decisions 9; decisions.md 4 [wf-import-actions, record-consistency]</sub>
 
@@ -723,6 +727,8 @@ Allowing it live would empty screens without the consequence-stating dialog deci
 
 *Recommended:* Yes — absent while on a screen; take it off first, then put it away.
 
+*Answer:* Owner asked for a workflow; recorded proposal (2026-08-07): the ⍏ menu shows exactly one state-matched action — on TVs → "Take off the screens" (with preview); off TVs → "Put away"; in the Not-in-use strip → "Put back on the shelf" (and placing it on a screen also returns it). Never both at once; one click can never blank a TV.
+
 <sub>decisions.md 10; build-decisions 16 [decisions-doc, readme-handoff, m1-hifi, wf-import-actions, record-consistency]</sub>
 
 ### Q60 · important
@@ -732,6 +738,8 @@ Allowing it live would empty screens without the consequence-stating dialog deci
 A menu with pending changes could show either state; the shelf answers "what are my screens showing" and the amber bar already flags the draft. A 41-item menu can't fit a thumbnail, so page 1 as the TV shows it.
 
 *Recommended:* Yes — published wins, page 1, engine-rendered, zero special cases.
+
+*Answer:* Accepted recommended (2026-08-07): card thumbnail + counts show the published menu (page 1, engine-rendered, 16:9); draft shown only for never-published menus; the amber bar covers pending changes.
 
 <sub>M1 card + "7 sections / 41 items"; README assets [readme-handoff, m1-hifi, wf-import-actions]</sub>
 
@@ -743,6 +751,8 @@ A menu with pending changes could show either state; the shelf answers "what are
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): shelf order = on-screen menus first, then most recently edited; no manual reordering this build.
+
 <sub>README M1 grid; M1 Hi-Fi v2 [m1-hifi]</sub>
 
 ### Q62 · important
@@ -752,6 +762,8 @@ A menu with pending changes could show either state; the shelf answers "what are
 The empty state IS the route picker, but the populated-shelf chooser is never drawn; one picker to build and maintain.
 
 *Recommended:* Yes — one modal, both entry points.
+
+*Answer:* Accepted recommended (2026-08-07): one add-a-menu chooser modal (the empty-state route cards) opened by both the header button and the grid tile.
 
 <sub>M1 tile + header button [wf-import-actions]</sub>
 
@@ -763,6 +775,8 @@ Manual Put away creates a state that is neither the populated shelf nor "no menu
 
 *Recommended:* Yes — takeover only at zero menus total.
 
+*Answer:* Accepted recommended (2026-08-07): onboarding takeover only at zero menus total; put-away menus keep the normal shelf.
+
 <sub>M1 Hi-Fi v2 second frame; build-decisions 16 [m1-hifi, wf-import-actions]</sub>
 
 ### Q64 · important
@@ -772,6 +786,8 @@ Manual Put away creates a state that is neither the populated shelf nor "no menu
 v1 and the X2 scale sheet have a count and collapse; v2 dropped both. Reconciling: quiet strip at small venues, collapsible at scale.
 
 *Recommended:* Yes — v2 verbatim at small scale; X2's collapsible variant at the scale cutover.
+
+*Answer:* Accepted recommended (2026-08-07): always-open strip at small scale (v2 verbatim); collapsible with count past ~6 menus (X2 variant).
 
 <sub>M1 Hi-Fi v1 vs v2; X2 strip [m1-hifi, wf-import-actions, wf-scale]</sub>
 
@@ -783,6 +799,8 @@ v1 labelled it "last on a screen" but a never-published menu can now be put away
 
 *Recommended:* Yes to both.
 
+*Answer:* Accepted recommended (2026-08-07): chip date = last-on-a-screen when it exists, else put-away date; chips open the builder like cards.
+
 <sub>M1 Hi-Fi v1/v2 chips; build-decisions 16 [m1-hifi, readme-handoff, record-consistency]</sub>
 
 ### Q66 · important
@@ -792,6 +810,8 @@ v1 labelled it "last on a screen" but a never-published menu can now be put away
 The annotation recommends duplicating old menus, but chips have no drawn control to do it.
 
 *Recommended:* Yes — same menu, inapplicable rows absent.
+
+*Answer:* Owner (2026-08-07): chips just open the menu — no ⍏ on Not-in-use chips; all actions happen from inside (or once back on the shelf).
 
 <sub>Menus.dc.html M1 strip annotation [wf-import-actions]</sub>
 
@@ -803,6 +823,8 @@ One queue per menu means the restore draft and pending edits can't coherently co
 
 *Recommended:* Replace, with the named warning before it commits.
 
+*Answer:* Accepted recommended (2026-08-07): a restore replaces the existing draft, with the named warning ("This replaces your N unpublished changes") before committing.
+
 <sub>decisions.md 2/11; Go-back footer [decisions-doc, wf-import-actions]</sub>
 
 ### Q68 · important
@@ -812,6 +834,8 @@ One queue per menu means the restore draft and pending edits can't coherently co
 The dialog reads as an immediate act and shows the consequence; queueing it would make the dialog a lie. It is itself the deliberate act decision 1 requires.
 
 *Recommended:* Immediate.
+
+*Answer:* Owner (2026-08-07), overrides recommendation with a cleaner rule: 86 is temporary and instant; take-off is PERMANENT and therefore queues as a draft change shipped by Publish. Dialog copy shifts to future tense; take-off appears as one line in the Review sheet.
 
 <sub>Menus.dc.html take-off dialog; decisions.md 1 [wf-import-actions]</sub>
 
@@ -823,6 +847,8 @@ Until Lobby reconnects it physically shows a menu that is officially off; no dra
 
 *Recommended:* Yes — amber dot with that phrase; headline names Lobby as the exception.
 
+*Answer:* Accepted recommended (2026-08-07): the off-but-offline window is named honestly — amber dot, "not on a screen · Lobby is still showing it until it reconnects"; headline names the exception.
+
 <sub>take-off dialog offline line; decisions.md 5 [wf-import-actions]</sub>
 
 ### Q70 · important
@@ -832,6 +858,8 @@ Until Lobby reconnects it physically shows a menu that is officially off; no dra
 One drawn row has a button, another a bare grey "preview"; a real read-only version preview is render-engine work in slice 2.
 
 *Recommended:* Yes — cut it; version preview can come later without rework.
+
+*Answer:* Accepted recommended (2026-08-07): preview affordance cut; restore-as-draft is the inspection path; version preview can come later.
 
 <sub>Menus.dc.html Go-back list [wf-import-actions]</sub>
 
@@ -843,6 +871,8 @@ Retention is a limit on a capability you have — between decision 5 (name limit
 
 *Recommended:* Yes — it just ends; entries beyond retention don't appear.
 
+*Answer:* Accepted recommended (2026-08-07): the history list just ends at retention; no notes, no dimmed rows.
+
 <sub>decisions.md 4/5/8; Go-back dimmed row [decisions-doc, wf-import-actions]</sub>
 
 ### Q72 · important
@@ -852,6 +882,8 @@ Retention is a limit on a capability you have — between decision 5 (name limit
 Decision 5's named states are for things blocking you, not actions with no object.
 
 *Recommended:* Yes — hidden, not greyed.
+
+*Answer:* Accepted recommended (2026-08-07): inapplicable ⍏ actions are absent, never greyed — the rule for every ⍏ item.
 
 <sub>decisions.md 5/10; M1b ⋯ menu [decisions-doc, wf-import-actions]</sub>
 
@@ -863,6 +895,8 @@ The button is drawn with no destination; Screens is explicitly not redesigned.
 
 *Recommended:* Yes.
 
+*Answer:* Owner (2026-08-07, after challenge): CUT the "Check the screens" button — the headline carries the state, the rail carries the door. May return with the future Screens redesign.
+
 <sub>M1 Hi-Fi v2 header; navigation.mjs #/screens [m1-hifi, wf-import-actions, code-backoffice]</sub>
 
 ### Q74 · minor
@@ -872,6 +906,8 @@ The button is drawn with no destination; Screens is explicitly not redesigned.
 No hover, focus or keyboard state is drawn anywhere on M1; implementers would otherwise invent each one.
 
 *Recommended:* Accept — standard conventions applied consistently.
+
+*Answer:* Accepted recommended (2026-08-07): standard hover/focus/keyboard conventions applied consistently; whole card is the door except ⍏ and the amber bar; styling reviewed at the slice-2 design pass.
 
 <sub>README "the board is the door"; M1 Hi-Fi v2 [m1-hifi, wf-import-actions]</sub>
 
@@ -883,6 +919,8 @@ Between Publish and every screen applying it there's a brief unnamed window.
 
 *Recommended:* Yes — three variants as specified.
 
+*Answer:* Accepted recommended (2026-08-07): three card status variants only; the applying window lives in the builder chips.
+
 <sub>README component sheet status variants [m1-hifi]</sub>
 
 ### Q76 · minor
@@ -892,6 +930,8 @@ Between Publish and every screen applying it there's a brief unnamed window.
 A stale page could state "Lobby is offline" falsely minutes later; real-time push isn't needed until the player slice proves delivery.
 
 *Recommended:* Yes — focus + interval refetch.
+
+*Answer:* Accepted recommended (2026-08-07): focus + ~1-minute interval refresh; no push this build.
 
 <sub>M1 headline live facts; decisions.md 12 [m1-hifi]</sub>
 
@@ -903,6 +943,8 @@ Neither state is drawn; the codebase has LoadingSkeleton.tsx and error-card patt
 
 *Recommended:* Yes — degrade the headline, never block the shelf.
 
+*Answer:* Accepted recommended (2026-08-07): skeletons while loading; on status failure the headline degrades to neutral and cards still render.
+
 <sub>LoadingSkeleton.tsx [m1-hifi]</sub>
 
 ### Q78 · minor
@@ -912,6 +954,8 @@ Neither state is drawn; the codebase has LoadingSkeleton.tsx and error-card patt
 A labelled empty strip and unreadable micro-renders both cost more than they give.
 
 *Recommended:* Yes to both.
+
+*Answer:* Accepted recommended (2026-08-07): strip absent when empty; chip thumbs are theme swatches, not micro renders.
 
 <sub>M1 Hi-Fi v2 strip + chip swatches [m1-hifi]</sub>
 
@@ -923,6 +967,8 @@ Menus accumulate forever; destroying attributable history deserves its own desig
 
 *Recommended:* Yes — no delete.
 
+*Answer:* Owner (2026-08-07), overrides recommendation: ADD DELETE this build. Spec confirmed 2026-08-07: "Delete forever" in the ⍏ only for menus on zero screens; hard confirmation naming the destroyed menu and history; shared library items survive.
+
 <sub>M1b ⋯ menu (six items, no delete) [readme-handoff]</sub>
 
 ### Q80 · minor
@@ -932,6 +978,8 @@ Menus accumulate forever; destroying attributable history deserves its own desig
 A venue can hold a draft with no screens; the sentence-that-scales is never drawn for none.
 
 *Recommended:* Yes.
+
+*Answer:* Owner (2026-08-07), overrides recommendation: publish is BLOCKED with zero screens paired — a real named state per decision 5 (e.g. "Pair a screen to publish"), not a silent absence. First Publish (Q1) always has at least one screen to pick.
 
 <sub>Menus.dc.html one-screen publish bar [wf-import-actions]</sub>
 
@@ -945,6 +993,8 @@ Only the caps-line-becomes-section rule is stated; real pastes contain all of th
 
 *Recommended:* Yes to all five — "never silently drop a line" is the invariant.
 
+*Answer:* Accepted recommended (2026-08-07): all five paste-grammar rules confirmed; a pasted line is never silently dropped.
+
 <sub>Menus.dc.html paste sample + note [wf-import-actions]</sub>
 
 ### Q82 · BLOCKING
@@ -955,6 +1005,8 @@ The crop-beside-question pattern is the confirm step's signature and the shared 
 
 *Recommended:* Yes — same slot, medium changes. Question shapes for paste: unreadable price, two-price lines, and the grouped near-miss check; cleanly parsed rows never shown (decision 18).
 
+*Answer:* Accepted recommended (2026-08-07): paste evidence = original line(s) verbatim in monospace; every route supplies an evidence fragment (image or text).
+
 <sub>Menus.dc.html confirm cards; decisions.md 18 [wf-import-actions, record-consistency]</sub>
 
 ### Q83 · BLOCKING
@@ -964,6 +1016,8 @@ The crop-beside-question pattern is the confirm step's signature and the shared 
 "They're flagged on the canvas until you fix them" is never drawn, and the Burrata card ships a machine-guessed price.
 
 *Recommended:* Amber dot + "we guessed this" note on the item and in its inspector; the guess renders normally (better than a hole); Publish allowed with one quiet publish-bar line ("2 items still flagged").
+
+*Answer:* PENDING — owner answered "I don't understand" at the sitting pause (2026-08-07). Re-explain in plainer terms at the next sitting before recording anything.
 
 <sub>Menus.dc.html confirm footer [wf-import-actions]</sub>
 
