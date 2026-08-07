@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** sitting 3 in progress (2026-08-07) — minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206 resolved (30 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
+- **Status:** sitting 3 in progress (2026-08-07) — minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -2365,6 +2365,8 @@ The draft/publish history is attributable by design, but nobody asked whether th
 
 *Recommended:* Yes — route those three acts into the same attributable history so nothing irreversible is anonymous; a dedicated audit/telemetry system stays out of scope.
 
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): a dedicated audit/analytics system is a backlog item. Provisional default for this build (unaffirmed parts follow the protocol's provisional rule): discard-draft, Put away and Take off the screens are still recorded as attributable history entries so nothing irreversible is anonymous — flagged in the slice-1 demo for review.
+
 <sub>slice-plan.md slice 1 DraftChange/PublishEvent (attributable history); src/Vennu.Core.Models has only FeatureMatrixAuditEntry — no general audit log</sub>
 
 ### Q208 · minor
@@ -2374,6 +2376,8 @@ The draft/publish history is attributable by design, but nobody asked whether th
 The .dc.html authority files render through support.js, which pulls React from a CDN — so the approved design authority in the repo needs an internet connection to open, and the README's screenshot paths point at an empty folder. Merged Q193 covers copying the bundle but not these two packaging facts.
 
 *Recommended:* Yes — accept the CDN dependency (engineers reference the files, not air-gapped), fix only the screenshot paths so the copied README isn't lying.
+
+*Answer:* Owner (2026-08-07): accepted — the .dc.html authority files may require internet to view (PNGs stay the offline orientation aids); the stray PNGs move into screenshots/ so the README's paths are true. Move applied in this commit.
 
 <sub>support.js "REACT_URL = https://unpkg.com/react@18.3.1…"; README.md "Screenshots are for orientation. The .dc.html files are the reference" — but screenshots/ is an empty folder and the PNGs sit at the bundle root</sub>
 
