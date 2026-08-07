@@ -25,6 +25,8 @@ Every artifact shows menus already on screens (publish chips, "On 3 screens", ta
 
 *Recommended:* First Publish doubles as the assignment act — a screen picker with all screens pre-ticked; the publish-bar chips become that choice thereafter; the menu↔screen link lands as its own table in slice 1; Screens gains a matching control later.
 
+*Answer:* Accepted recommended (2026-08-07): first Publish doubles as the assignment act — screen picker, all screens pre-ticked; publish-bar chips are the choice thereafter; assignment is its own table in slice 1.
+
 <sub>decisions.md 10/16/35; README data model; DisplayController.cs; Screen.cs [decisions-doc, readme-handoff, wf-import-actions, code-display, code-api-data]</sub>
 
 ### Q2 · BLOCKING
@@ -34,6 +36,8 @@ Every artifact shows menus already on screens (publish chips, "On 3 screens", ta
 The design never shows two menus on one screen but never forbids it; the answer shapes the schema, publish chips, and player. Guessing wrong means a migration later.
 
 *Recommended:* Exactly one menu per screen, stored as a separate assignment record (not a field on Screen) so Schedules can point several menus at a screen later without migration.
+
+*Answer:* Accepted recommended (2026-08-07): exactly one menu per screen, stored as a separate assignment record so Schedules can multiplex later without migration.
 
 <sub>Menus.dc.html; decisions.md 35 [code-display]</sub>
 
@@ -45,6 +49,8 @@ Today TVs auto-show the venue's first active menu through legacy layouts. The ne
 
 *Recommended:* Auto-migrate: current active menu becomes assigned and published to that venue's menu screens — no TV goes dark, accepting the visual change to the new board themes.
 
+*Answer:* Moot (2026-08-07): owner notes the system is not live in production, so no customer TVs exist to go dark. Migration only keeps dev/acceptance fixtures sensible — seeded menus are auto-marked assigned+published so tests and demos work.
+
 <sub>DisplayController.cs GetMenusAsync…IsActive [code-display, code-api-data]</sub>
 
 ### Q4 · BLOCKING
@@ -54,6 +60,8 @@ Today TVs auto-show the venue's first active menu through legacy layouts. The ne
 Four existing mechanisms fight for a screen's content today (EmergencyBroadcast, PlaylistSlide, MealPeriod, DateRangePromotion); time-based switching collides with criterion 4's "no content change without a deliberate act". A playlist 'menu' slide would also cut the board's page cycle mid-way.
 
 *Recommended:* Board only: emergency broadcast still takes over (cycling continues underneath; Play ignores broadcasts); playlists, meal-periods and promotions keep working only on screens not set to a board.
+
+*Answer:* Owner decision (2026-08-07), broader than recommended: playlists, meal-period switching, and date promotions are OUT OF SCOPE entirely — backlog features for the future. Emergency broadcast remains the sole override. A screen this build shows its board or the venue fallback.
 
 <sub>PlaylistRotation.tsx; DisplayController.cs; EmergencyBroadcastOverlay.tsx; api.ts [code-display, code-backoffice]</sub>
 
@@ -65,6 +73,8 @@ The item library means one item on several menus with "shared edits", but decisi
 
 *Recommended:* The edit joins the draft queue of every menu the item is placed on; each menu's screens change only when that menu publishes.
 
+*Answer:* Owner (2026-08-07): confirmed one item = one shared price across all menus it sits on (per-menu exceptions like happy hour are future features). Mechanics provisional per recommendation: the edit joins each affected menu’s draft queue; each menu’s screens change only on its own publish. FLAG: the editing flow must feel easy — possibly a quick price-change mode — design follow-up required before slice 3 builds the inspector flow.
+
 <sub>decisions.md 2; README criteria 2/4; build-decisions 1 [decisions-doc]</sub>
 
 ### Q6 · BLOCKING
@@ -74,6 +84,8 @@ The item library means one item on several menus with "shared edits", but decisi
 Merge wrongly and an 86 or edit silently changes a board nobody intended; never merge and the library's shared-edit benefit starts empty (and an 86 on one "Margherita" won't hide the other). Decision 33's name-matching covers imports only.
 
 *Recommended:* Merge only exact name+price+description matches, with the migration script listing every merge; anything that differs stays separate items.
+
+*Answer:* Moot (2026-08-07): no production data exists, so there is no migration day. Slice 1 creates the new schema fresh and re-seeds dev/acceptance fixtures; no merge policy needed. (Slice-plan language updated accordingly.)
 
 <sub>README data model (Placement); api.ts MenuItem; decisions.md 33 [readme-handoff, code-backoffice]</sub>
 
@@ -85,6 +97,8 @@ The Play hi-fi renders glass/bottle prices ("14 / 54", "— / 98") and MP items;
 
 *Recommended:* Yes — one-or-more named sizes with nullable price from day one; the inspector edits the default size this build, stacking rows for sized items.
 
+*Answer:* Accepted recommended (2026-08-07): items carry one-or-more named sizes with optional price from day one; blank renders nothing, text like "MP" renders verbatim; inspector shows a price row per size.
+
 <sub>README data model; M2c hi-fi; M2 inspector; 012_create_menu_domain.sql [readme-handoff, m2-hifi, code-api-data]</sub>
 
 ### Q8 · BLOCKING
@@ -94,6 +108,8 @@ The Play hi-fi renders glass/bottle prices ("14 / 54", "— / 98") and MP items;
 Explicitly left unsettled in the M2b wireframe ("I'd take fixed"); the slice-2 render engine and slice 5 both depend on it, and switching later means rewriting the engine.
 
 *Recommended:* Fixed — keeps boards looking designed, makes reflow per screen tractable, and is the only version the drawn UI depicts.
+
+*Answer:* Accepted recommended (2026-08-07): fixed zones — themes provide the zone set, sections snap into them. The designer’s own lean is ratified.
 
 <sub>Menus.dc.html M2b "Still to settle" [wf-additems, code-display, record-consistency]</sub>
 
@@ -105,6 +121,8 @@ Explicitly left unsettled in the M2b wireframe ("I'd take fixed"); the slice-2 r
 
 *Recommended:* Yes — per-menu dwell, default 8s, uniform; equal-width blocks (drawn widths were illustrative); HeroDwellSeconds stays with hero rotation; no general dwell control this build.
 
+*Answer:* Owner (2026-08-07): dwell must be a configurable option. Recorded as a per-menu setting, default 8s, uniform across pages this build (per-page timing stays future); the control needs a small design spot since none is drawn — flagged for the slice-5 design pass.
+
 <sub>M2c hi-fi transport; README timeline; Screen.cs HeroDwellSeconds; X4 fix [m2c-hifi, wf-additems, wf-scale, code-display]</sub>
 
 ### Q10 · BLOCKING
@@ -114,6 +132,8 @@ Explicitly left unsettled in the M2b wireframe ("I'd take fixed"); the slice-2 r
 An instant text push violates decision 1 (only 86 is immediate). The migration script must name everything discarded; Menu.DailySpecial, its endpoint, and Home's specials card all exist today.
 
 *Recommended:* Drop it and name it in the migration script; a special later becomes an ordinary featured item you publish.
+
+*Answer:* Owner (2026-08-07): Daily Special is backlogged for the future — removed from this build like playlists/meal-periods/promotions, not carried into the new schema.
 
 <sub>Menu.cs DailySpecial; QuickUpdateMode.tsx; DaypartHome.tsx; build-decisions 6 [code-backoffice, code-api-data]</sub>
 
@@ -125,6 +145,8 @@ Clover/Square/Toast handlers write price, quantity and availability straight to 
 
 *Recommended:* Yes — availability sync stays live both ways with provider attribution; price/quantity writes stop in slice 1; catalog mappings carry over to the new item IDs.
 
+*Answer:* Owner (2026-08-07): POS sync to menu items is out of scope entirely for now — no price, quantity, or availability writes from POS into the new item tables — until that area is dug into later. POS integration surfaces otherwise untouched.
+
 <sub>CloverRealtimeSyncHandler.cs; ToastInventorySyncService.cs; decisions.md 1; build-decisions 14 [wf-additems, code-api-data]</sub>
 
 ### Q12 · BLOCKING
@@ -134,6 +156,8 @@ Clover/Square/Toast handlers write price, quantity and availability straight to 
 The simplest honest version is a sheet listing each queued change (what, before → after, who, when) over the builder, with the target-screen summary and Publish/Back; M1's "Review →" (whole amber bar as one click target) opens the builder with it up.
 
 *Recommended:* Yes — one change-list sheet reusing the slice-1 draft-queue data, used by all three entry points; visual before/after diffing stays out.
+
+*Answer:* Accepted recommended (2026-08-07): one change-list sheet (what, before → after, who, when + target screens + Publish) shared by all three entry points. No visual diffing this build.
 
 <sub>README publish bar + pending bar; M1/M2/X1 drawings [readme-handoff, m1-hifi, m2-hifi, wf-import-actions, wf-scale]</sub>
 
@@ -145,6 +169,8 @@ Decision 14 specifies a "generated logo-and-name card" but Venue.cs has no logo 
 
 *Recommended:* Yes — monogram + name now, plus a nullable logo slot in the schema so a later build fills it without redesigning the card.
 
+*Answer:* Owner (2026-08-07): venues should upload a logo during onboarding; when none exists the system generates one (the initial-and-name card). Scope addition: Venue gains a nullable logo + a minimal upload point (lands with the fallback card in slice 2; onboarding integration when onboarding is built).
+
 <sub>decisions.md 14; Venue.cs (no logo) [decisions-doc, readme-handoff, code-display, code-api-data]</sub>
 
 ### Q14 · BLOCKING
@@ -154,6 +180,8 @@ Decision 14 specifies a "generated logo-and-name card" but Venue.cs has no logo 
 "Keeping the current editor compiling" is ambiguous; read-only kills two autosave Playwright specs at slice 1 and leaves menus uneditable for a slice or two, but a save bridge is throwaway work.
 
 *Recommended:* Keep it saving via a thin bridge onto the new tables (every slice must leave master releasable); the autosave specs retire with the editor in slice 3.
+
+*Answer:* Moot (2026-08-07): nothing is live, so no save bridge — the old editor may go dark between slices 1 and 3; its autosave Playwright specs retire at slice 1.
 
 <sub>slice-plan slice 1; menu-save-race.spec.ts; build-decisions 2 [code-api-data]</sub>
 
@@ -165,6 +193,8 @@ Decision 13 forbids representative sizes, but the approved plan ships the builde
 
 *Recommended:* Yes — labeled stand-in, label removed the moment slice 4 lands; wrap warning lights up only with real reports; Play stays absent until slice 5.
 
+*Answer:* Accepted recommended (2026-08-07): labeled 1920×1080 stand-in for the one-slice window; label removed when real geometry lands; wrap warning only ever computes from real reports.
+
 <sub>slice-plan slice 3 vs decisions.md 13; build-decisions known gaps [record-consistency, m2-hifi]</sub>
 
 ### Q16 · important
@@ -174,6 +204,8 @@ Decision 13 forbids representative sizes, but the approved plan ships the builde
 Direct conflict inside the bundle; your decision 3 set retention as tier-configurable with numbers TBD but never the unit, and the slice-1 entitlement config needs one.
 
 *Recommended:* Versions — a per-tier count of published versions per menu, oldest pruned; decisions.md wins on conflict, and the footer sentence becomes "Your plan keeps your last N versions."
+
+*Answer:* Owner (2026-08-07): re-affirmed retention is configurable per tier. Unit not chosen — provisionally VERSIONS (decisions.md wins the bundle conflict); config stores a per-tier version count. Open to flip to days before slice 1 hardens.
 
 <sub>decisions.md 8 vs Menus.dc.html Go-back footer; build-decisions 3 [decisions-doc, wf-import-actions]</sub>
 
@@ -185,6 +217,8 @@ An offline screen can be showing a version retention would otherwise prune; mult
 
 *Recommended:* Yes — prune history visibility, never a version something is still running.
 
+*Answer:* Owner (2026-08-07): data retention is a whole topic needing its own Q&A session soon — backlogged for this build. Provisional: nothing is pruned at all this build; the per-tier retention config exists but is effectively unlimited until the retention discussion.
+
 <sub>build-decisions 3; MV wireframes "Behind 9 days" [multivenue-fwdcompat]</sub>
 
 ### Q18 · important
@@ -194,6 +228,8 @@ An offline screen can be showing a version retention would otherwise prune; mult
 Two people (or two tabs) share one queue; "Draft saved 10:42am by Alex" implies multi-author. Nothing specifies collisions or mid-edit publishes.
 
 *Recommended:* Yes to all — shared queue, last-write-wins per field, attribution keeps it honest; live presence can come later.
+
+*Answer:* Owner (2026-08-07), overrides recommendation: single-editor lock — one user edits a menu’s draft at a time. Shared/concurrent editing is a future enhancement, possibly tier-gated. Lock mechanics (acquire on entering builder, inactivity timeout, takeover warning) are implementation details.
 
 <sub>decisions.md 2; M2 publish bar [decisions-doc, readme-handoff, m2-hifi, code-backoffice, code-api-data, wf-scale]</sub>
 
@@ -205,6 +241,8 @@ Two people (or two tabs) share one queue; "Draft saved 10:42am by Alex" implies 
 
 *Recommended:* Yes to both — every live change stays behind its own deliberate act; publish is a clean boundary.
 
+*Answer:* Accepted recommended (2026-08-07): Ctrl+Z reverses draft edits only, never an 86; undo stack clears on Publish — "Go back to…" is the only path back afterwards.
+
 <sub>decisions.md 3/7; M2 top bar [decisions-doc, m2-hifi]</sub>
 
 ### Q20 · important
@@ -214,6 +252,8 @@ Two people (or two tabs) share one queue; "Draft saved 10:42am by Alex" implies 
 Under the library model each choice surprises a different user; sharing is the point of the library and "Also on…" makes it visible; someone wanting a different price creates a new item.
 
 *Recommended:* Yes — shared items, draft state, "<Name> copy", lands on the shelf on no screens.
+
+*Answer:* Owner (2026-08-07, incl. follow-up): duplicates place the SAME shared items; a price edit on a shared item changes it across all menus holding it, and menus are versioned like transactions so published versions form an audit timeline of what price was on screen when. Exact delivery moment for the other menus’ screens rides the Q5 design follow-up (provisional: each menu updates on its own publish).
 
 <sub>M1b ⋯ menu; build-decision 1 [decisions-doc, readme-handoff]</sub>
 
@@ -225,6 +265,8 @@ The pending bar counts changes and history lists field-level entries; a 45-item 
 
 *Recommended:* Yes — one entry per import; never-published cards get the status line.
 
+*Answer:* Accepted recommended (2026-08-07): an import is ONE pending change ("Replaced from import · 45 items") in bar, Review and history; never-published menus read "Never published · not on a screen".
+
 <sub>decisions.md 30/32; M1 pending bar [decisions-doc]</sub>
 
 ### Q22 · important
@@ -234,6 +276,8 @@ The pending bar counts changes and history lists field-level entries; a 45-item 
 Decision 12's promise ("you can always tell whether your screens are current") never defines the word for fallback, non-menu, or draft-holding screens; the codebase's applied-vs-authoritative model already matches this.
 
 *Recommended:* Yes to all three.
+
+*Answer:* Accepted recommended (2026-08-07): all three confirmed — current = showing latest published version; fallback counts as current; non-menu screens stay out of the sentence.
 
 <sub>decisions.md 12; X2 "18 of 20 current"; ScreenContentDeliveryService [decisions-doc, wf-scale]</sub>
 
@@ -247,6 +291,8 @@ Nothing today connects a SubscriptionTier to any capability — the Release–Ca
 
 *Recommended:* Yes — dedicated Menus feature key, matrix rows drafted for the Menus area only, enabled on all current tiers at launch so gating bites only through deliberate plan changes later.
 
+*Answer:* Owner (2026-08-07): no migration concerns; every tier will most likely have Menus — the tiering applies to FUNCTIONS INSIDE Menus, not the area. Nav gates nothing at launch; the Release–Capability–Tier matrix rows get drafted around intra-Menus functions in a later pricing pass.
+
 <sub>decisions.md 19; navigation.mjs capabilityId; built-foundations-spec.md; CapabilityAccessPolicyRepository [decisions-doc, code-backoffice, code-api-data]</sub>
 
 ### Q24 · BLOCKING
@@ -256,6 +302,8 @@ Nothing today connects a SubscriptionTier to any capability — the Release–Ca
 Decision 8 makes history its own capability; none exists, and import and the area gate have no IDs. New IDs touch the registry, DB seed, and role grants; nobody should lose access on upgrade day.
 
 *Recommended:* Yes — three IDs, auto-granted alongside today's item-edit capability.
+
+*Answer:* DEFERRED (2026-08-07). Provisional: the three capability IDs (content.menu.manage, publishing.history.view, content.menu.import) land auto-granted to item-editing roles so gating can be wired; flagged in slice-1 demo for review.
 
 <sub>CapabilityModel.cs; SystemRoleRegistry; decisions.md 8 [code-api-data]</sub>
 
@@ -267,6 +315,8 @@ The 76px rail becomes the app-wide shell, but no settings route exists; existing
 
 *Recommended:* Settings opens exactly the two existing pages — Billing and Account & security — unchanged inside the shell; other areas keep their routes with short labels (POS, Billing, Account, Taps); no new Settings area this build.
 
+*Answer:* DEFERRED (2026-08-07). Provisional: rail Settings opens existing Billing + Account & security unchanged; short labels elsewhere; no new pages. Flagged in slice-2 acceptance workbook.
+
 <sub>M1 Hi-Fi v2 rail; navigation.mjs; BackOfficeNav.dc.html [readme-handoff, m1-hifi, code-backoffice, record-consistency]</sub>
 
 ### Q26 · BLOCKING
@@ -276,6 +326,8 @@ The 76px rail becomes the app-wide shell, but no settings route exists; existing
 Only Menus goes invisible below tier (decision 9 scopes decision 4). "Untouched" upgrade surfaces and "replaced shell" collide for the nudge; no locked rail treatment is drawn.
 
 *Recommended:* Yes — visible rail item → existing locked-preview content; the nudge stops rendering until the planned upgrade/marketing rework; other upgrade surfaces stay live.
+
+*Answer:* DEFERRED (2026-08-07). Provisional: below-tier non-Menus areas stay visible in the rail and click through to the existing locked preview; the sidebar upgrade nudge disappears with the sidebar. Flagged in slice-2 acceptance workbook.
 
 <sub>build-decisions 9/12; App.tsx LockedNavigationItem; SidebarUpgradeNudge.tsx [m1-hifi, readme-handoff, code-backoffice, record-consistency]</sub>
 
@@ -287,6 +339,8 @@ The README puts switching "under the avatar" but the popover is never drawn; tod
 
 *Recommended:* Yes — name/role, switcher, Sign out in that order; keep confirm-and-recheck, reword: access is rechecked, drafts are safe.
 
+*Answer:* Accepted recommended (2026-08-07): avatar menu = name/role, venue-workspace switcher (only when more than one), Sign out; switch confirmation kept and reworded for server-side drafts.
+
 <sub>README M1; App.tsx identity button [m1-hifi, code-backoffice]</sub>
 
 ### Q28 · important
@@ -296,6 +350,8 @@ The README puts switching "under the avatar" but the popover is never drawn; tod
 The M1 hi-fi has none of this chrome; "other areas keep their current content unchanged" is ambiguous between content and shell.
 
 *Recommended:* Treat them as shell: remove both app-wide (the avatar takes over identity and switching); every area's own headings and content stay untouched.
+
+*Answer:* Accepted recommended (2026-08-07): old top chrome (workspace header + active-workspace banner) removed app-wide; the avatar owns identity and switching; each area’s own content untouched.
 
 <sub>App.tsx; build-decisions 12 [code-backoffice]</sub>
 
@@ -307,6 +363,8 @@ Decision 19 references that screen but it appears in no artifact or slice.
 
 *Recommended:* Yes — out of scope; it arrives with the deferred upgrade/marketing rework.
 
+*Answer:* Owner (2026-08-07), approved deviation from decisions.md 19: there is NO separate purpose-built static-content home. The Content area is one surface whose functions are tier-gated — each tier sees only the functions necessary for what it can do (consistent with Q23: area present for all tiers, functions tiered).
+
 <sub>decisions.md 19; slice-plan slice 2 [decisions-doc, readme-handoff]</sub>
 
 ### Q30 · important
@@ -316,6 +374,8 @@ Decision 19 references that screen but it appears in no artifact or slice.
 The designer recorded this as an open question; the rail label becomes the area's durable name everywhere from slice 2.
 
 *Recommended:* "Menus" — matches the area's own naming throughout the bundle, and the area holds several menus.
+
+*Answer:* Owner (2026-08-07), overrides recommendation: the durable top-level label is "Content". The rail item and area name are Content; the objects inside remain menus ("Summer Menu", "Add a menu"). Aligns with the product-surface inventory’s Content-area architecture and leaves room for future content types.
 
 <sub>github.md open questions; navigation.mjs; M1 Hi-Fi rail [readme-handoff, record-consistency]</sub>
 
@@ -327,6 +387,8 @@ Only #/menu exists today, so refresh/Back would dump users on the shelf; the des
 
 *Recommended:* Yes — sub-addresses with old #/menu bookmarks landing on the shelf; tabs as drawn; the permissions-driven split waits for the roles build.
 
+*Answer:* Owner (2026-08-07), overrides recommendation: one address with tabs in memory — no sub-routes this build; refresh/Back return to the shelf. Sub-addresses can come later if it annoys.
+
 <sub>navigation.mjs; github.md open question; Menus.dc.html M3 "Still to settle" [readme-handoff, code-backoffice, wf-additems, record-consistency]</sub>
 
 ### Q32 · important
@@ -336,6 +398,8 @@ Only #/menu exists today, so refresh/Back would dump users on the shelf; the des
 Today every menu endpoint, including quick-availability, demands full item-edit; the registry already defines the lighter capability.
 
 *Recommended:* Yes — gate the M3 toggle (and only it) with availability_update.
+
+*Answer:* Accepted recommended (2026-08-07): the 86 toggle (and only it) gates on the lighter content.item.availability_update capability; everything else keeps full item-edit.
 
 <sub>BackOfficeMenusController.cs RequireCapability; CapabilityModel.cs [code-api-data, decisions-doc]</sub>
 
@@ -347,6 +411,8 @@ Decision 9 keeps upgrade surfaces untouched, but after decisions 6/15 these entr
 
 *Recommended:* Yes — remove just those three; everything else waits for the marketing rework.
 
+*Answer:* Accepted recommended (2026-08-07): remove the happy_hour, bilingual_display and ai_translation upgrade-catalog entries; all other upgrade surfaces wait for the marketing rework.
+
 <sub>upgradeExperience.mjs upgradeCatalog; build-decisions 6/15 [code-backoffice]</sub>
 
 ### Q34 · important
@@ -356,6 +422,8 @@ Decision 9 keeps upgrade surfaces untouched, but after decisions 6/15 these entr
 The new M1 empty state has no template concept; the routes are paste and start-blank.
 
 *Recommended:* Yes — retire the starter links and name pre-fill; the empty state IS the onboarding (decision 17).
+
+*Answer:* Owner (2026-08-07): starter templates are a LAUNCH REQUIREMENT, not retired — the product is not live, and by launch the empty state offers "start from a template" alongside paste/blank. Old-editor deep-links retire with the old editor. Template content TBD.
 
 <sub>CustomerOnboardingApp.tsx:293; decisions.md 17 [code-backoffice]</sub>
 
