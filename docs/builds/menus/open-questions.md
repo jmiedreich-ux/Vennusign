@@ -435,6 +435,8 @@ Home isn't redesigned, but both cards are wired to concepts the migration delete
 
 *Recommended:* Yes — same 86 card with new wiring; specials card removed.
 
+*Answer:* Owner (2026-08-07): out of scope — no design work on Home. Mechanical consequence only: widgets wired to deleted concepts (quantity remaining, Today’s special, "active menu") are stubbed/removed so Home compiles and renders; nothing else changes.
+
 <sub>DaypartHome.tsx:109-117; build-decisions 6 [code-backoffice]</sub>
 
 ### Q36 · important
@@ -444,6 +446,8 @@ Home isn't redesigned, but both cards are wired to concepts the migration delete
 Ops-side edits write straight to live tables — a screen would change without a publish, contradicting criterion 4; the slice-1 migration breaks those endpoints anyway.
 
 *Recommended:* Read-only this build; support edits return later through the same draft/publish API.
+
+*Answer:* Owner (2026-08-07), corrects the premise: the intended platform-ops model is (a) log in AS the venue in read-only mode, and (b) publish/change data only by assuming the local user WITH customer permission granted via a code system. That impersonation+consent system is out of scope and BACKLOGGED. This build: old direct-edit ops menu endpoints retire with the old tables; ops has no menu write path.
 
 <sub>PlatformOperationsMenusController.cs; platform-operations QuickUpdateMode.tsx [code-api-data]</sub>
 
@@ -455,6 +459,8 @@ The hi-fis are fixed 1440×940 frames and mobile is explicitly out of scope, but
 
 *Recommended:* Yes to all — the smallest departure from the hi-fis, matching how the app already degrades.
 
+*Answer:* Accepted recommended (2026-08-07): rail fixed; shelf 4→3-up below ~1280; builder to 1280 by narrowing the canvas; Play scales; no horizontal scroll; <~1024 waits for the mobile pass.
+
 <sub>README responsive; styles.css:78 @760px; M1/M2/M2c fixed frames [readme-handoff, m1-hifi, m2-hifi, m2c-hifi, code-backoffice]</sub>
 
 ### Q38 · minor
@@ -464,6 +470,8 @@ The hi-fis are fixed 1440×940 frames and mobile is explicitly out of scope, but
 The M1 hi-fi shows no banners; upgradeExperience maps two hints to the menu panel, which would sit over the redesigned shelf.
 
 *Recommended:* Yes — keep the rare transactional banners everywhere; suppress inline hints on Menus only.
+
+*Answer:* Owner (2026-08-07): out of scope — banner behavior unchanged; upgrade hints that target replaced/deleted surfaces simply have nowhere to render. Revisited in the marketing rework.
 
 <sub>App.tsx banners; upgradeExperience.mjs [code-backoffice]</sub>
 
@@ -477,6 +485,8 @@ Multi-venue requires venue-or-group ownership; retrofitting a required VenueId l
 
 *Recommended:* Yes — owner type + id, defaulted to venue; trust-level and venue-state tables stay entirely in the multi-venue build.
 
+*Answer:* Accepted recommended (2026-08-07): Menu records owner type + owner id (always venue this build, invisible in UI).
+
 <sub>README data model "owner (venue | group)"; Menu.cs VenueId [multivenue-fwdcompat, readme-handoff]</sub>
 
 ### Q40 · important
@@ -486,6 +496,8 @@ Multi-venue requires venue-or-group ownership; retrofitting a required VenueId l
 A group menu's placements must reference items usable across venues; hard venue-only constraints would force re-scoping every Placement and 86 row later.
 
 *Recommended:* Yes — same columns, same reasoning; 86 stays item × venue either way.
+
+*Answer:* Accepted recommended (2026-08-07): Item mirrors the same owner shape; 86 remains item × venue.
 
 <sub>slice-plan slice 1; decisions.md 20 [multivenue-fwdcompat]</sub>
 
@@ -497,6 +509,8 @@ Multi-venue sends target venues that accept on their own schedule; a hard FK to 
 
 *Recommended:* Yes — parallels the applied-vs-authoritative model already in the codebase; invisible this build.
 
+*Answer:* Accepted recommended (2026-08-07): publish-target rows carry target type (screen now, venue-capable) and an extensible status.
+
 <sub>README PublishEvent; slice-plan slice 1 [multivenue-fwdcompat]</sub>
 
 ### Q42 · important
@@ -506,6 +520,8 @@ Multi-venue sends target venues that accept on their own schedule; a hard FK to 
 Multi-venue's conflict preview ("your $16 over their $17") can only be computed from structured rows; free-text labels make it impossible forever. An optional nullable "whose draft" scope column now also lets a venue's local draft coexist on a group menu later without re-keying.
 
 *Recommended:* Yes — structured rows plus the nullable scope column; sentences rendered from data.
+
+*Answer:* Accepted recommended (2026-08-07): DraftChange is structured (entity id, named field, typed before/after) with sentences generated from data; includes nullable draft-scope column. Enables the Q20 price-audit timeline.
 
 <sub>slice-plan DraftChange; MV2a conflict preview; decisions.md 26 [multivenue-fwdcompat]</sub>
 
@@ -517,6 +533,8 @@ If publishing cloned items into snapshot copies, every 86 would silently lose it
 
 *Recommended:* Yes — reject any per-version item-copying design in review.
 
+*Answer:* Accepted recommended (2026-08-07): item identity is permanent; versions snapshot values, never re-mint items; per-version copying designs rejected in review.
+
 <sub>MV2a/MV3 "86s always survive a publish"; slice-plan slice 1 [multivenue-fwdcompat]</sub>
 
 ### Q44 · important
@@ -526,6 +544,8 @@ If publishing cloned items into snapshot copies, every 86 would silently lose it
 The delivery counter carries no content identity and purges at 90 days; tier history may keep versions longer.
 
 *Recommended:* Yes — snapshot the terminal state per publish; keep the purge; history stays truthful without an ever-growing table.
+
+*Answer:* DEFERRED (2026-08-07) into the backlogged data-retention discussion. Provisional: publish records snapshot final per-screen outcomes; raw logs keep their 90-day purge.
 
 <sub>ScreenContentDeliveryService.cs 90-day DELETE; slice-plan slice 3 [code-api-data]</sub>
 
@@ -537,6 +557,8 @@ The new world has no archive concept (criterion 5 bans the word); today's data h
 
 *Recommended:* Yes to all.
 
+*Answer:* Owner (2026-08-07): fresh start — new tables begin with seed/demo data only; old tables stay untouched but unused. A carry script remains possible any time before the old tables retire.
+
 <sub>MenuSectionsEditor/MenuItemsEditor archive flows; build-decisions 16; slice-plan slice 1 [code-backoffice, code-api-data]</sub>
 
 ### Q46 · important
@@ -546,6 +568,8 @@ The new world has no archive concept (criterion 5 bans the word); today's data h
 Two theming systems will coexist; the Themes area's live-push changes must not fight the board on one TV, and no theme picker is drawn anywhere.
 
 *Recommended:* Yes — per-menu theme, Themes area untouched, migrated menus start Classic dark.
+
+*Answer:* Owner (2026-08-07): confirmed — they are two different things. Venue Themes and per-menu board looks are separate systems; the board renderer never consults the venue theme.
 
 <sub>README data model; VenueTheme.cs; DisplayController theme push [readme-handoff, code-display, code-backoffice, code-api-data]</sub>
 
@@ -557,6 +581,8 @@ The repo has two display front-ends and the handoff maps Play to both; the answe
 
 *Recommended:* Target the one production TVs run (please name it — we'd guess src/tv), renderer shared.
 
+*Answer:* Owner (2026-08-07): src/display is the main player — it runs on the web and inside the TV apps. Slice 4 targets src/display; TV apps inherit via the embedded player.
+
 <sub>github.md screen map A3; repo src/display + src/tv [readme-handoff]</sub>
 
 ### Q48 · important
@@ -566,6 +592,8 @@ The repo has two display front-ends and the handoff maps Play to both; the answe
 Today's player discards cached content after 7 days and shows "Display unavailable" — a working TV showing a correct menu would error purely from a week of bad network.
 
 *Recommended:* Keep — a published board never expires on the player; the fallback appears only when nothing is published.
+
+*Answer:* Accepted recommended (2026-08-07): a published board never expires on the player regardless of offline duration; fallback only when nothing is published; back office reports offline honestly.
 
 <sub>displayCache.mjs 7-day max age [code-display]</sub>
 
@@ -577,6 +605,8 @@ Today's player draws "Offline — showing saved content…" boxes on the TV; the
 
 *Recommended:* Suppress — no status chrome on boards; guests never read our plumbing.
 
+*Answer:* Accepted recommended (2026-08-07): no connection/status chrome on guest-facing boards; delivery honesty lives in the back-office chips.
+
 <sub>player.css .player-status--offline; displayPresentation.mjs [code-display]</sub>
 
 ### Q50 · important
@@ -586,6 +616,8 @@ Today's player draws "Offline — showing saved content…" boxes on the TV; the
 The wireframe lists safe area in the report and puts the correction "under Screens" — an area out of scope; nothing in the six slices consumes the correction and its authorship rule is unresolved.
 
 *Recommended:* Yes — report safe area opportunistically; omit overscan correction (no field, no UI) this build.
+
+*Answer:* Owner (2026-08-07): overscan correction backlogged for the future. Heartbeat reports what platforms expose (resolution, orientation, safe area when available); no correction field or UI this build.
 
 <sub>Menus.dc.html M2c geometry note; README Screen model; slice-plan slice 4 [record-consistency, readme-handoff, code-display]</sub>
 
@@ -597,6 +629,8 @@ The fixture MERGEs into tables the migration restructures; every per-slice workb
 
 *Recommended:* Yes — same venue, users and menu restated in the new schema, updated in the migration PR.
 
+*Answer:* Owner (2026-08-07, incl. follow-up): AUTH REWORK — the login system is reworked in a dedicated later build (backlogged); until then development runs with open access (auto-session as the venue owner, no login ceremony). The capability model keeps working underneath. Acceptance workbooks lose sign-in steps; login-dependent Playwright specs retire or adapt to auto-auth.
+
 <sub>docs/acceptance/track-1-owner-fixture.sql [code-api-data]</sub>
 
 ### Q52 · minor
@@ -606,6 +640,8 @@ The fixture MERGEs into tables the migration restructures; every per-slice workb
 The README data model lists it as required, but adding a required setup field now touches venue creation outside Menus, and single-venue escalation has nowhere to go.
 
 *Recommended:* Yes — defer; the multi-venue build adds it nullable and enforces it at group setup.
+
+*Answer:* Owner (2026-08-07), overrides recommendation: add the venue default-user field NOW — required at venue creation per decision 27, pointing at one of the venue’s users; seeded venues get their owner. Escalation behavior still arrives with multi-venue.
 
 <sub>decisions.md 27; README data model; Venue.cs [decisions-doc, multivenue-fwdcompat]</sub>
 
@@ -617,6 +653,8 @@ Owner columns added now must point at something; the codebase already has Organi
 
 *Recommended:* Treat Organization as the group; a brand split would be its own build with its own migration either way.
 
+*Answer:* Accepted recommended (2026-08-07): Organization is the group; owner columns will point at it when multi-venue arrives; brand-splitting would be its own future build.
+
 <sub>MV1 nav; Organization.cs; Venue.OrganizationId [multivenue-fwdcompat]</sub>
 
 ### Q54 · minor
@@ -627,6 +665,8 @@ A SyncTick event already exists if lockstep is ever wanted; side-by-side walls c
 
 *Recommended:* Independent this build.
 
+*Answer:* Accepted recommended (2026-08-07): independent page-cycling per TV this build; lockstep sync is a later nicety.
+
 <sub>signalRTypes.ts syncTick [code-display]</sub>
 
 ### Q55 · minor
@@ -636,6 +676,8 @@ A SyncTick event already exists if lockstep is ever wanted; side-by-side walls c
 Playfair has no CJK/Arabic glyphs and menus today contain those scripts; per-script serif companions are a later polish item.
 
 *Recommended:* Yes — bundled Noto fallback, mixed look accepted.
+
+*Answer:* DEFERRED (2026-08-07). Provisional: bundled Noto fallback for non-Latin scripts; per-script serif companions revisited later.
 
 <sub>build-decisions 10; notoFonts.mjs [code-display]</sub>
 
@@ -648,6 +690,8 @@ Playfair has no CJK/Arabic glyphs and menus today contain those scripts; per-scr
 The hi-fi advertises Photo (highlighted) and Spreadsheet in both the tile and empty state; decision 4's spirit forbids dead affordances, and routes return unchanged as they ship. Header button and tile open the same chooser.
 
 *Recommended:* Yes — trim to Paste (highlighted) + blank link everywhere; never render a route that doesn't work.
+
+*Answer:* Accepted recommended (2026-08-07): empty state and Add tile show only shipping routes (Paste highlighted + start-blank link; template card when templates land); dead routes never render.
 
 <sub>M1 Hi-Fi v2 empty state + tile; decisions.md 4/17; build-decisions 5 [decisions-doc, readme-handoff, m1-hifi, wf-import-actions, record-consistency]</sub>
 
