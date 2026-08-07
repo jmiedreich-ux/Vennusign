@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&display=swap" rel="stylesheet"><style>body{margin:0;background:#f0eee9;font-family:system-ui,sans-serif}a{color:#2a78d6}a:hover{color:#1a5aa8}.wf{scroll-margin-top:12px;margin:0 0 34px;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}.wfl{display:flex;align-items:baseline;gap:9px;margin:0 0 8px}.wfid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0f172a;color:#fff;border-radius:5px;text-decoration:none}.wfn{font:600 12.5px system-ui;color:#1a1a1a}.wfs{font:400 11.5px system-ui;color:#777}.card{width:1180px;min-width:1180px;max-width:none;flex:none;background:#fff;border:1.5px solid #2b2b2b;border-radius:9px;overflow:hidden;display:flex}.card>*{flex-shrink:0}.card>*:last-child{flex-shrink:1}.note{font:400 15px/1.4 Caveat,cursive;color:#2a78d6;margin:9px 0 0;max-width:1180px}@media (max-width:900px){.wrap{padding:16px 12px}}</style></helmet>
+
+<section class="wrap" style="padding:38px 42px 40px">
+<div style="max-width:880px;margin:0 0 30px">
+<h1 style="font:700 21px/1.3 system-ui;margin:0 0 10px;color:#111">Menus — reworked</h1>
+<p style="font:400 12.5px/1.65 system-ui;color:#444;margin:0 0 10px">Scoped to <b>Menus</b> only — Today, Schedules, Screens, the rest of the routes and all mobile layouts are parked until this area is settled. Wireframed from the current source: <code style="font:11.5px ui-monospace,monospace;background:#eee;padding:1px 4px;border-radius:3px">MenuSectionsEditor</code>, <code style="font:11.5px ui-monospace,monospace;background:#eee;padding:1px 4px;border-radius:3px">MenuItemsEditor</code> and <code style="font:11.5px ui-monospace,monospace;background:#eee;padding:1px 4px;border-radius:3px">QuickUpdateMode</code>. <b>Left navigation and its colors are unchanged</b> — the four groups, nine routes, labels and descriptions are exactly <code style="font:11.5px ui-monospace,monospace;background:#eee;padding:1px 4px;border-radius:3px">navigation.mjs</code>, same dark ink and sky accent.</p>
+<p style="font:400 12.5px/1.6 system-ui;color:#444;margin:0 0 12px"><b>Six rules applied everywhere.</b></p>
+<ol style="font:400 12.5px/1.65 system-ui;color:#444;margin:0;padding-left:20px">
+<li><b>One save model per surface.</b> Live ops commit instantly with undo. Structural edits are drafts with an explicit apply. Today the same screen mixes onBlur autosave, per-row Save buttons, and draft bars.</li>
+<li><b>Drag to reorder.</b> Every ↑/↓ pair in the codebase (sections, taps, categories, meal periods, playlist slides) becomes a drag handle.</li>
+<li><b>The TV is always visible.</b> Screens and Themes already render real player iframes — every content surface gets one.</li>
+<li><b>Rows summarize; panels edit.</b> A tap row currently has ~14 inline inputs. Rows become readable lines; editing opens one focused panel.</li>
+<li><b>Machine states become sentences.</b> "Delivery: requested · revision 12 · acknowledgement pending" becomes "Bar is showing revision 12."</li>
+<li><b>Locked features are hidden, not disabled.</b> Per your call — no more inline "· Pro" options, tier-prompt asides, or soft-locked fieldsets. Upgrade discovery is deferred, not designed into these screens.</li>
+</ol>
+</div>
+
+<div class="wf" id="m1"><div class="wfl"><a class="wfid" href="#m1">M1</a><span class="wfn">Menus home — the shelf, and getting a menu in</span><span class="wfs">onboarding is the empty state of this screen, not a separate wizard</span></div>
+
+<p style="max-width:1180px;font:400 12.5px/1.65 system-ui;color:#333;margin:0 0 14px">A venue has two to six menus, not two hundred — so this is a <b>shelf</b>, not a library. Searchable tables of menus are a file manager solving a problem nobody has. And getting a menu <i>in</i> is not a thing that happens once at signup: seasonal menus, a second bar, a reprint that moved thirty prices. So the import routes are permanent, and the empty state of this screen is the onboarding flow.</p>
+
+<div class="card">
+<dc-import name="BackOfficeNav" active="Menu" hint-size="198px,100%"></dc-import>
+
+
+<div style="flex:1;min-width:0;background:#f8fafc;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1.5px solid #2b2b2b;background:#fff"><div style="font:700 13px system-ui">Menu</div><div style="flex:1"></div><div style="font:400 11px system-ui;color:#64748b">Harborview Lounge ▾</div></div>
+
+<div style="padding:18px 20px">
+<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:18px"><div style="width:10px;height:10px;border-radius:50%;background:#c9871a;margin-top:6px;flex:none"></div><div style="flex:1"><div style="font:600 17px/1.35 system-ui;color:#0f172a">Bar and Patio are current. Lobby is offline — it will catch up when it reconnects.</div><div style="font:400 11.5px system-ui;color:#64748b;margin-top:2px">All 3 screens are set to Summer Menu · last seen Lobby 4:12pm</div></div></div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;overflow:hidden;background:#fff">
+<div style="height:104px;background:#12181f;padding:11px 13px;border-bottom:1.5px solid #2b2b2b">
+<div style="font:700 8px Georgia,serif;color:#fff;letter-spacing:.14em;border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:5px;margin-bottom:7px">SUMMER MENU</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px"><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.25)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.25)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div></div>
+</div>
+<div style="padding:9px 11px"><div style="display:flex;align-items:center;gap:7px"><div style="flex:1;font:700 12px system-ui">Summer Menu</div><div style="display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:#c9871a"></span><span style="font:600 9.5px system-ui;color:#7d5911">on 3 screens · 1 offline</span></div><div style="width:19px;height:19px;border:1.5px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b;flex:none">⋯</div></div><div style="font:400 9.5px system-ui;color:#64748b;margin-top:2px">7 sections · 41 items</div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;padding-top:6px;border-top:1px dashed #cbd5e1"><span style="width:6px;height:6px;border-radius:2px;background:#c9871a;flex:none"></span><span style="font:600 9.5px system-ui;color:#7d5911">3 changes not published</span></div></div>
+</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;overflow:hidden;background:#fff">
+<div style="height:104px;background:#0f172a;padding:11px 13px;border-bottom:1.5px solid #2b2b2b">
+<div style="font:700 8px Georgia,serif;color:#fff;letter-spacing:.14em;border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:5px;margin-bottom:7px">LATE NIGHT</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px"><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.25)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.25)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div></div>
+</div>
+<div style="padding:9px 11px"><div style="display:flex;align-items:center;gap:7px"><div style="flex:1;font:700 12px system-ui">Late Night</div><span style="font:500 9.5px system-ui;color:#94a3b8">not on a screen</span><div style="width:19px;height:19px;border:1.5px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b;flex:none">⋯</div></div><div style="font:400 9.5px system-ui;color:#64748b;margin-top:2px">3 sections · 14 items</div></div>
+</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;overflow:hidden;background:#fff">
+<div style="height:104px;background:#faf8f2;padding:11px 13px;border-bottom:1.5px solid #2b2b2b">
+<div style="font:700 8px Georgia,serif;color:#1a2b4a;letter-spacing:.14em;border-bottom:1px solid rgba(26,43,74,.25);padding-bottom:5px;margin-bottom:7px">BRUNCH</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px"><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(26,43,74,.4)"></div><div style="width:11px;height:4px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(26,43,74,.4)"></div><div style="width:11px;height:4px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(26,43,74,.4)"></div><div style="width:11px;height:4px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(26,43,74,.4)"></div><div style="width:11px;height:4px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(26,43,74,.4)"></div><div style="width:11px;height:4px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(26,43,74,.4)"></div><div style="width:11px;height:4px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(26,43,74,.2)"></div><div style="width:11px;height:4px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(26,43,74,.2)"></div><div style="width:11px;height:4px;background:rgba(26,43,74,.4)"></div></div></div>
+</div>
+<div style="padding:9px 11px"><div style="display:flex;align-items:center;gap:7px"><div style="flex:1;font:700 12px system-ui">Brunch</div><span style="font:500 9.5px system-ui;color:#94a3b8">not on a screen</span><div style="width:19px;height:19px;border:1.5px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b;flex:none">⋯</div></div><div style="font:400 9.5px system-ui;color:#64748b;margin-top:2px">5 sections · 22 items</div></div>
+</div>
+<div style="border:1.5px dashed #94a3b8;border-radius:8px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:14px;min-height:150px"><div style="font:400 20px system-ui;color:#64748b">+</div><div style="font:600 11.5px system-ui">Add a menu</div><div style="font:400 9.5px/1.35 system-ui;color:#64748b;text-align:center">Photo, paste, spreadsheet<br>or start blank</div></div>
+</div>
+<div style="margin-top:16px;border-top:1.5px dashed #cbd5e1;padding-top:13px">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b">Not in use</div><div style="font:400 10px system-ui;color:#94a3b8">3 · kept with their history</div><div style="font:400 10px system-ui;color:#94a3b8">▾</div></div>
+<div style="display:flex;gap:9px;flex-wrap:wrap">
+<div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border:1.5px solid #cbd5e1;border-radius:7px;background:#fff"><div style="width:38px;height:24px;border-radius:3px;background:#12181f;border:1px solid #cbd5e1;flex:none"></div><div><div style="font:600 11px system-ui;color:#475569">Winter Menu</div><div style="font:400 9px system-ui;color:#94a3b8">last on a screen 12 Mar</div></div></div>
+<div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border:1.5px solid #cbd5e1;border-radius:7px;background:#fff"><div style="width:38px;height:24px;border-radius:3px;background:#faf8f2;border:1px solid #cbd5e1;flex:none"></div><div><div style="font:600 11px system-ui;color:#475569">Valentine's Prix Fixe</div><div style="font:400 9px system-ui;color:#94a3b8">last on a screen 14 Feb</div></div></div>
+<div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border:1.5px solid #cbd5e1;border-radius:7px;background:#fff"><div style="width:38px;height:24px;border-radius:3px;background:#0f172a;border:1px solid #cbd5e1;flex:none"></div><div><div style="font:600 11px system-ui;color:#475569">Summer Menu 2025</div><div style="font:400 9px system-ui;color:#94a3b8">last on a screen 2 Sep</div></div></div>
+</div>
+<div style="font:400 10px/1.45 system-ui;color:#94a3b8;margin-top:9px">Click one to open it. Duplicating an old menu is usually faster than building next season from scratch.</div>
+</div>
+<div class="note" style="margin:12px 0 0;font-size:13.5px">real boards at real proportions — you recognise your own menu faster than you read its name. The headline is <b>decision 12</b> doing actual work: a sentence that names what is current and what is not, rather than a green all-clear. And because <b>decision 2</b> gives every menu its own queue, the shelf card has to be able to say it is holding one. The board <i>is</i> the door — clicking anywhere on it opens the builder where you left off, so there is no Open button. The <b>⋯</b> is the only other control on a card, and it holds everything you can do to a whole menu. Late Night and Brunch are still in rotation, just not on a screen today. Menus you have finished with drop to <b>Not in use</b> — smaller, quieter, still one click from opening, and never deleted</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;width:1180px;margin-top:16px">
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">Empty — no POS add-on</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;padding:20px 18px;text-align:center">
+<div style="font:700 15px system-ui;margin-bottom:4px">Let's get your menu in.</div>
+<div style="font:400 11.5px system-ui;color:#64748b;margin-bottom:16px">Pick whatever's easiest. You can fix anything later.</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px">
+<div style="border:2.5px solid #2a78d6;border-radius:8px;padding:14px 11px;background:#f2fafe;text-align:center"><div style="font:400 19px system-ui;margin-bottom:6px;color:#0f172a">▣</div><div style="font:600 11.5px system-ui;margin-bottom:3px">Photo of it</div><div style="font:400 9.5px/1.35 system-ui;color:#64748b">Snap your printed menu</div></div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;padding:14px 11px;background:#fff;text-align:center"><div style="font:400 19px system-ui;margin-bottom:6px;color:#0f172a">⎘</div><div style="font:600 11.5px system-ui;margin-bottom:3px">Paste text</div><div style="font:400 9.5px/1.35 system-ui;color:#64748b">From a doc or website</div></div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;padding:14px 11px;background:#fff;text-align:center"><div style="font:400 19px system-ui;margin-bottom:6px;color:#0f172a">⊞</div><div style="font:600 11.5px system-ui;margin-bottom:3px">Spreadsheet</div><div style="font:400 9.5px/1.35 system-ui;color:#64748b">Excel or CSV</div></div>
+</div>
+<div style="font:500 11px system-ui;color:#2a78d6;margin-top:13px;text-decoration:underline">or start from a blank board</div>
+</div>
+<p class="note" style="margin:8px 0 0">three routes, and no trace that a fourth exists — <b>decision 4</b>: a capability outside your plan is absent, not disabled. This whole screen is gated in turn: a venue on static content never reaches it, because <b>Menu</b> is not in their navigation (<b>decision 19</b>)</p>
+</div>
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">Empty — POS add-on attached</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;padding:20px 18px;text-align:center">
+<div style="font:700 15px system-ui;margin-bottom:4px">Let's get your menu in.</div>
+<div style="font:400 11.5px system-ui;color:#64748b;margin-bottom:16px">Pick whatever's easiest. You can fix anything later.</div>
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:9px">
+<div style="border:2.5px solid #2a78d6;border-radius:8px;padding:14px 11px;background:#f2fafe;text-align:center"><div style="font:400 19px system-ui;margin-bottom:6px;color:#0f172a">⇄</div><div style="font:600 11.5px system-ui;margin-bottom:3px">From your POS</div><div style="font:400 9.5px/1.35 system-ui;color:#64748b">Toast · connected</div></div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;padding:14px 11px;background:#fff;text-align:center"><div style="font:400 19px system-ui;margin-bottom:6px;color:#0f172a">▣</div><div style="font:600 11.5px system-ui;margin-bottom:3px">Photo of it</div><div style="font:400 9.5px/1.35 system-ui;color:#64748b">Snap your printed menu</div></div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;padding:14px 11px;background:#fff;text-align:center"><div style="font:400 19px system-ui;margin-bottom:6px;color:#0f172a">⎘</div><div style="font:600 11.5px system-ui;margin-bottom:3px">Paste text</div><div style="font:400 9.5px/1.35 system-ui;color:#64748b">From a doc or website</div></div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;padding:14px 11px;background:#fff;text-align:center"><div style="font:400 19px system-ui;margin-bottom:6px;color:#0f172a">⊞</div><div style="font:600 11.5px system-ui;margin-bottom:3px">Spreadsheet</div><div style="font:400 9.5px/1.35 system-ui;color:#64748b">Excel or CSV</div></div>
+</div>
+</div>
+<p class="note" style="margin:8px 0 0">the same screen with the add-on attached — POS leads, because a connected catalogue is better than any of the others. It appears; it is never dangled</p>
+</div>
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">Pick a look — at creation, and after</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;padding:15px 16px">
+<div style="font:600 12.5px system-ui;margin-bottom:3px">Your menu, three ways.</div>
+<div style="font:400 10.5px system-ui;color:#64748b;margin-bottom:11px">Pick one — you can change it anytime.</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px">
+<div style="border:2.5px solid #2a78d6;border-radius:6px;overflow:hidden"><div style="background:#12181f;padding:9px;height:80px"><div style="font:700 7px Georgia,serif;color:#fff;border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:4px;margin-bottom:5px">SUMMER</div><div style="display:flex;flex-direction:column;gap:4px"><div style="display:flex;gap:5px"><div style="flex:1;height:3.5px;background:rgba(255,255,255,.55)"></div><div style="width:10px;height:3.5px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:5px"><div style="flex:1;height:3.5px;background:rgba(255,255,255,.55)"></div><div style="width:10px;height:3.5px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:5px"><div style="flex:1;height:3.5px;background:rgba(255,255,255,.55)"></div><div style="width:10px;height:3.5px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:5px"><div style="flex:1;height:3.5px;background:rgba(255,255,255,.3)"></div><div style="width:10px;height:3.5px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:5px"><div style="flex:1;height:3.5px;background:rgba(255,255,255,.3)"></div><div style="width:10px;height:3.5px;background:rgba(255,255,255,.5)"></div></div></div></div><div style="padding:6px 8px;font:600 9.5px system-ui;background:#fff">Classic dark</div></div>
+<div style="border:1.5px solid #2b2b2b;border-radius:6px;overflow:hidden"><div style="background:#f8f5ef;padding:9px;height:80px"><div style="font:700 7px Georgia,serif;color:#1a1a1a;text-align:center;margin-bottom:6px">SUMMER</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px"><div style="height:3.5px;background:rgba(0,0,0,.35)"></div><div style="height:3.5px;background:rgba(0,0,0,.35)"></div><div style="height:3.5px;background:rgba(0,0,0,.35)"></div><div style="height:3.5px;background:rgba(0,0,0,.35)"></div><div style="height:3.5px;background:rgba(0,0,0,.35)"></div><div style="height:3.5px;background:rgba(0,0,0,.35)"></div><div style="height:3.5px;background:rgba(0,0,0,.18)"></div><div style="height:3.5px;background:rgba(0,0,0,.18)"></div></div></div><div style="padding:6px 8px;font:600 9.5px system-ui;background:#fff">Paper, two-up</div></div>
+<div style="border:1.5px solid #2b2b2b;border-radius:6px;overflow:hidden"><div style="background:#0f172a;padding:9px;height:80px;display:flex;gap:6px"><div style="width:34%;background:repeating-linear-gradient(135deg,#334155,#334155 4px,#1e293b 4px,#1e293b 8px);border-radius:2px"></div><div style="flex:1;display:flex;flex-direction:column;gap:4px;padding-top:2px"><div style="height:3.5px;background:#87ceeb;width:60%"></div><div style="height:3.5px;background:rgba(255,255,255,.45)"></div><div style="height:3.5px;background:rgba(255,255,255,.45)"></div><div style="height:3.5px;background:rgba(255,255,255,.3)"></div></div></div><div style="padding:6px 8px;font:600 9.5px system-ui;background:#fff">With photos</div></div>
+</div>
+<div style="font:400 10px/1.45 system-ui;color:#64748b;margin-top:11px;padding-top:9px;border-top:1px dashed #cbd5e1">Previews use <b>your</b> items, not sample text. Changeable later from the builder — never a theme editor buried in settings.</div>
+</div>
+<p class="note" style="margin:8px 0 0">three looks is the whole choice at this tier. A venue that cannot edit themes never learns a theme editor exists</p>
+</div>
+</div>
+
+
+<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;width:1180px;margin-top:16px">
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">Everything else you can do to a whole menu</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;overflow:hidden;box-shadow:0 6px 20px rgba(15,23,42,.14)">
+<div style="padding:9px 13px;border-bottom:1.5px solid #2b2b2b;background:#f8fafc;font:700 11px system-ui">Summer Menu</div>
+<div style="padding:6px 0">
+<div style="padding:8px 13px;font:600 11.5px system-ui;background:#e0f2fe">Open</div>
+<div style="padding:8px 13px;font:500 11.5px system-ui;color:#475569">Quick update</div>
+<div style="height:1px;background:#e2e8f0;margin:5px 0"></div>
+<div style="padding:8px 13px;font:500 11.5px system-ui;color:#475569">Go back to…</div>
+<div style="padding:8px 13px;font:500 11.5px system-ui;color:#475569">Duplicate</div>
+<div style="height:1px;background:#e2e8f0;margin:5px 0"></div>
+<div style="padding:8px 13px;font:500 11.5px system-ui;color:#8a2929">Take off the screens</div>
+</div>
+</div>
+<p class="note" style="margin:8px 0 0">five items, all in plain language — the menu-level home for <b>decisions 10 and 11</b>. No “unpublish”, no “restore”, no “archive” as a verb nobody uses out loud</p>
+</div>
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">Finding one when there are more</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;padding:14px">
+<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid #2b2b2b;border-radius:6px;margin-bottom:11px"><span style="color:#94a3b8;font-size:11px">⌕</span><span style="font:400 12px system-ui;color:#0f172a">bru</span><span style="width:1.5px;height:14px;background:#2a78d6"></span></div>
+<div style="display:flex;gap:9px;align-items:center;padding:8px 9px;border:1.5px solid #cbd5e1;border-radius:6px;background:#f8fafc"><div style="width:44px;height:30px;border-radius:3px;background:#faf8f2;border:1px solid #cbd5e1;flex:none"></div><div style="flex:1"><div style="font:600 11.5px system-ui">Brunch</div><div style="font:400 9.5px system-ui;color:#64748b">5 sections · 22 items · not on a screen</div></div></div>
+<div style="font:400 10px/1.45 system-ui;color:#94a3b8;margin-top:10px">Search appears once a venue has more than six menus. Below that it is a control with nothing to do.</div>
+</div>
+<p class="note" style="margin:8px 0 0">the shelf earns a search field by growing into one — a venue with three menus never sees it</p>
+</div>
+</div>
+
+<div style="display:flex;gap:14px;width:1180px;margin-top:16px;flex-wrap:wrap">
+<div style="flex:1;min-width:250px;border-left:3px solid #178a52;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">Onboarding is a fullness, not a mode</div><div style="font:400 11.5px/1.5 system-ui;color:#555">Zero menus and this screen <i>is</i> the import flow. Three menus and it is a shelf with the same affordance in the last slot — the routes themselves are drawn in <a href="#m1a">M1a</a>. Nothing to fall out of, nothing to re-enter, and no separate wizard to maintain.</div></div>
+<div style="flex:1;min-width:250px;border-left:3px solid #178a52;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">Only surface what the machine is unsure about</div><div style="font:400 11.5px/1.5 system-ui;color:#555">After any import, confirm the four rows we could not read — not the thirty-one we could. This is a product principle, not a step in a wizard: it should govern spreadsheet import, photo capture and POS sync alike.</div></div>
+<div style="flex:1;min-width:250px;border-left:3px solid #178a52;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">Settled — spreadsheet import</div><div style="font:400 11.5px/1.5 system-ui;color:#555">We publish the headings and read them in <b>any order</b>, with only <b>Item</b> and <b>Price</b> required. A template is offered but never required, since the common file is one they already have. Extra columns are the only thing worth asking about. Drawn in <a href="#m1a">M1a</a>.</div></div>
+</div>
+</div>
+
+
+<div class="wf" id="m1a"><div class="wfl"><a class="wfid" href="#m1a">M1a</a><span class="wfn">Import — the four routes, drawn</span><span class="wfs">every route ends in the same place: confirm only what we couldn't read</span></div>
+
+<p style="max-width:1180px;font:400 12.5px/1.65 system-ui;color:#333;margin:0 0 14px">The routes differ in what they ask you for — a photo, a paste, a file, a connection. They do <b>not</b> differ in what happens next. All four produce the same thing: a draft menu, plus a short list of rows the machine wasn't sure about. Nobody proofreads thirty-one correct rows to find four wrong ones (<b>decision 18</b>), and nothing reaches a screen — an import lands on the shelf as a draft like any other new menu.</p>
+
+<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;width:1180px">
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">Photo · 1 take the picture</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;overflow:hidden">
+<div style="padding:13px 15px;border-bottom:1.5px dashed #cbd5e1"><div style="font:700 13px system-ui;margin-bottom:3px">Photograph your printed menu</div><div style="font:400 11px/1.5 system-ui;color:#475569">Flat, whole page in frame. Two pages? Two photos — we'll join them.</div></div>
+<div style="padding:14px 15px">
+<div style="border:2px dashed #94a3b8;border-radius:7px;background:#f8fafc;padding:26px 14px;text-align:center"><div style="font:400 24px system-ui;color:#94a3b8;margin-bottom:6px">▣</div><div style="font:600 11.5px system-ui;margin-bottom:2px">Drop a photo, or take one</div><div style="font:400 10px system-ui;color:#94a3b8">JPG, PNG or HEIC · up to 8 pages</div></div>
+<div style="display:flex;gap:7px;margin-top:11px"><div style="flex:1;padding:8px 12px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11px system-ui;text-align:center">Choose a photo</div><div style="padding:8px 12px;border:1.5px solid #2b2b2b;border-radius:6px;font:600 11px system-ui;background:#fff">Use my camera</div></div>
+<div style="font:500 10.5px system-ui;color:#2a78d6;margin-top:10px;text-align:center">Cancel</div>
+</div>
+</div>
+<p class="note" style="margin:8px 0 0">a bartender photographs the menu taped to the till. Camera is a peer of upload, not hidden behind it</p>
+</div>
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">Photo · 2 while it reads</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;overflow:hidden">
+<div style="padding:13px 15px;border-bottom:1.5px dashed #cbd5e1"><div style="font:700 13px system-ui;margin-bottom:3px">Reading your menu…</div><div style="font:400 11px system-ui;color:#475569">About 20 seconds. You can leave this page.</div></div>
+<div style="padding:14px 15px">
+<div style="display:flex;gap:11px">
+<div style="width:96px;flex:none;height:124px;border:1.5px solid #cbd5e1;border-radius:5px;background:#faf8f2;padding:9px 8px;overflow:hidden"><div style="font:700 6px Georgia,serif;color:#1a2b4a;letter-spacing:.12em;text-align:center;border-bottom:1px solid rgba(26,43,74,.3);padding-bottom:4px;margin-bottom:5px">SUMMER MENU</div><div style="display:flex;flex-direction:column;gap:3.5px"><div style="display:flex;gap:4px"><div style="flex:1;height:3px;background:rgba(26,43,74,.5)"></div><div style="width:8px;height:3px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:4px"><div style="flex:1;height:3px;background:rgba(26,43,74,.3)"></div><div style="width:8px;height:3px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:4px"><div style="flex:1;height:3px;background:rgba(26,43,74,.3)"></div><div style="width:8px;height:3px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:4px"><div style="flex:1;height:3px;background:rgba(26,43,74,.3)"></div><div style="width:8px;height:3px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:4px"><div style="flex:1;height:3px;background:rgba(26,43,74,.5)"></div><div style="width:8px;height:3px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:4px"><div style="flex:1;height:3px;background:rgba(26,43,74,.3)"></div><div style="width:8px;height:3px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:4px"><div style="flex:1;height:3px;background:rgba(26,43,74,.3)"></div><div style="width:8px;height:3px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:4px"><div style="flex:1;height:3px;background:rgba(26,43,74,.3)"></div><div style="width:8px;height:3px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:4px"><div style="flex:1;height:3px;background:rgba(26,43,74,.5)"></div><div style="width:8px;height:3px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:4px"><div style="flex:1;height:3px;background:rgba(26,43,74,.3)"></div><div style="width:8px;height:3px;background:rgba(26,43,74,.4)"></div></div><div style="display:flex;gap:4px"><div style="flex:1;height:3px;background:rgba(26,43,74,.3)"></div><div style="width:8px;height:3px;background:rgba(26,43,74,.4)"></div></div></div></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px"><span style="color:#178a52;font:700 12px system-ui">✓</span><div style="flex:1"><div style="font:600 11px system-ui">7 sections found</div><div style="font:400 9.5px system-ui;color:#94a3b8">Cocktails, Beer, Wine…</div></div></div>
+<div style="display:flex;align-items:center;gap:8px"><span style="color:#178a52;font:700 12px system-ui">✓</span><div style="flex:1"><div style="font:600 11px system-ui">41 items</div><div style="font:400 9.5px system-ui;color:#94a3b8">with prices</div></div></div>
+<div style="display:flex;align-items:center;gap:8px"><span style="color:#2a78d6;font:700 12px system-ui">◴</span><div style="flex:1"><div style="font:600 11px system-ui;color:#475569">Reading descriptions</div><div style="height:4px;background:#e2e8f0;border-radius:99px;margin-top:4px;overflow:hidden"><div style="width:64%;height:100%;background:#2a78d6"></div></div></div></div>
+</div>
+</div>
+<div style="margin-top:11px;padding:8px 10px;border:1.5px solid #cbd5e1;border-radius:6px;background:#f8fafc;font:400 10px/1.45 system-ui;color:#64748b">We'll email you when it's ready. Nothing goes on a screen — this becomes a draft on your shelf.</div>
+</div>
+</div>
+<p class="note" style="margin:8px 0 0">progress that names what it found, not a spinner. And an explicit promise about what this does <i>not</i> do</p>
+</div>
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">Paste text</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;overflow:hidden">
+<div style="padding:13px 15px;border-bottom:1.5px dashed #cbd5e1"><div style="font:700 13px system-ui;margin-bottom:3px">Paste your menu</div><div style="font:400 11px/1.5 system-ui;color:#475569">From a doc, an email, your website. Formatting doesn't matter.</div></div>
+<div style="padding:14px 15px">
+<div style="border:1.5px solid #2b2b2b;border-radius:6px;background:#fff;padding:10px 11px;height:164px;overflow:hidden;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:#334155">COCKTAILS<br>Harbor Lemonade  5<br>Cucumber Cooler  5<br>Berry Fizz  6<br><br>SMALL PLATES<br>Grilled Snapper  18<br>Bone Marrow &nbsp;22<br>Burrata — heirloom tomato 14<span style="display:inline-block;width:1.5px;height:12px;background:#2a78d6;vertical-align:-2px;margin-left:1px"></span></div>
+<div style="display:flex;align-items:center;gap:9px;margin-top:10px;padding:8px 10px;border:1.5px solid #178a52;border-radius:6px;background:#eaf6f0"><span style="color:#178a52;font:700 12px system-ui">✓</span><div style="font:500 10.5px system-ui;color:#18603f">Looks like <b>2 sections</b> and <b>6 items</b></div></div>
+<div style="display:flex;gap:7px;margin-top:11px"><div style="flex:1;padding:8px 12px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11px system-ui;text-align:center">Use this</div><div style="padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:6px;font:600 11px system-ui;color:#475569">Cancel</div></div>
+</div>
+</div>
+<p class="note" style="margin:8px 0 0">it reads as you type, so you know it understood before you commit. A caps line becomes a section — no syntax to learn</p>
+</div>
+
+</div>
+
+<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;width:1180px;margin-top:16px">
+
+<div style="width:578px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">Spreadsheet · we publish the headings, you use them in any order</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;overflow:hidden">
+<div style="padding:13px 15px;border-bottom:1.5px dashed #cbd5e1;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font:700 13px system-ui">summer-menu-2026.xlsx</div><div style="font:400 10.5px system-ui;color:#64748b">47 rows · matched by heading name — column order doesn’t matter</div></div><div style="font:500 10.5px system-ui;color:#2a78d6">Use a different file</div></div>
+<div style="padding:13px 15px">
+<div style="display:flex;align-items:center;gap:11px;padding:9px 11px;border:1.5px solid #cbd5e1;border-radius:6px;background:#f8fafc;margin-bottom:11px">
+<div style="flex:1"><div style="font:600 10.5px system-ui;margin-bottom:3px">The headings we read</div><div style="display:flex;flex-wrap:wrap;gap:4px"><span style="font:600 9.5px system-ui;padding:2px 7px;border:1px solid #2b2b2b;border-radius:99px;background:#fff">Item</span><span style="font:600 9.5px system-ui;padding:2px 7px;border:1px solid #2b2b2b;border-radius:99px;background:#fff">Price</span><span style="font:500 9.5px system-ui;padding:2px 7px;border:1px solid #cbd5e1;border-radius:99px;color:#475569;background:#fff">Description</span><span style="font:500 9.5px system-ui;padding:2px 7px;border:1px solid #cbd5e1;border-radius:99px;color:#475569;background:#fff">Section</span><span style="font:500 9.5px system-ui;padding:2px 7px;border:1px solid #cbd5e1;border-radius:99px;color:#475569;background:#fff">Sold out</span><span style="font:500 9.5px system-ui;padding:2px 7px;border:1px solid #cbd5e1;border-radius:99px;color:#475569;background:#fff">Size</span></div><div style="font:400 9.5px system-ui;color:#94a3b8;margin-top:5px"><b>Item</b> and <b>Price</b> are required. Any order, any extra columns, spelling and case don’t matter.</div></div>
+<div style="padding:7px 11px;border:1.5px solid #2b2b2b;border-radius:6px;font:600 10px system-ui;background:#fff;flex:none">Download the template</div>
+</div>
+<div style="border:1.5px solid #cbd5e1;border-radius:6px;overflow:hidden">
+<div style="display:grid;grid-template-columns:1.4fr 2fr .7fr 1fr;background:#f1f5f9;border-bottom:1.5px solid #cbd5e1">
+<div style="padding:7px 9px;border-right:1px solid #cbd5e1"><div style="display:flex;align-items:center;gap:4px;font:600 9px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#18603f;margin-bottom:2px"><span style="font-size:9px">✓</span> Matched</div><div style="font:700 10.5px system-ui">Item</div></div>
+<div style="padding:7px 9px;border-right:1px solid #cbd5e1"><div style="display:flex;align-items:center;gap:4px;font:600 9px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#18603f;margin-bottom:2px"><span style="font-size:9px">✓</span> Matched</div><div style="font:700 10.5px system-ui">Description</div></div>
+<div style="padding:7px 9px;border-right:1px solid #cbd5e1"><div style="display:flex;align-items:center;gap:4px;font:600 9px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#18603f;margin-bottom:2px"><span style="font-size:9px">✓</span> Matched</div><div style="font:700 10.5px system-ui">Price</div></div>
+<div style="padding:7px 9px;background:#fdf1dc"><div style="font:600 9px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#7d5911;margin-bottom:2px">Not one of ours</div><div style="font:700 10.5px system-ui;color:#7d5911">Kitchen code</div></div>
+</div>
+<div style="display:grid;grid-template-columns:1.4fr 2fr .7fr 1fr;font:400 10.5px system-ui;color:#334155">
+<div style="padding:6px 9px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">Harbor Lemonade</div><div style="padding:6px 9px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;color:#64748b">Fresh lemon, cane sugar…</div><div style="padding:6px 9px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">5.00</div><div style="padding:6px 9px;border-bottom:1px solid #e2e8f0;background:#fffdf6;color:#7d5911">NA-01</div>
+<div style="padding:6px 9px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">Cucumber Cooler</div><div style="padding:6px 9px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;color:#64748b">Cucumber, lime, mint…</div><div style="padding:6px 9px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">5.00</div><div style="padding:6px 9px;border-bottom:1px solid #e2e8f0;background:#fffdf6;color:#7d5911">NA-02</div>
+<div style="padding:6px 9px;border-right:1px solid #e2e8f0">Grilled Snapper</div><div style="padding:6px 9px;border-right:1px solid #e2e8f0;color:#64748b">Whole fish, charred lemon</div><div style="padding:6px 9px;border-right:1px solid #e2e8f0">18.00</div><div style="padding:6px 9px;background:#fffdf6;color:#7d5911">SP-11</div>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;margin-top:11px;padding:9px 11px;border:1.5px solid #c9871a;border-radius:6px;background:#fdf1dc"><div style="flex:1;font:400 10.5px/1.5 system-ui;color:#7d5911"><b>Kitchen code</b> isn’t one of our headings. Three of your four columns matched; this one is yours. We can keep it on each item, or ignore the column.</div><div style="display:flex;gap:6px;flex:none"><div style="padding:6px 10px;border:1.5px solid #7d5911;border-radius:5px;font:600 10px system-ui;color:#7d5911;background:#fff">Keep as codes</div><div style="padding:6px 10px;border:1.5px solid #7d5911;border-radius:5px;font:600 10px system-ui;background:#7d5911;color:#fff">Ignore it</div></div></div>
+<div style="display:flex;align-items:center;gap:9px;margin-top:11px"><div style="padding:9px 15px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11.5px system-ui">Import 47 items</div><div style="padding:9px 13px;border:1.5px solid #cbd5e1;border-radius:6px;font:600 11.5px system-ui;color:#475569">Cancel</div><div style="flex:1"></div><div style="font:400 10px system-ui;color:#94a3b8"><b>Section</b> and <b>Sold out</b> were also matched · <span style="color:#2a78d6;font-weight:500">see all headings</span></div></div>
+</div>
+</div>
+<p class="note" style="margin:8px 0 0">the still-to-settle question, answered: <b>we publish the headings, they can be in any order, and extra columns are the only question</b>. No mapping step, because there is nothing to map — a heading either is one of ours or it is theirs</p>
+</div>
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">From your POS · add-on attached</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;overflow:hidden">
+<div style="padding:13px 15px;border-bottom:1.5px dashed #cbd5e1;display:flex;align-items:center;gap:9px"><div style="width:24px;height:24px;border-radius:6px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:center;font:700 11px system-ui;flex:none">T</div><div style="flex:1"><div style="font:700 12.5px system-ui">Toast · connected</div><div style="font:400 10px system-ui;color:#178a52">read last night, 2:04am</div></div></div>
+<div style="padding:13px 15px">
+<div style="font:600 9.5px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b;margin-bottom:7px">Bring in which categories?</div>
+<div style="display:flex;flex-direction:column;gap:5px">
+<div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border:1.5px solid #2b2b2b;border-radius:6px;background:#f8fafc"><div style="width:14px;height:14px;border:1.5px solid #2b2b2b;border-radius:3px;background:#0f172a;flex:none"></div><div style="flex:1;font:600 11px system-ui">Cocktails</div><div style="font:400 9.5px system-ui;color:#94a3b8">22</div></div>
+<div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border:1.5px solid #2b2b2b;border-radius:6px;background:#f8fafc"><div style="width:14px;height:14px;border:1.5px solid #2b2b2b;border-radius:3px;background:#0f172a;flex:none"></div><div style="flex:1;font:600 11px system-ui">Small Plates</div><div style="font:400 9.5px system-ui;color:#94a3b8">14</div></div>
+<div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border:1.5px solid #cbd5e1;border-radius:6px"><div style="width:14px;height:14px;border:1.5px solid #94a3b8;border-radius:3px;flex:none"></div><div style="flex:1;font:500 11px system-ui;color:#475569">Retail &amp; merch</div><div style="font:400 9.5px system-ui;color:#94a3b8">31</div></div>
+<div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border:1.5px solid #cbd5e1;border-radius:6px"><div style="width:14px;height:14px;border:1.5px solid #94a3b8;border-radius:3px;flex:none"></div><div style="flex:1;font:500 11px system-ui;color:#475569">Modifiers</div><div style="font:400 9.5px system-ui;color:#94a3b8">88</div></div>
+</div>
+<div style="margin-top:10px;padding:8px 10px;border:1.5px solid #cbd5e1;border-radius:6px;background:#f8fafc;font:400 10px/1.45 system-ui;color:#64748b">Your POS is the source for these prices from now on. You'll still 86 from here, and a price you type by hand wins until you clear it.</div>
+<div style="display:flex;gap:7px;margin-top:11px"><div style="flex:1;padding:8px 12px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11px system-ui;text-align:center">Bring in 36 items</div><div style="padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:6px;font:600 11px system-ui;color:#475569">Cancel</div></div>
+</div>
+</div>
+<p class="note" style="margin:8px 0 0">the only route that keeps reading after today, so it's the only one that has to say what that means for prices up front. Categories, not items — nobody ticks 36 boxes</p>
+</div>
+
+</div>
+
+<div style="width:1180px;margin-top:16px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">Where all four end · confirm only what we couldn't read</div>
+<div class="card" style="display:block">
+<div style="padding:15px 18px;border-bottom:1.5px solid #2b2b2b;display:flex;align-items:flex-start;gap:12px;background:#fff"><div style="flex:1"><div style="font:600 17px/1.35 system-ui;color:#0f172a">We read 41 of 45 items. Four need you, plus a name check.</div><div style="font:400 11.5px system-ui;color:#64748b;margin-top:2px">Summer Menu · from a photo, 2 pages · nothing is on a screen yet</div></div><div style="display:flex;gap:8px;flex:none"><div style="padding:8px 14px;border:1.5px solid #2b2b2b;border-radius:6px;font:600 11px system-ui;background:#fff">See all 45</div><div style="padding:8px 15px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11px system-ui">Open in the builder</div></div></div>
+
+<div style="padding:15px 18px;background:#f8fafc">
+<div style="display:flex;flex-direction:column;gap:9px">
+
+<div style="border:1.5px solid #c9871a;border-radius:7px;background:#fff;overflow:hidden;display:flex">
+<div style="width:120px;flex:none;background:#faf8f2;border-right:1.5px solid #e3c58a;padding:9px;display:flex;align-items:center;justify-content:center"><div style="font:700 9px Georgia,serif;color:#1a2b4a;text-align:center;line-height:1.5">BURRATA<br><span style="filter:blur(1.2px)">—— 1&amp;</span></div></div>
+<div style="flex:1;padding:10px 13px;display:flex;align-items:center;gap:14px">
+<div style="flex:1"><div style="font:700 12px system-ui">Burrata</div><div style="font:400 10px system-ui;color:#64748b">Small Plates · the price is smudged in the photo</div></div>
+<div style="display:flex;align-items:center;gap:7px"><div style="font:400 10px system-ui;color:#64748b">Price</div><div style="padding:7px 12px;border:2px solid #2a78d6;border-radius:6px;font:700 12px system-ui;min-width:64px;background:#fff">14.00<span style="display:inline-block;width:1.5px;height:13px;background:#2a78d6;vertical-align:-2px;margin-left:2px"></span></div></div>
+<div style="font:400 10px system-ui;color:#94a3b8;width:96px">we guessed from<br>the line above</div>
+</div>
+</div>
+
+<div style="border:1.5px solid #c9871a;border-radius:7px;background:#fff;overflow:hidden;display:flex">
+<div style="width:120px;flex:none;background:#faf8f2;border-right:1.5px solid #e3c58a;padding:9px;display:flex;align-items:center;justify-content:center"><div style="font:700 9px Georgia,serif;color:#1a2b4a;text-align:center;line-height:1.5"><span style="filter:blur(1.1px)">SNAPPFR</span><br>18</div></div>
+<div style="flex:1;padding:10px 13px;display:flex;align-items:center;gap:14px">
+<div style="flex:1"><div style="display:flex;align-items:center;gap:7px"><div style="padding:6px 11px;border:1.5px solid #2b2b2b;border-radius:6px;font:700 12px system-ui;background:#fff">Grilled Snapper</div></div><div style="font:400 10px system-ui;color:#64748b;margin-top:3px">Small Plates · we weren't sure of the spelling</div></div>
+<div style="display:flex;gap:6px"><div style="padding:6px 11px;border:1.5px solid #178a52;border-radius:5px;font:600 10.5px system-ui;color:#18603f;background:#eaf6f0">That's right</div><div style="padding:6px 11px;border:1.5px solid #cbd5e1;border-radius:5px;font:600 10.5px system-ui;color:#475569">Edit</div></div>
+</div>
+</div>
+
+<div style="border:1.5px solid #c9871a;border-radius:7px;background:#fff;overflow:hidden;display:flex">
+<div style="width:120px;flex:none;background:#faf8f2;border-right:1.5px solid #e3c58a;padding:9px;display:flex;align-items:center;justify-content:center"><div style="font:700 8px Georgia,serif;color:#1a2b4a;text-align:center;line-height:1.6">HALF DOZEN 16<br>DOZEN 30</div></div>
+<div style="flex:1;padding:10px 13px;display:flex;align-items:center;gap:14px">
+<div style="flex:1"><div style="font:700 12px system-ui">Oysters</div><div style="font:400 10px system-ui;color:#64748b">Two prices on one line — one item with sizes, or two items?</div></div>
+<div style="display:flex;gap:6px"><div style="padding:6px 11px;border:2px solid #0f172a;border-radius:5px;font:700 10.5px system-ui;background:#f8fafc">One item, two sizes</div><div style="padding:6px 11px;border:1.5px solid #cbd5e1;border-radius:5px;font:600 10.5px system-ui;color:#475569">Two items</div></div>
+</div>
+</div>
+
+<div style="border:1.5px solid #c9871a;border-radius:7px;background:#fff;overflow:hidden">
+<div style="padding:10px 13px;display:flex;align-items:flex-start;gap:12px;border-bottom:1px dashed #e3c58a"><div style="flex:1"><div style="font:700 12px system-ui">6 items are nearly the same as ones you already have</div><div style="font:400 10px system-ui;color:#64748b">We've assumed they're the same item with a tidied name. Untick any that are genuinely different.</div></div><div style="font:500 10px system-ui;color:#2a78d6;flex:none">Untick all</div></div>
+<div style="padding:4px 13px 10px">
+<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f1f5f9"><div style="width:15px;height:15px;border:1.5px solid #2b2b2b;border-radius:3px;background:#0f172a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;flex:none">✓</div><div style="flex:1;font:500 10.5px system-ui;color:#334155">“Old-Fashioned”</div><div style="font:400 10px system-ui;color:#94a3b8">is your</div><div style="flex:1;font:600 10.5px system-ui">Old Fashioned</div><div style="font:500 10px system-ui;color:#2a78d6;width:64px;text-align:right">Different</div></div><div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f1f5f9"><div style="width:15px;height:15px;border:1.5px solid #2b2b2b;border-radius:3px;background:#0f172a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;flex:none">✓</div><div style="flex:1;font:500 10.5px system-ui;color:#334155">“The Harbor Lemonade”</div><div style="font:400 10px system-ui;color:#94a3b8">is your</div><div style="flex:1;font:600 10.5px system-ui">Harbor Lemonade</div><div style="font:500 10px system-ui;color:#2a78d6;width:64px;text-align:right">Different</div></div><div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f1f5f9"><div style="width:15px;height:15px;border:1.5px solid #2b2b2b;border-radius:3px;background:#0f172a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;flex:none">✓</div><div style="flex:1;font:500 10.5px system-ui;color:#334155">“Snapper, grilled”</div><div style="font:400 10px system-ui;color:#94a3b8">is your</div><div style="flex:1;font:600 10.5px system-ui">Grilled Snapper</div><div style="font:500 10px system-ui;color:#2a78d6;width:64px;text-align:right">Different</div></div><div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f1f5f9"><div style="width:15px;height:15px;border:1.5px solid #2b2b2b;border-radius:3px;background:#0f172a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;flex:none">✓</div><div style="flex:1;font:500 10.5px system-ui;color:#334155">“Burrata & Tomato”</div><div style="font:400 10px system-ui;color:#94a3b8">is your</div><div style="flex:1;font:600 10.5px system-ui">Burrata</div><div style="font:500 10px system-ui;color:#2a78d6;width:64px;text-align:right">Different</div></div>
+<div style="padding:7px 0 0;font:500 10.5px system-ui;color:#2a78d6">2 more ▾</div>
+</div>
+</div>
+
+<div style="border:1.5px solid #c9871a;border-radius:7px;background:#fff;overflow:hidden;display:flex">
+<div style="width:120px;flex:none;background:#faf8f2;border-right:1.5px solid #e3c58a;padding:9px;display:flex;align-items:center;justify-content:center"><div style="font:700 8px Georgia,serif;color:#1a2b4a;text-align:center;line-height:1.5;filter:blur(1.4px)">ask yr server</div></div>
+<div style="flex:1;padding:10px 13px;display:flex;align-items:center;gap:14px">
+<div style="flex:1"><div style="font:700 12px system-ui">Market Fish</div><div style="font:400 10px system-ui;color:#64748b">No price we could read — the menu says to ask</div></div>
+<div style="display:flex;gap:6px"><div style="padding:6px 11px;border:2px solid #0f172a;border-radius:5px;font:700 10.5px system-ui;background:#f8fafc">Show “MP”</div><div style="padding:6px 11px;border:1.5px solid #cbd5e1;border-radius:5px;font:600 10.5px system-ui;color:#475569">Type a price</div><div style="padding:6px 11px;border:1.5px solid #cbd5e1;border-radius:5px;font:600 10.5px system-ui;color:#8a2929">Leave it out</div></div>
+</div>
+</div>
+
+</div>
+
+<div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:13px;border-top:1.5px dashed #cbd5e1">
+<div style="padding:9px 17px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11.5px system-ui">Done — open in the builder</div>
+<div style="font:500 11px system-ui;color:#2a78d6">Skip these for now</div>
+<div style="flex:1"></div>
+<div style="font:400 10.5px system-ui;color:#64748b">Skipping leaves the four as-is. They're flagged on the canvas until you fix them.</div>
+</div>
+</div>
+</div>
+<p class="note">four questions, each with the scrap of the original beside it so you can answer without hunting for the paper menu. Near-misses are <b>one</b> question with a list, never thirty questions — pre-ticked as the same item, because a tidied name is the common case and the rare disagreement is the thing worth a tap. The other 41 are not shown, not counted down, not paged through — they were right</p>
+</div>
+
+<div style="display:flex;gap:14px;width:1180px;margin-top:16px;flex-wrap:wrap">
+<div style="flex:1;min-width:250px;border-left:3px solid #178a52;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">Four routes, one ending</div><div style="font:400 11.5px/1.5 system-ui;color:#555">Photo, paste, spreadsheet and POS differ only in what they ask for. They converge on the same confirm step and the same draft on the shelf, so there is one flow to build and one to explain — and a fifth route later inherits both.</div></div>
+<div style="flex:1;min-width:250px;border-left:3px solid #178a52;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">Show the evidence, not the file</div><div style="font:400 11.5px/1.5 system-ui;color:#555">Every question carries the crop of the original beside it. The alternative is a form that asks about “row 34”, which sends the operator back to the paper menu to answer — the slowest possible version of the same step.</div></div>
+<div style="flex:1;min-width:250px;border-left:3px solid #178a52;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">Importing into an existing menu <b>replaces</b> it</div><div style="font:400 11.5px/1.5 system-ui;color:#555">A reprint that moved thirty prices is the new menu — the file wins outright, no row-by-row merge. Items <b>match your library by name</b>: same name updates the item you already have, a new name makes a new one. The board keeps its layout and theme, and anything 86’d stays 86’d — a fact about tonight, not about the menu. Same four routes, same confirm step, queued as a draft like any edit.</div></div>
+</div>
+</div>
+
+
+<div class="wf" id="m1b"><div class="wfl"><a class="wfid" href="#m1b">M1b</a><span class="wfn">The named actions, and the one-screen venue</span><span class="wfs">decisions 10–14 drawn — nobody has to learn the words unpublish, supersede or restore</span></div>
+
+<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;width:1180px">
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">Take off the screens</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;overflow:hidden">
+<div style="padding:12px 14px;border-bottom:1.5px dashed #cbd5e1"><div style="font:700 13px system-ui;margin-bottom:3px">Take Summer Menu off the screens?</div><div style="font:400 11.5px/1.5 system-ui;color:#475569">It stays on your Menus home and keeps its history. You can put it back at any time.</div></div>
+<div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+<div style="font:600 9px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b">What people will see instead</div>
+<div style="display:flex;gap:9px">
+<div style="width:96px;flex:none;border:1.5px solid #2b2b2b;border-radius:5px;background:#12181f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:54px"><div style="width:20px;height:20px;border-radius:5px;background:#87ceeb;display:flex;align-items:center;justify-content:center;font:700 11px system-ui;color:#0f172a">H</div><div style="font:600 6.5px system-ui;letter-spacing:.14em;color:#f8fafc">HARBORVIEW</div></div>
+<div style="flex:1;font:400 10.5px/1.45 system-ui;color:#475569">Your venue fallback, on <b>Bar</b> and <b>Patio</b>. <b>Lobby</b> is offline and will show it when it reconnects.<div style="margin-top:4px;font:400 10px system-ui;color:#94a3b8">Generated from your logo and name. Replacing it comes later.</div></div>
+</div>
+</div>
+<div style="padding:11px 14px;border-top:1.5px dashed #cbd5e1;display:flex;gap:8px;justify-content:flex-end"><div style="padding:7px 13px;border:1.5px solid #cbd5e1;border-radius:6px;font:600 11px system-ui;color:#475569">Cancel</div><div style="padding:7px 13px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11px system-ui">Take it off</div></div>
+</div>
+<p class="note" style="margin:8px 0 0">the word “unpublish” never appears, and the consequence is shown rather than described — an owner who can see the fallback card does not need to understand publishing. “Library” is not used here either: it means the item pool in <a href="#m2a">M2a</a> and nothing else</p>
+</div>
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">Go back to…</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;overflow:hidden">
+<div style="padding:11px 14px;border-bottom:1.5px solid #2b2b2b;font:700 12.5px system-ui">Go back to how this looked</div>
+<div style="padding:9px 0">
+<div style="padding:8px 14px;display:flex;align-items:center;gap:10px;border-left:3px solid #87ceeb;background:#f2fafe"><div style="flex:1"><div style="font:600 11.5px system-ui">Now — live on 3 screens</div><div style="font:400 10px system-ui;color:#64748b">published Tue 4:12pm by Dana</div></div></div>
+<div style="padding:8px 14px;display:flex;align-items:center;gap:10px;border-left:3px solid transparent"><div style="flex:1"><div style="font:500 11.5px system-ui">Tuesday 4:12pm</div><div style="font:400 10px system-ui;color:#64748b">Dana · 6 prices changed</div></div><div style="padding:4px 9px;border:1.5px solid #2b2b2b;border-radius:5px;font:600 10px system-ui">Go back to this</div></div>
+<div style="padding:8px 14px;display:flex;align-items:center;gap:10px;border-left:3px solid transparent"><div style="flex:1"><div style="font:500 11.5px system-ui">Monday 9:30am</div><div style="font:400 10px system-ui;color:#64748b">Alex · Small Plates reordered</div></div><div style="font:400 10px system-ui;color:#94a3b8">preview</div></div>
+<div style="padding:8px 14px;display:flex;align-items:center;gap:10px;border-left:3px solid transparent;opacity:.5"><div style="flex:1"><div style="font:500 11.5px system-ui">Sunday 6:02pm</div><div style="font:400 10px system-ui;color:#64748b">Dana · Wine section added</div></div></div>
+</div>
+<div style="padding:10px 14px;border-top:1.5px dashed #cbd5e1;background:#f8fafc;font:400 10.5px/1.45 system-ui;color:#475569">Going back opens it as a <b>draft</b>. Nothing changes on a screen until you publish it.</div>
+<div style="padding:9px 14px;border-top:1.5px dashed #cbd5e1;font:400 10px/1.4 system-ui;color:#94a3b8">Your plan keeps the last <b>30 days</b>. <a href="#m1b">Keep more →</a></div>
+</div>
+<p class="note" style="margin:8px 0 0">time, not version numbers — and it lands in the draft queue like any other edit, so there is exactly one way anything reaches a screen</p>
+</div>
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">The same publish bar, one screen</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;overflow:hidden">
+<div style="padding:12px 14px;display:flex;align-items:center;gap:12px;border-bottom:1.5px dashed #cbd5e1">
+<div style="flex:1"><div style="font:700 12.5px system-ui;color:#7d5911">3 changes not on your screen</div><div style="font:400 10.5px system-ui;color:#64748b">Draft saved 10:42am · <a href="#m1b">go back to…</a></div></div>
+<div style="padding:8px 14px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11px system-ui">Publish</div>
+</div>
+<div style="padding:11px 14px;display:flex;align-items:center;gap:9px"><span style="width:8px;height:8px;border-radius:50%;background:#178a52;flex:none"></span><div style="font:500 11.5px system-ui;color:#0f172a">Your screen is online and ready.</div></div>
+</div>
+<div style="border:1.5px solid #cbd5e1;border-radius:8px;background:#f8fafc;padding:11px 13px;margin-top:10px">
+<div style="font:600 9px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b;margin-bottom:6px">After publishing</div>
+<div style="display:flex;align-items:center;gap:9px;margin-bottom:6px"><span style="width:8px;height:8px;border-radius:50%;background:#178a52;flex:none"></span><div style="font:500 11px system-ui">Your screen is showing the new prices.</div></div>
+<div style="display:flex;align-items:center;gap:9px"><span style="width:8px;height:8px;border-radius:50%;background:#c9871a;flex:none"></span><div style="font:400 11px/1.4 system-ui;color:#7d5911">Your screen is still showing Tuesday's prices — it went offline at 4:12pm.</div></div>
+</div>
+<p class="note" style="margin:8px 0 0">a sentence that grows into a list, not a three-slot strip with two empties. The promise is “you can always tell whether your screens are current” — true at one screen and at forty</p>
+</div>
+</div>
+</div>
+
+
+<div class="wf" id="m2"><div class="wfl"><a class="wfid" href="#m2">M2</a><span class="wfn">Menu Builder, adopted</span><span style="font:700 9px system-ui;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:4px;background:#e0f4e9;color:#18603f;border:1px solid #178a52">Draft approved</span><span class="wfs">the attached layout with the five fixes applied — nav and colors untouched</span></div>
+<div class="card">
+<dc-import name="BackOfficeNav" active="Menu" hint-size="198px,100%"></dc-import>
+
+<div style="flex:1;min-width:0;background:#f8fafc;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:11px;padding:9px 16px;border-bottom:1.5px solid #2b2b2b;background:#fff">
+<div style="font:500 11.5px system-ui;color:#2a78d6">‹ Menus</div><div style="font:400 11.5px system-ui;color:#94a3b8">/ Harborview Lounge /</div><div style="font:700 12px system-ui">Summer Menu</div>
+<div style="display:flex;border:1.5px solid #2b2b2b;border-radius:5px;overflow:hidden;margin-left:6px"><div style="padding:4px 11px;font:500 10px system-ui;color:#64748b;background:#fff">Quick update</div><div style="padding:4px 11px;font:700 10px system-ui;background:#87ceeb;color:#0f172a">Build</div></div>
+<div style="flex:1"></div>
+<div style="display:flex;gap:5px"><div style="padding:5px 9px;border:1.5px solid #2b2b2b;border-radius:5px;font:500 10.5px system-ui">↺ Undo</div><div style="padding:5px 9px;border:1.5px solid #cbd5e1;border-radius:5px;font:500 10.5px system-ui;color:#94a3b8">↻ Redo</div></div>
+<div style="padding:5px 10px;border:1.5px solid #2b2b2b;border-radius:5px;font:500 10.5px system-ui">Viewing as <b>Bar</b> · 1920×1080 ▾</div>
+<div style="padding:5px 11px;border:1.5px solid #2b2b2b;border-radius:5px;font:700 10.5px system-ui;background:#87ceeb">▶ Play</div>
+</div>
+
+<div style="flex:1;display:flex;min-height:0">
+<div style="width:186px;flex:none;border-right:1.5px solid #2b2b2b;background:#fff;padding:11px 10px">
+<div style="display:flex;align-items:center;margin-bottom:9px"><div style="flex:1;font:600 9.5px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b">Sections</div><div style="font:600 10px system-ui;color:#2a78d6">+ Add</div></div>
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:5px;font:500 11px system-ui;color:#475569"><span style="color:#cbd5e1;font-size:10px">⠿</span>Welcome Panel</div>
+<div style="display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:5px;font:500 11px system-ui;color:#475569"><span style="color:#cbd5e1;font-size:10px">⠿</span>Signature Cocktails<span style="flex:1"></span><span style="font:400 9.5px system-ui;color:#94a3b8">6</span></div>
+<div style="display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:5px;font:500 11px system-ui;color:#475569"><span style="color:#cbd5e1;font-size:10px">⠿</span>Beer<span style="flex:1"></span><span style="font:400 9.5px system-ui;color:#94a3b8">9</span></div>
+<div style="display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:5px;font:500 11px system-ui;color:#475569"><span style="color:#cbd5e1;font-size:10px">⠿</span>Wine<span style="flex:1"></span><span style="font:400 9.5px system-ui;color:#94a3b8">12</span></div>
+<div style="display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:5px;background:#e0f2fe;border:1.5px solid #87ceeb;font:700 11px system-ui;color:#0f172a"><span style="color:#64748b;font-size:10px">⠿</span>Non-Alcoholic<span style="flex:1"></span><span style="font:400 9.5px system-ui;color:#475569">3</span></div>
+<div style="display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:5px;font:500 11px system-ui;color:#475569"><span style="color:#cbd5e1;font-size:10px">⠿</span>Small Plates<span style="flex:1"></span><span style="font:400 9.5px system-ui;color:#94a3b8">7</span></div>
+<div style="display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:5px;font:500 11px system-ui;color:#475569"><span style="color:#cbd5e1;font-size:10px">⠿</span>Desserts<span style="flex:1"></span><span style="font:400 9.5px system-ui;color:#94a3b8">4</span></div>
+</div>
+<div class="note" style="font-size:13.5px;margin-top:11px">a navigator, not a second editor — items live on the canvas only, so there's one place to change structure</div>
+</div>
+
+<div style="flex:1;min-width:0;padding:14px;display:flex;flex-direction:column;gap:9px">
+<div style="display:flex;align-items:center;gap:7px"><div style="font:600 9.5px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b">View</div><div style="display:flex;gap:4px"><div style="padding:3px 10px;border-radius:99px;font:700 9.5px system-ui;border:1.5px solid #2b2b2b;background:#0f172a;color:#fff">One section</div><div style="padding:3px 10px;border-radius:99px;font:500 9.5px system-ui;border:1.5px solid #cbd5e1;color:#64748b;background:#fff">Whole board</div></div></div>
+<div style="flex:1;border:1.5px solid #2b2b2b;border-radius:6px;background:#faf8f2;padding:16px 20px;position:relative">
+<div style="text-align:center;font:600 11px system-ui;letter-spacing:.22em;color:#1a2b4a;padding-bottom:9px;border-bottom:1px solid #c8d2e0;margin-bottom:14px">NON-ALCOHOLIC</div>
+<div style="display:flex;flex-direction:column;gap:13px">
+<div style="border:2px solid #2a78d6;border-radius:3px;padding:7px 9px;display:flex;gap:11px;align-items:flex-start;position:relative;background:#fff">
+<div style="position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:11px;height:26px;background:#2a78d6;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px">⠿</div>
+<div style="width:44px;height:44px;border:1.5px dashed #94a3b8;border-radius:4px;flex:none"></div>
+<div style="flex:1"><div style="display:flex;gap:10px;align-items:baseline"><div style="flex:1;font:700 14px system-ui;letter-spacing:.05em;color:#1a2b4a">HARBOR LEMONADE</div><div style="font:600 14px system-ui;color:#1a2b4a">5.00</div></div><div style="font:italic 400 11px/1.45 Georgia,serif;color:#475569;margin-top:2px">Fresh lemon, cane sugar, and a hint of rosemary. Crisp, bright, and refreshing.</div></div>
+</div>
+<div style="padding:7px 9px;display:flex;gap:11px;align-items:flex-start"><div style="width:44px;height:44px;border:1.5px dashed #cbd5e1;border-radius:4px;flex:none"></div><div style="flex:1"><div style="display:flex;gap:10px;align-items:baseline"><div style="flex:1;font:700 14px system-ui;letter-spacing:.05em;color:#1a2b4a">CUCUMBER COOLER</div><div style="font:600 14px system-ui;color:#1a2b4a">5.00</div></div><div style="font:italic 400 11px/1.45 Georgia,serif;color:#475569;margin-top:2px">Cucumber, lime, mint, and soda.</div></div></div>
+<div style="padding:7px 9px;display:flex;gap:11px;align-items:flex-start;opacity:.4"><div style="width:44px;height:44px;border:1.5px dashed #cbd5e1;border-radius:4px;flex:none"></div><div style="flex:1"><div style="display:flex;gap:10px;align-items:baseline"><div style="flex:1;font:700 14px system-ui;letter-spacing:.05em;color:#1a2b4a;text-decoration:line-through">BERRY FIZZ</div><div style="font:600 14px system-ui;color:#1a2b4a">6.00</div></div><div style="font:500 10px system-ui;color:#8a2929;margin-top:3px">86'd 6:40pm — hidden on all screens right now</div></div></div>
+</div>
+</div>
+<div class="note" style="font-size:13.5px;margin:0">the canvas is the structure: drag the handle to reorder, click a price to type over it, drag from the section list to add</div>
+</div>
+
+<div style="width:250px;flex:none;border-left:1.5px solid #2b2b2b;background:#fff;padding:12px 13px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center"><div style="flex:1;font:700 12.5px system-ui">Harbor Lemonade</div><div style="font:400 12px system-ui;color:#94a3b8">✕</div></div>
+
+<div style="border:2px solid #178a52;border-radius:7px;background:#e0f4e9;padding:9px 10px;display:flex;align-items:center;gap:9px">
+<div style="flex:1"><div style="font:700 11px system-ui;color:#18603f">Available now</div><div style="font:400 9.5px/1.35 system-ui;color:#267252">Turning this off hides it on all 3 screens immediately — not part of your draft.</div></div>
+<div style="width:38px;height:22px;border:1.5px solid #178a52;border-radius:11px;background:#178a52;position:relative;flex:none"><div style="position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:#fff"></div></div>
+</div>
+
+<div><div style="font:600 9px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b;margin-bottom:4px">Name</div><div style="padding:7px 9px;border:1.5px solid #2b2b2b;border-radius:5px;font:400 11.5px system-ui">Harbor Lemonade</div></div>
+<div><div style="font:600 9px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b;margin-bottom:4px">Description</div><div style="padding:7px 9px;border:1.5px solid #2b2b2b;border-radius:5px;font:400 11.5px/1.45 system-ui;height:40px">Fresh lemon, cane sugar, and a hint of rosemary. Crisp, bright, and refreshing.</div><div style="display:flex;align-items:center;gap:5px;margin-top:4px"><span style="width:6px;height:6px;border-radius:50%;background:#c9871a;flex:none"></span><span style="font:500 9.5px system-ui;color:#7d5911">Two words over — wraps to 3 lines on Patio</span></div></div>
+<div><div style="font:600 9px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b;margin-bottom:4px">Price</div><div style="width:88px;padding:7px 9px;border:1.5px solid #2b2b2b;border-radius:5px;font:600 11.5px system-ui">$5.00</div></div>
+
+<div style="border-top:1.5px dashed #cbd5e1;padding-top:10px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:center;gap:8px"><div style="width:15px;height:15px;border:1.5px solid #2b2b2b;border-radius:3px;flex:none"></div><div style="font:400 11px system-ui">Feature on the board</div></div>
+<div style="display:flex;align-items:center;gap:8px"><div style="width:15px;height:15px;border:1.5px solid #2b2b2b;border-radius:3px;flex:none"></div><div style="font:400 11px system-ui">Add a photo</div></div>
+</div>
+<div style="flex:1"></div>
+<div style="font:400 10px/1.4 system-ui;color:#94a3b8">Style comes from the <b style="color:#475569">Coastal</b> theme. <a href="#m2">Change it for the whole board →</a></div>
+<div class="note" style="font-size:13.5px;margin:0">no Content/Style tabs, no Advanced, no "looks good" card, no per‑item currency — six controls total, and the only warning is one that matters</div>
+</div>
+</div>
+
+<div style="border-top:1.5px solid #2b2b2b;background:#fff;padding:11px 16px;display:flex;align-items:center;gap:16px">
+<div style="flex:none"><div style="font:700 13px system-ui;color:#7d5911">3 changes not on your screens</div><div style="font:400 10.5px system-ui;color:#64748b">Draft saved 10:42am by Alex · <a href="#m1b">go back to…</a> · <a href="#m2">discard draft</a></div></div>
+<div style="flex:1;display:flex;gap:7px">
+<div style="flex:1;border:1.5px solid #178a52;border-radius:6px;padding:6px 9px;background:#fff"><div style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#178a52"></span><span style="font:700 10.5px system-ui">Bar</span></div><div style="font:400 9.5px system-ui;color:#475569;margin-top:1px">online — ready</div></div>
+<div style="flex:1;border:1.5px solid #178a52;border-radius:6px;padding:6px 9px;background:#fff"><div style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#178a52"></span><span style="font:700 10.5px system-ui">Patio</span></div><div style="font:400 9.5px system-ui;color:#475569;margin-top:1px">online — ready</div></div>
+<div style="flex:1;border:1.5px solid #c9871a;border-radius:6px;padding:6px 9px;background:#fdf1dc"><div style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#c9871a"></span><span style="font:700 10.5px system-ui">Lobby</span></div><div style="font:400 9.5px system-ui;color:#7d5911;margin-top:1px">offline — updates when it reconnects</div></div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px"><div style="padding:9px 16px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11.5px system-ui">Publish 3 changes</div><div style="font:500 10px system-ui;color:#2a78d6">Review first</div></div>
+</div>
+</div>
+</div>
+<p class="note">Kept verbatim from your mockup, because it's the best thing here: the per-screen impact strip. It's the only place in either product that answers <i>what am I about to do, and to which screens</i> — including the honest "Lobby is offline, it'll catch up." Before you publish it reports <i>readiness</i>, not a promise; after you publish, the same three slots report what actually arrived. One change: the yellow "2 saved changes not yet live" tile and the "Autosaved" chip merge into a single sentence, so there's one save story instead of two.</p>
+</div>
+
+
+<div class="wf" id="m2a"><div class="wfl"><a class="wfid" href="#m2a">M2a</a><span class="wfn">Adding items to a board</span><span class="wfs">one affordance for "new" and "existing" — you don't have to know which you want before you start typing</span></div>
+
+<p style="max-width:1180px;font:400 12.5px/1.65 system-ui;color:#333;margin:0 0 14px">Because items live in a library and get <i>placed</i> on boards, "add a new item" and "add one I already have" are the same gesture with different endings. Splitting them into a <b>+ New item</b> button and a <b>library browser</b> forces a decision before the user has the information to make it — and guarantees duplicates, because nobody checks the library first. So: one inline row at the end of every section. Type, and it searches as you go.</p>
+
+<div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;width:1180px">
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">1 · Resting</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:6px;background:#faf8f2;padding:14px 16px;height:250px">
+<div style="text-align:center;font:600 10px system-ui;letter-spacing:.22em;color:#1a2b4a;padding-bottom:8px;border-bottom:1px solid #c8d2e0;margin-bottom:12px">NON-ALCOHOLIC</div>
+<div style="display:flex;gap:9px;align-items:baseline;margin-bottom:10px"><div style="flex:1;font:700 12.5px system-ui;letter-spacing:.05em;color:#1a2b4a">HARBOR LEMONADE</div><div style="font:600 12.5px system-ui;color:#1a2b4a">5.00</div></div>
+<div style="display:flex;gap:9px;align-items:baseline;margin-bottom:14px"><div style="flex:1;font:700 12.5px system-ui;letter-spacing:.05em;color:#1a2b4a">CUCUMBER COOLER</div><div style="font:600 12.5px system-ui;color:#1a2b4a">5.00</div></div>
+<div style="border:1.5px dashed #94a3b8;border-radius:5px;padding:8px 10px;display:flex;align-items:center;gap:7px;background:#fff"><span style="font:600 13px system-ui;color:#64748b">+</span><span style="font:500 11.5px system-ui;color:#64748b">Add an item</span></div>
+</div>
+<p class="note" style="margin:8px 0 0">one row, at the end of the section you're looking at — so the item lands where you meant it, not "at the bottom of whatever was selected"</p>
+</div>
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">2 · Typing — the library answers</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:6px;background:#faf8f2;padding:14px 16px;height:250px;position:relative">
+<div style="text-align:center;font:600 10px system-ui;letter-spacing:.22em;color:#1a2b4a;padding-bottom:8px;border-bottom:1px solid #c8d2e0;margin-bottom:12px">NON-ALCOHOLIC</div>
+<div style="display:flex;gap:9px;align-items:baseline;margin-bottom:10px;opacity:.45"><div style="flex:1;font:700 12.5px system-ui;letter-spacing:.05em;color:#1a2b4a">HARBOR LEMONADE</div><div style="font:600 12.5px system-ui;color:#1a2b4a">5.00</div></div>
+<div style="border:2px solid #2a78d6;border-radius:5px;padding:8px 10px;background:#fff;display:flex;align-items:center;gap:2px"><span style="font:500 12px system-ui;color:#0f172a">berr</span><span style="width:1.5px;height:15px;background:#2a78d6"></span></div>
+<div style="border:1.5px solid #2b2b2b;border-radius:6px;background:#fff;margin-top:5px;box-shadow:0 6px 18px rgba(15,23,42,.16);overflow:hidden">
+<div style="padding:5px 10px;border-bottom:1px solid #e2e8f0;font:600 8.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b">In your library</div>
+<div style="padding:7px 10px;background:#e0f2fe;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:8px"><div style="flex:1"><div style="font:600 11.5px system-ui">Berry Fizz</div><div style="font:400 9.5px system-ui;color:#64748b">$6.00 · on Late Night · 86'd right now</div></div><div style="font:600 9.5px system-ui;color:#2a78d6">↵</div></div>
+<div style="padding:7px 10px;border-bottom:1px solid #e2e8f0"><div style="font:500 11.5px system-ui">Berry Lemonade Spritz</div><div style="font:400 9.5px system-ui;color:#64748b">$7.00 · not on any board</div></div>
+<div style="padding:7px 10px;display:flex;align-items:center;gap:7px;background:#f8fafc"><span style="font:600 12px system-ui;color:#178a52">+</span><div style="font:500 11.5px system-ui;color:#18603f">Create “berr” as a new item</div></div>
+</div>
+</div>
+<p class="note" style="margin:8px 0 0">every match says <i>where it already lives</i> — the one fact that stops a manager creating a second Berry Fizz. Creating new is the last option, not the first.</p>
+</div>
+
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">3 · Placed</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:6px;background:#faf8f2;padding:14px 16px;height:250px">
+<div style="text-align:center;font:600 10px system-ui;letter-spacing:.22em;color:#1a2b4a;padding-bottom:8px;border-bottom:1px solid #c8d2e0;margin-bottom:12px">NON-ALCOHOLIC</div>
+<div style="display:flex;gap:9px;align-items:baseline;margin-bottom:10px;opacity:.45"><div style="flex:1;font:700 12.5px system-ui;letter-spacing:.05em;color:#1a2b4a">HARBOR LEMONADE</div><div style="font:600 12.5px system-ui;color:#1a2b4a">5.00</div></div>
+<div style="border:2px solid #2a78d6;border-radius:3px;padding:6px 8px;background:#fff;margin-bottom:6px"><div style="display:flex;gap:9px;align-items:baseline"><div style="flex:1;font:700 12.5px system-ui;letter-spacing:.05em;color:#1a2b4a">BERRY FIZZ</div><div style="font:600 12.5px system-ui;color:#1a2b4a">6.00</div></div><div style="font:italic 400 10px Georgia,serif;color:#475569">Seasonal berries, soda, lime</div></div>
+<div style="border:1.5px solid #c9871a;border-radius:5px;background:#fdf1dc;padding:7px 9px;display:flex;align-items:center;gap:8px"><div style="flex:1;font:400 10px/1.4 system-ui;color:#7d5911">Also on <b>Late Night</b>. Price and description are shared — editing here changes both.</div></div>
+<div style="border:1.5px dashed #cbd5e1;border-radius:5px;padding:7px 10px;margin-top:8px;font:500 11px system-ui;color:#94a3b8">+ Add an item</div>
+</div>
+<p class="note" style="margin:8px 0 0">the shared-item warning appears <b>once, on placement</b> — not as a permanent badge. The next add row is already waiting, so six items is six lines of typing.</p>
+</div>
+</div>
+
+<div style="display:flex;gap:14px;width:1180px;margin-top:16px;flex-wrap:wrap">
+<div style="flex:1;min-width:340px;border:1.5px solid #2b2b2b;border-radius:7px;background:#fff;padding:12px 14px">
+<div style="font:700 11.5px system-ui;margin-bottom:5px">Finding an item that's already on the board</div>
+<div style="font:400 11.5px/1.55 system-ui;color:#555;margin-bottom:9px">Different job, different tool. <b>⌘K</b> searches this board and jumps the canvas to the item with it selected — no scrolling 41 items to find the one whose price changed.</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:6px;background:#fff;overflow:hidden;box-shadow:0 4px 14px rgba(15,23,42,.1)">
+<div style="padding:8px 11px;border-bottom:1.5px solid #2b2b2b;display:flex;align-items:center;gap:7px"><span style="color:#94a3b8;font-size:11px">⌕</span><span style="font:400 12px system-ui;color:#0f172a">snap</span><span style="width:1.5px;height:14px;background:#2a78d6"></span></div>
+<div style="padding:6px 11px;background:#e0f2fe;display:flex;align-items:center;gap:8px"><div style="flex:1;font:600 11px system-ui">Grilled Snapper</div><div style="font:400 9.5px system-ui;color:#64748b">Small Plates · pos 3</div></div>
+<div style="padding:6px 11px;display:flex;align-items:center;gap:8px"><div style="flex:1;font:500 11px system-ui;color:#475569">Snapper Crudo</div><div style="font:400 9.5px system-ui;color:#94a3b8">not on this board</div></div>
+</div>
+</div>
+<div style="flex:1;min-width:340px;border:1.5px solid #2b2b2b;border-radius:7px;background:#fff;padding:12px 14px">
+<div style="font:700 11.5px system-ui;margin-bottom:5px">Adding a lot at once</div>
+<div style="font:400 11.5px/1.55 system-ui;color:#555;margin-bottom:9px">Typing eight items one at a time is fine; placing eight <i>existing</i> ones isn't. The section rail's <b>+ Add</b> opens the library as a drawer over the canvas — multi-select, then drop the set into the section you're in. Same content as the inline dropdown, just batched.</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:6px;background:#f8fafc;padding:9px 10px">
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><div style="padding:4px 9px;border:1.5px solid #2b2b2b;border-radius:99px;background:#87ceeb;font:600 9.5px system-ui">All 84</div><div style="padding:4px 9px;border:1.5px solid #cbd5e1;border-radius:99px;font:500 9.5px system-ui;color:#64748b">Not on a board · 6</div><div style="padding:4px 9px;border:1.5px solid #cbd5e1;border-radius:99px;font:500 9.5px system-ui;color:#64748b">From POS</div></div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border:1.5px solid #2b2b2b;border-radius:5px;background:#fff"><div style="width:13px;height:13px;border:1.5px solid #2b2b2b;border-radius:3px;background:#87ceeb;flex:none"></div><div style="flex:1;font:500 10.5px system-ui">Ginger Switchel</div><div style="font:400 9.5px system-ui;color:#94a3b8">$6</div></div>
+<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border:1.5px solid #2b2b2b;border-radius:5px;background:#fff"><div style="width:13px;height:13px;border:1.5px solid #2b2b2b;border-radius:3px;background:#87ceeb;flex:none"></div><div style="flex:1;font:500 10.5px system-ui">Seedlip &amp; Tonic</div><div style="font:400 9.5px system-ui;color:#94a3b8">$9</div></div>
+<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border:1.5px solid #cbd5e1;border-radius:5px;background:#fff"><div style="width:13px;height:13px;border:1.5px solid #94a3b8;border-radius:3px;flex:none"></div><div style="flex:1;font:500 10.5px system-ui;color:#475569">Iced Hibiscus</div><div style="font:400 9.5px system-ui;color:#94a3b8">$5</div></div>
+</div>
+<div style="margin-top:8px;padding:6px 10px;border:1.5px solid #2b2b2b;border-radius:5px;background:#0f172a;color:#fff;font:700 10.5px system-ui;text-align:center">Place 2 in Non-Alcoholic</div>
+</div>
+</div>
+</div>
+<p class="note" style="max-width:1180px">All three routes end in the same place: a draft change in the publish bar. Nothing here goes live on its own — except availability, which never enters the draft at all.</p>
+</div>
+
+
+<div class="wf" id="m2b"><div class="wfl"><a class="wfid" href="#m2b">M2b</a><span class="wfn">Board view — where each section actually is</span><span class="wfs">the missing zoom level between editing an item and watching the cycle</span></div>
+
+<p style="max-width:1180px;font:400 12.5px/1.65 system-ui;color:#333;margin:0 0 14px">The section rail gives you <i>order</i>, which only means something if a board is one scrolling column — and it isn't. "Where is Wine" has two answers: which <b>zone</b> of the screen it occupies, and which <b>page</b> of the cycle it lands on. <a href="#m2">M2</a> jumps from one section at editing scale straight to <a href="#m2c">M2c</a>, a movie you watch. Between them belongs one zoom out: the whole screen, sections as the blocks they really are, draggable. Same canvas, not a new screen.</p>
+
+<div class="card">
+<div style="flex:1;min-width:0;background:#f8fafc;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:11px;padding:9px 16px;border-bottom:1.5px solid #2b2b2b;background:#fff">
+<div style="font:500 11.5px system-ui;color:#2a78d6">‹ Menus</div><div style="font:400 11.5px system-ui;color:#94a3b8">/ Harborview Lounge /</div><div style="font:700 12px system-ui">Summer Menu</div>
+<div style="display:flex;border:1.5px solid #2b2b2b;border-radius:5px;overflow:hidden;margin-left:6px"><div style="padding:4px 11px;font:500 10px system-ui;color:#64748b;background:#fff">Quick update</div><div style="padding:4px 11px;font:700 10px system-ui;background:#87ceeb;color:#0f172a">Build</div></div>
+<div style="flex:1"></div>
+<div style="padding:5px 10px;border:1.5px solid #2b2b2b;border-radius:5px;font:500 10.5px system-ui">Viewing as <b>Bar</b> · 1920×1080 ▾</div>
+<div style="padding:5px 11px;border:1.5px solid #2b2b2b;border-radius:5px;font:700 10.5px system-ui;background:#87ceeb">▶ Play</div>
+</div>
+
+<div style="flex:1;display:flex;min-height:0">
+<div style="width:206px;flex:none;border-right:1.5px solid #2b2b2b;background:#fff;padding:11px 10px">
+<div style="display:flex;align-items:center;margin-bottom:9px"><div style="flex:1;font:600 9.5px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b">Sections</div><div style="font:600 10px system-ui;color:#2a78d6">+ Add</div></div>
+<div style="display:flex;flex-direction:column;gap:3px">
+<div style="padding:5px 7px;border-radius:5px"><div style="display:flex;align-items:center;gap:6px"><span style="color:#cbd5e1;font-size:10px">⠿</span><span style="font:500 11px system-ui;color:#475569;flex:1">Welcome Panel</span></div><div style="font:400 9px system-ui;color:#94a3b8;padding-left:16px">full width · page 1</div></div>
+<div style="padding:5px 7px;border-radius:5px"><div style="display:flex;align-items:center;gap:6px"><span style="color:#cbd5e1;font-size:10px">⠿</span><span style="font:500 11px system-ui;color:#475569;flex:1">Signature Cocktails</span></div><div style="font:400 9px system-ui;color:#94a3b8;padding-left:16px">left column · page 2</div></div>
+<div style="padding:5px 7px;border-radius:5px"><div style="display:flex;align-items:center;gap:6px"><span style="color:#cbd5e1;font-size:10px">⠿</span><span style="font:500 11px system-ui;color:#475569;flex:1">Beer</span></div><div style="font:400 9px system-ui;color:#94a3b8;padding-left:16px">right column · page 2</div></div>
+<div style="padding:5px 7px;border-radius:5px;background:#e0f2fe;border:1.5px solid #87ceeb"><div style="display:flex;align-items:center;gap:6px"><span style="color:#64748b;font-size:10px">⠿</span><span style="font:700 11px system-ui;color:#0f172a;flex:1">Wine</span></div><div style="font:500 9px system-ui;color:#7d5911;padding-left:16px">right column · pages 3–4 ⚠</div></div>
+<div style="padding:5px 7px;border-radius:5px"><div style="display:flex;align-items:center;gap:6px"><span style="color:#cbd5e1;font-size:10px">⠿</span><span style="font:500 11px system-ui;color:#475569;flex:1">Non-Alcoholic</span></div><div style="font:400 9px system-ui;color:#94a3b8;padding-left:16px">left column · page 3</div></div>
+<div style="padding:5px 7px;border-radius:5px"><div style="display:flex;align-items:center;gap:6px"><span style="color:#cbd5e1;font-size:10px">⠿</span><span style="font:500 11px system-ui;color:#475569;flex:1">Small Plates</span></div><div style="font:400 9px system-ui;color:#94a3b8;padding-left:16px">left column · page 5</div></div>
+<div style="padding:5px 7px;border-radius:5px"><div style="display:flex;align-items:center;gap:6px"><span style="color:#cbd5e1;font-size:10px">⠿</span><span style="font:500 11px system-ui;color:#475569;flex:1">Desserts</span></div><div style="font:400 9px system-ui;color:#94a3b8;padding-left:16px">right column · page 5</div></div>
+</div>
+<div class="note" style="font-size:13.5px;margin-top:11px">every row answers <i>where</i>, not just <i>what order</i> — the rail was the only thing in <a href="#m2">M2</a> that couldn't</div>
+</div>
+
+<div style="flex:1;min-width:0;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:9px">
+<div style="display:flex;align-items:center;gap:7px"><div style="font:600 9.5px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b">View</div><div style="display:flex;gap:4px"><div style="padding:3px 10px;border-radius:99px;font:500 9.5px system-ui;border:1.5px solid #cbd5e1;color:#64748b;background:#fff">One section</div><div style="padding:3px 10px;border-radius:99px;font:700 9.5px system-ui;border:1.5px solid #2b2b2b;background:#0f172a;color:#fff">Whole board</div></div></div>
+<div style="width:1px;height:16px;background:#cbd5e1;margin:0 3px"></div>
+<div style="font:600 9.5px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b">Page</div>
+<div style="display:flex;gap:4px">
+<div style="width:22px;height:22px;border:1.5px solid #cbd5e1;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b">1</div>
+<div style="width:22px;height:22px;border:1.5px solid #cbd5e1;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b">2</div>
+<div style="width:22px;height:22px;border:1.5px solid #2b2b2b;border-radius:4px;background:#87ceeb;display:flex;align-items:center;justify-content:center;font:700 10px system-ui">3</div>
+<div style="width:22px;height:22px;border:1.5px dashed #c9871a;border-radius:4px;background:#fdf1dc;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#7d5911">4</div>
+<div style="width:22px;height:22px;border:1.5px solid #cbd5e1;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b">5</div>
+</div>
+<div style="font:400 10px system-ui;color:#94a3b8">page 4 exists only because Wine overflowed</div>
+<div style="flex:1"></div>
+<div style="font:400 10px system-ui;color:#64748b">8s per page · loop 40s</div>
+</div>
+
+<div style="flex:1;border:1.5px solid #2b2b2b;border-radius:6px;background:#faf8f2;padding:13px;display:flex;flex-direction:column;gap:9px">
+<div style="border:1.5px solid #cbd5e1;border-radius:4px;background:#fff;padding:6px 10px;display:flex;align-items:center;gap:8px"><span style="font:400 10px system-ui;color:#cbd5e1">⠿</span><span style="font:600 10.5px system-ui;letter-spacing:.1em;color:#1a2b4a;flex:1">HARBORVIEW LOUNGE — header strip</span><span style="font:400 9px system-ui;color:#94a3b8">on every page</span></div>
+<div style="flex:1;display:flex;gap:9px">
+<div style="flex:1;border:1.5px solid #2b2b2b;border-radius:4px;background:#fff;padding:9px 11px;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px"><span style="font:400 10px system-ui;color:#94a3b8">⠿</span><span style="font:700 10px system-ui;letter-spacing:.14em;color:#1a2b4a;flex:1">NON-ALCOHOLIC</span><span style="font:400 9px system-ui;color:#94a3b8">3 placed · 2 showing</span></div>
+<div style="display:flex;flex-direction:column;gap:5px;flex:1">
+<div style="height:9px;background:#e8eef5;border-radius:2px"></div><div style="height:9px;background:#e8eef5;border-radius:2px;width:88%"></div><div style="height:9px;border:1px dashed #cbd5e1;border-radius:2px;width:94%;display:flex;align-items:center;padding-left:4px;font:600 6px system-ui;letter-spacing:.08em;color:#94a3b8">86'D — NOT RENDERED</div>
+</div>
+<div style="border:1.5px dashed #cbd5e1;border-radius:3px;height:26px;display:flex;align-items:center;justify-content:center;font:500 9px system-ui;color:#94a3b8;margin-top:7px">room for one more section</div>
+</div>
+<div style="flex:1;border:2px solid #2a78d6;border-radius:4px;background:#fff;padding:9px 11px;display:flex;flex-direction:column;position:relative;box-shadow:0 3px 12px rgba(42,120,214,.18)">
+<div style="position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:11px;height:30px;background:#2a78d6;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px">⠿</div>
+<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px"><span style="font:700 10px system-ui;letter-spacing:.14em;color:#1a2b4a;flex:1">WINE</span><span style="font:400 9px system-ui;color:#94a3b8">6 of 12</span></div>
+<div style="display:flex;flex-direction:column;gap:5px;flex:1">
+<div style="height:9px;background:#e8eef5;border-radius:2px"></div><div style="height:9px;background:#e8eef5;border-radius:2px;width:92%"></div><div style="height:9px;background:#e8eef5;border-radius:2px;width:86%"></div><div style="height:9px;background:#e8eef5;border-radius:2px;width:95%"></div><div style="height:9px;background:#e8eef5;border-radius:2px;width:80%"></div><div style="height:9px;background:#e8eef5;border-radius:2px;width:90%"></div>
+</div>
+<div style="border-top:1.5px dashed #c9871a;margin-top:7px;padding-top:6px;font:600 9px system-ui;color:#7d5911">↓ 6 more continue on page 4</div>
+</div>
+</div>
+</div>
+<div class="note" style="margin:0;font-size:13.5px">drag a section between columns, drag the boundary to give it more room — the block <i>is</i> the section, at the proportion it really occupies</div>
+</div>
+
+<div style="width:238px;flex:none;border-left:1.5px solid #2b2b2b;background:#fff;padding:12px 13px;display:flex;flex-direction:column;gap:11px">
+<div style="font:700 12.5px system-ui">Wine</div>
+<div style="border:1.5px solid #c9871a;border-radius:6px;background:#fdf1dc;padding:9px 10px">
+<div style="font:700 10.5px system-ui;color:#7d5911;margin-bottom:3px">Runs onto a second page</div>
+<div style="font:400 10px/1.45 system-ui;color:#7d5911">12 items don't fit this column. A guest reads six, waits 8 seconds for the rest.</div>
+<div style="display:flex;flex-direction:column;gap:4px;margin-top:7px">
+<div style="padding:5px 8px;border:1.5px solid #2b2b2b;border-radius:4px;background:#fff;font:600 10px system-ui">Split into Whites and Reds</div>
+<div style="padding:5px 8px;border:1.5px solid #cbd5e1;border-radius:4px;background:#fff;font:500 10px system-ui;color:#475569">Give it the full width</div>
+<div style="padding:5px 8px;border:1.5px solid #cbd5e1;border-radius:4px;background:#fff;font:500 10px system-ui;color:#475569">Let it run to two pages</div>
+</div>
+</div>
+<div><div style="font:600 9px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b;margin-bottom:5px">Where it sits</div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;align-items:center;gap:7px;padding:6px 8px;border:1.5px solid #cbd5e1;border-radius:5px"><div style="flex:1;font:500 10.5px system-ui">Right column</div><div style="font:400 9.5px system-ui;color:#94a3b8">▾</div></div>
+<div style="display:flex;align-items:center;gap:7px;padding:6px 8px;border:1.5px solid #cbd5e1;border-radius:5px"><div style="flex:1;font:500 10.5px system-ui">Starts on page 3</div><div style="font:400 9.5px system-ui;color:#94a3b8">▾</div></div>
+</div></div>
+
+<div style="border-top:1.5px dashed #cbd5e1;padding-top:10px">
+<div style="font:600 9px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b;margin-bottom:6px">On your other screens</div>
+<div style="display:flex;flex-direction:column;gap:5px">
+<div style="display:flex;align-items:center;gap:7px;padding:6px 8px;border:1.5px solid #cbd5e1;border-radius:5px;background:#fff"><div style="flex:1"><div style="font:600 10px system-ui">Patio · 1080×1920</div><div style="font:400 9px system-ui;color:#64748b">one column — pages 4, 5 and 6</div></div></div>
+<div style="display:flex;align-items:center;gap:7px;padding:6px 8px;border:1.5px solid #cbd5e1;border-radius:5px;background:#fff"><div style="flex:1"><div style="font:600 10px system-ui">Lobby · 1920×1080</div><div style="font:400 9px system-ui;color:#64748b">same as Bar</div></div></div>
+</div>
+<div style="font:400 9.5px/1.4 system-ui;color:#94a3b8;margin-top:7px">Layout adapts to each screen's geometry on its own. <a href="#m2b">Override it for Patio →</a></div>
+</div>
+<div style="flex:1"></div>
+<div class="note" style="margin:0;font-size:13px">an overflow is a decision with three answers, offered where you notice it — not a surprise you find during Play</div>
+</div>
+</div>
+
+<div style="border-top:1.5px solid #2b2b2b;background:#fff;padding:11px 16px;display:flex;align-items:center;gap:16px">
+<div style="flex:none"><div style="font:700 13px system-ui;color:#7d5911">4 changes not on your screens</div><div style="font:400 10.5px system-ui;color:#64748b">Draft saved 10:51am by Alex · <a href="#m1b">go back to…</a> · <a href="#m2b">discard draft</a></div></div>
+<div style="flex:1;display:flex;gap:7px">
+<div style="flex:1;border:1.5px solid #178a52;border-radius:6px;padding:6px 9px;background:#fff"><div style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#178a52"></span><span style="font:700 10.5px system-ui">Bar</span></div><div style="font:400 9.5px system-ui;color:#475569;margin-top:1px">online — ready</div></div>
+<div style="flex:1;border:1.5px solid #178a52;border-radius:6px;padding:6px 9px;background:#fff"><div style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#178a52"></span><span style="font:700 10.5px system-ui">Patio</span></div><div style="font:400 9.5px system-ui;color:#475569;margin-top:1px">online — ready · relays to 3 pages</div></div>
+<div style="flex:1;border:1.5px solid #c9871a;border-radius:6px;padding:6px 9px;background:#fdf1dc"><div style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#c9871a"></span><span style="font:700 10.5px system-ui">Lobby</span></div><div style="font:400 9.5px system-ui;color:#7d5911;margin-top:1px">offline — updates when it reconnects</div></div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px"><div style="padding:9px 16px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11.5px system-ui">Publish 4 changes</div><div style="font:500 10px system-ui;color:#2a78d6">Review first</div></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;gap:14px;width:1180px;margin-top:14px;flex-wrap:wrap">
+<div style="flex:1;min-width:250px;border-left:3px solid #178a52;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">One section / whole board is a zoom, not a mode</div><div style="font:400 11.5px/1.5 system-ui;color:#555">It sits on the canvas as a pill pair, deliberately unlike the header's <b>Quick update / Build</b> switch — that one changes surface and commit model, this one only changes how far away you are standing. Click into a block and you are back at <a href="#m2">M2</a> with that section open.</div></div>
+<div style="flex:1;min-width:250px;border-left:3px solid #178a52;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">Pages are a consequence, not a setting</div><div style="font:400 11.5px/1.5 system-ui;color:#555">Nobody chooses "5 pages." Page 4 exists because Wine overflowed, and it's drawn dashed to say so. Fix the overflow and it disappears — which is why the page strip has to be visible while you arrange.</div></div>
+<div style="flex:1;min-width:250px;border-left:3px solid #c9871a;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">Adapt first, override where it breaks</div><div style="font:400 11.5px/1.5 system-ui;color:#555">One layout per board, reflowed to each screen's reported geometry, with a per-screen override only where the automatic result is wrong. Per-screen layouts everywhere would double the work and the concepts — same principle as the geometry correction in <a href="#m2c">M2c</a>.</div></div>
+<div style="flex:1;min-width:250px;border-left:3px solid #b03a33;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">Still to settle</div><div style="font:400 11.5px/1.5 system-ui;color:#555">Whether zones are a fixed set the theme provides (full width, two columns, sidebar) or free-form. Fixed keeps boards looking designed and makes reflow tractable; free-form makes every screen a bespoke layout problem. I'd take fixed.</div></div>
+</div>
+</div>
+
+
+<div class="wf" id="m2c"><div class="wfl"><a class="wfid" href="#m2c">M2c</a><span class="wfn">Play — walking the board</span><span class="wfs">not a preview of your edit; the real cycle, at real scale, on every screen</span></div>
+
+<p style="max-width:1180px;font:400 12.5px/1.65 system-ui;color:#333;margin:0 0 14px">There is no <b>Preview</b> button, because <a href="#m2">M2</a>'s canvas already is the preview — adding one would imply the thing you're editing isn't real. What the canvas can't answer is the question you ask before a shift: <i>does the whole board work?</i> It shows one section, at editing scale, on one screen. <b>Play</b> takes over the canvas and runs the actual cycle — real page breaks, real dwell times, real screen sizes — as a thing you watch, not edit.</p>
+
+<div class="card">
+<div style="flex:1;min-width:0;background:#0f172a;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:11px;padding:9px 16px;border-bottom:1px solid #334155;background:#111c2e">
+<div style="font:700 11.5px system-ui;color:#f8fafc">Playing · Summer Menu</div>
+<div style="padding:3px 8px;border-radius:99px;background:#fdf1dc;border:1px solid #c9871a;font:700 9px system-ui;color:#7d5911">Draft — includes your 3 unpublished changes</div>
+<div style="flex:1"></div>
+<div style="display:flex;gap:4px">
+<div style="padding:4px 9px;border:1.5px solid #87ceeb;border-radius:5px;background:#87ceeb;font:700 10px system-ui;color:#0f172a">Bar · 1920×1080</div>
+<div style="padding:4px 9px;border:1.5px solid #475569;border-radius:5px;font:500 10px system-ui;color:#cbd5e1">Patio · 1080×1920</div>
+<div style="padding:4px 9px;border:1.5px solid #475569;border-radius:5px;font:500 10px system-ui;color:#cbd5e1">Lobby · 1920×1080 · offline</div>
+</div>
+<div style="padding:4px 10px;border:1.5px solid #475569;border-radius:5px;font:500 10px system-ui;color:#cbd5e1">Close ✕</div>
+</div>
+
+<div style="flex:1;padding:20px 26px;display:flex;gap:20px;align-items:stretch">
+<div style="flex:1;min-width:0;border:1.5px solid #334155;border-radius:5px;background:#faf8f2;padding:16px 20px;display:flex;flex-direction:column">
+<div style="text-align:center;font:600 9.5px system-ui;letter-spacing:.24em;color:#1a2b4a;padding-bottom:8px;border-bottom:1px solid #c8d2e0;margin-bottom:14px">HARBORVIEW LOUNGE</div>
+<div style="flex:1;display:flex;gap:22px">
+<div style="flex:1;display:flex;flex-direction:column">
+<div style="font:700 10px system-ui;letter-spacing:.2em;color:#1a2b4a;margin-bottom:11px">NON-ALCOHOLIC</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:10px;align-items:baseline"><div style="flex:1;font:700 11.5px system-ui;letter-spacing:.04em;color:#1a2b4a">HARBOR LEMONADE</div><div style="font:600 11.5px system-ui;color:#1a2b4a">5</div></div><div style="display:flex;gap:10px;align-items:baseline"><div style="flex:1;font:700 11.5px system-ui;letter-spacing:.04em;color:#1a2b4a">CUCUMBER COOLER</div><div style="font:600 11.5px system-ui;color:#1a2b4a">5</div></div><div style="border-top:1px dashed #c8d2e0;padding-top:9px;margin-top:2px;font:400 8.5px system-ui;letter-spacing:.1em;color:#8a94a6">BERRY FIZZ IS 86'D — NOT RENDERED</div>
+</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column">
+<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><div style="font:700 10px system-ui;letter-spacing:.2em;color:#1a2b4a">WINE</div><div style="font:400 8.5px system-ui;letter-spacing:.12em;color:#8a94a6">1 OF 2</div></div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:10px;align-items:baseline"><div style="flex:1;font:700 11.5px system-ui;letter-spacing:.04em;color:#1a2b4a">SANCERRE, DOMAINE THOMAS</div><div style="font:600 11.5px system-ui;color:#1a2b4a">14 / 54</div></div><div style="display:flex;gap:10px;align-items:baseline"><div style="flex:1;font:700 11.5px system-ui;letter-spacing:.04em;color:#1a2b4a">CHABLIS, LOUIS MICHEL</div><div style="font:600 11.5px system-ui;color:#1a2b4a">16 / 62</div></div><div style="display:flex;gap:10px;align-items:baseline"><div style="flex:1;font:700 11.5px system-ui;letter-spacing:.04em;color:#1a2b4a">ALBARIÑO, PAZO SEÑORANS</div><div style="font:600 11.5px system-ui;color:#1a2b4a">13 / 50</div></div><div style="display:flex;gap:10px;align-items:baseline"><div style="flex:1;font:700 11.5px system-ui;letter-spacing:.04em;color:#1a2b4a">BAROLO, VIETTI CASTIGLIONE</div><div style="font:600 11.5px system-ui;color:#1a2b4a">— / 98</div></div><div style="display:flex;gap:10px;align-items:baseline"><div style="flex:1;font:700 11.5px system-ui;letter-spacing:.04em;color:#1a2b4a">CÔTES DU RHÔNE, GUIGAL</div><div style="font:600 11.5px system-ui;color:#1a2b4a">12 / 46</div></div><div style="display:flex;gap:10px;align-items:baseline"><div style="flex:1;font:700 11.5px system-ui;letter-spacing:.04em;color:#1a2b4a">RIOJA RESERVA, LA RIOJA ALTA</div><div style="font:600 11.5px system-ui;color:#1a2b4a">15 / 58</div></div>
+</div>
+</div>
+</div>
+<div style="text-align:right;font:400 9px system-ui;letter-spacing:.16em;color:#94a3b8;padding-top:10px">PAGE 3 OF 5</div>
+</div>
+
+<div style="width:214px;flex:none;display:flex;flex-direction:column;gap:11px">
+<div style="border:1.5px solid #c9871a;border-radius:6px;background:#fdf1dc;padding:9px 11px">
+<div style="font:700 10.5px system-ui;color:#7d5911;margin-bottom:3px">Wine splits across 2 pages</div>
+<div style="font:400 10px/1.45 system-ui;color:#7d5911">12 items don't fit the right column. A guest sees six, waits 8 seconds, sees six more.</div>
+<div style="font:600 10px system-ui;color:#2a78d6;margin-top:6px">Fix it in <a href="#m2b" style="color:#2a78d6">Board view</a> →</div>
+</div>
+<div style="border:1.5px solid #334155;border-radius:6px;background:#111c2e;padding:9px 11px">
+<div style="font:600 8.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px">Readable from</div>
+<div style="font:700 15px system-ui;color:#f8fafc">18 ft</div>
+<div style="font:400 9.5px/1.4 system-ui;color:#94a3b8;margin-top:2px">Bar's far end is about 24 ft. Prices hold; the producer names won't.</div>
+<div style="font:400 9px/1.4 system-ui;color:#64748b;margin-top:6px;padding-top:6px;border-top:1px solid #334155">Measured from what this screen reported: 55″ at 1920×1080, last seen 2m ago.</div>
+</div>
+<div style="flex:1"></div>
+<div style="font:400 13.5px/1.35 Caveat,cursive;color:#87ceeb">this is the only place the product can tell you something a static editor never could</div>
+</div>
+</div>
+
+<div style="border-top:1px solid #334155;background:#111c2e;padding:10px 16px;display:flex;align-items:center;gap:14px">
+<div style="display:flex;gap:6px;align-items:center">
+<div style="width:26px;height:26px;border:1.5px solid #475569;border-radius:5px;display:flex;align-items:center;justify-content:center;font:400 10px system-ui;color:#cbd5e1">◀</div>
+<div style="width:26px;height:26px;border:1.5px solid #87ceeb;border-radius:5px;background:#87ceeb;display:flex;align-items:center;justify-content:center;font:400 10px system-ui;color:#0f172a">❚❚</div>
+<div style="width:26px;height:26px;border:1.5px solid #475569;border-radius:5px;display:flex;align-items:center;justify-content:center;font:400 10px system-ui;color:#cbd5e1">▶</div>
+</div>
+<div style="flex:1;display:flex;gap:3px;align-items:center">
+<div style="flex:1;height:22px;border-radius:4px;background:#334155;display:flex;align-items:center;padding:0 8px;font:600 9px system-ui;color:#cbd5e1">1 · Welcome</div><div style="flex:1.4;height:22px;border-radius:4px;background:#334155;display:flex;align-items:center;padding:0 8px;font:600 9px system-ui;color:#cbd5e1">2 · Cocktails + Beer</div><div style="flex:1.4;height:22px;border-radius:4px;background:#87ceeb;display:flex;align-items:center;padding:0 8px;font:700 9px system-ui;color:#0f172a">3 · Non-Alc + Wine 1</div>
+<div style="flex:1.1;height:22px;border-radius:4px;background:#1e3a52;border:1px dashed #87ceeb;display:flex;align-items:center;padding:0 8px;font:600 9px system-ui;color:#87ceeb">4 · Wine 2</div>
+<div style="flex:1.4;height:22px;border-radius:4px;background:#334155;display:flex;align-items:center;padding:0 8px;font:600 9px system-ui;color:#cbd5e1">5 · Plates + Desserts</div>
+</div>
+<div style="font:500 10px system-ui;color:#94a3b8;flex:none">8s per page · loop 40s</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;gap:14px;width:1180px;margin-top:14px;flex-wrap:wrap">
+<div style="flex:1;min-width:250px;border-left:3px solid #178a52;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">Where it lives</div><div style="font:400 11.5px/1.5 system-ui;color:#555">A <b>▶ Play</b> control in <a href="#m2">M2</a>'s header, beside the screen picker. Not a modal you dismiss — it takes the canvas and gives it back, so you can play, spot the split, close, fix, play again.</div></div>
+<div style="flex:1;min-width:250px;border-left:3px solid #178a52;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">It plays your draft</div><div style="font:400 11.5px/1.5 system-ui;color:#555">Including the 3 unpublished changes, clearly labelled. Playing the live board instead would make it useless for the thing you'd use it for — checking work before it ships.</div></div>
+<div style="flex:1;min-width:250px;border-left:3px solid #178a52;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">The screen reports; Play never dictates</div><div style="font:400 11.5px/1.5 system-ui;color:#555">Geometry comes from the device on pairing and on every reconnect — resolution, orientation, safe area, panel size. The tabs are <i>the screens you own</i>, not aspect-ratio options. Lobby is offline but still renders from its last report — that geometry doesn't change when the Wi-Fi drops. A screen you have not paired yet cannot be previewed against at all — there is no such thing as a representative size, only real ones.</div></div>
+<div style="flex:1;min-width:250px;border-left:3px solid #c9871a;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">The one thing you do send</div><div style="font:400 11.5px/1.5 system-ui;color:#555">A <b>correction</b>, when the report is wrong — a TV in a cabinet cropping edges, a device lying about overscan. That is a per-screen override set once under <b>Screens</b>, never a picker in the player. Otherwise the wrong geometry silently follows you into every board you design.</div></div>
+</div>
+<p class="note" style="max-width:1180px"><a href="#m2">M2</a>'s header changes meaning to match: it is no longer "pick an aspect ratio," it is "show me this board as Bar / Patio / Lobby." An operator should never have to know their own screen's resolution — and should never be able to get it wrong. Play is read-only by design. The moment you can edit inside it, it becomes a second editor with a different layout — which is how the old build ended up with two of everything.</p>
+</div>
+
+
+<div class="wf" id="m3"><div class="wfl"><a class="wfid" href="#m3">M3</a><span class="wfn">Quick Update — the separate fast path</span><span class="wfs">decision 15 · changing “sold out” must never require the builder</span></div>
+
+<p style="max-width:1180px;font:400 12.5px/1.65 system-ui;color:#333;margin:0 0 14px">This is the other half of Menus, and it is deliberately not <a href="#m2">M2</a>. No canvas, no sections, no inspector, no draft, no publish bar — because every change here is live the moment it is made (<b>decision 3</b>). One flat list of what is on air, searchable, with a single control per row. A bartender should be able to use it having never seen the builder.</p>
+
+<div class="card">
+<dc-import name="BackOfficeNav" active="Menu" hint-size="198px,100%"></dc-import>
+
+
+<div style="flex:1;min-width:0;background:#f8fafc;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:11px;padding:10px 16px;border-bottom:1.5px solid #2b2b2b;background:#fff">
+<div style="font:500 11.5px system-ui;color:#2a78d6">‹ Menus</div>
+<div style="font:700 13px system-ui">Summer Menu</div>
+<div style="display:flex;border:1.5px solid #2b2b2b;border-radius:5px;overflow:hidden;margin-left:6px"><div style="padding:4px 11px;font:700 10px system-ui;background:#87ceeb;color:#0f172a">Quick update</div><div style="padding:4px 11px;font:500 10px system-ui;color:#64748b;background:#fff">Build</div></div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:6px;font:500 11px system-ui;color:#7d5911"><span style="width:7px;height:7px;border-radius:50%;background:#c9871a"></span>Bar and Patio are current · Lobby offline</div>
+</div>
+
+<div style="display:flex;align-items:center;gap:9px;padding:11px 16px;border-bottom:1.5px dashed #cbd5e1">
+<div style="flex:1;display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid #2b2b2b;border-radius:6px;background:#fff"><span style="color:#94a3b8;font-size:11px">⌕</span><span style="font:400 12px system-ui;color:#94a3b8">Find an item…</span><span style="flex:1"></span><span style="font:500 9.5px ui-monospace,monospace;color:#94a3b8;border:1px solid #cbd5e1;border-radius:3px;padding:2px 5px">⌘K</span></div>
+<div style="padding:7px 11px;border:1.5px solid #2b2b2b;border-radius:99px;font:600 10.5px system-ui;background:#87ceeb">Everything</div>
+<div style="padding:7px 11px;border:1.5px solid #cbd5e1;border-radius:99px;font:500 10.5px system-ui;color:#64748b">Off right now · 2</div>
+</div>
+
+<div style="flex:1;padding:14px 16px;display:flex;gap:16px">
+<div style="flex:1;min-width:0">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:8px">Summer Menu · 41 items on air</div>
+<div style="font:700 11px system-ui;color:#0f172a;margin:0 0 7px">Non-Alcoholic</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+<div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1.5px solid #2b2b2b;border-radius:7px;background:#fff"><div style="flex:1;min-width:0"><div style="font:600 12.5px system-ui;color:#0f172a">Harbor Lemonade</div><div style="font:400 10.5px system-ui;color:#64748b">$5.00</div></div><div style="width:44px;height:25px;border:1.5px solid #2b2b2b;border-radius:13px;background:#87ceeb;position:relative;flex:none"><div style="position:absolute;top:2px;right:2px;width:17px;height:17px;border-radius:50%;background:#fff;border:1.5px solid #2b2b2b"></div></div></div><div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1.5px solid #2b2b2b;border-radius:7px;background:#fff"><div style="flex:1;min-width:0"><div style="font:600 12.5px system-ui;color:#0f172a">Cucumber Cooler</div><div style="font:400 10.5px system-ui;color:#64748b">$5.00</div></div><div style="width:44px;height:25px;border:1.5px solid #2b2b2b;border-radius:13px;background:#87ceeb;position:relative;flex:none"><div style="position:absolute;top:2px;right:2px;width:17px;height:17px;border-radius:50%;background:#fff;border:1.5px solid #2b2b2b"></div></div></div><div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1.5px solid #b03a33;border-radius:7px;background:#fbe7e5"><div style="flex:1;min-width:0"><div style="font:600 12.5px system-ui;color:#8a2929;text-decoration:line-through">Berry Fizz</div><div style="font:500 10.5px system-ui;color:#8a2929">86'd 6:40pm by Dana</div></div><div style="width:44px;height:25px;border:1.5px solid #b03a33;border-radius:13px;background:#fff;position:relative;flex:none"><div style="position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#b03a33;border:1.5px solid #b03a33"></div></div></div>
+</div>
+<div style="font:700 11px system-ui;color:#0f172a;margin:0 0 7px">Wine</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+<div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1.5px solid #2b2b2b;border-radius:7px;background:#fff"><div style="flex:1;min-width:0"><div style="font:600 12.5px system-ui;color:#0f172a">Sancerre, Domaine Thomas</div><div style="font:400 10.5px system-ui;color:#64748b">$14 / $54</div></div><div style="width:44px;height:25px;border:1.5px solid #2b2b2b;border-radius:13px;background:#87ceeb;position:relative;flex:none"><div style="position:absolute;top:2px;right:2px;width:17px;height:17px;border-radius:50%;background:#fff;border:1.5px solid #2b2b2b"></div></div></div><div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1.5px solid #2b2b2b;border-radius:7px;background:#fff"><div style="flex:1;min-width:0"><div style="font:600 12.5px system-ui;color:#0f172a">Chablis, Louis Michel</div><div style="font:400 10.5px system-ui;color:#64748b">$16 / $62</div></div><div style="width:44px;height:25px;border:1.5px solid #2b2b2b;border-radius:13px;background:#87ceeb;position:relative;flex:none"><div style="position:absolute;top:2px;right:2px;width:17px;height:17px;border-radius:50%;background:#fff;border:1.5px solid #2b2b2b"></div></div></div><div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1.5px solid #2b2b2b;border-radius:7px;background:#fff"><div style="flex:1;min-width:0"><div style="font:600 12.5px system-ui;color:#0f172a">Barolo, Vietti Castiglione</div><div style="font:400 10.5px system-ui;color:#64748b">$98 bottle</div></div><div style="width:44px;height:25px;border:1.5px solid #2b2b2b;border-radius:13px;background:#87ceeb;position:relative;flex:none"><div style="position:absolute;top:2px;right:2px;width:17px;height:17px;border-radius:50%;background:#fff;border:1.5px solid #2b2b2b"></div></div></div><div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1.5px solid #2b2b2b;border-radius:7px;background:#fff"><div style="flex:1;min-width:0"><div style="font:600 12.5px system-ui;color:#0f172a">Rioja Reserva</div><div style="font:400 10.5px system-ui;color:#64748b">$15 / $58</div></div><div style="width:44px;height:25px;border:1.5px solid #2b2b2b;border-radius:13px;background:#87ceeb;position:relative;flex:none"><div style="position:absolute;top:2px;right:2px;width:17px;height:17px;border-radius:50%;background:#fff;border:1.5px solid #2b2b2b"></div></div></div>
+</div>
+<div style="font:700 11px system-ui;color:#0f172a;margin:0 0 7px">Small Plates</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1.5px solid #2b2b2b;border-radius:7px;background:#fff"><div style="flex:1;min-width:0"><div style="font:600 12.5px system-ui;color:#0f172a">Grilled Snapper</div><div style="font:400 10.5px system-ui;color:#64748b">$28.00</div></div><div style="width:44px;height:25px;border:1.5px solid #2b2b2b;border-radius:13px;background:#87ceeb;position:relative;flex:none"><div style="position:absolute;top:2px;right:2px;width:17px;height:17px;border-radius:50%;background:#fff;border:1.5px solid #2b2b2b"></div></div></div><div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1.5px solid #b03a33;border-radius:7px;background:#fbe7e5"><div style="flex:1;min-width:0"><div style="font:600 12.5px system-ui;color:#8a2929;text-decoration:line-through">Bone Marrow</div><div style="font:500 10.5px system-ui;color:#8a2929">86'd 5:15pm by Alex</div></div><div style="width:44px;height:25px;border:1.5px solid #b03a33;border-radius:13px;background:#fff;position:relative;flex:none"><div style="position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#b03a33;border:1.5px solid #b03a33"></div></div></div>
+</div>
+</div>
+
+<div style="width:250px;flex:none;display:flex;flex-direction:column;gap:11px">
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#0f172a;padding:11px 13px">
+<div style="font:600 11.5px/1.45 system-ui;color:#f8fafc;margin-bottom:8px">Berry Fizz is off on all 3 screens.</div>
+<div style="display:flex;align-items:center;gap:8px"><div style="padding:5px 12px;border:1.5px solid #f8fafc;border-radius:5px;font:600 10.5px system-ui;color:#f8fafc">Undo</div><div style="font:400 9.5px system-ui;color:#94a3b8">taken off 4 seconds ago</div></div>
+</div>
+<div style="border:1.5px solid #cbd5e1;border-radius:8px;background:#fff;padding:11px 13px">
+<div style="font:600 9px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b;margin-bottom:7px">Off right now</div>
+<div style="display:flex;flex-direction:column;gap:7px">
+<div><div style="font:600 11px system-ui">Berry Fizz</div><div style="font:400 9.5px system-ui;color:#64748b">since 6:40pm · Dana</div></div>
+<div><div style="font:600 11px system-ui">Bone Marrow</div><div style="font:400 9.5px system-ui;color:#64748b">since 5:15pm · Alex</div></div>
+</div>
+<div style="font:400 9.5px/1.4 system-ui;color:#94a3b8;margin-top:8px;padding-top:8px;border-top:1px dashed #cbd5e1">Nothing here has been off for more than a day.</div>
+</div>
+<div style="flex:1"></div>
+<div class="note" style="margin:0;font-size:13.5px">no draft, no publish, no Save — the toggle <i>is</i> the action, and the undo toast is the whole safety net. The header sentence matters most here: a bartender 86'ing an item needs to know Lobby will not get it until it reconnects</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;gap:14px;width:1180px;margin-top:14px;flex-wrap:wrap">
+<div style="flex:1;min-width:250px;border-left:3px solid #178a52;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">Why it is not a view of the builder</div><div style="font:400 11.5px/1.5 system-ui;color:#555">A toggle here is live; a change in <a href="#m2">M2</a> waits in that menu's queue. Two different commit models cannot share one surface without the user having to know which mode they are in — which is exactly the confusion the current build has.</div></div>
+<div style="flex:1;min-width:250px;border-left:3px solid #178a52;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">One control per row</div><div style="font:400 11.5px/1.5 system-ui;color:#555">Price and description are not editable here. Wanting to change a price is builder work; wanting to stop selling something is not. Keeping the row to one control is what makes it usable at speed and on a phone later.</div></div>
+<div style="flex:1;min-width:250px;border-left:3px solid #c9871a;padding-left:11px"><div style="font:700 11.5px system-ui;margin-bottom:2px">Still to settle</div><div style="font:400 11.5px/1.5 system-ui;color:#555">Whether Quick update and Build are two tabs on one route (drawn here, and now on <a href="#m2">M2</a> and <a href="#m2b">M2b</a> too, so the trip is reversible) or two nav entries. Tabs keep the nav short; separate entries make it reachable for staff who should never see the builder at all — which becomes a permissions question.</div></div>
+</div>
+</div>
+
+</section>
+</x-dc>
+</body>
+</html>
