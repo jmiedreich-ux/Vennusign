@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** sitting 3 in progress (2026-08-07) — minor lane: Q93, Q94, Q116–Q123 resolved (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
+- **Status:** sitting 3 in progress (2026-08-07) — minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150 resolved (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -1465,6 +1465,8 @@ Filling a new board is the bulk path's whole point.
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): after a bulk place the drawer stays open, selection cleared, brief "2 placed" note; the button retargets as sections change; Escape/✕ closes.
+
 <sub>M2a drawer button [wf-additems]</sub>
 
 ## Board view (M2b)
@@ -1517,6 +1519,8 @@ The bundle's only use of "relays"; its meaning is a guess.
 
 *Recommended:* Yes — plain words over a coined verb.
 
+*Answer:* Accepted recommended (2026-08-07): plain words — "online — ready · 3 pages on this screen", shown whenever a screen's reflow yields a different page count. "Relays" is retired.
+
 <sub>M2b publish bar chip [wf-additems]</sub>
 
 ### Q130 · minor
@@ -1526,6 +1530,8 @@ The bundle's only use of "relays"; its meaning is a guess.
 Also gives Board view a visible add-a-section affordance on the board itself.
 
 *Recommended:* Yes — both.
+
+*Answer:* Accepted recommended (2026-08-07): the dashed slot is both a drop target for dragged sections and clickable to create a new empty section in that spot.
 
 <sub>M2b dashed box [wf-additems]</sub>
 
@@ -1675,6 +1681,8 @@ Dashed means "this page disappears if you fix the overflow", only true of pure c
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): dashed only when the page contains nothing but overflow continuation; solid the moment any other content shares it.
+
 <sub>M2c "4 · Wine 2" dashed [m2c-hifi]</sub>
 
 ### Q145 · minor
@@ -1684,6 +1692,8 @@ Dashed means "this page disappears if you fix the overflow", only true of pure c
 Pages are a consequence of overflow, not a setting.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): labels auto-derived — section names joined with " + ", continuations as "Wine 2", long labels ellipsized; no manual naming.
 
 <sub>M2c timeline labels [m2c-hifi]</sub>
 
@@ -1695,6 +1705,8 @@ Watch-mode surface with no keyboard, paused state or click behavior drawn.
 
 *Recommended:* Yes to all.
 
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): the Play keyboard/click spec (Space pause, ←/→ pages, Esc close, clickable timeline blocks) is not locked this build; Play ships with basic default interactions and the full spec is a backlog item.
+
 <sub>M2c transport [m2c-hifi]</sub>
 
 ### Q147 · minor
@@ -1704,6 +1716,8 @@ Watch-mode surface with no keyboard, paused state or click behavior drawn.
 The draft is multi-author, so "your 3 unpublished changes" can be literally wrong.
 
 *Recommended:* Yes.
+
+*Answer:* Owner (2026-08-07): remove "your" and any possessive phrasing — the pill reads "Draft — includes 3 unpublished changes" (count is still all queued changes on the menu, any author). Approved deviation from the README verbatim-copy list, which carried "your".
 
 <sub>M2c pill; M2 byline [m2c-hifi]</sub>
 
@@ -1715,6 +1729,8 @@ Pagination differs per geometry; no portrait board is drawn anywhere.
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): switching chips re-paginates and restarts at page 1, preserving play/pause; portrait boards letterboxed at real proportions.
+
 <sub>M2c Patio chip 1080×1920 [m2c-hifi]</sub>
 
 ### Q149 · minor
@@ -1725,6 +1741,8 @@ A wine book can hit 10+ pages; no overflow state is drawn and the transport bar 
 
 *Recommended:* Yes to all.
 
+*Answer:* Accepted recommended (2026-08-07): labels ellipsize first, then number-only blocks with the active page fully labeled; past six pages a six-block window slides with the current page, "+N" counts flanking.
+
 <sub>M2c timeline; X3 transport; X4 page strip [m2c-hifi, wf-scale]</sub>
 
 ### Q150 · minor
@@ -1734,6 +1752,8 @@ A wine book can hit 10+ pages; no overflow state is drawn and the transport bar 
 Wiring them to devices would violate criterion 4; worth one word before slice 5.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): the transport is entirely simulated — pause/prev/next never touch a real screen.
 
 <sub>M2c transport; Menus.dc.html "a thing you watch" [m2c-hifi]</sub>
 
