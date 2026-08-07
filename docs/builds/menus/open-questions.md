@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
+- **Status:** sitting 3 in progress (2026-08-07) — minor lane: Q93, Q94, Q116–Q123 resolved (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -1125,6 +1125,8 @@ A duplicate is visible and fixable; a wrong merge silently rewrites another menu
 
 *Recommended:* Yes — when in doubt, new item.
 
+*Answer:* Accepted recommended (2026-08-07): tidying-level only — case, punctuation, spacing, an obvious one-letter typo; anything more distant is a new item. When in doubt, new item.
+
 <sub>decisions.md 33 [decisions-doc]</sub>
 
 ### Q94 · minor
@@ -1134,6 +1136,8 @@ A duplicate is visible and fixable; a wrong merge silently rewrites another menu
 Two affordances per row with no stated relationship.
 
 *Recommended:* Yes — a readable synonym, not a third state.
+
+*Answer:* Owner (2026-08-07): go beyond the binary — a near-miss row can open a small picker of other close library matches, in case the machine matched the wrong existing item. Same/Different remains the fast path; the picker is the correction path. Needs a small design spot in the confirm step (slice 6).
 
 <sub>Menus.dc.html near-miss rows [wf-import-actions]</sub>
 
@@ -1365,6 +1369,8 @@ Return visits restore "where you left off"; first opens have no left-off.
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): first open shows One-section view, topmost section selected, nothing selected in the inspector; return visits restore where you left off.
+
 <sub>M2 hi-fi; README card-click [m2-hifi]</sub>
 
 ### Q117 · minor
@@ -1374,6 +1380,8 @@ Return visits restore "where you left off"; first opens have no left-off.
 No multi-select is drawn and the inspector is single-item.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): single item selection only this build; bulk operations live in the bulk-place drawer.
 
 <sub>M2 hi-fi selection ring [m2-hifi]</sub>
 
@@ -1385,6 +1393,8 @@ The wireframe grants in-place editing to the price alone; unstated, everything m
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): in-place editing is the price only; clicking a name or description selects the item and focuses the matching inspector field.
+
 <sub>Menus.dc.html M2 annotation [m2-hifi]</sub>
 
 ### Q119 · minor
@@ -1394,6 +1404,8 @@ The wireframe grants in-place editing to the price alone; unstated, everything m
 The design specifies no limits; the DB already enforces these.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): carry the current limits — name ≤200 and never blank (an emptied name reverts on blur), description ≤1000.
 
 <sub>012_create_menu_domain.sql [m2-hifi]</sub>
 
@@ -1405,6 +1417,8 @@ A keyboard-only user could no longer reorder anything.
 
 *Recommended:* Yes.
 
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): Alt+Up/Down keyboard reordering waits. Noted trade-off: with every ↑/↓ button pair replaced by drag handles, keyboard-only users cannot reorder until this lands — tracked as a backlog accessibility item.
+
 <sub>README "Drag to reorder. Everywhere." [m2-hifi]</sub>
 
 ### Q121 · minor
@@ -1414,6 +1428,8 @@ A keyboard-only user could no longer reorder anything.
 It's the only fast path to one item on a 41-item board.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): ⌘K find-an-item-on-this-board ships with the builder in slice 3 (slice plan omission corrected).
 
 <sub>Menus.dc.html M2a ⌘K; slice-plan slice 3 [record-consistency]</sub>
 
@@ -1425,6 +1441,8 @@ Only the ↵ hint on the top result is drawn; this row is how six items get type
 
 *Recommended:* Yes to all four.
 
+*Answer:* OUT OF SCOPE → backlog (2026-08-07): the full keyboard flow spec (arrows / Enter places / Escape clears / Enter-creates-when-no-match) is not locked this build; the add-item row ships with framework-default keyboard behavior and the full flow is a backlog item.
+
 <sub>M2a dropdown ↵ hint [wf-additems]</sub>
 
 ### Q123 · minor
@@ -1434,6 +1452,8 @@ Only the ↵ hint on the top result is drawn; this row is how six items get type
 Only the single-board case is drawn; implementers would invent one per surface.
 
 *Recommended:* Yes — lock the vocabulary.
+
+*Answer:* Accepted recommended (2026-08-07): vocabulary locked — up to two board names, "on 3 boards" beyond, "· 86'd right now" when off, long names ellipsized.
 
 <sub>M2a result rows [wf-additems]</sub>
 
