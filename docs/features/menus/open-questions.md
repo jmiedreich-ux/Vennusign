@@ -1,6 +1,7 @@
 # Menus Build — Open Questions Register
 
-- **Status:** COMPLETE (2026-08-07) — all 208 questions resolved across four sittings. Sitting 1: Q1–Q82. Sitting 2: 16 BLOCKING. Sitting 3: 32 minor. Sitting 4: 78 important. Owner deviations of note: Q83 resolve-at-import, Q94 match picker, Q115/Q190 as-typed prices, Q147 no possessive copy, Q175/Q201 tier-/setting-configurable thresholds and ceilings, Q185 lucide-react icons, Q196 venue-local timestamps. Backlog issues: #670–#682. Deferred: Q86 (board looks). Next: reconcile slice-plan.md with all recorded answers, then slice 1.
+- **Status:** COMPLETE (2026-08-07) — all 208 questions resolved across four sittings. Sitting 1: Q1–Q82. Sitting 2: 16 BLOCKING. Sitting 3: 32 minor. Sitting 4: 78 important. Owner deviations of note: Q83 resolve-at-import, Q94 match picker, Q115/Q190 as-typed prices, Q147 no possessive copy, Q175/Q201 tier-/setting-configurable thresholds and ceilings, Q185 lucide-react icons, Q196 venue-local timestamps. Backlog issues: #670–#682. Deferred: Q86 (board looks). Next: reconcile milestone-plan.md with all recorded answers, then slice 1.
+- **Terminology (2026-08-07):** the unit of work is now a **feature** delivered in **milestones**; "build" and "slice" in recorded answers below are historical synonyms and were not rewritten.
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -2475,7 +2476,7 @@ When a publish or an 86 reaches a TV that is mid-way through showing a page to g
 
 *Answer:* Accepted recommended (2026-08-07): an 86 takes the item down immediately, even mid-page; a publish swaps at the next page turn and restarts the cycle at page 1 with the new version.
 
-<sub>slice-plan.md slice 4 "pages, dwell cycle, instant 86 removal"; merged Q142 settles this for Play only</sub>
+<sub>milestone-plan.md slice 4 "pages, dwell cycle, instant 86 removal"; merged Q142 settles this for Play only</sub>
 
 ### Q204 · important
 
@@ -2487,7 +2488,7 @@ The slice-4 workbook asks the owner to "watch the TV change," but nothing says w
 
 *Answer:* Accepted recommended (2026-08-07): a paired browser tab is the TV for the slice-4 workbook (window size = reported geometry), with one check on a real TV device before the build closes if available.
 
-<sub>slice-plan.md slice 4 "Acceptance workbook: publish → watch the TV change; 86 → watch it vanish"; src/display PairingPage.tsx (player runs in a browser)</sub>
+<sub>milestone-plan.md slice 4 "Acceptance workbook: publish → watch the TV change; 86 → watch it vanish"; src/display PairingPage.tsx (player runs in a browser)</sub>
 
 ### Q205 · important
 
@@ -2523,7 +2524,7 @@ The draft/publish history is attributable by design, but nobody asked whether th
 
 *Answer:* OUT OF SCOPE → backlog (2026-08-07): a dedicated audit/analytics system is a backlog item. Provisional default for this build (unaffirmed parts follow the protocol's provisional rule): discard-draft, Put away and Take off the screens are still recorded as attributable history entries so nothing irreversible is anonymous — flagged in the slice-1 demo for review.
 
-<sub>slice-plan.md slice 1 DraftChange/PublishEvent (attributable history); src/Vennu.Core.Models has only FeatureMatrixAuditEntry — no general audit log</sub>
+<sub>milestone-plan.md slice 1 DraftChange/PublishEvent (attributable history); src/Vennu.Core.Models has only FeatureMatrixAuditEntry — no general audit log</sub>
 
 ### Q208 · minor
 
