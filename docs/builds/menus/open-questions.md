@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** paused after sitting 3 (2026-08-07). BLOCKING lane complete (16/16, sitting 2); minor lane COMPLETE (32/32, sitting 3). important lane in progress (sitting 4): Q87–Q92, Q99–Q115, Q125–Q128, Q134–Q143, Q151–Q158, Q164–Q168 resolved (50 of 78); RESUME AT Q169. Sitting 3 minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
+- **Status:** paused after sitting 3 (2026-08-07). BLOCKING lane complete (16/16, sitting 2); minor lane COMPLETE (32/32, sitting 3). important lane in progress (sitting 4): Q87–Q92, Q99–Q115, Q125–Q128, Q134–Q143, Q151–Q158, Q164–Q176, Q179, Q180 resolved (60 of 78); RESUME AT Q181. Sitting 3 minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -2059,6 +2059,8 @@ The chip says two holding menus; the drawn sentence names one.
 
 *Recommended:* Yes — the drawn sentence missed the second menu.
 
+*Answer:* Accepted recommended (2026-08-07): the headline names each holding menu ("Summer Menu is holding 3 changes, Patio Drinks 1"); screen-count phrases capped at the top three menus.
+
 <sub>X2 sub-line vs "Holding changes · 2" chip [wf-scale]</sub>
 
 ### Q170 · important
@@ -2068,6 +2070,8 @@ The chip says two holding menus; the drawn sentence names one.
 Fixing an offline TV is hardware work, not menu work.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): "Fix these 2" opens the existing Screens area filtered to those screens — Menus points at the problem, Screens owns fixing it.
 
 <sub>X2 headline button [wf-scale]</sub>
 
@@ -2079,6 +2083,8 @@ Fixing an offline TV is hardware work, not menu work.
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): past six target screens the picker moves to the searchable sidebar; the top-bar screen name becomes a plain label, no second dropdown.
+
 <sub>X3; README M2c chips [wf-scale]</sub>
 
 ### Q172 · important
@@ -2088,6 +2094,8 @@ Fixing an offline TV is hardware work, not menu work.
 As drawn the rule contradicts itself (an identical screen gets its own row).
 
 *Recommended:* Yes — expandable so any screen is still pickable by name.
+
+*Answer:* Accepted recommended (2026-08-07): one representative row per distinct rendering (shape × page count) plus a row per problem screen; identical extras collapsed behind an expandable count so any screen stays pickable by name.
 
 <sub>X3 rows + "7 more" [wf-scale]</sub>
 
@@ -2099,6 +2107,8 @@ The copy is written for exactly one.
 
 *Recommended:* Yes.
 
+*Answer:* Owner (2026-08-07): not considered a problem — no special design attention. Trivial default applies: one line per differing screen with its reason, absent when none differ.
+
 <sub>X3 differs card [wf-scale]</sub>
 
 ### Q174 · important
@@ -2108,6 +2118,8 @@ The copy is written for exactly one.
 Slice 5 needs to know it doesn't disappear past six screens.
 
 *Recommended:* Yes — it stays.
+
+*Answer:* Accepted recommended (2026-08-07): the Readable-from panel stays at scale, shown for the currently selected screen below the screens list.
 
 <sub>X3 sidebar vs README M2c [wf-scale]</sub>
 
@@ -2119,6 +2131,8 @@ The drawing fires at 120s but states no threshold.
 
 *Recommended:* Yes — 60 seconds.
 
+*Answer:* Owner (2026-08-07): the loop-length warning threshold is a configurable setting (joins the dwell setting in the per-menu/venue configuration), default 60 seconds; always computed from real loop time — page count alone never triggers it.
+
 <sub>X4 warning [wf-scale]</sub>
 
 ### Q176 · important
@@ -2128,6 +2142,8 @@ The drawing fires at 120s but states no threshold.
 The scale sheet insists the behavior is part of each component from day one, but no slice or gate claims it; retrofitting is a redesign.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): each surface ships its at-scale behavior inside its own slice (shelf search s2, publish-bar collapse s3, Play sidebar s5, Quick-Update collapse s6); Playwright specs get a 20-screen/13-menu seed.
 
 <sub>Menus at Scale strapline; slice-plan gates [record-consistency]</sub>
 
@@ -2165,6 +2181,8 @@ Screens, Promotions and the legacy menu editors use those exact words today; an 
 
 *Recommended:* Yes — enforce in Menus, log the rest.
 
+*Answer:* Accepted recommended (2026-08-07): criterion 5 enforced in Menus and any surface this build rewrites; legacy wording in Screens, Promotions and the old editors logged as copy debt for each area's own redesign (tracked as a backlog issue).
+
 <sub>README criterion 5; ScreenManagement.tsx; DateRangePromotionAdministration.tsx [decisions-doc]</sub>
 
 ### Q180 · important
@@ -2174,6 +2192,8 @@ Screens, Promotions and the legacy menu editors use those exact words today; an 
 Items are shared across boards and 86 is venue-wide; "all 3 screens" overstates when Lobby is offline and breaks at one or zero.
 
 *Recommended:* Yes to all — summarize the normal, name the exception, on the surface where truth matters most mid-shift.
+
+*Answer:* Accepted recommended (2026-08-07): the count covers every screen currently showing the item through any menu; honest one-screen and zero-screen forms; the toast tells the per-screen story when a screen is offline ("off on Bar and Patio; Lobby will catch up when it reconnects").
 
 <sub>M2 inspector copy; M3 toast + note; decisions.md 3/12/25 [decisions-doc, readme-handoff, m2-hifi, wf-additems]</sub>
 
