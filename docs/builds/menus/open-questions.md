@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** paused after sitting 3 (2026-08-07). BLOCKING lane complete (16/16, sitting 2); minor lane COMPLETE (32/32, sitting 3). important lane in progress (sitting 4): Q87–Q92, Q99–Q112 resolved (20 of 78); RESUME AT Q113. Sitting 3 minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
+- **Status:** paused after sitting 3 (2026-08-07). BLOCKING lane complete (16/16, sitting 2); minor lane COMPLETE (32/32, sitting 3). important lane in progress (sitting 4): Q87–Q92, Q99–Q115, Q125–Q128, Q134–Q136 resolved (30 of 78); RESUME AT Q137. Sitting 3 minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -1379,6 +1379,8 @@ The design never shows what the new item is born with; the import flow already p
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): created with exactly the typed text as name, empty price/description, placed in the section, inspector opening with the name field focused; missing price allowed — quiet canvas flag, publish not blocked.
+
 <sub>Menus.dc.html M2a create row [wf-additems]</sub>
 
 ### Q114 · important
@@ -1389,6 +1391,8 @@ The POS import route is deferred and decision 17 shows POS surfaces only when th
 
 *Recommended:* Yes — omit.
 
+*Answer:* Accepted recommended (2026-08-07): the "From POS" chip is omitted entirely this build; the item source field stays in the schema so the chip lights up when the POS route lands.
+
 <sub>M2a chips; decisions.md 17; build-decisions known gaps [wf-additems]</sub>
 
 ### Q115 · important
@@ -1398,6 +1402,8 @@ The POS import route is deferred and decision 17 shows POS surfaces only when th
 The builder hi-fi renders "5.00", Play renders the same item as "5" — one engine needs one rule; Play is the later drawing and reads like a printed menu.
 
 *Recommended:* Trim.
+
+*Answer:* Owner (2026-08-07): price display is the venue's choice, not a hard engine rule. This build renders prices exactly as typed (consistent with Q190 — type "5" get "5", type "5.00" get "5.00", em dash for a missing size price); a venue-level display/format setting joins the backlogged currency work (issue #675).
 
 <sub>M2 hi-fi vs M2c hi-fi prices [m2c-hifi]</sub>
 
@@ -1519,6 +1525,8 @@ The strip is drawn as state with no interactions specified.
 
 *Recommended:* Yes.
 
+*Answer:* Accepted recommended (2026-08-07): the page strip is navigation only — clicking any chip (dashed overflow page included) jumps the canvas there; no drag-onto-chip; all rearranging happens on the canvas.
+
 <sub>Menus.dc.html M2b page chips [wf-additems]</sub>
 
 ### Q126 · important
@@ -1528,6 +1536,8 @@ The strip is drawn as state with no interactions specified.
 Slice 5 includes per-screen overrides but the surface is drawn nowhere.
 
 *Recommended:* Yes — anything richer waits for a real venue to need it.
+
+*Answer:* Accepted recommended (2026-08-07): "Override it for Patio" switches Board view to that screen's scope; layout changes apply to Patio only; visible "Overridden for Patio" marker; one "use the automatic layout again" action; no separate override editor.
 
 <sub>M2b sidebar link; slice-plan slice 5 [wf-additems]</sub>
 
@@ -1539,6 +1549,8 @@ The system can't know a wine list divides into whites and reds; guessing categor
 
 *Recommended:* Yes — generic split.
 
+*Answer:* Accepted recommended (2026-08-07): generic "Split into two sections" cutting at the overflow point, both halves renameable; the drawn names are illustrative.
+
 <sub>M2b overflow buttons [wf-additems]</sub>
 
 ### Q128 · important
@@ -1548,6 +1560,8 @@ The system can't know a wine list divides into whites and reds; guessing categor
 The sidebar draws it as a control, but the same screen's principle card says nobody chooses pages; a forced start page creates gaps.
 
 *Recommended:* Read-only.
+
+*Answer:* Accepted recommended (2026-08-07): "Starts on page 3" is a read-only fact; "Right column" stays the one placement control; page position derives from order, column and overflow.
 
 <sub>M2b "Where it sits" vs principle card [wf-additems]</sub>
 
@@ -1621,6 +1635,8 @@ Both drawings fill the whole 1440px viewport; the prose says canvas-only. An imp
 
 *Recommended:* Full-window, as both drawings show.
 
+*Answer:* Accepted recommended (2026-08-07): Play is a full-window takeover — nav rail and builder chrome hidden, ✕ returns to M2 exactly as left; "takes over the canvas" is flow, not geometry.
+
 <sub>M2c full-bleed frame vs Menus.dc.html prose [m2c-hifi]</sub>
 
 ### Q135 · important
@@ -1631,6 +1647,8 @@ The README says they're not board content but never lists which surfaces render 
 
 *Recommended:* Yes — TV completely clean.
 
+*Answer:* Accepted recommended (2026-08-07): the guest-facing TV renders no annotations; Play, the M2 canvas and M2b show them; M1 cards show none — one engine flag for editing/preview surfaces.
+
 <sub>M2c overlays; README annotations note [m2c-hifi, code-display]</sub>
 
 ### Q136 · important
@@ -1640,6 +1658,8 @@ The README says they're not board content but never lists which surfaces render 
 If the note took layout space, Play's pagination would differ from the TV's, defeating its promise.
 
 *Recommended:* Yes.
+
+*Answer:* Accepted recommended (2026-08-07): Play paginates from guest-visible content only; the 86 note renders inside the freed space and never pushes content, so page breaks always match the TV.
 
 <sub>M2c 86 note placement; "real page breaks" [m2c-hifi]</sub>
 
