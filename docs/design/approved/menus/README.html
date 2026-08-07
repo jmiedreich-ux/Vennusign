@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handoff: Vennusign Back Office — Menus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0f172a;--body:#334155;--muted:#64748b;--line:#e2e8f0;--hair:#eef2f6;--sky:#87ceeb;--wash:#f8fafc}
+*{box-sizing:border-box}
+body{margin:0;background:#e8eef4;color:var(--body);font:400 15px/1.65 Inter,ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:0 0 90px}
+header{background:var(--ink);color:#f8fafc;padding:48px 56px 42px;margin-bottom:0}
+header .eyebrow{display:flex;align-items:center;gap:11px;margin-bottom:18px}
+header .mark{width:32px;height:32px;border-radius:10px;background:var(--sky);color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px}
+header .eyebrow span{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#94a3b8}
+header h1{margin:0;font-size:34px;font-weight:600;letter-spacing:-.03em;line-height:1.2;color:#fff}
+header p{margin:10px 0 0;font-size:15px;color:#cbd5e1;max-width:620px}
+main{background:#fff;padding:44px 56px 60px;box-shadow:0 18px 52px rgb(15 23 42 / .1)}
+h1,h2,h3,h4{color:var(--ink);letter-spacing:-.02em}
+main>h1{font-size:27px;margin:44px 0 14px}
+h2{font-size:22px;font-weight:600;margin:46px 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+h2:first-child{margin-top:0}
+h3{font-size:17px;font-weight:600;margin:32px 0 10px}
+h4{font-size:14.5px;font-weight:600;margin:22px 0 8px}
+p{margin:0 0 14px}
+ul,ol{margin:0 0 16px;padding-left:22px}
+li{margin:0 0 7px}
+strong{color:var(--ink);font-weight:600}
+code{font:500 13px ui-monospace,SFMono-Regular,Menlo,monospace;background:#f1f5f9;color:var(--ink);padding:2px 6px;border-radius:5px}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+table{width:100%;border-collapse:collapse;margin:0 0 20px;font-size:13.5px}
+th{text-align:left;font-weight:600;color:var(--ink);background:var(--wash);padding:9px 12px;border-bottom:1.5px solid var(--line);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--hair);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td code{font-size:12.5px;background:transparent;padding:0}
+a{color:#1a5aa8}
+@media print{body{background:#fff}main,header{box-shadow:none;padding-left:0;padding-right:0}h2{break-after:avoid}table,li,p{break-inside:avoid}}
+@media (max-width:820px){header,main{padding-left:24px;padding-right:24px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div class="eyebrow"><div class="mark">V</div><span>Vennusign · Design handoff</span></div>
+<h1>Back Office — Menus</h1>
+<p>Design reference and implementation spec. Read <code>decisions.md</code> alongside this; where the two disagree, the decisions win.</p>
+</header>
+<main>
+<h1>Handoff: Vennusign Back Office — Menus</h1>
+<h2>Overview</h2>
+<p>The <strong>Menu</strong> area of the Vennusign back office: where a venue gets its menu into the system, builds the board that appears on their TV screens, checks it, and publishes it. Covers the single-venue experience end to end, plus the group/multi-venue layer that sits on the same screens at a higher tier.</p>
+<p>This replaces an existing implementation whose core problems were: too many controls, no way to see what a change would look like, slow 86 (sold-out) updates, and three different save models on one screen. The design resolves those into a single rule set — see <code>decisions.md</code>, which is the authoritative document for this feature.</p>
+<p><strong>Read <code>decisions.md</code> first.</strong> Thirty-six numbered decisions, each settled with the product owner. They are written as rules, not descriptions, and the wireframes annotate themselves by decision number. Where this README and a decision disagree, the decision wins.</p>
+<hr>
+<h2>About the design files</h2>
+<p>The files in this bundle are <strong>design references created in HTML</strong> — prototypes showing intended look and behavior. They are <strong>not production code to copy</strong>.</p>
+<p>The task is to <strong>recreate these designs in the target codebase's existing environment</strong> using its established patterns, component library, and conventions. The real product is a React back office (<code>src/back-office/</code> in the Vennusign repo) that already consumes <code>sky-ui-tokens.css</code>; build there, against those tokens and whatever component primitives already exist.</p>
+<p>The HTML uses inline styles throughout. That is an artifact of the design tool, not a recommendation.</p>
+<hr>
+<h2>Fidelity</h2>
+<p><strong>Mixed — read this carefully, it changes what you should infer.</strong></p>
+<p><strong>High fidelity (3 screens).</strong> Final colors, type, spacing, radii, shadows. Recreate these closely.</p>
+<ul>
+<li><code>M1 Hi-Fi v2 - Menus home.dc.html</code> — Menus home, populated <strong>and</strong> empty states</li>
+<li><code>M2 Hi-Fi - Menu builder.dc.html</code> — the builder</li>
+<li><code>M2c Hi-Fi - Play.dc.html</code> — Play</li>
+</ul>
+<p><strong>Low fidelity (everything else).</strong> <code>Menus.dc.html</code> and <code>Multi-Venue Menus.dc.html</code> are wireframes: grey boxes, system fonts, hard black borders, handwritten blue annotations. <strong>Do not reproduce their styling.</strong> Take structure, content, states, and behavior from them; take all styling from the three hi-fi screens and the component sheet below.</p>
+<p>The wireframes also carry blue Caveat-font annotations and <code>M1</code>/<code>MV2</code> badges. Those are documentation, not UI. Never render them.</p>
+<hr>
+<h2>Design tokens</h2>
+<h3>The existing contract</h3>
+<p><code>sky-ui-tokens.css</code> is included in this bundle and is already in the repo at <code>src/back-office/src/sky-ui-tokens.css</code>. Use it. Two rules that were violated repeatedly during design review and are worth internalising:</p>
+<ul>
+<li><code>--sky-color-text-muted: #64748b</code> is the muted text color <strong>on light surfaces</strong>.</li>
+<li><code>--sky-color-text-on-dark-muted: #94a3b8</code> is <strong>only</strong> for text on the dark ink surfaces (the nav rail, the Play chrome). It fails WCAG AA on white — measured 2.56:1.</li>
+</ul>
+<p>Every accessibility defect found in review was this one substitution. Treat <code>#94a3b8</code> on anything light as a bug.</p>
+<p>Status colors always pair with a label or icon, never color alone.</p>
+<h3>Proposed additions — NOT YET APPROVED</h3>
+<p><code>proposed-token-additions.css</code> is in this bundle. <strong>It has not been approved by the token owner.</strong> The three hi-fi screens use values the current contract does not define, because a dense back office needs finer steps than the existing scale provides (it jumps 12 → 14 → 16 → 20 → 24).</p>
+<p>Do not merge that file without the owner's sign-off. Options, in order of preference:</p>
+<ol>
+<li>Owner approves the additions, they land in <code>sky-ui-tokens.css</code>, you consume them as variables.</li>
+<li>Owner rejects, you snap to the nearest existing step and accept a blunter page.</li>
+</ol>
+<p>Either way the tokens stay the single source of truth. Do not hardcode the raw values into components.</p>
+<hr>
+<h2>Component sheet</h2>
+<p>Extracted from the three hi-fi screens. These are the entire vocabulary of the Menu area — if you find yourself inventing a fourth button style, something is wrong.</p>
+<h3>Buttons</h3>
+<table><thead><tr><th>variant</th><th>fill</th><th>text</th><th>border</th><th>radius</th><th>padding</th><th>size/weight</th></tr></thead><tbody><tr><td>Primary (dark)</td><td><code>#0f172a</code></td><td><code>#f8fafc</code></td><td>none</td><td>12px</td><td>10–11px / 17–20px</td><td>13–13.5px / 600</td></tr><tr><td>Accent (sky)</td><td><code>#87ceeb</code></td><td><code>#0f172a</code></td><td>none</td><td>10px</td><td>8px / 15px</td><td>13px / 600</td></tr><tr><td>Secondary</td><td><code>#fff</code></td><td><code>#475569</code></td><td>1px <code>#e2e8f0</code></td><td>12px</td><td>10px / 16px</td><td>13px / 600</td></tr><tr><td>Inline link</td><td>none</td><td><code>#0f172a</code></td><td>none</td><td>—</td><td>—</td><td>12.5px / 500, underline, <code>text-underline-offset: 3px</code></td></tr></tbody></table>
+<p>Primary carries <code>box-shadow: 0 4px 12px rgb(15 23 42 / .2)</code> when it is the page's main action (the Publish button); no shadow otherwise.</p>
+<h3>Segmented control</h3>
+<p>Track <code>#f1f5f9</code>, 3px padding, 10px radius. Selected segment: <code>#fff</code>, 8px radius, <code>0 1px 2px rgb(15 23 42 / .1)</code>, 12px/600. Unselected: transparent, <code>#64748b</code>, 12px/500. Used for Quick update / Build and the icon-button pairs (Undo/Redo).</p>
+<h3>Pill toggle (View: One section / Whole board)</h3>
+<p>Selected: <code>#0f172a</code> fill, <code>#f8fafc</code> text, 999px radius, 5px/13px padding, 12px/600.</p>
+<p>Unselected: <code>#fff</code> fill, <code>#475569</code> text, 1px <code>#e2e8f0</code> border, 12px/500.</p>
+<h3>Availability switch (the 86 control)</h3>
+<p>42×24px, 999px radius, <code>#178a52</code> when on, <code>0 1px 2px rgb(23 138 82 / .4)</code>, 18px white knob inset 3px. Lives inside a panel: <code>#e0f4e9</code> background, <code>inset 0 0 0 1.5px #178a52</code>, 12px radius. Title 13px/700 <code>#18603f</code>; body 11.5px/1.45 <code>#267252</code>.</p>
+<p>This control is visually the loudest thing in the inspector on purpose — decision 3.</p>
+<h3>Text field</h3>
+<p>1px <code>#dbe3ec</code> border, 10px radius, <code>#fff</code>, 9px/11px padding, 13px/1.45. Label above: 10.5px/600, <code>letter-spacing .07em</code>, uppercase, <code>#64748b</code>, 6px gap.</p>
+<p>Inline warning below: 6px dot <code>#c9871a</code> + 11.5px/500 <code>#7d5911</code>.</p>
+<h3>Checkbox</h3>
+<p>18×18px, 1.5px <code>#cbd5e1</code> border, 5px radius. Label 13px <code>#334155</code>, 10px gap.</p>
+<h3>Menu card (Menus home)</h3>
+<p>Board render at <code>aspect-ratio: 16/9</code>, 14px radius, <code>box-shadow: 0 1px 2px rgb(15 23 42 / .09), 0 10px 24px rgb(15 23 42 / .10)</code>. <strong>No border and no card background</strong> — the board is the card.</p>
+<p>Below the board, 12px gap, then a row: name 15.5px/600 <code>letter-spacing -.018em</code> on the left with a status line under it; section/item counts 11.5px <code>#64748b</code> right-aligned.</p>
+<p>Status line: 6px dot + 12.5px/500 text.</p>
+<ul>
+<li>On screens, all good → dot <code>#178a52</code>, text <code>#18603f</code></li>
+<li>On screens, one offline → dot <code>#c9871a</code>, text <code>#7d5911</code></li>
+<li>Not on a screen → dot <code>#cbd5e1</code>, text <code>#64748b</code></li>
+</ul>
+<p><strong>⋯ button</strong>, absolutely positioned top-right 12px, 28×28px, 9px radius, <code>backdrop-filter: blur(6px)</code>:</p>
+<ul>
+<li>on a <strong>dark</strong> board → <code>rgba(248,250,252,.16)</code> fill, <code>rgba(248,250,252,.24)</code> border, <code>#f8fafc</code> glyph</li>
+<li>on a <strong>light</strong> board → <code>rgba(15,23,42,.42)</code> fill, <code>rgba(15,23,42,.12)</code> border, <code>#f8fafc</code> glyph</li>
+</ul>
+<p>Branch on board lightness. A light-glass chip on a cream board is invisible — this was a real defect twice.</p>
+<p><strong>Pending-changes bar.</strong> When a menu has unpublished changes, the board renders <strong>shorter</strong> (<code>aspect-ratio: 16/7.75</code>) and an amber strip occupies the reserved space at the bottom of the same rounded container: <code>#c9871a</code> fill, <code>#0f172a</code> text, 7px/14px padding, 11.5px/700, "3 changes not published" left, "Review →" right. The bar never overlays board content — decision from review.</p>
+<h3>Add-a-menu tile</h3>
+<p>Same grid cell, <code>aspect-ratio: 16/9</code>, 1.5px dashed <code>#cbd9e4</code>, 14px radius, <code>#fbfdfe</code>. Centered: 36px sky rounded square with <code>+</code>, then 13.5px/600 "Add a menu", then 11px/1.5 <code>#64748b</code> "Photo, paste, spreadsheet / or start blank". Always the last cell.</p>
+<h3>Nav rail</h3>
+<p>76px wide, <code>#0f172a</code>. Logo 34px sky rounded square. Items 56px wide, icon 15px over a 9px/500 label, 12px radius, 5px gap. Active: <code>#87ceeb</code> fill, <code>#0f172a</code> text, label 600. Inactive: <code>#94a3b8</code>. A <code>border-top: 1px solid #1e293b</code> divider near the bottom, then Settings, then a 32px avatar.</p>
+<h3>Publish bar</h3>
+<p><code>border-top: 1px solid #e9eef4</code>, <code>#fff</code>, 13px/22px padding. Left: 14px/700 <code>#7d5911</code> count + 11.5px <code>#64748b</code> meta line with underlined inline links. Center: per-screen chips. Right: "Review first" inline link + primary Publish button.</p>
+<p>Screen chip: 1px border, 10px radius, 8px/11px padding. Online → <code>#dbe7de</code> border, <code>#fff</code>, <code>#178a52</code> dot. Offline → <code>#c9871a</code> border, <code>#fdf1dc</code>, <code>#c9871a</code> dot, <code>#7d5911</code> sub-text. Name 12.5px/600, sub 11.5px.</p>
+<h3>Board rendering (the simulated TV)</h3>
+<p>This is menu content, not chrome. Typography is deliberately different from the UI.</p>
+<ul>
+<li>Family: <code>'Playfair Display', Georgia, serif</code></li>
+<li>Venue/board title: 15px/600, <code>letter-spacing .3em</code>, uppercase, <code>#1a2b4a</code>, 1px <code>#ccd6e2</code> bottom rule</li>
+<li>Section heading: 11.5px/700, <code>letter-spacing .22em</code>, uppercase, <code>#8a6a2a</code></li>
+<li>Item name: 15–19px/600, <code>letter-spacing .055em</code>, uppercase, <code>#1a2b4a</code></li>
+<li>Price: same size, 500 weight</li>
+<li>Description: italic 13.5px/1.45, <code>#475569</code></li>
+<li>Surface: <code>#faf8f2</code> (Coastal theme). Dark themes use <code>linear-gradient(#14202c, #0b1219)</code> with <code>#e2e8f0</code> items and <code>#87ceeb</code> section headings.</li>
+</ul>
+<p><strong>Product annotations overlaid on a board</strong> ("BERRY FIZZ IS 86'D — NOT RENDERED", "PAGE 3 OF 5", "1 OF 2") are <strong>not board content</strong>. 11.5px, <code>#64748b</code> or <code>#475569</code>, never the board's muted ink.</p>
+<hr>
+<h2>Screens</h2>
+<p>Eight screens in the single-venue set (<code>Menus.dc.html</code>), eight in the group set (<code>Multi-Venue Menus.dc.html</code>).</p>
+<h3>M1 — Menus home</h3>
+<p><strong>Hi-fi:</strong> <code>M1 Hi-Fi v2 - Menus home.dc.html</code> (both states).</p>
+<p><strong>Purpose:</strong> see every menu, know whether the screens are current, open one, or add one.</p>
+<p>Layout: 76px rail + content. Content is 30px/40px padded. Header block: venue name 11px/600 uppercase <code>#94a3b8</code> (not clickable — switching lives under the avatar), then the status headline at 29px/600 <code>letter-spacing -.028em</code> max-width 800px, then a 13px <code>#64748b</code> sub-line. Right: "Check the screens" secondary + "Add a menu" primary.</p>
+<p>Grid: <code>repeat(4, 1fr)</code>, 26px gap, <code>align-items: start</code>. Always 4-up. Menus in order, then the Add-a-menu tile as the last cell.</p>
+<p>Below, a "Not in use" strip: 11px/600 uppercase label, then pill chips (999px radius, <code>#f4f7fa</code>, 34×21px thumb + name + date).</p>
+<p><strong>The headline is decision 12 doing real work.</strong> It is a sentence naming what is current and what is not — never a green all-clear, never a status table. One screen → a sentence. Many screens → "18 current · 2 offline". It scales by summarising the normal and naming the exception.</p>
+<p><strong>Empty state (zero menus):</strong> the grid is replaced entirely. Centered, max-width 860px: "Let's get your menu in." at 34px/600, sub-line, then three route cards in a row (Photo highlighted with 2px <code>#87ceeb</code> and <code>#f2fbff</code>), then "or start from a blank board" as an underlined link. <strong>Onboarding is the empty state of this screen, not a wizard</strong> — decision 17. There is nothing to fall out of and nothing to re-enter.</p>
+<p><strong>POS variant:</strong> when the POS add-on is attached, a fourth route appears and leads. When it is not, there is no trace of it — decision 4.</p>
+<h3>M1a — Import</h3>
+<p><strong>Lo-fi.</strong> Four routes, one ending.</p>
+<ul>
+<li><strong>Photo:</strong> drop zone → reading state that names what it found as it finds it ("7 sections found", "41 items", progress on descriptions) → confirm. Camera is a peer of upload, not hidden behind it.</li>
+<li><strong>Paste:</strong> a textarea that parses live and reports "Looks like 2 sections and 6 items" before you commit. A caps line becomes a section; no syntax to learn.</li>
+<li><strong>Spreadsheet:</strong> we publish the headings we read — <strong>Item</strong> and <strong>Price</strong> required, Description / Section / Sold out / Size optional. Any order, any case, extra columns allowed. A template is offered, never required. Matched columns are shown as facts; unmatched columns are the only question. <strong>There is no mapping step</strong> — decision 31.</li>
+<li><strong>POS:</strong> pick categories, not items. States up front that the POS becomes the price source and that a hand-typed price wins until cleared.</li>
+</ul>
+<p><strong>All four converge on one confirm step</strong> (decision 30):</p>
+<ul>
+<li>Headline names the ratio: "We read 41 of 45 items. Four need you, plus a name check."</li>
+<li>One card per unclear item, each with a <strong>crop of the original beside it</strong> so the operator answers without hunting for the paper menu.</li>
+<li>Question shapes: fill a price, confirm a spelling, one-item-with-sizes vs two items, no-price (show "MP" / type one / leave it out).</li>
+<li><strong>Near-misses are one grouped question, never N questions</strong> — a list with a row per item, each pre-ticked as <em>the same item</em>, plus "Untick all". A reprint with 30 tweaked names must not produce 30 questions (decision 33).</li>
+<li>The 41 correct rows are not shown, not counted down, not paged through. "See all 45" exists and is not the default (decision 18).</li>
+<li>Actions: "Done — open in the builder" primary, "Skip these for now" inline. Skipping flags them on the canvas.</li>
+</ul>
+<p><strong>Importing into an existing menu replaces it</strong> — decision 32. Not a merge. The board keeps its layout and theme; anything 86'd stays 86'd.</p>
+<h3>M1b — The named actions</h3>
+<p><strong>Lo-fi.</strong> The card ⋯ menu and the dialogs behind it.</p>
+<p>Menu items, in order: <strong>Open</strong> · <strong>Quick update</strong> · — · <strong>Go back to…</strong> · <strong>Duplicate</strong> · — · <strong>Take off the screens</strong> (danger, <code>#8a2929</code>).</p>
+<p>Nobody ever sees the words <em>unpublish</em>, <em>supersede</em>, <em>restore</em> or <em>archive</em> — decisions 9, 10, 11. This is <strong>verbatim copy</strong>; do not paraphrase.</p>
+<p><strong>Take off the screens</strong> is never a bare action. The dialog states what replaces it, with a picture of the fallback, before you confirm: "It stays on your Menus home and keeps its history. You can put it back at any time." Then "What people will see instead" showing the venue fallback and which screens are affected.</p>
+<p><strong>The fallback</strong> is a generated logo-and-name card, one per venue, used for <strong>every</strong> empty moment — taken off the screens, a scheduled gap, anything (decisions 14, 36). Authoring a replacement is out of scope; the UI says so plainly rather than offering a dead link.</p>
+<h3>M2 — Menu builder</h3>
+<p><strong>Hi-fi:</strong> <code>M2 Hi-Fi - Menu builder.dc.html</code>.</p>
+<p>Four columns inside the rail: section rail 212px, canvas (flex), inspector 296px; publish bar across the bottom. <strong>Set <code>box-sizing: border-box</code></strong> — the fixed widths are outer widths.</p>
+<p>Top bar 58px: breadcrumb ("Menus / Summer Menu", "Menus" is the way back), Quick update / Build segmented control, Undo/Redo pair, "Viewing as <strong>Bar</strong> · 1920×1080 ▾", "▶ Play" accent button.</p>
+<p><strong>Section rail</strong> <code>#fbfcfe</code>: uppercase "Sections" heading with a <code>+</code>, then rows — drag handle <code>⠿</code> (<code>#64748b</code>, must be legible; it is the reorder affordance), name, item count. Selected row: <code>#e0f2fe</code> with <code>inset 0 0 0 1px #87ceeb</code>. It is a <strong>navigator, not a second editor</strong> — items live only on the canvas.</p>
+<p><strong>Canvas</strong> <code>#f4f7fa</code>: View toggle (One section / Whole board) then the board card at 14px radius on <code>#faf8f2</code> with a strong drop shadow. The board is the real render. Selected item gets <code>0 0 0 2px #2a78d6</code> plus a blue drag pill hanging off its left edge. An 86'd item renders at 42% opacity, name struck through, with "86'd 6:40pm — hidden on all screens right now" in <code>#8a2929</code>.</p>
+<p><strong>There is no Preview button</strong> — the canvas <em>is</em> the preview (decision from M2c). Adding one would imply the thing you are editing is not real.</p>
+<p><strong>Inspector</strong>: item name + ✕, then the availability panel, then Name / Description / Price, then two checkboxes (Feature on the board, Add a photo), then a footer line pointing at the theme. <strong>Six controls total.</strong> No Content/Style tabs, no Advanced, no per-item currency. The only warning shown is one that matters: "Two words over — wraps to 3 lines on Patio".</p>
+<p><strong>Publish bar</strong>: "3 changes not on your screens" (14px/700 <code>#7d5911</code>), "Draft saved 10:42am by Alex · go back to… · discard draft", the three screen chips, "Review first", "Publish 3 changes".</p>
+<h3>M2a — Adding items</h3>
+<p><strong>Lo-fi.</strong> One affordance for "new" and "existing" — you type, and it offers both library matches and "Create '&lt;typed&gt;' as a new item". Shows where an existing item already appears ("Also on Late Night"). A bulk path exists for adding many at once ("Place 2 in Non-Alcoholic").</p>
+<p>All three routes end in the same place: a draft change in the publish bar.</p>
+<p><strong>Note:</strong> M2a references an item library that is <strong>out of scope for this feature</strong> and is being designed separately. Build against whatever the library API turns out to be; do not invent a library UI here.</p>
+<h3>M2b — Board view</h3>
+<p><strong>Lo-fi.</strong> The zoom level between editing an item and watching the cycle: where each section actually sits on the board, how it paginates, per-screen differences, and per-screen overrides ("Override it for Patio →"). Pages are a <strong>consequence of content, not a setting</strong>.</p>
+<h3>M2c — Play</h3>
+<p><strong>Hi-fi:</strong> <code>M2c Hi-Fi - Play.dc.html</code>.</p>
+<p>Full-bleed dark (<code>#0b1220</code>). Top bar: "Playing · Summer Menu" with a live dot, an amber "Draft — includes your 3 unpublished changes" pill, screen picker chips (active = sky fill; offline = dimmed), ✕.</p>
+<p>Body: the board at real proportions on the left, a 268px sidebar on the right holding (a) any problem the run surfaced — "Wine splits across 2 pages / 12 items don't fit the right column. A guest sees six, waits 8 seconds, then sees six more." with "Fix it in Board view →", and (b) the <strong>Readable from</strong> panel: a large number (32px/600) in feet, then a plain comparison to the room, then the provenance line — "Measured from what this screen reported: 55″ at 1920×1080, last seen 2m ago."</p>
+<p>Transport bar: prev / pause / next, then a proportional timeline of pages where each block's width is its dwell time, the current page in sky, and a <strong>dashed sky block for a page that only exists because something overflowed</strong>. Right: "8s each · 40s a full cycle".</p>
+<p><strong>Play is read-only by design.</strong> The moment you can edit inside it, it becomes a second editor with a different layout.</p>
+<p><strong>Play uses real screen geometry reported by devices — never a generic aspect ratio</strong> (decision 13). An unpaired screen cannot be previewed against at all. The picker is "show me this board as Bar / Patio / Lobby", not "pick an aspect ratio"; an operator should never need to know their own screen's resolution.</p>
+<h3>M3 — Quick Update</h3>
+<p><strong>Lo-fi.</strong> The other half of Menus, and deliberately <strong>not</strong> a view of the builder (decision 15).</p>
+<p>No canvas, no sections, no inspector. A search field, filter chips (Everything / Off right now · 2), and a flat list of items grouped by section, each with exactly one control: an availability toggle. Toggling shows a toast — "Berry Fizz is off on all 3 screens." + Undo.</p>
+<p><strong>A toggle here is live</strong> — it never joins the draft queue, never waits for a publish (decision 3). This is the 11pm-on-a-Friday path and must be reachable in one tap from the card ⋯ menu.</p>
+<hr>
+<h2>Multi-venue (tier-gated)</h2>
+<p><code>Multi-Venue Menus.dc.html</code>, screens MV1–MV4b. <strong>All lo-fi.</strong></p>
+<p>This is <strong>not a second design</strong>. It is the same screens with one extra dimension. A single-venue account gets the identical components with the venue parts absent — not disabled, absent (decisions 21, 29). Below the tier there is no Venues nav, no trust levels, no venue chip, and no upgrade UI beyond a single "Talk to us" prompt at the moment someone tries to add a second venue. It is not self-serve.</p>
+<ul>
+<li><strong>MV1</strong> — the same shelf, with venue status folded onto each card. Filter row gains "Waiting on a venue", "Has local changes", "Local menus", "What venues can change".</li>
+<li><strong>MV1a</strong> — Add a menu, same dialog plus one question: <strong>Who owns it</strong> (a group menu vs one venue's own). Marked "Group tier only". Everything else identical.</li>
+<li><strong>MV2</strong> — one group menu's rollout across venues: who's running it, who's behind and by how long, who has local changes, and who isn't running it at all (with "Add them").</li>
+<li><strong>MV2a</strong> — Send an update: pick venues, see conflicts <em>before</em> they happen ("your Old Fashioned price would replace theirs"), and note which venues will run it for the first time. <strong>This screen both updates and assigns</strong> — sending is how a menu reaches a venue.</li>
+<li><strong>MV3</strong> — the venue's side: a pending menu on day 3, with locked fields shown greyed <strong>with the reason</strong>, never removed. An operator who can't see the price can't tell a guest why the board is wrong.</li>
+<li><strong>MV4 / MV4a / MV4b</strong> — trust levels as a comparison table, creating a level, moving a venue between levels.</li>
+</ul>
+<p><strong>Key rules:</strong> corporate pushes and venues accept on their own schedule; nothing auto-applies; not accepting escalates badge → banner → daily email; an override is a fact on the row, never a fork; <strong>86 is always venue-level</strong> with no prompt and no scope question; trust levels are named, capped at 8, and always defined as a difference from an existing level. Decisions 20–29.</p>
+<hr>
+<h2>Interactions &amp; behavior</h2>
+<h3>Save model — this is the spine of the feature</h3>
+<p><strong>One save model per surface.</strong> The old build mixed onBlur autosave, per-row Save buttons and dialogs on a single screen.</p>
+<ul>
+<li><strong>Availability (86) commits instantly</strong>, always, everywhere. It never queues, never waits for a publish, and survives a publish. Toast with Undo.</li>
+<li><strong>Everything else is a draft</strong>, queued <strong>per menu</strong>, and ships together on an explicit Publish. Price, copy, structure, layout — all of it.</li>
+<li>Nothing reaches a screen without a deliberate act.</li>
+</ul>
+<h3>Undo</h3>
+<p><code>⌘Z</code> / <code>Ctrl+Z</code>. Session-scoped, quietly capped. <strong>Never named in a settings page or plan comparison</strong> — it is a keystroke, not a feature (decision 7). History is a separate, durable, attributable capability; the tiered part is retention depth.</p>
+<h3>Drag to reorder</h3>
+<p>Everywhere. Sections, items, taps, categories, meal periods, playlist slides. Every ↑/↓ button pair in the existing codebase becomes a drag handle.</p>
+<h3>Navigation</h3>
+<ul>
+<li>Card body → builder (M2), opening where you left off. The board <strong>is</strong> the door; there is no Open button on the card.</li>
+<li>Card ⋯ → the actions menu (M1b).</li>
+<li>Breadcrumb "Menus" → M1, from M2, M2b and M3.</li>
+<li>"▶ Play" → M2c. ✕ returns to the builder.</li>
+<li>"Fix it in Board view →" (M2c) → M2b.</li>
+<li>Quick update / Build segmented control switches between M3 and M2 for the <strong>open menu</strong>. It does <strong>not</strong> appear on the shelf — there is no menu selected yet, so it has nothing to switch.</li>
+</ul>
+<h3>Loading and blocked states</h3>
+<p>Real states must say exactly what they are (decision 5): permission, disconnection, limits, offline targets. An offline screen says "offline — updates when it reconnects", not "error".</p>
+<p>Capability outside your plan is <strong>absent</strong> — no ghost fields, no disabled controls, no explanatory tooltips (decision 4).</p>
+<h3>Responsive</h3>
+<p>The hi-fis are 1440px desktop. Mobile has not been designed and is explicitly out of scope. Quick Update (M3) is the screen most likely to be used on a phone and should be treated as the first mobile candidate — flag it, don't guess it.</p>
+<hr>
+<h2>Data model</h2>
+<p>Not previously written down; implied by the rules. Confirm with the owner before building.</p>
+<p><strong>Venue</strong> — id, name, logo, fallback card (generated), trust level (group accounts only), default user (<strong>required</strong>; the address escalations go to — decision 27).</p>
+<p><strong>Screen</strong> — id, venue, name ("Bar"), reported geometry (width, height, physical size), last-seen timestamp, online/offline, optional overscan correction. <strong>Geometry is device-reported, never user-entered.</strong></p>
+<p><strong>Menu</strong> — id, name, owner (venue | group), theme, sections[], published version, draft queue, history. A group menu is <strong>one object</strong>; each venue holds a <em>state</em> on it, never a copy (decision 20).</p>
+<p><strong>VenueMenuState</strong> (group only) — venue, menu, status (running | pending | behind | not-running), accepted version, days behind, local overrides[].</p>
+<p><strong>Section</strong> — id, name, order, items[].</p>
+<p><strong>Item</strong> — id, name, description, price(s), sizes[], featured, photo, source (manual | pos), library ref.</p>
+<p><strong>Placement</strong> — item on a section of a board, with order. Items live in a library and get <em>placed</em>; the same item can appear on several boards.</p>
+<p><strong>Availability (86)</strong> — item × venue, boolean, timestamp, who. <strong>Never part of a draft.</strong> Scoped to the venue always (decision 25).</p>
+<p><strong>DraftChange</strong> — menu, field, before, after, author, timestamp. Grouped per menu; published as a set.</p>
+<p><strong>PublishEvent</strong> — menu, version, author, timestamp, target screens or venues, per-target delivery state.</p>
+<hr>
+<h2>Acceptance criteria</h2>
+<p>Checkable restatements of the rules. These are the things most likely to be got wrong.</p>
+<ol>
+<li>Toggling availability updates every screen showing that item within seconds, <strong>without</strong> a publish, and does not add anything to the draft queue.</li>
+<li>Publishing a menu ships <strong>all</strong> queued changes for that menu and no changes belonging to another menu.</li>
+<li>An item 86'd before a publish is still 86'd after it.</li>
+<li>No screen content changes without a deliberate publish or accept.</li>
+<li>The strings "unpublish", "supersede", "restore" and "archive" appear nowhere in the UI.</li>
+<li>"Take off the screens" always shows what will replace the menu before confirming.</li>
+<li>Undo is bound to the keystroke and appears in no settings page, plan comparison or marketing surface.</li>
+<li>A capability outside the account's plan renders <strong>nothing</strong> — no disabled control, no tooltip, no placeholder.</li>
+<li>Play renders against a screen's device-reported geometry; an unpaired screen cannot be selected in Play.</li>
+<li>Import surfaces only rows the parser was unsure about; correctly-read rows are not shown by default.</li>
+<li>A spreadsheet with the published headings in any order, any case, plus unknown extra columns, imports successfully and asks only about the extra columns.</li>
+<li>Importing into an existing menu replaces its content, preserves its layout and theme, and preserves active 86s.</li>
+<li>Thirty near-miss name matches produce <strong>one</strong> grouped question, pre-ticked as <em>same item</em>.</li>
+<li>(Group) A venue below Trusted cannot change a price on a group menu, and the locked field is <strong>visible with its reason</strong>, not hidden.</li>
+<li>(Group) An 86 at one venue never affects another venue, and never prompts.</li>
+<li>(Group) A pending group menu never applies on its own, at any age.</li>
+<li>(Group) Demoting a venue's trust level does not revert anything currently on a screen.</li>
+<li>(Group) A single-venue account renders the same components with zero venue affordances.</li>
+</ol>
+<hr>
+<h2>Verbatim copy</h2>
+<p>Wording <strong>is</strong> the design in several places. Do not paraphrase, shorten, or "improve" these.</p>
+<ul>
+<li>Card menu: <strong>Open</strong> / <strong>Quick update</strong> / <strong>Go back to…</strong> / <strong>Duplicate</strong> / <strong>Take off the screens</strong></li>
+<li>"It stays on your Menus home and keeps its history. You can put it back at any time."</li>
+<li>"Turning this off hides it on all 3 screens immediately — not part of your draft."</li>
+<li>"86'd 6:40pm — hidden on all screens right now"</li>
+<li>"3 changes not on your screens"</li>
+<li>"offline — updates when it reconnects"</li>
+<li>"Draft — includes your 3 unpublished changes"</li>
+<li>"Measured from what this screen reported: 55″ at 1920×1080, last seen 2m ago."</li>
+<li>"Let's get your menu in." / "Pick whatever's easiest. You can fix anything later."</li>
+<li>(Group) "Behind 9 days", "running · 2 local changes", "set by head office"</li>
+</ul>
+<p>Numbers in these strings are illustrative and should come from data. The sentence shapes should not change.</p>
+<hr>
+<h2>Out of scope</h2>
+<p>Do not build, and do not invent UI for:</p>
+<ul>
+<li><strong>The item library</strong> — its own feature, designed separately. M2a references it.</li>
+<li><strong>Replacing the fallback card</strong> — the generated logo-and-name card is the whole of it for now.</li>
+<li><strong>Price requests</strong> — MV3's "Ask for a price change" implies a corporate inbox that does not exist. Parked.</li>
+<li><strong>Users, permissions and roles across a group</strong> — area managers, who can send an update, who can move a trust level. Parked; MV1's Group → People is a placeholder.</li>
+<li><strong>Source-controlled POS pricing</strong> — freshness, last-known-good, override semantics. Deferred (decision 16).</li>
+<li><strong>Mobile layouts.</strong></li>
+<li><strong>Other nav areas</strong> — Screens, Schedules, Themes, Tap list, Billing. Menus references them; they are not designed.</li>
+<li><strong>Time and scheduling.</strong> A menu has no hours of its own; Schedules points at menus (decision 35). Menus owns only what shows when nothing is pointed at a screen.</li>
+</ul>
+<hr>
+<h2>Assets</h2>
+<p>No image assets. Everything in the designs is CSS.</p>
+<ul>
+<li><strong>Fonts:</strong> Inter (UI, per the token contract) and Playfair Display (board rendering only, loaded from Google Fonts in the hi-fi files). Confirm Playfair against the brand — it was chosen to make the simulated boards read as restaurant menus rather than as UI, and it appears nowhere in the chrome.</li>
+<li><strong>Icons:</strong> the hi-fis use Unicode glyphs (⌂ ☰ ◷ ⛁ ▢ ◐ ⇄ ⚙ ⋯ ⠿ ✕ ▶ ❚❚ ◀). <strong>Replace all of them</strong> with the codebase's icon set. They are placeholders.</li>
+<li><strong>Board thumbnails</strong> are live DOM renders of menu content, not images. In production they should render from real menu data at 16:9 — that is the point of them.</li>
+</ul>
+<hr>
+<h2>Files</h2>
+<p><strong>Read first</strong></p>
+<ul>
+<li><code>decisions.md</code> — 36 numbered decisions plus the parked list. Authoritative.</li>
+</ul>
+<p><strong>Hi-fi (recreate closely)</strong></p>
+<ul>
+<li><code>M1 Hi-Fi v2 - Menus home.dc.html</code> — M1 populated + empty</li>
+<li><code>M2 Hi-Fi - Menu builder.dc.html</code> — M2</li>
+<li><code>M2c Hi-Fi - Play.dc.html</code> — M2c</li>
+</ul>
+<p><strong>Lo-fi wireframes (structure, states and behavior — never styling)</strong></p>
+<ul>
+<li><code>Menus.dc.html</code> — M1, M1a, M1b, M2, M2a, M2b, M2c, M3, annotated</li>
+<li><code>Multi-Venue Menus.dc.html</code> — MV1–MV4b, annotated</li>
+<li><code>Menus at Scale.dc.html</code> — the same surfaces at 20 screens and 13 menus. Not a separate design; it is the scaling check. Every screen must summarise the normal and name the exception rather than growing a longer list.</li>
+<li><code>Menus Home - Compare.dc.html</code> — the two candidate M1 layouts side by side, with the trade-offs written out. The shelf won. Included because the reasoning constrains what M1 may become later.</li>
+</ul>
+<p><strong>Superseded, included for context only</strong></p>
+<ul>
+<li><code>M1 Hi-Fi v1 - Menus home.dc.html</code> — the first hi-fi pass: tinted gradient page, bordered cards, 4-up small thumbnails. <strong>Rejected.</strong> Kept so the direction is not accidentally rebuilt. Build <code>M1 Hi-Fi v2</code>.</li>
+</ul>
+<p><strong>Tokens</strong></p>
+<ul>
+<li><code>sky-ui-tokens.css</code> — the existing contract, already in the repo</li>
+<li><code>proposed-token-additions.css</code> — <strong>not approved</strong>; see Design tokens above</li>
+</ul>
+<p><strong>Screenshots</strong></p>
+<ul>
+<li><code>screenshots/M1-menus-home.png</code> — M1 hi-fi, populated + empty</li>
+<li><code>screenshots/M2-menu-builder.png</code> — M2 hi-fi</li>
+<li><code>screenshots/M2c-play.png</code> — M2c hi-fi</li>
+<li><code>screenshots/wireframes-menus.png</code> — the full single-venue wireframe sheet</li>
+<li><code>screenshots/wireframes-multi-venue.png</code> — the full group wireframe sheet</li>
+</ul>
+<p>Screenshots are for orientation. The <code>.dc.html</code> files are the reference — open those for real measurements.</p>
+<p><strong>Also included</strong></p>
+<ul>
+<li><code>README.html</code> — this document, formatted for reading and printing</li>
+<li><code>github.md</code> — the source repo this project tracks</li>
+</ul>
+<p><strong>Runtime dependencies — do not delete</strong></p>
+<ul>
+<li><code>support.js</code> — the wireframe files will not render without it</li>
+<li><code>BackOfficeNav.dc.html</code> — the shared nav the wireframes pull in. Not a deliverable in itself; the nav's production spec is the rail described under Components.</li>
+</ul>
+<p>Open any <code>.dc.html</code> in a browser to view it.</p>
+</main>
+</div>
+</body>
+</html>

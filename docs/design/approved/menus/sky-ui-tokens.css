@@ -1,0 +1,123 @@
+/*
+ * Sky UI shared design-token contract.
+ * Copied from Jmiedreich-UX/Vennusign :: src/back-office/src/sky-ui-tokens.css
+ */
+:root {
+  color-scheme: light;
+
+  /* Locked owner palette. Sky is a fill/focus accent, never text on light. */
+  --sky-color-primary: #87ceeb;
+  --sky-color-surface: #f8fafc;
+  --sky-color-surface-raised: #ffffff;
+  --sky-color-ink: #0f172a;
+  --sky-color-secondary: #e0f2fe;
+  --sky-color-border: #e2e8f0;
+  --sky-color-background-base: #f4f9fd;
+  --sky-color-text-secondary: #475569;
+  --sky-color-text-muted: #64748b;
+  --sky-color-text-on-dark-muted: #94a3b8;
+
+  /* Reserved status colors. Always pair these with a label or icon. */
+  --sky-color-live: #178a52;
+  --sky-color-live-surface: #e0f4e9;
+  --sky-color-off: #b03a33;
+  --sky-color-off-surface: #fbe7e5;
+  --sky-color-warning: #c9871a;
+  --sky-color-warning-surface: #fdf1dc;
+  --sky-color-emergency: #c22e26;
+  --sky-color-promotion: #7c5cbf;
+  --sky-label-accent: #267252;
+  --sky-positive-text: #18603f;
+  --sky-danger-text: #8a2929;
+  --sky-warning-text: #7d5911;
+  --sky-danger-solid: #991b1b;
+  --sky-warning-solid: #854d0e;
+
+  /* Semantic color aliases used by components. */
+  --sky-page-background: var(--sky-color-surface);
+  --sky-card-background: var(--sky-color-surface-raised);
+  --sky-text-primary: var(--sky-color-ink);
+  --sky-text-secondary: var(--sky-color-text-secondary);
+  --sky-text-muted: var(--sky-color-text-muted);
+  --sky-small-text: var(--sky-color-text-muted);
+  --sky-action-primary-background: var(--sky-color-primary);
+  --sky-action-primary-text: var(--sky-color-ink);
+  --sky-action-dark-background: var(--sky-color-ink);
+  --sky-action-dark-text: var(--sky-color-surface);
+  --sky-control-hover-background: var(--sky-color-secondary);
+  --sky-control-border: var(--sky-color-border);
+  --sky-sidebar-background: var(--sky-color-ink);
+  --sky-sidebar-text: var(--sky-color-surface);
+  --sky-badge-background: var(--sky-color-secondary);
+  --sky-badge-text: var(--sky-color-ink);
+  --sky-panel-shadow: 0 18px 52px rgb(15 23 42 / 0.12);
+  --sky-focus-color: var(--sky-color-primary);
+  --sky-focus-width: 3px;
+  --sky-focus-offset: 2px;
+  --sky-focus-ring: var(--sky-focus-width) solid var(--sky-focus-color);
+
+  /* Typography. */
+  --sky-font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --sky-font-size-xs: 0.75rem;
+  --sky-font-size-sm: 0.875rem;
+  --sky-font-size-md: 1rem;
+  --sky-font-size-lg: 1.25rem;
+  --sky-font-size-xl: 1.5rem;
+  --sky-font-weight-regular: 400;
+  --sky-font-weight-medium: 500;
+  --sky-font-weight-semibold: 600;
+  --sky-font-weight-bold: 700;
+  --sky-line-height-tight: 1.25;
+  --sky-line-height-body: 1.55;
+
+  /* Spacing and shape. */
+  --sky-space-1: 0.25rem;
+  --sky-space-2: 0.5rem;
+  --sky-space-3: 0.75rem;
+  --sky-space-4: 1rem;
+  --sky-space-5: 1.5rem;
+  --sky-space-6: 2rem;
+  --sky-space-7: 3rem;
+  --sky-radius-sm: 0.5rem;
+  --sky-radius-md: 0.75rem;
+  --sky-radius-lg: 1rem;
+  --sky-radius-xl: 1.5rem;
+  --sky-radius-pill: 999px;
+
+  --sky-button-radius: var(--sky-radius-md);
+  --sky-input-radius: var(--sky-radius-md);
+  --sky-card-radius: var(--sky-radius-lg);
+  --sky-badge-radius: var(--sky-radius-sm);
+  --sky-card-border: 1px solid var(--sky-color-border);
+  --sky-page-gradient: radial-gradient(circle at top right, var(--sky-color-secondary), var(--sky-color-background-base) 54%);
+}
+
+:root[data-sky-theme="midnight"] {
+  color-scheme: dark;
+  --sky-color-surface: #111827;
+  --sky-color-surface-raised: #1e293b;
+  --sky-color-ink: #f8fafc;
+  --sky-color-secondary: #17344a;
+  --sky-color-border: #475569;
+  --sky-color-background-base: #0b1120;
+  --sky-color-text-secondary: #cbd5e1;
+  --sky-color-text-muted: #94a3b8;
+  --sky-color-live: #65d99c;
+  --sky-color-live-surface: #123d2d;
+  --sky-color-off: #ff8a83;
+  --sky-color-off-surface: #4a2024;
+  --sky-color-warning: #f4c15d;
+  --sky-color-warning-surface: #493518;
+  --sky-label-accent: #87ceeb;
+  --sky-positive-text: #65d99c;
+  --sky-danger-text: #ff8a83;
+  --sky-warning-text: #f4c15d;
+  --sky-action-primary-text: #0f172a;
+  --sky-action-dark-background: #e2e8f0;
+  --sky-action-dark-text: #0f172a;
+  --sky-sidebar-background: #0b1120;
+  --sky-sidebar-text: #f8fafc;
+  --sky-badge-text: #f8fafc;
+  --sky-panel-shadow: 0 18px 52px rgb(0 0 0 / 0.34);
+  --sky-page-gradient: radial-gradient(circle at top right, #17344a, #0b1120 54%);
+}

@@ -1,0 +1,44 @@
+/*
+ * PROPOSED additions to sky-ui-tokens.css — NOT APPROVED.
+ *
+ * The Menus hi-fi screens (M1, M2, M2c) needed type steps and neutral tints the
+ * locked contract does not define. Nothing existing is changed; these are additions.
+ *
+ * Rationale for the type steps: the current scale runs 12 / 14 / 16 / 20 / 24, which
+ * is too coarse for a dense back office. Metadata, field labels and nav labels all
+ * landed between steps, and the page headline wanted a size above 24.
+ *
+ * Rationale for the neutrals: the palette covers surfaces, borders and status, but
+ * not the page shell behind a frame, subtle fills, or a hairline lighter than
+ * --sky-color-border.
+ *
+ * Do not merge without the token owner's sign-off.
+ */
+:root {
+  /* Type — filling the 9-16px range and adding display sizes above 24. */
+  --sky-font-size-2xs: 0.5625rem;  /*  9px — nav rail labels only */
+  --sky-font-size-xxs: 0.6875rem;  /* 11px — dense metadata, board annotations */
+  --sky-font-size-xs-plus: 0.71875rem; /* 11.5px */
+  --sky-font-size-sm-minus: 0.78125rem; /* 12.5px — status lines, chips */
+  --sky-font-size-sm-plus: 0.84375rem;  /* 13.5px — button text */
+  --sky-font-size-md-plus: 0.96875rem;  /* 15.5px — card titles */
+  --sky-font-size-2xl: 1.8125rem;  /* 29px — page headline */
+  --sky-font-size-3xl: 2.125rem;   /* 34px — empty-state headline */
+
+  /* Letter-spacing — optical correction at display sizes. */
+  --sky-tracking-tight: -0.018em;
+  --sky-tracking-tighter: -0.028em;
+
+  /* Neutrals not covered by the palette. */
+  --sky-color-shell: #e8eef4;        /* page behind an app frame */
+  --sky-color-hairline: #eef2f6;     /* lighter than --sky-color-border */
+  --sky-color-fill-subtle: #f4f7fa;  /* canvas, chip fills */
+  --sky-color-surface-tint: #fbfcfe; /* section rail, low-emphasis panels */
+  --sky-color-border-dashed: #cbd9e4;/* dashed affordances (add-a-menu tile) */
+  --sky-color-accent-wash: #f2fbff;  /* selected route card */
+
+  /* Elevation — the contract defines one panel shadow; cards need less. */
+  --sky-shadow-card: 0 1px 2px rgb(15 23 42 / 0.09), 0 10px 24px rgb(15 23 42 / 0.10);
+  --sky-shadow-button: 0 4px 12px rgb(15 23 42 / 0.2);
+  --sky-shadow-hairline: 0 1px 2px rgb(15 23 42 / 0.04);
+}

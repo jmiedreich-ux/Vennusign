@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&display=swap" rel="stylesheet"><style>body{margin:0;background:#f0eee9;font-family:system-ui,sans-serif}a{color:#2a78d6}a:hover{color:#1a5aa8}.wf{scroll-margin-top:12px;margin:0 0 34px;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}.wfl{display:flex;align-items:baseline;gap:9px;margin:0 0 8px}.wfid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0f172a;color:#fff;border-radius:5px;text-decoration:none}.wfn{font:600 12.5px system-ui;color:#1a1a1a}.wfs{font:400 11.5px system-ui;color:#777}.card{width:1180px;min-width:1180px;max-width:none;flex:none;background:#fff;border:1.5px solid #2b2b2b;border-radius:9px;overflow:hidden;display:flex}.card>*{flex-shrink:0}.card>*:last-child{flex-shrink:1}.note{font:400 15px/1.4 Caveat,cursive;color:#2a78d6;margin:9px 0 0;max-width:1180px}@media (max-width:900px){.wrap{padding:16px 12px}}</style></helmet>
+
+<section class="wrap" style="padding:38px 42px 40px">
+
+<div style="max-width:900px;margin:0 0 26px">
+<h1 style="font:700 21px/1.3 system-ui;margin:0 0 10px;color:#111">Multi-venue menus</h1>
+<p style="font:400 12.5px/1.65 system-ui;color:#444;margin:0 0 12px">Twelve bars under one brand, corporate authoring the core menus, operators running the floor. The single-venue wireframes don't break here — they get one extra dimension. The rule that governs it: <b>a menu is one object, and each venue's relationship to it is a state on that object</b>, not a copy of it. That's why the default view is the same shelf of menus a single venue sees, with the group answer on each card — not a grid of venues each holding their own menus.</p>
+<div style="border:2px solid #0f172a;border-radius:9px;background:#fff;padding:13px 15px">
+<div style="font:700 12px system-ui;margin-bottom:7px">How the screens connect</div>
+<div style="display:flex;flex-direction:column;gap:5px;font:400 11px/1.5 system-ui;color:#444">
+<div><b>Corporate</b> · <a href="#mv1">MV1</a> Menus, all venues → <i>Add a menu</i> → <a href="#mv1a">MV1a</a> create it as a draft · <i>Open</i> a menu → <a href="#mv2">MV2</a> its rollout → <i>Send an update</i> or <i>Add venues</i> → <a href="#mv2a">MV2a</a> pick venues — the same screen assigns a menu to a venue and updates the ones already on it → back to <a href="#mv1">MV1</a> with the row updated</div>
+<div><b>Permissions</b> · <a href="#mv1">MV1</a> Venues in the nav, or <i>What the levels mean</i> from <a href="#mv3">MV3</a> → <a href="#mv4">MV4</a> the levels → <i>Create a level</i> → <a href="#mv4a">MV4a</a> · <i>Move a venue</i> from <a href="#mv4">MV4</a> or a venue card in <a href="#mv2">MV2</a> → <a href="#mv4b">MV4b</a></div>
+<div><b>The venue</b> · <a href="#mv3">MV3</a> is the other end of <a href="#mv2a">MV2a</a> — what Marcus sees, and the only place an update becomes real</div>
+</div>
+</div>
+</div>
+
+<div class="wf" id="mv1"><div class="wfl"><a class="wfid" href="#mv1">MV1</a><span class="wfn">Menus · all 12 venues</span><span class="wfs">the default landing — the single-venue shelf with venue status folded onto each card</span></div>
+<div class="card">
+<dc-import name="BackOfficeNav" group="{{ true }}" active="Menu" org-name="Coast &amp; Co" org-sub="12 venues" user-name="Dana Reyes" user-sub="Group menu lead" hint-size="198px,100%"></dc-import>
+
+<div style="flex:1;min-width:0;background:#f8fafc;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1.5px solid #2b2b2b;background:#fff"><div style="font:700 13px system-ui">Menu</div><div style="flex:1"></div><div style="padding:5px 11px;border:1.5px solid #2b2b2b;border-radius:99px;font:600 10.5px system-ui;background:#fff">All 12 venues ▾</div></div>
+
+<div style="padding:17px 20px 20px">
+<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:15px"><div style="width:10px;height:10px;border-radius:50%;background:#c9871a;margin-top:6px;flex:none"></div><div style="flex:1"><div style="font:600 17px/1.35 system-ui;color:#0f172a">10 venues are running everything you've sent. Southbank and Pier 9 are behind.</div><div style="font:400 11.5px system-ui;color:#64748b;margin-top:2px">Pier 9 hasn't accepted Autumn Core in 9 days — the operator and their manager are getting a daily email</div></div><div style="padding:7px 13px;border:1.5px solid #2b2b2b;border-radius:6px;font:600 11px system-ui;background:#fff;flex:none">Chase these 2</div></div>
+
+<div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">
+<div style="flex:1;display:flex;align-items:center;gap:8px;padding:8px 12px;border:1.5px solid #2b2b2b;border-radius:6px;background:#fff"><span style="color:#94a3b8;font-size:11px">⌕</span><span style="font:400 11.5px system-ui;color:#94a3b8">Search menus and venues</span></div>
+<div style="padding:6px 11px;border:1.5px solid #2b2b2b;border-radius:99px;font:600 10px system-ui;background:#87ceeb">All menus · 9</div>
+<div style="padding:6px 11px;border:1.5px solid #cbd5e1;border-radius:99px;font:500 10px system-ui;color:#7d5911">Waiting on a venue · 2</div>
+<div style="padding:6px 11px;border:1.5px solid #cbd5e1;border-radius:99px;font:500 10px system-ui;color:#64748b">Has local changes · 3</div>
+<div style="padding:6px 11px;border:1.5px solid #cbd5e1;border-radius:99px;font:500 10px system-ui;color:#64748b">Local menus · 4</div>
+<div style="flex:none;width:1px;height:20px;background:#cbd5e1;margin:0 2px"></div>
+<div style="padding:6px 11px;border:1.5px solid #2b2b2b;border-radius:6px;font:600 10px system-ui;background:#fff">What venues can change</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+
+<div style="border:1.5px solid #c9871a;border-radius:8px;overflow:hidden;background:#fffdf6;display:flex;flex-direction:column">
+<div style="height:104px;background:#12181f;padding:11px 13px;border-bottom:1.5px solid #2b2b2b">
+<div style="font:700 8px Georgia,serif;color:#fff;letter-spacing:.14em;border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:5px;margin-bottom:7px">AUTUMN CORE</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px"><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.25)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.25)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div></div>
+</div>
+<div style="padding:9px 11px;display:flex;flex-direction:column;flex:1">
+<div style="display:flex;align-items:center;gap:7px"><div style="flex:1;font:700 12px system-ui">Autumn Core</div><span style="font:600 8px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#0f172a;background:#e2e8f0;padding:2px 5px;border-radius:3px">Group</span><div style="width:19px;height:19px;border:1.5px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b;flex:none">⋯</div></div>
+<div style="font:400 9.5px system-ui;color:#64748b;margin-top:2px">48 items · published 28 Jul by Dana</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:5px;margin-top:7px;padding-top:7px;border-top:1px dashed #cbd5e1"><span style="width:6px;height:6px;border-radius:50%;background:#c9871a;flex:none"></span><span style="font:600 9.5px system-ui;color:#7d5911">9 of 12 venues running</span></div>
+<div style="margin-top:7px;padding:7px 8px;border:1px solid #e3c58a;border-radius:5px;background:#fdf1dc"><div style="display:flex;justify-content:space-between;gap:6px;font:500 9.5px system-ui;color:#7d5911"><span>Southbank</span><span><b>3 days</b></span></div><div style="display:flex;justify-content:space-between;gap:6px;font:500 9.5px system-ui;color:#7d5911;margin-top:2px"><span>Pier 9</span><span><b>9 days</b></span></div></div>
+</div>
+</div>
+
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;overflow:hidden;background:#fff;display:flex;flex-direction:column">
+<div style="height:104px;background:#0f172a;padding:11px 13px;border-bottom:1.5px solid #2b2b2b">
+<div style="font:700 8px Georgia,serif;color:#fff;letter-spacing:.14em;border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:5px;margin-bottom:7px">COCKTAILS</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px"><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.25)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.25)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div></div>
+</div>
+<div style="padding:9px 11px;display:flex;flex-direction:column;flex:1">
+<div style="display:flex;align-items:center;gap:7px"><div style="flex:1;font:700 12px system-ui">Cocktails</div><span style="font:600 8px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#0f172a;background:#e2e8f0;padding:2px 5px;border-radius:3px">Group</span><div style="width:19px;height:19px;border:1.5px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b;flex:none">⋯</div></div>
+<div style="font:400 9.5px system-ui;color:#64748b;margin-top:2px">22 items · published 14 Jul by Dana</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:5px;margin-top:7px;padding-top:7px;border-top:1px dashed #cbd5e1"><span style="width:6px;height:6px;border-radius:50%;background:#178a52;flex:none"></span><span style="font:600 9.5px system-ui;color:#18603f">12 of 12 venues running</span></div>
+<div style="font:400 9px system-ui;color:#64748b;margin-top:5px">3 venues have local changes</div>
+</div>
+</div>
+
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;overflow:hidden;background:#fff;display:flex;flex-direction:column">
+<div style="height:104px;background:#12181f;padding:11px 13px;border-bottom:1.5px solid #2b2b2b">
+<div style="font:700 8px Georgia,serif;color:#fff;letter-spacing:.14em;border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:5px;margin-bottom:7px">DRAFT LIST</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px"><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.25)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.25)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div></div>
+</div>
+<div style="padding:9px 11px;display:flex;flex-direction:column;flex:1">
+<div style="display:flex;align-items:center;gap:7px"><div style="flex:1;font:700 12px system-ui">Draft list</div><span style="font:600 8px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#0f172a;background:#e2e8f0;padding:2px 5px;border-radius:3px">Group</span><div style="width:19px;height:19px;border:1.5px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b;flex:none">⋯</div></div>
+<div style="font:400 9.5px system-ui;color:#64748b;margin-top:2px">POS-synced · last change 6 min ago</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:5px;margin-top:7px;padding-top:7px;border-top:1px dashed #cbd5e1"><span style="width:6px;height:6px;border-radius:50%;background:#178a52;flex:none"></span><span style="font:600 9.5px system-ui;color:#18603f">8 of 12 venues running</span></div>
+<div style="font:400 9px system-ui;color:#94a3b8;margin-top:5px">4 venues don’t pour draft</div>
+</div>
+</div>
+
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;overflow:hidden;background:#fff;display:flex;flex-direction:column">
+<div style="height:104px;background:#1e293b;padding:11px 13px;border-bottom:1.5px solid #2b2b2b">
+<div style="font:700 8px Georgia,serif;color:#fff;letter-spacing:.14em;border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:5px;margin-bottom:7px">PIER 9 OYSTER HOUR</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px"><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.5)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.25)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div><div style="display:flex;gap:6px"><div style="flex:1;height:4px;background:rgba(255,255,255,.25)"></div><div style="width:11px;height:4px;background:rgba(255,255,255,.5)"></div></div></div>
+</div>
+<div style="padding:9px 11px;display:flex;flex-direction:column;flex:1">
+<div style="display:flex;align-items:center;gap:7px"><div style="flex:1;font:700 12px system-ui">Pier 9 Oyster Hour</div><span style="font:600 8px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#7d5911;background:#fdf1dc;border:1px solid #e3c58a;padding:2px 5px;border-radius:3px">Local</span><div style="width:19px;height:19px;border:1.5px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b;flex:none">⋯</div></div>
+<div style="font:400 9.5px system-ui;color:#64748b;margin-top:2px">9 items · 3 Aug by Marcus (Pier 9)</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:5px;margin-top:7px;padding-top:7px;border-top:1px dashed #cbd5e1"><span style="width:6px;height:6px;border-radius:50%;background:#178a52;flex:none"></span><span style="font:600 9.5px system-ui;color:#18603f">Pier 9 only · 2 screens</span></div>
+<div style="font:400 9px system-ui;color:#94a3b8;margin-top:5px">authored by the venue</div>
+</div>
+</div>
+
+<div style="border:1.5px dashed #94a3b8;border-radius:8px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:14px;min-height:150px"><div style="font:400 20px system-ui;color:#64748b">+</div><div style="font:600 11.5px system-ui">Add a menu</div><div style="font:400 9.5px/1.35 system-ui;color:#64748b;text-align:center">Photo, paste, spreadsheet<br>or start blank</div></div>
+</div>
+<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:13px"><div style="font:500 10.5px system-ui;color:#2a78d6">5 more menus ▾</div><div style="font:400 10px system-ui;color:#94a3b8">3 local · 2 group, none currently on a screen</div></div>
+</div>
+</div>
+</div>
+</div>
+<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;width:1180px;margin-top:14px">
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">The card's ⋯ at group tier</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;overflow:hidden;box-shadow:0 6px 20px rgba(15,23,42,.14)">
+<div style="padding:9px 13px;border-bottom:1.5px solid #2b2b2b;background:#f8fafc;font:700 11px system-ui">Autumn Core</div>
+<div style="padding:6px 0">
+<div style="padding:8px 13px;font:600 11.5px system-ui;background:#e0f2fe">Open</div>
+<div style="padding:8px 13px;font:500 11.5px system-ui;color:#475569">Quick update</div>
+<div style="height:1px;background:#e2e8f0;margin:5px 0"></div>
+<div style="padding:8px 13px;font:500 11.5px system-ui;color:#475569;display:flex;align-items:center;gap:7px">Send an update<span style="font:600 8px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#7d5911;background:#fdf1dc;border:1px solid #e3c58a;padding:1px 5px;border-radius:3px">Group</span></div>
+<div style="padding:8px 13px;font:500 11.5px system-ui;color:#475569;display:flex;align-items:center;gap:7px">Which venues run it<span style="font:600 8px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#7d5911;background:#fdf1dc;border:1px solid #e3c58a;padding:1px 5px;border-radius:3px">Group</span></div>
+<div style="height:1px;background:#e2e8f0;margin:5px 0"></div>
+<div style="padding:8px 13px;font:500 11.5px system-ui;color:#475569">Go back to…</div>
+<div style="padding:8px 13px;font:500 11.5px system-ui;color:#475569">Duplicate</div>
+<div style="height:1px;background:#e2e8f0;margin:5px 0"></div>
+<div style="padding:8px 13px;font:500 11.5px system-ui;color:#8a2929">Take off the screens</div>
+</div>
+</div>
+<p class="note" style="margin:8px 0 0">the single-venue menu with two items inserted, not a different menu — <b>Which venues run it</b> opens <a href="#mv2">MV2</a>, <b>Send an update</b> opens <a href="#mv2a">MV2a</a></p>
+</div>
+<div style="width:376px">
+<div style="font:600 9.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:6px">On a local menu you don't own</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;overflow:hidden;box-shadow:0 6px 20px rgba(15,23,42,.14)">
+<div style="padding:9px 13px;border-bottom:1.5px solid #2b2b2b;background:#f8fafc;font:700 11px system-ui">Pier 9 Oyster Hour</div>
+<div style="padding:6px 0">
+<div style="padding:8px 13px;font:600 11.5px system-ui;background:#e0f2fe">View</div>
+<div style="padding:8px 13px;font:500 11.5px system-ui;color:#475569">Duplicate as a group menu</div>
+<div style="height:1px;background:#e2e8f0;margin:5px 0"></div>
+<div style="padding:8px 13px;font:400 11.5px system-ui;color:#94a3b8">Pier 9 owns this menu — Marcus edits and publishes it</div>
+</div>
+</div>
+<p class="note" style="margin:8px 0 0">head office can look and copy, not edit. The good idea travels up by duplication, which leaves Pier 9's board alone</p>
+</div>
+</div>
+
+<p class="note">The same shelf a single venue sees, with one line added to each card. A menu in trouble grows to name the venues; the ones that are fine stay a count — summarize the normal, name the exception</p>
+</div>
+
+<div class="wf" id="mv1a"><div class="wfl"><a class="wfid" href="#mv1a">MV1a</a><span class="wfn">Add a menu</span><span class="wfs">the same dialog a single venue gets, with one question added — creating never puts a menu on a screen</span></div>
+<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+<div style="width:520px;border:2px solid #2b2b2b;border-radius:9px;background:#fff;overflow:hidden;box-shadow:0 6px 20px rgba(15,23,42,.13)">
+<div style="padding:13px 15px;border-bottom:1px solid #e2e8f0"><div style="font:700 14px system-ui">Add a menu</div><div style="font:400 10.5px system-ui;color:#64748b;margin-top:2px">It lands on your shelf as a draft. You choose venues later, when you send it.</div></div>
+<div style="padding:13px 15px">
+
+<div style="margin-bottom:12px"><div style="font:600 10px system-ui;color:#64748b;margin-bottom:4px">Name</div><div style="padding:9px 11px;border:1.5px solid #2b2b2b;border-radius:6px;font:600 12px system-ui">Winter Core</div></div>
+
+<div style="margin-bottom:12px"><div style="display:flex;align-items:baseline;gap:7px;margin-bottom:4px"><div style="font:600 10px system-ui;color:#64748b">Who owns it</div><div style="font:600 8px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#7d5911;background:#fdf1dc;border:1px solid #e3c58a;padding:1px 5px;border-radius:3px">Group tier only</div></div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:2px solid #0f172a;border-radius:7px;background:#f8fafc"><div style="width:15px;height:15px;border-radius:50%;border:2px solid #0f172a;background:#0f172a;box-shadow:inset 0 0 0 2.5px #fff;flex:none;margin-top:1px"></div><div style="flex:1"><div style="font:700 11.5px system-ui">A group menu</div><div style="font:400 10px/1.45 system-ui;color:#64748b">You author it here and send it to whichever venues should run it. Venues can only change what their trust level allows.</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1.5px solid #cbd5e1;border-radius:7px"><div style="width:15px;height:15px;border-radius:50%;border:2px solid #cbd5e1;flex:none;margin-top:1px"></div><div style="flex:1"><div style="font:700 11.5px system-ui">One venue's own menu</div><div style="font:400 10px/1.45 system-ui;color:#64748b">Belongs to that venue, tagged <b>Local</b>, theirs to edit entirely. Pick the venue next.</div></div></div>
+</div></div>
+
+<div style="margin-bottom:12px"><div style="display:flex;align-items:baseline;gap:7px;margin-bottom:4px"><div style="font:600 10px system-ui;color:#64748b">Start from</div><div style="font:400 9px system-ui;color:#94a3b8">same four routes at every tier — decision 17</div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+<div style="padding:10px 11px;border:1.5px solid #2b2b2b;border-radius:7px;background:#fff"><div style="font:700 11px system-ui">A copy of Autumn Core</div><div style="font:400 9.5px system-ui;color:#64748b">48 items, same layout</div></div>
+<div style="padding:10px 11px;border:1.5px solid #cbd5e1;border-radius:7px"><div style="font:700 11px system-ui;color:#475569">A photo of the printed menu</div><div style="font:400 9.5px system-ui;color:#94a3b8">we read it, you confirm what we couldn't</div></div>
+<div style="padding:10px 11px;border:1.5px solid #cbd5e1;border-radius:7px"><div style="font:700 11px system-ui;color:#475569">Pasted text or a spreadsheet</div><div style="font:400 9.5px system-ui;color:#94a3b8">one item per line</div></div>
+<div style="padding:10px 11px;border:1.5px solid #cbd5e1;border-radius:7px"><div style="font:700 11px system-ui;color:#475569">Nothing — start empty</div><div style="font:400 9.5px system-ui;color:#94a3b8">build it item by item</div></div>
+</div></div>
+
+<div style="padding:9px 11px;border:1.5px solid #cbd5e1;border-radius:6px;background:#f8fafc;font:400 10.5px/1.5 system-ui;color:#475569;margin-bottom:12px"><b>Nothing goes on a screen yet.</b> Winter Core opens in the builder and sits on the shelf marked <i>not on a screen</i> until you send it to venues — the same state a single venue’s new menu starts in.</div>
+
+<div style="display:flex;gap:9px"><div style="padding:9px 16px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11.5px system-ui">Create and open</div><div style="padding:9px 14px;border:1.5px solid #cbd5e1;border-radius:6px;font:600 11.5px system-ui;color:#475569">Cancel</div></div>
+</div>
+</div>
+
+<div style="width:420px;display:flex;flex-direction:column;gap:9px">
+<div style="font:600 10px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b">Then it appears on the shelf like this</div>
+<div style="border:1.5px solid #2b2b2b;border-radius:8px;background:#fff;overflow:hidden">
+<div style="display:grid;grid-template-columns:1fr 116px;gap:10px;padding:11px 13px;align-items:center;background:#fffdf6">
+<div style="display:flex;align-items:center;gap:9px"><div style="width:40px;height:25px;border-radius:3px;background:#e2e8f0;border:1px dashed #94a3b8;flex:none"></div><div><div style="font:700 12px system-ui">Winter Core</div><div style="display:flex;align-items:center;gap:5px;margin-top:2px"><span style="font:600 8.5px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#0f172a;background:#e2e8f0;padding:2px 5px;border-radius:3px">Group</span><span style="font:400 9.5px system-ui;color:#64748b">48 items · draft</span></div></div></div>
+<div style="display:flex;justify-content:flex-end"><div style="padding:6px 11px;border:1.5px solid #2b2b2b;border-radius:6px;font:600 10.5px system-ui;background:#fff">Open</div></div>
+</div>
+<div style="padding:8px 13px;border-top:1px solid #e2e8f0;font:400 10px system-ui;color:#94a3b8">Not on a screen · never sent</div>
+</div>
+<div style="font:400 10px/1.5 system-ui;color:#94a3b8">It sits under the “Not on a screen” filter until the first send. Creating and assigning stay two separate acts, so a half-built menu can never surprise a bar.</div>
+<div style="margin-top:5px;padding:10px 12px;border:1.5px solid #2b2b2b;border-radius:7px;background:#fff"><div style="font:700 11px system-ui;margin-bottom:4px">What a single venue sees</div><div style="font:400 10.5px/1.55 system-ui;color:#475569">The identical dialog with <b>Who owns it</b> absent — there is only one owner, so the question has one answer and never renders. Name and Start from are unchanged, and the menu lands on the same shelf in the same not-on-a-screen state. The only difference downstream is that a single venue publishes to their own screens instead of sending to venues.</div></div>
+</div>
+</div>
+<p class="note">One dialog across both tiers. Group adds a question, it doesn't get a different screen — and venues are deliberately not asked here; that's <a href="#mv2a">MV2a</a>'s job and only <a href="#mv2a">MV2a</a>'s</p>
+</div>
+
+<div class="wf" id="mv2"><div class="wfl"><a class="wfid" href="#mv2">MV2</a><span class="wfn">One group menu · rollout across 12 venues</span><span class="wfs">opened from MV1 — the venue dimension of a single menu, with overrides shown as facts</span></div>
+<div style="width:1180px;border:1.5px solid #2b2b2b;border-radius:9px;background:#fff;overflow:hidden">
+<div style="padding:12px 16px;border-bottom:1.5px solid #2b2b2b;display:flex;align-items:center;gap:12px"><div><div style="font:500 10px system-ui;color:#2a78d6;margin-bottom:2px">‹ All menus</div><div style="font:700 14px system-ui">Autumn Core</div><div style="font:400 10.5px system-ui;color:#64748b">Group menu · 48 items · last published 28 Jul by Dana</div></div><div style="flex:1"></div><div style="display:flex;border:1.5px solid #2b2b2b;border-radius:6px;overflow:hidden"><div style="padding:6px 13px;font:500 10.5px system-ui;color:#64748b;background:#fff">Items</div><div style="padding:6px 13px;font:500 10.5px system-ui;color:#64748b;background:#fff;border-left:1.5px solid #2b2b2b">Layout</div><div style="padding:6px 13px;font:700 10.5px system-ui;background:#87ceeb;color:#0f172a;border-left:1.5px solid #2b2b2b">Venues</div></div><div style="padding:8px 15px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11.5px system-ui">Send an update</div></div>
+
+<div style="padding:14px 16px;display:flex;align-items:flex-start;gap:12px;background:#fdf1dc;border-bottom:1.5px solid #e3c58a"><div style="width:10px;height:10px;border-radius:50%;background:#c9871a;margin-top:5px;flex:none"></div><div style="flex:1"><div style="font:600 14px/1.4 system-ui;color:#7d5911">Pier 9 has been sitting on this for 9 days.</div><div style="font:400 11px system-ui;color:#8a6a2a;margin-top:2px">Badge on day 1, banner on day 3, daily email to Marcus and their area manager since day 7. It will not apply on its own.</div></div><div style="display:flex;gap:7px"><div style="padding:7px 12px;border:1.5px solid #7d5911;border-radius:6px;font:600 10.5px system-ui;color:#7d5911;background:#fff">Call Marcus</div><div style="padding:7px 12px;border:1.5px solid #7d5911;border-radius:6px;font:600 10.5px system-ui;background:#7d5911;color:#fff">Apply it for them</div></div></div>
+
+<div style="padding:14px 16px">
+<div style="display:flex;align-items:center;gap:9px;margin-bottom:11px"><div style="padding:5px 10px;border:1.5px solid #2b2b2b;border-radius:99px;font:600 10px system-ui;background:#87ceeb">All 12</div><div style="padding:5px 10px;border:1.5px solid #cbd5e1;border-radius:99px;font:500 10px system-ui;color:#7d5911">Behind · 2</div><div style="padding:5px 10px;border:1.5px solid #cbd5e1;border-radius:99px;font:500 10px system-ui;color:#64748b">Local changes · 3</div><div style="padding:5px 10px;border:1.5px solid #cbd5e1;border-radius:99px;font:500 10px system-ui;color:#64748b">Not running it · 3</div><div style="flex:1"></div><div style="font:400 10.5px system-ui;color:#64748b">Sorted by what needs you</div><div style="padding:6px 12px;border:1.5px solid #2b2b2b;border-radius:6px;font:600 10.5px system-ui;background:#fff">Add venues</div></div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div style="border:1.5px solid #c9871a;border-radius:7px;background:#fdf1dc;padding:10px 12px;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font:700 11.5px system-ui">Pier 9</div><div style="font:400 10px system-ui;color:#7d5911">Behind 9 days · still showing the 14 Jul version on 3 screens</div></div><div style="display:flex;align-items:center;gap:7px;flex:none"><div style="font:600 9px system-ui;color:#64748b;letter-spacing:.04em;text-transform:uppercase">Standard</div><div style="width:20px;height:20px;border:1.5px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b">⋯</div></div></div>
+<div style="border:1.5px solid #c9871a;border-radius:7px;background:#fdf1dc;padding:10px 12px;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font:700 11.5px system-ui">Southbank</div><div style="font:400 10px system-ui;color:#7d5911">Behind 3 days · opened it twice, hasn't accepted</div></div><div style="display:flex;align-items:center;gap:7px;flex:none"><div style="font:600 9px system-ui;color:#64748b;letter-spacing:.04em;text-transform:uppercase">New</div><div style="width:20px;height:20px;border:1.5px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b">⋯</div></div></div>
+<div style="border:1.5px solid #cbd5e1;border-radius:7px;background:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font:700 11.5px system-ui">Harborview Lounge</div><div style="font:400 10px system-ui;color:#475569">Running · <b>2 local changes</b> — Old Fashioned $17, Fries removed</div></div><div style="display:flex;align-items:center;gap:7px;flex:none"><div style="font:600 9px system-ui;color:#178a52;letter-spacing:.04em;text-transform:uppercase">Trusted</div><div style="width:20px;height:20px;border:1.5px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b">⋯</div></div></div>
+<div style="border:1.5px solid #cbd5e1;border-radius:7px;background:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font:700 11.5px system-ui">Quay St</div><div style="font:400 10px system-ui;color:#475569">Running · <b>1 local change</b> — 2 items added to Small Plates</div></div><div style="display:flex;align-items:center;gap:7px;flex:none"><div style="font:600 9px system-ui;color:#178a52;letter-spacing:.04em;text-transform:uppercase">Trusted</div><div style="width:20px;height:20px;border:1.5px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b">⋯</div></div></div>
+<div style="border:1.5px solid #cbd5e1;border-radius:7px;background:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font:700 11.5px system-ui">Rowan Ln</div><div style="font:400 10px system-ui;color:#475569">Running · <b>1 local change</b> — Burrata 86'd since Tuesday</div></div><div style="display:flex;align-items:center;gap:7px;flex:none"><div style="font:600 9px system-ui;color:#64748b;letter-spacing:.04em;text-transform:uppercase">Standard</div><div style="width:20px;height:20px;border:1.5px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;font:600 10px system-ui;color:#64748b">⋯</div></div></div>
+<div style="border:1.5px solid #cbd5e1;border-radius:7px;background:#f8fafc;padding:10px 12px;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font:600 11.5px system-ui;color:#475569">7 more venues</div><div style="font:400 10px system-ui;color:#94a3b8">Running the current version, nothing changed locally</div></div><div style="font:500 10px system-ui;color:#2a78d6">Show ▾</div></div>
+<div style="border:1.5px dashed #94a3b8;border-radius:7px;background:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px;grid-column:span 2"><div style="flex:1"><div style="font:600 11.5px system-ui;color:#475569">3 venues aren't running Autumn Core</div><div style="font:400 10px system-ui;color:#94a3b8">Ferry Rd, Kiln St, Old Mill — they run their own boards instead</div></div><div style="padding:6px 11px;border:1.5px solid #2b2b2b;border-radius:6px;font:600 10.5px system-ui;background:#fff">Add them</div></div>
+</div>
+</div>
+</div>
+<p class="note">Same shape as the publish bar at scale — the exceptions are drawn, the seven that are fine are one line. Trust level sits on each venue card because it's the answer to “why could they change that?”</p>
+</div>
+
+<div class="wf" id="mv2a"><div class="wfl"><a class="wfid" href="#mv2a">MV2a</a><span class="wfn">Send an update · picking venues</span><span class="wfs">the publish bar from the single-venue file, one dimension out</span></div>
+<div style="width:900px;border:1.5px solid #2b2b2b;border-radius:9px;background:#fff;overflow:hidden">
+<div style="padding:13px 16px;border-bottom:1.5px solid #2b2b2b"><div style="font:700 13.5px system-ui">Send Autumn Core to your venues</div><div style="font:400 10px system-ui;color:#94a3b8;margin-top:1px">Sending is how a menu reaches a venue — a venue that isn't on it yet gets it added</div><div style="font:400 10.5px system-ui;color:#64748b;margin-top:3px">6 changes since 28 Jul — 4 prices, 1 item added, 1 section reordered · <span style="color:#2a78d6;font-weight:500">see the 6</span></div></div>
+<div style="padding:14px 16px">
+<div style="display:flex;align-items:center;gap:9px;margin-bottom:11px"><div style="padding:6px 12px;border:1.5px solid #2b2b2b;border-radius:6px;font:700 10.5px system-ui;background:#87ceeb">All 12</div><div style="padding:6px 12px;border:1.5px solid #cbd5e1;border-radius:6px;font:500 10.5px system-ui;color:#64748b">Only the 9 already running it</div><div style="padding:6px 12px;border:1.5px solid #cbd5e1;border-radius:6px;font:500 10.5px system-ui;color:#64748b">Pick venues</div></div>
+
+<div style="border:1.5px solid #cbd5e1;border-radius:7px;overflow:hidden;margin-bottom:13px">
+<div style="padding:9px 12px;background:#eaf6f0;border-bottom:1px solid #cbd5e1;display:flex;align-items:center;gap:9px"><span style="width:8px;height:8px;border-radius:50%;background:#178a52"></span><div style="font:600 11.5px system-ui;color:#18603f">9 venues will get it cleanly</div><div style="font:400 10.5px system-ui;color:#64748b">nothing local to lose</div></div>
+<div style="padding:10px 12px;border-bottom:1px solid #e2e8f0;display:flex;align-items:flex-start;gap:9px"><span style="width:8px;height:8px;border-radius:50%;background:#c9871a;margin-top:4px;flex:none"></span><div style="flex:1"><div style="font:600 11.5px system-ui;color:#7d5911">3 venues have changes of their own</div><div style="font:400 10.5px/1.5 system-ui;color:#475569;margin-top:3px"><b>Harborview</b> — your Old Fashioned price would replace theirs ($16 over $17)<br><b>Quay St</b> — their 2 added items stay, nothing lost<br><b>Rowan Ln</b> — their 86 on Burrata stays; 86s always survive a publish</div></div><div style="padding:5px 10px;border:1.5px solid #7d5911;border-radius:5px;font:600 10px system-ui;color:#7d5911;flex:none">Keep theirs</div></div>
+<div style="padding:10px 12px;border-bottom:1px solid #e2e8f0;display:flex;align-items:flex-start;gap:9px"><span style="width:8px;height:8px;border-radius:50%;background:#2a78d6;margin-top:4px;flex:none"></span><div style="flex:1"><div style="font:600 11.5px system-ui;color:#1a5aa8">3 venues will run Autumn Core for the first time</div><div style="font:400 10.5px/1.5 system-ui;color:#475569;margin-top:3px">Ferry Rd, Kiln St and Old Mill aren't on this menu today. Sending it adds it to their menu list — <b>Ferry Rd and Kiln St are New</b>, so pick which of their screens it runs on; Old Mill chooses for themselves.</div></div><div style="padding:5px 10px;border:1.5px solid #2a78d6;border-radius:5px;font:600 10px system-ui;color:#1a5aa8;flex:none">Pick screens</div></div>
+<div style="padding:10px 12px;display:flex;align-items:center;gap:9px;background:#f8fafc"><span style="width:8px;height:8px;border-radius:50%;background:#94a3b8"></span><div style="font:500 11px system-ui;color:#475569">Pier 9 is still 9 days behind — this replaces what they never accepted</div></div>
+</div>
+
+<div style="display:flex;align-items:center;gap:12px;padding:11px 12px;border:1.5px solid #2b2b2b;border-radius:7px;background:#f8fafc;margin-bottom:12px"><div style="flex:1"><div style="font:700 11.5px system-ui">Venues accept when they're ready</div><div style="font:400 10.5px/1.5 system-ui;color:#64748b">Each venue sees this waiting for them next time they open the back office. Nothing changes on a screen mid-service. You'll see who's accepted on the menu row.</div></div><div style="display:flex;flex-direction:column;gap:4px;flex:none"><div style="display:flex;align-items:center;gap:6px"><div style="width:26px;height:15px;border-radius:99px;background:#94a3b8;position:relative"><div style="position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:#fff"></div></div><span style="font:500 10px system-ui;color:#475569">Apply immediately instead</span></div><div style="font:400 9px system-ui;color:#94a3b8;text-align:right">only for New-level venues</div></div></div>
+
+<div style="display:flex;align-items:center;gap:10px"><div style="padding:9px 17px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11.5px system-ui">Send to 12 venues</div><div style="padding:9px 15px;border:1.5px solid #2b2b2b;border-radius:6px;background:#fff;font:600 11.5px system-ui">Review the 6 changes</div><div style="padding:9px 14px;border:1.5px solid #cbd5e1;border-radius:6px;font:600 11.5px system-ui;color:#475569">Cancel</div><div style="flex:1"></div><div style="font:400 10.5px system-ui;color:#64748b">Draft saved 11:04am</div></div>
+</div>
+</div>
+<p class="note">This dialog does both jobs — it updates the venues already on the menu and puts it on venues that aren't. The conflict list is the point of it: corporate sees what their send would step on before it steps on it</p>
+</div>
+
+<div class="wf" id="mv3"><div class="wfl"><a class="wfid" href="#mv3">MV3</a><span class="wfn">The venue's side · a pending menu, on day 3</span><span class="wfs">what Marcus at Pier 9 sees — the banner stage of the escalation</span></div>
+<div style="width:900px;border:1.5px solid #2b2b2b;border-radius:9px;background:#fff;overflow:hidden">
+<div style="display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1.5px solid #2b2b2b;background:#fff"><div style="font:500 11.5px system-ui;color:#2a78d6">‹ Menus</div><div style="font:700 13px system-ui">Autumn Core</div><div style="flex:1"></div><div style="padding:5px 11px;border:1.5px solid #2b2b2b;border-radius:99px;font:600 10.5px system-ui;background:#fff">Pier 9 ▾</div></div>
+
+<div style="margin:14px 16px;border:2px solid #c9871a;border-radius:8px;background:#fdf1dc;overflow:hidden">
+<div style="padding:13px 15px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1"><div style="font:700 14.5px/1.35 system-ui;color:#0f172a">Head office sent a new Autumn Core 3 days ago.</div><div style="font:400 11.5px/1.55 system-ui;color:#7d5911;margin-top:3px">4 prices went up, the Smoked Trout Dip is new, and Starters moved above Small Plates. Your screens are still showing the old one.</div></div><div style="display:flex;flex-direction:column;gap:6px;flex:none"><div style="padding:9px 16px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11.5px system-ui;text-align:center">Put it on my screens</div><div style="font:500 10.5px system-ui;color:#2a78d6;text-align:center">See what changed</div></div></div>
+<div style="border-top:1px solid #e3c58a;padding:8px 15px;background:rgba(255,255,255,.5);display:flex;align-items:center;gap:10px"><div style="font:400 10.5px system-ui;color:#8a6a2a;flex:1">Your Burrata 86 stays on. Nothing you've turned off comes back.</div><div style="font:500 10.5px system-ui;color:#64748b">Remind me after service</div></div>
+</div>
+
+<div style="padding:0 16px 16px">
+<div style="display:flex;align-items:center;gap:9px;margin-bottom:10px"><div style="font:700 12px system-ui">Running now</div><div style="font:400 10.5px system-ui;color:#64748b">Autumn Core · version from 14 Jul · 3 screens</div></div>
+<div style="border:1.5px solid #cbd5e1;border-radius:7px;overflow:hidden">
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #e2e8f0"><div style="width:34px;height:20px;border-radius:99px;background:#178a52;position:relative;flex:none"><div style="position:absolute;top:2.5px;right:2.5px;width:15px;height:15px;border-radius:50%;background:#fff"></div></div><div style="flex:1"><div style="font:600 11.5px system-ui">Smoked Trout Dip</div><div style="font:400 9.5px system-ui;color:#94a3b8">Small Plates</div></div><div style="font:500 11px system-ui;color:#94a3b8">$18</div><div style="display:flex;align-items:center;gap:5px;font:400 9.5px system-ui;color:#94a3b8;width:150px;justify-content:flex-end"><span style="font-size:10px">🔒</span> set by head office</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #e2e8f0"><div style="width:34px;height:20px;border-radius:99px;background:#178a52;position:relative;flex:none"><div style="position:absolute;top:2.5px;right:2.5px;width:15px;height:15px;border-radius:50%;background:#fff"></div></div><div style="flex:1"><div style="font:600 11.5px system-ui">Old Fashioned</div><div style="font:400 9.5px system-ui;color:#94a3b8">Cocktails</div></div><div style="font:500 11px system-ui;color:#94a3b8">$16</div><div style="display:flex;align-items:center;gap:5px;font:400 9.5px system-ui;color:#94a3b8;width:150px;justify-content:flex-end"><span style="font-size:10px">🔒</span> set by head office</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#fbe7e5"><div style="width:34px;height:20px;border-radius:99px;background:#cbd5e1;position:relative;flex:none"><div style="position:absolute;top:2.5px;left:2.5px;width:15px;height:15px;border-radius:50%;background:#fff"></div></div><div style="flex:1"><div style="font:600 11.5px system-ui;color:#8a2929">Burrata</div><div style="font:400 9.5px system-ui;color:#8a2929">86'd by you, Tuesday 6:40pm · off your screens</div></div><div style="font:500 11px system-ui;color:#94a3b8">$14</div><div style="width:150px"></div></div>
+</div>
+<div style="margin-top:9px;padding:9px 12px;border:1.5px dashed #cbd5e1;border-radius:7px;display:flex;align-items:center;gap:10px;background:#f8fafc"><div style="font:400 10.5px/1.5 system-ui;color:#64748b;flex:1">You're on the <b>Standard</b> level — you can 86 anything and build your own menus, but head office sets prices and the layout on group menus. <a href="#mv4">What the levels mean</a></div><div style="padding:6px 11px;border:1.5px solid #cbd5e1;border-radius:6px;font:600 10.5px system-ui;color:#475569;background:#fff">Ask for a price change</div></div>
+</div>
+</div>
+<p class="note">Locked fields are shown, greyed, with the reason — never removed. An operator who can't see the price can't tell the customer why the board is wrong. And the escape hatch is a request, not a dead end</p>
+</div>
+
+<div class="wf" id="mv4"><div class="wfl"><a class="wfid" href="#mv4">MV4</a><span class="wfn">Trust levels · what venues can change</span><span class="wfs">one row per thing an operator actually tries to do — the question support gets asked</span></div>
+<div style="width:1040px;border:1.5px solid #2b2b2b;border-radius:9px;background:#fff;overflow:hidden">
+<div style="padding:11px 16px;border-bottom:1.5px solid #2b2b2b;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font:700 13px system-ui">What venues can change</div><div style="font:400 10.5px system-ui;color:#64748b;margin-top:2px">On group menus only — a venue always has full control of the menus they author themselves</div></div><div style="font:500 10px system-ui;color:#64748b">4 of 8 levels used</div><div style="padding:6px 12px;border:1.5px solid #2b2b2b;border-radius:6px;font:600 10.5px system-ui;background:#fff">Create a level</div></div>
+<div style="padding:14px 16px">
+<div style="display:grid;grid-template-columns:1fr 104px 104px 104px 116px;border:1.5px solid #2b2b2b;border-radius:8px;overflow:hidden">
+<div style="padding:8px 12px;background:#f1f5f9;font:600 9.5px system-ui;letter-spacing:.05em;text-transform:uppercase;color:#64748b;border-bottom:1.5px solid #2b2b2b">On a group menu, a venue can…</div>
+<div style="padding:8px 6px;background:#f1f5f9;border-bottom:1.5px solid #2b2b2b;border-left:1px solid #cbd5e1;text-align:center"><div style="font:700 11px system-ui">New</div><div style="font:400 9px system-ui;color:#64748b">3 venues</div></div>
+<div style="padding:8px 6px;background:#e3f1f8;border-bottom:1.5px solid #2b2b2b;border-left:1px solid #cbd5e1;text-align:center"><div style="font:700 11px system-ui">Standard</div><div style="font:400 9px system-ui;color:#64748b">5 · default</div></div>
+<div style="padding:8px 6px;background:#eaf6f0;border-bottom:1.5px solid #2b2b2b;border-left:1px solid #cbd5e1;text-align:center"><div style="font:700 11px system-ui">Trusted</div><div style="font:400 9px system-ui;color:#64748b">3 venues</div></div>
+<div style="padding:8px 6px;background:#fdf1dc;border-bottom:1.5px solid #2b2b2b;border-left:1px solid #cbd5e1;text-align:center"><div style="font:700 11px system-ui">Seasonal sites</div><div style="font:400 9px system-ui;color:#7d5911">1 · yours</div></div>
+
+<div style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font:500 11px system-ui">86 an item on their own screens</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+
+<div style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font:500 11px system-ui">86 an item at <b>another</b> venue</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">Never</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">Never</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">Never</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">Never</div>
+
+<div style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font:500 11px system-ui">Accept an update from head office</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+
+<div style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font:500 11px system-ui">Build their own local menu</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">No</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8;background:#fffdf6">No</div>
+
+<div style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font:500 11px system-ui">Choose which of their screens runs what</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">No</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+
+<div style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font:500 11px system-ui">Remove an item they don't carry</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">No</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">No</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52;background:#fffdf6">Yes</div>
+
+<div style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font:500 11px system-ui">Change a price · add a local item</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">No</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">No</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:700 12px system-ui;color:#178a52">Yes</div>
+<div style="padding:9px 6px;border-bottom:1px solid #e2e8f0;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">No</div>
+
+<div style="padding:9px 12px;font:500 11px system-ui">Change the layout or theme</div>
+<div style="padding:9px 6px;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">No</div>
+<div style="padding:9px 6px;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">No</div>
+<div style="padding:9px 6px;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">No</div>
+<div style="padding:9px 6px;border-left:1px solid #cbd5e1;text-align:center;font:500 11px system-ui;color:#94a3b8">No</div>
+</div>
+<div style="margin-top:10px;display:flex;align-items:center;gap:10px"><div style="padding:7px 12px;border:1.5px solid #2b2b2b;border-radius:6px;font:600 10.5px system-ui;background:#fff">Edit a level</div><div style="padding:7px 12px;border:1.5px solid #2b2b2b;border-radius:6px;font:600 10.5px system-ui;background:#fff">Move a venue</div><div style="flex:1;font:400 10.5px/1.5 system-ui;color:#64748b">Layout is nobody's by default, at any level — brand consistency is usually why a group bought this. A group that disagrees creates a level that allows it.</div></div>
+</div>
+</div>
+<p class="note">One view, not two — a level is only ever meaningful next to the others. <b>Seasonal sites</b> is a level this group created (<a href="#mv4a">MV4a</a>) and sits as a column like any shipped one. Venue names live on the venue, not here: assign from <a href="#mv2">MV2</a> or <a href="#mv4b">MV4b</a></p>
+</div>
+
+<div class="wf" id="mv4a"><div class="wfl"><a class="wfid" href="#mv4a">MV4a</a><span class="wfn">Creating a level</span><span class="wfs">a level is a named difference from an existing one — never a blank checkbox grid</span></div>
+<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+<div style="width:490px;border:2px solid #2b2b2b;border-radius:9px;background:#fff;overflow:hidden;box-shadow:0 6px 20px rgba(15,23,42,.13)">
+<div style="padding:13px 15px;border-bottom:1px solid #e2e8f0;display:flex;align-items:flex-start;gap:12px"><div style="flex:1"><div style="font:700 14px system-ui">New trust level</div><div style="font:400 10.5px system-ui;color:#64748b;margin-top:2px">Old Mill closes for winter and runs a cut-down board — Standard is too tight, Trusted is too loose</div></div><div style="font:500 10px system-ui;color:#64748b;flex:none;padding-top:3px">4 of 8 used</div></div>
+<div style="padding:13px 15px">
+<div style="margin-bottom:11px"><div style="font:600 10px system-ui;color:#64748b;margin-bottom:4px">Name it for the situation, not the permissions</div><div style="padding:9px 11px;border:1.5px solid #2b2b2b;border-radius:6px;font:600 12px system-ui">Seasonal sites</div></div>
+<div style="margin-bottom:11px"><div style="font:600 10px system-ui;color:#64748b;margin-bottom:4px">Start from</div><div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border:1.5px solid #2b2b2b;border-radius:6px;background:#fff"><div style="flex:1"><div style="font:600 11.5px system-ui">Standard</div><div style="font:400 9.5px system-ui;color:#64748b">5 venues · the default level</div></div><span style="font:400 10px system-ui;color:#64748b">▾</span></div></div>
+<div style="margin-bottom:11px"><div style="font:600 10px system-ui;color:#64748b;margin-bottom:4px">Same as Standard, except</div>
+<div style="display:flex;flex-direction:column;gap:5px">
+<div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1.5px solid #178a52;border-radius:6px;background:#eaf6f0"><span style="color:#178a52;font:700 12px system-ui">+</span><span style="font:500 10.5px system-ui;flex:1">Can remove items they don't carry</span><span style="font:400 10px system-ui;color:#64748b">✕</span></div>
+<div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1.5px solid #b03a33;border-radius:6px;background:#fbe7e5"><span style="color:#b03a33;font:700 12px system-ui">−</span><span style="font:500 10.5px system-ui;flex:1">Cannot build their own local menus</span><span style="font:400 10px system-ui;color:#64748b">✕</span></div>
+<div style="padding:8px 10px;border:1.5px dashed #cbd5e1;border-radius:6px;font:500 10.5px system-ui;color:#2a78d6">Add a difference ▾</div>
+</div></div>
+<div style="padding:9px 11px;border:1.5px solid #cbd5e1;border-radius:6px;background:#f8fafc;margin-bottom:12px"><div style="font:600 10px system-ui;color:#64748b;margin-bottom:3px">Reads as</div><div style="font:400 11px/1.5 system-ui;color:#333">“Seasonal sites can 86 anything, choose what runs on their screens, and remove items they don't carry. They can't build their own menus or change prices.”</div></div>
+<div style="display:flex;gap:9px"><div style="padding:9px 16px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11.5px system-ui">Create level</div><div style="padding:9px 14px;border:1.5px solid #cbd5e1;border-radius:6px;font:600 11.5px system-ui;color:#475569">Cancel</div></div>
+</div>
+</div>
+
+</div>
+<p class="note">Deliberately not a blank checkbox grid — a level is a named difference from one that already exists, which is what keeps the list short and describable. This is the pressure valve that keeps decision 24 honest</p>
+</div>
+
+<div class="wf" id="mv4b"><div class="wfl"><a class="wfid" href="#mv4b">MV4b</a><span class="wfn">Moving a venue between levels</span><span class="wfs">up is a note, down is a consequence you read first</span></div>
+<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+<div style="width:470px;border:1.5px solid #2b2b2b;border-radius:9px;background:#fff;overflow:hidden">
+<div style="padding:13px 15px;border-bottom:1px solid #e2e8f0"><div style="font:700 14px system-ui">Move Pier 9 to Trusted</div><div style="font:400 10.5px system-ui;color:#64748b;margin-top:2px">Currently Standard · Marcus Hale is the venue's default user</div></div>
+<div style="padding:13px 15px">
+<div style="font:600 11px system-ui;margin-bottom:6px">Marcus gains, on group menus:</div>
+<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
+<div style="display:flex;gap:8px;align-items:baseline"><span style="color:#178a52;font:700 11px system-ui">+</span><span style="font:400 11px system-ui;color:#333">Changing prices at their venue</span></div>
+<div style="display:flex;gap:8px;align-items:baseline"><span style="color:#178a52;font:700 11px system-ui">+</span><span style="font:400 11px system-ui;color:#333">Removing items they don't carry</span></div>
+<div style="display:flex;gap:8px;align-items:baseline"><span style="color:#178a52;font:700 11px system-ui">+</span><span style="font:400 11px system-ui;color:#333">Adding their own items into a group section</span></div>
+</div>
+<div style="padding:9px 11px;border:1.5px solid #cbd5e1;border-radius:7px;background:#f8fafc;font:400 10.5px/1.5 system-ui;color:#475569;margin-bottom:12px">Takes effect now. Marcus sees a one-line note next time they open the back office — you don't have to tell them. Nothing on a screen changes.</div>
+<div style="display:flex;gap:9px"><div style="padding:9px 16px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11.5px system-ui">Move to Trusted</div><div style="padding:9px 14px;border:1.5px solid #cbd5e1;border-radius:6px;font:600 11.5px system-ui;color:#475569">Cancel</div></div>
+</div>
+</div>
+
+<div style="width:470px;border:2px solid #c9871a;border-radius:9px;background:#fff;overflow:hidden">
+<div style="padding:13px 15px;border-bottom:1px solid #e3c58a;background:#fdf1dc"><div style="font:700 14px system-ui">Move Harborview to Standard</div><div style="font:400 10.5px system-ui;color:#7d5911;margin-top:2px">Down from Trusted · they have 2 local changes running right now</div></div>
+<div style="padding:13px 15px">
+<div style="font:600 11px system-ui;margin-bottom:6px">Their existing changes keep running:</div>
+<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+<div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1.5px solid #cbd5e1;border-radius:6px"><div style="flex:1"><div style="font:600 11px system-ui">Old Fashioned · $17</div><div style="font:400 9.5px system-ui;color:#64748b">group price is $16</div></div><div style="font:500 10px system-ui;color:#2a78d6">Reset to group</div></div>
+<div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1.5px solid #cbd5e1;border-radius:6px"><div style="flex:1"><div style="font:600 11px system-ui">Fries removed from Sides</div><div style="font:400 9.5px system-ui;color:#64748b">removed 12 Jun</div></div><div style="font:500 10px system-ui;color:#2a78d6">Reset to group</div></div>
+</div>
+<div style="padding:9px 11px;border:1.5px solid #7d5911;border-radius:7px;background:#fdf1dc;font:400 10.5px/1.5 system-ui;color:#7d5911;margin-bottom:12px"><b>A demotion never reverts a board mid-service.</b> They just can't make new price or item changes. Reset each one deliberately, or send an update that replaces them.</div>
+<div style="display:flex;gap:9px"><div style="padding:9px 16px;border:1.5px solid #2b2b2b;border-radius:6px;background:#0f172a;color:#fff;font:700 11.5px system-ui">Move to Standard</div><div style="padding:9px 14px;border:1.5px solid #cbd5e1;border-radius:6px;font:600 11.5px system-ui;color:#475569">Cancel</div></div>
+</div>
+</div>
+</div>
+<p class="note">Demotion is the dangerous direction, so it's the one that shows you what's already on a screen before you touch it</p>
+</div>
+
+</section>
+</x-dc>
+</body>
+</html>
