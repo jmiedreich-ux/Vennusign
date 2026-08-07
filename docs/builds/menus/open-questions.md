@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** paused after sitting 3 (2026-08-07). BLOCKING lane complete (16/16, sitting 2); minor lane COMPLETE (32/32, sitting 3). RESUME AT Q87 — the 78 *important* questions remain, walked in document order, skipping already-answered. Sitting 3 minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
+- **Status:** paused after sitting 3 (2026-08-07). BLOCKING lane complete (16/16, sitting 2); minor lane COMPLETE (32/32, sitting 3). important lane in progress (sitting 4): Q87–Q92, Q99–Q102 resolved (10 of 78); RESUME AT Q103. Sitting 3 minor lane: Q93, Q94, Q116–Q124, Q129, Q130, Q144–Q150, Q159, Q177, Q187–Q192, Q195, Q206–Q208 resolved — minor lane COMPLETE (32 of 32) (Q94 owner-answered: near-miss rows offer a picker of other close matches; Q120 and Q122 out of scope → backlog). Sitting 2 (2026-08-07) — all 16 BLOCKING questions resolved (Q83–Q178): 12 accepted recommended, Q83 owner-answered (resolve at import; reconciliation flag), Q86 deferred, Q98 and Q133 out of scope → backlog. RESUME AT Q87 — remaining are 78 *important* + 32 *minor*, walked in document order, skipping already-answered. Sitting 1 (2026-08-07): Q1–Q82 resolved or deferred. Awaiting owner answers (generated 2026-08-07 from the 15-agent design interrogation: 333 raw findings, deduped to the list below)
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
 ## How to answer
@@ -1065,6 +1065,8 @@ Decision 18 (confirm only what we were unsure of) and decision 30 (all routes co
 
 *Recommended:* Always appears, zero-question form when clean; variants drafted for the workbook.
 
+*Answer:* Accepted recommended (2026-08-07): the confirm step always appears as the one consistent ending — zero-question form when the parse is clean ("We read all 6 items.", Name field, "Done — open in the builder"); headline variants drafted for the workbook.
+
 <sub>decisions.md 18/30; confirm headline [decisions-doc, wf-import-actions]</sub>
 
 ### Q88 · important
@@ -1074,6 +1076,8 @@ Decision 18 (confirm only what we were unsure of) and decision 30 (all routes co
 Nothing in the paste flow collects a name, but the shelf card, breadcrumb and history need one immediately; caps lines are sections by rule, so never guess a title from one.
 
 *Recommended:* Yes — editable Name on confirm, best-guess pre-fill, never a blank name on the shelf.
+
+*Answer:* Accepted recommended (2026-08-07): editable Name field on the confirm step, pre-filled from the paste's first line when it reads like a title, otherwise "New menu"; renameable later inline in the builder breadcrumb; never a blank name on the shelf.
 
 <sub>Menus.dc.html confirm sub-line; README M1a [decisions-doc, wf-import-actions]</sub>
 
@@ -1085,6 +1089,8 @@ The panel is drawn but never sequenced and assigned to no slice; "previews use y
 
 *Recommended:* Yes to all.
 
+*Answer:* Accepted recommended (2026-08-07): Pick-a-look shows once right after import confirm (or immediately on start-blank), defaults Coastal, zero-item boards preview sample lines; slice-wise — engine themes slice 2, builder entry slice 3, creation-time picker slice 6.
+
 <sub>Menus.dc.html "Pick a look — at creation, and after"; slice-plan [wf-import-actions, record-consistency]</sub>
 
 ### Q90 · important
@@ -1094,6 +1100,8 @@ The panel is drawn but never sequenced and assigned to no slice; "previews use y
 On first import the library is empty; in-file dedupe is rare in real pastes and would complicate slice 6.
 
 *Recommended:* Yes — library-only.
+
+*Answer:* Accepted recommended (2026-08-07): near-miss matching is library-only this build; first-ever import shows no name check; in-file near-duplicates land as typed for the builder to fix.
 
 <sub>decisions.md 33; near-miss card [wf-import-actions]</sub>
 
@@ -1105,6 +1113,8 @@ The button exists but its surface is never drawn.
 
 *Recommended:* Yes — exactly that.
 
+*Answer:* Accepted recommended (2026-08-07): "See all 45" opens a read-only list grouped by section, unsure rows highlighted amber, no inline editing.
+
 <sub>Menus.dc.html confirm header [wf-import-actions]</sub>
 
 ### Q92 · important
@@ -1114,6 +1124,8 @@ The button exists but its surface is never drawn.
 Otherwise a half-imported state exists to reason about.
 
 *Recommended:* Yes to all three.
+
+*Answer:* Accepted recommended (2026-08-07): draft created the moment the route commits; abandoning the confirm behaves identically to "Skip these for now"; the confirm is one-shot, flags live on the canvas afterwards. Cross-reference Q83 (owner): flagged items must be resolved before publish, so an abandoned confirm leaves a menu that cannot publish until its flags are cleared.
 
 <sub>Menus.dc.html M1a intro [wf-import-actions]</sub>
 
@@ -1199,6 +1211,8 @@ Nothing draws a leave-confirmation, and a lost just-typed edit would be worse.
 
 *Recommended:* Yes — save-per-edit, no prompts.
 
+*Answer:* Accepted recommended (2026-08-07): save-per-edit into the shared draft; leaving via the breadcrumb never loses anything and never prompts; "Draft saved 10:42am" is the last edit's time.
+
 <sub>M2 publish bar; README breadcrumbs [m2-hifi]</sub>
 
 ### Q100 · important
@@ -1208,6 +1222,8 @@ Nothing draws a leave-confirmation, and a lost just-typed edit would be worse.
 Slice 2 ships shelf affordances whose destinations arrive one to four slices later; the plan is silent on the gap and the slice-2 workbook will hit it.
 
 *Recommended:* Yes — temporary wiring to existing surfaces, absence for the rest, each replaced as its slice lands.
+
+*Answer:* Accepted recommended (2026-08-07): interim wiring — Quick update | Build control absent until slice 6; slice-2 card-click opens the existing editor and Add-a-menu uses the existing create flow until slices 3/6 land; anything with no target is absent, never disabled.
 
 <sub>slice-plan slices 2/3/6; M2 segmented control [m2-hifi, record-consistency]</sub>
 
@@ -1219,6 +1235,8 @@ The opened dropdown is never drawn and slice 3 predates real geometry.
 
 *Recommended:* Yes to all.
 
+*Answer:* Accepted recommended (2026-08-07): dropdown lists the menu's target screens including offline (last-reported shape); "No screens yet" over the default canvas when none paired; screen name without resolution until slice 4 geometry.
+
 <sub>M2 top bar "Viewing as Bar · 1920×1080 ▾" [m2-hifi]</sub>
 
 ### Q102 · important
@@ -1228,6 +1246,8 @@ The opened dropdown is never drawn and slice 3 predates real geometry.
 Decision 5 says real states say what they are; decision 13 bans representative sizes; freshly-paired screens shouldn't look broken.
 
 *Recommended:* Yes to all — blocked-with-reason, never vanished.
+
+*Answer:* Accepted recommended (2026-08-07): Play stays visible; zero previewable screens opens a plain sentence linking to Screens; a paired screen without reported geometry is listed but unselectable ("hasn't reported yet"), selectable when resolution arrives.
 
 <sub>decisions.md 5/13; criterion 9; slice-plan slice 4 [decisions-doc, m2-hifi, m2c-hifi, readme-handoff, code-display]</sub>
 
