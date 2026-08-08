@@ -8,6 +8,9 @@ API contract against seeded data. Roughly 10 minutes.
 - **What it proves:** acceptance criteria 1, 2, 3 and 4
 - **Base URL:** the running API, `/api/back-office/menu-spine`
 - **Auth:** a back-office session for the seeded venue
+- **Interactive workbook:** open `m1-demo-workbook.html` in a browser to run these checks and record
+  Pass / Fail / Needs Adjustment against each one. It saves as you go and exports a JSON record.
+  This Markdown file and the workbook carry the same checks; the workbook is the one to actually test with.
 
 ## Before you start
 
