@@ -2,20 +2,22 @@
 
 ## Current State
 
+- A proposed design-facing product surface and future feature inventory now exists locally in Markdown and standalone HTML under `docs/design/proposed/`. It consolidates 18 customer-facing domains, 133 classified capabilities, a universal state vocabulary, navigation implications, and unresolved owner decisions. It now includes a dedicated Content and Menu industry deep dive covering six industries, their editing attributes and operational context, the shared extensible content model, recommended Content-area architecture, suggested starting content, and required editor states. It is a design reference, not a roadmap or implementation approval.
+- The HTML companion is searchable and filterable by Core, Foundation, Advanced, Add-on, Policy and Long-horizon status. Focused browser validation passed for search/filter behavior, console errors, and desktop/mobile overflow; the Impeccable finish review returned `APPROVE` after two findings were resolved.
+- Exact next action for this artifact: the owner reviews `docs/design/proposed/product-surface-feature-inventory.html`, then identifies missing capabilities and decides whether it should become the approved input to the Release–Capability–Tier Matrix and future navigation design.
 - Track 0 industry and product architecture: complete and closed.
 - Track 1.01 through Track 1.04: implemented, merged, exact-head validated and closed.
 - Track 1.05: complete, merged through PR #650, exact-head validated by Actions run 31049451685 and verified on `master` at `6915ef2b402ce146d8ff01bf7ad767e3cbb1295e`.
 - **Exact next action: ChatGPT reviews PR #654.** The desktop session lock is released and no agent holds Track 1. Do not push to `collab/desktop/track1-qa-automation` until that review records a decision.
 - Track 1 closure: blocked only on owner acceptance after Track 1.05 merges. The acceptance QA gate now passes all 19 cases, so owner judgment is the only remaining step.
 - PR #654 carries the Track 1 acceptance QA automation and nine defect fixes. All 13 required checks are green on `d77dae5` and the branch is mergeable. It has had no independent review: the review recorded in-session was written by the agent that authored the diff and did not read the full change, which is tracked as issue #659.
-- Seven follow-up issues (#656 to #662) are labelled `before-track-2`. None block Track 1 closure.
+- Former `before-track-2` follow-ups #656 to #662 were canceled by the owner and closed as `NOT_PLANNED` on 2026-08-07. They are not prerequisites for Track 2 or any later work.
 - Track 1 acceptance QA is automated in two halves. `tests/ui` (Playwright, 44 tests) asserts the 14 mechanical cases on every commit at no cost and is gated in CI by `.github/workflows/ui-regression.yml`. `scripts/run-track1-qa.ps1` retains only the 5 subjective cases (4-1, 5-0, 6-1, 6-2, 6-3) on hosted agents, at roughly $1.70 a run against $9.40 before the split.
 - Use `scripts/start-ui-test-env.ps1` for Playwright work; it is local-only. `run-track1-qa.ps1` publishes cloudflared tunnels and sets CORS to those public origins, which blocks a browser running on localhost. The two environments cannot be shared, and both bind ports 7138/5174/5175/5176.
 - Test data isolation: `POST /api/test/seed` (Development only) creates a private menu, section, item and optional screen so specs run in parallel without sharing rows. Seeded rows are pruned by `scripts/start-ui-test-env.ps1 -PruneSeed`, which the Playwright global setup runs automatically.
-- Future-track implementation: blocked pending explicit owner approval of Track 1 closure.
-- Light planning for any future track may remain provisional, but cannot be marked complete until Track 1 feedback and potential changes from earlier tracks are evaluated.
-- RWP-13.06: held; do not resume unchanged.
-- Phase 14 and later: paused.
+- **All future tracks are cancelled (owner, 2026-08-07) ahead of a full planning reset.** No Track 2 or later track exists as a plan. RWP-13.06 is closed as not planned (#466). The queued future work packages on file (RWP-10.02, RWP-11.03, RWP-11.04, RWP-13.04, RWP-13.05) are void as plans; their documents remain only as history and require fresh owner approval before any reuse.
+- Phase 13 is the final numbered phase. Former Phases 14, 15 and 16 are canceled as phases; their feature ideas remain only in the unprioritized **Backlog — TBD** and require fresh owner approval before planning or implementation.
+- What survives the cancellation: Track 1's own remaining items only — the three unresolved owner-acceptance results, the retrospective decision (#665, report on PR #667), and the disposition of PR #663 — plus the planning reset itself, whose inputs include the retrospective report, `docs/architecture/built-foundations-spec.md`, and the proposed product-surface inventory under `docs/design/proposed/`.
 
 ## Read First
 

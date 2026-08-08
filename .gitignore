@@ -378,3 +378,6 @@ blob-report/
 # Local Google OAuth client secrets and signup notes - never commit
 docs/Google/
 **/client_secret_*.json
+
+# Impeccable skill run logs and state
+.impeccable/

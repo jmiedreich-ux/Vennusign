@@ -3,7 +3,7 @@
 ## Current State
 
 - Phase 13: complete.
-- Phase 14 and later: paused.
+- Phase 13 is the final numbered phase. Former Phases 14, 15 and 16 are canceled as phases; their feature ideas are retained only in the unprioritized **Backlog — TBD** and require fresh owner approval before planning or implementation.
 - Product implementation: the first scheduled Track 1 chunk is complete, merged and exact-head validated; implementation is stopped for owner acceptance.
 - RWP-13.06 — Trial-First Onboarding: held and must not resume unchanged.
 - Native-industry Track 0 gate: complete.
@@ -16,6 +16,7 @@
 - Track 1.05 — Track Validation and Handoff (#644): complete, merged and verified on `master` through PR #650 and Actions run 31049451685.
 - Track 1 closure: owner acceptance currently needs adjustment (17 Pass, 1 Needs Adjustment, 2 Fail). After acceptance becomes acceptable, RWP-01.06 lessons learned and retrospective is mandatory before closure.
 - Track 1.06 — Lessons Learned and Retrospective (#665): approved and planned; blocked until owner acceptance reaches an acceptable state.
+- Former `before-track-2` follow-ups #656–#662: canceled by the owner and closed as `NOT_PLANNED`; they are not Track 2 prerequisites.
 - Track 1 acceptance QA: all 19 automated/agent owner-acceptance cases pass. Fourteen are asserted deterministically by the Playwright suite in `tests/ui`; five subjective cases (4-1, 5-0, 6-1, 6-2, 6-3) are judged by hosted agents through `scripts/run-track1-qa.ps1`. Latest gate record: `artifacts/track1-qa/20260806T030415Z/track-1-owner-acceptance.qa.json` (0 attention, 0 manual review, 0 lane failures).
 - Defects found and fixed during Track 1 QA: menu item updates failing with an unbound `@Id` (missing RepoDb table mappings); the POS webhook worker terminating the whole API host; a `SERIALIZABLE` isolation level leaking onto pooled connections; an unscoped `aside` rule covering page content; capability refusals rendering as generic load failures; a menu save race persisting pre-edit values; screen thumbnails heartbeating their own screens Online; a destructive dialog that did not trap focus; and mobile navigation with no collapse control.
 

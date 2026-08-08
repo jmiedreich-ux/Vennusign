@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-06T07:20:38Z",
+  "updatedUtc": "2026-08-06T23:41:00Z",
   "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
@@ -19,12 +19,10 @@
   },
   "lastDesktopSession": {
     "owner": "Codex for JeremyPC",
-    "scope": "Track 1 review remediation and acceptance QA automation",
-    "branch": "collab/desktop/track1-qa-automation",
-    "startedUtc": "2026-08-06T04:26:08Z",
-    "releasedUtc": "2026-08-06T07:20:38Z",
-    "releasedBy": "owner confirmation",
-    "mergedPullRequest": 654,
-    "mergeCommit": "b16d849"
+    "scope": "Product surface inventory plus Content and Menu industry deep dive",
+    "branch": "collab/desktop/product-surface-inventory",
+    "startedUtc": "2026-08-06T22:59:48Z",
+    "releasedUtc": "2026-08-06T23:41:00Z",
+    "releasedBy": "scope completed locally"
   }
 }
