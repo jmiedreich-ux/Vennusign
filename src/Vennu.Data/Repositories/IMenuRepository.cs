@@ -46,4 +46,3 @@ public interface IMenuRepository
             .ToArray();
 
 }
-
