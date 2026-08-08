@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="width:198px;flex:none;background:#0f172a;color:#f8fafc;padding:14px 11px;display:flex;flex-direction:column;gap:12px;align-self:stretch">
+<div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;border-radius:7px;background:#87ceeb;color:#0f172a;display:flex;align-items:center;justify-content:center;font:700 14px system-ui">V</div><div><div style="font:700 12px system-ui">{{ orgName }}</div><div style="font:400 9.5px system-ui;color:#94a3b8">{{ orgSub }}</div></div></div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ sections }}" as="sec" hint-placeholder-count="4">
+<div><div style="font:600 9px system-ui;letter-spacing:.09em;text-transform:uppercase;color:#64748b;padding:0 7px 4px">{{ sec.label }}</div>
+<div style="display:flex;flex-direction:column;gap:1px">
+<sc-for list="{{ sec.items }}" as="item" hint-placeholder-count="3">
+<div style="{{ item.style }}"><div style="{{ item.nameStyle }}">{{ item.name }}</div><div style="{{ item.subStyle }}">{{ item.sub }}</div></div>
+</sc-for>
+</div></div>
+</sc-for>
+</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:8px;padding:7px;border-top:1px solid #334155"><div style="width:24px;height:24px;border-radius:50%;background:#334155;display:flex;align-items:center;justify-content:center;font:600 11px system-ui">{{ initial }}</div><div><div style="font:600 10.5px system-ui">{{ userName }}</div><div style="font:400 9px system-ui;color:#64748b">{{ userSub }}</div></div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:198,&quot;height&quot;:460},&quot;group&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Context&quot;},&quot;active&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Home&quot;,&quot;Menu&quot;,&quot;Schedules&quot;,&quot;Tap list&quot;,&quot;Screens&quot;,&quot;Themes&quot;,&quot;Venues&quot;,&quot;People&quot;,&quot;POS integrations&quot;,&quot;Billing&quot;,&quot;Account &amp; security&quot;],&quot;default&quot;:&quot;Menu&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Context&quot;},&quot;orgName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Vennusign&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Identity&quot;},&quot;orgSub&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Back Office&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Identity&quot;},&quot;userName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Alex Morgan&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Identity&quot;},&quot;userSub&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Sign out&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Identity&quot;}}">
+const ON = 'padding:6px 8px;border-radius:6px;background:#87ceeb;color:#0f172a';
+const OFF = 'padding:6px 8px;border-radius:6px;color:#cbd5e1';
+const NAME_ON = 'font:700 11px system-ui';
+const NAME_OFF = 'font:500 11px system-ui';
+const SUB_ON = 'font:400 9px system-ui;opacity:.75';
+const SUB_OFF = 'font:400 9px system-ui;color:#64748b';
+
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const group = p.group ?? false;
+    const active = p.active ?? 'Menu';
+    const homeSub = group ? 'Today across the group' : 'Today at your venue';
+
+    const raw = [
+      ['Operate', [
+        ['Home', homeSub],
+        ['Menu', 'Items and quick updates'],
+        ['Schedules', 'Timing and broadcasts'],
+        ['Tap list', 'Draft board operations'],
+      ]],
+      ['Design & delivery', [
+        ['Screens', 'Boards and playback'],
+        ['Themes', 'Brand and layouts'],
+      ]],
+      ...(group ? [['Group', [
+        ['Venues', 'Sites and trust levels'],
+        ['People', 'Access by venue'],
+      ]]] : []),
+      ['Connect', [
+        ['POS integrations', 'Catalog and availability sync'],
+      ]],
+      ['Account', [
+        ['Billing', 'Plan and payments'],
+        ['Account & security', 'Passkeys and recovery'],
+      ]],
+    ];
+
+    const sections = raw.map(([label, items]) => ({
+      label,
+      items: items.map(([name, sub]) => {
+        const on = name === active;
+        return { name, sub, style: on ? ON : OFF, nameStyle: on ? NAME_ON : NAME_OFF, subStyle: on ? SUB_ON : SUB_OFF };
+      }),
+    }));
+
+    const userName = p.userName ?? 'Alex Morgan';
+    return {
+      sections,
+      orgName: p.orgName ?? 'Vennusign',
+      orgSub: p.orgSub ?? 'Back Office',
+      userName,
+      userSub: p.userSub ?? 'Sign out',
+      initial: userName.trim().charAt(0).toUpperCase(),
+    };
+  }
+}
+</script>
+</body>
+</html>

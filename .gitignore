@@ -379,5 +379,10 @@ blob-report/
 docs/Google/
 **/client_secret_*.json
 
+# runtime logs (never commit)
+vennu-api-*.txt
+*.out.txt
+*.err.txt
+
 # Impeccable skill run logs and state
 .impeccable/
