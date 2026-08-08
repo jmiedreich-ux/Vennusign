@@ -146,7 +146,6 @@ public sealed class MenuSectionManagementServiceTests
             return Task.FromResult(section.Id);
         }
         public Task<Guid> CreateItemAsync(MenuItem item, CancellationToken cancellationToken = default) => Task.FromResult(item.Id);
-        public Task<Guid> CreateTranslationAsync(MenuItemTranslation translation, CancellationToken cancellationToken = default) => Task.FromResult(translation.Id);
         public Task<bool> UpdateSectionAsync(MenuSection section, CancellationToken cancellationToken = default)
         {
             UpdatedSection = section;
@@ -154,8 +153,6 @@ public sealed class MenuSectionManagementServiceTests
         }
         public Task<bool> UpdateItemAsync(MenuItem item, CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task<bool> UpdateMenuAsync(Menu menu, CancellationToken cancellationToken = default) => Task.FromResult(true);
-        public Task<IReadOnlyCollection<RestoredMenuItem>> RestoreExpiredAvailabilityAsync(DateTime utcNow, CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyCollection<RestoredMenuItem>>([]);
         public Task<int> ReorderSectionsAsync(Guid venueId, Guid menuId, IReadOnlyCollection<Guid> sectionIds, DateTime updatedUtc, CancellationToken cancellationToken = default)
         {
             ReorderedSectionIds = sectionIds;
@@ -167,7 +164,5 @@ public sealed class MenuSectionManagementServiceTests
             Task.FromResult<IReadOnlyCollection<MenuSection>>(Sections.Where(section => section.VenueId == venueId && section.MenuId == menuId).ToArray());
         public Task<IReadOnlyCollection<MenuItem>> GetItemsAsync(Guid venueId, Guid sectionId, CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyCollection<MenuItem>>([]);
-        public Task<IReadOnlyCollection<MenuItemTranslation>> GetTranslationsAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyCollection<MenuItemTranslation>>([]);
     }
 }

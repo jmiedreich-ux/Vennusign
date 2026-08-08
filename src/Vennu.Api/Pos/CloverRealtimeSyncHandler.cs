@@ -90,7 +90,6 @@ public sealed class CloverRealtimeSyncHandler(
         if (!availabilityChanged && !quantityChanged && !priceChanged) return;
         item.IsAvailable = source.IsAvailable;
         item.QuantityAvailable = source.QuantityAvailable;
-        item.AvailabilityResetUtc = null;
         if (priceChanged) item.Price = price!.Value;
         item.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
         if (!await menus.UpdateItemAsync(item, cancellationToken).ConfigureAwait(false))

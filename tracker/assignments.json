@@ -1,7 +1,17 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-06T07:20:38Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-08T06:20:00Z",
+  "activeAssignments": [
+    {
+      "item": "Menus M1 \u2014 the spine",
+      "issue": 684,
+      "branch": "feature/menus-m1-spine",
+      "owner": "Claude (session_01EXYUJDBiHsKSRhfTH2YLai)",
+      "mode": "Sequential",
+      "claimedUtc": "2026-08-08T06:20:00Z",
+      "scope": "Item library + Placement schema, migration, menu-screen assignment, availability, draft/publish model, tier ceilings, API surface, focused tests"
+    }
+  ],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],

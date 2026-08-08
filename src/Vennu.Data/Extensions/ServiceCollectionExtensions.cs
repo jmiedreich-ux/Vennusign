@@ -22,6 +22,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVenueRepository, VenueRepository>();
         services.AddScoped<IVenueThemeRepository, VenueThemeRepository>();
         services.AddScoped<IMenuRepository, MenuRepository>();
+        services.AddScoped<IMenuLibraryRepository, MenuLibraryRepository>();
         services.AddScoped<IMealPeriodRepository, MealPeriodRepository>();
         services.AddSingleton<IMealPeriodScheduleResolver, MealPeriodScheduleResolver>();
         services.AddScoped<IMealPeriodAdministrationService, MealPeriodAdministrationService>();

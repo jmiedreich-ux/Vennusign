@@ -62,7 +62,6 @@ public sealed class SquareRealtimeSyncHandler(
             if (!availabilityChanged && !quantityChanged) continue;
             item.IsAvailable = available;
             item.QuantityAvailable = quantity;
-            item.AvailabilityResetUtc = null;
             item.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
             if (!await menus.UpdateItemAsync(item, cancellationToken).ConfigureAwait(false))
                 throw new InvalidOperationException("The Square inventory update could not be persisted.");
