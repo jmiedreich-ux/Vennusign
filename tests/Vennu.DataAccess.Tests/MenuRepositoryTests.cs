@@ -76,15 +76,4 @@ public sealed class MenuRepositoryTests
         Assert.Contains("ORDER BY SortOrder, Id", capturedSql, StringComparison.Ordinal);
     }
 
-    [Fact]
-    [Trait("Category", "Unit")]
-    public async Task GetTranslationsAsync_RejectsEmptyVenueId()
-    {
-        var repository = new MenuRepository(new FakeSqlDataAccess());
-
-        var exception = await Assert.ThrowsAsync<ArgumentException>(
-            () => repository.GetTranslationsAsync(Guid.Empty, Guid.NewGuid()));
-
-        Assert.Equal("venueId", exception.ParamName);
-    }
 }

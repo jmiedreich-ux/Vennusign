@@ -10,17 +10,11 @@ public interface IMenuRepository
 
     Task<Guid> CreateItemAsync(MenuItem item, CancellationToken cancellationToken = default);
 
-    Task<Guid> CreateTranslationAsync(MenuItemTranslation translation, CancellationToken cancellationToken = default);
-
     Task<bool> UpdateSectionAsync(MenuSection section, CancellationToken cancellationToken = default);
 
     Task<bool> UpdateItemAsync(MenuItem item, CancellationToken cancellationToken = default);
 
     Task<bool> UpdateMenuAsync(Menu menu, CancellationToken cancellationToken = default);
-
-    Task<IReadOnlyCollection<RestoredMenuItem>> RestoreExpiredAvailabilityAsync(
-        DateTime utcNow,
-        CancellationToken cancellationToken = default);
 
     Task<int> ReorderSectionsAsync(
         Guid venueId,
@@ -51,12 +45,5 @@ public interface IMenuRepository
             .Where(item => item.IsActive)
             .ToArray();
 
-    Task<IReadOnlyCollection<MenuItemTranslation>> GetTranslationsAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken = default);
 }
 
-public sealed class RestoredMenuItem
-{
-    public Guid VenueId { get; set; }
-
-    public Guid ItemId { get; set; }
-}

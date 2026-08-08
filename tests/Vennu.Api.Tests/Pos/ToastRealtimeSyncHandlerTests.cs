@@ -86,15 +86,12 @@ public sealed class ToastRealtimeSyncHandlerTests
         public Task<Guid> CreateMenuAsync(Menu menu, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<Guid> CreateSectionAsync(MenuSection section, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<Guid> CreateItemAsync(MenuItem item, CancellationToken cancellationToken = default) => throw new NotSupportedException();
-        public Task<Guid> CreateTranslationAsync(MenuItemTranslation translation, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<bool> UpdateSectionAsync(MenuSection section, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<bool> UpdateMenuAsync(Menu menu, CancellationToken cancellationToken = default) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<RestoredMenuItem>> RestoreExpiredAvailabilityAsync(DateTime utcNow, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<int> ReorderSectionsAsync(Guid venueId, Guid menuId, IReadOnlyCollection<Guid> sectionIds, DateTime updatedUtc, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<Menu>> GetMenusAsync(Guid venueId, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<MenuSection>> GetSectionsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<MenuItem>> GetItemsAsync(Guid venueId, Guid sectionId, CancellationToken cancellationToken = default) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<MenuItemTranslation>> GetTranslationsAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken = default) => throw new NotSupportedException();
     }
 
     private sealed class ImportFake : IPosCatalogImportService

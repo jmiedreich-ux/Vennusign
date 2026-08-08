@@ -22,7 +22,7 @@ public sealed class PosCatalogMappingRepository(ISqlDataAccess dataAccess, TimeP
 
     private const string GetMappedItemSql = """
         SELECT item.Id, item.VenueId, item.MenuSectionId, item.Name, item.Description,
-               item.Price, item.HappyHourPrice, item.IsAvailable, item.AvailabilityResetUtc,
+               item.Price, item.HappyHourPrice, item.IsAvailable,
                item.QuantityAvailable, item.Tags, item.ImageUrl, item.IsPopular, item.SortOrder,
                item.CreatedUtc, item.UpdatedUtc
         FROM dbo.PosCatalogMappings mapping

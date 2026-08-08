@@ -250,7 +250,6 @@ builder.Services.AddScoped<IVenueThemeService, VenueThemeService>();
 
 if (!builder.Environment.IsEnvironment("Testing"))
 {
-    builder.Services.AddHostedService<QuickAvailabilityResetService>();
     builder.Services.AddHostedService<ScheduledContentActivationService>();
     builder.Services.AddHostedService<HappyHourEvaluatorService>();
     builder.Services.AddHostedService<PromotionActivationService>();

@@ -62,7 +62,6 @@ public sealed class ToastInventorySyncService(
             if (!availabilityChanged && !quantityChanged) continue;
             item.IsAvailable = value.IsAvailable;
             item.QuantityAvailable = value.QuantityAvailable;
-            item.AvailabilityResetUtc = null;
             item.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
             if (!await menus.UpdateItemAsync(item, cancellationToken).ConfigureAwait(false))
                 throw new InvalidOperationException("The Toast inventory update could not be persisted.");

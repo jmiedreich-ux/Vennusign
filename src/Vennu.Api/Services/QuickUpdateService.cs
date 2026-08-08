@@ -69,9 +69,6 @@ public sealed class QuickUpdateService(
 
         var now = timeProvider.GetUtcNow();
         item.IsAvailable = isAvailable;
-        item.AvailabilityResetUtc = isAvailable
-            ? null
-            : await GetNextLocalMidnightUtcAsync(venueId, now, cancellationToken).ConfigureAwait(false);
         item.UpdatedUtc = now.UtcDateTime;
         await menuRepository.UpdateItemAsync(item, cancellationToken).ConfigureAwait(false);
         await notifier.NotifyVenueItemAvailabilityChangedAsync(
