@@ -74,6 +74,14 @@ public sealed class MenusM1SpineMigrationTests
         Assert.Contains("DROP TABLE dbo.MenuItemTranslations", sql, StringComparison.Ordinal);
         Assert.Contains("ALTER TABLE dbo.MenuItems DROP COLUMN AvailabilityResetUtc", sql, StringComparison.Ordinal);
 
+        // Regression: migration 013 indexed that column, and SQL Server refuses to
+        // drop a column an index depends on. The index has to go first.
+        Assert.Contains("DROP INDEX IX_MenuItems_AvailabilityResetUtc ON dbo.MenuItems", sql, StringComparison.Ordinal);
+        Assert.True(
+            sql.IndexOf("DROP INDEX IX_MenuItems_AvailabilityResetUtc", StringComparison.Ordinal)
+                < sql.IndexOf("DROP COLUMN AvailabilityResetUtc", StringComparison.Ordinal),
+            "The dependent index must be dropped before the column.");
+
         // Deferred while live code still reads them, so master stays releasable.
         Assert.DoesNotContain("DROP COLUMN HappyHourPrice", sql, StringComparison.Ordinal);
         Assert.DoesNotContain("DROP COLUMN QuantityAvailable", sql, StringComparison.Ordinal);

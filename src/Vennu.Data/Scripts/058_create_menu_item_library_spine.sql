@@ -388,6 +388,15 @@ IF OBJECT_ID('dbo.MenuItemTranslations', 'U') IS NOT NULL
     DROP TABLE dbo.MenuItemTranslations;
 GO
 
+-- Migration 013 indexed this column for the auto-reset sweep. The index has to
+-- go first or the column cannot be dropped.
+IF EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_MenuItems_AvailabilityResetUtc'
+      AND object_id = OBJECT_ID('dbo.MenuItems'))
+    DROP INDEX IX_MenuItems_AvailabilityResetUtc ON dbo.MenuItems;
+GO
+
 IF COL_LENGTH('dbo.MenuItems', 'AvailabilityResetUtc') IS NOT NULL
     ALTER TABLE dbo.MenuItems DROP COLUMN AvailabilityResetUtc;
 GO
