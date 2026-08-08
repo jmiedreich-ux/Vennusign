@@ -261,6 +261,49 @@ WHERE venue.OrganizationId IS NOT NULL
 GO
 
 -------------------------------------------------------------------------------
+-- The three Menus capability ids (Q24). Provisional: auto-granted to every role
+-- that already edits items, so gating can be wired now; flagged in the M1 demo
+-- for owner review before they harden into their own permissions.
+-------------------------------------------------------------------------------
+INSERT dbo.CapabilityDefinitions (CapabilityId, Domain, Classification, OperationKind)
+SELECT v.CapabilityId, v.Domain, v.Classification, v.OperationKind
+FROM (VALUES
+    ('content.menu.manage', 1, 1, 2),
+    ('content.menu.import', 1, 1, 2),
+    ('publishing.history.view', 2, 1, 1)
+) AS v (CapabilityId, Domain, Classification, OperationKind)
+WHERE NOT EXISTS (
+    SELECT 1 FROM dbo.CapabilityDefinitions existing
+    WHERE existing.CapabilityId = v.CapabilityId);
+GO
+
+INSERT dbo.AuthorityPermissions (PermissionId, CapabilityId)
+SELECT v.PermissionId, v.PermissionId
+FROM (VALUES
+    ('content.menu.manage'),
+    ('content.menu.import'),
+    ('publishing.history.view')
+) AS v (PermissionId)
+WHERE NOT EXISTS (
+    SELECT 1 FROM dbo.AuthorityPermissions existing
+    WHERE existing.PermissionId = v.PermissionId);
+GO
+
+INSERT dbo.AuthorityRolePermissions (RoleKey, PermissionId)
+SELECT existing.RoleKey, v.PermissionId
+FROM dbo.AuthorityRolePermissions existing
+CROSS JOIN (VALUES
+    ('content.menu.manage'),
+    ('content.menu.import'),
+    ('publishing.history.view')
+) AS v (PermissionId)
+WHERE existing.PermissionId = 'content.item.update'
+  AND NOT EXISTS (
+    SELECT 1 FROM dbo.AuthorityRolePermissions already
+    WHERE already.RoleKey = existing.RoleKey AND already.PermissionId = v.PermissionId);
+GO
+
+-------------------------------------------------------------------------------
 -- Carry existing menu content into the item library.
 -- Name/Description/Price/ImageUrl/IsActive/SortOrder/availability are preserved;
 -- the fields listed at the top of this script are deliberately not carried.
