@@ -174,7 +174,7 @@ $thisDraft = Invoke-Api GET "$spine/menus/$menuId/draft"
 if ($otherMenuId) { $otherQueued = Invoke-Api GET "$spine/menus/$otherMenuId/draft" }
 $otherIntact = (-not $otherMenuId) -or ($otherQueued.count -ge 1)
 $targetsText = ($published.targets | ForEach-Object { "$($_.state)" }) -join ', '
-Record '6' "Publishing ships only this menu's queue" `
+Record '6' "Publishing ships only this menu's queue, and stores what it shipped" `
     ($published.changeCount -ge 1 -and $thisDraft.count -eq 0 -and $otherIntact) `
     "version $($published.version), shipped $($published.changeCount) change(s), targets [$targetsText]; this draft now $($thisDraft.count), other menu still $($otherQueued.count)" `
     "this menu's queue emptied, the other menu's queue untouched, one target per assigned screen"
@@ -195,18 +195,25 @@ Record '8' 'Go back to produces a draft, not a silent publish' `
     "draft now holds $($restored.count) change(s); publishes stayed at $publishesPost" `
     'a draft with a change in it, and no new publish'
 
+# --- 8b. Take-off queues rather than committing (Q68) -----------------------------------
+$beforeTakeOff = @(Invoke-Api GET "$spine/assignments").Count
+$takeOffDraft = Invoke-Api DELETE "$spine/menus/$menuId/screens"
+$afterTakeOff = @(Invoke-Api GET "$spine/assignments").Count
+Record '8b' 'Take off the screens queues, and ships on Publish' `
+    ($afterTakeOff -eq $beforeTakeOff -and $takeOffDraft.count -ge 1) `
+    "screens still assigned: $afterTakeOff (was $beforeTakeOff); queued changes: $($takeOffDraft.count)" `
+    'the menu still on its screen, with the removal waiting in the draft - take-off is permanent, so it is not instant like an 86'
+
 # --- 9. Destructive acts are attributable ----------------------------------------------
 Invoke-Api DELETE "$spine/menus/$menuId/draft" | Out-Null
-Invoke-Api DELETE "$spine/menus/$menuId/screens" | Out-Null
 $history = @(Invoke-Api GET "$spine/menus/$menuId/history")
 $discardAuthor = @($history | Where-Object { $_.kind -eq 'draft_discarded' } | ForEach-Object { $_.author })[0]
-$takeOffAuthor = @($history | Where-Object { $_.kind -eq 'taken_off_screens' } | ForEach-Object { $_.author })[0]
+$restoredAuthor = @($history | Where-Object { $_.kind -eq 'restored' } | ForEach-Object { $_.author })[0]
 $discard = @($history | Where-Object { $_.kind -eq 'draft_discarded' })[0]
-$takeOff = @($history | Where-Object { $_.kind -eq 'taken_off_screens' })[0]
-Record '9' 'Discard and take-off are recorded with their author' `
-    ($null -ne $discard -and $null -ne $takeOff) `
-    "draft_discarded by '$discardAuthor'; taken_off_screens by '$takeOffAuthor'" `
-    'both acts present in history, each naming who did it'
+Record '9' 'Irreversible acts are recorded with their author' `
+    ($null -ne $discard) `
+    "draft_discarded by '$discardAuthor'; restored by '$restoredAuthor'" `
+    'the discard present in history, naming who did it'
 
 # --- Tidy up ------------------------------------------------------------------------------
 if ($otherMenuId) { Invoke-Api DELETE "$spine/menus/$otherMenuId/draft" | Out-Null }

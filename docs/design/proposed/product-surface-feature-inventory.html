@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>VennuSign Product Surface &amp; Future Feature Inventory</title>
+  <style>
+    :root{--ink:#071b33;--muted:#46627c;--sky:#dff4ff;--blue:#087db8;--blue-deep:#07547f;--line:#b9d8e7;--paper:#fbfdff;--core:#087a60;--foundation:#3f61a8;--advanced:#7653a6;--addon:#a55a13;--policy:#a33a45;--horizon:#586577;--focus:#f3b51b}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:var(--paper);font:16px/1.55 "Segoe UI",Arial,sans-serif}a{color:var(--blue-deep)}button,input{font:inherit}
+    .skip{position:fixed;z-index:10;top:8px;left:8px;padding:10px 14px;color:white;background:var(--ink);transform:translateY(-150%)}.skip:focus{transform:none}
+    header{padding:48px clamp(22px,5vw,72px) 36px;background:var(--sky);border-bottom:1px solid var(--line)}
+    .mast{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:44px}.brand{font-size:1.15rem;font-weight:800;letter-spacing:.02em}.stamp{border:1px solid var(--blue);padding:5px 9px;color:var(--blue-deep);font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+    h1{max-width:900px;margin:0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(2.5rem,6vw,5.7rem);font-weight:500;line-height:.92;letter-spacing:-.04em}header p{max-width:760px;margin:24px 0 0;color:#254966;font-size:1.1rem}
+    .layout{display:grid;grid-template-columns:260px minmax(0,1fr);max-width:1600px;margin:auto}.rail{position:sticky;top:0;height:100vh;overflow:auto;padding:28px 20px;border-right:1px solid var(--line);background:#f3faff}.rail strong{display:block;margin-bottom:12px}.rail a{display:block;padding:7px 8px;color:#284a66;text-decoration:none}.rail a:hover,.rail a:focus-visible{color:var(--ink);background:white;outline:2px solid var(--focus);outline-offset:0}
+    main{min-width:0;padding:42px clamp(22px,5vw,72px) 80px}.intro{max-width:900px}.intro h2,.section-title{font-family:Georgia,"Times New Roman",serif;font-size:clamp(2rem,4vw,3.5rem);font-weight:500;line-height:1.03;letter-spacing:-.025em}.notice{margin:28px 0;padding:18px 20px;border-top:3px solid var(--blue);background:var(--sky)}
+    .legend{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0}.tag{display:inline-flex;align-items:center;border:1px solid currentColor;border-radius:99px;padding:4px 9px;font-size:.72rem;font-weight:800;letter-spacing:.025em}.core{color:var(--core)}.foundation{color:var(--foundation)}.advanced{color:var(--advanced)}.addon{color:var(--addon)}.policy{color:var(--policy)}.horizon{color:var(--horizon)}
+    .architecture{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;margin:28px 0;border-top:1px solid var(--line)}.architecture div{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}.architecture div:nth-child(odd){padding-right:24px}.architecture strong{color:var(--blue-deep)}
+    .tools{position:sticky;z-index:5;top:0;display:flex;flex-wrap:wrap;gap:10px;margin:36px -12px 22px;padding:12px;background:rgba(251,253,255,.96);border-bottom:1px solid var(--line)}.tools input{flex:1 1 280px;min-height:44px;border:1px solid #8db8ce;padding:9px 12px;background:white}.tools button{min-height:44px;border:1px solid var(--line);padding:8px 12px;color:var(--blue-deep);background:white;cursor:pointer}.tools button[aria-pressed="true"]{color:white;background:var(--blue-deep)}.tools input:focus,.tools button:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+    .count{margin-left:auto;align-self:center;color:var(--muted);font-size:.85rem}.domain{margin:0;border-top:1px solid var(--line)}.domain:last-child{border-bottom:1px solid var(--line)}summary{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:14px;padding:22px 8px;cursor:pointer;list-style:none}summary::-webkit-details-marker{display:none}.number{color:var(--blue);font-size:.8rem;font-weight:800}.domain h3{margin:0;font:500 clamp(1.35rem,2.5vw,2rem)/1.1 Georgia,"Times New Roman",serif}.domain summary p{margin:5px 0 0;color:var(--muted);font-size:.9rem}.chev{font-size:1.4rem}.domain[open] .chev{transform:rotate(45deg)}
+    .domain-body{padding:0 8px 30px 74px}.surfaces{margin:0 0 18px;color:var(--muted)}.features{display:grid;gap:0;margin:0;padding:0;list-style:none}.feature{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:start;padding:12px 0;border-top:1px solid #dceaf1}.feature span:first-child{max-width:80ch}.empty{display:none;padding:40px;color:var(--muted);text-align:center}.empty.visible{display:block}
+    .states{width:100%;border-collapse:collapse}.states th,.states td{padding:12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}.states th{color:var(--blue-deep);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}.deep-dive{margin-top:58px}.deep-dive h3{margin:38px 0 10px;font:500 1.65rem/1.15 Georgia,"Times New Roman",serif}.deep-dive p,.deep-dive li{max-width:82ch}.map{overflow:auto;padding:20px;color:#dff4ff;background:var(--ink);font:14px/1.7 Consolas,monospace}.starter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border-top:1px solid var(--line)}.starter-grid div{padding:13px 0;border-bottom:1px solid var(--line)}.starter-grid div:nth-child(odd){padding-right:24px}.decisions li,.rules li{margin:9px 0}.footer{margin-top:60px;padding-top:24px;border-top:1px solid var(--line);color:var(--muted);font-size:.88rem}
+    @media(max-width:900px){.layout{display:block}.rail{position:relative;height:auto;border-right:0;border-bottom:1px solid var(--line)}.rail nav{columns:2}.architecture,.starter-grid{grid-template-columns:1fr}.architecture div:nth-child(odd),.starter-grid div:nth-child(odd){padding-right:0}.tools{top:0}.domain-body{padding-left:8px}.feature{grid-template-columns:1fr}.count{width:100%;margin-left:0}}
+    @media(max-width:560px){header{padding-top:28px}.mast{margin-bottom:32px}.rail nav{columns:1}summary{grid-template-columns:34px minmax(0,1fr) auto}.architecture div{grid-template-columns:1fr}.states{display:block;overflow-x:auto}.tag{width:max-content}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+    @media print{.rail,.tools,.skip{display:none}.layout{display:block}main{padding:24px}.domain{break-inside:avoid}.domain-body{display:block!important}header{padding:24px}a{color:inherit;text-decoration:none}}
+  </style>
+</head>
+<body>
+<!--
+THESIS: A design-facing atlas of VennuSign's possible product surface; it refuses a flat feature checklist that confuses commitments, add-ons, states, and controls.
+OWN-WORLD: Sky paper, deep-blue editorial type, ruled inventory rows, small status stamps, and generous reading space.
+STORY: Understand the product architecture, search all possible capabilities, inspect each customer domain, then carry unresolved decisions into screen design.
+FIRST VIEWPORT: A strong report title and plain-language scope lead into a persistent contents rail; search and classification filters anchor the inventory.
+FORM: Read-mode reference atlas in the established Sky identity.
+FINISH: unreviewed and undocumented is unfinished; this report ends with the finish review, resolved findings, and verified parity with its canonical Markdown companion.
+-->
+<a class="skip" href="#main">Skip to report</a>
+<header>
+  <div class="mast"><div class="brand">VENNUSIGN / PRODUCT ATLAS</div><div class="stamp">Proposed design reference · 07 Aug 2026</div></div>
+  <h1>The product surface we may one day need.</h1>
+  <p>A customer-facing inventory of VennuSign’s possible workflows, screens, actions, and states—organized for design without pretending every candidate is committed.</p>
+</header>
+<div class="layout">
+  <aside class="rail" aria-label="Report contents"><strong>Contents</strong><nav>
+    <a href="#purpose">Purpose</a><a href="#architecture">Product architecture</a><a href="#content-deep-dive">Content &amp; Menu deep dive</a><a href="#inventory">Surface inventory</a><a href="#backlog-tbd">Backlog — TBD</a><a href="#states">Universal states</a><a href="#rules">Design rules</a><a href="#decisions">Open decisions</a><a href="#sources">Sources</a>
+  </nav></aside>
+  <main id="main">
+    <section class="intro" id="purpose">
+      <h2>A map for designing beyond today’s three screens.</h2>
+      <p>This report translates the Track 0 capability architecture into a screen-design reference. It includes approved core behavior, delivered foundations, advanced native candidates, independent add-ons, policy gaps, and credible longer-horizon possibilities.</p>
+      <div class="notice"><strong>This is not a roadmap.</strong> “Possible” does not mean promised, scheduled, tiered, or priced. The Markdown companion remains the canonical agent reference.</div>
+      <div class="legend" aria-label="Classification legend">
+        <span class="tag core">Core approved</span><span class="tag foundation">Foundation delivered</span><span class="tag advanced">Advanced candidate</span><span class="tag addon">Add-on candidate</span><span class="tag policy">Policy pending</span><span class="tag horizon">Long horizon</span>
+      </div>
+    </section>
+    <section id="architecture">
+      <h2 class="section-title">A durable product architecture</h2>
+      <p>These are stable customer jobs, not a recommendation to expose twelve permanent navigation items.</p>
+      <div class="architecture">
+        <div><strong>Home</strong><span>Is the venue okay, and what needs me now?</span></div><div><strong>Content</strong><span>What public information are we showing?</span></div>
+        <div><strong>Screens</strong><span>Where is content playing, and is it healthy?</span></div><div><strong>Plan &amp; Automate</strong><span>What should happen later or repeatedly?</span></div>
+        <div><strong>Publish</strong><span>What will change, where, and did it arrive?</span></div><div><strong>Brand &amp; Templates</strong><span>How should outputs look and stay consistent?</span></div>
+        <div><strong>Sources &amp; Add-ons</strong><span>Where does authoritative data come from?</span></div><div><strong>Insights</strong><span>What happened and what deserves attention?</span></div>
+        <div><strong>Team</strong><span>Who can act, where, and what awaits review?</span></div><div><strong>Organization</strong><span>How do sites share standards without losing local control?</span></div>
+        <div><strong>Plan &amp; Billing</strong><span>What is included, limited, attached, or changing?</span></div><div><strong>Help &amp; Administration</strong><span>How do we recover, govern, and stay safe?</span></div>
+      </div>
+    </section>
+    <section id="content-deep-dive" class="deep-dive">
+      <h2 class="section-title">Content and Menu industry deep dive</h2>
+      <div class="notice"><strong>Central conclusion.</strong> Menu remains an important content type, but it is too restaurant-specific to be the permanent product umbrella. Use <strong>Content</strong> as the durable architecture and present an industry-aware starting label and editor.</div>
+      <table class="states"><thead><tr><th>Industry</th><th>Customer label</th><th>Primary content types</th></tr></thead><tbody>
+        <tr><td>Restaurant</td><td>Menus</td><td>Food and drink menus, specials, service-period menus</td></tr>
+        <tr><td>Bar, Brewery &amp; Nightlife</td><td>Drinks &amp; Menus</td><td>Tap, cocktail and wine lists; food, releases and event lineups</td></tr>
+        <tr><td>Café, Bakery &amp; Dessert</td><td>Products &amp; Menus</td><td>Counter menus, products, batch boards, seasonal offers and pickup</td></tr>
+        <tr><td>Food Truck &amp; Concession</td><td>Menus &amp; Offers</td><td>Compact/event menus, combos, specials, pickup and service guidance</td></tr>
+        <tr><td>Hospitality</td><td>Guest Information</td><td>Amenities, services, outlets, directories, wayfinding and notices</td></tr>
+        <tr><td>Entertainment &amp; Attractions</td><td>Programs &amp; Visitor Information</td><td>Shows, sessions, attractions, admission, queues, routes and safety</td></tr>
+      </tbody></table>
+      <h3>What each industry adds to the editor</h3>
+      <table class="states"><thead><tr><th>Industry</th><th>Entries and attributes</th><th>Operational context</th></tr></thead><tbody>
+        <tr><td>Restaurant</td><td>Items, prices, sizes, modifiers, dietary/allergen data, availability</td><td>Service period, service mode, location, source-controlled fields</td></tr>
+        <tr><td>Bar/Brewery</td><td>Beer, wine, cocktails, taps, packages, pours, flights, ABV/style, releases</td><td>Cross-midnight day, room/patio, events, age wording, last call</td></tr>
+        <tr><td>Café/Bakery</td><td>Products, sizes, options, batches, freshness, limited quantity, preorder</td><td>Daypart, production source, pickup point, batch and return time</td></tr>
+        <tr><td>Food Truck/Concession</td><td>Compact menus, combos, specials, stand menus, pickup guidance</td><td>Current location, host/event, service window, queue lane, relocation</td></tr>
+        <tr><td>Hospitality</td><td>Amenities, services, outlets, events, sessions, destinations, notices</td><td>Property/building/floor, audience, accessible route, privacy-safe wording</td></tr>
+        <tr><td>Entertainment</td><td>Programs, shows, sessions, attractions, admission and visitor guidance</td><td>Occurrence, venue/zone, capacity/queue source, accessibility and safety</td></tr>
+      </tbody></table>
+      <h3>One extensible content model</h3>
+      <p>All industries share ten primitives: collection, section, entry, attributes, operating state, timing, place/audience, source, presentation and lifecycle. Industry modules add relevant fields—food and allergens; beverage formats; batch/freshness; events and admission; attraction queues/capacity; hospitality location and service conditions—without forcing every entry into a restaurant-item schema.</p>
+      <h3>Recommended Content-area architecture</h3>
+      <pre class="map" aria-label="Recommended Content information architecture">Content
+├── Library       Find, create, duplicate, archive and restore
+├── Editor        Structure, entries and industry properties
+├── Quick Update  Change urgent public states without the full editor
+├── Plan          Timing, service periods, schedules and expiry
+├── Presentation  Layout, theme, media, language and accessibility
+├── Sources       Authority, freshness, mappings, conflicts and overrides
+└── Publish       Targets, change review, delivery evidence and recovery</pre>
+      <p>The main editor should combine a structure outline, direct preview/canvas, contextual property inspector, persistent draft-versus-live status and exact publish impact. Quick Update stays separate for interrupted operational work.</p>
+      <h3>Suggested starting content</h3>
+      <div class="starter-grid">
+        <div><strong>Brewery</strong><br>Tap List · Food Menu · Releases · Events</div><div><strong>Café</strong><br>Counter Menu · Batch Board · Pickup Information</div>
+        <div><strong>Food truck</strong><br>Today’s Menu · Current Location · Pickup Guidance</div><div><strong>Hotel</strong><br>Guest Information · Amenities · Event Directory · Dining</div>
+        <div><strong>Cinema</strong><br>Showtimes · Concessions · Visitor Notices</div><div><strong>Attraction</strong><br>Today’s Program · Queue/Closure Information · Wayfinding</div>
+      </div>
+      <p>Onboarding suggests a small useful set based on industry, subtype and screen purpose. <strong>Create another content type</strong> exposes broader discovery without turning recommendations into hidden packages.</p>
+      <h3>Required editor states</h3>
+      <p>First use, populated, empty section, validation, unsaved/saved draft, review required, permission restricted, commercially locked advanced tool, source controlled, stale/conflicted, offline target, partial delivery, publish success/failure, archived and recoverable.</p>
+    </section>
+    <section id="inventory">
+      <h2 class="section-title">Complete surface inventory</h2>
+      <div class="tools" role="search">
+        <label for="search" style="position:absolute;left:-9999px">Search features</label><input id="search" type="search" placeholder="Search features, screens, actions, or states…">
+        <button type="button" data-filter="all" aria-pressed="true">All</button><button type="button" data-filter="core" aria-pressed="false">Core</button><button type="button" data-filter="foundation" aria-pressed="false">Foundation</button><button type="button" data-filter="advanced" aria-pressed="false">Advanced</button><button type="button" data-filter="addon" aria-pressed="false">Add-ons</button><button type="button" data-filter="policy" aria-pressed="false">Policy</button><button type="button" data-filter="horizon" aria-pressed="false">Horizon</button>
+        <span class="count" aria-live="polite"></span>
+      </div>
+      <div id="domains"></div><p class="empty" id="empty">No features match that search and classification.</p>
+    </section>
+    <section id="backlog-tbd" class="deep-dive">
+      <h2 class="section-title">Backlog — TBD</h2>
+      <div class="notice"><strong>No phases and no commitment.</strong> The owner canceled former Phases 14–16 as numbered phases. Their ideas remain only as an unprioritized backlog and require fresh approval before planning or implementation.</div>
+      <h3>Mobile operations <small>— formerly Phase 14</small></h3>
+      <p><strong>Intent:</strong> fast operational control from iOS and Android during active service.</p>
+      <ul>
+        <li>Shared React Native application, biometric authentication, and operational push notifications.</li>
+        <li>Quick unavailable/“86” updates, daily specials, happy-hour overrides, and emergency broadcasts.</li>
+        <li>Mobile fleet health, offline alerts, last-seen evidence, manual publish, and remote content refresh.</li>
+        <li>Brewery-specific keg-empty, tap-list, and “Now Pouring” actions.</li>
+      </ul>
+      <p><span class="tag horizon">Long horizon</span></p>
+      <h3>AI-assisted work <small>— formerly Phase 15</small></h3>
+      <p><strong>Intent:</strong> lower the skill required to produce, arrange, and troubleshoot content while keeping people in control.</p>
+      <ul>
+        <li>Description drafting, bulk generation, naming suggestions, and human-confirmed allergen suggestions.</li>
+        <li>Plain-language custom display generation with reusable templates, governed variables, sandboxing, usage tracking, and review before publish.</li>
+        <li>A developer HTML/CSS editor with supported variables and live venue-data preview.</li>
+        <li>POS-informed recommendations, layout advice, and AI-assisted branded imagery.</li>
+        <li>Page-aware support and engineering diagnostic agents with consent, evidence, privacy, and access controls.</li>
+      </ul>
+      <p><span class="tag horizon">Long horizon</span> <span class="tag policy">Policy pending</span></p>
+      <h3>Analytics and smart automation <small>— formerly Phase 16</small></h3>
+      <p><strong>Intent:</strong> use accumulated operational and commerce evidence to demonstrate reliability and guide decisions.</p>
+      <ul>
+        <li>Uptime, downtime, impressions, sales correlation, item performance, happy-hour ROI, and portfolio reporting.</li>
+        <li>Owner-controlled A/B tests for layouts and item positions.</li>
+        <li>Time-of-day, rules-based, and carefully governed demand-based pricing.</li>
+        <li>Weather, foot-traffic, review, recommendation, and sports-driven display context.</li>
+        <li>Webhooks, automation-platform connections, and spreadsheet synchronization with audit and manual fallback.</li>
+      </ul>
+      <p><span class="tag horizon">Long horizon</span> <span class="tag addon">Add-on candidate</span> <span class="tag policy">Policy pending</span></p>
+    </section>
+    <section id="states">
+      <h2 class="section-title">Universal state vocabulary</h2>
+      <table class="states"><thead><tr><th>State family</th><th>Examples</th><th>Design response</th></tr></thead><tbody>
+        <tr><td>Included and available</td><td>Ready, configured, permitted</td><td>Show the action normally.</td></tr>
+        <tr><td>Permission restricted</td><td>User lacks this action at this scope</td><td>Name the missing authority and who can resolve it.</td></tr>
+        <tr><td>Commercially locked</td><td>Advanced native outcome not included</td><td>Explain the outcome and offer plan review without false urgency.</td></tr>
+        <tr><td>Add-on absent</td><td>Not attached, configured, or connected</td><td>Explain setup, scope, prerequisites, responsibility, and manual fallback.</td></tr>
+        <tr><td>Product state</td><td>Sold out, closed, paused, canceled, relocated</td><td>Show the real state and authorized update/recovery.</td></tr>
+        <tr><td>Source condition</td><td>Stale, disconnected, conflicted, rate-limited</td><td>Show source, freshness, last-known-good, override, and reconnect.</td></tr>
+        <tr><td>Delivery condition</td><td>Queued, partial, offline, failed, unknown</td><td>Show affected targets, evidence, retry, correction, and persistence.</td></tr>
+        <tr><td>Limit condition</td><td>Warning, reached, reserved, pooled</td><td>Show unit, scope, calculation, consuming objects, and safe remedy.</td></tr>
+        <tr><td>Privacy / rights / safety</td><td>Sensitive, regulated, unsupported audience</td><td>Offer the safe alternative or responsible review path; never upsell around it.</td></tr>
+        <tr><td>Rollout / temporary</td><td>Preview, staged, maintenance, disabled</td><td>Explain availability and timing without presenting it as a purchase decision.</td></tr>
+      </tbody></table>
+    </section>
+    <section id="rules" class="rules"><h2 class="section-title">Rules that shape every screen</h2><ol>
+      <li>Design for an owner working in interrupted bursts: current scope, public impact, exceptions, and the next safe action come first.</li>
+      <li>Preserve essential manual operation when automation, integrations, or paid add-ons fail.</li>
+      <li>Preview exact targets and distinguish intended from delivered results.</li>
+      <li>Never collapse permission, entitlement, product state, add-on state, source health, limits, restrictions, and rollout into one generic lock.</li>
+      <li>Preview consequences for destructive or high-scope actions and provide recovery where possible.</li>
+      <li>Cover loading, first use, empty, validation, success, error, denial, stale/offline, responsive, keyboard, screen-reader, zoom, and localization states.</li>
+      <li>Industry changes language, defaults, and emphasis—not entitlement.</li>
+    </ol></section>
+    <section id="decisions" class="decisions"><h2 class="section-title">Owner decisions still required</h2><ul>
+      <li>Complete V1, V1.1, V2, and Later outcomes.</li><li>Final capability names, identifiers, tiers, add-ons, prices, trials, contracts, and regions.</li><li>Exact allowances, pooling, grace, overage, retention, and grandfathering.</li><li>Supported providers, hardware platforms, service levels, and responsibility boundaries.</li><li>Privacy, rights, safety, regulated-content, AI, and data-governance policy.</li><li>Final top-level navigation and which future areas stay hidden until useful.</li>
+    </ul></section>
+    <footer class="footer" id="sources"><strong>Source authority.</strong> Synthesized from <code>track0/CAPABILITY_MATRIX.md</code>, the cross-industry model, tier/add-on architecture, customer-journey validation, existing-product inventory, owner handoff, native-industry capability sets, and RWP-01.06. The archived Roadmap v5 provides historical provenance only for the canceled Phase 14–16 groupings. See the sibling Markdown report for full source paths and detail.</footer>
+  </main>
+</div>
+<script>
+const D=[
+['Identity, onboarding & first value','Sign in · organization setup · venue setup · industry · starter content · first publish',[
+['Account creation, sign-in, recovery, invitations, session expiry, and secure sign-out','core'],['Organization and first authorized venue/property/operation context','core'],['Industry, subtype, local terminology, timezone, and screen-purpose setup','core'],['Preview effects of an industry or subtype change','policy'],['Starter content and recommended screen purposes with neutral fallback','core'],['First-screen pairing, deferral, preview, publish, and confirmation','core'],['Resumable setup, ownership transfer, and incomplete-setup recovery','advanced'],['Guided import from a menu, website, document, provider, or prior venue','horizon']]],
+['Home & daily operations','Venue health · attention queue · quick update · activity · assistant',[
+['At-a-glance screen, content, source, schedule, and exception health','core'],['Public-impact attention queue and next safe action','core'],['Rapid sold-out, delay, closure, relocation, hours, batch, and reopening updates','core'],['Pending changes and explicit draft-versus-live status','core'],['Activity with actor, scope, target, result, and timestamps','core'],['Upcoming schedules, campaigns, expirations, and review deadlines','advanced'],['Role-aware home emphasis','foundation'],['Evidence-based contextual recommendations','advanced'],['Page-aware customer support agent','horizon']]],
+['Content & information models','Library · menus · notices · services · events · wayfinding · media · history',[
+['Customer-authored names, descriptions, prices, availability, timing, media, and alt text','core'],['Menus, products, taps, amenities, services, attractions, programs, sessions, areas, routes, gates, and notices','core'],['Sections, groups, ordering, duplication, archiving, restoration, and bulk editing','advanced'],['Effective dates, expiry, supersession, unpublish, undo, restore, and versions','core'],['Validation for overflow, unsupported media, privacy, rights, and target compatibility','core'],['Reusable content blocks, libraries, collections, and organization templates','advanced'],['Import, export, structured exchange, and content portability','advanced'],['Comments, assignments, review state, and ownership','advanced']]],
+['Menu, catalog & rapid update','Menu builder · availability board · price review · batch update · live preview',[
+['Direct editing of names, descriptions, prices, dietary/allergen data, availability, and placement','core'],['Rapid state updates with optional expected return','core'],['Autosave, explicit publish, cancel/revert, undo/redo, and history','core'],['Show which screens display old versus new values','core'],['Bulk price, availability, category, schedule, and destination changes','advanced'],['Variants, modifiers, sizes, service points, batches, pickup, and source-controlled fields','advanced'],['Happy hour, specials, seasonal items, promotions, and tap rotations','advanced'],['Manual-versus-source conflict resolution','addon']]],
+['Brand, layout & templates','Brand library · themes · layouts · templates · preview · simulation',[
+['Basic readable themes and accessible layouts','core'],['Logo, color, typography, spacing, media, and brand assets','advanced'],['Layout by purpose, orientation, resolution, safe area, and density','advanced'],['Exact-target and representative-device preview','core'],['Reusable templates, locked regions, components, and local customization','advanced'],['Validated and sandboxed custom HTML presentation','advanced'],['Video walls, coordinated canvases, synchronized regions, and partial failure','advanced'],['Accessibility checking for contrast, type, motion, order, and density','advanced'],['Brand inheritance, approval, distribution, and local overrides','advanced']]],
+['Screen fleet, players & topology','Fleet · screen detail · pairing · groups · walls · maintenance',[
+['Add, pair, name, locate, purpose, rename, and safely unpair','core'],['Pairing-code expiry and broken-player replacement','core'],['Platform, app version, identity, orientation, resolution, purpose, and content','core'],['Paired, online, idle, stale, offline, updating, unsupported, and disabled states','core'],['Current/intended version, heartbeat, acknowledgement, and successful publish','core'],['Groups, target sets, zones, floors, service points, and collections','advanced'],['Video-wall membership, ordering, capacity, sync, and partial failure','advanced'],['Brightness, quiet hours, restart, cache, app update, and remote recovery','advanced'],['Hardware inventory, installation, warranty, replacement, and connectivity','addon']]],
+['Publishing, delivery & recovery','Targets · preview · publish review · progress · ledger · history',[
+['Exact venue, context, object, audience, screen, group, and target selection','core'],['Preview intended output before publication','core'],['Publish selected or all authorized targets','core'],['Saved, queued, received, applied, acknowledged, partial, offline, stale, failed, and unknown evidence','core'],['Per-target impact before publish and mixed results afterward','core'],['Retry, correct, supersede, expire, unpublish, undo, restore, and last-known-good','core'],['Approval gates, scheduled/staged release, rollout windows, and transitions','advanced'],['Publication comparison, retained evidence, export, and audit','advanced'],['Emergency publishing authority and recovery safeguards','policy']]],
+['Scheduling, rotations & campaigns','Calendar · dayparts · rotations · rules · campaigns',[
+['Hours, service periods, events, sessions, batches, programs, routes, and notices','core'],['Start/end, expiry, one-time changes, timezone-aware preview','core'],['Recurrence, dayparts, rotations, conflicts, exclusions, and transitions','advanced'],['Campaigns, promotions, content sets, destinations, target groups, and calendars','advanced'],['Rules driven by time, source, availability, weather, capacity, or events','advanced'],['Campaign approval, simulation, readiness, rollback, and results','advanced'],['Calendar/source synchronization with manual fallback','addon']]],
+['Sources, synchronization & conflicts','Connections · mapping · health · conflicts · overrides · history',[
+['Source identity, authority, freshness, coverage, refresh, and last-known-good','core'],['Configuration error, unauthorized, disconnected, stale, conflicting, rate-limited, provider incident, and unsupported states','core'],['Scoped local override with author, reason, expiry, and reconnect behavior','advanced'],['Field mapping, object matching, duplicate resolution, import, and dry run','addon'],['Sync direction, cadence, pause/resume, retry, backfill, and history','addon'],['Secret-safe credentials, reconnect, revoke, remove, and retain/delete','addon'],['Data-quality warnings, precedence, fallback, and conflict queues','addon']]],
+['Commerce & food operations','POS · inventory · production · ordering · payments · taps · loyalty',[
+['POS catalog, price, availability, modifier, and item synchronization','addon'],['Inventory, production, recipe/supply, batch, sold-out, and return synchronization','addon'],['Ordering, payment, fulfillment, pickup, order-ready, and service-point information','addon'],['Tap management, keg/beer data, rotations, freshness, and availability','addon'],['Loyalty, supplier, CRM, promotion, and customer-program sources','addon'],['Manual fallback, override, conflicts, and last-known-good during disconnection','core']]],
+['Hospitality, entertainment & environment','Property · ticketing · occupancy · mapping · public data · safety',[
+['Property, room, booking, conference, guest service, transport, parking, access, and gaming systems','addon'],['Ticketing, admissions, queues, occupancy, cinema, attractions, show control, sports, maps, and mobility','addon'],['Weather, traffic, public feeds, safety alerts, calendars, directories, messaging, BI, and exports','addon'],['Public-screen privacy, rights, regulated content, uncertainty, coverage, and fallback','policy'],['Guest, child, biometric/camera, alcohol, gambling, sponsor, and regulated governance','policy']]],
+['AI, translation & assisted work','Assistant · translation · generation review · usage · evidence',[
+['Draft, rewrite, summarize, tone adaptation, layout suggestions, and variations','addon'],['Translation, human review, terminology, locale fallback, and target languages','addon'],['Predictive recommendations, anomalies, scheduling help, and optimization','horizon'],['Page/session-aware customer support agent','horizon'],['Engineering diagnostics with traces, logs, insights, versions, and audit','horizon'],['Source/status labeling, review, privacy, consumption, and no silent publish','policy']]],
+['Team, roles, workflow & audit','People · roles · scopes · review queue · activity · support access',[
+['Owner, editor, publisher, operator, billing, integration, support, and scoped roles','foundation'],['Organization, venue, area, screen, content, event, source, integration, billing, and support scopes','foundation'],['View, create, edit, approve, publish, override, restore, delete, export, and administration actions','foundation'],['Invitations, assignment, expiration, deactivation, and access review','advanced'],['Approval chains, review queues, comments, acknowledgement, escalation, and handoff','advanced'],['Actor/reason/scope/before-after/correlation/source/effective-time audit','advanced'],['Bounded support grants with reason, expiry, review, notification, and revocation','foundation']]],
+['Multi-venue, portfolio & enterprise','Organization map · portfolio health · inheritance · bulk action',[
+['Authorized context switching with preserved local terminology and state','core'],['Hierarchy, groups, regions, brands, concepts, properties, outlets, and areas','advanced'],['Defaults, inheritance, overrides, exceptions, effective values, and rollback','advanced'],['Cross-site templates, campaigns, schedules, libraries, standards, and localization','advanced'],['Bulk action scope preview, mixed results, per-site confirmation, and restore','advanced'],['Portfolio delivery/source health, exceptions, comparisons, and capacity','advanced'],['Directory, policy, delegated admin, data region, retention, export, legal hold, and assurance','advanced']]],
+['Insights, alerts & evidence','Operations · alerts · reports · metrics · exports',[
+['Screen health, freshness, pending changes, delivery, sources, and exceptions','core'],['Offline/stale, failed/partial, expiry, disconnected, conflict, limit, and approval alerts','advanced'],['Trends, comparisons, scheduled reports, portfolio analysis, and optimization','advanced'],['External commerce, footfall, ticketing, occupancy, CRM, and BI data','addon'],['Metric definition, scope, source, freshness, reconciliation, privacy, and confidence','policy'],['Export destinations, permissions, retention, redaction, and audit','advanced'],['No invented revenue, engagement, attribution, or operational claims','policy']]],
+['Plans, allowances & add-ons','Plan · usage · marketplace · checkout · downgrade review',[
+['Current software outcome, included capabilities, add-ons, allowances, state, and administrator','foundation'],['Eligibility, hosted billing, provider confirmation, pending, applied, canceled, and error states','foundation'],['Typed venue, screen, user, object, schedule, source, storage, support, and consumption allowances','policy'],['Included, consumed, reserved, remaining, counted objects, scope, pooling, and calculation','advanced'],['Upgrade comparison by complete customer outcome','policy'],['Downgrade impact, conflicts, public outputs, history, retention, dependencies, grace, and remediation','policy'],['Add-on purchase, scope, prerequisites, eligibility, support, removal, reconnect, and fallback','policy']]],
+['Help, support & diagnostics','Help center · incident detail · trace · support conversation · status',[
+['Contextual explanations, guides, recovery steps, and task-aware help','core'],['Customer causal trace across save, publish, acknowledgement, connection, heartbeat, and recovery','advanced'],['Safe retry, reconnect, pairing code, replacement, correction, and restore','advanced'],['Consent-based support conversation with scoped session evidence','horizon'],['Owner/engineering view with IDs, logs, traces, insights, deployments, versions, and audit','horizon'],['Status, incidents, maintenance, service evidence, and managed monitoring','addon'],['Managed hardware, connectivity, installation, deployment, content, analytics, and support','addon']]],
+['Account, security, privacy & developer','Profile · authentication · privacy · API · internal controls',[
+['Profile, locale, timezone, authentication, sessions, recovery, and notifications','core'],['Ownership, security contacts, billing contacts, and administrators','core'],['MFA, SSO/directory, device/session control, events, and delegated policy','advanced'],['Privacy, rights, consent, retention, deletion, export, redaction, and review','policy'],['API credentials, webhooks, service accounts, events, rates, usage, and audit','horizon'],['Internal preview, staged rollout, temporary disablement, and support exceptions','foundation'],['Audited, scope-safe migration, reconciliation, repair, and support tools','foundation']]]
+];
+const labels={core:'Core approved',foundation:'Foundation delivered',advanced:'Advanced candidate',addon:'Add-on candidate',policy:'Policy pending',horizon:'Long horizon'};
+const domains=document.querySelector('#domains'), search=document.querySelector('#search'), count=document.querySelector('.count'), empty=document.querySelector('#empty');let active='all';
+function render(){const q=search.value.trim().toLowerCase();domains.innerHTML='';let shown=0;D.forEach((d,i)=>{const matches=d[2].filter(f=>(active==='all'||f[1]===active)&&(!q||(d[0]+' '+d[1]+' '+f[0]+' '+labels[f[1]]).toLowerCase().includes(q)));if(!matches.length)return;shown+=matches.length;const el=document.createElement('details');el.className='domain';if(q)el.open=true;el.innerHTML=`<summary><span class="number">${String(i+1).padStart(2,'0')}</span><span><h3>${d[0]}</h3><p>${d[1]}</p></span><span class="chev" aria-hidden="true">+</span></summary><div class="domain-body"><p class="surfaces"><strong>Likely surfaces:</strong> ${d[1]}</p><ul class="features">${matches.map(f=>`<li class="feature"><span>${f[0]}</span><span class="tag ${f[1]}">${labels[f[1]]}</span></li>`).join('')}</ul></div>`;domains.append(el)});count.textContent=`${shown} matching capabilities`;empty.classList.toggle('visible',shown===0)}
+document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{active=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));render()}));search.addEventListener('input',render);render();
+</script>
+</body>
+</html>

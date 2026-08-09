@@ -1,17 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-08T06:20:00Z",
-  "activeAssignments": [
-    {
-      "item": "Menus M1 \u2014 the spine",
-      "issue": 684,
-      "branch": "feature/menus-m1-spine",
-      "owner": "Claude (session_01EXYUJDBiHsKSRhfTH2YLai)",
-      "mode": "Sequential",
-      "claimedUtc": "2026-08-08T06:20:00Z",
-      "scope": "Item library + Placement schema, migration, menu-screen assignment, availability, draft/publish model, tier ceilings, API surface, focused tests"
-    }
-  ],
+  "updatedUtc": "2026-08-06T23:41:00Z",
+  "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
@@ -29,12 +19,10 @@
   },
   "lastDesktopSession": {
     "owner": "Codex for JeremyPC",
-    "scope": "Track 1 review remediation and acceptance QA automation",
-    "branch": "collab/desktop/track1-qa-automation",
-    "startedUtc": "2026-08-06T04:26:08Z",
-    "releasedUtc": "2026-08-06T07:20:38Z",
-    "releasedBy": "owner confirmation",
-    "mergedPullRequest": 654,
-    "mergeCommit": "b16d849"
+    "scope": "Product surface inventory plus Content and Menu industry deep dive",
+    "branch": "collab/desktop/product-surface-inventory",
+    "startedUtc": "2026-08-06T22:59:48Z",
+    "releasedUtc": "2026-08-06T23:41:00Z",
+    "releasedBy": "scope completed locally"
   }
 }

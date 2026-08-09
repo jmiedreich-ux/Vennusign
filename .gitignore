@@ -384,5 +384,9 @@ vennu-api-*.txt
 *.out.txt
 *.err.txt
 
+<<<<<<< HEAD
 # Impeccable skill run logs and state (machine-specific)
+=======
+# Impeccable skill run logs and state
+>>>>>>> origin/master
 .impeccable/
