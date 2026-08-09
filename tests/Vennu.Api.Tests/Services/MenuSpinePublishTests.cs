@@ -177,6 +177,49 @@ public sealed class MenuSpinePublishTests
         Assert.DoesNotContain(library.History, entry => entry.Kind == MenuHistoryKinds.PutAway);
     }
 
+    // Review #6: a take-off reaches the screens only on the next publish, so a
+    // menu shelved between the two left a screen showing it with no act able to
+    // clear it - the publish that would was refused for being put away. The
+    // refusal now lasts until that publish has actually gone out.
+    [Fact]
+    public async Task PuttingAMenuAway_IsRefusedUntilTheTakeOffHasBeenPublished()
+    {
+        var (service, library) = Build();
+        await service.PublishAsync(VenueId, MenuId, "Publisher");
+        await service.QueueTakeOffScreensAsync(VenueId, MenuId, "Chef");
+
+        var refusal = await Assert.ThrowsAsync<MenuStillOnScreensException>(
+            () => service.SetPutAwayAsync(VenueId, MenuId, isPutAway: true, "Owner"));
+        Assert.Contains("publish", refusal.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(library.History, entry => entry.Kind == MenuHistoryKinds.PutAway);
+
+        // Publishing the take-off is what frees the screen, and it is still allowed.
+        await service.PublishAsync(VenueId, MenuId, "Publisher");
+        Assert.True((await service.SetPutAwayAsync(VenueId, MenuId, isPutAway: true, "Owner")).Changed);
+    }
+
+    // A shelved menu can still be edited - only its screens are settled - so the
+    // draft that creates must still have a way out. Discard goes back to the
+    // published shape, which has no screens in it and so cannot re-shelve anything.
+    [Fact]
+    public async Task DiscardingTheDraft_IsStillAllowedOnAPutAwayMenu()
+    {
+        var (service, library) = Build();
+        await service.PublishAsync(VenueId, MenuId, "Publisher");
+        await service.QueueTakeOffScreensAsync(VenueId, MenuId, "Chef");
+        await service.PublishAsync(VenueId, MenuId, "Publisher");
+        await service.SetPutAwayAsync(VenueId, MenuId, isPutAway: true, "Owner");
+
+        library.WorkingSnapshotJson = library.WorkingSnapshotJson!.Replace("\"12\"", "\"13\"", StringComparison.Ordinal);
+        Assert.NotEmpty(await service.GetDraftAsync(VenueId, MenuId));
+
+        await service.DiscardDraftAsync(VenueId, MenuId, "Owner");
+
+        Assert.Empty(await service.GetDraftAsync(VenueId, MenuId));
+        Assert.Contains(library.History, entry => entry.Kind == MenuHistoryKinds.DraftDiscarded);
+        Assert.Contains(MenuId, library.PutAwayMenus);
+    }
+
     [Fact]
     public async Task PuttingAMenuAway_IsAttributableAndFreesRoomUnderTheCeiling()
     {

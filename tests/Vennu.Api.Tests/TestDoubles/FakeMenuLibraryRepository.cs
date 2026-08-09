@@ -148,6 +148,22 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
     /// <summary>Menus this fake knows are put away, so the ceiling and the act can be exercised.</summary>
     public HashSet<Guid> PutAwayMenus { get; } = [];
 
+    /// <summary>
+    /// Screens the latest published snapshot still shows this menu on, less any a
+    /// different menu has since been given -- those are not this menu's to release,
+    /// so they neither hold it on the shelf nor block a restore.
+    /// </summary>
+    private List<Guid> PublishedScreensThisMenuCanStillRelease(Guid menuId) =>
+        PublishEvents
+            .Where(e => e.MenuId == menuId)
+            .OrderByDescending(e => e.Version)
+            .Take(1)
+            .SelectMany(e => MenuSnapshot.Parse(e.Snapshot)?.Screens ?? [])
+            .Select(screen => screen.ScreenId)
+            .Where(screenId => !Assignments.Any(a => a.ScreenId == screenId && a.MenuId != menuId))
+            .Distinct()
+            .ToList();
+
     public Task<PutAwayOutcome> SetPutAwayAsync(
         Guid venueId,
         Guid menuId,
@@ -169,7 +185,13 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
             return Task.FromResult(new PutAwayOutcome(PutAwayOutcomes.OverCeiling, active));
         }
 
-        if (isPutAway && Assignments.Any(a => a.VenueId == venueId && a.MenuId == menuId))
+        // Being on a screen is not the presence of an assignment row: a take-off
+        // reaches the screens only on the next publish, so the published snapshot
+        // is asked too. Otherwise a menu is put away with its take-off pending and
+        // the publish that would free the screen is refused for being put away.
+        if (isPutAway
+            && (Assignments.Any(a => a.VenueId == venueId && a.MenuId == menuId)
+                || PublishedScreensThisMenuCanStillRelease(menuId).Count > 0))
         {
             return Task.FromResult(new PutAwayOutcome(PutAwayOutcomes.StillOnScreens, active));
         }
@@ -321,8 +343,31 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
     /// <summary>The snapshot this fake returns for the working state.</summary>
     public string? WorkingSnapshotJson { get; set; }
 
+    /// <summary>
+    /// The working snapshot as the statement rebuilds it, with its screens read
+    /// from the live assignments rather than from whatever the stored shape was
+    /// last set to. Holding the two apart is the point of the model: a take-off
+    /// leaves the working state at once, and reaches the screens only when a
+    /// publish carries it (Q68). A fake that kept the screen in both could not
+    /// tell those two states apart.
+    /// </summary>
+    private string? WorkingSnapshotNow(Guid menuId)
+    {
+        var parsed = MenuSnapshot.Parse(WorkingSnapshotJson);
+        if (parsed is null)
+        {
+            return WorkingSnapshotJson;
+        }
+
+        parsed.Screens = Assignments
+            .Where(a => a.MenuId == menuId)
+            .Select(a => new SnapshotScreen { ScreenId = a.ScreenId })
+            .ToList();
+        return MenuSnapshot.Serialize(parsed);
+    }
+
     public Task<string?> GetWorkingSnapshotAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
-        Task.FromResult(WorkingSnapshotJson);
+        Task.FromResult(WorkingSnapshotNow(menuId));
 
     public Task<string?> GetLatestPublishedSnapshotAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
         Task.FromResult(PublishEvents
@@ -334,7 +379,7 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
     public async Task<DraftSnapshots> GetDraftSnapshotsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
         new(
             await GetLatestPublishedSnapshotAsync(venueId, menuId, cancellationToken).ConfigureAwait(false),
-            WorkingSnapshotJson,
+            WorkingSnapshotNow(menuId),
             PublishEvents.Where(e => e.VenueId == venueId && e.MenuId == menuId).Select(e => e.Version).DefaultIfEmpty(0).Max());
 
     /// <summary>
@@ -353,17 +398,32 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
         CancellationToken cancellationToken = default,
         string kind = MenuHistoryKinds.Restored)
     {
-        // A restore puts screen assignments back, so it is the third door onto the
-        // shelf and refuses a put-away menu like the other two.
-        if (PutAwayMenus.Contains(menuId))
+        // A restore puts back whatever shape it was given, screens included, so a
+        // version that was on a screen is a third door onto the shelf. A shape with
+        // no screens in it cannot put a menu back on one, so discarding a draft on
+        // a shelved menu stays possible.
+        if (PutAwayMenus.Contains(menuId) && MenuSnapshot.Parse(snapshotJson)?.Screens?.Count > 0)
         {
             throw new MenuPutAwayException(
-                "This menu is put away. Put it back on the shelf before changing what it looks like.");
+                "This menu is put away. Put it back on the shelf before going back to a version it was on a screen for.");
         }
 
-        // The statement puts the working rows back; the fake models that by making
-        // the working snapshot the restored one.
+        // The statement puts the working rows back, screen assignments included --
+        // which is exactly why the refusal above exists.
         WorkingSnapshotJson = snapshotJson;
+        Assignments.RemoveAll(a => a.VenueId == venueId && a.MenuId == menuId);
+        foreach (var screen in MenuSnapshot.Parse(snapshotJson)?.Screens ?? [])
+        {
+            Assignments.RemoveAll(a => a.ScreenId == screen.ScreenId);
+            Assignments.Add(new MenuScreenAssignment
+            {
+                Id = Guid.NewGuid(),
+                VenueId = venueId,
+                ScreenId = screen.ScreenId,
+                MenuId = menuId
+            });
+        }
+
         History.Add(new MenuHistoryEntry
         {
             Id = Guid.NewGuid(),
@@ -396,7 +456,7 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
         // has moved, and refuses again if someone else published in between. The
         // fake mirrors both, so the retry path is exercised here. The comparison is
         // ordinal because the statement's is binary.
-        var observed = WorkingSnapshotAtPublish ?? WorkingSnapshotJson;
+        var observed = WorkingSnapshotAtPublish ?? WorkingSnapshotNow(publishEvent.MenuId);
         var currentVersion = PublishEvents
             .Where(e => e.VenueId == publishEvent.VenueId && e.MenuId == publishEvent.MenuId)
             .Select(e => e.Version)
@@ -459,7 +519,7 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
             .Max() + 1;
         publishEvent.ChangeCount = changeCount;
         publishEvent.ShippedChanges = shippedChanges;
-        publishEvent.Snapshot = WorkingSnapshotJson;
+        publishEvent.Snapshot = observed;
 
         PublishEvents.Add(publishEvent);
 

@@ -178,7 +178,37 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             BEGIN
                 -- A menu on a screen is never put away underneath the person: it is
                 -- taken off first, which is its own deliberate act (Q195).
-                IF @IsPutAway = 1 AND EXISTS (SELECT 1 FROM dbo.MenuScreenAssignments WHERE VenueId = @VenueId AND MenuId = @MenuId)
+                --
+                -- Being on a screen is not the presence of an assignment row. A
+                -- take-off changes the working state; the screens keep showing the
+                -- published snapshot until a publish carries it (Q68). Reading only
+                -- the working rows lets a menu be put away with its take-off still
+                -- pending -- and the publish that would release the screen is then
+                -- refused, because the menu is put away, leaving the screen showing
+                -- a menu the system reports as shelved. So the published snapshot
+                -- is asked too: take off, publish, then put away.
+                --
+                -- A screen another menu has since been given is not this menu's to
+                -- release -- publish leaves it alone by the owner's rule -- so it
+                -- does not hold this menu on the shelf either. Counting it would
+                -- strand the menu just as surely, with no publish able to clear it.
+                IF @IsPutAway = 1 AND
+                (
+                    EXISTS (SELECT 1 FROM dbo.MenuScreenAssignments WITH (UPDLOCK, HOLDLOCK) WHERE VenueId = @VenueId AND MenuId = @MenuId)
+                    OR EXISTS
+                    (
+                        SELECT 1
+                        FROM dbo.MenuPublishEvents e WITH (UPDLOCK, HOLDLOCK)
+                        CROSS APPLY OPENJSON(e.Snapshot, '$.screens')
+                            WITH (screenId UNIQUEIDENTIFIER '$.screenId') published
+                        WHERE e.VenueId = @VenueId AND e.MenuId = @MenuId
+                          AND e.Version = (SELECT MAX(Version) FROM dbo.MenuPublishEvents WHERE VenueId = @VenueId AND MenuId = @MenuId)
+                          AND published.screenId IS NOT NULL
+                          AND NOT EXISTS (
+                              SELECT 1 FROM dbo.MenuScreenAssignments taken WITH (UPDLOCK, HOLDLOCK)
+                              WHERE taken.ScreenId = published.screenId AND taken.MenuId <> @MenuId)
+                    )
+                )
                 BEGIN
                     ROLLBACK TRANSACTION;
                     SELECT N'still_on_screens' AS Outcome, @Active AS ActiveMenuCount;
@@ -406,14 +436,21 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             THROW 51001, 'The menu does not belong to this venue.', 1;
         END;
 
-        -- A put-away menu is off the shelf, and a restore puts screen assignments
-        -- back. Allowing it here would be a third way onto the shelf, around the
-        -- ceiling check and the record that make putting one back deliberate --
-        -- and would leave a menu both put away and on a screen.
+        -- A restore puts back whatever shape it was given, screens included, so a
+        -- version that was on a screen is a third way onto the shelf -- around the
+        -- ceiling check and the record that make putting one back deliberate, and
+        -- into a state the model says cannot exist: put away and on a screen.
+        --
+        -- The rule is that nothing puts a put-away menu on a screen except a
+        -- deliberate put-back, not that a put-away menu is frozen. A shape with no
+        -- screens in it cannot break that rule, so discarding a draft on a shelved
+        -- menu -- the common case, since the menu had to leave its screens before
+        -- it could be put away at all -- is still allowed.
         IF EXISTS (SELECT 1 FROM dbo.Menus WHERE Id = @MenuId AND VenueId = @VenueId AND IsPutAway = 1)
+            AND EXISTS (SELECT 1 FROM OPENJSON(@SnapshotJson, '$.screens'))
         BEGIN
             ROLLBACK TRANSACTION;
-            THROW 51008, 'This menu is put away. Put it back on the shelf before changing what it looks like.', 1;
+            THROW 51008, 'This menu is put away. Put it back on the shelf before going back to a version it was on a screen for.', 1;
         END;
 
         -- A screen the recorded shape wants, which another menu has since been

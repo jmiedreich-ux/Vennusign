@@ -187,14 +187,28 @@ PUT /api/back-office/menu-spine/menus/{menuId}/put-away
 { "isPutAway": true }
 ```
 
-**Expect:** refused while the menu is still on a screen — it is taken off first,
-deliberately, so nothing goes blank without someone deciding to. Once it is off,
-the menu is put away, the act is recorded with its author, and the venue's active
-menu count drops: a put-away menu does not count against the ceiling, which is
-what makes the refusal's advice ("put one away first") true.
+**Expect:** refused while a screen is still showing the menu — it is taken off,
+and that take-off published, deliberately, so nothing goes blank without someone
+deciding to. Being off a screen means the published snapshot no longer names one,
+not merely that the assignment has gone: until the publish carries the take-off,
+the screen is still showing the menu, and shelving it there would strand that
+screen with no act left able to clear it. Once the take-off has shipped, the menu
+is put away, the act is recorded with its author, and the venue's active menu
+count drops: a put-away menu does not count against the ceiling, which is what
+makes the refusal's advice ("put one away first") true.
+
+A screen another menu has since been given is a different matter: it is not this
+menu's to release, no publish would touch it, and so it does not hold the menu on
+the shelf either.
 
 Putting one back is bounded by that same ceiling, and refuses in the same plain
 words when there is no room.
+
+A put-away menu can still be edited — only its screens are settled — and the
+draft that creates can still be discarded, because going back to the published
+shape of a shelved menu puts it on no screen. Going back to an older version that
+*was* on a screen is refused: that would be a way onto the shelf around the
+ceiling check and the record.
 
 ---
 

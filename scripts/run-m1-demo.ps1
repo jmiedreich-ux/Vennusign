@@ -254,15 +254,20 @@ Record '8b' 'Take off the screens waits in the draft, and ships on Publish' `
     'the removal waiting as a screens change with no new publish - the menu leaves the working state now, and leaves the screens on the next Publish (Q68)'
 
 # --- 8c. Take-off ships on Publish, and is recorded again against it ---------------------
+# The screen is still showing the menu until this publish carries the take-off, so
+# putting it away now would strand that screen: the act is refused until it ships.
+$putAwayTooEarlyRefused = $false
+try { Invoke-Api PUT "$spine/menus/$menuId/put-away" @{ isPutAway = $true } | Out-Null } catch { $putAwayTooEarlyRefused = $true }
+
 $takeOffPublish = Invoke-Api POST "$spine/menus/$menuId/publish"
 $historyAfterShip = @((Invoke-Api GET "$spine/menus/$menuId/history") | Where-Object { $null -ne $_ })
 $takeOffEntries = @($historyAfterShip | Where-Object { $_.kind -eq 'taken_off_screens' })
 $assignmentsAfterShip = Measure-Api "$spine/assignments"
 $shippedSnapshotScreens = @($takeOffPublish.targets).Count
 Record '8c' 'Publishing the take-off reaches the screens it is leaving, and records the act' `
-    ($takeOffEntries.Count -ge 2 -and $assignmentsAfterShip -eq 0) `
-    "taken_off_screens recorded $($takeOffEntries.Count) time(s) - when it was done and when it shipped, by '$(@($takeOffEntries | ForEach-Object { $_.author })[0])'; the publish told $shippedSnapshotScreens screen(s) it is being released; assignments now $assignmentsAfterShip" `
-    'the released screen told by the publish that releases it, and the act attributable both when queued and when shipped'
+    ($takeOffEntries.Count -ge 2 -and $assignmentsAfterShip -eq 0 -and $putAwayTooEarlyRefused) `
+    "putting it away before the take-off shipped was refused: $putAwayTooEarlyRefused; taken_off_screens recorded $($takeOffEntries.Count) time(s) - when it was done and when it shipped, by '$(@($takeOffEntries | ForEach-Object { $_.author })[0])'; the publish told $shippedSnapshotScreens screen(s) it is being released; assignments now $assignmentsAfterShip" `
+    'the released screen told by the publish that releases it, the act attributable both when queued and when shipped, and no way to shelve the menu while a screen is still showing it'
 
 # --- 8d. Put away is deliberate, attributable, and frees ceiling room ---------------------
 $contextBeforePutAway = Invoke-Api GET "$spine/context"

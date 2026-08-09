@@ -462,7 +462,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture) : IClassFixture<
     // screen assignments back too - a third way onto the shelf, around the ceiling
     // check and the record, leaving a menu both put away and on a screen.
     [Fact]
-    public async Task Restore_IsRefusedWhileTheMenuIsPutAway()
+    public async Task Restore_ToAVersionThatWasOnAScreen_IsRefusedWhileTheMenuIsPutAway()
     {
         if (!fixture.IsAvailable) { return; }
         var dataAccess = fixture.CreateDataAccess();
@@ -472,10 +472,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture) : IClassFixture<
         var screenId = await SeedScreenAsync(dataAccess, venueId);
         await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
         var version = await PublishCurrentAsync(repository, venueId, menuId);
-
-        await repository.TakeOffScreensAsync(venueId, menuId, "Owner", DateTime.UtcNow);
-        await repository.SetPutAwayAsync(
-            venueId, menuId, isPutAway: true, activeMenuLimit: 50, "Owner", "Put the menu away.", DateTime.UtcNow);
+        await ShelveAsync(repository, venueId, menuId);
 
         // The stored version has the screen in it, so restoring would re-assign it.
         Assert.NotEmpty(MenuSnapshot.Parse(version.Event.Snapshot)!.Screens!);
@@ -488,6 +485,52 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture) : IClassFixture<
         Assert.DoesNotContain(
             await repository.GetHistoryAsync(venueId, menuId, 20),
             entry => entry.Kind == MenuHistoryKinds.Restored);
+    }
+
+    // Review #6: the refusal above was written as "a put-away menu cannot be
+    // restored at all", which is broader than the rule it enforces. A shelved menu
+    // can still be edited, and discarding that draft goes back to the published
+    // snapshot - which, because the menu had to leave its screens to be shelved,
+    // has no screens in it and cannot put the menu back on one. Refusing it left
+    // the draft with no way out.
+    [Fact]
+    public async Task Discard_OnAPutAwayMenu_GoesBackToTheScreenlessPublishedShape()
+    {
+        if (!fixture.IsAvailable) { return; }
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new MenuLibraryRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("burger"), Price = "9" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await PublishCurrentAsync(repository, venueId, menuId);
+        var shelved = await ShelveAsync(repository, venueId, menuId);
+
+        // Nothing this version carries can re-assign a screen.
+        Assert.Empty(MenuSnapshot.Parse(shelved.Event.Snapshot)!.Screens ?? []);
+
+        // A shelved menu is still editable; only the screens are settled.
+        var item = (await repository.GetItemsAsync(venueId)).Single(candidate => candidate.Price == "9");
+        item.Price = "11";
+        Assert.True(await repository.UpdateItemAsync(item));
+        Assert.NotEmpty(MenuSnapshot.Diff(
+            shelved.Event.Snapshot,
+            (await repository.GetDraftSnapshotsAsync(venueId, menuId)).Working));
+
+        await repository.RestoreSnapshotAsync(
+            venueId, menuId, shelved.Event.Snapshot!, "Owner", "Threw the draft away.", DateTime.UtcNow,
+            kind: MenuHistoryKinds.DraftDiscarded);
+
+        // The draft is gone, the menu is still off the shelf, and still on no screen.
+        Assert.Empty(MenuSnapshot.Diff(
+            shelved.Event.Snapshot,
+            (await repository.GetDraftSnapshotsAsync(venueId, menuId)).Working));
+        Assert.Empty(await repository.GetAssignmentsAsync(venueId));
+        Assert.Equal(0, await repository.CountMenusAsync(venueId));
     }
 
     // Review #4: a delivery target records who was *told* about a publish,
@@ -535,9 +578,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture) : IClassFixture<
         var screenId = await SeedScreenAsync(dataAccess, venueId);
         await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
         await PublishCurrentAsync(repository, venueId, menuId);
-        await repository.TakeOffScreensAsync(venueId, menuId, "Owner", DateTime.UtcNow);
-        await repository.SetPutAwayAsync(
-            venueId, menuId, isPutAway: true, activeMenuLimit: 50, "Owner", "Put the menu away.", DateTime.UtcNow);
+        await ShelveAsync(repository, venueId, menuId);
 
         await Assert.ThrowsAsync<MenuPutAwayException>(() => repository.AssignScreenAsync(
             new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
@@ -545,6 +586,80 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture) : IClassFixture<
 
         // It is still off the shelf, so it still does not count against the ceiling.
         Assert.Equal(0, await repository.CountMenusAsync(venueId));
+    }
+
+    // Review #6: put away decided "off its screens" from the working assignment
+    // alone. A take-off deletes that row but reaches the screens only on the next
+    // publish (Q68), so a menu could be shelved with the take-off still pending -
+    // and the publish that would free the screen was then refused for being put
+    // away. The screen kept showing a menu the system called shelved, with no act
+    // left that could clear it.
+    [Fact]
+    public async Task PutAway_IsRefusedUntilTheTakeOffHasReachedTheScreens()
+    {
+        if (!fixture.IsAvailable) { return; }
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new MenuLibraryRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        var live = await PublishCurrentAsync(repository, venueId, menuId);
+
+        // The take-off empties the working assignment, but the screen still shows
+        // the published version until a publish carries it.
+        Assert.Equal(1, await repository.TakeOffScreensAsync(venueId, menuId, "Owner", DateTime.UtcNow));
+        Assert.Empty(await repository.GetAssignmentsAsync(venueId));
+        Assert.Equal(screenId, Assert.Single(MenuSnapshot.Parse(live.Event.Snapshot)!.Screens!).ScreenId);
+
+        var refused = await repository.SetPutAwayAsync(
+            venueId, menuId, isPutAway: true, activeMenuLimit: 50, "Owner", "Put the menu away.", DateTime.UtcNow);
+        Assert.Equal(PutAwayOutcomes.StillOnScreens, refused.Outcome);
+
+        // Nothing happened: the menu is still on the shelf, and still publishable -
+        // which is the act that actually frees the screen.
+        Assert.Equal(1, await repository.CountMenusAsync(venueId));
+        var released = await PublishCurrentAsync(repository, venueId, menuId);
+        Assert.Equal(screenId, Assert.Single(await repository.GetPublishTargetsAsync(released.Event.Id)).ScreenId);
+        Assert.Empty(MenuSnapshot.Parse(released.Event.Snapshot)!.Screens ?? []);
+
+        var shelved = await repository.SetPutAwayAsync(
+            venueId, menuId, isPutAway: true, activeMenuLimit: 50, "Owner", "Put the menu away.", DateTime.UtcNow);
+        Assert.Equal(PutAwayOutcomes.Changed, shelved.Outcome);
+    }
+
+    // The same rule must not create the mirror trap: a screen another menu has
+    // since been given is not this menu's to release - publish leaves it alone by
+    // the owner's rule and would refuse outright, having nothing to reach - so it
+    // cannot be what holds the menu on the shelf either.
+    [Fact]
+    public async Task PutAway_IgnoresAPublishedScreenAnotherMenuHasSinceTaken()
+    {
+        if (!fixture.IsAvailable) { return; }
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new MenuLibraryRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var otherMenuId = await SeedMenuAsync(dataAccess, venueId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await PublishCurrentAsync(repository, venueId, menuId);
+
+        // The first menu is taken off and the screen is given to another menu
+        // before the take-off is ever published.
+        await repository.TakeOffScreensAsync(venueId, menuId, "Owner", DateTime.UtcNow);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = otherMenuId });
+
+        // There is no publish left that could release it, so nothing is pending.
+        await Assert.ThrowsAsync<ScreensTakenByAnotherMenuException>(
+            () => PublishCurrentAsync(repository, venueId, menuId));
+
+        var outcome = await repository.SetPutAwayAsync(
+            venueId, menuId, isPutAway: true, activeMenuLimit: 50, "Owner", "Put the menu away.", DateTime.UtcNow);
+        Assert.Equal(PutAwayOutcomes.Changed, outcome.Outcome);
+
+        // The other menu keeps the screen throughout.
+        Assert.Equal(otherMenuId, Assert.Single(await repository.GetAssignmentsAsync(venueId)).MenuId);
     }
 
     // The owner's rule for a stale act: never touch a screen another menu now
@@ -1147,6 +1262,27 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture) : IClassFixture<
             snapshots.Working!,
             snapshots.Published,
             snapshots.PublishedVersion);
+    }
+
+    /// <summary>
+    /// Puts a published menu away the only way the model allows: take it off its
+    /// screens, publish that so the screens actually let go, then shelve it. Each
+    /// step is asserted, so a test arranged with this cannot quietly proceed from a
+    /// refusal it did not expect. Returns the take-off publish.
+    /// </summary>
+    private static async Task<PublishOutcome> ShelveAsync(
+        MenuLibraryRepository repository,
+        Guid venueId,
+        Guid menuId,
+        string author = "Owner")
+    {
+        Assert.True(await repository.TakeOffScreensAsync(venueId, menuId, author, DateTime.UtcNow) > 0);
+        var takeOff = await PublishCurrentAsync(repository, venueId, menuId, author);
+
+        var outcome = await repository.SetPutAwayAsync(
+            venueId, menuId, isPutAway: true, activeMenuLimit: 50, author, "Put the menu away.", DateTime.UtcNow);
+        Assert.Equal(PutAwayOutcomes.Changed, outcome.Outcome);
+        return takeOff;
     }
 
     private async Task<Guid> SeedScreenAsync(SqlDataAccess dataAccess, Guid venueId)

@@ -311,7 +311,7 @@ public sealed class MenuSpineService(
                     MenuCeilings.DescribeRefusal(MenuCeilings.MenusPerVenue, outcome.ActiveMenuCount + 1, limit)),
             PutAwayOutcomes.StillOnScreens =>
                 throw new MenuStillOnScreensException(
-                    "This menu is still on a screen. Take it off the screens first, so nothing goes blank without you deciding to."),
+                    "This menu is still on a screen. Take it off the screens and publish that, so nothing goes blank without you deciding to."),
             _ => new PutAwayResult(outcome.Outcome == PutAwayOutcomes.Changed, outcome.ActiveMenuCount)
         };
     }
