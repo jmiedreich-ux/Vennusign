@@ -217,15 +217,24 @@ public sealed class BackOfficeMenuSpineController(
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var assignment = await spine
-            .AssignAsync(VenueId, screenId, request.MenuId, Author, cancellationToken)
-            .ConfigureAwait(false);
+        try
+        {
+            var assignment = await spine
+                .AssignAsync(VenueId, screenId, request.MenuId, Author, cancellationToken)
+                .ConfigureAwait(false);
 
-        return Ok(new AssignmentResponse(
-            assignment.ScreenId,
-            assignment.MenuId,
-            assignment.AssignedUtc,
-            assignment.AssignedBy));
+            return Ok(new AssignmentResponse(
+                assignment.ScreenId,
+                assignment.MenuId,
+                assignment.AssignedUtc,
+                assignment.AssignedBy));
+        }
+        catch (InvalidOperationException)
+        {
+            // The screen or the menu belongs to another venue. Say nothing about
+            // which, or whether it exists at all.
+            return NotFound(new { message = "That screen is not one of this venue's screens." });
+        }
     }
 
     /// <summary>

@@ -66,9 +66,19 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         """;
 
     // A screen shows exactly one menu, so assigning replaces whatever it showed.
+    // The screen id arrives from the route, so the venue owns neither side of this
+    // by default. Both the screen and the menu must belong to the calling venue or
+    // the source set is empty and nothing is written -- otherwise one venue could
+    // hand another venue's screen to its own menu.
     private const string AssignScreenSql = """
         MERGE dbo.MenuScreenAssignments WITH (HOLDLOCK) AS target
-        USING (SELECT @ScreenId AS ScreenId) AS source
+        USING (
+            SELECT s.Id AS ScreenId
+            FROM dbo.Screens s
+            WHERE s.Id = @ScreenId
+              AND s.VenueId = @VenueId
+              AND EXISTS (SELECT 1 FROM dbo.Menus m WHERE m.Id = @MenuId AND m.VenueId = @VenueId)
+        ) AS source
             ON target.ScreenId = source.ScreenId
         WHEN MATCHED THEN
             UPDATE SET MenuId = @MenuId, VenueId = @VenueId, AssignedUtc = @AssignedUtc, AssignedBy = @AssignedBy
@@ -361,7 +371,9 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
                 AssignedUtc = assignment.AssignedUtc == default ? DateTime.UtcNow : assignment.AssignedUtc,
                 assignment.AssignedBy
             },
-            cancellationToken).ConfigureAwait(false)).Single();
+            cancellationToken).ConfigureAwait(false)).SingleOrDefault()
+            ?? throw new InvalidOperationException(
+                $"Screen '{assignment.ScreenId}' and menu '{assignment.MenuId}' must both belong to venue '{assignment.VenueId}'.");
     }
 
     public async Task<bool> ClearScreenAssignmentAsync(Guid venueId, Guid screenId, CancellationToken cancellationToken = default) =>
