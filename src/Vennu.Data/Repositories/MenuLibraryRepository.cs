@@ -372,26 +372,24 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
     // Both halves of the draft in one statement. Reading them separately let a
     // publish land between the two reads, which produced a diff against a version
     // that was already gone.
-    // The published version travels with its snapshot so a publish can prove the
-    // diff was computed against the version that is still current. Reading them
-    // together is not an atomic observation on its own -- the publish transaction
-    // is what makes it one, by refusing when either half has moved.
+    // The published snapshot and its version come from one row, not from two
+    // subqueries. Read separately, a publish committing between them hands back
+    // one version's snapshot labelled with another's, and a diff computed from
+    // that pair describes a comparison that never existed.
     private const string DraftSnapshotsSql = """
         SELECT
-            (
-                SELECT TOP (1) Snapshot
-                FROM dbo.MenuPublishEvents
-                WHERE VenueId = @VenueId AND MenuId = @MenuId
-                ORDER BY Version DESC
-            ) AS Published,
-            ISNULL((
-                SELECT MAX(Version)
-                FROM dbo.MenuPublishEvents
-                WHERE VenueId = @VenueId AND MenuId = @MenuId
-            ), 0) AS PublishedVersion,
+            latest.Snapshot AS Published,
+            ISNULL(latest.Version, 0) AS PublishedVersion,
             (
         """ + WorkingSnapshotBody + """
-            ) AS Working;
+            ) AS Working
+        FROM (SELECT 1 AS Anchor) anchor
+        OUTER APPLY (
+            SELECT TOP (1) e.Snapshot, e.Version
+            FROM dbo.MenuPublishEvents e
+            WHERE e.VenueId = @VenueId AND e.MenuId = @MenuId
+            ORDER BY e.Version DESC
+        ) latest;
         """;
 
     // Restore and discard are the same operation against different snapshots: put
@@ -406,6 +404,16 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         BEGIN
             ROLLBACK TRANSACTION;
             THROW 51001, 'The menu does not belong to this venue.', 1;
+        END;
+
+        -- A put-away menu is off the shelf, and a restore puts screen assignments
+        -- back. Allowing it here would be a third way onto the shelf, around the
+        -- ceiling check and the record that make putting one back deliberate --
+        -- and would leave a menu both put away and on a screen.
+        IF EXISTS (SELECT 1 FROM dbo.Menus WHERE Id = @MenuId AND VenueId = @VenueId AND IsPutAway = 1)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            THROW 51008, 'This menu is put away. Put it back on the shelf before changing what it looks like.', 1;
         END;
 
         -- A screen the recorded shape wants, which another menu has since been
@@ -604,11 +612,26 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             WHERE MenuId = @MenuId
         );
 
-        -- The caller's shipped set is the difference from a particular published
-        -- version. If another publish has landed since it read that, the set
-        -- describes a comparison that no longer holds and would re-ship content
-        -- already on the screens; the caller recomputes against what is there now.
+        DECLARE @PreviousSnapshot NVARCHAR(MAX) =
+        (
+            SELECT TOP (1) Snapshot
+            FROM dbo.MenuPublishEvents WITH (UPDLOCK, HOLDLOCK)
+            WHERE VenueId = @VenueId AND MenuId = @MenuId
+            ORDER BY Version DESC
+        );
+
+        -- The caller's shipped set is the difference between a particular published
+        -- snapshot and the working state. Both ends are proved here, not just the
+        -- version: a version alone would still accept a diff computed from some
+        -- other version's content, and the recorded set would describe a comparison
+        -- that never existed. Either way the caller recomputes against what is
+        -- actually published now (Q182).
         IF @PreviousVersion <> @ExpectedPublishedVersion
+            OR (CASE WHEN @PreviousSnapshot IS NULL THEN 1 ELSE 0 END)
+               <> (CASE WHEN @ExpectedPublishedSnapshot IS NULL THEN 1 ELSE 0 END)
+            OR (@PreviousSnapshot IS NOT NULL
+                AND @PreviousSnapshot COLLATE Latin1_General_BIN2
+                    <> @ExpectedPublishedSnapshot COLLATE Latin1_General_BIN2)
         BEGIN
             ROLLBACK TRANSACTION;
             THROW 51003, 'The menu was published by someone else while this publish was being prepared.', 1;
@@ -1115,6 +1138,7 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         int changeCount,
         string? shippedChanges,
         string expectedWorkingSnapshot,
+        string? expectedPublishedSnapshot,
         long expectedPublishedVersion,
         CancellationToken cancellationToken = default)
     {
@@ -1140,6 +1164,7 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
                     ChangeCount = changeCount,
                     ShippedChanges = shippedChanges,
                     ExpectedSnapshot = expectedWorkingSnapshot,
+                    ExpectedPublishedSnapshot = expectedPublishedSnapshot,
                     ExpectedPublishedVersion = expectedPublishedVersion,
                     Detail = (string?)null
                 },
@@ -1286,6 +1311,10 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         catch (Microsoft.Data.SqlClient.SqlException exception) when (exception.Number == 51005)
         {
             throw new ScreensTakenByAnotherMenuException(exception.Message);
+        }
+        catch (Microsoft.Data.SqlClient.SqlException exception) when (exception.Number == 51008)
+        {
+            throw new MenuPutAwayException(exception.Message);
         }
     }
 

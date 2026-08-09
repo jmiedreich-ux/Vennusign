@@ -112,8 +112,19 @@ public sealed class BackOfficeMenuSpineController(
     [RequireCapability("content.item.update")]
     public async Task<ActionResult<DiscardResponse>> DiscardDraft(Guid menuId, CancellationToken cancellationToken)
     {
-        var discarded = await spine.DiscardDraftAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
-        return Ok(new DiscardResponse(discarded));
+        try
+        {
+            var discarded = await spine.DiscardDraftAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
+            return Ok(new DiscardResponse(discarded));
+        }
+        catch (MenuPutAwayException exception)
+        {
+            return Conflict(new { reason = "menu_put_away", message = exception.Message });
+        }
+        catch (ScreensTakenByAnotherMenuException exception)
+        {
+            return Conflict(new { reason = "screens_taken", message = exception.Message });
+        }
     }
 
     // ----- Publish ------------------------------------------------------------------
@@ -236,6 +247,10 @@ public sealed class BackOfficeMenuSpineController(
         catch (ScreensTakenByAnotherMenuException exception)
         {
             return Conflict(new { reason = "screens_taken", message = exception.Message });
+        }
+        catch (MenuPutAwayException exception)
+        {
+            return Conflict(new { reason = "menu_put_away", message = exception.Message });
         }
         catch (InvalidOperationException exception)
         {

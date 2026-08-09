@@ -128,6 +128,11 @@ public interface IMenuLibraryRepository
     /// rebuilds it under lock and refuses if the menu has moved, so what history
     /// records always describes the snapshot that went out.
     /// </param>
+    /// <param name="expectedPublishedSnapshot">
+    /// The published snapshot the shipped set was computed against. Proving the
+    /// version alone would still accept a diff taken from another version's
+    /// content, which is possible whenever the two are read separately.
+    /// </param>
     /// <param name="expectedPublishedVersion">
     /// The published version the shipped set was computed against, so a publish
     /// by someone else in between cannot cause this one to re-ship a difference
@@ -138,6 +143,7 @@ public interface IMenuLibraryRepository
         int changeCount,
         string? shippedChanges,
         string expectedWorkingSnapshot,
+        string? expectedPublishedSnapshot,
         long expectedPublishedVersion,
         CancellationToken cancellationToken = default);
 
@@ -170,7 +176,9 @@ public interface IMenuLibraryRepository
     /// Puts the menu's working state back to a stored snapshot and records the act,
     /// in one transaction. Used by both "go back to" and discard, which are the
     /// same operation against different snapshots. Item identity is preserved: this
-    /// restores values onto existing items and never mints new ones (Q43).
+    /// restores values onto existing items and never mints new ones (Q43). Refused
+    /// for a put-away menu, because a restore puts screen assignments back and
+    /// would otherwise be a way onto the shelf around the ceiling and the record.
     /// </summary>
     Task RestoreSnapshotAsync(
         Guid venueId,

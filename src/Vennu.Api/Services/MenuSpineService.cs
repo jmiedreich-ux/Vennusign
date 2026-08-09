@@ -102,12 +102,14 @@ public sealed class MenuSpineService(
         return new DraftReading(
             MenuSnapshot.Diff(snapshots.Published, snapshots.Working),
             snapshots.Working,
+            snapshots.Published,
             snapshots.PublishedVersion);
     }
 
     private sealed record DraftReading(
         IReadOnlyList<SnapshotChange> Changes,
         string WorkingSnapshot,
+        string? PublishedSnapshot,
         long PublishedVersion);
 
     /// <summary>
@@ -148,6 +150,7 @@ public sealed class MenuSpineService(
                     draft.Changes.Count,
                     shippedJson,
                     draft.WorkingSnapshot,
+                    draft.PublishedSnapshot,
                     draft.PublishedVersion,
                     cancellationToken).ConfigureAwait(false);
             }

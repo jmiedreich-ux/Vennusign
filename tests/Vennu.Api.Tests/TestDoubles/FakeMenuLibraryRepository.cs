@@ -353,6 +353,14 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
         CancellationToken cancellationToken = default,
         string kind = MenuHistoryKinds.Restored)
     {
+        // A restore puts screen assignments back, so it is the third door onto the
+        // shelf and refuses a put-away menu like the other two.
+        if (PutAwayMenus.Contains(menuId))
+        {
+            throw new MenuPutAwayException(
+                "This menu is put away. Put it back on the shelf before changing what it looks like.");
+        }
+
         // The statement puts the working rows back; the fake models that by making
         // the working snapshot the restored one.
         WorkingSnapshotJson = snapshotJson;
@@ -374,6 +382,7 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
         int changeCount,
         string? shippedChanges,
         string expectedWorkingSnapshot,
+        string? expectedPublishedSnapshot,
         long expectedPublishedVersion,
         CancellationToken cancellationToken = default)
     {
@@ -393,8 +402,14 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
             .Select(e => e.Version)
             .DefaultIfEmpty(0)
             .Max();
+        var currentPublished = PublishEvents
+            .Where(e => e.VenueId == publishEvent.VenueId && e.MenuId == publishEvent.MenuId)
+            .OrderByDescending(e => e.Version)
+            .Select(e => e.Snapshot)
+            .FirstOrDefault();
         if (!string.Equals(observed, expectedWorkingSnapshot, StringComparison.Ordinal)
-            || currentVersion != expectedPublishedVersion)
+            || currentVersion != expectedPublishedVersion
+            || !string.Equals(currentPublished, expectedPublishedSnapshot, StringComparison.Ordinal))
         {
             WorkingSnapshotJson = observed;
             WorkingSnapshotAtPublish = null;
