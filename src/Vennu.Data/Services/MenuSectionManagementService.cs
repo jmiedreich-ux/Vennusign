@@ -5,6 +5,7 @@ namespace Vennu.Data.Services;
 
 public sealed class MenuSectionManagementService(
     IMenuRepository repository,
+    IMenuLibraryRepository libraryRepository,
     ICapabilityDecisionService decisions,
     TimeProvider timeProvider) : IMenuSectionManagementService
 {
@@ -47,6 +48,18 @@ public sealed class MenuSectionManagementService(
         if (menus.Any(menu => string.Equals(menu.Name, normalizedName, StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException("A menu with that name already exists.", nameof(name));
+        }
+
+        // A ceiling that is configured but never checked is decorative. Refuse in
+        // plain words rather than failing quietly further down (Q201).
+        var ceilings = await libraryRepository
+            .GetResolvedCeilingsAsync(venueId, cancellationToken)
+            .ConfigureAwait(false);
+        if (ceilings.TryGetValue(MenuCeilings.MenusPerVenue, out var menuLimit) && menus.Count + 1 > menuLimit)
+        {
+            throw new ArgumentException(
+                MenuCeilings.DescribeRefusal(MenuCeilings.MenusPerVenue, menus.Count + 1, menuLimit),
+                nameof(name));
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;

@@ -110,6 +110,25 @@ public interface IMenuLibraryRepository
     /// </summary>
     Task<IReadOnlyDictionary<string, int>> GetCeilingsAsync(Guid venueId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// The venue's ceilings with the documented defaults filled in for any
+    /// capability that has no allowance row. A venue created after the migration
+    /// is bounded like every other venue rather than treated as unlimited.
+    /// </summary>
+    async Task<IReadOnlyDictionary<string, int>> GetResolvedCeilingsAsync(
+        Guid venueId,
+        CancellationToken cancellationToken = default)
+    {
+        var configured = await GetCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var resolved = new Dictionary<string, int>(MenuCeilings.Defaults, StringComparer.Ordinal);
+        foreach (var (capabilityId, limit) in configured)
+        {
+            resolved[capabilityId] = limit;
+        }
+
+        return resolved;
+    }
+
     Task<int> CountMenusAsync(Guid venueId, CancellationToken cancellationToken = default);
 }
 
@@ -128,6 +147,19 @@ public static class MenuCeilings
             [ImportLines] = 2000,
             [HistoryRetention] = 50
         };
+
+    /// <summary>
+    /// A ceiling refusal in plain words. It names the number, the limit and a way
+    /// forward, because a limit that fails quietly is worse than one that explains
+    /// itself (Q201).
+    /// </summary>
+    public static string DescribeRefusal(string capabilityId, int proposedTotal, int limit) => capabilityId switch
+    {
+        MenusPerVenue => $"That would be {proposedTotal} menus, and this venue is set up for {limit}. Put one away first, or ask us to raise the limit.",
+        ItemsPerMenu => $"That would be {proposedTotal} items on one menu, and this venue is set up for {limit}. Split it into two menus.",
+        ImportLines => $"That paste is too big - {proposedTotal} lines against a limit of {limit}. Split it into two menus.",
+        _ => $"That would be {proposedTotal}, and this venue is set up for {limit}."
+    };
 
     public const string MenusPerVenue = "content.menu.count";
 

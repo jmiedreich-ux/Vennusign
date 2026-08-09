@@ -264,6 +264,21 @@ public sealed class MenuSpineServiceTests
         Assert.Null(await service.DescribeCeilingRefusalAsync(VenueId, MenuCeilings.ImportLines, 10));
     }
 
+    // A venue with no allowance row is bounded by the documented defaults, not
+    // treated as unlimited.
+    [Fact]
+    public async Task Ceilings_FallBackToDefaultsWhenAVenueHasNoRow()
+    {
+        var library = SeededLibrary();
+        library.Ceilings.Clear();
+        var service = CreateService(library);
+
+        var context = await service.GetContextAsync(VenueId);
+
+        Assert.Equal(MenuCeilings.Defaults[MenuCeilings.MenusPerVenue], context.Ceilings[MenuCeilings.MenusPerVenue]);
+        Assert.NotNull(await service.DescribeCeilingRefusalAsync(VenueId, MenuCeilings.MenusPerVenue, 9999));
+    }
+
     private static MenuSpineService CreateService(FakeMenuLibraryRepository library) =>
         new(
             library,

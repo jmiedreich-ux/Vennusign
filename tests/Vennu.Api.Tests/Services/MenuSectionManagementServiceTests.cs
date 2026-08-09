@@ -106,6 +106,7 @@ public sealed class MenuSectionManagementServiceTests
     {
         var service = new MenuSectionManagementService(
             new FakeMenuRepository(),
+            new FakeMenuLibraryRepository(),
             new FakeCapabilityDecisionServices("schedule.promotion.automate"),
             new FixedTimeProvider());
 
@@ -121,7 +122,7 @@ public sealed class MenuSectionManagementServiceTests
     }
 
     private static MenuSectionManagementService CreateService(FakeMenuRepository repository) =>
-        new(repository, new FakeCapabilityDecisionServices(
+        new(repository, new FakeMenuLibraryRepository(), new FakeCapabilityDecisionServices(
             "schedule.promotion.automate",
             "content.item.dietary_information_manage",
             "content.item.availability_update"), new FixedTimeProvider());

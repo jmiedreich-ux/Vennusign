@@ -304,6 +304,30 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         INSERT dbo.MenuHistoryEntries (Id, VenueId, MenuId, Kind, PublishEventId, ReplacedByVersion, Detail, Author, OccurredUtc)
         VALUES (NEWID(), @VenueId, @MenuId, N'published', @Id, NULL, @Detail, @Author, @PublishedUtc);
 
+        -- Take-off is permanent, so it waited in the queue rather than committing
+        -- when the operator confirmed it (Q68). This is the deliberate act that
+        -- ships it. The targets above were written first on purpose: the screens
+        -- that were showing this menu are told about the publish, and only then
+        -- released to the venue fallback.
+        IF EXISTS (
+            SELECT 1 FROM @Shipped
+            WHERE TargetKind = N'screens'
+              AND Field = N'assignedScreens'
+              AND (AfterValue IS NULL OR AfterValue = N''))
+        BEGIN
+            DECLARE @Released INT;
+
+            DELETE FROM dbo.MenuScreenAssignments
+            WHERE VenueId = @VenueId AND MenuId = @MenuId;
+
+            SET @Released = @@ROWCOUNT;
+
+            INSERT dbo.MenuHistoryEntries (Id, VenueId, MenuId, Kind, PublishEventId, ReplacedByVersion, Detail, Author, OccurredUtc)
+            VALUES (NEWID(), @VenueId, @MenuId, N'taken_off_screens', @Id, NULL,
+                    CONCAT(N'Released ', @Released, N' screen(s); the venue fallback shows instead.'),
+                    @Author, @PublishedUtc);
+        END;
+
         -- Supersession is never an action; it survives only as a fact on the
         -- entry that came before.
         UPDATE h

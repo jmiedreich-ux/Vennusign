@@ -332,30 +332,10 @@ public sealed class MenuSpineService(
     /// </summary>
     public async Task<MenuContext> GetContextAsync(Guid venueId, CancellationToken cancellationToken = default)
     {
-        var ceilings = await ResolveCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var ceilings = await library.GetResolvedCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
         var venue = await venues.GetByIdAsync(venueId, cancellationToken).ConfigureAwait(false);
         var menuCount = await library.CountMenusAsync(venueId, cancellationToken).ConfigureAwait(false);
         return new MenuContext(venue?.Timezone ?? "UTC", ceilings, menuCount);
-    }
-
-    /// <summary>
-    /// The venue's ceilings, falling back to the documented defaults for any
-    /// capability with no allowance row. A venue created after the migration is
-    /// therefore bounded like every other venue, rather than being treated as
-    /// unlimited because nobody provisioned a row for it.
-    /// </summary>
-    private async Task<IReadOnlyDictionary<string, int>> ResolveCeilingsAsync(
-        Guid venueId,
-        CancellationToken cancellationToken)
-    {
-        var configured = await library.GetCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
-        var resolved = new Dictionary<string, int>(MenuCeilings.Defaults, StringComparer.Ordinal);
-        foreach (var (capabilityId, limit) in configured)
-        {
-            resolved[capabilityId] = limit;
-        }
-
-        return resolved;
     }
 
     /// <summary>
@@ -368,19 +348,13 @@ public sealed class MenuSpineService(
         int proposedTotal,
         CancellationToken cancellationToken = default)
     {
-        var ceilings = await ResolveCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var ceilings = await library.GetResolvedCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
         if (!ceilings.TryGetValue(capabilityId, out var limit) || proposedTotal <= limit)
         {
             return null;
         }
 
-        return capabilityId switch
-        {
-            MenuCeilings.MenusPerVenue => $"That would be {proposedTotal} menus, and this venue is set up for {limit}. Put one away first, or ask us to raise the limit.",
-            MenuCeilings.ItemsPerMenu => $"That would be {proposedTotal} items on one menu, and this venue is set up for {limit}. Split it into two menus.",
-            MenuCeilings.ImportLines => $"That paste is too big — {proposedTotal} lines against a limit of {limit}. Split it into two menus.",
-            _ => $"That would be {proposedTotal}, and this venue is set up for {limit}."
-        };
+        return MenuCeilings.DescribeRefusal(capabilityId, proposedTotal, limit);
     }
 }
 
