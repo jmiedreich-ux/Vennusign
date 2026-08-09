@@ -60,18 +60,22 @@ a.sign-in:focus-visible{outline:3px solid #d49d22;outline-offset:2px}
     </section>
 
     <section class="start-here">
-      <h2>Start here: run the API against a database with migration 058 applied</h2>
+      <h2>Start here</h2>
+      <p><strong>Two commands.</strong> The first starts the product; the second walks all nine checks and prints what each one actually returned. You read the output and record your judgment below &mdash; you do not have to call any endpoint by hand.</p>
       <ol>
-        <li>Open PowerShell in <code>C:\Development\VennuSign</code>.</li>
-        <li>Start the local environment. Migration <code>058_create_menu_item_library_spine.sql</code> applies automatically on API startup:</li>
+        <li>Open PowerShell in <code>C:\Development\VennuSign</code>, on the <code>feature/menus-m1-spine</code> branch. Start the product (migration <code>058</code> applies automatically):</li>
       </ol>
       <div class="command"><code>powershell -ExecutionPolicy Bypass -File scripts/start-ui-test-env.ps1</code><button class="copy" type="button" data-copy="powershell -ExecutionPolicy Bypass -File scripts/start-ui-test-env.ps1">Copy</button></div>
-      <ol start="3">
-        <li>Wait until the API answers on <code>https://localhost:7138</code>. If it never comes up, the migration failed &mdash; that is itself a Fail on check 1.</li>
-        <li>Sign in to the Back Office at <code>https://localhost:5174</code> so your browser holds a back-office session; every endpoint below is authenticated and venue-scoped.</li>
-        <li>Call the endpoints from your browser devtools console, or any REST client that sends that session. Replace <code>{menuId}</code> and <code>{itemId}</code> with ids from the seeded venue.</li>
+      <ol start="2">
+        <li>Wait for the API to answer on <code>https://localhost:7138</code>. If it never comes up, that is a Fail on check 1 &mdash; capture the output of <code>artifacts/ui-test-env/api.out.log</code>.</li>
+        <li>Run the demo. It finds a menu, an item and a screen for you, assigns the menu to that screen so the screen-facing checks mean something, walks the nine checks in order, and puts the data back afterwards:</li>
       </ol>
-      <p class="sign-in-note">Every timestamp you see is rendered in the <strong>venue&rsquo;s</strong> local time, not your own &mdash; that is deliberate, and check 1 verifies it.</p>
+      <div class="command"><code>powershell -ExecutionPolicy Bypass -File scripts/run-m1-demo.ps1</code><button class="copy" type="button" data-copy="powershell -ExecutionPolicy Bypass -File scripts/run-m1-demo.ps1">Copy</button></div>
+      <ol start="4">
+        <li>Read each result against the check below and record <strong>Pass</strong>, <strong>Fail</strong> or <strong>Needs Adjustment</strong>. The script says what it saw; you decide whether that is right.</li>
+        <li>Add <code>-Json artifacts/m1-demo-evidence.json</code> to keep a machine-readable record alongside your workbook export.</li>
+      </ol>
+      <p class="sign-in-note">Every timestamp is rendered in the <strong>venue&rsquo;s</strong> local time, not your own &mdash; deliberate, and check 1 verifies it. Each check below also lists the raw call, if you would rather drive it yourself.</p>
     </section>
 
     <nav class="toc" aria-label="Demo sections"><h2>Checks</h2><ol id="toc"></ol></nav>
