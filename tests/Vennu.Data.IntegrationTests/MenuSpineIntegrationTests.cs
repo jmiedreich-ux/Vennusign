@@ -297,7 +297,8 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture) : IClassFixture<
             new MenuPublishEvent { VenueId = venueId, MenuId = menuId, PublishedUtc = DateTime.UtcNow },
             changeCount: 1,
             shippedChanges: "[]",
-            expectedWorkingSnapshot: stale!));
+            expectedWorkingSnapshot: stale!,
+            expectedPublishedVersion: 0));
 
         // Nothing was recorded, so no version claims to have shipped that set.
         Assert.Empty(await repository.GetPublishHistoryAsync(venueId, menuId, 10));
@@ -306,8 +307,136 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture) : IClassFixture<
         var current = await repository.GetWorkingSnapshotAsync(venueId, menuId);
         var published = await repository.PublishAsync(
             new MenuPublishEvent { VenueId = venueId, MenuId = menuId, PublishedUtc = DateTime.UtcNow },
-            1, "[]", current!);
+            1, "[]", current!, 0);
         Assert.Equal("4", Assert.Single(Assert.Single(MenuSnapshot.Parse(published.Event.Snapshot)!.Sections!).Items!).Price);
+    }
+
+    // Review #4: the guard compared the two snapshots under the database's own
+    // collation, which is case- and accent-insensitive, so a rename that differed
+    // only in casing read as "unchanged" and let through exactly the mismatch the
+    // guard exists to prevent. The comparison is binary now.
+    [Fact]
+    public async Task Publish_RefusesWhenTheOnlyChangeIsLetterCasing()
+    {
+        if (!fixture.IsAvailable) { return; }
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new MenuLibraryRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = "Burger", Price = "12" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+
+        var snapshots = await repository.GetDraftSnapshotsAsync(venueId, menuId);
+
+        // The only difference is the case of one letter.
+        var item = (await repository.GetItemsAsync(venueId)).Single(candidate => candidate.Name == "Burger");
+        item.Name = "burger";
+        await repository.UpdateItemAsync(item);
+
+        await Assert.ThrowsAsync<MenuMovedWhilePublishingException>(() => repository.PublishAsync(
+            new MenuPublishEvent { VenueId = venueId, MenuId = menuId, PublishedUtc = DateTime.UtcNow },
+            changeCount: 0,
+            shippedChanges: "[]",
+            expectedWorkingSnapshot: snapshots.Working!,
+            expectedPublishedVersion: snapshots.PublishedVersion));
+
+        Assert.Empty(await repository.GetPublishHistoryAsync(venueId, menuId, 10));
+    }
+
+    // Review #4: the guard proved the working state had not moved but never that
+    // the published version it was compared against was still current, so a
+    // publish by someone else in between could make this one re-ship a difference
+    // that had already reached the screens.
+    [Fact]
+    public async Task Publish_RefusesWhenSomeoneElsePublishedSinceTheDiffWasComputed()
+    {
+        if (!fixture.IsAvailable) { return; }
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new MenuLibraryRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("cola"), Price = "3" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+
+        // One caller reads the menu, and another publishes it before the first commits.
+        var stale = await repository.GetDraftSnapshotsAsync(venueId, menuId);
+        await PublishCurrentAsync(repository, venueId, menuId, "Someone else");
+
+        // The working state is untouched, so only the version check can catch this.
+        await Assert.ThrowsAsync<MenuMovedWhilePublishingException>(() => repository.PublishAsync(
+            new MenuPublishEvent { VenueId = venueId, MenuId = menuId, PublishedUtc = DateTime.UtcNow },
+            changeCount: 3,
+            shippedChanges: "[]",
+            expectedWorkingSnapshot: stale.Working!,
+            expectedPublishedVersion: stale.PublishedVersion));
+
+        // Exactly one publish exists: the other person's.
+        Assert.Single(await repository.GetPublishHistoryAsync(venueId, menuId, 10));
+    }
+
+    // Review #4: a delivery target records who was *told* about a publish,
+    // including the screens a take-off released. Reading membership from it meant
+    // a screen-less menu could publish for ever, re-targeting screens it had
+    // already let go and stepping around Q80 every time.
+    [Fact]
+    public async Task Publish_AfterATakeOffHasShipped_HasNothingLeftToReachAndSaysSo()
+    {
+        if (!fixture.IsAvailable) { return; }
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new MenuLibraryRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await PublishCurrentAsync(repository, venueId, menuId);
+
+        await repository.TakeOffScreensAsync(venueId, menuId, "Chef", DateTime.UtcNow);
+        var release = await PublishCurrentAsync(repository, venueId, menuId);
+        Assert.Equal(screenId, Assert.Single(await repository.GetPublishTargetsAsync(release.Event.Id)).ScreenId);
+
+        // The release has happened. There is nothing left to reach, so Q80 applies.
+        var refusal = await Assert.ThrowsAsync<MenuNotOnAnyScreenException>(
+            () => PublishCurrentAsync(repository, venueId, menuId));
+
+        Assert.Contains("not on a screen", refusal.Message, StringComparison.Ordinal);
+        Assert.Equal(2, (await repository.GetPublishHistoryAsync(venueId, menuId, 10)).Count);
+        // ...and no second take-off entry claiming it happened twice.
+        Assert.Single(
+            await repository.GetHistoryAsync(venueId, menuId, 20),
+            entry => entry.Kind == MenuHistoryKinds.TakenOffScreens && entry.PublishEventId is not null);
+    }
+
+    // Review #4: put-back was guarded, but assignment and publish were two other
+    // doors onto the shelf that skipped the ceiling and the record entirely.
+    [Fact]
+    public async Task APutAwayMenu_CanBeNeitherGivenAScreenNorPublished()
+    {
+        if (!fixture.IsAvailable) { return; }
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new MenuLibraryRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await PublishCurrentAsync(repository, venueId, menuId);
+        await repository.TakeOffScreensAsync(venueId, menuId, "Owner", DateTime.UtcNow);
+        await repository.SetPutAwayAsync(
+            venueId, menuId, isPutAway: true, activeMenuLimit: 50, "Owner", "Put the menu away.", DateTime.UtcNow);
+
+        await Assert.ThrowsAsync<MenuPutAwayException>(() => repository.AssignScreenAsync(
+            new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
+        await Assert.ThrowsAsync<MenuPutAwayException>(() => PublishCurrentAsync(repository, venueId, menuId));
+
+        // It is still off the shelf, so it still does not count against the ceiling.
+        Assert.Equal(0, await repository.CountMenusAsync(venueId));
     }
 
     // The owner's rule for a stale act: never touch a screen another menu now
@@ -603,7 +732,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture) : IClassFixture<
         var menuB = await SeedMenuAsync(dataAccess, venueB);
 
         await Assert.ThrowsAnyAsync<Exception>(() => repository.PublishAsync(
-            new MenuPublishEvent { VenueId = venueA, MenuId = menuB, PublishedUtc = DateTime.UtcNow }, 0, "[]", "{}"));
+            new MenuPublishEvent { VenueId = venueA, MenuId = menuB, PublishedUtc = DateTime.UtcNow }, 0, "[]", "{}", 0));
 
         // B's version line is untouched: A did not consume a version number.
         Assert.Empty(await repository.GetPublishHistoryAsync(venueB, menuB, 10));
@@ -907,7 +1036,8 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture) : IClassFixture<
             new MenuPublishEvent { VenueId = venueId, MenuId = menuId, Author = author, PublishedUtc = DateTime.UtcNow },
             changes.Count,
             System.Text.Json.JsonSerializer.Serialize(changes),
-            snapshots.Working!);
+            snapshots.Working!,
+            snapshots.PublishedVersion);
     }
 
     private async Task<Guid> SeedScreenAsync(SqlDataAccess dataAccess, Guid venueId)

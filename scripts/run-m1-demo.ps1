@@ -121,22 +121,38 @@ function Set-ItemPrice {
     Invoke-Api PUT "$menus/$menuId/sections/$sectionId/items/$itemId" @{ name = $item.name; description = $item.description; price = $Price }
 }
 
-# Put the menu on a screen, otherwise the screen-facing checks pass trivially
-# against an empty fleet and prove nothing.
+# Put the menu on a screen, and prove it. Every screen-facing check below is
+# meaningless without one, and passing them against an assignment that merely
+# happened to be in the fixture already would make this demo state-dependent
+# rather than self-proving. So it is established here and verified, or the run
+# stops.
 $screenId = $null
 try {
     $screens = Invoke-Api GET "$BaseUrl/api/back-office/venues/$venueId/screens"
-    $screenList = if ($screens.screens) { $screens.screens } else { $screens }
-    $screenId = ($screenList | Select-Object -First 1).id
+    # The endpoint answers with a bare array. Reading `.screens` off one would
+    # return a null per element - a non-empty array, and therefore truthy - which
+    # silently selected nothing as soon as the venue had more than one screen.
+    $screenList = if ($null -ne $screens -and $screens.PSObject.Properties.Name -contains 'screens') { $screens.screens } else { $screens }
+    $screenId = @($screenList | Where-Object { $_ -and $_.id } | Select-Object -First 1).id
 } catch {
-    Write-Host "could not list screens: $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host "could not list screens: $($_.Exception.Message)" -ForegroundColor Red
 }
-if ($screenId) {
-    Invoke-Api PUT "$spine/screens/$screenId/menu" @{ menuId = $menuId } | Out-Null
-    Write-Host "screen: $screenId (assigned for this run)" -ForegroundColor DarkGray
-} else {
-    Write-Host "screen: none found - the screen-facing checks will report 0 screens" -ForegroundColor Yellow
+if (-not $screenId) {
+    Write-Host ''
+    Write-Host 'No screen exists on this venue, so the screen-facing checks would prove nothing.' -ForegroundColor Red
+    Write-Host 'Seed the acceptance fixture first:' -ForegroundColor Red
+    Write-Host '  powershell -ExecutionPolicy Bypass -File scripts/start-ui-test-env.ps1' -ForegroundColor Red
+    exit 1
 }
+
+Invoke-Api PUT "$spine/screens/$screenId/menu" @{ menuId = $menuId } | Out-Null
+$assignedNow = @((Invoke-Api GET "$spine/assignments") | Where-Object { $null -ne $_ -and $_.screenId -eq $screenId -and $_.menuId -eq $menuId })
+if ($assignedNow.Count -ne 1) {
+    Write-Host ''
+    Write-Host "The demo could not put menu $menuId on screen $screenId, so its screen-facing checks would be meaningless." -ForegroundColor Red
+    exit 1
+}
+Write-Host "screen: $screenId (assigned by this run, and verified)" -ForegroundColor DarkGray
 
 # Publish once so the run starts from a known clean state: working = published.
 Invoke-Api POST "$spine/menus/$menuId/publish" | Out-Null
@@ -253,10 +269,18 @@ $contextBeforePutAway = Invoke-Api GET "$spine/context"
 $putAway = Invoke-Api PUT "$spine/menus/$menuId/put-away" @{ isPutAway = $true }
 $contextAfterPutAway = Invoke-Api GET "$spine/context"
 $putAwayEntry = @(@((Invoke-Api GET "$spine/menus/$menuId/history")) | Where-Object { $_.kind -eq 'put_away' })[0]
-Record '8d' 'Put away is attributable, and a put-away menu stops counting against the ceiling' `
-    ($putAway.changed -eq $true -and $null -ne $putAwayEntry -and $contextAfterPutAway.menuCount -lt $contextBeforePutAway.menuCount) `
-    "put away by '$($putAwayEntry.author)'; active menus $($contextBeforePutAway.menuCount) -> $($contextAfterPutAway.menuCount)" `
-    "the act recorded with its author, and the count dropping - the refusal says 'put one away first', so putting one away has to make room"
+
+# A put-away menu is off the shelf: putting it back is the one way on, so
+# assigning it a screen and publishing it must both refuse.
+$assignRefused = $false
+try { Invoke-Api PUT "$spine/screens/$screenId/menu" @{ menuId = $menuId } | Out-Null } catch { $assignRefused = $true }
+$publishRefused = $false
+try { Invoke-Api POST "$spine/menus/$menuId/publish" | Out-Null } catch { $publishRefused = $true }
+
+Record '8d' 'Put away is attributable, frees ceiling room, and is the only way back on the shelf' `
+    ($putAway.changed -eq $true -and $null -ne $putAwayEntry -and $contextAfterPutAway.menuCount -lt $contextBeforePutAway.menuCount -and $assignRefused -and $publishRefused) `
+    "put away by '$($putAwayEntry.author)'; active menus $($contextBeforePutAway.menuCount) -> $($contextAfterPutAway.menuCount); giving it a screen refused: $assignRefused; publishing it refused: $publishRefused" `
+    "the act recorded with its author, the count dropping - the refusal says 'put one away first', so putting one away has to make room - and neither assigning nor publishing able to put it back quietly"
 
 # Put it back so the venue is left as it was found.
 Invoke-Api PUT "$spine/menus/$menuId/put-away" @{ isPutAway = $false } | Out-Null

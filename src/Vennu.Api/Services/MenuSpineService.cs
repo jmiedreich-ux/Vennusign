@@ -99,10 +99,16 @@ public sealed class MenuSpineService(
             throw new InvalidOperationException($"Menu '{menuId}' does not belong to venue '{venueId}'.");
         }
 
-        return new DraftReading(MenuSnapshot.Diff(snapshots.Published, snapshots.Working), snapshots.Working);
+        return new DraftReading(
+            MenuSnapshot.Diff(snapshots.Published, snapshots.Working),
+            snapshots.Working,
+            snapshots.PublishedVersion);
     }
 
-    private sealed record DraftReading(IReadOnlyList<SnapshotChange> Changes, string WorkingSnapshot);
+    private sealed record DraftReading(
+        IReadOnlyList<SnapshotChange> Changes,
+        string WorkingSnapshot,
+        long PublishedVersion);
 
     /// <summary>
     /// Ships the menu as it stands to its screens. Refused when the menu is on no
@@ -142,6 +148,7 @@ public sealed class MenuSpineService(
                     draft.Changes.Count,
                     shippedJson,
                     draft.WorkingSnapshot,
+                    draft.PublishedVersion,
                     cancellationToken).ConfigureAwait(false);
             }
             catch (MenuMovedWhilePublishingException) when (attempt < PublishAttempts)

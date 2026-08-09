@@ -42,6 +42,16 @@ of the menu than the snapshot it committed, plus a restore that left sections
 un-restored. Both of the last two are fixed with regression tests that fail on the
 old behaviour.
 
+## After Milestone 1 — a retrospective item the owner named
+
+Three consecutive independent reviews (#2, #3, #4) each found real defects in work
+that had just been declared finished, and the throughline is consistent: the tests
+written with a fix prove the case its author had in mind and stop there, rather
+than attacking the next step in the sequence — publish twice, assign a put-away
+menu, change only the letter casing. Reviews are catching what the author's own
+tests do not. **Decide what to change about how work is verified before it goes to
+review** — owner instruction, to be taken up once M1 merges, not during it.
+
 ## Boundaries
 
 - Do not start milestones 2–6 until milestone 1 is merged and its demo accepted.

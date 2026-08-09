@@ -144,6 +144,10 @@ public sealed class BackOfficeMenuSpineController(
         {
             return Conflict(new { reason = "menu_kept_changing", message = exception.Message });
         }
+        catch (MenuPutAwayException exception)
+        {
+            return Conflict(new { reason = "menu_put_away", message = exception.Message });
+        }
 
         return Ok(new PublishResponse(
             result.Event.Version,
@@ -271,6 +275,10 @@ public sealed class BackOfficeMenuSpineController(
                 assignment.MenuId,
                 assignment.AssignedUtc,
                 assignment.AssignedBy));
+        }
+        catch (MenuPutAwayException exception)
+        {
+            return Conflict(new { reason = "menu_put_away", message = exception.Message });
         }
         catch (InvalidOperationException)
         {

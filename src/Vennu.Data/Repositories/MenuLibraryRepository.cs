@@ -71,6 +71,19 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
     // the source set is empty and nothing is written -- otherwise one venue could
     // hand another venue's screen to its own menu.
     private const string AssignScreenSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        -- Giving a put-away menu a screen would put it back on the shelf without
+        -- the ceiling check or the record that makes putting one back deliberate,
+        -- so it is refused and the operator is told why.
+        IF EXISTS (SELECT 1 FROM dbo.Menus WITH (UPDLOCK, HOLDLOCK)
+                   WHERE Id = @MenuId AND VenueId = @VenueId AND IsPutAway = 1)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            THROW 51006, 'This menu is put away. Put it back on the shelf before giving it a screen.', 1;
+        END;
+
         MERGE dbo.MenuScreenAssignments WITH (HOLDLOCK) AS target
         USING (
             SELECT s.Id AS ScreenId
@@ -86,6 +99,8 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             INSERT (Id, VenueId, ScreenId, MenuId, AssignedUtc, AssignedBy)
             VALUES (@Id, @VenueId, @ScreenId, @MenuId, @AssignedUtc, @AssignedBy)
         OUTPUT inserted.Id, inserted.VenueId, inserted.ScreenId, inserted.MenuId, inserted.AssignedUtc, inserted.AssignedBy;
+
+        COMMIT TRANSACTION;
         """;
 
     private const string ClearScreenAssignmentSql = """
@@ -357,6 +372,10 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
     // Both halves of the draft in one statement. Reading them separately let a
     // publish land between the two reads, which produced a diff against a version
     // that was already gone.
+    // The published version travels with its snapshot so a publish can prove the
+    // diff was computed against the version that is still current. Reading them
+    // together is not an atomic observation on its own -- the publish transaction
+    // is what makes it one, by refusing when either half has moved.
     private const string DraftSnapshotsSql = """
         SELECT
             (
@@ -365,6 +384,11 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
                 WHERE VenueId = @VenueId AND MenuId = @MenuId
                 ORDER BY Version DESC
             ) AS Published,
+            ISNULL((
+                SELECT MAX(Version)
+                FROM dbo.MenuPublishEvents
+                WHERE VenueId = @VenueId AND MenuId = @MenuId
+            ), 0) AS PublishedVersion,
             (
         """ + WorkingSnapshotBody + """
             ) AS Working;
@@ -565,6 +589,14 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             THROW 51001, 'The menu does not belong to this venue.', 1;
         END;
 
+        -- A put-away menu is off the shelf. Publishing is not a way back on:
+        -- putting one back is its own deliberate, ceiling-checked act.
+        IF EXISTS (SELECT 1 FROM dbo.Menus WHERE Id = @MenuId AND VenueId = @VenueId AND IsPutAway = 1)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            THROW 51007, 'This menu is put away. Put it back on the shelf before publishing it.', 1;
+        END;
+
         DECLARE @PreviousVersion BIGINT =
         (
             SELECT ISNULL(MAX(Version), 0)
@@ -572,18 +604,39 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             WHERE MenuId = @MenuId
         );
 
-        -- A screen this menu was published to, which another menu has since been
-        -- given, is not this publish's to touch. Releasing it would blank content
-        -- somebody else deliberately put there.
+        -- The caller's shipped set is the difference from a particular published
+        -- version. If another publish has landed since it read that, the set
+        -- describes a comparison that no longer holds and would re-ship content
+        -- already on the screens; the caller recomputes against what is there now.
+        IF @PreviousVersion <> @ExpectedPublishedVersion
+        BEGIN
+            ROLLBACK TRANSACTION;
+            THROW 51003, 'The menu was published by someone else while this publish was being prepared.', 1;
+        END;
+
+        -- Which screens were showing this menu comes from the published snapshot,
+        -- never from the delivery rows. A delivery target records who was *told*
+        -- about a publish - including the screens a take-off released - so reading
+        -- membership from it would keep re-targeting screens already let go.
+        DECLARE @PreviousScreens TABLE (ScreenId UNIQUEIDENTIFIER PRIMARY KEY);
+        INSERT @PreviousScreens (ScreenId)
+        SELECT DISTINCT screens.screenId
+        FROM dbo.MenuPublishEvents e
+        CROSS APPLY OPENJSON(e.Snapshot, '$.screens')
+            WITH (screenId UNIQUEIDENTIFIER '$.screenId') screens
+        WHERE e.VenueId = @VenueId AND e.MenuId = @MenuId AND e.Version = @PreviousVersion
+          AND screens.screenId IS NOT NULL;
+
+        -- A screen this menu was on, which another menu has since been given, is
+        -- not this publish's to touch. Releasing it would blank content somebody
+        -- else deliberately put there.
         DECLARE @Conflicts TABLE (ScreenId UNIQUEIDENTIFIER PRIMARY KEY);
         INSERT @Conflicts (ScreenId)
-        SELECT DISTINCT t.ScreenId
-        FROM dbo.MenuPublishTargets t
-        INNER JOIN dbo.MenuPublishEvents e ON e.Id = t.PublishEventId
-        WHERE e.MenuId = @MenuId AND e.Version = @PreviousVersion
-          AND EXISTS (
-              SELECT 1 FROM dbo.MenuScreenAssignments a WITH (UPDLOCK, HOLDLOCK)
-              WHERE a.ScreenId = t.ScreenId AND a.MenuId <> @MenuId);
+        SELECT p.ScreenId
+        FROM @PreviousScreens p
+        WHERE EXISTS (
+            SELECT 1 FROM dbo.MenuScreenAssignments a WITH (UPDLOCK, HOLDLOCK)
+            WHERE a.ScreenId = p.ScreenId AND a.MenuId <> @MenuId);
 
         -- Where this publish lands: the screens the menu is on now, plus the ones
         -- it was on and is now leaving, minus the ones another menu has taken.
@@ -593,11 +646,9 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         FROM dbo.MenuScreenAssignments a WITH (UPDLOCK, HOLDLOCK)
         WHERE a.VenueId = @VenueId AND a.MenuId = @MenuId
         UNION
-        SELECT t.ScreenId
-        FROM dbo.MenuPublishTargets t
-        INNER JOIN dbo.MenuPublishEvents e ON e.Id = t.PublishEventId
-        WHERE e.MenuId = @MenuId AND e.Version = @PreviousVersion
-          AND NOT EXISTS (SELECT 1 FROM @Conflicts c WHERE c.ScreenId = t.ScreenId);
+        SELECT p.ScreenId
+        FROM @PreviousScreens p
+        WHERE NOT EXISTS (SELECT 1 FROM @Conflicts c WHERE c.ScreenId = p.ScreenId);
 
         IF NOT EXISTS (SELECT 1 FROM @Targets)
         BEGIN
@@ -625,9 +676,14 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         -- The shipped set the caller computed describes the menu it read. If the
         -- menu has moved since, publishing now would record a set that does not
         -- match the snapshot going out; the caller recomputes and tries again.
+        --
+        -- The comparison is binary on purpose. The database collation is
+        -- case- and accent-insensitive, so a plain <> would read "Burger" and
+        -- "burger" as the same snapshot and let exactly the mismatch this guard
+        -- exists to prevent through.
         IF @ExpectedSnapshot IS NULL
             OR @SnapshotJson IS NULL
-            OR CONVERT(NVARCHAR(MAX), @SnapshotJson) <> CONVERT(NVARCHAR(MAX), @ExpectedSnapshot)
+            OR @SnapshotJson COLLATE Latin1_General_BIN2 <> @ExpectedSnapshot COLLATE Latin1_General_BIN2
         BEGIN
             ROLLBACK TRANSACTION;
             THROW 51003, 'The menu changed while it was being published.', 1;
@@ -670,9 +726,10 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
           AND e.Version < @ResolvedVersion
           AND h.ReplacedByVersion IS NULL;
 
+        -- Publishing does not bring a put-away menu back: putting one back is its
+        -- own deliberate act, bounded by the ceiling and recorded with its author.
         UPDATE dbo.Menus
         SET PublishedVersion = @ResolvedVersion,
-            IsPutAway = 0,
             UpdatedUtc = @PublishedUtc
         WHERE Id = @MenuId AND VenueId = @VenueId;
 
@@ -957,20 +1014,27 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
     public async Task<MenuScreenAssignment> AssignScreenAsync(MenuScreenAssignment assignment, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(assignment);
-        return (await dataAccess.ExecuteSqlQueryAsync<MenuScreenAssignment, object>(
-            AssignScreenSql,
-            new
-            {
-                Id = assignment.Id == Guid.Empty ? Guid.NewGuid() : assignment.Id,
-                VenueId = RequireId(assignment.VenueId, nameof(assignment.VenueId)),
-                ScreenId = RequireId(assignment.ScreenId, nameof(assignment.ScreenId)),
-                MenuId = RequireId(assignment.MenuId, nameof(assignment.MenuId)),
-                AssignedUtc = assignment.AssignedUtc == default ? DateTime.UtcNow : assignment.AssignedUtc,
-                assignment.AssignedBy
-            },
-            cancellationToken).ConfigureAwait(false)).SingleOrDefault()
-            ?? throw new InvalidOperationException(
-                $"Screen '{assignment.ScreenId}' and menu '{assignment.MenuId}' must both belong to venue '{assignment.VenueId}'.");
+        try
+        {
+            return (await dataAccess.ExecuteSqlQueryAsync<MenuScreenAssignment, object>(
+                AssignScreenSql,
+                new
+                {
+                    Id = assignment.Id == Guid.Empty ? Guid.NewGuid() : assignment.Id,
+                    VenueId = RequireId(assignment.VenueId, nameof(assignment.VenueId)),
+                    ScreenId = RequireId(assignment.ScreenId, nameof(assignment.ScreenId)),
+                    MenuId = RequireId(assignment.MenuId, nameof(assignment.MenuId)),
+                    AssignedUtc = assignment.AssignedUtc == default ? DateTime.UtcNow : assignment.AssignedUtc,
+                    assignment.AssignedBy
+                },
+                cancellationToken).ConfigureAwait(false)).SingleOrDefault()
+                ?? throw new InvalidOperationException(
+                    $"Screen '{assignment.ScreenId}' and menu '{assignment.MenuId}' must both belong to venue '{assignment.VenueId}'.");
+        }
+        catch (Microsoft.Data.SqlClient.SqlException exception) when (exception.Number == 51006)
+        {
+            throw new MenuPutAwayException(exception.Message);
+        }
     }
 
     public async Task<bool> ClearScreenAssignmentAsync(Guid venueId, Guid screenId, CancellationToken cancellationToken = default) =>
@@ -1051,6 +1115,7 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         int changeCount,
         string? shippedChanges,
         string expectedWorkingSnapshot,
+        long expectedPublishedVersion,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(publishEvent);
@@ -1075,6 +1140,7 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
                     ChangeCount = changeCount,
                     ShippedChanges = shippedChanges,
                     ExpectedSnapshot = expectedWorkingSnapshot,
+                    ExpectedPublishedVersion = expectedPublishedVersion,
                     Detail = (string?)null
                 },
                 cancellationToken).ConfigureAwait(false)).Single();
@@ -1090,6 +1156,10 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         catch (Microsoft.Data.SqlClient.SqlException exception) when (exception.Number == 51004)
         {
             throw new ScreensTakenByAnotherMenuException(exception.Message);
+        }
+        catch (Microsoft.Data.SqlClient.SqlException exception) when (exception.Number == 51007)
+        {
+            throw new MenuPutAwayException(exception.Message);
         }
 
         var conflicted = string.IsNullOrWhiteSpace(row.ConflictedScreenIds)
@@ -1125,7 +1195,7 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             },
             cancellationToken).ConfigureAwait(false)).SingleOrDefault();
 
-        return new DraftSnapshots(row?.Published, row?.Working);
+        return new DraftSnapshots(row?.Published, row?.Working, row?.PublishedVersion ?? 0);
     }
 
     /// <summary>The menu as it stands right now, in the shape a publish records.</summary>
@@ -1390,6 +1460,8 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
     private sealed class DraftSnapshotRow
     {
         public string? Published { get; set; }
+
+        public long PublishedVersion { get; set; }
 
         public string? Working { get; set; }
     }

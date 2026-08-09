@@ -125,14 +125,20 @@ public interface IMenuLibraryRepository
     /// <param name="shippedChanges">Those differences, recorded so history can say what went out.</param>
     /// <param name="expectedWorkingSnapshot">
     /// The working snapshot the shipped set was computed from. The statement
-    /// rebuilds it under lock and refuses (SQL error 51003) if the menu has moved,
-    /// so what history records always describes the snapshot that went out.
+    /// rebuilds it under lock and refuses if the menu has moved, so what history
+    /// records always describes the snapshot that went out.
+    /// </param>
+    /// <param name="expectedPublishedVersion">
+    /// The published version the shipped set was computed against, so a publish
+    /// by someone else in between cannot cause this one to re-ship a difference
+    /// that has already reached the screens.
     /// </param>
     Task<PublishOutcome> PublishAsync(
         MenuPublishEvent publishEvent,
         int changeCount,
         string? shippedChanges,
         string expectedWorkingSnapshot,
+        long expectedPublishedVersion,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -224,8 +230,12 @@ public sealed record MenuCreateOutcome(bool Created, int ActiveMenuCount);
 /// </summary>
 public sealed record PublishOutcome(MenuPublishEvent Event, IReadOnlyCollection<Guid> ConflictedScreenIds);
 
-/// <summary>The two snapshots the draft is derived from, read together.</summary>
-public sealed record DraftSnapshots(string? Published, string? Working);
+/// <summary>
+/// The two snapshots the draft is derived from, with the version the published
+/// one came from. Publish proves both halves are still current before recording
+/// a difference against them.
+/// </summary>
+public sealed record DraftSnapshots(string? Published, string? Working, long PublishedVersion);
 
 /// <summary>What happened to a put-away or put-back; see <see cref="PutAwayOutcomes"/>.</summary>
 public sealed record PutAwayOutcome(string Outcome, int ActiveMenuCount);
@@ -249,6 +259,13 @@ public sealed class ScreensTakenByAnotherMenuException(string message) : Invalid
 /// recomputes and tries again.
 /// </summary>
 public sealed class MenuMovedWhilePublishingException(string message) : InvalidOperationException(message);
+
+/// <summary>
+/// A put-away menu is off the shelf: it cannot be given a screen and cannot be
+/// published. Putting one back is its own deliberate, ceiling-checked act, so
+/// nothing else may quietly perform that transition.
+/// </summary>
+public sealed class MenuPutAwayException(string message) : InvalidOperationException(message);
 
 public static class PutAwayOutcomes
 {

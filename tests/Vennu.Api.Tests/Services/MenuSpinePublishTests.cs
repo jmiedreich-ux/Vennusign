@@ -148,6 +148,24 @@ public sealed class MenuSpinePublishTests
                 && library.PublishEvents.Single(e => e.Id == target.PublishEventId).Version > 1);
     }
 
+    // Review #4: putting one back is the deliberate, ceiling-checked, attributable
+    // way onto the shelf. It must be the only way, or the ceiling means nothing.
+    [Fact]
+    public async Task APutAwayMenu_CanBeNeitherGivenAScreenNorPublished()
+    {
+        var (service, library) = Build();
+        await service.QueueTakeOffScreensAsync(VenueId, MenuId, "Chef");
+        await service.SetPutAwayAsync(VenueId, MenuId, isPutAway: true, "Owner");
+
+        await Assert.ThrowsAsync<MenuPutAwayException>(
+            () => service.AssignAsync(VenueId, ScreenId, MenuId, "Owner"));
+        await Assert.ThrowsAsync<MenuPutAwayException>(
+            () => service.PublishAsync(VenueId, MenuId, "Owner"));
+
+        // It is still put away, so it still does not count against the ceiling.
+        Assert.Contains(MenuId, library.PutAwayMenus);
+    }
+
     [Fact]
     public async Task PuttingAMenuAway_IsRefusedWhileItIsStillOnAScreen()
     {
