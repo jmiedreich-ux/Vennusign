@@ -51,12 +51,21 @@ public sealed record DraftChangeResponse(
 
 public sealed record DiscardResponse(int Discarded);
 
+public sealed record PutAwayRequest(bool IsPutAway);
+
+/// <summary>
+/// ConflictedScreenIds are screens this publish left alone because another menu
+/// has since been given them. A safe no-op is still reported, never swallowed.
+/// </summary>
 public sealed record PublishResponse(
     long Version,
     int ChangeCount,
     DateTime PublishedUtc,
     string? Author,
-    IReadOnlyCollection<PublishTargetResponse> Targets);
+    IReadOnlyCollection<PublishTargetResponse> Targets,
+    IReadOnlyCollection<Guid> ConflictedScreenIds);
+
+public sealed record PutAwayResponse(bool Changed, bool IsPutAway, int ActiveMenuCount);
 
 public sealed record PublishTargetResponse(Guid ScreenId, string State);
 

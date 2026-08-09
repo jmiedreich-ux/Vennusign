@@ -39,6 +39,9 @@ public static class MenuHistoryKinds
 
     public const string PutAway = "put_away";
 
+    /// <summary>Put back on the shelf — the one way out of put-away, which is otherwise terminal.</summary>
+    public const string PutBack = "put_back";
+
     public const string TakenOffScreens = "taken_off_screens";
 
     public const string Restored = "restored";
@@ -46,5 +49,5 @@ public static class MenuHistoryKinds
     public const string Assigned = "assigned";
 
     public static bool IsSupported(string? value) =>
-        value is Published or DraftDiscarded or PutAway or TakenOffScreens or Restored or Assigned;
+        value is Published or DraftDiscarded or PutAway or PutBack or TakenOffScreens or Restored or Assigned;
 }

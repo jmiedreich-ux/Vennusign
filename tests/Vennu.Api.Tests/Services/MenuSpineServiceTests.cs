@@ -50,6 +50,35 @@ public sealed class MenuSpineDiffTests
         return MenuSnapshot.Serialize(snapshot);
     }
 
+    private static readonly Guid SecondSectionId = Guid.Parse("66666666-6666-6666-6666-666666666666");
+
+    /// <summary>The same library item placed on two sections of one menu.</summary>
+    private static string TwoSectionSnapshot(string price = "12", bool secondSectionHoldsItem = true)
+    {
+        SnapshotItem Item() => new() { ItemId = ItemId, Name = "Berry Fizz", Price = price, SortOrder = 0 };
+
+        return MenuSnapshot.Serialize(new MenuSnapshot
+        {
+            MenuId = MenuId,
+            Name = "Summer",
+            Theme = "coastal",
+            DwellSeconds = 8,
+            LoopWarningSeconds = 60,
+            Screens = [new SnapshotScreen { ScreenId = ScreenId }],
+            Sections =
+            [
+                new SnapshotSection { SectionId = SectionId, Name = "Drinks", SortOrder = 0, Items = [Item()] },
+                new SnapshotSection
+                {
+                    SectionId = SecondSectionId,
+                    Name = "Happy Hour",
+                    SortOrder = 1,
+                    Items = secondSectionHoldsItem ? [Item()] : []
+                }
+            ]
+        });
+    }
+
     [Fact]
     public void AMenuThatMatchesItsScreens_HasNothingToPublish()
     {
@@ -125,6 +154,36 @@ public sealed class MenuSpineDiffTests
 
         Assert.Equal("placed", change.Field);
         Assert.Equal("true", change.AfterValue);
+    }
+
+    // Q182 counts the latest state per field per item. One library item can sit on
+    // several boards, so editing its price once must read as one change however
+    // many places it appears - a person who changed one price is never told they
+    // changed three things.
+    [Fact]
+    public void EditingAnItemPlacedTwice_IsStillOneChange()
+    {
+        var change = Assert.Single(
+            MenuSnapshot.Diff(TwoSectionSnapshot(price: "12"), TwoSectionSnapshot(price: "13")));
+
+        Assert.Equal(DraftTargetKinds.Item, change.TargetKind);
+        Assert.Equal(ItemId, change.TargetId);
+        Assert.Equal("price", change.Field);
+        Assert.Equal("12", change.BeforeValue);
+        Assert.Equal("13", change.AfterValue);
+    }
+
+    // ...and the placements themselves are still counted separately, because
+    // taking the item off one board is a different act from editing it.
+    [Fact]
+    public void RemovingOneOfTwoPlacements_IsOnePlacementChange()
+    {
+        var change = Assert.Single(
+            MenuSnapshot.Diff(TwoSectionSnapshot(), TwoSectionSnapshot(secondSectionHoldsItem: false)));
+
+        Assert.Equal(DraftTargetKinds.Placement, change.TargetKind);
+        Assert.Equal("placed", change.Field);
+        Assert.Equal("false", change.AfterValue);
     }
 
     // Q68: take-off waits as a difference in which screens the menu is on, and

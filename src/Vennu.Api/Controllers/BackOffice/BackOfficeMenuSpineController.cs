@@ -136,6 +136,14 @@ public sealed class BackOfficeMenuSpineController(
             // A real named state, not a silent absence (decision 5, Q80).
             return Conflict(new { reason = "no_screen_paired", message = exception.Message });
         }
+        catch (ScreensTakenByAnotherMenuException exception)
+        {
+            return Conflict(new { reason = "screens_taken", message = exception.Message });
+        }
+        catch (MenuMovedWhilePublishingException exception)
+        {
+            return Conflict(new { reason = "menu_kept_changing", message = exception.Message });
+        }
 
         return Ok(new PublishResponse(
             result.Event.Version,
@@ -144,7 +152,42 @@ public sealed class BackOfficeMenuSpineController(
             result.Event.Author,
             result.Targets
                 .Select(target => new PublishTargetResponse(target.ScreenId, target.State))
-                .ToArray()));
+                .ToArray(),
+            result.ConflictedScreenIds));
+    }
+
+    /// <summary>
+    /// Puts a menu away, or back on the shelf. Put away is the terminal state for a
+    /// menu this build — nothing deletes a menu — so it is attributable, and a menu
+    /// still on a screen is taken off deliberately first.
+    /// </summary>
+    [HttpPut("menus/{menuId:guid}/put-away")]
+    [RequireCapability("content.menu.manage")]
+    public async Task<ActionResult<PutAwayResponse>> SetPutAway(
+        Guid menuId,
+        PutAwayRequest request,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        try
+        {
+            var result = await spine
+                .SetPutAwayAsync(VenueId, menuId, request.IsPutAway, Author, cancellationToken)
+                .ConfigureAwait(false);
+            return Ok(new PutAwayResponse(result.Changed, request.IsPutAway, result.ActiveMenuCount));
+        }
+        catch (MenuStillOnScreensException exception)
+        {
+            return Conflict(new { reason = "still_on_screens", message = exception.Message });
+        }
+        catch (MenuCeilingReachedException exception)
+        {
+            return Conflict(new { reason = "ceiling_reached", message = exception.Message });
+        }
+        catch (InvalidOperationException)
+        {
+            return NotFound(new { message = "That menu is not one of this venue's menus." });
+        }
     }
 
     [HttpGet("menus/{menuId:guid}/history")]
@@ -185,6 +228,10 @@ public sealed class BackOfficeMenuSpineController(
                 .ConfigureAwait(false);
             var draft = ToDraftResponse(restore.Draft);
             return Ok(new RestoreResponse(draft.Count, draft.Changes, restore.ReplacedChangeCount));
+        }
+        catch (ScreensTakenByAnotherMenuException exception)
+        {
+            return Conflict(new { reason = "screens_taken", message = exception.Message });
         }
         catch (InvalidOperationException exception)
         {

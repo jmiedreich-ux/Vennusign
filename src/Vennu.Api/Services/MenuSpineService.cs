@@ -78,57 +78,86 @@ public sealed class MenuSpineService(
     public async Task<IReadOnlyList<SnapshotChange>> GetDraftAsync(
         Guid venueId,
         Guid menuId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        (await ReadDraftAsync(venueId, menuId, cancellationToken).ConfigureAwait(false)).Changes;
+
+    /// <summary>
+    /// The draft, together with the working snapshot it was computed from. Publish
+    /// needs both: the snapshot is what it proves has not moved before recording
+    /// the changes as shipped.
+    /// </summary>
+    private async Task<DraftReading> ReadDraftAsync(
+        Guid venueId,
+        Guid menuId,
+        CancellationToken cancellationToken)
     {
-        var working = await library.GetWorkingSnapshotAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
-        if (working is null)
+        // Both halves come from one read, so a publish landing between two separate
+        // reads cannot produce a diff against a version that is already gone.
+        var snapshots = await library.GetDraftSnapshotsAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
+        if (snapshots.Working is null)
         {
             throw new InvalidOperationException($"Menu '{menuId}' does not belong to venue '{venueId}'.");
         }
 
-        var published = await library.GetLatestPublishedSnapshotAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
-        return MenuSnapshot.Diff(published, working);
+        return new DraftReading(MenuSnapshot.Diff(snapshots.Published, snapshots.Working), snapshots.Working);
     }
+
+    private sealed record DraftReading(IReadOnlyList<SnapshotChange> Changes, string WorkingSnapshot);
 
     /// <summary>
     /// Ships the menu as it stands to its screens. Refused when the menu is on no
     /// screen and has none to release — a publish that reaches nothing is a named
     /// state, not a silent version bump (Q80, enforced inside the transaction).
     /// </summary>
+    /// <summary>How many times a publish re-reads and retries when the menu moves underneath it.</summary>
+    private const int PublishAttempts = 4;
+
     public async Task<PublishResult> PublishAsync(
         Guid venueId,
         Guid menuId,
         string? author,
         CancellationToken cancellationToken = default)
     {
-        // The shipped set is the diff at the moment of publishing, recorded so the
-        // history can say what went out. It is descriptive: the snapshot is the
-        // authority on what the screens now show.
-        var shipped = await GetDraftAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
-        var shippedJson = System.Text.Json.JsonSerializer.Serialize(shipped, JsonOptions);
-
-        MenuPublishEvent published;
-        try
+        // The shipped set and the snapshot that ships have to be one observation,
+        // or history can describe content that never went out. The diff is computed
+        // from a working snapshot, and the publish refuses unless the menu is still
+        // exactly that snapshot when it commits; if someone edited in between, the
+        // whole thing is recomputed rather than recorded wrongly (Q182).
+        for (var attempt = 1; ; attempt++)
         {
-            published = await library.PublishAsync(
-                new MenuPublishEvent
-                {
-                    VenueId = venueId,
-                    MenuId = menuId,
-                    Author = author,
-                    PublishedUtc = timeProvider.GetUtcNow().UtcDateTime
-                },
-                shipped.Count,
-                shippedJson,
-                cancellationToken).ConfigureAwait(false);
-        }
-        catch (Microsoft.Data.SqlClient.SqlException exception) when (exception.Number == 51002)
-        {
-            throw new MenuNotOnAnyScreenException(exception.Message);
-        }
+            var draft = await ReadDraftAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
+            var shippedJson = System.Text.Json.JsonSerializer.Serialize(draft.Changes, JsonOptions);
 
-        var deliveries = await library.GetPublishTargetsAsync(published.Id, cancellationToken).ConfigureAwait(false);
-        return new PublishResult(published, published.ChangeCount, deliveries);
+            PublishOutcome outcome;
+            try
+            {
+                outcome = await library.PublishAsync(
+                    new MenuPublishEvent
+                    {
+                        VenueId = venueId,
+                        MenuId = menuId,
+                        Author = author,
+                        PublishedUtc = timeProvider.GetUtcNow().UtcDateTime
+                    },
+                    draft.Changes.Count,
+                    shippedJson,
+                    draft.WorkingSnapshot,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch (MenuMovedWhilePublishingException) when (attempt < PublishAttempts)
+            {
+                // Someone edited between the diff and the commit. Read the menu
+                // again and ship what it actually is now.
+                continue;
+            }
+
+            var deliveries = await library.GetPublishTargetsAsync(outcome.Event.Id, cancellationToken).ConfigureAwait(false);
+            return new PublishResult(
+                outcome.Event,
+                outcome.Event.ChangeCount,
+                deliveries,
+                outcome.ConflictedScreenIds);
+        }
     }
 
     /// <summary>
@@ -158,14 +187,25 @@ public sealed class MenuSpineService(
 
         // Applying the snapshot and recording the act commit together, so a failure
         // part-way cannot leave the menu half-restored.
-        await library.RestoreSnapshotAsync(
-            venueId,
-            menuId,
-            target.Snapshot!,
-            author,
-            $"Put the menu back to how it looked when version {version} was published, replacing {displaced} unpublished change(s).",
-            timeProvider.GetUtcNow().UtcDateTime,
-            cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await library.RestoreSnapshotAsync(
+                venueId,
+                menuId,
+                target.Snapshot!,
+                author,
+                $"Put the menu back to how it looked when version {version} was published, replacing {displaced} unpublished change(s).",
+                timeProvider.GetUtcNow().UtcDateTime,
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch (Microsoft.Data.SqlClient.SqlException exception) when (exception.Number == 51005)
+        {
+            // Refused rather than restored around: a restore that cannot put the
+            // screens back has not put the menu back to how it looked.
+            throw new ScreensTakenByAnotherMenuException(
+                "A screen this menu was on is now showing a different menu, so it cannot go back to how it looked. "
+                + "Put that screen back on this menu first, or go back to a version it was not on.");
+        }
 
         var draft = await GetDraftAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
         return new RestoreResult(draft, displaced);
@@ -219,7 +259,52 @@ public sealed class MenuSpineService(
         Guid menuId,
         string? author,
         CancellationToken cancellationToken = default) =>
-        await library.ClearMenuAssignmentsAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
+        await library.TakeOffScreensAsync(
+            venueId,
+            menuId,
+            author,
+            timeProvider.GetUtcNow().UtcDateTime,
+            cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Puts a menu away, or back on the shelf. Put away is the terminal state for a
+    /// menu this build — there is no delete — so it is recorded with its author in
+    /// the same transaction, and a menu still on a screen is taken off first rather
+    /// than disappearing underneath the person.
+    /// </summary>
+    public async Task<PutAwayResult> SetPutAwayAsync(
+        Guid venueId,
+        Guid menuId,
+        bool isPutAway,
+        string? author,
+        CancellationToken cancellationToken = default)
+    {
+        var ceilings = await library.GetResolvedCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var limit = ceilings.TryGetValue(MenuCeilings.MenusPerVenue, out var configured) ? configured : int.MaxValue;
+
+        var outcome = await library.SetPutAwayAsync(
+            venueId,
+            menuId,
+            isPutAway,
+            limit,
+            author,
+            isPutAway ? "Put the menu away." : "Put the menu back on the shelf.",
+            timeProvider.GetUtcNow().UtcDateTime,
+            cancellationToken).ConfigureAwait(false);
+
+        return outcome.Outcome switch
+        {
+            PutAwayOutcomes.NotFound =>
+                throw new InvalidOperationException($"Menu '{menuId}' does not belong to venue '{venueId}'."),
+            PutAwayOutcomes.OverCeiling =>
+                throw new MenuCeilingReachedException(
+                    MenuCeilings.DescribeRefusal(MenuCeilings.MenusPerVenue, outcome.ActiveMenuCount + 1, limit)),
+            PutAwayOutcomes.StillOnScreens =>
+                throw new MenuStillOnScreensException(
+                    "This menu is still on a screen. Take it off the screens first, so nothing goes blank without you deciding to."),
+            _ => new PutAwayResult(outcome.Outcome == PutAwayOutcomes.Changed, outcome.ActiveMenuCount)
+        };
+    }
 
     public async Task<MenuScreenAssignment> AssignAsync(
         Guid venueId,
@@ -291,12 +376,23 @@ public sealed record AvailabilityResult(Item Item, ItemAvailability Availability
 
 public sealed record RestoreResult(IReadOnlyList<SnapshotChange> Draft, int ReplacedChangeCount);
 
-/// <summary>
-/// Publishing a menu that is on no screen is refused rather than silently
-/// versioning nothing (Q80).
-/// </summary>
-public sealed class MenuNotOnAnyScreenException(string message) : InvalidOperationException(message);
+/// <summary>A tier ceiling refused the act, in the plain words the operator sees (Q201).</summary>
+public sealed class MenuCeilingReachedException(string message) : InvalidOperationException(message);
 
-public sealed record PublishResult(MenuPublishEvent Event, int ChangeCount, IReadOnlyCollection<MenuPublishTarget> Targets);
+/// <summary>A menu on a screen is taken off deliberately before it can be put away (Q195).</summary>
+public sealed class MenuStillOnScreensException(string message) : InvalidOperationException(message);
+
+public sealed record PutAwayResult(bool Changed, int ActiveMenuCount);
+
+/// <summary>
+/// ConflictedScreenIds are screens this publish deliberately left alone because
+/// another menu has since been given them. Reporting them is what keeps a safe
+/// no-op from being a silent one.
+/// </summary>
+public sealed record PublishResult(
+    MenuPublishEvent Event,
+    int ChangeCount,
+    IReadOnlyCollection<MenuPublishTarget> Targets,
+    IReadOnlyCollection<Guid> ConflictedScreenIds);
 
 public sealed record MenuContext(string Timezone, IReadOnlyDictionary<string, int> Ceilings, int MenuCount);

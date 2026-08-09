@@ -21,20 +21,26 @@ Updated 2026-08-09 after the Menus Milestone 1 rework that answers independent r
 
 ## Exact Next Action
 
-1. **A fresh independent review of PR #685** — never by its author (issue #659). Every commit invalidates the previous review, and the branch has been reworked substantially since the last one. Review #2's findings are all addressed; the review comment on the PR names each one and how.
-2. **Owner acceptance re-run.** `scripts/run-m1-demo.ps1` was rewritten for the derived model and reported 10 of 10 locally on 2026-08-09 against real LocalDB; `docs/features/menus/m1-demo-workbook.html` carries the matching checks. The owner still records the judgment.
-3. The three owner decisions from the first acceptance still stand: audit record kept as is (#677), legacy columns kept, and the three menu capabilities to become separately grantable (#686).
-4. **Do not merge PR #685** until the fresh review and re-run acceptance both pass, and exact-head CI is green — no CI ran for the 2026-08-09 push. Milestone 2 starts only after it merges.
+1. **A fourth independent review of PR #685** — never by its author (issue #659). Every commit invalidates the previous review. Reviews #2 and #3 are both fully addressed; the response comments on the PR name each finding and how it was closed.
+2. **Owner acceptance re-run.** `scripts/run-m1-demo.ps1` walks the derived model, including take-off through to publish and put-away; `docs/features/menus/m1-demo-workbook.html` carries the matching checks. `m1-acceptance-record.json` is **superseded** — it was signed against the authored-draft implementation and is kept as history only.
+3. The three owner decisions from the first acceptance still stand: audit record kept as is (#677), legacy columns kept, and the three menu capabilities to become separately grantable (#686). The screen-conflict rule was settled on 2026-08-09: a screen another menu now owns is never touched by a stale act, and the conflict is always named — publish leaves it alone and reports it, restore refuses outright.
+4. **Do not merge PR #685** until the fresh review and the re-run acceptance both pass, with exact-head CI green. Milestone 2 starts only after it merges.
 
-## Local verification on 2026-08-09 (no CI run)
+## Verification
 
-Run locally against real LocalDB and a running product, all green: 401 unit tests;
-38 data integration tests (fresh database, migration applied from scratch); 109
-back-office and 98 platform-operations UI tests; 56 Playwright specs (2 skipped);
-and the owner demo at 10 of 10. Local execution caught two defects green CI would
-have missed — a phantom assignment count from PowerShell's empty-array handling in
-the demo script, and a stale migration-script list that had been failing in the
-integration project since script 052.
+Exact-head GitHub Actions were green (13 checks) at `ca187f0`; the third review
+confirmed that independently. Local runs against real LocalDB and a running
+product cover what CI's standing exception skips: unit tests, the data
+integration suite on a database migrated from scratch, both UI suites, the
+Playwright specs and the owner demo.
+
+Local execution has now caught four defects green CI missed: a phantom assignment
+count from PowerShell turning an empty JSON array into `$null`; a migration-script
+list test that had been failing in the integration project since script 052; and,
+found by review #3, a publish that recorded a shipped set from a different reading
+of the menu than the snapshot it committed, plus a restore that left sections
+un-restored. Both of the last two are fixed with regression tests that fail on the
+old behaviour.
 
 ## Boundaries
 

@@ -84,6 +84,34 @@ public interface IMenuLibraryRepository
 
     Task<int> ClearMenuAssignmentsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Takes the menu off its screens in the working state and records the act
+    /// with its author in the same transaction (Q68, Q207). The screens keep
+    /// showing the published snapshot until the next publish carries it.
+    /// </summary>
+    Task<int> TakeOffScreensAsync(
+        Guid venueId,
+        Guid menuId,
+        string? author,
+        DateTime occurredUtc,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Puts a menu away, or back on the shelf, recording the act with its author
+    /// in the same transaction. Putting one back is bounded by the same ceiling as
+    /// creating one, checked under the same lock; a menu still on a screen is
+    /// never put away underneath the person.
+    /// </summary>
+    Task<PutAwayOutcome> SetPutAwayAsync(
+        Guid venueId,
+        Guid menuId,
+        bool isPutAway,
+        int activeMenuLimit,
+        string? author,
+        string detail,
+        DateTime occurredUtc,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyCollection<MenuScreenAssignment>> GetAssignmentsAsync(Guid venueId, CancellationToken cancellationToken = default);
 
     // ----- Publish and history -----------------------------------------------------
@@ -95,11 +123,24 @@ public interface IMenuLibraryRepository
     /// </summary>
     /// <param name="changeCount">How many differences this publish is shipping, from the computed draft.</param>
     /// <param name="shippedChanges">Those differences, recorded so history can say what went out.</param>
-    Task<MenuPublishEvent> PublishAsync(
+    /// <param name="expectedWorkingSnapshot">
+    /// The working snapshot the shipped set was computed from. The statement
+    /// rebuilds it under lock and refuses (SQL error 51003) if the menu has moved,
+    /// so what history records always describes the snapshot that went out.
+    /// </param>
+    Task<PublishOutcome> PublishAsync(
         MenuPublishEvent publishEvent,
         int changeCount,
         string? shippedChanges,
+        string expectedWorkingSnapshot,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Both halves of the derived draft read together, so a publish landing
+    /// between two separate reads cannot produce a diff against a version that is
+    /// already gone.
+    /// </summary>
+    Task<DraftSnapshots> GetDraftSnapshotsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyCollection<MenuPublishEvent>> GetPublishHistoryAsync(
         Guid venueId,
@@ -175,6 +216,52 @@ public interface IMenuLibraryRepository
 
 /// <summary>Whether the menu was created, and the venue's active-menu count under the lock.</summary>
 public sealed record MenuCreateOutcome(bool Created, int ActiveMenuCount);
+
+/// <summary>
+/// The published event, plus any screens this publish deliberately did not touch
+/// because another menu has since been given them. Naming them is the difference
+/// between a safe no-op and a silent one.
+/// </summary>
+public sealed record PublishOutcome(MenuPublishEvent Event, IReadOnlyCollection<Guid> ConflictedScreenIds);
+
+/// <summary>The two snapshots the draft is derived from, read together.</summary>
+public sealed record DraftSnapshots(string? Published, string? Working);
+
+/// <summary>What happened to a put-away or put-back; see <see cref="PutAwayOutcomes"/>.</summary>
+public sealed record PutAwayOutcome(string Outcome, int ActiveMenuCount);
+
+/// <summary>
+/// Publishing a menu that is on no screen, and has none to release, is refused
+/// rather than silently versioning nothing (Q80).
+/// </summary>
+public sealed class MenuNotOnAnyScreenException(string message) : InvalidOperationException(message);
+
+/// <summary>
+/// Every screen involved now shows a different menu. Publishing would reach
+/// nothing, and restoring cannot put the menu back to how it looked, so both say
+/// so rather than reporting a success that did not happen.
+/// </summary>
+public sealed class ScreensTakenByAnotherMenuException(string message) : InvalidOperationException(message);
+
+/// <summary>
+/// The menu moved between the caller computing its diff and the publish
+/// committing, so recording that diff as shipped would be untrue. The caller
+/// recomputes and tries again.
+/// </summary>
+public sealed class MenuMovedWhilePublishingException(string message) : InvalidOperationException(message);
+
+public static class PutAwayOutcomes
+{
+    public const string Changed = "changed";
+
+    public const string Unchanged = "unchanged";
+
+    public const string NotFound = "not_found";
+
+    public const string OverCeiling = "over_ceiling";
+
+    public const string StillOnScreens = "still_on_screens";
+}
 
 /// <summary>
 /// What happened to a create-and-place: <see cref="ItemPlacementOutcomes"/> names

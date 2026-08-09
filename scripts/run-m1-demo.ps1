@@ -237,20 +237,44 @@ Record '8b' 'Take off the screens waits in the draft, and ships on Publish' `
     "screens change '$($screensChange.beforeValue)' -> '$($screensChange.afterValue)' waiting in a draft of $($takeOffDraft.count); working assignments now $afterTakeOff (was $beforeTakeOff); publishes stayed at $publishesAfterTakeOff" `
     'the removal waiting as a screens change with no new publish - the menu leaves the working state now, and leaves the screens on the next Publish (Q68)'
 
+# --- 8c. Take-off ships on Publish, and is recorded again against it ---------------------
+$takeOffPublish = Invoke-Api POST "$spine/menus/$menuId/publish"
+$historyAfterShip = @((Invoke-Api GET "$spine/menus/$menuId/history") | Where-Object { $null -ne $_ })
+$takeOffEntries = @($historyAfterShip | Where-Object { $_.kind -eq 'taken_off_screens' })
+$assignmentsAfterShip = Measure-Api "$spine/assignments"
+$shippedSnapshotScreens = @($takeOffPublish.targets).Count
+Record '8c' 'Publishing the take-off reaches the screens it is leaving, and records the act' `
+    ($takeOffEntries.Count -ge 2 -and $assignmentsAfterShip -eq 0) `
+    "taken_off_screens recorded $($takeOffEntries.Count) time(s) - when it was done and when it shipped, by '$(@($takeOffEntries | ForEach-Object { $_.author })[0])'; the publish told $shippedSnapshotScreens screen(s) it is being released; assignments now $assignmentsAfterShip" `
+    'the released screen told by the publish that releases it, and the act attributable both when queued and when shipped'
+
+# --- 8d. Put away is deliberate, attributable, and frees ceiling room ---------------------
+$contextBeforePutAway = Invoke-Api GET "$spine/context"
+$putAway = Invoke-Api PUT "$spine/menus/$menuId/put-away" @{ isPutAway = $true }
+$contextAfterPutAway = Invoke-Api GET "$spine/context"
+$putAwayEntry = @(@((Invoke-Api GET "$spine/menus/$menuId/history")) | Where-Object { $_.kind -eq 'put_away' })[0]
+Record '8d' 'Put away is attributable, and a put-away menu stops counting against the ceiling' `
+    ($putAway.changed -eq $true -and $null -ne $putAwayEntry -and $contextAfterPutAway.menuCount -lt $contextBeforePutAway.menuCount) `
+    "put away by '$($putAwayEntry.author)'; active menus $($contextBeforePutAway.menuCount) -> $($contextAfterPutAway.menuCount)" `
+    "the act recorded with its author, and the count dropping - the refusal says 'put one away first', so putting one away has to make room"
+
+# Put it back so the venue is left as it was found.
+Invoke-Api PUT "$spine/menus/$menuId/put-away" @{ isPutAway = $false } | Out-Null
+
 # --- 9. Destructive acts are attributable ----------------------------------------------
 Invoke-Api DELETE "$spine/menus/$menuId/draft" | Out-Null
-$assignmentsAfterDiscard = Measure-Api "$spine/assignments"
 $history = @((Invoke-Api GET "$spine/menus/$menuId/history") | Where-Object { $null -ne $_ })
-$discardAuthor = @($history | Where-Object { $_.kind -eq 'draft_discarded' } | ForEach-Object { $_.author })[0]
-$restoredAuthor = @($history | Where-Object { $_.kind -eq 'restored' } | ForEach-Object { $_.author })[0]
-$discard = @($history | Where-Object { $_.kind -eq 'draft_discarded' })[0]
-Record '9' 'Irreversible acts are recorded with their author, and discard restores the published shape' `
-    ($null -ne $discard -and $assignmentsAfterDiscard -eq $beforeTakeOff) `
-    "draft_discarded by '$discardAuthor'; restored by '$restoredAuthor'; the discarded take-off put the menu back on its screen ($assignmentsAfterDiscard assignment(s))" `
-    'the discard present in history naming who did it, and the pending take-off undone with it'
+$kinds = @($history | ForEach-Object { $_.kind } | Sort-Object -Unique)
+$anonymous = @($history | Where-Object { [string]::IsNullOrWhiteSpace($_.author) })
+$missingKinds = @(@('taken_off_screens','put_away','put_back','restored') | Where-Object { $kinds -notcontains $_ })
+Record '9' 'Every irreversible act is recorded with its author' `
+    ($missingKinds.Count -eq 0 -and $anonymous.Count -eq 0) `
+    "history holds: $($kinds -join ', '); entries with no author: $($anonymous.Count)" `
+    'take-off, put away, put back and restore all present, each naming who did it - nothing irreversible is anonymous'
 
 # --- Tidy up ------------------------------------------------------------------------------
 Invoke-Api PUT "$spine/items/$itemId/availability" @{ isAvailable = $true } | Out-Null
+if ($screenId) { Invoke-Api PUT "$spine/screens/$screenId/menu" @{ menuId = $menuId } | Out-Null }
 
 # --- Summary -------------------------------------------------------------------------------
 $passed = @($results | Where-Object { $_.Result -eq 'PASS' }).Count

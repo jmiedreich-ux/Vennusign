@@ -70,6 +70,7 @@ public sealed class MenuSnapshot
 
         CompareScreens(changes, published, working);
         CompareSections(changes, published, working);
+        CompareItems(changes, published, working);
         ComparePlacements(changes, published, working);
 
         return changes;
@@ -102,6 +103,34 @@ public sealed class MenuSnapshot
         }
     }
 
+    /// <summary>
+    /// An item's own values are the library's, not a placement's. Editing the price
+    /// of an item that sits on three sections is one change, so it is compared once
+    /// per item id — Q182 counts the latest state per field per item, and a person
+    /// who changed one price should never be told they changed three things.
+    /// </summary>
+    private static void CompareItems(List<SnapshotChange> changes, MenuSnapshot? published, MenuSnapshot working)
+    {
+        var before = Items(published);
+        var after = Items(working);
+
+        foreach (var (itemId, item) in after)
+        {
+            if (!before.TryGetValue(itemId, out var previous))
+            {
+                // An item new to this menu arrives through its placement, which is
+                // the change; its values travel inside the publish snapshot.
+                continue;
+            }
+
+            Compare(changes, DraftTargetKinds.Item, itemId, "name", previous.Name, item.Name);
+            Compare(changes, DraftTargetKinds.Item, itemId, "description", previous.Description, item.Description);
+            // Prices are compared as typed, so "9.5" and "9.50" are genuinely
+            // different values rather than the same number (Q115/Q190).
+            Compare(changes, DraftTargetKinds.Item, itemId, "price", previous.Price, item.Price);
+        }
+    }
+
     private static void ComparePlacements(List<SnapshotChange> changes, MenuSnapshot? published, MenuSnapshot working)
     {
         // Keyed by section and item together: the same library item can sit on more
@@ -114,17 +143,11 @@ public sealed class MenuSnapshot
             if (!before.TryGetValue(key, out var previous))
             {
                 // A new placement is one change, like a removal is one change: the
-                // person did one thing, and the count says so (Q182). Its values
-                // travel inside the publish snapshot, not as separate entries.
+                // person did one thing, and the count says so (Q182).
                 changes.Add(new SnapshotChange(DraftTargetKinds.Placement, placement.ItemId, "placed", "false", "true"));
                 continue;
             }
 
-            Compare(changes, DraftTargetKinds.Item, placement.ItemId, "name", previous.Name, placement.Name);
-            Compare(changes, DraftTargetKinds.Item, placement.ItemId, "description", previous.Description, placement.Description);
-            // Prices are compared as typed, so "9.5" and "9.50" are genuinely
-            // different values rather than the same number (Q115/Q190).
-            Compare(changes, DraftTargetKinds.Item, placement.ItemId, "price", previous.Price, placement.Price);
             Compare(changes, DraftTargetKinds.Placement, placement.ItemId, "sortOrder", Number(previous.SortOrder), Number(placement.SortOrder));
         }
 
@@ -132,6 +155,25 @@ public sealed class MenuSnapshot
         {
             changes.Add(new SnapshotChange(DraftTargetKinds.Placement, placement.ItemId, "placed", "true", "false"));
         }
+    }
+
+    /// <summary>
+    /// Every item the menu renders, once each, whatever it is placed on. Where the
+    /// same item appears twice its values are identical by construction: they come
+    /// from one library row.
+    /// </summary>
+    private static Dictionary<Guid, SnapshotItem> Items(MenuSnapshot? snapshot)
+    {
+        var map = new Dictionary<Guid, SnapshotItem>();
+        foreach (var section in snapshot?.Sections ?? [])
+        {
+            foreach (var item in section.Items ?? [])
+            {
+                map[item.ItemId] = item;
+            }
+        }
+
+        return map;
     }
 
     // Keyed by section and item together: the same library item can sit on more

@@ -113,6 +113,83 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
     public Task<int> ClearMenuAssignmentsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
         Task.FromResult(Assignments.RemoveAll(a => a.VenueId == venueId && a.MenuId == menuId));
 
+    public Task<int> TakeOffScreensAsync(
+        Guid venueId,
+        Guid menuId,
+        string? author,
+        DateTime occurredUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var removed = Assignments.RemoveAll(a => a.VenueId == venueId && a.MenuId == menuId);
+        if (removed > 0)
+        {
+            History.Add(new MenuHistoryEntry
+            {
+                Id = Guid.NewGuid(),
+                VenueId = venueId,
+                MenuId = menuId,
+                Kind = MenuHistoryKinds.TakenOffScreens,
+                Detail = $"Took the menu off {removed} screen(s); it reaches them on the next publish.",
+                Author = author,
+                OccurredUtc = occurredUtc
+            });
+        }
+
+        return Task.FromResult(removed);
+    }
+
+    /// <summary>Menus this fake knows are put away, so the ceiling and the act can be exercised.</summary>
+    public HashSet<Guid> PutAwayMenus { get; } = [];
+
+    public Task<PutAwayOutcome> SetPutAwayAsync(
+        Guid venueId,
+        Guid menuId,
+        bool isPutAway,
+        int activeMenuLimit,
+        string? author,
+        string detail,
+        DateTime occurredUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var active = MenuCount - PutAwayMenus.Count;
+        if (PutAwayMenus.Contains(menuId) == isPutAway)
+        {
+            return Task.FromResult(new PutAwayOutcome(PutAwayOutcomes.Unchanged, active));
+        }
+
+        if (!isPutAway && active + 1 > activeMenuLimit)
+        {
+            return Task.FromResult(new PutAwayOutcome(PutAwayOutcomes.OverCeiling, active));
+        }
+
+        if (isPutAway && Assignments.Any(a => a.VenueId == venueId && a.MenuId == menuId))
+        {
+            return Task.FromResult(new PutAwayOutcome(PutAwayOutcomes.StillOnScreens, active));
+        }
+
+        if (isPutAway)
+        {
+            PutAwayMenus.Add(menuId);
+        }
+        else
+        {
+            PutAwayMenus.Remove(menuId);
+        }
+
+        History.Add(new MenuHistoryEntry
+        {
+            Id = Guid.NewGuid(),
+            VenueId = venueId,
+            MenuId = menuId,
+            Kind = isPutAway ? MenuHistoryKinds.PutAway : MenuHistoryKinds.PutBack,
+            Detail = detail,
+            Author = author,
+            OccurredUtc = occurredUtc
+        });
+
+        return Task.FromResult(new PutAwayOutcome(PutAwayOutcomes.Changed, MenuCount - PutAwayMenus.Count));
+    }
+
     public Task<IReadOnlyCollection<MenuScreenAssignment>> GetAssignmentsAsync(Guid venueId, CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyCollection<MenuScreenAssignment>>(
             Assignments.Where(a => a.VenueId == venueId).ToArray());
@@ -247,6 +324,17 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
             .Select(e => e.Snapshot)
             .FirstOrDefault());
 
+    public async Task<DraftSnapshots> GetDraftSnapshotsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
+        new(
+            await GetLatestPublishedSnapshotAsync(venueId, menuId, cancellationToken).ConfigureAwait(false),
+            WorkingSnapshotJson);
+
+    /// <summary>
+    /// Set to make the next publish observe a working state different from the one
+    /// the caller's diff came from, the way a concurrent edit would.
+    /// </summary>
+    public string? WorkingSnapshotAtPublish { get; set; }
+
     public Task RestoreSnapshotAsync(
         Guid venueId,
         Guid menuId,
@@ -273,12 +361,23 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
         return Task.CompletedTask;
     }
 
-    public Task<MenuPublishEvent> PublishAsync(
+    public Task<PublishOutcome> PublishAsync(
         MenuPublishEvent publishEvent,
         int changeCount,
         string? shippedChanges,
+        string expectedWorkingSnapshot,
         CancellationToken cancellationToken = default)
     {
+        // The statement rebuilds the working snapshot under lock and refuses if it
+        // has moved. The fake mirrors that, so the retry path is exercised here.
+        var observed = WorkingSnapshotAtPublish ?? WorkingSnapshotJson;
+        if (!string.Equals(observed, expectedWorkingSnapshot, StringComparison.Ordinal))
+        {
+            WorkingSnapshotJson = observed;
+            WorkingSnapshotAtPublish = null;
+            throw new MenuMovedWhilePublishingException("The menu changed while it was being published.");
+        }
+
         var assigned = Assignments
             .Where(a => a.VenueId == publishEvent.VenueId && a.MenuId == publishEvent.MenuId)
             .Select(a => a.ScreenId)
@@ -290,11 +389,23 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
             .SelectMany(e => PublishTargets.Where(t => t.PublishEventId == e.Id).Select(t => t.ScreenId))
             .ToList();
 
-        // Q80 lives in the statement, so the fake mirrors it.
-        if (assigned.Count == 0 && previouslyTargeted.Count == 0)
+        // A screen another menu has since been given is not this publish's to
+        // touch, and is reported rather than silently dropped.
+        var conflicted = previouslyTargeted
+            .Where(screenId => Assignments.Any(a => a.ScreenId == screenId && a.MenuId != publishEvent.MenuId))
+            .Distinct()
+            .ToArray();
+        var targets = assigned.Union(previouslyTargeted.Except(conflicted)).ToList();
+
+        if (targets.Count == 0)
         {
-            throw new MenuNotOnAnyScreenException(
-                "Pair a screen to publish. This menu is not on a screen yet, so publishing it would reach nothing.");
+            // Q80 lives in the statement, so the fake mirrors it — as does the
+            // distinct "every screen was taken" refusal.
+            throw conflicted.Length > 0
+                ? new ScreensTakenByAnotherMenuException(
+                    "Every screen this menu was on is now showing a different menu, so this publish would reach nothing.")
+                : new MenuNotOnAnyScreenException(
+                    "Pair a screen to publish. This menu is not on a screen yet, so publishing it would reach nothing.");
         }
 
         publishEvent.Id = publishEvent.Id == Guid.Empty ? Guid.NewGuid() : publishEvent.Id;
@@ -309,7 +420,7 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
 
         PublishEvents.Add(publishEvent);
 
-        foreach (var screenId in assigned.Union(previouslyTargeted))
+        foreach (var screenId in targets)
         {
             PublishTargets.Add(new MenuPublishTarget
             {
@@ -332,7 +443,23 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
             OccurredUtc = publishEvent.PublishedUtc
         });
 
-        return Task.FromResult(publishEvent);
+        // The publish that carries a take-off records it under its own name.
+        if (assigned.Count == 0)
+        {
+            History.Add(new MenuHistoryEntry
+            {
+                Id = Guid.NewGuid(),
+                VenueId = publishEvent.VenueId,
+                MenuId = publishEvent.MenuId,
+                Kind = MenuHistoryKinds.TakenOffScreens,
+                PublishEventId = publishEvent.Id,
+                Detail = $"Taken off {targets.Count} screen(s).",
+                Author = publishEvent.Author,
+                OccurredUtc = publishEvent.PublishedUtc
+            });
+        }
+
+        return Task.FromResult(new PublishOutcome(publishEvent, conflicted));
     }
 
     /// <summary>Snapshot the fake hands back from a publish, so restore can be exercised.</summary>

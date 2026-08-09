@@ -197,7 +197,7 @@ CREATE TABLE dbo.MenuHistoryEntries
     -- A history entry that names a publish event must name one of its own menu's
     -- events in its own venue, never another tenant's.
     CONSTRAINT FK_MenuHistoryEntries_PublishEvent FOREIGN KEY (PublishEventId, MenuId, VenueId) REFERENCES dbo.MenuPublishEvents (Id, MenuId, VenueId),
-    CONSTRAINT CK_MenuHistoryEntries_Kind CHECK (Kind IN (N'published', N'draft_discarded', N'put_away', N'taken_off_screens', N'restored', N'assigned'))
+    CONSTRAINT CK_MenuHistoryEntries_Kind CHECK (Kind IN (N'published', N'draft_discarded', N'put_away', N'put_back', N'taken_off_screens', N'restored', N'assigned'))
 );
 
 CREATE INDEX IX_MenuHistoryEntries_MenuTimeline

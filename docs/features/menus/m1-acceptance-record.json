@@ -2,6 +2,8 @@
   "schema": "vennusign.menus.m1-demo",
   "version": 2,
   "savedAt": "2026-08-09T00:34:36.335Z",
+  "supersededUtc": "2026-08-09T00:00:00.000Z",
+  "supersededReason": "This record is history, not current evidence. It was signed against the authored-draft implementation, before the owner settled the derived-draft save model and before the reworks that followed the second and third independent reviews. Its checks no longer match the ones the demo runs — in particular 4-1, which recorded taken_off_screens against a flow that has since changed. Milestone 1 needs a fresh acceptance run before merge; the owner's three decisions in 'flagged' below still stand.",
   "fields": {
     "reviewer": "Jeremy Miedreich",
     "reviewDate": "2026-08-08",
