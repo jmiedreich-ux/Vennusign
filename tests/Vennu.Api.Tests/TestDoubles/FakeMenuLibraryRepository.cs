@@ -1,13 +1,13 @@
 using Vennu.Core.Models;
+using Vennu.Api.Services;
 using Vennu.Data.Repositories;
 
 namespace Vennu.Api.Tests.TestDoubles;
 
 /// <summary>
-/// In-memory stand-in for the Menus spine. It deliberately mirrors the two
-/// invariants the SQL enforces: the draft queue is keyed by (menu, target,
-/// field) so it stays the current diff, and a publish clears only its own
-/// menu's queue.
+/// In-memory stand-in for the Menus spine. It deliberately mirrors the
+/// invariants the SQL enforces: the Q80 refusal and the ceiling checks live
+/// inside the same operations that write, and every read is venue-scoped.
 /// </summary>
 internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
 {
@@ -15,11 +15,11 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
 
     public List<Placement> Placements { get; } = [];
 
+    public List<MenuSection> Sections { get; } = [];
+
     public List<ItemAvailability> Availability { get; } = [];
 
     public List<MenuScreenAssignment> Assignments { get; } = [];
-
-    public List<MenuDraftChange> DraftChanges { get; } = [];
 
     public List<MenuPublishEvent> PublishEvents { get; } = [];
 
@@ -117,105 +117,199 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
         Task.FromResult<IReadOnlyCollection<MenuScreenAssignment>>(
             Assignments.Where(a => a.VenueId == venueId).ToArray());
 
-    // ----- Draft queue -----
+    // ----- Consolidated editor writes -----
 
-    public Task<MenuDraftChange?> UpsertDraftChangeAsync(MenuDraftChange change, CancellationToken cancellationToken = default)
-    {
-        // Mirror the statement: a value taken back to what is published is not a
-        // change, so it leaves the queue rather than sitting in it.
-        if (string.Equals(change.BeforeValue, change.AfterValue, StringComparison.Ordinal))
-        {
-            DraftChanges.RemoveAll(candidate =>
-                candidate.MenuId == change.MenuId
-                && string.Equals(candidate.TargetKind, change.TargetKind, StringComparison.Ordinal)
-                && candidate.TargetId == change.TargetId
-                && string.Equals(candidate.Field, change.Field, StringComparison.Ordinal));
-            return Task.FromResult<MenuDraftChange?>(null);
-        }
+    public Menu? CreatedMenu { get; private set; }
 
-        var existing = DraftChanges.SingleOrDefault(candidate =>
-            candidate.MenuId == change.MenuId
-            && string.Equals(candidate.TargetKind, change.TargetKind, StringComparison.Ordinal)
-            && candidate.TargetId == change.TargetId
-            && string.Equals(candidate.Field, change.Field, StringComparison.Ordinal));
-
-        if (existing is not null)
-        {
-            existing.AfterValue = change.AfterValue;
-            existing.Author = change.Author;
-            existing.UpdatedUtc = change.CreatedUtc;
-            return Task.FromResult<MenuDraftChange?>(existing);
-        }
-
-        change.Id = change.Id == Guid.Empty ? Guid.NewGuid() : change.Id;
-        change.UpdatedUtc = change.CreatedUtc;
-        DraftChanges.Add(change);
-        return Task.FromResult<MenuDraftChange?>(change);
-    }
-
-    public Task<IReadOnlyCollection<MenuDraftChange>> GetDraftChangesAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyCollection<MenuDraftChange>>(
-            DraftChanges.Where(change => change.VenueId == venueId && change.MenuId == menuId).ToArray());
-
-    public Task<int> ClearDraftAsync(
-        Guid venueId,
-        Guid menuId,
-        string? author = null,
-        bool recordHistory = false,
+    public Task<MenuCreateOutcome> CreateMenuWithinCeilingAsync(
+        Menu menu,
+        int activeMenuLimit,
         CancellationToken cancellationToken = default)
     {
-        var removed = DraftChanges.RemoveAll(change => change.VenueId == venueId && change.MenuId == menuId);
-        if (removed > 0 && recordHistory)
+        if (MenuCount + 1 > activeMenuLimit)
         {
-            History.Add(new MenuHistoryEntry
-            {
-                Id = Guid.NewGuid(),
-                VenueId = venueId,
-                MenuId = menuId,
-                Kind = MenuHistoryKinds.DraftDiscarded,
-                Detail = $"Discarded {removed} queued change(s).",
-                Author = author,
-                OccurredUtc = DateTime.UtcNow
-            });
+            return Task.FromResult(new MenuCreateOutcome(false, MenuCount));
         }
 
-        return Task.FromResult(removed);
+        MenuCount++;
+        CreatedMenu = menu;
+        return Task.FromResult(new MenuCreateOutcome(true, MenuCount));
     }
+
+    public Task<ItemPlacementOutcome> CreateItemOnMenuAsync(
+        Item item,
+        Guid menuId,
+        Guid sectionId,
+        int itemsPerMenuLimit,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Sections.Any(section => section.Id == sectionId && section.MenuId == menuId && section.VenueId == item.VenueId && section.IsActive))
+        {
+            return Task.FromResult(new ItemPlacementOutcome(ItemPlacementOutcomes.SectionMissing, 0, 0));
+        }
+
+        var onMenu = Placements
+            .Where(placement => placement.VenueId == item.VenueId && placement.MenuId == menuId)
+            .Select(placement => placement.ItemId)
+            .Distinct()
+            .Count();
+        if (onMenu + 1 > itemsPerMenuLimit)
+        {
+            return Task.FromResult(new ItemPlacementOutcome(ItemPlacementOutcomes.OverCeiling, onMenu, 0));
+        }
+
+        item.Id = item.Id == Guid.Empty ? Guid.NewGuid() : item.Id;
+        Items.Add(item);
+        var sortOrder = Placements
+            .Where(placement => placement.MenuSectionId == sectionId)
+            .Select(placement => placement.SortOrder + 1)
+            .DefaultIfEmpty(0)
+            .Max();
+        Placements.Add(new Placement
+        {
+            Id = Guid.NewGuid(),
+            VenueId = item.VenueId,
+            MenuId = menuId,
+            MenuSectionId = sectionId,
+            ItemId = item.Id,
+            SortOrder = sortOrder
+        });
+        return Task.FromResult(new ItemPlacementOutcome(ItemPlacementOutcomes.Created, onMenu + 1, sortOrder));
+    }
+
+    public Task<int> ReorderPlacementsAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        IReadOnlyCollection<Guid> itemIds,
+        DateTime updatedUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var ordered = itemIds.ToList();
+        var changed = 0;
+        foreach (var placement in Placements.Where(p => p.VenueId == venueId && p.MenuId == menuId && p.MenuSectionId == sectionId))
+        {
+            var index = ordered.IndexOf(placement.ItemId);
+            if (index >= 0)
+            {
+                placement.SortOrder = index;
+                placement.UpdatedUtc = updatedUtc;
+                changed++;
+            }
+        }
+
+        return Task.FromResult(changed);
+    }
+
+    public Task<IReadOnlyCollection<PlacedMenuItem>> GetPlacedItemsForVenueAsync(
+        Guid venueId,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyCollection<PlacedMenuItem>>(Placements
+            .Where(placement => placement.VenueId == venueId)
+            .OrderBy(placement => placement.MenuSectionId)
+            .ThenBy(placement => placement.SortOrder)
+            .Select(placement =>
+            {
+                var item = Items.Single(candidate => candidate.Id == placement.ItemId);
+                return new PlacedMenuItem
+                {
+                    MenuId = placement.MenuId,
+                    MenuSectionId = placement.MenuSectionId,
+                    ItemId = placement.ItemId,
+                    Name = item.Name,
+                    Description = item.Description,
+                    Price = item.Price,
+                    SortOrder = placement.SortOrder,
+                    IsAvailable = Availability
+                        .Where(state => state.VenueId == venueId && state.ItemId == placement.ItemId)
+                        .Select(state => state.IsAvailable)
+                        .DefaultIfEmpty(true)
+                        .Single(),
+                    IsActive = item.IsActive,
+                    CreatedUtc = placement.CreatedUtc,
+                    UpdatedUtc = placement.UpdatedUtc
+                };
+            })
+            .ToArray());
 
     // ----- Publish and history -----
 
-    public Task<long> GetNextPublishVersionAsync(Guid menuId, CancellationToken cancellationToken = default) =>
-        Task.FromResult(PublishEvents.Where(e => e.MenuId == menuId).Select(e => e.Version).DefaultIfEmpty(0).Max() + 1);
+    /// <summary>The snapshot this fake returns for the working state.</summary>
+    public string? WorkingSnapshotJson { get; set; }
+
+    public Task<string?> GetWorkingSnapshotAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(WorkingSnapshotJson);
+
+    public Task<string?> GetLatestPublishedSnapshotAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(PublishEvents
+            .Where(e => e.VenueId == venueId && e.MenuId == menuId)
+            .OrderByDescending(e => e.Version)
+            .Select(e => e.Snapshot)
+            .FirstOrDefault());
+
+    public Task RestoreSnapshotAsync(
+        Guid venueId,
+        Guid menuId,
+        string snapshotJson,
+        string? author,
+        string detail,
+        DateTime occurredUtc,
+        CancellationToken cancellationToken = default,
+        string kind = MenuHistoryKinds.Restored)
+    {
+        // The statement puts the working rows back; the fake models that by making
+        // the working snapshot the restored one.
+        WorkingSnapshotJson = snapshotJson;
+        History.Add(new MenuHistoryEntry
+        {
+            Id = Guid.NewGuid(),
+            VenueId = venueId,
+            MenuId = menuId,
+            Kind = kind,
+            Detail = detail,
+            Author = author,
+            OccurredUtc = occurredUtc
+        });
+        return Task.CompletedTask;
+    }
 
     public Task<MenuPublishEvent> PublishAsync(
         MenuPublishEvent publishEvent,
+        int changeCount,
+        string? shippedChanges,
         CancellationToken cancellationToken = default)
     {
+        var assigned = Assignments
+            .Where(a => a.VenueId == publishEvent.VenueId && a.MenuId == publishEvent.MenuId)
+            .Select(a => a.ScreenId)
+            .ToList();
+        var previouslyTargeted = PublishEvents
+            .Where(e => e.MenuId == publishEvent.MenuId)
+            .OrderByDescending(e => e.Version)
+            .Take(1)
+            .SelectMany(e => PublishTargets.Where(t => t.PublishEventId == e.Id).Select(t => t.ScreenId))
+            .ToList();
+
+        // Q80 lives in the statement, so the fake mirrors it.
+        if (assigned.Count == 0 && previouslyTargeted.Count == 0)
+        {
+            throw new MenuNotOnAnyScreenException(
+                "Pair a screen to publish. This menu is not on a screen yet, so publishing it would reach nothing.");
+        }
+
         publishEvent.Id = publishEvent.Id == Guid.Empty ? Guid.NewGuid() : publishEvent.Id;
         publishEvent.Version = PublishEvents
             .Where(e => e.MenuId == publishEvent.MenuId)
             .Select(e => e.Version)
             .DefaultIfEmpty(0)
             .Max() + 1;
-
-        // Capture the queue and clear it in one step, exactly as the statement
-        // does, so the recorded count is what actually shipped.
-        var shipped = DraftChanges
-            .Where(change => change.VenueId == publishEvent.VenueId && change.MenuId == publishEvent.MenuId)
-            .ToList();
-        DraftChanges.RemoveAll(change =>
-            change.VenueId == publishEvent.VenueId && change.MenuId == publishEvent.MenuId);
-
-        publishEvent.ChangeCount = shipped.Count;
-        publishEvent.ShippedChanges = System.Text.Json.JsonSerializer.Serialize(shipped);
-        publishEvent.Snapshot ??= SnapshotJson ?? "{\"menuId\":\"" + publishEvent.MenuId + "\",\"sections\":[]}";
+        publishEvent.ChangeCount = changeCount;
+        publishEvent.ShippedChanges = shippedChanges;
+        publishEvent.Snapshot = WorkingSnapshotJson;
 
         PublishEvents.Add(publishEvent);
 
-        // Targets come from the assignments, never from a caller-supplied list.
-        foreach (var screenId in Assignments
-            .Where(a => a.VenueId == publishEvent.VenueId && a.MenuId == publishEvent.MenuId)
-            .Select(a => a.ScreenId))
+        foreach (var screenId in assigned.Union(previouslyTargeted))
         {
             PublishTargets.Add(new MenuPublishTarget
             {

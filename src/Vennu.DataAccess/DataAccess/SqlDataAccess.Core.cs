@@ -158,10 +158,6 @@ public partial class SqlDataAccess : ISqlDataAccess
                 .Table("dbo.MenuScreenAssignments", true);
 
             FluentMapper
-                .Entity<MenuDraftChange>()
-                .Table("dbo.MenuDraftChanges", true);
-
-            FluentMapper
                 .Entity<MenuPublishEvent>()
                 .Table("dbo.MenuPublishEvents", true);
 

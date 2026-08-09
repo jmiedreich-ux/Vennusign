@@ -1,57 +1,28 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { access } from "node:fs/promises";
 
-const component = await readFile(new URL("../src/MenuSectionsEditor.tsx", import.meta.url), "utf8");
-const items = await readFile(new URL("../src/MenuItemsEditor.tsx", import.meta.url), "utf8");
 const api = await readFile(new URL("../src/api.ts", import.meta.url), "utf8");
-const quick = await readFile(new URL("../src/QuickUpdateMode.tsx", import.meta.url), "utf8");
 const screens = await readFile(new URL("../src/ScreenManagement.tsx", import.meta.url), "utf8");
 const videoWall = await readFile(new URL("../src/VideoWallBuilder.tsx", import.meta.url), "utf8");
 
-test("section journeys remain venue scoped", () => {
-  assert.ok(api.includes("api/platform-operations/venues/${venueId}/menus"));
-  assert.match(component, /createMenuSection/);
-  assert.match(component, /updateMenuSection/);
-  assert.match(component, /reorderMenuSections/);
+const missing = async path => access(new URL(path, import.meta.url)).then(() => false, () => true);
+
+// Q36: ops has no menu write path this build. Menu content changes are the
+// venue's own, made through its draft-and-publish flow; the impersonation-with-
+// consent model that will let support act on a venue's behalf is backlogged.
+test("platform operations has no menu editing surface", async () => {
+  assert.ok(await missing("../src/MenuSectionsEditor.tsx"));
+  assert.ok(await missing("../src/MenuItemsEditor.tsx"));
+  assert.ok(await missing("../src/QuickUpdateMode.tsx"));
 });
 
-test("inline item editing uses venue scoped create and update contracts", () => {
-  assert.match(items, /createMenuItem/);
-  assert.match(items, /updateMenuItem/);
-  assert.match(items, /onBlur=\{\(\) => save\(item\)\}/);
-  assert.ok(api.includes("/sections/${sectionId}/items"));
-});
-
-test("availability quantity and badges use the presentation contract", () => {
-  assert.match(items, /updateMenuItemPresentation/);
-  assert.match(items, /Quantity available/);
-  assert.match(items, /Dietary \/ allergen tags/);
-  assert.match(items, /Bestseller/);
-  assert.ok(api.includes("/presentation"));
-});
-
-test("tier-aware controls stay visible and use one dismissible prompt", () => {
-  assert.match(component, /tierPrompt \?/);
-  assert.match(component, /Dismiss tier prompt/);
-  assert.match(items, /capabilities\.happyHour/);
-  assert.match(items, /capabilities\.allergenBadges/);
-  assert.match(items, /feature-preview/);
-});
-
-test("collapsed state persists per venue", () => {
-  assert.ok(component.includes("localStorage.getItem(storageKey)"));
-  assert.ok(component.includes("localStorage.setItem(storageKey"));
-});
-
-test("quick update provides daily special and one-scroll availability controls", () => {
-  assert.match(quick, /Daily special/);
-  assert.match(quick, /updateQuickDailySpecial/);
-  assert.match(quick, /updateQuickAvailability/);
-  assert.match(quick, /snapshot\.capabilities\.quickUpdate/);
-  assert.match(quick, /quick-items/);
-  assert.ok(api.includes("/quick-update/daily-special"));
-  assert.ok(api.includes("/quick-availability"));
+test("the ops api client carries no menu write calls", () => {
+  assert.doesNotMatch(api, /quick-update\/daily-special/);
+  assert.doesNotMatch(api, /quick-availability/);
+  assert.doesNotMatch(api, /\/presentation"/);
+  assert.doesNotMatch(api, /createMenuItem|updateMenuItem|createMenuSection|updateMenuSection|reorderMenuSections/);
 });
 
 test("screen management supports registration health editing and manual push", () => {

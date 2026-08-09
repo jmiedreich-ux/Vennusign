@@ -39,10 +39,20 @@ public sealed class MenusM1SpineMigrationTests
         Assert.Contains("CREATE TABLE dbo.Placements", sql, StringComparison.Ordinal);
         Assert.Contains("CREATE TABLE dbo.ItemAvailability", sql, StringComparison.Ordinal);
         Assert.Contains("CREATE TABLE dbo.MenuScreenAssignments", sql, StringComparison.Ordinal);
-        Assert.Contains("CREATE TABLE dbo.MenuDraftChanges", sql, StringComparison.Ordinal);
         Assert.Contains("CREATE TABLE dbo.MenuPublishEvents", sql, StringComparison.Ordinal);
         Assert.Contains("CREATE TABLE dbo.MenuPublishTargets", sql, StringComparison.Ordinal);
         Assert.Contains("CREATE TABLE dbo.MenuHistoryEntries", sql, StringComparison.Ordinal);
+    }
+
+    // The draft is derived (owner decision, 2026-08-09): there is deliberately no
+    // draft table, because a stored queue could disagree with what Publish ships.
+    [Fact]
+    public void SpineMigration_CreatesNoDraftTable()
+    {
+        var sql = ReadSpineMigration();
+
+        Assert.DoesNotContain("CREATE TABLE dbo.MenuDraftChanges", sql, StringComparison.Ordinal);
+        Assert.Contains("NO draft table", sql, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -109,13 +119,19 @@ public sealed class MenusM1SpineMigrationTests
         Assert.Contains("CONSTRAINT UQ_MenuScreenAssignments_Screen UNIQUE (ScreenId)", sql, StringComparison.Ordinal);
     }
 
+    // Review finding #5: the tenant invariant has to cover every relationship,
+    // not only direct parents. A placement proves its section is on its own menu;
+    // a publish target proves its event and screen share its venue; a history
+    // entry proves the event it names belongs to its own menu and venue.
     [Fact]
-    public void SpineMigration_MakesTheDraftQueueTheCurrentDiff()
+    public void SpineMigration_ClosesTheIndirectTenantRelationships()
     {
         var sql = ReadSpineMigration();
 
-        Assert.Contains("CREATE UNIQUE INDEX UQ_MenuDraftChanges_CurrentDiff", sql, StringComparison.Ordinal);
-        Assert.Contains("ON dbo.MenuDraftChanges (MenuId, TargetKind, TargetId, Field)", sql, StringComparison.Ordinal);
+        Assert.Contains("CONSTRAINT FK_Placements_SectionOnMenu FOREIGN KEY (MenuSectionId, MenuId) REFERENCES dbo.MenuSections (Id, MenuId)", sql, StringComparison.Ordinal);
+        Assert.Contains("CONSTRAINT FK_MenuPublishTargets_Event FOREIGN KEY (PublishEventId, VenueId) REFERENCES dbo.MenuPublishEvents (Id, VenueId)", sql, StringComparison.Ordinal);
+        Assert.Contains("CONSTRAINT FK_MenuPublishTargets_Screens FOREIGN KEY (VenueId, ScreenId) REFERENCES dbo.Screens (VenueId, Id)", sql, StringComparison.Ordinal);
+        Assert.Contains("CONSTRAINT FK_MenuHistoryEntries_PublishEvent FOREIGN KEY (PublishEventId, MenuId, VenueId) REFERENCES dbo.MenuPublishEvents (Id, MenuId, VenueId)", sql, StringComparison.Ordinal);
     }
 
     [Fact]

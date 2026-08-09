@@ -84,45 +84,30 @@ public sealed class BackOfficeMenuSpineController(
 
     // ----- Draft queue --------------------------------------------------------------
 
+    /// <summary>
+    /// What is different between this menu and the one its screens are showing.
+    /// There is deliberately no endpoint to author a change here: edits go through
+    /// the menu itself, and this reports what that made different (Q182).
+    /// </summary>
     [HttpGet("menus/{menuId:guid}/draft")]
     [RequireCapability("content.item.update")]
     public async Task<ActionResult<DraftResponse>> GetDraft(Guid menuId, CancellationToken cancellationToken)
     {
-        var changes = await spine.GetDraftAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
-        return Ok(ToDraftResponse(changes));
-    }
-
-    [HttpPost("menus/{menuId:guid}/draft")]
-    [RequireCapability("content.item.update")]
-    public async Task<ActionResult<DraftResponse>> QueueChange(
-        Guid menuId,
-        DraftChangeRequest request,
-        CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(request);
         try
         {
-            await spine.QueueChangeAsync(
-                VenueId,
-                menuId,
-                request.TargetKind,
-                request.TargetId,
-                request.Field,
-                request.BeforeValue,
-                request.AfterValue,
-                Author,
-                cancellationToken).ConfigureAwait(false);
+            var changes = await spine.GetDraftAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
+            return Ok(ToDraftResponse(changes));
         }
-        catch (ArgumentException exception)
+        catch (InvalidOperationException)
         {
-            return ValidationProblem(exception.Message);
+            return NotFound(new { message = "That menu is not one of this venue's menus." });
         }
-
-        var changes = await spine.GetDraftAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
-        return Ok(ToDraftResponse(changes));
     }
 
-    /// <summary>Throws the draft away. Irreversible, so it is recorded in history.</summary>
+    /// <summary>
+    /// Puts the menu back to what its screens are showing, throwing away every
+    /// unpublished edit.
+    /// </summary>
     [HttpDelete("menus/{menuId:guid}/draft")]
     [RequireCapability("content.item.update")]
     public async Task<ActionResult<DiscardResponse>> DiscardDraft(Guid menuId, CancellationToken cancellationToken)
@@ -262,7 +247,7 @@ public sealed class BackOfficeMenuSpineController(
         return Ok(ToDraftResponse(changes));
     }
 
-    private static DraftResponse ToDraftResponse(IReadOnlyCollection<Core.Models.MenuDraftChange> changes) =>
+    private static DraftResponse ToDraftResponse(IReadOnlyList<SnapshotChange> changes) =>
         new(
             changes.Count,
             changes
@@ -271,8 +256,6 @@ public sealed class BackOfficeMenuSpineController(
                     change.TargetId,
                     change.Field,
                     change.BeforeValue,
-                    change.AfterValue,
-                    change.Author,
-                    change.UpdatedUtc))
+                    change.AfterValue))
                 .ToArray());
 }

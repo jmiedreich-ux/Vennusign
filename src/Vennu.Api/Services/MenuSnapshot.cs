@@ -5,9 +5,9 @@ using Vennu.Core.Models;
 namespace Vennu.Api.Services;
 
 /// <summary>
-/// The published shape of a menu: what a board renders, captured at publish time
-/// so a version can be shown and restored later without the draft queue that
-/// produced it.
+/// The shape of a menu at a moment in time: what a board renders, plus which
+/// screens it is on. A publish records one of these; the draft is the difference
+/// between the menu now and the one the screens are showing.
 /// </summary>
 /// <remarks>
 /// Item identity is permanent (Q43). A snapshot records an item's values against
@@ -16,10 +16,7 @@ namespace Vennu.Api.Services;
 /// </remarks>
 public sealed class MenuSnapshot
 {
-    private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web)
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
+    private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web);
 
     [JsonPropertyName("menuId")]
     public Guid MenuId { get; set; }
@@ -36,8 +33,11 @@ public sealed class MenuSnapshot
     [JsonPropertyName("loopWarningSeconds")]
     public int LoopWarningSeconds { get; set; }
 
+    [JsonPropertyName("screens")]
+    public List<SnapshotScreen>? Screens { get; set; }
+
     [JsonPropertyName("sections")]
-    public List<SnapshotSection> Sections { get; set; } = [];
+    public List<SnapshotSection>? Sections { get; set; }
 
     public static MenuSnapshot? Parse(string? json) =>
         string.IsNullOrWhiteSpace(json) ? null : JsonSerializer.Deserialize<MenuSnapshot>(json, Options);
@@ -45,68 +45,118 @@ public sealed class MenuSnapshot
     public static string Serialize(MenuSnapshot snapshot) => JsonSerializer.Serialize(snapshot, Options);
 
     /// <summary>
-    /// The changes that would turn <paramref name="currentJson"/> into
-    /// <paramref name="targetJson"/>. Only genuine differences are returned, so a
-    /// restore to the state a menu is already in queues nothing.
+    /// What is different between the menu the screens are showing and the menu as
+    /// it stands. This is the draft: it is computed, never authored, so the count
+    /// cannot disagree with what a publish will ship, and no caller can misreport
+    /// a previous value (Q182).
     /// </summary>
-    public static IReadOnlyList<SnapshotChange> Diff(string? currentJson, string? targetJson)
+    /// <param name="publishedJson">The last published snapshot, or null if never published.</param>
+    /// <param name="workingJson">The menu as it stands now.</param>
+    public static IReadOnlyList<SnapshotChange> Diff(string? publishedJson, string? workingJson)
     {
-        var current = Parse(currentJson);
-        var target = Parse(targetJson);
-        if (target is null)
+        var published = Parse(publishedJson);
+        var working = Parse(workingJson);
+        if (working is null)
         {
             return [];
         }
 
         var changes = new List<SnapshotChange>();
 
-        AddIfDifferent(changes, DraftTargetKinds.Menu, null, "name", current?.Name, target.Name);
-        AddIfDifferent(changes, DraftTargetKinds.Theme, null, "theme", current?.Theme, target.Theme);
-        AddIfDifferent(
-            changes,
-            DraftTargetKinds.Menu,
-            null,
-            "dwellSeconds",
-            current?.DwellSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            target.DwellSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Compare(changes, DraftTargetKinds.Menu, null, "name", published?.Name, working.Name);
+        Compare(changes, DraftTargetKinds.Theme, null, "theme", published?.Theme, working.Theme);
+        Compare(changes, DraftTargetKinds.Menu, null, "dwellSeconds", Number(published?.DwellSeconds), Number(working.DwellSeconds));
+        Compare(changes, DraftTargetKinds.Menu, null, "loopWarningSeconds", Number(published?.LoopWarningSeconds), Number(working.LoopWarningSeconds));
 
-        var currentItems = Flatten(current);
-        var targetItems = Flatten(target);
-
-        foreach (var (itemId, targetItem) in targetItems)
-        {
-            currentItems.TryGetValue(itemId, out var currentItem);
-            AddIfDifferent(changes, DraftTargetKinds.Item, itemId, "name", currentItem?.Name, targetItem.Name);
-            AddIfDifferent(changes, DraftTargetKinds.Item, itemId, "description", currentItem?.Description, targetItem.Description);
-            // Prices are compared as the text they were typed as, so "9.5" and
-            // "9.50" are genuinely different values rather than the same number.
-            AddIfDifferent(changes, DraftTargetKinds.Item, itemId, "price", currentItem?.Price, targetItem.Price);
-        }
-
-        // An item on the board now but absent from the target version comes off.
-        foreach (var (itemId, currentItem) in currentItems)
-        {
-            if (!targetItems.ContainsKey(itemId))
-            {
-                changes.Add(new SnapshotChange(DraftTargetKinds.Placement, itemId, "placed", "true", "false"));
-            }
-        }
+        CompareScreens(changes, published, working);
+        CompareSections(changes, published, working);
+        ComparePlacements(changes, published, working);
 
         return changes;
     }
 
-    private static Dictionary<Guid, SnapshotItem> Flatten(MenuSnapshot? snapshot)
+    private static void CompareScreens(List<SnapshotChange> changes, MenuSnapshot? published, MenuSnapshot working)
     {
-        var map = new Dictionary<Guid, SnapshotItem>();
-        foreach (var item in (snapshot?.Sections ?? []).SelectMany(section => section.Items ?? []))
+        // Take-off is permanent, so it waits here as a difference in which screens
+        // the menu is on, and ships on the next publish (Q68).
+        var before = Join(published?.Screens?.Select(screen => screen.ScreenId.ToString()));
+        var after = Join(working.Screens?.Select(screen => screen.ScreenId.ToString()));
+        Compare(changes, DraftTargetKinds.Screens, null, "assignedScreens", before, after);
+    }
+
+    private static void CompareSections(List<SnapshotChange> changes, MenuSnapshot? published, MenuSnapshot working)
+    {
+        var before = (published?.Sections ?? []).ToDictionary(section => section.SectionId);
+        var after = (working.Sections ?? []).ToDictionary(section => section.SectionId);
+
+        foreach (var (sectionId, section) in after)
         {
-            map[item.ItemId] = item;
+            before.TryGetValue(sectionId, out var previous);
+            Compare(changes, DraftTargetKinds.Section, sectionId, "name", previous?.Name, section.Name);
+            Compare(changes, DraftTargetKinds.Section, sectionId, "sortOrder", Number(previous?.SortOrder), Number(section.SortOrder));
+        }
+
+        foreach (var sectionId in before.Keys.Where(id => !after.ContainsKey(id)))
+        {
+            changes.Add(new SnapshotChange(DraftTargetKinds.Section, sectionId, "present", "true", "false"));
+        }
+    }
+
+    private static void ComparePlacements(List<SnapshotChange> changes, MenuSnapshot? published, MenuSnapshot working)
+    {
+        // Keyed by section and item together: the same library item can sit on more
+        // than one board, and flattening by item alone would lose that.
+        var before = Placements(published);
+        var after = Placements(working);
+
+        foreach (var (key, placement) in after)
+        {
+            if (!before.TryGetValue(key, out var previous))
+            {
+                // A new placement is one change, like a removal is one change: the
+                // person did one thing, and the count says so (Q182). Its values
+                // travel inside the publish snapshot, not as separate entries.
+                changes.Add(new SnapshotChange(DraftTargetKinds.Placement, placement.ItemId, "placed", "false", "true"));
+                continue;
+            }
+
+            Compare(changes, DraftTargetKinds.Item, placement.ItemId, "name", previous.Name, placement.Name);
+            Compare(changes, DraftTargetKinds.Item, placement.ItemId, "description", previous.Description, placement.Description);
+            // Prices are compared as typed, so "9.5" and "9.50" are genuinely
+            // different values rather than the same number (Q115/Q190).
+            Compare(changes, DraftTargetKinds.Item, placement.ItemId, "price", previous.Price, placement.Price);
+            Compare(changes, DraftTargetKinds.Placement, placement.ItemId, "sortOrder", Number(previous.SortOrder), Number(placement.SortOrder));
+        }
+
+        foreach (var (_, placement) in before.Where(entry => !after.ContainsKey(entry.Key)))
+        {
+            changes.Add(new SnapshotChange(DraftTargetKinds.Placement, placement.ItemId, "placed", "true", "false"));
+        }
+    }
+
+    // Keyed by section and item together: the same library item can sit on more
+    // than one board, and flattening by item alone would lose that.
+    private static Dictionary<(Guid Section, Guid Item), SnapshotItem> Placements(MenuSnapshot? snapshot)
+    {
+        var map = new Dictionary<(Guid, Guid), SnapshotItem>();
+        foreach (var section in snapshot?.Sections ?? [])
+        {
+            foreach (var item in section.Items ?? [])
+            {
+                map[(section.SectionId, item.ItemId)] = item;
+            }
         }
 
         return map;
     }
 
-    private static void AddIfDifferent(
+    private static string Join(IEnumerable<string>? values) =>
+        string.Join(",", (values ?? []).OrderBy(value => value, StringComparer.Ordinal));
+
+    private static string Number(int? value) =>
+        (value ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    private static void Compare(
         List<SnapshotChange> changes,
         string targetKind,
         Guid? targetId,
@@ -119,6 +169,12 @@ public sealed class MenuSnapshot
             changes.Add(new SnapshotChange(targetKind, targetId, field, before, after));
         }
     }
+}
+
+public sealed class SnapshotScreen
+{
+    [JsonPropertyName("screenId")]
+    public Guid ScreenId { get; set; }
 }
 
 public sealed class SnapshotSection

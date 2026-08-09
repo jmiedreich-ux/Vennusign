@@ -66,50 +66,34 @@ public sealed class MenuSpineService(
         return new AvailabilityResult(item, availability, screenIds);
     }
 
-    /// <summary>
-    /// Queues one change against a menu. Re-editing the same field replaces the
-    /// queued row, so the count always equals what Publish will ship.
-    /// </summary>
-    public Task<MenuDraftChange?> QueueChangeAsync(
-        Guid venueId,
-        Guid menuId,
-        string targetKind,
-        Guid? targetId,
-        string field,
-        string? beforeValue,
-        string? afterValue,
-        string? author,
-        CancellationToken cancellationToken = default) =>
-        library.UpsertDraftChangeAsync(
-            new MenuDraftChange
-            {
-                VenueId = venueId,
-                MenuId = menuId,
-                TargetKind = targetKind,
-                TargetId = targetId,
-                Field = field,
-                BeforeValue = beforeValue,
-                AfterValue = afterValue,
-                Author = author,
-                CreatedUtc = timeProvider.GetUtcNow().UtcDateTime
-            },
-            cancellationToken);
-
-    public Task<IReadOnlyCollection<MenuDraftChange>> GetDraftAsync(
-        Guid venueId,
-        Guid menuId,
-        CancellationToken cancellationToken = default) =>
-        library.GetDraftChangesAsync(venueId, menuId, cancellationToken);
+    private static readonly System.Text.Json.JsonSerializerOptions JsonOptions =
+        new(System.Text.Json.JsonSerializerDefaults.Web);
 
     /// <summary>
-    /// Ships every queued change for this menu, and nothing belonging to another.
-    /// Atomic: on failure nothing reaches a screen and the draft is untouched.
+    /// What is different between this menu and the one its screens are showing.
+    /// The draft is computed, never authored: no caller supplies a previous value,
+    /// so the count cannot disagree with what a publish will ship, and a stale
+    /// client cannot misreport or erase someone else's edit (Q182).
     /// </summary>
+    public async Task<IReadOnlyList<SnapshotChange>> GetDraftAsync(
+        Guid venueId,
+        Guid menuId,
+        CancellationToken cancellationToken = default)
+    {
+        var working = await library.GetWorkingSnapshotAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
+        if (working is null)
+        {
+            throw new InvalidOperationException($"Menu '{menuId}' does not belong to venue '{venueId}'.");
+        }
+
+        var published = await library.GetLatestPublishedSnapshotAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
+        return MenuSnapshot.Diff(published, working);
+    }
+
     /// <summary>
-    /// Ships every queued change for this menu, and nothing belonging to another.
-    /// Atomic: on failure nothing reaches a screen and the draft is untouched.
-    /// Refused when the menu is on no screen — a publish that reaches nothing is a
-    /// named state, not a silent success (Q80).
+    /// Ships the menu as it stands to its screens. Refused when the menu is on no
+    /// screen and has none to release — a publish that reaches nothing is a named
+    /// state, not a silent version bump (Q80, enforced inside the transaction).
     /// </summary>
     public async Task<PublishResult> PublishAsync(
         Guid venueId,
@@ -117,36 +101,42 @@ public sealed class MenuSpineService(
         string? author,
         CancellationToken cancellationToken = default)
     {
-        var assignments = await library.GetAssignmentsAsync(venueId, cancellationToken).ConfigureAwait(false);
-        if (!assignments.Any(assignment => assignment.MenuId == menuId))
+        // The shipped set is the diff at the moment of publishing, recorded so the
+        // history can say what went out. It is descriptive: the snapshot is the
+        // authority on what the screens now show.
+        var shipped = await GetDraftAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
+        var shippedJson = System.Text.Json.JsonSerializer.Serialize(shipped, JsonOptions);
+
+        MenuPublishEvent published;
+        try
         {
-            throw new MenuNotOnAnyScreenException(
-                "Pair a screen to publish. This menu is not on a screen yet, so publishing it would reach nothing.");
+            published = await library.PublishAsync(
+                new MenuPublishEvent
+                {
+                    VenueId = venueId,
+                    MenuId = menuId,
+                    Author = author,
+                    PublishedUtc = timeProvider.GetUtcNow().UtcDateTime
+                },
+                shipped.Count,
+                shippedJson,
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch (Microsoft.Data.SqlClient.SqlException exception) when (exception.Number == 51002)
+        {
+            throw new MenuNotOnAnyScreenException(exception.Message);
         }
 
-        var published = await library.PublishAsync(
-            new MenuPublishEvent
-            {
-                VenueId = venueId,
-                MenuId = menuId,
-                Author = author,
-                PublishedUtc = timeProvider.GetUtcNow().UtcDateTime
-            },
-            cancellationToken).ConfigureAwait(false);
-
         var deliveries = await library.GetPublishTargetsAsync(published.Id, cancellationToken).ConfigureAwait(false);
-
-        // The count comes from the publish itself, captured as the queue was
-        // removed, not from a read taken before it.
         return new PublishResult(published, published.ChangeCount, deliveries);
     }
 
     /// <summary>
-    /// "Go back to" — phrased as a time, never a version. It rebuilds the draft
-    /// from that version's snapshot and REPLACES whatever was queued (Q67), then
-    /// waits for a deliberate publish. It is never a second silent path to the
-    /// screens. The count of replaced changes is returned so the caller can warn
-    /// before committing.
+    /// "Go back to" — phrased as a time, never a version. It puts the menu back to
+    /// how it looked at that publish, in one transaction, and leaves it as an
+    /// unpublished draft: it is never a second silent path to the screens (Q67).
+    /// The count of changes it displaced is returned so the caller can warn before
+    /// committing.
     /// </summary>
     public async Task<RestoreResult> GoBackToAsync(
         Guid venueId,
@@ -164,61 +154,72 @@ public sealed class MenuSpineService(
                 $"Version {version} of menu '{menuId}' has no stored content, so it cannot be restored.");
         }
 
-        var replaced = await library.GetDraftChangesAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
-        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var displaced = (await GetDraftAsync(venueId, menuId, cancellationToken).ConfigureAwait(false)).Count;
 
-        // The restore replaces the queue rather than stacking on it, so the two
-        // cannot disagree about what the menu should become.
-        await library.ClearDraftAsync(venueId, menuId, author, recordHistory: false, cancellationToken).ConfigureAwait(false);
-
-        var current = await BuildCurrentSnapshotAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
-        var changes = MenuSnapshot.Diff(current, target.Snapshot!);
-
-        foreach (var change in changes)
-        {
-            await library.UpsertDraftChangeAsync(
-                new MenuDraftChange
-                {
-                    VenueId = venueId,
-                    MenuId = menuId,
-                    TargetKind = change.TargetKind,
-                    TargetId = change.TargetId,
-                    Field = change.Field,
-                    BeforeValue = change.BeforeValue,
-                    AfterValue = change.AfterValue,
-                    Author = author,
-                    CreatedUtc = now
-                },
-                cancellationToken).ConfigureAwait(false);
-        }
-
-        await library.RecordHistoryAsync(
-            new MenuHistoryEntry
-            {
-                VenueId = venueId,
-                MenuId = menuId,
-                Kind = MenuHistoryKinds.Restored,
-                Detail = $"Rebuilt the draft from the version published {target.PublishedUtc:O}, replacing {replaced.Count} queued change(s).",
-                Author = author,
-                OccurredUtc = now
-            },
+        // Applying the snapshot and recording the act commit together, so a failure
+        // part-way cannot leave the menu half-restored.
+        await library.RestoreSnapshotAsync(
+            venueId,
+            menuId,
+            target.Snapshot!,
+            author,
+            $"Put the menu back to how it looked when version {version} was published, replacing {displaced} unpublished change(s).",
+            timeProvider.GetUtcNow().UtcDateTime,
             cancellationToken).ConfigureAwait(false);
 
-        var draft = await library.GetDraftChangesAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
-        return new RestoreResult(draft, replaced.Count);
+        var draft = await GetDraftAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
+        return new RestoreResult(draft, displaced);
     }
 
     /// <summary>
-    /// Throws the draft away. The one irreversible act in the model, so the
-    /// clearing and the record naming who did it commit together — a partial
-    /// failure cannot leave the work gone and the act anonymous (Q207).
+    /// Puts the menu back to what its screens are showing, throwing away every
+    /// unpublished edit. The one irreversible act in the model, so the change and
+    /// the record naming who did it commit together (Q207).
     /// </summary>
-    public Task<int> DiscardDraftAsync(
+    public async Task<int> DiscardDraftAsync(
+        Guid venueId,
+        Guid menuId,
+        string? author,
+        CancellationToken cancellationToken = default)
+    {
+        var published = await library.GetLatestPublishedSnapshotAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
+        if (published is null)
+        {
+            // Nothing has ever been published, so there is no state to return to.
+            return 0;
+        }
+
+        var discarded = (await GetDraftAsync(venueId, menuId, cancellationToken).ConfigureAwait(false)).Count;
+        if (discarded == 0)
+        {
+            return 0;
+        }
+
+        await library.RestoreSnapshotAsync(
+            venueId,
+            menuId,
+            published,
+            author,
+            $"Discarded {discarded} unpublished change(s).",
+            timeProvider.GetUtcNow().UtcDateTime,
+            cancellationToken,
+            MenuHistoryKinds.DraftDiscarded).ConfigureAwait(false);
+
+        return discarded;
+    }
+
+    /// <summary>
+    /// "Take off the screens" is permanent, so unlike an 86 it does not commit on
+    /// confirm. It removes the menu from its screens in the working state, where it
+    /// shows up as an unpublished change and reaches the screens on the next
+    /// Publish (Q68).
+    /// </summary>
+    public async Task<int> QueueTakeOffScreensAsync(
         Guid venueId,
         Guid menuId,
         string? author,
         CancellationToken cancellationToken = default) =>
-        library.ClearDraftAsync(venueId, menuId, author, recordHistory: true, cancellationToken);
+        await library.ClearMenuAssignmentsAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
 
     public async Task<MenuScreenAssignment> AssignAsync(
         Guid venueId,
@@ -255,78 +256,6 @@ public sealed class MenuSpineService(
     }
 
     /// <summary>
-    /// "Take off the screens" is permanent, so unlike an 86 it queues as a draft
-    /// change and reaches the screens through Publish (Q68). The menu keeps its
-    /// place and its history; only its screens are released, and only when the
-    /// operator deliberately publishes.
-    /// </summary>
-    public async Task<MenuDraftChange?> QueueTakeOffScreensAsync(
-        Guid venueId,
-        Guid menuId,
-        string? author,
-        CancellationToken cancellationToken = default)
-    {
-        var assignments = await library.GetAssignmentsAsync(venueId, cancellationToken).ConfigureAwait(false);
-        var current = assignments.Where(a => a.MenuId == menuId).Select(a => a.ScreenId).ToArray();
-
-        return await library.UpsertDraftChangeAsync(
-            new MenuDraftChange
-            {
-                VenueId = venueId,
-                MenuId = menuId,
-                TargetKind = DraftTargetKinds.Screens,
-                TargetId = null,
-                Field = "assignedScreens",
-                BeforeValue = string.Join(",", current.Select(id => id.ToString())),
-                AfterValue = string.Empty,
-                Author = author,
-                CreatedUtc = timeProvider.GetUtcNow().UtcDateTime
-            },
-            cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// The menu as it stands right now, in the same shape a publish records, so a
-    /// restore can be expressed as the difference between now and then.
-    /// </summary>
-    private async Task<string?> BuildCurrentSnapshotAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken)
-    {
-        var placements = await library.GetPlacementsAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
-        var items = (await library.GetItemsAsync(venueId, cancellationToken).ConfigureAwait(false))
-            .ToDictionary(item => item.Id);
-
-        var snapshot = new MenuSnapshot
-        {
-            MenuId = menuId,
-            Sections =
-            [
-                .. placements
-                    .GroupBy(placement => placement.MenuSectionId)
-                    .Select(group => new SnapshotSection
-                    {
-                        SectionId = group.Key,
-                        Items =
-                        [
-                            .. group
-                                .OrderBy(placement => placement.SortOrder)
-                                .Where(placement => items.ContainsKey(placement.ItemId))
-                                .Select(placement => new SnapshotItem
-                                {
-                                    ItemId = placement.ItemId,
-                                    Name = items[placement.ItemId].Name,
-                                    Description = items[placement.ItemId].Description,
-                                    Price = items[placement.ItemId].Price,
-                                    SortOrder = placement.SortOrder
-                                })
-                        ]
-                    })
-            ]
-        };
-
-        return MenuSnapshot.Serialize(snapshot);
-    }
-
-    /// <summary>
     /// The ceilings that apply to this venue, always read from the allowance
     /// model, plus the venue timezone every surface renders its times in.
     /// </summary>
@@ -360,7 +289,7 @@ public sealed class MenuSpineService(
 
 public sealed record AvailabilityResult(Item Item, ItemAvailability Availability, IReadOnlyCollection<Guid> ScreenIds);
 
-public sealed record RestoreResult(IReadOnlyCollection<MenuDraftChange> Draft, int ReplacedChangeCount);
+public sealed record RestoreResult(IReadOnlyList<SnapshotChange> Draft, int ReplacedChangeCount);
 
 /// <summary>
 /// Publishing a menu that is on no screen is refused rather than silently

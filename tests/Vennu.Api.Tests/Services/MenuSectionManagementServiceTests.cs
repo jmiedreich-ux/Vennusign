@@ -16,14 +16,32 @@ public sealed class MenuSectionManagementServiceTests
         {
             Menus = [new Menu { Id = Guid.NewGuid(), VenueId = venueId, Name = "Dinner" }]
         };
-        var service = CreateService(repository);
+        var library = new FakeMenuLibraryRepository();
+        var service = CreateService(repository, library);
 
         var created = await service.CreateMenuAsync(venueId, "  Lunch  ");
         var error = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateMenuAsync(venueId, " dinner "));
 
         Assert.Equal("Lunch", created.Name);
-        Assert.Equal(created, repository.CreatedMenu);
+        // The insert goes through the ceiling-guarded path, never a bare create.
+        Assert.Equal(created, library.CreatedMenu);
         Assert.Contains("already exists", error.Message);
+    }
+
+    // Q201: two requests at limit-minus-one cannot both get in, and the refusal
+    // names the way to make room.
+    [Fact]
+    public async Task CreateMenuAsync_RefusesInPlainWordsAtTheActiveMenuCeiling()
+    {
+        var venueId = Guid.NewGuid();
+        var library = new FakeMenuLibraryRepository();
+        library.Ceilings[MenuCeilings.MenusPerVenue] = 1;
+        var service = CreateService(new FakeMenuRepository(), library);
+
+        var error = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateMenuAsync(venueId, "Lunch"));
+
+        Assert.Contains("Put one away first", error.Message, StringComparison.Ordinal);
+        Assert.Null(library.CreatedMenu);
     }
 
     [Fact]
@@ -121,8 +139,10 @@ public sealed class MenuSectionManagementServiceTests
         public override DateTimeOffset GetUtcNow() => new(2026, 7, 29, 22, 20, 0, TimeSpan.Zero);
     }
 
-    private static MenuSectionManagementService CreateService(FakeMenuRepository repository) =>
-        new(repository, new FakeMenuLibraryRepository(), new FakeCapabilityDecisionServices(
+    private static MenuSectionManagementService CreateService(
+        FakeMenuRepository repository,
+        FakeMenuLibraryRepository? library = null) =>
+        new(repository, library ?? new FakeMenuLibraryRepository(), new FakeCapabilityDecisionServices(
             "schedule.promotion.automate",
             "content.item.dietary_information_manage",
             "content.item.availability_update"), new FixedTimeProvider());

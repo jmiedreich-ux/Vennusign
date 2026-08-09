@@ -10,6 +10,37 @@ Single venue only. No multi-venue affordance may leak (decision 29; criterion 18
 
 Additional exclusions recorded in the register: item photos and upload (Q108 → #679), featured-item control (Q107 → #678), print (Q206 → #676), currency/format setting (Q115/Q190 → #675 — prices render exactly as typed), language/translation work (Q200 → #683 — Menus UI ships English-only; venue language fields dormant), separate audit/analytics system (Q207 → #677), keyboard reorder and canvas keyboard reachability (Q120/Q202 → #672), add-item-row keyboard flow (Q122 → #673), Play interaction spec (Q146 → #674), Welcome/title panel (Q98 → #670), room-distance line (Q133 → #671).
 
+## The save model — owner decision, 2026-08-09
+
+Two readings of "draft" were possible, and the first implementation drifted
+between them. The owner settled it: **the draft is derived, not authored.**
+
+- The live rows are the working state. An edit changes the menu immediately.
+- The screens show the last **published snapshot**, and nothing else.
+- The draft is **computed** by comparing the working state against that
+  snapshot. "3 changes not on your screens" is that comparison, so the count
+  cannot disagree with what Publish will ship.
+- Publish snapshots the working state as it stands and sends it to the screens.
+- Clients never supply a `beforeValue`. The previous value always comes from the
+  published snapshot, so a stale caller cannot misreport it or delete another
+  editor's pending change.
+
+This is what Q182 already described — "each thing currently different from the
+screens" — and what makes "the canvas *is* the preview" true rather than a
+layering trick. Its one cost, accepted knowingly: you publish a menu whole. There
+is no partial publish of selected changes, which matches one queue per menu.
+
+Two consequences landed with it, both in milestone 1:
+
+- **There is no draft table.** Migration 058 creates none, and nothing writes one,
+  so no stored queue can disagree with what Publish ships.
+- **There is no legacy editor path.** The owner's rule — "there is no legacy,
+  because it was not live" — is applied: the existing editor writes through
+  `Items`/`Placements` like everything else, the owner-killed concepts (happy-hour
+  price, quantity, tags, featured, per-item archive, daily special) have no
+  endpoints or controls left, and platform operations is read-only for menus
+  (Q36) until the backlogged impersonation-with-consent model exists.
+
 ## Cross-cutting rules (from the register)
 
 - **Timestamps render in the venue's local time** from the venue's stored Timezone — on every Menus surface (Q196). Deviation from today's viewer-clock behavior.

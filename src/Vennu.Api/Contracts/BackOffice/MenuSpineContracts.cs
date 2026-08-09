@@ -4,13 +4,6 @@ namespace Vennu.Api.Contracts.BackOffice;
 
 public sealed record AvailabilityRequest(bool IsAvailable);
 
-public sealed record DraftChangeRequest(
-    string TargetKind,
-    Guid? TargetId,
-    string Field,
-    string? BeforeValue,
-    string? AfterValue);
-
 public sealed record AssignmentRequest(Guid MenuId);
 
 // Responses ------------------------------------------------------------------
@@ -44,14 +37,17 @@ public sealed record AvailabilityStateResponse(
 /// </summary>
 public sealed record DraftResponse(int Count, IReadOnlyCollection<DraftChangeResponse> Changes);
 
+/// <summary>
+/// One difference between the menu and what its screens are showing. It is
+/// computed, so BeforeValue always comes from the published snapshot rather than
+/// from whoever is asking.
+/// </summary>
 public sealed record DraftChangeResponse(
     string TargetKind,
     Guid? TargetId,
     string Field,
     string? BeforeValue,
-    string? AfterValue,
-    string? Author,
-    DateTime UpdatedUtc);
+    string? AfterValue);
 
 public sealed record DiscardResponse(int Discarded);
 

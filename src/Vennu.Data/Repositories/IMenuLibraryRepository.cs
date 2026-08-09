@@ -13,7 +13,47 @@ public interface IMenuLibraryRepository
 
     Task<Guid> CreateItemAsync(Item item, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Updates an item's values inside its own venue only: the venue id is part
+    /// of the WHERE clause, never assumed from the primary key.
+    /// </summary>
     Task<bool> UpdateItemAsync(Item item, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates a menu unless the venue is already at its active-menu ceiling.
+    /// The count and the insert commit under one lock, so two requests at
+    /// limit-minus-one cannot both succeed (Q201).
+    /// </summary>
+    Task<MenuCreateOutcome> CreateMenuWithinCeilingAsync(
+        Menu menu,
+        int activeMenuLimit,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates a library item and places it on a section in one transaction,
+    /// refusing atomically when the menu is at its items ceiling (Q201) or the
+    /// section does not sit on this menu in this venue.
+    /// </summary>
+    Task<ItemPlacementOutcome> CreateItemOnMenuAsync(
+        Item item,
+        Guid menuId,
+        Guid sectionId,
+        int itemsPerMenuLimit,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Rewrites a section's placement order; position in the list is the sort order.</summary>
+    Task<int> ReorderPlacementsAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        IReadOnlyCollection<Guid> itemIds,
+        DateTime updatedUtc,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Every placement in the venue with its item values and live availability, in board order.</summary>
+    Task<IReadOnlyCollection<PlacedMenuItem>> GetPlacedItemsForVenueAsync(
+        Guid venueId,
+        CancellationToken cancellationToken = default);
 
     Task<Item?> GetItemAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken = default);
 
@@ -46,41 +86,19 @@ public interface IMenuLibraryRepository
 
     Task<IReadOnlyCollection<MenuScreenAssignment>> GetAssignmentsAsync(Guid venueId, CancellationToken cancellationToken = default);
 
-    // ----- Draft queue -------------------------------------------------------------
-
-    /// <summary>
-    /// Records a change against the menu's draft. Editing the same field again
-    /// replaces the existing row, and taking a value back to what is published
-    /// removes it, so the queue is always the current diff (Q182). Returns null
-    /// when the change collapsed and nothing remains queued for that field.
-    /// </summary>
-    Task<MenuDraftChange?> UpsertDraftChangeAsync(MenuDraftChange change, CancellationToken cancellationToken = default);
-
-    Task<IReadOnlyCollection<MenuDraftChange>> GetDraftChangesAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Empties the menu's queue. When <paramref name="recordHistory"/> is set the
-    /// clearing and its attributable history entry commit together, so a discard
-    /// can never happen anonymously.
-    /// </summary>
-    Task<int> ClearDraftAsync(
-        Guid venueId,
-        Guid menuId,
-        string? author = null,
-        bool recordHistory = false,
-        CancellationToken cancellationToken = default);
-
     // ----- Publish and history -----------------------------------------------------
-
-    Task<long> GetNextPublishVersionAsync(Guid menuId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Ships the whole queued set in one transaction: publish event, per-target
     /// delivery rows, history entry, cleared queue and the menu's published
     /// version all land together, or nothing does.
     /// </summary>
+    /// <param name="changeCount">How many differences this publish is shipping, from the computed draft.</param>
+    /// <param name="shippedChanges">Those differences, recorded so history can say what went out.</param>
     Task<MenuPublishEvent> PublishAsync(
         MenuPublishEvent publishEvent,
+        int changeCount,
+        string? shippedChanges,
         CancellationToken cancellationToken = default);
 
     Task<IReadOnlyCollection<MenuPublishEvent>> GetPublishHistoryAsync(
@@ -94,6 +112,28 @@ public interface IMenuLibraryRepository
     Task<IReadOnlyCollection<MenuPublishTarget>> GetPublishTargetsAsync(Guid publishEventId, CancellationToken cancellationToken = default);
 
     Task<Guid> RecordHistoryAsync(MenuHistoryEntry entry, CancellationToken cancellationToken = default);
+
+    /// <summary>The snapshot the screens are currently showing, or null if never published.</summary>
+    Task<string?> GetLatestPublishedSnapshotAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
+
+    /// <summary>The menu as it stands right now, in the shape a publish records.</summary>
+    Task<string?> GetWorkingSnapshotAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Puts the menu's working state back to a stored snapshot and records the act,
+    /// in one transaction. Used by both "go back to" and discard, which are the
+    /// same operation against different snapshots. Item identity is preserved: this
+    /// restores values onto existing items and never mints new ones (Q43).
+    /// </summary>
+    Task RestoreSnapshotAsync(
+        Guid venueId,
+        Guid menuId,
+        string snapshotJson,
+        string? author,
+        string detail,
+        DateTime occurredUtc,
+        CancellationToken cancellationToken = default,
+        string kind = MenuHistoryKinds.Restored);
 
     Task<IReadOnlyCollection<MenuHistoryEntry>> GetHistoryAsync(
         Guid venueId,
@@ -129,7 +169,26 @@ public interface IMenuLibraryRepository
         return resolved;
     }
 
+    /// <summary>Active menus only: put-away menus do not count against the ceiling.</summary>
     Task<int> CountMenusAsync(Guid venueId, CancellationToken cancellationToken = default);
+}
+
+/// <summary>Whether the menu was created, and the venue's active-menu count under the lock.</summary>
+public sealed record MenuCreateOutcome(bool Created, int ActiveMenuCount);
+
+/// <summary>
+/// What happened to a create-and-place: <see cref="ItemPlacementOutcomes"/> names
+/// the cases, and the count is the menu's item total read under the same lock.
+/// </summary>
+public sealed record ItemPlacementOutcome(string Outcome, int ItemCountOnMenu, int SortOrder);
+
+public static class ItemPlacementOutcomes
+{
+    public const string Created = "created";
+
+    public const string SectionMissing = "section_missing";
+
+    public const string OverCeiling = "over_ceiling";
 }
 
 public static class MenuCeilings

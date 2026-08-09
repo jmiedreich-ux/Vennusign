@@ -76,14 +76,16 @@ export type MenuSection = {
   id: string; venueId: string; menuId: string; name: string;
   sortOrder: number; isActive: boolean; createdUtc: string; updatedUtc: string;
 };
+// The owner-killed concepts (happy-hour price, quantities, tags, popular, the
+// availability auto-reset) are gone from the item shape: the library stores
+// name, description and price, and availability is its own instant fact.
 export type MenuItem = {
   id: string; venueId: string; menuSectionId: string; name: string;
-  description?: string; price: number; happyHourPrice?: number;
-  sortOrder: number; isAvailable: boolean; availabilityResetUtc?: string; quantityAvailable?: number;
-  tags?: string; isPopular: boolean; isActive: boolean; createdUtc: string; updatedUtc: string;
+  description?: string; price: number;
+  sortOrder: number; isAvailable: boolean; isActive: boolean; createdUtc: string; updatedUtc: string;
 };
 export type MenuItemWrite = {
-  name: string; description?: string; price: number; happyHourPrice?: number;
+  name: string; description?: string; price: number;
 };
 export type MenuEditorSnapshot = {
   menus: Array<{
@@ -521,45 +523,6 @@ export async function updateMenuItem(
   })).json() as Promise<MenuItem>;
 }
 
-export async function updateMenuItemPresentation(
-  configuration: BackOfficeConfiguration,
-  accessToken: string,
-  _venueId: string,
-  menuId: string,
-  sectionId: string,
-  item: MenuItem
-): Promise<MenuItem> {
-  return (await menuRequest(
-    configuration,
-    accessToken,
-    `/${menuId}/sections/${sectionId}/items/${item.id}/presentation`,
-    {
-      method: "PUT",
-      body: JSON.stringify({
-        isAvailable: item.isAvailable,
-        quantityAvailable: item.quantityAvailable,
-        tags: item.tags?.split(",").map(tag => tag.trim()).filter(Boolean) ?? [],
-        isPopular: item.isPopular
-      })
-    }
-  )).json() as Promise<MenuItem>;
-}
-
-export async function updateMenuItemLifecycle(
-  configuration: BackOfficeConfiguration,
-  accessToken: string,
-  _venueId: string,
-  menuId: string,
-  sectionId: string,
-  itemId: string,
-  isActive: boolean
-): Promise<MenuItem> {
-  return (await menuRequest(configuration, accessToken, `/${menuId}/sections/${sectionId}/items/${itemId}/lifecycle`, {
-    method: "PUT",
-    body: JSON.stringify({ isActive })
-  })).json() as Promise<MenuItem>;
-}
-
 export async function reorderMenuItems(
   configuration: BackOfficeConfiguration,
   accessToken: string,
@@ -571,19 +534,6 @@ export async function reorderMenuItems(
   await menuRequest(configuration, accessToken, `/${menuId}/sections/${sectionId}/items/order`, {
     method: "PUT",
     body: JSON.stringify({ itemIds })
-  });
-}
-
-export async function updateQuickDailySpecial(
-  configuration: BackOfficeConfiguration,
-  accessToken: string,
-  _venueId: string,
-  menuId: string,
-  dailySpecial?: string
-): Promise<void> {
-  await menuRequest(configuration, accessToken, `/${menuId}/quick-update/daily-special`, {
-    method: "PUT",
-    body: JSON.stringify({ dailySpecial })
   });
 }
 

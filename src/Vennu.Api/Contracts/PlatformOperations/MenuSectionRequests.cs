@@ -10,20 +10,11 @@ public sealed record MenuSectionOrderRequest(IReadOnlyCollection<Guid>? SectionI
 
 public sealed record MenuItemOrderRequest(IReadOnlyCollection<Guid>? ItemIds);
 
-public sealed record MenuItemLifecycleRequest(bool IsActive);
-
+// Happy-hour pricing, quantities, tags and "popular" are owner-killed concepts
+// (decision 6, Q14-r2); the write contract carries only what the library stores.
 public sealed record MenuItemWriteRequest(
     string Name,
     string? Description,
-    decimal Price,
-    decimal? HappyHourPrice);
-
-public sealed record MenuItemPresentationRequest(
-    bool IsAvailable,
-    int? QuantityAvailable,
-    IReadOnlyCollection<string>? Tags,
-    bool IsPopular);
-
-public sealed record QuickDailySpecialRequest(string? DailySpecial);
+    decimal Price);
 
 public sealed record QuickAvailabilityRequest(bool IsAvailable);

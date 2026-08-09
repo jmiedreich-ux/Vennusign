@@ -50,6 +50,30 @@ DECLARE @Menus TABLE (Id uniqueidentifier);
 INSERT INTO @Menus (Id)
 SELECT Id FROM dbo.Menus WHERE Name LIKE '% menu [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]';
 
+-- Seeded content now lives in the item library, so the placements go first,
+-- then the library items they were the only reason to keep.
+DECLARE @SeedItems TABLE (Id uniqueidentifier);
+INSERT INTO @SeedItems (Id)
+SELECT DISTINCT p.ItemId FROM dbo.Placements p INNER JOIN @Menus m ON m.Id = p.MenuId;
+
+DELETE p FROM dbo.Placements p INNER JOIN @Menus m ON m.Id = p.MenuId;
+
+DELETE a FROM dbo.ItemAvailability a
+INNER JOIN @SeedItems i ON i.Id = a.ItemId
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Placements p WHERE p.ItemId = a.ItemId);
+
+DELETE x FROM dbo.Items x
+INNER JOIN @SeedItems i ON i.Id = x.Id
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Placements p WHERE p.ItemId = x.Id);
+
+-- The publish chain references the menu, so it goes before the menu itself.
+DELETE h FROM dbo.MenuHistoryEntries h INNER JOIN @Menus m ON m.Id = h.MenuId;
+DELETE t FROM dbo.MenuPublishTargets t
+INNER JOIN dbo.MenuPublishEvents e ON e.Id = t.PublishEventId
+INNER JOIN @Menus m ON m.Id = e.MenuId;
+DELETE e FROM dbo.MenuPublishEvents e INNER JOIN @Menus m ON m.Id = e.MenuId;
+DELETE a FROM dbo.MenuScreenAssignments a INNER JOIN @Menus m ON m.Id = a.MenuId;
+
 DELETE i FROM dbo.MenuItems i
 INNER JOIN dbo.MenuSections s ON s.Id = i.MenuSectionId
 INNER JOIN @Menus m ON m.Id = s.MenuId;

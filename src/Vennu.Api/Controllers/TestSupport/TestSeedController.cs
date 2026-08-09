@@ -19,6 +19,7 @@ public sealed class TestSeedController(
     IHostEnvironment environment,
     IOptionsMonitor<BackOfficeAuthenticationOptions> backOfficeOptions,
     IMenuRepository menuRepository,
+    IMenuLibraryRepository libraryRepository,
     IScreenRepository screenRepository,
     TimeProvider timeProvider) : ControllerBase
 {
@@ -106,20 +107,33 @@ public sealed class TestSeedController(
         var itemName = $"{label} item {suffix}";
         const string itemDescription = "Seeded for an automated UI test.";
         const decimal itemPrice = 4.50m;
-        var itemId = await menuRepository.CreateItemAsync(
-            new MenuItem
-            {
-                Id = Guid.NewGuid(),
-                VenueId = session.VenueId,
-                MenuSectionId = sectionId,
-                Name = itemName,
-                Description = itemDescription,
-                Price = itemPrice,
-                IsAvailable = true,
-                IsActive = true,
-                SortOrder = 0
-            },
+
+        // The seed writes what the product reads: a library item placed on the
+        // section. Prices are stored exactly as typed (Q115/Q190).
+        var item = new Item
+        {
+            Id = Guid.NewGuid(),
+            VenueId = session.VenueId,
+            Name = itemName,
+            Description = itemDescription,
+            Price = itemPrice.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            Source = ItemSources.Manual
+        };
+        var ceilings = await libraryRepository
+            .GetResolvedCeilingsAsync(session.VenueId, cancellationToken)
+            .ConfigureAwait(false);
+        var outcome = await libraryRepository.CreateItemOnMenuAsync(
+            item,
+            menuId,
+            sectionId,
+            ceilings.TryGetValue(MenuCeilings.ItemsPerMenu, out var itemLimit) ? itemLimit : int.MaxValue,
             cancellationToken).ConfigureAwait(false);
+        if (outcome.Outcome != ItemPlacementOutcomes.Created)
+        {
+            return Problem($"Seeding the item failed: {outcome.Outcome}.", statusCode: StatusCodes.Status409Conflict);
+        }
+
+        var itemId = item.Id;
 
         Guid? screenId = null;
         string? screenKey = null;

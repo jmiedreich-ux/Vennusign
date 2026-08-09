@@ -16,11 +16,21 @@ public sealed class MenuSectionManagementService(
         var sections = await Task.WhenAll(menus.Select(async menu => new MenuEditorMenu(
             menu,
             await repository.GetSectionsAsync(venueId, menu.Id, cancellationToken).ConfigureAwait(false))));
-        var itemGroups = await Task.WhenAll(sections
+
+        // The editor reads the same placements a publish snapshots. It keeps the
+        // legacy item shape until milestone 3 replaces this surface, so a price
+        // that is not a number ("MP") renders as 0 here while the board and the
+        // library keep it exactly as typed.
+        var placed = await libraryRepository.GetPlacedItemsForVenueAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var placedBySection = placed
+            .GroupBy(item => item.MenuSectionId)
+            .ToDictionary(group => group.Key, group => group.Select(ToEditorItem).ToArray());
+        var itemGroups = sections
             .SelectMany(menu => menu.Sections)
-            .Select(async section => new MenuEditorItemGroup(
+            .Select(section => new MenuEditorItemGroup(
                 section.Id,
-                await repository.GetItemsAsync(venueId, section.Id, cancellationToken).ConfigureAwait(false))));
+                placedBySection.TryGetValue(section.Id, out var items) ? items : []))
+            .ToArray();
         var capabilityResults = await decisions.EvaluateBatchAsync(
             [
                 CapabilityId.Parse("schedule.promotion.automate"),
@@ -50,17 +60,10 @@ public sealed class MenuSectionManagementService(
             throw new ArgumentException("A menu with that name already exists.", nameof(name));
         }
 
-        // A ceiling that is configured but never checked is decorative. Refuse in
-        // plain words rather than failing quietly further down (Q201).
         var ceilings = await libraryRepository
             .GetResolvedCeilingsAsync(venueId, cancellationToken)
             .ConfigureAwait(false);
-        if (ceilings.TryGetValue(MenuCeilings.MenusPerVenue, out var menuLimit) && menus.Count + 1 > menuLimit)
-        {
-            throw new ArgumentException(
-                MenuCeilings.DescribeRefusal(MenuCeilings.MenusPerVenue, menus.Count + 1, menuLimit),
-                nameof(name));
-        }
+        var menuLimit = ceilings.TryGetValue(MenuCeilings.MenusPerVenue, out var configured) ? configured : int.MaxValue;
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var menu = new Menu
@@ -72,7 +75,20 @@ public sealed class MenuSectionManagementService(
             CreatedUtc = now,
             UpdatedUtc = now
         };
-        await repository.CreateMenuAsync(menu, cancellationToken).ConfigureAwait(false);
+
+        // The ceiling is enforced under the same lock as the insert, so two
+        // requests arriving at limit-minus-one cannot both get in (Q201). The
+        // refusal is a plain sentence, never a quiet failure.
+        var outcome = await libraryRepository
+            .CreateMenuWithinCeilingAsync(menu, menuLimit, cancellationToken)
+            .ConfigureAwait(false);
+        if (!outcome.Created)
+        {
+            throw new ArgumentException(
+                MenuCeilings.DescribeRefusal(MenuCeilings.MenusPerVenue, outcome.ActiveMenuCount + 1, menuLimit),
+                nameof(name));
+        }
+
         return menu;
     }
 
@@ -158,6 +174,24 @@ public sealed class MenuSectionManagementService(
             timeProvider.GetUtcNow().UtcDateTime,
             cancellationToken).ConfigureAwait(false);
     }
+
+    private static MenuItem ToEditorItem(PlacedMenuItem placed) => new()
+    {
+        Id = placed.ItemId,
+        MenuSectionId = placed.MenuSectionId,
+        Name = placed.Name,
+        Description = placed.Description,
+        Price = decimal.TryParse(
+            placed.Price,
+            System.Globalization.NumberStyles.Number,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out var price) ? price : 0m,
+        IsAvailable = placed.IsAvailable,
+        IsActive = placed.IsActive,
+        SortOrder = placed.SortOrder,
+        CreatedUtc = placed.CreatedUtc,
+        UpdatedUtc = placed.UpdatedUtc
+    };
 
     private static string NormalizeName(string name)
     {

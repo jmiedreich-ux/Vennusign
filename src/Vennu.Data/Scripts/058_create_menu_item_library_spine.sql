@@ -59,6 +59,10 @@ CREATE INDEX IX_Items_VenueName ON dbo.Items (VenueId, Name);
 -- permanent and placements never re-mint items (Q43), so an 86 keeps its anchor
 -- across every publish by construction.
 -------------------------------------------------------------------------------
+-- Placements prove section-in-menu through this key, so it must exist first.
+ALTER TABLE dbo.MenuSections ADD CONSTRAINT UQ_MenuSections_Id_MenuId UNIQUE (Id, MenuId);
+GO
+
 CREATE TABLE dbo.Placements
 (
     Id UNIQUEIDENTIFIER NOT NULL CONSTRAINT PK_Placements PRIMARY KEY,
@@ -72,6 +76,10 @@ CREATE TABLE dbo.Placements
     CONSTRAINT FK_Placements_Venues FOREIGN KEY (VenueId) REFERENCES dbo.Venues (Id),
     CONSTRAINT FK_Placements_Menus FOREIGN KEY (MenuId, VenueId) REFERENCES dbo.Menus (Id, VenueId),
     CONSTRAINT FK_Placements_Sections FOREIGN KEY (MenuSectionId, VenueId) REFERENCES dbo.MenuSections (Id, VenueId),
+    -- The section must belong to the same menu as the placement, not merely the
+    -- same venue: without this, menu A could reference a section of menu B and the
+    -- placement would silently vanish from every snapshot of menu A.
+    CONSTRAINT FK_Placements_SectionOnMenu FOREIGN KEY (MenuSectionId, MenuId) REFERENCES dbo.MenuSections (Id, MenuId),
     CONSTRAINT FK_Placements_Items FOREIGN KEY (ItemId, VenueId) REFERENCES dbo.Items (Id, VenueId),
     CONSTRAINT UQ_Placements_SectionItem UNIQUE (MenuSectionId, ItemId)
 );
@@ -118,37 +126,11 @@ CREATE TABLE dbo.MenuScreenAssignments
 CREATE INDEX IX_MenuScreenAssignments_Menu ON dbo.MenuScreenAssignments (VenueId, MenuId);
 
 -------------------------------------------------------------------------------
--- Draft queue. One queue per menu; the count callers see is the CURRENT DIFF
--- (Q182): the latest state per field, and only where it still differs from what
--- the screens are showing. An edit taken back to the published value is removed
--- from the queue rather than left in it.
+-- There is deliberately NO draft table. The draft is derived (owner decision,
+-- 2026-08-09): it is the computed difference between the working rows and the
+-- latest published snapshot, so the count callers see is the CURRENT DIFF (Q182)
+-- by construction and cannot be misreported by any writer.
 -------------------------------------------------------------------------------
-CREATE TABLE dbo.MenuDraftChanges
-(
-    Id UNIQUEIDENTIFIER NOT NULL CONSTRAINT PK_MenuDraftChanges PRIMARY KEY,
-    VenueId UNIQUEIDENTIFIER NOT NULL,
-    MenuId UNIQUEIDENTIFIER NOT NULL,
-    TargetKind NVARCHAR(20) NOT NULL,
-    TargetId UNIQUEIDENTIFIER NULL,
-    Field NVARCHAR(100) NOT NULL,
-    BeforeValue NVARCHAR(MAX) NULL,
-    AfterValue NVARCHAR(MAX) NULL,
-    Author NVARCHAR(200) NULL,
-    CreatedUtc DATETIME2(7) NOT NULL,
-    UpdatedUtc DATETIME2(7) NOT NULL,
-    CONSTRAINT FK_MenuDraftChanges_Menus FOREIGN KEY (MenuId, VenueId) REFERENCES dbo.Menus (Id, VenueId),
-    CONSTRAINT CK_MenuDraftChanges_TargetKind CHECK (TargetKind IN (N'menu', N'section', N'placement', N'item', N'layout', N'theme', N'screens'))
-);
-
--- One row per (menu, target, field): re-editing the same field replaces the row
--- rather than adding a second change.
-CREATE UNIQUE INDEX UQ_MenuDraftChanges_CurrentDiff
-    ON dbo.MenuDraftChanges (MenuId, TargetKind, TargetId, Field)
-    WHERE TargetId IS NOT NULL;
-
-CREATE UNIQUE INDEX UQ_MenuDraftChanges_CurrentDiff_MenuScope
-    ON dbo.MenuDraftChanges (MenuId, TargetKind, Field)
-    WHERE TargetId IS NULL;
 
 -------------------------------------------------------------------------------
 -- Publish events + per-target delivery state. A publish is atomic (Q198): the
@@ -169,6 +151,10 @@ CREATE TABLE dbo.MenuPublishEvents
     ShippedChanges NVARCHAR(MAX) NULL,
     CONSTRAINT FK_MenuPublishEvents_Menus FOREIGN KEY (MenuId, VenueId) REFERENCES dbo.Menus (Id, VenueId),
     CONSTRAINT UQ_MenuPublishEvents_MenuVersion UNIQUE (MenuId, Version),
+    -- Children reference an event together with its venue (targets) or its menu
+    -- and venue (history), so a child row cannot name another tenant's event.
+    CONSTRAINT UQ_MenuPublishEvents_Id_VenueId UNIQUE (Id, VenueId),
+    CONSTRAINT UQ_MenuPublishEvents_Id_MenuId_VenueId UNIQUE (Id, MenuId, VenueId),
     CONSTRAINT CK_MenuPublishEvents_ChangeCount CHECK (ChangeCount >= 0)
 );
 
@@ -178,12 +164,15 @@ CREATE INDEX IX_MenuPublishEvents_MenuHistory
 CREATE TABLE dbo.MenuPublishTargets
 (
     Id UNIQUEIDENTIFIER NOT NULL CONSTRAINT PK_MenuPublishTargets PRIMARY KEY,
+    VenueId UNIQUEIDENTIFIER NOT NULL,
     PublishEventId UNIQUEIDENTIFIER NOT NULL,
     ScreenId UNIQUEIDENTIFIER NOT NULL,
     State NVARCHAR(20) NOT NULL,
     UpdatedUtc DATETIME2(7) NOT NULL,
-    CONSTRAINT FK_MenuPublishTargets_Event FOREIGN KEY (PublishEventId) REFERENCES dbo.MenuPublishEvents (Id),
-    CONSTRAINT FK_MenuPublishTargets_Screens FOREIGN KEY (ScreenId) REFERENCES dbo.Screens (Id),
+    -- The event and the screen must both belong to the target's venue: a publish
+    -- for venue A cannot name venue B's screen at the database layer.
+    CONSTRAINT FK_MenuPublishTargets_Event FOREIGN KEY (PublishEventId, VenueId) REFERENCES dbo.MenuPublishEvents (Id, VenueId),
+    CONSTRAINT FK_MenuPublishTargets_Screens FOREIGN KEY (VenueId, ScreenId) REFERENCES dbo.Screens (VenueId, Id),
     CONSTRAINT UQ_MenuPublishTargets_EventScreen UNIQUE (PublishEventId, ScreenId),
     CONSTRAINT CK_MenuPublishTargets_State CHECK (State IN (N'Pending', N'Delivered', N'Offline', N'Failed'))
 );
@@ -205,7 +194,9 @@ CREATE TABLE dbo.MenuHistoryEntries
     Author NVARCHAR(200) NULL,
     OccurredUtc DATETIME2(7) NOT NULL,
     CONSTRAINT FK_MenuHistoryEntries_Menus FOREIGN KEY (MenuId, VenueId) REFERENCES dbo.Menus (Id, VenueId),
-    CONSTRAINT FK_MenuHistoryEntries_PublishEvent FOREIGN KEY (PublishEventId) REFERENCES dbo.MenuPublishEvents (Id),
+    -- A history entry that names a publish event must name one of its own menu's
+    -- events in its own venue, never another tenant's.
+    CONSTRAINT FK_MenuHistoryEntries_PublishEvent FOREIGN KEY (PublishEventId, MenuId, VenueId) REFERENCES dbo.MenuPublishEvents (Id, MenuId, VenueId),
     CONSTRAINT CK_MenuHistoryEntries_Kind CHECK (Kind IN (N'published', N'draft_discarded', N'put_away', N'taken_off_screens', N'restored', N'assigned'))
 );
 
