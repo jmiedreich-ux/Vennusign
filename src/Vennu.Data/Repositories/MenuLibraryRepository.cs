@@ -109,21 +109,55 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
 
     // Editing the same field twice replaces the row: the queue is the current
     // diff from what the screens are showing, never a log of keystrokes.
+    // Editing the same field twice replaces the row: the queue is the current diff
+    // from what the screens are showing, never a log of keystrokes. Taking a value
+    // back to what is already published removes the row entirely -- a change that
+    // no longer differs is not a change (Q182). The menu is proved to belong to the
+    // venue first, so a foreign menu id writes nothing.
     private const string UpsertDraftChangeSql = """
-        MERGE dbo.MenuDraftChanges WITH (HOLDLOCK) AS target
-        USING (SELECT @MenuId AS MenuId, @TargetKind AS TargetKind, @TargetId AS TargetId, @Field AS Field) AS source
-            ON target.MenuId = source.MenuId
-           AND target.TargetKind = source.TargetKind
-           AND target.Field = source.Field
-           AND ((target.TargetId IS NULL AND source.TargetId IS NULL) OR target.TargetId = source.TargetId)
-        WHEN MATCHED THEN
-            UPDATE SET AfterValue = @AfterValue, Author = @Author, UpdatedUtc = @UpdatedUtc
-        WHEN NOT MATCHED THEN
-            INSERT (Id, VenueId, MenuId, TargetKind, TargetId, Field, BeforeValue, AfterValue, Author, CreatedUtc, UpdatedUtc)
-            VALUES (@Id, @VenueId, @MenuId, @TargetKind, @TargetId, @Field, @BeforeValue, @AfterValue, @Author, @CreatedUtc, @UpdatedUtc)
-        OUTPUT inserted.Id, inserted.VenueId, inserted.MenuId, inserted.TargetKind, inserted.TargetId,
-               inserted.Field, inserted.BeforeValue, inserted.AfterValue, inserted.Author,
-               inserted.CreatedUtc, inserted.UpdatedUtc;
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS (SELECT 1 FROM dbo.Menus WHERE Id = @MenuId AND VenueId = @VenueId)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            THROW 51001, 'The menu does not belong to this venue.', 1;
+        END;
+
+        IF (@AfterValue IS NULL AND @BeforeValue IS NULL)
+            OR (@AfterValue IS NOT NULL AND @BeforeValue IS NOT NULL AND @AfterValue = @BeforeValue)
+        BEGIN
+            DELETE FROM dbo.MenuDraftChanges
+            WHERE MenuId = @MenuId
+              AND TargetKind = @TargetKind
+              AND Field = @Field
+              AND ((TargetId IS NULL AND @TargetId IS NULL) OR TargetId = @TargetId);
+        END
+        ELSE
+        BEGIN
+            MERGE dbo.MenuDraftChanges WITH (HOLDLOCK) AS target
+            USING (SELECT @MenuId AS MenuId, @TargetKind AS TargetKind, @TargetId AS TargetId, @Field AS Field) AS source
+                ON target.MenuId = source.MenuId
+               AND target.TargetKind = source.TargetKind
+               AND target.Field = source.Field
+               AND ((target.TargetId IS NULL AND source.TargetId IS NULL) OR target.TargetId = source.TargetId)
+            WHEN MATCHED THEN
+                UPDATE SET AfterValue = @AfterValue, Author = @Author, UpdatedUtc = @UpdatedUtc
+            WHEN NOT MATCHED THEN
+                INSERT (Id, VenueId, MenuId, TargetKind, TargetId, Field, BeforeValue, AfterValue, Author, CreatedUtc, UpdatedUtc)
+                VALUES (@Id, @VenueId, @MenuId, @TargetKind, @TargetId, @Field, @BeforeValue, @AfterValue, @Author, @CreatedUtc, @UpdatedUtc);
+        END;
+
+        COMMIT TRANSACTION;
+
+        -- Only the row this call touched. A collapsed change returns nothing, which
+        -- is how the caller learns the edit no longer differs from the screens.
+        SELECT Id, VenueId, MenuId, TargetKind, TargetId, Field, BeforeValue, AfterValue, Author, CreatedUtc, UpdatedUtc
+        FROM dbo.MenuDraftChanges
+        WHERE MenuId = @MenuId
+          AND TargetKind = @TargetKind
+          AND Field = @Field
+          AND ((TargetId IS NULL AND @TargetId IS NULL) OR TargetId = @TargetId);
         """;
 
     private const string DraftChangesSql = """
@@ -133,10 +167,30 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         ORDER BY CreatedUtc, Id;
         """;
 
+    // Discarding is the one irreversible act in the model, so the clearing and the
+    // history entry that names who did it commit together. If the record cannot be
+    // written, the draft is not thrown away.
     private const string ClearDraftSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        DECLARE @Removed INT;
+
         DELETE FROM dbo.MenuDraftChanges
-        OUTPUT 1 AS Value
         WHERE VenueId = @VenueId AND MenuId = @MenuId;
+
+        SET @Removed = @@ROWCOUNT;
+
+        IF @Removed > 0 AND @RecordHistory = 1
+        BEGIN
+            INSERT dbo.MenuHistoryEntries (Id, VenueId, MenuId, Kind, PublishEventId, ReplacedByVersion, Detail, Author, OccurredUtc)
+            VALUES (NEWID(), @VenueId, @MenuId, N'draft_discarded', NULL, NULL,
+                    CONCAT(N'Discarded ', @Removed, N' queued change(s).'), @Author, @OccurredUtc);
+        END;
+
+        COMMIT TRANSACTION;
+
+        SELECT @Removed AS Value;
         """;
 
     private const string NextVersionSql = """
@@ -149,9 +203,28 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
     // per-screen delivery rows, the history entry, the emptied queue and the
     // menu's new published version -- lands in a single transaction, so a
     // failure leaves the screens and the draft exactly as they were.
+    // A publish is one deliberate act. Everything it implies -- the event, the
+    // content snapshot, the shipped change set, the per-screen delivery rows, the
+    // history entry, the emptied queue and the menu's new published version --
+    // lands in a single transaction, so a failure leaves the screens and the draft
+    // exactly as they were.
+    //
+    // The draft rows are captured by the same DELETE that removes them, so the
+    // count and the shipped set describe exactly what went, even if another
+    // request queues a change while this one runs. Counting first and deleting
+    // later would let a late arrival be destroyed without ever being shipped.
+    //
+    // The menu is re-checked against the caller's venue inside the transaction:
+    // a foreign menu id ships nothing and rolls the whole thing back.
     private const string PublishSql = """
         SET XACT_ABORT ON;
         BEGIN TRANSACTION;
+
+        IF NOT EXISTS (SELECT 1 FROM dbo.Menus WITH (UPDLOCK, HOLDLOCK) WHERE Id = @MenuId AND VenueId = @VenueId)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            THROW 51001, 'The menu does not belong to this venue.', 1;
+        END;
 
         DECLARE @ResolvedVersion BIGINT =
         (
@@ -160,20 +233,73 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             WHERE MenuId = @MenuId
         );
 
-        DECLARE @Count INT =
+        -- Take the queue and remove it in one statement so nothing can slip in
+        -- between counting and clearing.
+        DECLARE @Shipped TABLE
         (
-            SELECT COUNT(*)
-            FROM dbo.MenuDraftChanges
-            WHERE VenueId = @VenueId AND MenuId = @MenuId
+            TargetKind NVARCHAR(20) NOT NULL,
+            TargetId UNIQUEIDENTIFIER NULL,
+            Field NVARCHAR(100) NOT NULL,
+            BeforeValue NVARCHAR(MAX) NULL,
+            AfterValue NVARCHAR(MAX) NULL,
+            Author NVARCHAR(200) NULL
         );
 
-        INSERT dbo.MenuPublishEvents (Id, VenueId, MenuId, Version, ChangeCount, Author, PublishedUtc, Snapshot)
-        VALUES (@Id, @VenueId, @MenuId, @ResolvedVersion, @Count, @Author, @PublishedUtc, @Snapshot);
+        DELETE FROM dbo.MenuDraftChanges
+        OUTPUT deleted.TargetKind, deleted.TargetId, deleted.Field,
+               deleted.BeforeValue, deleted.AfterValue, deleted.Author
+        INTO @Shipped
+        WHERE VenueId = @VenueId AND MenuId = @MenuId;
+
+        DECLARE @Count INT = (SELECT COUNT(*) FROM @Shipped);
+
+        DECLARE @ShippedJson NVARCHAR(MAX) =
+        (
+            SELECT TargetKind AS targetKind, TargetId AS targetId, Field AS field,
+                   BeforeValue AS beforeValue, AfterValue AS afterValue, Author AS author
+            FROM @Shipped
+            FOR JSON PATH
+        );
+
+        -- The snapshot is the published content itself, so this version can be
+        -- rendered and restored later without the queue that produced it.
+        -- Item identity is permanent: the snapshot records values, never new ids.
+        DECLARE @SnapshotJson NVARCHAR(MAX) =
+        (
+            SELECT
+                m.Id AS menuId, m.Name AS name, m.Theme AS theme,
+                m.DwellSeconds AS dwellSeconds, m.LoopWarningSeconds AS loopWarningSeconds,
+                (
+                    SELECT s.Id AS sectionId, s.Name AS name, s.SortOrder AS sortOrder,
+                    (
+                        SELECT p.ItemId AS itemId, i.Name AS name, i.Description AS description,
+                               i.Price AS price, p.SortOrder AS sortOrder
+                        FROM dbo.Placements p
+                        INNER JOIN dbo.Items i ON i.Id = p.ItemId AND i.VenueId = p.VenueId
+                        WHERE p.MenuSectionId = s.Id AND p.VenueId = @VenueId
+                        ORDER BY p.SortOrder, p.Id
+                        FOR JSON PATH
+                    ) AS items
+                    FROM dbo.MenuSections s
+                    WHERE s.MenuId = m.Id AND s.VenueId = @VenueId AND s.IsActive = 1
+                    ORDER BY s.SortOrder, s.Id
+                    FOR JSON PATH
+                ) AS sections
+            FROM dbo.Menus m
+            WHERE m.Id = @MenuId AND m.VenueId = @VenueId
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        );
+
+        INSERT dbo.MenuPublishEvents (Id, VenueId, MenuId, Version, ChangeCount, Author, PublishedUtc, Snapshot, ShippedChanges)
+        VALUES (@Id, @VenueId, @MenuId, @ResolvedVersion, @Count, @Author, @PublishedUtc, @SnapshotJson, @ShippedJson);
 
         INSERT dbo.MenuPublishTargets (Id, PublishEventId, ScreenId, State, UpdatedUtc)
-        SELECT NEWID(), @Id, s.ScreenId, CASE WHEN sc.Status = N'Online' THEN N'Pending' ELSE N'Offline' END, @PublishedUtc
-        FROM OPENJSON(@ScreenIdsJson) WITH (ScreenId UNIQUEIDENTIFIER '$.screenId') s
-        INNER JOIN dbo.Screens sc ON sc.Id = s.ScreenId;
+        SELECT NEWID(), @Id, a.ScreenId,
+               CASE WHEN sc.Status = N'Online' THEN N'Pending' ELSE N'Offline' END,
+               @PublishedUtc
+        FROM dbo.MenuScreenAssignments a
+        INNER JOIN dbo.Screens sc ON sc.Id = a.ScreenId
+        WHERE a.VenueId = @VenueId AND a.MenuId = @MenuId;
 
         INSERT dbo.MenuHistoryEntries (Id, VenueId, MenuId, Kind, PublishEventId, ReplacedByVersion, Detail, Author, OccurredUtc)
         VALUES (NEWID(), @VenueId, @MenuId, N'published', @Id, NULL, @Detail, @Author, @PublishedUtc);
@@ -189,9 +315,6 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
           AND e.Version < @ResolvedVersion
           AND h.ReplacedByVersion IS NULL;
 
-        DELETE FROM dbo.MenuDraftChanges
-        WHERE VenueId = @VenueId AND MenuId = @MenuId;
-
         UPDATE dbo.Menus
         SET PublishedVersion = @ResolvedVersion,
             IsPutAway = 0,
@@ -200,7 +323,7 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
 
         COMMIT TRANSACTION;
 
-        SELECT Id, VenueId, MenuId, Version, ChangeCount, Author, PublishedUtc, Snapshot
+        SELECT Id, VenueId, MenuId, Version, ChangeCount, Author, PublishedUtc, Snapshot, ShippedChanges
         FROM dbo.MenuPublishEvents
         WHERE Id = @Id;
         """;
@@ -232,15 +355,23 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         ORDER BY OccurredUtc DESC, Id DESC;
         """;
 
-    // A venue-scoped allowance wins over an organization-wide one; the minimum
-    // is taken so a narrower ceiling is never quietly widened.
+    // A venue-scoped allowance wins outright over an organization-wide one, matching
+    // how capability access already resolves. Taking the minimum would silently
+    // ignore a ceiling someone deliberately raised for one venue.
     private const string CeilingsSql = """
-        SELECT a.CapabilityId, a.LimitValue
-        FROM dbo.CapabilityAllowances a
-        INNER JOIN dbo.Venues v ON v.Id = @VenueId
-        WHERE (a.VenueId = @VenueId OR (a.VenueId IS NULL AND a.OrganizationId = v.OrganizationId))
-          AND a.StartsUtc <= SYSUTCDATETIME()
-          AND (a.EndsUtc IS NULL OR a.EndsUtc > SYSUTCDATETIME());
+        SELECT ranked.CapabilityId, ranked.LimitValue
+        FROM (
+            SELECT a.CapabilityId, a.LimitValue,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY a.CapabilityId
+                       ORDER BY CASE WHEN a.VenueId = @VenueId THEN 0 ELSE 1 END, a.StartsUtc DESC) AS Precedence
+            FROM dbo.CapabilityAllowances a
+            INNER JOIN dbo.Venues v ON v.Id = @VenueId
+            WHERE (a.VenueId = @VenueId OR (a.VenueId IS NULL AND a.OrganizationId = v.OrganizationId))
+              AND a.StartsUtc <= SYSUTCDATETIME()
+              AND (a.EndsUtc IS NULL OR a.EndsUtc > SYSUTCDATETIME())
+        ) ranked
+        WHERE ranked.Precedence = 1;
         """;
 
     private const string CountMenusSql = """
@@ -404,7 +535,7 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
 
     // ----- Draft queue ----------------------------------------------------------------
 
-    public async Task<MenuDraftChange> UpsertDraftChangeAsync(MenuDraftChange change, CancellationToken cancellationToken = default)
+    public async Task<MenuDraftChange?> UpsertDraftChangeAsync(MenuDraftChange change, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(change);
         if (!DraftTargetKinds.IsSupported(change.TargetKind))
@@ -430,7 +561,7 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
                 CreatedUtc = change.CreatedUtc == default ? now : change.CreatedUtc,
                 UpdatedUtc = now
             },
-            cancellationToken).ConfigureAwait(false)).Single();
+            cancellationToken).ConfigureAwait(false)).SingleOrDefault();
     }
 
     public async Task<IReadOnlyCollection<MenuDraftChange>> GetDraftChangesAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
@@ -443,15 +574,23 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             },
             cancellationToken).ConfigureAwait(false)).ToArray();
 
-    public async Task<int> ClearDraftAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
+    public async Task<int> ClearDraftAsync(
+        Guid venueId,
+        Guid menuId,
+        string? author = null,
+        bool recordHistory = false,
+        CancellationToken cancellationToken = default) =>
         (await dataAccess.ExecuteSqlQueryAsync<ScalarResult, object>(
             ClearDraftSql,
             new
             {
                 VenueId = RequireId(venueId, nameof(venueId)),
-                MenuId = RequireId(menuId, nameof(menuId))
+                MenuId = RequireId(menuId, nameof(menuId)),
+                Author = author,
+                RecordHistory = recordHistory,
+                OccurredUtc = DateTime.UtcNow
             },
-            cancellationToken).ConfigureAwait(false)).Count();
+            cancellationToken).ConfigureAwait(false)).Single().Value;
 
     // ----- Publish and history ---------------------------------------------------------
 
@@ -466,16 +605,12 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
 
     public async Task<MenuPublishEvent> PublishAsync(
         MenuPublishEvent publishEvent,
-        IReadOnlyCollection<Guid> targetScreenIds,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(publishEvent);
-        ArgumentNullException.ThrowIfNull(targetScreenIds);
 
-        var screenIdsJson = System.Text.Json.JsonSerializer.Serialize(
-            targetScreenIds.Select(id => new { screenId = id }),
-            System.Text.Json.JsonSerializerOptions.Web);
-
+        // Targets come from the assignments inside the transaction, not from the
+        // caller: a caller-supplied screen list could name another venue's screens.
         return (await dataAccess.ExecuteSqlQueryAsync<MenuPublishEvent, object>(
             PublishSql,
             new
@@ -485,8 +620,6 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
                 MenuId = RequireId(publishEvent.MenuId, nameof(publishEvent.MenuId)),
                 publishEvent.Author,
                 PublishedUtc = publishEvent.PublishedUtc == default ? DateTime.UtcNow : publishEvent.PublishedUtc,
-                publishEvent.Snapshot,
-                ScreenIdsJson = screenIdsJson,
                 Detail = (string?)null
             },
             cancellationToken).ConfigureAwait(false)).Single();
@@ -564,9 +697,7 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             new { VenueId = RequireId(venueId, nameof(venueId)) },
             cancellationToken).ConfigureAwait(false);
 
-        return rows
-            .GroupBy(row => row.CapabilityId, StringComparer.Ordinal)
-            .ToDictionary(group => group.Key, group => group.Min(row => row.LimitValue), StringComparer.Ordinal);
+        return rows.ToDictionary(row => row.CapabilityId, row => row.LimitValue, StringComparer.Ordinal);
     }
 
     public async Task<int> CountMenusAsync(Guid venueId, CancellationToken cancellationToken = default)
@@ -591,6 +722,11 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         if (item.Description is { Length: > Item.DescriptionMaxLength })
         {
             throw new ArgumentException($"Item description cannot exceed {Item.DescriptionMaxLength} characters.", nameof(item));
+        }
+
+        if (item.Price is { Length: > Item.PriceMaxLength })
+        {
+            throw new ArgumentException($"Item price cannot exceed {Item.PriceMaxLength} characters.", nameof(item));
         }
 
         if (!ItemSources.IsSupported(item.Source))

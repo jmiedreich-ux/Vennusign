@@ -138,13 +138,43 @@ public sealed class MenusM1SpineMigrationTests
         Assert.Contains("LoopWarningSeconds INT NOT NULL CONSTRAINT DF_Menus_LoopWarningSeconds DEFAULT 60", sql, StringComparison.Ordinal);
     }
 
+    // Q45: fresh start. The new tables begin empty and the migration must not
+    // carry legacy menu content across; the old tables stay untouched but unused.
     [Fact]
-    public void SpineMigration_MarksSeededMenusPublishedSoFixturesWork()
+    public void SpineMigration_DoesNotCarryLegacyContentIntoTheLibrary()
     {
         var sql = ReadSpineMigration();
 
-        Assert.Contains("INSERT dbo.MenuPublishEvents", sql, StringComparison.Ordinal);
-        Assert.Contains("WHERE m.IsActive = 1", sql, StringComparison.Ordinal);
+        Assert.DoesNotContain("INSERT dbo.Items", sql, StringComparison.Ordinal);
+        Assert.DoesNotContain("INSERT dbo.Placements", sql, StringComparison.Ordinal);
+        Assert.DoesNotContain("INSERT dbo.ItemAvailability", sql, StringComparison.Ordinal);
+        Assert.DoesNotContain("FROM dbo.MenuItems mi", sql, StringComparison.Ordinal);
+        Assert.Contains("FRESH START", sql, StringComparison.Ordinal);
+    }
+
+    // Tenancy is a database invariant, not a predicate each query must remember:
+    // every child reaches its parent through the parent's (Id, VenueId) key.
+    [Fact]
+    public void SpineMigration_MakesTenantOwnershipADatabaseInvariant()
+    {
+        var sql = ReadSpineMigration();
+
+        Assert.Contains("REFERENCES dbo.Menus (Id, VenueId)", sql, StringComparison.Ordinal);
+        Assert.Contains("REFERENCES dbo.MenuSections (Id, VenueId)", sql, StringComparison.Ordinal);
+        Assert.Contains("REFERENCES dbo.Items (Id, VenueId)", sql, StringComparison.Ordinal);
+        Assert.Contains("REFERENCES dbo.Screens (VenueId, Id)", sql, StringComparison.Ordinal);
+        Assert.Contains("CONSTRAINT UQ_Items_Id_VenueId UNIQUE (Id, VenueId)", sql, StringComparison.Ordinal);
+    }
+
+    // Q115/Q190: a price is stored exactly as typed, so "MP" is a valid price and
+    // "9.5" never becomes "9.50". A numeric column could do neither.
+    [Fact]
+    public void SpineMigration_StoresPricesAsTypedText()
+    {
+        var sql = ReadSpineMigration();
+
+        Assert.Contains("Price NVARCHAR(40) NULL", sql, StringComparison.Ordinal);
+        Assert.DoesNotContain("Price DECIMAL", sql, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

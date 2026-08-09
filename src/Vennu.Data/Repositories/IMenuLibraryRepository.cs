@@ -50,13 +50,25 @@ public interface IMenuLibraryRepository
 
     /// <summary>
     /// Records a change against the menu's draft. Editing the same field again
-    /// replaces the existing row so the queue is always the current diff.
+    /// replaces the existing row, and taking a value back to what is published
+    /// removes it, so the queue is always the current diff (Q182). Returns null
+    /// when the change collapsed and nothing remains queued for that field.
     /// </summary>
-    Task<MenuDraftChange> UpsertDraftChangeAsync(MenuDraftChange change, CancellationToken cancellationToken = default);
+    Task<MenuDraftChange?> UpsertDraftChangeAsync(MenuDraftChange change, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyCollection<MenuDraftChange>> GetDraftChangesAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
 
-    Task<int> ClearDraftAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Empties the menu's queue. When <paramref name="recordHistory"/> is set the
+    /// clearing and its attributable history entry commit together, so a discard
+    /// can never happen anonymously.
+    /// </summary>
+    Task<int> ClearDraftAsync(
+        Guid venueId,
+        Guid menuId,
+        string? author = null,
+        bool recordHistory = false,
+        CancellationToken cancellationToken = default);
 
     // ----- Publish and history -----------------------------------------------------
 
@@ -69,7 +81,6 @@ public interface IMenuLibraryRepository
     /// </summary>
     Task<MenuPublishEvent> PublishAsync(
         MenuPublishEvent publishEvent,
-        IReadOnlyCollection<Guid> targetScreenIds,
         CancellationToken cancellationToken = default);
 
     Task<IReadOnlyCollection<MenuPublishEvent>> GetPublishHistoryAsync(
@@ -104,6 +115,20 @@ public interface IMenuLibraryRepository
 
 public static class MenuCeilings
 {
+    /// <summary>
+    /// The ceiling used when a venue has no allowance row of its own - a venue
+    /// created after the migration, for instance. A missing row means "not
+    /// configured yet", never "unlimited".
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, int> Defaults =
+        new Dictionary<string, int>(StringComparer.Ordinal)
+        {
+            [MenusPerVenue] = 50,
+            [ItemsPerMenu] = 500,
+            [ImportLines] = 2000,
+            [HistoryRetention] = 50
+        };
+
     public const string MenusPerVenue = "content.menu.count";
 
     public const string ItemsPerMenu = "content.menu.items";

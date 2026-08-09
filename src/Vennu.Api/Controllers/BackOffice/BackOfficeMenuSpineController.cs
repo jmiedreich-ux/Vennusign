@@ -141,7 +141,17 @@ public sealed class BackOfficeMenuSpineController(
     [RequireCapability("publishing.release.publish")]
     public async Task<ActionResult<PublishResponse>> Publish(Guid menuId, CancellationToken cancellationToken)
     {
-        var result = await spine.PublishAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
+        PublishResult result;
+        try
+        {
+            result = await spine.PublishAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
+        }
+        catch (MenuNotOnAnyScreenException exception)
+        {
+            // A real named state, not a silent absence (decision 5, Q80).
+            return Conflict(new { reason = "no_screen_paired", message = exception.Message });
+        }
+
         return Ok(new PublishResponse(
             result.Event.Version,
             result.ChangeCount,
@@ -178,17 +188,18 @@ public sealed class BackOfficeMenuSpineController(
     /// </summary>
     [HttpPost("menus/{menuId:guid}/go-back-to/{version:long}")]
     [RequireCapability("publishing.release.replace")]
-    public async Task<ActionResult<DraftResponse>> GoBackTo(
+    public async Task<ActionResult<RestoreResponse>> GoBackTo(
         Guid menuId,
         long version,
         CancellationToken cancellationToken)
     {
         try
         {
-            var changes = await spine
+            var restore = await spine
                 .GoBackToAsync(VenueId, menuId, version, Author, cancellationToken)
                 .ConfigureAwait(false);
-            return Ok(ToDraftResponse(changes));
+            var draft = ToDraftResponse(restore.Draft);
+            return Ok(new RestoreResponse(draft.Count, draft.Changes, restore.ReplacedChangeCount));
         }
         catch (InvalidOperationException exception)
         {
@@ -238,15 +249,17 @@ public sealed class BackOfficeMenuSpineController(
     }
 
     /// <summary>
-    /// Takes a menu off its screens. It keeps its place and its history; the
-    /// venue fallback shows instead.
+    /// Queues taking a menu off its screens. Unlike an 86 this is permanent, so it
+    /// waits in the draft and reaches the screens on the next Publish (Q68). The
+    /// menu keeps its place and its history either way.
     /// </summary>
     [HttpDelete("menus/{menuId:guid}/screens")]
     [RequireCapability("screen.content.target")]
-    public async Task<ActionResult<TakeOffResponse>> TakeOffScreens(Guid menuId, CancellationToken cancellationToken)
+    public async Task<ActionResult<DraftResponse>> TakeOffScreens(Guid menuId, CancellationToken cancellationToken)
     {
-        var released = await spine.TakeOffScreensAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
-        return Ok(new TakeOffResponse(released));
+        await spine.QueueTakeOffScreensAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
+        var changes = await spine.GetDraftAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
+        return Ok(ToDraftResponse(changes));
     }
 
     private static DraftResponse ToDraftResponse(IReadOnlyCollection<Core.Models.MenuDraftChange> changes) =>

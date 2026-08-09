@@ -10,6 +10,8 @@ public sealed class Item
 
     public const int DescriptionMaxLength = 1000;
 
+    public const int PriceMaxLength = 40;
+
     public Guid Id { get; set; }
 
     public Guid VenueId { get; set; }
@@ -19,10 +21,12 @@ public sealed class Item
     public string? Description { get; set; }
 
     /// <summary>
-    /// Null when the item has no price yet (an import the parser was unsure about,
-    /// or a market-price item). A missing price never blocks a publish.
+    /// The price exactly as the operator typed it, and exactly as a board renders
+    /// it: "12", "9.5" and "MP" all round-trip unchanged. It is deliberately not a
+    /// number - a numeric type would normalise "9.5" and could not hold "MP" at
+    /// all. Null means no price yet, which never blocks a publish.
     /// </summary>
-    public decimal? Price { get; set; }
+    public string? Price { get; set; }
 
     public string? ImageUrl { get; set; }
 

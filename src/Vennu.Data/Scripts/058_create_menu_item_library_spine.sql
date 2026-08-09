@@ -1,32 +1,32 @@
--- Menus M1 — the spine: item library, placements, availability, assignment,
+-- Menus M1 - the spine: item library, placements, availability, assignment,
 -- draft/publish save model, attributable history and tier-configurable ceilings.
 --
--- DISCARDED FROM THE ITEM LIBRARY (owner decision 6 + Q14-r2, recorded in
--- docs/features/menus/open-questions.md). NONE of the following are carried into
--- dbo.Items / dbo.Placements / dbo.ItemAvailability:
+-- FRESH START (owner answer Q45). The new tables begin empty. Legacy menu data is
+-- deliberately NOT carried across: the old tables stay untouched but unused, and a
+-- carry script remains possible any time before they retire. Nothing here reads
+-- dbo.MenuItems or dbo.MenuSections for content.
 --
+-- NOT CARRIED INTO THE LIBRARY, and named here because the decision is the
+-- migration's to record (owner decision 6 + Q14-r2):
 --   * MenuItems.HappyHourPrice      -- happy-hour pricing returns via Schedules-owned pricing
 --   * MenuItems.QuantityAvailable   -- countdown inventory is not part of the item library
 --   * MenuItems.Tags                -- free-text tags have no home in the new model
---   * MenuItems.IsPopular           -- "featured" is deferred until its board treatment exists (#678)
---   * MenuItems.AvailabilityResetUtc-- the auto-reset concept is removed; an 86 stays off
---                                      until a person turns it back on
---   * dbo.MenuItemTranslations      -- per-item translations are dropped; the Menus UI ships
---                                      English-only this milestone (#683)
+--   * MenuItems.IsPopular           -- "featured" waits for its board treatment (#678)
+--   * MenuItems.AvailabilityResetUtc-- the auto-reset concept is removed entirely
+--   * dbo.MenuItemTranslations      -- per-item translations dropped; English-only (#683)
 --
--- PHYSICALLY DROPPED BY THIS SCRIPT: AvailabilityResetUtc and MenuItemTranslations.
--- Both are owner-killed concepts with no surviving reader once this milestone lands.
+-- PHYSICALLY DROPPED HERE: AvailabilityResetUtc and MenuItemTranslations. Both are
+-- owner-killed concepts with no surviving reader once this milestone lands.
 --
--- PHYSICALLY DEFERRED (owner decision, 2026-08-08): HappyHourPrice, QuantityAvailable,
--- Tags and IsPopular remain as columns for now because live code still reads and
--- writes them -- Toast/Clover/Square inventory sync, the display content payload,
--- and the legacy item-management service. They are dropped by the milestone that
--- retires their last reader (M4 display player, M6 quick update). Keeping them
--- until then is what lets this milestone leave master releasable; the library
--- above already behaves as though they do not exist.
+-- PHYSICALLY DEFERRED: HappyHourPrice, QuantityAvailable, Tags and IsPopular remain
+-- as columns because live code still reads and writes them (Toast/Clover/Square
+-- inventory sync, the display payload, the legacy item service). They are dropped by
+-- the milestone that retires their last reader.
 --
--- Every other MenuItems value (Name, Description, Price, ImageUrl, IsActive,
--- SortOrder, IsAvailable, timestamps) is preserved into Items/Placements/ItemAvailability below.
+-- TENANCY IS A DATABASE INVARIANT. Every child carries VenueId and references its
+-- parent through the parent's (Id, VenueId) unique key, following the pattern
+-- established in 012_create_menu_domain.sql. A row therefore cannot point at another
+-- venue's menu, section, item or screen even if a caller supplies a foreign id.
 
 -------------------------------------------------------------------------------
 -- Item library
@@ -37,13 +37,17 @@ CREATE TABLE dbo.Items
     VenueId UNIQUEIDENTIFIER NOT NULL,
     Name NVARCHAR(200) NOT NULL,
     Description NVARCHAR(1000) NULL,
-    Price DECIMAL(18, 2) NULL,
+    -- Prices are stored exactly as typed and rendered exactly as typed (Q115/Q190):
+    -- "12", "9.5" and "MP" are all valid and all round-trip unchanged. A numeric type
+    -- would normalise the text and could not hold "MP" at all. Null means no price yet.
+    Price NVARCHAR(40) NULL,
     ImageUrl NVARCHAR(2048) NULL,
     Source NVARCHAR(20) NOT NULL CONSTRAINT DF_Items_Source DEFAULT N'manual',
     IsActive BIT NOT NULL CONSTRAINT DF_Items_IsActive DEFAULT 1,
     CreatedUtc DATETIME2(7) NOT NULL,
     UpdatedUtc DATETIME2(7) NOT NULL,
     CONSTRAINT FK_Items_Venues FOREIGN KEY (VenueId) REFERENCES dbo.Venues (Id),
+    CONSTRAINT UQ_Items_Id_VenueId UNIQUE (Id, VenueId),
     CONSTRAINT CK_Items_Name_NotBlank CHECK (LEN(LTRIM(RTRIM(Name))) > 0),
     CONSTRAINT CK_Items_Source CHECK (Source IN (N'manual', N'pos', N'import'))
 );
@@ -51,8 +55,9 @@ CREATE TABLE dbo.Items
 CREATE INDEX IX_Items_VenueName ON dbo.Items (VenueId, Name);
 
 -------------------------------------------------------------------------------
--- Placement: an item placed on a section of a menu, ordered.
--- The same item can appear on several boards (decision: items are placed, not owned).
+-- Placement: an item placed on a section of a menu, ordered. Item identity is
+-- permanent and placements never re-mint items (Q43), so an 86 keeps its anchor
+-- across every publish by construction.
 -------------------------------------------------------------------------------
 CREATE TABLE dbo.Placements
 (
@@ -65,9 +70,9 @@ CREATE TABLE dbo.Placements
     CreatedUtc DATETIME2(7) NOT NULL,
     UpdatedUtc DATETIME2(7) NOT NULL,
     CONSTRAINT FK_Placements_Venues FOREIGN KEY (VenueId) REFERENCES dbo.Venues (Id),
-    CONSTRAINT FK_Placements_Menus FOREIGN KEY (MenuId) REFERENCES dbo.Menus (Id),
-    CONSTRAINT FK_Placements_Sections FOREIGN KEY (MenuSectionId) REFERENCES dbo.MenuSections (Id),
-    CONSTRAINT FK_Placements_Items FOREIGN KEY (ItemId) REFERENCES dbo.Items (Id),
+    CONSTRAINT FK_Placements_Menus FOREIGN KEY (MenuId, VenueId) REFERENCES dbo.Menus (Id, VenueId),
+    CONSTRAINT FK_Placements_Sections FOREIGN KEY (MenuSectionId, VenueId) REFERENCES dbo.MenuSections (Id, VenueId),
+    CONSTRAINT FK_Placements_Items FOREIGN KEY (ItemId, VenueId) REFERENCES dbo.Items (Id, VenueId),
     CONSTRAINT UQ_Placements_SectionItem UNIQUE (MenuSectionId, ItemId)
 );
 
@@ -75,8 +80,8 @@ CREATE INDEX IX_Placements_MenuSectionOrder ON dbo.Placements (MenuId, MenuSecti
 CREATE INDEX IX_Placements_ItemLookup ON dbo.Placements (VenueId, ItemId);
 
 -------------------------------------------------------------------------------
--- Availability (86): item x venue. Instant, never queued, survives publish,
--- and stays off until a person turns it back on -- there is no reset column.
+-- Availability (86): item x venue. Instant, never queued, survives publish, and
+-- stays off until a person turns it back on -- there is no reset column.
 -------------------------------------------------------------------------------
 CREATE TABLE dbo.ItemAvailability
 (
@@ -86,8 +91,7 @@ CREATE TABLE dbo.ItemAvailability
     ChangedUtc DATETIME2(7) NOT NULL,
     ChangedBy NVARCHAR(200) NULL,
     CONSTRAINT PK_ItemAvailability PRIMARY KEY (VenueId, ItemId),
-    CONSTRAINT FK_ItemAvailability_Venues FOREIGN KEY (VenueId) REFERENCES dbo.Venues (Id),
-    CONSTRAINT FK_ItemAvailability_Items FOREIGN KEY (ItemId) REFERENCES dbo.Items (Id)
+    CONSTRAINT FK_ItemAvailability_Items FOREIGN KEY (ItemId, VenueId) REFERENCES dbo.Items (Id, VenueId)
 );
 
 CREATE INDEX IX_ItemAvailability_OffRightNow
@@ -106,9 +110,8 @@ CREATE TABLE dbo.MenuScreenAssignments
     MenuId UNIQUEIDENTIFIER NOT NULL,
     AssignedUtc DATETIME2(7) NOT NULL,
     AssignedBy NVARCHAR(200) NULL,
-    CONSTRAINT FK_MenuScreenAssignments_Venues FOREIGN KEY (VenueId) REFERENCES dbo.Venues (Id),
-    CONSTRAINT FK_MenuScreenAssignments_Screens FOREIGN KEY (ScreenId) REFERENCES dbo.Screens (Id),
-    CONSTRAINT FK_MenuScreenAssignments_Menus FOREIGN KEY (MenuId) REFERENCES dbo.Menus (Id),
+    CONSTRAINT FK_MenuScreenAssignments_Screens FOREIGN KEY (VenueId, ScreenId) REFERENCES dbo.Screens (VenueId, Id),
+    CONSTRAINT FK_MenuScreenAssignments_Menus FOREIGN KEY (MenuId, VenueId) REFERENCES dbo.Menus (Id, VenueId),
     CONSTRAINT UQ_MenuScreenAssignments_Screen UNIQUE (ScreenId)
 );
 
@@ -116,7 +119,9 @@ CREATE INDEX IX_MenuScreenAssignments_Menu ON dbo.MenuScreenAssignments (VenueId
 
 -------------------------------------------------------------------------------
 -- Draft queue. One queue per menu; the count callers see is the CURRENT DIFF
--- (Q182), enforced by the unique key on the changed field.
+-- (Q182): the latest state per field, and only where it still differs from what
+-- the screens are showing. An edit taken back to the published value is removed
+-- from the queue rather than left in it.
 -------------------------------------------------------------------------------
 CREATE TABLE dbo.MenuDraftChanges
 (
@@ -131,13 +136,12 @@ CREATE TABLE dbo.MenuDraftChanges
     Author NVARCHAR(200) NULL,
     CreatedUtc DATETIME2(7) NOT NULL,
     UpdatedUtc DATETIME2(7) NOT NULL,
-    CONSTRAINT FK_MenuDraftChanges_Venues FOREIGN KEY (VenueId) REFERENCES dbo.Venues (Id),
-    CONSTRAINT FK_MenuDraftChanges_Menus FOREIGN KEY (MenuId) REFERENCES dbo.Menus (Id),
-    CONSTRAINT CK_MenuDraftChanges_TargetKind CHECK (TargetKind IN (N'menu', N'section', N'placement', N'item', N'layout', N'theme'))
+    CONSTRAINT FK_MenuDraftChanges_Menus FOREIGN KEY (MenuId, VenueId) REFERENCES dbo.Menus (Id, VenueId),
+    CONSTRAINT CK_MenuDraftChanges_TargetKind CHECK (TargetKind IN (N'menu', N'section', N'placement', N'item', N'layout', N'theme', N'screens'))
 );
 
 -- One row per (menu, target, field): re-editing the same field replaces the row
--- rather than adding a second change, so the queue is always the current diff.
+-- rather than adding a second change.
 CREATE UNIQUE INDEX UQ_MenuDraftChanges_CurrentDiff
     ON dbo.MenuDraftChanges (MenuId, TargetKind, TargetId, Field)
     WHERE TargetId IS NOT NULL;
@@ -147,8 +151,10 @@ CREATE UNIQUE INDEX UQ_MenuDraftChanges_CurrentDiff_MenuScope
     WHERE TargetId IS NULL;
 
 -------------------------------------------------------------------------------
--- Publish events + per-target delivery state. A publish is atomic (Q198):
--- the whole set ships or nothing does.
+-- Publish events + per-target delivery state. A publish is atomic (Q198): the
+-- whole set ships or nothing does. Snapshot holds the published content itself,
+-- so a version can be rendered and restored later without re-deriving it from a
+-- queue that no longer exists (Q43, Q67).
 -------------------------------------------------------------------------------
 CREATE TABLE dbo.MenuPublishEvents
 (
@@ -160,8 +166,8 @@ CREATE TABLE dbo.MenuPublishEvents
     Author NVARCHAR(200) NULL,
     PublishedUtc DATETIME2(7) NOT NULL,
     Snapshot NVARCHAR(MAX) NULL,
-    CONSTRAINT FK_MenuPublishEvents_Venues FOREIGN KEY (VenueId) REFERENCES dbo.Venues (Id),
-    CONSTRAINT FK_MenuPublishEvents_Menus FOREIGN KEY (MenuId) REFERENCES dbo.Menus (Id),
+    ShippedChanges NVARCHAR(MAX) NULL,
+    CONSTRAINT FK_MenuPublishEvents_Menus FOREIGN KEY (MenuId, VenueId) REFERENCES dbo.Menus (Id, VenueId),
     CONSTRAINT UQ_MenuPublishEvents_MenuVersion UNIQUE (MenuId, Version),
     CONSTRAINT CK_MenuPublishEvents_ChangeCount CHECK (ChangeCount >= 0)
 );
@@ -183,9 +189,9 @@ CREATE TABLE dbo.MenuPublishTargets
 );
 
 -------------------------------------------------------------------------------
--- Attributable history. Publishes and the destructive-but-instant acts
--- (discard draft, put away, take off the screens) all land here so nothing
--- irreversible is anonymous -- provisional audit record per Q207 (#677).
+-- Attributable history. Publishes and the destructive-but-instant acts all land
+-- here in the same transaction as the act itself, so nothing irreversible can
+-- become anonymous through a partial failure (Q207).
 -------------------------------------------------------------------------------
 CREATE TABLE dbo.MenuHistoryEntries
 (
@@ -198,8 +204,7 @@ CREATE TABLE dbo.MenuHistoryEntries
     Detail NVARCHAR(400) NULL,
     Author NVARCHAR(200) NULL,
     OccurredUtc DATETIME2(7) NOT NULL,
-    CONSTRAINT FK_MenuHistoryEntries_Venues FOREIGN KEY (VenueId) REFERENCES dbo.Venues (Id),
-    CONSTRAINT FK_MenuHistoryEntries_Menus FOREIGN KEY (MenuId) REFERENCES dbo.Menus (Id),
+    CONSTRAINT FK_MenuHistoryEntries_Menus FOREIGN KEY (MenuId, VenueId) REFERENCES dbo.Menus (Id, VenueId),
     CONSTRAINT FK_MenuHistoryEntries_PublishEvent FOREIGN KEY (PublishEventId) REFERENCES dbo.MenuPublishEvents (Id),
     CONSTRAINT CK_MenuHistoryEntries_Kind CHECK (Kind IN (N'published', N'draft_discarded', N'put_away', N'taken_off_screens', N'restored', N'assigned'))
 );
@@ -225,25 +230,30 @@ ALTER TABLE dbo.Menus ADD
 GO
 
 -------------------------------------------------------------------------------
--- Tier-configurable ceilings (Q201). Numbers are DEFAULTS, not constants:
--- they live in the existing capability allowance model so a tier can change them.
+-- Capability definitions. Ceilings are typed allowances, so they need a
+-- definition row before any allowance can reference them.
+-- Domain 1 = content, 2 = publishing; Classification 1 = essential;
+-- OperationKind 1 = read, 2 = write.
 -------------------------------------------------------------------------------
--- Domain 1 = content, 2 = publishing; Classification 1 = essential; OperationKind 2 = write.
 INSERT dbo.CapabilityDefinitions (CapabilityId, Domain, Classification, OperationKind)
 SELECT v.CapabilityId, v.Domain, v.Classification, v.OperationKind
 FROM (VALUES
     ('content.menu.count', 1, 1, 2),
     ('content.menu.items', 1, 1, 2),
     ('content.menu.import.lines', 1, 1, 2),
-    ('publishing.history.retention', 2, 1, 1)
+    ('publishing.history.retention', 2, 1, 1),
+    ('content.menu.manage', 1, 1, 2),
+    ('content.menu.import', 1, 1, 2),
+    ('publishing.history.view', 2, 1, 1)
 ) AS v (CapabilityId, Domain, Classification, OperationKind)
 WHERE NOT EXISTS (
     SELECT 1 FROM dbo.CapabilityDefinitions existing
     WHERE existing.CapabilityId = v.CapabilityId);
 GO
 
--- Default ceilings per venue; a tier may override any row. These numbers are
--- defaults, never constants -- the ceiling is always read from the allowance.
+-- Ceilings for the venues that exist today. Venues created later are covered by
+-- the documented defaults in code, which are used only when no allowance row
+-- exists; a missing row is never read as "unlimited".
 INSERT dbo.CapabilityAllowances (Id, OrganizationId, VenueId, CapabilityId, LimitValue, StartsUtc, EndsUtc)
 SELECT NEWID(), venue.OrganizationId, venue.Id, v.CapabilityId, v.LimitValue, SYSUTCDATETIME(), NULL
 FROM dbo.Venues venue
@@ -261,22 +271,11 @@ WHERE venue.OrganizationId IS NOT NULL
 GO
 
 -------------------------------------------------------------------------------
--- The three Menus capability ids (Q24). Provisional: auto-granted to every role
--- that already edits items, so gating can be wired now; flagged in the M1 demo
--- for owner review before they harden into their own permissions.
+-- The three Menus permissions (Q24). Auto-granted to every role that already
+-- edits items so gating can be wired now. The owner has since decided they must
+-- become separately grantable; that needs a role-to-permission mapping and is
+-- tracked as issue #686.
 -------------------------------------------------------------------------------
-INSERT dbo.CapabilityDefinitions (CapabilityId, Domain, Classification, OperationKind)
-SELECT v.CapabilityId, v.Domain, v.Classification, v.OperationKind
-FROM (VALUES
-    ('content.menu.manage', 1, 1, 2),
-    ('content.menu.import', 1, 1, 2),
-    ('publishing.history.view', 2, 1, 1)
-) AS v (CapabilityId, Domain, Classification, OperationKind)
-WHERE NOT EXISTS (
-    SELECT 1 FROM dbo.CapabilityDefinitions existing
-    WHERE existing.CapabilityId = v.CapabilityId);
-GO
-
 INSERT dbo.AuthorityPermissions (PermissionId, CapabilityId)
 SELECT v.PermissionId, v.PermissionId
 FROM (VALUES
@@ -290,7 +289,7 @@ WHERE NOT EXISTS (
 GO
 
 INSERT dbo.AuthorityRolePermissions (RoleKey, PermissionId)
-SELECT existing.RoleKey, v.PermissionId
+SELECT DISTINCT existing.RoleKey, v.PermissionId
 FROM dbo.AuthorityRolePermissions existing
 CROSS JOIN (VALUES
     ('content.menu.manage'),
@@ -301,79 +300,6 @@ WHERE existing.PermissionId = 'content.item.update'
   AND NOT EXISTS (
     SELECT 1 FROM dbo.AuthorityRolePermissions already
     WHERE already.RoleKey = existing.RoleKey AND already.PermissionId = v.PermissionId);
-GO
-
--------------------------------------------------------------------------------
--- Carry existing menu content into the item library.
--- Name/Description/Price/ImageUrl/IsActive/SortOrder/availability are preserved;
--- the fields listed at the top of this script are deliberately not carried.
--------------------------------------------------------------------------------
-DECLARE @MigratedUtc DATETIME2(7) = SYSUTCDATETIME();
-
-INSERT dbo.Items (Id, VenueId, Name, Description, Price, ImageUrl, Source, IsActive, CreatedUtc, UpdatedUtc)
-SELECT
-    mi.Id,
-    mi.VenueId,
-    LEFT(NULLIF(LTRIM(RTRIM(mi.Name)), N''), 200),
-    LEFT(mi.Description, 1000),
-    mi.Price,
-    mi.ImageUrl,
-    N'manual',
-    mi.IsActive,
-    mi.CreatedUtc,
-    mi.UpdatedUtc
-FROM dbo.MenuItems mi
-WHERE NULLIF(LTRIM(RTRIM(mi.Name)), N'') IS NOT NULL
-  AND NOT EXISTS (SELECT 1 FROM dbo.Items i WHERE i.Id = mi.Id);
-
-INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
-SELECT
-    NEWID(),
-    mi.VenueId,
-    ms.MenuId,
-    mi.MenuSectionId,
-    mi.Id,
-    mi.SortOrder,
-    mi.CreatedUtc,
-    mi.UpdatedUtc
-FROM dbo.MenuItems mi
-INNER JOIN dbo.MenuSections ms ON ms.Id = mi.MenuSectionId
-INNER JOIN dbo.Items i ON i.Id = mi.Id
-WHERE NOT EXISTS (
-    SELECT 1 FROM dbo.Placements p
-    WHERE p.MenuSectionId = mi.MenuSectionId AND p.ItemId = mi.Id);
-
--- Availability carries over as a fact about the venue. AvailabilityResetUtc is
--- deliberately ignored: an 86 now stays off until a person turns it back on.
-INSERT dbo.ItemAvailability (VenueId, ItemId, IsAvailable, ChangedUtc, ChangedBy)
-SELECT mi.VenueId, mi.Id, mi.IsAvailable, mi.UpdatedUtc, N'migration'
-FROM dbo.MenuItems mi
-INNER JOIN dbo.Items i ON i.Id = mi.Id
-WHERE NOT EXISTS (
-    SELECT 1 FROM dbo.ItemAvailability a
-    WHERE a.VenueId = mi.VenueId AND a.ItemId = mi.Id);
-
--- Q3: the system is not live, so migration only has to keep dev/acceptance
--- fixtures sensible. Each venue's active menus are marked published so seeded
--- data walks the API contract without a manual first publish.
-INSERT dbo.MenuPublishEvents (Id, VenueId, MenuId, Version, ChangeCount, Author, PublishedUtc, Snapshot)
-SELECT NEWID(), m.VenueId, m.Id, 1, 0, N'migration', @MigratedUtc, NULL
-FROM dbo.Menus m
-WHERE m.IsActive = 1
-  AND NOT EXISTS (SELECT 1 FROM dbo.MenuPublishEvents e WHERE e.MenuId = m.Id);
-
-UPDATE m
-SET m.PublishedVersion = 1
-FROM dbo.Menus m
-INNER JOIN dbo.MenuPublishEvents e ON e.MenuId = m.Id AND e.Version = 1
-WHERE m.PublishedVersion IS NULL;
-
-INSERT dbo.MenuHistoryEntries (Id, VenueId, MenuId, Kind, PublishEventId, ReplacedByVersion, Detail, Author, OccurredUtc)
-SELECT NEWID(), e.VenueId, e.MenuId, N'published', e.Id, NULL,
-       N'Carried forward by the item-library migration.', N'migration', e.PublishedUtc
-FROM dbo.MenuPublishEvents e
-WHERE e.Author = N'migration'
-  AND NOT EXISTS (SELECT 1 FROM dbo.MenuHistoryEntries h WHERE h.PublishEventId = e.Id);
 GO
 
 -------------------------------------------------------------------------------

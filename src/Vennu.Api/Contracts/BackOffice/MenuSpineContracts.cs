@@ -77,4 +77,11 @@ public sealed record AssignmentResponse(
     DateTime AssignedUtc,
     string? AssignedBy);
 
-public sealed record TakeOffResponse(int ScreensReleased);
+/// <summary>
+/// A restore rebuilt the draft from a published version. ReplacedChangeCount says
+/// how many queued changes it displaced, so the caller can warn honestly (Q67).
+/// </summary>
+public sealed record RestoreResponse(
+    int Count,
+    IReadOnlyCollection<DraftChangeResponse> Changes,
+    int ReplacedChangeCount);

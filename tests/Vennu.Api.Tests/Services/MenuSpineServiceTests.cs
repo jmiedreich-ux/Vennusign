@@ -109,23 +109,35 @@ public sealed class MenuSpineServiceTests
         Assert.Empty(await library.GetPublishHistoryAsync(VenueId, MenuId, 10));
     }
 
-    // "Go back to" produces a draft you then publish -- never a second silent
-    // path to the screens.
+    // "Go back to" rebuilds the draft from the published snapshot and REPLACES
+    // whatever was queued (Q67), rather than stacking a marker on top of it.
     [Fact]
-    public async Task GoBackTo_ProducesADraftRatherThanPublishing()
+    public async Task GoBackTo_RebuildsTheDraftFromTheSnapshotAndReplacesWhatWasQueued()
     {
         var library = SeededLibrary();
+        // The published version had the item priced at 12.
+            library.SnapshotJson =
+                "{\"menuId\":\"" + MenuId + "\",\"sections\":[{\"sectionId\":\"" + Guid.Empty +
+                "\",\"items\":[{\"itemId\":\"" + ItemId + "\",\"name\":\"Berry Fizz\",\"price\":\"12\"}]}]}";
         var service = CreateService(library);
 
         await service.QueueChangeAsync(VenueId, MenuId, DraftTargetKinds.Item, ItemId, "price", "12", "13", "Alex");
         var published = await service.PublishAsync(VenueId, MenuId, "Alex");
 
-        var draft = await service.GoBackToAsync(VenueId, MenuId, published.Event.Version, "Dana");
+        // The board has since moved on, and an unrelated edit is queued.
+        library.Items.Single(i => i.Id == ItemId).Price = "14";
+        await service.QueueChangeAsync(VenueId, MenuId, DraftTargetKinds.Item, ItemId, "name", "Berry Fizz", "Berry Fizzz", "Dana");
 
-        Assert.NotEmpty(draft);
-        // Still one publish: going back did not reach the screens by itself.
+        var restore = await service.GoBackToAsync(VenueId, MenuId, published.Event.Version, "Dana");
+
+        // The queued edit was displaced, and the caller is told how many.
+        Assert.Equal(1, restore.ReplacedChangeCount);
+        // The restore expresses the real difference: price back to 12.
+        Assert.Contains(restore.Draft, c => c.Field == "price" && c.AfterValue == "12");
+        // And it published nothing by itself.
         Assert.Single(await library.GetPublishHistoryAsync(VenueId, MenuId, 10));
     }
+
 
     // The one irreversible act is recorded with its author, never anonymous.
     [Fact]
@@ -143,20 +155,87 @@ public sealed class MenuSpineServiceTests
         Assert.Equal("Dana", entry.Author);
     }
 
+    // Take-off is permanent, so unlike an 86 it queues and ships on Publish (Q68).
     [Fact]
-    public async Task TakeOffScreens_ReleasesScreensAndKeepsHistory()
+    public async Task TakeOffScreens_QueuesRatherThanCommittingImmediately()
     {
         var library = SeededLibrary();
         var service = CreateService(library);
 
-        var released = await service.TakeOffScreensAsync(VenueId, MenuId, "Dana");
+        await service.QueueTakeOffScreensAsync(VenueId, MenuId, "Dana");
 
-        Assert.Equal(1, released);
-        Assert.Empty(await library.GetAssignmentsAsync(VenueId));
-        Assert.Contains(
-            await library.GetHistoryAsync(VenueId, MenuId, 10),
-            entry => entry.Kind == MenuHistoryKinds.TakenOffScreens);
+        // Still on its screen until someone publishes.
+        Assert.NotEmpty(await library.GetAssignmentsAsync(VenueId));
+        var queued = Assert.Single(await service.GetDraftAsync(VenueId, MenuId));
+        Assert.Equal(DraftTargetKinds.Screens, queued.TargetKind);
+        Assert.Equal(string.Empty, queued.AfterValue);
     }
+
+    // Publishing a menu that reaches nothing is refused as a named state (Q80).
+    [Fact]
+    public async Task Publish_IsRefusedWhenTheMenuIsOnNoScreen()
+    {
+        var library = SeededLibrary();
+        library.Assignments.Clear();
+        var service = CreateService(library);
+
+        await service.QueueChangeAsync(VenueId, MenuId, DraftTargetKinds.Item, ItemId, "price", "12", "13", "Alex");
+
+        var refusal = await Assert.ThrowsAsync<MenuNotOnAnyScreenException>(
+            () => service.PublishAsync(VenueId, MenuId, "Alex"));
+        Assert.Contains("Pair a screen", refusal.Message, StringComparison.Ordinal);
+        // A refused publish leaves the draft untouched.
+        Assert.Single(await service.GetDraftAsync(VenueId, MenuId));
+    }
+
+    // Q182: the count is what is CURRENTLY different, so an edit taken back to the
+    // published value leaves the queue entirely.
+    [Fact]
+    public async Task QueueChange_RemovesTheRowWhenAnEditIsTakenBackToThePublishedValue()
+    {
+        var library = SeededLibrary();
+        var service = CreateService(library);
+
+        await service.QueueChangeAsync(VenueId, MenuId, DraftTargetKinds.Item, ItemId, "price", "12", "13", "Alex");
+        Assert.Single(await service.GetDraftAsync(VenueId, MenuId));
+
+        await service.QueueChangeAsync(VenueId, MenuId, DraftTargetKinds.Item, ItemId, "price", "12", "12", "Alex");
+
+        Assert.Empty(await service.GetDraftAsync(VenueId, MenuId));
+    }
+
+    // The publish reports the count it actually shipped, captured as the queue was
+    // removed, not a count read beforehand.
+    [Fact]
+    public async Task Publish_ReportsTheCountItActuallyShipped()
+    {
+        var library = SeededLibrary();
+        var service = CreateService(library);
+
+        await service.QueueChangeAsync(VenueId, MenuId, DraftTargetKinds.Item, ItemId, "price", "12", "13", "Alex");
+        await service.QueueChangeAsync(VenueId, MenuId, DraftTargetKinds.Menu, null, "theme", "coastal", "classic-dark", "Alex");
+
+        var result = await service.PublishAsync(VenueId, MenuId, "Alex");
+
+        Assert.Equal(2, result.ChangeCount);
+        Assert.Equal(result.Event.ChangeCount, result.ChangeCount);
+    }
+
+    // An 86 that reports reaching a screen must actually have pushed to it.
+    [Fact]
+    public async Task SetAvailability_PushesToEveryScreenItClaimsToReach()
+    {
+        var library = SeededLibrary();
+        Notifier = new RecordingNotifier();
+        var service = CreateService(library);
+
+        var result = await service.SetAvailabilityAsync(VenueId, ItemId, isAvailable: false, "Alex");
+
+        Assert.Equal(ScreenId, Assert.Single(result.ScreenIds));
+        Assert.Equal(ScreenId, Assert.Single(Notifier.ScreenAvailabilityPushes));
+        Assert.Equal(1, Notifier.VenueAvailabilityPushes);
+    }
+
 
     // Q196: times render in the venue's local time, so the context says which.
     [Fact]
@@ -189,12 +268,15 @@ public sealed class MenuSpineServiceTests
         new(
             library,
             new StubVenueRepository(new Venue { Id = VenueId, Name = "Harborview", Timezone = "America/New_York" }),
+            Notifier,
             new FixedTimeProvider());
+
+    private static RecordingNotifier Notifier { get; set; } = new();
 
     private static FakeMenuLibraryRepository SeededLibrary()
     {
         var library = new FakeMenuLibraryRepository();
-        library.Items.Add(new Item { Id = ItemId, VenueId = VenueId, Name = "Berry Fizz", Price = 12m });
+        library.Items.Add(new Item { Id = ItemId, VenueId = VenueId, Name = "Berry Fizz", Price = "12" });
         library.Placements.Add(new Placement
         {
             Id = Guid.NewGuid(),
@@ -229,6 +311,32 @@ public sealed class MenuSpineServiceTests
 
         public Task<Venue?> GetByIdAsync(Guid venueId, CancellationToken cancellationToken = default) =>
             Task.FromResult<Venue?>(venue.Id == venueId ? venue : null);
+    }
+
+    private sealed class RecordingNotifier : Vennu.Api.Notifications.IScreenUpdateNotifier
+    {
+        public List<Guid> ScreenAvailabilityPushes { get; } = [];
+
+        public int VenueAvailabilityPushes { get; private set; }
+
+        public Task NotifyScreenItemAvailabilityChangedAsync(Guid screenId, string itemId, bool available, CancellationToken cancellationToken = default)
+        {
+            ScreenAvailabilityPushes.Add(screenId);
+            return Task.CompletedTask;
+        }
+
+        public Task NotifyVenueItemAvailabilityChangedAsync(Guid venueId, string itemId, bool available, CancellationToken cancellationToken = default)
+        {
+            VenueAvailabilityPushes++;
+            return Task.CompletedTask;
+        }
+
+        public Task NotifyScreenContentUpdatedAsync(Guid screenId, object payload, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyVenueContentUpdatedAsync(Guid venueId, object payload, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyScreenThemeUpdatedAsync(Guid screenId, object theme, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyVenueThemeUpdatedAsync(Guid venueId, object theme, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyScreenSyncTickAsync(Guid screenId, long serverTimeMs, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyVenueSyncTickAsync(Guid venueId, long serverTimeMs, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
     private sealed class FixedTimeProvider : TimeProvider

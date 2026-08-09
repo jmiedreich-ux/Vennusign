@@ -45,6 +45,9 @@ public static class DraftTargetKinds
 
     public const string Theme = "theme";
 
+    /// <summary>Which screens the menu is on. Take-off is permanent, so it queues here rather than committing instantly.</summary>
+    public const string Screens = "screens";
+
     public static bool IsSupported(string? value) =>
-        value is Menu or Section or Placement or Item or Layout or Theme;
+        value is Menu or Section or Placement or Item or Layout or Theme or Screens;
 }

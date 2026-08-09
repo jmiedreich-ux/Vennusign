@@ -119,8 +119,20 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
 
     // ----- Draft queue -----
 
-    public Task<MenuDraftChange> UpsertDraftChangeAsync(MenuDraftChange change, CancellationToken cancellationToken = default)
+    public Task<MenuDraftChange?> UpsertDraftChangeAsync(MenuDraftChange change, CancellationToken cancellationToken = default)
     {
+        // Mirror the statement: a value taken back to what is published is not a
+        // change, so it leaves the queue rather than sitting in it.
+        if (string.Equals(change.BeforeValue, change.AfterValue, StringComparison.Ordinal))
+        {
+            DraftChanges.RemoveAll(candidate =>
+                candidate.MenuId == change.MenuId
+                && string.Equals(candidate.TargetKind, change.TargetKind, StringComparison.Ordinal)
+                && candidate.TargetId == change.TargetId
+                && string.Equals(candidate.Field, change.Field, StringComparison.Ordinal));
+            return Task.FromResult<MenuDraftChange?>(null);
+        }
+
         var existing = DraftChanges.SingleOrDefault(candidate =>
             candidate.MenuId == change.MenuId
             && string.Equals(candidate.TargetKind, change.TargetKind, StringComparison.Ordinal)
@@ -132,21 +144,43 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
             existing.AfterValue = change.AfterValue;
             existing.Author = change.Author;
             existing.UpdatedUtc = change.CreatedUtc;
-            return Task.FromResult(existing);
+            return Task.FromResult<MenuDraftChange?>(existing);
         }
 
         change.Id = change.Id == Guid.Empty ? Guid.NewGuid() : change.Id;
         change.UpdatedUtc = change.CreatedUtc;
         DraftChanges.Add(change);
-        return Task.FromResult(change);
+        return Task.FromResult<MenuDraftChange?>(change);
     }
 
     public Task<IReadOnlyCollection<MenuDraftChange>> GetDraftChangesAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyCollection<MenuDraftChange>>(
             DraftChanges.Where(change => change.VenueId == venueId && change.MenuId == menuId).ToArray());
 
-    public Task<int> ClearDraftAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
-        Task.FromResult(DraftChanges.RemoveAll(change => change.VenueId == venueId && change.MenuId == menuId));
+    public Task<int> ClearDraftAsync(
+        Guid venueId,
+        Guid menuId,
+        string? author = null,
+        bool recordHistory = false,
+        CancellationToken cancellationToken = default)
+    {
+        var removed = DraftChanges.RemoveAll(change => change.VenueId == venueId && change.MenuId == menuId);
+        if (removed > 0 && recordHistory)
+        {
+            History.Add(new MenuHistoryEntry
+            {
+                Id = Guid.NewGuid(),
+                VenueId = venueId,
+                MenuId = menuId,
+                Kind = MenuHistoryKinds.DraftDiscarded,
+                Detail = $"Discarded {removed} queued change(s).",
+                Author = author,
+                OccurredUtc = DateTime.UtcNow
+            });
+        }
+
+        return Task.FromResult(removed);
+    }
 
     // ----- Publish and history -----
 
@@ -155,7 +189,6 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
 
     public Task<MenuPublishEvent> PublishAsync(
         MenuPublishEvent publishEvent,
-        IReadOnlyCollection<Guid> targetScreenIds,
         CancellationToken cancellationToken = default)
     {
         publishEvent.Id = publishEvent.Id == Guid.Empty ? Guid.NewGuid() : publishEvent.Id;
@@ -164,12 +197,25 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
             .Select(e => e.Version)
             .DefaultIfEmpty(0)
             .Max() + 1;
-        publishEvent.ChangeCount = DraftChanges
-            .Count(change => change.VenueId == publishEvent.VenueId && change.MenuId == publishEvent.MenuId);
+
+        // Capture the queue and clear it in one step, exactly as the statement
+        // does, so the recorded count is what actually shipped.
+        var shipped = DraftChanges
+            .Where(change => change.VenueId == publishEvent.VenueId && change.MenuId == publishEvent.MenuId)
+            .ToList();
+        DraftChanges.RemoveAll(change =>
+            change.VenueId == publishEvent.VenueId && change.MenuId == publishEvent.MenuId);
+
+        publishEvent.ChangeCount = shipped.Count;
+        publishEvent.ShippedChanges = System.Text.Json.JsonSerializer.Serialize(shipped);
+        publishEvent.Snapshot ??= SnapshotJson ?? "{\"menuId\":\"" + publishEvent.MenuId + "\",\"sections\":[]}";
 
         PublishEvents.Add(publishEvent);
 
-        foreach (var screenId in targetScreenIds)
+        // Targets come from the assignments, never from a caller-supplied list.
+        foreach (var screenId in Assignments
+            .Where(a => a.VenueId == publishEvent.VenueId && a.MenuId == publishEvent.MenuId)
+            .Select(a => a.ScreenId))
         {
             PublishTargets.Add(new MenuPublishTarget
             {
@@ -192,12 +238,11 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
             OccurredUtc = publishEvent.PublishedUtc
         });
 
-        // The publish clears only its own menu's queue.
-        DraftChanges.RemoveAll(change =>
-            change.VenueId == publishEvent.VenueId && change.MenuId == publishEvent.MenuId);
-
         return Task.FromResult(publishEvent);
     }
+
+    /// <summary>Snapshot the fake hands back from a publish, so restore can be exercised.</summary>
+    public string? SnapshotJson { get; set; }
 
     public Task<IReadOnlyCollection<MenuPublishEvent>> GetPublishHistoryAsync(
         Guid venueId,

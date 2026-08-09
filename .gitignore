@@ -383,3 +383,6 @@ docs/Google/
 vennu-api-*.txt
 *.out.txt
 *.err.txt
+
+# Impeccable skill run logs and state (machine-specific)
+.impeccable/

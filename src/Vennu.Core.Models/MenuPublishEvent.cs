@@ -20,7 +20,11 @@ public sealed class MenuPublishEvent
 
     public DateTime PublishedUtc { get; set; }
 
+    /// <summary>The published content itself, so this version can be rendered and restored later.</summary>
     public string? Snapshot { get; set; }
+
+    /// <summary>The exact change set this publish shipped, captured as it was removed from the queue.</summary>
+    public string? ShippedChanges { get; set; }
 }
 
 /// <summary>
