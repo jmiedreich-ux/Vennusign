@@ -156,3 +156,98 @@ SELECT
     @ScreenId AS ScreenId,
     'offline' AS InitialScreenState,
     1 AS ScreenPairAllowance;
+
+-------------------------------------------------------------------------------
+-- Menus M1 spine fixture.
+--
+-- Migration 058 is a fresh start (Q45): it creates the library tables empty and
+-- carries nothing across from the legacy tables. Seed and demo data therefore
+-- belongs here, which is also what Q3 asks for -- a seeded menu that is already
+-- assigned and published, so tests and demos have something real to walk.
+-------------------------------------------------------------------------------
+DECLARE @M1VenueId UNIQUEIDENTIFIER = '73000000-0000-0000-0000-000000000001';
+DECLARE @M1MenuId UNIQUEIDENTIFIER = '75000000-0000-0000-0000-000000000001';
+DECLARE @M1SectionId UNIQUEIDENTIFIER = '76000000-0000-0000-0000-000000000001';
+DECLARE @M1ScreenId UNIQUEIDENTIFIER = '74000000-0000-0000-0000-000000000001';
+DECLARE @M1ItemId UNIQUEIDENTIFIER = '77000000-0000-0000-0000-000000000001';
+DECLARE @M1SecondItemId UNIQUEIDENTIFIER = '77000000-0000-0000-0000-000000000002';
+DECLARE @M1Now DATETIME2(7) = SYSUTCDATETIME();
+
+-- Prices are stored exactly as typed (Q115/Q190), so the fixture deliberately
+-- includes a market price alongside a decimal one.
+MERGE dbo.Items AS target
+USING (VALUES
+    (@M1ItemId, @M1VenueId, N'Harbor Lemonade', N'House lemonade, over crushed ice.', N'9.5'),
+    (@M1SecondItemId, @M1VenueId, N'Market Oysters', N'Half dozen, whatever came in today.', N'MP')
+) AS source (Id, VenueId, Name, Description, Price)
+    ON target.Id = source.Id
+WHEN NOT MATCHED THEN
+    INSERT (Id, VenueId, Name, Description, Price, Source, IsActive, CreatedUtc, UpdatedUtc)
+    VALUES (source.Id, source.VenueId, source.Name, source.Description, source.Price, N'manual', 1, @M1Now, @M1Now);
+
+MERGE dbo.Placements AS target
+USING (VALUES
+    (@M1ItemId, 0),
+    (@M1SecondItemId, 1)
+) AS source (ItemId, SortOrder)
+    ON target.MenuSectionId = @M1SectionId AND target.ItemId = source.ItemId
+WHEN NOT MATCHED THEN
+    INSERT (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
+    VALUES (NEWID(), @M1VenueId, @M1MenuId, @M1SectionId, source.ItemId, source.SortOrder, @M1Now, @M1Now);
+
+MERGE dbo.ItemAvailability AS target
+USING (VALUES (@M1ItemId), (@M1SecondItemId)) AS source (ItemId)
+    ON target.VenueId = @M1VenueId AND target.ItemId = source.ItemId
+WHEN NOT MATCHED THEN
+    INSERT (VenueId, ItemId, IsAvailable, ChangedUtc, ChangedBy)
+    VALUES (@M1VenueId, source.ItemId, 1, @M1Now, N'fixture');
+
+-- Q3: the seeded menu is already on a screen and already published, so a demo
+-- does not have to perform a first publish before it can test anything.
+MERGE dbo.MenuScreenAssignments AS target
+USING (SELECT @M1ScreenId AS ScreenId) AS source
+    ON target.ScreenId = source.ScreenId
+WHEN NOT MATCHED THEN
+    INSERT (Id, VenueId, ScreenId, MenuId, AssignedUtc, AssignedBy)
+    VALUES (NEWID(), @M1VenueId, @M1ScreenId, @M1MenuId, @M1Now, N'fixture');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.MenuPublishEvents WHERE MenuId = @M1MenuId)
+BEGIN
+    DECLARE @M1PublishId UNIQUEIDENTIFIER = NEWID();
+
+    INSERT dbo.MenuPublishEvents (Id, VenueId, MenuId, Version, ChangeCount, Author, PublishedUtc, Snapshot, ShippedChanges)
+    VALUES (@M1PublishId, @M1VenueId, @M1MenuId, 1, 0, N'fixture', @M1Now,
+            (
+                SELECT m.Id AS menuId, m.Name AS name, m.Theme AS theme,
+                       m.DwellSeconds AS dwellSeconds, m.LoopWarningSeconds AS loopWarningSeconds,
+                       (
+                           SELECT s.Id AS sectionId, s.Name AS name, s.SortOrder AS sortOrder,
+                           (
+                               SELECT p.ItemId AS itemId, i.Name AS name, i.Description AS description,
+                                      i.Price AS price, p.SortOrder AS sortOrder
+                               FROM dbo.Placements p
+                               INNER JOIN dbo.Items i ON i.Id = p.ItemId AND i.VenueId = p.VenueId
+                               WHERE p.MenuSectionId = s.Id AND p.VenueId = @M1VenueId
+                               ORDER BY p.SortOrder, p.Id
+                               FOR JSON PATH
+                           ) AS items
+                           FROM dbo.MenuSections s
+                           WHERE s.MenuId = m.Id AND s.VenueId = @M1VenueId AND s.IsActive = 1
+                           ORDER BY s.SortOrder, s.Id
+                           FOR JSON PATH
+                       ) AS sections
+                FROM dbo.Menus m
+                WHERE m.Id = @M1MenuId AND m.VenueId = @M1VenueId
+                FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+            ),
+            NULL);
+
+    INSERT dbo.MenuPublishTargets (Id, PublishEventId, ScreenId, State, UpdatedUtc)
+    VALUES (NEWID(), @M1PublishId, @M1ScreenId, N'Offline', @M1Now);
+
+    INSERT dbo.MenuHistoryEntries (Id, VenueId, MenuId, Kind, PublishEventId, ReplacedByVersion, Detail, Author, OccurredUtc)
+    VALUES (NEWID(), @M1VenueId, @M1MenuId, N'published', @M1PublishId, NULL, N'Seeded by the acceptance fixture.', N'fixture', @M1Now);
+
+    UPDATE dbo.Menus SET PublishedVersion = 1 WHERE Id = @M1MenuId;
+END;
+GO
