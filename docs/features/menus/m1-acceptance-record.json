@@ -1,0 +1,35 @@
+{
+  "schema": "vennusign.menus.m1-demo",
+  "version": 2,
+  "savedAt": "2026-08-09T00:34:36.335Z",
+  "fields": {
+    "reviewer": "Jeremy Miedreich",
+    "reviewDate": "2026-08-08",
+    "environment": "Local Development",
+    "closure": "Accept Milestone 1",
+    "flagged": "Q207 (audit record, #677): KEEP AS IS for now - destructive acts stay recorded in the menu's attributable history, with no separate audit system. Remains backlogged. | Q24 (capability grants): CHANGED FROM PROVISIONAL - the owner wants content.menu.manage, content.menu.import and publishing.history.view to be separately grantable rather than bundled with item editing. Milestone 1 keeps the auto-grant so the spine is usable; the separation needs a role-to-permission mapping and is raised as issue #686. | Deferred legacy column drops (HappyHourPrice, QuantityAvailable, Tags, IsPopular): KEEP as columns for now, as recorded in the milestone.",
+    "finalNotes": "All nine checks passed against the local API on the feature/menus-m1-spine branch, exercising one assigned screen. Three defects were found and fixed while preparing this demo: the migration could not drop AvailabilityResetUtc while an index depended on it; the menu read omitted the new settings columns so PublishedVersion always returned null; and the three new capability ids were seeded in the database but never registered in the canonical capability model, so history requests returned 500. Milestone 1 is accepted. It still requires an independent review before merge (never by its author, per issue #659)."
+  },
+  "results": {
+    "0-0": "Pass",
+    "1-0": "Pass",
+    "1-1": "Pass",
+    "2-0": "Pass",
+    "2-1": "Pass",
+    "3-0": "Pass",
+    "3-1": "Pass",
+    "4-0": "Pass",
+    "4-1": "Pass"
+  },
+  "notes": {
+    "0-0": "Context returned the venue timezone America/Los_Angeles and all four ceilings from the allowance model.",
+    "1-0": "An 86 committed instantly, reached 1 assigned screen, and left the draft count at 0.",
+    "1-1": "The item stayed off; there is no auto-reset.",
+    "2-0": "A queued change produced no new publish.",
+    "2-1": "Editing the same field twice kept the count at 1 with the latest value.",
+    "3-0": "Publish shipped only this menu's queue; the other menu's draft was untouched. The single target reported Offline honestly rather than as a failure.",
+    "3-1": "The 86 survived the publish.",
+    "4-0": "Go back to produced a draft and added no publish.",
+    "4-1": "draft_discarded and taken_off_screens were both recorded with the acting user's name."
+  }
+}
