@@ -55,6 +55,33 @@ public sealed class MenuRepositoryTests
         Assert.Equal(menuId, capturedParameters.GetType().GetProperty("MenuId")!.GetValue(capturedParameters));
     }
 
+    // Regression: the menu read must select the milestone-1 settings columns.
+    // While they were missing from the SELECT, stored values were silently
+    // replaced by the model's C# defaults, so a published menu still reported
+    // PublishedVersion null.
+    [Fact]
+    [Trait("Category", "Unit")]
+    public async Task GetMenusAsync_SelectsTheMenuSettingsAndPublishedVersion()
+    {
+        string? capturedSql = null;
+        var dataAccess = new FakeSqlDataAccess
+        {
+            ExecuteSqlQueryHandler = (sql, _) =>
+            {
+                capturedSql = sql;
+                return [];
+            }
+        };
+        var repository = new MenuRepository(dataAccess);
+
+        await repository.GetMenusAsync(Guid.NewGuid());
+
+        foreach (var column in new[] { "DwellSeconds", "LoopWarningSeconds", "Theme", "IsPutAway", "PublishedVersion" })
+        {
+            Assert.Contains(column, capturedSql, StringComparison.Ordinal);
+        }
+    }
+
     [Fact]
     [Trait("Category", "Unit")]
     public async Task GetItemsAsync_UsesVenueScopeAndStableTieBreaker()

@@ -7,7 +7,9 @@ namespace Vennu.Data.Repositories;
 public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
 {
     private const string MenusSql = """
-        SELECT Id, VenueId, Name, IsActive, DailySpecial, CreatedUtc, UpdatedUtc
+        SELECT Id, VenueId, Name, IsActive, DailySpecial,
+               DwellSeconds, LoopWarningSeconds, Theme, IsPutAway, PublishedVersion,
+               CreatedUtc, UpdatedUtc
         FROM dbo.Menus
         WHERE VenueId = @VenueId
         ORDER BY Name, Id;
