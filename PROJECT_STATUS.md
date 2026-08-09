@@ -14,12 +14,13 @@
 
 The cancellation above cleared the roadmap deliberately. The reset has since produced the features-and-milestones working model and its first feature.
 
-- **Menus feature — active. Planning complete; Milestone 1 implemented, owner-accepted, and reworked after independent review.**
+- **Menus feature — active. Planning complete; Milestone 1 merged 2026-08-09 (PR #685, issue #684).**
   - Design authority approved and merged: `docs/design/approved/menus/` (36 decisions, hi-fi M1/M2/M2c, wireframes, tokens).
   - All 208 open questions resolved across four owner sittings: `docs/features/menus/open-questions.md`.
   - Six-milestone plan reconciled with every recorded answer: `docs/features/menus/milestone-plan.md` (merged via PR #669).
-  - Owner acceptance was recorded 2026-08-08 (`docs/features/menus/m1-acceptance-record.json`). The independent review then returned REQUEST_CHANGES; those findings are addressed and the branch reworked.
-  - **Exact next action: a fresh independent review of PR #685, and a re-run of the acceptance workbook** — the earlier run predates the rework, and its availability and publish checks did not prove the claimed behaviour.
+  - Five independent reviews (#2 through #6) each returned REQUEST_CHANGES and each found real defects. All findings are closed, every one with a regression test verified to fail with its fix reverted. Merged on 13 green exact-head checks at `2977bc3`.
+  - **Owner acceptance for the merged implementation is still outstanding.** `docs/features/menus/m1-acceptance-record.json` is **superseded** — it was signed on 2026-08-08 against the authored-draft implementation and is kept as history only.
+  - **Exact next action: re-run the owner acceptance workbook** (`scripts/run-m1-demo.ps1` with `docs/features/menus/m1-demo-workbook.html`) and record the result. Milestone 2 starts only after that acceptance.
 - Backlog from the Menus planning: issues #670–#683 (out-of-scope decisions, copy debt, accessibility debt).
 
 ### Planning-reset inputs, not yet approved
@@ -32,8 +33,8 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
 
 | Milestone | Scope | Status |
 |---|---|---|
-| 1 | Item library + draft/publish spine + assignment | reworked after review — PR #685, awaiting fresh review and re-run acceptance (#684) |
-| 2 | App shell + render engine + Menus home | blocked on 1 |
+| 1 | Item library + draft/publish spine + assignment | **merged** 2026-08-09 (PR #685, #684) — owner acceptance re-run outstanding |
+| 2 | App shell + render engine + Menus home | not started — blocked on milestone 1's owner acceptance |
 | 3 | Builder + adding items | blocked on 2 |
 | 4 | Display player + geometry + delivery | blocked on 3 |
 | 5 | Board view + Play | blocked on 4 |
