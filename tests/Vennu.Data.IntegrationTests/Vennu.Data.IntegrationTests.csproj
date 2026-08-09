@@ -24,5 +24,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Vennu.Data\Vennu.Data.csproj" />
     <ProjectReference Include="..\..\src\Vennu.DataAccess\Vennu.DataAccess.csproj" />
+    <!-- MenuSnapshot lives with the API: these tests prove the SQL-built
+         snapshots parse with the exact model restore and the draft depend on. -->
+    <ProjectReference Include="..\..\src\Vennu.Api\Vennu.Api.csproj" />
   </ItemGroup>
 </Project>

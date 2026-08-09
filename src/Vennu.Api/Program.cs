@@ -213,7 +213,7 @@ builder.Services.AddScoped<IPosWebhookEventHandler, ToastRealtimeSyncHandler>();
 builder.Services.AddScoped<IPosWebhookEventHandler, CloverRealtimeSyncHandler>();
 builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier>();
 builder.Services.AddScoped<IMenuItemManagementService, MenuItemManagementService>();
-builder.Services.AddScoped<IQuickUpdateService, QuickUpdateService>();
+builder.Services.AddScoped<MenuSpineService>();
 builder.Services.AddScoped<IScreenManagementService, ScreenManagementService>();
 builder.Services.AddScoped<IHaasPreRegistrationService, HaasPreRegistrationService>();
 builder.Services.AddScoped<IScreenTargetingService, ScreenTargetingService>();
@@ -250,7 +250,6 @@ builder.Services.AddScoped<IVenueThemeService, VenueThemeService>();
 
 if (!builder.Environment.IsEnvironment("Testing"))
 {
-    builder.Services.AddHostedService<QuickAvailabilityResetService>();
     builder.Services.AddHostedService<ScheduledContentActivationService>();
     builder.Services.AddHostedService<HappyHourEvaluatorService>();
     builder.Services.AddHostedService<PromotionActivationService>();

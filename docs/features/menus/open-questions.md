@@ -304,7 +304,7 @@ Decision 8 makes history its own capability; none exists, and import and the are
 
 *Recommended:* Yes — three IDs, auto-granted alongside today's item-edit capability.
 
-*Answer:* DEFERRED (2026-08-07). Provisional: the three capability IDs (content.menu.manage, publishing.history.view, content.menu.import) land auto-granted to item-editing roles so gating can be wired; flagged in slice-1 demo for review.
+*Answer:* DEFERRED (2026-08-07), then **decided at the M1 demo (2026-08-08): the three capability ids must be separately grantable**, not bundled with item editing — a person should be able to edit menu items without also importing whole menus or reading publish history. Milestone 1 ships the provisional auto-grant so the spine is usable and gating is wired; the separation needs a role-to-permission mapping and is tracked as issue #686.
 
 <sub>CapabilityModel.cs; SystemRoleRegistry; decisions.md 8 [code-api-data]</sub>
 

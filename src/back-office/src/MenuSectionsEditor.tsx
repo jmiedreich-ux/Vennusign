@@ -21,7 +21,6 @@ export default function MenuSectionsEditor({ configuration, apiKey, venueId, sta
   const [newSectionName, setNewSectionName] = useState("");
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
-  const [tierPrompt, setTierPrompt] = useState<{ title: string; message: string }>();
   const [busy, setBusy] = useState(false);
   const [pendingArchive, setPendingArchive] = useState<MenuSection>();
   const [failedAction, setFailedAction] = useState<FailedSectionAction>();
@@ -72,7 +71,6 @@ export default function MenuSectionsEditor({ configuration, apiKey, venueId, sta
     <div className="menu-editor-heading"><div><p>Venue menus</p><h2>Menu lifecycle</h2></div><span role="status">{busy ? "Saving…" : notice ?? `${snapshot.menus.length} menus`}</span></div>
     {starterMenu ? <p className="state" role="status"><strong>{starterNames[starterMenu]} starter selected.</strong> Review the draft name, then choose Create menu. No content has been created yet.</p> : null}
     {error ? <div className="state error" role="alert"><p>{error}</p>{failedAction ? <button type="button" onClick={() => void run(failedAction.label, failedAction.run)}>Retry last change</button> : <button type="button" onClick={() => void refresh()}>Retry menus</button>}</div> : null}
-    {tierPrompt ? <aside className="tier-prompt" role="status"><div><strong>{tierPrompt.title}</strong><p>{tierPrompt.message}</p></div><button aria-label="Dismiss tier prompt" onClick={() => setTierPrompt(undefined)}>×</button></aside> : null}
     <div className="menu-lifecycle-toolbar">
       <label>Select menu<select data-testid="menu-picker" value={selectedMenuId} onChange={event => setSelectedMenuId(event.target.value)}>{snapshot.menus.map(entry => <option key={entry.menu.id} value={entry.menu.id}>{entry.menu.name}{entry.menu.isActive ? "" : " (archived)"}</option>)}</select></label>
       <form onSubmit={createNewMenu}><label>New menu<input maxLength={200} required value={newMenuName} onChange={event => setNewMenuName(event.target.value)} placeholder="Lunch menu" /></label><button disabled={busy}>Create menu</button></form>
@@ -88,7 +86,7 @@ export default function MenuSectionsEditor({ configuration, apiKey, venueId, sta
           <button type="button" aria-label={`Move ${section.name} up`} disabled={busy || index === 0} onClick={() => void move(index, -1)}>↑</button><button type="button" aria-label={`Move ${section.name} down`} disabled={busy || index === selectedMenu.sections.length - 1} onClick={() => void move(index, 1)}>↓</button>
           {section.isActive ? <button type="button" className="danger-link" disabled={busy} onClick={() => setPendingArchive(section)}>Archive</button> : <button type="button" disabled={busy} onClick={() => void save(section, { isActive: true }, "Section restore")}>Restore</button>}
         </div>
-        {!collapsed[section.id] ? <MenuItemsEditor configuration={configuration} apiKey={apiKey} venueId={venueId} menuId={selectedMenu.menu.id} sectionId={section.id} items={snapshot.itemGroups.find(group => group.sectionId === section.id)?.items ?? []} capabilities={snapshot.capabilities} disabled={busy || !section.isActive} onChanged={refresh} onError={message => { setError(message); setNotice(undefined); }} onTierPrompt={(title, message) => setTierPrompt({ title, message })} /> : null}
+        {!collapsed[section.id] ? <MenuItemsEditor configuration={configuration} apiKey={apiKey} venueId={venueId} menuId={selectedMenu.menu.id} sectionId={section.id} items={snapshot.itemGroups.find(group => group.sectionId === section.id)?.items ?? []} disabled={busy || !section.isActive} onChanged={refresh} onError={message => { setError(message); setNotice(undefined); }} /> : null}
       </section>)}</div>
     </>}
   </article>;

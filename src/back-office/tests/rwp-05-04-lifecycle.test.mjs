@@ -27,10 +27,12 @@ test("menu lifecycle is selectable recoverable ordered and explicitly saved", ()
   assert.match(sections, /Retry last change/);
   assert.match(items, /Unsaved draft/);
   assert.match(items, /Save failed/);
-  assert.match(items, /Confirm archive/);
   assert.match(items, /reorderMenuItems/);
   assert.match(api, /items\/order/);
-  assert.match(api, /items\/\$\{itemId\}\/lifecycle/);
+  // Per-item archive left with the consolidation: removing an item from a board
+  // is a placement change, and that arrives with the milestone 3 builder.
+  assert.doesNotMatch(items, /Confirm archive/);
+  assert.doesNotMatch(api, /items\/\$\{itemId\}\/lifecycle/);
 });
 
 test("Quick Update bounds selection and retains recovery feedback", () => {

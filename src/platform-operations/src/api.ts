@@ -146,27 +146,6 @@ export type TapItem = {
   glassColor?: string; nameColor?: string; isAvailable: boolean; isComingSoon: boolean; sortOrder: number;
 };
 export type TapListSnapshot = { categories: TapCategory[]; items: TapItem[] };
-export type MenuSection = {
-  id: string; venueId: string; menuId: string; name: string;
-  sortOrder: number; isActive: boolean; createdUtc: string; updatedUtc: string;
-};
-export type MenuItem = {
-  id: string; venueId: string; menuSectionId: string; name: string;
-  description?: string; price: number; happyHourPrice?: number;
-  sortOrder: number; isAvailable: boolean; availabilityResetUtc?: string; quantityAvailable?: number;
-  tags?: string; isPopular: boolean; createdUtc: string; updatedUtc: string;
-};
-export type MenuItemWrite = {
-  name: string; description?: string; price: number; happyHourPrice?: number;
-};
-export type MenuEditorSnapshot = {
-  menus: Array<{
-    menu: { id: string; venueId: string; name: string; isActive: boolean; dailySpecial?: string };
-    sections: MenuSection[];
-  }>;
-  itemGroups: Array<{ sectionId: string; items: MenuItem[] }>;
-  capabilities: { happyHour: boolean; allergenBadges: boolean; quickUpdate: boolean };
-};
 export type ManagedScreen = {
   id: string; name: string; location?: string; status: string;
   photoGridDensity: "2x2" | "3x2" | "4x2" | "3x3";
@@ -560,96 +539,9 @@ export async function reorderTapRows(configuration: PlatformOperationsConfigurat
   await tapRequest(configuration, apiKey, venueId, `/${kind}/order`, { method: "PUT", body: JSON.stringify({ ids }) });
 }
 
-async function menuRequest(configuration: PlatformOperationsConfiguration, apiKey: string, venueId: string, path = "", init?: RequestInit) {
-  const response = await fetch(`${configuration.apiBaseUrl}/api/platform-operations/venues/${venueId}/menus${path}`, {
-    ...init,
-    headers: { "Content-Type": "application/json", "X-Vennusign-Platform-Operations-Key": apiKey, ...init?.headers }
-  });
-  if (!response.ok) throw new PlatformOperationsApiError(response.status, "Unable to manage menu content.");
-  return response;
-}
-
-export async function loadMenuEditor(configuration: PlatformOperationsConfiguration, apiKey: string, venueId: string): Promise<MenuEditorSnapshot> {
-  return (await menuRequest(configuration, apiKey, venueId)).json() as Promise<MenuEditorSnapshot>;
-}
-export async function createMenuSection(configuration: PlatformOperationsConfiguration, apiKey: string, venueId: string, menuId: string, name: string): Promise<MenuSection> {
-  return (await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections`, { method: "POST", body: JSON.stringify({ name }) })).json() as Promise<MenuSection>;
-}
-export async function updateMenuSection(configuration: PlatformOperationsConfiguration, apiKey: string, venueId: string, section: MenuSection): Promise<MenuSection> {
-  return (await menuRequest(configuration, apiKey, venueId, `/sections/${section.id}`, { method: "PUT", body: JSON.stringify({ name: section.name, isActive: section.isActive }) })).json() as Promise<MenuSection>;
-}
-export async function reorderMenuSections(configuration: PlatformOperationsConfiguration, apiKey: string, venueId: string, menuId: string, sectionIds: string[]): Promise<void> {
-  await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections/order`, { method: "PUT", body: JSON.stringify({ sectionIds }) });
-}
-export async function createMenuItem(
-  configuration: PlatformOperationsConfiguration,
-  apiKey: string,
-  venueId: string,
-  menuId: string,
-  sectionId: string,
-  item: MenuItemWrite
-): Promise<MenuItem> {
-  return (await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections/${sectionId}/items`, {
-    method: "POST", body: JSON.stringify(item)
-  })).json() as Promise<MenuItem>;
-}
-export async function updateMenuItem(
-  configuration: PlatformOperationsConfiguration,
-  apiKey: string,
-  venueId: string,
-  menuId: string,
-  sectionId: string,
-  itemId: string,
-  item: MenuItemWrite
-): Promise<MenuItem> {
-  return (await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections/${sectionId}/items/${itemId}`, {
-    method: "PUT", body: JSON.stringify(item)
-  })).json() as Promise<MenuItem>;
-}
-export async function updateMenuItemPresentation(
-  configuration: PlatformOperationsConfiguration,
-  apiKey: string,
-  venueId: string,
-  menuId: string,
-  sectionId: string,
-  item: MenuItem
-): Promise<MenuItem> {
-  return (await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections/${sectionId}/items/${item.id}/presentation`, {
-    method: "PUT",
-    body: JSON.stringify({
-      isAvailable: item.isAvailable,
-      quantityAvailable: item.quantityAvailable,
-      tags: item.tags?.split(",").map(tag => tag.trim()).filter(Boolean) ?? [],
-      isPopular: item.isPopular
-    })
-  })).json() as Promise<MenuItem>;
-}
-
-export async function updateQuickDailySpecial(
-  configuration: PlatformOperationsConfiguration,
-  apiKey: string,
-  venueId: string,
-  menuId: string,
-  dailySpecial?: string
-): Promise<void> {
-  await menuRequest(configuration, apiKey, venueId, `/${menuId}/quick-update/daily-special`, {
-    method: "PUT", body: JSON.stringify({ dailySpecial })
-  });
-}
-
-export async function updateQuickAvailability(
-  configuration: PlatformOperationsConfiguration,
-  apiKey: string,
-  venueId: string,
-  menuId: string,
-  sectionId: string,
-  itemId: string,
-  isAvailable: boolean
-): Promise<void> {
-  await menuRequest(configuration, apiKey, venueId, `/${menuId}/sections/${sectionId}/items/${itemId}/quick-availability`, {
-    method: "PUT", body: JSON.stringify({ isAvailable })
-  });
-}
+// The ops menu editing client is retired (Q36): menu content changes are the
+// venue's own, made through its draft-and-publish flow. Ops has no menu write
+// path until the backlogged impersonation-with-consent model exists.
 
 async function screenRequest(configuration: PlatformOperationsConfiguration, apiKey: string, venueId: string, path = "", init?: RequestInit) {
   const response = await fetch(`${configuration.apiBaseUrl}/api/platform-operations/venues/${venueId}/screens${path}`, {

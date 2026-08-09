@@ -3,66 +3,41 @@ namespace Vennu.Data.IntegrationTests;
 [Trait("Category", "Unit")]
 public class DatabaseMigratorTests
 {
+    // Every .sql file under Vennu.Data/Scripts must actually be embedded, in
+    // order. Comparing against the files on disk rather than a hand-listed array
+    // is what makes this catch the real mistake - a migration added to the folder
+    // but never embedded, which a hard-coded list silently tolerates until it is
+    // updated by hand.
     [Fact]
-    public void GetEmbeddedScriptNames_ReturnsAllMigrationScriptsFromVennuDataAssembly()
+    public void GetEmbeddedScriptNames_MatchesEveryScriptOnDiskInOrder()
     {
         var scriptNames = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Equal(
-            [
-                "Vennu.Data.Scripts.001_create_venues.sql",
-                "Vennu.Data.Scripts.002_create_screens.sql",
-                "Vennu.Data.Scripts.003_create_screen_pairing_codes.sql",
-                "Vennu.Data.Scripts.004_create_feature_tier_core.sql",
-                "Vennu.Data.Scripts.005_create_venue_feature_overrides.sql",
-                "Vennu.Data.Scripts.006_create_feature_usages.sql",
-                "Vennu.Data.Scripts.007_add_stripe_billing_catalog.sql",
-                "Vennu.Data.Scripts.008_create_processed_stripe_events.sql",
-                "Vennu.Data.Scripts.009_create_feature_matrix_audit.sql",
-                "Vennu.Data.Scripts.010_create_operational_events.sql",
-                "Vennu.Data.Scripts.011_create_revenue_daily_snapshots.sql",
-                "Vennu.Data.Scripts.012_create_menu_domain.sql",
-                "Vennu.Data.Scripts.013_add_quick_update.sql",
-                "Vennu.Data.Scripts.014_add_video_wall_feature.sql",
-                "Vennu.Data.Scripts.015_add_photo_grid_density.sql",
-                "Vennu.Data.Scripts.016_add_screen_display_layout.sql",
-                "Vennu.Data.Scripts.017_create_venue_themes.sql",
-                "Vennu.Data.Scripts.018_add_advanced_venue_themes.sql",
-                "Vennu.Data.Scripts.019_add_split_layout.sql",
-                "Vennu.Data.Scripts.020_add_daily_special_hero.sql",
-                "Vennu.Data.Scripts.021_add_hero_dwell_seconds.sql",
-                "Vennu.Data.Scripts.022_create_meal_periods.sql",
-                "Vennu.Data.Scripts.023_add_meal_period_targets.sql",
-                "Vennu.Data.Scripts.024_create_happy_hour_schedules.sql",
-                "Vennu.Data.Scripts.025_create_playlist_slides.sql",
-                "Vennu.Data.Scripts.026_create_emergency_broadcasts.sql",
-                "Vennu.Data.Scripts.027_create_date_range_promotions.sql",
-                "Vennu.Data.Scripts.028_create_tap_domain.sql",
-                "Vennu.Data.Scripts.029_add_classic_chalkboard_layout.sql",
-                "Vennu.Data.Scripts.030_add_tap_strips_layout.sql",
-                "Vennu.Data.Scripts.031_add_digital_tap_board_layout.sql",
-                "Vennu.Data.Scripts.032_add_screen_pre_registration.sql",
-                "Vennu.Data.Scripts.033_add_subscription_period_end_state.sql",
-                "Vennu.Data.Scripts.034_create_haas_contracts.sql",
-                "Vennu.Data.Scripts.035_create_pos_connections.sql",
-                "Vennu.Data.Scripts.036_create_pos_catalog_mappings.sql",
-                "Vennu.Data.Scripts.037_create_pos_webhook_events.sql",
-                "Vennu.Data.Scripts.038_add_pos_sync_health.sql",
-                "Vennu.Data.Scripts.039_add_pos_refresh_token_expiration.sql",
-                "Vennu.Data.Scripts.040_create_customer_identity_tenancy.sql",
-                "Vennu.Data.Scripts.041_create_customer_authentication.sql",
-                "Vennu.Data.Scripts.042_add_customer_strong_authentication.sql",
-                "Vennu.Data.Scripts.043_add_tier_trial_entitlements.sql",
-                "Vennu.Data.Scripts.044_create_organization_subscriptions.sql",
-                "Vennu.Data.Scripts.045_create_customer_onboarding_states.sql",
-                "Vennu.Data.Scripts.046_create_system_configuration.sql",
-                "Vennu.Data.Scripts.047_seed_system_configuration_definitions.sql",
-                "Vennu.Data.Scripts.048_add_system_configuration_clear_state.sql",
-                "Vennu.Data.Scripts.049_seed_provider_configuration_definitions.sql",
-                "Vennu.Data.Scripts.050_add_configuration_rotation_metadata.sql",
-                "Vennu.Data.Scripts.051_seed_customer_frontend_origin.sql"
-            ],
-            scriptNames);
+        var expected = Directory
+            .EnumerateFiles(FindScriptsDirectory(), "*.sql")
+            .Select(path => $"Vennu.Data.Scripts.{Path.GetFileName(path)}")
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        Assert.NotEmpty(expected);
+        Assert.Equal(expected, scriptNames);
+    }
+
+    private static string FindScriptsDirectory()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var scripts = Path.Combine(directory.FullName, "src", "Vennu.Data", "Scripts");
+            if (Directory.Exists(scripts))
+            {
+                return scripts;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate src/Vennu.Data/Scripts from the test output directory.");
     }
 
     [Fact]

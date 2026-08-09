@@ -116,16 +116,13 @@ public sealed class PosCatalogImportServiceTests
         public Task<Guid> CreateMenuAsync(Menu menu, CancellationToken cancellationToken = default) { menu.Id = Guid.NewGuid(); Menus.Add(menu); return Task.FromResult(menu.Id); }
         public Task<Guid> CreateSectionAsync(MenuSection section, CancellationToken cancellationToken = default) { section.Id = Guid.NewGuid(); Sections.Add(section); return Task.FromResult(section.Id); }
         public Task<Guid> CreateItemAsync(MenuItem item, CancellationToken cancellationToken = default) { item.Id = Guid.NewGuid(); Items.Add(item); return Task.FromResult(item.Id); }
-        public Task<Guid> CreateTranslationAsync(MenuItemTranslation translation, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<bool> UpdateSectionAsync(MenuSection section, CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task<bool> UpdateItemAsync(MenuItem item, CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task<bool> UpdateMenuAsync(Menu menu, CancellationToken cancellationToken = default) => Task.FromResult(true);
-        public Task<IReadOnlyCollection<RestoredMenuItem>> RestoreExpiredAvailabilityAsync(DateTime utcNow, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyCollection<RestoredMenuItem>>([]);
         public Task<int> ReorderSectionsAsync(Guid venueId, Guid menuId, IReadOnlyCollection<Guid> sectionIds, DateTime updatedUtc, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task<IReadOnlyCollection<Menu>> GetMenusAsync(Guid venueId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyCollection<Menu>>(Menus.Where(value => value.VenueId == venueId).ToArray());
         public Task<IReadOnlyCollection<MenuSection>> GetSectionsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyCollection<MenuSection>>(Sections.Where(value => value.VenueId == venueId && value.MenuId == menuId).ToArray());
         public Task<IReadOnlyCollection<MenuItem>> GetItemsAsync(Guid venueId, Guid sectionId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyCollection<MenuItem>>(Items.Where(value => value.VenueId == venueId && value.MenuSectionId == sectionId).ToArray());
-        public Task<IReadOnlyCollection<MenuItemTranslation>> GetTranslationsAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyCollection<MenuItemTranslation>>([]);
     }
 
     private sealed class ProtectorFake : IPosCredentialProtector

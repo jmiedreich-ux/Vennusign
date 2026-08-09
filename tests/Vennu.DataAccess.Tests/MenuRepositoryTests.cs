@@ -55,6 +55,64 @@ public sealed class MenuRepositoryTests
         Assert.Equal(menuId, capturedParameters.GetType().GetProperty("MenuId")!.GetValue(capturedParameters));
     }
 
+    // Security regression: the screen id arrives from the route, so the assignment
+    // must be scoped to the calling venue on both sides. Without this, one venue
+    // could pass another venue's screen id and take over its assignment.
+    [Fact]
+    [Trait("Category", "Unit")]
+    public async Task AssignScreenAsync_ScopesBothScreenAndMenuToTheCallingVenue()
+    {
+        string? capturedSql = null;
+        var dataAccess = new FakeSqlDataAccess
+        {
+            ExecuteSqlQueryHandler = (sql, _) =>
+            {
+                capturedSql = sql;
+                return [];
+            }
+        };
+        var repository = new MenuLibraryRepository(dataAccess);
+
+        // No row comes back because the venue does not own the screen.
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            repository.AssignScreenAsync(new MenuScreenAssignment
+            {
+                VenueId = Guid.NewGuid(),
+                ScreenId = Guid.NewGuid(),
+                MenuId = Guid.NewGuid()
+            }));
+
+        Assert.Contains("s.VenueId = @VenueId", capturedSql, StringComparison.Ordinal);
+        Assert.Contains("m.VenueId = @VenueId", capturedSql, StringComparison.Ordinal);
+    }
+
+    // Regression: the menu read must select the milestone-1 settings columns.
+    // While they were missing from the SELECT, stored values were silently
+    // replaced by the model's C# defaults, so a published menu still reported
+    // PublishedVersion null.
+    [Fact]
+    [Trait("Category", "Unit")]
+    public async Task GetMenusAsync_SelectsTheMenuSettingsAndPublishedVersion()
+    {
+        string? capturedSql = null;
+        var dataAccess = new FakeSqlDataAccess
+        {
+            ExecuteSqlQueryHandler = (sql, _) =>
+            {
+                capturedSql = sql;
+                return [];
+            }
+        };
+        var repository = new MenuRepository(dataAccess);
+
+        await repository.GetMenusAsync(Guid.NewGuid());
+
+        foreach (var column in new[] { "DwellSeconds", "LoopWarningSeconds", "Theme", "IsPutAway", "PublishedVersion" })
+        {
+            Assert.Contains(column, capturedSql, StringComparison.Ordinal);
+        }
+    }
+
     [Fact]
     [Trait("Category", "Unit")]
     public async Task GetItemsAsync_UsesVenueScopeAndStableTieBreaker()
@@ -76,15 +134,4 @@ public sealed class MenuRepositoryTests
         Assert.Contains("ORDER BY SortOrder, Id", capturedSql, StringComparison.Ordinal);
     }
 
-    [Fact]
-    [Trait("Category", "Unit")]
-    public async Task GetTranslationsAsync_RejectsEmptyVenueId()
-    {
-        var repository = new MenuRepository(new FakeSqlDataAccess());
-
-        var exception = await Assert.ThrowsAsync<ArgumentException>(
-            () => repository.GetTranslationsAsync(Guid.Empty, Guid.NewGuid()));
-
-        Assert.Equal("venueId", exception.ParamName);
-    }
 }

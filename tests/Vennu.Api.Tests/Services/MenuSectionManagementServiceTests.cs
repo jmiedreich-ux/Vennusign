@@ -16,14 +16,32 @@ public sealed class MenuSectionManagementServiceTests
         {
             Menus = [new Menu { Id = Guid.NewGuid(), VenueId = venueId, Name = "Dinner" }]
         };
-        var service = CreateService(repository);
+        var library = new FakeMenuLibraryRepository();
+        var service = CreateService(repository, library);
 
         var created = await service.CreateMenuAsync(venueId, "  Lunch  ");
         var error = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateMenuAsync(venueId, " dinner "));
 
         Assert.Equal("Lunch", created.Name);
-        Assert.Equal(created, repository.CreatedMenu);
+        // The insert goes through the ceiling-guarded path, never a bare create.
+        Assert.Equal(created, library.CreatedMenu);
         Assert.Contains("already exists", error.Message);
+    }
+
+    // Q201: two requests at limit-minus-one cannot both get in, and the refusal
+    // names the way to make room.
+    [Fact]
+    public async Task CreateMenuAsync_RefusesInPlainWordsAtTheActiveMenuCeiling()
+    {
+        var venueId = Guid.NewGuid();
+        var library = new FakeMenuLibraryRepository();
+        library.Ceilings[MenuCeilings.MenusPerVenue] = 1;
+        var service = CreateService(new FakeMenuRepository(), library);
+
+        var error = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateMenuAsync(venueId, "Lunch"));
+
+        Assert.Contains("Put one away first", error.Message, StringComparison.Ordinal);
+        Assert.Null(library.CreatedMenu);
     }
 
     [Fact]
@@ -106,6 +124,7 @@ public sealed class MenuSectionManagementServiceTests
     {
         var service = new MenuSectionManagementService(
             new FakeMenuRepository(),
+            new FakeMenuLibraryRepository(),
             new FakeCapabilityDecisionServices("schedule.promotion.automate"),
             new FixedTimeProvider());
 
@@ -120,8 +139,10 @@ public sealed class MenuSectionManagementServiceTests
         public override DateTimeOffset GetUtcNow() => new(2026, 7, 29, 22, 20, 0, TimeSpan.Zero);
     }
 
-    private static MenuSectionManagementService CreateService(FakeMenuRepository repository) =>
-        new(repository, new FakeCapabilityDecisionServices(
+    private static MenuSectionManagementService CreateService(
+        FakeMenuRepository repository,
+        FakeMenuLibraryRepository? library = null) =>
+        new(repository, library ?? new FakeMenuLibraryRepository(), new FakeCapabilityDecisionServices(
             "schedule.promotion.automate",
             "content.item.dietary_information_manage",
             "content.item.availability_update"), new FixedTimeProvider());
@@ -146,7 +167,6 @@ public sealed class MenuSectionManagementServiceTests
             return Task.FromResult(section.Id);
         }
         public Task<Guid> CreateItemAsync(MenuItem item, CancellationToken cancellationToken = default) => Task.FromResult(item.Id);
-        public Task<Guid> CreateTranslationAsync(MenuItemTranslation translation, CancellationToken cancellationToken = default) => Task.FromResult(translation.Id);
         public Task<bool> UpdateSectionAsync(MenuSection section, CancellationToken cancellationToken = default)
         {
             UpdatedSection = section;
@@ -154,8 +174,6 @@ public sealed class MenuSectionManagementServiceTests
         }
         public Task<bool> UpdateItemAsync(MenuItem item, CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task<bool> UpdateMenuAsync(Menu menu, CancellationToken cancellationToken = default) => Task.FromResult(true);
-        public Task<IReadOnlyCollection<RestoredMenuItem>> RestoreExpiredAvailabilityAsync(DateTime utcNow, CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyCollection<RestoredMenuItem>>([]);
         public Task<int> ReorderSectionsAsync(Guid venueId, Guid menuId, IReadOnlyCollection<Guid> sectionIds, DateTime updatedUtc, CancellationToken cancellationToken = default)
         {
             ReorderedSectionIds = sectionIds;
@@ -167,7 +185,5 @@ public sealed class MenuSectionManagementServiceTests
             Task.FromResult<IReadOnlyCollection<MenuSection>>(Sections.Where(section => section.VenueId == venueId && section.MenuId == menuId).ToArray());
         public Task<IReadOnlyCollection<MenuItem>> GetItemsAsync(Guid venueId, Guid sectionId, CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyCollection<MenuItem>>([]);
-        public Task<IReadOnlyCollection<MenuItemTranslation>> GetTranslationsAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyCollection<MenuItemTranslation>>([]);
     }
 }

@@ -10,6 +10,37 @@ Single venue only. No multi-venue affordance may leak (decision 29; criterion 18
 
 Additional exclusions recorded in the register: item photos and upload (Q108 → #679), featured-item control (Q107 → #678), print (Q206 → #676), currency/format setting (Q115/Q190 → #675 — prices render exactly as typed), language/translation work (Q200 → #683 — Menus UI ships English-only; venue language fields dormant), separate audit/analytics system (Q207 → #677), keyboard reorder and canvas keyboard reachability (Q120/Q202 → #672), add-item-row keyboard flow (Q122 → #673), Play interaction spec (Q146 → #674), Welcome/title panel (Q98 → #670), room-distance line (Q133 → #671).
 
+## The save model — owner decision, 2026-08-09
+
+Two readings of "draft" were possible, and the first implementation drifted
+between them. The owner settled it: **the draft is derived, not authored.**
+
+- The live rows are the working state. An edit changes the menu immediately.
+- The screens show the last **published snapshot**, and nothing else.
+- The draft is **computed** by comparing the working state against that
+  snapshot. "3 changes not on your screens" is that comparison, so the count
+  cannot disagree with what Publish will ship.
+- Publish snapshots the working state as it stands and sends it to the screens.
+- Clients never supply a `beforeValue`. The previous value always comes from the
+  published snapshot, so a stale caller cannot misreport it or delete another
+  editor's pending change.
+
+This is what Q182 already described — "each thing currently different from the
+screens" — and what makes "the canvas *is* the preview" true rather than a
+layering trick. Its one cost, accepted knowingly: you publish a menu whole. There
+is no partial publish of selected changes, which matches one queue per menu.
+
+Two consequences landed with it, both in milestone 1:
+
+- **There is no draft table.** Migration 058 creates none, and nothing writes one,
+  so no stored queue can disagree with what Publish ships.
+- **There is no legacy editor path.** The owner's rule — "there is no legacy,
+  because it was not live" — is applied: the existing editor writes through
+  `Items`/`Placements` like everything else, the owner-killed concepts (happy-hour
+  price, quantity, tags, featured, per-item archive, daily special) have no
+  endpoints or controls left, and platform operations is read-only for menus
+  (Q36) until the backlogged impersonation-with-consent model exists.
+
 ## Cross-cutting rules (from the register)
 
 - **Timestamps render in the venue's local time** from the venue's stored Timezone — on every Menus surface (Q196). Deviation from today's viewer-clock behavior.
@@ -32,12 +63,12 @@ Additional exclusions recorded in the register: item photos and upload (Q108 →
 
 ### Milestone 1 — The spine: item library + draft/publish save model
 The schema everything else stands on. No visible UI change yet beyond keeping the current editor compiling.
-- Item library data model: `Item` (venue-scoped), `Placement` (item on a section of a menu, ordered), sections restructured to hold placements. Migration **drops** `HappyHourPrice`, `QuantityAvailable`, `Tags`, `IsPopular`, per-item translations, and the `AvailabilityResetUtc` auto-reset concept — the migration script names what it discards. Field limits carry over: name ≤200 and never blank, description ≤1000 (Q119).
+- Item library data model: `Item` (venue-scoped), `Placement` (item on a section of a menu, ordered), sections restructured to hold placements. The migration **drops** per-item translations and the `AvailabilityResetUtc` auto-reset concept outright, and names every field it discards. `HappyHourPrice`, `QuantityAvailable`, `Tags` and `IsPopular` are **retained as columns and deliberately unread** — POS sync still writes them, so they are dropped by the milestone that retires their last reader (owner decision at the first acceptance). Field limits carry over: name ≤200 and never blank, description ≤1000 (Q119).
 - **Menu↔screen assignment as its own table** (Q1/Q2): exactly one menu per screen, stored as a separate assignment record so Schedules can multiplex later without migration. Seeded/dev menus are auto-marked assigned+published so fixtures and demos work (Q3).
-- Availability (86): item × venue, boolean + timestamp + who. Commits instantly, never queues, survives publish, stays off until a person turns it back on.
-- Draft model: `DraftChange` per menu; the queue's count is the **current diff** (Q182). Explicit Publish ships the set **atomically** (Q198) as a `PublishEvent` with per-target delivery state; history is attributable; retention is tier-configurable. Destructive-but-instant acts (discard draft, Put away, Take off the screens) are recorded as history entries — provisional audit record, flagged in the demo (Q207).
-- Tier-configurable ceilings land here with their defaults (Q201). Per-menu dwell (default 8s) and loop-warning threshold (default 60s) land as settings (Q9/Q175).
-- API: draft queue read/write, publish, history list, "go back to" (produces a draft), availability toggle, assignment read/write. API exposes the venue timezone for venue-local rendering (Q196).
+- Availability (86): item × venue, boolean + timestamp + who. Commits instantly, never queues, survives publish, stays off until a person turns it back on. This milestone proves the notification contract; the screens render the new item model when the milestone 4 player lands.
+- Save model: **there is no draft table** — the draft is derived (see §The save model). The count is the **current diff** (Q182), and the publish that ships it proves the menu has not moved since the diff was computed, so what history records always describes the snapshot that went out. Explicit Publish ships **atomically** (Q198) as a `PublishEvent` with per-target delivery state; history is attributable; retention is tier-configurable. Discard draft, Put away and Take off the screens each commit with their history entry in the same transaction. **Take off the screens is permanent, so it waits as a difference and reaches the screens on the next Publish** (Q68) — it is not instant like an 86, and the publish that carries it records `taken_off_screens` under its own name. A screen another menu has since been given is never touched by a stale act and is named to the caller. History is the provisional audit record, flagged in the demo (Q207).
+- Tier-configurable ceilings land here with their defaults (Q201), enforced under the same lock as the write they bound. Put-away menus do not count against the menu ceiling, so the refusal's advice works. Per-menu dwell (default 8s) and loop-warning threshold (default 60s) land as settings (Q9/Q175).
+- API: draft read, publish, history list, "go back to" (produces a draft), availability toggle, assignment read/write, take-off, and put away / put back on the shelf. API exposes the venue timezone for venue-local rendering (Q196). The pre-existing editor is consolidated onto this spine; ops menu writes retire (Q36).
 - Acceptance: demo script (seeded data walked through the API contract). Criteria 1, 2, 3, 4.
 
 ### Milestone 2 — App shell + board render engine + M1 Menus home + M1b named actions

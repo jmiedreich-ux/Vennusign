@@ -14,7 +14,9 @@ test("daypart home composes venue-authoritative operations and essential states"
   assert.match(home, /capabilities\.includes\("screen\.device\.view"\) \? loadManagedScreens/);
   assert.match(home, /capabilities\.includes\("content\.item\.update"\) \? loadMenuEditor/);
   assert.match(home, /updateQuickAvailability/);
-  assert.match(home, /updateQuickDailySpecial/);
+  // Today's special is an owner-killed concept (Q35): Home carries no widget
+  // wired to it any more.
+  assert.doesNotMatch(home, /updateQuickDailySpecial/);
   assert.match(home, /\?schedule=emergency#\/schedules/);
   assert.match(home, /role="alert"/);
   assert.match(home, /role="status"/);

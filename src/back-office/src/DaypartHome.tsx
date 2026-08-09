@@ -4,7 +4,6 @@ import {
   loadMealPeriods,
   loadMenuEditor,
   updateQuickAvailability,
-  updateQuickDailySpecial,
   type ManagedScreen,
   type MealPeriodSnapshot,
   type MenuEditorSnapshot,
@@ -36,7 +35,6 @@ export default function DaypartHome({ configuration, accessToken, venueId, venue
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
   const [busyItem, setBusyItem] = useState<string>();
-  const [special, setSpecial] = useState("");
   const capabilityKey = capabilities.join("|");
 
   const load = async () => {
@@ -48,7 +46,6 @@ export default function DaypartHome({ configuration, accessToken, venueId, venue
         capabilities.includes("content.item.update") ? loadMenuEditor(configuration, accessToken, venueId) : Promise.resolve(unavailableMenu)
       ]);
       setState({ mealPeriods, screens, menu });
-      setSpecial(menu.menus.find(entry => entry.menu.isActive)?.menu.dailySpecial ?? "");
     } catch {
       setError("Today’s venue overview could not be loaded. No live settings were changed.");
     }
@@ -70,15 +67,6 @@ export default function DaypartHome({ configuration, accessToken, venueId, venue
       setNotice(`${item.name} is now ${item.isAvailable ? "86’d" : "available"}; screens were queued to refresh.`);
     } catch { setError(`${item.name} could not be updated. Its current availability remains unchanged.`); }
     finally { setBusyItem(undefined); }
-  };
-
-  const saveSpecial = async () => {
-    if (!activeMenu) return;
-    setNotice(undefined); setError(undefined);
-    try {
-      await updateQuickDailySpecial(configuration, accessToken, venueId, activeMenu.id, special.trim() || undefined);
-      setNotice(special.trim() ? "Today’s special was saved and screens were queued to refresh." : "Today’s special was cleared and screens were queued to refresh.");
-    } catch { setError("Today’s special could not be saved. The current special remains live."); }
   };
 
   if (!state && !error) return <LoadingSkeleton label="Loading today’s venue home" rows={5} />;
@@ -108,13 +96,8 @@ export default function DaypartHome({ configuration, accessToken, venueId, venue
 
       <section aria-labelledby="availability-heading"><header><div><p>86 board</p><h3 id="availability-heading">Quick availability</h3></div><a href="#/menu">Open menu</a></header>
         {!capabilities.includes("content.item.update") ? <p className="state">Menu availability is unavailable for this venue.</p>
-        : quickItems.length ? <ul className="availability-list">{quickItems.map(item => <li key={item.id}><span><strong>{item.name}</strong><small>{item.quantityAvailable == null ? "Manual availability" : `${item.quantityAvailable} remaining`}</small></span><button type="button" disabled={busyItem === item.id || !state.menu.capabilities.quickUpdate} aria-pressed={!item.isAvailable} onClick={() => void toggleAvailability(item)}>{item.isAvailable ? "86 item" : "Restore"}</button></li>)}</ul>
+        : quickItems.length ? <ul className="availability-list">{quickItems.map(item => <li key={item.id}><span><strong>{item.name}</strong><small>{item.isAvailable ? "Available" : "Off right now"}</small></span><button type="button" disabled={busyItem === item.id || !state.menu.capabilities.quickUpdate} aria-pressed={!item.isAvailable} onClick={() => void toggleAvailability(item)}>{item.isAvailable ? "86 item" : "Restore"}</button></li>)}</ul>
         : <EmptyState icon="search" title="No menu items" message="Add menu items before using the 86 board." action={<a href="#/menu">Open menu</a>} />}</section>
     </div>
-
-    <section className="specials-card" aria-labelledby="specials-heading"><div><p>Today’s special</p><h3 id="specials-heading">Featured on venue screens</h3><span>Saving queues the authoritative menu update for active screens.</span></div>
-      {activeMenu ? <form onSubmit={event => { event.preventDefault(); void saveSpecial(); }}><label htmlFor="today-special">Special<input id="today-special" value={special} maxLength={200} onChange={event => setSpecial(event.target.value)} placeholder="Add today’s special" /></label><button type="submit" disabled={!state.menu.capabilities.quickUpdate}>Save special</button></form>
-      : <p className="state">Create and activate a menu before adding a special.</p>}
-    </section>
   </div>;
 }

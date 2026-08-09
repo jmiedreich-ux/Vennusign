@@ -9,6 +9,13 @@ using Vennu.Data.Services;
 
 namespace Vennu.Api.Controllers.BackOffice;
 
+/// <summary>
+/// The current editor's surface, consolidated onto the item library: every write
+/// here changes the working state that the derived draft compares and a publish
+/// ships. The owner-killed concepts (daily special, quantities, tags, popular,
+/// archive) have no endpoints any more — there is no legacy, because it was
+/// never live.
+/// </summary>
 [ApiController]
 [Route("api/back-office/menus")]
 [Route("api/venue-admin/menus")]
@@ -17,10 +24,13 @@ namespace Vennu.Api.Controllers.BackOffice;
 public sealed class BackOfficeMenusController(
     IMenuSectionManagementService sectionService,
     IMenuItemManagementService itemService,
-    IQuickUpdateService quickUpdateService) : ControllerBase
+    MenuSpineService spine) : ControllerBase
 {
     private Guid VenueId => Guid.Parse(
         User.FindFirstValue(BackOfficeAuthenticationDefaults.VenueIdClaim)!);
+
+    private string? Author =>
+        User.FindFirstValue(ClaimTypes.Name) ?? User.FindFirstValue(ClaimTypes.Email);
 
     [HttpGet]
     public Task<MenuEditorSnapshot> Get(CancellationToken cancellationToken) =>
@@ -62,56 +72,6 @@ public sealed class BackOfficeMenusController(
         catch (ArgumentException exception)
         {
             return ValidationProblem(exception.Message);
-        }
-    }
-
-    [HttpPut("{menuId:guid}/quick-update/daily-special")]
-    public async Task<ActionResult<Menu>> UpdateDailySpecial(
-        Guid menuId,
-        QuickDailySpecialRequest request,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var menu = await quickUpdateService
-                .UpdateDailySpecialAsync(VenueId, menuId, request.DailySpecial, cancellationToken)
-                .ConfigureAwait(false);
-            return menu is null ? NotFound() : Ok(menu);
-        }
-        catch (ArgumentException exception)
-        {
-            return ValidationProblem(exception.Message);
-        }
-    }
-
-    [HttpPut("{menuId:guid}/sections/{sectionId:guid}/items/{itemId:guid}/quick-availability")]
-    public async Task<ActionResult<MenuItem>> UpdateQuickAvailability(
-        Guid menuId,
-        Guid sectionId,
-        Guid itemId,
-        QuickAvailabilityRequest request,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var item = await quickUpdateService
-                .SetAvailabilityAsync(
-                    VenueId,
-                    menuId,
-                    sectionId,
-                    itemId,
-                    request.IsAvailable,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            return item is null ? NotFound() : Ok(item);
-        }
-        catch (ArgumentException exception)
-        {
-            return ValidationProblem(exception.Message);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
         }
     }
 
@@ -175,7 +135,6 @@ public sealed class BackOfficeMenusController(
                     request.Name,
                     request.Description,
                     request.Price,
-                    request.HappyHourPrice,
                     cancellationToken)
                 .ConfigureAwait(false);
             return CreatedAtAction(nameof(Get), item);
@@ -209,7 +168,6 @@ public sealed class BackOfficeMenusController(
                     request.Name,
                     request.Description,
                     request.Price,
-                    request.HappyHourPrice,
                     cancellationToken)
                 .ConfigureAwait(false);
             return item is null ? NotFound() : Ok(item);
@@ -218,49 +176,6 @@ public sealed class BackOfficeMenusController(
         {
             return ValidationProblem(exception.Message);
         }
-    }
-
-    [HttpPut("{menuId:guid}/sections/{sectionId:guid}/items/{itemId:guid}/presentation")]
-    public async Task<ActionResult<MenuItem>> UpdateItemPresentation(
-        Guid menuId,
-        Guid sectionId,
-        Guid itemId,
-        MenuItemPresentationRequest request,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var item = await itemService
-                .UpdatePresentationAsync(
-                    VenueId,
-                    menuId,
-                    sectionId,
-                    itemId,
-                    request.IsAvailable,
-                    request.QuantityAvailable,
-                    request.Tags,
-                    request.IsPopular,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            return item is null ? NotFound() : Ok(item);
-        }
-        catch (ArgumentException exception)
-        {
-            return ValidationProblem(exception.Message);
-        }
-    }
-
-    [HttpPut("{menuId:guid}/sections/{sectionId:guid}/items/{itemId:guid}/lifecycle")]
-    public async Task<ActionResult<MenuItem>> UpdateItemLifecycle(
-        Guid menuId,
-        Guid sectionId,
-        Guid itemId,
-        MenuItemLifecycleRequest request,
-        CancellationToken cancellationToken)
-    {
-        var item = await itemService.SetActiveAsync(
-            VenueId, menuId, sectionId, itemId, request.IsActive, cancellationToken).ConfigureAwait(false);
-        return item is null ? NotFound() : Ok(item);
     }
 
     [HttpPut("{menuId:guid}/sections/{sectionId:guid}/items/order")]
@@ -287,6 +202,35 @@ public sealed class BackOfficeMenusController(
         catch (ArgumentException exception)
         {
             return ValidationProblem(exception.Message);
+        }
+    }
+
+    /// <summary>
+    /// The legacy quick-update route, kept for the current UI but consolidated
+    /// onto the one availability model: an 86 is item-by-venue, instant, never
+    /// queued, and survives a publish. The menu and section in the route only
+    /// locate the row the caller clicked.
+    /// </summary>
+    [HttpPut("{menuId:guid}/sections/{sectionId:guid}/items/{itemId:guid}/quick-availability")]
+    [RequireCapability("content.item.availability_update")]
+    public async Task<ActionResult> UpdateQuickAvailability(
+        Guid menuId,
+        Guid sectionId,
+        Guid itemId,
+        QuickAvailabilityRequest request,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        try
+        {
+            await spine
+                .SetAvailabilityAsync(VenueId, itemId, request.IsAvailable, Author, cancellationToken)
+                .ConfigureAwait(false);
+            return NoContent();
+        }
+        catch (InvalidOperationException)
+        {
+            return NotFound();
         }
     }
 }

@@ -93,12 +93,15 @@ public static class Version1CapabilityRegistry
         Core("content.item.dietary_information_manage", CapabilityDomain.Content, CapabilityOperationKind.Change),
         Advanced("content.collection.bulk_update", CapabilityDomain.Content, CapabilityOperationKind.Change),
         Advanced("content.source.synchronize", CapabilityDomain.Content, CapabilityOperationKind.Change),
+        Core("content.menu.manage", CapabilityDomain.Content, CapabilityOperationKind.Change),
+        Core("content.menu.import", CapabilityDomain.Content, CapabilityOperationKind.Change),
 
         Core("publishing.release.preview", CapabilityDomain.Publishing, CapabilityOperationKind.Read),
         Core("publishing.release.publish", CapabilityDomain.Publishing, CapabilityOperationKind.Change),
         Core("publishing.release.confirm", CapabilityDomain.Publishing, CapabilityOperationKind.Read),
         Core("publishing.release.replace", CapabilityDomain.Publishing, CapabilityOperationKind.Change),
         Core("publishing.release.unpublish", CapabilityDomain.Publishing, CapabilityOperationKind.Change),
+        Core("publishing.history.view", CapabilityDomain.Publishing, CapabilityOperationKind.Read),
         Core("publishing.delivery.retry", CapabilityDomain.Publishing, CapabilityOperationKind.Change),
         Core("publishing.delivery.restore", CapabilityDomain.Publishing, CapabilityOperationKind.Change),
 

@@ -142,8 +142,32 @@ public partial class SqlDataAccess : ISqlDataAccess
                 .Table("dbo.MenuItems", true);
 
             FluentMapper
-                .Entity<MenuItemTranslation>()
-                .Table("dbo.MenuItemTranslations", true);
+                .Entity<Item>()
+                .Table("dbo.Items", true);
+
+            FluentMapper
+                .Entity<Placement>()
+                .Table("dbo.Placements", true);
+
+            FluentMapper
+                .Entity<ItemAvailability>()
+                .Table("dbo.ItemAvailability", true);
+
+            FluentMapper
+                .Entity<MenuScreenAssignment>()
+                .Table("dbo.MenuScreenAssignments", true);
+
+            FluentMapper
+                .Entity<MenuPublishEvent>()
+                .Table("dbo.MenuPublishEvents", true);
+
+            FluentMapper
+                .Entity<MenuPublishTarget>()
+                .Table("dbo.MenuPublishTargets", true);
+
+            FluentMapper
+                .Entity<MenuHistoryEntry>()
+                .Table("dbo.MenuHistoryEntries", true);
 
             FluentMapper
                 .Entity<TapCategory>()
