@@ -58,7 +58,7 @@ function byRecencyThenName(left, right) {
  * that teaches the person nothing about their own shelf.
  */
 export const shelfFilters = Object.freeze([
-  { key: "on-screens", label: "On screens", matches: (menu) => menu.screenIds?.length > 0 },
+  { key: "on-screens", label: "On screens", matches: (menu) => screensOf(menu).length > 0 },
   { key: "pending", label: "Changes waiting", matches: hasChangesWaiting },
   { key: "not-in-use", label: "Not in use", matches: (menu) => menu.isPutAway }
 ]);
@@ -72,6 +72,18 @@ export const shelfFilters = Object.freeze([
  * a shelf that drew two bars is exactly the kind of quiet disagreement nobody
  * reports, they just stop trusting the number.
  */
+/**
+ * A menu's screens, always as an array.
+ *
+ * The API sends one; this defends the boundary anyway, because every caller
+ * below does arithmetic on it. A malformed payload would otherwise throw out of
+ * render and take the whole shelf down rather than drawing one odd card.
+ * Raised by the independent review.
+ */
+export function screensOf(menu) {
+  return Array.isArray(menu?.screenIds) ? menu.screenIds : [];
+}
+
 export function hasChangesWaiting(menu) {
   return menu?.draftCount > 0 && menu?.publishedVersion !== null && menu?.publishedVersion !== undefined;
 }
@@ -109,10 +121,10 @@ export function shelfHeadline(menus) {
 
   const holding = inUse.filter(hasChangesWaiting);
   if (holding.length === 0) {
-    const onScreens = inUse.filter((menu) => menu.screenIds.length > 0);
+    const onScreens = inUse.filter((menu) => screensOf(menu).length > 0);
     if (onScreens.length === 0) return "Nothing is on your screens.";
 
-    const screens = new Set(onScreens.flatMap((menu) => menu.screenIds)).size;
+    const screens = new Set(onScreens.flatMap(screensOf)).size;
     return screens === 1
       ? "Your screen is showing the latest."
       : `All ${screens} screens are showing the latest.`;
@@ -140,7 +152,7 @@ export function shelfSubLine(menus) {
   const inUse = menusInUse(menus);
   if (inUse.length === 0) return "Add a menu to get something on your screens.";
 
-  const screens = new Set(inUse.flatMap((menu) => menu.screenIds)).size;
+  const screens = new Set(inUse.flatMap(screensOf)).size;
   const away = menusNotInUse(menus).length;
 
   const parts = [];
@@ -169,7 +181,7 @@ export function cardStatus(menu) {
     return { tone: "idle", text: "Never published" };
   }
 
-  const screens = menu.screenIds?.length ?? 0;
+  const screens = screensOf(menu).length;
   if (screens === 0) return { tone: "idle", text: "Not on a screen" };
   if (hasChangesWaiting(menu)) {
     return { tone: "pending", text: screens === 1 ? "On your screen" : `On ${screens} screens` };

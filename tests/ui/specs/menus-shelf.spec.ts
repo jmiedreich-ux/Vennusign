@@ -192,6 +192,54 @@ test.describe("the shelf", () => {
     await expect(dialog).toContainText("It stays on your Menus home and keeps its history.");
   });
 
+  /**
+   * Independent review finding: every close path left focus on the document.
+   *
+   * The trigger lives inside the <details> menu, which is unmounted before the
+   * dialog appears — so Escape, Cancel and the scrim all closed it with focus
+   * nowhere, and the next Tab restarted from the top of the page instead of
+   * continuing from the card. The previous take-off test asserted the dialog's
+   * copy and presence, which is why it did not notice.
+   */
+  test("the take-off dialog can be worked by keyboard, and gives the card its focus back", async ({ page }) => {
+    const seeded = await scaleSeed({ menus: 4, screens: 4 });
+    await openAs(page, "scale", "menu");
+
+    const onScreens = seeded.seededMenus.find(menu => menu.screenIds.length > 0);
+    const card = page.locator(`[data-testid="menu-card"][data-menu-id="${onScreens!.menuId}"]`);
+    const summary = card.getByTestId("card-actions");
+
+    // Opened by keyboard alone, not by click.
+    await summary.focus();
+    await page.keyboard.press("Enter");
+    await card.getByTestId("take-off-screens").focus();
+    await page.keyboard.press("Enter");
+
+    const dialog = page.getByTestId("take-off-dialog");
+    await expect(dialog).toBeVisible();
+
+    // Focus moves into the dialog rather than being left behind it.
+    await expect(dialog.locator(":focus")).toHaveCount(1);
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+
+    // Back on the card that opened it — so the next Tab continues from here
+    // rather than restarting at the top of the page.
+    await expect(summary).toBeFocused();
+
+    // And the same for Cancel, which is the path a mouse user takes to the same
+    // outcome.
+    await page.keyboard.press("Enter");
+    await card.getByTestId("take-off-screens").focus();
+    await page.keyboard.press("Enter");
+    await expect(dialog).toBeVisible();
+
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(summary).toBeFocused();
+  });
+
   test("criterion 5 — the banned words appear nowhere on the shelf", async ({ page }) => {
     await scaleSeed({ menus: 4, screens: 4 });
     await openAs(page, "scale", "menu");

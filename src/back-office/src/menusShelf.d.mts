@@ -25,6 +25,8 @@ export function filterShelf(
 
 export function hasChangesWaiting(menu: ShelfMenu): boolean;
 
+export function screensOf(menu: ShelfMenu): readonly string[];
+
 export function shelfHeadline(menus: readonly ShelfMenu[] | null | undefined): string;
 
 export function shelfSubLine(menus: readonly ShelfMenu[] | null | undefined): string;

@@ -11,8 +11,12 @@ namespace Vennu.Api.Controllers.TestSupport;
 
 /// <summary>
 /// Creates isolated data for automated UI tests so that concurrent specs never mutate
-/// the same rows. Development only: <see cref="Seed"/> returns 404 in every other
-/// environment, so the route does not exist in a deployed system.
+/// the same rows.
+///
+/// Every action returns 404 outside Development. That is a gate, not a deployment
+/// boundary - the route still exists, and a remote test slot can carry the
+/// Development setting - so anything here that DESTROYS data carries its own gates
+/// as well. See <see cref="SeedScale"/>.
 /// </summary>
 [ApiController]
 [AllowAnonymous]
@@ -20,6 +24,7 @@ namespace Vennu.Api.Controllers.TestSupport;
 public sealed class TestSeedController(
     IHostEnvironment environment,
     IOptionsMonitor<BackOfficeAuthenticationOptions> backOfficeOptions,
+    IConfiguration configuration,
     IMenuRepository menuRepository,
     IContentRepository libraryRepository,
     IScreenRepository screenRepository,
@@ -178,6 +183,19 @@ public sealed class TestSeedController(
         });
     }
 
+    /// <summary>
+    /// Off unless something deliberately turns it on. `scripts/start-ui-test-env.ps1`
+    /// sets it for a local UI run; nothing else does, so a deployed slot that
+    /// happens to carry the Development environment still refuses.
+    /// </summary>
+    private const string ScaleSeedEnabledKey = "TestSupport:ScaleSeedEnabled";
+
+    /// <summary>
+    /// The only venue this action will ever clear — created by the owner
+    /// acceptance fixture purely so the Menus shelf can be measured at scale.
+    /// </summary>
+    private static readonly Guid ScaleSeedVenueId = Guid.Parse("73000000-0000-0000-0000-000000000002");
+
     public sealed record ScaleSeedRequest
     {
         public string? AccessToken { get; init; }
@@ -225,7 +243,24 @@ public sealed class TestSeedController(
         [FromBody] ScaleSeedRequest? request,
         CancellationToken cancellationToken)
     {
+        // Independent review, 2026-08-10: this action DELETES a venue's screens,
+        // menus, items, placements, availability, assignments, publish events and
+        // history. It previously refused one hard-coded venue and accepted every
+        // other, so any enabled session token authorised erasing its own venue —
+        // and IsDevelopment() is a setting, not a deployment boundary: a remote
+        // test slot can carry it.
+        //
+        // Now three independent gates, each of which alone refuses the request:
+        // the environment, an explicit opt-in that is off unless something sets
+        // it, and an allowlist of exactly one venue that exists for this and
+        // nothing else. A venue session token no longer authorises "delete
+        // everything in my venue"; it only identifies the caller.
         if (!environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        if (!configuration.GetValue<bool>(ScaleSeedEnabledKey))
         {
             return NotFound();
         }
@@ -237,12 +272,13 @@ public sealed class TestSeedController(
             return NotFound();
         }
 
-        if (session.VenueId == Guid.Parse("73000000-0000-0000-0000-000000000001"))
+        if (session.VenueId != ScaleSeedVenueId)
         {
-            // Refused rather than allowed to quietly wreck the venue every other
-            // spec depends on. The scale seed clears what it seeds into.
+            // An allowlist, not a denylist. The scale venue is created by the
+            // owner-acceptance fixture for this purpose; every other venue in
+            // every configuration is refused, including ones nobody has thought of.
             return Problem(
-                "The scale seed clears its venue, so it refuses to run against the shared acceptance venue. Use the scale session token.",
+                "The scale seed clears the venue it seeds into, so it runs against the scale fixture venue and no other.",
                 statusCode: StatusCodes.Status409Conflict);
         }
 

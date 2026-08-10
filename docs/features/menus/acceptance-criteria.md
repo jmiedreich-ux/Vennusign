@@ -10,6 +10,10 @@ a named milestone-2 spec and **re-checked every UI milestone** (Q194).
 Created 2026-08-09 at the Milestone 2 readiness pass. Update in the PR that changes a
 criterion's status, not after.
 
+**Owner acceptance, 2026-08-10** — Milestone 2 accepted, 11 of 11 checks Pass, one minor
+note (Q209, deferred). Criteria 5, 6, 8 and 18 were confirmed by the owner against the
+running build, not only by their specs; record in `m2-acceptance-record.json`.
+
 | # | Criterion (abbreviated — README is authoritative) | Milestone | Status |
 |---|---|---|---|
 | 1 | 86 reaches every screen in seconds, no publish, never queued | M1 (API) · M4 (on-screen, 10s pass line Q188) | **met at API** — `run-m1-demo.ps1` checks incl. screen assertions, M1 accepted 2026-08-09; on-screen re-assertion waits for M4 |

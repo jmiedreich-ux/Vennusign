@@ -15,11 +15,16 @@ export type BoardFrameProps = BoardRendererProps & {
 /**
  * A board at one fixed logical size, scaled to whatever box it is given.
  *
- * This is the decision that makes a shelf card honest. The board is always laid
- * out at 1920x1080 and then scaled; a card, the builder canvas, Play and the real
- * TV are the SAME DOM at different scales, never a per-size re-layout. A card
- * that laid itself out independently would drift from the TV, and nobody would
- * notice until a guest did.
+ * This is the decision that lets a shelf card be honest. The board is always laid
+ * out at 1920x1080 and then scaled, so every surface that consumes this engine
+ * draws the same DOM at a different scale rather than re-laying out per size.
+ *
+ * Stated precisely, because the difference matters: the back office consumes it
+ * today. The display player still renders the legacy model and adopts this engine
+ * in milestone 4, so card-and-TV parity is a property this makes POSSIBLE, not one
+ * that holds yet. Nothing here should be read as a claim that the shelf and a real
+ * screen already agree - no test exercises both consumers with one board, because
+ * there is only one consumer.
  *
  * Content taller than the board is clipped. Pages as a consequence of overflow
  * are milestone 5 and the dwell cycle is milestone 4; a fitting model invented

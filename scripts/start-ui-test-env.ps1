@@ -152,6 +152,10 @@ $env:ASPNETCORE_URLS = $apiOrigin
 # The whole point of this script: localhost is the browser's origin.
 $env:Cors__AllowedOrigins__0 = $backOfficeOrigin
 $env:Cors__AllowedOrigins__1 = $displayOrigin
+# The scale seed CLEARS the venue it seeds into, so it is off unless something
+# deliberately turns it on. This script is that something; nothing else sets it,
+# so a slot that merely carries the Development environment still refuses.
+$env:TestSupport__ScaleSeedEnabled = "true"
 
 for ($index = 0; $index -lt $roles.Count; $index++) {
     $role = $roles[$index]

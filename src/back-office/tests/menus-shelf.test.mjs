@@ -104,6 +104,24 @@ test("changes waiting means waiting to reach a screen, so a never-published menu
   );
 });
 
+// Raised by the independent review: a malformed payload threw out of render and
+// took the whole shelf with it, rather than drawing one odd card.
+test("a malformed payload draws an odd card rather than taking the shelf down", () => {
+  const malformed = [
+    { ...menu({ menuId: "a" }), screenIds: null },
+    { ...menu({ menuId: "b" }), screenIds: undefined },
+    { ...menu({ menuId: "c" }), screenIds: "s1" }
+  ];
+
+  assert.doesNotThrow(() => shelfHeadline(malformed));
+  assert.doesNotThrow(() => shelfSubLine(malformed));
+  assert.doesNotThrow(() => malformed.map(cardStatus));
+
+  // And it does not invent screens it cannot see.
+  assert.equal(shelfSubLine(malformed), "0 screens in use · 3 menus");
+  assert.deepEqual(cardStatus(malformed[0]), { tone: "idle", text: "Not on a screen" });
+});
+
 test("a filter that would match nothing is not offered", () => {
   // An empty filter is a dead end that teaches nobody anything about their shelf.
   const nothingPending = [menu({ draftCount: 0, screenIds: [] })];

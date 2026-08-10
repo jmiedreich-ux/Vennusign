@@ -327,6 +327,19 @@ function MenuCard({ menu, unavailable, busy, configuration, accessToken, venueNa
   // kind of disagreement nobody reports; they just stop trusting the number.
   const pending = hasChangesWaiting(menu);
 
+  /**
+   * Closing the dialog puts focus back on the card that opened it.
+   *
+   * The trigger lives inside the <details> menu, which is unmounted before the
+   * dialog appears - so every close path left focus on the document, and the next
+   * Tab restarted from the top of the page rather than continuing from the card.
+   * The summary is the stable control that survives all of it.
+   */
+  const closeTakeOff = () => {
+    setTakeOff(false);
+    details.current?.querySelector("summary")?.focus();
+  };
+
   const close = (returnFocus = false) => {
     setOpen(false);
     if (details.current) details.current.open = false;
@@ -505,9 +518,9 @@ function MenuCard({ menu, unavailable, busy, configuration, accessToken, venueNa
           menu={menu}
           venueName={venueName}
           busy={busy}
-          onCancel={() => setTakeOff(false)}
+          onCancel={closeTakeOff}
           onConfirm={() =>
-            { setTakeOff(false); void onAct(menu.menuId, async () => {
+            { closeTakeOff(); void onAct(menu.menuId, async () => {
               const draft = await takeMenuOffScreens(configuration, accessToken, menu.menuId);
               return `Taking ${menu.name} off is waiting with your other changes — ${changePhrase(draft.count)} to publish.`;
             }); }

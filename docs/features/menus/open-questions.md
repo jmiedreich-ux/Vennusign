@@ -1,6 +1,6 @@
 # Menus Build — Open Questions Register
 
-- **Status:** COMPLETE (2026-08-07) — all 208 questions resolved across four sittings. Sitting 1: Q1–Q82. Sitting 2: 16 BLOCKING. Sitting 3: 32 minor. Sitting 4: 78 important. Owner deviations of note: Q83 resolve-at-import, Q94 match picker, Q115/Q190 as-typed prices, Q147 no possessive copy, Q175/Q201 tier-/setting-configurable thresholds and ceilings, Q185 lucide-react icons, Q196 venue-local timestamps. Backlog issues: #670–#682. Q86 and Q98, once deferred/provisional, were RESOLVED 2026-08-09 (menu themes and shell themes are categorically different; no named looks ship; no theme-drawn venue strip in the Menus engine). Next: reconcile milestone-plan.md with all recorded answers, then slice 1.
+- **Status:** ONE OPEN (2026-08-10) — **Q209** was raised at M2 acceptance and deferred; it runs on its provisional default. All 208 earlier questions resolved across four sittings. Sitting 1: Q1–Q82. Sitting 2: 16 BLOCKING. Sitting 3: 32 minor. Sitting 4: 78 important. Owner deviations of note: Q83 resolve-at-import, Q94 match picker, Q115/Q190 as-typed prices, Q147 no possessive copy, Q175/Q201 tier-/setting-configurable thresholds and ceilings, Q185 lucide-react icons, Q196 venue-local timestamps. Backlog issues: #670–#682. Q86 and Q98, once deferred/provisional, were RESOLVED 2026-08-09 (menu themes and shell themes are categorically different; no named looks ship; no theme-drawn venue strip in the Menus engine). Next: reconcile milestone-plan.md with all recorded answers, then slice 1.
 - **Terminology (2026-08-07):** the unit of work is now a **feature** delivered in **milestones**; "build" and "slice" in recorded answers below are historical synonyms and were not rewritten.
 - **Authority context:** `docs/design/approved/menus/` + `build-decisions.md` (17 decisions). Nothing here re-asks those.
 
@@ -2550,6 +2550,18 @@ The .dc.html authority files render through support.js, which pulls React from a
 
 <sub>support.js "REACT_URL = https://unpkg.com/react@18.3.1…"; README.md "Screenshots are for orientation. The .dc.html files are the reference" — but screenshots/ is an empty folder and the PNGs sit at the bundle root</sub>
 
+### Q209 · important
+
+**Where do the ⋯ card actions live now that the card is nothing but the board — over the render as the component sheet specifies, or in the card's chrome row beneath it?**
+
+Raised by the owner at M2 acceptance (case 3-1, screenshot in `m2-acceptance-record.json`): *"the dots get in the way of the actual on screen info."* Q98 removed the venue-name strip, so the card is now a picture of the board and nothing else — and the glass chip the component sheet places at the board's top-right necessarily sits on top of guest content. On the accepted build it covers the first item's price. The card already carries a chrome row below the board (name, status, counts) which would hold the chip without ever covering the render; a hover/focus-only reveal is the other candidate, but it hides the affordance from mouse users at rest and still covers content once shown.
+
+*Recommended:* Move it into the chrome row below the board — the board is meant to be a picture of the screen, and this is the only option that covers nothing at any card size or pointer type. Requires an amendment to the README component sheet, which currently specifies the glass chip over the board.
+
+*Answer:* DEFERRED (2026-08-10, M2 acceptance). Provisional default per the protocol above: the chip stays over the board's top-right as the component sheet specifies, and therefore keeps covering a little of every card. Accepted into M2 in that state; flagged live on the shelf so the consequence is visible until it is settled.
+
+<sub>`menus-home.css` `.menu-card__menu { position: absolute; top: 10px; right: 10px; }`; README.md Components — top-right glass chip branching on board lightness; Q98 (no venue-name strip)</sub>
+
 ---
 
-**Totals:** 208 questions — 41 blocking, 122 important, 45 minor.
+**Totals:** 209 questions — 41 blocking, 123 important, 45 minor. One open: **Q209** (deferred at M2 acceptance, running on its provisional default).

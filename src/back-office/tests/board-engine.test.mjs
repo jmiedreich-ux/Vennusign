@@ -294,8 +294,10 @@ test("the engine draws no venue-name strip", async () => {
 });
 
 test("the engine imports nothing from either application", async () => {
-  // The single property that makes milestone 4 a re-consumer rather than a
-  // rewrite. Data arrives as props; nothing is reached for.
+  // What this proves and what it does not: it proves the engine has no dependency
+  // that would STOP the display player consuming it in milestone 4. It does not
+  // prove the player consumes it - the player still renders the legacy model, so
+  // card-and-TV parity is not a property this milestone can assert at all.
   for (const source of ["BoardRenderer.tsx", "BoardFrame.tsx", "boardDocument.mjs", "boardTheme.mjs", "boardScale.mjs"]) {
     const code = await codeWithoutComments(source);
     assert.doesNotMatch(
