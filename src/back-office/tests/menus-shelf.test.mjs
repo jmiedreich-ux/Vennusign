@@ -8,6 +8,7 @@ import {
   cardStatus,
   changePhrase,
   filterShelf,
+  hasChangesWaiting,
   isShelfAtScale,
   menusInUse,
   menusNotInUse,
@@ -82,6 +83,25 @@ test("search finds a put-away menu too", () => {
   const menus = [menu({ menuId: "away", name: "Winter Menu", isPutAway: true }), menu({ menuId: "m1" })];
 
   assert.deepEqual(filterShelf(menus, { search: "winter" }).map(item => item.menuId), ["away"]);
+});
+
+test("changes waiting means waiting to reach a screen, so a never-published menu is not one", () => {
+  // Found by the browser spec: the filter counted three while the shelf drew two
+  // pending bars, because a menu with no publish differs from nothing in every
+  // way. Everything about it is waiting, which is a different fact, and the card
+  // states it differently. One predicate now, shared by both.
+  assert.equal(hasChangesWaiting(menu({ draftCount: 5, publishedVersion: null })), false);
+  assert.equal(hasChangesWaiting(menu({ draftCount: 5 })), true);
+  assert.equal(hasChangesWaiting(menu({ draftCount: 0 })), false);
+
+  const menus = [
+    menu({ menuId: "waiting", draftCount: 2 }),
+    menu({ menuId: "never", draftCount: 5, publishedVersion: null })
+  ];
+  assert.deepEqual(
+    filterShelf(menus, { filter: "pending" }).map(item => item.menuId),
+    ["waiting"]
+  );
 });
 
 test("a filter that would match nothing is not offered", () => {

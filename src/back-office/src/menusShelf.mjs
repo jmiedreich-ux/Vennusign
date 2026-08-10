@@ -59,9 +59,22 @@ function byRecencyThenName(left, right) {
  */
 export const shelfFilters = Object.freeze([
   { key: "on-screens", label: "On screens", matches: (menu) => menu.screenIds?.length > 0 },
-  { key: "pending", label: "Changes waiting", matches: (menu) => menu.draftCount > 0 },
+  { key: "pending", label: "Changes waiting", matches: hasChangesWaiting },
   { key: "not-in-use", label: "Not in use", matches: (menu) => menu.isPutAway }
 ]);
+
+/**
+ * Changes waiting means waiting to reach a screen, so a menu that has never been
+ * published has none — everything about it is waiting, which is a different fact
+ * and the card states it differently.
+ *
+ * Shared with the card rather than written twice: a filter that counted three and
+ * a shelf that drew two bars is exactly the kind of quiet disagreement nobody
+ * reports, they just stop trusting the number.
+ */
+export function hasChangesWaiting(menu) {
+  return menu?.draftCount > 0 && menu?.publishedVersion !== null && menu?.publishedVersion !== undefined;
+}
 
 export function availableShelfFilters(menus) {
   return shelfFilters.filter((filter) => (menus ?? []).some((menu) => filter.matches(menu)));

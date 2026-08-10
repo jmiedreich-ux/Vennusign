@@ -74,6 +74,23 @@ WHEN MATCHED THEN UPDATE SET
 WHEN NOT MATCHED THEN INSERT (Id, Name, Timezone, Type, PrimaryLanguage, OrganizationId)
     VALUES (source.Id, source.Name, source.Timezone, source.Type, source.PrimaryLanguage, source.OrganizationId);
 
+-- A second venue, for the Menus shelf at scale (Q176: a 20-screen, 13-menu
+-- check). It exists so that shelf can be deterministic: the default venue
+-- accumulates menus from every spec that seeds, so nothing there can assert
+-- "exactly this many menus" while the suite runs in parallel. Only the scale
+-- seed writes here, and it clears the venue before each run.
+MERGE dbo.Venues AS target
+USING (VALUES ('73000000-0000-0000-0000-000000000002', N'Scale Check Venue', N'America/Los_Angeles', N'Bar', N'en', @OrganizationId))
+    AS source (Id, Name, Timezone, Type, PrimaryLanguage, OrganizationId)
+ON target.Id = source.Id
+WHEN MATCHED THEN UPDATE SET
+    Name = source.Name,
+    Timezone = source.Timezone,
+    OrganizationId = source.OrganizationId,
+    UpdatedUtc = SYSUTCDATETIME()
+WHEN NOT MATCHED THEN INSERT (Id, Name, Timezone, Type, PrimaryLanguage, OrganizationId)
+    VALUES (source.Id, source.Name, source.Timezone, source.Type, source.PrimaryLanguage, source.OrganizationId);
+
 MERGE dbo.Screens AS target
 USING (VALUES (@ScreenId, @VenueId, N'sc-t1demo', N'Acceptance Screen', N'North wall'))
     AS source (Id, VenueId, ScreenKey, Name, Location)

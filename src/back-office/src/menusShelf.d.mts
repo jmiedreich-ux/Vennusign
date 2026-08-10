@@ -23,6 +23,8 @@ export function filterShelf(
   options?: { search?: string; filter?: string | null }
 ): ShelfMenu[];
 
+export function hasChangesWaiting(menu: ShelfMenu): boolean;
+
 export function shelfHeadline(menus: readonly ShelfMenu[] | null | undefined): string;
 
 export function shelfSubLine(menus: readonly ShelfMenu[] | null | undefined): string;

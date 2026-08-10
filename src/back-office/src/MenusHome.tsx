@@ -20,6 +20,7 @@ import {
   cardStatus,
   changePhrase,
   filterShelf,
+  hasChangesWaiting,
   isShelfAtScale,
   menusInUse,
   menusNotInUse,
@@ -123,7 +124,7 @@ export default function MenusHome({
   const hidden = filterShelf(inUse, { search, filter }).length - shown.length;
 
   const screensNeedingAttention = useMemo(
-    () => [...new Set(inUse.filter((menu) => menu.draftCount > 0).flatMap((menu) => menu.screenIds))],
+    () => [...new Set(inUse.filter(hasChangesWaiting).flatMap((menu) => menu.screenIds))],
     [inUse]
   );
 
@@ -319,8 +320,12 @@ function MenuCard({ menu, unavailable, busy, configuration, accessToken, venueNa
   // A menu that has never been published has no bar, however many differences it
   // has from nothing. "5 changes not published" over an empty board is true and
   // useless: everything about it is a change, and the state worth naming is that
-  // no screen has ever shown it. The card's status line says exactly that.
-  const pending = menu.draftCount > 0 && menu.publishedVersion !== null;
+  // no screen has ever shown it. The card status line says exactly that.
+  //
+  // The same predicate the "Changes waiting" filter uses, shared rather than
+  // written twice — a filter counting three while the shelf drew two bars is the
+  // kind of disagreement nobody reports; they just stop trusting the number.
+  const pending = hasChangesWaiting(menu);
 
   const close = () => {
     setOpen(false);

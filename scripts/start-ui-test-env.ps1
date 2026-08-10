@@ -136,10 +136,15 @@ function Wait-ForHttp {
 $guid = { param($base) $base -replace '-0000-0000-0000-', "-0000-0000-$IsolationTag-" }
 # BaselineToken matches the owner acceptance workbook. Only non-default datasets get a
 # tag suffix, so a reviewer can sign in with exactly what the workbook prints.
+# The scale role is an owner of a SECOND venue, so the Menus shelf at scale can be
+# deterministic (Q176). The default venue accumulates menus from every spec that
+# seeds, so nothing there can assert "exactly this many" while the suite runs in
+# parallel; only the scale seed writes to this one, and it clears it first.
 $roles = @(
-    @{ Key = 'owner';     BaselineToken = 'track1-owner-review';   Base = '71000000-0000-0000-0000-000000000001'; Name = 'Track 1 Owner Review';   Role = 'organization_owner' },
-    @{ Key = 'editor';    BaselineToken = 'track1-content-editor'; Base = '71000000-0000-0000-0000-000000000002'; Name = 'Track 1 Content Editor'; Role = 'content_editor' },
-    @{ Key = 'publisher'; BaselineToken = 'track1-publisher';      Base = '71000000-0000-0000-0000-000000000003'; Name = 'Track 1 Publisher';      Role = 'publisher' }
+    @{ Key = 'owner';     BaselineToken = 'track1-owner-review';   Base = '71000000-0000-0000-0000-000000000001'; Name = 'Track 1 Owner Review';   Role = 'organization_owner'; Venue = '73000000-0000-0000-0000-000000000001' },
+    @{ Key = 'editor';    BaselineToken = 'track1-content-editor'; Base = '71000000-0000-0000-0000-000000000002'; Name = 'Track 1 Content Editor'; Role = 'content_editor';     Venue = '73000000-0000-0000-0000-000000000001' },
+    @{ Key = 'publisher'; BaselineToken = 'track1-publisher';      Base = '71000000-0000-0000-0000-000000000003'; Name = 'Track 1 Publisher';      Role = 'publisher';          Venue = '73000000-0000-0000-0000-000000000001' },
+    @{ Key = 'scale';     BaselineToken = 'track1-scale-check';    Base = '71000000-0000-0000-0000-000000000004'; Name = 'Track 1 Scale Check';    Role = 'organization_owner'; Venue = '73000000-0000-0000-0000-000000000002' }
 )
 
 $env:ASPNETCORE_ENVIRONMENT = 'Development'
@@ -152,7 +157,7 @@ for ($index = 0; $index -lt $roles.Count; $index++) {
     $role = $roles[$index]
     $token = if ($IsolationTag -eq '0000') { $role.BaselineToken } else { "track1-$($role.Key)-$IsolationTag" }
     Set-Item "env:BackOffice__Sessions__${index}__AccessToken" $token
-    Set-Item "env:BackOffice__Sessions__${index}__VenueId" (& $guid '73000000-0000-0000-0000-000000000001')
+    Set-Item "env:BackOffice__Sessions__${index}__VenueId" (& $guid $role.Venue)
     Set-Item "env:BackOffice__Sessions__${index}__OrganizationId" (& $guid '72000000-0000-0000-0000-000000000001')
     Set-Item "env:BackOffice__Sessions__${index}__UserId" (& $guid $role.Base)
     Set-Item "env:BackOffice__Sessions__${index}__DisplayName" "$($role.Name) [$IsolationTag]"

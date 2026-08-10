@@ -7,7 +7,12 @@ import { test as base, expect, type Page } from "@playwright/test";
  */
 const tokenStorageKey = "vennusign.back-office.token";
 
-export type VennuRole = "owner" | "editor" | "publisher";
+/**
+ * "scale" is an owner of a SECOND venue, used only by the shelf-at-scale checks.
+ * The default venue accumulates menus from every spec that seeds, so nothing there
+ * can assert "exactly this many menus" while the suite runs in parallel.
+ */
+export type VennuRole = "owner" | "editor" | "publisher" | "scale";
 
 /** Isolation tag of the seeded dataset this run targets. See run-track1-qa.ps1. */
 const tag = process.env.VENNU_ISOLATION_TAG ?? "0000";
@@ -20,7 +25,8 @@ const tag = process.env.VENNU_ISOLATION_TAG ?? "0000";
 const baselineTokens: Record<VennuRole, string> = {
   owner: "track1-owner-review",
   editor: "track1-content-editor",
-  publisher: "track1-publisher"
+  publisher: "track1-publisher",
+  scale: "track1-scale-check"
 };
 
 const tokenFor = (role: VennuRole) =>
@@ -29,7 +35,8 @@ const tokenFor = (role: VennuRole) =>
 export const tokens: Record<VennuRole, string> = {
   owner: process.env.VENNU_OWNER_TOKEN ?? tokenFor("owner"),
   editor: process.env.VENNU_EDITOR_TOKEN ?? tokenFor("editor"),
-  publisher: process.env.VENNU_PUBLISHER_TOKEN ?? tokenFor("publisher")
+  publisher: process.env.VENNU_PUBLISHER_TOKEN ?? tokenFor("publisher"),
+  scale: process.env.VENNU_SCALE_TOKEN ?? tokenFor("scale")
 };
 
 export const apiBaseUrl = process.env.VENNU_API_URL ?? "https://localhost:7138";
