@@ -69,6 +69,76 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         }
     }
 
+    /// <summary>
+    /// Migration 061. Two rules the builder leans on, asserted against the schema
+    /// itself rather than against a component that happens to honour them.
+    /// </summary>
+    [Fact]
+    public async Task Migration_DropsTheSectionArchiveFlagAndEnforcesOnePlacementPerBoard()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+
+        // Sections are deleted, not archived (Q96). The column is gone, so no future
+        // writer of 0 can quietly take a section off a live board behind a filter.
+        var archiveFlag = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            SELECT COUNT(*) AS Value FROM sys.columns
+            WHERE object_id = OBJECT_ID(N'dbo.MenuSections', N'U') AND name = N'IsActive';
+            """,
+            new { })).Single().Value;
+        Assert.Equal(0, archiveFlag);
+
+        foreach (var (constraint, expected) in new[]
+        {
+            ("UQ_Placements_MenuItem", 1),
+            // Strictly implied by the above, because FK_Placements_SectionOnMenu
+            // already ties a placement's section to its menu. Kept alongside, it
+            // would only be a weaker duplicate of a rule already stated.
+            ("UQ_Placements_SectionItem", 0)
+        })
+        {
+            var found = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+                "SELECT COUNT(*) AS Value FROM sys.key_constraints WHERE name = @Name;",
+                new { Name = constraint })).Single().Value;
+            Assert.True(found == expected, $"Expected {constraint} count {expected}, found {found}.");
+        }
+    }
+
+    /// <summary>
+    /// Q112's promise - picking an item already on this board jumps to it rather
+    /// than placing a second copy - enforced where it is enforceable. The UI rule
+    /// is the pleasant version; this is the one that survives a second editor, a
+    /// retry, and a caller that never read the design.
+    /// </summary>
+    [Fact]
+    public async Task Placing_TheSameItemTwiceOnOneBoard_IsRefusedBySchema()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var starters = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var mains = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 1);
+
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("olives"), Price = "7" };
+        await repository.CreateItemOnMenuAsync(item, menuId, starters, itemsPerMenuLimit: 500);
+
+        // A different section of the same menu. Legal before 061, and it would have
+        // rendered the same item twice to a guest.
+        await Assert.ThrowsAnyAsync<Exception>(() => repository.CreatePlacementAsync(new Placement
+        {
+            Id = Guid.NewGuid(),
+            VenueId = venueId,
+            MenuId = menuId,
+            MenuSectionId = mains,
+            ItemId = item.Id,
+            SortOrder = 0
+        }));
+
+        var placements = await repository.GetPlacementsAsync(venueId, menuId);
+        Assert.Single(placements.Where(placement => placement.ItemId == item.Id));
+    }
+
     [Fact]
     public async Task Migration_LeavesTheLibraryEmptyAndDoesNotCarryLegacyContent()
     {
@@ -1338,12 +1408,14 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
             menuId, first, itemsPerMenuLimit: 500);
         var version = await PublishCurrentAsync(repository, venueId, menuId);
 
-        // Every way a section can drift: one added, one deactivated, and the order
-        // of what remains swapped.
+        // Every way a section can drift: one added (carrying an item of its own),
+        // one deleted outright, and the order of what remains swapped.
         var added = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 7);
+        var stranded = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("olives"), Price = "7" };
+        await repository.CreateItemOnMenuAsync(stranded, menuId, added, itemsPerMenuLimit: 500);
         await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
             """
-            UPDATE dbo.MenuSections SET IsActive = 0 WHERE Id = @Second;
+            DELETE FROM dbo.MenuSections WHERE Id = @Second;
             UPDATE dbo.MenuSections SET SortOrder = 5 WHERE Id = @First;
             SELECT 1 AS Value;
             """,
@@ -1357,13 +1429,23 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
 
         var restored = MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId));
         Assert.Equal([first, second], restored!.Sections!.Select(section => section.SectionId).ToArray());
-        // The section added since is put away rather than deleted, so its items
-        // stay in the library and nothing it held is rendered.
+
+        // The section added since is DELETED, not hidden (M3: sections are deleted,
+        // not archived - Q96). Hiding it left a row nothing could ever reach again.
         Assert.DoesNotContain(restored.Sections!, section => section.SectionId == added);
-        var stillThere = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
-            "SELECT COUNT(*) AS Value FROM dbo.MenuSections WHERE Id = @Added AND IsActive = 0;",
+        var sectionRows = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            "SELECT COUNT(*) AS Value FROM dbo.MenuSections WHERE Id = @Added;",
             new { Added = added })).Single().Value;
-        Assert.Equal(1, stillThere);
+        Assert.Equal(0, sectionRows);
+
+        // ...and its item is back in the library rather than destroyed with it. That
+        // is the whole of Q96's "nothing is lost": the item was never IN the section,
+        // a placement put it there, so only the placement goes.
+        var placementRows = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            "SELECT COUNT(*) AS Value FROM dbo.Placements WHERE ItemId = @Item;",
+            new { Item = stranded.Id })).Single().Value;
+        Assert.Equal(0, placementRows);
+        Assert.NotNull(await repository.GetItemAsync(venueId, stranded.Id));
     }
 
     // A restore that cannot put the screens back has not put the menu back, so it
@@ -1697,8 +1779,8 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var sectionId = Guid.NewGuid();
         await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
             """
-            INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, IsActive, CreatedUtc, UpdatedUtc)
-            VALUES (@SectionId, @VenueId, @MenuId, @Name, @SortOrder, 1, SYSUTCDATETIME(), SYSUTCDATETIME());
+            INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            VALUES (@SectionId, @VenueId, @MenuId, @Name, @SortOrder, SYSUTCDATETIME(), SYSUTCDATETIME());
             SELECT 1 AS Value;
             """,
             new { SectionId = sectionId, VenueId = venueId, MenuId = menuId, Name = fixture.UniqueValue("section"), SortOrder = sortOrder });

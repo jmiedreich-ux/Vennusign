@@ -74,8 +74,7 @@ public sealed class PosCatalogImportService(
                 VenueId = venueId,
                 MenuId = menu.Id,
                 Name = Truncate(category.Name, 200),
-                SortOrder = sections.Count,
-                IsActive = true
+                SortOrder = sections.Count
             };
             created.Id = await menuRepository.CreateSectionAsync(created, cancellationToken).ConfigureAwait(false);
             await SaveMappingAsync(venueId, providerValue, PosCatalogEntityType.Category, category.ExternalId, created.Id, cancellationToken).ConfigureAwait(false);

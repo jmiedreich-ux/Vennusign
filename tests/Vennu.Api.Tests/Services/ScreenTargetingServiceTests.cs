@@ -44,8 +44,8 @@ public sealed class ScreenTargetingServiceTests
             Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Main", IsActive = true }],
             Sections =
             [
-                new MenuSection { Id = secondSection, VenueId = venueId, MenuId = menuId, Name = "Drinks", SortOrder = 2, IsActive = true },
-                new MenuSection { Id = firstSection, VenueId = venueId, MenuId = menuId, Name = "Food", SortOrder = 1, IsActive = true }
+                new MenuSection { Id = secondSection, VenueId = venueId, MenuId = menuId, Name = "Drinks", SortOrder = 2 },
+                new MenuSection { Id = firstSection, VenueId = venueId, MenuId = menuId, Name = "Food", SortOrder = 1 }
             ],
             Items =
             [

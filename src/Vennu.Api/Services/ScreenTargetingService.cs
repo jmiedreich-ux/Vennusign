@@ -65,7 +65,6 @@ public sealed class ScreenTargetingService(
 
         var sections = await menuRepository.GetSectionsAsync(venueId, menu.Id, cancellationToken).ConfigureAwait(false);
         var orderedSections = sections
-            .Where(section => section.IsActive)
             .OrderBy(section => section.SortOrder)
             .ThenBy(section => section.Id)
             .ToArray();

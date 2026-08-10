@@ -341,7 +341,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
 
         IF NOT EXISTS (
             SELECT 1 FROM dbo.MenuSections
-            WHERE Id = @SectionId AND MenuId = @MenuId AND VenueId = @VenueId AND IsActive = 1)
+            WHERE Id = @SectionId AND MenuId = @MenuId AND VenueId = @VenueId)
         BEGIN
             ROLLBACK TRANSACTION;
             SELECT N'section_missing' AS Outcome, 0 AS ItemCountOnMenu, 0 AS SortOrder;
@@ -428,7 +428,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                         FOR JSON PATH
                     )) AS items
                 FROM dbo.MenuSections s
-                WHERE s.MenuId = m.Id AND s.VenueId = @VenueId AND s.IsActive = 1
+                WHERE s.MenuId = m.Id AND s.VenueId = @VenueId
                 ORDER BY s.SortOrder, s.Id
                 FOR JSON PATH
             )) AS sections
@@ -584,10 +584,10 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             INSERT @Sections (OldId, NewId)
             SELECT s.Id, NEWID()
             FROM dbo.MenuSections s
-            WHERE s.MenuId = @SourceMenuId AND s.VenueId = @VenueId AND s.IsActive = 1;
+            WHERE s.MenuId = @SourceMenuId AND s.VenueId = @VenueId;
 
-            INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, IsActive, CreatedUtc, UpdatedUtc)
-            SELECT map.NewId, @VenueId, @NewMenuId, s.Name, s.SortOrder, 1, @Now, @Now
+            INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            SELECT map.NewId, @VenueId, @NewMenuId, s.Name, s.SortOrder, @Now, @Now
             FROM dbo.MenuSections s
             INNER JOIN @Sections map ON map.OldId = s.Id
             WHERE s.VenueId = @VenueId;
@@ -730,38 +730,60 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         UPDATE s
         SET s.Name = src.Name,
             s.SortOrder = src.SortOrder,
-            s.IsActive = 1,
             s.UpdatedUtc = @OccurredUtc
         FROM dbo.MenuSections s
         INNER JOIN @Sections src ON src.SectionId = s.Id
         WHERE s.VenueId = @VenueId AND s.MenuId = @MenuId;
 
-        INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, IsActive, CreatedUtc, UpdatedUtc)
-        SELECT src.SectionId, @VenueId, @MenuId, src.Name, src.SortOrder, 1, @OccurredUtc, @OccurredUtc
+        INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+        SELECT src.SectionId, @VenueId, @MenuId, src.Name, src.SortOrder, @OccurredUtc, @OccurredUtc
         FROM @Sections src
         WHERE NOT EXISTS (SELECT 1 FROM dbo.MenuSections s WHERE s.Id = src.SectionId);
 
-        -- A section added since the snapshot is put away rather than deleted: its
-        -- items stay in the library, and nothing the snapshot did not contain is
-        -- rendered. It keeps its parked sort order, which is out of the way.
-        UPDATE s
-        SET s.IsActive = 0, s.UpdatedUtc = @OccurredUtc
+        -- A section added since the snapshot is deleted, and its placements with
+        -- it. Its ITEMS survive: they were never in the section, a placement put
+        -- them there, so they go back to the library exactly as a deliberate
+        -- section delete leaves them (Q96). This used to hide the section behind
+        -- IsActive = 0, which left a row nothing could ever reach again and a
+        -- column whose next writer would silently change a live board.
+        DELETE p
+        FROM dbo.Placements p
+        WHERE p.VenueId = @VenueId AND p.MenuId = @MenuId
+          AND NOT EXISTS (SELECT 1 FROM @Sections src WHERE src.SectionId = p.MenuSectionId);
+
+        DELETE s
         FROM dbo.MenuSections s
         WHERE s.VenueId = @VenueId AND s.MenuId = @MenuId
           AND NOT EXISTS (SELECT 1 FROM @Sections src WHERE src.SectionId = s.Id);
 
         DECLARE @Items TABLE (SectionId UNIQUEIDENTIFIER, ItemId UNIQUEIDENTIFIER, Name NVARCHAR(200), Description NVARCHAR(1000), Price NVARCHAR(40), SortOrder INT);
+
+        -- One placement per item per board (UQ_Placements_MenuItem, migration 061).
+        -- A snapshot recorded BEFORE that constraint existed can name the same item
+        -- in two sections, and restoring it verbatim would fail on the constraint --
+        -- turning an old version into one nobody can ever go back to. The first
+        -- occurrence by section order then item order wins: the copy a guest would
+        -- have read first on that board.
+        WITH recorded AS
+        (
+            SELECT sec.SectionId, i.itemId, i.name, i.description, i.price, i.sortOrder,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY i.itemId
+                       ORDER BY sec.SortOrder, i.sortOrder) AS Rank
+            FROM @Sections sec
+            CROSS APPLY OPENJSON(sec.Items)
+            WITH (
+                itemId UNIQUEIDENTIFIER '$.itemId',
+                name NVARCHAR(200) '$.name',
+                description NVARCHAR(1000) '$.description',
+                price NVARCHAR(40) '$.price',
+                sortOrder INT '$.sortOrder'
+            ) i
+        )
         INSERT @Items (SectionId, ItemId, Name, Description, Price, SortOrder)
-        SELECT sec.SectionId, i.itemId, i.name, i.description, i.price, i.sortOrder
-        FROM @Sections sec
-        CROSS APPLY OPENJSON(sec.Items)
-        WITH (
-            itemId UNIQUEIDENTIFIER '$.itemId',
-            name NVARCHAR(200) '$.name',
-            description NVARCHAR(1000) '$.description',
-            price NVARCHAR(40) '$.price',
-            sortOrder INT '$.sortOrder'
-        ) i;
+        SELECT SectionId, itemId, name, description, price, sortOrder
+        FROM recorded
+        WHERE Rank = 1;
 
         -- Values go back onto the items that already exist. Identity is permanent.
         UPDATE it

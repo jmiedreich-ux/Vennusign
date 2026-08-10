@@ -210,7 +210,7 @@ internal sealed class FakeContentRepository : IContentRepository
         int itemsPerMenuLimit,
         CancellationToken cancellationToken = default)
     {
-        if (!Sections.Any(section => section.Id == sectionId && section.MenuId == menuId && section.VenueId == item.VenueId && section.IsActive))
+        if (!Sections.Any(section => section.Id == sectionId && section.MenuId == menuId && section.VenueId == item.VenueId))
         {
             return Task.FromResult(new ItemPlacementOutcome(ItemPlacementOutcomes.SectionMissing, 0, 0));
         }

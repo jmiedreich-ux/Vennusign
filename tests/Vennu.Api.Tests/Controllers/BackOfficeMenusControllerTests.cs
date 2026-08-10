@@ -68,7 +68,7 @@ public sealed class BackOfficeMenusControllerTests : IClassFixture<VennuApiFacto
         public Task<MenuSection> CreateAsync(Guid venueId, Guid menuId, string name, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task<MenuSection?> UpdateAsync(Guid venueId, Guid sectionId, string name, bool isActive, CancellationToken cancellationToken = default) =>
+        public Task<MenuSection?> UpdateAsync(Guid venueId, Guid sectionId, string name, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
         public Task<int> ReorderAsync(Guid venueId, Guid menuId, IReadOnlyCollection<Guid> sectionIds, CancellationToken cancellationToken = default) =>

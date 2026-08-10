@@ -72,7 +72,7 @@ public sealed class MenuSectionManagementServiceTests
         };
         var service = CreateService(repository);
 
-        var result = await service.UpdateAsync(Guid.NewGuid(), Guid.NewGuid(), "Changed", false);
+        var result = await service.UpdateAsync(Guid.NewGuid(), Guid.NewGuid(), "Changed");
 
         Assert.Null(result);
         Assert.Null(repository.UpdatedSection);

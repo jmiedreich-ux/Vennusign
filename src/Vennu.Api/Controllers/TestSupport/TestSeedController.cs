@@ -110,7 +110,7 @@ public sealed class TestSeedController(
             cancellationToken).ConfigureAwait(false);
 
         var sectionId = await menuRepository.CreateSectionAsync(
-            new MenuSection { Id = Guid.NewGuid(), VenueId = session.VenueId, MenuId = menuId, Name = $"{label} section {suffix}", SortOrder = 0, IsActive = true },
+            new MenuSection { Id = Guid.NewGuid(), VenueId = session.VenueId, MenuId = menuId, Name = $"{label} section {suffix}", SortOrder = 0 },
             cancellationToken).ConfigureAwait(false);
 
         var itemName = $"{label} item {suffix}";
@@ -339,8 +339,7 @@ public sealed class TestSeedController(
                     VenueId = session.VenueId,
                     MenuId = menuId,
                     Name = index % 2 == 0 ? "Drinks" : "Snacks",
-                    SortOrder = 0,
-                    IsActive = true
+                    SortOrder = 0
                 },
                 cancellationToken).ConfigureAwait(false);
 

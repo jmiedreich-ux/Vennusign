@@ -84,7 +84,7 @@ public sealed class BackOfficeMenusController(
         try
         {
             var section = await sectionService
-                .UpdateAsync(VenueId, sectionId, request.Name, request.IsActive, cancellationToken)
+                .UpdateAsync(VenueId, sectionId, request.Name, cancellationToken)
                 .ConfigureAwait(false);
             return section is null ? NotFound() : Ok(section);
         }

@@ -12,8 +12,6 @@ public sealed class MenuSection
 
     public int SortOrder { get; set; }
 
-    public bool IsActive { get; set; } = true;
-
     public DateTime CreatedUtc { get; set; }
 
     public DateTime UpdatedUtc { get; set; }
