@@ -36,6 +36,56 @@ These govern every task, not only milestone work.
 - **Evidence is a command someone else can rerun, and its output** — a test run, a request and its response, a case that failed and then passed. "Verified working" is not evidence. Anything not actually executed is marked **UNTESTED**; that is an acceptable answer, a false "done" is not.
 - **Read the handoff first, append to it last.** Before starting, read `ai/handoffs/current.md` and honour what earlier tasks established. Before stopping, append what was established, what was assumed, what was deliberately left for later and for whom, and any open questions.
 
+## Definition of Done
+
+"Done" is not "the happy path works". Each item below is considered before a change is called done; the ones that do not apply to it are **named as not applying**, not passed over in silence. Anything not actually executed is marked **UNTESTED**.
+
+**The behaviour**
+
+- Happy path works end to end.
+- Loading, empty, disabled, error and retry states.
+- Validation on first entry **and** when editing an already-saved value.
+- Error recovery: the person can retry without losing what they entered.
+
+**The data**
+
+- New data **and** existing saved data — both; they diverge constantly.
+- Empty, invalid, minimum, maximum, very long, duplicate values.
+- Partially completed data.
+
+**Navigation and persistence**
+
+- Back preserves entered values.
+- Browser refresh mid-flow.
+- Leave and return; resume an interrupted flow.
+- Cancel, and close.
+- Edit after completion.
+- Double-click and repeated submission.
+
+**Access**
+
+- Each role, each tier.
+- Permission granted and denied.
+- Feature enabled, disabled, unavailable, upgrade-required.
+- Role or tier changed **after** the data was created.
+
+**Integration, where a service is involved**
+
+- Success, failure, timeout, partial response.
+- Retry after failure.
+
+**Display, where UI changed**
+
+- Smallest and largest supported widths.
+- Long labels and overflow.
+- Zero records, one, many, and more than fit.
+
+**The multiplier**
+
+- Every location the same behaviour lives — searched, listed, all fixed.
+- Every consumer of any shared component touched.
+- Nothing adjacent broken: a quick regression of the surrounding flow.
+
 ## Architecture
 
 - Target `.NET 9`.
@@ -95,7 +145,7 @@ Adopted 2026-08-09 from the Menus Milestone 1 retrospective, after five consecut
 ## UI Completeness
 
 - Before changing a page or screen, load the project-local Impeccable skill at `.agents/skills/impeccable/SKILL.md` and follow its routing and bounded verification rules. Run a critique/audit pass against the approved design authority before a milestone closes.
-- Record goals, hierarchy/navigation, CRUD actions, loading/empty/error/success/permission states, validation, destructive-action safety, feedback, accessibility/responsiveness, and required API/data/auth/entitlement support.
+- Record goals, hierarchy and navigation, CRUD actions, destructive-action safety, feedback, accessibility and responsiveness, and the API, data, auth and entitlement support required. States, data shapes, access and display coverage are the *Definition of Done* above — one list, not two.
 - Resolve required gaps in scope or record an approved exclusion/follow-up. Do not ship necessary actions or states as silent omissions.
 
 ## Review and Merge Gate
