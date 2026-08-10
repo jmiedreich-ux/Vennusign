@@ -69,12 +69,88 @@ public sealed record PutAwayResponse(bool Changed, bool IsPutAway, int ActiveMen
 
 public sealed record PublishTargetResponse(Guid ScreenId, string State);
 
+/// <summary>
+/// Version is the publish this entry names, and null for the kinds that are not a
+/// publish. It is what makes "Go back to…" reachable: that act is addressed by
+/// version, and without this the only place a client ever learns one is the response
+/// to its own publish.
+/// </summary>
 public sealed record HistoryEntryResponse(
     string Kind,
     DateTime OccurredUtc,
     string? Author,
     string? Detail,
-    long? ReplacedByVersion);
+    long? ReplacedByVersion,
+    long? Version);
+
+/// <summary>
+/// One card on the Menus home shelf.
+///
+/// Board is what the screens are showing, and is null when the menu has never been
+/// published — the shelf renders that state rather than treating it as an error.
+/// DraftCount is the difference between that board and the menu as it stands, so a
+/// card's count and the board it draws always describe the same pair.
+///
+/// ScreenIds is published truth, never the assignments: a menu can be assigned to a
+/// screen and not yet be on it, which is the whole point of a deliberate publish.
+/// </summary>
+public sealed record ShelfMenuResponse(
+    Guid MenuId,
+    string Name,
+    string? Theme,
+    bool IsPutAway,
+    long? PublishedVersion,
+    DateTime? LastPublishedUtc,
+    string? LastPublishedBy,
+    int DraftCount,
+    IReadOnlyCollection<Guid> ScreenIds,
+    BoardResponse? Board);
+
+/// <summary>
+/// A board as the render engine consumes it. Prices are strings because they are
+/// stored exactly as typed — "9.5" never becomes "9.50", and "MP" is a price
+/// (Q115/Q190). Theme is the menu theme attached to it, or null: no theme attached
+/// is a valid state the engine renders plainly (Q86).
+/// </summary>
+public sealed record BoardResponse(
+    Guid MenuId,
+    string? Name,
+    string? Theme,
+    int DwellSeconds,
+    int LoopWarningSeconds,
+    IReadOnlyCollection<BoardSectionResponse> Sections);
+
+public sealed record BoardSectionResponse(
+    Guid SectionId,
+    string? Name,
+    int SortOrder,
+    IReadOnlyCollection<BoardItemResponse> Items);
+
+public sealed record BoardItemResponse(
+    Guid ItemId,
+    string? Name,
+    string? Description,
+    string? Price,
+    int SortOrder);
+
+/// <summary>
+/// The board a menu's screens are showing, with the publish that put it there — read
+/// as one row, so the version can never label a different board than the one returned.
+/// </summary>
+public sealed record PublishedBoardResponse(
+    Guid MenuId,
+    long Version,
+    DateTime PublishedUtc,
+    string? PublishedBy,
+    BoardResponse? Board);
+
+/// <summary>
+/// The copy's id and the name it actually got. The name is returned rather than
+/// assumed: a caller asking to duplicate "Summer Menu" may be given
+/// "Summer Menu copy 3", and saying so is the difference between the UI showing the
+/// truth and showing a guess.
+/// </summary>
+public sealed record DuplicateResponse(Guid MenuId, string Name, int ActiveMenuCount);
 
 public sealed record AssignmentResponse(
     Guid ScreenId,

@@ -29,6 +29,14 @@ public sealed class MenuHistoryEntry
     public string? Author { get; set; }
 
     public DateTime OccurredUtc { get; set; }
+
+    /// <summary>
+    /// The version of the publish event this entry names, when it names one. Read
+    /// only — it is the publish event's value, not the entry's own — and it is what
+    /// makes "Go back to…" reachable from a list of what happened, since that act is
+    /// addressed by version.
+    /// </summary>
+    public long? Version { get; set; }
 }
 
 public static class MenuHistoryKinds
@@ -48,6 +56,13 @@ public static class MenuHistoryKinds
 
     public const string Assigned = "assigned";
 
+    /// <summary>
+    /// Recorded on the copy, not the original: it is the only place that says where
+    /// a never-published menu came from. Plain creation is deliberately not recorded
+    /// — CreatedUtc already says all there is to say about it.
+    /// </summary>
+    public const string Duplicated = "duplicated";
+
     public static bool IsSupported(string? value) =>
-        value is Published or DraftDiscarded or PutAway or PutBack or TakenOffScreens or Restored or Assigned;
+        value is Published or DraftDiscarded or PutAway or PutBack or TakenOffScreens or Restored or Assigned or Duplicated;
 }

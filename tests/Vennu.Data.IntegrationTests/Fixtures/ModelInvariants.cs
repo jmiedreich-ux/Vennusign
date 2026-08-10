@@ -137,6 +137,28 @@ internal static class ModelInvariants
                 FROM dbo.MenuHistoryEntries h INNER JOIN dbo.Menus m ON m.Id = h.MenuId WHERE h.VenueId <> m.VenueId
             ) breaches;
             """),
+
+        new(
+            "A menu's published version is the version it last published",
+            "Milestone 2. Two columns describing one fact, written by different statements and read by "
+            + "different surfaces: the shelf card shows PublishedVersion, while the board it draws comes from "
+            + "the latest publish event. A duplicate that copied its source's PublishedVersion, or a publish "
+            + "that recorded an event without moving the menu on, would leave the card saying one version and "
+            + "showing another - and nothing in the schema connects the two. A menu with no publish events has "
+            + "never been published and says so with NULL.",
+            """
+            SELECT CONCAT('menu ', m.Id, ' says it published version ',
+                          ISNULL(CAST(m.PublishedVersion AS NVARCHAR(20)), 'nothing'),
+                          ' but its latest publish event is ',
+                          ISNULL(CAST(latest.Version AS NVARCHAR(20)), 'none')) AS Offence
+            FROM dbo.Menus m
+            OUTER APPLY (
+                SELECT MAX(e.Version) AS Version
+                FROM dbo.MenuPublishEvents e
+                WHERE e.MenuId = m.Id AND e.VenueId = m.VenueId
+            ) latest
+            WHERE ISNULL(m.PublishedVersion, -1) <> ISNULL(latest.Version, -1);
+            """),
     ];
 
     /// <summary>

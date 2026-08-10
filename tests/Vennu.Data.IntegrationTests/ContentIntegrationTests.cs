@@ -920,6 +920,282 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
             history => history.Kind == MenuHistoryKinds.PutBack);
     }
 
+    // ---- the shelf ---------------------------------------------------------------
+
+    /// <summary>
+    /// The shelf reads every menu in one statement, and each card's board and its
+    /// change count come from the same pair of snapshots — so a card can never draw
+    /// one board while counting the difference to another.
+    /// </summary>
+    [Fact]
+    public async Task Shelf_ReturnsEveryMenuWithItsPublishedBoardAndItsOwnDraftCount()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var publishedMenuId = await SeedMenuAsync(dataAccess, venueId);
+        var neverPublishedMenuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, publishedMenuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = publishedMenuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("shelf-ale"), Price = "5" },
+            publishedMenuId, sectionId, itemsPerMenuLimit: 500);
+
+        var published = await PublishCurrentAsync(repository, venueId, publishedMenuId, "Alex");
+
+        // One edit after the publish, so this card has exactly one waiting change.
+        var item = (await repository.GetItemsAsync(venueId)).Single(candidate => candidate.Price == "5");
+        item.Price = "MP";
+        await repository.UpdateItemAsync(item);
+
+        var shelf = await repository.GetShelfAsync(venueId);
+
+        var card = Assert.Single(shelf, menu => menu.MenuId == publishedMenuId);
+        Assert.Equal(published.Event.Version, card.PublishedVersion);
+        Assert.Equal("Alex", card.LastPublishedBy);
+        Assert.NotNull(card.LastPublishedUtc);
+        var change = Assert.Single(MenuSnapshot.Diff(card.PublishedSnapshot, card.WorkingSnapshot));
+        Assert.Equal("price", change.Field);
+        // Exactly as typed, on the shelf as everywhere else (Q115/Q190).
+        Assert.Equal("MP", change.AfterValue);
+
+        // A menu that has never been published is a card with no board, not an error
+        // and not an empty board that would render as a blank screen.
+        var unpublished = Assert.Single(shelf, menu => menu.MenuId == neverPublishedMenuId);
+        Assert.Null(unpublished.PublishedSnapshot);
+        Assert.Null(unpublished.PublishedVersion);
+        Assert.NotNull(unpublished.WorkingSnapshot);
+    }
+
+    [Fact]
+    public async Task Shelf_ShowsAPutAwayMenuAsPutAway()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+
+        await repository.SetPutAwayAsync(venueId, menuId, true, 50, "Alex", "Put away.", DateTime.UtcNow);
+
+        var card = Assert.Single(await repository.GetShelfAsync(venueId), menu => menu.MenuId == menuId);
+        Assert.True(card.IsPutAway);
+    }
+
+    [Fact]
+    public async Task Shelf_NeverReachesIntoAnotherVenue()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var mine = await SeedVenueAsync(dataAccess);
+        var theirs = await SeedVenueAsync(dataAccess);
+        var myMenu = await SeedMenuAsync(dataAccess, mine);
+        var theirMenu = await SeedMenuAsync(dataAccess, theirs);
+
+        var shelf = await repository.GetShelfAsync(mine);
+
+        Assert.Contains(shelf, menu => menu.MenuId == myMenu);
+        Assert.DoesNotContain(shelf, menu => menu.MenuId == theirMenu);
+    }
+
+    /// <summary>
+    /// The board and the version that put it there come from one row. Read
+    /// separately, a publish landing between them returns one version's board
+    /// labelled with another's — the torn read this model has produced before.
+    /// </summary>
+    [Fact]
+    public async Task PublishedBoard_CarriesTheVersionAndAuthorThatPutItOnTheScreens()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("board-ale"), Price = "4" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+
+        var first = await PublishCurrentAsync(repository, venueId, menuId, "Alex");
+        var item = (await repository.GetItemsAsync(venueId)).Single(candidate => candidate.Price == "4");
+        item.Price = "4.5";
+        await repository.UpdateItemAsync(item);
+        var second = await PublishCurrentAsync(repository, venueId, menuId, "Sam");
+
+        var board = await repository.GetLatestPublishedBoardAsync(venueId, menuId);
+
+        Assert.NotNull(board);
+        Assert.Equal(second.Event.Version, board!.Version);
+        Assert.Equal("Sam", board.Author);
+        Assert.NotEqual(first.Event.Version, board.Version);
+        // The board returned is the one that version published, not the earlier one.
+        Assert.Equal(second.Event.Snapshot, board.Snapshot);
+    }
+
+    [Fact]
+    public async Task PublishedBoard_IsNullForAMenuThatHasNeverBeenPublished()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+
+        Assert.Null(await repository.GetLatestPublishedBoardAsync(venueId, menuId));
+    }
+
+    // ---- history carries the version -----------------------------------------------
+
+    /// <summary>
+    /// "Go back to..." is addressed by version, so a list of what happened has to
+    /// carry one. Without this the only place a client ever learns a version is the
+    /// response to its own publish, and the action is unreachable from the UI.
+    /// </summary>
+    [Fact]
+    public async Task History_CarriesTheVersionOfThePublishItNames()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("history-ale"), Price = "3" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+
+        var published = await PublishCurrentAsync(repository, venueId, menuId);
+
+        var entries = await repository.GetHistoryAsync(venueId, menuId, 20);
+
+        var publishEntry = Assert.Single(entries, entry => entry.Kind == MenuHistoryKinds.Published);
+        Assert.Equal(published.Event.Version, publishEntry.Version);
+
+        // The kinds that are not a publish carry no version, rather than borrowing one.
+        Assert.All(
+            entries.Where(entry => entry.Kind != MenuHistoryKinds.Published),
+            entry => Assert.Null(entry.Version));
+    }
+
+    // ---- duplicate -----------------------------------------------------------------
+
+    /// <summary>
+    /// Q20: the copy places the SAME library items, so a later price edit reaches
+    /// both boards. Cloning the items instead would look identical on the day and
+    /// diverge silently afterwards.
+    /// </summary>
+    [Fact]
+    public async Task Duplicate_PlacesTheSameLibraryItemsOnANeverPublishedCopy()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("dupe-ale"), Price = "9" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+        _ = await PublishCurrentAsync(repository, venueId, menuId);
+
+        var copyId = Guid.NewGuid();
+        var outcome = await repository.DuplicateMenuWithinCeilingAsync(
+            venueId, menuId, copyId, 50, "Alex", "Duplicated.", DateTime.UtcNow);
+
+        Assert.True(outcome.Created);
+
+        // Same library items: one item, on two boards.
+        var sourcePlacements = await repository.GetPlacementsAsync(venueId, menuId);
+        var copyPlacements = await repository.GetPlacementsAsync(venueId, copyId);
+        Assert.Equal(
+            sourcePlacements.Select(p => p.ItemId).OrderBy(id => id),
+            copyPlacements.Select(p => p.ItemId).OrderBy(id => id));
+
+        // ...and the sections are the copy's own, not shared with the original.
+        Assert.Empty(copyPlacements.Select(p => p.MenuSectionId).Intersect(sourcePlacements.Select(p => p.MenuSectionId)));
+
+        // Never published, on no screen: delivery is always deliberate.
+        Assert.Null(await repository.GetLatestPublishedBoardAsync(venueId, copyId));
+        Assert.DoesNotContain(await repository.GetAssignmentsAsync(venueId), a => a.MenuId == copyId);
+
+        // The copy's timeline says where it came from - the one thing not derivable
+        // from any other column.
+        var entry = Assert.Single(await repository.GetHistoryAsync(venueId, copyId, 10));
+        Assert.Equal(MenuHistoryKinds.Duplicated, entry.Kind);
+        Assert.Equal("Alex", entry.Author);
+    }
+
+    /// <summary>
+    /// Menu names are not unique in the database, so two people duplicating the same
+    /// menu at once would both read "no copy yet" and both take the name. The name is
+    /// chosen inside the same lock as the insert, so the second one gets the next one.
+    /// </summary>
+    [Fact]
+    public async Task Duplicate_GivesTheSecondCopyItsOwnName()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sourceName = (await repository.GetShelfAsync(venueId)).Single(menu => menu.MenuId == menuId).Name;
+
+        var first = await repository.DuplicateMenuWithinCeilingAsync(
+            venueId, menuId, Guid.NewGuid(), 50, "Alex", "Duplicated.", DateTime.UtcNow);
+        var second = await repository.DuplicateMenuWithinCeilingAsync(
+            venueId, menuId, Guid.NewGuid(), 50, "Alex", "Duplicated.", DateTime.UtcNow);
+
+        Assert.Equal($"{sourceName} copy", first.Name);
+        Assert.Equal($"{sourceName} copy 2", second.Name);
+    }
+
+    /// <summary>
+    /// A duplicate is a new menu, so it is bounded by the same ceiling as creating
+    /// one - otherwise Duplicate is simply the way around the limit.
+    /// </summary>
+    [Fact]
+    public async Task Duplicate_IsRefusedAtTheMenuCeiling()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+
+        // The venue has exactly one active menu, and the ceiling is one.
+        var outcome = await repository.DuplicateMenuWithinCeilingAsync(
+            venueId, menuId, Guid.NewGuid(), 1, "Alex", "Duplicated.", DateTime.UtcNow);
+
+        Assert.False(outcome.Created);
+        Assert.Equal(1, outcome.ActiveMenuCount);
+        Assert.Null(outcome.Name);
+    }
+
+    /// <summary>
+    /// The statement's own tenant check, the same 51001 every other menu-scoped write
+    /// raises. The service refuses earlier, by not finding the menu on the caller's
+    /// shelf at all; this is the backstop underneath that, so a copy can never be made
+    /// from another venue's menu even if a caller reaches the repository directly.
+    /// </summary>
+    [Fact]
+    public async Task Duplicate_RefusesAMenuFromAnotherVenue()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var mine = await SeedVenueAsync(dataAccess);
+        var theirs = await SeedVenueAsync(dataAccess);
+        var theirMenu = await SeedMenuAsync(dataAccess, theirs);
+        var copyId = Guid.NewGuid();
+
+        var refusal = await Assert.ThrowsAsync<Microsoft.Data.SqlClient.SqlException>(
+            () => repository.DuplicateMenuWithinCeilingAsync(
+                mine, theirMenu, copyId, 50, "Alex", "Duplicated.", DateTime.UtcNow));
+
+        Assert.Equal(51001, refusal.Number);
+        Assert.DoesNotContain(await repository.GetShelfAsync(mine), menu => menu.MenuId == copyId);
+        Assert.DoesNotContain(await repository.GetShelfAsync(theirs), menu => menu.MenuId == copyId);
+    }
+
     // ---- restore ---------------------------------------------------------------
 
     // Q67/Q43: restore puts values back onto the rows that already exist, brings
