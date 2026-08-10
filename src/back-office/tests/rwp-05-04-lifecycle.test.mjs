@@ -29,4 +29,3 @@ test("navigation exposes only implemented home, account, and POS administration"
   assert.match(pos, /Import catalog/);
   assert.match(pos, /role="alert"/);
 });
-

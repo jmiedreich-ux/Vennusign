@@ -1891,6 +1891,99 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
     }
 
     /// <summary>
+    /// The guard that makes Undo safe. An inverse write carries the values it
+    /// expects to find; if somebody else has edited the item since, it refuses and
+    /// changes nothing rather than restoring an older value over their work.
+    /// </summary>
+    [Fact]
+    public async Task GuardedItemEdit_RefusesWhenSomebodyElseChangedItFirst()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+
+        var item = new Item
+        {
+            Id = Guid.NewGuid(),
+            VenueId = venueId,
+            Name = fixture.UniqueValue("chowder"),
+            Description = "with oyster crackers",
+            Price = "12.50"
+        };
+        await repository.CreateItemOnMenuAsync(item, menuId, sectionId, itemsPerMenuLimit: 500);
+
+        // Editor A raises the price. This is a plain edit — no expectation.
+        var raised = await repository.UpdateItemValuesGuardedAsync(
+            venueId, item.Id, item.Name, item.Description, "14.00", expected: null, DateTime.UtcNow);
+        Assert.Equal("updated", raised.Outcome);
+
+        // Editor B, elsewhere, edits the same item afterwards.
+        var theirs = await repository.UpdateItemValuesGuardedAsync(
+            venueId, item.Id, "Editor B name", "editor B later", "99", expected: null, DateTime.UtcNow);
+        Assert.Equal("updated", theirs.Outcome);
+
+        // Editor A presses Undo. It expects to find what A wrote, and does not.
+        var undone = await repository.UpdateItemValuesGuardedAsync(
+            venueId,
+            item.Id,
+            item.Name,
+            item.Description,
+            "12.50",
+            new ItemValueExpectation(item.Name, item.Description, "14.00"),
+            DateTime.UtcNow);
+
+        Assert.Equal("item_changed", undone.Outcome);
+
+        // B's values are intact — all three of them, not just the guarded one.
+        var live = await repository.GetItemAsync(venueId, item.Id);
+        Assert.NotNull(live);
+        Assert.Equal("Editor B name", live!.Name);
+        Assert.Equal("editor B later", live.Description);
+        Assert.Equal("99", live.Price);
+    }
+
+    /// <summary>
+    /// The same guard, satisfied. NULL and empty are one absence: the API normalises
+    /// an empty description to NULL going in, so an Undo echoing back what it was
+    /// handed must not refuse itself over which of the two it sent.
+    /// </summary>
+    [Fact]
+    public async Task GuardedItemEdit_AppliesWhenNothingMovedAndTreatsEmptyAsNull()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+
+        var item = new Item
+        {
+            Id = Guid.NewGuid(),
+            VenueId = venueId,
+            Name = fixture.UniqueValue("soda"),
+            Description = null,
+            Price = "3.00"
+        };
+        await repository.CreateItemOnMenuAsync(item, menuId, sectionId, itemsPerMenuLimit: 500);
+
+        var undone = await repository.UpdateItemValuesGuardedAsync(
+            venueId,
+            item.Id,
+            item.Name,
+            null,
+            "2.50",
+            new ItemValueExpectation(item.Name, string.Empty, "3.00"),
+            DateTime.UtcNow);
+
+        Assert.Equal("updated", undone.Outcome);
+
+        var live = await repository.GetItemAsync(venueId, item.Id);
+        Assert.Equal("2.50", live!.Price);
+    }
+
+    /// <summary>
     /// Q112: an item already on this board is not a second copy and not an error.
     /// The caller is told which section it sits in, so the UI can jump there.
     /// </summary>

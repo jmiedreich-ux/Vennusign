@@ -273,4 +273,3 @@ test("a menu holding changes can still be opened by its board", async ({ page })
   await card.getByTestId("open-menu").click();
   await expect(page.getByTestId("menu-builder")).toBeVisible();
 });
-

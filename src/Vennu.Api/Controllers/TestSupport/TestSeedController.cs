@@ -64,6 +64,71 @@ public sealed class TestSeedController(
         public string? ScreenKey { get; init; }
     }
 
+    public sealed record BackdateAvailabilityRequest
+    {
+        public string? AccessToken { get; init; }
+        public Guid ItemId { get; init; }
+        /// <summary>How far back to move the moment this item went off.</summary>
+        public int MinutesAgo { get; init; }
+    }
+
+    /// <summary>
+    /// Moves an existing 86 backwards in time.
+    /// </summary>
+    /// <remarks>
+    /// The 86 note states WHEN an item went off, and two items 86'd in the same
+    /// second produce identical notes — which is indistinguishable from the defect
+    /// of handing one board-level note to every dimmed row. A spec that cannot tell
+    /// the fix from the bug is not evidence, so the times have to actually differ,
+    /// and a spec cannot wait a minute to make that true.
+    ///
+    /// It writes through the same repository the product writes through; only the
+    /// clock is supplied rather than read.
+    /// </remarks>
+    [HttpPost("seed/backdate-availability")]
+    public async Task<ActionResult> BackdateAvailability(
+        [FromBody] BackdateAvailabilityRequest? request,
+        CancellationToken cancellationToken)
+    {
+        if (!environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        request ??= new BackdateAvailabilityRequest();
+        var sessions = backOfficeOptions
+            .Get(BackOfficeAuthenticationDefaults.AuthenticationScheme)
+            .Sessions.Where(session => session.Enabled).ToList();
+        var session = string.IsNullOrWhiteSpace(request.AccessToken)
+            ? null
+            : sessions.FirstOrDefault(candidate =>
+                string.Equals(candidate.AccessToken, request.AccessToken, StringComparison.Ordinal));
+        if (session is null)
+        {
+            return NotFound();
+        }
+
+        var existing = (await libraryRepository.GetAvailabilityAsync(session.VenueId, cancellationToken).ConfigureAwait(false))
+            .FirstOrDefault(state => state.ItemId == request.ItemId);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        await libraryRepository.SetAvailabilityAsync(
+            new ItemAvailability
+            {
+                VenueId = session.VenueId,
+                ItemId = request.ItemId,
+                IsAvailable = existing.IsAvailable,
+                ChangedUtc = existing.ChangedUtc.AddMinutes(-Math.Abs(request.MinutesAgo)),
+                ChangedBy = existing.ChangedBy
+            },
+            cancellationToken).ConfigureAwait(false);
+
+        return NoContent();
+    }
+
     [HttpPost("seed")]
     public async Task<ActionResult<SeedResponse>> Seed(
         [FromBody] SeedRequest? request,

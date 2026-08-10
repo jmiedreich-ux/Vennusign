@@ -131,6 +131,107 @@
   grid-template-columns: 212px minmax(0, 1fr) 296px;
   min-height: 0;
   overflow: hidden;
+  /* The bulk drawer anchors here so it can cover the canvas and leave the rail. */
+  position: relative;
+}
+
+/* ---- bulk drawer (Q95 opens it, Q124 governs it) ------------------------- */
+
+.builder__drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 12px;
+  width: min(420px, calc(100% - 212px));
+  padding: 16px;
+  border-left: 1px solid var(--sky-color-border, #e9eef4);
+  background: var(--sky-color-surface, #fff);
+  box-shadow: -14px 0 34px rgb(15 23 42 / 12%);
+}
+
+.builder__drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.builder__drawer-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.builder__drawer-head button {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: var(--sky-radius-sm, 8px);
+  background: transparent;
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.builder__drawer-search {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--sky-color-border, #cbd5e1);
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  font: inherit;
+  font-size: 13px;
+}
+
+.builder__drawer-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.builder__drawer-list label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 9px;
+  padding: 7px 4px;
+  border-radius: var(--sky-radius-sm, 8px);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.builder__drawer-list label:hover {
+  background: var(--sky-color-surface-muted, #f4f7fa);
+}
+
+/* Already here: shown so you know, dimmed so you do not try. */
+.builder__drawer-list label.is-here {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.builder__drawer-list .builder__add-where {
+  grid-column: 2;
+}
+
+.builder__drawer-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.builder__drawer-note {
+  font-size: 12px;
+  color: var(--sky-color-text-muted, #64748b);
+}
+
+.builder__add-many {
+  margin-top: 8px;
+  font-size: 12px;
 }
 
 /* ---- section rail -------------------------------------------------------- */
@@ -396,14 +497,27 @@
  * The drag pill hangs off the left edge on hover as well as selection (Q103), so
  * a row can be dragged without clicking it first.
  */
+.builder__board-card .board-item[draggable="true"] {
+  cursor: grab;
+}
+
+.builder__board-card .board-item[draggable="true"]:active {
+  cursor: grabbing;
+}
+
 .builder__board-card .board-item::after {
   content: "⠿";
   position: absolute;
-  left: -22px;
+  /*
+   * Sized and offset against the board's own scale, like the 86 note above. A
+   * fixed 14px inside a board drawn at ~0.35 renders at about five — which is how
+   * the 86 note came to measure 5px and pass every computed-style check.
+   */
+  left: calc(-22px / var(--board-scale, 1));
   top: 0.35em;
   opacity: 0;
   color: var(--sky-selection, #2a78d6);
-  font-size: 14px;
+  font-size: calc(14px / var(--board-scale, 1));
   transition: opacity 90ms ease;
 }
 
@@ -428,6 +542,27 @@
   font: inherit;
   font-size: 15px;
   text-align: right;
+}
+
+/*
+ * Renaming a section by typing over its heading (Q96). Sized from the measured
+ * heading box, so it lands where the words were rather than near them.
+ */
+.builder__heading-edit {
+  position: absolute;
+  z-index: 5;
+  border: 2px solid var(--sky-selection, #2a78d6);
+  border-radius: 4px;
+  padding: 0 4px;
+  background: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* The heading is an affordance now, so it says so on the way past. */
+.builder__canvas .board-section-heading {
+  cursor: text;
 }
 
 .builder__add-row {
@@ -873,6 +1008,30 @@
 .builder__dialog-note {
   color: var(--sky-color-text-muted, #64748b);
   font-size: 12px;
+}
+
+/* The sign-back-in prompt's field and its refusal (Q199). */
+.builder__dialog-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sky-color-text-muted, #64748b);
+}
+
+.builder__dialog input[type="password"] {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--sky-color-border, #cbd5e1);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+}
+
+.builder__dialog-problem {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--sky-color-danger-text, #b42318);
 }
 
 .builder__dialog-actions {

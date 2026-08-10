@@ -29,8 +29,21 @@ export type BoardRendererProps = {
    * struck-through item is exactly what the availability model exists to prevent.
    */
   keepUnavailable?: boolean;
-  /** The one annotation the board itself carries, per 86'd item. Preview only. */
-  unavailableNote?: string | null;
+  /**
+   * The annotation each 86'd item carries, by item id. Preview only.
+   *
+   * A map rather than a string, because the note states WHEN that item went off
+   * and two items rarely go off together. A single board-level note was handed to
+   * every dimmed row alike, so a second 86 was labelled with the first one's time
+   * — a wrong fact, stated confidently, about the one thing the note exists to say.
+   */
+  unavailableNotes?: Readonly<Record<string, string>> | null;
+  /**
+   * Marks item rows as drag sources. An attribute, not a behaviour: the engine
+   * still emits no events, and the surface above decides what a drag means. A
+   * guest board never sets it, so a TV row is never draggable.
+   */
+  itemsDraggable?: boolean;
 };
 
 /**
@@ -51,7 +64,8 @@ export function BoardRenderer({
   theme,
   surface = "guest",
   keepUnavailable = false,
-  unavailableNote = null
+  unavailableNotes = null,
+  itemsDraggable = false
 }: BoardRendererProps) {
   // A theme written against a later engine is declined outright: rendering the
   // half we understand would be wrong without saying so.
@@ -74,7 +88,18 @@ export function BoardRenderer({
         owns it; the Menus engine neither draws one nor assumes room for one.
       */}
       {document.sections.map((section) => (
-        <section className="board-section" key={section.sectionId} data-testid="board-section">
+        <section
+          className="board-section"
+          key={section.sectionId}
+          data-testid="board-section"
+          /*
+            Named in the DOM so a surface above can act on it — the builder renames
+            a section by clicking this heading (Q96). A data attribute, not a
+            handler: the engine stays props-in/DOM-out, and the same markup on a TV
+            simply carries an id nothing reads.
+          */
+          data-section-id={section.sectionId}
+        >
           {/*
             A heading in look, not in the document outline. A board is a picture
             of a screen, and it can appear many times on one page — a shelf of
@@ -92,6 +117,8 @@ export function BoardRenderer({
                 data-testid="board-item"
                 data-item-id={item.itemId}
                 data-unavailable={item.isUnavailable ? "true" : undefined}
+                data-section-id={section.sectionId}
+                draggable={itemsDraggable ? true : undefined}
               >
                 <p className="board-item-line">
                   <span className="board-item-name">{item.name}</span>
@@ -106,8 +133,10 @@ export function BoardRenderer({
                   never the board's own, and it cannot reach a guest because a
                   guest document contains no unavailable item to attach it to.
                 */}
-                {item.isUnavailable && unavailableNote ? (
-                  <p className="board-item-note" data-testid="board-item-note">{unavailableNote}</p>
+                {item.isUnavailable && unavailableNotes?.[item.itemId] ? (
+                  <p className="board-item-note" data-testid="board-item-note">
+                    {unavailableNotes[item.itemId]}
+                  </p>
                 ) : null}
               </li>
             ))}

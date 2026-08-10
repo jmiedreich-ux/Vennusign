@@ -508,6 +508,56 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         """;
 
     /// <summary>
+    /// An edit that can be made conditional on the values still being the ones the
+    /// caller last saw.
+    ///
+    /// This exists for Undo. An unconditional inverse restores a value captured
+    /// before somebody else's edit and erases it silently — the reader of the board
+    /// sees their own change vanish with nothing said. Comparing in a prior read
+    /// would not help: the row can change between that read and this write, which is
+    /// why the comparison happens under the lock that writes.
+    ///
+    /// NULL and empty are the same absence here. The API normalises an empty
+    /// description or price to NULL on the way in, so a caller echoing back what it
+    /// was handed must not be refused over which of the two it sent.
+    /// </summary>
+    private const string UpdateItemValuesGuardedSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        DECLARE @Name NVARCHAR(200), @Description NVARCHAR(1000), @Price NVARCHAR(40);
+        SELECT @Name = Name, @Description = Description, @Price = Price
+        FROM dbo.Items WITH (UPDLOCK, HOLDLOCK)
+        WHERE Id = @ItemId AND VenueId = @VenueId;
+
+        IF @@ROWCOUNT = 0
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT N'not_found' AS Outcome, NULL AS Name, NULL AS Description, NULL AS Price;
+        END
+        ELSE IF @Guarded = 1
+           AND (@Name <> @ExpectedName
+             OR ISNULL(@Description, N'') <> ISNULL(@ExpectedDescription, N'')
+             OR ISNULL(@Price, N'') <> ISNULL(@ExpectedPrice, N''))
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT N'item_changed' AS Outcome, @Name AS Name, @Description AS Description, @Price AS Price;
+        END
+        ELSE
+        BEGIN
+            UPDATE dbo.Items
+            SET Name = @NewName,
+                Description = @NewDescription,
+                Price = @NewPrice,
+                UpdatedUtc = @Now
+            WHERE Id = @ItemId AND VenueId = @VenueId;
+
+            COMMIT TRANSACTION;
+            SELECT N'updated' AS Outcome, @NewName AS Name, @NewDescription AS Description, @NewPrice AS Price;
+        END
+        """;
+
+    /// <summary>
     /// The same guard for placements. The old path trusted the caller's list, so
     /// any placement omitted from it kept a stale sort order that could collide
     /// with a rewritten one - leaving board order resting on a tiebreaker nobody
@@ -1582,6 +1632,36 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         return new ReorderOutcome(row.Outcome, row.Moved);
     }
 
+    public async Task<ItemUpdateOutcome> UpdateItemValuesGuardedAsync(
+        Guid venueId,
+        Guid itemId,
+        string name,
+        string? description,
+        string? price,
+        ItemValueExpectation? expected,
+        DateTime now,
+        CancellationToken cancellationToken = default)
+    {
+        var row = (await dataAccess.ExecuteSqlQueryAsync<ItemUpdateRow, object>(
+            UpdateItemValuesGuardedSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                ItemId = RequireId(itemId, nameof(itemId)),
+                NewName = name,
+                NewDescription = description,
+                NewPrice = price,
+                Guarded = expected is null ? 0 : 1,
+                ExpectedName = expected?.Name,
+                ExpectedDescription = expected?.Description,
+                ExpectedPrice = expected?.Price,
+                Now = now
+            },
+            cancellationToken).ConfigureAwait(false)).Single();
+
+        return new ItemUpdateOutcome(row.Outcome, row.Name, row.Description, row.Price);
+    }
+
     public async Task<ReorderOutcome> ReorderPlacementsGuardedAsync(
         Guid venueId,
         Guid menuId,
@@ -2332,6 +2412,17 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         public string Outcome { get; set; } = string.Empty;
 
         public int Moved { get; set; }
+    }
+
+    private sealed class ItemUpdateRow
+    {
+        public string Outcome { get; set; } = string.Empty;
+
+        public string? Name { get; set; }
+
+        public string? Description { get; set; }
+
+        public string? Price { get; set; }
     }
 
     private sealed class PlaceExistingRow

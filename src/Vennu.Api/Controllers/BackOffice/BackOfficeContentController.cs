@@ -705,13 +705,45 @@ public sealed class BackOfficeContentController(
             return Problem("Item values are required.", statusCode: 400);
         }
 
-        var item = await content
-            .UpdateItemValuesAsync(VenueId, itemId, request.Name, request.Description, request.Price, cancellationToken)
+        /*
+         * The expectation is optional and only Undo sends it. A plain edit is a
+         * person deciding now, with the board in front of them; an inverse is a
+         * decision made earlier, and it has to prove the ground has not moved
+         * under it before it puts anything back.
+         */
+        var expected = request.ExpectedName is null
+            ? null
+            : new ItemValueExpectation(request.ExpectedName, request.ExpectedDescription, request.ExpectedPrice);
+
+        var result = await content
+            .UpdateItemValuesAsync(
+                VenueId,
+                itemId,
+                request.Name,
+                request.Description,
+                request.Price,
+                expected,
+                cancellationToken)
             .ConfigureAwait(false);
 
-        return item is null
+        if (result.Outcome == "item_changed")
+        {
+            return Conflict(new
+            {
+                reason = "item_changed",
+                message = $"“{result.Item?.Name}” changed since you did that, so nothing was moved. "
+                    + "Have another look before undoing again."
+            });
+        }
+
+        return result.Item is null
             ? NotFound(new { message = "That item is not one of this venue's items." })
-            : Ok(new BoardItemResponse(item.Id, item.Name, item.Description, item.Price, 0));
+            : Ok(new BoardItemResponse(
+                result.Item.Id,
+                result.Item.Name,
+                result.Item.Description,
+                result.Item.Price,
+                0));
     }
 
     /// <summary>

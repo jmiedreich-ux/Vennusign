@@ -658,18 +658,19 @@ public sealed class ContentService(
     /// sits on (Q5), so this reaches all of them — and each board's own screens
     /// still change only when that board publishes.
     /// </summary>
-    public async Task<Item?> UpdateItemValuesAsync(
+    public async Task<ItemEditResult> UpdateItemValuesAsync(
         Guid venueId,
         Guid itemId,
         string name,
         string? description,
         string? price,
+        ItemValueExpectation? expected = null,
         CancellationToken cancellationToken = default)
     {
         var item = await library.GetItemAsync(venueId, itemId, cancellationToken).ConfigureAwait(false);
         if (item is null)
         {
-            return null;
+            return new ItemEditResult("not_found", null);
         }
 
         // An emptied name reverts rather than saving blank (Q119): the schema
@@ -679,13 +680,51 @@ public sealed class ContentService(
         item.Price = Trim(price, 40);
         item.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
 
-        if (!await library.UpdateItemAsync(item, cancellationToken).ConfigureAwait(false))
+        /*
+         * The expectation is normalised the same way the new values are, because it
+         * is the same shape of data arriving by the same door. Otherwise an Undo
+         * echoing back a description it was handed as "" would be compared against
+         * the NULL that was stored, and refuse itself.
+         */
+        var guard = expected is null
+            ? null
+            : new ItemValueExpectation(
+                NormalizeItemName(expected.Name, fallback: expected.Name),
+                Trim(expected.Description, 1000),
+                Trim(expected.Price, 40));
+
+        var outcome = await library
+            .UpdateItemValuesGuardedAsync(
+                venueId,
+                itemId,
+                item.Name,
+                item.Description,
+                item.Price,
+                guard,
+                item.UpdatedUtc,
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        if (outcome.Outcome != "updated")
         {
-            return null;
+            // The values now in place travel with the refusal, so the surface can
+            // say what it found rather than only that it declined.
+            return new ItemEditResult(
+                outcome.Outcome,
+                outcome.Outcome == "item_changed"
+                    ? new Item
+                    {
+                        Id = itemId,
+                        VenueId = venueId,
+                        Name = outcome.Name ?? string.Empty,
+                        Description = outcome.Description,
+                        Price = outcome.Price
+                    }
+                    : null);
         }
 
         await NotifyAsync(venueId, "item-updated", null, cancellationToken).ConfigureAwait(false);
-        return item;
+        return new ItemEditResult("updated", item);
     }
 
     /// <summary>
@@ -865,6 +904,12 @@ public sealed record BuilderBoardResult(
 /// boards it already sits on.
 /// </summary>
 public sealed record LibraryItemResult(Item Item, bool IsAvailable, IReadOnlyList<ItemBoard> Boards);
+
+/// <summary>
+/// An edit's outcome: <c>updated</c>, <c>item_changed</c> (somebody else got there
+/// first, and <see cref="Item"/> carries what is there now), or <c>not_found</c>.
+/// </summary>
+public sealed record ItemEditResult(string Outcome, Item? Item);
 
 /// <summary>A menu theme the venue could attach. There are none yet (Q86).</summary>
 public sealed record MenuThemeResult(string Key, string Name);

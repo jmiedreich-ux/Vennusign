@@ -23,7 +23,19 @@ public sealed record PlaceRequest(Guid? ItemId, string? Name);
 /// An item's values. These are the item's, not this board's: one item is one
 /// shared price everywhere it sits (Q5).
 /// </summary>
-public sealed record ItemValuesRequest(string Name, string? Description, string? Price);
+/// <summary>
+/// New values for an item, and optionally the values the caller believes are still
+/// in place. The expectation is what makes Undo safe: with it, the edit applies only
+/// while the row still holds what the caller last saw, so an inverse cannot erase
+/// somebody else's later change without saying so.
+/// </summary>
+public sealed record ItemValuesRequest(
+    string Name,
+    string? Description,
+    string? Price,
+    string? ExpectedName = null,
+    string? ExpectedDescription = null,
+    string? ExpectedPrice = null);
 
 // Responses ------------------------------------------------------------------
 

@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import {
+  BackOfficeApiError,
   MenuActionRefused,
+  loadBackOfficeSession,
   addMenuSection,
   deleteMenuSection,
   discardMenuDraft,
@@ -64,9 +66,24 @@ type Props = {
   menuId: string;
   venueTimezone: string;
   onBack: () => void;
+  /**
+   * Hands a freshly accepted venue access token back to the application, so
+   * signing back in from the builder signs the whole back office back in rather
+   * than leaving one screen holding a credential nothing else knows about (Q199).
+   */
+  onAccessTokenChange?: (token: string) => void;
 };
 
 type SaveState = "clean" | "saving" | "failed";
+
+/**
+ * A change that was made and has not reached the server yet.
+ *
+ * It is kept rather than dropped: Q197 and Q199 both turn on the same promise —
+ * an edit you made is still an edit, whatever the network or the session did
+ * afterwards, and the surface never claims otherwise.
+ */
+type PendingWrite = { action: () => Promise<void>; undo?: UndoStep; describe: string };
 
 /**
  * The board at its logical width, scaled to whatever the canvas is.
@@ -193,6 +210,94 @@ function useDialogFocus(open: boolean) {
 }
 
 /**
+ * The sign-back-in prompt (Q199).
+ *
+ * A shift is long and a session is not. When one expires mid-edit the change has
+ * already been made — so this asks for the sign-in back and names what it is
+ * holding, instead of reporting a failure and leaving a bartender to guess
+ * whether the 86 they just flipped actually took.
+ */
+function SignBackIn({
+  configuration,
+  holding,
+  onSignedIn,
+  onDismiss
+}: {
+  configuration: BackOfficeConfiguration;
+  holding: string;
+  onSignedIn: (token: string) => void;
+  onDismiss: () => void;
+}) {
+  const dialog = useDialogFocus(true);
+  const [checking, setChecking] = useState(false);
+  const [problem, setProblem] = useState<string>();
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const token = String(new FormData(event.currentTarget).get("accessToken") ?? "").trim();
+    if (!token) return;
+    setChecking(true);
+    setProblem(undefined);
+    try {
+      // Proved against the API before it is trusted, so a wrong token is refused
+      // here rather than by silently failing the resend behind the dialog.
+      await loadBackOfficeSession(configuration, token);
+      onSignedIn(token);
+    } catch (failure) {
+      setProblem(failure instanceof Error ? failure.message : "That token was not accepted.");
+      setChecking(false);
+    }
+  };
+
+  return (
+    <>
+      {/* No click-away: dismissing is a decision, and "Not now" says so. */}
+      <div className="builder__scrim" />
+      <div
+        className="builder__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sign-back-in-title"
+        data-testid="sign-back-in-dialog"
+        ref={dialog}
+      >
+        <h2 id="sign-back-in-title">Your sign-in expired</h2>
+        <p>
+          <strong>{holding}</strong> hasn&apos;t reached your screens yet — it is still here. Sign back in and it sends
+          straight away.
+        </p>
+        <form onSubmit={submit}>
+          <label className="builder__dialog-label" htmlFor="builder-access-token">
+            Venue access token
+          </label>
+          <input
+            id="builder-access-token"
+            name="accessToken"
+            type="password"
+            autoComplete="current-password"
+            data-testid="sign-back-in-token"
+            required
+          />
+          {problem ? (
+            <p className="builder__dialog-problem" role="alert">
+              {problem}
+            </p>
+          ) : null}
+          <div className="builder__dialog-actions">
+            <button type="button" className="action-secondary" onClick={onDismiss}>
+              Not now
+            </button>
+            <button type="submit" className="action-primary" data-testid="sign-back-in-submit" disabled={checking}>
+              {checking ? "Signing in…" : "Sign in and send"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
+  );
+}
+
+/**
  * The menu builder.
  *
  * Four columns: a section rail that navigates and nothing else, a canvas that IS
@@ -200,7 +305,26 @@ function useDialogFocus(open: boolean) {
  * writes working state; the draft count follows on its own, because it is the
  * computed difference from what the screens are showing.
  */
-export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezone, onBack }: Props) {
+export default function MenuBuilder({
+  configuration,
+  apiKey,
+  menuId,
+  venueTimezone,
+  onBack,
+  onAccessTokenChange
+}: Props) {
+  /*
+   * The credential every write reads, at the moment it is sent.
+   *
+   * A held change replayed after signing back in must go with the NEW token: the
+   * closure that captured the old one would 401 forever, which is the loop Q199
+   * exists to prevent. Read through `credential()` rather than the `apiKey` prop
+   * for anything that talks to the API.
+   */
+  const currentKey = useRef(apiKey);
+  currentKey.current = apiKey;
+  const credential = useCallback(() => currentKey.current, []);
+
   const [data, setData] = useState<BuilderBoard>();
   const [availability, setAvailability] = useState<MenuAvailability[]>([]);
   const [screens, setScreens] = useState<MenuScreenShowing[]>([]);
@@ -240,9 +364,9 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
 
   const refresh = useCallback(async () => {
     const [next, states, showing] = await Promise.all([
-      loadBuilderBoard(configuration, apiKey, menuId),
-      loadMenuAvailability(configuration, apiKey),
-      loadScreensShowing(configuration, apiKey)
+      loadBuilderBoard(configuration, credential(), menuId),
+      loadMenuAvailability(configuration, credential()),
+      loadScreensShowing(configuration, credential())
     ]);
     setData(next);
     setAvailability(states);
@@ -285,13 +409,39 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
 
   /**
    * Runs a write and keeps the byline honest about it. A failure never clears the
-   * change from the surface: it flips the byline amber, holds the retry, and
-   * blocks Publish until the queue is confirmed (Q197).
+   * change from the surface: it flips the byline amber, holds the change, retries
+   * it, and blocks Publish until the queue is confirmed (Q197).
    */
   const writes = useRef<Promise<unknown>>(Promise.resolve());
+  const held = useRef<PendingWrite | null>(null);
+  const retryTimer = useRef<number>();
+  const retryRound = useRef(0);
+  const deliverRef = useRef<(entry: PendingWrite) => Promise<void>>();
+  /** What is being held for a sign-in, and whether the prompt is on screen. */
+  const [signBackIn, setSignBackIn] = useState<string | null>(null);
+  const [signInDeferred, setSignInDeferred] = useState(false);
 
-  const run = useCallback(
-    async (action: () => Promise<void>, undoStep?: UndoStep) => {
+  useEffect(() => () => window.clearTimeout(retryTimer.current), []);
+
+  const scheduleRetry = useCallback(() => {
+    window.clearTimeout(retryTimer.current);
+    /*
+     * 1s, 2s, 4s, then every 8s for as long as it takes.
+     *
+     * It never gives up, because giving up IS the terminal error Q197 exists to
+     * remove: the change stays held and Publish stays shut until it lands. The
+     * first wait is short on purpose — most of these are one dropped request.
+     */
+    const round = Math.min(retryRound.current, 3);
+    retryRound.current += 1;
+    retryTimer.current = window.setTimeout(() => {
+      const entry = held.current;
+      if (entry) void deliverRef.current?.(entry);
+    }, 1000 * 2 ** round);
+  }, []);
+
+  const deliver = useCallback(
+    async (entry: PendingWrite) => {
       setBusy(true);
       setSaveState("saving");
       setError(undefined);
@@ -305,29 +455,86 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
        * the newer draft when the older save returned), and a spec has guarded it
        * ever since; this is that guarantee moved to where it can actually hold.
        */
-      const mine = writes.current.then(action, action);
+      const mine = writes.current.then(entry.action, entry.action);
       writes.current = mine.catch(() => undefined);
       try {
         await mine;
         await refresh();
+        held.current = null;
+        retryRound.current = 0;
+        setSignBackIn(null);
         setSaveState("clean");
-        if (undoStep) {
-          undoStack.current = [...undoStack.current.slice(-49), undoStep];
+        if (entry.undo) {
+          undoStack.current = [...undoStack.current.slice(-49), entry.undo];
           redoStack.current = [];
           setHistoryDepth({ undo: undoStack.current.length, redo: 0 });
         }
       } catch (failure) {
+        if (failure instanceof MenuActionRefused) {
+          /*
+           * The server reached a decision and said no. Retrying repeats the same
+           * refusal word for word, so this holds nothing and blocks nothing — the
+           * queue IS confirmed; it simply does not contain this change. The board
+           * re-reads, because a refusal means the server's state is not the state
+           * this screen assumed when it asked.
+           */
+          held.current = null;
+          retryRound.current = 0;
+          await refresh().catch(() => undefined);
+          setSaveState("clean");
+          setError(failure.message);
+          return;
+        }
+
+        // Anything else is a change that never landed. It is kept, not dropped.
+        held.current = entry;
         setSaveState("failed");
-        setError(
-          failure instanceof MenuActionRefused
-            ? failure.message
-            : "Couldn't save your last change — retrying won't lose it. Check your connection."
-        );
+        setError(undefined);
+
+        if (failure instanceof BackOfficeApiError && failure.status === 401) {
+          // Q199: the session went, not the change. Ask for the sign-in back.
+          setSignBackIn(entry.describe);
+          setSignInDeferred(false);
+          return;
+        }
+        scheduleRetry();
       } finally {
         setBusy(false);
       }
     },
-    [refresh]
+    [refresh, scheduleRetry]
+  );
+
+  useEffect(() => {
+    deliverRef.current = deliver;
+  }, [deliver]);
+
+  const run = useCallback(
+    (action: () => Promise<void>, undoStep?: UndoStep) => {
+      window.clearTimeout(retryTimer.current);
+      retryRound.current = 0;
+      return deliver({ action, undo: undoStep, describe: undoStep?.describe ?? "Your last change" });
+    },
+    [deliver]
+  );
+
+  /**
+   * Signed back in — so send what was being held (Q199).
+   *
+   * The token reaches the whole application, not just this screen: a builder
+   * quietly holding a credential nothing else knows about would 401 the moment
+   * you navigated away, which is the same terminal error one step later.
+   */
+  const resumeAfterSignIn = useCallback(
+    (token: string) => {
+      onAccessTokenChange?.(token);
+      currentKey.current = token;
+      setSignBackIn(null);
+      retryRound.current = 0;
+      const entry = held.current;
+      if (entry) void deliver(entry);
+    },
+    [deliver, onAccessTokenChange]
   );
 
   // ---- the section rail ----------------------------------------------------
@@ -349,15 +556,15 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
     let created: { sectionId: string } | undefined;
     await run(
       async () => {
-        created = await addMenuSection(configuration, apiKey, menuId, name);
+        created = await addMenuSection(configuration, credential(), menuId, name);
       },
       {
         describe: `Add section "${name}"`,
         undo: async () => {
-          if (created) await deleteMenuSection(configuration, apiKey, menuId, created.sectionId);
+          if (created) await deleteMenuSection(configuration, credential(), menuId, created.sectionId);
         },
         redo: async () => {
-          created = await addMenuSection(configuration, apiKey, menuId, name);
+          created = await addMenuSection(configuration, credential(), menuId, name);
         }
       }
     );
@@ -369,18 +576,18 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
     const next = reorder(ids, from, to);
     if (next.join() === ids.join()) return;
     await run(
-      () => reorderMenuSections(configuration, apiKey, menuId, next),
+      () => reorderMenuSections(configuration, credential(), menuId, next),
       {
         describe: "Move section",
-        undo: () => reorderMenuSections(configuration, apiKey, menuId, ids),
-        redo: () => reorderMenuSections(configuration, apiKey, menuId, next)
+        undo: () => reorderMenuSections(configuration, credential(), menuId, ids),
+        redo: () => reorderMenuSections(configuration, credential(), menuId, next)
       }
     );
   };
 
   const deleteSection = async (sectionId: string, name: string | null) => {
     await run(async () => {
-      const outcome = await deleteMenuSection(configuration, apiKey, menuId, sectionId);
+      const outcome = await deleteMenuSection(configuration, credential(), menuId, sectionId);
       setNotice(releasedPhrase(outcome.releasedItemCount));
       setPlace(current =>
         current.sectionId === sectionId ? { ...current, sectionId: null, selectedItemId: null } : current
@@ -396,6 +603,73 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [priceEdit, setPriceEdit] = useState<{ itemId: string; value: string; box: DOMRect } | null>(null);
+  const [headingEdit, setHeadingEdit] = useState<{ sectionId: string; value: string; box: DOMRect } | null>(null);
+
+  /**
+   * Renames a section. One path, two ways in: the canvas heading (Q96) and the
+   * field below the board, which is the keyboard route while canvas items stay
+   * mouse-only (Q202). Both queue the same draft change and the same inverse.
+   */
+  const renameSection = useCallback(
+    (sectionId: string, name: string, current: string) => {
+      if (!name || name === current) return;
+      void run(() => renameMenuSection(configuration, credential(), menuId, sectionId, name), {
+        describe: "Rename section",
+        undo: () => renameMenuSection(configuration, credential(), menuId, sectionId, current),
+        redo: () => renameMenuSection(configuration, credential(), menuId, sectionId, name)
+      });
+    },
+    [configuration, credential, menuId, run]
+  );
+
+  /*
+   * Dragging an item to a new place on its own section (Q103).
+   *
+   * Cross-section moves wait for Board view in milestone 5, and the answer names
+   * the path until then: remove and re-add, two draft changes. So a drop onto a
+   * different section is refused in those words rather than silently ignored — an
+   * affordance that appears to work and does nothing is worse than one that says
+   * what it cannot do.
+   */
+  const dragging = useRef<string | null>(null);
+
+  const dropOnItem = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const from = dragging.current;
+    dragging.current = null;
+    if (!from) return;
+
+    const target = (event.target as HTMLElement).closest<HTMLElement>("[data-item-id]");
+    const toId = target?.dataset.itemId;
+    const toSection = target?.dataset.sectionId;
+    if (!toId || !toSection || toId === from) return;
+
+    const fromSection = itemsOf(board, toSection).some(item => item.itemId === from) ? toSection : null;
+    if (!fromSection) {
+      setError(
+        "Moving an item to another section arrives with Board view. For now, remove it here and add it there."
+      );
+      return;
+    }
+
+    const ids = itemsOf(board, toSection).map(item => item.itemId);
+    const next = reorder(ids, ids.indexOf(from), ids.indexOf(toId));
+    if (next.join() === ids.join()) return;
+
+    void run(() => reorderMenuItems(configuration, credential(), menuId, toSection, next), {
+      describe: "Reorder items",
+      undo: () => reorderMenuItems(configuration, credential(), menuId, toSection, ids),
+      redo: () => reorderMenuItems(configuration, credential(), menuId, toSection, next)
+    });
+  };
+
+  const commitHeading = () => {
+    const edit = headingEdit;
+    setHeadingEdit(null);
+    if (!edit) return;
+    const current = sectionsOf(board).find(section => section.sectionId === edit.sectionId)?.name ?? "";
+    renameSection(edit.sectionId, edit.value.trim(), current);
+  };
 
   /*
    * The selection ring is drawn ON the board row, but the engine knows nothing
@@ -414,6 +688,28 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
   });
 
   const selectFromCanvas = (event: React.MouseEvent<HTMLDivElement>) => {
+    /*
+     * Q96: a section is renamed by clicking its heading on the canvas and typing
+     * over it. The rename control below the board stays — it is the keyboard path,
+     * and canvas items are deliberately mouse-only this build (Q202) — but the
+     * heading is where the design says the act belongs, on the thing itself.
+     */
+    const heading = (event.target as HTMLElement).closest<HTMLElement>(".board-section-heading");
+    if (heading && canvasRef.current) {
+      const sectionId = heading.closest<HTMLElement>("[data-section-id]")?.dataset.sectionId;
+      const named = sectionsOf(board).find(section => section.sectionId === sectionId);
+      if (named) {
+        const canvasBox = canvasRef.current.getBoundingClientRect();
+        const box = heading.getBoundingClientRect();
+        setHeadingEdit({
+          sectionId: named.sectionId,
+          value: named.name ?? "",
+          box: new DOMRect(box.left - canvasBox.left, box.top - canvasBox.top, box.width, box.height)
+        });
+        return;
+      }
+    }
+
     const row = (event.target as HTMLElement).closest<HTMLElement>("[data-item-id]");
     if (!row) return;
     const itemId = row.dataset.itemId!;
@@ -447,30 +743,20 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
     const found = findItem(board, edit.itemId);
     if (!found || (found.item.price ?? "") === edit.value) return;
 
-    const before = found.item;
-    await run(
-      () =>
-        updateMenuItemValues(configuration, apiKey, edit.itemId, {
-          name: before.name ?? "",
-          description: before.description,
-          price: edit.value.trim() === "" ? null : edit.value
-        }),
-      {
-        describe: "Change price",
-        undo: () =>
-          updateMenuItemValues(configuration, apiKey, edit.itemId, {
-            name: before.name ?? "",
-            description: before.description,
-            price: before.price
-          }),
-        redo: () =>
-          updateMenuItemValues(configuration, apiKey, edit.itemId, {
-            name: before.name ?? "",
-            description: before.description,
-            price: edit.value.trim() === "" ? null : edit.value
-          })
-      }
-    );
+    const was = { name: found.item.name ?? "", description: found.item.description, price: found.item.price };
+    const now = { ...was, price: edit.value.trim() === "" ? null : edit.value };
+
+    /*
+     * The inverses carry what they expect to find. Undo restores `was` only while
+     * `now` is still there; redo re-applies `now` only while `was` is. Between the
+     * edit and the keystroke somebody else may have changed the same item, and an
+     * unconditional inverse would erase them without either of you being told.
+     */
+    await run(() => updateMenuItemValues(configuration, credential(), edit.itemId, now), {
+      describe: "Change price",
+      undo: () => updateMenuItemValues(configuration, credential(), edit.itemId, was, now),
+      redo: () => updateMenuItemValues(configuration, credential(), edit.itemId, now, was)
+    });
   };
 
   // ---- the inspector -------------------------------------------------------
@@ -493,7 +779,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
     // Which other boards this item sits on, for Q5's shared-price line. Read from
     // the library rather than assumed, so a menu renamed elsewhere is named right.
     let cancelled = false;
-    searchLibraryItems(configuration, apiKey, selected.item.name ?? "", 20)
+    searchLibraryItems(configuration, credential(), selected.item.name ?? "", 20)
       .then(hits => {
         if (cancelled) return;
         setItemBoards(hits.find(hit => hit.itemId === selected.item.itemId)?.boards ?? []);
@@ -523,15 +809,11 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
       return;
     }
 
-    await run(() => updateMenuItemValues(configuration, apiKey, before.itemId, next), {
+    const was = { name: before.name ?? "", description: before.description, price: before.price };
+    await run(() => updateMenuItemValues(configuration, credential(), before.itemId, next), {
       describe: "Edit item",
-      undo: () =>
-        updateMenuItemValues(configuration, apiKey, before.itemId, {
-          name: before.name ?? "",
-          description: before.description,
-          price: before.price
-        }),
-      redo: () => updateMenuItemValues(configuration, apiKey, before.itemId, next)
+      undo: () => updateMenuItemValues(configuration, credential(), before.itemId, was, next),
+      redo: () => updateMenuItemValues(configuration, credential(), before.itemId, next, was)
     });
   };
 
@@ -541,7 +823,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
     // Availability commits instantly and never joins the draft. It is deliberately
     // NOT on the undo stack: undo is for the queue, and this already went out.
     await run(async () => {
-      await setItemAvailability(configuration, apiKey, selected.item.itemId, !isAvailable);
+      await setItemAvailability(configuration, credential(), selected.item.itemId, !isAvailable);
       setNotice(
         isAvailable
           ? `${selected.item.name} is off. It is already gone from every screen showing it.`
@@ -555,15 +837,15 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
     const { item, sectionId } = selected;
     await run(
       async () => {
-        await removeMenuItem(configuration, apiKey, menuId, item.itemId);
+        await removeMenuItem(configuration, credential(), menuId, item.itemId);
         setPlace(current => ({ ...current, selectedItemId: null }));
       },
       {
         describe: "Remove from this board",
         undo: async () => {
-          await placeMenuItem(configuration, apiKey, menuId, sectionId, { itemId: item.itemId });
+          await placeMenuItem(configuration, credential(), menuId, sectionId, { itemId: item.itemId });
         },
-        redo: () => removeMenuItem(configuration, apiKey, menuId, item.itemId)
+        redo: () => removeMenuItem(configuration, credential(), menuId, item.itemId)
       }
     );
   };
@@ -581,7 +863,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
     }
     let cancelled = false;
     const timer = window.setTimeout(() => {
-      searchLibraryItems(configuration, apiKey, addQuery, 8)
+      searchLibraryItems(configuration, credential(), addQuery, 8)
         .then(found => {
           if (!cancelled) setHits(found);
         })
@@ -595,22 +877,109 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
     };
   }, [addQuery, addSectionId, apiKey, configuration]);
 
+  /*
+   * The bulk drawer (Q95 opens it, Q124 governs it).
+   *
+   * Deliberately NOT modal. Q124 says the button retargets as you move sections,
+   * and you move sections in the rail — so a scrim over the rail would make the
+   * one behaviour the answer names impossible. It is a panel beside the rail, and
+   * Escape closes it.
+   */
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerQuery, setDrawerQuery] = useState("");
+  const [drawerHits, setDrawerHits] = useState<LibraryItem[]>([]);
+  const [picked, setPicked] = useState<string[]>([]);
+  const [placedNote, setPlacedNote] = useState<string>();
+  const drawerSearch = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (drawerOpen) drawerSearch.current?.focus();
+  }, [drawerOpen]);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      // Empty query lists the library rather than nothing: filling a new board is
+      // this path's whole point (Q124), and you cannot pick from a blank panel.
+      searchLibraryItems(configuration, credential(), drawerQuery, 40)
+        .then(found => {
+          if (!cancelled) setDrawerHits(found);
+        })
+        .catch(() => {
+          if (!cancelled) setDrawerHits([]);
+        });
+    }, 150);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [credential, drawerOpen, drawerQuery, configuration]);
+
+  useEffect(() => {
+    if (!placedNote) return;
+    const timer = window.setTimeout(() => setPlacedNote(undefined), 4000);
+    return () => window.clearTimeout(timer);
+  }, [placedNote]);
+
+  const placeMany = async () => {
+    const sectionId = place.sectionId;
+    if (!sectionId || picked.length === 0) return;
+    const wanted = [...picked];
+    const landed: string[] = [];
+
+    await run(
+      async () => {
+        /*
+         * One at a time, through the same guarded placement every single add uses
+         * — so the ceiling and the already-on-this-board rule are decided under the
+         * lock that writes, once per item, exactly as they are for one.
+         *
+         * A refusal part-way stops the rest and is reported in the server's words.
+         * What already landed stays landed, and the note counts what really
+         * happened rather than what was asked for.
+         */
+        for (const itemId of wanted) {
+          const outcome = await placeMenuItem(configuration, credential(), menuId, sectionId, { itemId });
+          if (outcome.outcome === "placed" && outcome.itemId) landed.push(outcome.itemId);
+        }
+      },
+      {
+        describe: `Add ${wanted.length} item${wanted.length === 1 ? "" : "s"} to this board`,
+        undo: async () => {
+          for (const itemId of landed) {
+            await removeMenuItem(configuration, credential(), menuId, itemId);
+          }
+        },
+        redo: async () => {
+          for (const itemId of landed) {
+            await placeMenuItem(configuration, credential(), menuId, sectionId, { itemId });
+          }
+        }
+      }
+    );
+
+    // Stays open, selection cleared, and says how many landed (Q124).
+    setPicked([]);
+    setPlacedNote(`${landed.length} placed`);
+  };
+
   const place_ = async (sectionId: string, request: { itemId?: string; name?: string }) => {
     let outcome: Awaited<ReturnType<typeof placeMenuItem>> | undefined;
     await run(
       async () => {
-        outcome = await placeMenuItem(configuration, apiKey, menuId, sectionId, request);
+        outcome = await placeMenuItem(configuration, credential(), menuId, sectionId, request);
       },
       {
         describe: "Add to this board",
         undo: async () => {
           if (outcome?.itemId && outcome.outcome === "placed") {
-            await removeMenuItem(configuration, apiKey, menuId, outcome.itemId);
+            await removeMenuItem(configuration, credential(), menuId, outcome.itemId);
           }
         },
         redo: async () => {
           if (outcome?.itemId) {
-            await placeMenuItem(configuration, apiKey, menuId, sectionId, { itemId: outcome.itemId });
+            await placeMenuItem(configuration, credential(), menuId, sectionId, { itemId: outcome.itemId });
           }
         }
       }
@@ -650,10 +1019,18 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
       await refresh();
       redoStack.current = [...redoStack.current, step];
       setNotice(`Undid: ${step.describe.toLowerCase()}.`);
-    } catch {
-      // A failed inverse says so rather than clobbering: somebody else may have
-      // changed the same thing, and pretending otherwise loses their work.
-      setError("That can't be undone now — the menu changed since. Nothing was moved.");
+    } catch (failure) {
+      /*
+       * The server refuses a stale inverse by name and in its own words — it knows
+       * which item changed and this screen does not. Repeating them beats replacing
+       * them with a vaguer sentence of our own.
+       */
+      setError(
+        failure instanceof MenuActionRefused
+          ? failure.message
+          : "That can't be undone now — the menu changed since. Nothing was moved."
+      );
+      await refresh().catch(() => undefined);
     } finally {
       setHistoryDepth({ undo: undoStack.current.length, redo: redoStack.current.length });
       setBusy(false);
@@ -670,8 +1047,13 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
       await refresh();
       undoStack.current = [...undoStack.current, step];
       setNotice(`Redid: ${step.describe.toLowerCase()}.`);
-    } catch {
-      setError("That can't be redone now — the menu changed since. Nothing was moved.");
+    } catch (failure) {
+      setError(
+        failure instanceof MenuActionRefused
+          ? failure.message
+          : "That can't be redone now — the menu changed since. Nothing was moved."
+      );
+      await refresh().catch(() => undefined);
     } finally {
       setHistoryDepth({ undo: undoStack.current.length, redo: redoStack.current.length });
       setBusy(false);
@@ -742,7 +1124,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
 
   const publish = async () => {
     await run(async () => {
-      const result = await publishMenu(configuration, apiKey, menuId);
+      const result = await publishMenu(configuration, credential(), menuId);
       undoStack.current = [];
       redoStack.current = [];
       setHistoryDepth({ undo: 0, redo: 0 });
@@ -759,7 +1141,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
   const discard = async () => {
     setConfirmDiscard(false);
     await run(async () => {
-      const result = await discardMenuDraft(configuration, apiKey, menuId);
+      const result = await discardMenuDraft(configuration, credential(), menuId);
       undoStack.current = [];
       redoStack.current = [];
       setHistoryDepth({ undo: 0, redo: 0 });
@@ -786,22 +1168,39 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
    * children of that root and inert would take them down with it.
    */
   const behindScrim =
-    confirmDiscard || Boolean(confirmDelete) || themePickerOpen || seeAllOpen || reviewOpen || historyOpen || findOpen
-      ? ""
+    confirmDiscard ||
+    Boolean(confirmDelete) ||
+    themePickerOpen ||
+    seeAllOpen ||
+    reviewOpen ||
+    historyOpen ||
+    findOpen ||
+    Boolean(signBackIn && !signInDeferred)
+      ? ("" as const)
       : undefined;
   const sections = sectionsOf(board);
   const shown = canvasBoard(board, place);
   const offNote = availabilityLine(selectedAvailability, venueTimezone);
   /*
-   * One note for every 86'd row on the canvas. The design writes it with the time
+   * A note per 86'd item, keyed by item. The design writes it with the time
    * ("86'd 6:40pm — hidden on all screens right now"), because the first question
-   * about an item that is off is when it went off. The engine draws whichever
-   * note it is handed; it never composes one, so a guest board cannot inherit it.
+   * about an item that is off is when it went off — and that answer is different
+   * for every item. Composing ONE note from the first 86'd record and handing it
+   * to every dimmed row told the truth about one item and lied about the rest.
+   *
+   * The engine draws whichever notes it is handed; it never composes one, so a
+   * guest board cannot inherit them.
    */
-  const boardNote = unavailableNote(
-    availability.find(state => !state.isAvailable) ?? null,
-    venueTimezone
-  );
+  /*
+   * Built plainly, not memoised. This sits BELOW the loading early-return, and a
+   * hook below a conditional return changes the hook count between renders — which
+   * takes the whole application down with a blank page, exactly as it did here.
+   */
+  const boardNotes: Record<string, string> = {};
+  for (const state of availability) {
+    const note = unavailableNote(state, venueTimezone);
+    if (note) boardNotes[state.itemId] = note;
+  }
   const isOff = selectedAvailability?.isAvailable === false;
 
   return (
@@ -1005,6 +1404,18 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
             data-selected-item={place.selectedItemId ?? undefined}
             onClick={selectFromCanvas}
             data-testid="canvas"
+            onDragStart={event => {
+              dragging.current =
+                (event.target as HTMLElement).closest<HTMLElement>("[data-item-id]")?.dataset.itemId ?? null;
+              event.dataTransfer.effectAllowed = "move";
+            }}
+            onDragOver={event => {
+              if (dragging.current) event.preventDefault();
+            }}
+            onDrop={dropOnItem}
+            onDragEnd={() => {
+              dragging.current = null;
+            }}
           >
             {place.view === "whole-board" ? (
               <BoardFrame
@@ -1012,7 +1423,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
                 unavailableItemIds={unavailableIds}
                 surface="preview"
                 keepUnavailable
-                unavailableNote={boardNote}
+                unavailableNotes={boardNotes}
               />
             ) : (
               <BoardStage>
@@ -1021,7 +1432,8 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
                   unavailableItemIds={unavailableIds}
                   surface="preview"
                   keepUnavailable
-                  unavailableNote={boardNote}
+                  itemsDraggable
+                  unavailableNotes={boardNotes}
                 />
               </BoardStage>
             )}
@@ -1045,6 +1457,36 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
                 onKeyDown={event => {
                   if (event.key === "Enter") void commitPrice();
                   if (event.key === "Escape") setPriceEdit(null);
+                }}
+              />
+            ) : null}
+
+            {/*
+              Typing over the heading, in the heading's own place (Q96). It sits at
+              the measured box rather than replacing the rendered element, because
+              the element belongs to the engine and the engine has no affordances.
+            */}
+            {headingEdit ? (
+              <input
+                className="builder__heading-edit"
+                autoFocus
+                value={headingEdit.value}
+                aria-label="Section name"
+                data-testid="heading-edit"
+                maxLength={200}
+                style={{
+                  left: `${headingEdit.box.left}px`,
+                  top: `${headingEdit.box.top}px`,
+                  width: `${Math.max(headingEdit.box.width, 120)}px`,
+                  height: `${headingEdit.box.height}px`
+                }}
+                onChange={event =>
+                  setHeadingEdit(current => (current ? { ...current, value: event.target.value } : current))
+                }
+                onBlur={commitHeading}
+                onKeyDown={event => {
+                  if (event.key === "Enter") commitHeading();
+                  if (event.key === "Escape") setHeadingEdit(null);
                 }}
               />
             ) : null}
@@ -1109,6 +1551,15 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
                       </li>
                     ) : null}
                   </ul>
+                  {/* The bulk path lives on the add row, not on the rail's + (Q95). */}
+                  <button
+                    type="button"
+                    className="builder__link builder__add-many"
+                    data-testid="open-add-many"
+                    onClick={() => setDrawerOpen(true)}
+                  >
+                    Add many at once
+                  </button>
                 </>
               ) : (
                 <button
@@ -1139,11 +1590,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
                       event.target.value = current;
                       return;
                     }
-                    void run(() => renameMenuSection(configuration, apiKey, menuId, place.sectionId!, name), {
-                      describe: "Rename section",
-                      undo: () => renameMenuSection(configuration, apiKey, menuId, place.sectionId!, current),
-                      redo: () => renameMenuSection(configuration, apiKey, menuId, place.sectionId!, name)
-                    });
+                    renameSection(place.sectionId!, name, current);
                   }}
                 />
               </label>
@@ -1276,7 +1723,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
                   onClick={() => {
                     setThemePickerOpen(true);
                     if (!themes) {
-                      loadMenuThemes(configuration, apiKey)
+                      loadMenuThemes(configuration, credential())
                         .then(setThemes)
                         .catch(() => setThemes([]));
                     }
@@ -1288,6 +1735,112 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
             </>
           )}
         </aside>
+
+        {/*
+          The bulk drawer. It overlays the canvas and inspector and leaves the rail
+          alone, because Q124 says the place button retargets as you move sections
+          and the rail is how you move sections.
+        */}
+        {drawerOpen ? (
+          <section
+            className="builder__drawer"
+            aria-label="Add many at once"
+            data-testid="add-many-drawer"
+            onKeyDown={event => {
+              if (event.key === "Escape") setDrawerOpen(false);
+            }}
+          >
+            <header className="builder__drawer-head">
+              <h2>Add many at once</h2>
+              <button
+                type="button"
+                aria-label="Close"
+                data-testid="close-add-many"
+                onClick={() => setDrawerOpen(false)}
+              >
+                ✕
+              </button>
+            </header>
+
+            <input
+              ref={drawerSearch}
+              className="builder__drawer-search"
+              value={drawerQuery}
+              placeholder="Search your items"
+              aria-label="Search your items"
+              data-testid="add-many-search"
+              onChange={event => setDrawerQuery(event.target.value)}
+            />
+
+            <ul className="builder__drawer-list" data-testid="add-many-list">
+              {drawerHits.map(hit => {
+                const here = hit.boards.some(entry => entry.menuId === menuId);
+                const elsewhere = hit.boards.filter(entry => entry.menuId !== menuId);
+                return (
+                  <li key={hit.itemId}>
+                    {/*
+                      An item already on this board is shown and labelled, never
+                      offered — placing it again is refused under the lock anyway
+                      (Q112), and a checkbox that cannot do anything is a lie.
+                    */}
+                    <label className={here ? "is-here" : undefined}>
+                      <input
+                        type="checkbox"
+                        data-testid="add-many-pick"
+                        data-item-id={hit.itemId}
+                        disabled={here}
+                        checked={picked.includes(hit.itemId)}
+                        onChange={event =>
+                          setPicked(current =>
+                            event.target.checked
+                              ? [...current, hit.itemId]
+                              : current.filter(id => id !== hit.itemId)
+                          )
+                        }
+                      />
+                      <span className="builder__add-name">{hit.name}</span>
+                      <span className="builder__add-where">
+                        {here
+                          ? "already on this board"
+                          : elsewhere.length === 0
+                            ? "not on a board yet"
+                            : elsewhere.length === 1
+                              ? `on ${elsewhere[0].menuName}`
+                              : elsewhere.length === 2
+                                ? `on ${elsewhere[0].menuName} and ${elsewhere[1].menuName}`
+                                : `on ${elsewhere.length} boards`}
+                        {hit.isAvailable ? "" : " · 86'd right now"}
+                      </span>
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <footer className="builder__drawer-foot">
+              {placedNote ? (
+                <span className="builder__drawer-note" data-testid="add-many-placed" role="status">
+                  {placedNote}
+                </span>
+              ) : null}
+              <button
+                type="button"
+                className="action-primary"
+                data-testid="add-many-place"
+                disabled={picked.length === 0 || !place.sectionId || busy}
+                onClick={() => void placeMany()}
+              >
+                {/*
+                  The button names its target, and the target follows the rail —
+                  move sections with the drawer open and this sentence changes
+                  under your hand (Q124).
+                */}
+                Place {picked.length} in{" "}
+                {sections.find(section => section.sectionId === place.sectionId)?.name ?? "this section"}
+              </button>
+            </footer>
+          </section>
+        ) : null}
       </div>
 
       <footer className="builder__publish" data-testid="publish-bar" inert={behindScrim}>
@@ -1297,9 +1850,30 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
           </strong>
           <span className="builder__publish-meta">
             {saveState === "failed" ? (
-              <span className="builder__save-failed" data-testid="save-failed">
-                Couldn&apos;t save your last change — retrying…
-              </span>
+              /*
+               * Two different failures, and they must not wear each other's words.
+               * A dropped request IS retrying; an expired session is not — it is
+               * waiting for you, and saying "retrying…" there would be a promise
+               * the screen has no way to keep (Q197/Q199).
+               */
+              signBackIn ? (
+                <span className="builder__save-failed" data-testid="save-needs-sign-in">
+                  Couldn&apos;t save your last change — your sign-in expired.{" "}
+                  <button
+                    type="button"
+                    className="builder__link"
+                    data-testid="resume-sign-in"
+                    onClick={() => setSignInDeferred(false)}
+                  >
+                    Sign back in
+                  </button>{" "}
+                  and it sends.
+                </span>
+              ) : (
+                <span className="builder__save-failed" data-testid="save-failed">
+                  Couldn&apos;t save your last change — retrying…
+                </span>
+              )
             ) : (
               publishedLine(data, venueTimezone)
             )}
@@ -1313,7 +1887,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
                   onClick={() => {
                     setHistoryOpen(true);
                     if (!history) {
-                      loadMenuHistory(configuration, apiKey, menuId)
+                      loadMenuHistory(configuration, credential(), menuId)
                         .then(setHistory)
                         .catch(() => setHistory([]));
                     }
@@ -1405,6 +1979,15 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
         <p className="builder__error" role="alert" data-testid="builder-error">
           {error}
         </p>
+      ) : null}
+
+      {signBackIn && !signInDeferred ? (
+        <SignBackIn
+          configuration={configuration}
+          holding={signBackIn}
+          onSignedIn={resumeAfterSignIn}
+          onDismiss={() => setSignInDeferred(true)}
+        />
       ) : null}
 
       {confirmDiscard ? (
@@ -1588,7 +2171,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
                       data-testid="go-back-to-version"
                       onClick={() =>
                         void run(async () => {
-                          const result = await goBackToMenuVersion(configuration, apiKey, menuId, entry.version!);
+                          const result = await goBackToMenuVersion(configuration, credential(), menuId, entry.version!);
                           setHistoryOpen(false);
                           undoStack.current = [];
                           redoStack.current = [];

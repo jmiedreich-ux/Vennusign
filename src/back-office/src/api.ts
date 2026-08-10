@@ -1144,15 +1144,33 @@ export async function removeMenuItem(
  * Edits an item. One item is one shared price across every board it sits on (Q5);
  * each of those boards still changes its own screens only when it publishes.
  */
+/**
+ * Edits an item. `expected` makes it conditional: the values the caller believes
+ * are still there, checked under the lock that writes.
+ *
+ * Undo sends it, a plain edit does not. Undoing means "put back what I changed" —
+ * and if what you changed is no longer what is there, somebody else has edited it
+ * since, and putting your old value back would erase their work without a word.
+ */
 export async function updateMenuItemValues(
   configuration: BackOfficeConfiguration,
   accessToken: string,
   itemId: string,
-  values: { name: string; description: string | null; price: string | null }
+  values: { name: string; description: string | null; price: string | null },
+  expected?: { name: string; description: string | null; price: string | null }
 ): Promise<void> {
   await contentRequest(configuration, accessToken, `/items/${itemId}`, {
     method: "PUT",
-    body: JSON.stringify(values)
+    body: JSON.stringify(
+      expected
+        ? {
+            ...values,
+            expectedName: expected.name,
+            expectedDescription: expected.description,
+            expectedPrice: expected.price
+          }
+        : values
+    )
   });
 }
 

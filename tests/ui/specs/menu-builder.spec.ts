@@ -605,3 +605,273 @@ test.describe("the builder", () => {
     }
   });
 });
+
+/**
+ * The independent review of PR #691, answered in the browser.
+ *
+ * Every finding it raised was filed with an executed failure attached, so every
+ * answer here drives the same sequence rather than describing it. Each was checked
+ * against the code as it was before the fix, not only against the fix.
+ */
+test.describe("what the independent review found", () => {
+  const owned = { "X-Vennusign-Back-Office-Token": tokens.owner };
+
+  test("a save that fails is retried on its own, and Publish waits for it (Q197)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "retry" });
+
+    // The first attempt fails outright; anything after it goes through. The defect
+    // was that there WAS nothing after it — one request, then silence, forever.
+    let attempts = 0;
+    await page.route(`**/content/items/${data.itemId}`, async route => {
+      if (route.request().method() !== "PUT") return route.fallback();
+      attempts += 1;
+      if (attempts === 1) {
+        return route.fulfill({ status: 500, contentType: "application/json", body: "{}" });
+      }
+      return route.continue();
+    });
+
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    await page.getByTestId("item-description").fill("retried into place");
+    await page.getByTestId("item-description").blur();
+
+    // Amber, and Publish shut while the queue is unconfirmed.
+    await expect(page.getByTestId("save-failed")).toBeVisible();
+
+    // Nobody touches anything. The retry happens by itself.
+    await expect.poll(() => attempts, { timeout: 20_000 }).toBeGreaterThan(1);
+    await expect(page.getByTestId("save-failed")).toHaveCount(0);
+    await expect(page.getByTestId("canvas")).toContainText("retried into place");
+    await expect(page.getByTestId("publish")).toBeEnabled();
+  });
+
+  test("an expired sign-in holds the change and sends it after signing back in (Q199)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "signin" });
+
+    // 401 until the moment the session is decided to be back.
+    let expired = true;
+    let saves = 0;
+    await page.route(`**/content/items/${data.itemId}`, async route => {
+      if (route.request().method() !== "PUT") return route.fallback();
+      saves += 1;
+      if (expired) {
+        return route.fulfill({ status: 401, contentType: "application/json", body: "{}" });
+      }
+      return route.continue();
+    });
+
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    await page.getByTestId("item-description").fill("held through the expiry");
+    await page.getByTestId("item-description").blur();
+
+    // A prompt over the page — not a terminal error, and not a claim of retrying,
+    // which is a promise an expired session would never let the screen keep.
+    await expect(page.getByTestId("sign-back-in-dialog")).toBeVisible();
+    await expect(page.getByTestId("save-failed")).toHaveCount(0);
+
+    const before = saves;
+    expired = false;
+    await page.getByTestId("sign-back-in-token").fill(tokens.owner);
+    await page.getByTestId("sign-back-in-submit").click();
+
+    // It sends by itself. Nobody retypes the description.
+    await expect(page.getByTestId("sign-back-in-dialog")).toHaveCount(0);
+    await expect.poll(() => saves, { timeout: 20_000 }).toBeGreaterThan(before);
+    await expect(page.getByTestId("canvas")).toContainText("held through the expiry");
+
+    await page.reload();
+    await expect(page.getByTestId("canvas")).toContainText("held through the expiry");
+  });
+
+  test("Undo refuses rather than erasing somebody else's later edit", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "staleundo" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    // Editor A, here, changes the description.
+    await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    await page.getByTestId("item-description").fill("editor A");
+    await page.getByTestId("item-description").blur();
+    await expect(page.getByTestId("canvas")).toContainText("editor A");
+
+    // Editor B, elsewhere, edits the same item afterwards — all three values.
+    const theirs = await page.request.put(`${apiBaseUrl}/api/back-office/content/items/${data.itemId}`, {
+      headers: owned,
+      data: { name: "Editor B name", description: "editor B later", price: "99" }
+    });
+    expect(theirs.ok()).toBeTruthy();
+
+    // Editor A presses Undo. Before the guard this restored A's whole snapshot and
+    // all three of B's values vanished, with nothing said to either of them.
+    await page.keyboard.press("Control+z");
+    await expect(page.getByTestId("builder-error")).toContainText(/changed since/i);
+
+    const after = await page.request.get(
+      `${apiBaseUrl}/api/back-office/content/items?query=${encodeURIComponent("Editor B name")}&take=5`,
+      { headers: owned }
+    );
+    const found = (await after.json()) as Array<{ itemId: string; name: string }>;
+    expect(found.some(hit => hit.itemId === data.itemId)).toBeTruthy();
+  });
+
+  test("two 86'd items each carry their own time, not the first one's", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "two86" });
+
+    const placed = await page.request.post(
+      `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/sections/${data.sectionId}/items`,
+      { headers: owned, data: { name: `Second ${data.itemName}` } }
+    );
+    expect(placed.ok()).toBeTruthy();
+    const second = (await placed.json()) as { itemId: string };
+
+    for (const itemId of [data.itemId, second.itemId]) {
+      const off = await page.request.put(
+        `${apiBaseUrl}/api/back-office/content/items/${itemId}/availability`,
+        { headers: owned, data: { isAvailable: false } }
+      );
+      expect(off.ok()).toBeTruthy();
+    }
+
+    /*
+     * The times have to actually differ, or this spec cannot tell the fix from the
+     * defect: two items 86'd in the same second produce identical notes, and a
+     * single board-level note handed to both rows would satisfy it. Ninety minutes
+     * is enough to change the rendered hour whatever the venue's timezone.
+     */
+    const backdated = await page.request.post(`${apiBaseUrl}/api/test/seed/backdate-availability`, {
+      data: { accessToken: tokens.owner, itemId: data.itemId, minutesAgo: 90 }
+    });
+    expect(backdated.ok()).toBeTruthy();
+
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await expect(page.getByTestId("board-item-note")).toHaveCount(2);
+
+    const rows = await page.getByTestId("board-item").evaluateAll(nodes =>
+      nodes.map(node => ({
+        itemId: (node as HTMLElement).dataset.itemId,
+        note: node.querySelector('[data-testid="board-item-note"]')?.textContent?.trim() ?? null
+      }))
+    );
+
+    const noted = rows.filter(row => row.note);
+    expect(noted).toHaveLength(2);
+    expect(noted.map(row => row.itemId).sort()).toEqual([data.itemId, second.itemId].sort());
+
+    // The point of the whole finding: each row states its OWN time.
+    expect(noted[0].note).not.toBe(noted[1].note);
+  });
+
+  test("a section is renamed by clicking its heading on the canvas (Q96)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "heading" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    // The heading was inert: clicking it left focus on BODY and opened nothing.
+    await page.getByTestId("canvas").locator(".board-section-heading").first().click();
+    const editor = page.getByTestId("heading-edit");
+    await expect(editor).toBeFocused();
+
+    await editor.fill("Renamed On The Board");
+    await editor.press("Enter");
+
+    await expect(page.getByTestId("canvas")).toContainText("Renamed On The Board");
+    await expect(page.getByTestId("rail-section").first()).toContainText("Renamed On The Board");
+
+    // A draft change on the server, not a label on this screen.
+    await page.reload();
+    await expect(page.getByTestId("canvas")).toContainText("Renamed On The Board");
+  });
+
+  test("the bulk drawer places many, stays open, and retargets as sections change (Q124)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "drawer" });
+
+    // Two library items on no board, so the drawer has something to offer.
+    for (const name of ["Alpha", "Beta"]) {
+      const made = await page.request.post(
+        `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/sections/${data.sectionId}/items`,
+        { headers: owned, data: { name: `${name} ${data.itemName}` } }
+      );
+      expect(made.ok()).toBeTruthy();
+      const item = (await made.json()) as { itemId: string };
+      const removed = await page.request.delete(
+        `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/items/${item.itemId}`,
+        { headers: owned }
+      );
+      expect(removed.ok()).toBeTruthy();
+    }
+
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("open-add-many").click();
+    await expect(page.getByTestId("add-many-drawer")).toBeVisible();
+
+    await page.getByTestId("add-many-search").fill(data.itemName);
+    await expect(page.getByTestId("add-many-pick").first()).toBeVisible();
+
+    // A second section, added while the drawer is open — which is only possible
+    // because the drawer is not modal. Q124 requires exactly that.
+    await page.getByTestId("add-section").click();
+    await page.getByTestId("new-section-name").fill("Second Section");
+    await page.getByTestId("new-section-name").press("Enter");
+    await expect(page.getByTestId("rail-section")).toHaveCount(2);
+
+    await expect(page.getByTestId("add-many-drawer")).toBeVisible();
+    await expect(page.getByTestId("add-many-place")).toContainText("Second Section");
+
+    // The button retargets as you move sections.
+    await page.getByTestId("rail-section").first().click();
+    await expect(page.getByTestId("add-many-place")).toContainText(data.sectionName);
+
+    let picked = 0;
+    for (const box of await page.getByTestId("add-many-pick").all()) {
+      if (await box.isDisabled()) continue;
+      await box.check();
+      picked += 1;
+      if (picked === 2) break;
+    }
+    expect(picked).toBe(2);
+
+    await expect(page.getByTestId("add-many-place")).toContainText("Place 2 in");
+    await page.getByTestId("add-many-place").click();
+
+    // Stays open, selection cleared, and says how many landed (Q124).
+    await expect(page.getByTestId("add-many-drawer")).toBeVisible();
+    await expect(page.getByTestId("add-many-placed")).toContainText("2 placed");
+    await expect(page.getByTestId("add-many-place")).toContainText("Place 0 in");
+
+    // Escape closes it.
+    await page.getByTestId("add-many-search").press("Escape");
+    await expect(page.getByTestId("add-many-drawer")).toHaveCount(0);
+  });
+
+  test("an item is dragged to a new place on its own section (Q103)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "dragitem" });
+
+    for (const name of ["Beta", "Gamma"]) {
+      const made = await page.request.post(
+        `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/sections/${data.sectionId}/items`,
+        { headers: owned, data: { name: `${name} ${data.itemName}` } }
+      );
+      expect(made.ok()).toBeTruthy();
+    }
+
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    const rows = page.getByTestId("board-item");
+    await expect(rows).toHaveCount(3);
+
+    const before = await rows.allInnerTexts();
+
+    /*
+     * The pill was drawn on hover and on selection all along, exactly as Q103 asks.
+     * It simply dragged nothing: no handler, and `reorderMenuItems` imported and
+     * never called anywhere in the builder.
+     */
+    await rows.first().dragTo(rows.nth(2));
+    await expect.poll(async () => (await rows.allInnerTexts())[0], { timeout: 15_000 }).not.toBe(before[0]);
+
+    // A draft change on the server, not a rearrangement of this screen.
+    await page.reload();
+    const after = await page.getByTestId("board-item").allInnerTexts();
+    expect(after[0]).not.toBe(before[0]);
+  });
+});

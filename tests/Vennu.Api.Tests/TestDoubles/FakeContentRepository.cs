@@ -55,6 +55,44 @@ internal sealed class FakeContentRepository : IContentRepository
     public Task<Item?> GetItemAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken = default) =>
         Task.FromResult(Items.SingleOrDefault(item => item.VenueId == venueId && item.Id == itemId));
 
+    /// <summary>
+    /// Mirrors the guarded SQL, including its treatment of NULL and empty as the
+    /// same absence — a comparison that differs between here and the database would
+    /// make these tests agree with something the product does not do.
+    /// </summary>
+    public Task<ItemUpdateOutcome> UpdateItemValuesGuardedAsync(
+        Guid venueId,
+        Guid itemId,
+        string name,
+        string? description,
+        string? price,
+        ItemValueExpectation? expected,
+        DateTime now,
+        CancellationToken cancellationToken = default)
+    {
+        var item = Items.SingleOrDefault(candidate => candidate.VenueId == venueId && candidate.Id == itemId);
+        if (item is null)
+        {
+            return Task.FromResult(new ItemUpdateOutcome("not_found", null, null, null));
+        }
+
+        static bool Same(string? left, string? right) => (left ?? string.Empty) == (right ?? string.Empty);
+
+        if (expected is not null
+            && (item.Name != expected.Name
+                || !Same(item.Description, expected.Description)
+                || !Same(item.Price, expected.Price)))
+        {
+            return Task.FromResult(new ItemUpdateOutcome("item_changed", item.Name, item.Description, item.Price));
+        }
+
+        item.Name = name;
+        item.Description = description;
+        item.Price = price;
+        item.UpdatedUtc = now;
+        return Task.FromResult(new ItemUpdateOutcome("updated", name, description, price));
+    }
+
     public Task<IReadOnlyCollection<Item>> GetItemsAsync(Guid venueId, CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyCollection<Item>>(Items.Where(item => item.VenueId == venueId).ToArray());
 
