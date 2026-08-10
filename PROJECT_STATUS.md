@@ -20,7 +20,9 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
   - Six-milestone plan reconciled with every recorded answer: `docs/features/menus/milestone-plan.md` (merged via PR #669).
   - Five independent reviews (#2 through #6) each returned REQUEST_CHANGES and each found real defects. All findings are closed, every one with a regression test verified to fail with its fix reverted. Merged on 13 green exact-head checks at `2977bc3`.
   - **Accepted by the owner 2026-08-09.** Milestone 1 shipped no new UI, so its acceptance is the demo script rather than a workbook walk: `scripts/run-m1-demo.ps1` passes 12 of 12, including assertions of what each screen is actually showing. `docs/features/menus/m1-acceptance-record.json` remains **superseded** — signed 2026-08-08 against the earlier authored-draft implementation — and is kept as history.
-  - **Exact next action: begin Milestone 2.**
+  - **Milestone 2 is built and owner-accepted, on its branch and not yet merged** (issue #687, branch `feature/menus-m2-shell-render`, head `4c61aa2`). Owner ran the acceptance workbook 2026-08-10: 11 of 11 Pass, closure "Accept Milestone 2", record at `docs/features/menus/m2-acceptance-record.json`. One independent review so far; its three blocking defects are fixed and it required a fresh review of the resulting head.
+  - **Exact next action: a new independent review of Milestone 2's exact head, then the PR.** The owner chooses the reviewing agent.
+  - The register has one open question again — **Q209**, deferred at M2 acceptance: the ⋯ card actions cover guest content now that Q98 removed the venue-name strip. It ships on its provisional default until settled.
 - Backlog from the Menus planning: issues #670–#683 (out-of-scope decisions, copy debt, accessibility debt).
 
 ### Planning-reset inputs, not yet approved
@@ -34,8 +36,8 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
 | Milestone | Scope | Status |
 |---|---|---|
 | 1 | Item library + draft/publish spine + assignment | **complete** — merged and accepted 2026-08-09 (PR #685, #684) |
-| 2 | App shell + render engine + Menus home | **ready to start** — unblocked 2026-08-09; readiness pass complete, issue #687, branch `feature/menus-m2-shell-render` |
-| 3 | Builder + adding items | blocked on 2 |
+| 2 | App shell + render engine + Menus home | **built and accepted, not merged** — owner accepted 11 of 11 on 2026-08-10; issue #687, branch `feature/menus-m2-shell-render`, head `4c61aa2`. Awaiting a new independent review, then the PR |
+| 3 | Builder + adding items | blocked on 2 **merging** — acceptance alone does not open it |
 | 4 | Display player + geometry + delivery | blocked on 3 |
 | 5 | Board view + Play | blocked on 4 |
 | 6 | Quick Update + import + confirm step | blocked on 5 |
