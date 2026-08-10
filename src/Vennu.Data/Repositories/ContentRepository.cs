@@ -523,9 +523,14 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             loopWarningSeconds INT '$.loopWarningSeconds'
         );
 
+        -- Theme is assigned straight across, without the ISNULL the other settings
+        -- carry. A snapshot whose theme is null recorded a menu with no theme
+        -- attached, which is a valid state (Q86) and a fact to restore -- not a
+        -- gap to paper over with whatever is attached now. The guards stay on the
+        -- others, where null means the snapshot simply did not record the field.
         UPDATE m
         SET m.Name = ISNULL(t.Name, m.Name),
-            m.Theme = ISNULL(t.Theme, m.Theme),
+            m.Theme = t.Theme,
             m.DwellSeconds = ISNULL(NULLIF(t.DwellSeconds, 0), m.DwellSeconds),
             m.LoopWarningSeconds = ISNULL(NULLIF(t.LoopWarningSeconds, 0), m.LoopWarningSeconds),
             m.UpdatedUtc = @OccurredUtc

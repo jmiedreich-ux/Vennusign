@@ -84,6 +84,68 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         Assert.Equal(0, carried);
     }
 
+    // Migration 059. The column used to be NOT NULL DEFAULT N'coastal': it forbade
+    // the valid unthemed state (Q86) and defaulted to a look nobody built.
+    [Fact]
+    public async Task Migration_LeavesTheThemeNullableWithNoDefaultAndNoInventedValue()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+
+        var nullable = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            SELECT COUNT(*) AS Value
+            FROM sys.columns
+            WHERE object_id = OBJECT_ID(N'dbo.Menus', N'U') AND name = 'Theme' AND is_nullable = 1;
+            """, new { })).Single().Value;
+        Assert.True(nullable == 1, "dbo.Menus.Theme must be nullable: a menu with no theme attached is a valid state.");
+
+        var defaults = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            SELECT COUNT(*) AS Value
+            FROM sys.default_constraints dc
+            JOIN sys.columns c ON c.object_id = dc.parent_object_id AND c.column_id = dc.parent_column_id
+            WHERE dc.parent_object_id = OBJECT_ID(N'dbo.Menus', N'U') AND c.name = 'Theme';
+            """, new { })).Single().Value;
+        Assert.True(defaults == 0, "dbo.Menus.Theme must carry no default: there is no named look to default to.");
+
+        // The fiction is gone from the rows and from every snapshot that recorded it.
+        var fiction = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM dbo.Menus WHERE Theme = N'coastal')
+              + (SELECT COUNT(*) FROM dbo.MenuPublishEvents
+                 WHERE ISJSON(Snapshot) = 1 AND JSON_VALUE(Snapshot, '$.theme') = N'coastal') AS Value;
+            """, new { })).Single().Value;
+        Assert.True(fiction == 0, "No menu or stored snapshot may still name 'coastal': it never described anything real.");
+    }
+
+    /// <summary>
+    /// The reason migration 059 scrubs stored snapshots as well as rows. Comparing
+    /// a published 'coastal' against a working null would report "theme changed" on
+    /// every published menu in the system — a change nobody made, on the one count
+    /// whose promise is that it cannot disagree with what a publish ships (Q182).
+    /// </summary>
+    [Fact]
+    public async Task Draft_ReportsNoThemeChangeForAMenuThatNeverHadOne()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("cider"), Price = "7" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+
+        _ = await PublishCurrentAsync(repository, venueId, menuId);
+
+        var snapshots = await repository.GetDraftSnapshotsAsync(venueId, menuId);
+        Assert.Null(MenuSnapshot.Parse(snapshots.Published)!.Theme);
+        Assert.Empty(MenuSnapshot.Diff(snapshots.Published, snapshots.Working));
+    }
+
     [Fact]
     public async Task Migration_StoresAPriceExactlyAsTyped()
     {
@@ -897,6 +959,87 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         Assert.Empty(MenuSnapshot.Diff(version.Event.Snapshot, await repository.GetWorkingSnapshotAsync(venueId, menuId)));
         var entry = Assert.Single(await repository.GetHistoryAsync(venueId, menuId, 10), h => h.Kind == MenuHistoryKinds.Restored);
         Assert.Equal("Reviewer", entry.Author);
+    }
+
+    /// <summary>
+    /// Going back to a version the menu had no theme on takes the theme off again.
+    ///
+    /// Restore used to write <c>Theme = ISNULL(t.Theme, m.Theme)</c>, which treats a
+    /// null in the snapshot as "not recorded" and keeps whatever is attached now.
+    /// Since an unthemed menu is a valid state (Q86), null is a recorded fact, and
+    /// the guard silently made going back to it impossible: the menu would claim to
+    /// be on version 1 while wearing a theme version 1 never had.
+    /// </summary>
+    [Fact]
+    public async Task Restore_TakesTheThemeBackOffAMenuPublishedWithoutOne()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("porter"), Price = "6" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+
+        // Version 1: no theme attached, which is the state being restored to.
+        var unthemed = await PublishCurrentAsync(repository, venueId, menuId);
+        Assert.Null(MenuSnapshot.Parse(unthemed.Event.Snapshot)!.Theme);
+
+        // Someone attaches one afterwards.
+        await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            "UPDATE dbo.Menus SET Theme = @Theme WHERE Id = @MenuId; SELECT 1 AS Value;",
+            new { Theme = "harbour-dark", MenuId = menuId });
+        Assert.Equal(
+            "harbour-dark",
+            MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId))!.Theme);
+
+        await repository.RestoreSnapshotAsync(
+            venueId, menuId, unthemed.Event.Snapshot!, "Reviewer", "Went back to version 1.", DateTime.UtcNow);
+
+        var afterRestore = MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId));
+        Assert.Null(afterRestore!.Theme);
+
+        // And the strongest statement: nothing differs from the version restored to.
+        Assert.Empty(MenuSnapshot.Diff(unthemed.Event.Snapshot, await repository.GetWorkingSnapshotAsync(venueId, menuId)));
+    }
+
+    /// <summary>
+    /// The other direction, so the fix is not simply "theme is always cleared":
+    /// going back to a version that HAD a theme puts that theme back.
+    /// </summary>
+    [Fact]
+    public async Task Restore_PutsBackTheThemeTheVersionWasPublishedWith()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("saison"), Price = "8" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+
+        await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            "UPDATE dbo.Menus SET Theme = @Theme WHERE Id = @MenuId; SELECT 1 AS Value;",
+            new { Theme = "harbour-dark", MenuId = menuId });
+        var themed = await PublishCurrentAsync(repository, venueId, menuId);
+        Assert.Equal("harbour-dark", MenuSnapshot.Parse(themed.Event.Snapshot)!.Theme);
+
+        await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            "UPDATE dbo.Menus SET Theme = NULL WHERE Id = @MenuId; SELECT 1 AS Value;",
+            new { MenuId = menuId });
+
+        await repository.RestoreSnapshotAsync(
+            venueId, menuId, themed.Event.Snapshot!, "Reviewer", "Went back.", DateTime.UtcNow);
+
+        Assert.Equal(
+            "harbour-dark",
+            MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId))!.Theme);
     }
 
     // Review finding: restore only updated sections that still existed, so a

@@ -33,7 +33,7 @@ public sealed class ContentServiceLogicTests
     {
         MenuId = MenuId,
         Name = "Summer",
-        Theme = "coastal",
+        Theme = null,
         DwellSeconds = 8,
         LoopWarningSeconds = 60,
         Screens = [new SnapshotScreen { ScreenId = ScreenId }],

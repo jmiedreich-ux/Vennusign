@@ -183,8 +183,11 @@ BEGIN TRANSACTION;
 
 -- The menu's own working values return to canonical, so a drifted theme or
 -- dwell from an earlier demo cannot leak into the rebuilt publish snapshot.
+-- Canonical for the theme is NO theme attached: that is a valid state (Q86), no
+-- named look exists to attach, and migration 059 removed the 'coastal' this used
+-- to set - a value the fixture would otherwise put straight back.
 UPDATE dbo.Menus
-SET Theme = N'coastal', DwellSeconds = 8, LoopWarningSeconds = 60, IsPutAway = 0, UpdatedUtc = @M1Now
+SET Theme = NULL, DwellSeconds = 8, LoopWarningSeconds = 60, IsPutAway = 0, UpdatedUtc = @M1Now
 WHERE Id = @M1MenuId AND VenueId = @M1VenueId;
 
 -- Prices are stored exactly as typed (Q115/Q190), so the fixture deliberately
