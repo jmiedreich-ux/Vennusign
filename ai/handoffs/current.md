@@ -10,7 +10,7 @@ Updated 2026-08-10, after Menus Milestone 3 was built and gated.
 - **The planning reset produced the Menus feature.** Design authority: `docs/design/approved/menus/` (`decisions.md` wins conflicts). All 208 register questions are resolved in `docs/features/menus/open-questions.md`; the six-milestone plan in `docs/features/menus/milestone-plan.md` is reconciled with every answer.
 - **Milestone 1 is merged.** PR #685 merged to `master` on 2026-08-09 as `cd449a3`, on 13 green exact-head checks at `2977bc3`; branch `feature/menus-m1-spine` is deleted, issue #684 closed. It was reworked five times: independent reviews #2 through #6 each returned REQUEST_CHANGES and each found real defects. All are closed, every one with a regression test verified to fail with its fix reverted.
 - **Milestone 1 is accepted** (owner, 2026-08-09). Milestone 1 shipped no new UI, and `AGENTS.md` gives a schema-only milestone a demo script rather than a workbook walk: `scripts/run-m1-demo.ps1` passes 12 of 12, including customer-visible assertions of what each screen is actually showing. `m1-acceptance-record.json` stays **superseded** — it was signed 2026-08-08 against the authored-draft implementation — and is kept as history; this note is the acceptance record. **Milestone 2 is unblocked.**
-- **Milestone 3 is built, gated and awaiting acceptance** on `feature/menus-m3-builder` (issue #690). The builder: four columns, canvas-as-preview, the add row, undo/redo, the publish bar. Six decisions were taken by judgment at the readiness pass — all provisional, all recorded in #690 — because the owner asked that ambiguity not block progress overnight. Detail in §Milestone 3 readiness pass and §Milestone 3 — built and gated.
+- **Milestone 3 is built, reviewed, answered, and awaiting acceptance** on `feature/menus-m3-builder` (issue #690). The builder: four columns, canvas-as-preview, the add row, the bulk drawer, item drag, undo/redo, the publish bar. Six decisions were taken by judgment at the readiness pass — all provisional, all recorded in #690 — because the owner asked that ambiguity not block progress overnight. An independent review returned **REQUEST_CHANGES with seven findings, all of them real**; an eighth was found in the review prompt itself. All eight are fixed at `b59d2d1`. Detail in §Milestone 3 readiness pass, §Milestone 3 — built and gated, and §Milestone 3 — what the independent review cost.
 - **Milestone 2 is merged and accepted.** Owner ran the acceptance workbook 2026-08-10: 11 of 11 Pass, closure "Accept Milestone 2", record in `docs/features/menus/m2-acceptance-record.json`. One independent review, three blocking defects, all fixed at `4c61aa2`; the owner waived the second review that the first had asked for and closed the milestone on it. **Milestone 3 is unblocked.** Detail in §Milestone 2 — built and accepted.
 - **The register has one open question again: Q209**, deferred by the owner at M2 acceptance. The ⋯ card actions sit over the board and, now that Q98 removed the venue-name strip, they cover guest content — the first item's price on the accepted build. It ships on its provisional default until settled.
 - **The save model is settled: the draft is derived, not authored** (owner decision, milestone-plan §The save model). The live rows are the working state; the screens show the last published snapshot; the draft is the computed difference. Migration 058 creates no draft table, and the legacy editor now writes through `Items`/`Placements` so no path can change a screen without a publish.
@@ -26,13 +26,14 @@ Updated 2026-08-10, after Menus Milestone 3 was built and gated.
 ## Exact Next Action
 
 1. **Run the Menus Milestone 3 acceptance workbook** —
-   `docs/features/menus/m3-acceptance-workbook.html`, twelve checks, about ten minutes.
-   Two are marked as judgment calls rather than test results and are the ones that
-   most need an owner: the shared-price line (Q5's follow-up, resolved by judgment
+   `docs/features/menus/m3-acceptance-workbook.html`, **fifteen** checks, about twelve
+   minutes. Two are marked as judgment calls rather than test results and are the ones
+   that most need an owner: the shared-price line (Q5's follow-up, resolved by judgment
    while the owner slept) and whether a never-published menu should offer no discard
-   at all. Milestone 3 is built and gated on branch `feature/menus-m3-builder`
-   (issue **#690**); the PR is open. **Then decide whether it needs an independent
-   review** — milestone 2's was waived, and that decision was the owner's.
+   at all. **Checks 11–13 are new**: they cover the three behaviours the independent
+   review found missing — the canvas-heading rename, the bulk drawer and item drag —
+   all built since. Milestone 3 is on `feature/menus-m3-builder` (issue **#690**); the
+   PR is open, and the review's findings are answered at `b59d2d1`.
 2. Standing owner decisions carried out of Milestone 1: audit record kept as is (#677),
    legacy columns kept, and the three menu capabilities to become separately grantable
    (#686).
@@ -501,7 +502,8 @@ label rather than a dropdown, the 86 note had no time, and "go back to…" and
 
 **Not shipped, and named:** the overflow warning ("Two words over — wraps to 3
 lines on Patio") needs reported screen geometry, which arrives in milestone 4.
-Cross-section drag waits for milestone 5 (Q103). Keyboard reorder (#672) and the
+Cross-section drag waits for milestone 5 (Q103) — **within-section item drag does
+not, and was missing until the review; it ships now.** Keyboard reorder (#672) and the
 full add-row keyboard flow (Q122) stay backlogged; the rail keeps its ↑/↓ buttons
 until #672 lands, because replacing them with a drag handle first would remove
 reordering from keyboard users entirely.
@@ -510,6 +512,61 @@ reordering from keyboard users entirely.
 invariant sweep · 190 back office · 98 platform operations · 118 Playwright across
 desktop and mobile · 21/21 builder API checks over real HTTP · M1 demo 12/12. The
 four failures on **#688** remain, all pre-existing.
+
+## Milestone 3 — what the independent review cost — 2026-08-10
+
+The owner's chosen agent reviewed PR #691 at `d521cd4` and returned
+**REQUEST_CHANGES with seven findings. Every one was real**, verified here before
+anything was changed. An eighth was found in the review prompt itself. All eight
+are fixed at `b59d2d1`, each with a Playwright spec that was **run with its own fix
+reverted and observed to fail**.
+
+**The gate had a hole exactly the shape of the worst finding.** `npm run build`
+failed with three `TS2322`s on `inert`, and nothing ran it: `validate.ps1` built
+`src/display` and had never heard of `src/back-office`. 190 unit tests and 130
+Playwright specs were green against a branch whose back office did not compile,
+because the dev server transforms per module and never type-checks the project.
+`validate.ps1` now builds and tests **both** front ends. That is the durable fix;
+the `inert` typing itself is one declaration file.
+
+**Two recorded answers were named in the milestone plan and simply not built.**
+Q197 (a failed save retries automatically, Publish waits) and Q199 (a 401 shows a
+sign-back-in prompt, holds the change, sends it after). Both existed as copy — the
+amber byline was drawn — with no mechanism under them. A byline that says
+"retrying…" while nothing retries is worse than an error, because it is a promise.
+
+**Undo was a blind overwrite.** It sent the whole previously-captured row
+unconditionally, so undoing your own price edit erased a colleague's name,
+description and price along with it, silently. Inverses now carry the values they
+expect to find, compared under the lock that writes; `item_changed` comes back in
+the server's words. The catch block had claimed this protection for weeks — it
+could never fire, because an unconditional write does not fail.
+
+**Three named M3 behaviours were absent**: Q96's rename-by-clicking-the-canvas-
+heading (the heading was a `<p role="presentation">`), Q124's "Add many at once"
+drawer, and Q103's within-section item drag — where the pill was drawn correctly
+on hover and on selection all along and dragged nothing, with `reorderMenuItems`
+imported by the builder and called from nowhere.
+
+**Two lessons worth carrying, both about evidence.**
+
+1. *A do-not-file list is an authority claim, and mine was wrong.* The review
+   prompt told the reviewer that item drag was milestone 5 "per Q103". Q103 defers
+   only **cross-section** moves. An in-scope gap was placed out of bounds, in the
+   same document that warned the reviewer against citing a recorded answer they
+   had not read. **Quote the register entry into the prompt itself** — if the words
+   have to be pasted, the mistake cannot survive being written down.
+2. *A spec can pass against the defect it names.* The first version of the 86-note
+   spec 86'd two items and asserted each had a note — which the one-shared-string
+   bug also satisfies, because both rows got a note. It needed a test-support
+   endpoint to backdate one 86 before the notes could differ at all. Written and
+   run, it would have been evidence of nothing. **Revert the fix and watch the spec
+   fail** is not a formality; it is the only thing that distinguishes the two.
+
+And one the browser caught that nothing else could: moving the 86 notes into a
+`useMemo` below the loading early-return changed the hook count and blanked the
+entire application. 190 unit tests passed and the production build completed while
+the app rendered nothing at all.
 
 ## Boundaries
 
