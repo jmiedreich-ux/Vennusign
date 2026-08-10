@@ -103,8 +103,22 @@ a.sign-in:focus-visible{outline:3px solid #d49d22;outline-offset:2px}
       <p id="closure-guidance">Record every check before deciding on Milestone 3.</p>
       <p class="closure-warning" id="closure-warning" hidden>One or more checks failed or need adjustment. Milestone 3 should not merge until those findings are resolved.</p>
       <label>Decision<select data-field="closure"><option value="">Select a decision</option><option id="approve-option">Accept Milestone 3</option><option>Needs adjustment</option><option>Do not accept</option></select></label>
-      <label>Decisions on the three flagged items<textarea data-field="flagged" placeholder="1) Provisional audit record (Q207, issue #677) - is the attributable history enough for now?&#10;2) Provisional capability grants (Q24) - content.menu.manage, content.menu.import and publishing.history.view are auto-granted to every role that already edits items.&#10;3) Deferred column drops - HappyHourPrice, QuantityAvailable, Tags and IsPopular stay as columns until M4/M6 retire their last reader."></textarea></label>
       <label>Final notes and required follow-up<textarea data-field="finalNotes" placeholder="Summarize the decision, failed checks, issue links, owners, and next action."></textarea></label>
+      <!--
+        The closing decision takes evidence too. A screenshot of the shelf, or of the
+        one thing that made the decision go the way it did, belongs with the decision
+        rather than filed under whichever check happened to be open at the time.
+      -->
+      <div class="shots">
+        <strong>Screenshots</strong>
+        <small>Anything attached here is saved with the workbook and travels in the exported JSON and the printed PDF.</small>
+        <div class="shot-drop" tabindex="0" data-drop="closure" role="group" aria-label="Attach screenshots for the closing decision">
+          <p>Press <kbd>Ctrl</kbd>+<kbd>V</kbd> here to paste a screenshot (Windows: <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> to capture), or drop an image, or</p>
+          <button type="button" class="secondary" data-pick="closure">Choose image…</button>
+          <input type="file" accept="image/*" multiple hidden data-file="closure">
+        </div>
+        <ul class="shot-list" data-shots="closure"></ul>
+      </div>
     </section>
   </main>
   <script>
