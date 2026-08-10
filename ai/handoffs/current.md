@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-10, after Menus Milestone 2 merged.
+Updated 2026-08-10, after Menus Milestone 3 was built and gated.
 
 ## Current State
 
@@ -10,6 +10,7 @@ Updated 2026-08-10, after Menus Milestone 2 merged.
 - **The planning reset produced the Menus feature.** Design authority: `docs/design/approved/menus/` (`decisions.md` wins conflicts). All 208 register questions are resolved in `docs/features/menus/open-questions.md`; the six-milestone plan in `docs/features/menus/milestone-plan.md` is reconciled with every answer.
 - **Milestone 1 is merged.** PR #685 merged to `master` on 2026-08-09 as `cd449a3`, on 13 green exact-head checks at `2977bc3`; branch `feature/menus-m1-spine` is deleted, issue #684 closed. It was reworked five times: independent reviews #2 through #6 each returned REQUEST_CHANGES and each found real defects. All are closed, every one with a regression test verified to fail with its fix reverted.
 - **Milestone 1 is accepted** (owner, 2026-08-09). Milestone 1 shipped no new UI, and `AGENTS.md` gives a schema-only milestone a demo script rather than a workbook walk: `scripts/run-m1-demo.ps1` passes 12 of 12, including customer-visible assertions of what each screen is actually showing. `m1-acceptance-record.json` stays **superseded** — it was signed 2026-08-08 against the authored-draft implementation — and is kept as history; this note is the acceptance record. **Milestone 2 is unblocked.**
+- **Milestone 3 is built, gated and awaiting acceptance** on `feature/menus-m3-builder` (issue #690). The builder: four columns, canvas-as-preview, the add row, undo/redo, the publish bar. Six decisions were taken by judgment at the readiness pass — all provisional, all recorded in #690 — because the owner asked that ambiguity not block progress overnight. Detail in §Milestone 3 readiness pass and §Milestone 3 — built and gated.
 - **Milestone 2 is merged and accepted.** Owner ran the acceptance workbook 2026-08-10: 11 of 11 Pass, closure "Accept Milestone 2", record in `docs/features/menus/m2-acceptance-record.json`. One independent review, three blocking defects, all fixed at `4c61aa2`; the owner waived the second review that the first had asked for and closed the milestone on it. **Milestone 3 is unblocked.** Detail in §Milestone 2 — built and accepted.
 - **The register has one open question again: Q209**, deferred by the owner at M2 acceptance. The ⋯ card actions sit over the board and, now that Q98 removed the venue-name strip, they cover guest content — the first item's price on the accepted build. It ships on its provisional default until settled.
 - **The save model is settled: the draft is derived, not authored** (owner decision, milestone-plan §The save model). The live rows are the working state; the screens show the last published snapshot; the draft is the computed difference. Migration 058 creates no draft table, and the legacy editor now writes through `Items`/`Placements` so no path can change a screen without a publish.
@@ -24,12 +25,14 @@ Updated 2026-08-10, after Menus Milestone 2 merged.
 
 ## Exact Next Action
 
-1. **Menus Milestone 3 is under way** — issue **#690**, branch `feature/menus-m3-builder`,
-   claim recorded, readiness pass complete (§Milestone 3 readiness pass below). Milestone 2 is merged and
-   accepted; PR #689 closed issue #687. Carry its standing instruction: **browser
-   assertions ship with the surface, not a step later.** Q209 is open and running on its
-   provisional default — settle it in milestone 3 if the builder touches the card, and do
-   not treat the provisional as decided.
+1. **Run the Menus Milestone 3 acceptance workbook** —
+   `docs/features/menus/m3-acceptance-workbook.html`, twelve checks, about ten minutes.
+   Two are marked as judgment calls rather than test results and are the ones that
+   most need an owner: the shared-price line (Q5's follow-up, resolved by judgment
+   while the owner slept) and whether a never-published menu should offer no discard
+   at all. Milestone 3 is built and gated on branch `feature/menus-m3-builder`
+   (issue **#690**); the PR is open. **Then decide whether it needs an independent
+   review** — milestone 2's was waived, and that decision was the owner's.
 2. Standing owner decisions carried out of Milestone 1: audit record kept as is (#677),
    legacy columns kept, and the three menu capabilities to become separately grantable
    (#686).
@@ -461,6 +464,52 @@ browser refresh mid-edit · leave and return.
 - `README.md` (design authority) M2 inspector still lists "two checkboxes (Feature on
   the board, Add a photo)" and calls them "**Six controls total**" — Q107 and Q108 put
   both out of scope, so the inspector has four.
+
+## Milestone 3 — built and gated — 2026-08-10
+
+Branch `feature/menus-m3-builder`, issue **#690**. Three steps, a gate each, then a
+critique pass and the full gate.
+
+**What it delivers.** The four-column builder at its own address `#/menu/{menuId}`:
+a section rail that navigates, a canvas that IS the preview, an inspector of four
+controls, and the publish bar. Adding items with search that jumps rather than
+duplicates. Undo and redo. ⌘K over the board. The theme picker's honest empty
+state. Migration 061, which moved two rules the product only promised into the
+schema. Nine content endpoints where every rule is decided inside the statement
+that writes it.
+
+**Retired with it**, per AGENTS.md: `MenuSectionsEditor`, `MenuItemsEditor`,
+`QuickUpdateMode`, the legacy section/item routes and their client, and four
+back-office specs — with their specs **rewritten, not deleted**.
+
+**Six decisions taken by judgment**, all provisional and recorded in #690, because
+the owner asked that ambiguity not block progress overnight. The one most worth an
+owner's eye is Q5's design follow-up: shared-price editing "must feel easy", and
+the resolution was a quiet statement of fact under the price rather than a
+confirmation step or a separate quick-price mode.
+
+**What the browser caught that 190 unit tests could not**: board type six times too
+large, a second page header stacked over the builder, a selection ring that never
+drew, duplicate exports the typecheck passed and the bundler refused, and — from
+milestone 2's shelf — an amber strip that swallowed clicks, so the one menu you
+most wanted to open was the one you could not.
+
+**The critique pass** against `docs/design/approved/menus/README.md` §M2/§M2a found
+five gaps and all five are closed: redo was a disabled button, "Viewing as" was a
+label rather than a dropdown, the 86 note had no time, and "go back to…" and
+"Review first" were missing from the publish bar.
+
+**Not shipped, and named:** the overflow warning ("Two words over — wraps to 3
+lines on Patio") needs reported screen geometry, which arrives in milestone 4.
+Cross-section drag waits for milestone 5 (Q103). Keyboard reorder (#672) and the
+full add-row keyboard flow (Q122) stay backlogged; the rail keeps its ↑/↓ buttons
+until #672 lands, because replacing them with a drag handle first would remove
+reordering from keyboard users entirely.
+
+**Gate.** 433 API unit · 89 data integration on a fresh migration with the
+invariant sweep · 190 back office · 98 platform operations · 118 Playwright across
+desktop and mobile · 21/21 builder API checks over real HTTP · M1 demo 12/12. The
+four failures on **#688** remain, all pre-existing.
 
 ## Boundaries
 

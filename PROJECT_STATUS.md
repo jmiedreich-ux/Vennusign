@@ -21,7 +21,8 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
   - Five independent reviews (#2 through #6) each returned REQUEST_CHANGES and each found real defects. All findings are closed, every one with a regression test verified to fail with its fix reverted. Merged on 13 green exact-head checks at `2977bc3`.
   - **Accepted by the owner 2026-08-09.** Milestone 1 shipped no new UI, so its acceptance is the demo script rather than a workbook walk: `scripts/run-m1-demo.ps1` passes 12 of 12, including assertions of what each screen is actually showing. `docs/features/menus/m1-acceptance-record.json` remains **superseded** — signed 2026-08-08 against the earlier authored-draft implementation — and is kept as history.
   - **Milestone 2 merged and accepted 2026-08-10** (PR #689, issue #687). Owner ran the acceptance workbook: 11 of 11 Pass, closure "Accept Milestone 2", record at `docs/features/menus/m2-acceptance-record.json`. One independent review; its three blocking defects are fixed. It asked for a second review of the resulting head and the owner waived that, judging the first sufficient — milestone 1 took five reviews, milestone 2 took one.
-  - **Exact next action: begin Milestone 3 — builder and adding items.** Browser assertions ship with the surface, not a step later.
+  - **Milestone 3 is built and gated, awaiting owner acceptance** (issue #690, branch `feature/menus-m3-builder`). The builder: four columns, the canvas as the preview, adding items, undo/redo and the publish bar. Six readiness-pass decisions were taken by judgment while the owner was away, all provisional and recorded in #690.
+  - **Exact next action: run `docs/features/menus/m3-acceptance-workbook.html`** — twelve checks, about ten minutes, two of them marked as judgment calls.
   - The register has one open question again — **Q209**, deferred at M2 acceptance: the ⋯ card actions cover guest content now that Q98 removed the venue-name strip. It ships on its provisional default until settled.
 - Backlog from the Menus planning: issues #670–#683 (out-of-scope decisions, copy debt, accessibility debt).
 
@@ -37,7 +38,7 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
 |---|---|---|
 | 1 | Item library + draft/publish spine + assignment | **complete** — merged and accepted 2026-08-09 (PR #685, #684) |
 | 2 | App shell + render engine + Menus home | **complete** — merged and accepted 2026-08-10 (PR #689, #687) |
-| 3 | Builder + adding items | **ready to start** — unblocked 2026-08-10 |
+| 3 | Builder + adding items | **built and gated, awaiting acceptance** — issue #690, branch `feature/menus-m3-builder` |
 | 4 | Display player + geometry + delivery | blocked on 3 |
 | 5 | Board view + Play | blocked on 4 |
 | 6 | Quick Update + import + confirm step | blocked on 5 |

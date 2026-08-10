@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-10T11:05:00Z",
+  "updatedUtc": "2026-08-10T12:40:00Z",
   "activeAssignments": [
     {
       "assignment": "Menus milestone 3 \u2014 menu builder + adding items",
@@ -8,8 +8,8 @@
       "branch": "feature/menus-m3-builder",
       "owner": "Claude Code for JeremyPC",
       "claimedUtc": "2026-08-10T11:05:00Z",
-      "status": "readiness pass complete; coding in progress",
-      "notes": "Readiness pass 2026-08-10 recorded in issue #690 and ai/handoffs/current.md. Six decisions taken by judgment while the owner was asleep, at their instruction; all provisional. Standing instruction from M2: browser assertions ship with the surface, not a step later."
+      "status": "built and gated; awaiting the owner acceptance workbook",
+      "notes": "Readiness pass 2026-08-10 recorded in issue #690 and ai/handoffs/current.md. Six decisions taken by judgment while the owner was asleep, at their instruction; all provisional. Built in three steps with a gate each. Impeccable critique run against the design authority: five gaps found and closed. Workbook ready at docs/features/menus/m3-acceptance-workbook.html. Whether an independent review is required is the owner's call - milestone 2's was waived."
     }
   ],
   "desktopSessionLock": null,
