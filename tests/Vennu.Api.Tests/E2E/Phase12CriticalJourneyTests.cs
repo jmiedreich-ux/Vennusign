@@ -71,7 +71,7 @@ public sealed class Phase12CriticalJourneyTests : IClassFixture<VennuApiFactory>
         // built in dependency order - mappings and webhook events reference the
         // connection - so the claim is about order within the baseline, not about how
         // many files it happens to be spread across.
-        var baseline = MenusM1SpineMigrationTests.ReadBaseline();
+        var baseline = MenusM1MigrationTests.ReadBaseline();
 
         var order = new[]
         {

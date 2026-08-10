@@ -3,7 +3,7 @@ using Vennu.DataAccess;
 
 namespace Vennu.Data.Repositories;
 
-public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibraryRepository
+public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepository
 {
     private const string ItemsSql = """
         SELECT Id, VenueId, Name, Description, Price, ImageUrl, Source, IsActive, CreatedUtc, UpdatedUtc

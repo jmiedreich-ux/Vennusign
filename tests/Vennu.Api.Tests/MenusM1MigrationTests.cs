@@ -7,18 +7,18 @@ namespace Vennu.Api.Tests;
 /// discards, so these assert the script itself rather than a running database.
 /// </summary>
 [Trait("Category", "Unit")]
-public sealed class MenusM1SpineMigrationTests
+public sealed class MenusM1MigrationTests
 {
     /// <summary>
-    /// The spine's own statements, not the whole baseline.
+    /// The content model's own statements, not the whole baseline.
     ///
     /// The fifty-nine migrations were collapsed into one file, but each keeps its
     /// <c>-- ===== name =====</c> header, so a test about one migration can still be
     /// about that migration. It matters: the legacy menu domain in the same file
-    /// declares a DECIMAL price, and asserting the spine does not would otherwise read
+    /// declares a DECIMAL price, and asserting the content model does not would otherwise read
     /// the wrong statements and fail for the wrong reason.
     /// </summary>
-    private static string ReadSpineMigration() =>
+    private static string ReadM1MigrationSection() =>
         ReadBaselineSection("058_create_menu_item_library_spine.sql");
 
     internal static string ReadBaselineSection(string originalScriptName)
@@ -44,7 +44,7 @@ public sealed class MenusM1SpineMigrationTests
     }
 
     [Fact]
-    public void SpineMigration_IsEmbeddedInOrder()
+    public void M1Migration_IsEmbeddedInOrder()
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
@@ -53,9 +53,9 @@ public sealed class MenusM1SpineMigrationTests
     }
 
     [Fact]
-    public void SpineMigration_CreatesTheLibraryAndSaveModelTables()
+    public void M1Migration_CreatesTheLibraryAndSaveModelTables()
     {
-        var sql = ReadSpineMigration();
+        var sql = ReadM1MigrationSection();
 
         Assert.Contains("CREATE TABLE dbo.Items", sql, StringComparison.Ordinal);
         Assert.Contains("CREATE TABLE dbo.Placements", sql, StringComparison.Ordinal);
@@ -69,18 +69,18 @@ public sealed class MenusM1SpineMigrationTests
     // The draft is derived (owner decision, 2026-08-09): there is deliberately no
     // draft table, because a stored queue could disagree with what Publish ships.
     [Fact]
-    public void SpineMigration_CreatesNoDraftTable()
+    public void M1Migration_CreatesNoDraftTable()
     {
-        var sql = ReadSpineMigration();
+        var sql = ReadM1MigrationSection();
 
         Assert.DoesNotContain("CREATE TABLE dbo.MenuDraftChanges", sql, StringComparison.Ordinal);
         Assert.Contains("NO draft table", sql, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void SpineMigration_NamesEveryFieldItDiscardsFromTheLibrary()
+    public void M1Migration_NamesEveryFieldItDiscardsFromTheLibrary()
     {
-        var sql = ReadSpineMigration();
+        var sql = ReadM1MigrationSection();
 
         // AGENTS.md: a migration that discards data names what it discards.
         foreach (var discarded in new[]
@@ -98,9 +98,9 @@ public sealed class MenusM1SpineMigrationTests
     }
 
     [Fact]
-    public void SpineMigration_NeverBuildsTheOwnerKilledConcepts()
+    public void M1Migration_NeverBuildsTheOwnerKilledConcepts()
     {
-        var sql = ReadSpineMigration();
+        var sql = ReadM1MigrationSection();
 
         // These used to be created by scripts 012 and 013 and dropped again by 058, so
         // a new database built them and then demolished them. The baseline does not
@@ -125,9 +125,9 @@ public sealed class MenusM1SpineMigrationTests
     }
 
     [Fact]
-    public void SpineMigration_KeepsFieldLimitsAndForbidsBlankNames()
+    public void M1Migration_KeepsFieldLimitsAndForbidsBlankNames()
     {
-        var sql = ReadSpineMigration();
+        var sql = ReadM1MigrationSection();
 
         Assert.Contains("Name NVARCHAR(200) NOT NULL", sql, StringComparison.Ordinal);
         Assert.Contains("Description NVARCHAR(1000) NULL", sql, StringComparison.Ordinal);
@@ -135,9 +135,9 @@ public sealed class MenusM1SpineMigrationTests
     }
 
     [Fact]
-    public void SpineMigration_HoldsOneMenuPerScreen()
+    public void M1Migration_HoldsOneMenuPerScreen()
     {
-        var sql = ReadSpineMigration();
+        var sql = ReadM1MigrationSection();
 
         // A separate assignment record, uniquely keyed by screen, so Schedules
         // can multiplex later without a migration.
@@ -149,9 +149,9 @@ public sealed class MenusM1SpineMigrationTests
     // a publish target proves its event and screen share its venue; a history
     // entry proves the event it names belongs to its own menu and venue.
     [Fact]
-    public void SpineMigration_ClosesTheIndirectTenantRelationships()
+    public void M1Migration_ClosesTheIndirectTenantRelationships()
     {
-        var sql = ReadSpineMigration();
+        var sql = ReadM1MigrationSection();
 
         Assert.Contains("CONSTRAINT FK_Placements_SectionOnMenu FOREIGN KEY (MenuSectionId, MenuId) REFERENCES dbo.MenuSections (Id, MenuId)", sql, StringComparison.Ordinal);
         Assert.Contains("CONSTRAINT FK_MenuPublishTargets_Event FOREIGN KEY (PublishEventId, VenueId) REFERENCES dbo.MenuPublishEvents (Id, VenueId)", sql, StringComparison.Ordinal);
@@ -160,9 +160,9 @@ public sealed class MenusM1SpineMigrationTests
     }
 
     [Fact]
-    public void SpineMigration_SeedsCeilingsAsAllowancesNotConstants()
+    public void M1Migration_SeedsCeilingsAsAllowancesNotConstants()
     {
-        var sql = ReadSpineMigration();
+        var sql = ReadM1MigrationSection();
 
         Assert.Contains("INSERT dbo.CapabilityAllowances", sql, StringComparison.Ordinal);
         Assert.Contains("('content.menu.count', 50)", sql, StringComparison.Ordinal);
@@ -171,9 +171,9 @@ public sealed class MenusM1SpineMigrationTests
     }
 
     [Fact]
-    public void SpineMigration_LandsConfigurableDwellAndLoopWarning()
+    public void M1Migration_LandsConfigurableDwellAndLoopWarning()
     {
-        var sql = ReadSpineMigration();
+        var sql = ReadM1MigrationSection();
 
         Assert.Contains("DwellSeconds INT NOT NULL CONSTRAINT DF_Menus_DwellSeconds DEFAULT 8", sql, StringComparison.Ordinal);
         Assert.Contains("LoopWarningSeconds INT NOT NULL CONSTRAINT DF_Menus_LoopWarningSeconds DEFAULT 60", sql, StringComparison.Ordinal);
@@ -182,9 +182,9 @@ public sealed class MenusM1SpineMigrationTests
     // Q45: fresh start. The new tables begin empty and the migration must not
     // carry legacy menu content across; the old tables stay untouched but unused.
     [Fact]
-    public void SpineMigration_DoesNotCarryLegacyContentIntoTheLibrary()
+    public void M1Migration_DoesNotCarryLegacyContentIntoTheLibrary()
     {
-        var sql = ReadSpineMigration();
+        var sql = ReadM1MigrationSection();
 
         Assert.DoesNotContain("INSERT dbo.Items", sql, StringComparison.Ordinal);
         Assert.DoesNotContain("INSERT dbo.Placements", sql, StringComparison.Ordinal);
@@ -196,9 +196,9 @@ public sealed class MenusM1SpineMigrationTests
     // Tenancy is a database invariant, not a predicate each query must remember:
     // every child reaches its parent through the parent's (Id, VenueId) key.
     [Fact]
-    public void SpineMigration_MakesTenantOwnershipADatabaseInvariant()
+    public void M1Migration_MakesTenantOwnershipADatabaseInvariant()
     {
-        var sql = ReadSpineMigration();
+        var sql = ReadM1MigrationSection();
 
         Assert.Contains("REFERENCES dbo.Menus (Id, VenueId)", sql, StringComparison.Ordinal);
         Assert.Contains("REFERENCES dbo.MenuSections (Id, VenueId)", sql, StringComparison.Ordinal);
@@ -210,18 +210,18 @@ public sealed class MenusM1SpineMigrationTests
     // Q115/Q190: a price is stored exactly as typed, so "MP" is a valid price and
     // "9.5" never becomes "9.50". A numeric column could do neither.
     [Fact]
-    public void SpineMigration_StoresPricesAsTypedText()
+    public void M1Migration_StoresPricesAsTypedText()
     {
-        var sql = ReadSpineMigration();
+        var sql = ReadM1MigrationSection();
 
         Assert.Contains("Price NVARCHAR(40) NULL", sql, StringComparison.Ordinal);
         Assert.DoesNotContain("Price DECIMAL", sql, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public void SpineMigration_AddsTheMenusCapabilityIdsAutoGranted()
+    public void M1Migration_AddsTheMenusCapabilityIdsAutoGranted()
     {
-        var sql = ReadSpineMigration();
+        var sql = ReadM1MigrationSection();
 
         Assert.Contains("'content.menu.manage'", sql, StringComparison.Ordinal);
         Assert.Contains("'content.menu.import'", sql, StringComparison.Ordinal);

@@ -8,8 +8,8 @@ namespace Vennu.Api.Services;
 /// availability is a fact that commits instantly, and everything else is an
 /// intention that waits in the menu's draft until someone publishes it.
 /// </summary>
-public sealed class MenuSpineService(
-    IMenuLibraryRepository library,
+public sealed class ContentService(
+    IContentRepository library,
     IVenueRepository venues,
     Vennu.Api.Notifications.IScreenUpdateNotifier notifier,
     TimeProvider timeProvider)

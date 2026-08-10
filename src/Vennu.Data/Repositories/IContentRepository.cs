@@ -3,11 +3,11 @@ using Vennu.Core.Models;
 namespace Vennu.Data.Repositories;
 
 /// <summary>
-/// Persistence for the Menus spine: the venue item library, placements onto
+/// Persistence for menu content: the venue item library, placements onto
 /// boards, availability, menu-to-screen assignment, the per-menu draft queue,
 /// publishes and the attributable history.
 /// </summary>
-public interface IMenuLibraryRepository
+public interface IContentRepository
 {
     // ----- Library and placements -------------------------------------------------
 

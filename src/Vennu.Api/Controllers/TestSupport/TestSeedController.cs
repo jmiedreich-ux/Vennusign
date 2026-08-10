@@ -19,7 +19,7 @@ public sealed class TestSeedController(
     IHostEnvironment environment,
     IOptionsMonitor<BackOfficeAuthenticationOptions> backOfficeOptions,
     IMenuRepository menuRepository,
-    IMenuLibraryRepository libraryRepository,
+    IContentRepository libraryRepository,
     IScreenRepository screenRepository,
     TimeProvider timeProvider) : ControllerBase
 {

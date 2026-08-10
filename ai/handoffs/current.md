@@ -113,7 +113,7 @@ decision; local verification was the gate).
   did not contain, because the two were separate parameters. The count is now derived
   from the shipped set inside the statement, so they cannot disagree; `PublishAsync` no
   longer takes it.
-- **`GET menu-spine/screens/showing`** answers what a screen is showing, from the
+- **`GET content/screens/showing`** answers what a screen is showing, from the
   delivery rows and the published snapshot, never from the assignments. The milestone's
   central claim had no read behind it, which is why the demo could report 12 of 12
   while a screen sat stranded. The demo now asserts the screen at checks 4, 6, 8c and 8d.
@@ -246,7 +246,7 @@ moves them.
 ## Milestone 2 readiness pass — 2026-08-09
 
 The owner asked that M2 be put through the dev process before coding. Three exploration
-sweeps (frontend/shell, design authority, spine API/test harness) plus a structural
+sweeps (frontend/shell, design authority, content API/test harness) plus a structural
 design pass. Findings and decisions, all recorded in issue **#687**:
 
 - **Owner decisions:** defer the MenuThemes table (above); the render engine lives at
@@ -254,8 +254,28 @@ design pass. Findings and decisions, all recorded in issue **#687**:
   from back-office in M2 and the display player in M4 (the platform-operations
   cross-app import is the precedent). The engine imports nothing from either app; data
   arrives as props.
+- **"Spine" is retired; the model is named "content"** (owner, 2026-08-09). The data
+  model and API are *content* — items, placements, availability — and "menu" is the
+  operational context using it, which the capability IDs already said
+  (`content.item.update`, `content.menu.manage`). Landed as milestone 2's step 0,
+  before any frontend client was written against the old name: route
+  `api/back-office/menu-spine` → **`api/back-office/content`**;
+  `BackOfficeMenuSpineController` → `BackOfficeContentController`; `MenuSpineService`
+  → `ContentService`; `MenuSpineContracts` → `ContentContracts`;
+  `IMenuLibraryRepository`/`MenuLibraryRepository` → `IContentRepository`/
+  `ContentRepository`; `FakeMenuLibraryRepository` → `FakeContentRepository`; the test
+  classes and the demo runner with them. **Historical names stay as history**:
+  milestone 1's title, the `feature/menus-m1-spine` branch, PR #685, the
+  `058_create_menu_item_library_spine.sql` header inside the frozen baseline, and the
+  recorded register answers are not rewritten.
+- **Step gates, not a testing phase** (owner, 2026-08-09). Tests are written with each
+  step and each step ends on its own green gate before the next starts — schema on both
+  a fresh and a previously-migrated database; the API exercised with real requests
+  before any UI consumes it; the engine on its render invariants; the shell on both app
+  builds plus existing nav specs; the shelf on new Playwright specs. The full local
+  gate, review and workbook run at close. Recorded on #687.
 - **Backend gaps M2 must fill before the shelf UI can be honest:** no frontend client
-  for the spine API exists at all; no menus-list read (the legacy `GET /menus` drags
+  for the content API exists at all; no menus-list read (the legacy `GET /menus` drags
   every section and item and loses "MP" price fidelity); nothing exposes a published
   snapshot to render; `HistoryEntryResponse` carries no `Version` so Go back to… is
   unreachable; no duplicate operation exists (semantics owner-settled in Q20). Route

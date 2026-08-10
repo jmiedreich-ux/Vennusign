@@ -15,7 +15,7 @@ criterion's status, not after.
 | 1 | 86 reaches every screen in seconds, no publish, never queued | M1 (API) · M4 (on-screen, 10s pass line Q188) | **met at API** — `run-m1-demo.ps1` checks incl. screen assertions, M1 accepted 2026-08-09; on-screen re-assertion waits for M4 |
 | 2 | Publish ships all of that menu's queue, nothing of another's | M1 · re-asserted through UI in M3 | **met at API** — M1 demo + SQL integration suite; UI re-assertion M3 |
 | 3 | An item 86'd before a publish is still 86'd after it | M1 | **met** — M1 demo + integration tests + `ModelInvariants` |
-| 4 | No screen content changes without a deliberate act — a publish, an accept, an availability toggle, or a confirmed Take off the screens (Q187 wording) | M1 · re-asserted through UI in M3 | **met at API** — M1 demo checks 4/6/8c/8d assert screens via `GET menu-spine/screens/showing` |
+| 4 | No screen content changes without a deliberate act — a publish, an accept, an availability toggle, or a confirmed Take off the screens (Q187 wording) | M1 · re-asserted through UI in M3 | **met at API** — M1 demo checks 4/6/8c/8d assert screens via `GET content/screens/showing` |
 | 5 | "unpublish" / "supersede" / "restore" / "archive" appear nowhere in the UI (scope per Q179: Menus + rewritten surfaces; elsewhere = copy debt #682) | M2 | **pending** — M2 workbook + named spec |
 | 6 | Take off the screens always shows what will replace the menu before confirming | M2 | **pending** — M2 workbook |
 | 7 | Undo is a keystroke; named in no settings page, plan comparison, or marketing surface | M3 | pending |

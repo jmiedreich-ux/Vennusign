@@ -5,11 +5,11 @@ using Vennu.Data.Repositories;
 namespace Vennu.Api.Tests.TestDoubles;
 
 /// <summary>
-/// In-memory stand-in for the Menus spine. It deliberately mirrors the
+/// In-memory stand-in for the menu content repository. It deliberately mirrors the
 /// invariants the SQL enforces: the Q80 refusal and the ceiling checks live
 /// inside the same operations that write, and every read is venue-scoped.
 /// </summary>
-internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
+internal sealed class FakeContentRepository : IContentRepository
 {
     public List<Item> Items { get; } = [];
 

@@ -12,7 +12,7 @@ namespace Vennu.Data.IntegrationTests;
 /// were edited, and every write path refuses to cross a tenant or a ceiling.
 /// </summary>
 [Trait("Category", "Integration")]
-public class MenuSpineIntegrationTests(DatabaseFixture fixture)
+public class ContentIntegrationTests(DatabaseFixture fixture)
     : InvariantCheckedTests(fixture), IClassFixture<DatabaseFixture>
 {
     private readonly DatabaseFixture fixture = fixture;
@@ -20,7 +20,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     // ---- migration outcomes ---------------------------------------------------
 
     [Fact]
-    public async Task Migration_CreatesTheSpineWithTenantOwnershipEnforced()
+    public async Task Migration_CreatesTheContentModelWithTenantOwnershipEnforced()
     {
         var dataAccess = fixture.CreateDataAccess();
 
@@ -88,7 +88,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Migration_StoresAPriceExactlyAsTyped()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
 
         foreach (var typed in new[] { "12", "9.5", "9.50", "MP" })
@@ -115,7 +115,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task WorkingSnapshot_ParsesWithTheRestoreModelIncludingNestedContent()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -144,7 +144,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_StoresADeserializableSnapshotContainingTheEdit()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -186,7 +186,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Draft_IsTheDifferenceBetweenWorkingStateAndPublishedSnapshot()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -220,7 +220,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_RefusesInsideTheTransactionWhenItWouldReachNothing()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
 
@@ -236,7 +236,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task TakeOff_WaitsInTheDraftAndReleasedScreensAreStillTold()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -268,7 +268,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_RefusesWhenTheMenuMovedSinceTheDiffWasComputed()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -311,7 +311,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_RefusesWhenTheOnlyChangeIsLetterCasing()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -346,7 +346,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_RefusesWhenSomeoneElsePublishedSinceTheDiffWasComputed()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -379,7 +379,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task DraftRead_TakesThePublishedSnapshotAndItsVersionFromTheSameEvent()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -412,7 +412,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_RefusesADiffComputedAgainstADifferentPublishedSnapshot()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -449,7 +449,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Restore_ToAVersionThatWasOnAScreen_IsRefusedWhileTheMenuIsPutAway()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -480,7 +480,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Discard_OnAPutAwayMenu_GoesBackToTheScreenlessPublishedShape()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -524,7 +524,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task ScreensShowing_IsThePublishedTruth_NotTheAssignment()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -560,7 +560,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task ScreensShowing_FollowsTheScreenToWhicheverMenuPublishedToItLast()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var first = await SeedMenuAsync(dataAccess, venueId);
         var second = await SeedMenuAsync(dataAccess, venueId);
@@ -586,7 +586,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task ScreensShowing_NamesOnlyThisVenuesScreens()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueA = await SeedVenueAsync(dataAccess);
         var venueB = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueA);
@@ -608,7 +608,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_AfterATakeOffHasShipped_HasNothingLeftToReachAndSaysSo()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -637,7 +637,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task APutAwayMenu_CanBeNeitherGivenAScreenNorPublished()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -663,7 +663,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task PutAway_IsRefusedUntilTheTakeOffHasReachedTheScreens()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -700,7 +700,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task PutAway_IgnoresAPublishedScreenAnotherMenuHasSinceTaken()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var otherMenuId = await SeedMenuAsync(dataAccess, venueId);
@@ -731,7 +731,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_LeavesAScreenAnotherMenuNowOwnsAloneAndNamesIt()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueId);
         var menuB = await SeedMenuAsync(dataAccess, venueId);
@@ -757,7 +757,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_RefusesWhenEveryScreenItWasOnBelongsToAnotherMenu()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueId);
         var menuB = await SeedMenuAsync(dataAccess, venueId);
@@ -782,7 +782,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task TakeOff_IsRecordedWhenItHappensAndWhenItShips()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -811,7 +811,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task PutAway_IsAttributableAndRefusedWhileTheMenuIsOnAScreen()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -839,7 +839,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task PutBack_IsBoundedByTheSameCeilingAsCreatingAMenu()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var first = await SeedMenuAsync(dataAccess, venueId);
         await SeedMenuAsync(dataAccess, venueId);
@@ -867,7 +867,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Restore_PutsTheWholeShapeBackAndRecordsTheActTogether()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -907,7 +907,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Restore_PutsSectionsBack_WhetherAdded_Removed_OrReordered()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var first = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
@@ -953,7 +953,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Restore_RefusesWhenAScreenItWantsBelongsToAnotherMenu()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueId);
         var menuB = await SeedMenuAsync(dataAccess, venueId);
@@ -979,7 +979,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Restore_AgainstAForeignVenue_ChangesNothingAndRecordsNothing()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueA = await SeedVenueAsync(dataAccess);
         var venueB = await SeedVenueAsync(dataAccess);
         var menuB = await SeedMenuAsync(dataAccess, venueB);
@@ -1002,7 +1002,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task ForeignMenuId_CannotBePublishedByAnotherVenue()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueA = await SeedVenueAsync(dataAccess);
         var venueB = await SeedVenueAsync(dataAccess);
         var menuB = await SeedMenuAsync(dataAccess, venueB);
@@ -1020,7 +1020,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task UpdateItemAsync_CannotReachAForeignVenueItem()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueA = await SeedVenueAsync(dataAccess);
         var venueB = await SeedVenueAsync(dataAccess);
         var name = fixture.UniqueValue("bisque");
@@ -1046,7 +1046,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Placement_CannotReferenceASectionOfAnotherMenu()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueId);
         var menuB = await SeedMenuAsync(dataAccess, venueId);
@@ -1071,7 +1071,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task PublishTarget_CannotNameAnotherVenuesScreen()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueA = await SeedVenueAsync(dataAccess);
         var venueB = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueA);
@@ -1095,7 +1095,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task HistoryEntry_CannotNameAnotherMenusPublishEvent()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueId);
         var menuB = await SeedMenuAsync(dataAccess, venueId);
@@ -1121,7 +1121,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task MenuCeiling_CountsOnlyActiveMenus_SoPuttingOneAwayMakesRoom()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
 
@@ -1143,7 +1143,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task MenuCeiling_UnderConcurrency_AdmitsExactlyTheRoomLeft()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         await SeedMenuAsync(dataAccess, venueId);
 
@@ -1161,7 +1161,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task ItemCeiling_RefusesAtomicallyAndTheSectionMustBeOnTheMenu()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -1185,7 +1185,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Ceilings_PreferTheVenueRowOverTheOrganizationRow()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
 
         var organizationId = (await dataAccess.ExecuteSqlQueryAsync<GuidRow, object>(
@@ -1215,7 +1215,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task PlacedItems_CarryLiveAvailability()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -1256,7 +1256,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
             VALUES (@VenueId, @OrganizationId, @Name, 'Bar', 'America/New_York', 'en', SYSUTCDATETIME(), SYSUTCDATETIME());
             SELECT 1 AS Value;
             """,
-            new { OrganizationId = organizationId, VenueId = venueId, OwnerUserId = Guid.NewGuid(), Name = fixture.UniqueValue("spine") });
+            new { OrganizationId = organizationId, VenueId = venueId, OwnerUserId = Guid.NewGuid(), Name = fixture.UniqueValue("content") });
         return venueId;
     }
 
@@ -1292,7 +1292,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     /// just read.
     /// </summary>
     private static async Task<PublishOutcome> PublishCurrentAsync(
-        MenuLibraryRepository repository,
+        ContentRepository repository,
         Guid venueId,
         Guid menuId,
         string? author = null)
@@ -1314,7 +1314,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     /// refusal it did not expect. Returns the take-off publish.
     /// </summary>
     private static async Task<PublishOutcome> ShelveAsync(
-        MenuLibraryRepository repository,
+        ContentRepository repository,
         Guid venueId,
         Guid menuId,
         string author = "Owner")

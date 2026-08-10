@@ -13,11 +13,11 @@ namespace Vennu.Api.Controllers.BackOffice;
 /// "go back to", availability and screen assignment.
 /// </summary>
 [ApiController]
-[Route("api/back-office/menu-spine")]
+[Route("api/back-office/content")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
-public sealed class BackOfficeMenuSpineController(
-    MenuSpineService spine,
-    IMenuLibraryRepository library) : ControllerBase
+public sealed class BackOfficeContentController(
+    ContentService content,
+    IContentRepository library) : ControllerBase
 {
     private Guid VenueId => Guid.Parse(
         User.FindFirstValue(BackOfficeAuthenticationDefaults.VenueIdClaim)!);
@@ -33,7 +33,7 @@ public sealed class BackOfficeMenuSpineController(
     [RequireCapability("content.item.update")]
     public async Task<ActionResult<MenuContextResponse>> GetContext(CancellationToken cancellationToken)
     {
-        var context = await spine.GetContextAsync(VenueId, cancellationToken).ConfigureAwait(false);
+        var context = await content.GetContextAsync(VenueId, cancellationToken).ConfigureAwait(false);
         return Ok(new MenuContextResponse(context.Timezone, context.Ceilings, context.MenuCount));
     }
 
@@ -53,7 +53,7 @@ public sealed class BackOfficeMenuSpineController(
         ArgumentNullException.ThrowIfNull(request);
         try
         {
-            var result = await spine
+            var result = await content
                 .SetAvailabilityAsync(VenueId, itemId, request.IsAvailable, Author, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -95,7 +95,7 @@ public sealed class BackOfficeMenuSpineController(
     {
         try
         {
-            var changes = await spine.GetDraftAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
+            var changes = await content.GetDraftAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
             return Ok(ToDraftResponse(changes));
         }
         catch (InvalidOperationException)
@@ -114,7 +114,7 @@ public sealed class BackOfficeMenuSpineController(
     {
         try
         {
-            var discarded = await spine.DiscardDraftAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
+            var discarded = await content.DiscardDraftAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
             return Ok(new DiscardResponse(discarded));
         }
         catch (MenuPutAwayException exception)
@@ -140,7 +140,7 @@ public sealed class BackOfficeMenuSpineController(
         PublishResult result;
         try
         {
-            result = await spine.PublishAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
+            result = await content.PublishAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
         }
         catch (MenuNotOnAnyScreenException exception)
         {
@@ -186,7 +186,7 @@ public sealed class BackOfficeMenuSpineController(
         ArgumentNullException.ThrowIfNull(request);
         try
         {
-            var result = await spine
+            var result = await content
                 .SetPutAwayAsync(VenueId, menuId, request.IsPutAway, Author, cancellationToken)
                 .ConfigureAwait(false);
             return Ok(new PutAwayResponse(result.Changed, request.IsPutAway, result.ActiveMenuCount));
@@ -238,7 +238,7 @@ public sealed class BackOfficeMenuSpineController(
     {
         try
         {
-            var restore = await spine
+            var restore = await content
                 .GoBackToAsync(VenueId, menuId, version, Author, cancellationToken)
                 .ConfigureAwait(false);
             var draft = ToDraftResponse(restore.Draft);
@@ -303,7 +303,7 @@ public sealed class BackOfficeMenuSpineController(
         ArgumentNullException.ThrowIfNull(request);
         try
         {
-            var assignment = await spine
+            var assignment = await content
                 .AssignAsync(VenueId, screenId, request.MenuId, Author, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -334,8 +334,8 @@ public sealed class BackOfficeMenuSpineController(
     [RequireCapability("screen.content.target")]
     public async Task<ActionResult<DraftResponse>> TakeOffScreens(Guid menuId, CancellationToken cancellationToken)
     {
-        await spine.QueueTakeOffScreensAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
-        var changes = await spine.GetDraftAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
+        await content.QueueTakeOffScreensAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
+        var changes = await content.GetDraftAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
         return Ok(ToDraftResponse(changes));
     }
 

@@ -30,7 +30,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$spine = "$BaseUrl/api/back-office/menu-spine"
+$content = "$BaseUrl/api/back-office/content"
 $menus = "$BaseUrl/api/back-office/menus"
 $headers = @{ 'X-Vennusign-Back-Office-Token' = $Token }
 $results = [System.Collections.Generic.List[object]]::new()
@@ -96,7 +96,7 @@ function Measure-Api {
 # the demo asks the screen rather than asking the API whether it accepted a request.
 # What each screen is actually showing, from the published side.
 function Get-AllShowing {
-    Expand-Api (Invoke-Api GET "$spine/screens/showing")
+    Expand-Api (Invoke-Api GET "$content/screens/showing")
 }
 
 function Get-Showing {
@@ -178,8 +178,8 @@ if (-not $screenId) {
     exit 1
 }
 
-Invoke-Api PUT "$spine/screens/$screenId/menu" @{ menuId = $menuId } | Out-Null
-$assignedNow = @((Invoke-Api GET "$spine/assignments") | Where-Object { $null -ne $_ -and $_.screenId -eq $screenId -and $_.menuId -eq $menuId })
+Invoke-Api PUT "$content/screens/$screenId/menu" @{ menuId = $menuId } | Out-Null
+$assignedNow = @((Invoke-Api GET "$content/assignments") | Where-Object { $null -ne $_ -and $_.screenId -eq $screenId -and $_.menuId -eq $menuId })
 if ($assignedNow.Count -ne 1) {
     Write-Host ''
     Write-Host "The demo could not put menu $menuId on screen $screenId, so its screen-facing checks would be meaningless." -ForegroundColor Red
@@ -188,10 +188,10 @@ if ($assignedNow.Count -ne 1) {
 Write-Host "screen: $screenId (assigned by this run, and verified)" -ForegroundColor DarkGray
 
 # Publish once so the run starts from a known clean state: working = published.
-Invoke-Api POST "$spine/menus/$menuId/publish" | Out-Null
+Invoke-Api POST "$content/menus/$menuId/publish" | Out-Null
 
 # --- 1. Context ----------------------------------------------------------------
-$context = Invoke-Api GET "$spine/context"
+$context = Invoke-Api GET "$content/context"
 $ceilings = $context.ceilings
 $hasAll = @('content.menu.count','content.menu.items','content.menu.import.lines','publishing.history.retention') |
     ForEach-Object { $ceilings.PSObject.Properties.Name -contains $_ } | Where-Object { -not $_ }
@@ -201,8 +201,8 @@ Record '1' 'Context returns the venue timezone and configured ceilings' `
     'the venue timezone plus all four ceilings, read from the allowance model'
 
 # --- 2. An 86 is instant and does not queue -------------------------------------
-$off = Invoke-Api PUT "$spine/items/$itemId/availability" @{ isAvailable = $false }
-$draftAfter86 = Invoke-Api GET "$spine/menus/$menuId/draft"
+$off = Invoke-Api PUT "$content/items/$itemId/availability" @{ isAvailable = $false }
+$draftAfter86 = Invoke-Api GET "$content/menus/$menuId/draft"
 Record '2' 'Turning an item off is instant and never queues' `
     ($off.isAvailable -eq $false -and $draftAfter86.count -eq 0) `
     "$($off.name) is off, changed by '$($off.changedBy)', notification sent for $($off.screenIds.Count) screen(s); draft count $($draftAfter86.count)" `
@@ -210,18 +210,18 @@ Record '2' 'Turning an item off is instant and never queues' `
 
 # --- 3. No auto-reset ------------------------------------------------------------
 Start-Sleep -Seconds 2
-$stillOff = (Invoke-Api GET "$spine/availability") | Where-Object { $_.itemId -eq $itemId }
+$stillOff = (Invoke-Api GET "$content/availability") | Where-Object { $_.itemId -eq $itemId }
 Record '3' 'The 86 does not reset itself' `
     ($stillOff.isAvailable -eq $false) `
     "still off, since $($stillOff.changedUtc)" `
     'the item still off - an 86 stays off until a person turns it back on'
 
 # --- 4. An edit changes the menu now, and no screen until Publish -----------------
-$historyBefore = @((Invoke-Api GET "$spine/menus/$menuId/history") | Where-Object { $null -ne $_ })
+$historyBefore = @((Invoke-Api GET "$content/menus/$menuId/history") | Where-Object { $null -ne $_ })
 $versionBeforeEdit = (Get-Showing $screenId).version
 Set-ItemPrice ($basePrice + 1) | Out-Null
-$draftAfterEdit = Invoke-Api GET "$spine/menus/$menuId/draft"
-$historyAfter = @((Invoke-Api GET "$spine/menus/$menuId/history") | Where-Object { $null -ne $_ })
+$draftAfterEdit = Invoke-Api GET "$content/menus/$menuId/draft"
+$historyAfter = @((Invoke-Api GET "$content/menus/$menuId/history") | Where-Object { $null -ne $_ })
 $publishesBefore = @($historyBefore | Where-Object { $_.kind -eq 'published' }).Count
 $publishesAfter = @($historyAfter | Where-Object { $_.kind -eq 'published' }).Count
 $priceChange = $draftAfterEdit.changes | Where-Object { $_.field -eq 'price' } | Select-Object -First 1
@@ -234,10 +234,10 @@ Record '4' 'An edit shows up as a derived change and reaches no screen' `
 
 # --- 5. The count is the current diff ---------------------------------------------
 Set-ItemPrice ($basePrice + 2) | Out-Null
-$again = Invoke-Api GET "$spine/menus/$menuId/draft"
+$again = Invoke-Api GET "$content/menus/$menuId/draft"
 $secondChange = $again.changes | Where-Object { $_.field -eq 'price' } | Select-Object -First 1
 Set-ItemPrice $basePrice | Out-Null
-$reverted = Invoke-Api GET "$spine/menus/$menuId/draft"
+$reverted = Invoke-Api GET "$content/menus/$menuId/draft"
 Record '5' 'Editing twice is one change, and an edit taken back is none' `
     ($again.count -eq 1 -and $secondChange.afterValue -ne $priceChange.afterValue -and $reverted.count -eq 0) `
     "after a second edit: count $($again.count), afterValue $($secondChange.afterValue); after typing the published price back in: count $($reverted.count)" `
@@ -250,10 +250,10 @@ $otherMenuId = ($editor.menus | Where-Object { $_.menu.name -eq $otherMenuName }
 if (-not $otherMenuId) {
     try { $otherMenuId = (Invoke-Api POST $menus @{ name = $otherMenuName }).id } catch { $otherMenuId = $null }
 }
-$otherBefore = if ($otherMenuId) { (Invoke-Api GET "$spine/menus/$otherMenuId/draft").count } else { $null }
-$published = Invoke-Api POST "$spine/menus/$menuId/publish"
-$thisDraft = Invoke-Api GET "$spine/menus/$menuId/draft"
-$otherAfter = if ($otherMenuId) { (Invoke-Api GET "$spine/menus/$otherMenuId/draft").count } else { $null }
+$otherBefore = if ($otherMenuId) { (Invoke-Api GET "$content/menus/$otherMenuId/draft").count } else { $null }
+$published = Invoke-Api POST "$content/menus/$menuId/publish"
+$thisDraft = Invoke-Api GET "$content/menus/$menuId/draft"
+$otherAfter = if ($otherMenuId) { (Invoke-Api GET "$content/menus/$otherMenuId/draft").count } else { $null }
 $otherIntact = (-not $otherMenuId) -or ($otherAfter -eq $otherBefore -and $otherAfter -ge 1)
 $targetsText = ($published.targets | ForEach-Object { "$($_.state)" }) -join ', '
 $showingAfterPublish = Get-Showing $screenId
@@ -264,27 +264,27 @@ Record '6' "Publishing ships this menu's diff and no other menu's" `
     "this menu's diff shipped and emptied, the other menu's pending content untouched, one target per assigned screen"
 
 # --- 7. The 86 survived the publish --------------------------------------------------
-$afterPublish = (Invoke-Api GET "$spine/availability") | Where-Object { $_.itemId -eq $itemId }
+$afterPublish = (Invoke-Api GET "$content/availability") | Where-Object { $_.itemId -eq $itemId }
 Record '7' 'The 86 survived the publish' `
     ($afterPublish.isAvailable -eq $false) `
     "item still off after publishing version $($published.version)" `
     'the item still off - availability is a fact about tonight, not about the menu'
 
 # --- 8. Go back to produces a draft ---------------------------------------------------
-$publishesPre = @((Invoke-Api GET "$spine/menus/$menuId/history") | Where-Object { $_.kind -eq 'published' }).Count
-$restored = Invoke-Api POST "$spine/menus/$menuId/go-back-to/$($published.version - 1)"
-$publishesPost = @((Invoke-Api GET "$spine/menus/$menuId/history") | Where-Object { $_.kind -eq 'published' }).Count
+$publishesPre = @((Invoke-Api GET "$content/menus/$menuId/history") | Where-Object { $_.kind -eq 'published' }).Count
+$restored = Invoke-Api POST "$content/menus/$menuId/go-back-to/$($published.version - 1)"
+$publishesPost = @((Invoke-Api GET "$content/menus/$menuId/history") | Where-Object { $_.kind -eq 'published' }).Count
 Record '8' 'Go back to produces a draft, not a silent publish' `
     ($restored.count -ge 1 -and $publishesPost -eq $publishesPre) `
     "back to version $($published.version - 1): draft now holds $($restored.count) change(s); publishes stayed at $publishesPost" `
     'the older values waiting as a draft against the current screens, and no new publish'
 
 # --- 8b. Take-off queues rather than committing (Q68) -----------------------------------
-$beforeTakeOff = Measure-Api "$spine/assignments"
-$publishesBeforeTakeOff = @((Invoke-Api GET "$spine/menus/$menuId/history") | Where-Object { $_.kind -eq 'published' }).Count
-$takeOffDraft = Invoke-Api DELETE "$spine/menus/$menuId/screens"
-$afterTakeOff = Measure-Api "$spine/assignments"
-$publishesAfterTakeOff = @((Invoke-Api GET "$spine/menus/$menuId/history") | Where-Object { $_.kind -eq 'published' }).Count
+$beforeTakeOff = Measure-Api "$content/assignments"
+$publishesBeforeTakeOff = @((Invoke-Api GET "$content/menus/$menuId/history") | Where-Object { $_.kind -eq 'published' }).Count
+$takeOffDraft = Invoke-Api DELETE "$content/menus/$menuId/screens"
+$afterTakeOff = Measure-Api "$content/assignments"
+$publishesAfterTakeOff = @((Invoke-Api GET "$content/menus/$menuId/history") | Where-Object { $_.kind -eq 'published' }).Count
 $screensChange = $takeOffDraft.changes | Where-Object { $_.targetKind -eq 'screens' } | Select-Object -First 1
 Record '8b' 'Take off the screens waits in the draft, and ships on Publish' `
     ($null -ne $screensChange -and $takeOffDraft.count -ge 1 -and $publishesAfterTakeOff -eq $publishesBeforeTakeOff) `
@@ -295,12 +295,12 @@ Record '8b' 'Take off the screens waits in the draft, and ships on Publish' `
 # The screen is still showing the menu until this publish carries the take-off, so
 # putting it away now would strand that screen: the act is refused until it ships.
 $putAwayTooEarlyRefused = $false
-try { Invoke-Api PUT "$spine/menus/$menuId/put-away" @{ isPutAway = $true } | Out-Null } catch { $putAwayTooEarlyRefused = $true }
+try { Invoke-Api PUT "$content/menus/$menuId/put-away" @{ isPutAway = $true } | Out-Null } catch { $putAwayTooEarlyRefused = $true }
 
-$takeOffPublish = Invoke-Api POST "$spine/menus/$menuId/publish"
-$historyAfterShip = @((Invoke-Api GET "$spine/menus/$menuId/history") | Where-Object { $null -ne $_ })
+$takeOffPublish = Invoke-Api POST "$content/menus/$menuId/publish"
+$historyAfterShip = @((Invoke-Api GET "$content/menus/$menuId/history") | Where-Object { $null -ne $_ })
 $takeOffEntries = @($historyAfterShip | Where-Object { $_.kind -eq 'taken_off_screens' })
-$assignmentsAfterShip = Measure-Api "$spine/assignments"
+$assignmentsAfterShip = Measure-Api "$content/assignments"
 $shippedSnapshotScreens = @($takeOffPublish.targets).Count
 $showingAfterTakeOff = Get-Showing $screenId
 Record '8c' 'Publishing the take-off reaches the screens it is leaving, and records the act' `
@@ -309,17 +309,17 @@ Record '8c' 'Publishing the take-off reaches the screens it is leaving, and reco
     'the released screen told by the publish that releases it, the act attributable both when queued and when shipped, and no way to shelve the menu while a screen is still showing it'
 
 # --- 8d. Put away is deliberate, attributable, and frees ceiling room ---------------------
-$contextBeforePutAway = Invoke-Api GET "$spine/context"
-$putAway = Invoke-Api PUT "$spine/menus/$menuId/put-away" @{ isPutAway = $true }
-$contextAfterPutAway = Invoke-Api GET "$spine/context"
-$putAwayEntry = @(@((Invoke-Api GET "$spine/menus/$menuId/history")) | Where-Object { $_.kind -eq 'put_away' })[0]
+$contextBeforePutAway = Invoke-Api GET "$content/context"
+$putAway = Invoke-Api PUT "$content/menus/$menuId/put-away" @{ isPutAway = $true }
+$contextAfterPutAway = Invoke-Api GET "$content/context"
+$putAwayEntry = @(@((Invoke-Api GET "$content/menus/$menuId/history")) | Where-Object { $_.kind -eq 'put_away' })[0]
 
 # A put-away menu is off the shelf: putting it back is the one way on, so
 # assigning it a screen and publishing it must both refuse.
 $assignRefused = $false
-try { Invoke-Api PUT "$spine/screens/$screenId/menu" @{ menuId = $menuId } | Out-Null } catch { $assignRefused = $true }
+try { Invoke-Api PUT "$content/screens/$screenId/menu" @{ menuId = $menuId } | Out-Null } catch { $assignRefused = $true }
 $publishRefused = $false
-try { Invoke-Api POST "$spine/menus/$menuId/publish" | Out-Null } catch { $publishRefused = $true }
+try { Invoke-Api POST "$content/menus/$menuId/publish" | Out-Null } catch { $publishRefused = $true }
 
 # The state the model says cannot exist: put away, and still on a screen.
 $screensStillShowingIt = @(Get-AllShowing | Where-Object { $_.menuId -eq $menuId }).Count
@@ -331,11 +331,11 @@ Record '8d' 'Put away is attributable, frees ceiling room, and is the only way b
     "the act recorded with its author, the count dropping - the refusal says 'put one away first', so putting one away has to make room - neither assigning nor publishing able to put it back quietly, and no screen anywhere still showing it"
 
 # Put it back so the venue is left as it was found.
-Invoke-Api PUT "$spine/menus/$menuId/put-away" @{ isPutAway = $false } | Out-Null
+Invoke-Api PUT "$content/menus/$menuId/put-away" @{ isPutAway = $false } | Out-Null
 
 # --- 9. Destructive acts are attributable ----------------------------------------------
-Invoke-Api DELETE "$spine/menus/$menuId/draft" | Out-Null
-$history = @((Invoke-Api GET "$spine/menus/$menuId/history") | Where-Object { $null -ne $_ })
+Invoke-Api DELETE "$content/menus/$menuId/draft" | Out-Null
+$history = @((Invoke-Api GET "$content/menus/$menuId/history") | Where-Object { $null -ne $_ })
 $kinds = @($history | ForEach-Object { $_.kind } | Sort-Object -Unique)
 $anonymous = @($history | Where-Object { [string]::IsNullOrWhiteSpace($_.author) })
 $missingKinds = @(@('taken_off_screens','put_away','put_back','restored') | Where-Object { $kinds -notcontains $_ })
@@ -345,8 +345,8 @@ Record '9' 'Every irreversible act is recorded with its author' `
     'take-off, put away, put back and restore all present, each naming who did it - nothing irreversible is anonymous'
 
 # --- Tidy up ------------------------------------------------------------------------------
-Invoke-Api PUT "$spine/items/$itemId/availability" @{ isAvailable = $true } | Out-Null
-if ($screenId) { Invoke-Api PUT "$spine/screens/$screenId/menu" @{ menuId = $menuId } | Out-Null }
+Invoke-Api PUT "$content/items/$itemId/availability" @{ isAvailable = $true } | Out-Null
+if ($screenId) { Invoke-Api PUT "$content/screens/$screenId/menu" @{ menuId = $menuId } | Out-Null }
 
 # --- Summary -------------------------------------------------------------------------------
 $passed = @($results | Where-Object { $_.Result -eq 'PASS' }).Count

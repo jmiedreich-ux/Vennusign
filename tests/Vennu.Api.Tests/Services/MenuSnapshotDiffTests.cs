@@ -10,7 +10,7 @@ namespace Vennu.Api.Tests.Services;
 /// the behaviour it is meant to be checking.
 /// </summary>
 [Trait("Category", "Unit")]
-public sealed class MenuSpineDiffTests
+public sealed class MenuSnapshotDiffTests
 {
     private static readonly Guid MenuId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly Guid SectionId = Guid.Parse("33333333-3333-3333-3333-333333333333");

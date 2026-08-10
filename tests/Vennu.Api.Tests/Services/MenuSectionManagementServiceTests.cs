@@ -16,7 +16,7 @@ public sealed class MenuSectionManagementServiceTests
         {
             Menus = [new Menu { Id = Guid.NewGuid(), VenueId = venueId, Name = "Dinner" }]
         };
-        var library = new FakeMenuLibraryRepository();
+        var library = new FakeContentRepository();
         var service = CreateService(repository, library);
 
         var created = await service.CreateMenuAsync(venueId, "  Lunch  ");
@@ -34,7 +34,7 @@ public sealed class MenuSectionManagementServiceTests
     public async Task CreateMenuAsync_RefusesInPlainWordsAtTheActiveMenuCeiling()
     {
         var venueId = Guid.NewGuid();
-        var library = new FakeMenuLibraryRepository();
+        var library = new FakeContentRepository();
         library.Ceilings[MenuCeilings.MenusPerVenue] = 1;
         var service = CreateService(new FakeMenuRepository(), library);
 
@@ -124,7 +124,7 @@ public sealed class MenuSectionManagementServiceTests
     {
         var service = new MenuSectionManagementService(
             new FakeMenuRepository(),
-            new FakeMenuLibraryRepository(),
+            new FakeContentRepository(),
             new FakeCapabilityDecisionServices("schedule.promotion.automate"),
             new FixedTimeProvider());
 
@@ -141,8 +141,8 @@ public sealed class MenuSectionManagementServiceTests
 
     private static MenuSectionManagementService CreateService(
         FakeMenuRepository repository,
-        FakeMenuLibraryRepository? library = null) =>
-        new(repository, library ?? new FakeMenuLibraryRepository(), new FakeCapabilityDecisionServices(
+        FakeContentRepository? library = null) =>
+        new(repository, library ?? new FakeContentRepository(), new FakeCapabilityDecisionServices(
             "schedule.promotion.automate",
             "content.item.dietary_information_manage",
             "content.item.availability_update"), new FixedTimeProvider());

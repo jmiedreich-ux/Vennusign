@@ -24,7 +24,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 public sealed class BackOfficeMenusController(
     IMenuSectionManagementService sectionService,
     IMenuItemManagementService itemService,
-    MenuSpineService spine) : ControllerBase
+    ContentService content) : ControllerBase
 {
     private Guid VenueId => Guid.Parse(
         User.FindFirstValue(BackOfficeAuthenticationDefaults.VenueIdClaim)!);
@@ -223,7 +223,7 @@ public sealed class BackOfficeMenusController(
         ArgumentNullException.ThrowIfNull(request);
         try
         {
-            await spine
+            await content
                 .SetAvailabilityAsync(VenueId, itemId, request.IsAvailable, Author, cancellationToken)
                 .ConfigureAwait(false);
             return NoContent();
