@@ -5,20 +5,16 @@
  * hand-rolled glyph set). `railLabel` is the short form the 76px rail shows
  * under the icon; the full label still names the page and its route.
  *
- * `hiddenWhenLocked` is decision 19, as data rather than a branch in the
- * markup: "Menus is itself tier-gated. A venue whose plan is one screen of
- * static content has no menu to build. The Menu nav item does not render at
- * all - no shelf, no import, no empty state."
- *
- * It is set on Menu alone, deliberately. The other areas keep the locked
- * previews Track 1 shipped on purpose as an upgrade path (RWP-11.02/11.04);
- * turning those off is a product decision about upselling, not a Menus one, and
- * quietly deleting them under cover of this milestone would be the wrong way to
- * make it. Raised for the owner rather than settled here.
+ * Decision 19 - "Menus is itself tier-gated... The Menu nav item does not render
+ * at all" - is one case of decision 4, which governs every area: "locked by plan
+ * means invisible... absent, not disabled - no ghost fields, no reasons, no
+ * state". So the rule lives in `isBackOfficeRouteVisible` rather than on any one
+ * route. Upgrade and marketing surfaces are their own scheduled work
+ * (milestone-plan, After this build); the shell does not carry them.
  */
 export const backOfficeRoutes = [
   { path: "home", label: "Home", railLabel: "Home", icon: "House", description: "Today at your venue", group: "Operate" },
-  { path: "menu", label: "Menu", railLabel: "Menu", icon: "UtensilsCrossed", description: "Items and quick updates", group: "Operate", capabilityId: "content.item.update", upgradeFeature: "quick_update", hiddenWhenLocked: true },
+  { path: "menu", label: "Menu", railLabel: "Menu", icon: "UtensilsCrossed", description: "Items and quick updates", group: "Operate", capabilityId: "content.item.update", upgradeFeature: "quick_update" },
   { path: "schedules", label: "Schedules", railLabel: "Schedules", icon: "Clock", description: "Timing and broadcasts", group: "Operate", capabilityId: "schedule.entry.manage", upgradeFeature: "meal_periods" },
   { path: "tap-list", label: "Tap list", railLabel: "Taps", icon: "Beer", description: "Draft board operations", group: "Operate", capabilityId: "content.item.update", upgradeFeature: "all_layouts" },
   { path: "screens", label: "Screens", railLabel: "Screens", icon: "Monitor", description: "Boards and playback", group: "Design & delivery", capabilityId: "screen.device.view", upgradeFeature: "all_layouts" },
@@ -49,16 +45,33 @@ export const backOfficeRailSections = [
 ];
 
 /**
- * Whether this route appears in the rail at all.
+ * What the plan does not include, rather than what this person cannot do.
  *
- * Absent is not the same as locked. A locked area is one this account could
- * have and does not; an absent one is a whole way of working the plan does not
- * include, and showing it greyed would be advertising a product they are not
- * being sold (decision 19, criterion 8).
+ * Decisions 4 and 5 draw the line between them, and it is the whole of the
+ * gating rule:
+ *
+ *   - **Outside the plan** - an entitlement or an add-on the account does not
+ *     buy - is *invisible*. Criterion 8: renders nothing, no disabled control,
+ *     no tooltip, no placeholder. Showing it greyed is advertising, and
+ *     advertising is its own scheduled work, not something the shell does.
+ *   - **Blocked for a real reason** - a permission this role lacks, a rollout
+ *     not yet reached, an allowance already spent - still renders and still
+ *     says what it is. Decision 5: blocked is not absent. An editor who cannot
+ *     open Screens needs to know Screens exists and who can open it.
  */
+const planCategories = new Set(["entitlement", "addon", "add_on"]);
+
 export function isBackOfficeRouteVisible(route, decisions) {
-  if (!route?.hiddenWhenLocked) return true;
-  return canOpenBackOfficeRoute(route, decisions);
+  if (!route?.capabilityId) return true;
+  if (canOpenBackOfficeRoute(route, decisions)) return true;
+
+  const decision = decisionForBackOfficeRoute(route, decisions);
+
+  // No decision at all is not evidence the plan excludes it. Treated as blocked
+  // rather than absent, so a missing decision fails towards saying something.
+  if (!decision) return true;
+
+  return !planCategories.has(String(decision.category ?? "").toLowerCase());
 }
 
 export function resolveBackOfficeRoute(hash) {

@@ -9,8 +9,6 @@ export type BackOfficeRoute = {
   group: string;
   capabilityId?: string;
   upgradeFeature?: string;
-  /** Decision 19: absent from the rail entirely when the plan does not include it. */
-  hiddenWhenLocked?: boolean;
 };
 
 export const backOfficeRoutes: BackOfficeRoute[];

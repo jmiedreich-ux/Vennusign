@@ -63,25 +63,55 @@ test("every route names an icon and a label short enough for the rail", () => {
   }
 });
 
-// Decision 19: "Menus is itself tier-gated... The Menu nav item does not render
-// at all - no shelf, no import, no empty state."
-test("a plan without menus shows no Menu item at all, rather than a locked one", () => {
+// Decision 4, of which decision 19's Menus case is one instance: "locked by plan
+// means invisible... absent, not disabled - no ghost fields, no reasons, no
+// state." Criterion 8 states the same thing as a check.
+test("an area the plan does not include renders nothing at all", () => {
   const menu = backOfficeRoutes.find(route => route.path === "menu");
+  const outsideThePlan = [{ capabilityId: "content.item.update", decision: "unavailable", category: "entitlement" }];
 
-  assert.equal(isBackOfficeRouteVisible(menu, []), false);
+  assert.equal(isBackOfficeRouteVisible(menu, outsideThePlan), false);
+
+  // An add-on nobody bought is the same answer: it is not part of this account.
+  const pos = backOfficeRoutes.find(route => route.path === "pos");
   assert.equal(
-    isBackOfficeRouteVisible(menu, [{ capabilityId: "content.item.update", decision: "allowed" }]),
-    true
+    isBackOfficeRouteVisible(pos, [{ capabilityId: "content.source.synchronize", decision: "denied", category: "addOn" }]),
+    false
   );
 });
 
-test("the other areas keep the locked previews they already had", () => {
-  // Absent and locked are different answers, and only Menus has been decided.
-  // Turning the rest off is a product decision about upselling (RWP-11.02/11.04),
-  // not something this milestone should do quietly on its way past.
-  for (const route of backOfficeRoutes.filter(route => route.path !== "menu")) {
-    assert.equal(isBackOfficeRouteVisible(route, []), true, `${route.path} should still render when locked`);
+// Decision 5: blocked is not absent. A real state says what it is.
+test("an area this role cannot open still renders and still says so", () => {
+  const screens = backOfficeRoutes.find(route => route.path === "screens");
+  const notThisRole = [{ capabilityId: "screen.device.view", decision: "denied", category: "permission" }];
+
+  assert.equal(isBackOfficeRouteVisible(screens, notThisRole), true);
+  assert.equal(canOpenBackOfficeRoute(screens, notThisRole), false);
+
+  // A rollout not yet reached, and an allowance already spent, are facts about
+  // today rather than about the plan - so they explain themselves too.
+  for (const category of ["rollout", "allowance", "resourceState"]) {
+    assert.equal(
+      isBackOfficeRouteVisible(screens, [{ capabilityId: "screen.device.view", decision: "denied", category }]),
+      true,
+      `a ${category} refusal should still render`
+    );
   }
+});
+
+test("a route with no decision at all is shown rather than quietly dropped", () => {
+  // Absence of evidence is not evidence the plan excludes it. Failing towards
+  // saying something beats a rail that silently loses an area on a bad response.
+  const menu = backOfficeRoutes.find(route => route.path === "menu");
+
+  assert.equal(isBackOfficeRouteVisible(menu, []), true);
+  assert.equal(canOpenBackOfficeRoute(menu, []), false);
+});
+
+test("an area with no capability behind it is always shown", () => {
+  const home = backOfficeRoutes.find(route => route.path === "home");
+
+  assert.equal(isBackOfficeRouteVisible(home, []), true);
 });
 
 test("the rail keeps the handles the mobile drawer and the specs address", async () => {
