@@ -15,7 +15,17 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    // The board engine sits outside this application, so node resolution finds no
+    // React from its folder. Pointed at this application's copy rather than given
+    // its own: a second React in the bundle breaks hooks. Paths resolve relative
+    // to this file, so no (deprecated) baseUrl is needed.
+    "paths": {
+      "react": ["./node_modules/@types/react", "./node_modules/react"],
+      "react/*": ["./node_modules/@types/react/*", "./node_modules/react/*"],
+      "react-dom": ["./node_modules/@types/react-dom", "./node_modules/react-dom"],
+      "react-dom/*": ["./node_modules/@types/react-dom/*", "./node_modules/react-dom/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "../board-engine"]
 }
