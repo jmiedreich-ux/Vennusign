@@ -9,7 +9,7 @@ Before changing the repository, read only:
 3. `tracker/assignments.json`
 4. `PROJECT_STATUS.md`
 5. The active feature's records under `docs/features/<feature>/`, when a feature is active
-6. Linked issue, branch, PR, comments, and exact-head CI results
+6. Linked issue, branch, PR, comments, and exact-head CI results where CI has run
 
 Read `AI_DEVELOPMENT_GUIDE.md`, component README files, architecture, or operations documents only when the task touches that area. Content under `docs/archive/`, `ai/handoffs/archive/`, and `track0/` is research-only: do not load it routinely. Repository and GitHub state override chat history and archived material.
 
@@ -20,7 +20,7 @@ Adopted 2026-08-07 from the Track 1 retrospective; replaces the earlier phase/tr
 - The unit of work is a **feature**, named by product area (e.g. Menus). A feature is delivered in numbered **milestones** — small functional vertical pieces that each ship whole.
 - **Design before implementation.** A feature's UI work starts only after its design authority is approved and landed in `docs/design/approved/<feature>/`. Where any other document disagrees with that bundle's `decisions.md`, the decisions win. Open design questions are resolved through the feature's question register in `docs/features/<feature>/` before or alongside the affected milestone — never silently.
 - Every milestone ships **schema → API → UI → Playwright specs together**; tests are written with the implementation, never after. Each milestone is independently mergeable and leaves `master` releasable.
-- Milestone execution follows the GitHub-first discipline: create the milestone issue, record the claim, branch as `feature/<area>-m<n>-<short-name>`, open one PR, pass exact-head CI, obtain independent review, merge, then synchronize records. One milestone at a time; a successor starts only after its predecessor is merged and its owner workbook is accepted.
+- Milestone execution follows the GitHub-first discipline: create the milestone issue, record the claim, branch as `feature/<area>-m<n>-<short-name>`, open one PR, verify locally (see Testing — CI is suspended), obtain independent review, merge, then synchronize records. One milestone at a time; a successor starts only after its predecessor is merged and its owner workbook is accepted.
 - **Every milestone ends with a short owner acceptance workbook (5–10 minutes)** before the next milestone starts; a schema-only milestone gets a demo script instead. Hosted-agent subjective QA (the Track 1 pattern) runs on demand when a milestone carries judgment cases deterministic specs cannot assert.
 - Keep changes bounded; do not refactor unrelated code or begin future-milestone work. Delete completed branches after merge.
 
@@ -68,12 +68,13 @@ These govern every task, not only milestone work.
 
 ## Testing and CI
 
-- GitHub Actions is authoritative; required checks must pass on the exact reviewed PR head.
+- **CI is suspended by owner decision, 2026-08-09, and gates nothing until the owner approves it.** Local verification is the gate meanwhile: the affected Release builds, the suites below, the Playwright gate and the owner demo, each run before a merge and reported with its output. Pushes carry `[skip ci]`.
+- When the owner restores CI, GitHub Actions is authoritative again and required checks must pass on the exact reviewed head. Restoring it means deleting this note and the one above, not quietly relying on a green tick that never ran.
 - Normal milestone work runs affected Release builds, focused unit tests, static checks, applicable non-integration migration validation, and the Playwright UI gate (`ui-regression.yml`).
 - Widen validation for shared contracts, models, authentication, project files, DI, migrations, dependencies, or workflows.
 - Documentation-only changes use lightweight repository validation.
 - Standing owner exception: skip Azure SQL and all integration-type tests requiring external services, credentials, hosted infrastructure, containers, devices, signing/store access, or cross-system integration. Record skipped tests.
-- Add focused non-integration tests for every behavioral change. A milestone that replaces a surface retires or rewrites the legacy specs it obsoletes in the same PR. Local checks supplement but never replace Actions.
+- Add focused non-integration tests for every behavioral change. A milestone that replaces a surface retires or rewrites the legacy specs it obsoletes in the same PR. While CI is suspended local checks *are* the gate; when it returns they supplement Actions rather than replacing it.
 
 ### Where a test lives, and what makes it worth having
 
@@ -98,7 +99,7 @@ Adopted 2026-08-09 from the Menus Milestone 1 retrospective, after five consecut
 ## Review and Merge Gate
 
 - Every PR gets an independent review — never by its author (Track 1 lesson, issue #659). Review the full diff, acceptance criteria, architecture/security impact, tests, exact-head Actions, artifacts, secrets, debug code, unrelated changes, branch drift, and documentation accuracy.
-- Allowed decisions are `APPROVE`, `REQUEST_CHANGES`, or `COMMENT`. New commits invalidate prior approval. Never merge with incomplete/failing required checks or unresolved material comments.
+- Allowed decisions are `APPROVE`, `REQUEST_CHANGES`, or `COMMENT`. New commits invalidate prior approval. Never merge with unresolved material comments, and — once CI is restored — never with incomplete or failing required checks.
 - If GitHub blocks self-approval, record the review decision, reviewed SHA, validation status, and residual risks in a top-level PR comment.
 
 ## Completion and Handoff
