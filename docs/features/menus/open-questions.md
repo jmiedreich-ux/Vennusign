@@ -1056,13 +1056,13 @@ The Pick-a-look step and the slice-2 render engine both need the exact list; "Wi
 
 *Answer:* RESOLVED (2026-08-09) — the question conflated two categorically different things.
 
-A **menu theme** is attached to a menu. A venue may have many of them. Coastal, Classic dark, Paper two-up and With photos were illustrative examples of menu themes; **none of them exist**, and they are built later in the theme builder. Milestone 2 therefore ships **no named looks at all** — the render engine consumes a menu theme definition, so themes built later need no change to the engine.
+A **menu theme** is attached to a menu. A venue may have many of them. Coastal, Classic dark, Paper two-up and With photos were illustrative examples of menu themes; **none of them exist**, and they are built later in the theme editor. Milestone 2 therefore ships **no named looks at all** — the render engine consumes a menu theme definition, so themes built later need no change to the engine.
 
 A **shell theme** is the software's own look — the current sky blue, and a dark variant later. That is what "venue theme" should mean, and it is not what `dbo.VenueThemes` holds today.
 
 Milestone 2's own theme deliverable is the **shell theme**, not menu themes: the nav rail, the tokens, the sky-blue chrome. The board render engine renders whatever menu theme a menu has attached.
 
-**A menu with no theme attached is a valid state.** It renders — it will look bad, and that is acceptable — but it must not blank, fall back silently to something invented, or fail. The menu editor only *attaches* a theme; authoring one is the theme builder's job.
+**A menu with no theme attached is a valid state.** It renders — it will look bad, and that is acceptable — but it must not blank, fall back silently to something invented, or fail. The menu editor only *attaches* a theme; authoring one is the theme editor's job.
 
 Menu themes do not belong in `VenueThemes`. See the theme-model note in `ai/handoffs/current.md`: no menu-theme table exists, `Menus.Theme` is free text defaulting to a look that was never built, and `VenueThemes` currently carries board-render fields. Naming the model is milestone 2's first design decision, before the render engine exists rather than after.
 

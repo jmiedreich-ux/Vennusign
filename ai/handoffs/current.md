@@ -203,14 +203,17 @@ Owner correction, 2026-08-09, recorded against Q86 and Q98. **Menu themes and sh
 are categorically different things**, and the code currently confuses them.
 
 - A **menu theme** is attached to a menu. A venue may have many. None exist yet; they are
-  built later in the theme builder. Milestone 2 ships **no named looks** — the render
+  built later in the theme editor. Milestone 2 ships **no named looks** — the render
   engine consumes a theme definition so later themes need no engine change.
 - A **shell theme** is the software's own look — today's sky blue, a dark variant later.
   That is what "venue theme" should mean, and it is **milestone 2's actual theme
   deliverable**: nav rail, tokens, chrome. One ships, built so others can be added.
 - **A menu with no theme attached is a valid state.** The engine renders it — plainly and
   badly, which is acceptable — but never blank, never a silently invented fallback, never
-  a failure. The menu editor only attaches a theme; authoring is the theme builder's.
+  a failure.
+- **A menu theme is created in the theme editor and attached in the menu editor.** The
+  menu editor never authors a theme. The theme editor (`ThemeBuilder.tsx`, route `themes`)
+  is the existing surface.
 - A venue-name title strip on the TV, if it exists, belongs to the **theme editor**. The
   Menus render engine neither draws one nor assumes one.
 
