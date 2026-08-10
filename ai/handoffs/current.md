@@ -9,7 +9,7 @@ Updated 2026-08-09, after Menus Milestone 1 merged.
 - Tracks 0 and 1 are complete and owner-closed. The Track 1 retrospective report sits on **PR #667 (open, unmerged)**; its process changes are already folded into `AGENTS.md`.
 - **The planning reset produced the Menus feature.** Design authority: `docs/design/approved/menus/` (`decisions.md` wins conflicts). All 208 register questions are resolved in `docs/features/menus/open-questions.md`; the six-milestone plan in `docs/features/menus/milestone-plan.md` is reconciled with every answer.
 - **Milestone 1 is merged.** PR #685 merged to `master` on 2026-08-09 as `cd449a3`, on 13 green exact-head checks at `2977bc3`; branch `feature/menus-m1-spine` is deleted, issue #684 closed. It was reworked five times: independent reviews #2 through #6 each returned REQUEST_CHANGES and each found real defects. All are closed, every one with a regression test verified to fail with its fix reverted.
-- **Milestone 1's owner acceptance has not been re-run.** The owner directed the merge without it. `m1-acceptance-record.json` is **superseded** — signed 2026-08-08 against the authored-draft implementation, kept as history only. Milestone 2 does not start until the acceptance is re-run and recorded.
+- **Milestone 1 is accepted** (owner, 2026-08-09). Milestone 1 shipped no new UI, and `AGENTS.md` gives a schema-only milestone a demo script rather than a workbook walk: `scripts/run-m1-demo.ps1` passes 12 of 12, including customer-visible assertions of what each screen is actually showing. `m1-acceptance-record.json` stays **superseded** — it was signed 2026-08-08 against the authored-draft implementation — and is kept as history; this note is the acceptance record. **Milestone 2 is unblocked.**
 - **The save model is settled: the draft is derived, not authored** (owner decision, milestone-plan §The save model). The live rows are the working state; the screens show the last published snapshot; the draft is the computed difference. Migration 058 creates no draft table, and the legacy editor now writes through `Items`/`Placements` so no path can change a screen without a publish.
 - Backlog issues #670–#683 hold the owner's out-of-scope decisions; do not silently implement them.
 - Not yet approved, and inputs to any further planning: `docs/architecture/built-foundations-spec.md`, and the proposed product-surface inventory under `docs/design/proposed/` (Markdown plus a searchable HTML companion). Design references only.
@@ -22,12 +22,15 @@ Updated 2026-08-09, after Menus Milestone 1 merged.
 
 ## Exact Next Action
 
-1. **Re-run the owner acceptance workbook for Milestone 1 and record the result.**
-   Start the local environment with `scripts/start-ui-test-env.ps1`, run
-   `scripts/run-m1-demo.ps1` (12 checks) and walk
-   `docs/features/menus/m1-demo-workbook.html` with the owner. Write the outcome to a
-   fresh acceptance record; do not amend the superseded one. **Milestone 2 starts only
-   after that.**
+1. **Begin Menus Milestone 2** — app shell and nav rail, board render engine v1, the
+   Menus home shelf, and the named card actions. Create the milestone issue, record the
+   claim, branch `feature/menus-m2-shell-render`, and hold it to the `AGENTS.md`
+   *Definition of Done* and *Where a test lives*.
+   Two provisional design decisions it builds on are worth confirming first: **Q86**
+   (which board looks ship — provisionally Coastal and Classic dark) and **Q98** (the
+   theme-drawn venue-name header strip, always present and not editable). Both are
+   marked BLOCKING in the register and were answered provisionally; the render engine
+   and its specs are what gets reworked if either changes later.
 2. Standing owner decisions carried out of Milestone 1: audit record kept as is (#677),
    legacy columns kept, and the three menu capabilities to become separately grantable
    (#686).
@@ -196,7 +199,7 @@ would only change new databases.
 
 ## Boundaries
 
-- Do not start milestones 2–6 until milestone 1's demo is accepted by the owner. The merge is done; the acceptance is not.
+- Milestone 1 is merged and accepted, so milestone 2 may start. Milestones 3–6 stay closed until their predecessor is merged and accepted in turn.
 - Do not revive any cancelled track, phase or void work package without fresh owner approval.
 - Do not implement backlog issues #670–#683 without owner scheduling.
 - Design follow-ups (milestone-plan §Design follow-ups) must be resolved before the milestone that consumes them.

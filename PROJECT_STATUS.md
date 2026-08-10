@@ -19,8 +19,8 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
   - All 208 open questions resolved across four owner sittings: `docs/features/menus/open-questions.md`.
   - Six-milestone plan reconciled with every recorded answer: `docs/features/menus/milestone-plan.md` (merged via PR #669).
   - Five independent reviews (#2 through #6) each returned REQUEST_CHANGES and each found real defects. All findings are closed, every one with a regression test verified to fail with its fix reverted. Merged on 13 green exact-head checks at `2977bc3`.
-  - **Owner acceptance for the merged implementation is still outstanding.** `docs/features/menus/m1-acceptance-record.json` is **superseded** — it was signed on 2026-08-08 against the authored-draft implementation and is kept as history only.
-  - **Exact next action: re-run the owner acceptance workbook** (`scripts/run-m1-demo.ps1` with `docs/features/menus/m1-demo-workbook.html`) and record the result. Milestone 2 starts only after that acceptance.
+  - **Accepted by the owner 2026-08-09.** Milestone 1 shipped no new UI, so its acceptance is the demo script rather than a workbook walk: `scripts/run-m1-demo.ps1` passes 12 of 12, including assertions of what each screen is actually showing. `docs/features/menus/m1-acceptance-record.json` remains **superseded** — signed 2026-08-08 against the earlier authored-draft implementation — and is kept as history.
+  - **Exact next action: begin Milestone 2.**
 - Backlog from the Menus planning: issues #670–#683 (out-of-scope decisions, copy debt, accessibility debt).
 
 ### Planning-reset inputs, not yet approved
@@ -33,8 +33,8 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
 
 | Milestone | Scope | Status |
 |---|---|---|
-| 1 | Item library + draft/publish spine + assignment | **merged** 2026-08-09 (PR #685, #684) — owner acceptance re-run outstanding |
-| 2 | App shell + render engine + Menus home | not started — blocked on milestone 1's owner acceptance |
+| 1 | Item library + draft/publish spine + assignment | **complete** — merged and accepted 2026-08-09 (PR #685, #684) |
+| 2 | App shell + render engine + Menus home | **ready to start** — unblocked 2026-08-09 |
 | 3 | Builder + adding items | blocked on 2 |
 | 4 | Display player + geometry + delivery | blocked on 3 |
 | 5 | Board view + Play | blocked on 4 |
