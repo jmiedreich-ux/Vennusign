@@ -3,7 +3,7 @@ using Vennu.DataAccess;
 
 namespace Vennu.Data.Repositories;
 
-public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibraryRepository
+public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepository
 {
     private const string ItemsSql = """
         SELECT Id, VenueId, Name, Description, Price, ImageUrl, Source, IsActive, CreatedUtc, UpdatedUtc
@@ -400,7 +400,12 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         ORDER BY p.MenuSectionId, p.SortOrder, p.Id;
         """;
 
-    private const string WorkingSnapshotBody = """
+    // One projection, used wherever a board is read: the draft's two halves, and
+    // the shelf's card for every menu at once. Written twice it would drift, and a
+    // shelf card that disagrees with the draft it sits above is the defect this
+    // milestone is most able to produce. Only the menu predicate differs, so only
+    // the menu predicate is written twice.
+    private const string WorkingSnapshotProjection = """
         SELECT
             m.Id AS menuId, m.Name AS name, m.Theme AS theme,
             m.DwellSeconds AS dwellSeconds, m.LoopWarningSeconds AS loopWarningSeconds,
@@ -428,9 +433,21 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
                 FOR JSON PATH
             )) AS sections
         FROM dbo.Menus m
-        WHERE m.Id = @MenuId AND m.VenueId = @VenueId
+        WHERE
+        """;
+
+    private const string WorkingSnapshotSuffix = """
+
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
         """;
+
+    /// <summary>One named menu's board, for the draft.</summary>
+    private const string WorkingSnapshotBody =
+        WorkingSnapshotProjection + " m.Id = @MenuId AND m.VenueId = @VenueId " + WorkingSnapshotSuffix;
+
+    /// <summary>The same board, correlated to the shelf row being read.</summary>
+    private const string ShelfWorkingSnapshotBody =
+        WorkingSnapshotProjection + " m.Id = shelf.Id AND m.VenueId = @VenueId " + WorkingSnapshotSuffix;
 
     private const string WorkingSnapshotSql = """
         SELECT (
@@ -443,6 +460,151 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         FROM dbo.MenuPublishEvents
         WHERE VenueId = @VenueId AND MenuId = @MenuId
         ORDER BY Version DESC;
+        """;
+
+    // The board a screen is showing, with the version and author that put it there,
+    // from ONE row. Reading the snapshot and then its version is the torn read this
+    // codebase has produced repeatedly: a publish landing between the two hands back
+    // one version's board labelled with another's.
+    private const string LatestPublishedBoardSql = """
+        SELECT TOP (1) Snapshot, Version, PublishedUtc, Author
+        FROM dbo.MenuPublishEvents
+        WHERE VenueId = @VenueId AND MenuId = @MenuId
+        ORDER BY Version DESC;
+        """;
+
+    // Every menu the venue has, with the board its screens are showing and the board
+    // as it stands, in one statement. One round trip whatever the menu count: the
+    // shelf shows thirteen menus at the scale this milestone ships (Q176), and asking
+    // per menu would be thirteen diffs on every page load.
+    //
+    // The published half carries its version, time and author from the same row for
+    // the reason above. The working half is the shared projection, so a card can
+    // never describe a different board from the draft count beneath it.
+    private const string ShelfSql = """
+        SELECT
+            shelf.Id AS MenuId,
+            shelf.Name AS Name,
+            shelf.Theme AS Theme,
+            shelf.IsPutAway AS IsPutAway,
+            latest.Version AS PublishedVersion,
+            latest.PublishedUtc AS LastPublishedUtc,
+            latest.Author AS LastPublishedBy,
+            latest.Snapshot AS PublishedSnapshot,
+            (
+        """ + ShelfWorkingSnapshotBody + """
+            ) AS WorkingSnapshot
+        FROM dbo.Menus shelf
+        OUTER APPLY
+        (
+            SELECT TOP (1) e.Snapshot, e.Version, e.PublishedUtc, e.Author
+            FROM dbo.MenuPublishEvents e
+            WHERE e.VenueId = @VenueId AND e.MenuId = shelf.Id
+            ORDER BY e.Version DESC
+        ) latest
+        WHERE shelf.VenueId = @VenueId
+        ORDER BY shelf.Name;
+        """;
+
+    // Duplicating a menu copies the working state onto a new menu that has never
+    // been published and is on no screen (Q20). The placements point at the SAME
+    // library items: sharing is the point of a library, so a later price edit
+    // reaches both boards rather than quietly diverging.
+    //
+    // The ceiling is counted under the same lock as the insert, exactly as creating
+    // a menu does - a duplicate is a new menu and must not be a way around the limit.
+    //
+    // The name is chosen inside that same lock, not handed in by the caller. Menu
+    // names are not unique in the database, so two people duplicating the same menu
+    // at once would otherwise both read "no 'Summer Menu copy' yet" and both use it.
+    // Reading and writing a pair of values separately is the defect shape this
+    // codebase produces most, so the read and the write are one statement.
+    private const string DuplicateMenuWithinCeilingSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        DECLARE @SourceName NVARCHAR(200) =
+        (
+            SELECT Name FROM dbo.Menus WITH (UPDLOCK, HOLDLOCK)
+            WHERE Id = @SourceMenuId AND VenueId = @VenueId
+        );
+
+        IF @SourceName IS NULL
+        BEGIN
+            ROLLBACK TRANSACTION;
+            THROW 51001, 'The menu does not belong to this venue.', 1;
+        END;
+
+        DECLARE @Active INT =
+        (
+            SELECT COUNT(*) FROM dbo.Menus WITH (UPDLOCK, HOLDLOCK)
+            WHERE VenueId = @VenueId AND IsPutAway = 0
+        );
+
+        IF @Active + 1 > @Limit
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT CAST(0 AS BIT) AS Created, @Active AS ActiveMenuCount, CAST(NULL AS NVARCHAR(200)) AS Name;
+        END
+        ELSE
+        BEGIN
+            -- "<Name> copy", then "<Name> copy 2" and upward while that is taken.
+            -- The base is trimmed so the whole name still fits the 200-character
+            -- limit: a long name loses its tail rather than the copy silently
+            -- failing to be created.
+            DECLARE @Base NVARCHAR(200) = LEFT(@SourceName, 200 - LEN(N' copy')) + N' copy';
+            DECLARE @Name NVARCHAR(200) = @Base;
+            DECLARE @Suffix INT = 1;
+
+            WHILE EXISTS (
+                SELECT 1 FROM dbo.Menus WITH (UPDLOCK, HOLDLOCK)
+                WHERE VenueId = @VenueId AND Name = @Name)
+            BEGIN
+                SET @Suffix = @Suffix + 1;
+
+                IF @Suffix > 999
+                BEGIN
+                    ROLLBACK TRANSACTION;
+                    THROW 51009, 'There are already too many copies of that menu to name another one.', 1;
+                END;
+
+                DECLARE @Tail NVARCHAR(10) = CAST(@Suffix AS NVARCHAR(10));
+                SET @Name = LEFT(@Base, 200 - LEN(@Tail) - 1) + N' ' + @Tail;
+            END;
+
+            -- The copy lands on the shelf, unpublished, on no screen: delivery is
+            -- always deliberate, and one screen holds one menu.
+            INSERT dbo.Menus (Id, VenueId, Name, IsActive, DwellSeconds, LoopWarningSeconds, Theme, IsPutAway, PublishedVersion, CreatedUtc, UpdatedUtc)
+            SELECT @NewMenuId, @VenueId, @Name, 1, src.DwellSeconds, src.LoopWarningSeconds, src.Theme, 0, NULL, @Now, @Now
+            FROM dbo.Menus src
+            WHERE src.Id = @SourceMenuId AND src.VenueId = @VenueId;
+
+            DECLARE @Sections TABLE (OldId UNIQUEIDENTIFIER, NewId UNIQUEIDENTIFIER);
+
+            INSERT @Sections (OldId, NewId)
+            SELECT s.Id, NEWID()
+            FROM dbo.MenuSections s
+            WHERE s.MenuId = @SourceMenuId AND s.VenueId = @VenueId AND s.IsActive = 1;
+
+            INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, IsActive, CreatedUtc, UpdatedUtc)
+            SELECT map.NewId, @VenueId, @NewMenuId, s.Name, s.SortOrder, 1, @Now, @Now
+            FROM dbo.MenuSections s
+            INNER JOIN @Sections map ON map.OldId = s.Id
+            WHERE s.VenueId = @VenueId;
+
+            -- Same ItemId: the copy places the library's items, it does not clone them.
+            INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
+            SELECT NEWID(), @VenueId, @NewMenuId, map.NewId, p.ItemId, p.SortOrder, @Now, @Now
+            FROM dbo.Placements p
+            INNER JOIN @Sections map ON map.OldId = p.MenuSectionId
+            WHERE p.VenueId = @VenueId AND p.MenuId = @SourceMenuId;
+
+            INSERT dbo.MenuHistoryEntries (Id, VenueId, MenuId, Kind, PublishEventId, ReplacedByVersion, Detail, Author, OccurredUtc)
+            VALUES (NEWID(), @VenueId, @NewMenuId, N'duplicated', NULL, NULL, @Detail, @Author, @Now);
+
+            COMMIT TRANSACTION;
+            SELECT CAST(1 AS BIT) AS Created, @Active + 1 AS ActiveMenuCount, @Name AS Name;
+        END;
         """;
 
     // Both halves of the draft in one statement. Reading them separately let a
@@ -523,9 +685,14 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             loopWarningSeconds INT '$.loopWarningSeconds'
         );
 
+        -- Theme is assigned straight across, without the ISNULL the other settings
+        -- carry. A snapshot whose theme is null recorded a menu with no theme
+        -- attached, which is a valid state (Q86) and a fact to restore -- not a
+        -- gap to paper over with whatever is attached now. The guards stay on the
+        -- others, where null means the snapshot simply did not record the field.
         UPDATE m
         SET m.Name = ISNULL(t.Name, m.Name),
-            m.Theme = ISNULL(t.Theme, m.Theme),
+            m.Theme = t.Theme,
             m.DwellSeconds = ISNULL(NULLIF(t.DwellSeconds, 0), m.DwellSeconds),
             m.LoopWarningSeconds = ISNULL(NULLIF(t.LoopWarningSeconds, 0), m.LoopWarningSeconds),
             m.UpdatedUtc = @OccurredUtc
@@ -881,11 +1048,19 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         ORDER BY ScreenId;
         """;
 
+    // Version comes from the publish event the entry names. Without it the only
+    // place a client ever learns a version is the response to its own publish, so
+    // "Go back to..." - which is addressed by version - is unreachable from a list
+    // of what happened. Null for the kinds that are not a publish.
     private const string HistorySql = """
-        SELECT TOP (@Limit) Id, VenueId, MenuId, Kind, PublishEventId, ReplacedByVersion, Detail, Author, OccurredUtc
-        FROM dbo.MenuHistoryEntries
-        WHERE VenueId = @VenueId AND MenuId = @MenuId
-        ORDER BY OccurredUtc DESC, Id DESC;
+        SELECT TOP (@Limit)
+            h.Id, h.VenueId, h.MenuId, h.Kind, h.PublishEventId, h.ReplacedByVersion,
+            h.Detail, h.Author, h.OccurredUtc, e.Version
+        FROM dbo.MenuHistoryEntries h
+        LEFT JOIN dbo.MenuPublishEvents e
+            ON e.Id = h.PublishEventId AND e.MenuId = h.MenuId AND e.VenueId = h.VenueId
+        WHERE h.VenueId = @VenueId AND h.MenuId = @MenuId
+        ORDER BY h.OccurredUtc DESC, h.Id DESC;
         """;
 
     // A venue-scoped allowance wins outright over an organization-wide one, matching
@@ -1374,6 +1549,61 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             },
             cancellationToken).ConfigureAwait(false)).SingleOrDefault()?.Value;
 
+    public async Task<PublishedBoard?> GetLatestPublishedBoardAsync(
+        Guid venueId,
+        Guid menuId,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<PublishedBoard, object>(
+            LatestPublishedBoardSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                MenuId = RequireId(menuId, nameof(menuId))
+            },
+            cancellationToken).ConfigureAwait(false)).SingleOrDefault();
+
+    public async Task<IReadOnlyCollection<ShelfMenu>> GetShelfAsync(
+        Guid venueId,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<ShelfMenu, object>(
+            ShelfSql,
+            new { VenueId = RequireId(venueId, nameof(venueId)) },
+            cancellationToken).ConfigureAwait(false)).ToArray();
+
+    public async Task<MenuDuplicateOutcome> DuplicateMenuWithinCeilingAsync(
+        Guid venueId,
+        Guid sourceMenuId,
+        Guid newMenuId,
+        int activeMenuLimit,
+        string? author,
+        string detail,
+        DateTime occurredUtc,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var row = (await dataAccess.ExecuteSqlQueryAsync<MenuDuplicateRow, object>(
+                DuplicateMenuWithinCeilingSql,
+                new
+                {
+                    VenueId = RequireId(venueId, nameof(venueId)),
+                    SourceMenuId = RequireId(sourceMenuId, nameof(sourceMenuId)),
+                    NewMenuId = RequireId(newMenuId, nameof(newMenuId)),
+                    Limit = activeMenuLimit,
+                    Author = author,
+                    Detail = detail,
+                    Now = occurredUtc
+                },
+                cancellationToken).ConfigureAwait(false)).Single();
+
+            return new MenuDuplicateOutcome(row.Created, row.ActiveMenuCount, row.Name);
+        }
+        catch (Microsoft.Data.SqlClient.SqlException exception) when (exception.Number == 51009)
+        {
+            throw new TooManyMenuCopiesException(exception.Message);
+        }
+    }
+
     public async Task RestoreSnapshotAsync(
         Guid venueId,
         Guid menuId,
@@ -1566,6 +1796,15 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         public bool Created { get; set; }
 
         public int ActiveMenuCount { get; set; }
+    }
+
+    private sealed class MenuDuplicateRow
+    {
+        public bool Created { get; set; }
+
+        public int ActiveMenuCount { get; set; }
+
+        public string? Name { get; set; }
     }
 
     private sealed class ItemPlacementRow

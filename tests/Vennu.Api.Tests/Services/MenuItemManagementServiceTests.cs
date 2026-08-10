@@ -18,14 +18,14 @@ public sealed class MenuItemManagementServiceTests
     private static readonly Guid MenuId = Guid.NewGuid();
     private static readonly Guid SectionId = Guid.NewGuid();
 
-    private static FakeMenuLibraryRepository Repository()
+    private static FakeContentRepository Repository()
     {
-        var repository = new FakeMenuLibraryRepository();
+        var repository = new FakeContentRepository();
         repository.Sections.Add(new MenuSection { Id = SectionId, VenueId = VenueId, MenuId = MenuId, Name = "Food", IsActive = true });
         return repository;
     }
 
-    private static MenuItemManagementService Service(FakeMenuLibraryRepository repository, RecordingNotifier notifier) =>
+    private static MenuItemManagementService Service(FakeContentRepository repository, RecordingNotifier notifier) =>
         new(repository, notifier, new FixedTimeProvider());
 
     [Fact]

@@ -12,7 +12,7 @@ namespace Vennu.Data.IntegrationTests;
 /// were edited, and every write path refuses to cross a tenant or a ceiling.
 /// </summary>
 [Trait("Category", "Integration")]
-public class MenuSpineIntegrationTests(DatabaseFixture fixture)
+public class ContentIntegrationTests(DatabaseFixture fixture)
     : InvariantCheckedTests(fixture), IClassFixture<DatabaseFixture>
 {
     private readonly DatabaseFixture fixture = fixture;
@@ -20,7 +20,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     // ---- migration outcomes ---------------------------------------------------
 
     [Fact]
-    public async Task Migration_CreatesTheSpineWithTenantOwnershipEnforced()
+    public async Task Migration_CreatesTheContentModelWithTenantOwnershipEnforced()
     {
         var dataAccess = fixture.CreateDataAccess();
 
@@ -84,11 +84,73 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
         Assert.Equal(0, carried);
     }
 
+    // Migration 059. The column used to be NOT NULL DEFAULT N'coastal': it forbade
+    // the valid unthemed state (Q86) and defaulted to a look nobody built.
+    [Fact]
+    public async Task Migration_LeavesTheThemeNullableWithNoDefaultAndNoInventedValue()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+
+        var nullable = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            SELECT COUNT(*) AS Value
+            FROM sys.columns
+            WHERE object_id = OBJECT_ID(N'dbo.Menus', N'U') AND name = 'Theme' AND is_nullable = 1;
+            """, new { })).Single().Value;
+        Assert.True(nullable == 1, "dbo.Menus.Theme must be nullable: a menu with no theme attached is a valid state.");
+
+        var defaults = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            SELECT COUNT(*) AS Value
+            FROM sys.default_constraints dc
+            JOIN sys.columns c ON c.object_id = dc.parent_object_id AND c.column_id = dc.parent_column_id
+            WHERE dc.parent_object_id = OBJECT_ID(N'dbo.Menus', N'U') AND c.name = 'Theme';
+            """, new { })).Single().Value;
+        Assert.True(defaults == 0, "dbo.Menus.Theme must carry no default: there is no named look to default to.");
+
+        // The fiction is gone from the rows and from every snapshot that recorded it.
+        var fiction = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM dbo.Menus WHERE Theme = N'coastal')
+              + (SELECT COUNT(*) FROM dbo.MenuPublishEvents
+                 WHERE ISJSON(Snapshot) = 1 AND JSON_VALUE(Snapshot, '$.theme') = N'coastal') AS Value;
+            """, new { })).Single().Value;
+        Assert.True(fiction == 0, "No menu or stored snapshot may still name 'coastal': it never described anything real.");
+    }
+
+    /// <summary>
+    /// The reason migration 059 scrubs stored snapshots as well as rows. Comparing
+    /// a published 'coastal' against a working null would report "theme changed" on
+    /// every published menu in the system — a change nobody made, on the one count
+    /// whose promise is that it cannot disagree with what a publish ships (Q182).
+    /// </summary>
+    [Fact]
+    public async Task Draft_ReportsNoThemeChangeForAMenuThatNeverHadOne()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("cider"), Price = "7" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+
+        _ = await PublishCurrentAsync(repository, venueId, menuId);
+
+        var snapshots = await repository.GetDraftSnapshotsAsync(venueId, menuId);
+        Assert.Null(MenuSnapshot.Parse(snapshots.Published)!.Theme);
+        Assert.Empty(MenuSnapshot.Diff(snapshots.Published, snapshots.Working));
+    }
+
     [Fact]
     public async Task Migration_StoresAPriceExactlyAsTyped()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
 
         foreach (var typed in new[] { "12", "9.5", "9.50", "MP" })
@@ -115,7 +177,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task WorkingSnapshot_ParsesWithTheRestoreModelIncludingNestedContent()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -144,7 +206,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_StoresADeserializableSnapshotContainingTheEdit()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -186,7 +248,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Draft_IsTheDifferenceBetweenWorkingStateAndPublishedSnapshot()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -220,7 +282,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_RefusesInsideTheTransactionWhenItWouldReachNothing()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
 
@@ -236,7 +298,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task TakeOff_WaitsInTheDraftAndReleasedScreensAreStillTold()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -268,7 +330,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_RefusesWhenTheMenuMovedSinceTheDiffWasComputed()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -311,7 +373,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_RefusesWhenTheOnlyChangeIsLetterCasing()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -346,7 +408,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_RefusesWhenSomeoneElsePublishedSinceTheDiffWasComputed()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -379,7 +441,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task DraftRead_TakesThePublishedSnapshotAndItsVersionFromTheSameEvent()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -412,7 +474,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_RefusesADiffComputedAgainstADifferentPublishedSnapshot()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -449,7 +511,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Restore_ToAVersionThatWasOnAScreen_IsRefusedWhileTheMenuIsPutAway()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -480,7 +542,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Discard_OnAPutAwayMenu_GoesBackToTheScreenlessPublishedShape()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -524,7 +586,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task ScreensShowing_IsThePublishedTruth_NotTheAssignment()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -560,7 +622,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task ScreensShowing_FollowsTheScreenToWhicheverMenuPublishedToItLast()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var first = await SeedMenuAsync(dataAccess, venueId);
         var second = await SeedMenuAsync(dataAccess, venueId);
@@ -586,7 +648,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task ScreensShowing_NamesOnlyThisVenuesScreens()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueA = await SeedVenueAsync(dataAccess);
         var venueB = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueA);
@@ -608,7 +670,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_AfterATakeOffHasShipped_HasNothingLeftToReachAndSaysSo()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -637,7 +699,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task APutAwayMenu_CanBeNeitherGivenAScreenNorPublished()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -663,7 +725,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task PutAway_IsRefusedUntilTheTakeOffHasReachedTheScreens()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -700,7 +762,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task PutAway_IgnoresAPublishedScreenAnotherMenuHasSinceTaken()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var otherMenuId = await SeedMenuAsync(dataAccess, venueId);
@@ -731,7 +793,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_LeavesAScreenAnotherMenuNowOwnsAloneAndNamesIt()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueId);
         var menuB = await SeedMenuAsync(dataAccess, venueId);
@@ -757,7 +819,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Publish_RefusesWhenEveryScreenItWasOnBelongsToAnotherMenu()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueId);
         var menuB = await SeedMenuAsync(dataAccess, venueId);
@@ -782,7 +844,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task TakeOff_IsRecordedWhenItHappensAndWhenItShips()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -811,7 +873,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task PutAway_IsAttributableAndRefusedWhileTheMenuIsOnAScreen()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
@@ -839,7 +901,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task PutBack_IsBoundedByTheSameCeilingAsCreatingAMenu()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var first = await SeedMenuAsync(dataAccess, venueId);
         await SeedMenuAsync(dataAccess, venueId);
@@ -858,6 +920,282 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
             history => history.Kind == MenuHistoryKinds.PutBack);
     }
 
+    // ---- the shelf ---------------------------------------------------------------
+
+    /// <summary>
+    /// The shelf reads every menu in one statement, and each card's board and its
+    /// change count come from the same pair of snapshots — so a card can never draw
+    /// one board while counting the difference to another.
+    /// </summary>
+    [Fact]
+    public async Task Shelf_ReturnsEveryMenuWithItsPublishedBoardAndItsOwnDraftCount()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var publishedMenuId = await SeedMenuAsync(dataAccess, venueId);
+        var neverPublishedMenuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, publishedMenuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = publishedMenuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("shelf-ale"), Price = "5" },
+            publishedMenuId, sectionId, itemsPerMenuLimit: 500);
+
+        var published = await PublishCurrentAsync(repository, venueId, publishedMenuId, "Alex");
+
+        // One edit after the publish, so this card has exactly one waiting change.
+        var item = (await repository.GetItemsAsync(venueId)).Single(candidate => candidate.Price == "5");
+        item.Price = "MP";
+        await repository.UpdateItemAsync(item);
+
+        var shelf = await repository.GetShelfAsync(venueId);
+
+        var card = Assert.Single(shelf, menu => menu.MenuId == publishedMenuId);
+        Assert.Equal(published.Event.Version, card.PublishedVersion);
+        Assert.Equal("Alex", card.LastPublishedBy);
+        Assert.NotNull(card.LastPublishedUtc);
+        var change = Assert.Single(MenuSnapshot.Diff(card.PublishedSnapshot, card.WorkingSnapshot));
+        Assert.Equal("price", change.Field);
+        // Exactly as typed, on the shelf as everywhere else (Q115/Q190).
+        Assert.Equal("MP", change.AfterValue);
+
+        // A menu that has never been published is a card with no board, not an error
+        // and not an empty board that would render as a blank screen.
+        var unpublished = Assert.Single(shelf, menu => menu.MenuId == neverPublishedMenuId);
+        Assert.Null(unpublished.PublishedSnapshot);
+        Assert.Null(unpublished.PublishedVersion);
+        Assert.NotNull(unpublished.WorkingSnapshot);
+    }
+
+    [Fact]
+    public async Task Shelf_ShowsAPutAwayMenuAsPutAway()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+
+        await repository.SetPutAwayAsync(venueId, menuId, true, 50, "Alex", "Put away.", DateTime.UtcNow);
+
+        var card = Assert.Single(await repository.GetShelfAsync(venueId), menu => menu.MenuId == menuId);
+        Assert.True(card.IsPutAway);
+    }
+
+    [Fact]
+    public async Task Shelf_NeverReachesIntoAnotherVenue()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var mine = await SeedVenueAsync(dataAccess);
+        var theirs = await SeedVenueAsync(dataAccess);
+        var myMenu = await SeedMenuAsync(dataAccess, mine);
+        var theirMenu = await SeedMenuAsync(dataAccess, theirs);
+
+        var shelf = await repository.GetShelfAsync(mine);
+
+        Assert.Contains(shelf, menu => menu.MenuId == myMenu);
+        Assert.DoesNotContain(shelf, menu => menu.MenuId == theirMenu);
+    }
+
+    /// <summary>
+    /// The board and the version that put it there come from one row. Read
+    /// separately, a publish landing between them returns one version's board
+    /// labelled with another's — the torn read this model has produced before.
+    /// </summary>
+    [Fact]
+    public async Task PublishedBoard_CarriesTheVersionAndAuthorThatPutItOnTheScreens()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("board-ale"), Price = "4" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+
+        var first = await PublishCurrentAsync(repository, venueId, menuId, "Alex");
+        var item = (await repository.GetItemsAsync(venueId)).Single(candidate => candidate.Price == "4");
+        item.Price = "4.5";
+        await repository.UpdateItemAsync(item);
+        var second = await PublishCurrentAsync(repository, venueId, menuId, "Sam");
+
+        var board = await repository.GetLatestPublishedBoardAsync(venueId, menuId);
+
+        Assert.NotNull(board);
+        Assert.Equal(second.Event.Version, board!.Version);
+        Assert.Equal("Sam", board.Author);
+        Assert.NotEqual(first.Event.Version, board.Version);
+        // The board returned is the one that version published, not the earlier one.
+        Assert.Equal(second.Event.Snapshot, board.Snapshot);
+    }
+
+    [Fact]
+    public async Task PublishedBoard_IsNullForAMenuThatHasNeverBeenPublished()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+
+        Assert.Null(await repository.GetLatestPublishedBoardAsync(venueId, menuId));
+    }
+
+    // ---- history carries the version -----------------------------------------------
+
+    /// <summary>
+    /// "Go back to..." is addressed by version, so a list of what happened has to
+    /// carry one. Without this the only place a client ever learns a version is the
+    /// response to its own publish, and the action is unreachable from the UI.
+    /// </summary>
+    [Fact]
+    public async Task History_CarriesTheVersionOfThePublishItNames()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("history-ale"), Price = "3" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+
+        var published = await PublishCurrentAsync(repository, venueId, menuId);
+
+        var entries = await repository.GetHistoryAsync(venueId, menuId, 20);
+
+        var publishEntry = Assert.Single(entries, entry => entry.Kind == MenuHistoryKinds.Published);
+        Assert.Equal(published.Event.Version, publishEntry.Version);
+
+        // The kinds that are not a publish carry no version, rather than borrowing one.
+        Assert.All(
+            entries.Where(entry => entry.Kind != MenuHistoryKinds.Published),
+            entry => Assert.Null(entry.Version));
+    }
+
+    // ---- duplicate -----------------------------------------------------------------
+
+    /// <summary>
+    /// Q20: the copy places the SAME library items, so a later price edit reaches
+    /// both boards. Cloning the items instead would look identical on the day and
+    /// diverge silently afterwards.
+    /// </summary>
+    [Fact]
+    public async Task Duplicate_PlacesTheSameLibraryItemsOnANeverPublishedCopy()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("dupe-ale"), Price = "9" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+        _ = await PublishCurrentAsync(repository, venueId, menuId);
+
+        var copyId = Guid.NewGuid();
+        var outcome = await repository.DuplicateMenuWithinCeilingAsync(
+            venueId, menuId, copyId, 50, "Alex", "Duplicated.", DateTime.UtcNow);
+
+        Assert.True(outcome.Created);
+
+        // Same library items: one item, on two boards.
+        var sourcePlacements = await repository.GetPlacementsAsync(venueId, menuId);
+        var copyPlacements = await repository.GetPlacementsAsync(venueId, copyId);
+        Assert.Equal(
+            sourcePlacements.Select(p => p.ItemId).OrderBy(id => id),
+            copyPlacements.Select(p => p.ItemId).OrderBy(id => id));
+
+        // ...and the sections are the copy's own, not shared with the original.
+        Assert.Empty(copyPlacements.Select(p => p.MenuSectionId).Intersect(sourcePlacements.Select(p => p.MenuSectionId)));
+
+        // Never published, on no screen: delivery is always deliberate.
+        Assert.Null(await repository.GetLatestPublishedBoardAsync(venueId, copyId));
+        Assert.DoesNotContain(await repository.GetAssignmentsAsync(venueId), a => a.MenuId == copyId);
+
+        // The copy's timeline says where it came from - the one thing not derivable
+        // from any other column.
+        var entry = Assert.Single(await repository.GetHistoryAsync(venueId, copyId, 10));
+        Assert.Equal(MenuHistoryKinds.Duplicated, entry.Kind);
+        Assert.Equal("Alex", entry.Author);
+    }
+
+    /// <summary>
+    /// Menu names are not unique in the database, so two people duplicating the same
+    /// menu at once would both read "no copy yet" and both take the name. The name is
+    /// chosen inside the same lock as the insert, so the second one gets the next one.
+    /// </summary>
+    [Fact]
+    public async Task Duplicate_GivesTheSecondCopyItsOwnName()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sourceName = (await repository.GetShelfAsync(venueId)).Single(menu => menu.MenuId == menuId).Name;
+
+        var first = await repository.DuplicateMenuWithinCeilingAsync(
+            venueId, menuId, Guid.NewGuid(), 50, "Alex", "Duplicated.", DateTime.UtcNow);
+        var second = await repository.DuplicateMenuWithinCeilingAsync(
+            venueId, menuId, Guid.NewGuid(), 50, "Alex", "Duplicated.", DateTime.UtcNow);
+
+        Assert.Equal($"{sourceName} copy", first.Name);
+        Assert.Equal($"{sourceName} copy 2", second.Name);
+    }
+
+    /// <summary>
+    /// A duplicate is a new menu, so it is bounded by the same ceiling as creating
+    /// one - otherwise Duplicate is simply the way around the limit.
+    /// </summary>
+    [Fact]
+    public async Task Duplicate_IsRefusedAtTheMenuCeiling()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+
+        // The venue has exactly one active menu, and the ceiling is one.
+        var outcome = await repository.DuplicateMenuWithinCeilingAsync(
+            venueId, menuId, Guid.NewGuid(), 1, "Alex", "Duplicated.", DateTime.UtcNow);
+
+        Assert.False(outcome.Created);
+        Assert.Equal(1, outcome.ActiveMenuCount);
+        Assert.Null(outcome.Name);
+    }
+
+    /// <summary>
+    /// The statement's own tenant check, the same 51001 every other menu-scoped write
+    /// raises. The service refuses earlier, by not finding the menu on the caller's
+    /// shelf at all; this is the backstop underneath that, so a copy can never be made
+    /// from another venue's menu even if a caller reaches the repository directly.
+    /// </summary>
+    [Fact]
+    public async Task Duplicate_RefusesAMenuFromAnotherVenue()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var mine = await SeedVenueAsync(dataAccess);
+        var theirs = await SeedVenueAsync(dataAccess);
+        var theirMenu = await SeedMenuAsync(dataAccess, theirs);
+        var copyId = Guid.NewGuid();
+
+        var refusal = await Assert.ThrowsAsync<Microsoft.Data.SqlClient.SqlException>(
+            () => repository.DuplicateMenuWithinCeilingAsync(
+                mine, theirMenu, copyId, 50, "Alex", "Duplicated.", DateTime.UtcNow));
+
+        Assert.Equal(51001, refusal.Number);
+        Assert.DoesNotContain(await repository.GetShelfAsync(mine), menu => menu.MenuId == copyId);
+        Assert.DoesNotContain(await repository.GetShelfAsync(theirs), menu => menu.MenuId == copyId);
+    }
+
     // ---- restore ---------------------------------------------------------------
 
     // Q67/Q43: restore puts values back onto the rows that already exist, brings
@@ -867,7 +1205,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Restore_PutsTheWholeShapeBackAndRecordsTheActTogether()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -899,6 +1237,87 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
         Assert.Equal("Reviewer", entry.Author);
     }
 
+    /// <summary>
+    /// Going back to a version the menu had no theme on takes the theme off again.
+    ///
+    /// Restore used to write <c>Theme = ISNULL(t.Theme, m.Theme)</c>, which treats a
+    /// null in the snapshot as "not recorded" and keeps whatever is attached now.
+    /// Since an unthemed menu is a valid state (Q86), null is a recorded fact, and
+    /// the guard silently made going back to it impossible: the menu would claim to
+    /// be on version 1 while wearing a theme version 1 never had.
+    /// </summary>
+    [Fact]
+    public async Task Restore_TakesTheThemeBackOffAMenuPublishedWithoutOne()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("porter"), Price = "6" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+
+        // Version 1: no theme attached, which is the state being restored to.
+        var unthemed = await PublishCurrentAsync(repository, venueId, menuId);
+        Assert.Null(MenuSnapshot.Parse(unthemed.Event.Snapshot)!.Theme);
+
+        // Someone attaches one afterwards.
+        await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            "UPDATE dbo.Menus SET Theme = @Theme WHERE Id = @MenuId; SELECT 1 AS Value;",
+            new { Theme = "harbour-dark", MenuId = menuId });
+        Assert.Equal(
+            "harbour-dark",
+            MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId))!.Theme);
+
+        await repository.RestoreSnapshotAsync(
+            venueId, menuId, unthemed.Event.Snapshot!, "Reviewer", "Went back to version 1.", DateTime.UtcNow);
+
+        var afterRestore = MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId));
+        Assert.Null(afterRestore!.Theme);
+
+        // And the strongest statement: nothing differs from the version restored to.
+        Assert.Empty(MenuSnapshot.Diff(unthemed.Event.Snapshot, await repository.GetWorkingSnapshotAsync(venueId, menuId)));
+    }
+
+    /// <summary>
+    /// The other direction, so the fix is not simply "theme is always cleared":
+    /// going back to a version that HAD a theme puts that theme back.
+    /// </summary>
+    [Fact]
+    public async Task Restore_PutsBackTheThemeTheVersionWasPublishedWith()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.CreateItemOnMenuAsync(
+            new Item { VenueId = venueId, Name = fixture.UniqueValue("saison"), Price = "8" },
+            menuId, sectionId, itemsPerMenuLimit: 500);
+
+        await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            "UPDATE dbo.Menus SET Theme = @Theme WHERE Id = @MenuId; SELECT 1 AS Value;",
+            new { Theme = "harbour-dark", MenuId = menuId });
+        var themed = await PublishCurrentAsync(repository, venueId, menuId);
+        Assert.Equal("harbour-dark", MenuSnapshot.Parse(themed.Event.Snapshot)!.Theme);
+
+        await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            "UPDATE dbo.Menus SET Theme = NULL WHERE Id = @MenuId; SELECT 1 AS Value;",
+            new { MenuId = menuId });
+
+        await repository.RestoreSnapshotAsync(
+            venueId, menuId, themed.Event.Snapshot!, "Reviewer", "Went back.", DateTime.UtcNow);
+
+        Assert.Equal(
+            "harbour-dark",
+            MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId))!.Theme);
+    }
+
     // Review finding: restore only updated sections that still existed, so a
     // section added since the snapshot stayed on the board and one removed since
     // never came back. Either left the menu different from the version it claimed
@@ -907,7 +1326,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Restore_PutsSectionsBack_WhetherAdded_Removed_OrReordered()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var first = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
@@ -953,7 +1372,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Restore_RefusesWhenAScreenItWantsBelongsToAnotherMenu()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueId);
         var menuB = await SeedMenuAsync(dataAccess, venueId);
@@ -979,7 +1398,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Restore_AgainstAForeignVenue_ChangesNothingAndRecordsNothing()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueA = await SeedVenueAsync(dataAccess);
         var venueB = await SeedVenueAsync(dataAccess);
         var menuB = await SeedMenuAsync(dataAccess, venueB);
@@ -1002,7 +1421,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task ForeignMenuId_CannotBePublishedByAnotherVenue()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueA = await SeedVenueAsync(dataAccess);
         var venueB = await SeedVenueAsync(dataAccess);
         var menuB = await SeedMenuAsync(dataAccess, venueB);
@@ -1020,7 +1439,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task UpdateItemAsync_CannotReachAForeignVenueItem()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueA = await SeedVenueAsync(dataAccess);
         var venueB = await SeedVenueAsync(dataAccess);
         var name = fixture.UniqueValue("bisque");
@@ -1046,7 +1465,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Placement_CannotReferenceASectionOfAnotherMenu()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueId);
         var menuB = await SeedMenuAsync(dataAccess, venueId);
@@ -1071,7 +1490,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task PublishTarget_CannotNameAnotherVenuesScreen()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueA = await SeedVenueAsync(dataAccess);
         var venueB = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueA);
@@ -1095,7 +1514,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task HistoryEntry_CannotNameAnotherMenusPublishEvent()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuA = await SeedMenuAsync(dataAccess, venueId);
         var menuB = await SeedMenuAsync(dataAccess, venueId);
@@ -1121,7 +1540,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task MenuCeiling_CountsOnlyActiveMenus_SoPuttingOneAwayMakesRoom()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
 
@@ -1143,7 +1562,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task MenuCeiling_UnderConcurrency_AdmitsExactlyTheRoomLeft()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         await SeedMenuAsync(dataAccess, venueId);
 
@@ -1161,7 +1580,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task ItemCeiling_RefusesAtomicallyAndTheSectionMustBeOnTheMenu()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -1185,7 +1604,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task Ceilings_PreferTheVenueRowOverTheOrganizationRow()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
 
         var organizationId = (await dataAccess.ExecuteSqlQueryAsync<GuidRow, object>(
@@ -1215,7 +1634,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     public async Task PlacedItems_CarryLiveAvailability()
     {
         var dataAccess = fixture.CreateDataAccess();
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
@@ -1256,7 +1675,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
             VALUES (@VenueId, @OrganizationId, @Name, 'Bar', 'America/New_York', 'en', SYSUTCDATETIME(), SYSUTCDATETIME());
             SELECT 1 AS Value;
             """,
-            new { OrganizationId = organizationId, VenueId = venueId, OwnerUserId = Guid.NewGuid(), Name = fixture.UniqueValue("spine") });
+            new { OrganizationId = organizationId, VenueId = venueId, OwnerUserId = Guid.NewGuid(), Name = fixture.UniqueValue("content") });
         return venueId;
     }
 
@@ -1292,7 +1711,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     /// just read.
     /// </summary>
     private static async Task<PublishOutcome> PublishCurrentAsync(
-        MenuLibraryRepository repository,
+        ContentRepository repository,
         Guid venueId,
         Guid menuId,
         string? author = null)
@@ -1314,7 +1733,7 @@ public class MenuSpineIntegrationTests(DatabaseFixture fixture)
     /// refusal it did not expect. Returns the take-off publish.
     /// </summary>
     private static async Task<PublishOutcome> ShelveAsync(
-        MenuLibraryRepository repository,
+        ContentRepository repository,
         Guid venueId,
         Guid menuId,
         string author = "Owner")

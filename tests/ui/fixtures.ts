@@ -7,7 +7,12 @@ import { test as base, expect, type Page } from "@playwright/test";
  */
 const tokenStorageKey = "vennusign.back-office.token";
 
-export type VennuRole = "owner" | "editor" | "publisher";
+/**
+ * "scale" is an owner of a SECOND venue, used only by the shelf-at-scale checks.
+ * The default venue accumulates menus from every spec that seeds, so nothing there
+ * can assert "exactly this many menus" while the suite runs in parallel.
+ */
+export type VennuRole = "owner" | "editor" | "publisher" | "scale";
 
 /** Isolation tag of the seeded dataset this run targets. See run-track1-qa.ps1. */
 const tag = process.env.VENNU_ISOLATION_TAG ?? "0000";
@@ -20,7 +25,8 @@ const tag = process.env.VENNU_ISOLATION_TAG ?? "0000";
 const baselineTokens: Record<VennuRole, string> = {
   owner: "track1-owner-review",
   editor: "track1-content-editor",
-  publisher: "track1-publisher"
+  publisher: "track1-publisher",
+  scale: "track1-scale-check"
 };
 
 const tokenFor = (role: VennuRole) =>
@@ -29,7 +35,8 @@ const tokenFor = (role: VennuRole) =>
 export const tokens: Record<VennuRole, string> = {
   owner: process.env.VENNU_OWNER_TOKEN ?? tokenFor("owner"),
   editor: process.env.VENNU_EDITOR_TOKEN ?? tokenFor("editor"),
-  publisher: process.env.VENNU_PUBLISHER_TOKEN ?? tokenFor("publisher")
+  publisher: process.env.VENNU_PUBLISHER_TOKEN ?? tokenFor("publisher"),
+  scale: process.env.VENNU_SCALE_TOKEN ?? tokenFor("scale")
 };
 
 export const apiBaseUrl = process.env.VENNU_API_URL ?? "https://localhost:7138";
@@ -52,6 +59,28 @@ export async function openAs(page: Page, role: VennuRole, route: string) {
   // goes idle and the wait times out. Waiting for the shell is deterministic, and
   // Playwright's per-locator auto-waiting covers everything after it.
   await page.locator('[data-testid="nav-item"]').first().waitFor({ state: "attached" });
+}
+
+/**
+ * Opens the menu editor, through the door a person uses.
+ *
+ * Menus milestone 2 put the shelf at `#/menu`, so the editor is no longer the
+ * first thing that route shows — a card is opened to reach it. Every spec that
+ * drives the editor goes through here rather than each learning the new path,
+ * so when milestone 3 replaces the editor with the builder there is one place
+ * to change.
+ *
+ * The board is the door: there is no Open button on a card (design README,
+ * Navigation), which is why this clicks the board itself.
+ */
+export async function openMenuEditorAs(page: Page, role: VennuRole) {
+  await openAs(page, role, "menu");
+  await page.getByTestId("menus-home").waitFor();
+
+  const card = page.getByTestId("menu-card").first();
+  await card.waitFor();
+  await card.getByTestId("open-menu").click();
+  await page.getByTestId("menu-picker").waitFor();
 }
 
 export const test = base.extend<{ asOwner: Page }>({

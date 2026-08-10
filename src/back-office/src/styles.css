@@ -37,7 +37,7 @@ button, input, select { font: inherit; }
 .venue-access-choice { display: grid; gap: 12px; }.customer-sign-in { display: block; border-radius: 12px; padding: 12px 14px; color: white; background: #173f30; text-align: center; text-decoration: none; font-weight: 800; }.customer-recovery { color: #225541; font-weight: 750; text-align: center; }.venue-access-choice details { margin-top: 8px; border-top: 1px solid #dbe3df; padding-top: 14px; }.venue-access-choice summary { color: var(--sky-text-secondary); cursor: pointer; font-weight: 750; }.venue-access-choice details p { margin-top: 12px; font-size: .82rem; }.venue-access-choice form { display: grid; gap: 10px; margin-top: 12px; }.venue-access-choice a:focus-visible, .venue-access-choice summary:focus-visible { outline: 3px solid #d49d22; outline-offset: 3px; }
 .loading { color: #527066; font-weight: 750; }
 .shell { min-height: 100vh; display: grid; grid-template-columns: 270px minmax(0, 1fr); }
-.app-sidebar { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: 28px 20px; color: #eaf4ef; background: #123b30; }
+
 .brand { display: flex; gap: 12px; align-items: center; margin: 0 5px 32px; }.brand > span, .identity > span { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; color: #123b30; background: #d6b96f; font-weight: 900; }
 .brand div, .identity div { display: grid; }.brand small, .identity small { color: #a9c5b9; }
 nav { display: grid; gap: 8px; }nav a { display: grid; gap: 3px; padding: 13px; border-radius: 13px; color: inherit; text-decoration: none; }nav a small { color: #a9c5b9; }nav a.active { background: #245b49; }nav a.locked { background: rgb(255 255 255 / .04); }
@@ -76,8 +76,9 @@ nav { display: grid; gap: 8px; }nav a { display: grid; gap: 3px; padding: 13px; 
 .app-nav-toggle { display: none; }
 
 @media (max-width: 760px) {
-  /* The sidebar is full-height by design on desktop. On a phone that pushes all page
-     content below the fold, so it collapses behind an explicit toggle instead. */
+  /* The nav is full-height by design on desktop. On a phone that pushes all page
+     content below the fold, so it collapses behind an explicit toggle instead.
+     The rail's own open/closed rules live with the rest of the rail, below. */
   .app-nav-toggle {
     display: inline-flex; align-items: center; gap: 8px;
     position: sticky; top: 0; z-index: 20; width: 100%;
@@ -85,11 +86,9 @@ nav { display: grid; gap: 8px; }nav a { display: grid; gap: 3px; padding: 13px; 
     padding: 12px 16px; font: inherit; font-weight: 650;
     color: var(--sky-sidebar-text); background: var(--sky-sidebar-background); cursor: pointer;
   }
-  .app-sidebar[data-open="false"] { display: none; }
-  .app-sidebar[data-open="true"] { position: sticky; top: 44px; z-index: 19; max-height: calc(100vh - 44px); overflow-y: auto; }
 }
 
-@media (max-width: 760px) { .shell { grid-template-columns: 1fr; } .app-sidebar { position: static; height: auto; } nav { grid-template-columns: repeat(2, 1fr); }.identity { margin-top: 20px; }.workspace-context, .workspace-context__controls { align-items: stretch; flex-direction: column; }.workspace-context__controls select { width: 100%; }.workspace-context__account { border-top: 1px solid #dbe3df; border-left: 0; padding-top: 12px; padding-left: 0; }.workspace-context__active strong, .workspace-context__active span, .workspace-context__account strong, .workspace-context__account span { max-width: 100%; } }
+@media (max-width: 760px) { .shell { grid-template-columns: 1fr; } nav { grid-template-columns: repeat(2, 1fr); }.identity { margin-top: 20px; }.workspace-context, .workspace-context__controls { align-items: stretch; flex-direction: column; }.workspace-context__controls select { width: 100%; }.workspace-context__account { border-top: 1px solid #dbe3df; border-left: 0; padding-top: 12px; padding-left: 0; }.workspace-context__active strong, .workspace-context__active span, .workspace-context__account strong, .workspace-context__account span { max-width: 100%; } }
 
 .menu-lifecycle-toolbar, .page-toolbar { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 18px 0; }.menu-lifecycle-toolbar label, .menu-lifecycle-toolbar form, .page-toolbar > div { display: grid; gap: 6px; }.menu-lifecycle-toolbar form { grid-template-columns: minmax(180px, 1fr) auto; align-items: end; }.menu-lifecycle-toolbar select, .menu-lifecycle-toolbar input, .quick-filter-bar input, .quick-filter-bar select { min-height: 42px; border: 1px solid #c8d5ce; border-radius: 9px; padding: 8px 10px; background: var(--sky-card-background); }.menu-lifecycle-toolbar button, .page-toolbar button, .bulk-toolbar button, .item-lifecycle-actions button, .item-save-status button, .destructive-review button { min-height: 38px; border: 1px solid #c8d5ce; border-radius: 9px; padding: 8px 11px; background: var(--sky-card-background); cursor: pointer; }.page-toolbar p, .page-toolbar h2 { margin: 0; }.page-toolbar p { color: var(--sky-label-accent); font-size: .72rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
 .destructive-review { border: 2px solid #b45309; border-radius: 14px; padding: 16px; background: #fff7ed; }.destructive-review.compact { margin-bottom: 10px; }.destructive-review h3, .destructive-review h4, .destructive-review p { margin: 0 0 8px; }.destructive-review > div { display: flex; gap: 8px; }.destructive-review .danger, .danger-link, .provider-actions .danger { border-color: var(--sky-danger-solid); color: white; background: var(--sky-danger-solid); }.menu-item.archived { opacity: .65; }.item-save-status { min-height: 24px; display: flex; justify-content: flex-end; gap: 8px; align-items: center; color: var(--sky-text-secondary); font-size: .76rem; }.item-save-status button { min-height: 28px; padding: 3px 8px; }.item-lifecycle-actions { display: flex; justify-content: flex-end; gap: 7px; margin-top: 8px; }
@@ -217,8 +216,8 @@ nav { display: grid; gap: 8px; }nav a { display: grid; gap: 3px; padding: 13px; 
 
 /* Sky UI visual standard: shared hierarchy, actions, badges, and focus behavior. */
 body, .shell > main, .customer-entry { background: var(--sky-page-gradient); }
-.app-sidebar { color: var(--sky-sidebar-text); background: var(--sky-sidebar-background); }
-:where(button, a, input, select, textarea, summary):focus-visible { outline: var(--sky-focus-ring); outline-offset: var(--sky-focus-offset); }
+
+:where(button, a, input, select, textarea, summary):focus-visible { outline: var(--sky-focus-ring); outline-offset: var(--sky-focus-offset); box-shadow: var(--sky-focus-halo); }
 :where(input, select, textarea) { border-color: var(--sky-control-border); color: var(--sky-text-primary); background: var(--sky-card-background); }
 :where(.access-card, .workspace-context, .placeholder, .menu-editor, .operations-stack > article, .operations-stack > section, .customer-entry__auth-card, .customer-onboarding__panel, .account-security__add, .account-security__list form) { border-color: var(--sky-control-border); border-radius: var(--sky-card-radius); background: var(--sky-card-background); box-shadow: var(--sky-panel-shadow); }
 :where(.access-card button, .customer-sign-in, .section-create button, .menu-item-create button, .quick-update form button, .screen-create button, .screen-actions button, .screen-management-heading .push-all, .video-wall-builder form > button, .wall-groups button, .theme-builder__heading button, .back-office-handoff a, .customer-entry__signout, .customer-entry button:not(.quiet):not(.danger), .customer-timeline__resume a, .customer-onboarding__completion-actions a, .account-security button:not(.danger)) { border-color: var(--sky-action-primary-background); color: var(--sky-action-primary-text); background: var(--sky-action-primary-background); }
@@ -234,3 +233,120 @@ body, .shell > main, .customer-entry { background: var(--sky-page-gradient); }
 /* Action hierarchy standard: one explicit primary, secondary recovery, destructive overflow, sticky form actions, and applied-state undo. */
 .action-surface, .sticky-action-bar { display: flex; align-items: center; justify-content: flex-end; gap: 9px; }.sticky-action-bar { position: sticky; bottom: 12px; z-index: 8; border: var(--sky-card-border); border-radius: var(--sky-radius-lg); padding: 9px; background: color-mix(in srgb, var(--sky-card-background) 94%, transparent); box-shadow: var(--sky-panel-shadow); backdrop-filter: blur(10px); }.action-primary, .action-secondary, .action-danger, .action-overflow summary, .action-overflow button { min-height: 42px; border: var(--sky-card-border); border-radius: var(--sky-button-radius); padding: 9px 13px; font-weight: var(--sky-font-weight-bold); cursor: pointer; }.action-primary { border-color: var(--sky-action-primary-background) !important; color: var(--sky-action-primary-text) !important; background: var(--sky-action-primary-background) !important; }.action-secondary, .action-overflow summary, .action-overflow button { color: var(--sky-text-primary) !important; background: var(--sky-card-background) !important; }.action-danger { border-color: var(--sky-danger-solid) !important; color: var(--sky-danger-text) !important; background: var(--sky-color-off-surface) !important; }.action-overflow { position: relative; }.action-overflow summary { display: flex; align-items: center; list-style: none; }.action-overflow summary::-webkit-details-marker { display: none; }.action-overflow summary::after { content: "\22EF"; margin-left: 7px; letter-spacing: .08em; }.action-overflow[open] > div { position: absolute; right: 0; bottom: calc(100% + 7px); z-index: 20; width: max-content; min-width: 190px; display: grid; gap: 6px; border: var(--sky-card-border); border-radius: var(--sky-radius-md); padding: 8px; background: var(--sky-card-background); box-shadow: 0 18px 48px rgb(15 23 42 / .22); }.action-overflow[open] > div button { width: 100%; text-align: left; }.applied-state-undo { display: flex; align-items: center; justify-content: space-between; gap: 14px; border: 1px solid var(--sky-color-live); border-radius: var(--sky-radius-md); padding: 12px 14px; color: var(--sky-positive-text); background: var(--sky-color-live-surface); }.applied-state-undo button { min-height: 40px; border: 1px solid currentColor; border-radius: var(--sky-button-radius); padding: 8px 12px; color: inherit; background: transparent; font-weight: var(--sky-font-weight-bold); }.action-primary:disabled, .action-secondary:disabled, .action-danger:disabled, .action-overflow button:disabled { cursor: not-allowed; opacity: .55; }
 @media (max-width: 600px) { .action-surface, .sticky-action-bar, .applied-state-undo { align-items: stretch; flex-direction: column; }.action-surface > *, .sticky-action-bar > *, .applied-state-undo button { width: 100%; }.action-overflow[open] > div { right: auto; bottom: auto; left: 0; top: calc(100% + 7px); width: 100%; }.sticky-action-bar { bottom: 8px; } }
+
+/* ---------------------------------------------------------------------------
+   The 76px icon nav rail, app-wide (build-decision 12). Values are the design
+   README's Components spec. It replaces the 270px grouped sidebar: at this width
+   there is no room for group headings, so the areas are one flat column with a
+   single divider before the account items.
+
+   Keeps the id and the data attributes the old sidebar carried, so the mobile
+   drawer and every existing spec still address the same thing.
+   --------------------------------------------------------------------------- */
+.shell { grid-template-columns: var(--sky-rail-width) minmax(0, 1fr); }
+
+.app-rail {
+  position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column; align-items: center; gap: var(--sky-space-2);
+  padding: 14px 0 12px;
+  color: var(--sky-rail-item-color); background: var(--sky-rail-background);
+}
+
+.rail-brand {
+  width: 34px; height: 34px; flex: none;
+  display: grid; place-items: center; margin-bottom: var(--sky-space-2);
+  border-radius: var(--sky-radius-sm-plus);
+  color: var(--sky-color-ink); background: var(--sky-color-primary);
+  font-weight: var(--sky-font-weight-bold); text-decoration: none;
+}
+
+.rail-section { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+
+/* The divider the spec places near the bottom: the work of running a venue
+   above it, the account itself below. */
+.rail-section-account {
+  margin-top: auto; padding-top: var(--sky-space-2);
+  border-top: 1px solid var(--sky-color-ink-divider);
+}
+
+.rail-item, .rail-identity {
+  width: var(--sky-rail-item-width);
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  border: 0; border-radius: var(--sky-radius-md);
+  padding: 8px 2px;
+  color: var(--sky-rail-item-color); background: transparent;
+  font: inherit; text-align: center; text-decoration: none; cursor: pointer;
+}
+
+.rail-item-label {
+  font-size: var(--sky-font-size-2xs);
+  font-weight: var(--sky-font-weight-medium);
+  line-height: 1.1;
+}
+
+.rail-item.active {
+  color: var(--sky-rail-item-active-color);
+  background: var(--sky-rail-item-active-background);
+}
+.rail-item.active .rail-item-label { font-weight: var(--sky-font-weight-semibold); }
+
+/* Locked is dimmer and unclickable, but still present and still named. An area
+   the plan does not include at all is absent instead - see decision 19. */
+.rail-item.locked { opacity: .55; cursor: not-allowed; }
+
+.rail-item:hover:not(.locked):not(.active) { background: rgb(248 250 252 / .08); }
+
+.rail-identity { margin-top: var(--sky-space-2); }
+.rail-identity > span[aria-hidden] {
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  border-radius: var(--sky-radius-pill);
+  color: var(--sky-color-surface); background: var(--sky-color-ink-divider);
+  font-weight: var(--sky-font-weight-semibold);
+}
+
+/* The rail hosts the upgrade nudge the sidebar used to, at rail width. */
+.app-rail .sidebar-upgrade-nudge, .app-rail .sidebar-upgrade-context {
+  width: calc(var(--sky-rail-width) - 12px);
+  font-size: var(--sky-font-size-2xs);
+}
+
+@media (max-width: 760px) {
+  /* On a phone the rail becomes a wrapping grid behind the existing toggle,
+     rather than a full-height column that pushes the page below the fold. */
+  .shell { grid-template-columns: 1fr; }
+  .app-rail { position: static; height: auto; flex-direction: row; flex-wrap: wrap; justify-content: center; padding: 10px; }
+  .rail-section { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+  .rail-section-account { margin-top: 0; border-top: 0; border-left: 1px solid var(--sky-color-ink-divider); padding-top: 0; padding-left: var(--sky-space-2); }
+  .rail-identity { margin-top: 0; }
+  .app-rail[data-open="false"] { display: none; }
+  .app-rail[data-open="true"] { position: sticky; top: 44px; z-index: 19; max-height: calc(100vh - 44px); overflow-y: auto; }
+}
+
+/* A locked area's chip was drawn for the 270px sidebar and is width: max-content,
+   so in the rail it spilled straight out of the 76px column. In here it takes the
+   rail item's shape instead: the lock and the tier still show, because the upgrade
+   path Track 1 built is the point of it, and the full title stays in the button's
+   aria-label rather than being lost with the visible text. */
+.app-rail .entitlement-lock-chip {
+  width: var(--sky-rail-item-width);
+  max-width: var(--sky-rail-item-width);
+  min-height: 0;
+  flex-direction: column;
+  gap: 5px;
+  border: 0;
+  border-radius: var(--sky-radius-md);
+  padding: 8px 2px;
+  color: var(--sky-rail-item-color);
+  background: transparent;
+  text-align: center;
+}
+.app-rail .entitlement-lock-chip:hover { background: rgb(248 250 252 / .08); }
+.app-rail .entitlement-lock-chip__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.app-rail .entitlement-lock-chip__icon { width: .9rem; height: .72rem; }
+.app-rail .entitlement-lock-chip .tier-badge,
+.app-rail .entitlement-lock-chip [class*="badge"] {
+  padding: 1px 5px;
+  font-size: var(--sky-font-size-2xs);
+  line-height: 1.3;
+}

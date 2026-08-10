@@ -8,6 +8,7 @@ test("customer UI and messages use the Vennusign product name consistently", asy
   const content = (await Promise.all([
     readFile(new URL("index.html", root), "utf8"),
     readFile(new URL("src/App.tsx", root), "utf8"),
+    readFile(new URL("src/NavRail.tsx", root), "utf8"),
     readFile(new URL("src/CustomerOnboardingApp.tsx", root), "utf8"),
     readFile(new URL("src/BillingStatusCard.tsx", root), "utf8"),
     readFile(new URL("src/customerOnboardingApi.ts", root), "utf8")

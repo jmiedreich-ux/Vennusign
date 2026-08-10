@@ -829,3 +829,199 @@ export async function deleteTapItem(configuration: BackOfficeConfiguration, acce
 export async function reorderTapRows(configuration: BackOfficeConfiguration, accessToken: string, venueId: string, kind: "categories" | "items", ids: string[]): Promise<void> {
   await areaRequest("tap-list", configuration, accessToken, venueId, `/${kind}/order`, { method: "PUT", body: JSON.stringify({ ids }) });
 }
+
+// ---------------------------------------------------------------------------
+// Menu content: the shelf, the boards it draws, and the named card actions.
+//
+// The API calls it content, not menus: items, placements and availability are
+// content, and "menu" is the operational context using it. The capability ids
+// have always said so - content.item.update, content.menu.manage.
+// ---------------------------------------------------------------------------
+
+/** A board as the render engine consumes it. Prices are strings, exactly as typed. */
+export type BoardResponse = {
+  menuId: string;
+  name: string | null;
+  /** The menu theme attached, or null when none is — a valid, rendered state. */
+  theme: string | null;
+  dwellSeconds: number;
+  loopWarningSeconds: number;
+  sections: Array<{
+    sectionId: string;
+    name: string | null;
+    sortOrder: number;
+    items: Array<{
+      itemId: string;
+      name: string | null;
+      description: string | null;
+      price: string | null;
+      sortOrder: number;
+    }>;
+  }>;
+};
+
+/**
+ * One card on the Menus home shelf.
+ *
+ * `board` is what this menu's screens are showing, and is null when it has never
+ * been published — a state the shelf draws rather than an error. `screenIds` is
+ * published truth, never the working assignments.
+ */
+export type ShelfMenu = {
+  menuId: string;
+  name: string;
+  theme: string | null;
+  isPutAway: boolean;
+  publishedVersion: number | null;
+  lastPublishedUtc: string | null;
+  lastPublishedBy: string | null;
+  draftCount: number;
+  screenIds: string[];
+  board: BoardResponse | null;
+};
+
+export type MenuAvailability = {
+  itemId: string;
+  isAvailable: boolean;
+  changedUtc: string;
+  changedBy: string | null;
+};
+
+export type MenuHistoryEntry = {
+  kind: string;
+  occurredUtc: string;
+  author: string | null;
+  detail: string | null;
+  replacedByVersion: number | null;
+  /** The publish this entry names; null for the kinds that are not a publish. */
+  version: number | null;
+};
+
+export type MenuScreenShowing = {
+  screenId: string;
+  screenName: string;
+  menuId: string | null;
+  menuName: string | null;
+  version: number | null;
+  publishedUtc: string | null;
+  publishedBy: string | null;
+};
+
+/**
+ * A refusal the API named rather than a failure.
+ *
+ * These reasons are a contract: the server refuses in plain words and the UI
+ * repeats them. Inventing a friendlier sentence here would be a second source of
+ * truth about why something was refused, and the two would drift.
+ */
+export class MenuActionRefused extends Error {
+  constructor(
+    public readonly reason: string,
+    message: string
+  ) {
+    super(message);
+  }
+}
+
+async function contentRequest(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  path = "",
+  init?: RequestInit
+) {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/back-office/content${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      "X-Vennusign-Back-Office-Token": accessToken,
+      ...init?.headers
+    }
+  });
+
+  if (response.status === 409) {
+    // A named refusal, in the words the server chose.
+    const body = (await response.json().catch(() => ({}))) as { reason?: string; message?: string };
+    throw new MenuActionRefused(body.reason ?? "refused", body.message ?? "That is not something you can do right now.");
+  }
+
+  if (!response.ok) throw new BackOfficeApiError(response.status, "Unable to manage menu content.");
+  return response;
+}
+
+/** Every menu the venue has, as the shelf draws it. One call, whatever the count. */
+export async function loadShelf(
+  configuration: BackOfficeConfiguration,
+  accessToken: string
+): Promise<ShelfMenu[]> {
+  return (await contentRequest(configuration, accessToken, "/menus")).json();
+}
+
+/** What is 86'd right now. Availability lives outside the published board. */
+export async function loadMenuAvailability(
+  configuration: BackOfficeConfiguration,
+  accessToken: string
+): Promise<MenuAvailability[]> {
+  return (await contentRequest(configuration, accessToken, "/availability")).json();
+}
+
+export async function loadScreensShowing(
+  configuration: BackOfficeConfiguration,
+  accessToken: string
+): Promise<MenuScreenShowing[]> {
+  return (await contentRequest(configuration, accessToken, "/screens/showing")).json();
+}
+
+export async function loadMenuHistory(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string
+): Promise<MenuHistoryEntry[]> {
+  return (await contentRequest(configuration, accessToken, `/menus/${menuId}/history`)).json();
+}
+
+export async function duplicateMenu(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string
+): Promise<{ menuId: string; name: string; activeMenuCount: number }> {
+  return (await contentRequest(configuration, accessToken, `/menus/${menuId}/duplicate`, { method: "POST" })).json();
+}
+
+/** Put a menu away, or back on the shelf. Both are deliberate, recorded acts. */
+export async function setMenuPutAway(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  isPutAway: boolean
+): Promise<{ changed: boolean; isPutAway: boolean; activeMenuCount: number }> {
+  return (
+    await contentRequest(configuration, accessToken, `/menus/${menuId}/put-away`, {
+      method: "PUT",
+      body: JSON.stringify({ isPutAway })
+    })
+  ).json();
+}
+
+/**
+ * Take the menu off its screens. Permanent, so it waits in the draft and reaches
+ * the screens on the next publish (Q68) — this returns the draft it joined.
+ */
+export async function takeMenuOffScreens(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string
+): Promise<{ count: number }> {
+  return (await contentRequest(configuration, accessToken, `/menus/${menuId}/screens`, { method: "DELETE" })).json();
+}
+
+/** Go back to a published version. Produces a draft; never a second silent publish. */
+export async function goBackToMenuVersion(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  version: number
+): Promise<{ count: number; replacedChangeCount: number }> {
+  return (
+    await contentRequest(configuration, accessToken, `/menus/${menuId}/go-back-to/${version}`, { method: "POST" })
+  ).json();
+}

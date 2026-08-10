@@ -44,3 +44,42 @@ export async function seed(
     await context.dispose();
   }
 }
+
+/** Mirrors TestSeedController.ScaleSeedResponse. */
+export type ScaleSeedResult = {
+  venueId: string;
+  seededMenus: Array<{
+    menuId: string;
+    name: string;
+    state: "on-screens" | "pending-changes" | "put-away" | "never-published";
+    screenIds: string[];
+  }>;
+  screenIds: string[];
+};
+
+/**
+ * Fills the scale venue with a shelf big enough to change shape, and leaves it in
+ * a known state (Q176: twenty screens, thirteen menus).
+ *
+ * It clears the venue first, so it is deterministic however many times it runs —
+ * which is why it has a venue of its own and refuses the shared one.
+ */
+export async function scaleSeed(options: { menus?: number; screens?: number } = {}): Promise<ScaleSeedResult> {
+  const context = await playwrightRequest.newContext({ ignoreHTTPSErrors: true });
+  try {
+    const response = await context.post(`${apiBaseUrl}/api/test/seed/scale`, {
+      data: {
+        accessToken: tokens.scale,
+        menus: options.menus ?? 13,
+        screens: options.screens ?? 20
+      },
+      timeout: 120_000
+    });
+    if (!response.ok()) {
+      throw new Error(`Scale seed failed (${response.status()}): ${await response.text()}`);
+    }
+    return (await response.json()) as ScaleSeedResult;
+  } finally {
+    await context.dispose();
+  }
+}

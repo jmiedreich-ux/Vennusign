@@ -3,11 +3,11 @@ using Vennu.Core.Models;
 namespace Vennu.Data.Repositories;
 
 /// <summary>
-/// Persistence for the Menus spine: the venue item library, placements onto
+/// Persistence for menu content: the venue item library, placements onto
 /// boards, availability, menu-to-screen assignment, the per-menu draft queue,
 /// publishes and the attributable history.
 /// </summary>
-public interface IMenuLibraryRepository
+public interface IContentRepository
 {
     // ----- Library and placements -------------------------------------------------
 
@@ -174,6 +174,41 @@ public interface IMenuLibraryRepository
     /// <summary>The snapshot the screens are currently showing, or null if never published.</summary>
     Task<string?> GetLatestPublishedSnapshotAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// The board the screens are showing, together with the version, time and author
+    /// that put it there — all from one row. Null when the menu has never been
+    /// published. Reading the snapshot and then its version separately is the torn
+    /// read this model has produced before.
+    /// </summary>
+    Task<PublishedBoard?> GetLatestPublishedBoardAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Every menu the venue has, each with the board its screens are showing and the
+    /// board as it stands, in one round trip. The caller derives the draft count from
+    /// the pair, so a card can never describe a different board from its own count.
+    /// </summary>
+    Task<IReadOnlyCollection<ShelfMenu>> GetShelfAsync(Guid venueId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Copies a menu's working state onto a new menu, unless the venue is already at
+    /// its active-menu ceiling — counted under the same lock as the insert, because a
+    /// duplicate is a new menu and must not be a way around the limit (Q201).
+    ///
+    /// The copy places the SAME library items (Q20): sharing is the point of a
+    /// library, so a later price edit reaches both boards. It is never published and
+    /// on no screen, and its name is chosen inside the lock, so two people
+    /// duplicating at once cannot both claim it.
+    /// </summary>
+    Task<MenuDuplicateOutcome> DuplicateMenuWithinCeilingAsync(
+        Guid venueId,
+        Guid sourceMenuId,
+        Guid newMenuId,
+        int activeMenuLimit,
+        string? author,
+        string detail,
+        DateTime occurredUtc,
+        CancellationToken cancellationToken = default);
+
     /// <summary>The menu as it stands right now, in the shape a publish records.</summary>
     Task<string?> GetWorkingSnapshotAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
 
@@ -235,6 +270,43 @@ public interface IMenuLibraryRepository
 
 /// <summary>Whether the menu was created, and the venue's active-menu count under the lock.</summary>
 public sealed record MenuCreateOutcome(bool Created, int ActiveMenuCount);
+
+/// <summary>
+/// Whether the copy was made, the venue's active-menu count under the lock, and the
+/// name the copy actually got. The name is returned rather than assumed: the caller
+/// asked for "&lt;Name&gt; copy" and may have been given "&lt;Name&gt; copy 3", and telling it
+/// so is the difference between the UI showing the truth and showing a guess.
+/// </summary>
+public sealed record MenuDuplicateOutcome(bool Created, int ActiveMenuCount, string? Name);
+
+/// <summary>
+/// A published board and the publish that put it there, read as one row. Author is
+/// whoever published it; a null author means the publish recorded none.
+/// </summary>
+public sealed record PublishedBoard(string? Snapshot, long Version, DateTime PublishedUtc, string? Author);
+
+/// <summary>
+/// One menu as the shelf needs it: what it is, what its screens are showing, and what
+/// it looks like now. The two snapshots come back together so the difference between
+/// them — the card's "N changes not published" — describes these two boards and no
+/// others.
+/// </summary>
+public sealed record ShelfMenu(
+    Guid MenuId,
+    string Name,
+    string? Theme,
+    bool IsPutAway,
+    long? PublishedVersion,
+    DateTime? LastPublishedUtc,
+    string? LastPublishedBy,
+    string? PublishedSnapshot,
+    string? WorkingSnapshot);
+
+/// <summary>
+/// Too many copies of one menu to name another. Bounded rather than looping forever,
+/// and named rather than failing on a constraint nobody would recognise.
+/// </summary>
+public sealed class TooManyMenuCopiesException(string message) : InvalidOperationException(message);
 
 /// <summary>
 /// The published event, plus any screens this publish deliberately did not touch

@@ -74,6 +74,23 @@ WHEN MATCHED THEN UPDATE SET
 WHEN NOT MATCHED THEN INSERT (Id, Name, Timezone, Type, PrimaryLanguage, OrganizationId)
     VALUES (source.Id, source.Name, source.Timezone, source.Type, source.PrimaryLanguage, source.OrganizationId);
 
+-- A second venue, for the Menus shelf at scale (Q176: a 20-screen, 13-menu
+-- check). It exists so that shelf can be deterministic: the default venue
+-- accumulates menus from every spec that seeds, so nothing there can assert
+-- "exactly this many menus" while the suite runs in parallel. Only the scale
+-- seed writes here, and it clears the venue before each run.
+MERGE dbo.Venues AS target
+USING (VALUES ('73000000-0000-0000-0000-000000000002', N'Scale Check Venue', N'America/Los_Angeles', N'Bar', N'en', @OrganizationId))
+    AS source (Id, Name, Timezone, Type, PrimaryLanguage, OrganizationId)
+ON target.Id = source.Id
+WHEN MATCHED THEN UPDATE SET
+    Name = source.Name,
+    Timezone = source.Timezone,
+    OrganizationId = source.OrganizationId,
+    UpdatedUtc = SYSUTCDATETIME()
+WHEN NOT MATCHED THEN INSERT (Id, Name, Timezone, Type, PrimaryLanguage, OrganizationId)
+    VALUES (source.Id, source.Name, source.Timezone, source.Type, source.PrimaryLanguage, source.OrganizationId);
+
 MERGE dbo.Screens AS target
 USING (VALUES (@ScreenId, @VenueId, N'sc-t1demo', N'Acceptance Screen', N'North wall'))
     AS source (Id, VenueId, ScreenKey, Name, Location)
@@ -183,8 +200,11 @@ BEGIN TRANSACTION;
 
 -- The menu's own working values return to canonical, so a drifted theme or
 -- dwell from an earlier demo cannot leak into the rebuilt publish snapshot.
+-- Canonical for the theme is NO theme attached: that is a valid state (Q86), no
+-- named look exists to attach, and migration 059 removed the 'coastal' this used
+-- to set - a value the fixture would otherwise put straight back.
 UPDATE dbo.Menus
-SET Theme = N'coastal', DwellSeconds = 8, LoopWarningSeconds = 60, IsPutAway = 0, UpdatedUtc = @M1Now
+SET Theme = NULL, DwellSeconds = 8, LoopWarningSeconds = 60, IsPutAway = 0, UpdatedUtc = @M1Now
 WHERE Id = @M1MenuId AND VenueId = @M1VenueId;
 
 -- Prices are stored exactly as typed (Q115/Q190), so the fixture deliberately

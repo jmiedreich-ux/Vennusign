@@ -6,7 +6,7 @@ API contract against seeded data. Roughly 10 minutes.
 
 - **Milestone:** M1 — the spine (issue #684)
 - **What it proves:** acceptance criteria 1, 2, 3 and 4
-- **Base URL:** the running API, `/api/back-office/menu-spine`
+- **Base URL:** the running API, `/api/back-office/content`
 - **Auth:** a back-office session for the seeded venue
 - **Interactive workbook:** open `m1-demo-workbook.html` in a browser to run these checks and record
   Pass / Fail / Needs Adjustment against each one. It saves as you go and exports a JSON record.
@@ -30,7 +30,7 @@ supplies a previous value — it always comes from the published snapshot.
 ## 1. The venue's context — timezone and ceilings
 
 ```
-GET /api/back-office/menu-spine/context
+GET /api/back-office/content/context
 ```
 
 **Expect:** the venue's own timezone (not yours) and the four ceilings read from
@@ -51,7 +51,7 @@ and no ceiling is a constant — a tier can change any of them (Q201).
 ## 2. Criterion 1 — an 86 commits immediately, with no publish
 
 ```
-PUT /api/back-office/menu-spine/items/{itemId}/availability
+PUT /api/back-office/content/items/{itemId}/availability
 { "isAvailable": false }
 ```
 
@@ -61,7 +61,7 @@ currently showing that item through any menu**.
 Then:
 
 ```
-GET /api/back-office/menu-spine/menus/{menuId}/draft
+GET /api/back-office/content/menus/{menuId}/draft
 ```
 
 **Expect:** `"count": 0`. The 86 changed the world without joining the draft.
@@ -87,14 +87,14 @@ PUT /api/back-office/menus/{menuId}/sections/{sectionId}/items/{itemId}
 Then read the derived draft:
 
 ```
-GET /api/back-office/menu-spine/menus/{menuId}/draft
+GET /api/back-office/content/menus/{menuId}/draft
 ```
 
 **Expect:** `"count": 1`, and the change's `beforeValue` is the price the screens
 are showing — taken from the published snapshot, never from the caller.
 
 ```
-GET /api/back-office/menu-spine/menus/{menuId}/history
+GET /api/back-office/content/menus/{menuId}/history
 ```
 
 **Expect:** no new publish. Nothing has reached a screen.
@@ -118,7 +118,7 @@ per placement.
 ## 5. Criterion 2 — a publish ships this menu and nothing else
 
 ```
-POST /api/back-office/menu-spine/menus/{menuId}/publish
+POST /api/back-office/content/menus/{menuId}/publish
 ```
 
 **Expect:**
@@ -137,7 +137,7 @@ commit, the publish recomputes rather than recording a set that did not ship.
 ## 6. Criterion 3 — the 86 survived the publish
 
 ```
-GET /api/back-office/menu-spine/availability
+GET /api/back-office/content/availability
 ```
 
 **Expect:** the item from step 2 is still off. Availability is a fact about
@@ -148,7 +148,7 @@ tonight, not about the menu.
 ## 7. "Go back to" produces a draft, never a silent publish
 
 ```
-POST /api/back-office/menu-spine/menus/{menuId}/go-back-to/{version}
+POST /api/back-office/content/menus/{menuId}/go-back-to/{version}
 ```
 
 **Expect:** the menu's working state returns to how it looked then, so those
@@ -165,7 +165,7 @@ around the conflict and report a success that did not happen.
 ## 7b. Ask the screen, not the API
 
 ```
-GET /api/back-office/menu-spine/screens/showing
+GET /api/back-office/content/screens/showing
 ```
 
 **Expect:** every screen in the venue, and the menu and published version it is
@@ -184,8 +184,8 @@ publish means — so this disagreeing with `GET assignments` is normal and corre
 ## 8. Take off the screens waits for Publish (Q68)
 
 ```
-DELETE /api/back-office/menu-spine/menus/{menuId}/screens
-GET    /api/back-office/menu-spine/menus/{menuId}/draft
+DELETE /api/back-office/content/menus/{menuId}/screens
+GET    /api/back-office/content/menus/{menuId}/draft
 ```
 
 **Expect:** a `screens` change waiting in the draft, and history already records
@@ -202,7 +202,7 @@ else deliberately put there.
 ## 9. Put away, and put back on the shelf
 
 ```
-PUT /api/back-office/menu-spine/menus/{menuId}/put-away
+PUT /api/back-office/content/menus/{menuId}/put-away
 { "isPutAway": true }
 ```
 
@@ -234,8 +234,8 @@ ceiling check and the record.
 ## 10. The destructive acts are attributable
 
 ```
-DELETE /api/back-office/menu-spine/menus/{menuId}/draft
-GET    /api/back-office/menu-spine/menus/{menuId}/history
+DELETE /api/back-office/content/menus/{menuId}/draft
+GET    /api/back-office/content/menus/{menuId}/history
 ```
 
 **Expect:** history shows `draft_discarded`, `restored`, `taken_off_screens` and

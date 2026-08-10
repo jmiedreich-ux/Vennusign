@@ -5,11 +5,81 @@ namespace Vennu.Data;
 
 public static class DatabaseMigrator
 {
+    /// <summary>
+    /// Brings the database up to date, one caller at a time.
+    ///
+    /// Migrating concurrently is the normal case here, not an edge one: the API calls
+    /// this from two places at startup, and every test host that boots the app calls
+    /// it again, in parallel. DbUp reads its journal, decides what to run, then writes
+    /// the journal afterwards, and nothing between those steps stops a second caller
+    /// reading the same "not applied yet" answer. Left alone it produced seven journal
+    /// rows for one script on the product database, and on a database whose journal
+    /// does not exist yet it fails outright with "There is already an object named
+    /// 'SchemaVersions'" — a crash at startup rather than a tidy duplicate.
+    ///
+    /// So the whole decision runs behind one named application lock, the same shape
+    /// the baseline recorder already uses. The lock lives in the database being
+    /// migrated, so different databases never wait on each other.
+    ///
+    /// Not covered, and deliberately named rather than left implied: two callers
+    /// creating a database that does not exist yet still race inside
+    /// <see cref="EnsureDatabase"/>, because there is nowhere to take the lock until
+    /// the database is there. That window is one CREATE DATABASE wide and fails loudly.
+    /// </summary>
     public static void Run(string connectionString)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
         EnsureDatabase.For.SqlDatabase(connectionString);
+
+        using var gate = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
+        gate.Open();
+        AcquireMigrationLock(gate);
+
+        try
+        {
+            Upgrade(connectionString);
+        }
+        finally
+        {
+            ReleaseMigrationLock(gate);
+        }
+    }
+
+    private const string MigrationLockResource = "vennusign.schema.migrate";
+
+    private static void AcquireMigrationLock(Microsoft.Data.SqlClient.SqlConnection connection)
+    {
+        using var acquire = new Microsoft.Data.SqlClient.SqlCommand(
+            """
+            DECLARE @Acquired INT;
+            EXEC @Acquired = sys.sp_getapplock
+                @Resource = @LockResource,
+                @LockMode = 'Exclusive',
+                @LockOwner = 'Session',
+                @LockTimeout = 180000;
+
+            IF @Acquired < 0
+                THROW 51101, 'Timed out waiting to migrate the database; another process is migrating it.', 1;
+            """,
+            connection);
+        _ = acquire.Parameters.AddWithValue("@LockResource", MigrationLockResource);
+        _ = acquire.ExecuteNonQuery();
+    }
+
+    private static void ReleaseMigrationLock(Microsoft.Data.SqlClient.SqlConnection connection)
+    {
+        // Closing the connection would release it anyway; releasing explicitly means a
+        // pooled connection does not carry the lock back into the pool with it.
+        using var release = new Microsoft.Data.SqlClient.SqlCommand(
+            "EXEC sys.sp_releaseapplock @Resource = @LockResource, @LockOwner = 'Session';",
+            connection);
+        _ = release.Parameters.AddWithValue("@LockResource", MigrationLockResource);
+        _ = release.ExecuteNonQuery();
+    }
+
+    private static void Upgrade(string connectionString)
+    {
         BaselineExistingDatabase(connectionString);
 
         var assembly = typeof(DatabaseMigrator).Assembly;

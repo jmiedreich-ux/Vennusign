@@ -5,7 +5,7 @@ namespace Vennu.Data.Services;
 
 public sealed class MenuSectionManagementService(
     IMenuRepository repository,
-    IMenuLibraryRepository libraryRepository,
+    IContentRepository libraryRepository,
     ICapabilityDecisionService decisions,
     TimeProvider timeProvider) : IMenuSectionManagementService
 {

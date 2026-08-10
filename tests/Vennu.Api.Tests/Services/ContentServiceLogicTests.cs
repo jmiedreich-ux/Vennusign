@@ -8,7 +8,7 @@ namespace Vennu.Api.Tests.Services;
 /// <summary>
 /// What the service decides, and only that.
 ///
-/// This class used to assert the spine's refusals — a put-away menu cannot be
+/// This class used to assert the content model's refusals — a put-away menu cannot be
 /// published, a screen another menu owns is left alone, a ceiling refuses — against
 /// an in-memory repository that re-implemented each rule in C#. Every one of those
 /// assertions had an identically named twin in the SQL suite, so the unit test was
@@ -17,13 +17,13 @@ namespace Vennu.Api.Tests.Services;
 /// fake was wrong in the same way the author was.
 ///
 /// So the refusals live where they are enforced, in
-/// <c>tests/Vennu.Data.IntegrationTests/MenuSpineIntegrationTests.cs</c>. What stays
+/// <c>tests/Vennu.Data.IntegrationTests/ContentIntegrationTests.cs</c>. What stays
 /// here is the logic that has no database in it and that SQL therefore cannot reach:
 /// the publish retry, and the wording of a refusal. The fake is storage plus one
 /// explicit failure seam — it is told when to fail, it never decides.
 /// </summary>
 [Trait("Category", "Unit")]
-public sealed class MenuSpineServiceLogicTests
+public sealed class ContentServiceLogicTests
 {
     private static readonly Guid VenueId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid MenuId = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -33,7 +33,7 @@ public sealed class MenuSpineServiceLogicTests
     {
         MenuId = MenuId,
         Name = "Summer",
-        Theme = "coastal",
+        Theme = null,
         DwellSeconds = 8,
         LoopWarningSeconds = 60,
         Screens = [new SnapshotScreen { ScreenId = ScreenId }],
@@ -49,9 +49,9 @@ public sealed class MenuSpineServiceLogicTests
         ]
     });
 
-    private static (MenuSpineService Service, FakeMenuLibraryRepository Library) Build()
+    private static (ContentService Service, FakeContentRepository Library) Build()
     {
-        var library = new FakeMenuLibraryRepository();
+        var library = new FakeContentRepository();
         library.Assignments.Add(new MenuScreenAssignment
         {
             Id = Guid.NewGuid(),
@@ -61,7 +61,7 @@ public sealed class MenuSpineServiceLogicTests
         });
         library.WorkingSnapshotJson = Snapshot("12");
 
-        var service = new MenuSpineService(
+        var service = new ContentService(
             library,
             new FakeVenueRepository(),
             new RecordingNotifier(),

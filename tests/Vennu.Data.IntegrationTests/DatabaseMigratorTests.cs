@@ -1,4 +1,89 @@
+using Microsoft.Data.SqlClient;
+
 namespace Vennu.Data.IntegrationTests;
+
+/// <summary>
+/// Migrating a database concurrently is the normal case, not an edge one: the API
+/// calls the migrator from two places at startup, and every test host that boots
+/// the app calls it again — in parallel, because the test runner is parallel.
+/// </summary>
+[Trait("Category", "Integration")]
+public class DatabaseMigratorConcurrencyTests
+{
+    /// <summary>
+    /// Found while landing migration 059: the product database ended up with seven
+    /// journal rows for one script. DbUp reads the journal, decides what to run, and
+    /// writes the journal afterwards; nothing between those steps stops a second
+    /// caller reading the same "not applied yet" answer. Every one of them then runs
+    /// the script. 059 survived it because its statements happen to be repeatable —
+    /// a CREATE TABLE would have thrown, and startup would have failed.
+    ///
+    /// This is the same read-then-write shape the baseline recorder was fixed for,
+    /// and the fix is the same: one named application lock around the whole decision.
+    /// </summary>
+    [Fact]
+    public async Task EightConcurrentMigrations_ApplyEveryScriptExactlyOnce()
+    {
+        var database = $"vennusign_dev_migrate_{Guid.NewGuid():N}"[..40];
+        var master = new SqlConnectionStringBuilder(LocalDb) { InitialCatalog = "master" }.ConnectionString;
+        var target = new SqlConnectionStringBuilder(LocalDb) { InitialCatalog = database }.ConnectionString;
+
+        try
+        {
+            await ExecuteAsync(master, $"CREATE DATABASE [{database}];");
+
+            // All eight start together, the way the real callers do.
+            using var gate = new SemaphoreSlim(0, 8);
+            var runs = Enumerable.Range(0, 8)
+                .Select(_ => Task.Run(async () =>
+                {
+                    await gate.WaitAsync();
+                    DatabaseMigrator.Run(target);
+                }))
+                .ToArray();
+
+            gate.Release(8);
+            await Task.WhenAll(runs);
+
+            var duplicated = await ScalarAsync(
+                target,
+                """
+                SELECT COUNT(*) FROM (
+                    SELECT ScriptName FROM dbo.SchemaVersions GROUP BY ScriptName HAVING COUNT(*) > 1
+                ) AS d;
+                """);
+
+            Assert.True(
+                duplicated == 0,
+                $"{duplicated} script(s) were journaled more than once: the migration decision is not serialised.");
+        }
+        finally
+        {
+            await ExecuteAsync(
+                master,
+                $"IF DB_ID('{database}') IS NOT NULL BEGIN ALTER DATABASE [{database}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{database}]; END;");
+        }
+    }
+
+    private const string LocalDb =
+        @"Server=(localdb)\MSSQLLocalDB;Database=master;Integrated Security=true;TrustServerCertificate=true;Connection Timeout=30;";
+
+    private static async Task ExecuteAsync(string connectionString, string sql)
+    {
+        await using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = new SqlCommand(sql, connection);
+        _ = await command.ExecuteNonQueryAsync();
+    }
+
+    private static async Task<int> ScalarAsync(string connectionString, string sql)
+    {
+        await using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = new SqlCommand(sql, connection);
+        return Convert.ToInt32(await command.ExecuteScalarAsync(), System.Globalization.CultureInfo.InvariantCulture);
+    }
+}
 
 [Trait("Category", "Unit")]
 public class DatabaseMigratorTests

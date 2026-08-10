@@ -8,8 +8,8 @@ namespace Vennu.Api.Services;
 /// availability is a fact that commits instantly, and everything else is an
 /// intention that waits in the menu's draft until someone publishes it.
 /// </summary>
-public sealed class MenuSpineService(
-    IMenuLibraryRepository library,
+public sealed class ContentService(
+    IContentRepository library,
     IVenueRepository venues,
     Vennu.Api.Notifications.IScreenUpdateNotifier notifier,
     TimeProvider timeProvider)
@@ -350,6 +350,109 @@ public sealed class MenuSpineService(
     }
 
     /// <summary>
+    /// Every menu the venue has, as the shelf needs it: the board its screens are
+    /// showing, how many changes are waiting, and which screens it is on.
+    ///
+    /// One repository read for the menus and one for the screens, whatever the menu
+    /// count. Asking per menu would be a diff per card on every page load, and the
+    /// shelf ships its own scale behaviour this milestone (Q176).
+    ///
+    /// Screens come from what was published, never from the assignments: a menu can
+    /// be assigned to a screen and not yet be on it, which is the entire point of a
+    /// deliberate publish.
+    /// </summary>
+    public async Task<IReadOnlyList<ShelfMenuResult>> GetShelfAsync(
+        Guid venueId,
+        CancellationToken cancellationToken = default)
+    {
+        var menus = await library.GetShelfAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var showing = await library.GetScreensShowingAsync(venueId, cancellationToken).ConfigureAwait(false);
+
+        var screensByMenu = showing
+            .Where(screen => screen.MenuId is not null)
+            .GroupBy(screen => screen.MenuId!.Value)
+            .ToDictionary(group => group.Key, group => group.Select(screen => screen.ScreenId).ToArray());
+
+        return [.. menus.Select(menu => new ShelfMenuResult(
+            menu.MenuId,
+            menu.Name,
+            menu.Theme,
+            menu.IsPutAway,
+            menu.PublishedVersion,
+            menu.LastPublishedUtc,
+            menu.LastPublishedBy,
+            // The card's count and the card's board are the same pair of snapshots,
+            // so what the card shows and what it says about itself cannot disagree.
+            MenuSnapshot.Diff(menu.PublishedSnapshot, menu.WorkingSnapshot),
+            screensByMenu.TryGetValue(menu.MenuId, out var screenIds) ? screenIds : [],
+            MenuSnapshot.Parse(menu.PublishedSnapshot)))];
+    }
+
+    /// <summary>
+    /// The board a menu's screens are showing, with the publish that put it there.
+    /// Null when the menu has never been published — which is a state the shelf
+    /// renders, not an error.
+    /// </summary>
+    public async Task<PublishedBoardResult?> GetPublishedBoardAsync(
+        Guid venueId,
+        Guid menuId,
+        CancellationToken cancellationToken = default)
+    {
+        var board = await library.GetLatestPublishedBoardAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
+        if (board is null)
+        {
+            return null;
+        }
+
+        return new PublishedBoardResult(
+            menuId,
+            board.Version,
+            board.PublishedUtc,
+            board.Author,
+            MenuSnapshot.Parse(board.Snapshot));
+    }
+
+    /// <summary>
+    /// Copies a menu onto a new one that has never been published and is on no
+    /// screen (Q20). The copy places the same library items, so a later price edit
+    /// reaches both boards — sharing is the point of a library.
+    /// </summary>
+    public async Task<DuplicateResult> DuplicateAsync(
+        Guid venueId,
+        Guid menuId,
+        string? author,
+        CancellationToken cancellationToken = default)
+    {
+        var ceilings = await library.GetResolvedCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var limit = ceilings.TryGetValue(MenuCeilings.MenusPerVenue, out var configured) ? configured : int.MaxValue;
+
+        var source = await library.GetShelfAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var original = source.FirstOrDefault(menu => menu.MenuId == menuId)
+            ?? throw new InvalidOperationException($"Menu '{menuId}' does not belong to venue '{venueId}'.");
+
+        var newMenuId = Guid.NewGuid();
+        var outcome = await library.DuplicateMenuWithinCeilingAsync(
+            venueId,
+            menuId,
+            newMenuId,
+            limit,
+            author,
+            $"Duplicated from '{original.Name}'.",
+            timeProvider.GetUtcNow().UtcDateTime,
+            cancellationToken).ConfigureAwait(false);
+
+        if (!outcome.Created)
+        {
+            throw new MenuCeilingReachedException(
+                MenuCeilings.DescribeRefusal(MenuCeilings.MenusPerVenue, outcome.ActiveMenuCount + 1, limit));
+        }
+
+        // The name is whatever the statement settled on under its lock, not what
+        // this method guessed: "Summer Menu copy" may well have become "… copy 3".
+        return new DuplicateResult(newMenuId, outcome.Name ?? original.Name, outcome.ActiveMenuCount);
+    }
+
+    /// <summary>
     /// The ceilings that apply to this venue, always read from the allowance
     /// model, plus the venue timezone every surface renders its times in.
     /// </summary>
@@ -392,6 +495,35 @@ public sealed class MenuCeilingReachedException(string message) : InvalidOperati
 public sealed class MenuStillOnScreensException(string message) : InvalidOperationException(message);
 
 public sealed record PutAwayResult(bool Changed, int ActiveMenuCount);
+
+/// <summary>
+/// One shelf card. <paramref name="Draft"/> is the difference between the board the
+/// screens are showing and the board as it stands; <paramref name="PublishedBoard"/>
+/// is the first of those two, and is null when the menu has never been published —
+/// a state the shelf renders rather than an error. <paramref name="ScreenIds"/> is
+/// published truth, never the assignments.
+/// </summary>
+public sealed record ShelfMenuResult(
+    Guid MenuId,
+    string Name,
+    string? Theme,
+    bool IsPutAway,
+    long? PublishedVersion,
+    DateTime? LastPublishedUtc,
+    string? LastPublishedBy,
+    IReadOnlyList<SnapshotChange> Draft,
+    IReadOnlyCollection<Guid> ScreenIds,
+    MenuSnapshot? PublishedBoard);
+
+public sealed record PublishedBoardResult(
+    Guid MenuId,
+    long Version,
+    DateTime PublishedUtc,
+    string? Author,
+    MenuSnapshot? Board);
+
+/// <summary>The copy's id, the name it actually got, and the venue's active-menu count.</summary>
+public sealed record DuplicateResult(Guid MenuId, string Name, int ActiveMenuCount);
 
 /// <summary>
 /// ConflictedScreenIds are screens this publish deliberately left alone because

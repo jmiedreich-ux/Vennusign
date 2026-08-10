@@ -6,7 +6,7 @@ using Vennu.Data.Repositories;
 namespace Vennu.Api.Services;
 
 public sealed class MenuItemManagementService(
-    IMenuLibraryRepository library,
+    IContentRepository library,
     IScreenUpdateNotifier notifier,
     TimeProvider timeProvider) : IMenuItemManagementService
 {

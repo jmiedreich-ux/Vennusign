@@ -1,0 +1,237 @@
+/*
+ * Menus home: the shelf.
+ *
+ * Values from the M1 Hi-Fi v2 and the design README's component sheet, through
+ * the tokens batches 1 and 2 added. Its own file rather than another 100 rules
+ * on the end of styles.css, and imported where it is used.
+ *
+ * The board IS the card: no border and no card background, so what the shelf
+ * shows is what the screens show.
+ */
+
+.menus-home { padding: 30px 40px; }
+
+.menus-home__header { display: flex; align-items: start; justify-content: space-between; gap: 24px; }
+
+/* A static label, never clickable, no caret (Q186). #64748b rather than the
+   layout spec's lighter value, which fails contrast on a light surface (Q184). */
+.menus-home__venue {
+  margin: 0;
+  font-size: var(--sky-font-size-xxs);
+  font-weight: var(--sky-font-weight-semibold);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--sky-color-text-muted);
+}
+
+.menus-home h1 {
+  margin: 6px 0 0;
+  max-width: 800px;
+  font-size: var(--sky-font-size-2xl);
+  font-weight: var(--sky-font-weight-semibold);
+  letter-spacing: var(--sky-tracking-tighter);
+}
+
+/* The shell has a global `header p` rule that uppercases and bolds - meant for
+   its own page eyebrow. The shelf header is a <header>, so the sub-line inherited
+   it and rendered as a second eyebrow shouting the sentence underneath the
+   headline. Stated back explicitly rather than left to specificity. */
+.menus-home__subline {
+  margin: 8px 0 0;
+  color: var(--sky-color-text-muted);
+  font-size: var(--sky-font-size-sm);
+  font-weight: var(--sky-font-weight-regular);
+  letter-spacing: normal;
+  text-transform: none;
+}
+.menus-home__actions { display: flex; gap: var(--sky-space-2); flex: none; }
+
+/* Past the seven-menu cutover: search and single-select chips (Q163, Q164). */
+.menus-home__scale { display: flex; align-items: center; gap: var(--sky-space-3); margin-top: var(--sky-space-5); flex-wrap: wrap; }
+.menus-home__search {
+  display: flex; align-items: center; gap: var(--sky-space-2);
+  border: 1px solid var(--sky-color-border-input); border-radius: var(--sky-radius-md-minus);
+  padding: 0 10px; background: var(--sky-card-background); color: var(--sky-color-text-muted);
+}
+.menus-home__search input { min-width: 240px; border: 0; padding: 9px 0; background: transparent; font: inherit; font-size: var(--sky-font-size-sm); color: var(--sky-text-primary); }
+/* The input keeps a real focus ring rather than borrowing the wrapper border,
+   which was the only cue and measured 1.74:1 — invisible to anyone who needed it. */
+.menus-home__search:focus-within { border-color: var(--sky-color-primary); }
+.menus-home__search input:focus-visible { outline: var(--sky-focus-ring); outline-offset: var(--sky-focus-offset); box-shadow: var(--sky-focus-halo); }
+
+.menus-home__filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.menus-home__chip {
+  border: 1px solid var(--sky-color-border); border-radius: var(--sky-radius-pill);
+  padding: 6px 12px; background: var(--sky-card-background);
+  color: var(--sky-color-text-secondary);
+  font: inherit; font-size: var(--sky-font-size-sm-minus); font-weight: var(--sky-font-weight-semibold);
+  cursor: pointer;
+}
+.menus-home__chip.active { border-color: var(--sky-color-ink); background: var(--sky-color-ink); color: var(--sky-color-surface); }
+
+/* Always 4-up at the M1 size; 6-across once the shelf compacts (Q165). */
+.menus-home__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 26px; align-items: start; margin-top: var(--sky-space-5); }
+.menus-home__grid--compact { grid-template-columns: repeat(6, 1fr); gap: 18px; }
+
+.menus-home__more {
+  margin-top: var(--sky-space-4); border: 0; padding: 0; background: transparent;
+  color: var(--sky-text-primary); font: inherit; font-size: var(--sky-font-size-sm-minus);
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+
+.menu-card { position: relative; display: grid; gap: 12px; }
+
+.menu-card__board {
+  position: relative; aspect-ratio: 16 / 9; overflow: hidden;
+  border-radius: var(--sky-radius-lg-minus);
+  box-shadow: var(--sky-shadow-card);
+  background: var(--sky-card-background);
+}
+
+/* With changes waiting, the board renders shorter and the amber strip takes the
+   space reserved at the bottom of the same container. The bar never overlays
+   board content, and the board crops top-aligned, so a menu loses its bottom
+   rather than its heading (Q191). */
+/* The CONTAINER keeps 16/9; the strip takes 30px from the bottom of it, which
+   leaves the board at roughly the 16/7.75 the design asks for. Setting the
+   container to 16/7.75 as well subtracted the strip twice, landing the board near
+   16/5.9 - and with the old fit-by-tighter-dimension scale that letterboxed it
+   into a 90px blank gutter at 34% smaller type than the card beside it. */
+.menu-card__board--pending .board-frame { height: calc(100% - 30px); }
+
+/* The board is the door: there is no Open button on the card. */
+.menu-card__open { display: block; width: 100%; height: 100%; border: 0; padding: 0; background: transparent; text-align: left; cursor: pointer; }
+.menu-card__never-published { color: var(--sky-color-text-muted); font-size: var(--sky-font-size-sm-minus); }
+
+/* The chip sits over the board by design (README, Components: top-right, glass,
+   branching on board lightness), so it always covers a little of the render. What
+   is NOT acceptable is how much it covered once the compact grid squeezed cards to
+   151px — a fixed 28px chip over a 151px card hid a whole price. The grid keeps
+   the cards big enough instead; padding the board would have changed what the card
+   draws, and the card is supposed to be a picture of the screen. */
+.menu-card__menu { position: absolute; top: 10px; right: 10px; }
+.menu-card__menu > summary {
+  width: 28px; height: 28px; display: grid; place-items: center; list-style: none;
+  border: 1px solid var(--sky-glass-on-light-border); border-radius: var(--sky-radius-sm-plus);
+  background: var(--sky-glass-on-light-fill); color: var(--sky-color-surface);
+  cursor: pointer; backdrop-filter: blur(6px);
+}
+.menu-card__menu > summary::-webkit-details-marker { display: none; }
+
+.menu-card__actions {
+  position: absolute; top: 34px; right: 0; z-index: 20; width: max-content; min-width: 190px;
+  display: grid; gap: 2px;
+  border: var(--sky-card-border); border-radius: var(--sky-radius-md);
+  padding: 6px; background: var(--sky-card-background);
+  box-shadow: 0 18px 48px rgb(15 23 42 / .22);
+}
+.menu-card__actions button {
+  border: 0; border-radius: var(--sky-radius-sm); padding: 8px 10px;
+  background: transparent; color: var(--sky-text-primary);
+  font: inherit; font-size: var(--sky-font-size-sm); text-align: left; cursor: pointer;
+}
+.menu-card__actions button:hover:not(:disabled) { background: var(--sky-color-fill-subtle); }
+.menu-card__actions button:disabled { opacity: .45; cursor: not-allowed; }
+.menu-card__actions hr { margin: 4px 2px; border: 0; border-top: 1px solid var(--sky-color-hairline); }
+/* Specificity, not intent: the generic button rule above is (0,1,1) and this was
+   (0,1,0), so the one destructive item rendered pixel-identical to Open. The
+   design names it as danger (README, M1b). */
+.menu-card__actions button.menu-card__danger { color: var(--sky-danger-text); }
+
+.menu-card__pending {
+  position: absolute; inset: auto 0 0 0; margin: 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 7px 14px;
+  background: var(--sky-color-warning); color: var(--sky-color-ink);
+  font-size: var(--sky-font-size-xs-plus); font-weight: var(--sky-font-weight-bold);
+}
+.menu-card__pending button { border: 0; padding: 0; background: transparent; color: inherit; font: inherit; font-weight: inherit; cursor: pointer; }
+
+.menu-card__meta { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.menu-card__meta > div { display: grid; gap: 3px; min-width: 0; overflow: hidden; }
+.menu-card__meta strong, .menu-card__status { overflow-wrap: anywhere; }
+.menu-card__meta strong { font-size: var(--sky-font-size-md-plus); font-weight: var(--sky-font-weight-semibold); letter-spacing: var(--sky-tracking-tight); }
+.menu-card__meta small { flex: none; color: var(--sky-color-text-muted); font-size: var(--sky-font-size-xs-plus); text-align: right; }
+
+/* A status colour never travels alone: every dot has its sentence beside it. */
+.menu-card__status { display: flex; align-items: center; gap: 6px; font-size: var(--sky-font-size-sm-minus); font-weight: var(--sky-font-weight-medium); }
+.menu-card__status::before { content: ""; width: 6px; height: 6px; border-radius: var(--sky-radius-pill); background: currentColor; }
+.menu-card__status--live { color: var(--sky-positive-text); }
+.menu-card__status--pending { color: var(--sky-warning-text); }
+.menu-card__status--idle { color: var(--sky-color-text-muted); }
+
+/* Always the last cell, and only below the cutover (Q166). */
+.menus-home__add-tile {
+  display: grid; place-content: center; justify-items: center; gap: 8px;
+  aspect-ratio: 16 / 9;
+  border: 1.5px dashed var(--sky-color-border-dashed); border-radius: var(--sky-radius-lg-minus);
+  background: var(--sky-color-surface-tint); cursor: pointer;
+}
+.menus-home__add-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: var(--sky-radius-md-minus); background: var(--sky-color-primary); color: var(--sky-color-ink); }
+.menus-home__add-tile strong { font-size: var(--sky-font-size-sm-plus); font-weight: var(--sky-font-weight-semibold); }
+.menus-home__add-tile small { color: var(--sky-color-text-muted); font-size: var(--sky-font-size-xxs); line-height: 1.5; }
+
+.menus-home__idle { margin-top: var(--sky-space-6); }
+.menus-home__idle h2 { margin: 0 0 10px; font-size: var(--sky-font-size-xxs); font-weight: var(--sky-font-weight-semibold); letter-spacing: .09em; text-transform: uppercase; color: var(--sky-color-text-muted); }
+.menus-home__idle ul { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.menus-home__idle li { display: flex; align-items: center; gap: 6px; border-radius: var(--sky-radius-pill); padding: 4px 6px 4px 12px; background: var(--sky-color-fill-subtle); }
+.menus-home__idle li button { border: 0; padding: 4px 6px; background: transparent; color: var(--sky-text-primary); font: inherit; font-size: var(--sky-font-size-sm-minus); cursor: pointer; }
+.menus-home__put-back { border-radius: var(--sky-radius-pill); background: var(--sky-card-background); font-weight: var(--sky-font-weight-semibold); }
+
+/* Onboarding is the empty state of this screen, not a wizard (decision 17). */
+.menus-home--empty { display: grid; justify-items: center; gap: 12px; max-width: 860px; margin: 0 auto; padding-top: 12vh; text-align: center; }
+.menus-home--empty h1 { font-size: var(--sky-font-size-3xl); }
+
+/*
+ * Centred on the viewport, not anchored to its card.
+ *
+ * Anchored, it opened at the card's left edge and ran off the page from any
+ * right-hand column — 174px past the viewport at 1440, taking the confirm button
+ * with it and giving the whole page a horizontal scrollbar. A confirmation you
+ * have to scroll sideways to complete is not a confirmation.
+ *
+ * The backdrop is what makes aria-modal true rather than merely claimed: the rest
+ * of the shelf is visibly behind it and cannot be clicked through.
+ */
+.menu-card__dialog {
+  position: fixed; inset: 0; z-index: 30;
+  display: grid; align-content: center; justify-items: stretch; gap: 10px;
+  width: min(460px, calc(100vw - 2rem));
+  height: max-content; max-height: calc(100vh - 4rem); overflow-y: auto;
+  margin: auto;
+  border: var(--sky-card-border); border-radius: var(--sky-radius-lg);
+  padding: 20px; background: var(--sky-card-background); box-shadow: var(--sky-panel-shadow);
+}
+
+.menu-card__scrim {
+  position: fixed; inset: 0; z-index: 29;
+  background: rgb(15 23 42 / .32);
+}
+.menu-card__dialog h3, .menu-card__dialog h4, .menu-card__dialog p { margin: 0; }
+.menu-card__dialog h4 { font-size: var(--sky-font-size-xxs); letter-spacing: .09em; text-transform: uppercase; color: var(--sky-color-text-muted); }
+.menu-card__dialog p { font-size: var(--sky-font-size-sm); color: var(--sky-color-text-secondary); }
+.menu-card__dialog-note { font-size: var(--sky-font-size-xs-plus); }
+
+/* The venue fallback: a generated logo-and-name card, shown rather than
+   authorable, used for every empty moment (decisions 14, 36). */
+.venue-fallback { display: grid; place-items: center; gap: 8px; aspect-ratio: 16 / 9; border-radius: var(--sky-radius-md); background: var(--sky-color-ink); color: var(--sky-color-surface); }
+.venue-fallback > span { width: 42px; height: 42px; display: grid; place-items: center; border-radius: var(--sky-radius-md-minus); background: var(--sky-color-primary); color: var(--sky-color-ink); font-weight: var(--sky-font-weight-bold); }
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (max-width: 1500px) {
+  .menus-home__grid--compact { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 1200px) {
+  .menus-home__grid { grid-template-columns: repeat(3, 1fr); }
+  .menus-home__grid--compact { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* The hi-fis are 1440px desktop; mobile is explicitly out of scope, so this
+   stacks honestly rather than claiming a phone layout. */
+@media (max-width: 900px) {
+  .menus-home { padding: 20px; }
+  .menus-home__grid, .menus-home__grid--compact { grid-template-columns: repeat(2, 1fr); }
+  .menus-home__header { flex-direction: column; }
+}

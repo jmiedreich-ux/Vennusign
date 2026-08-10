@@ -58,6 +58,14 @@
   --sky-focus-width: 3px;
   --sky-focus-offset: 2px;
   --sky-focus-ring: var(--sky-focus-width) solid var(--sky-focus-color);
+  /*
+   * Sky alone is a 1.66:1 ring on a light surface, which fails WCAG 1.4.11's 3:1
+   * for a non-text indicator — measured on the Menus shelf, but it was never
+   * specific to it. So the ring is two-tone: the sky band keeps the brand cue and
+   * an ink halo just outside it carries the contrast, on light surfaces and dark
+   * ones alike. Applied wherever --sky-focus-ring is.
+   */
+  --sky-focus-halo: 0 0 0 calc(var(--sky-focus-offset) + var(--sky-focus-width) + 1px) var(--sky-color-ink);
 
   /* Typography. */
   --sky-font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -94,10 +102,84 @@
   --sky-badge-radius: var(--sky-radius-sm);
   --sky-card-border: 1px solid var(--sky-color-border);
   --sky-page-gradient: radial-gradient(circle at top right, var(--sky-color-secondary), var(--sky-color-background-base) 54%);
+
+  /* ---------------------------------------------------------------------------
+     Menus additions, batches 1 and 2. Approved as build-decision 8 and Q178;
+     merged here by Menus milestone 2, the first work that consumes them.
+     Nothing above is changed - these are additions, and the exact hi-fi values.
+
+     The BOARD palette is deliberately absent. A board's surface, inks and
+     leaders belong to menu-theme definitions consumed by the render engine, not
+     to the UI contract (Q178/Q86), and no named look exists to enshrine here.
+     --------------------------------------------------------------------------- */
+
+  /* Type - filling the 9-16px range the existing 12/14/16/20/24 scale skips,
+     and adding the display sizes the Menus headlines need. */
+  --sky-font-size-2xs: 0.5625rem;      /*  9px - nav rail labels only */
+  --sky-font-size-xxs: 0.6875rem;      /* 11px - dense metadata, board annotations */
+  --sky-font-size-xs-plus: 0.71875rem; /* 11.5px */
+  --sky-font-size-sm-minus: 0.78125rem;/* 12.5px - status lines, chips */
+  --sky-font-size-sm-plus: 0.84375rem; /* 13.5px - button text */
+  --sky-font-size-md-plus: 0.96875rem; /* 15.5px - card titles */
+  --sky-font-size-2xl: 1.8125rem;      /* 29px - page headline */
+  --sky-font-size-3xl: 2.125rem;       /* 34px - empty-state headline */
+
+  /* Letter-spacing - optical correction at display sizes. */
+  --sky-tracking-tight: -0.018em;
+  --sky-tracking-tighter: -0.028em;
+
+  /* Neutrals the palette does not cover: the page behind a frame, subtle fills,
+     and a hairline lighter than --sky-color-border. */
+  --sky-color-shell: #e8eef4;
+  --sky-color-hairline: #eef2f6;
+  --sky-color-fill-subtle: #f4f7fa;
+  --sky-color-surface-tint: #fbfcfe;
+  --sky-color-border-dashed: #cbd9e4;
+  --sky-color-accent-wash: #f2fbff;
+
+  /* Elevation - the contract defines one panel shadow; cards need less. */
+  --sky-shadow-card: 0 1px 2px rgb(15 23 42 / 0.09), 0 10px 24px rgb(15 23 42 / 0.10);
+  --sky-shadow-button: 0 4px 12px rgb(15 23 42 / 0.2);
+  --sky-shadow-hairline: 0 1px 2px rgb(15 23 42 / 0.04);
+
+  /* Batch 2: the remaining exact hi-fi values. */
+
+  /* Selection - the builder's canvas ring and drag pill (Q178, named). */
+  --sky-color-selection: #2a78d6;
+
+  /* Borders and hairlines. */
+  --sky-color-ink-divider: #1e293b;      /* divider on dark ink surfaces (the nav rail) */
+  --sky-color-border-input: #dbe3ec;
+  --sky-color-border-control: #cbd5e1;   /* checkbox border; "not on a screen" status dot */
+  --sky-color-hairline-strong: #e9eef4;  /* publish-bar top border */
+  --sky-color-live-border: #dbe7de;      /* online screen-chip border */
+
+  /* Radii between the existing 8/12/16/24px steps. */
+  --sky-radius-sm-plus: 0.5625rem;   /*  9px - the board's glass chip */
+  --sky-radius-md-minus: 0.625rem;   /* 10px - accent button, text field, chips */
+  --sky-radius-lg-minus: 0.875rem;   /* 14px - menu card / board frame, add-a-menu tile */
+
+  /* A glass chip over a board render branches on the board's lightness: a
+     light-glass chip on a cream board is invisible, which was a real defect twice. */
+  --sky-glass-on-dark-fill: rgb(248 250 252 / 0.16);
+  --sky-glass-on-dark-border: rgb(248 250 252 / 0.24);
+  --sky-glass-on-light-fill: rgb(15 23 42 / 0.42);
+  --sky-glass-on-light-border: rgb(15 23 42 / 0.12);
+
+  /* The nav rail (design README, Components). */
+  --sky-rail-width: 76px;
+  --sky-rail-item-width: 56px;
+  --sky-rail-background: var(--sky-color-ink);
+  --sky-rail-item-color: var(--sky-color-text-on-dark-muted);
+  --sky-rail-item-active-background: var(--sky-color-primary);
+  --sky-rail-item-active-color: var(--sky-color-ink);
 }
 
 :root[data-sky-theme="midnight"] {
   color-scheme: dark;
+  /* Ink is near-white here, so the halo inverts with the theme and keeps its
+     contrast rather than disappearing into the surface. */
+  --sky-focus-halo: 0 0 0 calc(var(--sky-focus-offset) + var(--sky-focus-width) + 1px) #0b1120;
   --sky-color-surface: #111827;
   --sky-color-surface-raised: #1e293b;
   --sky-color-ink: #f8fafc;

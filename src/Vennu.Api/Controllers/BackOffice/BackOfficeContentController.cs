@@ -13,11 +13,11 @@ namespace Vennu.Api.Controllers.BackOffice;
 /// "go back to", availability and screen assignment.
 /// </summary>
 [ApiController]
-[Route("api/back-office/menu-spine")]
+[Route("api/back-office/content")]
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
-public sealed class BackOfficeMenuSpineController(
-    MenuSpineService spine,
-    IMenuLibraryRepository library) : ControllerBase
+public sealed class BackOfficeContentController(
+    ContentService content,
+    IContentRepository library) : ControllerBase
 {
     private Guid VenueId => Guid.Parse(
         User.FindFirstValue(BackOfficeAuthenticationDefaults.VenueIdClaim)!);
@@ -33,9 +33,111 @@ public sealed class BackOfficeMenuSpineController(
     [RequireCapability("content.item.update")]
     public async Task<ActionResult<MenuContextResponse>> GetContext(CancellationToken cancellationToken)
     {
-        var context = await spine.GetContextAsync(VenueId, cancellationToken).ConfigureAwait(false);
+        var context = await content.GetContextAsync(VenueId, cancellationToken).ConfigureAwait(false);
         return Ok(new MenuContextResponse(context.Timezone, context.Ceilings, context.MenuCount));
     }
+
+    // ----- The shelf -----------------------------------------------------------------
+
+    /// <summary>
+    /// Every menu the venue has, as the Menus home shelf draws it: the board its
+    /// screens are showing, how many changes are waiting, and which screens it is on.
+    ///
+    /// One call, whatever the menu count — the shelf ships its scale behaviour this
+    /// milestone (Q176), and a request per card would be thirteen diffs on load.
+    /// </summary>
+    [HttpGet("menus")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<IReadOnlyCollection<ShelfMenuResponse>>> GetShelf(CancellationToken cancellationToken)
+    {
+        var menus = await content.GetShelfAsync(VenueId, cancellationToken).ConfigureAwait(false);
+        return Ok(menus
+            .Select(menu => new ShelfMenuResponse(
+                menu.MenuId,
+                menu.Name,
+                menu.Theme,
+                menu.IsPutAway,
+                menu.PublishedVersion,
+                menu.LastPublishedUtc,
+                menu.LastPublishedBy,
+                menu.Draft.Count,
+                menu.ScreenIds,
+                ToBoardResponse(menu.PublishedBoard)))
+            .ToArray());
+    }
+
+    /// <summary>
+    /// The board one menu's screens are showing, for a single card refreshed after an
+    /// act. 404 when the menu has never been published: the shelf already knows which
+    /// cards those are and does not ask.
+    /// </summary>
+    [HttpGet("menus/{menuId:guid}/published-board")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<PublishedBoardResponse>> GetPublishedBoard(
+        Guid menuId,
+        CancellationToken cancellationToken)
+    {
+        var board = await content.GetPublishedBoardAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
+        if (board is null)
+        {
+            return NotFound(new { message = "This menu has never been published, so no screen is showing it." });
+        }
+
+        return Ok(new PublishedBoardResponse(
+            board.MenuId,
+            board.Version,
+            board.PublishedUtc,
+            board.Author,
+            ToBoardResponse(board.Board)));
+    }
+
+    /// <summary>
+    /// Duplicates a menu. The copy places the same library items, so a later price
+    /// edit reaches both boards (Q20); it has never been published and is on no
+    /// screen, because delivery is always a deliberate act.
+    /// </summary>
+    [HttpPost("menus/{menuId:guid}/duplicate")]
+    [RequireCapability("content.menu.manage")]
+    public async Task<ActionResult<DuplicateResponse>> Duplicate(Guid menuId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var copy = await content.DuplicateAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
+            return Ok(new DuplicateResponse(copy.MenuId, copy.Name, copy.ActiveMenuCount));
+        }
+        catch (MenuCeilingReachedException exception)
+        {
+            return Conflict(new { reason = "ceiling_reached", message = exception.Message });
+        }
+        catch (TooManyMenuCopiesException exception)
+        {
+            return Conflict(new { reason = "too_many_copies", message = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+    }
+
+    private static BoardResponse? ToBoardResponse(MenuSnapshot? snapshot) =>
+        snapshot is null
+            ? null
+            : new BoardResponse(
+                snapshot.MenuId,
+                snapshot.Name,
+                snapshot.Theme,
+                snapshot.DwellSeconds,
+                snapshot.LoopWarningSeconds,
+                [.. (snapshot.Sections ?? []).Select(section => new BoardSectionResponse(
+                    section.SectionId,
+                    section.Name,
+                    section.SortOrder,
+                    [.. (section.Items ?? []).Select(item => new BoardItemResponse(
+                        item.ItemId,
+                        item.Name,
+                        item.Description,
+                        item.Price,
+                        item.SortOrder))]))]);
 
     // ----- Availability -------------------------------------------------------------
 
@@ -53,7 +155,7 @@ public sealed class BackOfficeMenuSpineController(
         ArgumentNullException.ThrowIfNull(request);
         try
         {
-            var result = await spine
+            var result = await content
                 .SetAvailabilityAsync(VenueId, itemId, request.IsAvailable, Author, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -95,7 +197,7 @@ public sealed class BackOfficeMenuSpineController(
     {
         try
         {
-            var changes = await spine.GetDraftAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
+            var changes = await content.GetDraftAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
             return Ok(ToDraftResponse(changes));
         }
         catch (InvalidOperationException)
@@ -114,7 +216,7 @@ public sealed class BackOfficeMenuSpineController(
     {
         try
         {
-            var discarded = await spine.DiscardDraftAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
+            var discarded = await content.DiscardDraftAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
             return Ok(new DiscardResponse(discarded));
         }
         catch (MenuPutAwayException exception)
@@ -140,7 +242,7 @@ public sealed class BackOfficeMenuSpineController(
         PublishResult result;
         try
         {
-            result = await spine.PublishAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
+            result = await content.PublishAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
         }
         catch (MenuNotOnAnyScreenException exception)
         {
@@ -186,7 +288,7 @@ public sealed class BackOfficeMenuSpineController(
         ArgumentNullException.ThrowIfNull(request);
         try
         {
-            var result = await spine
+            var result = await content
                 .SetPutAwayAsync(VenueId, menuId, request.IsPutAway, Author, cancellationToken)
                 .ConfigureAwait(false);
             return Ok(new PutAwayResponse(result.Changed, request.IsPutAway, result.ActiveMenuCount));
@@ -221,7 +323,8 @@ public sealed class BackOfficeMenuSpineController(
                 entry.OccurredUtc,
                 entry.Author,
                 entry.Detail,
-                entry.ReplacedByVersion))
+                entry.ReplacedByVersion,
+                entry.Version))
             .ToArray());
     }
 
@@ -238,7 +341,7 @@ public sealed class BackOfficeMenuSpineController(
     {
         try
         {
-            var restore = await spine
+            var restore = await content
                 .GoBackToAsync(VenueId, menuId, version, Author, cancellationToken)
                 .ConfigureAwait(false);
             var draft = ToDraftResponse(restore.Draft);
@@ -303,7 +406,7 @@ public sealed class BackOfficeMenuSpineController(
         ArgumentNullException.ThrowIfNull(request);
         try
         {
-            var assignment = await spine
+            var assignment = await content
                 .AssignAsync(VenueId, screenId, request.MenuId, Author, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -334,8 +437,8 @@ public sealed class BackOfficeMenuSpineController(
     [RequireCapability("screen.content.target")]
     public async Task<ActionResult<DraftResponse>> TakeOffScreens(Guid menuId, CancellationToken cancellationToken)
     {
-        await spine.QueueTakeOffScreensAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
-        var changes = await spine.GetDraftAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
+        await content.QueueTakeOffScreensAsync(VenueId, menuId, Author, cancellationToken).ConfigureAwait(false);
+        var changes = await content.GetDraftAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
         return Ok(ToDraftResponse(changes));
     }
 

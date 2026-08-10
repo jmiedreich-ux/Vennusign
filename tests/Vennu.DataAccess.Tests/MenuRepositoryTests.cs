@@ -71,7 +71,7 @@ public sealed class MenuRepositoryTests
                 return [];
             }
         };
-        var repository = new MenuLibraryRepository(dataAccess);
+        var repository = new ContentRepository(dataAccess);
 
         // No row comes back because the venue does not own the screen.
         await Assert.ThrowsAsync<InvalidOperationException>(() =>

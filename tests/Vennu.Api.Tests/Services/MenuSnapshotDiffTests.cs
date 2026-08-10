@@ -10,7 +10,7 @@ namespace Vennu.Api.Tests.Services;
 /// the behaviour it is meant to be checking.
 /// </summary>
 [Trait("Category", "Unit")]
-public sealed class MenuSpineDiffTests
+public sealed class MenuSnapshotDiffTests
 {
     private static readonly Guid MenuId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly Guid SectionId = Guid.Parse("33333333-3333-3333-3333-333333333333");
@@ -21,6 +21,7 @@ public sealed class MenuSpineDiffTests
         string price = "12",
         string sectionName = "Drinks",
         string menuName = "Summer",
+        string? theme = null,
         bool placed = true,
         bool onScreen = true,
         int itemOrder = 0)
@@ -29,7 +30,7 @@ public sealed class MenuSpineDiffTests
         {
             MenuId = MenuId,
             Name = menuName,
-            Theme = "coastal",
+            Theme = theme,
             DwellSeconds = 8,
             LoopWarningSeconds = 60,
             Screens = onScreen ? [new SnapshotScreen { ScreenId = ScreenId }] : [],
@@ -61,7 +62,7 @@ public sealed class MenuSpineDiffTests
         {
             MenuId = MenuId,
             Name = "Summer",
-            Theme = "coastal",
+            Theme = null,
             DwellSeconds = 8,
             LoopWarningSeconds = 60,
             Screens = [new SnapshotScreen { ScreenId = ScreenId }],
@@ -127,6 +128,37 @@ public sealed class MenuSpineDiffTests
 
         Assert.Equal(DraftTargetKinds.Placement, change.TargetKind);
         Assert.Equal("sortOrder", change.Field);
+    }
+
+    // A menu with no theme attached is a valid state (Q86), so null is a value the
+    // diff compares like any other: attaching one is a change, taking it off is a
+    // change, and having never had one is not.
+    [Fact]
+    public void AttachingAThemeToAnUnthemedMenu_IsAChange()
+    {
+        var change = Assert.Single(MenuSnapshot.Diff(Snapshot(theme: null), Snapshot(theme: "harbour-dark")));
+
+        Assert.Equal(DraftTargetKinds.Theme, change.TargetKind);
+        Assert.Null(change.BeforeValue);
+        Assert.Equal("harbour-dark", change.AfterValue);
+    }
+
+    [Fact]
+    public void TakingTheThemeOffAMenu_IsAChange()
+    {
+        var change = Assert.Single(MenuSnapshot.Diff(Snapshot(theme: "harbour-dark"), Snapshot(theme: null)));
+
+        Assert.Equal(DraftTargetKinds.Theme, change.TargetKind);
+        Assert.Equal("harbour-dark", change.BeforeValue);
+        Assert.Null(change.AfterValue);
+    }
+
+    [Fact]
+    public void AMenuThatNeverHadAThemeHasNothingToPublishAboutOne()
+    {
+        Assert.DoesNotContain(
+            MenuSnapshot.Diff(Snapshot(theme: null), Snapshot(theme: null)),
+            change => change.TargetKind == DraftTargetKinds.Theme);
     }
 
     [Fact]

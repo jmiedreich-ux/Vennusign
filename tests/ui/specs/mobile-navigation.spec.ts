@@ -1,4 +1,4 @@
-import { test, expect, openAs } from "../fixtures";
+import { test, expect, openAs, openMenuEditorAs } from "../fixtures";
 
 /**
  * Workbook case 6-1 - navigation at narrow mobile width.
@@ -42,6 +42,7 @@ test.describe("6-1 narrow width navigation", () => {
 
     // Selecting a destination must close the drawer, or the page stays hidden behind it.
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
-    await expect(page.getByTestId("menu-picker")).toBeVisible();
+    // The Menu destination is the shelf from milestone 2 on.
+    await expect(page.getByTestId("menus-home")).toBeVisible();
   });
 });

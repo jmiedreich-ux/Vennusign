@@ -18,7 +18,14 @@ public sealed class Menu
     /// <summary>Full-cycle length past which the board is called too long to read. Configurable.</summary>
     public int LoopWarningSeconds { get; set; } = MenuSettingDefaults.LoopWarningSeconds;
 
-    public string Theme { get; set; } = MenuSettingDefaults.Theme;
+    /// <summary>
+    /// The menu theme attached to this menu, or null when none is. No theme is a
+    /// valid state (Q86): the board renders plainly rather than blank, and never
+    /// falls back to something invented. Themes are created in the theme editor
+    /// and attached here; the table behind this lands with the milestone that
+    /// first reads one.
+    /// </summary>
+    public string? Theme { get; set; }
 
     /// <summary>Moved to the "Not in use" strip by a person; it keeps its history and comes back when placed on a screen.</summary>
     public bool IsPutAway { get; set; }
@@ -37,7 +44,8 @@ public static class MenuSettingDefaults
 
     public const int LoopWarningSeconds = 60;
 
-    public const string Theme = "coastal";
+    // There is deliberately no default theme. A menu with none attached is a
+    // valid state, and no named look exists to default to (Q86).
 
     public const int MinDwellSeconds = 2;
 

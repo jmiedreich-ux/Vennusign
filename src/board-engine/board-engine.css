@@ -1,0 +1,124 @@
+/*
+ * The board's structure. Every value here is a variable resolved by
+ * boardTheme.mjs, which always supplies a complete set — so this stylesheet
+ * never needs a fallback, and an unthemed menu is not a special case.
+ *
+ * Deliberately not imported by any application stylesheet: each app imports this
+ * where it uses the engine, the same way sky-ui-tokens.css is shared today.
+ */
+
+.board-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  /* The board paints its own ground; a transparent frame would let whatever is
+     behind it read as part of the menu. */
+  background: var(--board-board-background, #ffffff);
+}
+
+/*
+ * Laid out at the logical size, then scaled. Scaling from the top-left corner is
+ * what makes the crop top-aligned: a menu that is too tall loses its bottom, never
+ * its heading (Q191 asks for exactly this on a card with pending changes).
+ */
+.board-frame-stage {
+  position: absolute;
+  inset: 0;
+  transform-origin: top left;
+}
+
+.board-frame-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.board {
+  box-sizing: border-box;
+  /* The engine decides the board typography, including alignment. Anything that
+     wraps it - a card is a <button>, and buttons centre their text - would
+     otherwise re-typeset the board, and the card would stop being a picture of
+     the TV in the one way nobody would think to check. */
+  text-align: left;
+  width: 100%;
+  height: 100%;
+  padding: var(--board-board-padding);
+  background: var(--board-board-background);
+  font-family: var(--board-board-font);
+  /* Overflow is clipped rather than scrolled: a TV has no scrollbar, and a card
+     that scrolled would be showing something no guest can ever see. Pages as a
+     consequence of overflow are milestone 5. */
+  overflow: hidden;
+}
+
+.board-section + .board-section {
+  margin-top: var(--board-section-gap);
+}
+
+.board-section-heading {
+  margin: 0 0 1.25rem;
+  font-family: var(--board-section-heading-font);
+  font-size: var(--board-section-heading-size);
+  font-weight: 700;
+  letter-spacing: var(--board-section-heading-tracking);
+  text-transform: uppercase;
+  color: var(--board-section-heading-color);
+}
+
+.board-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.board-item + .board-item {
+  margin-top: var(--board-item-gap);
+}
+
+/*
+ * Name, leader, price on one baseline. The leader is a flexible dotted rule that
+ * takes whatever width is left, so the price always sits hard right however long
+ * the name is.
+ */
+.board-item-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0;
+  font-family: var(--board-item-font);
+  font-size: var(--board-item-name-size);
+  letter-spacing: var(--board-item-name-tracking);
+}
+
+.board-item-name {
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--board-item-name-color);
+}
+
+.board-item-leader {
+  flex: 1 1 auto;
+  min-width: 1.5rem;
+  align-self: flex-end;
+  margin-bottom: 0.35em;
+  border-bottom: 2px var(--board-leader-style) var(--board-leader-color);
+}
+
+.board-item-price {
+  flex: 0 0 auto;
+  font-weight: 500;
+  color: var(--board-item-price-color);
+  font-variant-numeric: tabular-nums;
+}
+
+.board-item-description {
+  margin: 0.35rem 0 0;
+  font-family: var(--board-item-font);
+  font-size: var(--board-item-description-size);
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--board-item-description-color);
+}

@@ -5,11 +5,11 @@ using Vennu.Data.Repositories;
 namespace Vennu.Api.Tests.TestDoubles;
 
 /// <summary>
-/// In-memory stand-in for the Menus spine. It deliberately mirrors the
+/// In-memory stand-in for the menu content repository. It deliberately mirrors the
 /// invariants the SQL enforces: the Q80 refusal and the ceiling checks live
 /// inside the same operations that write, and every read is venue-scoped.
 /// </summary>
-internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
+internal sealed class FakeContentRepository : IContentRepository
 {
     public List<Item> Items { get; } = [];
 
@@ -361,6 +361,61 @@ internal sealed class FakeMenuLibraryRepository : IMenuLibraryRepository
             .OrderByDescending(e => e.Version)
             .Select(e => e.Snapshot)
             .FirstOrDefault());
+
+    public Task<PublishedBoard?> GetLatestPublishedBoardAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(PublishEvents
+            .Where(e => e.VenueId == venueId && e.MenuId == menuId)
+            .OrderByDescending(e => e.Version)
+            .Select(e => new PublishedBoard(e.Snapshot, e.Version, e.PublishedUtc, e.Author))
+            .FirstOrDefault());
+
+    /// <summary>The venue's menus. Storage only — nothing here decides anything.</summary>
+    public List<Menu> Menus { get; } = [];
+
+    public Task<IReadOnlyCollection<ShelfMenu>> GetShelfAsync(Guid venueId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyCollection<ShelfMenu>>(Menus
+            .Where(menu => menu.VenueId == venueId)
+            .OrderBy(menu => menu.Name, StringComparer.Ordinal)
+            .Select(menu =>
+            {
+                var latest = PublishEvents
+                    .Where(e => e.VenueId == venueId && e.MenuId == menu.Id)
+                    .OrderByDescending(e => e.Version)
+                    .FirstOrDefault();
+
+                return new ShelfMenu(
+                    menu.Id,
+                    menu.Name,
+                    menu.Theme,
+                    menu.IsPutAway,
+                    latest?.Version,
+                    latest?.PublishedUtc,
+                    latest?.Author,
+                    latest?.Snapshot,
+                    WorkingSnapshotNow(menu.Id));
+            })
+            .ToArray());
+
+    /// <summary>
+    /// Present so this class satisfies the interface, and deliberately not
+    /// implemented. Everything duplicate does that is worth asserting — the ceiling
+    /// under the lock, the name chosen against what already exists, the placements
+    /// pointing at the same library items — is enforced in SQL. An in-memory version
+    /// would be a second implementation of those rules, and a test against it would
+    /// prove the copy rather than the product. That is exactly how a defect survived
+    /// 412 green unit tests in milestone 1.
+    /// </summary>
+    public Task<MenuDuplicateOutcome> DuplicateMenuWithinCeilingAsync(
+        Guid venueId,
+        Guid sourceMenuId,
+        Guid newMenuId,
+        int activeMenuLimit,
+        string? author,
+        string detail,
+        DateTime occurredUtc,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException(
+            "Duplicate is enforced in SQL. Assert it in Vennu.Data.IntegrationTests against a real database.");
 
     public async Task<DraftSnapshots> GetDraftSnapshotsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
         new(
