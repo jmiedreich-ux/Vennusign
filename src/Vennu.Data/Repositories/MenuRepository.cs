@@ -16,7 +16,7 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
         """;
 
     private const string SectionsSql = """
-        SELECT Id, VenueId, MenuId, Name, SortOrder, IsActive, CreatedUtc, UpdatedUtc
+        SELECT Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc
         FROM dbo.MenuSections
         WHERE VenueId = @VenueId AND MenuId = @MenuId
         ORDER BY SortOrder, Id;
