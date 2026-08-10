@@ -43,6 +43,7 @@ Two consequences landed with it, both in milestone 1:
 
 ## Cross-cutting rules (from the register)
 
+- **Keyboard is out of scope for this build — owner ruling 2026-08-10, reaffirmed.** Nothing further is built or tested for keyboard, no keyboard findings are filed against these milestones, and no acceptance step may depend on a keystroke. Q202 (canvas reachability) and Q120 (keyboard reorder) were already backlogged to **#672**; this extends that to the build as a whole. It does **not** mean deleting behaviour already shipped and named here — the undo/redo keystroke and ⌘K (Q121) stay in the code; they simply stop being relied on or extended. The owner reversed course on this after it was raised repeatedly; it is settled, and re-raising it is the defect.
 - **Timestamps render in the venue's local time** from the venue's stored Timezone — on every Menus surface (Q196). Deviation from today's viewer-clock behavior.
 - **Copy:** natural singular/zero forms everywhere, approved shapes for 2+ (Q181); no possessive phrasing in the draft pill (Q147); banned words (unpublish/supersede/restore/archive) enforced in Menus and rewritten surfaces only, elsewhere logged as copy debt #682 (Q179); criterion 4 reworded to name its deliberate acts (Q187).
 - **Ceilings are tier-configurable** in the entitlement/allowance model, never constants (Q201): defaults ~50 menus/venue, ~500 items/menu, ~2,000-line paste; every refusal names the reason in a plain sentence.

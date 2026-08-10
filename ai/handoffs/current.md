@@ -25,7 +25,27 @@ Updated 2026-08-10, after Menus Milestone 3 was built and gated.
 
 ## Exact Next Action
 
-1. **Run the Menus Milestone 3 acceptance workbook** —
+1. **Work the Menus Milestone 3 acceptance findings** — the owner ran the workbook
+   2026-08-10 and returned **"Needs adjustment"**: 11 Pass, 2 Fail, 2 Needs Adjustment.
+   Record at `docs/features/menus/m3-acceptance-record.json`, work package at
+   `docs/features/menus/m3-acceptance-findings.md`. **M3 does not merge on this
+   record** — the owner re-runs the workbook after the findings are worked, and has a
+   further set of visual notes to give once that set is done.
+
+   The two Fails are worth naming here. One is an invented green "On the board" panel
+   the design never asked for — Q104 specifies only the red 86 panel — which reads as
+   a live/instant status over an area where only the 86 flip is instant. The other is
+   item drag: it does not work under a real mouse and shows no drop indicator, **while
+   its Playwright spec passes**. That is the third time in this milestone a green spec
+   covered a broken feature, and the prime suspect is `BoardStage`'s `useEffect` having
+   no dependency array, re-rendering the dragged row out from under Chromium.
+
+   Owner decisions taken on the back of the run, all recorded: the delete control moves
+   into the Sections list (**overrides Q96**, noted there), the duplicate section-name
+   field under the board goes, and **keyboard is out of scope for the build**
+   (milestone-plan §Cross-cutting rules — settled, and re-raising it is the defect).
+
+2. ~~Run the Menus Milestone 3 acceptance workbook~~ — done 2026-08-10, see above. Original text:
    `docs/features/menus/m3-acceptance-workbook.html`, **fifteen** checks, about twelve
    minutes. Two are marked as judgment calls rather than test results and are the ones
    that most need an owner: the shared-price line (Q5's follow-up, resolved by judgment

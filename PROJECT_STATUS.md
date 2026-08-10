@@ -23,7 +23,8 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
   - **Milestone 2 merged and accepted 2026-08-10** (PR #689, issue #687). Owner ran the acceptance workbook: 11 of 11 Pass, closure "Accept Milestone 2", record at `docs/features/menus/m2-acceptance-record.json`. One independent review; its three blocking defects are fixed. It asked for a second review of the resulting head and the owner waived that, judging the first sufficient — milestone 1 took five reviews, milestone 2 took one.
   - **Milestone 3 is built, reviewed and awaiting owner acceptance** (issue #690, branch `feature/menus-m3-builder`). The builder: four columns, the canvas as the preview, adding items, the bulk drawer, item drag, undo/redo and the publish bar. Six readiness-pass decisions were taken by judgment while the owner was away, all provisional and recorded in #690.
   - **The independent review returned REQUEST_CHANGES with seven findings, and every one was real** — including a back office that did not compile in production mode, because `validate.ps1` built `src/display` and had never heard of `src/back-office`. An eighth was found in the review prompt itself, which had put an in-scope gap (Q103's item drag) on the do-not-file list. All eight are fixed at `b59d2d1`, each with a spec run against its own reverted fix and observed to fail. `validate.ps1` now builds both front ends.
-  - **Exact next action: run `docs/features/menus/m3-acceptance-workbook.html`** — fifteen checks, about twelve minutes, two of them marked as judgment calls. Checks 11–13 cover the behaviour the review found missing.
+  - **The owner ran the acceptance workbook 2026-08-10 and returned "Needs adjustment"** — 11 Pass, 2 Fail, 2 Needs Adjustment across fifteen checks. Record at `docs/features/menus/m3-acceptance-record.json`. **M3 does not merge on this record.** The two Fails: an invented green "On the board" panel that the design never specified (only the red 86 panel is, Q104), and item drag that does not work under a real mouse with no drop indicator — the latter passing its Playwright spec, which is the third green-spec-over-broken-feature in this milestone. Owner decisions taken on the back of it: the delete control moves into the Sections list (overriding Q96, recorded there), the duplicate section-name field goes, and keyboard is out of scope for the build.
+  - **Exact next action: work the acceptance findings.** Package at `docs/features/menus/m3-acceptance-findings.md`. The owner supplies a further set of visual notes once that set is done.
   - The register has one open question again — **Q209**, deferred at M2 acceptance: the ⋯ card actions cover guest content now that Q98 removed the venue-name strip. It ships on its provisional default until settled.
 - Backlog from the Menus planning: issues #670–#683 (out-of-scope decisions, copy debt, accessibility debt).
 
@@ -39,7 +40,7 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
 |---|---|---|
 | 1 | Item library + draft/publish spine + assignment | **complete** — merged and accepted 2026-08-09 (PR #685, #684) |
 | 2 | App shell + render engine + Menus home | **complete** — merged and accepted 2026-08-10 (PR #689, #687) |
-| 3 | Builder + adding items | **reviewed and answered, awaiting acceptance** — issue #690, PR #691; seven review findings plus one of my own, all fixed at `b59d2d1` |
+| 3 | Builder + adding items | **acceptance returned "Needs adjustment"** — issue #690, PR #691; 11 Pass / 2 Fail / 2 adjust, findings at `docs/features/menus/m3-acceptance-findings.md` |
 | 4 | Display player + geometry + delivery | blocked on 3 |
 | 5 | Board view + Play | blocked on 4 |
 | 6 | Quick Update + import + confirm step | blocked on 5 |
