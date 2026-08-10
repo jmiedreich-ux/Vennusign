@@ -1,17 +1,21 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-10T12:40:00Z",
-  "activeAssignments": [
-    {
-      "assignment": "Menus milestone 3 \u2014 menu builder + adding items",
-      "issue": 690,
-      "branch": "feature/menus-m3-builder",
-      "owner": "Claude Code for JeremyPC",
-      "claimedUtc": "2026-08-10T11:05:00Z",
-      "status": "built and gated; awaiting the owner acceptance workbook",
-      "notes": "Readiness pass 2026-08-10 recorded in issue #690 and ai/handoffs/current.md. Six decisions taken by judgment while the owner was asleep, at their instruction; all provisional. Built in three steps with a gate each. Impeccable critique run against the design authority: five gaps found and closed. Workbook ready at docs/features/menus/m3-acceptance-workbook.html. Whether an independent review is required is the owner's call - milestone 2's was waived."
-    }
-  ],
+  "updatedUtc": "2026-08-11T00:05:00Z",
+  "activeAssignments": [],
+  "releasedForHandover": {
+    "assignment": "Menus milestone 3 \u2014 menu builder + adding items: acceptance remediation",
+    "issue": 690,
+    "pr": 691,
+    "branch": "feature/menus-m3-builder",
+    "previousOwner": "Claude Code for JeremyPC",
+    "releasedUtc": "2026-08-11T00:05:00Z",
+    "releasedBy": "owner instruction \u2014 handing the acceptance remediation to another agent while usage resets",
+    "headAtRelease": "960376d",
+    "openTo": "the next agent to claim it; move this object into activeAssignments under your own owner name before touching code",
+    "status": "built, independently reviewed, owner-accepted with 'Needs adjustment' \u2014 remediation not started",
+    "startHere": "docs/features/menus/m3-acceptance-findings.md",
+    "notes": "The branch is clean at 960376d and ahead of the findings package's 93b4ac8 baseline; the extra commit is the acceptance record and the decisions it produced, not code. Work package: two Fails (an invented green 'On the board' panel, and item drag that fails under a real mouse while its Playwright spec passes), one Pass-with-note, plus three settled owner decisions - delete control moves into the Sections list (OVERRIDES Q96, dated note recorded there), the duplicate section-name field goes, and keyboard is out of scope for the build (milestone-plan cross-cutting rules; re-raising it is the defect). The owner holds a further set of visual notes to give once this set is done, so this milestone does not close on the current record."
+  },
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
