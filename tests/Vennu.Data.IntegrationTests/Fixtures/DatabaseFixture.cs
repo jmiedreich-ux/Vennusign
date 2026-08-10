@@ -17,24 +17,81 @@ public sealed class DatabaseFixture : IAsyncLifetime
 
     public bool ResetTablesBeforeEachTest => IsEnabled(GetSetting(ResetTablesVariable));
 
+    /// <summary>
+    /// Where these tests run unless someone deliberately says otherwise: a local
+    /// database, on this machine, that the run owns.
+    /// </summary>
+    private const string LocalDbConnectionString =
+        @"Server=(localdb)\MSSQLLocalDB;Database=vennusign_dev_tests;Integrated Security=true;TrustServerCertificate=true;Connection Timeout=30;";
+
     public async Task InitializeAsync()
     {
+        // LocalDB is the default everywhere - here and in CI. Azure is reached only by
+        // setting the environment variable for that run, which is a deliberate act that
+        // ends when the run does.
+        //
+        // It used to work the other way round. A gitignored app.settings.json supplied an
+        // Azure connection string, so every local run silently went to a shared remote
+        // database: slower, non-hermetic, sharing state with anything else pointed at it,
+        // and flaky in a way that looked like product flakiness. A file on disk is not
+        // "when I ask for it" - it is "always, until somebody remembers to delete it" -
+        // so the file is no longer consulted for the connection string.
+        // Still read for its other toggles; it can no longer decide which database.
         LoadSettings();
-        ConnectionString = GetSetting(ConnectionStringVariable);
 
-        if (IsAvailable)
+        var configured = Environment.GetEnvironmentVariable(ConnectionStringVariable);
+        var usingOverride = !string.IsNullOrWhiteSpace(configured);
+        ConnectionString = usingOverride ? configured : LocalDbConnectionString;
+
+        EnsureDevDatabase(ConnectionString!);
+
+        Console.WriteLine(usingOverride
+            ? $"[integration] {ConnectionStringVariable} is set: running against {DescribeTarget(ConnectionString!)}."
+            : $"[integration] running against local {DescribeTarget(ConnectionString!)}.");
+
+        await initializationLock.WaitAsync();
+        try
         {
-            EnsureDevDatabase(ConnectionString!);
-            await initializationLock.WaitAsync();
-            try
-            {
-                DatabaseMigrator.Run(ConnectionString!);
-                await EnsureTestRecordTraceTableAsync();
-            }
-            finally
-            {
-                initializationLock.Release();
-            }
+            EnsureDatabaseExists(ConnectionString!);
+            DatabaseMigrator.Run(ConnectionString!);
+            await EnsureTestRecordTraceTableAsync();
+        }
+        finally
+        {
+            initializationLock.Release();
+        }
+    }
+
+    private static string DescribeTarget(string connectionString)
+    {
+        var builder = new SqlConnectionStringBuilder(connectionString);
+        return $"{builder.DataSource} / {builder.InitialCatalog}";
+    }
+
+    /// <summary>
+    /// A developer's first run should not fail because a database does not exist yet.
+    /// Only ever creates the dev database <see cref="EnsureDevDatabase"/> has approved.
+    /// </summary>
+    private static void EnsureDatabaseExists(string connectionString)
+    {
+        var builder = new SqlConnectionStringBuilder(connectionString);
+        var databaseName = builder.InitialCatalog;
+        builder.InitialCatalog = "master";
+
+        try
+        {
+            using var connection = new SqlConnection(builder.ConnectionString);
+            connection.Open();
+            using var command = new SqlCommand(
+                $"IF DB_ID(@Name) IS NULL EXEC('CREATE DATABASE [{databaseName.Replace("]", "]]")}');",
+                connection);
+            _ = command.Parameters.AddWithValue("@Name", databaseName);
+            _ = command.ExecuteNonQuery();
+        }
+        catch (SqlException)
+        {
+            // A hosted server may refuse master, or the account may not create databases.
+            // The migrator's own failure will say so more usefully than this would.
         }
     }
 

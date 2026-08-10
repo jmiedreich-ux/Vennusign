@@ -270,6 +270,28 @@ public sealed class BackOfficeMenuSpineController(
             .ToArray());
     }
 
+    /// <summary>
+    /// What every screen in this venue is showing. Answers the question the model is
+    /// built around - the screens show the last published version - which until now
+    /// nothing could be asked.
+    /// </summary>
+    [HttpGet("screens/showing")]
+    [RequireCapability("publishing.history.view")]
+    public async Task<ActionResult<IReadOnlyCollection<ScreenShowingResponse>>> GetScreensShowing(CancellationToken cancellationToken)
+    {
+        var showing = await library.GetScreensShowingAsync(VenueId, cancellationToken).ConfigureAwait(false);
+        return Ok(showing
+            .Select(screen => new ScreenShowingResponse(
+                screen.ScreenId,
+                screen.ScreenName,
+                screen.MenuId,
+                screen.MenuName,
+                screen.Version,
+                screen.PublishedUtc,
+                screen.Author))
+            .ToArray());
+    }
+
     /// <summary>Puts a menu on a screen. A screen shows exactly one menu.</summary>
     [HttpPut("screens/{screenId:guid}/menu")]
     [RequireCapability("screen.content.target")]

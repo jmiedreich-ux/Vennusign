@@ -117,6 +117,45 @@ jobs:
       - name: Build and run affected data-access unit tests
         run: dotnet test tests/Vennu.DataAccess.Tests/Vennu.DataAccess.Tests.csproj --configuration Release --no-restore --filter "Category=Unit" --logger "console;verbosity=normal"
 
+  sql-integration:
+    # The suite that proves the product against a real database. It ran only on a
+    # developer's machine until now, which meant the layer the reviews kept finding
+    # defects in was the one layer CI never checked. windows-latest ships LocalDB, so
+    # the run is hermetic - no Azure, no shared state, nothing to configure.
+    if: needs.classify.outputs.dotnet_api == 'true' || needs.classify.outputs.dotnet_data_access == 'true'
+    needs: classify
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - name: Start LocalDB
+        shell: pwsh
+        run: |
+          # The runner ships LocalDB but leaves the instance stopped, so a bare
+          # sqlcmd fails with "delay in opening server connection".
+          & sqllocaldb start MSSQLLocalDB
+          $connected = $false
+          foreach ($attempt in 1..12) {
+            & sqlcmd -S '(localdb)\MSSQLLocalDB' -E -b -Q "SELECT 1;" | Out-Null
+            if ($LASTEXITCODE -eq 0) { $connected = $true; break }
+            Start-Sleep -Seconds 5
+          }
+          if (-not $connected) { throw 'LocalDB did not accept connections.' }
+      - name: Run the SQL-backed integration suite
+        shell: pwsh
+        # No connection string is set on purpose: the fixture defaults to LocalDB,
+        # creates the database and migrates it from scratch. A run with no database
+        # fails rather than reporting a pass, so a green result here means the SQL ran.
+        run: dotnet test tests/Vennu.Data.IntegrationTests/Vennu.Data.IntegrationTests.csproj --configuration Release --logger "console;verbosity=normal"
+
   frontend:
     if: needs.classify.outputs.platform_operations == 'true' || needs.classify.outputs.back_office == 'true' || needs.classify.outputs.display == 'true'
     needs: classify
@@ -218,7 +257,7 @@ jobs:
 
   build-and-test:
     if: always()
-    needs: [classify, docs-validation, dotnet-api, dotnet-data-access, frontend, android-tv, tizen, webos, dev-control]
+    needs: [classify, docs-validation, dotnet-api, dotnet-data-access, sql-integration, frontend, android-tv, tizen, webos, dev-control]
     runs-on: ubuntu-latest
     steps:
       - name: Require every applicable affected-area check

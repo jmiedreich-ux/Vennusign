@@ -147,7 +147,6 @@ public sealed class MenuSpineService(
                         Author = author,
                         PublishedUtc = timeProvider.GetUtcNow().UtcDateTime
                     },
-                    draft.Changes.Count,
                     shippedJson,
                     draft.WorkingSnapshot,
                     draft.PublishedSnapshot,

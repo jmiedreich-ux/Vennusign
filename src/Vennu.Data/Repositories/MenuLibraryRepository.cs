@@ -236,6 +236,52 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
         END;
         """;
 
+    // What a screen is actually showing.
+    //
+    // The milestone's whole promise is that a screen shows the last published version
+    // and nothing else changes it - and until this read existed there was no way to
+    // ask. That absence is why the owner demo could pass twelve checks of twelve while
+    // a screen sat stranded on a menu the system called shelved: every check asked the
+    // API whether it had accepted a request, and none could ask the screen.
+    //
+    // Two sources, each used for what it actually means. The delivery rows say which
+    // publish last spoke to this screen - that is what a target records, including the
+    // publish that releases a screen. The snapshot of that publish says what it was
+    // told: if it names the screen, the screen is showing that version; if it does not,
+    // that publish was the take-off and the screen is showing nothing.
+    //
+    // Assignments are deliberately absent. An assignment is unpublished intent, and
+    // reading a screen's content from it is the defect independent review #6 found.
+    private const string ScreensShowingSql = """
+        SELECT
+            sc.Id AS ScreenId,
+            sc.Name AS ScreenName,
+            CASE WHEN named.ScreenId IS NULL THEN NULL ELSE last.MenuId END AS MenuId,
+            CASE WHEN named.ScreenId IS NULL THEN NULL ELSE m.Name END AS MenuName,
+            CASE WHEN named.ScreenId IS NULL THEN NULL ELSE last.Version END AS Version,
+            CASE WHEN named.ScreenId IS NULL THEN NULL ELSE last.PublishedUtc END AS PublishedUtc,
+            CASE WHEN named.ScreenId IS NULL THEN NULL ELSE last.Author END AS Author
+        FROM dbo.Screens sc
+        OUTER APPLY
+        (
+            SELECT TOP (1) e.Id, e.MenuId, e.Version, e.PublishedUtc, e.Author, e.Snapshot
+            FROM dbo.MenuPublishTargets t
+            INNER JOIN dbo.MenuPublishEvents e ON e.Id = t.PublishEventId AND e.VenueId = t.VenueId
+            WHERE t.VenueId = @VenueId AND t.ScreenId = sc.Id
+            ORDER BY e.PublishedUtc DESC, e.Id DESC
+        ) last
+        OUTER APPLY
+        (
+            SELECT TOP (1) s.screenId AS ScreenId
+            FROM OPENJSON(last.Snapshot, '$.screens')
+                WITH (screenId UNIQUEIDENTIFIER '$.screenId') s
+            WHERE s.screenId = sc.Id
+        ) named
+        LEFT JOIN dbo.Menus m ON m.Id = last.MenuId AND m.VenueId = sc.VenueId
+        WHERE sc.VenueId = @VenueId
+        ORDER BY sc.Name;
+        """;
+
     private const string AssignmentsSql = """
         SELECT Id, VenueId, ScreenId, MenuId, AssignedUtc, AssignedBy
         FROM dbo.MenuScreenAssignments
@@ -749,8 +795,19 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             THROW 51003, 'The menu changed while it was being published.', 1;
         END;
 
+        -- The count is not taken from the caller. It and the shipped set are two
+        -- recordings of one fact, and a version that claims a number its own set does
+        -- not contain is the same disagreement Q182 exists to prevent - just written
+        -- into history instead of onto a screen. Deriving it here makes them agree by
+        -- construction rather than by everyone remembering to pass both.
+        DECLARE @ResolvedChangeCount INT =
+            CASE WHEN @ShippedChanges IS NULL OR ISJSON(@ShippedChanges) = 0
+                 THEN 0
+                 ELSE (SELECT COUNT(*) FROM OPENJSON(@ShippedChanges))
+            END;
+
         INSERT dbo.MenuPublishEvents (Id, VenueId, MenuId, Version, ChangeCount, Author, PublishedUtc, Snapshot, ShippedChanges)
-        VALUES (@Id, @VenueId, @MenuId, @ResolvedVersion, @ChangeCount, @Author, @PublishedUtc, @SnapshotJson, @ShippedChanges);
+        VALUES (@Id, @VenueId, @MenuId, @ResolvedVersion, @ResolvedChangeCount, @Author, @PublishedUtc, @SnapshotJson, @ShippedChanges);
 
         -- The screens that were showing this menu are told about the publish even
         -- when they are being released, so a take-off reaches them instead of
@@ -1168,11 +1225,16 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
             new { VenueId = RequireId(venueId, nameof(venueId)) },
             cancellationToken).ConfigureAwait(false)).ToArray();
 
+    public async Task<IReadOnlyCollection<ScreenShowing>> GetScreensShowingAsync(Guid venueId, CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<ScreenShowing, object>(
+            ScreensShowingSql,
+            new { VenueId = RequireId(venueId, nameof(venueId)) },
+            cancellationToken).ConfigureAwait(false)).ToArray();
+
     // ----- Publish and history ---------------------------------------------------------
 
     public async Task<PublishOutcome> PublishAsync(
         MenuPublishEvent publishEvent,
-        int changeCount,
         string? shippedChanges,
         string expectedWorkingSnapshot,
         string? expectedPublishedSnapshot,
@@ -1198,7 +1260,6 @@ public sealed class MenuLibraryRepository(ISqlDataAccess dataAccess) : IMenuLibr
                     MenuId = RequireId(publishEvent.MenuId, nameof(publishEvent.MenuId)),
                     publishEvent.Author,
                     PublishedUtc = publishEvent.PublishedUtc == default ? DateTime.UtcNow : publishEvent.PublishedUtc,
-                    ChangeCount = changeCount,
                     ShippedChanges = shippedChanges,
                     ExpectedSnapshot = expectedWorkingSnapshot,
                     ExpectedPublishedSnapshot = expectedPublishedSnapshot,
