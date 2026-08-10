@@ -117,3 +117,31 @@ Spreadsheet import; photo import (needs OCR provider + cost decision); POS impor
 
 ## Per-milestone quality gates
 Playwright specs with implementation (seed endpoint per spec, parallel-safe; 20-screen/13-menu scale seed from milestone 2); impeccable detector on every UI edit + a critique/audit pass against the hi-fis before milestone close; independent code review; exact-head CI green; owner acceptance workbook per milestone (decision 17); the 18 acceptance criteria tracked as a running checklist — criterion 18 asserted by a named spec from milestone 2 and re-checked each UI milestone, criteria 11 and 14–17 stamped "deferred to a later build" (Q194); a criterion flips to "met" only with a named spec or review asserting it. **Hosted-agent subjective QA on demand** (owner-approved 2026-08-07): when a milestone carries subjective judgment cases the deterministic specs cannot assert, run them through the Track 1 hosted-agent pattern (`scripts/run-track1-qa.ps1` lineage, ~$1.70/run) before the owner workbook; the cases and cost are noted in that milestone's workbook.
+
+## Acceptance workbook conventions
+
+Each milestone's workbook is built from the last one, so these carry forward rather
+than being rediscovered. Every item here came from an owner running one.
+
+- **Evidence lives with the thing it is evidence of.** Every check takes pasted
+  screenshots (Ctrl+V, drop, or file pick), and so does the closing decision — a shot
+  of what decided it belongs with the decision, not filed under whichever check
+  happened to be open. Images are downscaled before storage; the record lives in
+  `localStorage` and a couple of raw 4K PNGs would fill it and start losing outcomes
+  silently.
+- **Never ask twice for the same thing.** The M3 workbook had a "Decisions on the
+  three flagged items" box restating what the case sections already carried in
+  context; it collected a duplicate or a shrug, and neither is evidence. Removed at
+  the owner's instruction, 2026-08-10.
+- **Recording an outcome advances the workbook** (owner instruction 2026-08-10, from
+  M4 on): choosing Pass, Fail or Needs Adjustment collapses that check and opens the
+  next one. Walking a workbook is a sequence, and the reviewer should not be closing
+  and opening sections by hand between every observation. The last check in a journey
+  opens the first of the next; the last check overall leaves the closing decision in
+  view. Anything already recorded stays reopenable — this is advancing, not locking.
+- **Judgment calls are marked as such** and named in the intro, so an owner knows
+  which cases are asking for a decision rather than an observation.
+- **Checks covering behaviour a review found missing say so**, because an owner
+  walking a shorter list could not have noticed the absence themselves.
+- **The closing decision stays disabled** until every check has an outcome, and
+  "Accept" stays disabled while any check is not a Pass.
