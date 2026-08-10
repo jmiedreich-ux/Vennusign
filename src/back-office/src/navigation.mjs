@@ -74,9 +74,32 @@ export function isBackOfficeRouteVisible(route, decisions) {
   return !planCategories.has(String(decision.category ?? "").toLowerCase());
 }
 
+/**
+ * The route a fragment names, matched on its FIRST segment.
+ *
+ * Milestone 3 gives the builder its own address — `#/menu/{menuId}` — so that a
+ * browser refresh mid-edit, the back button and a pasted link all land back on
+ * the menu somebody was working on. An exact match would send every one of those
+ * to Home instead. An unknown first segment still falls back to Home, which is
+ * what keeps a mistyped address from rendering a blank area.
+ */
 export function resolveBackOfficeRoute(hash) {
   const value = String(hash ?? "").replace(/^#\/?/, "");
-  return backOfficeRoutes.find(route => route.path === value) ?? backOfficeRoutes[0];
+  const [head] = value.split(/[/?]/);
+  return backOfficeRoutes.find(route => route.path === head) ?? backOfficeRoutes[0];
+}
+
+/**
+ * The menu a `#/menu/{menuId}` fragment names, or null for the shelf itself.
+ * Returns the id as written: this decides which menu to ASK for, and the API
+ * decides whether it is one of this venue's.
+ */
+export function menuIdFromHash(hash) {
+  const value = String(hash ?? "")
+    .replace(/^#\/?/, "")
+    .split("?")[0];
+  const [head, id] = value.split("/");
+  return head === "menu" && id ? decodeURIComponent(id) : null;
 }
 
 export function decisionForBackOfficeRoute(route, decisions) {

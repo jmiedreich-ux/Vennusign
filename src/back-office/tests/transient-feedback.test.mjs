@@ -14,10 +14,10 @@ test("shared success feedback is polite dismissible and time bounded", () => {
 });
 
 test("successful operations use toasts while errors remain inline", () => {
-  for (const name of ["AccountSecurity.tsx", "QuickUpdateMode.tsx", "ScreenManagement.tsx", "VideoWallBuilder.tsx", "TapListAdministration.tsx"]) {
+  for (const name of ["AccountSecurity.tsx", "MenuBuilder.tsx", "ScreenManagement.tsx", "VideoWallBuilder.tsx", "TapListAdministration.tsx"]) {
     assert.match(source(name), /TransientFeedback/);
   }
-  assert.match(source("QuickUpdateMode.tsx"), /className="state error" role="alert"/);
+  assert.match(source("MenuBuilder.tsx"), /role="alert"/);
   assert.match(source("AccountSecurity.tsx"), /role="alert" className="account-security__error"/);
 });
 

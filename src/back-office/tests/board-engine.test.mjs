@@ -54,6 +54,39 @@ test("an 86'd item is not on the board", () => {
   assert.deepEqual(items, ["cider", "olives"]);
 });
 
+test("an editing surface keeps the 86'd item, marked", () => {
+  // You cannot turn back on what the surface has hidden from you (Q104).
+  const document = buildBoardDocument(board(), ["fizz"], { keepUnavailable: true });
+
+  const items = document.sections.flatMap((section) => section.items);
+  assert.deepEqual(items.map((item) => item.itemId), ["fizz", "cider", "olives"]);
+  assert.deepEqual(
+    items.filter((item) => item.isUnavailable).map((item) => item.itemId),
+    ["fizz"]
+  );
+});
+
+test("every item says whether it is off, on both kinds of document", () => {
+  // A guest document says false for everything, because everything it drew is on.
+  // A caller reading the flag must never have to know which document it holds.
+  for (const document of [
+    buildBoardDocument(board(), ["fizz"]),
+    buildBoardDocument(board(), ["fizz"], { keepUnavailable: true })
+  ]) {
+    for (const item of document.sections.flatMap((section) => section.items)) {
+      assert.equal(typeof item.isUnavailable, "boolean", item.itemId);
+    }
+  }
+});
+
+test("a section holding only 86'd items survives on an editing surface", () => {
+  // It is empty tonight and gone from every TV, but it is where the items you
+  // would turn back on live, so an editor still has to be able to reach it.
+  const document = buildBoardDocument(board(), ["olives"], { keepUnavailable: true });
+
+  assert.deepEqual(document.sections.map((section) => section.sectionId), ["drinks", "snacks"]);
+});
+
 test("a section emptied by an 86 is not on the board either", () => {
   // The whole point of judging emptiness after the removals: this section is not
   // empty, it just has nothing to show tonight.
@@ -310,11 +343,23 @@ test("the engine imports nothing from either application", async () => {
 
 test("a guest surface carries no annotation markup", async () => {
   // Q135: the TV renders zero annotations, and milestone 2's cards are guest
-  // surfaces too, so the default has to be the safe one.
+  // surfaces too, so the default has to be the safe one. The engine hard-codes no
+  // annotation copy at all — the one note it can draw arrives as a prop, from the
+  // surface that decided to draw it.
   const code = await codeWithoutComments("BoardRenderer.tsx");
 
   assert.doesNotMatch(code, /86'd|PAGE \d|OF \d|annotation/i);
   assert.match(code, /surface = "guest"/);
+});
+
+test("a guest surface cannot be talked into keeping an 86'd item", async () => {
+  // The guard is in the renderer rather than in its callers on purpose: a guest
+  // board that honoured keepUnavailable would put a struck-through item on a real
+  // TV, which is precisely what the availability model exists to prevent. Nothing
+  // outside the engine should be able to cause that by passing one wrong prop.
+  const code = await codeWithoutComments("BoardRenderer.tsx");
+
+  assert.match(code, /surface === "preview" && keepUnavailable/);
 });
 
 test("no two source files differ only by case", async () => {

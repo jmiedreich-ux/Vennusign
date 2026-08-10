@@ -1,4 +1,4 @@
-import { test, expect, openAs, openMenuEditorAs, apiBaseUrl, tokens } from "../fixtures";
+import { test, expect, findShelfCard, openAs, openMenuBuilderAs, apiBaseUrl, tokens } from "../fixtures";
 
 /**
  * Workbook cases 0-0, 0-1 and 0-2 - environment, deterministic fixture, owner sign-in.
@@ -29,14 +29,15 @@ test("0-1 the deterministic fixture is loaded", async ({ page }) => {
   await openAs(page, "owner", "menu");
   await expect(page.getByTestId("menus-home")).toContainText("Acceptance Menu");
 
-  await openMenuEditorAs(page, "owner");
+  // Named, not "the first card": every spec that seeds adds a menu to this venue,
+  // so which card comes first is whatever the shelf happened to order that run.
+  (await findShelfCard(page, "Acceptance Menu")).getByTestId("open-menu").click();
+  await page.getByTestId("menu-builder").waitFor();
 
   // The fixture's named records are what later cases assert against by name.
-  await expect(page.getByTestId("menu-picker")).toContainText("Acceptance Menu");
-  await expect(page.getByTestId("menu-item").first()).toBeVisible();
-  await expect(
-    page.locator('[data-testid="menu-item"] [data-testid="item-name"][value="Harbor Lemonade"]')
-  ).toHaveCount(1);
+  await expect(page.getByTestId("builder-menu-name")).toContainText("Acceptance Menu");
+  await expect(page.getByTestId("board-item").first()).toBeVisible();
+  await expect(page.getByTestId("canvas")).toContainText("Harbor Lemonade");
 
   await page.goto("/#screens");
   await expect(page.getByTestId("screen-card").filter({ hasText: "Acceptance Screen" })).toHaveCount(1);
@@ -51,6 +52,9 @@ test("0-2 the owner signs in with the configured venue access", async ({ page })
 
   // Core work is reachable and editable: the shelf loads, and the editor behind
   // a card is not refused.
-  await openMenuEditorAs(page, "owner");
-  await expect(page.getByTestId("menu-item").first().getByTestId("item-name")).toBeEnabled();
+  await openAs(page, "owner", "menu");
+  (await findShelfCard(page, "Acceptance Menu")).getByTestId("open-menu").click();
+  await page.getByTestId("menu-builder").waitFor();
+  await page.getByTestId("board-item").first().locator(".board-item-name").click();
+  await expect(page.getByTestId("item-name")).toBeEnabled();
 });

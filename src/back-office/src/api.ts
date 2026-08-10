@@ -456,86 +456,16 @@ export async function createMenu(
   })).json() as Promise<MenuEditorSnapshot["menus"][number]["menu"]>;
 }
 
-export async function createMenuSection(
-  configuration: BackOfficeConfiguration,
-  accessToken: string,
-  _venueId: string,
-  menuId: string,
-  name: string
-): Promise<MenuSection> {
-  return (await menuRequest(configuration, accessToken, `/${menuId}/sections`, {
-    method: "POST",
-    body: JSON.stringify({ name })
-  })).json() as Promise<MenuSection>;
-}
-
-export async function updateMenuSection(
-  configuration: BackOfficeConfiguration,
-  accessToken: string,
-  _venueId: string,
-  section: MenuSection
-): Promise<MenuSection> {
-  return (await menuRequest(configuration, accessToken, `/sections/${section.id}`, {
-    method: "PUT",
-    body: JSON.stringify({ name: section.name, isActive: section.isActive })
-  })).json() as Promise<MenuSection>;
-}
-
-export async function reorderMenuSections(
-  configuration: BackOfficeConfiguration,
-  accessToken: string,
-  _venueId: string,
-  menuId: string,
-  sectionIds: string[]
-): Promise<void> {
-  await menuRequest(configuration, accessToken, `/${menuId}/sections/order`, {
-    method: "PUT",
-    body: JSON.stringify({ sectionIds })
-  });
-}
-
-export async function createMenuItem(
-  configuration: BackOfficeConfiguration,
-  accessToken: string,
-  _venueId: string,
-  menuId: string,
-  sectionId: string,
-  item: MenuItemWrite
-): Promise<MenuItem> {
-  return (await menuRequest(configuration, accessToken, `/${menuId}/sections/${sectionId}/items`, {
-    method: "POST",
-    body: JSON.stringify(item)
-  })).json() as Promise<MenuItem>;
-}
-
-export async function updateMenuItem(
-  configuration: BackOfficeConfiguration,
-  accessToken: string,
-  _venueId: string,
-  menuId: string,
-  sectionId: string,
-  itemId: string,
-  item: MenuItemWrite
-): Promise<MenuItem> {
-  return (await menuRequest(configuration, accessToken, `/${menuId}/sections/${sectionId}/items/${itemId}`, {
-    method: "PUT",
-    body: JSON.stringify(item)
-  })).json() as Promise<MenuItem>;
-}
-
-export async function reorderMenuItems(
-  configuration: BackOfficeConfiguration,
-  accessToken: string,
-  _venueId: string,
-  menuId: string,
-  sectionId: string,
-  itemIds: string[]
-): Promise<void> {
-  await menuRequest(configuration, accessToken, `/${menuId}/sections/${sectionId}/items/order`, {
-    method: "PUT",
-    body: JSON.stringify({ itemIds })
-  });
-}
+/*
+ * The section and item writes that used to live here went with the editor they
+ * served. Milestone 3's builder writes through `api/back-office/content`, where
+ * every rule is decided inside the statement that writes it — the next sort order
+ * under a lock, the ceiling under a lock, "already on this board", and whether a
+ * reorder list still matches the menu.
+ *
+ * `loadMenuEditor` and `updateQuickAvailability` stay: Home and the locked-section
+ * preview still read them, and they are not Menus surfaces.
+ */
 
 export async function updateQuickAvailability(
   configuration: BackOfficeConfiguration,
@@ -1024,4 +954,252 @@ export async function goBackToMenuVersion(
   return (
     await contentRequest(configuration, accessToken, `/menus/${menuId}/go-back-to/${version}`, { method: "POST" })
   ).json();
+}
+
+// ---------------------------------------------------------------------------
+// The builder (M3)
+// ---------------------------------------------------------------------------
+
+/**
+ * A menu open in the builder.
+ *
+ * `board` is the WORKING state — what the menu says now, which is what the canvas
+ * draws, because the canvas is the preview. `changes` is its difference from the
+ * board the screens are showing, and the publish fields describe that other board.
+ * All of it arrives in one response for a reason: three sentences about two boards
+ * cannot be assembled from three reads without eventually describing two different
+ * menus.
+ */
+export type BuilderBoard = {
+  board: BoardResponse;
+  draftCount: number;
+  changes: MenuDraftChange[];
+  publishedVersion: number | null;
+  lastPublishedUtc: string | null;
+  lastPublishedBy: string | null;
+  screenIds: string[];
+};
+
+export type MenuDraftChange = {
+  targetKind: string;
+  targetId: string | null;
+  field: string;
+  beforeValue: string | null;
+  afterValue: string | null;
+};
+
+/** One add-row search result, naming the boards it already sits on (Q112/Q123). */
+export type LibraryItem = {
+  itemId: string;
+  name: string;
+  description: string | null;
+  price: string | null;
+  isAvailable: boolean;
+  boards: Array<{ menuId: string; menuName: string }>;
+};
+
+export type PlaceOutcome = {
+  outcome: "placed" | "already_on_board";
+  itemId: string | null;
+  sectionId: string | null;
+  sortOrder: number;
+  itemCountOnMenu: number;
+};
+
+export async function loadBuilderBoard(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string
+): Promise<BuilderBoard> {
+  return (await contentRequest(configuration, accessToken, `/menus/${menuId}/board`)).json();
+}
+
+export async function addMenuSection(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  name: string
+): Promise<{ sectionId: string; name: string; sortOrder: number }> {
+  return (
+    await contentRequest(configuration, accessToken, `/menus/${menuId}/sections`, {
+      method: "POST",
+      body: JSON.stringify({ name })
+    })
+  ).json();
+}
+
+export async function renameMenuSection(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  sectionId: string,
+  name: string
+): Promise<void> {
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/sections/${sectionId}`, {
+    method: "PUT",
+    body: JSON.stringify({ name })
+  });
+}
+
+/** Deleting a section releases its items back to the library; it says how many (Q96). */
+export async function deleteMenuSection(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  sectionId: string
+): Promise<{ releasedItemCount: number }> {
+  return (
+    await contentRequest(configuration, accessToken, `/menus/${menuId}/sections/${sectionId}`, { method: "DELETE" })
+  ).json();
+}
+
+/**
+ * Reorder refuses whole when the list no longer matches — someone else added or
+ * removed something mid-drag. It arrives here as a `MenuActionRefused` with reason
+ * `order_stale`, in the server's words.
+ */
+export async function reorderMenuSections(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  sectionIds: string[]
+): Promise<void> {
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/sections/order`, {
+    method: "PUT",
+    body: JSON.stringify({ sectionIds })
+  });
+}
+
+/** @see reorderMenuSections — same refusal, same reason. */
+export async function reorderMenuItems(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  sectionId: string,
+  itemIds: string[]
+): Promise<void> {
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/sections/${sectionId}/items/order`, {
+    method: "PUT",
+    body: JSON.stringify({ itemIds })
+  });
+}
+
+/**
+ * Put something in a section: an item the library already holds, or a new one born
+ * with the typed name. `already_on_board` is not a failure — it carries the section
+ * the item sits in so the caller jumps there instead of duplicating it (Q112).
+ */
+export async function placeMenuItem(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  sectionId: string,
+  request: { itemId?: string; name?: string }
+): Promise<PlaceOutcome> {
+  return (
+    await contentRequest(configuration, accessToken, `/menus/${menuId}/sections/${sectionId}/items`, {
+      method: "POST",
+      body: JSON.stringify(request)
+    })
+  ).json();
+}
+
+/** Takes an item off this board. It stays in the library (Q97). */
+export async function removeMenuItem(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  itemId: string
+): Promise<void> {
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/items/${itemId}`, { method: "DELETE" });
+}
+
+/**
+ * Edits an item. One item is one shared price across every board it sits on (Q5);
+ * each of those boards still changes its own screens only when it publishes.
+ */
+export async function updateMenuItemValues(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  itemId: string,
+  values: { name: string; description: string | null; price: string | null }
+): Promise<void> {
+  await contentRequest(configuration, accessToken, `/items/${itemId}`, {
+    method: "PUT",
+    body: JSON.stringify(values)
+  });
+}
+
+export async function searchLibraryItems(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  query: string,
+  take = 20
+): Promise<LibraryItem[]> {
+  const search = new URLSearchParams({ query, take: String(take) });
+  return (await contentRequest(configuration, accessToken, `/items?${search}`)).json();
+}
+
+/**
+ * The menu themes this venue could attach. Empty until the theme editor exists —
+ * read rather than assumed, so the picker needs no change when the first one is
+ * built (Q86).
+ */
+export async function loadMenuThemes(
+  configuration: BackOfficeConfiguration,
+  accessToken: string
+): Promise<Array<{ key: string; name: string }>> {
+  return (await contentRequest(configuration, accessToken, "/menu-themes")).json();
+}
+
+/** Publish everything waiting on this menu. Atomic server-side (Q198). */
+export async function publishMenu(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string
+): Promise<{
+  version: number;
+  changeCount: number;
+  publishedUtc: string;
+  author: string | null;
+  targets: Array<{ screenId: string; state: string }>;
+  conflictedScreenIds: string[];
+}> {
+  return (await contentRequest(configuration, accessToken, `/menus/${menuId}/publish`, { method: "POST" })).json();
+}
+
+/** Clears the whole queue for this menu. One confirmation, no undo (Q110). */
+export async function discardMenuDraft(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string
+): Promise<{ discarded: number }> {
+  return (await contentRequest(configuration, accessToken, `/menus/${menuId}/draft`, { method: "DELETE" })).json();
+}
+
+/** Turn an item on or off. Commits instantly, never queues, survives a publish. */
+export async function setItemAvailability(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  itemId: string,
+  isAvailable: boolean
+): Promise<{ itemId: string; name: string; isAvailable: boolean; changedUtc: string; changedBy: string | null; screenIds: string[] }> {
+  return (
+    await contentRequest(configuration, accessToken, `/items/${itemId}/availability`, {
+      method: "PUT",
+      body: JSON.stringify({ isAvailable })
+    })
+  ).json();
+}
+
+/**
+ * The venue's timezone and its configured ceilings. Every Menus surface renders
+ * times in the venue's local time (Q196), so the zone is read rather than taken
+ * from whichever browser happens to be looking.
+ */
+export async function loadMenuContext(
+  configuration: BackOfficeConfiguration,
+  accessToken: string
+): Promise<{ timezone: string; ceilings: Record<string, number>; menuCount: number }> {
+  return (await contentRequest(configuration, accessToken, "/context")).json();
 }

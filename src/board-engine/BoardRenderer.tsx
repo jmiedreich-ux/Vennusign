@@ -22,6 +22,15 @@ export type BoardRendererProps = {
   /** The menu theme attached, or null when none is. Null renders plainly (Q86). */
   theme?: BoardTheme;
   surface?: BoardSurface;
+  /**
+   * An editing surface keeps 86'd items on the board, struck through and dimmed,
+   * because you cannot turn back on what has been hidden from you (Q104). Only a
+   * "preview" surface may ask; a guest board ignores it, since a TV showing a
+   * struck-through item is exactly what the availability model exists to prevent.
+   */
+  keepUnavailable?: boolean;
+  /** The one annotation the board itself carries, per 86'd item. Preview only. */
+  unavailableNote?: string | null;
 };
 
 /**
@@ -40,12 +49,18 @@ export function BoardRenderer({
   board,
   unavailableItemIds,
   theme,
-  surface = "guest"
+  surface = "guest",
+  keepUnavailable = false,
+  unavailableNote = null
 }: BoardRendererProps) {
   // A theme written against a later engine is declined outright: rendering the
   // half we understand would be wrong without saying so.
   const usable = canRenderTheme(theme) ? theme : null;
-  const document = buildBoardDocument(board, unavailableItemIds);
+  // Only a preview surface may keep them. A guest board that honoured this would
+  // put a struck-through item on a real TV, which is the exact thing the
+  // availability model exists to prevent — so the guard is here, not in a caller.
+  const keeping = surface === "preview" && keepUnavailable;
+  const document = buildBoardDocument(board, unavailableItemIds, { keepUnavailable: keeping });
 
   return (
     <div
@@ -71,7 +86,13 @@ export function BoardRenderer({
           <p className="board-section-heading" role="presentation">{section.name}</p>
           <ul className="board-items">
             {section.items.map((item) => (
-              <li className="board-item" key={item.itemId} data-testid="board-item" data-item-id={item.itemId}>
+              <li
+                className="board-item"
+                key={item.itemId}
+                data-testid="board-item"
+                data-item-id={item.itemId}
+                data-unavailable={item.isUnavailable ? "true" : undefined}
+              >
                 <p className="board-item-line">
                   <span className="board-item-name">{item.name}</span>
                   <span className="board-item-leader" aria-hidden="true" />
@@ -79,6 +100,14 @@ export function BoardRenderer({
                 </p>
                 {item.description ? (
                   <p className="board-item-description">{item.description}</p>
+                ) : null}
+                {/*
+                  An annotation, not board content (README): it is 11.5px UI ink,
+                  never the board's own, and it cannot reach a guest because a
+                  guest document contains no unavailable item to attach it to.
+                */}
+                {item.isUnavailable && unavailableNote ? (
+                  <p className="board-item-note" data-testid="board-item-note">{unavailableNote}</p>
                 ) : null}
               </li>
             ))}

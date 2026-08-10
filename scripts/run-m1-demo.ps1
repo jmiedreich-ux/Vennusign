@@ -151,7 +151,10 @@ Write-Host "item: $($item.name)  ($itemId), price $basePrice" -ForegroundColor D
 
 function Set-ItemPrice {
     param([double]$Price)
-    Invoke-Api PUT "$menus/$menuId/sections/$sectionId/items/$itemId" @{ name = $item.name; description = $item.description; price = $Price }
+    # The item write moved onto the content API with milestone 3: one item is one
+    # shared set of values across every board it sits on, so it is addressed by
+    # item rather than by where it happens to be placed.
+    Invoke-Api PUT "$content/items/$itemId" @{ name = $item.name; description = $item.description; price = $Price }
 }
 
 # Put the menu on a screen, and prove it. Every screen-facing check below is

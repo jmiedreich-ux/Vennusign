@@ -36,8 +36,10 @@ type Props = {
   venueName: string;
   /** Opens the existing editor. Interim wiring until milestone 3 (Q100). */
   onOpenMenu: (menuId: string) => void;
-  /** The existing create flow, likewise interim. */
-  onAddMenu: () => void;
+  /** Names a new menu and hands back its id. The import routes arrive in milestone 6 (Q100). */
+  onAddMenu: (name: string) => Promise<void>;
+  /** A name carried over from onboarding's starter choice, if there was one. */
+  starterMenuName?: string;
   /** Screens, filtered to the ones needing attention (Q170). */
   onFixScreens: (screenIds: string[]) => void;
 };
@@ -55,8 +57,19 @@ export default function MenusHome({
   venueName,
   onOpenMenu,
   onAddMenu,
+  starterMenuName,
   onFixScreens
 }: Props) {
+  /**
+   * Naming a new menu.
+   *
+   * Interim by design (Q100): milestone 6 replaces this with the import routes —
+   * paste, start blank, and the shared confirm step that hosts the Name field.
+   * Until then Add-a-menu still has to reach a real menu, so it asks the one
+   * question the create endpoint needs and opens the builder on the result.
+   */
+  const [namingMenu, setNamingMenu] = useState(Boolean(starterMenuName));
+  const [newMenuName, setNewMenuName] = useState(starterMenuName ?? "");
   const [menus, setMenus] = useState<ShelfMenu[] | null>(null);
   const [unavailable, setUnavailable] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -151,7 +164,7 @@ export default function MenusHome({
       <section className="menus-home menus-home--empty" data-testid="menus-home">
         <h1>Let's get your menu in.</h1>
         <p>Pick whatever's easiest. You can fix anything later.</p>
-        <button type="button" className="action-primary" onClick={onAddMenu} data-testid="add-a-menu">
+        <button type="button" className="action-primary" onClick={() => setNamingMenu(true)} data-testid="add-a-menu">
           Add a menu
         </button>
       </section>
@@ -180,7 +193,7 @@ export default function MenusHome({
             </button>
           ) : null}
           {atScale ? (
-            <button type="button" className="action-primary" onClick={onAddMenu} data-testid="add-a-menu">
+            <button type="button" className="action-primary" onClick={() => setNamingMenu(true)} data-testid="add-a-menu">
               Add a menu
             </button>
           ) : null}
@@ -244,7 +257,7 @@ export default function MenusHome({
         {/* The dashed tile stays at six or fewer; past the cutover "Add a menu"
             is a plain button beside search instead (Q166). */}
         {!atScale ? (
-          <button type="button" className="menus-home__add-tile" onClick={onAddMenu} data-testid="add-a-menu">
+          <button type="button" className="menus-home__add-tile" onClick={() => setNamingMenu(true)} data-testid="add-a-menu">
             <span className="menus-home__add-mark" aria-hidden><Plus size={18} /></span>
             <strong>Add a menu</strong>
             <small>Paste it in, or start blank</small>
@@ -292,6 +305,62 @@ export default function MenusHome({
             ))}
           </ul>
         </section>
+      ) : null}
+
+      {namingMenu ? (
+        <>
+          <div className="menu-card__scrim" onClick={() => setNamingMenu(false)} data-testid="name-menu-scrim" />
+          <form
+            className="menu-card__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="name-menu-title"
+            data-testid="name-menu-dialog"
+            onSubmit={event => {
+              event.preventDefault();
+              const name = newMenuName.trim();
+              if (!name) return;
+              setNamingMenu(false);
+              setNewMenuName("");
+              void onAddMenu(name);
+            }}
+          >
+            <h2 id="name-menu-title">What is this menu called?</h2>
+            <p>You can change what is on it once it opens. Nothing reaches a screen until you publish.</p>
+            <label>
+              <span>Menu name</span>
+              <input
+                autoFocus
+                required
+                maxLength={200}
+                value={newMenuName}
+                data-testid="new-menu-name"
+                onChange={event => setNewMenuName(event.target.value)}
+                onKeyDown={event => {
+                  if (event.key === "Escape") {
+                    setNamingMenu(false);
+                    setNewMenuName("");
+                  }
+                }}
+              />
+            </label>
+            <div className="menu-card__dialog-actions">
+              <button
+                type="button"
+                className="action-secondary"
+                onClick={() => {
+                  setNamingMenu(false);
+                  setNewMenuName("");
+                }}
+              >
+                Cancel
+              </button>
+              <button type="submit" className="action-primary" data-testid="create-menu">
+                Create it
+              </button>
+            </div>
+          </form>
+        </>
       ) : null}
     </section>
   );

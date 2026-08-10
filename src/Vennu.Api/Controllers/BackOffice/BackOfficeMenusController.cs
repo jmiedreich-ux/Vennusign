@@ -52,165 +52,17 @@ public sealed class BackOfficeMenusController(
         }
     }
 
-    [HttpPost("{menuId:guid}/sections")]
-    public async Task<ActionResult<MenuSection>> CreateSection(
-        Guid menuId,
-        MenuSectionCreateRequest request,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var section = await sectionService
-                .CreateAsync(VenueId, menuId, request.Name, cancellationToken)
-                .ConfigureAwait(false);
-            return CreatedAtAction(nameof(Get), section);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (ArgumentException exception)
-        {
-            return ValidationProblem(exception.Message);
-        }
-    }
+    /*
+     * The section and item writes retired with the editor they served (milestone
+     * 3). The builder writes through api/back-office/content, where each rule is
+     * decided inside the statement that writes it rather than by a read, a check
+     * in C#, and a write.
+     *
+     * What stays: the editor snapshot, which Home and the locked-section preview
+     * still read; creating a menu, which Add-a-menu still uses until milestone 6
+     * owns the import routes (Q100); and quick availability, which Home uses.
+     */
 
-    [HttpPut("sections/{sectionId:guid}")]
-    public async Task<ActionResult<MenuSection>> UpdateSection(
-        Guid sectionId,
-        MenuSectionUpdateRequest request,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var section = await sectionService
-                .UpdateAsync(VenueId, sectionId, request.Name, cancellationToken)
-                .ConfigureAwait(false);
-            return section is null ? NotFound() : Ok(section);
-        }
-        catch (ArgumentException exception)
-        {
-            return ValidationProblem(exception.Message);
-        }
-    }
-
-    [HttpPut("{menuId:guid}/sections/order")]
-    public async Task<ActionResult> Reorder(
-        Guid menuId,
-        MenuSectionOrderRequest request,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            if (request.SectionIds is null)
-            {
-                return ValidationProblem("Section identifiers are required.");
-            }
-
-            await sectionService
-                .ReorderAsync(VenueId, menuId, request.SectionIds, cancellationToken)
-                .ConfigureAwait(false);
-            return NoContent();
-        }
-        catch (ArgumentException exception)
-        {
-            return ValidationProblem(exception.Message);
-        }
-    }
-
-    [HttpPost("{menuId:guid}/sections/{sectionId:guid}/items")]
-    public async Task<ActionResult<MenuItem>> CreateItem(
-        Guid menuId,
-        Guid sectionId,
-        MenuItemWriteRequest request,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var item = await itemService
-                .CreateAsync(
-                    VenueId,
-                    menuId,
-                    sectionId,
-                    request.Name,
-                    request.Description,
-                    request.Price,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            return CreatedAtAction(nameof(Get), item);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (ArgumentException exception)
-        {
-            return ValidationProblem(exception.Message);
-        }
-    }
-
-    [HttpPut("{menuId:guid}/sections/{sectionId:guid}/items/{itemId:guid}")]
-    public async Task<ActionResult<MenuItem>> UpdateItem(
-        Guid menuId,
-        Guid sectionId,
-        Guid itemId,
-        MenuItemWriteRequest request,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var item = await itemService
-                .UpdateAsync(
-                    VenueId,
-                    menuId,
-                    sectionId,
-                    itemId,
-                    request.Name,
-                    request.Description,
-                    request.Price,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            return item is null ? NotFound() : Ok(item);
-        }
-        catch (ArgumentException exception)
-        {
-            return ValidationProblem(exception.Message);
-        }
-    }
-
-    [HttpPut("{menuId:guid}/sections/{sectionId:guid}/items/order")]
-    public async Task<ActionResult> ReorderItems(
-        Guid menuId,
-        Guid sectionId,
-        MenuItemOrderRequest request,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            if (request.ItemIds is null)
-            {
-                return ValidationProblem("Item identifiers are required.");
-            }
-            await itemService.ReorderAsync(
-                VenueId, menuId, sectionId, request.ItemIds, cancellationToken).ConfigureAwait(false);
-            return NoContent();
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (ArgumentException exception)
-        {
-            return ValidationProblem(exception.Message);
-        }
-    }
-
-    /// <summary>
-    /// The legacy quick-update route, kept for the current UI but consolidated
-    /// onto the one availability model: an 86 is item-by-venue, instant, never
-    /// queued, and survives a publish. The menu and section in the route only
-    /// locate the row the caller clicked.
-    /// </summary>
     [HttpPut("{menuId:guid}/sections/{sectionId:guid}/items/{itemId:guid}/quick-availability")]
     [RequireCapability("content.item.availability_update")]
     public async Task<ActionResult> UpdateQuickAvailability(

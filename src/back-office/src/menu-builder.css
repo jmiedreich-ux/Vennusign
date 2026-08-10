@@ -1,0 +1,951 @@
+/*
+ * The menu builder.
+ *
+ * Four columns inside the rail: sections 212px, canvas (flex), inspector 296px,
+ * publish bar across the bottom. The fixed widths are OUTER widths — the design
+ * authority says so explicitly, which is why box-sizing is stated here rather
+ * than assumed from a reset.
+ *
+ * Every colour is a token. The shell theme is variables only, so a dark variant
+ * can follow without reopening any of this.
+ */
+
+.builder,
+.builder * {
+  box-sizing: border-box;
+}
+
+.builder {
+  display: grid;
+  grid-template-rows: 58px 1fr auto;
+  height: 100%;
+  min-height: 0;
+  background: var(--sky-color-surface-muted, #f4f7fa);
+}
+
+.builder--loading {
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  padding: 48px;
+  text-align: center;
+}
+
+/* ---- top bar ------------------------------------------------------------- */
+
+.builder__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--sky-color-border, #e9eef4);
+  background: var(--sky-color-surface, #fff);
+}
+
+.builder__crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--sky-font-size-sm, 13px);
+  color: var(--sky-color-text-muted, #64748b);
+}
+
+.builder__crumb-link {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--sky-color-text-muted, #64748b);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.builder__crumb-current {
+  color: var(--sky-text-primary, #0f172a);
+  font-weight: var(--sky-font-weight-semibold, 600);
+}
+
+.builder__top-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.builder__history {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  background: var(--sky-color-surface-muted, #f1f5f9);
+}
+
+.builder__history button {
+  min-width: 30px;
+  height: 26px;
+  border: 0;
+  border-radius: var(--sky-radius-sm, 8px);
+  background: transparent;
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.builder__history button:not(:disabled):hover {
+  background: var(--sky-color-surface, #fff);
+  color: var(--sky-text-primary, #0f172a);
+}
+
+.builder__history button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.builder__viewing-as {
+  font-size: var(--sky-font-size-sm, 13px);
+  color: var(--sky-color-text-muted, #64748b);
+}
+
+.builder__play {
+  border: 0;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 8px 15px;
+  background: var(--sky-accent, #87ceeb);
+  color: var(--sky-text-primary, #0f172a);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---- columns ------------------------------------------------------------- */
+
+.builder__columns {
+  display: grid;
+  grid-template-columns: 212px minmax(0, 1fr) 296px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---- section rail -------------------------------------------------------- */
+
+.builder__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 12px;
+  border-right: 1px solid var(--sky-color-border, #e9eef4);
+  background: #fbfcfe;
+  overflow-y: auto;
+}
+
+.builder__rail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.builder__rail-head h2 {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--sky-color-text-muted, #64748b);
+}
+
+.builder__rail-head button {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--sky-color-border, #e2e8f0);
+  border-radius: var(--sky-radius-sm, 8px);
+  background: var(--sky-color-surface, #fff);
+  color: var(--sky-text-primary, #0f172a);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.builder__rail-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.builder__rail-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px;
+}
+
+.builder__rail-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 7px 9px;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: var(--sky-text-primary, #0f172a);
+  cursor: pointer;
+}
+
+.builder__rail-row.is-selected {
+  background: #e0f2fe;
+  box-shadow: inset 0 0 0 1px #87ceeb;
+}
+
+/* The drag handle is the reorder affordance, so it has to be legible — muted, not faint. */
+.builder__rail-handle {
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 12px;
+}
+
+.builder__rail-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.builder__rail-count {
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Until keyboard reorder lands (#672), these arrows ARE the keyboard path. The
+ * design replaces every arrow pair with a drag handle; doing that before the
+ * keyboard alternative exists would remove reordering from keyboard users
+ * entirely, which Q120 named as the trade-off to avoid.
+ */
+.builder__rail-move {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.builder__rail-move button {
+  width: 18px;
+  height: 14px;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--sky-color-text-muted, #94a3b8);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.builder__rail-move button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.builder__rail-new {
+  width: 100%;
+  border: 1px solid #87ceeb;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 7px 9px;
+  font: inherit;
+  font-size: 13px;
+}
+
+/* ---- canvas -------------------------------------------------------------- */
+
+.builder__canvas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+}
+
+.builder__canvas-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.builder__view-toggle {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.builder__view-toggle button {
+  border: 1px solid var(--sky-color-border, #e2e8f0);
+  border-radius: var(--sky-radius-pill, 999px);
+  padding: 5px 13px;
+  background: var(--sky-color-surface, #fff);
+  color: #475569;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.builder__view-toggle button.is-selected {
+  border-color: transparent;
+  background: var(--sky-text-primary, #0f172a);
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.builder__flag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: #7d5911;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.builder__flag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c9871a;
+}
+
+/*
+ * The board card. One-section view grows and scrolls for editing (Q105); Whole
+ * board renders through BoardFrame at the real logical size, so pagination and
+ * overflow look like they will on a TV.
+ */
+.builder__board-card {
+  position: relative;
+  border-radius: 14px;
+  padding: 0;
+  background: #faf8f2;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.09), 0 18px 44px rgb(15 23 42 / 0.14);
+  overflow: hidden;
+}
+
+/* The stage scales the logical board down to the canvas; its own box is the
+   scaled height, so the card grows with the content rather than cropping it. */
+.builder__stage {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.builder__stage-inner {
+  transform-origin: top left;
+}
+
+.builder__board-card .board-frame {
+  aspect-ratio: 16 / 9;
+}
+
+/* There is no Preview button, because this IS the preview. The selection ring is
+   the one thing drawn over the board, and it never re-typesets it. */
+.builder__board-card .board-item {
+  position: relative;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+/*
+ * An OUTLINE, not a border or a shadow that takes space: the selected row must not
+ * move the board by a pixel, or the canvas stops being a picture of the screen.
+ */
+.builder__board-card .board-item.is-selected {
+  outline: 2px solid var(--sky-selection, #2a78d6);
+  outline-offset: 3px;
+}
+
+/*
+ * The drag pill hangs off the left edge on hover as well as selection (Q103), so
+ * a row can be dragged without clicking it first.
+ */
+.builder__board-card .board-item::after {
+  content: "⠿";
+  position: absolute;
+  left: -22px;
+  top: 0.35em;
+  opacity: 0;
+  color: var(--sky-selection, #2a78d6);
+  font-size: 14px;
+  transition: opacity 90ms ease;
+}
+
+.builder__board-card .board-item:hover::after,
+.builder__board-card .board-item.is-selected::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .builder__board-card .board-item::after {
+    transition: none;
+  }
+}
+
+.builder__price-edit {
+  position: absolute;
+  z-index: 5;
+  border: 2px solid var(--sky-selection, #2a78d6);
+  border-radius: 4px;
+  padding: 0 4px;
+  background: #fff;
+  font: inherit;
+  font-size: 15px;
+  text-align: right;
+}
+
+.builder__add-row {
+  position: relative;
+}
+
+.builder__add-open {
+  border: 1px dashed #cbd9e4;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 8px 14px;
+  background: #fbfdfe;
+  color: #475569;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.builder__add-row input {
+  width: 100%;
+  border: 1px solid #dbe3ec;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 9px 11px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+}
+
+.builder__add-results {
+  display: grid;
+  gap: 2px;
+  margin: 6px 0 0;
+  padding: 6px;
+  border: 1px solid var(--sky-color-border, #e2e8f0);
+  border-radius: var(--sky-radius-md, 12px);
+  background: #fff;
+  box-shadow: 0 18px 48px rgb(15 23 42 / 0.16);
+  list-style: none;
+}
+
+.builder__add-results button {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  border: 0;
+  border-radius: var(--sky-radius-sm, 8px);
+  padding: 7px 9px;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.builder__add-results button:hover {
+  background: var(--sky-color-surface-muted, #f1f5f9);
+}
+
+.builder__add-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sky-text-primary, #0f172a);
+}
+
+.builder__add-where {
+  font-size: 11.5px;
+  color: var(--sky-color-text-muted, #64748b);
+}
+
+.builder__add-create {
+  color: var(--sky-text-primary, #0f172a);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.builder__section-actions {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 4px;
+}
+
+.builder__section-actions label {
+  display: grid;
+  gap: 6px;
+  max-width: 280px;
+  flex: 1;
+}
+
+.builder__section-actions input {
+  border: 1px solid #dbe3ec;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 9px 11px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+}
+
+/* ---- inspector ----------------------------------------------------------- */
+
+.builder__inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border-left: 1px solid var(--sky-color-border, #e9eef4);
+  background: var(--sky-color-surface, #fff);
+  overflow-y: auto;
+}
+
+/* The inspector keeps its place with nothing selected: the canvas never resizes
+   with selection (Q106). */
+.builder__inspector-empty {
+  margin: 0;
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 13px;
+}
+
+.builder__inspector-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.builder__inspector-head h2 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.018em;
+}
+
+.builder__inspector-head button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.builder__inspector label {
+  display: grid;
+  gap: 6px;
+}
+
+.builder__label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--sky-color-text-muted, #64748b);
+}
+
+.builder__inspector input,
+.builder__inspector textarea {
+  width: 100%;
+  border: 1px solid #dbe3ec;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 9px 11px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+/*
+ * The loudest thing in the inspector, on purpose (decision 3). Green when the item
+ * is on; red-tinted when it is off, because "off right now" is a state a guest can
+ * see and the person needs to notice it before they do.
+ */
+.builder__availability {
+  display: grid;
+  gap: 6px;
+  border-radius: var(--sky-radius-md, 12px);
+  padding: 11px 12px;
+  background: #e0f4e9;
+  box-shadow: inset 0 0 0 1.5px #178a52;
+}
+
+.builder__availability.is-off {
+  background: #fdeaea;
+  box-shadow: inset 0 0 0 1.5px #8a2929;
+}
+
+.builder__availability-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.builder__availability strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: #18603f;
+}
+
+.builder__availability.is-off strong {
+  color: #8a2929;
+}
+
+.builder__availability p {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #267252;
+}
+
+.builder__availability.is-off p {
+  color: #8a2929;
+}
+
+.builder__availability button[role="switch"] {
+  flex: none;
+  width: 42px;
+  height: 24px;
+  border: 0;
+  border-radius: 999px;
+  padding: 3px;
+  background: #178a52;
+  box-shadow: 0 1px 2px rgb(23 138 82 / 0.4);
+  cursor: pointer;
+}
+
+.builder__availability button[role="switch"][aria-checked="false"] {
+  background: #cbd5e1;
+  box-shadow: none;
+}
+
+.builder__availability button[role="switch"] span {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translateX(18px);
+  transition: transform 120ms ease;
+}
+
+.builder__availability button[role="switch"][aria-checked="false"] span {
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .builder__availability button[role="switch"] span {
+    transition: none;
+  }
+}
+
+/* Q5's shared-price line: a fact, stated once, never a question. */
+.builder__shared {
+  margin: -6px 0 0;
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.builder__quiet-danger {
+  justify-self: start;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: #8a2929;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.builder__theme-footer {
+  margin: auto 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--sky-color-border, #e9eef4);
+}
+
+.builder__theme-footer button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--sky-color-text-muted, #64748b);
+  font: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* ---- publish bar --------------------------------------------------------- */
+
+.builder__publish {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 13px 22px;
+  border-top: 1px solid var(--sky-color-border, #e9eef4);
+  background: var(--sky-color-surface, #fff);
+}
+
+.builder__publish-left {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.builder__publish-left strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sky-text-primary, #0f172a);
+}
+
+.builder__publish-left strong.is-pending {
+  color: #7d5911;
+}
+
+.builder__publish-meta {
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 11.5px;
+}
+
+.builder__save-failed {
+  color: #7d5911;
+  font-weight: 600;
+}
+
+.builder__link {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* The bar grows and wraps rather than summarising exceptions behind a count (Q167). */
+.builder__publish-screens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.builder__chip {
+  display: grid;
+  gap: 1px;
+  border: 1px solid #dbe7de;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 8px 11px;
+  background: #fff;
+}
+
+.builder__chip strong {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.builder__chip small {
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 11.5px;
+}
+
+.builder__chip--taken {
+  border-color: #c9871a;
+  background: #fdf1dc;
+}
+
+.builder__chip--taken small {
+  color: #7d5911;
+}
+
+.builder__publish-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.builder__blocked {
+  color: #7d5911;
+  font-size: 11.5px;
+}
+
+/* ---- overlays ------------------------------------------------------------ */
+
+.builder__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(15 23 42 / 0.34);
+}
+
+.builder__dialog,
+.builder__find {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 41;
+  width: min(440px, calc(100vw - 32px));
+  transform: translate(-50%, -50%);
+  border-radius: var(--sky-radius-lg, 16px);
+  padding: 20px;
+  background: var(--sky-color-surface, #fff);
+  box-shadow: 0 28px 70px rgb(15 23 42 / 0.32);
+}
+
+.builder__find {
+  top: 18%;
+  transform: translate(-50%, 0);
+  padding: 12px;
+}
+
+.builder__dialog h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.builder__dialog p {
+  margin: 0 0 8px;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.builder__dialog-note {
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 12px;
+}
+
+.builder__dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.builder__screen-list {
+  display: grid;
+  gap: 6px;
+  max-height: 40vh;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.builder__screen-list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--sky-color-border, #eef2f7);
+  font-size: 13px;
+}
+
+.builder__screen-list span {
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 11.5px;
+}
+
+.builder__find input {
+  width: 100%;
+  border: 1px solid #dbe3ec;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+}
+
+.builder__find ul {
+  display: grid;
+  gap: 2px;
+  margin: 8px 0 0;
+  padding: 0;
+  max-height: 44vh;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.builder__find button {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  border: 0;
+  border-radius: var(--sky-radius-sm, 8px);
+  padding: 8px 10px;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.builder__find button:hover {
+  background: var(--sky-color-surface-muted, #f1f5f9);
+}
+
+.builder__find span {
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 11.5px;
+}
+
+/*
+ * An error stays until it is dealt with — it is never a toast. Success goes
+ * through the app's shared TransientFeedback, which is already polite, dismissible
+ * and time-bounded.
+ */
+.builder__error {
+  position: fixed;
+  left: 50%;
+  bottom: 84px;
+  z-index: 42;
+  transform: translateX(-50%);
+  margin: 0;
+  max-width: min(560px, calc(100vw - 32px));
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 10px 16px;
+  background: #8a2929;
+  color: #fff;
+  font-size: 13px;
+  box-shadow: 0 18px 44px rgb(15 23 42 / 0.28);
+}
+
+/*
+ * The hi-fis are 1440px desktop and mobile is out of scope (Q158 → #681). Below
+ * that the columns stack rather than claiming a phone layout, so a narrow window
+ * is usable without pretending to be designed for one.
+ */
+@media (max-width: 1100px) {
+  .builder__columns {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+
+  .builder__inspector {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid var(--sky-color-border, #e9eef4);
+  }
+}

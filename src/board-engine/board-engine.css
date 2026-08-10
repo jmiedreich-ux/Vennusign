@@ -122,3 +122,36 @@
   line-height: 1.45;
   color: var(--board-item-description-color);
 }
+
+/*
+ * An 86'd item on an EDITING surface only. A guest document never contains one,
+ * so these rules can never reach a TV — the guard is in the renderer, and this is
+ * only what the state looks like once that guard has let it through.
+ *
+ * 42% opacity with the name struck through, per the design authority's M2 canvas.
+ * The strike is on the name rather than the row so the price stays legible: you
+ * are about to decide whether to turn this back on, and the price is part of that.
+ */
+.board-item[data-unavailable="true"] {
+  opacity: 0.42;
+}
+
+.board-item[data-unavailable="true"] .board-item-name {
+  text-decoration: line-through;
+}
+
+/*
+ * The annotation is UI ink, deliberately not the board's. Product annotations are
+ * "not board content" (README), so this uses its own family and colour rather than
+ * inheriting the theme's — a guest must never be able to mistake one for the menu.
+ */
+.board-item-note {
+  margin: 0.3rem 0 0;
+  font-family: var(--sky-font-family, system-ui, sans-serif);
+  font-size: 11.5px;
+  font-style: normal;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #8a2929;
+  opacity: 1;
+}
