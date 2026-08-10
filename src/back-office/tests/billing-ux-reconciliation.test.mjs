@@ -46,7 +46,13 @@ test("canonical opportunities and dismissals remain deterministic in Back Office
 });
 
 test("Back Office coordinates one prompt surface and one upgrade sheet", () => {
-  assert.match(app, /allowed && !inlineOpportunity && !upgradeContext/);
+  // The sidebar nudge is no longer rendered: it was drawn for the 270px sidebar
+  // and spills out of the 76px rail that replaced it. Upgrade and marketing
+  // surfaces are their own scheduled work, and that work places it in the new
+  // shell. What still has to hold is the rule this test exists for — one prompt
+  // surface at a time, and never one behind the upgrade sheet.
+  assert.match(app, /inlineOpportunity && !upgradeContext/);
+  assert.doesNotMatch(app, /<SidebarUpgradeNudge/);
   assert.match(app, /inlineOpportunity && !upgradeContext/);
   // The locked nav entry moved into the rail when the 76px shell replaced the
   // grouped sidebar. Still one component, rendered in one place.

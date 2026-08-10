@@ -250,11 +250,12 @@ test("the board is laid out at one screen-shaped logical size", () => {
   assert.equal(boardAspectRatio, 16 / 9);
 });
 
-test("a board scales by the tighter dimension, so it keeps its shape", () => {
+test("a board fills the width it is given, cropping the bottom rather than shrinking", () => {
   assert.equal(scaleToFit(1920, 1080), 1);
   assert.equal(scaleToFit(960, 540), 0.5);
-  // A box that is wider than 16:9 is limited by its height, and the reverse.
-  assert.equal(scaleToFit(1920, 540), 0.5);
+  // A short, wide box fills the width and crops the bottom rather than shrinking
+  // into a letterbox - the pending card reserves 30px for its amber strip.
+  assert.equal(scaleToFit(1920, 540), 1);
   assert.equal(scaleToFit(960, 1080), 0.5);
 });
 

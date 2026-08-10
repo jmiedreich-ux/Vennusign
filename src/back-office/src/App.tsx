@@ -35,7 +35,6 @@ import VenueOperations from "./VenueOperations";
 import InlineFeatureHint from "./InlineFeatureHint";
 import LockedNavigationItem from "./LockedNavigationItem";
 import LockedSectionPreview from "./LockedSectionPreview";
-import SidebarUpgradeNudge from "./SidebarUpgradeNudge";
 import UpgradeSheet, { type BillingInterval } from "./UpgradeSheet";
 import BillingStatusCard from "./BillingStatusCard";
 import TierDecisionDialog from "./TierDecisionDialog";
@@ -290,12 +289,25 @@ export default function App() {
       : route.path === "schedules"
         ? "scheduling"
         : "operations";
-  const inlineOpportunity = allowed
+  const inlineOpportunity = allowed && route.path !== "menu"
     ? opportunities.find(item => upgradePanelForFeature(item.featureKey) === routePanel)
     : undefined;
   const lockedOpportunity = !allowed && routeDecision?.resolution === "review_product_access"
     ? opportunities.find(item => item.featureKey === route.upgradeFeature) ?? opportunities[0]
     : undefined;
+  /*
+   * No upgrade prompts on Menus.
+   *
+   * Criterion 8 is one of the three this milestone closes: a capability outside
+   * the account's plan renders nothing - no disabled control, no tooltip, no
+   * placeholder. An inline card advertising a feature the plan does not include
+   * was rendering above the venue name on Menus home, which is exactly the
+   * placeholder that criterion forbids and, per the owner, marketing surfaces are
+   * scheduled work of their own rather than something this shell carries.
+   *
+   * Scoped to Menus rather than removed everywhere: the other areas' prompts are
+   * Track 1's deliberate upgrade path, and retiring them is that work's decision.
+   */
   const dismiss = (featureKey: string) => {
     dismissUpgradeFeature(featureKey);
     setDismissalVersion(version => version + 1);
@@ -457,13 +469,15 @@ export default function App() {
       onSignOut={signOut}
       open={navigationOpen}
     >
-      {billing && allowed && !inlineOpportunity && !upgradeContext
-        ? <SidebarUpgradeNudge
-            key={dismissalVersion}
-            effectiveFeatures={billing.effectiveFeatures}
-            onUpgrade={setUpgradeContext}
-          />
-        : null}
+      {/*
+        The sidebar upgrade nudge has no home in a 76px rail. It was drawn for the
+        270px sidebar and spilled out of the rail across the page — a carousel of
+        marketing panels with pagination dots, at icon width. Rather than shrink a
+        marketing surface into a column it does not fit, it is not rendered here:
+        upgrade and marketing surfaces are their own scheduled work (milestone-plan,
+        After this build), and that work should decide where this lives in the new
+        shell. Named in the handoff rather than quietly dropped.
+      */}
       {upgradeNotice ? <p className="sidebar-upgrade-context" role="status">{upgradeNotice}</p> : null}
     </NavRail>
     <main>

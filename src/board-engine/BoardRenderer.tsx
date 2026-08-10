@@ -60,7 +60,15 @@ export function BoardRenderer({
       */}
       {document.sections.map((section) => (
         <section className="board-section" key={section.sectionId} data-testid="board-section">
-          <h2 className="board-section-heading">{section.name}</h2>
+          {/*
+            A heading in look, not in the document outline. A board is a picture
+            of a screen, and it can appear many times on one page — a shelf of
+            thirteen cards would otherwise inject thirteen sets of h2s between the
+            page's own headings, and a screen reader would read a menu board where
+            it expected a page structure. The words are still there and still
+            styled; they are simply not claiming to organise this document.
+          */}
+          <p className="board-section-heading" role="presentation">{section.name}</p>
           <ul className="board-items">
             {section.items.map((item) => (
               <li className="board-item" key={item.itemId} data-testid="board-item" data-item-id={item.itemId}>

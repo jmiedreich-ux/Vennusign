@@ -38,6 +38,11 @@
 
 .board {
   box-sizing: border-box;
+  /* The engine decides the board typography, including alignment. Anything that
+     wraps it - a card is a <button>, and buttons centre their text - would
+     otherwise re-typeset the board, and the card would stop being a picture of
+     the TV in the one way nobody would think to check. */
+  text-align: left;
   width: 100%;
   height: 100%;
   padding: var(--board-board-padding);

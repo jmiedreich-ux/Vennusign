@@ -169,7 +169,10 @@ test.describe("the shelf", () => {
 
     // Q195 and build-decision 16: six items, Put away directly after Duplicate,
     // Take off the screens alone below the last divider.
-    await expect(card.locator('[role="menuitem"]')).toHaveText([
+    // Plain buttons in a disclosure, not role="menu": the roles were there without
+    // the arrow-key navigation they promise, which tells a screen-reader user to
+    // expect behaviour that does not exist.
+    await expect(card.getByTestId("card-menu").locator("button")).toHaveText([
       "Open",
       "Quick update",
       "Go back to…",

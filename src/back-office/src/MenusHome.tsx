@@ -176,7 +176,7 @@ export default function MenusHome({
               onClick={() => onFixScreens(screensNeedingAttention)}
               data-testid="fix-these"
             >
-              {screensNeedingAttention.length === 1 ? "Check the screen" : `Fix these ${screensNeedingAttention.length}`}
+              {screensNeedingAttention.length === 1 ? "Check the screen" : "Check the screens"}
             </button>
           ) : null}
           {atScale ? (
@@ -327,10 +327,41 @@ function MenuCard({ menu, unavailable, busy, configuration, accessToken, venueNa
   // kind of disagreement nobody reports; they just stop trusting the number.
   const pending = hasChangesWaiting(menu);
 
-  const close = () => {
+  const close = (returnFocus = false) => {
     setOpen(false);
     if (details.current) details.current.open = false;
+    if (returnFocus) details.current?.querySelector("summary")?.focus();
   };
+
+  /**
+   * Escape closes it, and a click anywhere else closes it.
+   *
+   * A menu you can open and cannot dismiss is the shape a keyboard user gets
+   * stuck in: tab walks the six items and then carries on into the next card
+   * with the menu still hanging open behind them. Escape returns focus to the
+   * button that opened it, because focus left somewhere arbitrary is the same
+   * problem wearing a different hat.
+   */
+  useEffect(() => {
+    if (!open) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        close(true);
+      }
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      if (!details.current?.contains(event.target as Node)) close();
+    };
+
+    document.addEventListener("keydown", onKeyDown, true);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown, true);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [open]);
 
   const goBack = async () => {
     const entries = history ?? (await loadMenuHistory(configuration, accessToken, menu.menuId));
@@ -352,6 +383,13 @@ function MenuCard({ menu, unavailable, busy, configuration, accessToken, venueNa
         <button type="button" className="menu-card__open" onClick={onOpen} data-testid="open-menu">
           {/* The board IS the door — there is no Open button on the card. */}
           <span className="visually-hidden">Open {menu.name}</span>
+          {/*
+            The board is a picture, so it is named rather than read out. Without
+            this the button's accessible name became the entire menu — every item,
+            price and description concatenated — and a person using a screen
+            reader heard a board where they expected a link to one.
+          */}
+          <span aria-hidden="true">
           <BoardFrame
             board={menu.board}
             unavailableItemIds={unavailable}
@@ -364,6 +402,7 @@ function MenuCard({ menu, unavailable, busy, configuration, accessToken, venueNa
             surface="guest"
             fallback={<span className="menu-card__never-published">Never published</span>}
           />
+          </span>
         </button>
 
 
@@ -387,16 +426,16 @@ function MenuCard({ menu, unavailable, busy, configuration, accessToken, venueNa
             <Ellipsis size={15} aria-hidden />
           </summary>
           {open ? (
-            <div className="menu-card__actions" role="menu">
+            <div className="menu-card__actions" data-testid="card-menu">
               {/* Verbatim copy, in this order. "Put away" sits directly after
                   Duplicate; "Take off the screens" is alone below the last
                   divider (Q195, build-decision 16). */}
-              <button type="button" role="menuitem" onClick={onOpen}>Open</button>
-              <button type="button" role="menuitem" onClick={onOpen}>Quick update</button>
+              <button type="button" onClick={onOpen}>Open</button>
+              <button type="button" onClick={onOpen}>Quick update</button>
               <hr />
               <button
                 type="button"
-                role="menuitem"
+
                 disabled={busy || menu.publishedVersion === null}
                 data-testid="go-back-to"
                 onClick={() => { close(); void onAct(menu.menuId, goBack); }}
@@ -405,7 +444,7 @@ function MenuCard({ menu, unavailable, busy, configuration, accessToken, venueNa
               </button>
               <button
                 type="button"
-                role="menuitem"
+
                 disabled={busy}
                 data-testid="duplicate"
                 onClick={() =>
@@ -420,7 +459,7 @@ function MenuCard({ menu, unavailable, busy, configuration, accessToken, venueNa
               </button>
               <button
                 type="button"
-                role="menuitem"
+
                 disabled={busy}
                 data-testid="put-away"
                 onClick={() =>
@@ -435,7 +474,7 @@ function MenuCard({ menu, unavailable, busy, configuration, accessToken, venueNa
               <hr />
               <button
                 type="button"
-                role="menuitem"
+
                 className="menu-card__danger"
                 disabled={busy}
                 data-testid="take-off-screens"
@@ -497,9 +536,63 @@ function TakeOffDialog({
   onConfirm: () => void;
 }) {
   const screens = menu.screenIds.length;
+  const panel = useRef<HTMLDivElement>(null);
+
+  /**
+   * If it says aria-modal, it has to behave like one.
+   *
+   * It did not: focus stayed on the document when it opened, Escape did nothing,
+   * and Tab walked straight out into the cards behind it. That is worse than an
+   * ordinary panel, because a screen reader has been told the rest of the page is
+   * inert while it plainly is not — and this is the confirmation standing in front
+   * of the one destructive act on the shelf.
+   */
+  useEffect(() => {
+    panel.current?.querySelector<HTMLElement>("button")?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        onCancel();
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const focusable = panel.current?.querySelectorAll<HTMLElement>("button:not([disabled])");
+      if (!focusable?.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+
+      // Wrap at both ends rather than letting focus leave: cancelling should be
+      // a decision, not something you tab past without noticing.
+      if (event.shiftKey && (active === first || !panel.current?.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => document.removeEventListener("keydown", onKeyDown, true);
+  }, [onCancel]);
 
   return (
-    <div className="menu-card__dialog" role="dialog" aria-modal="true" aria-label={`Take ${menu.name} off the screens`} data-testid="take-off-dialog">
+    <>
+    {/* Clicking away cancels, which is the safe outcome for a destructive act. */}
+    <div className="menu-card__scrim" onClick={onCancel} data-testid="take-off-scrim" />
+    <div
+      className="menu-card__dialog"
+      ref={panel}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Take ${menu.name} off the screens`}
+      data-testid="take-off-dialog"
+    >
       <h3>Take {menu.name} off the screens?</h3>
       <p>It stays on your Menus home and keeps its history. You can put it back at any time.</p>
 
@@ -518,7 +611,7 @@ function TakeOffDialog({
             : `${screens} screens are showing it.`}
       </p>
       <p className="menu-card__dialog-note">
-        Taking it off is permanent, so it waits with your other changes and reaches the screens when you publish.
+        It waits with your other changes and reaches the screens when you publish.
       </p>
 
       <div className="action-surface">
@@ -528,5 +621,6 @@ function TakeOffDialog({
         </button>
       </div>
     </div>
+    </>
   );
 }

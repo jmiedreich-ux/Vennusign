@@ -232,7 +232,7 @@ test("the card menu is the six named actions, in order, verbatim", async () => {
   // Read the labels out of the menu in the order they are written, and compare
   // the whole list. Matching each one in turn would pass on a menu that also
   // contained three extra items nobody approved.
-  const menu = markup.slice(markup.indexOf('role="menu"'), markup.indexOf("</details>"));
+  const menu = markup.slice(markup.indexOf('data-testid="card-menu"'), markup.indexOf("</details>"));
   const labels = [...menu.matchAll(/>\s*([A-Z][^<>{}]*?)\s*<\/button>/g)].map(match => match[1]);
 
   assert.deepEqual(labels, order);

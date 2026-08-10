@@ -107,7 +107,7 @@ export function shelfHeadline(menus) {
   const inUse = menusInUse(menus);
   if (inUse.length === 0) return "Nothing on your screens yet.";
 
-  const holding = inUse.filter((menu) => menu.draftCount > 0);
+  const holding = inUse.filter(hasChangesWaiting);
   if (holding.length === 0) {
     const onScreens = inUse.filter((menu) => menu.screenIds.length > 0);
     if (onScreens.length === 0) return "Nothing is on your screens.";
@@ -171,7 +171,7 @@ export function cardStatus(menu) {
 
   const screens = menu.screenIds?.length ?? 0;
   if (screens === 0) return { tone: "idle", text: "Not on a screen" };
-  if (menu.draftCount > 0) {
+  if (hasChangesWaiting(menu)) {
     return { tone: "pending", text: screens === 1 ? "On your screen" : `On ${screens} screens` };
   }
 
