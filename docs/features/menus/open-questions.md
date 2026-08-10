@@ -1060,6 +1060,10 @@ A **menu theme** is attached to a menu. A venue may have many of them. Coastal, 
 
 A **shell theme** is the software's own look — the current sky blue, and a dark variant later. That is what "venue theme" should mean, and it is not what `dbo.VenueThemes` holds today.
 
+Milestone 2's own theme deliverable is the **shell theme**, not menu themes: the nav rail, the tokens, the sky-blue chrome. The board render engine renders whatever menu theme a menu has attached.
+
+**A menu with no theme attached is a valid state.** It renders — it will look bad, and that is acceptable — but it must not blank, fall back silently to something invented, or fail. The menu editor only *attaches* a theme; authoring one is the theme builder's job.
+
 Menu themes do not belong in `VenueThemes`. See the theme-model note in `ai/handoffs/current.md`: no menu-theme table exists, `Menus.Theme` is free text defaulting to a look that was never built, and `VenueThemes` currently carries board-render fields. Naming the model is milestone 2's first design decision, before the render engine exists rather than after.
 
 <sub>Menus.dc.html "Pick a look" vs slice-plan slice 2 vs M2 inspector [wf-import-actions, record-consistency]</sub>
