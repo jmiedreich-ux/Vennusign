@@ -197,7 +197,9 @@ Top bar 58px: breadcrumb ("Menus / Summer Menu", "Menus" is the way back), Quick
 
 **There is no Preview button** — the canvas *is* the preview (decision from M2c). Adding one would imply the thing you are editing is not real.
 
-**Inspector**: item name + ✕, then the availability panel, then Name / Description / Price, then two checkboxes (Feature on the board, Add a photo), then a footer line pointing at the theme. **Six controls total.** No Content/Style tabs, no Advanced, no per-item currency. The only warning shown is one that matters: "Two words over — wraps to 3 lines on Patio".
+**Inspector**: item name + ✕, then the availability panel, then Name / Description / Price, then a footer line pointing at the theme. **Four controls total**, plus the theme footer. No Content/Style tabs, no Advanced, no per-item currency. The only warning shown is one that matters: "Two words over — wraps to 3 lines on Patio".
+
+*Amended 2026-08-10 (milestone 3 readiness pass).* This read "two checkboxes (Feature on the board, Add a photo)" and "Six controls total", which Q107 and Q108 had already put out of scope — the featured-item board treatment is unspecified and photos are a separate feature. A shared item also carries one quiet line under the price naming the other boards it sits on (Q5's design follow-up, resolved provisionally at that pass); it is a statement of fact, not a sixth control.
 
 **Publish bar**: "3 changes not on your screens" (14px/700 `#7d5911`), "Draft saved 10:42am by Alex · go back to… · discard draft", the three screen chips, "Review first", "Publish 3 changes".
 

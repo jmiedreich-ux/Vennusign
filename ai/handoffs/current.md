@@ -24,7 +24,8 @@ Updated 2026-08-10, after Menus Milestone 2 merged.
 
 ## Exact Next Action
 
-1. **Begin Menus Milestone 3 — builder and adding items.** Milestone 2 is merged and
+1. **Menus Milestone 3 is under way** — issue **#690**, branch `feature/menus-m3-builder`,
+   claim recorded, readiness pass complete (§Milestone 3 readiness pass below). Milestone 2 is merged and
    accepted; PR #689 closed issue #687. Carry its standing instruction: **browser
    assertions ship with the surface, not a step later.** Q209 is open and running on its
    provisional default — settle it in milestone 3 if the builder touches the card, and do
@@ -338,6 +339,128 @@ five reviews and milestone 2 needed one, which is the evidence the owner weighed
 **#688** plus an E2E pairing assertion found in this run, all four verified pre-existing
 by stashing every M2 change and re-running. `#688` now covers all four; neither suite is
 in the routine gate, which is the actual defect.
+
+## Milestone 3 readiness pass — 2026-08-10
+
+The owner asked that M3 go through the dev process before coding, as M2 did, and — being
+asleep — that ambiguity be resolved by judgment rather than left blocking. Every call
+below is **provisional and cheap to overturn**; each names its reasoning.
+
+### The complete user behaviour
+
+*A person opens one menu, changes what it says — a price, a name, an item, a section,
+the order things sit in — sees the board change as they type because the canvas is the
+board, and then decides, deliberately, to put it on the screens.*
+
+Immediately before: the shelf card (M2). Immediately after: the screens, via Publish;
+or back to the shelf via the breadcrumb. The same behaviour lives in three other places
+that must agree — the shelf's card render, the publish diff, and (from M4) the TV.
+
+### Path map
+
+**In:** card click · `#/menu/{menuId}` deep link **(new — the builder gets an address)** ·
+back from Play · redirect after create (M6). **Unvalidated today:** all of them; the
+builder does not exist.
+
+**States that must render:** empty menu (no sections) · section with no items · item with
+no price (quiet flag, publish not blocked, Q113) · 86'd item (selectable, editable,
+red-tinted panel, Q104) · nothing selected (inspector holds its place, Q106) · never
+published · put-away menu open for editing · loading · API error · save failure (amber
+byline, retry, Publish blocked, Q197) · 401 mid-edit (holds the change, sends after
+sign-in, Q199) · permission denied · no screens paired ("No screens yet", Q101).
+
+**Refusals the UI must speak:** ceiling reached (items per menu) · name blank or >200
+(reverts on blur, Q119) · description >1000 · publish conflict (a screen another menu now
+owns) · publish while a save is unconfirmed · stale act after someone else published.
+
+**Out:** Publish · breadcrumb to the shelf · Play (visible, honest blocked state, Q102) ·
+browser refresh mid-edit · leave and return.
+
+### Invariants M3 gains
+
+- **An item appears at most once on a board.** The schema enforces once per *section*
+  (`UQ_Placements_SectionItem`) but not once per *menu*, so Q112's "picking it jumps
+  instead of duplicating" is currently a UI promise with nothing behind it.
+- **No two placements in a section share a sort order** — otherwise board order depends
+  on a tiebreaker nobody chose.
+- **A deleted section leaves no placement behind**, and never deletes an item.
+- **Every placement's section belongs to its menu** — already enforced by
+  `FK_Placements_SectionOnMenu`; asserted so a future schema edit cannot quietly drop it.
+
+### Ready
+
+- The derived-draft model means **the builder needs no draft plumbing at all**:
+  `MenuSnapshot.Diff` already compares name, theme, dwell, loop warning, screens,
+  sections, items and placements, so every builder edit produces its own draft change
+  and the count cannot disagree with what Publish ships.
+- `IContentRepository` already carries most of the writes: `CreateItemOnMenuAsync`,
+  `CreatePlacementAsync`, `RemovePlacementAsync`, `ReorderPlacementsAsync`,
+  `UpdateItemAsync`, `GetItemsAsync` (the library search), `GetPlacementsForItemAsync`
+  ("also on Late Night"), `GetWorkingSnapshotAsync` (the canvas's board).
+- The board engine renders the canvas as-is — `BoardSurface = "preview"` already exists
+  for the annotations flag (Q135).
+- Design authority is production-detailed: four columns at 212/flex/296, the six
+  inspector controls, the publish bar, the selection ring `#2a78d6` (already a token).
+
+### Decisions taken in this pass
+
+1. **Design follow-up 1 is Q5, not Q76** — the milestone plan cites the wrong question.
+   Q76 is refresh cadence; **Q5** carries the flag ("the editing flow must feel easy —
+   possibly a quick price-change mode — design follow-up required before slice 3 builds
+   the inspector flow").
+   **Resolved without inventing a mode:** a shared item's inspector states the fact
+   quietly and permanently under the price — *"Also on Late Night and Brunch — they show
+   the new price when you publish them"* — reusing Q123's locked vocabulary (two names,
+   then "on 3 boards"). No dialog, no confirmation step. A modal on every price edit is
+   the opposite of "feels easy", and a separate quick-price *mode* is undesigned, named
+   in no milestone, and would be the second editor that decision 15 and M2c's read-only
+   rule both exist to refuse.
+2. **The builder gets its own address**, `#/menu/{menuId}` — closing the note M2 left in
+   `App.tsx`. Refresh mid-edit and Back both survive, which the DoD navigation group
+   requires and today's `editingMenuId` React state cannot do.
+3. **Menu themes: still no table, and no attach write.** The picker ships and shows
+   Q86's empty state from `GET content/menu-themes` → `[]`. A theme that cannot exist
+   cannot be attached, and creating an empty table with no writer repeats exactly the
+   dead-schema problem the migration baseline flagged (`AuthorityRoles`,
+   `LayoutTemplates`). Table and attach land with the theme editor that first writes one.
+4. **`BackOfficeMenusController` is retired**, its builder-relevant writes consolidated
+   onto `api/back-office/content` — one base for one model, finishing step 0's rename.
+   `run-m1-demo.ps1` and `BackOfficeMenusControllerTests` move with it. The legacy
+   `MenuSectionsEditor`, `MenuItemsEditor` and `QuickUpdateMode` components go in the
+   same PR, with their specs **rewritten, not deleted** — `menu-save-race.spec.ts` guards
+   a real stale-overwrite race and must be re-expressed against the builder's save model.
+5. **Sections are deleted, not archived** (Q96). `MenuSections.IsActive` loses its last
+   writer; the migration hard-deletes any `IsActive = 0` section and its placements,
+   names what it discards, and drops the column. Leaving the column and its
+   `IsActive = 1` filters would mean a future writer of 0 silently changes a live board.
+6. **Reorder becomes one guarded write.** Both section and placement reorder today read
+   the current set, validate completeness in C#, then write — unlocked. A concurrent add
+   between the two makes the write describe a set that no longer exists. This is the
+   **fourth** instance of this codebase's most common defect shape ("two values that must
+   describe the same instant are read once, under one lock").
+
+### Gaps M3 must close before the builder can be honest
+
+- No working-board read: the canvas needs the menu **as it stands**, not the published
+  board the shelf draws. `GetWorkingSnapshotAsync` exists; nothing exposes it.
+- No section delete-that-releases-placements; no placement remove wired to a UI;
+  no library search read; no "which boards is this item on" read.
+- `ReorderPlacementsAsync` trusts a partial list: omitted placements keep stale sort
+  orders and can collide. The service validates completeness, but outside the write.
+- `MenuItemManagementService.ReorderAsync` reports "Menu section does not exist" for a
+  section that exists and is merely empty.
+- Undo/redo has no model. Design: every builder mutation is a command carrying its
+  inverse; ⌘Z issues the inverse write; session-scoped, capped, never persisted, never
+  named in settings (decision 7). A failed inverse says so rather than clobbering.
+- ⌘K (Q121), the "Viewing as" list (Q101), the bulk-place drawer (Q95/Q124) and the
+  publish bar's per-screen chips with the ≤6 cutover (Q161/Q167/Q168) have no code.
+
+### Records that state something untrue (fixed at M3 start)
+
+- `milestone-plan.md` design follow-up 1 cites **Q76**; the flag is **Q5**.
+- `README.md` (design authority) M2 inspector still lists "two checkboxes (Feature on
+  the board, Add a photo)" and calls them "**Six controls total**" — Q107 and Q108 put
+  both out of scope, so the inspector has four.
 
 ## Boundaries
 

@@ -55,7 +55,7 @@ Two consequences landed with it, both in milestone 1:
 
 ## Design follow-ups (needed before the milestone that consumes them)
 
-1. **Before milestone 3:** quick price-change flow feel (Q76 flag — shared-price edits must feel easy).
+1. **Before milestone 3:** quick price-change flow feel (**Q5** flag — shared-price edits must feel easy). *Corrected 2026-08-10: this line cited Q76, which is about refresh cadence; the flag is Q5's.* **Resolved at the milestone 3 readiness pass (2026-08-10), provisionally:** the inspector states the fact quietly and permanently under the price — "Also on Late Night and Brunch — they show the new price when you publish them", using Q123's locked vocabulary — with no dialog and no separate quick-price mode. A confirmation on every price edit is the opposite of "feels easy", and a second editing mode is undesigned and would be the second editor decision 15 refuses.
 2. **Before milestone 5:** a small design spot for the dwell-setting control (Q9) and the loop-warning threshold (Q175).
 3. **Before milestone 6:** reconcile the "Skip these for now" path with the owner's resolve-at-import rule — a menu with flagged/guessed items must never publish them to a live board; skipping must force resolution before publish or the skip path goes (Q83). Plus a design spot for the near-miss match picker (Q94).
 

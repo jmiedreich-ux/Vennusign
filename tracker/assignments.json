@@ -1,9 +1,19 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-10T10:35:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-10T11:05:00Z",
+  "activeAssignments": [
+    {
+      "assignment": "Menus milestone 3 \u2014 menu builder + adding items",
+      "issue": 690,
+      "branch": "feature/menus-m3-builder",
+      "owner": "Claude Code for JeremyPC",
+      "claimedUtc": "2026-08-10T11:05:00Z",
+      "status": "readiness pass complete; coding in progress",
+      "notes": "Readiness pass 2026-08-10 recorded in issue #690 and ai/handoffs/current.md. Six decisions taken by judgment while the owner was asleep, at their instruction; all provisional. Standing instruction from M2: browser assertions ship with the surface, not a step later."
+    }
+  ],
   "desktopSessionLock": null,
-  "nextAvailableWorkPackage": "Menus milestone 3 \u2014 builder and adding items (unblocked 2026-08-10; not yet claimed, no issue opened)",
+  "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
