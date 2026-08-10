@@ -29,25 +29,37 @@
  * is deliberately not UI typography, because a board is menu content and should
  * read as a menu rather than as an application (design README, board rendering).
  */
+/*
+ * The sizes are the design README's board measurements scaled up to the board's
+ * own 1920px logical width.
+ *
+ * Worth stating, because getting it wrong is invisible until you look: the
+ * README's numbers - an 11.5px section heading, a 15-19px item name - are
+ * measured on the hi-fi's CARD, which is about 320px wide. A card is a 1920px
+ * board shrunk by six, so those become roughly 69px and 96px on the board
+ * itself. Setting 32px here instead, as if the numbers were board pixels, makes
+ * a card render as a nearly blank rectangle with a few grey specks on it - which
+ * is exactly what the first pass did.
+ */
 export const plainBoard = Object.freeze({
   "board-background": "#ffffff",
-  "board-padding": "4.5rem 5rem",
+  "board-padding": "72px 80px",
   "board-font": "'Playfair Display', Georgia, 'Times New Roman', serif",
 
   "section-heading-font": "inherit",
   "section-heading-color": "#1a1a1a",
-  "section-heading-size": "1.6rem",
+  "section-heading-size": "69px",
   "section-heading-tracking": "0.22em",
-  "section-gap": "2.75rem",
+  "section-gap": "64px",
 
   "item-font": "inherit",
   "item-name-color": "#1a1a1a",
-  "item-name-size": "2rem",
+  "item-name-size": "96px",
   "item-name-tracking": "0.055em",
   "item-price-color": "#1a1a1a",
   "item-description-color": "#4a4a4a",
-  "item-description-size": "1.5rem",
-  "item-gap": "1.15rem",
+  "item-description-size": "81px",
+  "item-gap": "34px",
 
   "leader-style": "dotted",
   "leader-color": "#9a9a9a"

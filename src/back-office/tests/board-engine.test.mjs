@@ -314,20 +314,23 @@ test("a guest surface carries no annotation markup", async () => {
   assert.match(code, /surface = "guest"/);
 });
 
-test("no two engine files differ only by case", async () => {
-  // Found the hard way: BoardFrame.tsx and boardFrame.mjs sat side by side, and on
-  // a case-insensitive filesystem the bundler resolved "./BoardFrame" to the .mjs
-  // and failed. Worse than the failure is that it would resolve DIFFERENTLY on a
-  // case-sensitive filesystem, so the same commit builds on one machine and not
-  // another.
-  const names = await readdir(engineRoot);
-  const seen = new Map();
+test("no two source files differ only by case", async () => {
+  // Found the hard way, twice: BoardFrame.tsx beside boardFrame.mjs, and then
+  // MenusHome.tsx beside menusHome.mjs. On a case-insensitive filesystem the
+  // bundler resolves "./BoardFrame" to the .mjs and the build fails. Worse than
+  // the failure is that it resolves DIFFERENTLY on a case-sensitive filesystem,
+  // so the same commit builds on one machine and not another.
+  //
+  // Both places, because the second one taught us the first fix was too narrow.
+  for (const directory of [engineRoot, new URL("../src/", import.meta.url)]) {
+    const seen = new Map();
 
-  for (const name of names) {
-    const key = name.toLowerCase();
-    const clash = seen.get(key);
-    assert.equal(clash, undefined, `'${name}' and '${clash}' differ only by case`);
-    seen.set(key, name);
+    for (const name of await readdir(directory)) {
+      const key = name.toLowerCase();
+      const clash = seen.get(key);
+      assert.equal(clash, undefined, `'${name}' and '${clash}' differ only by case`);
+      seen.set(key, name);
+    }
   }
 });
 

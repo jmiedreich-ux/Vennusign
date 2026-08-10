@@ -29,6 +29,7 @@ import {
 } from "./navigation.mjs";
 import NavRail from "./NavRail";
 import MenuSectionsEditor from "./MenuSectionsEditor";
+import MenusHome from "./MenusHome";
 import PosIntegrationAdministration from "./PosIntegrationAdministration";
 import VenueOperations from "./VenueOperations";
 import InlineFeatureHint from "./InlineFeatureHint";
@@ -101,6 +102,14 @@ export default function App() {
     const value = new URLSearchParams(window.location.search).get("starterMenu");
     return value && ["restaurant", "cafe", "bar"].includes(value) ? value as "restaurant" | "cafe" | "bar" : undefined;
   }, []);
+  /**
+   * Null means the shelf; anything else means the editor is open.
+   *
+   * Interim, and deliberately not a route: milestone 3 replaces the editor with
+   * the builder and gives it its own address. Inventing a URL for a surface
+   * about to be replaced would leave a dead link behind (Q100).
+   */
+  const [editingMenuId, setEditingMenuId] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState(() =>
     consumeAccessTokenFromUrl() ?? sessionStorage.getItem(tokenStorageKey) ?? customerSessionAccess);
   const [session, setSession] = useState<BackOfficeSession>();
@@ -419,6 +428,11 @@ export default function App() {
     }
   };
 
+  // Menus home draws its own page header (the hi-fi has the shelf owning the
+  // page), and only when it is actually the shelf rather than the editor behind
+  // a card.
+  const showsOwnHeader = route.path === "menu" && editingMenuId === null;
+
   return <div className="shell">
     {reviewDialog}
     {/* Below the sidebar breakpoint the nav collapses behind this control, so page
@@ -453,8 +467,13 @@ export default function App() {
       {upgradeNotice ? <p className="sidebar-upgrade-context" role="status">{upgradeNotice}</p> : null}
     </NavRail>
     <main>
-      <header><div><p>Venue workspace</p><h1>{route.label}</h1></div><span>Secure session</span></header>
-      <section className="workspace-context" aria-labelledby="workspace-context-heading">
+      {/* The shelf carries its own header — the venue eyebrow, the status
+          headline, and the actions beside it — so the generic page title would
+          be a second heading saying "Menu" above it. Every other area keeps the
+          shell's, which is what it was built for. */}
+      {showsOwnHeader ? null : <header><div><p>Venue workspace</p><h1>{route.label}</h1></div><span>Secure session</span></header>}
+      {/* Not `hidden`: the attribute loses to this section's own display rule. */}
+      {showsOwnHeader ? null : <section className="workspace-context" aria-labelledby="workspace-context-heading">
         <div className="workspace-context__active">
           <p id="workspace-context-heading">Active workspace</p>
           <strong title={`${session.organizationName} — ${session.venueName}`}>{session.organizationName}</strong>
@@ -480,7 +499,7 @@ export default function App() {
             {session.account.email ? <span>{session.account.email}</span> : null}
           </div>
         </div>
-      </section>
+      </section>}
       {contextNotice ? <p className="workspace-context__notice" role="status" aria-live="polite">{contextNotice}</p> : null}
       {checkoutReturn ? <section className={`checkout-return checkout-return--${checkoutReturn}`} role="status">
         <div>
@@ -527,14 +546,37 @@ export default function App() {
         ? <AccountSecurity configuration={configuration} customerSession={accessToken === customerSessionAccess} />
         : allowed && route.path === "pos"
         ? <PosIntegrationAdministration key={session.venueId} configuration={configuration} accessToken={accessToken} />
-        : allowed && route.path === "menu"
-        ? <MenuSectionsEditor
+        : allowed && route.path === "menu" && editingMenuId === null
+        ? <MenusHome
             key={session.venueId}
             configuration={configuration}
-            apiKey={accessToken}
-            venueId={session.venueId}
-            starterMenu={starterMenu}
+            accessToken={accessToken}
+            venueName={session.venueName}
+            /* Interim wiring, until milestones 3 and 6 (Q100): a card opens the
+               editor that exists, and Add a menu uses the create flow that
+               exists. Anything with no destination is absent, never greyed. */
+            onOpenMenu={setEditingMenuId}
+            onAddMenu={() => setEditingMenuId("")}
+            onFixScreens={() => { window.location.hash = "#/screens"; }}
           />
+        : allowed && route.path === "menu"
+        ? <>
+            <button
+              type="button"
+              className="action-secondary menus-home__back"
+              onClick={() => setEditingMenuId(null)}
+              data-testid="back-to-menus"
+            >
+              ← Menus
+            </button>
+            <MenuSectionsEditor
+              key={session.venueId}
+              configuration={configuration}
+              apiKey={accessToken}
+              venueId={session.venueId}
+              starterMenu={starterMenu}
+            />
+          </>
         : allowed && ["screens", "themes", "schedules", "tap-list"].includes(route.path)
         ? <VenueOperations
             key={session.venueId}

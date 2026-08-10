@@ -1,4 +1,4 @@
-import { test, expect, openAs } from "../fixtures";
+import { test, expect, openAs, openMenuEditorAs } from "../fixtures";
 import { seed } from "../seed";
 
 /**
@@ -10,7 +10,7 @@ test.describe("menu item persistence (isolated data)", () => {
   test("an edit survives a reload", async ({ page }) => {
     const data = await seed({ role: "owner", label: "persist" });
 
-    await openAs(page, "owner", "menu");
+    await openMenuEditorAs(page, "owner");
     await page.getByTestId("menu-picker").selectOption(data.menuId);
 
     const row = page.getByTestId("menu-item").filter({ has: page.locator(`[value="${data.itemName}"]`) });
@@ -30,6 +30,7 @@ test.describe("menu item persistence (isolated data)", () => {
     await expect(row).toHaveAttribute("data-save-state", "saved");
 
     await page.reload();
+    await openMenuEditorAs(page, "owner");
     await page.getByTestId("menu-picker").selectOption(data.menuId);
     await expect(
       page.locator(`[data-item-id="${data.itemId}"]`).getByTestId("item-description")
@@ -39,7 +40,7 @@ test.describe("menu item persistence (isolated data)", () => {
   test("availability reflects the persisted value", async ({ page }) => {
     const data = await seed({ role: "owner", label: "availability" });
 
-    await openAs(page, "owner", "menu");
+    await openMenuEditorAs(page, "owner");
     await page.getByTestId("menu-picker").selectOption(data.menuId);
 
     const row = page.locator(`[data-item-id="${data.itemId}"]`);
@@ -49,6 +50,7 @@ test.describe("menu item persistence (isolated data)", () => {
     await expect(row).toHaveAttribute("data-save-state", "saved");
 
     await page.reload();
+    await openMenuEditorAs(page, "owner");
     await page.getByTestId("menu-picker").selectOption(data.menuId);
     await expect(page.locator(`[data-item-id="${data.itemId}"]`)).toHaveAttribute("data-available", "false");
   });

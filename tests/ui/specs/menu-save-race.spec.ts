@@ -1,4 +1,4 @@
-import { test, expect, openAs } from "../fixtures";
+import { test, expect, openAs, openMenuEditorAs } from "../fixtures";
 import { seed } from "../seed";
 
 /**
@@ -26,7 +26,7 @@ test("an edit made while a save is in flight is not overwritten by the older sav
     return route.fallback();
   });
 
-  await openAs(page, "owner", "menu");
+  await openMenuEditorAs(page, "owner");
   await page.getByTestId("menu-picker").selectOption(data.menuId);
 
   const row = page.locator(`[data-item-id="${data.itemId}"]`);

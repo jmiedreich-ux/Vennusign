@@ -54,6 +54,28 @@ export async function openAs(page: Page, role: VennuRole, route: string) {
   await page.locator('[data-testid="nav-item"]').first().waitFor({ state: "attached" });
 }
 
+/**
+ * Opens the menu editor, through the door a person uses.
+ *
+ * Menus milestone 2 put the shelf at `#/menu`, so the editor is no longer the
+ * first thing that route shows — a card is opened to reach it. Every spec that
+ * drives the editor goes through here rather than each learning the new path,
+ * so when milestone 3 replaces the editor with the builder there is one place
+ * to change.
+ *
+ * The board is the door: there is no Open button on a card (design README,
+ * Navigation), which is why this clicks the board itself.
+ */
+export async function openMenuEditorAs(page: Page, role: VennuRole) {
+  await openAs(page, role, "menu");
+  await page.getByTestId("menus-home").waitFor();
+
+  const card = page.getByTestId("menu-card").first();
+  await card.waitFor();
+  await card.getByTestId("open-menu").click();
+  await page.getByTestId("menu-picker").waitFor();
+}
+
 export const test = base.extend<{ asOwner: Page }>({
   asOwner: async ({ page }, use) => {
     await signIn(page, "owner");

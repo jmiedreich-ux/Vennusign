@@ -1,4 +1,4 @@
-import { test, expect, openAs, apiBaseUrl, tokens } from "../fixtures";
+import { test, expect, openAs, openMenuEditorAs, apiBaseUrl, tokens } from "../fixtures";
 
 /**
  * Workbook cases 0-0, 0-1 and 0-2 - environment, deterministic fixture, owner sign-in.
@@ -24,7 +24,12 @@ test("0-0 the acceptance environment is up and answering", async ({ request }) =
 });
 
 test("0-1 the deterministic fixture is loaded", async ({ page }) => {
+  // The shelf is what this route shows from milestone 2 on, so the fixture's
+  // menu is named on a card before anything is opened.
   await openAs(page, "owner", "menu");
+  await expect(page.getByTestId("menus-home")).toContainText("Acceptance Menu");
+
+  await openMenuEditorAs(page, "owner");
 
   // The fixture's named records are what later cases assert against by name.
   await expect(page.getByTestId("menu-picker")).toContainText("Acceptance Menu");
@@ -44,6 +49,8 @@ test("0-2 the owner signs in with the configured venue access", async ({ page })
   await expect(page.locator("body")).toContainText("Track 1 Owner Review");
   await expect(page.getByTestId("locked-panel")).toHaveCount(0);
 
-  await page.goto("/#menu");
+  // Core work is reachable and editable: the shelf loads, and the editor behind
+  // a card is not refused.
+  await openMenuEditorAs(page, "owner");
   await expect(page.getByTestId("menu-item").first().getByTestId("item-name")).toBeEnabled();
 });

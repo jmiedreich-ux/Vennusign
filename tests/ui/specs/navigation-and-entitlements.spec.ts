@@ -1,4 +1,4 @@
-import { test, expect, openAs } from "../fixtures";
+import { test, expect, openAs, openMenuEditorAs } from "../fixtures";
 import { backOfficeRoutes } from "../../../src/back-office/src/navigation.mjs";
 
 /**
@@ -94,5 +94,5 @@ test("4-0 an entitlement-blocked area explains itself and leaves core work usabl
 
   // Core work stays reachable while that area is blocked.
   await page.goto("/#menu");
-  await expect(page.getByTestId("menu-picker")).toBeVisible();
+  await expect(page.getByTestId("menus-home")).toBeVisible();
 });
