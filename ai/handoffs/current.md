@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-10, after Menus Milestone 2 was built and owner-accepted on its branch.
+Updated 2026-08-10, after Menus Milestone 2 merged.
 
 ## Current State
 
@@ -10,7 +10,7 @@ Updated 2026-08-10, after Menus Milestone 2 was built and owner-accepted on its 
 - **The planning reset produced the Menus feature.** Design authority: `docs/design/approved/menus/` (`decisions.md` wins conflicts). All 208 register questions are resolved in `docs/features/menus/open-questions.md`; the six-milestone plan in `docs/features/menus/milestone-plan.md` is reconciled with every answer.
 - **Milestone 1 is merged.** PR #685 merged to `master` on 2026-08-09 as `cd449a3`, on 13 green exact-head checks at `2977bc3`; branch `feature/menus-m1-spine` is deleted, issue #684 closed. It was reworked five times: independent reviews #2 through #6 each returned REQUEST_CHANGES and each found real defects. All are closed, every one with a regression test verified to fail with its fix reverted.
 - **Milestone 1 is accepted** (owner, 2026-08-09). Milestone 1 shipped no new UI, and `AGENTS.md` gives a schema-only milestone a demo script rather than a workbook walk: `scripts/run-m1-demo.ps1` passes 12 of 12, including customer-visible assertions of what each screen is actually showing. `m1-acceptance-record.json` stays **superseded** — it was signed 2026-08-08 against the authored-draft implementation — and is kept as history; this note is the acceptance record. **Milestone 2 is unblocked.**
-- **Milestone 2 is built and owner-accepted, on its branch and not yet merged.** Owner ran the acceptance workbook 2026-08-10: 11 of 11 Pass, closure "Accept Milestone 2", record in `docs/features/menus/m2-acceptance-record.json`. One independent review so far — three blocking defects, all fixed at `4c61aa2`. **A new independent review of the exact head is required before the PR merges**, and the owner chooses the reviewing agent. Detail in §Milestone 2 — built and accepted.
+- **Milestone 2 is merged and accepted.** Owner ran the acceptance workbook 2026-08-10: 11 of 11 Pass, closure "Accept Milestone 2", record in `docs/features/menus/m2-acceptance-record.json`. One independent review, three blocking defects, all fixed at `4c61aa2`; the owner waived the second review that the first had asked for and closed the milestone on it. **Milestone 3 is unblocked.** Detail in §Milestone 2 — built and accepted.
 - **The register has one open question again: Q209**, deferred by the owner at M2 acceptance. The ⋯ card actions sit over the board and, now that Q98 removed the venue-name strip, they cover guest content — the first item's price on the accepted build. It ships on its provisional default until settled.
 - **The save model is settled: the draft is derived, not authored** (owner decision, milestone-plan §The save model). The live rows are the working state; the screens show the last published snapshot; the draft is the computed difference. Migration 058 creates no draft table, and the legacy editor now writes through `Items`/`Placements` so no path can change a screen without a publish.
 - Backlog issues #670–#683 hold the owner's out-of-scope decisions; do not silently implement them.
@@ -24,12 +24,11 @@ Updated 2026-08-10, after Menus Milestone 2 was built and owner-accepted on its 
 
 ## Exact Next Action
 
-1. **Obtain a new independent review of Menus Milestone 2 at its exact head**, then open
-   the PR for issue **#687** from `feature/menus-m2-shell-render`. The first review
-   returned three blocking defects, all fixed at `4c61aa2`, and it closed by requiring a
-   fresh review of the resulting head rather than a re-read of the findings. **The owner
-   chooses the reviewing agent** — do not launch one without asking. See §Milestone 2 —
-   built and accepted below for what the reviewer should be pointed at.
+1. **Begin Menus Milestone 3 — builder and adding items.** Milestone 2 is merged and
+   accepted; PR #689 closed issue #687. Carry its standing instruction: **browser
+   assertions ship with the surface, not a step later.** Q209 is open and running on its
+   provisional default — settle it in milestone 3 if the builder touches the card, and do
+   not treat the provisional as decided.
 2. Standing owner decisions carried out of Milestone 1: audit record kept as is (#677),
    legacy columns kept, and the three menu capabilities to become separately grantable
    (#686).
@@ -301,9 +300,9 @@ design pass. Findings and decisions, all recorded in issue **#687**:
   criterion-4 wording (Q187), the batch-1 token file's "NOT APPROVED" header
   (build-decision 8), and `PROJECT_STATUS.md`'s validation policy (CI suspended).
 
-## Milestone 2 — built and accepted, not yet merged — 2026-08-10
+## Milestone 2 — merged and accepted — 2026-08-10
 
-Branch `feature/menus-m2-shell-render`, issue **#687**, head `4c61aa2`. 84 files,
+PR **#689**, issue **#687**, branch `feature/menus-m2-shell-render` (deleted). 84 files,
 +6,563/−311, in thirteen commits: step 0 retired the word "spine", then schema, content
 API, engine, shell, shelf, browser specs, workbook, critique, review fixes. Everything
 before the merge from master carries `[skip ci]` (CI suspended by owner decision).
@@ -328,12 +327,12 @@ three while the shelf drew two. This is the same failure mode M1's retrospective
 Owner instruction, recorded: **from M3, browser assertions ship with the surface, not a
 step later.**
 
-**Where the reviewer should be pointed.** The three defects the first review found — the
-scale seed's authorization, take-off focus restoration, and a parity claim stated in the
-present tense — are fixed at `4c61aa2` and are the natural place to check that the fixes
-are real rather than nominal. Beyond them: the engine's purity claims, the shelf's
-behaviour at the scale cutover, and whether the six card actions refuse in the UI
-everything the API refuses.
+**The second review was waived — owner decision, 2026-08-10.** The first review closed by
+requiring a fresh review of the resulting head; the owner judged that review sufficient to
+close the milestone and declined a second. Recorded plainly because the consequence is
+real: the three fixes at `4c61aa2` were verified by their own tests and by the owner's
+acceptance run, but they were not themselves independently reviewed. Milestone 1 needed
+five reviews and milestone 2 needed one, which is the evidence the owner weighed.
 
 **Known and deliberate.** Four test failures sit outside the Menus suites — the three on
 **#688** plus an E2E pairing assertion found in this run, all four verified pre-existing
@@ -342,7 +341,7 @@ in the routine gate, which is the actual defect.
 
 ## Boundaries
 
-- Milestones 1 and 2 are accepted; milestone 1 is merged and milestone 2 is not. **Milestone 3 stays closed until milestone 2 merges** — acceptance alone does not open the next one, and milestone 2 still owes a new independent review. Milestones 4–6 stay closed until their predecessor is merged and accepted in turn.
+- Milestones 1 and 2 are merged and accepted, so milestone 3 may start. Milestones 4–6 stay closed until their predecessor is merged and accepted in turn.
 - Do not revive any cancelled track, phase or void work package without fresh owner approval.
 - Do not implement backlog issues #670–#683 without owner scheduling.
 - Design follow-ups (milestone-plan §Design follow-ups) must be resolved before the milestone that consumes them.
