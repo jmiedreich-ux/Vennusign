@@ -8,6 +8,7 @@ import {
   boardsPhrase,
   canDiscardDraft,
   canvasBoard,
+  changeSentence,
   draftPhrase,
   findItem,
   findOnBoard,
@@ -24,6 +25,7 @@ import {
   sectionsOf,
   screenChipCutover,
   sharedItemLine,
+  unavailableNote,
   venueTime
 } from "../src/builderModel.mjs";
 
@@ -218,6 +220,20 @@ test("the availability line names the consequence, not the setting (Q104)", () =
   assert.equal(availabilityLine({ isAvailable: true }, "UTC"), null);
 });
 
+test("the canvas note on an 86'd row carries the time it went off", () => {
+  // "86'd — hidden on all screens right now" is half a sentence: the first thing
+  // anyone asks about an item that is off is when it went off.
+  const note = unavailableNote(
+    { isAvailable: false, changedUtc: "2026-08-10T18:40:00Z" },
+    "UTC"
+  );
+  assert.equal(note, "86'd Mon 6:40pm — hidden on all screens right now");
+  assert.equal(unavailableNote({ isAvailable: true }, "UTC"), null);
+
+  // An item off before anyone recorded when still says the useful half.
+  assert.match(unavailableNote({ isAvailable: false, changedUtc: null }, "UTC"), /hidden on all screens/);
+});
+
 test("publishing waits for an unconfirmed save, and says why (Q197)", () => {
   assert.match(publishBlockedReason({ draftCount: 3, saveState: "failed" }), /hasn't saved/);
   assert.match(publishBlockedReason({ draftCount: 3, saveState: "saving" }), /Saving/);
@@ -270,6 +286,57 @@ test("⌘K searches the board in front of you, name and description (Q121)", () 
   );
   assert.deepEqual(findOnBoard(board, "   "), []);
   assert.equal(findOnBoard(board, "oyster")[0].sectionName, "Mains");
+});
+
+test("a queued change is said in the words of the thing it happened to", () => {
+  // The API answers in the model's terms because that is what cannot drift; an id
+  // is not a sentence, so the surface looks the name up on the board it is drawing.
+  assert.equal(
+    changeSentence({ targetKind: "item", targetId: "i1", field: "price", beforeValue: "9" }, board),
+    "Harbor Lemonade — price"
+  );
+  assert.equal(
+    changeSentence({ targetKind: "section", targetId: "s2", field: "name", beforeValue: null }, board),
+    "Mains — name"
+  );
+  assert.equal(
+    changeSentence({ targetKind: "screens", targetId: null, field: "screens", beforeValue: null }, board),
+    "Which screens this menu is on"
+  );
+  assert.equal(
+    changeSentence({ targetKind: "menu", targetId: null, field: "dwellSeconds", beforeValue: "8" }, board),
+    "This menu — dwell seconds"
+  );
+});
+
+test("a placement change describes the act, not the model", () => {
+  // "placed — changed" is the column name. What happened is that somebody put an
+  // item on a board, or took it off one.
+  assert.equal(
+    changeSentence({ targetKind: "placement", targetId: "i1", field: "placed", beforeValue: "false", afterValue: "true" }, board),
+    "Harbor Lemonade — added to this board"
+  );
+  assert.equal(
+    changeSentence({ targetKind: "placement", targetId: "i1", field: "placed", beforeValue: "true", afterValue: "false" }, board),
+    "Harbor Lemonade — taken off this board"
+  );
+  assert.equal(
+    changeSentence({ targetKind: "placement", targetId: "i1", field: "sortOrder", beforeValue: "0", afterValue: "1" }, board),
+    "Harbor Lemonade — moved"
+  );
+});
+
+test("a change to something no longer on the board still names it", () => {
+  // A removed item is precisely the case the board cannot look up. Its last known
+  // name is in the change itself, which beats printing a guid at somebody.
+  assert.equal(
+    changeSentence({ targetKind: "item", targetId: "gone", field: "name", beforeValue: "Berry Fizz" }, board),
+    "Berry Fizz — name"
+  );
+  assert.equal(
+    changeSentence({ targetKind: "item", targetId: "gone", field: "name", beforeValue: null }, board),
+    "An item — name"
+  );
 });
 
 test("deleting a section says where its items went (Q96)", () => {

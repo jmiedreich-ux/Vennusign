@@ -351,6 +351,102 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("builder-notice")).toContainText(/play|screen/i);
   });
 
+  test("redo puts back what undo took away", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "redo" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("add-section").click();
+    await page.getByTestId("new-section-name").fill("Redo Me");
+    await page.getByTestId("new-section-name").press("Enter");
+    await expect(page.getByTestId("rail-section").filter({ hasText: "Redo Me" })).toBeVisible();
+
+    await page.getByTestId("undo").click();
+    await expect(page.getByTestId("rail-section").filter({ hasText: "Redo Me" })).toHaveCount(0);
+
+    await page.getByTestId("redo").click();
+    await expect(page.getByTestId("rail-section").filter({ hasText: "Redo Me" })).toBeVisible();
+  });
+
+  test("Viewing as lists the menu's screens, named without a resolution (Q101)", async ({ page }) => {
+    const data = await seed({ role: "owner", includeScreen: true, label: "viewing" });
+    await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
+      headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
+      data: { menuId: data.menuId }
+    });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("viewing-as").click();
+    const options = page.getByTestId("viewing-as-option");
+    await expect(options.first()).toBeVisible();
+    // Screen geometry arrives in milestone 4; naming a resolution now would be a
+    // guess dressed as a fact.
+    await expect(page.getByTestId("viewing-as-list")).not.toContainText("1920");
+  });
+
+  test("an 86'd row on the canvas says when it went off", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "note" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    await page.getByTestId("availability-switch").click();
+
+    // "hidden on all screens right now" without a time is half a sentence.
+    await expect(page.getByTestId("board-item-note")).toContainText("86'd");
+    await expect(page.getByTestId("board-item-note")).toContainText("hidden on all screens right now");
+    await expect(page.getByTestId("board-item-note")).toHaveText(/86'd \w{3} \d{1,2}:\d{2}[ap]m/);
+  });
+
+  test("Review first lists exactly what will ship, in words (Q111)", async ({ page }) => {
+    const data = await seed({ role: "owner", includeScreen: true, label: "review" });
+    await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
+      headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
+      data: { menuId: data.menuId }
+    });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    // Published first, so the queue below is ONE change rather than the whole
+    // menu measured against nothing.
+    await page.getByTestId("publish").click();
+    await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
+
+    await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    await page.getByTestId("item-price").fill("13.5");
+    await page.getByTestId("item-price").blur();
+
+    await page.getByTestId("review-first").click();
+    await expect(page.getByTestId("review-dialog")).toBeVisible();
+    // Named, not identified: a guid in a review list tells nobody anything.
+    await expect(page.getByTestId("review-list")).toContainText(data.itemName);
+    await expect(page.getByTestId("review-list")).toContainText("price");
+    await expect(page.getByTestId("review-list")).not.toContainText(data.itemId);
+  });
+
+  test("go back to… offers versions and produces a draft, never a silent publish", async ({ page }) => {
+    const data = await seed({ role: "owner", includeScreen: true, label: "goback" });
+    await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
+      headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
+      data: { menuId: data.menuId }
+    });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    // Two published versions, so there is something to go back TO.
+    await page.getByTestId("publish").click();
+    await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
+    await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    await page.getByTestId("item-price").fill("21");
+    await page.getByTestId("item-price").blur();
+    await page.getByTestId("publish").click();
+    await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
+
+    await page.getByTestId("go-back-to").click();
+    await expect(page.getByTestId("history-dialog")).toContainText("never publishes on its own");
+    await page.getByTestId("go-back-to-version").last().click();
+
+    // A draft against the current screens — the screens have not moved.
+    await expect(page.getByTestId("draft-count")).toContainText("not on your screens");
+    await expect(page.getByTestId("publish")).toBeVisible();
+  });
+
   test("none of the four banned words appear anywhere in the builder (criterion 5)", async ({ page }) => {
     const data = await seed({ role: "owner", label: "words" });
     await openMenuBuilderAs(page, "owner", data.menuId);

@@ -6,7 +6,9 @@ import {
   deleteMenuSection,
   discardMenuDraft,
   loadBuilderBoard,
+  goBackToMenuVersion,
   loadMenuAvailability,
+  loadMenuHistory,
   loadMenuThemes,
   loadScreensShowing,
   placeMenuItem,
@@ -21,6 +23,7 @@ import {
   type BuilderBoard,
   type LibraryItem,
   type MenuAvailability,
+  type MenuHistoryEntry,
   type MenuScreenShowing
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
@@ -32,6 +35,7 @@ import {
   availabilityLine,
   canDiscardDraft,
   canvasBoard,
+  changeSentence,
   draftPhrase,
   findItem,
   findOnBoard,
@@ -46,6 +50,7 @@ import {
   resumeState,
   sectionsOf,
   sharedItemLine,
+  unavailableNote,
   venueTime
 } from "./builderModel.mjs";
 import type { BuilderPlace } from "./builderModel.d.mts";
@@ -108,8 +113,12 @@ function BoardStage({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** One reversible act. ⌘Z issues the inverse; nothing is persisted (decision 7). */
-type UndoStep = { describe: string; undo: () => Promise<void> };
+/**
+ * One reversible act. ⌘Z issues the inverse, ⌘⇧Z issues it forward again.
+ * Session-scoped, capped, never persisted, and never named in a settings page —
+ * it is a keystroke, not a feature (decision 7).
+ */
+type UndoStep = { describe: string; undo: () => Promise<void>; redo: () => Promise<void> };
 
 const placeMemoryKey = (menuId: string) => `vennusign.menu.builder.${menuId}`;
 
@@ -136,6 +145,11 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
   const [themePickerOpen, setThemePickerOpen] = useState(false);
   const [themes, setThemes] = useState<Array<{ key: string; name: string }>>();
   const [seeAllOpen, setSeeAllOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [history, setHistory] = useState<MenuHistoryEntry[]>();
+  const [viewingOpen, setViewingOpen] = useState(false);
+  const [viewingScreenId, setViewingScreenId] = useState<string | null>(null);
   const undoStack = useRef<UndoStep[]>([]);
   const redoStack = useRef<UndoStep[]>([]);
   const [historyDepth, setHistoryDepth] = useState({ undo: 0, redo: 0 });
@@ -263,6 +277,9 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
         describe: `Add section "${name}"`,
         undo: async () => {
           if (created) await deleteMenuSection(configuration, apiKey, menuId, created.sectionId);
+        },
+        redo: async () => {
+          created = await addMenuSection(configuration, apiKey, menuId, name);
         }
       }
     );
@@ -277,7 +294,8 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
       () => reorderMenuSections(configuration, apiKey, menuId, next),
       {
         describe: "Move section",
-        undo: () => reorderMenuSections(configuration, apiKey, menuId, ids)
+        undo: () => reorderMenuSections(configuration, apiKey, menuId, ids),
+        redo: () => reorderMenuSections(configuration, apiKey, menuId, next)
       }
     );
   };
@@ -366,6 +384,12 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
             name: before.name ?? "",
             description: before.description,
             price: before.price
+          }),
+        redo: () =>
+          updateMenuItemValues(configuration, apiKey, edit.itemId, {
+            name: before.name ?? "",
+            description: before.description,
+            price: edit.value.trim() === "" ? null : edit.value
           })
       }
     );
@@ -428,7 +452,8 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
           name: before.name ?? "",
           description: before.description,
           price: before.price
-        })
+        }),
+      redo: () => updateMenuItemValues(configuration, apiKey, before.itemId, next)
     });
   };
 
@@ -459,7 +484,8 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
         describe: "Remove from this board",
         undo: async () => {
           await placeMenuItem(configuration, apiKey, menuId, sectionId, { itemId: item.itemId });
-        }
+        },
+        redo: () => removeMenuItem(configuration, apiKey, menuId, item.itemId)
       }
     );
   };
@@ -502,6 +528,11 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
         undo: async () => {
           if (outcome?.itemId && outcome.outcome === "placed") {
             await removeMenuItem(configuration, apiKey, menuId, outcome.itemId);
+          }
+        },
+        redo: async () => {
+          if (outcome?.itemId) {
+            await placeMenuItem(configuration, apiKey, menuId, sectionId, { itemId: outcome.itemId });
           }
         }
       }
@@ -551,6 +582,24 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
     }
   }, [refresh]);
 
+  const redo = useCallback(async () => {
+    const step = redoStack.current.at(-1);
+    if (!step) return;
+    redoStack.current = redoStack.current.slice(0, -1);
+    setBusy(true);
+    try {
+      await step.redo();
+      await refresh();
+      undoStack.current = [...undoStack.current, step];
+      setNotice(`Redid: ${step.describe.toLowerCase()}.`);
+    } catch {
+      setError("That can't be redone now — the menu changed since. Nothing was moved.");
+    } finally {
+      setHistoryDepth({ undo: undoStack.current.length, redo: redoStack.current.length });
+      setBusy(false);
+    }
+  }, [refresh]);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const meta = event.metaKey || event.ctrlKey;
@@ -559,17 +608,20 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
         setFindOpen(true);
         return;
       }
-      if (meta && event.key.toLowerCase() === "z" && !event.shiftKey) {
+      if (meta && event.key.toLowerCase() === "z") {
         const typing = document.activeElement?.matches("input, textarea");
         if (typing) return;
         event.preventDefault();
-        void undo();
+        void (event.shiftKey ? redo() : undo());
         return;
       }
       if (event.key === "Escape") {
         setFindOpen(false);
         setThemePickerOpen(false);
         setSeeAllOpen(false);
+        setReviewOpen(false);
+        setHistoryOpen(false);
+        setViewingOpen(false);
         setConfirmDiscard(false);
         setPriceEdit(null);
         setAddSectionId(null);
@@ -585,7 +637,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [place.selectedItemId, undo]);
+  }, [place.selectedItemId, redo, undo]);
 
   // ---- publishing ----------------------------------------------------------
 
@@ -601,6 +653,13 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
   }, [data?.screenIds, menuId, screens]);
 
   const blocked = publishBlockedReason({ draftCount: data?.draftCount ?? 0, saveState });
+
+  const viewingScreens = useMemo(
+    () => screens.filter(screen => (data?.screenIds ?? []).includes(screen.screenId)),
+    [data?.screenIds, screens]
+  );
+  const viewingScreen =
+    viewingScreens.find(screen => screen.screenId === viewingScreenId) ?? viewingScreens[0] ?? null;
 
   const publish = async () => {
     await run(async () => {
@@ -645,6 +704,16 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
   const sections = sectionsOf(board);
   const shown = canvasBoard(board, place);
   const offNote = availabilityLine(selectedAvailability, venueTimezone);
+  /*
+   * One note for every 86'd row on the canvas. The design writes it with the time
+   * ("86'd 6:40pm — hidden on all screens right now"), because the first question
+   * about an item that is off is when it went off. The engine draws whichever
+   * note it is handed; it never composes one, so a guest board cannot inherit it.
+   */
+  const boardNote = unavailableNote(
+    availability.find(state => !state.isAvailable) ?? null,
+    venueTimezone
+  );
   const isOff = selectedAvailability?.isAvailable === false;
 
   return (
@@ -671,20 +740,60 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
             >
               ↶
             </button>
-            <button type="button" disabled aria-label="Redo" data-testid="redo" title="Redo arrives with the next milestone">
+            <button
+              type="button"
+              onClick={() => void redo()}
+              disabled={historyDepth.redo === 0 || busy}
+              aria-label="Redo"
+              data-testid="redo"
+            >
               ↷
             </button>
           </div>
 
-          <span className="builder__viewing-as" data-testid="viewing-as">
-            {targets.total === 0 ? (
-              "No screens yet"
-            ) : (
-              <>
-                Viewing as <strong>{screens.find(screen => screen.screenId === data?.screenIds?.[0])?.screenName ?? "a screen"}</strong>
-              </>
-            )}
-          </span>
+          {/*
+            Q101: the menu's target screens, offline ones included, named without a
+            resolution until milestone 4 reports geometry. With none paired it says
+            so rather than offering an empty list.
+          */}
+          {targets.total === 0 ? (
+            <span className="builder__viewing-as" data-testid="viewing-as">No screens yet</span>
+          ) : (
+            <div className="builder__viewing">
+              <button
+                type="button"
+                className="builder__viewing-as"
+                data-testid="viewing-as"
+                aria-expanded={viewingOpen}
+                aria-haspopup="listbox"
+                onClick={() => setViewingOpen(open => !open)}
+              >
+                Viewing as <strong>{viewingScreen?.screenName ?? "a screen"}</strong> ▾
+              </button>
+              {viewingOpen ? (
+                <ul className="builder__viewing-list" role="listbox" data-testid="viewing-as-list">
+                  {viewingScreens.map(screen => (
+                    <li key={screen.screenId}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={screen.screenId === viewingScreen?.screenId}
+                        data-testid="viewing-as-option"
+                        onClick={() => {
+                          setViewingScreenId(screen.screenId);
+                          setViewingOpen(false);
+                        }}
+                      >
+                        <strong>{screen.screenName}</strong>
+                        {/* Named without a resolution: geometry arrives in milestone 4. */}
+                        <span>{screen.menuId === menuId ? "showing this menu" : "another menu now"}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          )}
 
           {/*
             Play stays visible and says plainly what it cannot do yet (Q102), rather
@@ -815,7 +924,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
                 unavailableItemIds={unavailableIds}
                 surface="preview"
                 keepUnavailable
-                unavailableNote="Off right now — hidden on every screen"
+                unavailableNote={boardNote}
               />
             ) : (
               <BoardStage>
@@ -824,7 +933,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
                   unavailableItemIds={unavailableIds}
                   surface="preview"
                   keepUnavailable
-                  unavailableNote="Off right now — hidden on every screen"
+                  unavailableNote={boardNote}
                 />
               </BoardStage>
             )}
@@ -944,7 +1053,8 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
                     }
                     void run(() => renameMenuSection(configuration, apiKey, menuId, place.sectionId!, name), {
                       describe: "Rename section",
-                      undo: () => renameMenuSection(configuration, apiKey, menuId, place.sectionId!, current)
+                      undo: () => renameMenuSection(configuration, apiKey, menuId, place.sectionId!, current),
+                      redo: () => renameMenuSection(configuration, apiKey, menuId, place.sectionId!, name)
                     });
                   }}
                 />
@@ -1095,6 +1205,26 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
             ) : (
               publishedLine(data, venueTimezone)
             )}
+            {data.publishedVersion !== null ? (
+              <>
+                {" · "}
+                <button
+                  type="button"
+                  className="builder__link"
+                  data-testid="go-back-to"
+                  onClick={() => {
+                    setHistoryOpen(true);
+                    if (!history) {
+                      loadMenuHistory(configuration, apiKey, menuId)
+                        .then(setHistory)
+                        .catch(() => setHistory([]));
+                    }
+                  }}
+                >
+                  go back to…
+                </button>
+              </>
+            ) : null}
             {canDiscardDraft(data) ? (
               <>
                 {" · "}
@@ -1145,9 +1275,14 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
             </span>
           ) : null}
           {data.draftCount > 0 ? (
+            <button type="button" className="builder__link" data-testid="review-first" onClick={() => setReviewOpen(true)}>
+              Review first
+            </button>
+          ) : null}
+          {data.draftCount > 0 ? (
             <button
               type="button"
-              className="action-primary"
+              className="builder__publish-button"
               data-testid="publish"
               disabled={busy || Boolean(blocked)}
               onClick={() => void publish()}
@@ -1235,6 +1370,88 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
             </ul>
             <div className="builder__dialog-actions">
               <button type="button" className="action-secondary" onClick={() => setSeeAllOpen(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {reviewOpen ? (
+        <>
+          <div className="builder__scrim" onClick={() => setReviewOpen(false)} />
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="review-title" data-testid="review-dialog">
+            <h2 id="review-title">{draftPhrase(data.draftCount, { neverPublished: data.publishedVersion === null })}</h2>
+            <p>Exactly what publishing will send to your screens — nothing more.</p>
+            <ul className="builder__screen-list" data-testid="review-list">
+              {data.changes.map((change, index) => (
+                <li key={`${change.targetKind}-${change.targetId}-${change.field}-${index}`}>
+                  <strong>{changeSentence(change, board)}</strong>
+                  <span>{change.beforeValue === null ? "new" : change.afterValue === null ? "removed" : "changed"}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="builder__dialog-actions">
+              <button type="button" className="action-secondary" onClick={() => setReviewOpen(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {historyOpen ? (
+        <>
+          <div className="builder__scrim" onClick={() => setHistoryOpen(false)} />
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="history-title" data-testid="history-dialog">
+            <h2 id="history-title">Go back to…</h2>
+            <p>
+              Going back produces a draft against your screens. It never publishes on its own — you still decide when
+              your screens change.
+            </p>
+            <ul className="builder__screen-list" data-testid="history-list">
+              {(history ?? [])
+                .filter(entry => entry.kind === "published" && entry.version !== null)
+                .map(entry => (
+                  <li key={entry.version}>
+                    <strong>
+                      {venueTime(entry.occurredUtc, venueTimezone)}
+                      {entry.author ? ` by ${entry.author}` : ""}
+                    </strong>
+                    <button
+                      type="button"
+                      className="builder__link"
+                      data-testid="go-back-to-version"
+                      onClick={() =>
+                        void run(async () => {
+                          const result = await goBackToMenuVersion(configuration, apiKey, menuId, entry.version!);
+                          setHistoryOpen(false);
+                          undoStack.current = [];
+                          redoStack.current = [];
+                          setHistoryDepth({ undo: 0, redo: 0 });
+                          setNotice(
+                            result.replacedChangeCount > 0
+                              ? `Back to that version. ${result.replacedChangeCount} change${
+                                  result.replacedChangeCount === 1 ? "" : "s"
+                                } you had waiting were replaced.`
+                              : "Back to that version. Publish when you want your screens to follow."
+                          );
+                        })
+                      }
+                    >
+                      Go back to this
+                    </button>
+                  </li>
+                ))}
+              {(history ?? []).filter(entry => entry.kind === "published").length === 0 ? (
+                <li data-testid="history-empty">
+                  <strong>Nothing to go back to yet</strong>
+                  <span>this menu has not been published</span>
+                </li>
+              ) : null}
+            </ul>
+            <div className="builder__dialog-actions">
+              <button type="button" className="action-secondary" onClick={() => setHistoryOpen(false)}>
                 Close
               </button>
             </div>

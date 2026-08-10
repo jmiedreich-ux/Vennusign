@@ -949,3 +949,97 @@
     border-top: 1px solid var(--sky-color-border, #e9eef4);
   }
 }
+
+/* ---- viewing as ---------------------------------------------------------- */
+
+.builder__viewing {
+  position: relative;
+}
+
+button.builder__viewing-as {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--sky-font-size-sm, 13px);
+  color: var(--sky-color-text-muted, #64748b);
+  cursor: pointer;
+}
+
+button.builder__viewing-as strong {
+  color: var(--sky-text-primary, #0f172a);
+  font-weight: var(--sky-font-weight-semibold, 600);
+}
+
+.builder__viewing-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  gap: 2px;
+  min-width: 220px;
+  margin: 0;
+  padding: 6px;
+  border: var(--sky-card-border, 1px solid #e2e8f0);
+  border-radius: var(--sky-radius-md, 12px);
+  background: var(--sky-color-surface, #fff);
+  box-shadow: 0 18px 48px rgb(15 23 42 / 0.22);
+  list-style: none;
+}
+
+.builder__viewing-list button {
+  display: grid;
+  gap: 1px;
+  width: 100%;
+  border: 0;
+  border-radius: var(--sky-radius-sm, 8px);
+  padding: 7px 9px;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.builder__viewing-list button:hover,
+.builder__viewing-list button[aria-selected="true"] {
+  background: var(--sky-color-surface-muted, #f1f5f9);
+}
+
+.builder__viewing-list span {
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 11.5px;
+}
+
+/* The review list names each queued change; the history list offers each version. */
+.builder__screen-list button.builder__link {
+  flex: none;
+}
+
+/*
+ * Publish is the page's main action, and the component sheet is explicit about
+ * what that looks like: the dark primary, with a shadow no other button on the
+ * page carries. The shell's own .action-primary is the sky accent AND marked
+ * !important, so this deliberately does not use it — Menus carries its own button
+ * vocabulary, and the one control that changes what a guest sees should not read
+ * as one more chip in a bar full of them.
+ */
+.builder__publish-button {
+  border: 0;
+  border-radius: var(--sky-radius-md, 12px);
+  padding: 11px 20px;
+  background: var(--sky-text-primary, #0f172a);
+  color: #f8fafc;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgb(15 23 42 / 0.2);
+  cursor: pointer;
+}
+
+.builder__publish-button:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+  cursor: default;
+}

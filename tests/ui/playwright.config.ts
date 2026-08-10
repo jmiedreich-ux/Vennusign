@@ -16,6 +16,13 @@ export default defineConfig({
   reporter: [["list"], ["html", { open: "never" }]],
   // Cases are independent and seed their own state, so the suite is bounded by
   // the slowest single case rather than by any chain of cases.
+  //
+  // Bounded workers, because the whole suite runs against ONE dev server and one
+  // LocalDB. Milestone 3 roughly doubled the case count, and past this point the
+  // failures stop being about the product: the same cases pass alone and fail in
+  // a full run, which is a queue, not a defect. An unbounded pool would keep
+  // producing red runs that teach nothing.
+  workers: process.env.CI ? 2 : 3,
   timeout: 30_000,
   expect: { timeout: 7_000 },
   use: {

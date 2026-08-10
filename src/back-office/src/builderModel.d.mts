@@ -54,6 +54,10 @@ export function publishedLine(
 
 export function boardsPhrase(boards: LibraryItem["boards"] | null | undefined, currentMenuId: string): string | null;
 export function sharedItemLine(boards: LibraryItem["boards"] | null | undefined, currentMenuId: string): string | null;
+export function unavailableNote(
+  availability: MenuAvailability | null | undefined,
+  timezone: string | null | undefined
+): string | null;
 export function isMissingPrice(item: { price?: string | null } | null | undefined): boolean;
 export function availabilityLine(
   availability: MenuAvailability | null | undefined,
@@ -71,5 +75,9 @@ export function publishTargets(screens: PublishScreen[] | null | undefined): Pub
 
 export function reorder(ids: string[] | null | undefined, from: number, to: number): string[];
 export function findOnBoard(board: BoardResponse | null | undefined, query: string): BoardHit[];
+export function changeSentence(
+  change: { targetKind: string; targetId: string | null; field: string; beforeValue: string | null },
+  board: BoardResponse | null | undefined
+): string;
 export function releasedPhrase(count: number): string;
 export const bannedWords: string[];

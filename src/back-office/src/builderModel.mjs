@@ -175,6 +175,21 @@ export function sharedItemLine(boards, currentMenuId) {
   return `Also on ${phrase} — ${plural ? "they" : "it"} will show this when you publish ${plural ? "them" : "it"}.`;
 }
 
+/**
+ * The note drawn on an 86'd row of the canvas.
+ *
+ * The design authority writes it "86'd 6:40pm — hidden on all screens right now":
+ * the TIME matters, because the first question about an item that is off is when
+ * it went off, and the sentence is useless without it.
+ */
+export function unavailableNote(availability, timezone) {
+  if (!availability || availability.isAvailable) return null;
+  const when = venueTime(availability.changedUtc, timezone);
+  return when
+    ? `86'd ${when} — hidden on all screens right now`
+    : "86'd — hidden on all screens right now";
+}
+
 /** A price nobody has typed yet. Quiet flag, never a refusal to publish (Q113). */
 export function isMissingPrice(item) {
   return !item?.price || String(item.price).trim().length === 0;
@@ -257,6 +272,44 @@ export function findOnBoard(board, query) {
     }
   }
   return hits;
+}
+
+/**
+ * One queued change, said in the words of the thing it happened to.
+ *
+ * The API answers in the model's terms — target kind, id, field — because that is
+ * what cannot drift. Turning that into "Harbor Lemonade — price" is the surface's
+ * job, and it needs the board to look the names up in: an id is not a sentence.
+ */
+export function changeSentence(change, board) {
+  const field = String(change?.field ?? "").replace(/([A-Z])/g, " $1").toLowerCase().trim();
+
+  if (change?.targetKind === "screens") return "Which screens this menu is on";
+  if (change?.targetKind === "menu") return `This menu — ${field}`;
+  if (change?.targetKind === "theme") return "The look attached to this menu";
+
+  // A placement is not an item edit: it is whether the item is ON this board, and
+  // where. Saying "placed — changed" describes the model rather than the act.
+  if (change?.targetKind === "placement") {
+    const name = findItem(board, change?.targetId)?.item?.name ?? change?.beforeValue ?? "An item";
+    if (change.field === "placed") {
+      return change.afterValue === "true" ? `${name} — added to this board` : `${name} — taken off this board`;
+    }
+    if (change.field === "sortOrder") return `${name} — moved`;
+    return `${name} — ${field}`;
+  }
+
+  if (change?.targetKind === "section") {
+    const section = sectionsOf(board).find(candidate => candidate.sectionId === change.targetId);
+    return section?.name ? `${section.name} — ${field}` : `A section — ${field}`;
+  }
+
+  const found = findItem(board, change?.targetId);
+  if (found?.item?.name) return `${found.item.name} — ${field}`;
+
+  // Removed items are the case where the board cannot name it: the row is gone,
+  // which is exactly what the change says. The before value is the last name it had.
+  return change?.beforeValue ? `${change.beforeValue} — ${field}` : `An item — ${field}`;
 }
 
 /** What deleting a section actually did, in the words the API counted (Q96). */
