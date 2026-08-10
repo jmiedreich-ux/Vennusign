@@ -117,9 +117,9 @@ WHEN NOT MATCHED THEN INSERT (Id, VenueId, Name, IsActive) VALUES (source.Id, so
 MERGE dbo.MenuSections AS target
 USING (VALUES (@SectionId, @VenueId, @MenuId, N'Featured', 0)) AS source (Id, VenueId, MenuId, Name, SortOrder)
 ON target.Id = source.Id
-WHEN MATCHED THEN UPDATE SET Name = source.Name, SortOrder = source.SortOrder, IsActive = 1, UpdatedUtc = SYSUTCDATETIME()
-WHEN NOT MATCHED THEN INSERT (Id, VenueId, MenuId, Name, SortOrder, IsActive)
-    VALUES (source.Id, source.VenueId, source.MenuId, source.Name, source.SortOrder, 1);
+WHEN MATCHED THEN UPDATE SET Name = source.Name, SortOrder = source.SortOrder, UpdatedUtc = SYSUTCDATETIME()
+WHEN NOT MATCHED THEN INSERT (Id, VenueId, MenuId, Name, SortOrder)
+    VALUES (source.Id, source.VenueId, source.MenuId, source.Name, source.SortOrder);
 
 MERGE dbo.MenuItems AS target
 USING (VALUES (@ItemId, @VenueId, @SectionId, N'Harbor Lemonade', N'Owner acceptance fixture', CAST(4.50 AS decimal(19,4)), 0))
@@ -308,7 +308,7 @@ VALUES (@M1PublishId, @M1VenueId, @M1MenuId, 1, 0, N'fixture', @M1Now,
                                FOR JSON PATH
                            )) AS items
                        FROM dbo.MenuSections s
-                       WHERE s.MenuId = m.Id AND s.VenueId = @M1VenueId AND s.IsActive = 1
+                       WHERE s.MenuId = m.Id AND s.VenueId = @M1VenueId
                        ORDER BY s.SortOrder, s.Id
                        FOR JSON PATH
                    )) AS sections

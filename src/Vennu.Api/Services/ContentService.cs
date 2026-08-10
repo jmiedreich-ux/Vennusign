@@ -452,6 +452,316 @@ public sealed class ContentService(
         return new DuplicateResult(newMenuId, outcome.Name ?? original.Name, outcome.ActiveMenuCount);
     }
 
+    // ---- the builder --------------------------------------------------------
+
+    /// <summary>
+    /// Everything the builder needs to open a menu, from ONE read of the pair of
+    /// snapshots: the board it draws is the WORKING state, not the published one
+    /// the shelf card draws, and the draft is the difference between them. Reading
+    /// them apart is how the canvas and the count start describing different menus.
+    /// </summary>
+    public async Task<BuilderBoardResult?> GetBuilderBoardAsync(
+        Guid venueId,
+        Guid menuId,
+        CancellationToken cancellationToken = default)
+    {
+        var snapshots = await library.GetDraftSnapshotsAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
+        var working = MenuSnapshot.Parse(snapshots.Working);
+        if (working is null)
+        {
+            return null;
+        }
+
+        return new BuilderBoardResult(
+            working,
+            MenuSnapshot.Diff(snapshots.Published, snapshots.Working),
+            snapshots.PublishedVersion == 0 ? null : snapshots.PublishedVersion,
+            snapshots.PublishedUtc,
+            snapshots.PublishedBy);
+    }
+
+    public async Task<SectionCreateOutcome> AddSectionAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        var outcome = await library.CreateSectionOnMenuAsync(
+            venueId, menuId, sectionId, NormalizeSectionName(name),
+            timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false);
+
+        if (outcome.Outcome == SectionOutcomes.Created)
+        {
+            await NotifyAsync(venueId, "section-added", menuId, cancellationToken).ConfigureAwait(false);
+        }
+
+        return outcome;
+    }
+
+    public async Task<bool> RenameSectionAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        var renamed = await library.RenameSectionAsync(
+            venueId, menuId, sectionId, NormalizeSectionName(name),
+            timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false);
+
+        if (renamed)
+        {
+            await NotifyAsync(venueId, "section-renamed", menuId, cancellationToken).ConfigureAwait(false);
+        }
+
+        return renamed;
+    }
+
+    /// <summary>
+    /// Deletes a section, releasing its items back to the library (Q96). Nothing is
+    /// lost: the items were never in the section, a placement put them there.
+    /// </summary>
+    public async Task<SectionDeleteOutcome> DeleteSectionAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        CancellationToken cancellationToken = default)
+    {
+        var outcome = await library
+            .DeleteSectionAsync(venueId, menuId, sectionId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (outcome.Outcome == SectionOutcomes.Deleted)
+        {
+            await NotifyAsync(venueId, "section-deleted", menuId, cancellationToken).ConfigureAwait(false);
+        }
+
+        return outcome;
+    }
+
+    public async Task<ReorderOutcome> ReorderSectionsAsync(
+        Guid venueId,
+        Guid menuId,
+        IReadOnlyCollection<Guid> sectionIds,
+        CancellationToken cancellationToken = default)
+    {
+        var outcome = await library.ReorderSectionsGuardedAsync(
+            venueId, menuId, sectionIds,
+            timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false);
+
+        if (outcome.Outcome == ReorderOutcomes.Reordered)
+        {
+            await NotifyAsync(venueId, "sections-reordered", menuId, cancellationToken).ConfigureAwait(false);
+        }
+
+        return outcome;
+    }
+
+    public async Task<ReorderOutcome> ReorderItemsAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        IReadOnlyCollection<Guid> itemIds,
+        CancellationToken cancellationToken = default)
+    {
+        var outcome = await library.ReorderPlacementsGuardedAsync(
+            venueId, menuId, sectionId, itemIds,
+            timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false);
+
+        if (outcome.Outcome == ReorderOutcomes.Reordered)
+        {
+            await NotifyAsync(venueId, "items-reordered", menuId, cancellationToken).ConfigureAwait(false);
+        }
+
+        return outcome;
+    }
+
+    /// <summary>
+    /// "Create '&lt;typed&gt;' as a new item": born with exactly the typed name, an
+    /// empty price and description, placed in the section (Q113). A missing price
+    /// is a quiet flag on the canvas, never a refusal.
+    /// </summary>
+    public async Task<ItemPlacementOutcome> AddNewItemAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid itemId,
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        var ceilings = await library.GetResolvedCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var limit = ceilings.TryGetValue(MenuCeilings.ItemsPerMenu, out var configured) ? configured : int.MaxValue;
+
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var outcome = await library.CreateItemOnMenuAsync(
+            new Item
+            {
+                Id = itemId,
+                VenueId = venueId,
+                Name = NormalizeItemName(name),
+                CreatedUtc = now,
+                UpdatedUtc = now
+            },
+            menuId, sectionId, limit, cancellationToken).ConfigureAwait(false);
+
+        if (outcome.Outcome == ItemPlacementOutcomes.Created)
+        {
+            await NotifyAsync(venueId, "item-added", menuId, cancellationToken).ConfigureAwait(false);
+        }
+
+        return outcome;
+    }
+
+    public async Task<PlaceExistingOutcome> PlaceExistingItemAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid itemId,
+        CancellationToken cancellationToken = default)
+    {
+        var ceilings = await library.GetResolvedCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var limit = ceilings.TryGetValue(MenuCeilings.ItemsPerMenu, out var configured) ? configured : int.MaxValue;
+
+        var outcome = await library.PlaceExistingItemAsync(
+            venueId, menuId, sectionId, itemId, limit,
+            timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false);
+
+        if (outcome.Outcome == PlaceExistingOutcomes.Placed)
+        {
+            await NotifyAsync(venueId, "item-placed", menuId, cancellationToken).ConfigureAwait(false);
+        }
+
+        return outcome;
+    }
+
+    public async Task<bool> RemoveItemFromMenuAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid itemId,
+        CancellationToken cancellationToken = default)
+    {
+        var removed = await library
+            .RemoveItemFromMenuAsync(venueId, menuId, itemId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (removed)
+        {
+            await NotifyAsync(venueId, "item-removed", menuId, cancellationToken).ConfigureAwait(false);
+        }
+
+        return removed;
+    }
+
+    /// <summary>
+    /// Edits an item's values. One item is one shared price across every board it
+    /// sits on (Q5), so this reaches all of them — and each board's own screens
+    /// still change only when that board publishes.
+    /// </summary>
+    public async Task<Item?> UpdateItemValuesAsync(
+        Guid venueId,
+        Guid itemId,
+        string name,
+        string? description,
+        string? price,
+        CancellationToken cancellationToken = default)
+    {
+        var item = await library.GetItemAsync(venueId, itemId, cancellationToken).ConfigureAwait(false);
+        if (item is null)
+        {
+            return null;
+        }
+
+        // An emptied name reverts rather than saving blank (Q119): the schema
+        // refuses it anyway, and a refusal a person cannot see is a lost edit.
+        item.Name = NormalizeItemName(name, fallback: item.Name);
+        item.Description = Trim(description, 1000);
+        item.Price = Trim(price, 40);
+        item.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
+
+        if (!await library.UpdateItemAsync(item, cancellationToken).ConfigureAwait(false))
+        {
+            return null;
+        }
+
+        await NotifyAsync(venueId, "item-updated", null, cancellationToken).ConfigureAwait(false);
+        return item;
+    }
+
+    /// <summary>
+    /// The add row's search, with the boards each result already sits on so the UI
+    /// can label them and jump rather than duplicate (Q112/Q123).
+    /// </summary>
+    public async Task<IReadOnlyList<LibraryItemResult>> SearchLibraryAsync(
+        Guid venueId,
+        string? query,
+        int take,
+        CancellationToken cancellationToken = default)
+    {
+        var items = await library.SearchItemsAsync(venueId, query, take, cancellationToken).ConfigureAwait(false);
+        if (items.Count == 0)
+        {
+            return [];
+        }
+
+        var ids = items.Select(item => item.Id).ToArray();
+        var boards = await library.GetItemBoardsAsync(venueId, ids, cancellationToken).ConfigureAwait(false);
+        var availability = await library.GetAvailabilityAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var offById = availability
+            .Where(state => !state.IsAvailable)
+            .Select(state => state.ItemId)
+            .ToHashSet();
+
+        var boardsByItem = boards
+            .GroupBy(board => board.ItemId)
+            .ToDictionary(group => group.Key, group => (IReadOnlyList<ItemBoard>)[.. group]);
+
+        return
+        [
+            .. items.Select(item => new LibraryItemResult(
+                item,
+                !offById.Contains(item.Id),
+                boardsByItem.TryGetValue(item.Id, out var on) ? on : []))
+        ];
+    }
+
+    /// <summary>
+    /// The menu themes this venue has. There are none, and there is no table for
+    /// them: menu themes are created in the theme editor, which does not exist yet,
+    /// and no named looks ship (Q86). The picker renders the empty state from this
+    /// rather than from a hard-coded list, so it needs no change when the first
+    /// theme is built.
+    /// </summary>
+    public static IReadOnlyList<MenuThemeResult> GetMenuThemes() => [];
+
+    private static string NormalizeSectionName(string? name)
+    {
+        var trimmed = (name ?? string.Empty).Trim();
+        return trimmed.Length == 0
+            ? throw new ArgumentException("A section needs a name.", nameof(name))
+            : trimmed[..Math.Min(trimmed.Length, 200)];
+    }
+
+    private static string NormalizeItemName(string? name, string? fallback = null)
+    {
+        var trimmed = (name ?? string.Empty).Trim();
+        if (trimmed.Length == 0)
+        {
+            return fallback ?? throw new ArgumentException("An item needs a name.", nameof(name));
+        }
+
+        return trimmed[..Math.Min(trimmed.Length, 200)];
+    }
+
+    private static string? Trim(string? value, int max)
+    {
+        var trimmed = value?.Trim();
+        return string.IsNullOrEmpty(trimmed) ? null : trimmed[..Math.Min(trimmed.Length, max)];
+    }
+
+    private Task NotifyAsync(Guid venueId, string change, Guid? menuId, CancellationToken cancellationToken) =>
+        notifier.NotifyVenueContentUpdatedAsync(venueId, new { change, menuId }, cancellationToken);
+
     /// <summary>
     /// The ceilings that apply to this venue, always read from the allowance
     /// model, plus the venue timezone every surface renders its times in.
@@ -537,3 +847,24 @@ public sealed record PublishResult(
     IReadOnlyCollection<Guid> ConflictedScreenIds);
 
 public sealed record MenuContext(string Timezone, IReadOnlyDictionary<string, int> Ceilings, int MenuCount);
+
+/// <summary>
+/// A menu open in the builder. Board is the WORKING state — what the canvas draws,
+/// because the canvas is the preview — and Draft is its difference from what the
+/// screens are showing.
+/// </summary>
+public sealed record BuilderBoardResult(
+    MenuSnapshot Board,
+    IReadOnlyList<SnapshotChange> Draft,
+    long? PublishedVersion,
+    DateTime? LastPublishedUtc,
+    string? LastPublishedBy);
+
+/// <summary>
+/// One search result on the add row: the item, whether it is on right now, and the
+/// boards it already sits on.
+/// </summary>
+public sealed record LibraryItemResult(Item Item, bool IsAvailable, IReadOnlyList<ItemBoard> Boards);
+
+/// <summary>A menu theme the venue could attach. There are none yet (Q86).</summary>
+public sealed record MenuThemeResult(string Key, string Name);

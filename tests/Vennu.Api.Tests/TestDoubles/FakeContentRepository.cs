@@ -405,6 +405,137 @@ internal sealed class FakeContentRepository : IContentRepository
     /// prove the copy rather than the product. That is exactly how a defect survived
     /// 412 green unit tests in milestone 1.
     /// </summary>
+    // ----- The builder's writes -----
+    //
+    // Every rule the builder leans on is decided inside the statement that writes:
+    // the next sort order under a lock, the ceiling under a lock, "already on this
+    // board", and whether the caller's reorder list still matches the menu. A
+    // double that re-implemented any of them would prove the copy, and the copy
+    // drifts — which is how a defect survived 412 green unit tests once already.
+    // These refuse and name where the rule actually lives.
+
+    public Task<SectionCreateOutcome> CreateSectionOnMenuAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        string name,
+        DateTime now,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException(
+            "Adding a section reads its sort order under the lock that inserts it. "
+            + "Assert it in Vennu.Data.IntegrationTests against a real database.");
+
+    public Task<bool> RenameSectionAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        string name,
+        DateTime now,
+        CancellationToken cancellationToken = default)
+    {
+        var section = Sections.SingleOrDefault(item =>
+            item.Id == sectionId && item.MenuId == menuId && item.VenueId == venueId);
+        if (section is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        section.Name = name;
+        section.UpdatedUtc = now;
+        return Task.FromResult(true);
+    }
+
+    public Task<SectionDeleteOutcome> DeleteSectionAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException(
+            "Deleting a section releases its placements in the same transaction. "
+            + "Assert it in Vennu.Data.IntegrationTests against a real database.");
+
+    public Task<ReorderOutcome> ReorderSectionsGuardedAsync(
+        Guid venueId,
+        Guid menuId,
+        IReadOnlyCollection<Guid> sectionIds,
+        DateTime now,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException(
+            "Reorder proves the caller's list still matches the menu under the lock that writes it. "
+            + "Assert it in Vennu.Data.IntegrationTests against a real database.");
+
+    public Task<ReorderOutcome> ReorderPlacementsGuardedAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        IReadOnlyCollection<Guid> itemIds,
+        DateTime now,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException(
+            "Reorder proves the caller's list still matches the section under the lock that writes it. "
+            + "Assert it in Vennu.Data.IntegrationTests against a real database.");
+
+    public Task<PlaceExistingOutcome> PlaceExistingItemAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid itemId,
+        int itemsPerMenuLimit,
+        DateTime now,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException(
+            "Placing an existing item decides 'already on this board' and the ceiling under one lock. "
+            + "Assert it in Vennu.Data.IntegrationTests against a real database.");
+
+    public Task<bool> RemoveItemFromMenuAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid itemId,
+        CancellationToken cancellationToken = default)
+    {
+        var removed = Placements.RemoveAll(placement =>
+            placement.VenueId == venueId && placement.MenuId == menuId && placement.ItemId == itemId);
+        return Task.FromResult(removed > 0);
+    }
+
+    public Task<IReadOnlyCollection<Item>> SearchItemsAsync(
+        Guid venueId,
+        string? query,
+        int take,
+        CancellationToken cancellationToken = default)
+    {
+        var trimmed = (query ?? string.Empty).Trim();
+        IReadOnlyCollection<Item> results =
+        [
+            .. Items
+                .Where(item => item.VenueId == venueId)
+                .Where(item => trimmed.Length == 0
+                    || item.Name.Contains(trimmed, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(item => item.Name.StartsWith(trimmed, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                .ThenBy(item => item.Name, StringComparer.Ordinal)
+                .Take(take)
+        ];
+        return Task.FromResult(results);
+    }
+
+    public Task<IReadOnlyCollection<ItemBoard>> GetItemBoardsAsync(
+        Guid venueId,
+        IReadOnlyCollection<Guid> itemIds,
+        CancellationToken cancellationToken = default)
+    {
+        var wanted = itemIds.ToHashSet();
+        IReadOnlyCollection<ItemBoard> boards =
+        [
+            .. Placements
+                .Where(placement => placement.VenueId == venueId && wanted.Contains(placement.ItemId))
+                .Select(placement => new ItemBoard(placement.ItemId, placement.MenuId, MenuNames.TryGetValue(placement.MenuId, out var name) ? name : placement.MenuId.ToString()))
+        ];
+        return Task.FromResult(boards);
+    }
+
+    /// <summary>Menu names for <see cref="GetItemBoardsAsync"/>; the SQL joins for them.</summary>
+    public Dictionary<Guid, string> MenuNames { get; } = [];
+
     public Task<MenuDuplicateOutcome> DuplicateMenuWithinCeilingAsync(
         Guid venueId,
         Guid sourceMenuId,
@@ -417,11 +548,20 @@ internal sealed class FakeContentRepository : IContentRepository
         throw new NotSupportedException(
             "Duplicate is enforced in SQL. Assert it in Vennu.Data.IntegrationTests against a real database.");
 
-    public async Task<DraftSnapshots> GetDraftSnapshotsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
-        new(
+    public async Task<DraftSnapshots> GetDraftSnapshotsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default)
+    {
+        var latest = PublishEvents
+            .Where(e => e.VenueId == venueId && e.MenuId == menuId)
+            .OrderByDescending(e => e.Version)
+            .FirstOrDefault();
+
+        return new(
             await GetLatestPublishedSnapshotAsync(venueId, menuId, cancellationToken).ConfigureAwait(false),
             WorkingSnapshotNow(menuId),
-            PublishEvents.Where(e => e.VenueId == venueId && e.MenuId == menuId).Select(e => e.Version).DefaultIfEmpty(0).Max());
+            latest?.Version ?? 0,
+            latest?.PublishedUtc,
+            latest?.Author);
+    }
 
     /// <summary>
     /// Set to make the next publish observe a working state different from the one

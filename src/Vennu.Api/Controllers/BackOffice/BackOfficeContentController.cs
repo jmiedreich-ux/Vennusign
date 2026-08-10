@@ -453,4 +453,304 @@ public sealed class BackOfficeContentController(
                     change.BeforeValue,
                     change.AfterValue))
                 .ToArray());
+
+    // ----- The builder ---------------------------------------------------------
+    //
+    // Every write here changes the working state, which is what makes the draft
+    // count follow on its own: MenuSnapshot.Diff compares the menu as it stands
+    // against the board its screens are showing, so nothing below needs to report
+    // a change, and nothing below can report one that a publish would not ship.
+
+    /// <summary>
+    /// The menu as the builder opens it: the working board the canvas draws, the
+    /// draft it differs by, and the publish that put the current board on screen.
+    /// </summary>
+    [HttpGet("menus/{menuId:guid}/board")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<BuilderBoardResponse>> GetBuilderBoard(
+        Guid menuId,
+        CancellationToken cancellationToken)
+    {
+        var result = await content.GetBuilderBoardAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
+        if (result is null)
+        {
+            return NotFound(new { message = "That menu is not one of this venue's menus." });
+        }
+
+        var draft = ToDraftResponse(result.Draft);
+        return Ok(new BuilderBoardResponse(
+            ToBoardResponse(result.Board)!,
+            draft.Count,
+            draft.Changes,
+            result.PublishedVersion,
+            result.LastPublishedUtc,
+            result.LastPublishedBy,
+            [.. (result.Board.Screens ?? []).Select(screen => screen.ScreenId)]));
+    }
+
+    /// <summary>
+    /// Adds a section at the end of the board (Q95). It lands as a draft change
+    /// like everything else the builder does.
+    /// </summary>
+    [HttpPost("menus/{menuId:guid}/sections")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<SectionResponse>> AddSection(
+        Guid menuId,
+        SectionNameRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request?.Name))
+        {
+            return Problem("A section needs a name.", statusCode: 400);
+        }
+
+        var sectionId = Guid.NewGuid();
+        var outcome = await content
+            .AddSectionAsync(VenueId, menuId, sectionId, request.Name, cancellationToken)
+            .ConfigureAwait(false);
+
+        return outcome.Outcome == SectionOutcomes.Created
+            ? Ok(new SectionResponse(sectionId, request.Name.Trim(), outcome.SortOrder))
+            : NotFound(new { message = "That menu is not one of this venue's menus." });
+    }
+
+    /// <summary>Renaming happens by typing over the heading on the canvas (Q96).</summary>
+    [HttpPut("menus/{menuId:guid}/sections/{sectionId:guid}")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult> RenameSection(
+        Guid menuId,
+        Guid sectionId,
+        SectionNameRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request?.Name))
+        {
+            return Problem("A section needs a name.", statusCode: 400);
+        }
+
+        return await content.RenameSectionAsync(VenueId, menuId, sectionId, request.Name, cancellationToken).ConfigureAwait(false)
+            ? NoContent()
+            : NotFound(new { message = "That section is not on this menu." });
+    }
+
+    /// <summary>
+    /// Deletes a section and releases its items back to the library (Q96). Nothing
+    /// is lost, and the response says how much came back.
+    /// </summary>
+    [HttpDelete("menus/{menuId:guid}/sections/{sectionId:guid}")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<SectionDeleteResponse>> DeleteSection(
+        Guid menuId,
+        Guid sectionId,
+        CancellationToken cancellationToken)
+    {
+        var outcome = await content
+            .DeleteSectionAsync(VenueId, menuId, sectionId, cancellationToken)
+            .ConfigureAwait(false);
+
+        return outcome.Outcome == SectionOutcomes.Deleted
+            ? Ok(new SectionDeleteResponse(outcome.ReleasedItemCount))
+            : NotFound(new { message = "That section is not on this menu." });
+    }
+
+    /// <summary>
+    /// Reordering refuses rather than half-applies when the list no longer matches
+    /// the menu — someone else added or removed something in between, and applying
+    /// it to the part that still matches would leave the rest at stale orders.
+    /// </summary>
+    [HttpPut("menus/{menuId:guid}/sections/order")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult> ReorderSections(
+        Guid menuId,
+        SectionOrderRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request?.SectionIds is null)
+        {
+            return Problem("Section identifiers are required.", statusCode: 400);
+        }
+
+        var outcome = await content
+            .ReorderSectionsAsync(VenueId, menuId, request.SectionIds, cancellationToken)
+            .ConfigureAwait(false);
+
+        return outcome.Outcome == ReorderOutcomes.Reordered
+            ? NoContent()
+            : Conflict(new
+            {
+                reason = ReorderOutcomes.OrderStale,
+                message = "The sections changed while you were dragging. Nothing moved — reload and try again."
+            });
+    }
+
+    /// <inheritdoc cref="ReorderSections"/>
+    [HttpPut("menus/{menuId:guid}/sections/{sectionId:guid}/items/order")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult> ReorderItems(
+        Guid menuId,
+        Guid sectionId,
+        ItemOrderRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request?.ItemIds is null)
+        {
+            return Problem("Item identifiers are required.", statusCode: 400);
+        }
+
+        var outcome = await content
+            .ReorderItemsAsync(VenueId, menuId, sectionId, request.ItemIds, cancellationToken)
+            .ConfigureAwait(false);
+
+        return outcome.Outcome == ReorderOutcomes.Reordered
+            ? NoContent()
+            : Conflict(new
+            {
+                reason = ReorderOutcomes.OrderStale,
+                message = "The items changed while you were dragging. Nothing moved — reload and try again."
+            });
+    }
+
+    /// <summary>
+    /// Puts something in a section: an item the library already holds, or a new one
+    /// born with the typed name (Q112/Q113). An item already on this board is
+    /// answered with where it sits, so the caller jumps rather than duplicating.
+    /// </summary>
+    [HttpPost("menus/{menuId:guid}/sections/{sectionId:guid}/items")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<PlaceResponse>> PlaceItem(
+        Guid menuId,
+        Guid sectionId,
+        PlaceRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request?.ItemId is null && string.IsNullOrWhiteSpace(request?.Name))
+        {
+            return Problem("Name an item to create, or an item to place.", statusCode: 400);
+        }
+
+        if (request.ItemId is { } existingId)
+        {
+            var placed = await content
+                .PlaceExistingItemAsync(VenueId, menuId, sectionId, existingId, cancellationToken)
+                .ConfigureAwait(false);
+
+            return placed.Outcome switch
+            {
+                PlaceExistingOutcomes.Placed => Ok(new PlaceResponse(
+                    placed.Outcome, existingId, sectionId, placed.SortOrder, placed.ItemCountOnMenu)),
+
+                // Not an error: this is Q112's jump, and the caller is told where to.
+                PlaceExistingOutcomes.AlreadyOnBoard => Ok(new PlaceResponse(
+                    placed.Outcome, existingId, placed.ExistingSectionId, 0, placed.ItemCountOnMenu)),
+
+                PlaceExistingOutcomes.CeilingReached => Problem(
+                    await content.DescribeCeilingRefusalAsync(
+                        VenueId, MenuCeilings.ItemsPerMenu, placed.ItemCountOnMenu + 1, cancellationToken)
+                        .ConfigureAwait(false)
+                    ?? "This menu is full.",
+                    statusCode: 409),
+
+                _ => NotFound(new { message = "That section or item is not on this venue's menu." })
+            };
+        }
+
+        var itemId = Guid.NewGuid();
+        var created = await content
+            .AddNewItemAsync(VenueId, menuId, sectionId, itemId, request.Name!, cancellationToken)
+            .ConfigureAwait(false);
+
+        return created.Outcome switch
+        {
+            ItemPlacementOutcomes.Created => Ok(new PlaceResponse(
+                PlaceExistingOutcomes.Placed, itemId, sectionId, created.SortOrder, created.ItemCountOnMenu)),
+
+            ItemPlacementOutcomes.OverCeiling => Problem(
+                await content.DescribeCeilingRefusalAsync(
+                    VenueId, MenuCeilings.ItemsPerMenu, created.ItemCountOnMenu + 1, cancellationToken)
+                    .ConfigureAwait(false)
+                ?? "This menu is full.",
+                statusCode: 409),
+
+            _ => NotFound(new { message = "That section is not on this venue's menu." })
+        };
+    }
+
+    /// <summary>
+    /// Takes an item off this board. It stays in the library, so it can be placed
+    /// again here or anywhere else (Q97).
+    /// </summary>
+    [HttpDelete("menus/{menuId:guid}/items/{itemId:guid}")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult> RemoveItem(
+        Guid menuId,
+        Guid itemId,
+        CancellationToken cancellationToken) =>
+        await content.RemoveItemFromMenuAsync(VenueId, menuId, itemId, cancellationToken).ConfigureAwait(false)
+            ? NoContent()
+            : NotFound(new { message = "That item is not on this board." });
+
+    /// <summary>
+    /// Edits an item. One item is one shared price across every board it sits on
+    /// (Q5) — each board's screens still change only when that board publishes.
+    /// </summary>
+    [HttpPut("items/{itemId:guid}")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<BoardItemResponse>> UpdateItem(
+        Guid itemId,
+        ItemValuesRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request is null)
+        {
+            return Problem("Item values are required.", statusCode: 400);
+        }
+
+        var item = await content
+            .UpdateItemValuesAsync(VenueId, itemId, request.Name, request.Description, request.Price, cancellationToken)
+            .ConfigureAwait(false);
+
+        return item is null
+            ? NotFound(new { message = "That item is not one of this venue's items." })
+            : Ok(new BoardItemResponse(item.Id, item.Name, item.Description, item.Price, 0));
+    }
+
+    /// <summary>
+    /// The add row's search across the whole venue library, 86'd items included,
+    /// each result naming the boards it already sits on (Q112/Q123).
+    /// </summary>
+    [HttpGet("items")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<IReadOnlyCollection<LibraryItemResponse>>> SearchItems(
+        [FromQuery] string? query,
+        [FromQuery] int take,
+        CancellationToken cancellationToken)
+    {
+        var bounded = take <= 0 ? 20 : Math.Min(take, 100);
+        var results = await content
+            .SearchLibraryAsync(VenueId, query, bounded, cancellationToken)
+            .ConfigureAwait(false);
+
+        return Ok(results
+            .Select(result => new LibraryItemResponse(
+                result.Item.Id,
+                result.Item.Name,
+                result.Item.Description,
+                result.Item.Price,
+                result.IsAvailable,
+                [.. result.Boards.Select(board => new LibraryItemBoardResponse(board.MenuId, board.MenuName))]))
+            .ToArray());
+    }
+
+    /// <summary>
+    /// The menu themes this venue could attach. Always empty: menu themes are built
+    /// in the theme editor, which does not exist yet, and no named looks ship (Q86).
+    /// The picker reads this rather than a hard-coded list, so it needs no change
+    /// when the first theme is built.
+    /// </summary>
+    [HttpGet("menu-themes")]
+    [RequireCapability("content.item.update")]
+    public ActionResult<IReadOnlyCollection<MenuThemeResponse>> GetMenuThemes() =>
+        Ok(ContentService.GetMenuThemes()
+            .Select(theme => new MenuThemeResponse(theme.Key, theme.Name))
+            .ToArray());
 }

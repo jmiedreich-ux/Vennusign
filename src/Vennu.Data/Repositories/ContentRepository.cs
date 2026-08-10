@@ -387,6 +387,270 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         WHERE p.VenueId = @VenueId AND p.MenuId = @MenuId AND p.MenuSectionId = @SectionId;
         """;
 
+    // ---- the builder's writes -------------------------------------------------
+    //
+    // Every one of these is a single guarded statement rather than a read, a
+    // decision in C#, and a write. That shape has produced this codebase's most
+    // common defect four times now: two values that must describe the same instant,
+    // read apart. Reorder is the sharpest case, because the builder makes it a
+    // drag - fast, repeated, and easy to overlap with somebody else's add.
+
+    /// <summary>
+    /// Adds a section at the end of the menu. The next sort order is read under the
+    /// same lock as the insert: (MenuId, SortOrder) is unique, so two people adding
+    /// a section at once would otherwise collide on it.
+    /// </summary>
+    private const string CreateSectionOnMenuSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS (
+            SELECT 1 FROM dbo.Menus WITH (UPDLOCK, HOLDLOCK)
+            WHERE Id = @MenuId AND VenueId = @VenueId)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT N'menu_missing' AS Outcome, 0 AS SortOrder;
+        END
+        ELSE
+        BEGIN
+            DECLARE @Next INT = ISNULL((
+                SELECT MAX(SortOrder) FROM dbo.MenuSections WITH (UPDLOCK, HOLDLOCK)
+                WHERE MenuId = @MenuId AND VenueId = @VenueId), -1) + 1;
+
+            INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            VALUES (@SectionId, @VenueId, @MenuId, @Name, @Next, @Now, @Now);
+
+            COMMIT TRANSACTION;
+            SELECT N'created' AS Outcome, @Next AS SortOrder;
+        END
+        """;
+
+    private const string RenameSectionSql = """
+        UPDATE dbo.MenuSections
+        SET Name = @Name, UpdatedUtc = @Now
+        OUTPUT 1 AS Value
+        WHERE Id = @SectionId AND MenuId = @MenuId AND VenueId = @VenueId;
+        """;
+
+    /// <summary>
+    /// Deletes a section and releases its items back to the library (Q96). The
+    /// placements go; the items do not - they were never in the section, a
+    /// placement put them there. The released count is returned so the UI can say
+    /// what happened rather than guess at it.
+    /// </summary>
+    private const string DeleteSectionSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS (
+            SELECT 1 FROM dbo.MenuSections WITH (UPDLOCK, HOLDLOCK)
+            WHERE Id = @SectionId AND MenuId = @MenuId AND VenueId = @VenueId)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT N'section_missing' AS Outcome, 0 AS Released;
+        END
+        ELSE
+        BEGIN
+            DECLARE @Released INT =
+                (SELECT COUNT(*) FROM dbo.Placements WHERE MenuSectionId = @SectionId AND VenueId = @VenueId);
+
+            DELETE FROM dbo.Placements WHERE MenuSectionId = @SectionId AND VenueId = @VenueId;
+            DELETE FROM dbo.MenuSections WHERE Id = @SectionId AND VenueId = @VenueId;
+
+            COMMIT TRANSACTION;
+            SELECT N'deleted' AS Outcome, @Released AS Released;
+        END
+        """;
+
+    /// <summary>
+    /// The order the caller sends must still be exactly this menu's sections when
+    /// the write happens, proved under the lock rather than by an earlier read. A
+    /// section added between the two would otherwise be left out of the numbering
+    /// and keep a stale sort order.
+    ///
+    /// (MenuId, SortOrder) is unique, so every section is parked out of the range
+    /// first - otherwise swapping two collides half-way through.
+    /// </summary>
+    private const string ReorderSectionsGuardedSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        DECLARE @Order TABLE (SectionId UNIQUEIDENTIFIER PRIMARY KEY, Position INT NOT NULL);
+        INSERT @Order (SectionId, Position)
+        SELECT TRY_CONVERT(UNIQUEIDENTIFIER, [value]), CAST([key] AS INT)
+        FROM OPENJSON(@SectionIdsJson);
+
+        DECLARE @Live INT = (
+            SELECT COUNT(*) FROM dbo.MenuSections WITH (UPDLOCK, HOLDLOCK)
+            WHERE MenuId = @MenuId AND VenueId = @VenueId);
+
+        IF @Live <> (SELECT COUNT(*) FROM @Order)
+           OR EXISTS (
+               SELECT 1 FROM @Order o
+               WHERE NOT EXISTS (
+                   SELECT 1 FROM dbo.MenuSections s
+                   WHERE s.Id = o.SectionId AND s.MenuId = @MenuId AND s.VenueId = @VenueId))
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT N'order_stale' AS Outcome, @Live AS Moved;
+        END
+        ELSE
+        BEGIN
+            UPDATE s SET s.SortOrder = 1000000 + o.Position, s.UpdatedUtc = @Now
+            FROM dbo.MenuSections s INNER JOIN @Order o ON o.SectionId = s.Id;
+
+            UPDATE s SET s.SortOrder = o.Position, s.UpdatedUtc = @Now
+            FROM dbo.MenuSections s INNER JOIN @Order o ON o.SectionId = s.Id;
+
+            COMMIT TRANSACTION;
+            SELECT N'reordered' AS Outcome, @Live AS Moved;
+        END
+        """;
+
+    /// <summary>
+    /// The same guard for placements. The old path trusted the caller's list, so
+    /// any placement omitted from it kept a stale sort order that could collide
+    /// with a rewritten one - leaving board order resting on a tiebreaker nobody
+    /// chose.
+    /// </summary>
+    private const string ReorderPlacementsGuardedSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        DECLARE @Order TABLE (ItemId UNIQUEIDENTIFIER PRIMARY KEY, Position INT NOT NULL);
+        INSERT @Order (ItemId, Position)
+        SELECT TRY_CONVERT(UNIQUEIDENTIFIER, [value]), CAST([key] AS INT)
+        FROM OPENJSON(@ItemIdsJson);
+
+        DECLARE @Live INT = (
+            SELECT COUNT(*) FROM dbo.Placements WITH (UPDLOCK, HOLDLOCK)
+            WHERE MenuId = @MenuId AND MenuSectionId = @SectionId AND VenueId = @VenueId);
+
+        IF @Live <> (SELECT COUNT(*) FROM @Order)
+           OR EXISTS (
+               SELECT 1 FROM @Order o
+               WHERE NOT EXISTS (
+                   SELECT 1 FROM dbo.Placements p
+                   WHERE p.ItemId = o.ItemId AND p.MenuSectionId = @SectionId
+                     AND p.MenuId = @MenuId AND p.VenueId = @VenueId))
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT N'order_stale' AS Outcome, @Live AS Moved;
+        END
+        ELSE
+        BEGIN
+            UPDATE p SET p.SortOrder = o.Position, p.UpdatedUtc = @Now
+            FROM dbo.Placements p
+            INNER JOIN @Order o ON o.ItemId = p.ItemId
+            WHERE p.MenuSectionId = @SectionId AND p.MenuId = @MenuId AND p.VenueId = @VenueId;
+
+            COMMIT TRANSACTION;
+            SELECT N'reordered' AS Outcome, @Live AS Moved;
+        END
+        """;
+
+    /// <summary>
+    /// Places an item the library already holds. An item already on this board is
+    /// neither an error nor a second copy: the caller is told which section it
+    /// already sits in, so the UI can jump to it (Q112). The items-per-menu ceiling
+    /// is counted under the same lock as the insert (Q201).
+    /// </summary>
+    private const string PlaceExistingItemSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS (
+            SELECT 1 FROM dbo.MenuSections WITH (UPDLOCK, HOLDLOCK)
+            WHERE Id = @SectionId AND MenuId = @MenuId AND VenueId = @VenueId)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT N'section_missing' AS Outcome, 0 AS ItemCountOnMenu, 0 AS SortOrder,
+                   CAST(NULL AS UNIQUEIDENTIFIER) AS ExistingSectionId;
+        END
+        ELSE IF NOT EXISTS (SELECT 1 FROM dbo.Items WHERE Id = @ItemId AND VenueId = @VenueId)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT N'item_missing' AS Outcome, 0 AS ItemCountOnMenu, 0 AS SortOrder,
+                   CAST(NULL AS UNIQUEIDENTIFIER) AS ExistingSectionId;
+        END
+        ELSE
+        BEGIN
+            DECLARE @Existing UNIQUEIDENTIFIER = (
+                SELECT TOP (1) MenuSectionId FROM dbo.Placements WITH (UPDLOCK, HOLDLOCK)
+                WHERE MenuId = @MenuId AND ItemId = @ItemId AND VenueId = @VenueId);
+
+            DECLARE @OnMenu INT = (
+                SELECT COUNT(*) FROM dbo.Placements WITH (UPDLOCK, HOLDLOCK)
+                WHERE MenuId = @MenuId AND VenueId = @VenueId);
+
+            IF @Existing IS NOT NULL
+            BEGIN
+                ROLLBACK TRANSACTION;
+                SELECT N'already_on_board' AS Outcome, @OnMenu AS ItemCountOnMenu, 0 AS SortOrder,
+                       @Existing AS ExistingSectionId;
+            END
+            ELSE IF @OnMenu >= @ItemsPerMenuLimit
+            BEGIN
+                ROLLBACK TRANSACTION;
+                SELECT N'ceiling_reached' AS Outcome, @OnMenu AS ItemCountOnMenu, 0 AS SortOrder,
+                       CAST(NULL AS UNIQUEIDENTIFIER) AS ExistingSectionId;
+            END
+            ELSE
+            BEGIN
+                DECLARE @Next INT = ISNULL((
+                    SELECT MAX(SortOrder) FROM dbo.Placements
+                    WHERE MenuSectionId = @SectionId AND VenueId = @VenueId), -1) + 1;
+
+                INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
+                VALUES (@PlacementId, @VenueId, @MenuId, @SectionId, @ItemId, @Next, @Now, @Now);
+
+                COMMIT TRANSACTION;
+                SELECT N'placed' AS Outcome, @OnMenu + 1 AS ItemCountOnMenu, @Next AS SortOrder,
+                       CAST(NULL AS UNIQUEIDENTIFIER) AS ExistingSectionId;
+            END
+        END
+        """;
+
+    /// <summary>
+    /// Takes an item off this board. The item stays in the library (Q97) - only the
+    /// placement goes, exactly as deleting a section releases everything it held.
+    /// </summary>
+    private const string RemoveItemFromMenuSql = """
+        DELETE FROM dbo.Placements
+        OUTPUT 1 AS Value
+        WHERE MenuId = @MenuId AND ItemId = @ItemId AND VenueId = @VenueId;
+        """;
+
+    /// <summary>
+    /// The add row's search: the whole venue library, 86'd items included (Q112).
+    /// Bounded by TOP, because the library has no ceiling of its own and a search
+    /// that returns everything is a search nobody reads. Prefix matches sort first.
+    /// </summary>
+    private const string SearchItemsSql = """
+        SELECT TOP (@Take) i.Id, i.VenueId, i.Name, i.Description, i.Price, i.ImageUrl,
+               i.Source, i.IsActive, i.CreatedUtc, i.UpdatedUtc
+        FROM dbo.Items i
+        WHERE i.VenueId = @VenueId
+          AND (@Pattern IS NULL OR i.Name LIKE @Pattern)
+        ORDER BY CASE WHEN @Prefix IS NOT NULL AND i.Name LIKE @Prefix THEN 0 ELSE 1 END,
+                 i.Name, i.Id;
+        """;
+
+    /// <summary>
+    /// Which boards each of these items sits on, for "also on Late Night" (Q123).
+    /// Menu names come from the row that owns them, so a renamed menu cannot be
+    /// described by a stale label the caller was holding.
+    /// </summary>
+    private const string ItemBoardsSql = """
+        SELECT p.ItemId, p.MenuId, m.Name AS MenuName
+        FROM dbo.Placements p
+        INNER JOIN dbo.Menus m ON m.Id = p.MenuId AND m.VenueId = p.VenueId
+        INNER JOIN OPENJSON(@ItemIdsJson) ids
+            ON p.ItemId = TRY_CONVERT(UNIQUEIDENTIFIER, ids.[value])
+        WHERE p.VenueId = @VenueId
+        ORDER BY m.Name, p.MenuId;
+        """;
+
     // What the editor renders: every placement in the venue with its item values
     // and its live availability, in board order.
     private const string PlacedItemsSql = """
@@ -614,16 +878,23 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
     // subqueries. Read separately, a publish committing between them hands back
     // one version's snapshot labelled with another's, and a diff computed from
     // that pair describes a comparison that never existed.
+    // Everything a builder needs to open a menu, in ONE read: the board it draws
+    // (Working), the board its screens are showing (Published), and the publish
+    // that put the second there. The publish bar states all three in one sentence
+    // - "3 changes not on your screens / published Tue 4:12pm by Dana" - so
+    // reading them separately is how that sentence starts lying (Q182).
     private const string DraftSnapshotsSql = """
         SELECT
             latest.Snapshot AS Published,
             ISNULL(latest.Version, 0) AS PublishedVersion,
+            latest.PublishedUtc AS PublishedUtc,
+            latest.Author AS PublishedBy,
             (
         """ + WorkingSnapshotBody + """
             ) AS Working
         FROM (SELECT 1 AS Anchor) anchor
         OUTER APPLY (
-            SELECT TOP (1) e.Snapshot, e.Version
+            SELECT TOP (1) e.Snapshot, e.Version, e.PublishedUtc, e.Author
             FROM dbo.MenuPublishEvents e
             WHERE e.VenueId = @VenueId AND e.MenuId = @MenuId
             ORDER BY e.Version DESC
@@ -1226,6 +1497,203 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             cancellationToken).ConfigureAwait(false)).Count();
     }
 
+    // ---- the builder's writes -------------------------------------------------
+
+    public async Task<SectionCreateOutcome> CreateSectionOnMenuAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        string name,
+        DateTime now,
+        CancellationToken cancellationToken = default)
+    {
+        var row = (await dataAccess.ExecuteSqlQueryAsync<SectionCreateRow, object>(
+            CreateSectionOnMenuSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                MenuId = RequireId(menuId, nameof(menuId)),
+                SectionId = RequireId(sectionId, nameof(sectionId)),
+                Name = name,
+                Now = now
+            },
+            cancellationToken).ConfigureAwait(false)).Single();
+
+        return new SectionCreateOutcome(row.Outcome, row.SortOrder);
+    }
+
+    public async Task<bool> RenameSectionAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        string name,
+        DateTime now,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<ScalarResult, object>(
+            RenameSectionSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                MenuId = RequireId(menuId, nameof(menuId)),
+                SectionId = RequireId(sectionId, nameof(sectionId)),
+                Name = name,
+                Now = now
+            },
+            cancellationToken).ConfigureAwait(false)).Any();
+
+    public async Task<SectionDeleteOutcome> DeleteSectionAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        CancellationToken cancellationToken = default)
+    {
+        var row = (await dataAccess.ExecuteSqlQueryAsync<SectionDeleteRow, object>(
+            DeleteSectionSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                MenuId = RequireId(menuId, nameof(menuId)),
+                SectionId = RequireId(sectionId, nameof(sectionId))
+            },
+            cancellationToken).ConfigureAwait(false)).Single();
+
+        return new SectionDeleteOutcome(row.Outcome, row.Released);
+    }
+
+    public async Task<ReorderOutcome> ReorderSectionsGuardedAsync(
+        Guid venueId,
+        Guid menuId,
+        IReadOnlyCollection<Guid> sectionIds,
+        DateTime now,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(sectionIds);
+        var row = (await dataAccess.ExecuteSqlQueryAsync<ReorderRow, object>(
+            ReorderSectionsGuardedSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                MenuId = RequireId(menuId, nameof(menuId)),
+                SectionIdsJson = System.Text.Json.JsonSerializer.Serialize(sectionIds),
+                Now = now
+            },
+            cancellationToken).ConfigureAwait(false)).Single();
+
+        return new ReorderOutcome(row.Outcome, row.Moved);
+    }
+
+    public async Task<ReorderOutcome> ReorderPlacementsGuardedAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        IReadOnlyCollection<Guid> itemIds,
+        DateTime now,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(itemIds);
+        var row = (await dataAccess.ExecuteSqlQueryAsync<ReorderRow, object>(
+            ReorderPlacementsGuardedSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                MenuId = RequireId(menuId, nameof(menuId)),
+                SectionId = RequireId(sectionId, nameof(sectionId)),
+                ItemIdsJson = System.Text.Json.JsonSerializer.Serialize(itemIds),
+                Now = now
+            },
+            cancellationToken).ConfigureAwait(false)).Single();
+
+        return new ReorderOutcome(row.Outcome, row.Moved);
+    }
+
+    public async Task<PlaceExistingOutcome> PlaceExistingItemAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid itemId,
+        int itemsPerMenuLimit,
+        DateTime now,
+        CancellationToken cancellationToken = default)
+    {
+        var row = (await dataAccess.ExecuteSqlQueryAsync<PlaceExistingRow, object>(
+            PlaceExistingItemSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                MenuId = RequireId(menuId, nameof(menuId)),
+                SectionId = RequireId(sectionId, nameof(sectionId)),
+                ItemId = RequireId(itemId, nameof(itemId)),
+                PlacementId = Guid.NewGuid(),
+                ItemsPerMenuLimit = itemsPerMenuLimit,
+                Now = now
+            },
+            cancellationToken).ConfigureAwait(false)).Single();
+
+        return new PlaceExistingOutcome(row.Outcome, row.ItemCountOnMenu, row.SortOrder, row.ExistingSectionId);
+    }
+
+    public async Task<bool> RemoveItemFromMenuAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid itemId,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<ScalarResult, object>(
+            RemoveItemFromMenuSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                MenuId = RequireId(menuId, nameof(menuId)),
+                ItemId = RequireId(itemId, nameof(itemId))
+            },
+            cancellationToken).ConfigureAwait(false)).Any();
+
+    public async Task<IReadOnlyCollection<Item>> SearchItemsAsync(
+        Guid venueId,
+        string? query,
+        int take,
+        CancellationToken cancellationToken = default)
+    {
+        // LIKE wildcards typed into a search box are characters, not operators: a
+        // person looking for "50% off" should not match everything.
+        var trimmed = (query ?? string.Empty).Trim();
+        var escaped = trimmed
+            .Replace("[", "[[]", StringComparison.Ordinal)
+            .Replace("%", "[%]", StringComparison.Ordinal)
+            .Replace("_", "[_]", StringComparison.Ordinal);
+
+        return (await dataAccess.ExecuteSqlQueryAsync<Item, object>(
+            SearchItemsSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                Take = take,
+                Pattern = trimmed.Length == 0 ? null : $"%{escaped}%",
+                Prefix = trimmed.Length == 0 ? null : $"{escaped}%"
+            },
+            cancellationToken).ConfigureAwait(false)).ToArray();
+    }
+
+    public async Task<IReadOnlyCollection<ItemBoard>> GetItemBoardsAsync(
+        Guid venueId,
+        IReadOnlyCollection<Guid> itemIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(itemIds);
+        if (itemIds.Count == 0)
+        {
+            return [];
+        }
+
+        return (await dataAccess.ExecuteSqlQueryAsync<ItemBoard, object>(
+            ItemBoardsSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                ItemIdsJson = System.Text.Json.JsonSerializer.Serialize(itemIds)
+            },
+            cancellationToken).ConfigureAwait(false)).ToArray();
+    }
+
     public async Task<IReadOnlyCollection<PlacedMenuItem>> GetPlacedItemsForVenueAsync(
         Guid venueId,
         CancellationToken cancellationToken = default) =>
@@ -1515,7 +1983,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             },
             cancellationToken).ConfigureAwait(false)).SingleOrDefault();
 
-        return new DraftSnapshots(row?.Published, row?.Working, row?.PublishedVersion ?? 0);
+        return new DraftSnapshots(row?.Published, row?.Working, row?.PublishedVersion ?? 0, row?.PublishedUtc, row?.PublishedBy);
     }
 
     /// <summary>The menu as it stands right now, in the shape a publish records.</summary>
@@ -1845,11 +2313,47 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         public int ActiveMenuCount { get; set; }
     }
 
+    private sealed class SectionCreateRow
+    {
+        public string Outcome { get; set; } = string.Empty;
+
+        public int SortOrder { get; set; }
+    }
+
+    private sealed class SectionDeleteRow
+    {
+        public string Outcome { get; set; } = string.Empty;
+
+        public int Released { get; set; }
+    }
+
+    private sealed class ReorderRow
+    {
+        public string Outcome { get; set; } = string.Empty;
+
+        public int Moved { get; set; }
+    }
+
+    private sealed class PlaceExistingRow
+    {
+        public string Outcome { get; set; } = string.Empty;
+
+        public int ItemCountOnMenu { get; set; }
+
+        public int SortOrder { get; set; }
+
+        public Guid? ExistingSectionId { get; set; }
+    }
+
     private sealed class DraftSnapshotRow
     {
         public string? Published { get; set; }
 
         public long PublishedVersion { get; set; }
+
+        public DateTime? PublishedUtc { get; set; }
+
+        public string? PublishedBy { get; set; }
 
         public string? Working { get; set; }
     }
