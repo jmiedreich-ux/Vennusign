@@ -3,24 +3,13 @@ using Vennu.Data.IntegrationTests.Fixtures;
 namespace Vennu.Data.IntegrationTests;
 
 [Trait("Category", "Integration")]
-public class ScreenPairingCodeRepositoryIntegrationTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
+public class ScreenPairingCodeRepositoryIntegrationTests(DatabaseFixture fixture)
+    : InvariantCheckedTests(fixture), IClassFixture<DatabaseFixture>
 {
-    private readonly DatabaseFixture fixture;
-
-    public ScreenPairingCodeRepositoryIntegrationTests(DatabaseFixture fixture) { this.fixture = fixture; }
-
-    public Task InitializeAsync() => fixture.ResetTablesAsync();
-
-    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task CreateAsync_PersistsPairingCodeToDatabase()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var screenRepo = new ScreenRepository(dataAccess);
         var sut = new ScreenPairingCodeRepository(dataAccess);
@@ -59,11 +48,6 @@ public class ScreenPairingCodeRepositoryIntegrationTests : IClassFixture<Databas
     [Fact]
     public async Task GetByCodeAsync_RetrievesPersistedPairingCode()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var screenRepo = new ScreenRepository(dataAccess);
         var sut = new ScreenPairingCodeRepository(dataAccess);
@@ -106,11 +90,6 @@ public class ScreenPairingCodeRepositoryIntegrationTests : IClassFixture<Databas
     [Fact]
     public async Task ClaimAsync_MarksPairingCodeAsClaimed()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var venueRepo = new VenueRepository(dataAccess);
         var screenRepo = new ScreenRepository(dataAccess);
@@ -172,11 +151,6 @@ public class ScreenPairingCodeRepositoryIntegrationTests : IClassFixture<Databas
     [Fact]
     public async Task ClaimAsync_ReturnsFalse_WhenCodeDoesNotExist()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var sut = new ScreenPairingCodeRepository(dataAccess);
 
@@ -188,11 +162,6 @@ public class ScreenPairingCodeRepositoryIntegrationTests : IClassFixture<Databas
     [Fact]
     public async Task GetByCodeAsync_ReturnsNull_WhenCodeDoesNotExist()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var sut = new ScreenPairingCodeRepository(dataAccess);
 

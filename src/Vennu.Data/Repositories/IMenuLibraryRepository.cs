@@ -114,6 +114,12 @@ public interface IMenuLibraryRepository
 
     Task<IReadOnlyCollection<MenuScreenAssignment>> GetAssignmentsAsync(Guid venueId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// What each screen in the venue is showing right now, taken from what was
+    /// published to it - never from the assignments, which are unpublished intent.
+    /// </summary>
+    Task<IReadOnlyCollection<ScreenShowing>> GetScreensShowingAsync(Guid venueId, CancellationToken cancellationToken = default);
+
     // ----- Publish and history -----------------------------------------------------
 
     /// <summary>
@@ -140,7 +146,6 @@ public interface IMenuLibraryRepository
     /// </param>
     Task<PublishOutcome> PublishAsync(
         MenuPublishEvent publishEvent,
-        int changeCount,
         string? shippedChanges,
         string expectedWorkingSnapshot,
         string? expectedPublishedSnapshot,
@@ -243,6 +248,20 @@ public sealed record PublishOutcome(MenuPublishEvent Event, IReadOnlyCollection<
 /// one came from. Publish proves both halves are still current before recording
 /// a difference against them.
 /// </summary>
+/// <summary>
+/// One screen and the published version it is showing. Every field but the screen is
+/// null when the screen is showing nothing - it was never published to, or the publish
+/// that last spoke to it was the one taking a menu off.
+/// </summary>
+public sealed record ScreenShowing(
+    Guid ScreenId,
+    string ScreenName,
+    Guid? MenuId,
+    string? MenuName,
+    long? Version,
+    DateTime? PublishedUtc,
+    string? Author);
+
 public sealed record DraftSnapshots(string? Published, string? Working, long PublishedVersion);
 
 /// <summary>What happened to a put-away or put-back; see <see cref="PutAwayOutcomes"/>.</summary>

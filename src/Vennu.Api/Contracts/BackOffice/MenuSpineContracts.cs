@@ -83,6 +83,23 @@ public sealed record AssignmentResponse(
     string? AssignedBy);
 
 /// <summary>
+/// What a screen is showing right now: the menu and published version that reached
+/// it. Everything but the screen is null when it is showing nothing.
+///
+/// This is the published truth, not the assignment. A menu can be assigned to a screen
+/// and not yet be on it - that is the whole point of a deliberate publish - so the two
+/// disagreeing is normal, and reading content from the assignment is a defect.
+/// </summary>
+public sealed record ScreenShowingResponse(
+    Guid ScreenId,
+    string ScreenName,
+    Guid? MenuId,
+    string? MenuName,
+    long? Version,
+    DateTime? PublishedUtc,
+    string? PublishedBy);
+
+/// <summary>
 /// A restore rebuilt the draft from a published version. ReplacedChangeCount says
 /// how many queued changes it displaced, so the caller can warn honestly (Q67).
 /// </summary>

@@ -10,7 +10,7 @@ public sealed class MenuLifecycleMigrationTests
     {
         var scriptName = Assert.Single(
             DatabaseMigrator.GetEmbeddedScriptNames()
-                .Where(name => name.EndsWith(".Scripts.053_add_menu_item_lifecycle.sql", StringComparison.Ordinal)));
+                .Where(name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal)));
         using var stream = Assert.IsAssignableFrom<Stream>(typeof(DatabaseMigrator).Assembly.GetManifestResourceStream(scriptName));
         using var reader = new StreamReader(stream);
         var sql = reader.ReadToEnd();

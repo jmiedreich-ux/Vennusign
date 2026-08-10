@@ -162,6 +162,25 @@ around the conflict and report a success that did not happen.
 
 ---
 
+## 7b. Ask the screen, not the API
+
+```
+GET /api/back-office/menu-spine/screens/showing
+```
+
+**Expect:** every screen in the venue, and the menu and published version it is
+actually showing — taken from what was published to it, never from the assignment.
+
+This is the question the whole model is built around, and until now nothing could ask
+it. That is not a small gap: the first run of this demo reported twelve checks of
+twelve while a screen sat stranded on a menu the system called shelved, because every
+check asked the API whether it had accepted a request and none could ask the screen.
+
+A menu can be assigned to a screen and not yet be on it — that is what a deliberate
+publish means — so this disagreeing with `GET assignments` is normal and correct.
+
+---
+
 ## 8. Take off the screens waits for Publish (Q68)
 
 ```

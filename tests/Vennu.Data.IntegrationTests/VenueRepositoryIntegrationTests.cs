@@ -3,24 +3,13 @@ using Vennu.Data.IntegrationTests.Fixtures;
 namespace Vennu.Data.IntegrationTests;
 
 [Trait("Category", "Integration")]
-public class VenueRepositoryIntegrationTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
+public class VenueRepositoryIntegrationTests(DatabaseFixture fixture)
+    : InvariantCheckedTests(fixture), IClassFixture<DatabaseFixture>
 {
-    private readonly DatabaseFixture fixture;
-
-    public VenueRepositoryIntegrationTests(DatabaseFixture fixture) { this.fixture = fixture; }
-
-    public Task InitializeAsync() => fixture.ResetTablesAsync();
-
-    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task CreateAsync_PersistsVenueToDatabase()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var sut = new VenueRepository(dataAccess);
         var venueName = fixture.UniqueValue("test-venue");
@@ -51,11 +40,6 @@ public class VenueRepositoryIntegrationTests : IClassFixture<DatabaseFixture>, I
     [Fact]
     public async Task GetByIdAsync_RetrievesPersistedVenue()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var sut = new VenueRepository(dataAccess);
         var venueName = fixture.UniqueValue("readable-venue");
@@ -88,11 +72,6 @@ public class VenueRepositoryIntegrationTests : IClassFixture<DatabaseFixture>, I
     [Fact]
     public async Task GetAllAsync_ReturnsAllPersistedVenues()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var sut = new VenueRepository(dataAccess);
         var venueNameA = fixture.UniqueValue("venue-a");
@@ -127,11 +106,6 @@ public class VenueRepositoryIntegrationTests : IClassFixture<DatabaseFixture>, I
     [Fact]
     public async Task GetByIdAsync_ReturnsNull_WhenVenueDoesNotExist()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var sut = new VenueRepository(dataAccess);
 

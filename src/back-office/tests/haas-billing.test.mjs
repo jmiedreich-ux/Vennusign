@@ -7,7 +7,7 @@ const [api, app, card, controller, migration] = await Promise.all([
   readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/BillingStatusCard.tsx", import.meta.url), "utf8"),
   readFile(new URL("../../Vennu.Api/Controllers/BackOffice/BackOfficeBillingController.cs", import.meta.url), "utf8"),
-  readFile(new URL("../../Vennu.Data/Scripts/034_create_haas_contracts.sql", import.meta.url), "utf8")
+  readFile(new URL("../../Vennu.Data/Scripts/001_baseline.sql", import.meta.url), "utf8")
 ]);
 
 test("HaaS checkout stays claim-bound and accepts only bundle term metadata", () => {

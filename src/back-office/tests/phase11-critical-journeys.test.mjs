@@ -9,7 +9,7 @@ const [app, navigation, prompts, sidebar, modal, checkout, portal, billing, haas
   read("../src/billingPortal.mjs"), read("../src/BillingStatusCard.tsx"), read("../tests/haas-billing.test.mjs"),
   read("../../Vennu.Api/Controllers/BackOffice/BackOfficeBillingController.cs"),
   read("../../Vennu.Api/Controllers/StripeWebhooksController.cs"),
-  read("../../Vennu.Data/Scripts/034_create_haas_contracts.sql"),
+  read("../../Vennu.Data/Scripts/001_baseline.sql"),
   read("../../Vennu.Api/Contracts/BackOffice/CreateCheckoutSessionRequest.cs"),
   read("../../Vennu.Api/Contracts/BackOffice/CreateHaasCheckoutSessionRequest.cs")
 ]);

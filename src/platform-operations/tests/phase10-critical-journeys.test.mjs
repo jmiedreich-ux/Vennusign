@@ -9,7 +9,7 @@ const [dashboard, api, adminController, publicController, service, migration] = 
   read('../../Vennu.Api/Controllers/PlatformOperations/PlatformOperationsScreensController.cs'),
   read('../../Vennu.Api/Controllers/ScreensController.cs'),
   read('../../Vennu.Api/Services/HaasPreRegistrationService.cs'),
-  read('../../Vennu.Data/Scripts/032_add_screen_pre_registration.sql')
+  read('../../Vennu.Data/Scripts/001_baseline.sql')
 ]);
 
 test('fleet health remains explicit across the API contract and operational dashboard', () => {

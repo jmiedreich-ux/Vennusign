@@ -3,24 +3,13 @@ using Vennu.Data.IntegrationTests.Fixtures;
 namespace Vennu.Data.IntegrationTests;
 
 [Trait("Category", "Integration")]
-public class ScreenRepositoryIntegrationTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
+public class ScreenRepositoryIntegrationTests(DatabaseFixture fixture)
+    : InvariantCheckedTests(fixture), IClassFixture<DatabaseFixture>
 {
-    private readonly DatabaseFixture fixture;
-
-    public ScreenRepositoryIntegrationTests(DatabaseFixture fixture) { this.fixture = fixture; }
-
-    public Task InitializeAsync() => fixture.ResetTablesAsync();
-
-    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task CreateAsync_PersistsScreenToDatabase()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var sut = new ScreenRepository(dataAccess);
         var screenKey = fixture.UniqueScreenKey();
@@ -52,11 +41,6 @@ public class ScreenRepositoryIntegrationTests : IClassFixture<DatabaseFixture>, 
     [Fact]
     public async Task GetByIdAsync_RetrievesPersistedScreen()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var sut = new ScreenRepository(dataAccess);
         var screenKey = fixture.UniqueScreenKey();
@@ -91,11 +75,6 @@ public class ScreenRepositoryIntegrationTests : IClassFixture<DatabaseFixture>, 
     [Fact]
     public async Task AssignVenueAsync_LinksScreenToVenue()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var venueRepo = new VenueRepository(dataAccess);
         var screenRepo = new ScreenRepository(dataAccess);
@@ -138,11 +117,6 @@ public class ScreenRepositoryIntegrationTests : IClassFixture<DatabaseFixture>, 
     [Fact]
     public async Task UpdateHeartbeatAsync_UpdatesScreenStatus()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var sut = new ScreenRepository(dataAccess);
         var screen = new Screen { ScreenKey = fixture.UniqueScreenKey(), Name = fixture.UniqueValue("heartbeat-screen"), Status = "Offline" };
@@ -176,11 +150,6 @@ public class ScreenRepositoryIntegrationTests : IClassFixture<DatabaseFixture>, 
     [Fact]
     public async Task GetByVenueIdAsync_ReturnsScreensLinkedToVenue()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var venueRepo = new VenueRepository(dataAccess);
         var screenRepo = new ScreenRepository(dataAccess);
@@ -235,11 +204,6 @@ public class ScreenRepositoryIntegrationTests : IClassFixture<DatabaseFixture>, 
     [Fact]
     public async Task GetByIdAsync_ReturnsNull_WhenScreenDoesNotExist()
     {
-        if (!fixture.IsAvailable)
-        {
-            return;
-        }
-
         var dataAccess = fixture.CreateDataAccess();
         var sut = new ScreenRepository(dataAccess);
 

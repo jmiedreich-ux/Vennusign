@@ -80,6 +80,120 @@ tests do not. **Decide what to change about how work is verified before it goes 
 review** — owner instruction, to be taken up once M1 merges, not during it. M1 has
 now merged, so this is live.
 
+## Menus M1 verification remediation — 2026-08-09, on `feature/menus-verification-sweep`
+
+Committed locally, **not pushed, no CI run** — the owner has not approved one.
+
+**What this established.**
+
+- **LocalDB is the default database everywhere**, in tests and in CI. Azure is reached
+  only by setting `VENU_TEST_AZURE_SQL_CONNECTION_STRING` for that run. A gitignored
+  `app.settings.json` used to supply an Azure connection string, so every "local"
+  integration run silently went to a shared remote database: 96 seconds against Azure
+  versus 4 on LocalDB, non-hermetic, and flaky in a way that read as product flakiness.
+  The settings file is still read for its other toggles but can no longer choose the
+  database. The fixture creates and migrates the database itself, so a fresh machine
+  needs no setup.
+- **A run with no database fails.** Fifty-three `if (!fixture.IsAvailable) { return; }`
+  guards are gone. A suite that cannot reach a database is not a passing suite.
+- **The in-memory repository decides nothing.** It re-implemented seven refusals in C#,
+  and eight of the nine unit tests over it had a twin in the SQL suite — two under the
+  same test name. It drifted, which is why review #6's defect survived 412 green unit
+  tests. It is now storage plus an explicit failure seam: it is told when to fail and
+  never judges. Refusals are asserted where they are enforced, in SQL.
+- **Unit tests keep only what has no database in it**: the publish retry loop and its
+  four-attempt bound, and refusal wording as the pure function it is.
+- **`ModelInvariants` runs after every integration test**, against whatever state that
+  test left behind, via the `InvariantCheckedTests` base class — no author action, by
+  design. Seven rules, each traceable to the review that paid for it. It found a real
+  defect on its first run: a publish could record a `ChangeCount` its own shipped set
+  did not contain, because the two were separate parameters. The count is now derived
+  from the shipped set inside the statement, so they cannot disagree; `PublishAsync` no
+  longer takes it.
+- **`GET menu-spine/screens/showing`** answers what a screen is showing, from the
+  delivery rows and the published snapshot, never from the assignments. The milestone's
+  central claim had no read behind it, which is why the demo could report 12 of 12
+  while a screen sat stranded. The demo now asserts the screen at checks 4, 6, 8c and 8d.
+
+**What was assumed.** That the screen/venue/pairing domains keep only the shared
+invariants (tenant scope, one menu per screen) and get no domain rules of their own —
+this work did not study them, and inventing invariants there would manufacture
+confidence rather than earn it. Say so before adding any.
+
+**Left deliberately, and for whom.**
+
+- **The `sqladmin` password for `dev-vennusign.database.windows.net` is recoverable from
+  this public repository's history** (added in `cf730c5`, removed in `05e35cc`). Removing
+  the file did not unpublish the secret. **Rotate it on the Azure side** — owner action;
+  no branch change fixes it.
+- **Milestone 1's owner acceptance is still not re-run.** The demo now passes 12 of 12
+  with the screen assertions actually asserting, which is the run to walk.
+- **Browser validation of rendered content waits for milestone 4** and is written into
+  `milestone-plan.md` as a gate there. No screen work, no browser work.
+- Door enumeration, one-read-one-lock for paired values, and records-in-the-same-commit
+  were recorded as written guidance rather than gates, by owner decision.
+
+**Open question.** `Measure-Api` in the demo runner had the same latent PowerShell array
+trap that once produced a phantom assignment count, and it surfaced again here: 5.1
+emits a JSON array as one object, and the shape changes with row count, so a reader
+correct against one row starts lying at thirteen. All list reads now go through
+`Expand-Api`. Other scripts in `scripts/` have not been audited for the same pattern.
+
+## Migration chain squashed to a baseline — 2026-08-09
+
+Committed locally on `feature/menus-verification-sweep`, **not pushed, no CI run**.
+
+`src/Vennu.Data/Scripts/` holds one file: `001_baseline.sql`, the fifty-nine migrations
+in the order DbUp applied them. Every statement in it already ran, so it is a collapse
+rather than a rewrite. New migrations continue from 059.
+
+**Deleting a migration never un-applies it.** DbUp decides what to run by journal name,
+so a database that ran the old chain would see the baseline as new work and fail on its
+first CREATE TABLE. `DatabaseMigrator.BaselineExistingDatabase` records the baseline as
+applied wherever the superseded chain is already recorded, and executes nothing against
+such a database. A database part-way through the old chain is **refused** with a message
+telling the operator to finish on the previous release first — marking it complete would
+leave it permanently short of whatever it never reached.
+
+**Proved, not assumed.** A reference database was built from the old chain and
+fingerprinted (1,166 lines: columns with types, nullability, defaults and collation;
+indexes with filters and included columns; foreign keys with actions; check and default
+constraints; seeded row counts). Results:
+
+- fresh database from the baseline vs the old chain — **no material difference**;
+- a database with the old chain journaled, migrated by the new code — **schema changed by
+  0 lines**;
+- a database stranded mid-chain — refused;
+- a control, the old chain against itself in two databases — 0 differences, which is what
+  makes the comparison trustworthy;
+- eight concurrent migrations against one database — exactly one baseline row.
+
+**Two pieces of dead work removed.** Script 012 created `dbo.MenuItemTranslations` and 058
+dropped it; 013 added `MenuItems.AvailabilityResetUtc` with its index and 058 dropped
+those. Every new database built both and demolished them. The baseline never creates them.
+
+**One accepted difference.** Eleven tables declare `DEFAULT NEWID()` without naming the
+constraint, so SQL Server generates the name from the object id. Creating one table fewer
+shifts those ids, so a database built from the baseline carries different `DF__` names
+than one built from the old chain. Nothing in the codebase reads a generated constraint
+name. Naming them explicitly would make fresh databases deterministic and is worth doing
+the next time this file is opened.
+
+**A defect this introduced and then fixed.** The first version checked the journal and
+then inserted as two steps. Startup calls the migrator concurrently, so the first real
+database got seven identical rows, and adding a lock hint to the check still allowed two.
+It is now serialised behind a named application lock — verified with eight concurrent
+migrations. This is the third read-then-write race this session; the owner filed
+"one read, one lock for paired values" as guidance rather than a gate, and the evidence
+now argues for a gate.
+
+**Still open.** `AuthorityRoles`, `AuthorityRolePermissions` and `LayoutTemplates` are
+created and seeded but read by no product code — only by a test asserting the script's
+text. That is Track 1 scoped-authority work and owner-closed, so it was left alone rather
+than judged on grep. If they are genuinely dead, the correct removal is a **new** migration
+that drops them, so existing and fresh databases converge; deleting them from the baseline
+would only change new databases.
+
 ## Boundaries
 
 - Do not start milestones 2–6 until milestone 1's demo is accepted by the owner. The merge is done; the acceptance is not.
