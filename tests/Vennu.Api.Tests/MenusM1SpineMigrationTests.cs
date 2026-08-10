@@ -9,11 +9,33 @@ namespace Vennu.Api.Tests;
 [Trait("Category", "Unit")]
 public sealed class MenusM1SpineMigrationTests
 {
-    private static string ReadSpineMigration()
+    /// <summary>
+    /// The spine's own statements, not the whole baseline.
+    ///
+    /// The fifty-nine migrations were collapsed into one file, but each keeps its
+    /// <c>-- ===== name =====</c> header, so a test about one migration can still be
+    /// about that migration. It matters: the legacy menu domain in the same file
+    /// declares a DECIMAL price, and asserting the spine does not would otherwise read
+    /// the wrong statements and fail for the wrong reason.
+    /// </summary>
+    private static string ReadSpineMigration() =>
+        ReadBaselineSection("058_create_menu_item_library_spine.sql");
+
+    internal static string ReadBaselineSection(string originalScriptName)
+    {
+        var sql = ReadBaseline();
+        var start = sql.IndexOf($"-- ===== {originalScriptName} =====", StringComparison.Ordinal);
+        Assert.True(start >= 0, $"The baseline no longer carries the statements from '{originalScriptName}'.");
+
+        var next = sql.IndexOf("-- ===== ", start + 1, StringComparison.Ordinal);
+        return next < 0 ? sql[start..] : sql[start..next];
+    }
+
+    internal static string ReadBaseline()
     {
         var scriptName = Assert.Single(
             DatabaseMigrator.GetEmbeddedScriptNames()
-                .Where(name => name.EndsWith(".Scripts.058_create_menu_item_library_spine.sql", StringComparison.Ordinal)));
+                .Where(name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal)));
 
         using var stream = Assert.IsAssignableFrom<Stream>(
             typeof(DatabaseMigrator).Assembly.GetManifestResourceStream(scriptName));
@@ -26,7 +48,7 @@ public sealed class MenusM1SpineMigrationTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.058_create_menu_item_library_spine.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -76,21 +98,24 @@ public sealed class MenusM1SpineMigrationTests
     }
 
     [Fact]
-    public void SpineMigration_DropsTheOwnerKilledConceptsOnly()
+    public void SpineMigration_NeverBuildsTheOwnerKilledConcepts()
     {
         var sql = ReadSpineMigration();
 
-        // Killed outright: the auto-reset column and per-item translations.
-        Assert.Contains("DROP TABLE dbo.MenuItemTranslations", sql, StringComparison.Ordinal);
-        Assert.Contains("ALTER TABLE dbo.MenuItems DROP COLUMN AvailabilityResetUtc", sql, StringComparison.Ordinal);
-
-        // Regression: migration 013 indexed that column, and SQL Server refuses to
-        // drop a column an index depends on. The index has to go first.
-        Assert.Contains("DROP INDEX IX_MenuItems_AvailabilityResetUtc ON dbo.MenuItems", sql, StringComparison.Ordinal);
-        Assert.True(
-            sql.IndexOf("DROP INDEX IX_MenuItems_AvailabilityResetUtc", StringComparison.Ordinal)
-                < sql.IndexOf("DROP COLUMN AvailabilityResetUtc", StringComparison.Ordinal),
-            "The dependent index must be dropped before the column.");
+        // These used to be created by scripts 012 and 013 and dropped again by 058, so
+        // a new database built them and then demolished them. The baseline does not
+        // create them at all, which is the same end state and less work - so the claim
+        // to prove is absence, not a drop statement. A database that ran the old chain
+        // had them and lost them, and arrives in the same place.
+        foreach (var neverBuilt in new[]
+        {
+            "CREATE TABLE dbo.MenuItemTranslations",
+            "ADD AvailabilityResetUtc",
+            "CREATE INDEX IX_MenuItems_AvailabilityResetUtc"
+        })
+        {
+            Assert.DoesNotContain(neverBuilt, sql, StringComparison.Ordinal);
+        }
 
         // Deferred while live code still reads them, so master stays releasable.
         Assert.DoesNotContain("DROP COLUMN HappyHourPrice", sql, StringComparison.Ordinal);

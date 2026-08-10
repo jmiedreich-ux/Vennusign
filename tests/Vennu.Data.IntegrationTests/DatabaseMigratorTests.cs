@@ -51,7 +51,7 @@ public class DatabaseMigratorTests
     [Fact]
     public void RotationMetadataMigration_DefersNewColumnReferenceUntilExecution()
     {
-        const string resourceName = "Vennu.Data.Scripts.050_add_configuration_rotation_metadata.sql";
+        const string resourceName = "Vennu.Data.Scripts.001_baseline.sql";
         using var stream = typeof(DatabaseMigrator).Assembly.GetManifestResourceStream(resourceName);
         Assert.NotNull(stream);
         using var reader = new StreamReader(stream);

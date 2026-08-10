@@ -66,18 +66,29 @@ public sealed class Phase12CriticalJourneyTests : IClassFixture<VennuApiFactory>
     [Fact]
     public void Phase12Migrations_AreEmbeddedInContiguousOrder()
     {
-        var phaseScripts = DatabaseMigrator.GetEmbeddedScriptNames()
-            .Where(name => Enumerable.Range(35, 5).Any(number =>
-                name.Contains($".Scripts.{number:000}_", StringComparison.Ordinal)))
-            .ToArray();
+        // These were five separate migrations before the chain was collapsed into one
+        // baseline. What mattered then and still matters is that the POS domain is
+        // built in dependency order - mappings and webhook events reference the
+        // connection - so the claim is about order within the baseline, not about how
+        // many files it happens to be spread across.
+        var baseline = MenusM1SpineMigrationTests.ReadBaseline();
 
-        Assert.Equal(5, phaseScripts.Length);
-        Assert.Collection(phaseScripts,
-            name => Assert.EndsWith(".Scripts.035_create_pos_connections.sql", name, StringComparison.Ordinal),
-            name => Assert.EndsWith(".Scripts.036_create_pos_catalog_mappings.sql", name, StringComparison.Ordinal),
-            name => Assert.EndsWith(".Scripts.037_create_pos_webhook_events.sql", name, StringComparison.Ordinal),
-            name => Assert.EndsWith(".Scripts.038_add_pos_sync_health.sql", name, StringComparison.Ordinal),
-            name => Assert.EndsWith(".Scripts.039_add_pos_refresh_token_expiration.sql", name, StringComparison.Ordinal));
+        var order = new[]
+        {
+            "035_create_pos_connections.sql",
+            "036_create_pos_catalog_mappings.sql",
+            "037_create_pos_webhook_events.sql",
+            "038_add_pos_sync_health.sql",
+            "039_add_pos_refresh_token_expiration.sql"
+        }
+        .Select(name => baseline.IndexOf($"-- ===== {name} =====", StringComparison.Ordinal))
+        .ToArray();
+
+        Assert.DoesNotContain(-1, order);
+        Assert.Equal(order.OrderBy(position => position), order);
+        Assert.Contains("CREATE TABLE dbo.PosConnections", baseline, StringComparison.Ordinal);
+        Assert.Contains("CREATE TABLE dbo.PosCatalogMappings", baseline, StringComparison.Ordinal);
+        Assert.Contains("CREATE TABLE dbo.PosWebhookEvents", baseline, StringComparison.Ordinal);
     }
 
     [Fact]

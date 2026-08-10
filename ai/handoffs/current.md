@@ -139,6 +139,61 @@ emits a JSON array as one object, and the shape changes with row count, so a rea
 correct against one row starts lying at thirteen. All list reads now go through
 `Expand-Api`. Other scripts in `scripts/` have not been audited for the same pattern.
 
+## Migration chain squashed to a baseline — 2026-08-09
+
+Committed locally on `feature/menus-verification-sweep`, **not pushed, no CI run**.
+
+`src/Vennu.Data/Scripts/` holds one file: `001_baseline.sql`, the fifty-nine migrations
+in the order DbUp applied them. Every statement in it already ran, so it is a collapse
+rather than a rewrite. New migrations continue from 059.
+
+**Deleting a migration never un-applies it.** DbUp decides what to run by journal name,
+so a database that ran the old chain would see the baseline as new work and fail on its
+first CREATE TABLE. `DatabaseMigrator.BaselineExistingDatabase` records the baseline as
+applied wherever the superseded chain is already recorded, and executes nothing against
+such a database. A database part-way through the old chain is **refused** with a message
+telling the operator to finish on the previous release first — marking it complete would
+leave it permanently short of whatever it never reached.
+
+**Proved, not assumed.** A reference database was built from the old chain and
+fingerprinted (1,166 lines: columns with types, nullability, defaults and collation;
+indexes with filters and included columns; foreign keys with actions; check and default
+constraints; seeded row counts). Results:
+
+- fresh database from the baseline vs the old chain — **no material difference**;
+- a database with the old chain journaled, migrated by the new code — **schema changed by
+  0 lines**;
+- a database stranded mid-chain — refused;
+- a control, the old chain against itself in two databases — 0 differences, which is what
+  makes the comparison trustworthy;
+- eight concurrent migrations against one database — exactly one baseline row.
+
+**Two pieces of dead work removed.** Script 012 created `dbo.MenuItemTranslations` and 058
+dropped it; 013 added `MenuItems.AvailabilityResetUtc` with its index and 058 dropped
+those. Every new database built both and demolished them. The baseline never creates them.
+
+**One accepted difference.** Eleven tables declare `DEFAULT NEWID()` without naming the
+constraint, so SQL Server generates the name from the object id. Creating one table fewer
+shifts those ids, so a database built from the baseline carries different `DF__` names
+than one built from the old chain. Nothing in the codebase reads a generated constraint
+name. Naming them explicitly would make fresh databases deterministic and is worth doing
+the next time this file is opened.
+
+**A defect this introduced and then fixed.** The first version checked the journal and
+then inserted as two steps. Startup calls the migrator concurrently, so the first real
+database got seven identical rows, and adding a lock hint to the check still allowed two.
+It is now serialised behind a named application lock — verified with eight concurrent
+migrations. This is the third read-then-write race this session; the owner filed
+"one read, one lock for paired values" as guidance rather than a gate, and the evidence
+now argues for a gate.
+
+**Still open.** `AuthorityRoles`, `AuthorityRolePermissions` and `LayoutTemplates` are
+created and seeded but read by no product code — only by a test asserting the script's
+text. That is Track 1 scoped-authority work and owner-closed, so it was left alone rather
+than judged on grep. If they are genuinely dead, the correct removal is a **new** migration
+that drops them, so existing and fresh databases converge; deleting them from the baseline
+would only change new databases.
+
 ## Boundaries
 
 - Do not start milestones 2–6 until milestone 1's demo is accepted by the owner. The merge is done; the acceptance is not.

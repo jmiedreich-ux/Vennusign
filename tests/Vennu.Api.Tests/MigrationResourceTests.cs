@@ -10,7 +10,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
         var scriptName = Assert.Single(
-            scripts.Where(name => name.EndsWith(".Scripts.053_create_scoped_authority.sql", StringComparison.Ordinal)));
+            scripts.Where(name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal)));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
 
         var assembly = typeof(DatabaseMigrator).Assembly;
@@ -31,7 +31,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.052_migrate_administrative_identity.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -41,7 +41,7 @@ public sealed class MigrationResourceTests
         var assembly = typeof(DatabaseMigrator).Assembly;
         var scriptName = Assert.Single(
             DatabaseMigrator.GetEmbeddedScriptNames()
-                .Where(name => name.EndsWith(".Scripts.052_migrate_administrative_identity.sql", StringComparison.Ordinal)));
+                .Where(name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal)));
 
         using var stream = Assert.IsAssignableFrom<Stream>(assembly.GetManifestResourceStream(scriptName));
         using var reader = new StreamReader(stream);
@@ -57,7 +57,7 @@ public sealed class MigrationResourceTests
     public void CustomerOnboardingMigration_IsEmbeddedInOrder()
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.045_create_customer_onboarding_states.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -65,7 +65,7 @@ public sealed class MigrationResourceTests
     public void OrganizationSubscriptionsMigration_IsEmbeddedInOrder()
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.044_create_organization_subscriptions.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -73,7 +73,7 @@ public sealed class MigrationResourceTests
     public void TierTrialEntitlementsMigration_IsEmbeddedInOrder()
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.043_add_tier_trial_entitlements.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -82,7 +82,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.042_add_customer_strong_authentication.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -91,7 +91,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.041_create_customer_authentication.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -100,7 +100,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.040_create_customer_identity_tenancy.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -109,7 +109,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.009_create_feature_matrix_audit.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -118,7 +118,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.012_create_menu_domain.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -127,7 +127,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.013_add_quick_update.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -136,7 +136,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.015_add_photo_grid_density.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -145,7 +145,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.016_add_screen_display_layout.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -154,7 +154,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.017_create_venue_themes.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -163,7 +163,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.018_add_advanced_venue_themes.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -172,7 +172,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.019_add_split_layout.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -181,7 +181,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.020_add_daily_special_hero.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -190,7 +190,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.021_add_hero_dwell_seconds.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -199,7 +199,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.022_create_meal_periods.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -208,7 +208,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.023_add_meal_period_targets.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -217,7 +217,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.024_create_happy_hour_schedules.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -226,7 +226,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.027_create_date_range_promotions.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -235,7 +235,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.028_create_tap_domain.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -244,7 +244,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.029_add_classic_chalkboard_layout.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -253,7 +253,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.030_add_tap_strips_layout.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -262,7 +262,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.031_add_digital_tap_board_layout.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -271,7 +271,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.032_add_screen_pre_registration.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -280,7 +280,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.033_add_subscription_period_end_state.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -289,7 +289,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.034_create_haas_contracts.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -298,7 +298,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.035_create_pos_connections.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -307,7 +307,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.036_create_pos_catalog_mappings.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -316,7 +316,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.037_create_pos_webhook_events.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -325,7 +325,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.038_add_pos_sync_health.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -334,7 +334,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.039_add_pos_refresh_token_expiration.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -343,7 +343,7 @@ public sealed class MigrationResourceTests
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
 
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.055_add_screen_replacement_audit.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 
@@ -351,7 +351,7 @@ public sealed class MigrationResourceTests
     public void ScreenContentDeliveryMigration_IsEmbeddedInOrder()
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
-        Assert.Contains(scripts, name => name.EndsWith(".Scripts.056_create_screen_content_deliveries.sql", StringComparison.Ordinal));
+        Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
 }
