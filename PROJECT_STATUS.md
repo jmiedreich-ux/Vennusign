@@ -34,7 +34,7 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
 | Milestone | Scope | Status |
 |---|---|---|
 | 1 | Item library + draft/publish spine + assignment | **complete** — merged and accepted 2026-08-09 (PR #685, #684) |
-| 2 | App shell + render engine + Menus home | **ready to start** — unblocked 2026-08-09 |
+| 2 | App shell + render engine + Menus home | **ready to start** — unblocked 2026-08-09; readiness pass complete, issue #687, branch `feature/menus-m2-shell-render` |
 | 3 | Builder + adding items | blocked on 2 |
 | 4 | Display player + geometry + delivery | blocked on 3 |
 | 5 | Board view + Play | blocked on 4 |
@@ -42,7 +42,7 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
 
 ## Validation Policy
 
-Exact-head GitHub Actions is authoritative (`phase02-tests.yml`, `ui-regression.yml`). Azure SQL, live Stripe/providers, physical devices, hosted infrastructure and integration/external-system tests remain skipped by standing owner exception. Tests are written with each milestone's implementation; a milestone retires the legacy specs it obsoletes. Every milestone ends with an owner acceptance workbook (milestone 1: demo script and HTML workbook); hosted-agent subjective QA runs on demand.
+**CI is suspended by owner decision, 2026-08-09** (see `AGENTS.md` §Testing and CI): local verification is the gate — affected Release builds, the unit and LocalDB integration suites with the invariant sweep, the Playwright gate, and the owner demo/workbook — and pushes carry `[skip ci]`. When the owner restores CI, exact-head GitHub Actions (`phase02-tests.yml`, `ui-regression.yml`) is authoritative again. Azure SQL, live Stripe/providers, physical devices, hosted infrastructure and integration/external-system tests remain skipped by standing owner exception. Tests are written with each milestone's implementation; a milestone retires the legacy specs it obsoletes. Every milestone ends with an owner acceptance workbook (milestone 1: demo script and HTML workbook); hosted-agent subjective QA runs on demand.
 
 ## Historical Reference
 

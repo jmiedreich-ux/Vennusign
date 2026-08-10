@@ -22,15 +22,12 @@ Updated 2026-08-09, after Menus Milestone 1 merged.
 
 ## Exact Next Action
 
-1. **Begin Menus Milestone 2** — app shell and nav rail, board render engine v1, the
-   Menus home shelf, and the named card actions. Create the milestone issue, record the
-   claim, branch `feature/menus-m2-shell-render`, and hold it to the `AGENTS.md`
-   *Definition of Done* and *Where a test lives*.
-   Two provisional design decisions it builds on are worth confirming first: **Q86**
-   (which board looks ship — provisionally Coastal and Classic dark) and **Q98** (the
-   theme-drawn venue-name header strip, always present and not editable). Both are
-   marked BLOCKING in the register and were answered provisionally; the render engine
-   and its specs are what gets reworked if either changes later.
+1. **Begin Menus Milestone 2 coding** — issue **#687**, branch
+   `feature/menus-m2-shell-render`, claim recorded. The readiness pass ran 2026-08-09
+   (see §Milestone 2 readiness pass below); Q86 and Q98 are RESOLVED (2026-08-09), not
+   provisional — no named looks ship, an unthemed menu renders plainly, and the engine
+   draws no venue-name strip. Hold the work to the `AGENTS.md` *Definition of Done* and
+   *Where a test lives*.
 2. Standing owner decisions carried out of Milestone 1: audit record kept as is (#677),
    legacy columns kept, and the three menu capabilities to become separately grantable
    (#686).
@@ -80,12 +77,15 @@ the publish that carries it. Review #6 is the sharpest instance: the trap it fou
 was written up as a *passing test*, which asserted the refusal it hit and never
 asked what the screen was still showing. Reviews are catching what the author's own
 tests do not. **Decide what to change about how work is verified before it goes to
-review** — owner instruction, to be taken up once M1 merges, not during it. M1 has
-now merged, so this is live.
+review** — owner instruction. Taken up and completed 2026-08-09: the invariant sweep
+and customer-visible acceptance assertions were adopted (see the remediation section
+below) and the rules are folded into `AGENTS.md` §How to Work a Task and §Where a
+test lives. This item is closed.
 
-## Menus M1 verification remediation — 2026-08-09, on `feature/menus-verification-sweep`
+## Menus M1 verification remediation — 2026-08-09
 
-Committed locally, **not pushed, no CI run** — the owner has not approved one.
+Merged to `master` and pushed 2026-08-09 with `[skip ci]` (CI suspended by owner
+decision; local verification was the gate).
 
 **What this established.**
 
@@ -129,8 +129,9 @@ confidence rather than earn it. Say so before adding any.
   this public repository's history** (added in `cf730c5`, removed in `05e35cc`). Removing
   the file did not unpublish the secret. **Rotate it on the Azure side** — owner action;
   no branch change fixes it.
-- **Milestone 1's owner acceptance is still not re-run.** The demo now passes 12 of 12
-  with the screen assertions actually asserting, which is the run to walk.
+- **Milestone 1's owner acceptance: recorded.** The owner accepted 2026-08-09 with the
+  demo run (12 of 12, screen assertions asserting) as the acceptance record; no
+  separate re-run was required.
 - **Browser validation of rendered content waits for milestone 4** and is written into
   `milestone-plan.md` as a gate there. No screen work, no browser work.
 - Door enumeration, one-read-one-lock for paired values, and records-in-the-same-commit
@@ -144,7 +145,8 @@ correct against one row starts lying at thirteen. All list reads now go through
 
 ## Migration chain squashed to a baseline — 2026-08-09
 
-Committed locally on `feature/menus-verification-sweep`, **not pushed, no CI run**.
+Merged to `master` and pushed 2026-08-09 with `[skip ci]` (CI suspended; local
+verification was the gate — the four proofs below).
 
 `src/Vennu.Data/Scripts/` holds one file: `001_baseline.sql`, the fifty-nine migrations
 in the order DbUp applied them. Every statement in it already ran, so it is a collapse
@@ -231,8 +233,51 @@ What the code says today, which contradicts that:
   platform-operations theme contracts, so moving it is not free.
 
 This is the recurring shape — one name carrying two meanings, and a value with no referent.
-**Settle the model before the render engine exists, not after**, and say plainly whether
-milestone 2 introduces the menu-theme table or defers it with `Menus.Theme` left inert.
+**Settled — owner decision, 2026-08-09: milestone 2 defers the MenuThemes table.** The
+table arrives with the first milestone that reads one (M3's picker / the theme editor),
+so its shape is designed when its real user exists. M2 ships migration 059 making
+`Menus.Theme` an honest nullable attachment slot: default dropped by dynamic constraint
+lookup, `'coastal'` removed from rows **and** stored snapshots (else every menu wakes
+with a phantom theme draft change), and `RestoreSnapshotSql`'s `ISNULL(t.Theme, m.Theme)`
+fixed so a null theme restores as null — regression test verified to fail with the fix
+reverted. `VenueThemes` keeps its board-render fields untouched until the milestone that
+moves them.
+
+## Milestone 2 readiness pass — 2026-08-09
+
+The owner asked that M2 be put through the dev process before coding. Three exploration
+sweeps (frontend/shell, design authority, spine API/test harness) plus a structural
+design pass. Findings and decisions, all recorded in issue **#687**:
+
+- **Owner decisions:** defer the MenuThemes table (above); the render engine lives at
+  **`src/board-engine/`** — a new top-level shared folder, imported by relative path
+  from back-office in M2 and the display player in M4 (the platform-operations
+  cross-app import is the precedent). The engine imports nothing from either app; data
+  arrives as props.
+- **Backend gaps M2 must fill before the shelf UI can be honest:** no frontend client
+  for the spine API exists at all; no menus-list read (the legacy `GET /menus` drags
+  every section and item and loses "MP" price fidelity); nothing exposes a published
+  snapshot to render; `HistoryEntryResponse` carries no `Version` so Go back to… is
+  unreachable; no duplicate operation exists (semantics owner-settled in Q20). Route
+  shapes are in #687.
+- **Named to settle inside the milestone, not silently:** the never-published card
+  state, and the Duplicate name-collision/length default.
+- **Test facts:** the 20-screen/13-menu seed (Q176) does not exist — it enters as
+  `POST /api/test/seed/scale` composing product write paths against a dedicated scale
+  venue, never fixture SQL that re-implements snapshot JSON. `navigation-shell.test.mjs`
+  hard-codes the current 9-route/4-group nav and changes with the rail, deliberately,
+  in the same PR. The running 18-criteria checklist now exists at
+  `docs/features/menus/acceptance-criteria.md`.
+- **Token batch-2** now has its artifact:
+  `docs/design/approved/menus/proposed-token-additions-batch-2.css` (Q178, including
+  the `#2a78d6` selection token; board palette deliberately excluded — it belongs to
+  menu-theme definitions).
+- **Stale records corrected in this pass:** this file's "not pushed" notes (both
+  batches are on `origin/master`), the provisional Q86/Q98 framing, the completed
+  retrospective instruction, the register header's "Deferred: Q86", the design README's
+  five-item card menu (Q195), eyebrow colour (Q184), icon instruction (Q185) and
+  criterion-4 wording (Q187), the batch-1 token file's "NOT APPROVED" header
+  (build-decision 8), and `PROJECT_STATUS.md`'s validation policy (CI suspended).
 
 ## Boundaries
 

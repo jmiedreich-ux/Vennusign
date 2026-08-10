@@ -48,13 +48,11 @@ Every accessibility defect found in review was this one substitution. Treat `#94
 
 Status colors always pair with a label or icon, never color alone.
 
-### Proposed additions — NOT YET APPROVED
+### Approved additions
 
-`proposed-token-additions.css` is in this bundle. **It has not been approved by the token owner.** The three hi-fi screens use values the current contract does not define, because a dense back office needs finer steps than the existing scale provides (it jumps 12 → 14 → 16 → 20 → 24).
+`proposed-token-additions.css` (batch 1) is in this bundle and **approved** (build-decision 8, 2026-08-07): it merges into `sky-ui-tokens.css` when the first milestone that consumes it lands. The three hi-fi screens use values the current contract does not define, because a dense back office needs finer steps than the existing scale provides (it jumps 12 → 14 → 16 → 20 → 24).
 
-Do not merge that file without the owner's sign-off. Options, in order of preference:
-1. Owner approves the additions, they land in `sky-ui-tokens.css`, you consume them as variables.
-2. Owner rejects, you snap to the nearest existing step and accept a blunter page.
+**Batch 2** — the remaining exact hi-fi component values, including the `#2a78d6` selection token — is approved under the same decision (Q178) and lives in `proposed-token-additions-batch-2.css`. The board palette is deliberately **not** tokenised: it lives in menu-theme definitions (Q178/Q86).
 
 Either way the tokens stay the single source of truth. Do not hardcode the raw values into components.
 
@@ -145,7 +143,7 @@ Eight screens in the single-venue set (`Menus.dc.html`), eight in the group set 
 **Hi-fi:** `M1 Hi-Fi v2 - Menus home.dc.html` (both states).
 **Purpose:** see every menu, know whether the screens are current, open one, or add one.
 
-Layout: 76px rail + content. Content is 30px/40px padded. Header block: venue name 11px/600 uppercase `#94a3b8` (not clickable — switching lives under the avatar), then the status headline at 29px/600 `letter-spacing -.028em` max-width 800px, then a 13px `#64748b` sub-line. Right: "Check the screens" secondary + "Add a menu" primary.
+Layout: 76px rail + content. Content is 30px/40px padded. Header block: venue name 11px/600 uppercase `#64748b` (Q184 — the accessibility rule outranks the layout spec's original `#94a3b8`, which fails on light; not clickable — switching lives under the avatar), then the status headline at 29px/600 `letter-spacing -.028em` max-width 800px, then a 13px `#64748b` sub-line. Right: "Check the screens" secondary + "Add a menu" primary.
 
 Grid: `repeat(4, 1fr)`, 26px gap, `align-items: start`. Always 4-up. Menus in order, then the Add-a-menu tile as the last cell.
 
@@ -178,7 +176,7 @@ Below, a "Not in use" strip: 11px/600 uppercase label, then pill chips (999px ra
 ### M1b — The named actions
 **Lo-fi.** The card ⋯ menu and the dialogs behind it.
 
-Menu items, in order: **Open** · **Quick update** · — · **Go back to…** · **Duplicate** · — · **Take off the screens** (danger, `#8a2929`).
+Menu items, in order: **Open** · **Quick update** · — · **Go back to…** · **Duplicate** · **Put away** · — · **Take off the screens** (danger, `#8a2929`). Six items: **Put away** sits directly after Duplicate, an approved deviation from the original five (Q195, build-decision 16); **Take off the screens** stays alone below the last divider.
 
 Nobody ever sees the words *unpublish*, *supersede*, *restore* or *archive* — decisions 9, 10, 11. This is **verbatim copy**; do not paraphrase.
 
@@ -318,7 +316,7 @@ Checkable restatements of the rules. These are the things most likely to be got 
 1. Toggling availability updates every screen showing that item within seconds, **without** a publish, and does not add anything to the draft queue.
 2. Publishing a menu ships **all** queued changes for that menu and no changes belonging to another menu.
 3. An item 86'd before a publish is still 86'd after it.
-4. No screen content changes without a deliberate publish or accept.
+4. No screen content changes without a deliberate act — a publish, an accept, an availability toggle, or a confirmed Take off the screens. (Reworded per Q187.)
 5. The strings "unpublish", "supersede", "restore" and "archive" appear nowhere in the UI.
 6. "Take off the screens" always shows what will replace the menu before confirming.
 7. Undo is bound to the keystroke and appears in no settings page, plan comparison or marketing surface.
@@ -340,7 +338,7 @@ Checkable restatements of the rules. These are the things most likely to be got 
 
 Wording **is** the design in several places. Do not paraphrase, shorten, or "improve" these.
 
-- Card menu: **Open** / **Quick update** / **Go back to…** / **Duplicate** / **Take off the screens**
+- Card menu: **Open** / **Quick update** / **Go back to…** / **Duplicate** / **Put away** / **Take off the screens** (Put away added per Q195, build-decision 16)
 - "It stays on your Menus home and keeps its history. You can put it back at any time."
 - "Turning this off hides it on all 3 screens immediately — not part of your draft."
 - "86'd 6:40pm — hidden on all screens right now"
@@ -375,7 +373,7 @@ Do not build, and do not invent UI for:
 No image assets. Everything in the designs is CSS.
 
 - **Fonts:** Inter (UI, per the token contract) and Playfair Display (board rendering only, loaded from Google Fonts in the hi-fi files). Confirm Playfair against the brand — it was chosen to make the simulated boards read as restaurant menus rather than as UI, and it appears nowhere in the chrome.
-- **Icons:** the hi-fis use Unicode glyphs (⌂ ☰ ◷ ⛁ ▢ ◐ ⇄ ⚙ ⋯ ⠿ ✕ ▶ ❚❚ ◀). **Replace all of them** with the codebase's icon set. They are placeholders.
+- **Icons:** the hi-fis use Unicode glyphs (⌂ ☰ ◷ ⛁ ▢ ◐ ⇄ ⚙ ⋯ ⠿ ✕ ▶ ❚❚ ◀). **Replace all of them with lucide-react** (owner decision Q185, overriding the earlier "codebase icon set" instruction — new dependency, documented at introduction). They are placeholders.
 - **Board thumbnails** are live DOM renders of menu content, not images. In production they should render from real menu data at 16:9 — that is the point of them.
 
 ---
@@ -401,7 +399,8 @@ No image assets. Everything in the designs is CSS.
 
 **Tokens**
 - `sky-ui-tokens.css` — the existing contract, already in the repo
-- `proposed-token-additions.css` — **not approved**; see Design tokens above
+- `proposed-token-additions.css` — batch 1, approved (build-decision 8); see Design tokens above
+- `proposed-token-additions-batch-2.css` — batch 2, approved under the same decision (Q178)
 
 **Screenshots**
 - `screenshots/M1-menus-home.png` — M1 hi-fi, populated + empty

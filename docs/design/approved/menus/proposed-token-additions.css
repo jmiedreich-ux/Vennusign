@@ -1,5 +1,7 @@
 /*
- * PROPOSED additions to sky-ui-tokens.css — NOT APPROVED.
+ * Additions to sky-ui-tokens.css — batch 1, APPROVED (build-decision 8, 2026-08-07).
+ * Merges into sky-ui-tokens.css when the first milestone that consumes it lands.
+ * Batch 2 (Q178) lives beside this file in proposed-token-additions-batch-2.css.
  *
  * The Menus hi-fi screens (M1, M2, M2c) needed type steps and neutral tints the
  * locked contract does not define. Nothing existing is changed; these are additions.
@@ -12,7 +14,7 @@
  * not the page shell behind a frame, subtle fills, or a hairline lighter than
  * --sky-color-border.
  *
- * Do not merge without the token owner's sign-off.
+ * Signed off by the owner as build-decision 8; keep additions-only until merged.
  */
 :root {
   /* Type — filling the 9-16px range and adding display sizes above 24. */

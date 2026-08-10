@@ -1,7 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-09T07:05:20Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-09T23:55:00Z",
+  "activeAssignments": [
+    {
+      "assignment": "Menus milestone 2 — app shell + board render engine v1 + Menus home + named actions",
+      "issue": 687,
+      "branch": "feature/menus-m2-shell-render",
+      "owner": "Claude Code for JeremyPC",
+      "claimedUtc": "2026-08-09T23:55:00Z",
+      "notes": "Readiness pass complete 2026-08-09; decisions and scope in issue #687 and ai/handoffs/current.md."
+    }
+  ],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],

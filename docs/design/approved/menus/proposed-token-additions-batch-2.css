@@ -1,0 +1,42 @@
+/*
+ * Additions to sky-ui-tokens.css — batch 2, APPROVED under the same decision as
+ * batch 1 (Q178, 2026-08-07; build-decision 8). Merges into sky-ui-tokens.css when
+ * Menus milestone 2 lands. Nothing existing is changed; these are additions.
+ *
+ * Source: the exact values of the three hi-fi screens' component sheet
+ * (docs/design/approved/menus/README.md §Component sheet). Q178's rule: preserve
+ * the exact hi-fi values as tokens — including a selection token for #2a78d6 —
+ * and keep the BOARD PALETTE out of the UI contract. Board surface, board inks and
+ * board typography belong to menu-theme definitions consumed by the render engine
+ * (Q86: no named looks ship; an unthemed menu renders the engine's plain defaults).
+ * That is why #faf8f2, #1a2b4a, #8a6a2a, #ccd6e2 and the dark-board gradient are
+ * deliberately absent here.
+ *
+ * Values already covered are not repeated: #0f172a/#87ceeb/#64748b/#94a3b8/#e2e8f0/
+ * #178a52/#c9871a/#7d5911/#8a2929/#18603f/#267252/#e0f4e9/#fdf1dc are in
+ * sky-ui-tokens.css; the type steps, tracking, shell neutrals and card shadows are
+ * batch 1.
+ */
+:root {
+  /* Selection — the M2 canvas selection ring and drag pill (Q178, named). */
+  --sky-color-selection: #2a78d6;
+
+  /* Borders and hairlines the contract does not define. */
+  --sky-color-ink-divider: #1e293b;     /* divider on dark ink surfaces (nav rail) */
+  --sky-color-border-input: #dbe3ec;    /* text-field border */
+  --sky-color-border-control: #cbd5e1;  /* checkbox border; "not on a screen" status dot */
+  --sky-color-hairline-strong: #e9eef4; /* publish-bar top border */
+  --sky-color-live-border: #dbe7de;     /* online screen-chip border */
+
+  /* Radii between the existing 8/12/16/24px steps. */
+  --sky-radius-sm-plus: 0.5625rem;      /*  9px — board ⋯ chip */
+  --sky-radius-md-minus: 0.625rem;      /* 10px — accent button, text field, chips */
+  --sky-radius-lg-minus: 0.875rem;      /* 14px — menu card / board frame, add-a-menu tile */
+
+  /* Glass ⋯ chip over a board render — branch on board lightness (README:
+     a light-glass chip on a cream board is invisible; this was a real defect twice). */
+  --sky-glass-on-dark-fill: rgb(248 250 252 / 0.16);
+  --sky-glass-on-dark-border: rgb(248 250 252 / 0.24);
+  --sky-glass-on-light-fill: rgb(15 23 42 / 0.42);
+  --sky-glass-on-light-border: rgb(15 23 42 / 0.12);
+}
