@@ -20,6 +20,8 @@ test("daypart home composes venue-authoritative operations and essential states"
   assert.match(home, /\?schedule=emergency#\/schedules/);
   assert.match(home, /role="alert"/);
   assert.match(home, /role="status"/);
-  assert.match(app, /backOfficeNavigationGroups\.map/);
+  // The shell draws the 76px rail now rather than the grouped sidebar, so the
+  // areas come from the rail's own sections; Home is still reached from it.
+  assert.match(app, /<NavRail/);
   assert.match(styles, /@media \(max-width: 860px\)/);
 });

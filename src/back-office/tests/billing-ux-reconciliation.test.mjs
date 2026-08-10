@@ -8,8 +8,9 @@ import {
   tierPresentation
 } from "../src/upgradeExperience.mjs";
 
-const [app, api, sheet, sidebar, operations, platformOperationsApp, platformOperationsVenue] = await Promise.all([
+const [app, rail, api, sheet, sidebar, operations, platformOperationsApp, platformOperationsVenue] = await Promise.all([
   readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../src/NavRail.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/api.ts", import.meta.url), "utf8"),
   readFile(new URL("../src/UpgradeSheet.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/SidebarUpgradeNudge.tsx", import.meta.url), "utf8"),
@@ -47,7 +48,9 @@ test("canonical opportunities and dismissals remain deterministic in Back Office
 test("Back Office coordinates one prompt surface and one upgrade sheet", () => {
   assert.match(app, /allowed && !inlineOpportunity && !upgradeContext/);
   assert.match(app, /inlineOpportunity && !upgradeContext/);
-  assert.match(app, /<LockedNavigationItem/);
+  // The locked nav entry moved into the rail when the 76px shell replaced the
+  // grouped sidebar. Still one component, rendered in one place.
+  assert.match(rail, /<LockedNavigationItem/);
   assert.match(app, /<LockedSectionPreview/);
   assert.match(app, /<UpgradeSheet/);
   assert.match(sidebar, /prefers-reduced-motion: reduce/);

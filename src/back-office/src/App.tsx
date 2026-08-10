@@ -27,6 +27,7 @@ import {
   backOfficeNavigationGroups,
   type BackOfficeRoute
 } from "./navigation.mjs";
+import NavRail from "./NavRail";
 import MenuSectionsEditor from "./MenuSectionsEditor";
 import PosIntegrationAdministration from "./PosIntegrationAdministration";
 import VenueOperations from "./VenueOperations";
@@ -433,38 +434,15 @@ export default function App() {
       <span aria-hidden="true">{navigationOpen ? "✕" : "☰"}</span>
       {navigationOpen ? "Close menu" : "Menu"}
     </button>
-    <aside className="app-sidebar" id="app-sidebar" data-open={navigationOpen}>
-      <div className="brand"><span>V</span><div><strong>Vennusign</strong><small>Back Office</small></div></div>
-      <nav className="grouped-navigation" aria-label="Back Office">
-        {backOfficeNavigationGroups.map(group => <details key={group.label} open={group.routes.some(item => item.path === route.path) || group.label === "Operate"}>
-          <summary>{group.label}</summary>
-          <div>{group.routes.map(item => {
-          const unlocked = canOpenBackOfficeRoute(item, session.capabilityDecisions);
-          const navigationDecision = decisionForBackOfficeRoute(item, session.capabilityDecisions);
-          const opportunity = !unlocked && navigationDecision?.resolution === "review_product_access"
-            ? opportunities.find(candidate => candidate.featureKey === item.upgradeFeature)
-            : undefined;
-          return opportunity ? <LockedNavigationItem
-            key={item.path}
-            opportunity={opportunity}
-            onUpgrade={setUpgradeContext}
-            route={item.path}
-          /> : <a
-            className={`${route.path === item.path ? "active " : ""}${unlocked ? "" : "locked"}`.trim()}
-            href={`#/${item.path}`}
-            key={item.path}
-            data-testid="nav-item"
-            data-route={item.path}
-            data-unlocked={unlocked}
-            data-active={route.path === item.path}
-            aria-disabled={!unlocked}
-            title={unlocked ? undefined : navigationDecision?.message}
-          >
-            <strong>{item.label}{unlocked ? "" : " · Locked"}</strong>
-            <small>{item.description}</small>
-          </a>;
-        })}</div></details>)}
-      </nav>
+    <NavRail
+      activePath={route.path}
+      decisions={session.capabilityDecisions}
+      opportunities={opportunities}
+      onUpgrade={setUpgradeContext}
+      displayName={session.displayName}
+      onSignOut={signOut}
+      open={navigationOpen}
+    >
       {billing && allowed && !inlineOpportunity && !upgradeContext
         ? <SidebarUpgradeNudge
             key={dismissalVersion}
@@ -473,11 +451,7 @@ export default function App() {
           />
         : null}
       {upgradeNotice ? <p className="sidebar-upgrade-context" role="status">{upgradeNotice}</p> : null}
-      <button className="identity" type="button" onClick={signOut}>
-        <span>{session.displayName.slice(0, 1)}</span>
-        <div><strong>{session.displayName}</strong><small>Sign out</small></div>
-      </button>
-    </aside>
+    </NavRail>
     <main>
       <header><div><p>Venue workspace</p><h1>{route.label}</h1></div><span>Secure session</span></header>
       <section className="workspace-context" aria-labelledby="workspace-context-heading">
