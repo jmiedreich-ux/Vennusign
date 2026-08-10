@@ -246,3 +246,14 @@
   .menus-home__grid, .menus-home__grid--compact { grid-template-columns: repeat(2, 1fr); }
   .menus-home__header { flex-direction: column; }
 }
+
+/* A refusal is shown where the person is looking, not swallowed. */
+.menu-card__dialog-refusal {
+  margin: 0;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 9px 11px;
+  background: var(--sky-color-off-surface, #fdeaea);
+  color: var(--sky-danger-text, #8a2929);
+  font-size: var(--sky-font-size-xs-plus, 12px);
+  line-height: 1.45;
+}

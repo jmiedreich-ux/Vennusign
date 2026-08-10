@@ -204,7 +204,9 @@ export function availabilityLine(availability, timezone) {
   if (!availability || availability.isAvailable) return null;
   const when = venueTime(availability.changedUtc, timezone);
   const stamp = when ? ` — 86'd ${when}` : "";
-  return `Off right now${stamp}. Hidden on every screen showing it. Turning it back on shows it immediately.`;
+  // "not part of your draft" is verbatim copy in the design authority. It is the
+  // sentence that separates this control from every other one on the page.
+  return `Off right now${stamp}. Hidden on every screen showing it — not part of your draft. Turning it back on shows it immediately.`;
 }
 
 /**
@@ -310,6 +312,31 @@ export function changeSentence(change, board) {
   // Removed items are the case where the board cannot name it: the row is gone,
   // which is exactly what the change says. The before value is the last name it had.
   return change?.beforeValue ? `${change.beforeValue} — ${field}` : `An item — ${field}`;
+}
+
+/**
+ * What a queued change is doing to the value, said as the value.
+ *
+ * "changed" is what the code knows; "12.50 -> 14.00" is what a person came to find
+ * out. Both sides are already in the change - they were being used only to pick
+ * the word.
+ */
+export function changeValues(change) {
+  const before = nonBlank(change?.beforeValue);
+  const after = nonBlank(change?.afterValue);
+
+  // A placement reads as an act, not a value: "true -> false" describes a column.
+  if (change?.targetKind === "placement") return after === "true" ? "added" : "removed";
+
+  if (before === null && after === null) return "changed";
+  if (before === null) return `now ${after}`;
+  if (after === null) return `was ${before}, now empty`;
+  return `${before} → ${after}`;
+}
+
+function nonBlank(value) {
+  const trimmed = typeof value === "string" ? value.trim() : "";
+  return trimmed.length > 0 ? trimmed : null;
 }
 
 /** What deleting a section actually did, in the words the API counted (Q96). */

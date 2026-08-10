@@ -79,5 +79,10 @@ export function changeSentence(
   change: { targetKind: string; targetId: string | null; field: string; beforeValue: string | null },
   board: BoardResponse | null | undefined
 ): string;
+export function changeValues(change: {
+  targetKind: string;
+  beforeValue: string | null;
+  afterValue: string | null;
+}): string;
 export function releasedPhrase(count: number): string;
 export const bannedWords: string[];

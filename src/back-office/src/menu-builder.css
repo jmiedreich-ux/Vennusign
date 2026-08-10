@@ -18,7 +18,13 @@
 .builder {
   display: grid;
   grid-template-rows: 58px 1fr auto;
-  height: 100%;
+  /*
+   * Bounded to the window, so the CANVAS scrolls rather than the page growing and
+   * carrying the publish bar off the bottom. `height: 100%` resolved to auto here
+   * - the shell's main is an auto-sized grid row, so the percentage had nothing to
+   * resolve against. 88px is that main's 44px of vertical padding, top and bottom.
+   */
+  height: calc(100dvh - 88px);
   min-height: 0;
   background: var(--sky-color-surface-muted, #f4f7fa);
 }
@@ -203,6 +209,16 @@
   box-shadow: inset 0 0 0 1px #87ceeb;
 }
 
+/*
+ * The shell's focus ring is sky blue, and the selected row's background is pale
+ * sky - so on the one row you are most likely to tab to, the ring measured 1.70:1
+ * against the 3:1 WCAG 2.2 asks for. It was invisible precisely where it mattered.
+ * The row is already keyboard-reachable; only the indicator was broken.
+ */
+.builder__rail-row.is-selected:focus-visible {
+  outline-color: var(--sky-text-primary, #0f172a);
+}
+
 /* The drag handle is the reorder affordance, so it has to be legible — muted, not faint. */
 .builder__rail-handle {
   color: var(--sky-color-text-muted, #64748b);
@@ -344,6 +360,17 @@
   transform-origin: top left;
 }
 
+/*
+ * The board is drawn at logical size and scaled, so anything authored inside it
+ * shrinks with it. That is right for menu content and wrong for an annotation
+ * ABOUT the content: at a typical 0.35 scale the 86 note rendered about 5px tall.
+ * Dividing by the scale keeps it at a constant on-screen size while the board
+ * around it stays honest.
+ */
+.builder__board-card .board-item-note {
+  font-size: calc(11.5px / var(--board-scale, 1));
+}
+
 .builder__board-card .board-frame {
   aspect-ratio: 16 / 9;
 }
@@ -429,10 +456,23 @@
   font-size: 13px;
 }
 
+/*
+ * Absolutely positioned, because a dropdown that reflows the page is not a
+ * dropdown. In flow it grew the builder from 812 to 967px at 1440x900 and pushed
+ * Publish, Review first and the draft count off the bottom of the screen - at
+ * exactly the moment somebody is adding items.
+ */
 .builder__add-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 46vh;
+  overflow-y: auto;
   display: grid;
   gap: 2px;
-  margin: 6px 0 0;
+  margin: 0;
   padding: 6px;
   border: 1px solid var(--sky-color-border, #e2e8f0);
   border-radius: var(--sky-radius-md, 12px);

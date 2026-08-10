@@ -132,7 +132,17 @@
  * The strike is on the name rather than the row so the price stays legible: you
  * are about to decide whether to turn this back on, and the price is part of that.
  */
-.board-item[data-unavailable="true"] {
+/*
+ * The dimming is applied to the CONTENT, not the row.
+ *
+ * `opacity` on the row created a compositing group its own children could not
+ * escape - so the note's `opacity: 1` did nothing and it rendered at 1.51:1
+ * against a declared 8.64:1. Computed styles reported it as passing; only a pixel
+ * read of the screenshot showed the truth. Dimming the lines instead leaves the
+ * annotation at full strength, which is the whole point of it.
+ */
+.board-item[data-unavailable="true"] .board-item-line,
+.board-item[data-unavailable="true"] .board-item-description {
   opacity: 0.42;
 }
 

@@ -217,6 +217,9 @@ test("the availability line names the consequence, not the setting (Q104)", () =
   assert.ok(line.includes("86'd"), line);
   assert.ok(line.includes("Hidden on every screen"), line);
   assert.ok(line.includes("immediately"), line);
+  // Verbatim copy in the design authority, and the clause that separates this
+  // control from every other one on the page: everything else waits for Publish.
+  assert.ok(line.includes("not part of your draft"), line);
   assert.equal(availabilityLine({ isAvailable: true }, "UTC"), null);
 });
 

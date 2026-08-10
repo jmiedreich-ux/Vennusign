@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Ellipsis, Plus, Search } from "lucide-react";
 import { BoardFrame } from "../../board-engine/BoardFrame";
 import {
+  BackOfficeApiError,
   MenuActionRefused,
   duplicateMenu,
   goBackToMenuVersion,
@@ -70,6 +71,8 @@ export default function MenusHome({
    */
   const [namingMenu, setNamingMenu] = useState(Boolean(starterMenuName));
   const [newMenuName, setNewMenuName] = useState(starterMenuName ?? "");
+  const [namingError, setNamingError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
   const [menus, setMenus] = useState<ShelfMenu[] | null>(null);
   const [unavailable, setUnavailable] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -316,13 +319,31 @@ export default function MenusHome({
             aria-modal="true"
             aria-labelledby="name-menu-title"
             data-testid="name-menu-dialog"
-            onSubmit={event => {
+            onSubmit={async event => {
               event.preventDefault();
               const name = newMenuName.trim();
               if (!name) return;
-              setNamingMenu(false);
-              setNewMenuName("");
-              void onAddMenu(name);
+              setCreating(true);
+              setNamingError(null);
+              try {
+                await onAddMenu(name);
+                setNamingMenu(false);
+                setNewMenuName("");
+              } catch (failure) {
+                /*
+                 * A refusal is shown where the person is looking, in the server's
+                 * own words, with the dialog still open and the name they typed
+                 * still in it. This used to fail silently: the ceiling refusal
+                 * carried good copy and the screen swallowed all of it.
+                 */
+                setNamingError(
+                  failure instanceof BackOfficeApiError || failure instanceof MenuActionRefused
+                    ? failure.message
+                    : "Vennusign could not create that menu. Nothing changed."
+                );
+              } finally {
+                setCreating(false);
+              }
             }}
           >
             <h2 id="name-menu-title">What is this menu called?</h2>
@@ -344,6 +365,11 @@ export default function MenusHome({
                 }}
               />
             </label>
+            {namingError ? (
+              <p className="menu-card__dialog-refusal" role="alert" data-testid="create-menu-error">
+                {namingError}
+              </p>
+            ) : null}
             <div className="menu-card__dialog-actions">
               <button
                 type="button"
@@ -351,12 +377,13 @@ export default function MenusHome({
                 onClick={() => {
                   setNamingMenu(false);
                   setNewMenuName("");
+                  setNamingError(null);
                 }}
               >
                 Cancel
               </button>
-              <button type="submit" className="action-primary" data-testid="create-menu">
-                Create it
+              <button type="submit" className="action-primary" data-testid="create-menu" disabled={creating}>
+                {creating ? "Creating…" : "Create it"}
               </button>
             </div>
           </form>

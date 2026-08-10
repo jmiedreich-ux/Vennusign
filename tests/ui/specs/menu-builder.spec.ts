@@ -186,6 +186,9 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("canvas")).toContainText(name);
 
     await page.getByTestId("delete-section").click();
+    // Deleting a section asks first now — the irreversible act gets the guard the
+    // reversible one always had.
+    await page.getByTestId("confirm-delete-section").click();
     await expect(page.getByTestId("builder-notice")).toContainText("back to your library");
 
     // Still in the library: findable from the add row on another section.
@@ -445,6 +448,149 @@ test.describe("the builder", () => {
     // A draft against the current screens — the screens have not moved.
     await expect(page.getByTestId("draft-count")).toContainText("not on your screens");
     await expect(page.getByTestId("publish")).toBeVisible();
+  });
+
+  test("a dialog takes focus, keeps it, and gives it back (impeccable critique)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "focus" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    await page.getByTestId("item-price").fill("15");
+    await page.getByTestId("item-price").blur();
+    await page.getByTestId("review-first").click();
+
+    // Focus lands inside, on the heading — a screen reader hears what this dialog
+    // is before it hears the first thing it can do.
+    const dialog = page.getByTestId("review-dialog");
+    await expect(dialog).toBeVisible();
+    expect(await dialog.evaluate(node => node.contains(document.activeElement))).toBe(true);
+
+    // Tab cannot escape to the Publish button behind the scrim. That was the most
+    // likely accidental keyboard action on the whole surface.
+    for (let press = 0; press < 8; press += 1) await page.keyboard.press("Tab");
+    expect(await dialog.evaluate(node => node.contains(document.activeElement))).toBe(true);
+
+    // The regions behind the scrim are inert, so nothing back there is reachable.
+    await expect(page.getByTestId("publish-bar")).toHaveAttribute("inert", "");
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByTestId("publish-bar")).not.toHaveAttribute("inert", "");
+    await expect(page.getByTestId("review-first")).toBeFocused();
+  });
+
+  test("opening the add row does not push Publish off the screen", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "layout" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    await page.getByTestId("item-price").fill("16");
+    await page.getByTestId("item-price").blur();
+    await expect(page.getByTestId("publish")).toBeInViewport();
+
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("add-item-input").fill("a");
+    // The dropdown overlays; it does not reflow the page out from under the
+    // primary action at exactly the moment somebody is adding items.
+    await expect(page.getByTestId("publish")).toBeInViewport();
+    await expect(page.getByTestId("draft-count")).toBeInViewport();
+  });
+
+  test("hitting the menu ceiling says so, in the server's own words", async ({ page }) => {
+    await openAs(page, "owner", "menu");
+    await page.getByTestId("shelf-headline").waitFor();
+
+    // Refuse the create the way the server does at the ceiling, so the assertion is
+    // about the surface rather than about how full the venue happens to be.
+    await page.route("**/api/back-office/menus", async route => {
+      if (route.request().method() !== "POST") return route.fallback();
+      await route.fulfill({
+        status: 409,
+        contentType: "application/problem+json",
+        body: JSON.stringify({
+          detail: "That would be 62 menus, and this venue is set up for 50. Put one away first, or ask us to raise the limit."
+        })
+      });
+    });
+
+    await page.getByTestId("add-a-menu").first().click();
+    await page.getByTestId("new-menu-name").fill("One too many");
+    await page.getByTestId("create-menu").click();
+
+    // Said where the person is looking, in the words the server chose, with the
+    // dialog still open and the typed name still in it.
+    const refusal = page.getByTestId("create-menu-error");
+    await expect(refusal).toContainText("set up for 50");
+    await expect(refusal).toContainText("Put one away first");
+    await expect(page.getByTestId("name-menu-dialog")).toBeVisible();
+    await expect(page.getByTestId("new-menu-name")).toHaveValue("One too many");
+  });
+
+  test("deleting a section asks first, and names what comes back", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "delconfirm" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("delete-section").click();
+    const dialog = page.getByTestId("delete-section-dialog");
+    await expect(dialog).toContainText("goes back to your library");
+    await expect(dialog).toContainText("can't be undone");
+
+    // Escape keeps it — the irreversible act now gets the guard the reversible
+    // one always had.
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByTestId("rail-section")).toHaveCount(1);
+
+    await page.getByTestId("delete-section").click();
+    await page.getByTestId("confirm-delete-section").click();
+    await expect(page.getByTestId("builder-notice")).toContainText("back to your library");
+  });
+
+  test("Review first shows the values, and leads into the publish", async ({ page }) => {
+    const data = await seed({ role: "owner", includeScreen: true, label: "values" });
+    await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
+      headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
+      data: { menuId: data.menuId }
+    });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await page.getByTestId("publish").click();
+    await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
+
+    await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    await page.getByTestId("item-price").fill("14.00");
+    await page.getByTestId("item-price").blur();
+
+    await page.getByTestId("review-first").click();
+    // The values, not the word "changed".
+    await expect(page.getByTestId("review-list")).toContainText("14.00");
+    await expect(page.getByTestId("review-list")).toContainText("→");
+
+    await page.getByTestId("publish-from-review").click();
+    await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
+  });
+
+  test("the 86 note is legible, not a smudge", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "note" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    await page.getByTestId("availability-switch").click();
+
+    const note = page.getByTestId("board-item-note");
+    await expect(note).toContainText("hidden on all screens right now");
+
+    // It is drawn outside the dimmed content, at a size the board's scale cannot
+    // shrink away. Measured 1.51:1 at ~5px before this.
+    const measured = await note.evaluate(node => {
+      const box = node.getBoundingClientRect();
+      let opacity = 1;
+      for (let element: Element | null = node; element; element = element.parentElement) {
+        opacity *= Number(getComputedStyle(element).opacity);
+      }
+      return { height: box.height, opacity };
+    });
+    expect(measured.opacity).toBeGreaterThan(0.95);
+    expect(measured.height).toBeGreaterThan(9);
   });
 
   test("none of the four banned words appear anywhere in the builder (criterion 5)", async ({ page }) => {

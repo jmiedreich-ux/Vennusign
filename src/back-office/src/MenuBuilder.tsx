@@ -36,6 +36,7 @@ import {
   canDiscardDraft,
   canvasBoard,
   changeSentence,
+  changeValues,
   draftPhrase,
   findItem,
   findOnBoard,
@@ -101,7 +102,11 @@ function BoardStage({ children }: { children: React.ReactNode }) {
   });
 
   return (
-    <div className="builder__stage" ref={outer} style={height ? { height: `${height}px` } : undefined}>
+    <div
+      className="builder__stage"
+      ref={outer}
+      style={{ ...(height ? { height: `${height}px` } : {}), ["--board-scale" as string]: scale }}
+    >
       <div
         ref={inner}
         className="builder__stage-inner"
@@ -121,6 +126,71 @@ function BoardStage({ children }: { children: React.ReactNode }) {
 type UndoStep = { describe: string; undo: () => Promise<void>; redo: () => Promise<void> };
 
 const placeMemoryKey = (menuId: string) => `vennusign.menu.builder.${menuId}`;
+
+/**
+ * Moves focus into a dialog, keeps Tab inside it, and hands focus back on close.
+ *
+ * Without this the dialogs announced themselves as modal and were not: focus
+ * stayed on the trigger, and one Tab reached the Publish button *behind the
+ * scrim* — so the most likely accidental keyboard action on this surface was
+ * publishing to the screens. `aria-modal` is a promise to assistive technology,
+ * and it was being made without being kept.
+ */
+function useDialogFocus(open: boolean) {
+  const dialog = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const node = dialog.current;
+    if (!node) return;
+
+    const returnTo = document.activeElement as HTMLElement | null;
+    const focusable = () =>
+      [...node.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )].filter(element => element.offsetParent !== null);
+
+    // The heading first, so a screen reader hears what this dialog is before it
+    // hears the first thing it can do.
+    const heading = node.querySelector<HTMLElement>("h2");
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.focus();
+    } else {
+      focusable()[0]?.focus();
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Tab") return;
+      const items = focusable();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey && (active === first || active === heading || !node.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      } else if (!node.contains(active)) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    node.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      node.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("keydown", onKeyDown, true);
+      returnTo?.focus?.();
+    };
+  }, [open]);
+
+  return dialog;
+}
 
 /**
  * The menu builder.
@@ -153,6 +223,14 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
   const undoStack = useRef<UndoStep[]>([]);
   const redoStack = useRef<UndoStep[]>([]);
   const [historyDepth, setHistoryDepth] = useState({ undo: 0, redo: 0 });
+  const [confirmDelete, setConfirmDelete] = useState<{ sectionId: string; name: string; items: number } | null>(null);
+
+  const discardRef = useDialogFocus(confirmDiscard);
+  const deleteRef = useDialogFocus(Boolean(confirmDelete));
+  const themeRef = useDialogFocus(themePickerOpen);
+  const seeAllRef = useDialogFocus(seeAllOpen);
+  const reviewRef = useDialogFocus(reviewOpen);
+  const historyRef = useDialogFocus(historyOpen);
 
   const board = data?.board;
   const unavailableIds = useMemo(
@@ -623,6 +701,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
         setHistoryOpen(false);
         setViewingOpen(false);
         setConfirmDiscard(false);
+        setConfirmDelete(null);
         setPriceEdit(null);
         setAddSectionId(null);
         return;
@@ -701,6 +780,15 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
     );
   }
 
+  /*
+   * What sits behind a scrim, and must be unreachable while one is up. Applied to
+   * the three regions rather than to the builder root, because the dialogs are
+   * children of that root and inert would take them down with it.
+   */
+  const behindScrim =
+    confirmDiscard || Boolean(confirmDelete) || themePickerOpen || seeAllOpen || reviewOpen || historyOpen || findOpen
+      ? ""
+      : undefined;
   const sections = sectionsOf(board);
   const shown = canvasBoard(board, place);
   const offNote = availabilityLine(selectedAvailability, venueTimezone);
@@ -718,7 +806,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
 
   return (
     <div className="builder" data-testid="menu-builder" data-menu-id={menuId}>
-      <header className="builder__top">
+      <header className="builder__top" inert={behindScrim}>
         <nav className="builder__crumbs" aria-label="Breadcrumb">
           <button type="button" className="builder__crumb-link" onClick={onBack} data-testid="back-to-menus">
             Menus
@@ -816,7 +904,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
         </div>
       </header>
 
-      <div className="builder__columns">
+      <div className="builder__columns" inert={behindScrim}>
         <nav className="builder__rail" aria-label="Sections">
           <div className="builder__rail-head">
             <h2>Sections</h2>
@@ -1064,10 +1152,11 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
                 className="builder__quiet-danger"
                 data-testid="delete-section"
                 onClick={() =>
-                  void deleteSection(
-                    place.sectionId!,
-                    sections.find(section => section.sectionId === place.sectionId)?.name ?? null
-                  )
+                  setConfirmDelete({
+                    sectionId: place.sectionId!,
+                    name: sections.find(section => section.sectionId === place.sectionId)?.name ?? "this section",
+                    items: itemsOf(board, place.sectionId).length
+                  })
                 }
               >
                 Delete this section
@@ -1114,8 +1203,17 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
                   </button>
                 </div>
                 <p>
+                  {/*
+                    The trailing clause is verbatim copy in the design authority,
+                    and it carries the rule: everything else on this page waits for
+                    Publish, and this does not. Without it a reasonable person
+                    flips the switch, walks away without publishing, and believes
+                    the item is still on the wall.
+                  */}
                   {offNote ??
-                    "Showing on every screen this board is on. Turning it off hides it everywhere, immediately."}
+                    `Showing on every screen this board is on. Turning this off hides it on ${
+                      targets.total === 1 ? "your screen" : `all ${targets.total} screens`
+                    } immediately — not part of your draft.`}
                 </p>
               </div>
 
@@ -1192,7 +1290,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
         </aside>
       </div>
 
-      <footer className="builder__publish" data-testid="publish-bar">
+      <footer className="builder__publish" data-testid="publish-bar" inert={behindScrim}>
         <div className="builder__publish-left">
           <strong data-testid="draft-count" className={data.draftCount ? "is-pending" : ""}>
             {draftPhrase(data.draftCount, { neverPublished: data.publishedVersion === null })}
@@ -1312,7 +1410,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
       {confirmDiscard ? (
         <>
           <div className="builder__scrim" onClick={() => setConfirmDiscard(false)} />
-          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="discard-title" data-testid="discard-dialog">
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="discard-title" data-testid="discard-dialog" ref={discardRef}>
             <h2 id="discard-title">Discard {draftPhrase(data.draftCount).replace(" not on your screens", "")}?</h2>
             <p>This clears everything waiting on this menu. It can&apos;t be undone.</p>
             <p className="builder__dialog-note">Your screens keep showing what they are showing now.</p>
@@ -1328,10 +1426,56 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
         </>
       ) : null}
 
+      {confirmDelete ? (
+        <>
+          <div className="builder__scrim" onClick={() => setConfirmDelete(null)} />
+          <div
+            className="builder__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-section-title"
+            data-testid="delete-section-dialog"
+            ref={deleteRef}
+          >
+            <h2 id="delete-section-title">Delete {confirmDelete.name}?</h2>
+            {/*
+              The count is in hand, so it is said rather than implied. "Nothing is
+              lost" only reassures if it names what survives - the items were never
+              IN the section; a placement put them there (Q96).
+            */}
+            <p>
+              {confirmDelete.items === 0
+                ? "It holds nothing, so nothing goes back to your library."
+                : confirmDelete.items === 1
+                  ? "Its item goes back to your library and comes off this board when you publish."
+                  : `Its ${confirmDelete.items} items go back to your library and come off this board when you publish.`}
+            </p>
+            <p className="builder__dialog-note">This can&apos;t be undone.</p>
+            <div className="builder__dialog-actions">
+              <button type="button" className="action-secondary" onClick={() => setConfirmDelete(null)}>
+                Keep it
+              </button>
+              <button
+                type="button"
+                className="builder__quiet-danger"
+                data-testid="confirm-delete-section"
+                onClick={() => {
+                  const target = confirmDelete;
+                  setConfirmDelete(null);
+                  void deleteSection(target.sectionId, target.name);
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </>
+      ) : null}
+
       {themePickerOpen ? (
         <>
           <div className="builder__scrim" onClick={() => setThemePickerOpen(false)} />
-          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="theme-title" data-testid="theme-picker">
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="theme-title" data-testid="theme-picker" ref={themeRef}>
             <h2 id="theme-title">Menu themes</h2>
             {themes && themes.length > 0 ? (
               <ul>
@@ -1356,7 +1500,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
       {seeAllOpen ? (
         <>
           <div className="builder__scrim" onClick={() => setSeeAllOpen(false)} />
-          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="screens-title" data-testid="see-all-dialog">
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="screens-title" data-testid="see-all-dialog" ref={seeAllRef}>
             <h2 id="screens-title">Screens showing this menu</h2>
             <ul className="builder__screen-list">
               {screens
@@ -1380,14 +1524,19 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
       {reviewOpen ? (
         <>
           <div className="builder__scrim" onClick={() => setReviewOpen(false)} />
-          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="review-title" data-testid="review-dialog">
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="review-title" data-testid="review-dialog" ref={reviewRef}>
             <h2 id="review-title">{draftPhrase(data.draftCount, { neverPublished: data.publishedVersion === null })}</h2>
             <p>Exactly what publishing will send to your screens — nothing more.</p>
             <ul className="builder__screen-list" data-testid="review-list">
               {data.changes.map((change, index) => (
                 <li key={`${change.targetKind}-${change.targetId}-${change.field}-${index}`}>
                   <strong>{changeSentence(change, board)}</strong>
-                  <span>{change.beforeValue === null ? "new" : change.afterValue === null ? "removed" : "changed"}</span>
+                  {/*
+                    The values, not the word "changed". Both were already in hand and
+                    used only to pick that word - which at 11pm tells an owner nothing
+                    about whether the price is now 12.50 or 14.00.
+                  */}
+                  <span>{changeValues(change)}</span>
                 </li>
               ))}
             </ul>
@@ -1395,6 +1544,21 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
               <button type="button" className="action-secondary" onClick={() => setReviewOpen(false)}>
                 Close
               </button>
+              {/* Reviewing leads into the act, rather than back out of it. */}
+              {data.draftCount > 0 && !blocked ? (
+                <button
+                  type="button"
+                  className="builder__publish-button"
+                  data-testid="publish-from-review"
+                  disabled={busy}
+                  onClick={() => {
+                    setReviewOpen(false);
+                    void publish();
+                  }}
+                >
+                  {publishLabel(data.draftCount)}
+                </button>
+              ) : null}
             </div>
           </div>
         </>
@@ -1403,7 +1567,7 @@ export default function MenuBuilder({ configuration, apiKey, menuId, venueTimezo
       {historyOpen ? (
         <>
           <div className="builder__scrim" onClick={() => setHistoryOpen(false)} />
-          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="history-title" data-testid="history-dialog">
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="history-title" data-testid="history-dialog" ref={historyRef}>
             <h2 id="history-title">Go back to…</h2>
             <p>
               Going back produces a draft against your screens. It never publishes on its own — you still decide when

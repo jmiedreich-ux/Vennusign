@@ -433,7 +433,20 @@ async function menuRequest(
       ...init?.headers
     }
   });
-  if (!response.ok) throw new BackOfficeApiError(response.status, "Unable to manage menu content.");
+  if (!response.ok) {
+    /*
+     * The server refuses in plain words - "That would be 62 menus, and this venue
+     * is set up for 50. Put one away first, or ask us to raise the limit." -
+     * and this used to throw that away for a generic string, so a real refusal
+     * reached the person as nothing at all. The reason is a contract; the UI
+     * repeats it rather than inventing a friendlier one that would drift.
+     */
+    const problem = (await response.json().catch(() => ({}))) as { detail?: string; title?: string; message?: string };
+    throw new BackOfficeApiError(
+      response.status,
+      problem.detail ?? problem.message ?? problem.title ?? "Unable to manage menu content."
+    );
+  }
   return response;
 }
 
@@ -874,7 +887,20 @@ async function contentRequest(
     throw new MenuActionRefused(body.reason ?? "refused", body.message ?? "That is not something you can do right now.");
   }
 
-  if (!response.ok) throw new BackOfficeApiError(response.status, "Unable to manage menu content.");
+  if (!response.ok) {
+    /*
+     * The server refuses in plain words - "That would be 62 menus, and this venue
+     * is set up for 50. Put one away first, or ask us to raise the limit." -
+     * and this used to throw that away for a generic string, so a real refusal
+     * reached the person as nothing at all. The reason is a contract; the UI
+     * repeats it rather than inventing a friendlier one that would drift.
+     */
+    const problem = (await response.json().catch(() => ({}))) as { detail?: string; title?: string; message?: string };
+    throw new BackOfficeApiError(
+      response.status,
+      problem.detail ?? problem.message ?? problem.title ?? "Unable to manage menu content."
+    );
+  }
   return response;
 }
 
