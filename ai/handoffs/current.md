@@ -197,6 +197,34 @@ than judged on grep. If they are genuinely dead, the correct removal is a **new*
 that drops them, so existing and fresh databases converge; deleting them from the baseline
 would only change new databases.
 
+## Milestone 2's first design decision — the theme model
+
+Owner correction, 2026-08-09, recorded against Q86 and Q98. **Menu themes and shell themes
+are categorically different things**, and the code currently confuses them.
+
+- A **menu theme** is attached to a menu. A venue may have many. None exist yet; they are
+  built later in the theme builder. Milestone 2 ships **no named looks** — the render
+  engine consumes a theme definition so later themes need no engine change.
+- A **shell theme** is the software's own look — today's sky blue, a dark variant later.
+  That is what "venue theme" should mean.
+- A venue-name title strip on the TV, if it exists, belongs to the **theme editor**. The
+  Menus render engine neither draws one nor assumes one.
+
+What the code says today, which contradicts that:
+
+- **No menu-theme table exists.** `git grep -cE "CREATE TABLE dbo\.(MenuThemes|BoardThemes)"`
+  against the baseline returns 0.
+- **`Menus.Theme` is free text** — `NVARCHAR(40) NOT NULL DEFAULT N'coastal'` — naming a
+  look that was never built, with no table behind it.
+- **`dbo.VenueThemes` holds board-render fields** (`BoardBackgroundColor`, `SectionColors`,
+  `GlowColor`, `TitleFont`, `ItemFont`): menu-theme data under the venue-theme name, one
+  row per venue. Read by `DisplayContentResponse` and by the back-office and
+  platform-operations theme contracts, so moving it is not free.
+
+This is the recurring shape — one name carrying two meanings, and a value with no referent.
+**Settle the model before the render engine exists, not after**, and say plainly whether
+milestone 2 introduces the menu-theme table or defers it with `Menus.Theme` left inert.
+
 ## Boundaries
 
 - Milestone 1 is merged and accepted, so milestone 2 may start. Milestones 3–6 stay closed until their predecessor is merged and accepted in turn.

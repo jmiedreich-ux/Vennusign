@@ -1054,7 +1054,13 @@ The Pick-a-look step and the slice-2 render engine both need the exact list; "Wi
 
 *Recommended:* Two this build — Coastal (the light paper look in the hi-fis) and Classic dark; "With photos" arrives with photo support.
 
-*Answer:* DEFERRED (2026-08-07). Provisional per recommendation: Coastal + Classic dark this build; "With photos" arrives with photo support. Flagged in the slice-2 acceptance workbook.
+*Answer:* RESOLVED (2026-08-09) — the question conflated two categorically different things.
+
+A **menu theme** is attached to a menu. A venue may have many of them. Coastal, Classic dark, Paper two-up and With photos were illustrative examples of menu themes; **none of them exist**, and they are built later in the theme builder. Milestone 2 therefore ships **no named looks at all** — the render engine consumes a menu theme definition, so themes built later need no change to the engine.
+
+A **shell theme** is the software's own look — the current sky blue, and a dark variant later. That is what "venue theme" should mean, and it is not what `dbo.VenueThemes` holds today.
+
+Menu themes do not belong in `VenueThemes`. See the theme-model note in `ai/handoffs/current.md`: no menu-theme table exists, `Menus.Theme` is free text defaulting to a look that was never built, and `VenueThemes` currently carries board-render fields. Naming the model is milestone 2's first design decision, before the render engine exists rather than after.
 
 <sub>Menus.dc.html "Pick a look" vs slice-plan slice 2 vs M2 inspector [wf-import-actions, record-consistency]</sub>
 
@@ -1200,7 +1206,9 @@ It appears in the rail with no item count and as page 1 in Play, undefined every
 
 *Recommended:* Accept — ordinary sections only; empty sections don't render; header strip is the theme-generated title.
 
-*Answer:* OUT OF SCOPE → backlog (2026-08-07): no special panel type this build. Provisional default where the render engine touches it: ordinary sections only, a zero-item section doesn't render on the TV, and the theme-generated venue-name header strip is the branded title (always present, not editable). The built-in title-panel idea goes to the backlog.
+*Answer:* RESOLVED (2026-08-09). No special panel type: ordinary sections only, and a zero-item section does not render on the TV — both confirmed.
+
+The branded title bar is **not the Menus area's to draw**. If the TV shows a venue-name strip, the theme editor owns it, because it is part of what a theme is. Milestone 2's render engine does not draw one and does not assume one. The built-in title-panel idea stays on the backlog (#670).
 
 <sub>M2 hi-fi rail; M2c "1 · Welcome"; Menus.dc.html M2b header strip [m2-hifi, code-display, wf-additems]</sub>
 
