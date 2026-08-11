@@ -20,6 +20,7 @@ using Microsoft.Extensions.Options;
 using Fido2NetLib;
 using Azure.Identity;
 using Vennu.Data.Configuration;
+using Vennu.Api.TestAgent;
 
 var builder = WebApplication.CreateBuilder(args);
 IConfigurationSecretProtector? databaseSecretProtector = null;
@@ -167,6 +168,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddDataProtection();
 builder.Services.AddHttpContextAccessor();
+builder.Services.Configure<TestAgentOptions>(builder.Configuration.GetSection(TestAgentOptions.SectionName));
+builder.Services.AddHttpClient(nameof(TestAgentRunService));
+builder.Services.AddSingleton<ITestAgentRunService, TestAgentRunService>();
 builder.Services.AddScoped<CustomerOidcEvents>();
 builder.Services.AddSingleton<ICustomerSecretProtector, DataProtectionCustomerSecretProtector>();
 builder.Services.AddScoped<ICustomerPasskeyService, CustomerPasskeyService>();
