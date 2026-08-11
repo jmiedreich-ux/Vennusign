@@ -1188,7 +1188,11 @@ No rename or delete control is drawn anywhere, and the rail is explicitly "a nav
 
 *Answer:* Accepted recommended (2026-08-07): rename by clicking the canvas heading and typing over it; quiet delete control with the heading; deleted sections release their items back to the library; all queued as draft changes; an empty board shows just the add affordance.
 
-<sub>M2 hi-fi rail + canvas; Menus.dc.html [m2-hifi]</sub>
+*Owner override (2026-08-10), from the milestone 3 acceptance run:* **the delete control moves out of the canvas and into the Sections list** — a small red ✕ or bin on each section row — with the confirmation dialog kept. Rename stays on the canvas heading as answered above. The owner's words: *"maybe have a little red x or garbage can next to each section."*
+
+The cost was put to them and accepted: this makes the Sections list an editor as well as a navigator, which `docs/design/approved/menus/README.md` describes as *"a navigator, not a second editor"*. That description is corrected in the same change rather than left stating something the product no longer does.
+
+<sub>M2 hi-fi rail + canvas; Menus.dc.html [m2-hifi]; override recorded from `m3-acceptance-record.json`</sub>
 
 ### Q97 · BLOCKING
 

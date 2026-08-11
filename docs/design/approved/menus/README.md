@@ -191,13 +191,15 @@ Four columns inside the rail: section rail 212px, canvas (flex), inspector 296px
 
 Top bar 58px: breadcrumb ("Menus / Summer Menu", "Menus" is the way back), Quick update / Build segmented control, Undo/Redo pair, "Viewing as **Bar** · 1920×1080 ▾", "▶ Play" accent button.
 
-**Section rail** `#fbfcfe`: uppercase "Sections" heading with a `+`, then rows — drag handle `⠿` (`#64748b`, must be legible; it is the reorder affordance), name, item count. Selected row: `#e0f2fe` with `inset 0 0 0 1px #87ceeb`. It is a **navigator, not a second editor** — items live only on the canvas.
+**Section rail** `#fbfcfe`: uppercase "Sections" heading with a `+`, then rows — drag handle `⠿` (`#64748b`, must be legible; it is the reorder affordance), name, item count, and a small red delete control. Selected row: `#e0f2fe` with `inset 0 0 0 1px #87ceeb`. The rail navigates and owns section deletion; section names and menu items are edited only on the canvas. *Amended 2026-08-10 by the Q96 owner override from the milestone 3 acceptance run.*
 
 **Canvas** `#f4f7fa`: View toggle (One section / Whole board) then the board card at 14px radius on `#faf8f2` with a strong drop shadow. The board is the real render. Selected item gets `0 0 0 2px #2a78d6` plus a blue drag pill hanging off its left edge. An 86'd item renders at 42% opacity, name struck through, with "86'd 6:40pm — hidden on all screens right now" in `#8a2929`.
 
 **There is no Preview button** — the canvas *is* the preview (decision from M2c). Adding one would imply the thing you are editing is not real.
 
-**Inspector**: item name + ✕, then the availability panel, then Name / Description / Price, then two checkboxes (Feature on the board, Add a photo), then a footer line pointing at the theme. **Six controls total.** No Content/Style tabs, no Advanced, no per-item currency. The only warning shown is one that matters: "Two words over — wraps to 3 lines on Patio".
+**Inspector**: item name + ✕, then the availability panel, then Name / Description / Price, then a footer line pointing at the theme. **Four controls total**, plus the theme footer. No Content/Style tabs, no Advanced, no per-item currency. The only warning shown is one that matters: "Two words over — wraps to 3 lines on Patio".
+
+*Amended 2026-08-10 (milestone 3 readiness pass).* This read "two checkboxes (Feature on the board, Add a photo)" and "Six controls total", which Q107 and Q108 had already put out of scope — the featured-item board treatment is unspecified and photos are a separate feature. A shared item also carries one quiet line under the price naming the other boards it sits on (Q5's design follow-up, resolved provisionally at that pass); it is a statement of fact, not a sixth control.
 
 **Publish bar**: "3 changes not on your screens" (14px/700 `#7d5911`), "Draft saved 10:42am by Alex · go back to… · discard draft", the three screen chips, "Review first", "Publish 3 changes".
 

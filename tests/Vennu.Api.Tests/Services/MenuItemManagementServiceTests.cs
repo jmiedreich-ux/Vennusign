@@ -21,7 +21,7 @@ public sealed class MenuItemManagementServiceTests
     private static FakeContentRepository Repository()
     {
         var repository = new FakeContentRepository();
-        repository.Sections.Add(new MenuSection { Id = SectionId, VenueId = VenueId, MenuId = MenuId, Name = "Food", IsActive = true });
+        repository.Sections.Add(new MenuSection { Id = SectionId, VenueId = VenueId, MenuId = MenuId, Name = "Food" });
         return repository;
     }
 

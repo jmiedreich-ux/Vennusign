@@ -159,6 +159,59 @@ internal static class ModelInvariants
             ) latest
             WHERE ISNULL(m.PublishedVersion, -1) <> ISNULL(latest.Version, -1);
             """),
+
+        new(
+            "An item appears at most once on a board",
+            "Milestone 3 readiness pass. Q112 promises that picking an item already on this board JUMPS to it "
+            + "rather than placing a second copy, but the schema only constrained it once per SECTION - so the "
+            + "same item on two sections of one menu was legal, and it would render twice to a guest. "
+            + "UQ_Placements_MenuItem (migration 061) is the rule the product actually states; this asserts it "
+            + "against whatever any test left behind, including paths that write placements directly.",
+            """
+            SELECT CONCAT('menu ', p.MenuId, ' places item ', p.ItemId, ' ', COUNT(*), ' times') AS Offence
+            FROM dbo.Placements p
+            GROUP BY p.MenuId, p.ItemId
+            HAVING COUNT(*) > 1;
+            """),
+
+        new(
+            "No two placements in a section share a sort order",
+            "Milestone 3 readiness pass. Board order would then rest on a tiebreaker nobody chose, so the same "
+            + "content could render in two different orders on two screens. The reorder write is the path that "
+            + "produces this: it trusted the caller's list, and any placement omitted from that list kept a "
+            + "stale sort order that could collide with a rewritten one.",
+            """
+            SELECT CONCAT('section ', p.MenuSectionId, ' has ', COUNT(*),
+                          ' placements at sort order ', p.SortOrder) AS Offence
+            FROM dbo.Placements p
+            GROUP BY p.MenuSectionId, p.SortOrder
+            HAVING COUNT(*) > 1;
+            """),
+
+        new(
+            "A placement's section belongs to its menu",
+            "Milestone 3 readiness pass. FK_Placements_SectionOnMenu already enforces this; the invariant exists "
+            + "so a future schema edit that drops the constraint is caught by every integration test rather than "
+            + "by a guest reading a board with an item that silently vanished from its own menu's snapshot.",
+            """
+            SELECT CONCAT('placement ', p.Id, ' is on menu ', p.MenuId,
+                          ' but its section belongs to menu ', s.MenuId) AS Offence
+            FROM dbo.Placements p
+            INNER JOIN dbo.MenuSections s ON s.Id = p.MenuSectionId
+            WHERE s.MenuId <> p.MenuId;
+            """),
+
+        new(
+            "A deleted section leaves no placement behind",
+            "Milestone 3 readiness pass. Sections are deleted rather than archived (Q96), and a delete that "
+            + "released the section but not its placements would leave rows pointing at nothing - invisible to "
+            + "every board read, and still counting against the items-per-menu ceiling.",
+            """
+            SELECT CONCAT('placement ', p.Id, ' names section ', p.MenuSectionId,
+                          ', which does not exist') AS Offence
+            FROM dbo.Placements p
+            WHERE NOT EXISTS (SELECT 1 FROM dbo.MenuSections s WHERE s.Id = p.MenuSectionId);
+            """),
     ];
 
     /// <summary>

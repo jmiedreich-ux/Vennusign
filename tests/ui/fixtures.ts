@@ -62,25 +62,53 @@ export async function openAs(page: Page, role: VennuRole, route: string) {
 }
 
 /**
- * Opens the menu editor, through the door a person uses.
- *
- * Menus milestone 2 put the shelf at `#/menu`, so the editor is no longer the
- * first thing that route shows — a card is opened to reach it. Every spec that
- * drives the editor goes through here rather than each learning the new path,
- * so when milestone 3 replaces the editor with the builder there is one place
- * to change.
+ * Opens a menu in the builder, through the door a person uses.
  *
  * The board is the door: there is no Open button on a card (design README,
- * Navigation), which is why this clicks the board itself.
+ * Navigation), which is why this clicks the board itself. Milestone 3 gave the
+ * builder its own address, so a spec that wants one particular menu can also
+ * navigate straight to `#/menu/{menuId}` — which is itself worth asserting, since
+ * a refresh mid-edit depends on it.
  */
-export async function openMenuEditorAs(page: Page, role: VennuRole) {
-  await openAs(page, role, "menu");
-  await page.getByTestId("menus-home").waitFor();
+export async function openMenuBuilderAs(page: Page, role: VennuRole, menuId?: string) {
+  if (menuId) {
+    await openAs(page, role, `/menu/${menuId}`);
+  } else {
+    await openAs(page, role, "menu");
+    await page.getByTestId("menus-home").waitFor();
+    const card = page.getByTestId("menu-card").first();
+    await card.waitFor();
+    await card.getByTestId("open-menu").click();
+  }
+  await page.getByTestId("menu-builder").waitFor();
+}
 
-  const card = page.getByTestId("menu-card").first();
+/**
+ * One named card on the shelf, however many menus the venue happens to have.
+ *
+ * The default venue accumulates menus from every spec that seeds, so the shelf
+ * crosses the scale cutover during a run and back again — search exists above it,
+ * the plain grid below, and "N more" hides the tail in between. A spec that
+ * assumed one of those states passed for the wrong reason whenever the count moved.
+ */
+export async function findShelfCard(page: Page, menuName: string) {
+  // The shelf renders its container while it is still loading, so waiting for the
+  // container alone decides "is there a search box?" before the answer exists —
+  // and at scale that leaves the card hidden behind a search nobody filled. The
+  // headline only appears once the menus are in.
+  await page.getByTestId("shelf-headline").waitFor();
+
+  const search = page.getByTestId("shelf-search");
+  if (await search.count()) {
+    await search.fill(menuName);
+  } else {
+    const more = page.getByTestId("shelf-more");
+    if (await more.count()) await more.click();
+  }
+
+  const card = page.getByTestId("menu-card").filter({ hasText: menuName });
   await card.waitFor();
-  await card.getByTestId("open-menu").click();
-  await page.getByTestId("menu-picker").waitFor();
+  return card;
 }
 
 export const test = base.extend<{ asOwner: Page }>({

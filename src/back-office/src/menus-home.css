@@ -138,14 +138,25 @@
    design names it as danger (README, M1b). */
 .menu-card__actions button.menu-card__danger { color: var(--sky-danger-text); }
 
+/*
+ * The strip sits over the bottom of the card, which made it a lid: it swallowed
+ * clicks aimed at the board underneath, so the one menu you most want to open -
+ * the one holding changes - was the one you could not open by clicking its middle.
+ * Found on a narrow viewport, where the card is short enough that the centre of
+ * the board IS the strip.
+ *
+ * The strip itself is a label, so it passes clicks through; its Review button
+ * takes them back, because that one is a real control.
+ */
 .menu-card__pending {
   position: absolute; inset: auto 0 0 0; margin: 0;
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   padding: 7px 14px;
   background: var(--sky-color-warning); color: var(--sky-color-ink);
   font-size: var(--sky-font-size-xs-plus); font-weight: var(--sky-font-weight-bold);
+  pointer-events: none;
 }
-.menu-card__pending button { border: 0; padding: 0; background: transparent; color: inherit; font: inherit; font-weight: inherit; cursor: pointer; }
+.menu-card__pending button { pointer-events: auto; border: 0; padding: 0; background: transparent; color: inherit; font: inherit; font-weight: inherit; cursor: pointer; }
 
 .menu-card__meta { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
 .menu-card__meta > div { display: grid; gap: 3px; min-width: 0; overflow: hidden; }
@@ -234,4 +245,15 @@
   .menus-home { padding: 20px; }
   .menus-home__grid, .menus-home__grid--compact { grid-template-columns: repeat(2, 1fr); }
   .menus-home__header { flex-direction: column; }
+}
+
+/* A refusal is shown where the person is looking, not swallowed. */
+.menu-card__dialog-refusal {
+  margin: 0;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 9px 11px;
+  background: var(--sky-color-off-surface, #fdeaea);
+  color: var(--sky-danger-text, #8a2929);
+  font-size: var(--sky-font-size-xs-plus, 12px);
+  line-height: 1.45;
 }

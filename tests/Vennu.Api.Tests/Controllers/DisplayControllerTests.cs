@@ -76,7 +76,7 @@ public class DisplayControllerTests
         var menuRepository = new FakeMenuRepository
         {
             Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Dinner", DailySpecial = "Chicken pot pie", IsActive = true }],
-            Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Mains", IsActive = true }],
+            Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Mains" }],
             Items = Enumerable.Range(1, 8).Select(index => new MenuItem
             {
                 Id = Guid.NewGuid(), VenueId = venueId, MenuSectionId = sectionId,
@@ -119,7 +119,7 @@ public class DisplayControllerTests
         var menuRepository = new FakeMenuRepository
         {
             Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Main", IsActive = true }],
-            Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Food", IsActive = true }],
+            Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, Name = "Food" }],
             Items = Enumerable.Range(1, 12)
                 .Select(index => new MenuItem
                 {
@@ -293,8 +293,7 @@ public class DisplayControllerTests
             ],
             Sections =
             [
-                new MenuSection { Id = Guid.NewGuid(), VenueId = venueId, MenuId = menuId, Name = "Hidden", IsActive = false, SortOrder = 0 },
-                new MenuSection { Id = activeSectionId, VenueId = venueId, MenuId = menuId, Name = "Bowls", IsActive = true, SortOrder = 1 }
+                new MenuSection { Id = activeSectionId, VenueId = venueId, MenuId = menuId, Name = "Bowls", SortOrder = 1 }
             ],
             Items =
             [

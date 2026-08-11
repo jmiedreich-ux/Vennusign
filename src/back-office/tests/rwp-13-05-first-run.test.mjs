@@ -2,10 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [app, shell, menu, api, styles] = await Promise.all([
+const [app, shell, api, styles] = await Promise.all([
   readFile(new URL("../src/CustomerOnboardingApp.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
-  readFile(new URL("../src/MenuSectionsEditor.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/customerOnboardingApi.ts", import.meta.url), "utf8"),
   readFile(new URL("../src/styles.css", import.meta.url), "utf8")
 ]);
@@ -30,9 +29,11 @@ test("go-live celebration remains authoritative and first run is actionable", ()
 
 test("starter offers prefill a reviewed draft and never create implicitly", () => {
   assert.match(shell, /\["restaurant", "cafe", "bar"\]\.includes\(value\)/);
-  assert.match(menu, /starterNames/);
-  assert.match(menu, /No content has been created yet/);
-  assert.match(menu, /onSubmit=\{createNewMenu\}/);
+  // The starter choice used to prefill the old editor's create form. Milestone 3
+  // retired that surface, so it prefills the name on Add a menu instead - the
+  // choice still ends somewhere rather than being dropped on the floor.
+  assert.match(shell, /starterMenuNames/);
+  assert.match(shell, /starterMenuName=\{starterMenu\}/);
   assert.doesNotMatch(app, /createMenu\(|createMenuSection\(/);
 });
 

@@ -1,5 +1,5 @@
-import { test, expect, openAs } from "../fixtures";
-import { scaleSeed } from "../seed";
+import { test, expect, findShelfCard, openAs } from "../fixtures";
+import { scaleSeed, seed } from "../seed";
 
 /**
  * The Menus home shelf, in a browser.
@@ -258,4 +258,18 @@ test.describe("the shelf", () => {
       await expect(shelf, `the card menu says "${banned}"`).not.toContainText(new RegExp(banned, "i"));
     }
   });
+});
+
+test("a menu holding changes can still be opened by its board", async ({ page }) => {
+  // The amber strip is drawn over the bottom of the card. It used to swallow the
+  // click, so the one menu you most want to open - the one holding changes - was
+  // the one you could not open by clicking its middle. On a narrow viewport the
+  // centre of the board IS the strip, which is where this turned up.
+  const data = await seed({ role: "owner", label: "pending" });
+  await openAs(page, "owner", "menu");
+
+  const card = await findShelfCard(page, data.menuName);
+  await expect(card.getByTestId("open-menu")).toBeVisible();
+  await card.getByTestId("open-menu").click();
+  await expect(page.getByTestId("menu-builder")).toBeVisible();
 });

@@ -10,6 +10,11 @@
  *
  *   - An 86'd item is not rendered at all (M1's availability model: 86 is a fact
  *     about tonight, it never waits for a publish and it never shows on a board).
+ *     An editing surface asks to KEEP them instead, marked: you cannot turn an
+ *     item back on if the surface has hidden it from you (Q104). That is the one
+ *     place a preview surface and a guest board legitimately differ, and it is a
+ *     decision made here rather than by each consumer separately — otherwise the
+ *     builder and the TV are two implementations of one rule.
  *   - A section with nothing visible left in it is not rendered. Order matters:
  *     86'ing the last item in a section empties that section, so the emptiness
  *     has to be judged after the removals, not before.
@@ -33,8 +38,9 @@ export const missingPrice = "—";
  *   published snapshot on purpose - it is instant, and it survives a publish -
  *   so it arrives here separately and is applied at render time.
  */
-export function buildBoardDocument(board, unavailableItemIds) {
+export function buildBoardDocument(board, unavailableItemIds, options) {
   const off = toIdSet(unavailableItemIds);
+  const keepUnavailable = options?.keepUnavailable === true;
 
   const sections = (board?.sections ?? [])
     .slice()
@@ -43,7 +49,7 @@ export function buildBoardDocument(board, unavailableItemIds) {
       sectionId: String(section?.sectionId ?? ""),
       name: typeof section?.name === "string" ? section.name : "",
       items: (section?.items ?? [])
-        .filter((item) => !off.has(String(item?.itemId ?? "")))
+        .filter((item) => keepUnavailable || !off.has(String(item?.itemId ?? "")))
         .slice()
         .sort(bySortOrderThen("itemId"))
         .map((item) => ({
@@ -51,11 +57,15 @@ export function buildBoardDocument(board, unavailableItemIds) {
           name: typeof item?.name === "string" ? item.name : "",
           description: nonEmpty(item?.description),
           // Exactly as typed, or an em dash. Never reformatted, never zero.
-          price: nonEmpty(item?.price) ?? missingPrice
+          price: nonEmpty(item?.price) ?? missingPrice,
+          // Always present, always a boolean. A guest document says false for
+          // everything it drew, because everything it drew is on.
+          isUnavailable: off.has(String(item?.itemId ?? ""))
         }))
     }))
     // Judged after the 86 removals: a section can be full of items and still
-    // have nothing to show tonight.
+    // have nothing to show tonight. An editing surface keeps such a section,
+    // because that is where the items you would turn back on live.
     .filter((section) => section.items.length > 0);
 
   return {

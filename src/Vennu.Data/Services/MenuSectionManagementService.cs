@@ -116,7 +116,6 @@ public sealed class MenuSectionManagementService(
             MenuId = menuId,
             Name = normalizedName,
             SortOrder = sections.Count == 0 ? 0 : sections.Max(item => item.SortOrder) + 1,
-            IsActive = true,
             CreatedUtc = now,
             UpdatedUtc = now
         };
@@ -128,7 +127,6 @@ public sealed class MenuSectionManagementService(
         Guid venueId,
         Guid sectionId,
         string name,
-        bool isActive,
         CancellationToken cancellationToken = default)
     {
         RequireId(venueId, nameof(venueId));
@@ -141,7 +139,6 @@ public sealed class MenuSectionManagementService(
         }
 
         section.Name = NormalizeName(name);
-        section.IsActive = isActive;
         section.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
         await repository.UpdateSectionAsync(section, cancellationToken).ConfigureAwait(false);
         return section;

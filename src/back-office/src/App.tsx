@@ -4,7 +4,9 @@ import {
   createBillingPortalSession,
   createTierBillingPortalSession,
   createHaasCheckoutSession,
+  createMenu,
   loadBackOfficeSession,
+  loadMenuContext,
   loadVenueBillingPresentation,
   selectBackOfficeVenue,
   clearBackOfficeVenueContext,
@@ -23,12 +25,13 @@ import { loadBackOfficeConfiguration } from "./config";
 import {
   canOpenBackOfficeRoute,
   decisionForBackOfficeRoute,
+  menuIdFromHash,
   resolveBackOfficeRoute,
   backOfficeNavigationGroups,
   type BackOfficeRoute
 } from "./navigation.mjs";
 import NavRail from "./NavRail";
-import MenuSectionsEditor from "./MenuSectionsEditor";
+import MenuBuilder from "./MenuBuilder";
 import MenusHome from "./MenusHome";
 import PosIntegrationAdministration from "./PosIntegrationAdministration";
 import VenueOperations from "./VenueOperations";
@@ -95,25 +98,50 @@ function consumeAccessTokenFromUrl(): string | undefined {
   return supplied;
 }
 
+/**
+ * The starter a first run chose, carried over from onboarding. It used to prefill
+ * the old editor's create form; with that gone it prefills the name on Add a menu,
+ * so "Choose a starter menu" still ends somewhere rather than being dropped on the
+ * floor. Milestone 6's import routes take this over.
+ */
+const starterMenuNames = { restaurant: "Lunch & Dinner", cafe: "Cafe Menu", bar: "Drinks & Tap List" } as const;
+
 export default function App() {
   const configuration = useMemo(loadBackOfficeConfiguration, []);
   const starterMenu = useMemo(() => {
     const value = new URLSearchParams(window.location.search).get("starterMenu");
-    return value && ["restaurant", "cafe", "bar"].includes(value) ? value as "restaurant" | "cafe" | "bar" : undefined;
+    return value && ["restaurant", "cafe", "bar"].includes(value)
+      ? starterMenuNames[value as keyof typeof starterMenuNames]
+      : undefined;
   }, []);
-  /**
-   * Null means the shelf; anything else means the editor is open.
-   *
-   * Interim, and deliberately not a route: milestone 3 replaces the editor with
-   * the builder and gives it its own address. Inventing a URL for a surface
-   * about to be replaced would leave a dead link behind (Q100).
-   */
-  const [editingMenuId, setEditingMenuId] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState(() =>
     consumeAccessTokenFromUrl() ?? sessionStorage.getItem(tokenStorageKey) ?? customerSessionAccess);
   const [session, setSession] = useState<BackOfficeSession>();
   const [billing, setBilling] = useState<BackOfficeBillingPresentation>();
-  const [route, setRoute] = useState<BackOfficeRoute>(() => resolveBackOfficeRoute(window.location.hash));
+  const [routeHash, setRouteHash] = useState(() => window.location.hash);
+  const route = useMemo(() => resolveBackOfficeRoute(routeHash), [routeHash]);
+
+  /**
+   * Which menu the builder has open, from the address bar.
+   *
+   * Milestone 3 gave the builder its own route, `#/menu/{menuId}`, closing the
+   * note milestone 2 left here. It is derived from the hash rather than held in
+   * state on purpose: a refresh mid-edit, the back button and a pasted link all
+   * have to land back on the same menu, and React state survives none of them.
+   */
+  const openMenuId = menuIdFromHash(routeHash);
+  const openMenu = (menuId: string) => { window.location.hash = `#/menu/${menuId}`; };
+  const [menuContext, setMenuContext] = useState<{ timezone: string }>();
+
+  /**
+   * Naming a new menu still goes through the create endpoint that already exists
+   * (Q100); milestone 6 replaces it with the import routes. It opens the builder
+   * on what it made, because a menu you cannot see is not a menu you created.
+   */
+  const onAddMenu = async (name: string) => {
+    const created = await createMenu(configuration, accessToken, name);
+    openMenu(created.id);
+  };
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [error, setError] = useState<string>();
   const [dismissalVersion, setDismissalVersion] = useState(0);
@@ -141,6 +169,17 @@ export default function App() {
       ? "Stripe returned successfully. Your plan and feature access are being confirmed from Vennusign."
       : "Checkout was canceled. Your current plan and features were not changed."
   );
+
+  useEffect(() => {
+    if (!accessToken || !session) return;
+    let cancelled = false;
+    loadMenuContext(configuration, accessToken)
+      .then(value => { if (!cancelled) setMenuContext(value); })
+      // A missing context is not worth blocking a board over; UTC, and the
+      // surface still renders. The zone is a label, not a permission.
+      .catch(() => { if (!cancelled) setMenuContext({ timezone: "UTC" }); });
+    return () => { cancelled = true; };
+  }, [accessToken, configuration, session]);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -197,7 +236,7 @@ export default function App() {
 
   useEffect(() => {
     // Choosing a destination must dismiss the drawer, or the selected page stays hidden behind it.
-    const onHashChange = () => { setRoute(resolveBackOfficeRoute(window.location.hash)); setNavigationOpen(false); };
+    const onHashChange = () => { setRouteHash(window.location.hash); setNavigationOpen(false); };
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
@@ -443,7 +482,10 @@ export default function App() {
   // Menus home draws its own page header (the hi-fi has the shelf owning the
   // page), and only when it is actually the shelf rather than the editor behind
   // a card.
-  const showsOwnHeader = route.path === "menu" && editingMenuId === null;
+  // Menus draws its own page header — the shelf owns the venue name and headline,
+  // and the builder is a whole surface with a breadcrumb of its own. Either would
+  // otherwise get a second "Menu" heading stacked above it.
+  const showsOwnHeader = route.path === "menu";
 
   return <div className="shell">
     {reviewDialog}
@@ -560,37 +602,38 @@ export default function App() {
         ? <AccountSecurity configuration={configuration} customerSession={accessToken === customerSessionAccess} />
         : allowed && route.path === "pos"
         ? <PosIntegrationAdministration key={session.venueId} configuration={configuration} accessToken={accessToken} />
-        : allowed && route.path === "menu" && editingMenuId === null
+        : allowed && route.path === "menu" && openMenuId === null
         ? <MenusHome
             key={session.venueId}
             configuration={configuration}
             accessToken={accessToken}
             venueName={session.venueName}
-            /* Interim wiring, until milestones 3 and 6 (Q100): a card opens the
-               editor that exists, and Add a menu uses the create flow that
-               exists. Anything with no destination is absent, never greyed. */
-            onOpenMenu={setEditingMenuId}
-            onAddMenu={() => setEditingMenuId("")}
+            /* The card opens the builder now. Add a menu still uses the create
+               flow that exists, until milestone 6 owns the import routes (Q100). */
+            onOpenMenu={openMenu}
+            onAddMenu={onAddMenu}
+            starterMenuName={starterMenu}
             onFixScreens={() => { window.location.hash = "#/screens"; }}
           />
         : allowed && route.path === "menu"
-        ? <>
-            <button
-              type="button"
-              className="action-secondary menus-home__back"
-              onClick={() => setEditingMenuId(null)}
-              data-testid="back-to-menus"
-            >
-              ← Menus
-            </button>
-            <MenuSectionsEditor
-              key={session.venueId}
-              configuration={configuration}
-              apiKey={accessToken}
-              venueId={session.venueId}
-              starterMenu={starterMenu}
-            />
-          </>
+        ? <MenuBuilder
+            key={openMenuId}
+            configuration={configuration}
+            apiKey={accessToken}
+            menuId={openMenuId!}
+            venueTimezone={menuContext?.timezone ?? "UTC"}
+            onBack={() => { window.location.hash = "#/menu"; }}
+            /*
+             * Signing back in from inside the builder signs the whole back office
+             * back in, on the same storage the sign-in form uses. Otherwise one
+             * screen holds a working credential nothing else knows about, and the
+             * next navigation drops straight back to the token form (Q199).
+             */
+            onAccessTokenChange={token => {
+              sessionStorage.setItem(tokenStorageKey, token);
+              setAccessToken(token);
+            }}
+          />
         : allowed && ["screens", "themes", "schedules", "tap-list"].includes(route.path)
         ? <VenueOperations
             key={session.venueId}

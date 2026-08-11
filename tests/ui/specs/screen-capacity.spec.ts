@@ -1,4 +1,4 @@
-import { test, expect, openAs, openMenuEditorAs } from "../fixtures";
+import { test, expect, openAs, openMenuBuilderAs } from "../fixtures";
 import { seed } from "../seed";
 
 /**
@@ -60,7 +60,8 @@ test("3-1 menu work is unaffected by exhausted screen capacity", async ({ page }
   await expect(page.getByTestId("screen-quota")).toBeVisible();
 
   // Through the shelf, the way a person reaches the editor from milestone 2 on.
-  await openMenuEditorAs(page, "owner");
-  await expect(page.getByTestId("menu-picker")).toBeVisible();
-  await expect(page.getByTestId("menu-item").first().getByTestId("item-name")).toBeEnabled();
+  await openMenuBuilderAs(page, "owner");
+  await expect(page.getByTestId("canvas")).toBeVisible();
+  await page.getByTestId("board-item").first().locator(".board-item-name").click();
+  await expect(page.getByTestId("item-name")).toBeEnabled();
 });

@@ -3,10 +3,20 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const source = name => readFile(new URL(`../src/${name}`, import.meta.url), "utf8");
-const [app, navigation, pos, sections, items, quick, api] = await Promise.all([
-  source("App.tsx"), source("navigation.mjs"), source("PosIntegrationAdministration.tsx"),
-  source("MenuSectionsEditor.tsx"), source("MenuItemsEditor.tsx"), source("QuickUpdateMode.tsx"), source("api.ts")
+const [app, navigation, pos] = await Promise.all([
+  source("App.tsx"), source("navigation.mjs"), source("PosIntegrationAdministration.tsx")
 ]);
+
+/*
+ * The two menu-lifecycle tests that used to live here asserted the pre-milestone-3
+ * editor: a menu picker, a Create menu form, per-row Save buttons, "Confirm
+ * archive" and the Quick Update bulk selector. Milestone 3 replaced that surface
+ * with the builder, so they were retired here rather than left asserting files
+ * that no longer exist. What they were protecting is asserted against the
+ * replacement in menu-builder.test.mjs and tests/ui/specs/menu-builder.spec.ts —
+ * including the one rule worth keeping verbatim, that an edit in flight is never
+ * overwritten by an older save completing late.
+ */
 
 test("navigation exposes only implemented home, account, and POS administration", () => {
   assert.match(navigation, /path: "home"/);
@@ -18,26 +28,4 @@ test("navigation exposes only implemented home, account, and POS administration"
   assert.match(pos, /Refresh status/);
   assert.match(pos, /Import catalog/);
   assert.match(pos, /role="alert"/);
-});
-
-test("menu lifecycle is selectable recoverable ordered and explicitly saved", () => {
-  assert.match(sections, /Select menu/);
-  assert.match(sections, /Create menu/);
-  assert.match(sections, /Confirm archive/);
-  assert.match(sections, /Retry last change/);
-  assert.match(items, /Unsaved draft/);
-  assert.match(items, /Save failed/);
-  assert.match(items, /reorderMenuItems/);
-  assert.match(api, /items\/order/);
-  // Per-item archive left with the consolidation: removing an item from a board
-  // is a placement change, and that arrives with the milestone 3 builder.
-  assert.doesNotMatch(items, /Confirm archive/);
-  assert.doesNotMatch(api, /items\/\$\{itemId\}\/lifecycle/);
-});
-
-test("Quick Update bounds selection and retains recovery feedback", () => {
-  assert.match(quick, /bulkLimit = 25/);
-  assert.match(quick, /Search quick-update items/);
-  assert.match(quick, /Undo last change/);
-  assert.match(quick, /Refresh to verify current item state/);
 });

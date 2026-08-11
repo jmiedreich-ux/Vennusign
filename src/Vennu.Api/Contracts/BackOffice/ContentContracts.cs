@@ -6,6 +6,37 @@ public sealed record AvailabilityRequest(bool IsAvailable);
 
 public sealed record AssignmentRequest(Guid MenuId);
 
+public sealed record SectionNameRequest(string Name);
+
+public sealed record SectionOrderRequest(IReadOnlyCollection<Guid> SectionIds);
+
+public sealed record ItemOrderRequest(IReadOnlyCollection<Guid> ItemIds);
+
+/// <summary>
+/// Placing something on a board. Exactly one of these is set: an ItemId places an
+/// item the library already holds; a Name creates one born with that text and an
+/// empty price and description (Q113).
+/// </summary>
+public sealed record PlaceRequest(Guid? ItemId, string? Name);
+
+/// <summary>
+/// An item's values. These are the item's, not this board's: one item is one
+/// shared price everywhere it sits (Q5).
+/// </summary>
+/// <summary>
+/// New values for an item, and optionally the values the caller believes are still
+/// in place. The expectation is what makes Undo safe: with it, the edit applies only
+/// while the row still holds what the caller last saw, so an inverse cannot erase
+/// somebody else's later change without saying so.
+/// </summary>
+public sealed record ItemValuesRequest(
+    string Name,
+    string? Description,
+    string? Price,
+    string? ExpectedName = null,
+    string? ExpectedDescription = null,
+    string? ExpectedPrice = null);
+
 // Responses ------------------------------------------------------------------
 
 /// <summary>
@@ -151,6 +182,64 @@ public sealed record PublishedBoardResponse(
 /// truth and showing a guess.
 /// </summary>
 public sealed record DuplicateResponse(Guid MenuId, string Name, int ActiveMenuCount);
+
+/// <summary>
+/// A menu open in the builder. Board is the WORKING state: the canvas draws what
+/// the menu says now, not what the screens are showing, because the canvas IS the
+/// preview. Draft is the difference between the two, and the publish fields
+/// describe the board it differs from — all read together, so the bar's one
+/// sentence cannot describe two different menus.
+/// </summary>
+public sealed record BuilderBoardResponse(
+    BoardResponse Board,
+    int DraftCount,
+    IReadOnlyCollection<DraftChangeResponse> Changes,
+    long? PublishedVersion,
+    DateTime? LastPublishedUtc,
+    string? LastPublishedBy,
+    IReadOnlyCollection<Guid> ScreenIds);
+
+public sealed record SectionResponse(Guid SectionId, string Name, int SortOrder);
+
+/// <summary>
+/// What a delete released back to the library, so the UI can say it rather than
+/// guess (Q96).
+/// </summary>
+public sealed record SectionDeleteResponse(int ReleasedItemCount);
+
+/// <summary>
+/// The outcome of placing something. <c>already_on_board</c> is not a failure: it
+/// carries the section the item already sits in so the UI jumps there instead of
+/// placing a second copy (Q112).
+/// </summary>
+public sealed record PlaceResponse(
+    string Outcome,
+    Guid? ItemId,
+    Guid? SectionId,
+    int SortOrder,
+    int ItemCountOnMenu);
+
+/// <summary>
+/// One add-row search result. Boards names where it already lives, capped in the
+/// UI by Q123's vocabulary rather than here — the API states the fact, the surface
+/// decides how much of it to say.
+/// </summary>
+public sealed record LibraryItemResponse(
+    Guid ItemId,
+    string Name,
+    string? Description,
+    string? Price,
+    bool IsAvailable,
+    IReadOnlyCollection<LibraryItemBoardResponse> Boards);
+
+public sealed record LibraryItemBoardResponse(Guid MenuId, string MenuName);
+
+/// <summary>
+/// A menu theme that could be attached. Always empty for now, and deliberately a
+/// real read rather than a hard-coded list: menu themes are created in the theme
+/// editor, which does not exist yet, and no named looks ship (Q86).
+/// </summary>
+public sealed record MenuThemeResponse(string Key, string Name);
 
 public sealed record AssignmentResponse(
     Guid ScreenId,

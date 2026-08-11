@@ -151,7 +151,13 @@ Write-Host "item: $($item.name)  ($itemId), price $basePrice" -ForegroundColor D
 
 function Set-ItemPrice {
     param([double]$Price)
-    Invoke-Api PUT "$menus/$menuId/sections/$sectionId/items/$itemId" @{ name = $item.name; description = $item.description; price = $Price }
+    # The item write moved onto the content API with milestone 3: one item is one
+    # shared set of values across every board it sits on, so it is addressed by
+    # item rather than by where it happens to be placed.
+    # A price is text, exactly as somebody typed it (Q115/Q190) - "9.5" never
+    # becomes 9.50, and "MP" is a price. Sending a number here is what the old
+    # per-placement route accepted and the content API rightly refuses.
+    Invoke-Api PUT "$content/items/$itemId" @{ name = $item.name; description = $item.description; price = "$Price" }
 }
 
 # Put the menu on a screen, and prove it. Every screen-facing check below is
@@ -300,7 +306,10 @@ try { Invoke-Api PUT "$content/menus/$menuId/put-away" @{ isPutAway = $true } | 
 $takeOffPublish = Invoke-Api POST "$content/menus/$menuId/publish"
 $historyAfterShip = @((Invoke-Api GET "$content/menus/$menuId/history") | Where-Object { $null -ne $_ })
 $takeOffEntries = @($historyAfterShip | Where-Object { $_.kind -eq 'taken_off_screens' })
-$assignmentsAfterShip = Measure-Api "$content/assignments"
+# This menu's assignments, not the venue's. A whole-venue count was true on a
+# clean fixture and stopped being true the moment anything else in the repo
+# assigned a screen - which made a green check depend on what else had run.
+$assignmentsAfterShip = @(Expand-Api (Invoke-Api GET "$content/assignments") | Where-Object { $_.menuId -eq $menuId }).Count
 $shippedSnapshotScreens = @($takeOffPublish.targets).Count
 $showingAfterTakeOff = Get-Showing $screenId
 Record '8c' 'Publishing the take-off reaches the screens it is leaving, and records the act' `

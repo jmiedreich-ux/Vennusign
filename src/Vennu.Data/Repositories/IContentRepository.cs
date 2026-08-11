@@ -51,6 +51,113 @@ public interface IContentRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>Every placement in the venue with its item values and live availability, in board order.</summary>
+    /// <summary>
+    /// Adds a section at the end of the menu, its sort order read under the same
+    /// lock as the insert. Outcomes: <c>created</c>, <c>menu_missing</c>.
+    /// </summary>
+    Task<SectionCreateOutcome> CreateSectionOnMenuAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        string name,
+        DateTime now,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> RenameSectionAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        string name,
+        DateTime now,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a section and releases its items back to the library (Q96), saying
+    /// how many were released. Outcomes: <c>deleted</c>, <c>section_missing</c>.
+    /// </summary>
+    Task<SectionDeleteOutcome> DeleteSectionAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Reorders under a lock that proves the caller's list is still exactly what
+    /// the menu holds. Outcomes: <c>reordered</c>, <c>order_stale</c>.
+    /// </summary>
+    Task<ReorderOutcome> ReorderSectionsGuardedAsync(
+        Guid venueId,
+        Guid menuId,
+        IReadOnlyCollection<Guid> sectionIds,
+        DateTime now,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Edits an item's values, optionally only while they are still the values the
+    /// caller last saw. Outcomes: <c>updated</c>, <c>item_changed</c>, <c>not_found</c>.
+    ///
+    /// The guard is what makes Undo safe. An inverse write with no condition is a
+    /// blind overwrite: it restores a value from before somebody else's edit and
+    /// erases work nobody was told about. With the expectation supplied, Undo means
+    /// "put back what I changed, provided what I changed is still what is there."
+    /// </summary>
+    Task<ItemUpdateOutcome> UpdateItemValuesGuardedAsync(
+        Guid venueId,
+        Guid itemId,
+        string name,
+        string? description,
+        string? price,
+        ItemValueExpectation? expected,
+        DateTime now,
+        CancellationToken cancellationToken = default);
+
+    /// <inheritdoc cref="ReorderSectionsGuardedAsync"/>
+    Task<ReorderOutcome> ReorderPlacementsGuardedAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        IReadOnlyCollection<Guid> itemIds,
+        DateTime now,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Places an item the library already holds. Outcomes: <c>placed</c>,
+    /// <c>already_on_board</c> (with the section it sits in, so the UI can jump
+    /// rather than duplicate — Q112), <c>ceiling_reached</c>, <c>section_missing</c>,
+    /// <c>item_missing</c>.
+    /// </summary>
+    Task<PlaceExistingOutcome> PlaceExistingItemAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid itemId,
+        int itemsPerMenuLimit,
+        DateTime now,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Takes an item off one board. The item stays in the library (Q97).</summary>
+    Task<bool> RemoveItemFromMenuAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid itemId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// The add row's search over the whole venue library, 86'd items included
+    /// (Q112). Bounded, and wildcards typed by a person are matched literally.
+    /// </summary>
+    Task<IReadOnlyCollection<Item>> SearchItemsAsync(
+        Guid venueId,
+        string? query,
+        int take,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Which boards these items sit on, for "also on Late Night" (Q123).</summary>
+    Task<IReadOnlyCollection<ItemBoard>> GetItemBoardsAsync(
+        Guid venueId,
+        IReadOnlyCollection<Guid> itemIds,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyCollection<PlacedMenuItem>> GetPlacedItemsForVenueAsync(
         Guid venueId,
         CancellationToken cancellationToken = default);
@@ -334,7 +441,74 @@ public sealed record ScreenShowing(
     DateTime? PublishedUtc,
     string? Author);
 
-public sealed record DraftSnapshots(string? Published, string? Working, long PublishedVersion);
+public static class SectionOutcomes
+{
+    public const string Created = "created";
+    public const string Deleted = "deleted";
+    public const string MenuMissing = "menu_missing";
+    public const string SectionMissing = "section_missing";
+}
+
+public static class ReorderOutcomes
+{
+    public const string Reordered = "reordered";
+
+    /// <summary>
+    /// The list the caller sent is no longer exactly what the menu holds — someone
+    /// added or removed something in between. Refused rather than applied to the
+    /// part that still matches, which would leave the rest at stale sort orders.
+    /// </summary>
+    public const string OrderStale = "order_stale";
+}
+
+public static class PlaceExistingOutcomes
+{
+    public const string Placed = "placed";
+    public const string AlreadyOnBoard = "already_on_board";
+    public const string CeilingReached = "ceiling_reached";
+    public const string SectionMissing = "section_missing";
+    public const string ItemMissing = "item_missing";
+}
+
+public sealed record SectionCreateOutcome(string Outcome, int SortOrder);
+
+public sealed record SectionDeleteOutcome(string Outcome, int ReleasedItemCount);
+
+public sealed record ReorderOutcome(string Outcome, int Moved);
+
+/// <summary>
+/// The values a caller believes an item still holds. Compared under the same lock
+/// that writes, because comparing them in a read beforehand proves nothing about
+/// the moment of the write.
+/// </summary>
+public sealed record ItemValueExpectation(string Name, string? Description, string? Price);
+
+/// <summary>
+/// The result of a guarded edit, carrying the values now in place when it refused
+/// — so the surface can say what it found rather than only that it gave up.
+/// </summary>
+public sealed record ItemUpdateOutcome(string Outcome, string? Name, string? Description, string? Price);
+
+/// <summary>
+/// ExistingSectionId is set only for <c>already_on_board</c>: it is where the item
+/// already sits, which is what the UI needs to jump there instead of placing a
+/// second copy.
+/// </summary>
+public sealed record PlaceExistingOutcome(
+    string Outcome,
+    int ItemCountOnMenu,
+    int SortOrder,
+    Guid? ExistingSectionId);
+
+/// <summary>One board an item sits on, named rather than counted.</summary>
+public sealed record ItemBoard(Guid ItemId, Guid MenuId, string MenuName);
+
+public sealed record DraftSnapshots(
+    string? Published,
+    string? Working,
+    long PublishedVersion,
+    DateTime? PublishedUtc,
+    string? PublishedBy);
 
 /// <summary>What happened to a put-away or put-back; see <see cref="PutAwayOutcomes"/>.</summary>
 public sealed record PutAwayOutcome(string Outcome, int ActiveMenuCount);

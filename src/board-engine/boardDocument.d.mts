@@ -50,13 +50,26 @@ export type BoardItem = {
   description: string | null;
   /** As typed, or `missingPrice` when none was ever entered. */
   price: string;
+  /**
+   * 86'd right now. Always false on a guest document, because a guest document
+   * never contains one — it is only ever true where a surface asked to keep them.
+   */
+  isUnavailable: boolean;
 };
+
+/**
+ * `keepUnavailable` is the editing surface's exception: an 86'd item stays in the
+ * document, marked, because you cannot turn back on what the surface has hidden
+ * from you (Q104). A guest board never sets it.
+ */
+export type BoardDocumentOptions = { keepUnavailable?: boolean };
 
 export const missingPrice: string;
 
 export function buildBoardDocument(
   board: BoardInput | null | undefined,
-  unavailableItemIds?: Iterable<string> | null
+  unavailableItemIds?: Iterable<string> | null,
+  options?: BoardDocumentOptions
 ): BoardDocument;
 
 export function isBoardEmpty(document: BoardDocument | null | undefined): boolean;

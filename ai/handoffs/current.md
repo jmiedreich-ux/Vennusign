@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-10, after Menus Milestone 2 merged.
+Updated 2026-08-10, after Menus Milestone 3 was built and gated.
 
 ## Current State
 
@@ -10,6 +10,7 @@ Updated 2026-08-10, after Menus Milestone 2 merged.
 - **The planning reset produced the Menus feature.** Design authority: `docs/design/approved/menus/` (`decisions.md` wins conflicts). All 208 register questions are resolved in `docs/features/menus/open-questions.md`; the six-milestone plan in `docs/features/menus/milestone-plan.md` is reconciled with every answer.
 - **Milestone 1 is merged.** PR #685 merged to `master` on 2026-08-09 as `cd449a3`, on 13 green exact-head checks at `2977bc3`; branch `feature/menus-m1-spine` is deleted, issue #684 closed. It was reworked five times: independent reviews #2 through #6 each returned REQUEST_CHANGES and each found real defects. All are closed, every one with a regression test verified to fail with its fix reverted.
 - **Milestone 1 is accepted** (owner, 2026-08-09). Milestone 1 shipped no new UI, and `AGENTS.md` gives a schema-only milestone a demo script rather than a workbook walk: `scripts/run-m1-demo.ps1` passes 12 of 12, including customer-visible assertions of what each screen is actually showing. `m1-acceptance-record.json` stays **superseded** — it was signed 2026-08-08 against the authored-draft implementation — and is kept as history; this note is the acceptance record. **Milestone 2 is unblocked.**
+- **Milestone 3 is built, reviewed, answered, and awaiting acceptance** on `feature/menus-m3-builder` (issue #690). The builder: four columns, canvas-as-preview, the add row, the bulk drawer, item drag, undo/redo, the publish bar. Six decisions were taken by judgment at the readiness pass — all provisional, all recorded in #690 — because the owner asked that ambiguity not block progress overnight. An independent review returned **REQUEST_CHANGES with seven findings, all of them real**; an eighth was found in the review prompt itself. All eight are fixed at `b59d2d1`. Detail in §Milestone 3 readiness pass, §Milestone 3 — built and gated, and §Milestone 3 — what the independent review cost.
 - **Milestone 2 is merged and accepted.** Owner ran the acceptance workbook 2026-08-10: 11 of 11 Pass, closure "Accept Milestone 2", record in `docs/features/menus/m2-acceptance-record.json`. One independent review, three blocking defects, all fixed at `4c61aa2`; the owner waived the second review that the first had asked for and closed the milestone on it. **Milestone 3 is unblocked.** Detail in §Milestone 2 — built and accepted.
 - **The register has one open question again: Q209**, deferred by the owner at M2 acceptance. The ⋯ card actions sit over the board and, now that Q98 removed the venue-name strip, they cover guest content — the first item's price on the accepted build. It ships on its provisional default until settled.
 - **The save model is settled: the draft is derived, not authored** (owner decision, milestone-plan §The save model). The live rows are the working state; the screens show the last published snapshot; the draft is the computed difference. Migration 058 creates no draft table, and the legacy editor now writes through `Items`/`Placements` so no path can change a screen without a publish.
@@ -24,11 +25,28 @@ Updated 2026-08-10, after Menus Milestone 2 merged.
 
 ## Exact Next Action
 
-1. **Begin Menus Milestone 3 — builder and adding items.** Milestone 2 is merged and
-   accepted; PR #689 closed issue #687. Carry its standing instruction: **browser
-   assertions ship with the surface, not a step later.** Q209 is open and running on its
-   provisional default — settle it in milestone 3 if the builder touches the card, and do
-   not treat the provisional as decided.
+1. **The owner reruns the Menus Milestone 3 acceptance workbook.** The 2026-08-10
+   record remains **"Needs adjustment"**: 11 Pass, 2 Fail, 2 Needs Adjustment. Its
+   findings are implemented and locally gated, but that old record does not authorize
+   merge. After the rerun, the owner supplies the deferred visual notes as the second
+   pass promised in `docs/features/menus/m3-acceptance-findings.md`.
+
+   Remediation removed the invented green availability panel, repaired real-mouse
+   handle-origin drag and added the insertion line, selected the previous/first
+   surviving section after deletion, moved delete into each Sections row, removed the
+   duplicate name field, changed workbook Undo to the on-screen button, and pre-seeded
+   Harbor Lemonade on two menus. The owner reaffirmed that mobile interactions are out
+   of scope (Q158/#681); desktop interaction is the M3 gate.
+
+2. ~~Run the Menus Milestone 3 acceptance workbook~~ — done 2026-08-10, see above. Original text:
+   `docs/features/menus/m3-acceptance-workbook.html`, **fifteen** checks, about twelve
+   minutes. Two are marked as judgment calls rather than test results and are the ones
+   that most need an owner: the shared-price line (Q5's follow-up, resolved by judgment
+   while the owner slept) and whether a never-published menu should offer no discard
+   at all. **Checks 11–13 are new**: they cover the three behaviours the independent
+   review found missing — the canvas-heading rename, the bulk drawer and item drag —
+   all built since. Milestone 3 is on `feature/menus-m3-builder` (issue **#690**); the
+   PR is open, and the review's findings are answered at `b59d2d1`.
 2. Standing owner decisions carried out of Milestone 1: audit record kept as is (#677),
    legacy columns kept, and the three menu capabilities to become separately grantable
    (#686).
@@ -339,9 +357,268 @@ five reviews and milestone 2 needed one, which is the evidence the owner weighed
 by stashing every M2 change and re-running. `#688` now covers all four; neither suite is
 in the routine gate, which is the actual defect.
 
+## Milestone 3 readiness pass — 2026-08-10
+
+The owner asked that M3 go through the dev process before coding, as M2 did, and — being
+asleep — that ambiguity be resolved by judgment rather than left blocking. Every call
+below is **provisional and cheap to overturn**; each names its reasoning.
+
+### The complete user behaviour
+
+*A person opens one menu, changes what it says — a price, a name, an item, a section,
+the order things sit in — sees the board change as they type because the canvas is the
+board, and then decides, deliberately, to put it on the screens.*
+
+Immediately before: the shelf card (M2). Immediately after: the screens, via Publish;
+or back to the shelf via the breadcrumb. The same behaviour lives in three other places
+that must agree — the shelf's card render, the publish diff, and (from M4) the TV.
+
+### Path map
+
+**In:** card click · `#/menu/{menuId}` deep link **(new — the builder gets an address)** ·
+back from Play · redirect after create (M6). **Unvalidated today:** all of them; the
+builder does not exist.
+
+**States that must render:** empty menu (no sections) · section with no items · item with
+no price (quiet flag, publish not blocked, Q113) · 86'd item (selectable, editable,
+red-tinted panel, Q104) · nothing selected (inspector holds its place, Q106) · never
+published · put-away menu open for editing · loading · API error · save failure (amber
+byline, retry, Publish blocked, Q197) · 401 mid-edit (holds the change, sends after
+sign-in, Q199) · permission denied · no screens paired ("No screens yet", Q101).
+
+**Refusals the UI must speak:** ceiling reached (items per menu) · name blank or >200
+(reverts on blur, Q119) · description >1000 · publish conflict (a screen another menu now
+owns) · publish while a save is unconfirmed · stale act after someone else published.
+
+**Out:** Publish · breadcrumb to the shelf · Play (visible, honest blocked state, Q102) ·
+browser refresh mid-edit · leave and return.
+
+### Invariants M3 gains
+
+- **An item appears at most once on a board.** The schema enforces once per *section*
+  (`UQ_Placements_SectionItem`) but not once per *menu*, so Q112's "picking it jumps
+  instead of duplicating" is currently a UI promise with nothing behind it.
+- **No two placements in a section share a sort order** — otherwise board order depends
+  on a tiebreaker nobody chose.
+- **A deleted section leaves no placement behind**, and never deletes an item.
+- **Every placement's section belongs to its menu** — already enforced by
+  `FK_Placements_SectionOnMenu`; asserted so a future schema edit cannot quietly drop it.
+
+### Ready
+
+- The derived-draft model means **the builder needs no draft plumbing at all**:
+  `MenuSnapshot.Diff` already compares name, theme, dwell, loop warning, screens,
+  sections, items and placements, so every builder edit produces its own draft change
+  and the count cannot disagree with what Publish ships.
+- `IContentRepository` already carries most of the writes: `CreateItemOnMenuAsync`,
+  `CreatePlacementAsync`, `RemovePlacementAsync`, `ReorderPlacementsAsync`,
+  `UpdateItemAsync`, `GetItemsAsync` (the library search), `GetPlacementsForItemAsync`
+  ("also on Late Night"), `GetWorkingSnapshotAsync` (the canvas's board).
+- The board engine renders the canvas as-is — `BoardSurface = "preview"` already exists
+  for the annotations flag (Q135).
+- Design authority is production-detailed: four columns at 212/flex/296, the six
+  inspector controls, the publish bar, the selection ring `#2a78d6` (already a token).
+
+### Decisions taken in this pass
+
+1. **Design follow-up 1 is Q5, not Q76** — the milestone plan cites the wrong question.
+   Q76 is refresh cadence; **Q5** carries the flag ("the editing flow must feel easy —
+   possibly a quick price-change mode — design follow-up required before slice 3 builds
+   the inspector flow").
+   **Resolved without inventing a mode:** a shared item's inspector states the fact
+   quietly and permanently under the price — *"Also on Late Night and Brunch — they show
+   the new price when you publish them"* — reusing Q123's locked vocabulary (two names,
+   then "on 3 boards"). No dialog, no confirmation step. A modal on every price edit is
+   the opposite of "feels easy", and a separate quick-price *mode* is undesigned, named
+   in no milestone, and would be the second editor that decision 15 and M2c's read-only
+   rule both exist to refuse.
+2. **The builder gets its own address**, `#/menu/{menuId}` — closing the note M2 left in
+   `App.tsx`. Refresh mid-edit and Back both survive, which the DoD navigation group
+   requires and today's `editingMenuId` React state cannot do.
+3. **Menu themes: still no table, and no attach write.** The picker ships and shows
+   Q86's empty state from `GET content/menu-themes` → `[]`. A theme that cannot exist
+   cannot be attached, and creating an empty table with no writer repeats exactly the
+   dead-schema problem the migration baseline flagged (`AuthorityRoles`,
+   `LayoutTemplates`). Table and attach land with the theme editor that first writes one.
+4. **`BackOfficeMenusController` is retired**, its builder-relevant writes consolidated
+   onto `api/back-office/content` — one base for one model, finishing step 0's rename.
+   `run-m1-demo.ps1` and `BackOfficeMenusControllerTests` move with it. The legacy
+   `MenuSectionsEditor`, `MenuItemsEditor` and `QuickUpdateMode` components go in the
+   same PR, with their specs **rewritten, not deleted** — `menu-save-race.spec.ts` guards
+   a real stale-overwrite race and must be re-expressed against the builder's save model.
+5. **Sections are deleted, not archived** (Q96). `MenuSections.IsActive` loses its last
+   writer; the migration hard-deletes any `IsActive = 0` section and its placements,
+   names what it discards, and drops the column. Leaving the column and its
+   `IsActive = 1` filters would mean a future writer of 0 silently changes a live board.
+6. **Reorder becomes one guarded write.** Both section and placement reorder today read
+   the current set, validate completeness in C#, then write — unlocked. A concurrent add
+   between the two makes the write describe a set that no longer exists. This is the
+   **fourth** instance of this codebase's most common defect shape ("two values that must
+   describe the same instant are read once, under one lock").
+
+### Gaps M3 must close before the builder can be honest
+
+- No working-board read: the canvas needs the menu **as it stands**, not the published
+  board the shelf draws. `GetWorkingSnapshotAsync` exists; nothing exposes it.
+- No section delete-that-releases-placements; no placement remove wired to a UI;
+  no library search read; no "which boards is this item on" read.
+- `ReorderPlacementsAsync` trusts a partial list: omitted placements keep stale sort
+  orders and can collide. The service validates completeness, but outside the write.
+- `MenuItemManagementService.ReorderAsync` reports "Menu section does not exist" for a
+  section that exists and is merely empty.
+- Undo/redo has no model. Design: every builder mutation is a command carrying its
+  inverse; ⌘Z issues the inverse write; session-scoped, capped, never persisted, never
+  named in settings (decision 7). A failed inverse says so rather than clobbering.
+- ⌘K (Q121), the "Viewing as" list (Q101), the bulk-place drawer (Q95/Q124) and the
+  publish bar's per-screen chips with the ≤6 cutover (Q161/Q167/Q168) have no code.
+
+### Records that state something untrue (fixed at M3 start)
+
+- `milestone-plan.md` design follow-up 1 cites **Q76**; the flag is **Q5**.
+- `README.md` (design authority) M2 inspector still lists "two checkboxes (Feature on
+  the board, Add a photo)" and calls them "**Six controls total**" — Q107 and Q108 put
+  both out of scope, so the inspector has four.
+
+## Milestone 3 — built and gated — 2026-08-10
+
+Branch `feature/menus-m3-builder`, issue **#690**. Three steps, a gate each, then a
+critique pass and the full gate.
+
+**What it delivers.** The four-column builder at its own address `#/menu/{menuId}`:
+a section rail that navigates, a canvas that IS the preview, an inspector of four
+controls, and the publish bar. Adding items with search that jumps rather than
+duplicates. Undo and redo. ⌘K over the board. The theme picker's honest empty
+state. Migration 061, which moved two rules the product only promised into the
+schema. Nine content endpoints where every rule is decided inside the statement
+that writes it.
+
+**Retired with it**, per AGENTS.md: `MenuSectionsEditor`, `MenuItemsEditor`,
+`QuickUpdateMode`, the legacy section/item routes and their client, and four
+back-office specs — with their specs **rewritten, not deleted**.
+
+**Six decisions taken by judgment**, all provisional and recorded in #690, because
+the owner asked that ambiguity not block progress overnight. The one most worth an
+owner's eye is Q5's design follow-up: shared-price editing "must feel easy", and
+the resolution was a quiet statement of fact under the price rather than a
+confirmation step or a separate quick-price mode.
+
+**What the browser caught that 190 unit tests could not**: board type six times too
+large, a second page header stacked over the builder, a selection ring that never
+drew, duplicate exports the typecheck passed and the bundler refused, and — from
+milestone 2's shelf — an amber strip that swallowed clicks, so the one menu you
+most wanted to open was the one you could not.
+
+**The critique pass** against `docs/design/approved/menus/README.md` §M2/§M2a found
+five gaps and all five are closed: redo was a disabled button, "Viewing as" was a
+label rather than a dropdown, the 86 note had no time, and "go back to…" and
+"Review first" were missing from the publish bar.
+
+**Not shipped, and named:** the overflow warning ("Two words over — wraps to 3
+lines on Patio") needs reported screen geometry, which arrives in milestone 4.
+Cross-section drag waits for milestone 5 (Q103) — **within-section item drag does
+not, and was missing until the review; it ships now.** Keyboard reorder (#672) and the
+full add-row keyboard flow (Q122) stay backlogged; the rail keeps its ↑/↓ buttons
+until #672 lands, because replacing them with a drag handle first would remove
+reordering from keyboard users entirely.
+
+**Gate.** 433 API unit · 89 data integration on a fresh migration with the
+invariant sweep · 190 back office · 98 platform operations · 118 Playwright across
+desktop and mobile · 21/21 builder API checks over real HTTP · M1 demo 12/12. The
+four failures on **#688** remain, all pre-existing.
+
+## Milestone 3 — what the independent review cost — 2026-08-10
+
+The owner's chosen agent reviewed PR #691 at `d521cd4` and returned
+**REQUEST_CHANGES with seven findings. Every one was real**, verified here before
+anything was changed. An eighth was found in the review prompt itself. All eight
+are fixed at `b59d2d1`, each with a Playwright spec that was **run with its own fix
+reverted and observed to fail**.
+
+**The gate had a hole exactly the shape of the worst finding.** `npm run build`
+failed with three `TS2322`s on `inert`, and nothing ran it: `validate.ps1` built
+`src/display` and had never heard of `src/back-office`. 190 unit tests and 130
+Playwright specs were green against a branch whose back office did not compile,
+because the dev server transforms per module and never type-checks the project.
+`validate.ps1` now builds and tests **both** front ends. That is the durable fix;
+the `inert` typing itself is one declaration file.
+
+**Two recorded answers were named in the milestone plan and simply not built.**
+Q197 (a failed save retries automatically, Publish waits) and Q199 (a 401 shows a
+sign-back-in prompt, holds the change, sends it after). Both existed as copy — the
+amber byline was drawn — with no mechanism under them. A byline that says
+"retrying…" while nothing retries is worse than an error, because it is a promise.
+
+**Undo was a blind overwrite.** It sent the whole previously-captured row
+unconditionally, so undoing your own price edit erased a colleague's name,
+description and price along with it, silently. Inverses now carry the values they
+expect to find, compared under the lock that writes; `item_changed` comes back in
+the server's words. The catch block had claimed this protection for weeks — it
+could never fire, because an unconditional write does not fail.
+
+**Three named M3 behaviours were absent**: Q96's rename-by-clicking-the-canvas-
+heading (the heading was a `<p role="presentation">`), Q124's "Add many at once"
+drawer, and Q103's within-section item drag — where the pill was drawn correctly
+on hover and on selection all along and dragged nothing, with `reorderMenuItems`
+imported by the builder and called from nowhere.
+
+**Two lessons worth carrying, both about evidence.**
+
+1. *A do-not-file list is an authority claim, and mine was wrong.* The review
+   prompt told the reviewer that item drag was milestone 5 "per Q103". Q103 defers
+   only **cross-section** moves. An in-scope gap was placed out of bounds, in the
+   same document that warned the reviewer against citing a recorded answer they
+   had not read. **Quote the register entry into the prompt itself** — if the words
+   have to be pasted, the mistake cannot survive being written down.
+2. *A spec can pass against the defect it names.* The first version of the 86-note
+   spec 86'd two items and asserted each had a note — which the one-shared-string
+   bug also satisfies, because both rows got a note. It needed a test-support
+   endpoint to backdate one 86 before the notes could differ at all. Written and
+   run, it would have been evidence of nothing. **Revert the fix and watch the spec
+   fail** is not a formality; it is the only thing that distinguishes the two.
+
+And one the browser caught that nothing else could: moving the 86 notes into a
+`useMemo` below the loading early-return changed the hook count and blanked the
+entire application. 190 unit tests passed and the production build completed while
+the app rendered nothing at all.
+
 ## Boundaries
 
 - Milestones 1 and 2 are merged and accepted, so milestone 3 may start. Milestones 4–6 stay closed until their predecessor is merged and accepted in turn.
 - Do not revive any cancelled track, phase or void work package without fresh owner approval.
 - Do not implement backlog issues #670–#683 without owner scheduling.
 - Design follow-ups (milestone-plan §Design follow-ups) must be resolved before the milestone that consumes them.
+
+## Milestone 3 owner-acceptance remediation — 2026-08-10
+
+**What this established.** The owner's first workbook findings are implemented.
+Available items now show a plain availability switch; only the 86 state is a red
+panel. The visible board handle is a real hit target, pointer drag works at human
+speed, a scale-correct insertion line follows it, and the order survives refresh.
+Section delete lives on each rail row, keeps its confirmation and library-release
+message, selects the previous surviving section (or the first if the deleted row
+was first), and leaves the empty-board add affordance when appropriate. Canvas-
+heading rename is the only section-name editor. Case 6 is pre-seeded with Harbor
+Lemonade on Acceptance Menu and Harbor Evening Menu; case 15 uses on-screen Undo.
+
+**Evidence.** Each product regression was observed red against its unfixed code:
+the available panel existed; a slow drag from the visible handle failed while a
+row-centre drag passed; the rail-row delete did not exist; the duplicate field did;
+and neutralising the deletion fallback left every remaining rail row unselected.
+Restored fixes pass. The fixture ran twice and returned exactly one shared placement
+on each named menu. Final local gate: back office 190/190 plus production build;
+Playwright 142 passed / 12 explicit skips; builder API 21/21; M1 demo 12/12;
+Data integration 91/91; .NET Debug retained only #688's known DataAccess 228/3 and
+API 433/1 failures; .NET Release solution and display production builds passed.
+CI remains suspended and was not used as a gate.
+
+**Assumed and deliberately bounded.** The owner reaffirmed that mobile interactions
+are out of scope (Q158/#681), so desktop handle drag and bulk placement are the M3
+interaction gates; their mobile Playwright variants are explicit skips. Existing
+mobile crash/layout coverage stays. Keyboard remains out of scope exactly as already
+recorded; existing handlers were not removed. D1's truncated visual notes were not
+chased, by owner instruction.
+
+**Left for the owner.** Rerun `docs/features/menus/m3-acceptance-workbook.html`.
+The existing record remains "Needs adjustment" and M3 does not merge on it. After
+this set is handed back, provide the deferred visual notes for the promised second
+pass. Milestones 4–6 remain blocked.

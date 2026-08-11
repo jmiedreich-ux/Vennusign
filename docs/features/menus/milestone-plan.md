@@ -43,6 +43,8 @@ Two consequences landed with it, both in milestone 1:
 
 ## Cross-cutting rules (from the register)
 
+- **Keyboard is out of scope for this build — owner ruling 2026-08-10, reaffirmed.** Nothing further is built or tested for keyboard, no keyboard findings are filed against these milestones, and no acceptance step may depend on a keystroke. Q202 (canvas reachability) and Q120 (keyboard reorder) were already backlogged to **#672**; this extends that to the build as a whole. It does **not** mean deleting behaviour already shipped and named here — the undo/redo keystroke and ⌘K (Q121) stay in the code; they simply stop being relied on or extended. The owner reversed course on this after it was raised repeatedly; it is settled, and re-raising it is the defect.
+- **Mobile interactions are out of scope for this build — Q158 → #681, owner reaffirmed 2026-08-10.** Desktop browser interaction is the Menus milestone gate. The shared Playwright mobile project may continue to catch accidental layout crashes, but a desktop-only interaction such as item drag is explicitly skipped there rather than gaining an invented touch design.
 - **Timestamps render in the venue's local time** from the venue's stored Timezone — on every Menus surface (Q196). Deviation from today's viewer-clock behavior.
 - **Copy:** natural singular/zero forms everywhere, approved shapes for 2+ (Q181); no possessive phrasing in the draft pill (Q147); banned words (unpublish/supersede/restore/archive) enforced in Menus and rewritten surfaces only, elsewhere logged as copy debt #682 (Q179); criterion 4 reworded to name its deliberate acts (Q187).
 - **Ceilings are tier-configurable** in the entitlement/allowance model, never constants (Q201): defaults ~50 menus/venue, ~500 items/menu, ~2,000-line paste; every refusal names the reason in a plain sentence.
@@ -55,7 +57,7 @@ Two consequences landed with it, both in milestone 1:
 
 ## Design follow-ups (needed before the milestone that consumes them)
 
-1. **Before milestone 3:** quick price-change flow feel (Q76 flag — shared-price edits must feel easy).
+1. **Before milestone 3:** quick price-change flow feel (**Q5** flag — shared-price edits must feel easy). *Corrected 2026-08-10: this line cited Q76, which is about refresh cadence; the flag is Q5's.* **Resolved at the milestone 3 readiness pass (2026-08-10), provisionally:** the inspector states the fact quietly and permanently under the price — "Also on Late Night and Brunch — they show the new price when you publish them", using Q123's locked vocabulary — with no dialog and no separate quick-price mode. A confirmation on every price edit is the opposite of "feels easy", and a second editing mode is undesigned and would be the second editor decision 15 refuses.
 2. **Before milestone 5:** a small design spot for the dwell-setting control (Q9) and the loop-warning threshold (Q175).
 3. **Before milestone 6:** reconcile the "Skip these for now" path with the owner's resolve-at-import rule — a menu with flagged/guessed items must never publish them to a live board; skipping must force resolution before publish or the skip path goes (Q83). Plus a design spot for the near-miss match picker (Q94).
 
@@ -117,3 +119,35 @@ Spreadsheet import; photo import (needs OCR provider + cost decision); POS impor
 
 ## Per-milestone quality gates
 Playwright specs with implementation (seed endpoint per spec, parallel-safe; 20-screen/13-menu scale seed from milestone 2); impeccable detector on every UI edit + a critique/audit pass against the hi-fis before milestone close; independent code review; exact-head CI green; owner acceptance workbook per milestone (decision 17); the 18 acceptance criteria tracked as a running checklist — criterion 18 asserted by a named spec from milestone 2 and re-checked each UI milestone, criteria 11 and 14–17 stamped "deferred to a later build" (Q194); a criterion flips to "met" only with a named spec or review asserting it. **Hosted-agent subjective QA on demand** (owner-approved 2026-08-07): when a milestone carries subjective judgment cases the deterministic specs cannot assert, run them through the Track 1 hosted-agent pattern (`scripts/run-track1-qa.ps1` lineage, ~$1.70/run) before the owner workbook; the cases and cost are noted in that milestone's workbook.
+
+## Acceptance workbook conventions
+
+Each milestone's workbook is built from the last one, so these carry forward rather
+than being rediscovered. Every item here came from an owner running one.
+
+- **Evidence lives with the thing it is evidence of.** Every check takes pasted
+  screenshots (Ctrl+V, drop, or file pick), and so does the closing decision — a shot
+  of what decided it belongs with the decision, not filed under whichever check
+  happened to be open. Images are downscaled before storage; the record lives in
+  `localStorage` and a couple of raw 4K PNGs would fill it and start losing outcomes
+  silently.
+- **Never ask twice for the same thing.** The M3 workbook had a "Decisions on the
+  three flagged items" box restating what the case sections already carried in
+  context; it collected a duplicate or a shrug, and neither is evidence. Removed at
+  the owner's instruction, 2026-08-10.
+- **Recording an outcome advances the workbook** (owner instruction 2026-08-10, from
+  M4 on): choosing Pass, Fail or Needs Adjustment collapses that check and opens the
+  next one. Walking a workbook is a sequence, and the reviewer should not be closing
+  and opening sections by hand between every observation. The last check in a journey
+  opens the first of the next; the last check overall leaves the closing decision in
+  view. Anything already recorded stays reopenable — this is advancing, not locking.
+- **Judgment calls are marked as such** and named in the intro, so an owner knows
+  which cases are asking for a decision rather than an observation.
+- **Checks covering behaviour a review found missing say so**, because an owner
+  walking a shorter list could not have noticed the absence themselves.
+- **The fixture supplies every non-trivial precondition.** An acceptance case does
+  not ask the owner to duplicate, create, pair or otherwise construct the state it
+  is meant to judge. Case 6 in M3 was skipped after "board" was read as "screen";
+  the shared-item condition is now pre-seeded and the step says "two menus".
+- **The closing decision stays disabled** until every check has an outcome, and
+  "Accept" stays disabled while any check is not a Pass.

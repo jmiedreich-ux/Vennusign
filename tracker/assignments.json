@@ -1,9 +1,22 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-10T10:35:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-11T00:31:00Z",
+  "activeAssignments": [
+    {
+      "assignment": "Menus milestone 3 \u2014 menu builder + adding items: acceptance remediation",
+      "issue": 690,
+      "pr": 691,
+      "branch": "feature/menus-m3-builder",
+      "owner": "Codex for JeremyPC",
+      "claimedUtc": "2026-08-11T00:16:00Z",
+      "headAtClaim": "960376d",
+      "status": "acceptance remediation implemented and locally gated; awaiting owner workbook rerun",
+      "startHere": "docs/features/menus/m3-acceptance-findings.md",
+      "notes": "Claimed from the explicit releasedForHandover block at 656eb9c after owner authorization. All acceptance-remediation work is implemented. Every product regression was observed red with its fix absent. Local gate: back office 190/190 and production build; Playwright 142 passed/12 explicit skips; builder API 21/21; M1 demo 12/12; integration 91/91; only the four documented #688 .NET failures; Release build and display build pass. Mobile interactions are out of scope per Q158/#681 and owner reaffirmation. The current acceptance record remains 'Needs adjustment'; owner rerun and the deferred visual-notes pass are next."
+    }
+  ],
   "desktopSessionLock": null,
-  "nextAvailableWorkPackage": "Menus milestone 3 \u2014 builder and adding items (unblocked 2026-08-10; not yet claimed, no issue opened)",
+  "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

@@ -69,6 +69,76 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         }
     }
 
+    /// <summary>
+    /// Migration 061. Two rules the builder leans on, asserted against the schema
+    /// itself rather than against a component that happens to honour them.
+    /// </summary>
+    [Fact]
+    public async Task Migration_DropsTheSectionArchiveFlagAndEnforcesOnePlacementPerBoard()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+
+        // Sections are deleted, not archived (Q96). The column is gone, so no future
+        // writer of 0 can quietly take a section off a live board behind a filter.
+        var archiveFlag = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            SELECT COUNT(*) AS Value FROM sys.columns
+            WHERE object_id = OBJECT_ID(N'dbo.MenuSections', N'U') AND name = N'IsActive';
+            """,
+            new { })).Single().Value;
+        Assert.Equal(0, archiveFlag);
+
+        foreach (var (constraint, expected) in new[]
+        {
+            ("UQ_Placements_MenuItem", 1),
+            // Strictly implied by the above, because FK_Placements_SectionOnMenu
+            // already ties a placement's section to its menu. Kept alongside, it
+            // would only be a weaker duplicate of a rule already stated.
+            ("UQ_Placements_SectionItem", 0)
+        })
+        {
+            var found = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+                "SELECT COUNT(*) AS Value FROM sys.key_constraints WHERE name = @Name;",
+                new { Name = constraint })).Single().Value;
+            Assert.True(found == expected, $"Expected {constraint} count {expected}, found {found}.");
+        }
+    }
+
+    /// <summary>
+    /// Q112's promise - picking an item already on this board jumps to it rather
+    /// than placing a second copy - enforced where it is enforceable. The UI rule
+    /// is the pleasant version; this is the one that survives a second editor, a
+    /// retry, and a caller that never read the design.
+    /// </summary>
+    [Fact]
+    public async Task Placing_TheSameItemTwiceOnOneBoard_IsRefusedBySchema()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var starters = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var mains = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 1);
+
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("olives"), Price = "7" };
+        await repository.CreateItemOnMenuAsync(item, menuId, starters, itemsPerMenuLimit: 500);
+
+        // A different section of the same menu. Legal before 061, and it would have
+        // rendered the same item twice to a guest.
+        await Assert.ThrowsAnyAsync<Exception>(() => repository.CreatePlacementAsync(new Placement
+        {
+            Id = Guid.NewGuid(),
+            VenueId = venueId,
+            MenuId = menuId,
+            MenuSectionId = mains,
+            ItemId = item.Id,
+            SortOrder = 0
+        }));
+
+        var placements = await repository.GetPlacementsAsync(venueId, menuId);
+        Assert.Single(placements.Where(placement => placement.ItemId == item.Id));
+    }
+
     [Fact]
     public async Task Migration_LeavesTheLibraryEmptyAndDoesNotCarryLegacyContent()
     {
@@ -1338,12 +1408,14 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
             menuId, first, itemsPerMenuLimit: 500);
         var version = await PublishCurrentAsync(repository, venueId, menuId);
 
-        // Every way a section can drift: one added, one deactivated, and the order
-        // of what remains swapped.
+        // Every way a section can drift: one added (carrying an item of its own),
+        // one deleted outright, and the order of what remains swapped.
         var added = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 7);
+        var stranded = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("olives"), Price = "7" };
+        await repository.CreateItemOnMenuAsync(stranded, menuId, added, itemsPerMenuLimit: 500);
         await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
             """
-            UPDATE dbo.MenuSections SET IsActive = 0 WHERE Id = @Second;
+            DELETE FROM dbo.MenuSections WHERE Id = @Second;
             UPDATE dbo.MenuSections SET SortOrder = 5 WHERE Id = @First;
             SELECT 1 AS Value;
             """,
@@ -1357,13 +1429,23 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
 
         var restored = MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId));
         Assert.Equal([first, second], restored!.Sections!.Select(section => section.SectionId).ToArray());
-        // The section added since is put away rather than deleted, so its items
-        // stay in the library and nothing it held is rendered.
+
+        // The section added since is DELETED, not hidden (M3: sections are deleted,
+        // not archived - Q96). Hiding it left a row nothing could ever reach again.
         Assert.DoesNotContain(restored.Sections!, section => section.SectionId == added);
-        var stillThere = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
-            "SELECT COUNT(*) AS Value FROM dbo.MenuSections WHERE Id = @Added AND IsActive = 0;",
+        var sectionRows = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            "SELECT COUNT(*) AS Value FROM dbo.MenuSections WHERE Id = @Added;",
             new { Added = added })).Single().Value;
-        Assert.Equal(1, stillThere);
+        Assert.Equal(0, sectionRows);
+
+        // ...and its item is back in the library rather than destroyed with it. That
+        // is the whole of Q96's "nothing is lost": the item was never IN the section,
+        // a placement put it there, so only the placement goes.
+        var placementRows = (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            "SELECT COUNT(*) AS Value FROM dbo.Placements WHERE ItemId = @Item;",
+            new { Item = stranded.Id })).Single().Value;
+        Assert.Equal(0, placementRows);
+        Assert.NotNull(await repository.GetItemAsync(venueId, stranded.Id));
     }
 
     // A restore that cannot put the screens back has not put the menu back, so it
@@ -1661,6 +1743,435 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
 
     // ---- helpers ----------------------------------------------------------------------
 
+    // ---- the builder's writes -------------------------------------------------
+
+    [Fact]
+    public async Task AddSection_LandsAtTheEndAndShowsUpAsADraftChange()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await PublishCurrentAsync(repository, venueId, menuId);
+
+        var added = Guid.NewGuid();
+        var outcome = await repository.CreateSectionOnMenuAsync(venueId, menuId, added, "Puddings", DateTime.UtcNow);
+
+        Assert.Equal(SectionOutcomes.Created, outcome.Outcome);
+        Assert.Equal(1, outcome.SortOrder);
+
+        // The builder writes working state and nothing else: the draft follows on
+        // its own, because it is the difference from what the screens are showing.
+        var snapshots = await repository.GetDraftSnapshotsAsync(venueId, menuId);
+        Assert.Contains(
+            MenuSnapshot.Diff(snapshots.Published, snapshots.Working),
+            change => change.TargetId == added);
+    }
+
+    [Fact]
+    public async Task AddSection_RefusesAMenuOfAnotherVenue()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var mine = await SeedVenueAsync(dataAccess);
+        var theirs = await SeedVenueAsync(dataAccess);
+        var theirMenu = await SeedMenuAsync(dataAccess, theirs);
+
+        var outcome = await repository.CreateSectionOnMenuAsync(mine, theirMenu, Guid.NewGuid(), "Theirs", DateTime.UtcNow);
+
+        Assert.Equal(SectionOutcomes.MenuMissing, outcome.Outcome);
+    }
+
+    /// <summary>
+    /// Q96's "nothing is lost", proved on rows: the placements go, the items do not.
+    /// </summary>
+    [Fact]
+    public async Task DeleteSection_ReleasesItsItemsBackToTheLibrary()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+
+        var first = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("wings"), Price = "12" };
+        var second = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("fries"), Price = "6" };
+        await repository.CreateItemOnMenuAsync(first, menuId, sectionId, itemsPerMenuLimit: 500);
+        await repository.CreateItemOnMenuAsync(second, menuId, sectionId, itemsPerMenuLimit: 500);
+
+        var outcome = await repository.DeleteSectionAsync(venueId, menuId, sectionId);
+
+        Assert.Equal(SectionOutcomes.Deleted, outcome.Outcome);
+        Assert.Equal(2, outcome.ReleasedItemCount);
+        Assert.Empty(await repository.GetPlacementsAsync(venueId, menuId));
+        Assert.NotNull(await repository.GetItemAsync(venueId, first.Id));
+        Assert.NotNull(await repository.GetItemAsync(venueId, second.Id));
+    }
+
+    /// <summary>
+    /// (MenuId, SortOrder) is unique, so a swap that writes both rows in one pass
+    /// collides half-way through. The write parks every section out of the range
+    /// first — this is the case that proves it.
+    /// </summary>
+    [Fact]
+    public async Task ReorderSections_SwapsTwoWithoutCollidingOnTheUniqueSortOrder()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var first = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var second = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 1);
+
+        var outcome = await repository.ReorderSectionsGuardedAsync(venueId, menuId, [second, first], DateTime.UtcNow);
+
+        Assert.Equal(ReorderOutcomes.Reordered, outcome.Outcome);
+        var sections = MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId))!.Sections!;
+        Assert.Equal([second, first], sections.Select(section => section.SectionId).ToArray());
+    }
+
+    /// <summary>
+    /// The defect this guard exists for: the old path read the current set, checked
+    /// it in C#, then wrote. A section added in that window was left out of the
+    /// numbering and kept a stale sort order.
+    /// </summary>
+    [Fact]
+    public async Task ReorderSections_RefusesAListThatNoLongerMatchesTheMenu()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var first = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var second = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 1);
+
+        // Somebody else adds a section while this drag is in flight.
+        await repository.CreateSectionOnMenuAsync(venueId, menuId, Guid.NewGuid(), "Late arrival", DateTime.UtcNow);
+
+        var outcome = await repository.ReorderSectionsGuardedAsync(venueId, menuId, [second, first], DateTime.UtcNow);
+
+        Assert.Equal(ReorderOutcomes.OrderStale, outcome.Outcome);
+
+        // Refused whole: the two named sections keep the order they had, rather than
+        // being half-applied around the one the caller never saw.
+        var sections = MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId))!.Sections!;
+        Assert.Equal(first, sections[0].SectionId);
+        Assert.Equal(second, sections[1].SectionId);
+    }
+
+    [Fact]
+    public async Task ReorderItems_RefusesAListThatNoLongerMatchesTheSection()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+
+        var first = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("a"), Price = "1" };
+        var second = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("b"), Price = "2" };
+        var third = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("c"), Price = "3" };
+        await repository.CreateItemOnMenuAsync(first, menuId, sectionId, itemsPerMenuLimit: 500);
+        await repository.CreateItemOnMenuAsync(second, menuId, sectionId, itemsPerMenuLimit: 500);
+        await repository.CreateItemOnMenuAsync(third, menuId, sectionId, itemsPerMenuLimit: 500);
+
+        // A list missing one placement is exactly the shape that used to leave the
+        // omitted row at a stale sort order, colliding with a rewritten one.
+        var outcome = await repository.ReorderPlacementsGuardedAsync(
+            venueId, menuId, sectionId, [second.Id, first.Id], DateTime.UtcNow);
+
+        Assert.Equal(ReorderOutcomes.OrderStale, outcome.Outcome);
+
+        var items = MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId))!
+            .Sections!.Single().Items!;
+        Assert.Equal([first.Id, second.Id, third.Id], items.Select(item => item.ItemId).ToArray());
+    }
+
+    /// <summary>
+    /// The guard that makes Undo safe. An inverse write carries the values it
+    /// expects to find; if somebody else has edited the item since, it refuses and
+    /// changes nothing rather than restoring an older value over their work.
+    /// </summary>
+    [Fact]
+    public async Task GuardedItemEdit_RefusesWhenSomebodyElseChangedItFirst()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+
+        var item = new Item
+        {
+            Id = Guid.NewGuid(),
+            VenueId = venueId,
+            Name = fixture.UniqueValue("chowder"),
+            Description = "with oyster crackers",
+            Price = "12.50"
+        };
+        await repository.CreateItemOnMenuAsync(item, menuId, sectionId, itemsPerMenuLimit: 500);
+
+        // Editor A raises the price. This is a plain edit — no expectation.
+        var raised = await repository.UpdateItemValuesGuardedAsync(
+            venueId, item.Id, item.Name, item.Description, "14.00", expected: null, DateTime.UtcNow);
+        Assert.Equal("updated", raised.Outcome);
+
+        // Editor B, elsewhere, edits the same item afterwards.
+        var theirs = await repository.UpdateItemValuesGuardedAsync(
+            venueId, item.Id, "Editor B name", "editor B later", "99", expected: null, DateTime.UtcNow);
+        Assert.Equal("updated", theirs.Outcome);
+
+        // Editor A presses Undo. It expects to find what A wrote, and does not.
+        var undone = await repository.UpdateItemValuesGuardedAsync(
+            venueId,
+            item.Id,
+            item.Name,
+            item.Description,
+            "12.50",
+            new ItemValueExpectation(item.Name, item.Description, "14.00"),
+            DateTime.UtcNow);
+
+        Assert.Equal("item_changed", undone.Outcome);
+
+        // B's values are intact — all three of them, not just the guarded one.
+        var live = await repository.GetItemAsync(venueId, item.Id);
+        Assert.NotNull(live);
+        Assert.Equal("Editor B name", live!.Name);
+        Assert.Equal("editor B later", live.Description);
+        Assert.Equal("99", live.Price);
+    }
+
+    /// <summary>
+    /// The same guard, satisfied. NULL and empty are one absence: the API normalises
+    /// an empty description to NULL going in, so an Undo echoing back what it was
+    /// handed must not refuse itself over which of the two it sent.
+    /// </summary>
+    [Fact]
+    public async Task GuardedItemEdit_AppliesWhenNothingMovedAndTreatsEmptyAsNull()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+
+        var item = new Item
+        {
+            Id = Guid.NewGuid(),
+            VenueId = venueId,
+            Name = fixture.UniqueValue("soda"),
+            Description = null,
+            Price = "3.00"
+        };
+        await repository.CreateItemOnMenuAsync(item, menuId, sectionId, itemsPerMenuLimit: 500);
+
+        var undone = await repository.UpdateItemValuesGuardedAsync(
+            venueId,
+            item.Id,
+            item.Name,
+            null,
+            "2.50",
+            new ItemValueExpectation(item.Name, string.Empty, "3.00"),
+            DateTime.UtcNow);
+
+        Assert.Equal("updated", undone.Outcome);
+
+        var live = await repository.GetItemAsync(venueId, item.Id);
+        Assert.Equal("2.50", live!.Price);
+    }
+
+    /// <summary>
+    /// Q112: an item already on this board is not a second copy and not an error.
+    /// The caller is told which section it sits in, so the UI can jump there.
+    /// </summary>
+    [Fact]
+    public async Task PlacingAnItemAlreadyOnTheBoard_SaysWhereItIsAndPlacesNothing()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var starters = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var mains = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 1);
+
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("olives"), Price = "7" };
+        await repository.CreateItemOnMenuAsync(item, menuId, starters, itemsPerMenuLimit: 500);
+
+        var outcome = await repository.PlaceExistingItemAsync(
+            venueId, menuId, mains, item.Id, itemsPerMenuLimit: 500, DateTime.UtcNow);
+
+        Assert.Equal(PlaceExistingOutcomes.AlreadyOnBoard, outcome.Outcome);
+        Assert.Equal(starters, outcome.ExistingSectionId);
+        Assert.Single(await repository.GetPlacementsAsync(venueId, menuId));
+    }
+
+    [Fact]
+    public async Task PlacingAnExistingItem_LandsAtTheEndAndCountsAgainstTheCeiling()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+
+        var placed = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("first"), Price = "1" };
+        await repository.CreateItemOnMenuAsync(placed, menuId, sectionId, itemsPerMenuLimit: 500);
+
+        // A library item that is on no board yet.
+        var loose = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("loose"), Price = "2" };
+        await repository.CreateItemAsync(loose);
+
+        var ok = await repository.PlaceExistingItemAsync(
+            venueId, menuId, sectionId, loose.Id, itemsPerMenuLimit: 500, DateTime.UtcNow);
+
+        Assert.Equal(PlaceExistingOutcomes.Placed, ok.Outcome);
+        Assert.Equal(1, ok.SortOrder);
+        Assert.Equal(2, ok.ItemCountOnMenu);
+
+        // At the ceiling the refusal is the outcome, not an exception and not a
+        // partial write.
+        var third = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("third"), Price = "3" };
+        await repository.CreateItemAsync(third);
+        var refused = await repository.PlaceExistingItemAsync(
+            venueId, menuId, sectionId, third.Id, itemsPerMenuLimit: 2, DateTime.UtcNow);
+
+        Assert.Equal(PlaceExistingOutcomes.CeilingReached, refused.Outcome);
+        Assert.Equal(2, (await repository.GetPlacementsAsync(venueId, menuId)).Count);
+    }
+
+    [Fact]
+    public async Task RemovingAnItemFromABoard_LeavesItInTheLibraryAndOnOtherBoards()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var lunch = await SeedMenuAsync(dataAccess, venueId);
+        var dinner = await SeedMenuAsync(dataAccess, venueId);
+        var lunchSection = await SeedSectionAsync(dataAccess, venueId, lunch, sortOrder: 0);
+        var dinnerSection = await SeedSectionAsync(dataAccess, venueId, dinner, sortOrder: 0);
+
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("shared"), Price = "9" };
+        await repository.CreateItemOnMenuAsync(item, lunch, lunchSection, itemsPerMenuLimit: 500);
+        await repository.PlaceExistingItemAsync(venueId, dinner, dinnerSection, item.Id, 500, DateTime.UtcNow);
+
+        Assert.True(await repository.RemoveItemFromMenuAsync(venueId, lunch, item.Id));
+
+        Assert.Empty(await repository.GetPlacementsAsync(venueId, lunch));
+        Assert.Single(await repository.GetPlacementsAsync(venueId, dinner));
+        Assert.NotNull(await repository.GetItemAsync(venueId, item.Id));
+    }
+
+    /// <summary>
+    /// Wildcards typed into a search box are characters, not operators: somebody
+    /// looking for "50% off" should not be shown the whole library.
+    /// </summary>
+    [Fact]
+    public async Task SearchingTheLibrary_TreatsTypedWildcardsAsText()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+
+        var literal = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("50% off pitcher"), Price = "20" };
+        var other = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("house red"), Price = "8" };
+        await repository.CreateItemAsync(literal);
+        await repository.CreateItemAsync(other);
+
+        var hits = await repository.SearchItemsAsync(venueId, "%", take: 50);
+
+        Assert.DoesNotContain(hits, item => item.Id == other.Id);
+        Assert.Contains(hits, item => item.Id == literal.Id);
+    }
+
+    [Fact]
+    public async Task SearchingTheLibrary_FindsItemsThatAreOffRightNow()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+
+        var name = fixture.UniqueValue("berry fizz");
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = name, Price = "9" };
+        await repository.CreateItemAsync(item);
+        await repository.SetAvailabilityAsync(new ItemAvailability
+        {
+            VenueId = venueId,
+            ItemId = item.Id,
+            IsAvailable = false,
+            ChangedUtc = DateTime.UtcNow,
+            ChangedBy = "Alex"
+        });
+
+        // An 86'd item is still findable and still placeable (Q112) - it is off, not
+        // gone.
+        Assert.Contains(await repository.SearchItemsAsync(venueId, name, take: 20), found => found.Id == item.Id);
+    }
+
+    /// <summary>
+    /// "Also on Late Night" (Q123) reads menu names from the rows that own them, so
+    /// a renamed menu cannot be described by a stale label.
+    /// </summary>
+    [Fact]
+    public async Task ItemBoards_NameEveryBoardAnItemSitsOn()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var lunch = await SeedMenuAsync(dataAccess, venueId);
+        var dinner = await SeedMenuAsync(dataAccess, venueId);
+        var lunchSection = await SeedSectionAsync(dataAccess, venueId, lunch, sortOrder: 0);
+        var dinnerSection = await SeedSectionAsync(dataAccess, venueId, dinner, sortOrder: 0);
+
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("shared"), Price = "9" };
+        await repository.CreateItemOnMenuAsync(item, lunch, lunchSection, itemsPerMenuLimit: 500);
+        await repository.PlaceExistingItemAsync(venueId, dinner, dinnerSection, item.Id, 500, DateTime.UtcNow);
+
+        var boards = await repository.GetItemBoardsAsync(venueId, [item.Id]);
+
+        Assert.Equal(2, boards.Count);
+        Assert.Contains(boards, board => board.MenuId == lunch);
+        Assert.Contains(boards, board => board.MenuId == dinner);
+        Assert.All(boards, board => Assert.False(string.IsNullOrWhiteSpace(board.MenuName)));
+    }
+
+    /// <summary>
+    /// The canvas draws the WORKING board and the publish bar describes the
+    /// published one. Both come from a single read, so the two can never describe
+    /// different menus - the shape that produced a torn read once already.
+    /// </summary>
+    [Fact]
+    public async Task TheBuilderRead_ReturnsTheWorkingBoardAndThePublishThatPutTheOtherOnScreen()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("lemonade"), Price = "9.5" };
+        await repository.CreateItemOnMenuAsync(item, menuId, sectionId, itemsPerMenuLimit: 500);
+        var published = await PublishCurrentAsync(repository, venueId, menuId, author: "Dana");
+
+        // An edit after the publish: the working board moves, the published one does not.
+        item.Price = "10";
+        await repository.UpdateItemAsync(item);
+
+        var snapshots = await repository.GetDraftSnapshotsAsync(venueId, menuId);
+
+        Assert.Equal(published.Event.Version, snapshots.PublishedVersion);
+        Assert.Equal("Dana", snapshots.PublishedBy);
+        Assert.NotNull(snapshots.PublishedUtc);
+
+        Assert.Equal("10", MenuSnapshot.Parse(snapshots.Working)!.Sections![0].Items![0].Price);
+        Assert.Equal("9.5", MenuSnapshot.Parse(snapshots.Published)!.Sections![0].Items![0].Price);
+        Assert.Single(MenuSnapshot.Diff(snapshots.Published, snapshots.Working));
+    }
+
     private async Task<Guid> SeedVenueAsync(SqlDataAccess dataAccess)
     {
         var organizationId = Guid.NewGuid();
@@ -1697,8 +2208,8 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var sectionId = Guid.NewGuid();
         await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
             """
-            INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, IsActive, CreatedUtc, UpdatedUtc)
-            VALUES (@SectionId, @VenueId, @MenuId, @Name, @SortOrder, 1, SYSUTCDATETIME(), SYSUTCDATETIME());
+            INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            VALUES (@SectionId, @VenueId, @MenuId, @Name, @SortOrder, SYSUTCDATETIME(), SYSUTCDATETIME());
             SELECT 1 AS Value;
             """,
             new { SectionId = sectionId, VenueId = venueId, MenuId = menuId, Name = fixture.UniqueValue("section"), SortOrder = sortOrder });
