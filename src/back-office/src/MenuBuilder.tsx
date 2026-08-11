@@ -69,6 +69,7 @@ import type { BuilderPlace } from "./builderModel.d.mts";
 import { calculateBoardCapacity } from "./boardCapacity.mjs";
 import "../../board-engine/board-engine.css";
 import "./menu-builder.css";
+import { hasMenuCapability, type MenuCapabilityOverrides } from "./menuCapabilities";
 
 type Props = {
   configuration: BackOfficeConfiguration;
@@ -82,6 +83,7 @@ type Props = {
    * than leaving one screen holding a credential nothing else knows about (Q199).
    */
   onAccessTokenChange?: (token: string) => void;
+  capabilityOverrides?: MenuCapabilityOverrides;
 };
 
 type SaveState = "clean" | "saving" | "failed";
@@ -322,8 +324,12 @@ export default function MenuBuilder({
   menuId,
   venueTimezone,
   onBack,
-  onAccessTokenChange
+  onAccessTokenChange,
+  capabilityOverrides
 }: Props) {
+  const canManagePages = hasMenuCapability("page-management", capabilityOverrides);
+  const canAssignScreens = hasMenuCapability("screen-assignment", capabilityOverrides);
+  const canViewCapacity = hasMenuCapability("capacity", capabilityOverrides);
   /*
    * The credential every write reads, at the moment it is sent.
    *
@@ -1499,7 +1505,7 @@ export default function MenuBuilder({
             <div
               className="builder__page-tab-wrap"
               key={page.pageId}
-              draggable={!editingPage && !busy}
+              draggable={canManagePages && !editingPage && !busy}
               onDragStart={() => setDraggedPageId(page.pageId)}
               onDragEnd={() => setDraggedPageId(null)}
               onDragOver={event => event.preventDefault()}
@@ -1531,7 +1537,7 @@ export default function MenuBuilder({
               >
                 {page.name}
               </button>}
-              {activePageId === page.pageId ? (
+              {canManagePages && activePageId === page.pageId ? (
                 <button type="button" className="builder__page-actions" data-testid="page-actions" aria-label={`Actions for ${page.name}`} onClick={() => setPageMenuId(open => open === page.pageId ? null : page.pageId)}>⋯</button>
               ) : null}
               {pageMenuId === page.pageId ? (
@@ -1547,7 +1553,7 @@ export default function MenuBuilder({
               ) : null}
             </div>
           ))}
-          {addingPage ? (
+          {canManagePages && addingPage ? (
             <input
               autoFocus
               value={newPageName}
@@ -1557,16 +1563,16 @@ export default function MenuBuilder({
               aria-label="Page name"
               data-testid="page-name-input"
             />
-          ) : (
+          ) : canManagePages ? (
             <button type="button" className="builder__add-page" data-testid="add-page" onClick={() => setAddingPage(true)}>+ Add page</button>
-          )}
+          ) : null}
         </div>
         {activePageId ? (
           <div className="builder__page-summary" data-testid="page-summary">
             <strong>{pages.find(page => page.pageId === activePageId)?.name}</strong>
             {activePageItemCount > 0 ? <span>{activePageItemCount} {activePageItemCount === 1 ? "item" : "items"}</span> : null}
             {activePageAssignmentCount > 0 ? <span data-testid="page-assignment-count">{activePageAssignmentCount} {activePageAssignmentCount === 1 ? "screen" : "screens"}</span> : null}
-            <button type="button" onClick={() => { setAssignmentDraft({}); setAssignmentOpen(true); }} data-testid="manage-page-screens">Manage screens</button>
+            {canAssignScreens ? <button type="button" onClick={() => { setAssignmentDraft({}); setAssignmentOpen(true); }} data-testid="manage-page-screens">Manage screens</button> : null}
           </div>
         ) : null}
       </nav>
@@ -1696,7 +1702,7 @@ export default function MenuBuilder({
             ) : null}
           </div>
 
-          {capacity && capacity.state !== "fits" ? (
+          {canViewCapacity && capacity && capacity.state !== "fits" ? (
             <div
               className={`builder__capacity builder__capacity--${capacity.state}`}
               data-testid="capacity-banner"
@@ -2523,7 +2529,7 @@ export default function MenuBuilder({
         </>
       ) : null}
 
-      {assignmentOpen ? (
+      {canAssignScreens && assignmentOpen ? (
         <>
           <div className="builder__scrim" />
           <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="assign-page-title" data-testid="screen-assignments-view">

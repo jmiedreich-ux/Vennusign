@@ -163,9 +163,12 @@ $env:Cors__AllowedOrigins__1 = $displayOrigin
 $env:TestAutomation__ApiKey = $testApiKey
 $env:TestAutomation__Scopes__0 = 'availability.backdate'
 $env:TestAutomation__Scopes__1 = 'venue.reset'
+$env:TestAutomation__Scopes__2 = 'history.write_at'
 $env:TestAutomation__AvailabilityVenueIds__0 = (& $guid '73000000-0000-0000-0000-000000000001')
 $env:TestAutomation__AvailabilityVenueIds__1 = (& $guid '73000000-0000-0000-0000-000000000002')
 $env:TestAutomation__ResetVenueIds__0 = (& $guid '73000000-0000-0000-0000-000000000002')
+$env:TestAutomation__HistoryVenueIds__0 = (& $guid '73000000-0000-0000-0000-000000000001')
+$env:TestAutomation__HistoryVenueIds__1 = (& $guid '73000000-0000-0000-0000-000000000002')
 
 for ($index = 0; $index -lt $roles.Count; $index++) {
     $role = $roles[$index]

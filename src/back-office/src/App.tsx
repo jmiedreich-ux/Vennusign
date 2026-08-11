@@ -623,6 +623,7 @@ export default function App() {
             menuId={openMenuId!}
             venueTimezone={menuContext?.timezone ?? "UTC"}
             onBack={() => { window.location.hash = "#/menu"; }}
+            capabilityOverrides={configuration.menuCapabilityOverrides}
             /*
              * Signing back in from inside the builder signs the whole back office
              * back in, on the same storage the sign-in form uses. Otherwise one

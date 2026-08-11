@@ -56,17 +56,43 @@ public sealed class TestAutomationControllerTests
         Assert.Equal(changedUtc.AddMinutes(-90), Assert.Single(repository.Availability).ChangedUtc);
     }
 
+    [Fact]
+    public async Task History_write_uses_the_session_venue_and_exact_utc_instant()
+    {
+        var repository = new FakeContentRepository();
+        repository.WorkingSnapshotJson = "{}";
+        var menuId = Guid.NewGuid();
+        repository.Menus.Add(new Menu { Id = menuId, VenueId = VenueId, Name = "History menu" });
+        var occurredUtc = new DateTime(2026, 8, 10, 12, 30, 0, DateTimeKind.Utc);
+        var controller = Create(repository, historyVenues: [VenueId]);
+
+        Assert.IsType<NoContentResult>(await controller.WriteHistoryAt(
+            new("token", menuId, MenuHistoryKinds.Assigned, "Seeded history", occurredUtc), CancellationToken.None));
+        var entry = Assert.Single(repository.History);
+        Assert.Equal(VenueId, entry.VenueId);
+        Assert.Equal(menuId, entry.MenuId);
+        Assert.Equal(occurredUtc, entry.OccurredUtc);
+
+        Assert.IsType<ObjectResult>(await controller.WriteHistoryAt(
+            new("token", menuId, "invented", null, occurredUtc), CancellationToken.None));
+        Assert.Single(repository.History);
+        Assert.IsType<NotFoundResult>(await Create(repository, historyVenues: [Guid.NewGuid()]).WriteHistoryAt(
+            new("token", menuId, MenuHistoryKinds.Assigned, null, occurredUtc), CancellationToken.None));
+    }
+
     private static TestAutomationController Create(
         FakeContentRepository repository,
         HashSet<Guid>? resetVenues = null,
-        HashSet<Guid>? availabilityVenues = null)
+        HashSet<Guid>? availabilityVenues = null,
+        HashSet<Guid>? historyVenues = null)
     {
         var automation = new TestAutomationOptions
         {
             ApiKey = "automation-key",
-            Scopes = ["venue.reset", "availability.backdate"],
+            Scopes = ["venue.reset", "availability.backdate", "history.write_at"],
             ResetVenueIds = resetVenues ?? [],
-            AvailabilityVenueIds = availabilityVenues ?? []
+            AvailabilityVenueIds = availabilityVenues ?? [],
+            HistoryVenueIds = historyVenues ?? []
         };
         var sessions = new BackOfficeAuthenticationOptions
         {

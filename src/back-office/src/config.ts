@@ -1,6 +1,7 @@
 export type BackOfficeConfiguration = {
   apiBaseUrl: string;
   displayBaseUrl: string;
+  menuCapabilityOverrides?: import("./menuCapabilities").MenuCapabilityOverrides;
 };
 
 export function loadBackOfficeConfiguration(): BackOfficeConfiguration {

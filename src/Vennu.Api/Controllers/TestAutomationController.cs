@@ -16,6 +16,7 @@ public sealed class TestAutomationController(
 {
     public sealed record BackdateAvailabilityRequest(string? AccessToken, Guid ItemId, int MinutesAgo);
     public sealed record ResetVenueRequest(string? AccessToken);
+    public sealed record WriteHistoryAtRequest(string? AccessToken, Guid MenuId, string Kind, string? Detail, DateTime OccurredUtc);
 
     [HttpPost("availability/backdate")]
     public async Task<IActionResult> BackdateAvailability(BackdateAvailabilityRequest request, CancellationToken cancellationToken)
@@ -46,6 +47,26 @@ public sealed class TestAutomationController(
         var session = ResolveSession(request.AccessToken);
         if (session is null || !authorization.Allows(Request, "venue.reset", session.VenueId)) return NotFound();
         await content.ResetAutomationVenueAsync(session.VenueId, cancellationToken).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    [HttpPost("history/write-at")]
+    public async Task<IActionResult> WriteHistoryAt(WriteHistoryAtRequest request, CancellationToken cancellationToken)
+    {
+        var session = ResolveSession(request.AccessToken);
+        if (session is null || !authorization.Allows(Request, "history.write_at", session.VenueId)) return NotFound();
+        if (request.MenuId == Guid.Empty || !MenuHistoryKinds.IsSupported(request.Kind) || request.OccurredUtc.Kind != DateTimeKind.Utc)
+            return ValidationProblem("MenuId, a supported history kind, and a UTC OccurredUtc are required.");
+        if (await content.GetWorkingSnapshotAsync(session.VenueId, request.MenuId, cancellationToken).ConfigureAwait(false) is null) return NotFound();
+        await content.RecordHistoryAsync(new MenuHistoryEntry
+        {
+            VenueId = session.VenueId,
+            MenuId = request.MenuId,
+            Kind = request.Kind,
+            Detail = request.Detail,
+            Author = session.DisplayName,
+            OccurredUtc = request.OccurredUtc
+        }, cancellationToken).ConfigureAwait(false);
         return NoContent();
     }
 

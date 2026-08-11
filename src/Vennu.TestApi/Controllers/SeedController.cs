@@ -34,6 +34,21 @@ public sealed class SeedController(SeedService seed, ProductApiClient product) :
         }
     }
 
+    [HttpPost("history-at")]
+    public async Task<IActionResult> WriteHistoryAt(WriteHistoryAtRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await product.SendAutomationAsync("/api/test-automation/history/write-at", request, cancellationToken)
+                .ConfigureAwait(false);
+            return NoContent();
+        }
+        catch (ProductApiException exception)
+        {
+            return StatusCode(exception.StatusCode, exception.Message);
+        }
+    }
+
     [HttpPost("scale")]
     public async Task<ActionResult<ScaleSeedResponse>> Scale(ScaleSeedRequest request, CancellationToken cancellationToken)
     {

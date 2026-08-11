@@ -8,4 +8,5 @@ public sealed class TestAutomationOptions
     public HashSet<string> Scopes { get; set; } = new(StringComparer.Ordinal);
     public HashSet<Guid> AvailabilityVenueIds { get; set; } = [];
     public HashSet<Guid> ResetVenueIds { get; set; } = [];
+    public HashSet<Guid> HistoryVenueIds { get; set; } = [];
 }

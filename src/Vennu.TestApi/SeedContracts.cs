@@ -21,6 +21,7 @@ public static class ScreenSeedStates
     public static bool IsSupported(string value) => value is Offline or Online or NeverPaired or HasNotTakenThisYet;
 }
 public sealed record BackdateAvailabilityRequest(string? AccessToken, Guid ItemId, int MinutesAgo);
+public sealed record WriteHistoryAtRequest(string? AccessToken, Guid MenuId, string Kind, string? Detail, DateTime OccurredUtc);
 public sealed record ScaleSeedRequest(string? AccessToken, int Menus = 13, int Screens = 20);
 public sealed record ScaleSeedMenu(Guid MenuId, string Name, string State, IReadOnlyCollection<Guid> ScreenIds);
 public sealed record ScaleSeedResponse(Guid VenueId, IReadOnlyCollection<ScaleSeedMenu> SeededMenus, IReadOnlyCollection<Guid> ScreenIds);

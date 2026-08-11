@@ -22,9 +22,19 @@ test("the display face is a page-tab token rather than general chrome", async ()
 });
 
 test("menu capability checks default on and honor an explicit off decision", async () => {
-  const helper = await readFile(new URL("src/menuCapabilities.ts", root), "utf8");
-  assert.match(helper, /overrides\?\.\[capability\]\s*\?\?\s*true/);
-  assert.match(helper, /Partial<Record<MenuCapability, boolean>>/);
+  const { hasMenuCapability } = await import(new URL("src/menuCapabilities.ts", root));
+  assert.equal(hasMenuCapability("page-management"), true);
+  assert.equal(hasMenuCapability("page-management", { "page-management": false }), false);
+  assert.equal(hasMenuCapability("screen-assignment", { "page-management": false }), true);
+
+  const builder = await readFile(new URL("src/MenuBuilder.tsx", root), "utf8");
+  assert.match(builder, /hasMenuCapability\("page-management", capabilityOverrides\)/);
+  assert.match(builder, /hasMenuCapability\("screen-assignment", capabilityOverrides\)/);
+  assert.match(builder, /hasMenuCapability\("capacity", capabilityOverrides\)/);
+  assert.match(builder, /canManagePages && activePageId/);
+  assert.match(builder, /canAssignScreens \? <button/);
+  assert.match(builder, /data-testid="manage-page-screens"/);
+  assert.match(builder, /canViewCapacity && capacity/);
 });
 
 test("restore is permitted while the three remaining shelf words stay banned", async () => {
