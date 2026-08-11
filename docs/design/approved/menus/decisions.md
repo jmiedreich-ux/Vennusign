@@ -88,6 +88,98 @@ Every decision settled with the owner across the menu work. These govern the wir
 
 **36 · One fallback, every empty moment.** The venue fallback covers a scheduled gap, a menu taken off the screens, and anything else that empties a screen — the same object in all cases (decision 14). For now it is the generated logo-and-name card only; authoring a replacement comes later.
 
+## Amendments — 11 August 2026
+
+Settled with the owner during the Menu Builder V2 session. Each one changes
+something already on this list or in the V2 handoff; the numbered decisions above
+stand except where named here. Governs `menus/Menu Builder Preview.dc.html`,
+`menus/Menu Builder - connected screens.dc.html` and the action inventory beside
+them.
+
+**A1 · Sections live inside the page, not in an outer rail.** V2 §4 put the
+section list in the left rail. It now sits inside the page panel, one column left
+of the board, so everything belonging to a page is contained by the tab that
+represents it. The rule's intent is unchanged: sections are scoped to the selected
+page, and the list is never a second page navigator.
+
+**A2 · History is page-scoped where it is shown, menu-level where it is kept.**
+Decision 8 stands — history is durable, attributable, and tiered on retention
+depth. What changes is placement: the page's own history sits inside its panel,
+filtered to that page, with menu-level facts and the route to full history at its
+foot. Menu events never appear under a page heading.
+
+**A3 · 86 is staff vocabulary; Sold out is guest vocabulary.** The control, the
+message and the history entry all say 86, because that is what a kitchen says. The
+board says **Sold out**, drawn by the theme (V2 correction #8). One word for the
+people who set it, another for the people who read it.
+
+**A4 · An 86 never queues, but its cancellation can.** Decision 3 is unchanged for
+the act itself. Switching *Available* off cancels an existing 86, and that
+cancellation rides with the hide's publish rather than firing immediately —
+otherwise the item goes back on sale between the toggle and the publish, which is
+the opposite of what the operator just said.
+
+**A5 · Imports never carry availability.** *Sold out* is recognised as a
+spreadsheet heading and then deliberately dropped, listed with the columns that do
+not come across. This amends decision 31, which had it among the optional headings
+we read. A printed menu cannot say what ran out tonight and neither can a file — an
+86 is a person's statement, and no import may change what guests can order.
+
+**A6 · Nothing is edited on the board except a new item's name.** Q118 allowed
+in-place price editing. It is withdrawn: adding is the only inline act on the
+board, and every edit happens in the panel. One rule instead of an exception.
+
+**A7 · Publish, exit, discard and restore live behind one menu.** V2 §9 lists the
+routes without ranking them. They now sit behind a single *Finish* control in the
+footer, with the change count removed from the bar and stated inside the menu. The
+count returns to the bar if operators start publishing late.
+
+**A8 · "Restore" is permitted wording again.** Decision 11 banned it because it
+read as version control. With restore-from-history deferred past this milestone and
+the Finish menu action producing an ordinary draft that still needs publishing,
+the word is accurate: **Restore an earlier version**. It leaves the banned-words
+list; *unpublish*, *supersede* and *archive* stay on it, and the assertion in
+`tests/ui/specs/menus-shelf.spec.ts` is amended in the same PR.
+
+**A9 · Viewing scope is chips, collapsing past five.** *Whole page* plus every
+section, visible rather than hidden behind a select. Past five sections the extras
+collapse behind *More*; the row never scrolls or wraps.
+
+**A10 · Items move between sections by drag.** V2 §7 described reordering within a
+section only. Dragging across sections moves the item, including into an empty one.
+
+**A11 · Adding an item, in six parts.** It lands at the end of the section in
+scope, with the caret in its name. A name is required and a price is not — blank
+and `MP` are both legal. Abandoning it blank discards it silently. An unnamed item
+is listed at Review & publish to finish or drop, and does not block the other
+changes. An 86 is unavailable until the item has been published once, and says why
+rather than sitting inert.
+
+**A12 · Removal has one name.** *Remove from this page* on both the board and the
+inspector, with a confirmation saying the item stays in the library and on any
+other page using it. *Delete* is not used on this screen, because nothing here
+destroys an item.
+
+**A13 · The theme owns the rotation interval.** Menus sets the order of pages on a
+screen and nothing more; Screen Assignments displays the interval read-only. This
+also settles two menus sharing one screen — neither of them argues about timing.
+
+**A14 · Unresolved overflow publishes, named.** Capacity may not be silently
+clipped (V2 §7), and it may not block a publish either. Every dropped item is named
+at review with where it sits, acknowledged by a tick, and a *fix the fit* route
+sits beside the tick.
+
+**A15 · History shows what review showed.** There is no diff view. Each publish
+stores the summary displayed at review and the row expands to show it back, so
+history can never disagree with what the operator saw when they pressed publish.
+Above five events of a kind in a day, rows group; publishes never group.
+
+**A16 · Everything ships on, gated individually.** The build target is the
+maximum-tier screen with every capability present and working, each wrapped in its
+own capability check. Decision 4 still governs what absence looks like — a control
+outside the plan is gone, not disabled — but the ladder can move without touching
+layout.
+
 ## Parked
 
 **Replacing the fallback card.** The generated logo-and-name card is the whole of it for now. Uploading or authoring an alternative is a later piece.
