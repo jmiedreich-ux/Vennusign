@@ -4,6 +4,37 @@ import { seed } from "../seed";
 test.describe("menu pages", () => {
   test.skip(({ browserName }) => browserName !== "chromium", "M3-A is desktop-only");
 
+  test("capabilities independently remove only their guarded controls", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "capability-off", itemsPerSection: 25, screenState: "has-not-taken-this-yet" });
+    await page.addInitScript(() => {
+      const stored = window.sessionStorage.getItem("vennusign.test.menu-capabilities");
+      window.__VENNUSIGN_BACK_OFFICE_CONFIGURATION__ = {
+        menuCapabilityOverrides: stored ? JSON.parse(stored) : { "page-management": false }
+      };
+    });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await expect(page.getByTestId("add-page")).toHaveCount(0);
+    await expect(page.getByTestId("page-actions")).toHaveCount(0);
+    await expect(page.getByTestId("manage-page-screens")).toBeVisible();
+    await expect(page.getByTestId("capacity-banner")).toBeVisible();
+
+    await page.evaluate(() => {
+      window.sessionStorage.setItem("vennusign.test.menu-capabilities", JSON.stringify({ "screen-assignment": false }));
+    });
+    await page.reload();
+    await expect(page.getByTestId("add-page")).toBeVisible();
+    await expect(page.getByTestId("manage-page-screens")).toHaveCount(0);
+    await expect(page.getByTestId("capacity-banner")).toBeVisible();
+
+    await page.evaluate(() => {
+      window.sessionStorage.setItem("vennusign.test.menu-capabilities", JSON.stringify({ capacity: false }));
+    });
+    await page.reload();
+    await expect(page.getByTestId("add-page")).toBeVisible();
+    await expect(page.getByTestId("manage-page-screens")).toBeVisible();
+    await expect(page.getByTestId("capacity-banner")).toHaveCount(0);
+  });
+
   test("tabs switch the page content and blank add is abandoned", async ({ page }) => {
     const data = await seed({ role: "owner", label: "pages", pageCount: 2, sectionCount: 2, itemsPerSection: 1 });
     await openMenuBuilderAs(page, "owner", data.menuId);

@@ -27,14 +27,6 @@ test("menu capability checks default on and honor an explicit off decision", asy
   assert.equal(hasMenuCapability("page-management", { "page-management": false }), false);
   assert.equal(hasMenuCapability("screen-assignment", { "page-management": false }), true);
 
-  const builder = await readFile(new URL("src/MenuBuilder.tsx", root), "utf8");
-  assert.match(builder, /hasMenuCapability\("page-management", capabilityOverrides\)/);
-  assert.match(builder, /hasMenuCapability\("screen-assignment", capabilityOverrides\)/);
-  assert.match(builder, /hasMenuCapability\("capacity", capabilityOverrides\)/);
-  assert.match(builder, /canManagePages && activePageId/);
-  assert.match(builder, /canAssignScreens \? <button/);
-  assert.match(builder, /data-testid="manage-page-screens"/);
-  assert.match(builder, /canViewCapacity && capacity/);
 });
 
 test("restore is permitted while the three remaining shelf words stay banned", async () => {
