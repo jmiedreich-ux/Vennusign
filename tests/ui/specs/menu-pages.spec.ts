@@ -50,7 +50,15 @@ test.describe("menu pages", () => {
     await expect(page.getByTestId("canvas")).not.toContainText(data.items[0].name);
 
     await page.getByTestId("add-page").click();
-    await page.getByTestId("page-name-input").blur();
+    const pageNameInput = page.getByTestId("page-name-input");
+    await expect(pageNameInput).toHaveAttribute("placeholder", "Page name");
+    await expect(pageNameInput).toHaveCSS("font-family", /Playfair Display/);
+    const railBox = await page.getByTestId("page-rail").boundingBox();
+    const inputBox = await pageNameInput.boundingBox();
+    expect(railBox).not.toBeNull();
+    expect(inputBox).not.toBeNull();
+    expect(inputBox!.x + inputBox!.width).toBeLessThanOrEqual(railBox!.x + railBox!.width + 1);
+    await pageNameInput.blur();
     await expect(tabs).toHaveCount(2);
   });
 
@@ -105,8 +113,11 @@ test.describe("menu pages", () => {
   test("six sections keep the sixth behind More and selecting it redraws the board", async ({ page }) => {
     const data = await seed({ role: "owner", label: "section-chips", sectionCount: 6 });
     await openMenuBuilderAs(page, "owner", data.menuId);
-    await expect(page.getByTestId("section-chips").getByRole("button")).toHaveCount(6);
-    await page.getByTestId("section-chips").getByText("More").click();
+    const chipRow = page.getByTestId("section-chips");
+    await expect(chipRow.getByRole("button")).toHaveCount(5);
+    await expect(chipRow.getByText("More")).toBeVisible();
+    await expect(chipRow).toHaveCSS("flex-wrap", "nowrap");
+    await chipRow.getByText("More").click();
     await page.getByTestId("section-chips").getByRole("button", { name: data.sections[5].name }).click();
     await expect(page.getByTestId("canvas")).toContainText(data.items[5].name);
   });
@@ -128,6 +139,22 @@ test.describe("menu pages", () => {
     await expect(page.getByTestId("page-tab")).toHaveCount(1);
     await page.getByTestId("view-whole-board").click();
     await expect(page.getByTestId("canvas")).toContainText(data.items[0].name);
+  });
+
+  test("populated page can be deleted with its sections instead of moving them", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "discard-page-sections", pageCount: 2, sectionCount: 2 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await page.getByTestId("page-actions").click();
+    await page.getByTestId("page-menu").getByRole("button", { name: "Delete" }).click();
+    const dialog = page.getByTestId("delete-page-dialog");
+    await expect(dialog).toContainText("Library items will be kept");
+    await dialog.getByRole("radio", { name: /Delete the page and its sections/ }).check();
+    await expect(page.getByTestId("delete-page-destination")).toHaveCount(0);
+    await dialog.getByRole("button", { name: "Delete page" }).click();
+    await expect(page.getByTestId("page-tab")).toHaveCount(1);
+    await page.getByTestId("view-whole-board").click();
+    await expect(page.getByTestId("canvas")).not.toContainText(data.items[0].name);
+    await expect(page.getByTestId("canvas")).toContainText(data.items[1].name);
   });
 
   test("capacity exposes its computed limit and every dropped item", async ({ page }) => {
@@ -176,7 +203,7 @@ test.describe("menu pages", () => {
     await openMenuBuilderAs(page, "owner", data.menuId);
     await page.getByTestId("page-tab").nth(1).click();
     await page.getByTestId("manage-page-screens").click();
-    await page.getByTestId("screen-assignments-view").getByText("page-assignment screen").locator("..").getByRole("button", { name: "Assign" }).click();
+    await page.getByTestId("screen-assignments-view").getByTestId("screen-assignment-row").filter({ hasText: "page-assignment screen" }).getByRole("button", { name: "Assign" }).click();
     await page.getByTestId("screen-assignments-view").getByRole("button", { name: "Save" }).click();
     await expect(page.getByTestId("page-assignment-count")).toHaveText("1 screen");
 
@@ -192,9 +219,28 @@ test.describe("menu pages", () => {
     await openMenuBuilderAs(page, "owner", data.menuId);
     await page.getByTestId("page-tab").nth(1).click();
     await page.getByTestId("manage-page-screens").click();
-    const row = page.getByTestId("screen-assignments-view").getByText("rotation-choice screen").locator("..");
+    const assignmentDialog = page.getByTestId("screen-assignments-view");
+    await expect(assignmentDialog.getByRole("heading", { name: "Screen assignments" })).toBeFocused();
+    const assignmentBox = await assignmentDialog.boundingBox();
+    const viewport = page.viewportSize();
+    expect(assignmentBox).not.toBeNull();
+    expect(viewport).not.toBeNull();
+    expect(assignmentBox!.y).toBeGreaterThanOrEqual(0);
+    expect(assignmentBox!.y + assignmentBox!.height).toBeLessThanOrEqual(viewport!.height);
+    const row = assignmentDialog.getByTestId("screen-assignment-row").filter({ hasText: "rotation-choice screen" });
     await row.getByRole("button", { name: "Choose…" }).click();
-    await expect(page.getByTestId("assignment-choice")).toContainText(data.pages[0].name);
+    const choice = page.getByTestId("assignment-choice");
+    await expect(choice).toContainText(data.pages[0].name);
+    await expect(choice.getByRole("heading", { name: "Choose assignment" })).toBeFocused();
+    await expect(choice.getByRole("button", { name: "Back" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(choice).toHaveCount(0);
+    await expect(row.getByRole("button", { name: /^Choose/ })).toBeFocused();
+    await row.getByRole("button", { name: /^Choose/ }).click();
+    await choice.getByRole("button", { name: "Back" }).click();
+    await expect(choice).toHaveCount(0);
+    await expect(row.getByRole("button", { name: /^Choose/ })).toBeFocused();
+    await row.getByRole("button", { name: /^Choose/ }).click();
     await page.getByRole("button", { name: "Rotate both" }).click();
     let response = await page.request.get(`${apiBaseUrl}/api/back-office/content/assignments`, { headers: { "X-Vennusign-Back-Office-Token": tokens.owner } });
     expect((await response.json()).filter((assignment: { screenId: string }) => assignment.screenId === data.screenId)).toHaveLength(1);
@@ -202,7 +248,7 @@ test.describe("menu pages", () => {
     response = await page.request.get(`${apiBaseUrl}/api/back-office/content/assignments`, { headers: { "X-Vennusign-Back-Office-Token": tokens.owner } });
     expect((await response.json()).filter((assignment: { screenId: string }) => assignment.screenId === data.screenId)).toHaveLength(1);
     await page.getByTestId("manage-page-screens").click();
-    await page.getByTestId("screen-assignments-view").getByText("rotation-choice screen").locator("..").getByRole("button", { name: /^Choose/ }).click();
+    await page.getByTestId("screen-assignments-view").getByTestId("screen-assignment-row").filter({ hasText: "rotation-choice screen" }).getByRole("button", { name: /^Choose/ }).click();
     await page.getByRole("button", { name: "Rotate both" }).click();
     await page.getByTestId("screen-assignments-view").getByRole("button", { name: "Save" }).click();
     response = await page.request.get(`${apiBaseUrl}/api/back-office/content/assignments`, { headers: { "X-Vennusign-Back-Office-Token": tokens.owner } });
@@ -223,13 +269,13 @@ test.describe("menu pages", () => {
     expect(afterRemoval[0].pageId).toBe(data.pages[0].pageId);
 
     await page.getByTestId("manage-page-screens").click();
-    await page.getByTestId("screen-assignments-view").getByText("rotation-choice screen").locator("..").getByRole("button", { name: /^Choose/ }).click();
+    await page.getByTestId("screen-assignments-view").getByTestId("screen-assignment-row").filter({ hasText: "rotation-choice screen" }).getByRole("button", { name: /^Choose/ }).click();
     await page.getByRole("button", { name: "Rotate both" }).click();
     await page.getByTestId("screen-assignments-view").getByRole("button", { name: "Save" }).click();
 
     await page.getByTestId("page-tab").nth(2).click();
     await page.getByTestId("manage-page-screens").click();
-    await page.getByTestId("screen-assignments-view").getByText("rotation-choice screen").locator("..").getByRole("button", { name: "Choose…" }).click();
+    await page.getByTestId("screen-assignments-view").getByTestId("screen-assignment-row").filter({ hasText: "rotation-choice screen" }).getByRole("button", { name: "Choose…" }).click();
     await page.getByRole("button", { name: "Replace" }).click();
     await page.getByTestId("screen-assignments-view").getByRole("button", { name: "Save" }).click();
     response = await page.request.get(`${apiBaseUrl}/api/back-office/content/assignments`, { headers: { "X-Vennusign-Back-Office-Token": tokens.owner } });
@@ -243,7 +289,7 @@ test.describe("menu pages", () => {
     const candidate = await seed({ role: "owner", label: "cross-menu-candidate" });
     await openMenuBuilderAs(page, "owner", candidate.menuId);
     await page.getByTestId("manage-page-screens").click();
-    const row = page.getByTestId("screen-assignments-view").getByText("cross-menu-owner screen").locator("..");
+    const row = page.getByTestId("screen-assignments-view").getByTestId("screen-assignment-row").filter({ hasText: "cross-menu-owner screen" });
     await row.getByRole("button", { name: /^Choose/ }).click();
     await expect(page.getByTestId("assignment-choice")).toContainText(occupied.pages[0].name);
   });

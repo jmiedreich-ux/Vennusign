@@ -203,7 +203,7 @@ public sealed class BackOfficeContentController(
     [RequireCapability("content.item.update")]
     public async Task<ActionResult<PageDeleteResponse>> DeletePage(Guid menuId, Guid pageId, [FromBody] PageDeleteRequest? request, CancellationToken cancellationToken)
     {
-        var outcome = await library.DeletePageAsync(VenueId, menuId, pageId, request?.MoveSectionsToPageId, cancellationToken).ConfigureAwait(false);
+        var outcome = await library.DeletePageAsync(VenueId, menuId, pageId, request?.MoveSectionsToPageId, request?.DeleteSections ?? false, cancellationToken).ConfigureAwait(false);
         return outcome.Outcome switch
         {
             "deleted" => Ok(new PageDeleteResponse(outcome.MovedSectionCount, outcome.RemovedAssignmentCount)),

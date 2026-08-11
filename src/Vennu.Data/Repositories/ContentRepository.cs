@@ -1560,7 +1560,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             SELECT Id,VenueId,MenuId,Name,SortOrder,CreatedUtc,UpdatedUtc FROM dbo.MenuPages WHERE Id=@NewPageId;
             """, new { VenueId = venueId, MenuId = menuId, SourcePageId = sourcePageId, NewPageId = newPageId, Now = now }, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
 
-    public async Task<PageDeleteOutcome> DeletePageAsync(Guid venueId, Guid menuId, Guid pageId, Guid? moveSectionsToPageId, CancellationToken cancellationToken = default)
+    public async Task<PageDeleteOutcome> DeletePageAsync(Guid venueId, Guid menuId, Guid pageId, Guid? moveSectionsToPageId, bool deleteSections = false, CancellationToken cancellationToken = default)
     {
         var row = (await dataAccess.ExecuteSqlQueryAsync<PageDeleteRow, object>(
             """
@@ -1570,17 +1570,21 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             IF NOT EXISTS (SELECT 1 FROM dbo.MenuPages WHERE Id=@PageId AND VenueId=@VenueId AND MenuId=@MenuId)
             BEGIN ROLLBACK; SELECT N'page_missing' Outcome,0 MovedSectionCount,0 RemovedAssignmentCount; RETURN; END;
             DECLARE @SectionCount int=(SELECT COUNT(*) FROM dbo.MenuSections WHERE PageId=@PageId AND VenueId=@VenueId);
-            IF @SectionCount>0 AND (@MoveSectionsToPageId IS NULL OR NOT EXISTS (SELECT 1 FROM dbo.MenuPages WHERE Id=@MoveSectionsToPageId AND VenueId=@VenueId AND MenuId=@MenuId AND Id<>@PageId))
+            IF @SectionCount>0 AND @DeleteSections=0 AND (@MoveSectionsToPageId IS NULL OR NOT EXISTS (SELECT 1 FROM dbo.MenuPages WHERE Id=@MoveSectionsToPageId AND VenueId=@VenueId AND MenuId=@MenuId AND Id<>@PageId))
             BEGIN ROLLBACK; SELECT N'move_required' Outcome,0 MovedSectionCount,0 RemovedAssignmentCount; RETURN; END;
-            IF @SectionCount>0 AND EXISTS (
+            IF @SectionCount>0 AND @DeleteSections=0 AND EXISTS (
               SELECT 1 FROM dbo.Placements sourcePlacement
               INNER JOIN dbo.MenuSections sourceSection ON sourceSection.Id=sourcePlacement.MenuSectionId AND sourceSection.PageId=@PageId
               INNER JOIN dbo.Placements destinationPlacement ON destinationPlacement.PageId=@MoveSectionsToPageId AND destinationPlacement.ItemId=sourcePlacement.ItemId
               WHERE sourcePlacement.VenueId=@VenueId)
             BEGIN ROLLBACK; SELECT N'item_conflict' Outcome,0 MovedSectionCount,0 RemovedAssignmentCount; RETURN; END;
-            IF @SectionCount>0 BEGIN
+            IF @SectionCount>0 AND @DeleteSections=0 BEGIN
               DECLARE @Offset int=ISNULL((SELECT MAX(SortOrder)+1 FROM dbo.MenuSections WHERE PageId=@MoveSectionsToPageId),0);
               UPDATE dbo.MenuSections SET PageId=@MoveSectionsToPageId, SortOrder=@Offset+SortOrder, UpdatedUtc=SYSUTCDATETIME() WHERE PageId=@PageId AND VenueId=@VenueId;
+            END;
+            IF @SectionCount>0 AND @DeleteSections=1 BEGIN
+              DELETE dbo.Placements WHERE PageId=@PageId AND VenueId=@VenueId;
+              DELETE dbo.MenuSections WHERE PageId=@PageId AND VenueId=@VenueId;
             END;
             DELETE dbo.MenuScreenAssignments WHERE PageId=@PageId AND VenueId=@VenueId; DECLARE @Assignments int=@@ROWCOUNT;
             DECLARE @OldOrder int=(SELECT SortOrder FROM dbo.MenuPages WHERE Id=@PageId);
@@ -1589,7 +1593,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             UPDATE dbo.MenuPages SET SortOrder=SortOrder+@PageCount+1 WHERE VenueId=@VenueId AND MenuId=@MenuId AND SortOrder>@OldOrder;
             UPDATE dbo.MenuPages SET SortOrder=SortOrder-@PageCount-2 WHERE VenueId=@VenueId AND MenuId=@MenuId AND SortOrder>@OldOrder+@PageCount+1;
             COMMIT; SELECT N'deleted' Outcome,@SectionCount MovedSectionCount,@Assignments RemovedAssignmentCount;
-            """, new { VenueId = venueId, MenuId = menuId, PageId = pageId, MoveSectionsToPageId = moveSectionsToPageId }, cancellationToken).ConfigureAwait(false)).Single();
+            """, new { VenueId = venueId, MenuId = menuId, PageId = pageId, MoveSectionsToPageId = moveSectionsToPageId, DeleteSections = deleteSections }, cancellationToken).ConfigureAwait(false)).Single();
         return new PageDeleteOutcome(row.Outcome, row.MovedSectionCount, row.RemovedAssignmentCount);
     }
 

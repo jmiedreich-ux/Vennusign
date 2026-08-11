@@ -637,3 +637,28 @@ chased, by owner instruction.
 The existing record remains "Needs adjustment" and M3 does not merge on it. After
 this set is handed back, provide the deferred visual notes for the promised second
 pass. Milestones 4–6 remain blocked.
+
+## M3-A Slice 1 owner-remediation — 2026-08-11
+
+**What this established.** The page rail, overflow section picker, populated-page
+deletion, and screen-assignment workflow were reworked from the owner's 4 Pass / 3
+Needs Adjustment record. Add-page naming now uses the page-tab visual language;
+section chips stay on one line with long names truncated and overflow in a bounded
+More menu; populated deletion explicitly offers move or delete-sections while
+retaining library items; and assignment management is a viewport-bounded,
+scrolling panel with screen geometry/current page context, staged Save/Cancel,
+and a recoverable nested rotate/replace choice. Delete-sections is enforced by the
+product API/repository transaction, not only presented by the UI.
+
+**Evidence.** Each new customer-visible regression was observed failing with its
+production fix removed, then restored: page-name typography, non-wrapping chips,
+delete-without-moving, and nested-choice focus recovery. Final local evidence:
+back office 196/196; production build passed (existing Vite chunk advisory only);
+desktop `menu-pages.spec.ts` 14/14; focused API 5/5; Test API 8/8. The Release
+solution build passed with 21 pre-existing warnings. Azure/external integration
+tests were skipped under the standing owner exception; the LocalDB deletion
+regression was added but is UNTESTED in this run.
+
+**Exact next action.** Push the committed remediation head to PR #697, obtain an
+independent exact-SHA review, then regenerate the owner workbook against that SHA
+and rerun only the three previously adjusted cases plus one surrounding-flow check.

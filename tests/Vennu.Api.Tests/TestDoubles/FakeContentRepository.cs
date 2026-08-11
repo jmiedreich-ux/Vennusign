@@ -65,7 +65,7 @@ internal sealed class FakeContentRepository : IContentRepository
         Pages.Add(copy); return Task.FromResult<MenuPage?>(copy);
     }
 
-    public Task<PageDeleteOutcome> DeletePageAsync(Guid venueId, Guid menuId, Guid pageId, Guid? moveSectionsToPageId, CancellationToken cancellationToken = default)
+    public Task<PageDeleteOutcome> DeletePageAsync(Guid venueId, Guid menuId, Guid pageId, Guid? moveSectionsToPageId, bool deleteSections = false, CancellationToken cancellationToken = default)
     {
         var matches = Pages.Where(page => page.VenueId == venueId && page.MenuId == menuId).ToArray();
         if (matches.Length <= 1) return Task.FromResult(new PageDeleteOutcome("last_page", 0, 0));

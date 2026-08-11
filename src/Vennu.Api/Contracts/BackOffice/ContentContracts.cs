@@ -8,7 +8,7 @@ public sealed record AssignmentRequest(Guid MenuId, Guid PageId, string Mode = "
 
 public sealed record PageNameRequest(string Name);
 public sealed record PageOrderRequest(IReadOnlyCollection<Guid> PageIds);
-public sealed record PageDeleteRequest(Guid? MoveSectionsToPageId);
+public sealed record PageDeleteRequest(Guid? MoveSectionsToPageId, bool DeleteSections = false);
 public sealed record SectionNameRequest(string Name, Guid? PageId = null);
 
 public sealed record SectionOrderRequest(IReadOnlyCollection<Guid> SectionIds);

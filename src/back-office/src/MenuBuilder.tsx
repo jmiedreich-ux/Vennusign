@@ -38,6 +38,7 @@ import {
   type MenuScreenShowing
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
+import SkyIcon from "./SkyIcon";
 import TransientFeedback from "./TransientFeedback";
 import { BoardRenderer } from "../../board-engine/BoardRenderer";
 import { BoardFrame } from "../../board-engine/BoardFrame";
@@ -376,7 +377,7 @@ export default function MenuBuilder({
   const [pageMenuId, setPageMenuId] = useState<string | null>(null);
   const [draggedPageId, setDraggedPageId] = useState<string | null>(null);
   const [editingPage, setEditingPage] = useState<{ pageId: string; name: string } | null>(null);
-  const [confirmPageDelete, setConfirmPageDelete] = useState<{ pageId: string; name: string; destinationPageId: string; sectionCount: number } | null>(null);
+  const [confirmPageDelete, setConfirmPageDelete] = useState<{ pageId: string; name: string; destinationPageId: string; sectionCount: number; mode: "move" | "delete" } | null>(null);
 
   const discardRef = useDialogFocus(confirmDiscard);
   const deleteRef = useDialogFocus(Boolean(confirmDelete));
@@ -385,6 +386,13 @@ export default function MenuBuilder({
   const reviewRef = useDialogFocus(reviewOpen);
   const historyRef = useDialogFocus(historyOpen);
   const pageDeleteRef = useDialogFocus(Boolean(confirmPageDelete));
+  const assignmentRef = useDialogFocus(assignmentOpen && !assignmentChoiceScreenId);
+  const assignmentChoiceRef = useDialogFocus(Boolean(assignmentChoiceScreenId));
+  const closeAssignmentChoice = () => {
+    const trigger = assignmentChoiceScreenId;
+    setAssignmentChoiceScreenId(null);
+    if (trigger) window.setTimeout(() => document.querySelector<HTMLButtonElement>(`[data-screen-id="${trigger}"]`)?.focus(), 0);
+  };
 
   const board = data?.board;
   const pages = board?.pages ?? [];
@@ -621,10 +629,10 @@ export default function MenuBuilder({
     await run(() => reorderMenuPages(configuration, credential(), menuId, ordered));
   };
 
-  const removePage = async (pageId: string, destinationPageId?: string) => {
+  const removePage = async (pageId: string, destinationPageId?: string, deleteSections = false) => {
     setPageMenuId(null);
     setConfirmPageDelete(null);
-    await run(() => deleteMenuPage(configuration, credential(), menuId, pageId, destinationPageId || undefined));
+    await run(() => deleteMenuPage(configuration, credential(), menuId, pageId, destinationPageId || undefined, deleteSections));
   };
 
   const saveAssignments = async () => {
@@ -1547,7 +1555,7 @@ export default function MenuBuilder({
                   <button type="button" disabled={pages.length === 1} onClick={() => {
                     const destinationPageId = pages.find(candidate => candidate.pageId !== page.pageId)?.pageId ?? "";
                     setPageMenuId(null);
-                    setConfirmPageDelete({ pageId: page.pageId, name: page.name, destinationPageId, sectionCount: sectionsOf(board).filter(section => section.pageId === page.pageId).length });
+                    setConfirmPageDelete({ pageId: page.pageId, name: page.name, destinationPageId, sectionCount: sectionsOf(board).filter(section => section.pageId === page.pageId).length, mode: "move" });
                   }}>Delete</button>
                 </div>
               ) : null}
@@ -1555,8 +1563,10 @@ export default function MenuBuilder({
           ))}
           {canManagePages && addingPage ? (
             <input
+              className="builder__page-name-input"
               autoFocus
               value={newPageName}
+              placeholder="Page name"
               onChange={event => setNewPageName(event.target.value)}
               onBlur={() => void commitNewPage()}
               onKeyDown={event => { if (event.key === "Enter") void commitNewPage(); if (event.key === "Escape") { setAddingPage(false); setNewPageName(""); } }}
@@ -1572,7 +1582,7 @@ export default function MenuBuilder({
             <strong>{pages.find(page => page.pageId === activePageId)?.name}</strong>
             {activePageItemCount > 0 ? <span>{activePageItemCount} {activePageItemCount === 1 ? "item" : "items"}</span> : null}
             {activePageAssignmentCount > 0 ? <span data-testid="page-assignment-count">{activePageAssignmentCount} {activePageAssignmentCount === 1 ? "screen" : "screens"}</span> : null}
-            {canAssignScreens ? <button type="button" onClick={() => { setAssignmentDraft({}); setAssignmentOpen(true); }} data-testid="manage-page-screens">Manage screens</button> : null}
+            {canAssignScreens ? <button type="button" className="builder__assignment-pill" onClick={() => { setAssignmentDraft({}); setAssignmentChoiceScreenId(null); setAssignmentOpen(true); }} data-testid="manage-page-screens"><SkyIcon name="screen-mark" /> {activePageAssignmentCount > 0 ? `${activePageAssignmentCount} ${activePageAssignmentCount === 1 ? "screen" : "screens"}` : "Manage screens"}</button> : null}
           </div>
         ) : null}
       </nav>
@@ -1678,7 +1688,7 @@ export default function MenuBuilder({
                 data-testid="view-whole-board"
                 onClick={() => setPlace(current => ({ ...current, view: "whole-board", selectedItemId: null }))}
               >Whole page</button>
-              {sections.slice(0, 5).map((section, index) => (
+              {sections.slice(0, 4).map((section, index) => (
                 <button
                   key={section.sectionId}
                   type="button"
@@ -1687,12 +1697,12 @@ export default function MenuBuilder({
                   onClick={() => setPlace(current => ({ ...current, view: "one-section", sectionId: section.sectionId, selectedItemId: null }))}
                 >{section.name}</button>
               ))}
-              {sections.length > 5 ? <details open={sectionPickerOpen}>
-                <summary onClick={event => { event.preventDefault(); setSectionPickerOpen(open => !open); }}>More</summary>
-                {sections.slice(5).map(section => <button key={section.sectionId} type="button" onClick={() => {
+              {sections.length > 4 ? <details className="builder__section-more" open={sectionPickerOpen}>
+                <summary aria-label="More page sections" onClick={event => { event.preventDefault(); setSectionPickerOpen(open => !open); }}>More <SkyIcon name="chevron" /></summary>
+                <div className="builder__section-more-menu">{sections.slice(4).map(section => <button key={section.sectionId} type="button" onClick={() => {
                   setPlace(current => ({ ...current, view: "one-section", sectionId: section.sectionId, selectedItemId: null }));
                   setSectionPickerOpen(false);
-                }}>{section.name}</button>)}
+                }}>{section.name}</button>)}</div>
               </details> : null}
             </div>
             {place.selectedItemId && isMissingPrice(selected?.item) ? (
@@ -2532,37 +2542,42 @@ export default function MenuBuilder({
       {canAssignScreens && assignmentOpen ? (
         <>
           <div className="builder__scrim" />
-          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="assign-page-title" data-testid="screen-assignments-view">
-            <h2 id="assign-page-title">Screen assignments</h2>
-            <p>Choose where {pages.find(page => page.pageId === activePageId)?.name} appears. Rotation timing comes from the theme.</p>
+          <div className="builder__dialog builder__assignment-dialog" role="dialog" aria-modal={assignmentChoiceScreenId ? undefined : "true"} aria-labelledby="assign-page-title" data-testid="screen-assignments-view" ref={assignmentRef} inert={assignmentChoiceScreenId ? "" : undefined}>
+            <header className="builder__assignment-head">
+              <div><h2 id="assign-page-title">Screen assignments</h2><p>Choose where {pages.find(page => page.pageId === activePageId)?.name} appears.</p></div>
+              <span>Rotation timing comes from the theme.</span>
+            </header>
+            <div className="builder__assignment-list">
             {screens.length === 0 ? <p>No paired screens.</p> : screens.map(screen => {
               const existing = assignments.filter(assignment => assignment.screenId === screen.screenId);
               const alreadyAssigned = existing.some(assignment => assignment.pageId === activePageId);
               const staged = assignmentDraft[screen.screenId];
-              return <div key={screen.screenId} className="builder__assignment-row">
-                <span>{screen.screenName}</span>
+              return <div key={screen.screenId} className="builder__assignment-row" data-testid="screen-assignment-row">
+                <span className="builder__assignment-identity"><strong>{screen.screenName}</strong><small>{screen.widthPixels} × {screen.heightPixels}{existing.length > 0 ? ` · ${existing.map(assignment => assignment.pageName ?? assignment.menuName ?? "Assigned page").join(" + ")}` : " · Available"}</small></span>
                 {staged ? <span>{staged === "rotate" ? "Will rotate" : staged === "remove" ? "Will remove" : "Will replace"}</span> : alreadyAssigned ? (
-                  <button type="button" data-testid="remove-page-screen" onClick={() => setAssignmentDraft(current => ({ ...current, [screen.screenId]: "remove" }))}>Remove</button>
+                  <button type="button" className="action-secondary" data-testid="remove-page-screen" onClick={() => setAssignmentDraft(current => ({ ...current, [screen.screenId]: "remove" }))}>Remove</button>
                 ) : (
-                  <button type="button" data-testid="assign-page-screen" onClick={() => {
+                  <button type="button" className="action-secondary" data-testid="assign-page-screen" data-screen-id={screen.screenId} onClick={() => {
                     if (existing.length === 0) setAssignmentDraft(current => ({ ...current, [screen.screenId]: "replace" }));
                     else setAssignmentChoiceScreenId(screen.screenId);
                   }}>{existing.length === 0 ? "Assign" : "Choose…"}</button>
                 )}
               </div>;
             })}
+            </div>
             <div className="builder__dialog-actions">
-              <button type="button" className="action-secondary" onClick={() => { setAssignmentOpen(false); setAssignmentDraft({}); }}>Cancel</button>
+              <button type="button" className="action-secondary" onClick={() => { setAssignmentChoiceScreenId(null); setAssignmentOpen(false); setAssignmentDraft({}); }}>Cancel</button>
               <button type="button" disabled={Object.keys(assignmentDraft).length === 0 || busy} onClick={() => void saveAssignments()}>Save</button>
             </div>
           </div>
-          {assignmentChoiceScreenId ? <div className="builder__dialog builder__dialog--nested" role="dialog" aria-modal="true" aria-labelledby="assignment-choice-title" data-testid="assignment-choice">
-            <h2 id="assignment-choice-title">This screen already has {(() => {
+          {assignmentChoiceScreenId ? <div className="builder__dialog builder__dialog--nested" role="dialog" aria-modal="true" aria-labelledby="assignment-choice-title" data-testid="assignment-choice" ref={assignmentChoiceRef} onKeyDown={event => { if (event.key === "Escape") closeAssignmentChoice(); }}>
+            <h2 id="assignment-choice-title">Choose assignment</h2>
+            <p>{screens.find(screen => screen.screenId === assignmentChoiceScreenId)?.screenName ?? "This screen"} already has {(() => {
               const existing = assignments.find(assignment => assignment.screenId === assignmentChoiceScreenId);
               return existing?.pageName ?? pages.find(page => page.pageId === existing?.pageId)?.name ?? existing?.menuName ?? "another page";
-            })()}</h2>
-            <p>Rotate both pages, or replace the page already there.</p>
+            })()}. Rotate both pages, or replace the page already there.</p>
             <div className="builder__dialog-actions">
+              <button type="button" className="action-secondary" data-testid="cancel-assignment-choice" onClick={closeAssignmentChoice}>Back</button>
               <button type="button" onClick={() => { setAssignmentDraft(current => ({ ...current, [assignmentChoiceScreenId]: "rotate" })); setAssignmentChoiceScreenId(null); }}>Rotate both</button>
               <button type="button" className="action-danger" onClick={() => { setAssignmentDraft(current => ({ ...current, [assignmentChoiceScreenId]: "replace" })); setAssignmentChoiceScreenId(null); }}>Replace</button>
             </div>
@@ -2576,12 +2591,15 @@ export default function MenuBuilder({
           <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="delete-page-title" ref={pageDeleteRef} data-testid="delete-page-dialog">
             <h2 id="delete-page-title">Delete {confirmPageDelete.name}?</h2>
             <p>
-              {confirmPageDelete.sectionCount > 0 ? "Its sections will move. " : "This page is empty. "}{assignments.filter(assignment => assignment.pageId === confirmPageDelete.pageId).length > 0
+              {confirmPageDelete.sectionCount > 0 ? `${confirmPageDelete.sectionCount} ${confirmPageDelete.sectionCount === 1 ? "section" : "sections"} will be ${confirmPageDelete.mode === "move" ? "moved" : "deleted"}. Library items will be kept. ` : "This page is empty. "}{assignments.filter(assignment => assignment.pageId === confirmPageDelete.pageId).length > 0
                 ? `${assignments.filter(assignment => assignment.pageId === confirmPageDelete.pageId).map(assignment => screens.find(screen => screen.screenId === assignment.screenId)?.screenName ?? "Unknown screen").join(", ")} will lose this assignment.`
                 : "No screens are assigned to this page."}
             </p>
-            {confirmPageDelete.sectionCount > 0 ? <label>
-              Move sections to
+            {confirmPageDelete.sectionCount > 0 ? <fieldset className="builder__delete-page-choice">
+              <legend>What should happen to its sections?</legend>
+              <label><input type="radio" name="delete-page-mode" value="move" checked={confirmPageDelete.mode === "move"} onChange={() => setConfirmPageDelete(current => current ? { ...current, mode: "move" } : null)} /> Move them to another page</label>
+              {confirmPageDelete.mode === "move" ? <label>
+              Destination page
               <select
                 value={confirmPageDelete.destinationPageId}
                 onChange={event => setConfirmPageDelete(current => current ? { ...current, destinationPageId: event.target.value } : null)}
@@ -2589,10 +2607,12 @@ export default function MenuBuilder({
               >
                 {pages.filter(page => page.pageId !== confirmPageDelete.pageId).map(page => <option key={page.pageId} value={page.pageId}>{page.name}</option>)}
               </select>
-            </label> : null}
+              </label> : null}
+              <label><input type="radio" name="delete-page-mode" value="delete" checked={confirmPageDelete.mode === "delete"} onChange={() => setConfirmPageDelete(current => current ? { ...current, mode: "delete" } : null)} /> Delete the page and its sections</label>
+            </fieldset> : null}
             <div className="builder__dialog-actions">
               <button type="button" className="action-secondary" onClick={() => setConfirmPageDelete(null)}>Cancel</button>
-              <button type="button" className="action-danger" disabled={confirmPageDelete.sectionCount > 0 && !confirmPageDelete.destinationPageId} onClick={() => void removePage(confirmPageDelete.pageId, confirmPageDelete.sectionCount > 0 ? confirmPageDelete.destinationPageId : undefined)}>Delete page</button>
+              <button type="button" className="action-danger" disabled={confirmPageDelete.sectionCount > 0 && confirmPageDelete.mode === "move" && !confirmPageDelete.destinationPageId} onClick={() => void removePage(confirmPageDelete.pageId, confirmPageDelete.sectionCount > 0 && confirmPageDelete.mode === "move" ? confirmPageDelete.destinationPageId : undefined, confirmPageDelete.sectionCount > 0 && confirmPageDelete.mode === "delete")}>Delete page</button>
             </div>
           </div>
         </>

@@ -16,7 +16,7 @@ public interface IContentRepository
     Task<bool> RenamePageAsync(Guid venueId, Guid menuId, Guid pageId, string name, DateTime now, CancellationToken cancellationToken = default);
     Task<ReorderOutcome> ReorderPagesGuardedAsync(Guid venueId, Guid menuId, IReadOnlyCollection<Guid> pageIds, DateTime now, CancellationToken cancellationToken = default);
     Task<MenuPage?> DuplicatePageAsync(Guid venueId, Guid menuId, Guid sourcePageId, Guid newPageId, DateTime now, CancellationToken cancellationToken = default);
-    Task<PageDeleteOutcome> DeletePageAsync(Guid venueId, Guid menuId, Guid pageId, Guid? moveSectionsToPageId, CancellationToken cancellationToken = default);
+    Task<PageDeleteOutcome> DeletePageAsync(Guid venueId, Guid menuId, Guid pageId, Guid? moveSectionsToPageId, bool deleteSections = false, CancellationToken cancellationToken = default);
 
     // ----- Library and placements -------------------------------------------------
 

@@ -143,6 +143,11 @@ public sealed class MenuPageIntegrationTests(DatabaseFixture fixture)
             Assert.Equal(new[] { second.Id, first.Id, copy.Id }, (await repository.GetPagesAsync(venueId, menuId)).Select(page => page.Id));
             Assert.Equal("Late night", (await repository.GetPagesAsync(venueId, menuId)).First().Name);
 
+            var discarded = await repository.DeletePageAsync(venueId, menuId, copy.Id, null, deleteSections: true);
+            Assert.Equal("deleted", discarded.Outcome);
+            Assert.DoesNotContain(await repository.GetPlacementsAsync(venueId, menuId), placement => placement.PageId == copy.Id);
+            Assert.Contains(await repository.GetItemsAsync(venueId), item => item.Id == sharedItem.Id);
+
             var moveRequired = await repository.DeletePageAsync(venueId, menuId, first.Id, null);
             Assert.Equal("move_required", moveRequired.Outcome);
             var deleted = await repository.DeletePageAsync(venueId, menuId, first.Id, second.Id);

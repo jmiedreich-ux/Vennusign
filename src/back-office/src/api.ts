@@ -1075,8 +1075,8 @@ export async function duplicateMenuPage(configuration: BackOfficeConfiguration, 
   return (await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}/duplicate`, { method: "POST" })).json();
 }
 
-export async function deleteMenuPage(configuration: BackOfficeConfiguration, accessToken: string, menuId: string, pageId: string, moveSectionsToPageId?: string): Promise<void> {
-  await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}`, { method: "DELETE", body: JSON.stringify({ moveSectionsToPageId: moveSectionsToPageId ?? null }) });
+export async function deleteMenuPage(configuration: BackOfficeConfiguration, accessToken: string, menuId: string, pageId: string, moveSectionsToPageId?: string, deleteSections = false): Promise<void> {
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}`, { method: "DELETE", body: JSON.stringify({ moveSectionsToPageId: moveSectionsToPageId ?? null, deleteSections }) });
 }
 
 export async function loadBuilderBoard(
