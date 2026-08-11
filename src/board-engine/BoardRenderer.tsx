@@ -118,8 +118,13 @@ export function BoardRenderer({
                 data-item-id={item.itemId}
                 data-unavailable={item.isUnavailable ? "true" : undefined}
                 data-section-id={section.sectionId}
-                draggable={itemsDraggable ? true : undefined}
+                data-item-draggable={itemsDraggable ? "true" : undefined}
               >
+                {itemsDraggable ? (
+                  <span className="board-item-drag-handle" data-testid="item-drag-handle" aria-hidden="true">
+                    ⠿
+                  </span>
+                ) : null}
                 <p className="board-item-line">
                   <span className="board-item-name">{item.name}</span>
                   <span className="board-item-leader" aria-hidden="true" />

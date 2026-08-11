@@ -44,6 +44,7 @@ Two consequences landed with it, both in milestone 1:
 ## Cross-cutting rules (from the register)
 
 - **Keyboard is out of scope for this build — owner ruling 2026-08-10, reaffirmed.** Nothing further is built or tested for keyboard, no keyboard findings are filed against these milestones, and no acceptance step may depend on a keystroke. Q202 (canvas reachability) and Q120 (keyboard reorder) were already backlogged to **#672**; this extends that to the build as a whole. It does **not** mean deleting behaviour already shipped and named here — the undo/redo keystroke and ⌘K (Q121) stay in the code; they simply stop being relied on or extended. The owner reversed course on this after it was raised repeatedly; it is settled, and re-raising it is the defect.
+- **Mobile interactions are out of scope for this build — Q158 → #681, owner reaffirmed 2026-08-10.** Desktop browser interaction is the Menus milestone gate. The shared Playwright mobile project may continue to catch accidental layout crashes, but a desktop-only interaction such as item drag is explicitly skipped there rather than gaining an invented touch design.
 - **Timestamps render in the venue's local time** from the venue's stored Timezone — on every Menus surface (Q196). Deviation from today's viewer-clock behavior.
 - **Copy:** natural singular/zero forms everywhere, approved shapes for 2+ (Q181); no possessive phrasing in the draft pill (Q147); banned words (unpublish/supersede/restore/archive) enforced in Menus and rewritten surfaces only, elsewhere logged as copy debt #682 (Q179); criterion 4 reworded to name its deliberate acts (Q187).
 - **Ceilings are tier-configurable** in the entitlement/allowance model, never constants (Q201): defaults ~50 menus/venue, ~500 items/menu, ~2,000-line paste; every refusal names the reason in a plain sentence.
@@ -144,5 +145,9 @@ than being rediscovered. Every item here came from an owner running one.
   which cases are asking for a decision rather than an observation.
 - **Checks covering behaviour a review found missing say so**, because an owner
   walking a shorter list could not have noticed the absence themselves.
+- **The fixture supplies every non-trivial precondition.** An acceptance case does
+  not ask the owner to duplicate, create, pair or otherwise construct the state it
+  is meant to judge. Case 6 in M3 was skipped after "board" was read as "screen";
+  the shared-item condition is now pre-seeded and the step says "two menus".
 - **The closing decision stays disabled** until every check has an outcome, and
   "Accept" stays disabled while any check is not a Pass.

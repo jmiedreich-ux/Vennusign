@@ -107,8 +107,9 @@ function BoardStage({ children }: { children: React.ReactNode }) {
     const measure = () => {
       if (!outer.current || !inner.current) return;
       const next = outer.current.clientWidth / boardLogicalWidth;
-      setScale(next);
-      setHeight(inner.current.scrollHeight * next);
+      setScale(current => (current === next ? current : next));
+      const nextHeight = inner.current.scrollHeight * next;
+      setHeight(current => (current === nextHeight ? current : nextHeight));
     };
     measure();
     if (typeof ResizeObserver === "undefined") return;
@@ -116,7 +117,7 @@ function BoardStage({ children }: { children: React.ReactNode }) {
     if (outer.current) observer.observe(outer.current);
     if (inner.current) observer.observe(inner.current);
     return () => observer.disconnect();
-  });
+  }, []);
 
   return (
     <div
@@ -586,11 +587,16 @@ export default function MenuBuilder({
   };
 
   const deleteSection = async (sectionId: string, name: string | null) => {
+    const sections = sectionsOf(board);
+    const deletedIndex = sections.findIndex(section => section.sectionId === sectionId);
+    const nextSection = sections[deletedIndex - 1] ?? sections[deletedIndex + 1] ?? null;
     await run(async () => {
       const outcome = await deleteMenuSection(configuration, credential(), menuId, sectionId);
       setNotice(releasedPhrase(outcome.releasedItemCount));
       setPlace(current =>
-        current.sectionId === sectionId ? { ...current, sectionId: null, selectedItemId: null } : current
+        current.sectionId === sectionId
+          ? { ...current, sectionId: nextSection?.sectionId ?? null, selectedItemId: null }
+          : current
       );
     });
     // Deliberately not undoable: the section's id is gone, so an "undo" would put
@@ -606,9 +612,8 @@ export default function MenuBuilder({
   const [headingEdit, setHeadingEdit] = useState<{ sectionId: string; value: string; box: DOMRect } | null>(null);
 
   /**
-   * Renames a section. One path, two ways in: the canvas heading (Q96) and the
-   * field below the board, which is the keyboard route while canvas items stay
-   * mouse-only (Q202). Both queue the same draft change and the same inverse.
+   * Renames a section by typing over the canvas heading (Q96). The duplicate
+   * field below the board was removed by the owner's acceptance ruling.
    */
   const renameSection = useCallback(
     (sectionId: string, name: string, current: string) => {
@@ -631,36 +636,108 @@ export default function MenuBuilder({
    * affordance that appears to work and does nothing is worse than one that says
    * what it cannot do.
    */
-  const dragging = useRef<string | null>(null);
+  type DropTarget = { itemId: string; sectionId: string; edge: "before" | "after" };
+  const pointerDrag = useRef<{
+    pointerId: number;
+    itemId: string;
+    sectionId: string;
+    startX: number;
+    startY: number;
+    active: boolean;
+    target: DropTarget | null;
+  } | null>(null);
+  const suppressCanvasClick = useRef(false);
+  const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
 
-  const dropOnItem = (event: React.DragEvent<HTMLDivElement>) => {
+  const beginItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+    const row = (event.target as HTMLElement).closest<HTMLElement>("[data-item-id]");
+    if (!row?.dataset.itemId || !row.dataset.sectionId) return;
+
+    // The pill hangs left of the logical row. Only that compact hit area starts
+    // a reorder; clicking the menu content keeps selecting and editing it.
+    const box = row.getBoundingClientRect();
+    if (event.clientX > box.left + 12) return;
+
+    pointerDrag.current = {
+      pointerId: event.pointerId,
+      itemId: row.dataset.itemId,
+      sectionId: row.dataset.sectionId,
+      startX: event.clientX,
+      startY: event.clientY,
+      active: false,
+      target: null
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const trackItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = pointerDrag.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (!drag.active && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 5) return;
+
+    drag.active = true;
     event.preventDefault();
-    const from = dragging.current;
-    dragging.current = null;
-    if (!from) return;
+    const row = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-item-id]");
+    if (!row?.dataset.itemId || !row.dataset.sectionId) {
+      drag.target = null;
+      setDropTarget(null);
+      return;
+    }
 
-    const target = (event.target as HTMLElement).closest<HTMLElement>("[data-item-id]");
-    const toId = target?.dataset.itemId;
-    const toSection = target?.dataset.sectionId;
-    if (!toId || !toSection || toId === from) return;
+    const box = row.getBoundingClientRect();
+    const target: DropTarget = {
+      itemId: row.dataset.itemId,
+      sectionId: row.dataset.sectionId,
+      edge: event.clientY < box.top + box.height / 2 ? "before" : "after"
+    };
+    drag.target = target;
+    setDropTarget(current =>
+      current?.itemId === target.itemId && current.sectionId === target.sectionId && current.edge === target.edge
+        ? current
+        : target
+    );
+  };
 
-    const fromSection = itemsOf(board, toSection).some(item => item.itemId === from) ? toSection : null;
-    if (!fromSection) {
+  const finishItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = pointerDrag.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    pointerDrag.current = null;
+    setDropTarget(null);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    if (!drag.active || !drag.target) return;
+
+    suppressCanvasClick.current = true;
+    window.setTimeout(() => {
+      suppressCanvasClick.current = false;
+    }, 0);
+
+    if (drag.target.sectionId !== drag.sectionId) {
       setError(
         "Moving an item to another section arrives with Board view. For now, remove it here and add it there."
       );
       return;
     }
 
-    const ids = itemsOf(board, toSection).map(item => item.itemId);
-    const next = reorder(ids, ids.indexOf(from), ids.indexOf(toId));
-    if (next.join() === ids.join()) return;
+    const ids = itemsOf(board, drag.sectionId).map(item => item.itemId);
+    const remaining = ids.filter(id => id !== drag.itemId);
+    const targetIndex = remaining.indexOf(drag.target.itemId);
+    if (targetIndex < 0) return;
+    const insertionIndex = targetIndex + (drag.target.edge === "after" ? 1 : 0);
+    remaining.splice(insertionIndex, 0, drag.itemId);
+    if (remaining.join() === ids.join()) return;
 
-    void run(() => reorderMenuItems(configuration, credential(), menuId, toSection, next), {
+    void run(() => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, remaining), {
       describe: "Reorder items",
-      undo: () => reorderMenuItems(configuration, credential(), menuId, toSection, ids),
-      redo: () => reorderMenuItems(configuration, credential(), menuId, toSection, next)
+      undo: () => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, ids),
+      redo: () => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, remaining)
     });
+  };
+
+  const cancelItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (pointerDrag.current?.pointerId !== event.pointerId) return;
+    pointerDrag.current = null;
+    setDropTarget(null);
   };
 
   const commitHeading = () => {
@@ -682,17 +759,22 @@ export default function MenuBuilder({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const target = dropTarget;
     for (const row of canvas.querySelectorAll<HTMLElement>("[data-item-id]")) {
       row.classList.toggle("is-selected", row.dataset.itemId === place.selectedItemId);
+      if (target && row.dataset.itemId === target.itemId && row.dataset.sectionId === target.sectionId) {
+        row.dataset.dropEdge = target.edge;
+      } else {
+        delete row.dataset.dropEdge;
+      }
     }
   });
 
   const selectFromCanvas = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (suppressCanvasClick.current) return;
     /*
      * Q96: a section is renamed by clicking its heading on the canvas and typing
-     * over it. The rename control below the board stays — it is the keyboard path,
-     * and canvas items are deliberately mouse-only this build (Q202) — but the
-     * heading is where the design says the act belongs, on the thing itself.
+     * over it, where the design says the act belongs.
      */
     const heading = (event.target as HTMLElement).closest<HTMLElement>(".board-section-heading");
     if (heading && canvasRef.current) {
@@ -1329,22 +1411,42 @@ export default function MenuBuilder({
                   <span className="builder__rail-name">{section.name}</span>
                   <span className="builder__rail-count">{itemsOf(board, section.sectionId).length}</span>
                 </button>
-                <span className="builder__rail-move">
+                <span className="builder__rail-actions">
+                  <span className="builder__rail-move">
+                    <button
+                      type="button"
+                      onClick={() => void moveSection(index, index - 1)}
+                      disabled={index === 0 || busy}
+                      aria-label={`Move ${section.name} up`}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void moveSection(index, index + 1)}
+                      disabled={index === sections.length - 1 || busy}
+                      aria-label={`Move ${section.name} down`}
+                    >
+                      ↓
+                    </button>
+                  </span>
                   <button
                     type="button"
-                    onClick={() => void moveSection(index, index - 1)}
-                    disabled={index === 0 || busy}
-                    aria-label={`Move ${section.name} up`}
+                    className="builder__rail-delete"
+                    data-testid="delete-section"
+                    aria-label={`Delete ${section.name}`}
+                    disabled={busy}
+                    onClick={() =>
+                      setConfirmDelete({
+                        sectionId: section.sectionId,
+                        name: section.name ?? "this section",
+                        items: itemsOf(board, section.sectionId).length
+                      })
+                    }
                   >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void moveSection(index, index + 1)}
-                    disabled={index === sections.length - 1 || busy}
-                    aria-label={`Move ${section.name} down`}
-                  >
-                    ↓
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M4 7h16M9 7V4h6v3m-9 0 1 13h10l1-13M10 11v5m4-5v5" />
+                    </svg>
                   </button>
                 </span>
               </li>
@@ -1404,18 +1506,10 @@ export default function MenuBuilder({
             data-selected-item={place.selectedItemId ?? undefined}
             onClick={selectFromCanvas}
             data-testid="canvas"
-            onDragStart={event => {
-              dragging.current =
-                (event.target as HTMLElement).closest<HTMLElement>("[data-item-id]")?.dataset.itemId ?? null;
-              event.dataTransfer.effectAllowed = "move";
-            }}
-            onDragOver={event => {
-              if (dragging.current) event.preventDefault();
-            }}
-            onDrop={dropOnItem}
-            onDragEnd={() => {
-              dragging.current = null;
-            }}
+            onPointerDown={beginItemDrag}
+            onPointerMove={trackItemDrag}
+            onPointerUp={finishItemDrag}
+            onPointerCancel={cancelItemDrag}
           >
             {place.view === "whole-board" ? (
               <BoardFrame
@@ -1574,42 +1668,6 @@ export default function MenuBuilder({
             </div>
           ) : null}
 
-          {place.view === "one-section" && place.sectionId ? (
-            <div className="builder__section-actions">
-              <label>
-                <span className="builder__label">Section name</span>
-                <input
-                  defaultValue={sections.find(section => section.sectionId === place.sectionId)?.name ?? ""}
-                  key={place.sectionId}
-                  maxLength={200}
-                  data-testid="section-name"
-                  onBlur={event => {
-                    const name = event.target.value.trim();
-                    const current = sections.find(section => section.sectionId === place.sectionId)?.name ?? "";
-                    if (!name || name === current) {
-                      event.target.value = current;
-                      return;
-                    }
-                    renameSection(place.sectionId!, name, current);
-                  }}
-                />
-              </label>
-              <button
-                type="button"
-                className="builder__quiet-danger"
-                data-testid="delete-section"
-                onClick={() =>
-                  setConfirmDelete({
-                    sectionId: place.sectionId!,
-                    name: sections.find(section => section.sectionId === place.sectionId)?.name ?? "this section",
-                    items: itemsOf(board, place.sectionId).length
-                  })
-                }
-              >
-                Delete this section
-              </button>
-            </div>
-          ) : null}
         </main>
 
         <aside className="builder__inspector" aria-label="Item">
@@ -1630,18 +1688,44 @@ export default function MenuBuilder({
                 </button>
               </div>
 
-              <div
-                className={`builder__availability${isOff ? " is-off" : ""}`}
-                data-testid="availability-panel"
-                data-off={isOff ? "true" : "false"}
-              >
-                <div className="builder__availability-head">
-                  <strong>{isOff ? "Off right now" : "On the board"}</strong>
+              {isOff ? (
+                <div className="builder__availability is-off" data-testid="availability-panel" data-off="true">
+                  <div className="builder__availability-head">
+                    <strong>Off right now</strong>
+                    <button
+                      type="button"
+                      className="builder__availability-switch"
+                      role="switch"
+                      aria-checked={false}
+                      aria-label="Turn back on"
+                      data-testid="availability-switch"
+                      onClick={() => void toggleAvailability()}
+                      disabled={busy}
+                    >
+                      <span aria-hidden="true" />
+                    </button>
+                  </div>
+                  <p>
+                    {/*
+                      The trailing clause is verbatim copy in the design authority,
+                      and it carries the rule: everything else on this page waits for
+                      Publish, and this does not.
+                    */}
+                    {offNote ??
+                      `Showing on every screen this board is on. Turning this off hides it on ${
+                        targets.total === 1 ? "your screen" : `all ${targets.total} screens`
+                      } immediately — not part of your draft.`}
+                  </p>
+                </div>
+              ) : (
+                <div className="builder__availability-control">
+                  <span className="builder__label">Availability</span>
                   <button
                     type="button"
+                    className="builder__availability-switch"
                     role="switch"
-                    aria-checked={!isOff}
-                    aria-label={isOff ? "Turn back on" : "Turn off"}
+                    aria-checked={true}
+                    aria-label="Turn off"
                     data-testid="availability-switch"
                     onClick={() => void toggleAvailability()}
                     disabled={busy}
@@ -1649,20 +1733,7 @@ export default function MenuBuilder({
                     <span aria-hidden="true" />
                   </button>
                 </div>
-                <p>
-                  {/*
-                    The trailing clause is verbatim copy in the design authority,
-                    and it carries the rule: everything else on this page waits for
-                    Publish, and this does not. Without it a reasonable person
-                    flips the switch, walks away without publishing, and believes
-                    the item is still on the wall.
-                  */}
-                  {offNote ??
-                    `Showing on every screen this board is on. Turning this off hides it on ${
-                      targets.total === 1 ? "your screen" : `all ${targets.total} screens`
-                    } immediately — not part of your draft.`}
-                </p>
-              </div>
+              )}
 
               <label>
                 <span className="builder__label">Name</span>

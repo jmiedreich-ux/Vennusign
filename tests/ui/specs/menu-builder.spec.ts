@@ -173,26 +173,35 @@ test.describe("the builder", () => {
     await page.getByTestId("new-section-name").press("Enter");
     await expect(page.getByTestId("rail-section").filter({ hasText: "Puddings" })).toBeVisible();
 
-    await page.getByTestId("section-name").fill("Afters");
-    await page.getByTestId("section-name").blur();
-    await expect(page.getByTestId("rail-section").filter({ hasText: "Afters" })).toBeVisible();
-
-    // Put an item on it, then delete the section: Q96's "nothing is lost" is what
-    // the message has to say, and it has to be true.
+    // Put an item on it so the section has a canvas heading to rename over. An
+    // empty section correctly shows only the add affordance (Q96).
     await page.getByTestId("open-add-item").click();
     const name = `Released ${data.itemId.slice(0, 6)}`;
     await page.getByTestId("add-item-input").fill(name);
     await page.getByTestId("add-item-create").click();
     await expect(page.getByTestId("canvas")).toContainText(name);
 
-    await page.getByTestId("delete-section").click();
+    await page.getByTestId("canvas").locator(".board-section-heading").click();
+    await page.getByTestId("heading-edit").fill("Afters");
+    await page.getByTestId("heading-edit").press("Enter");
+    await expect(page.getByTestId("rail-section").filter({ hasText: "Afters" })).toBeVisible();
+
+    // Delete the section: Q96's "nothing is lost" is what the message has to say,
+    // and it has to be true.
+    const sectionRow = page.getByTestId("rail-section").filter({ hasText: "Afters" }).locator("..");
+    await sectionRow.getByTestId("delete-section").click();
+    await expect(page.getByTestId("section-name")).toHaveCount(0);
     // Deleting a section asks first now — the irreversible act gets the guard the
     // reversible one always had.
     await page.getByTestId("confirm-delete-section").click();
     await expect(page.getByTestId("builder-notice")).toContainText("back to your library");
 
+    // The deleted section was last, so the previous surviving section becomes the
+    // canvas rather than leaving the builder pointed at an id that no longer exists.
+    await expect(page.getByTestId("rail-section").first()).toHaveAttribute("aria-current", "true");
+    await expect(page.getByTestId("canvas")).toContainText(data.itemName);
+
     // Still in the library: findable from the add row on another section.
-    await page.getByTestId("rail-section").first().click();
     await page.getByTestId("open-add-item").click();
     await page.getByTestId("add-item-input").fill(name);
     await expect(page.getByTestId("add-item-result").filter({ hasText: name })).toBeVisible();
@@ -218,6 +227,10 @@ test.describe("the builder", () => {
 
     await card.getByTestId("open-menu").click();
     await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    // Available is the normal state: a plain inspector control, not a green
+    // status panel that implies every edit here reaches screens immediately.
+    await expect(page.getByTestId("availability-switch")).toBeVisible();
+    await expect(page.getByTestId("availability-panel")).toHaveCount(0);
     await page.getByTestId("availability-switch").click();
 
     // On the canvas it stays, struck through: you cannot turn back on what the
@@ -226,6 +239,7 @@ test.describe("the builder", () => {
     await expect(row).toHaveAttribute("data-unavailable", "true");
     await expect(page.getByTestId("availability-panel")).toHaveAttribute("data-off", "true");
     await expect(page.getByTestId("availability-panel")).toContainText("Hidden on every screen");
+    await expect(page.getByTestId("availability-panel")).toHaveCSS("background-color", "rgb(253, 234, 234)");
 
     // On the guest board it is already gone — with no publish, and with the draft
     // still clean. That is the whole of the availability model, seen from outside.
@@ -541,9 +555,20 @@ test.describe("the builder", () => {
     await expect(dialog).toHaveCount(0);
     await expect(page.getByTestId("rail-section")).toHaveCount(1);
 
-    await page.getByTestId("delete-section").click();
+    // If the first section goes, the next surviving section becomes the canvas.
+    // It is empty, so Q96's add affordance is the honest board state.
+    await page.getByTestId("add-section").click();
+    await page.getByTestId("new-section-name").fill("Next section");
+    await page.getByTestId("new-section-name").press("Enter");
+    const firstSection = page.getByTestId("rail-section").first().locator("..");
+    await firstSection.getByTestId("delete-section").click();
     await page.getByTestId("confirm-delete-section").click();
     await expect(page.getByTestId("builder-notice")).toContainText("back to your library");
+    await expect(page.getByTestId("rail-section").filter({ hasText: "Next section" })).toHaveAttribute(
+      "aria-current",
+      "true"
+    );
+    await expect(page.getByTestId("open-add-item")).toBeVisible();
   });
 
   test("Review first shows the values, and leads into the publish", async ({ page }) => {
@@ -782,7 +807,8 @@ test.describe("what the independent review found", () => {
     await expect(page.getByTestId("canvas")).toContainText("Renamed On The Board");
   });
 
-  test("the bulk drawer places many, stays open, and retargets as sections change (Q124)", async ({ page }) => {
+  test("the bulk drawer places many, stays open, and retargets as sections change (Q124)", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed).");
     const data = await seed({ role: "owner", label: "drawer" });
 
     // Two library items on no board, so the drawer has something to offer.
@@ -844,7 +870,8 @@ test.describe("what the independent review found", () => {
     await expect(page.getByTestId("add-many-drawer")).toHaveCount(0);
   });
 
-  test("an item is dragged to a new place on its own section (Q103)", async ({ page }) => {
+  test("an item is dragged to a new place on its own section (Q103)", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed).");
     const data = await seed({ role: "owner", label: "dragitem" });
 
     for (const name of ["Beta", "Gamma"]) {
@@ -866,7 +893,28 @@ test.describe("what the independent review found", () => {
      * It simply dragged nothing: no handler, and `reorderMenuItems` imported and
      * never called anywhere in the builder.
      */
-    await rows.first().dragTo(rows.nth(2));
+    const source = await rows.first().boundingBox();
+    const target = await rows.nth(2).boundingBox();
+    const handle = await rows.first().getByTestId("item-drag-handle").boundingBox();
+    expect(source).not.toBeNull();
+    expect(target).not.toBeNull();
+    expect(handle).not.toBeNull();
+
+    // A human does not complete a drag inside one synthetic event turn. Move the
+    // actual browser pointer slowly enough for layout/observer work to happen
+    // between positions; that is the path the former dragTo check missed.
+    // Start on the visible handle itself. Starting in the row's text would not
+    // reproduce what the owner actually grabbed.
+    await page.mouse.move(handle!.x + handle!.width / 2, handle!.y + handle!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, { steps: 24 });
+    const indicator = page.locator("[data-drop-edge]");
+    await expect(indicator).toHaveCount(1);
+    expect(
+      await indicator.evaluate(element => Number.parseFloat(getComputedStyle(element, "::before").height))
+    ).toBeGreaterThan(3);
+    await page.waitForTimeout(300);
+    await page.mouse.up();
     await expect.poll(async () => (await rows.allInnerTexts())[0], { timeout: 15_000 }).not.toBe(before[0]);
 
     // A draft change on the server, not a rearrangement of this screen.

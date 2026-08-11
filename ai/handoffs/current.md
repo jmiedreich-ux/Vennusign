@@ -25,25 +25,18 @@ Updated 2026-08-10, after Menus Milestone 3 was built and gated.
 
 ## Exact Next Action
 
-1. **Work the Menus Milestone 3 acceptance findings** — the owner ran the workbook
-   2026-08-10 and returned **"Needs adjustment"**: 11 Pass, 2 Fail, 2 Needs Adjustment.
-   Record at `docs/features/menus/m3-acceptance-record.json`, work package at
-   `docs/features/menus/m3-acceptance-findings.md`. **M3 does not merge on this
-   record** — the owner re-runs the workbook after the findings are worked, and has a
-   further set of visual notes to give once that set is done.
+1. **The owner reruns the Menus Milestone 3 acceptance workbook.** The 2026-08-10
+   record remains **"Needs adjustment"**: 11 Pass, 2 Fail, 2 Needs Adjustment. Its
+   findings are implemented and locally gated, but that old record does not authorize
+   merge. After the rerun, the owner supplies the deferred visual notes as the second
+   pass promised in `docs/features/menus/m3-acceptance-findings.md`.
 
-   The two Fails are worth naming here. One is an invented green "On the board" panel
-   the design never asked for — Q104 specifies only the red 86 panel — which reads as
-   a live/instant status over an area where only the 86 flip is instant. The other is
-   item drag: it does not work under a real mouse and shows no drop indicator, **while
-   its Playwright spec passes**. That is the third time in this milestone a green spec
-   covered a broken feature, and the prime suspect is `BoardStage`'s `useEffect` having
-   no dependency array, re-rendering the dragged row out from under Chromium.
-
-   Owner decisions taken on the back of the run, all recorded: the delete control moves
-   into the Sections list (**overrides Q96**, noted there), the duplicate section-name
-   field under the board goes, and **keyboard is out of scope for the build**
-   (milestone-plan §Cross-cutting rules — settled, and re-raising it is the defect).
+   Remediation removed the invented green availability panel, repaired real-mouse
+   handle-origin drag and added the insertion line, selected the previous/first
+   surviving section after deletion, moved delete into each Sections row, removed the
+   duplicate name field, changed workbook Undo to the on-screen button, and pre-seeded
+   Harbor Lemonade on two menus. The owner reaffirmed that mobile interactions are out
+   of scope (Q158/#681); desktop interaction is the M3 gate.
 
 2. ~~Run the Menus Milestone 3 acceptance workbook~~ — done 2026-08-10, see above. Original text:
    `docs/features/menus/m3-acceptance-workbook.html`, **fifteen** checks, about twelve
@@ -594,3 +587,38 @@ the app rendered nothing at all.
 - Do not revive any cancelled track, phase or void work package without fresh owner approval.
 - Do not implement backlog issues #670–#683 without owner scheduling.
 - Design follow-ups (milestone-plan §Design follow-ups) must be resolved before the milestone that consumes them.
+
+## Milestone 3 owner-acceptance remediation — 2026-08-10
+
+**What this established.** The owner's first workbook findings are implemented.
+Available items now show a plain availability switch; only the 86 state is a red
+panel. The visible board handle is a real hit target, pointer drag works at human
+speed, a scale-correct insertion line follows it, and the order survives refresh.
+Section delete lives on each rail row, keeps its confirmation and library-release
+message, selects the previous surviving section (or the first if the deleted row
+was first), and leaves the empty-board add affordance when appropriate. Canvas-
+heading rename is the only section-name editor. Case 6 is pre-seeded with Harbor
+Lemonade on Acceptance Menu and Harbor Evening Menu; case 15 uses on-screen Undo.
+
+**Evidence.** Each product regression was observed red against its unfixed code:
+the available panel existed; a slow drag from the visible handle failed while a
+row-centre drag passed; the rail-row delete did not exist; the duplicate field did;
+and neutralising the deletion fallback left every remaining rail row unselected.
+Restored fixes pass. The fixture ran twice and returned exactly one shared placement
+on each named menu. Final local gate: back office 190/190 plus production build;
+Playwright 142 passed / 12 explicit skips; builder API 21/21; M1 demo 12/12;
+Data integration 91/91; .NET Debug retained only #688's known DataAccess 228/3 and
+API 433/1 failures; .NET Release solution and display production builds passed.
+CI remains suspended and was not used as a gate.
+
+**Assumed and deliberately bounded.** The owner reaffirmed that mobile interactions
+are out of scope (Q158/#681), so desktop handle drag and bulk placement are the M3
+interaction gates; their mobile Playwright variants are explicit skips. Existing
+mobile crash/layout coverage stays. Keyboard remains out of scope exactly as already
+recorded; existing handlers were not removed. D1's truncated visual notes were not
+chased, by owner instruction.
+
+**Left for the owner.** Rerun `docs/features/menus/m3-acceptance-workbook.html`.
+The existing record remains "Needs adjustment" and M3 does not merge on it. After
+this set is handed back, provide the deferred visual notes for the promised second
+pass. Milestones 4–6 remain blocked.

@@ -191,6 +191,8 @@ SELECT
 DECLARE @M1VenueId UNIQUEIDENTIFIER = '73000000-0000-0000-0000-000000000001';
 DECLARE @M1MenuId UNIQUEIDENTIFIER = '75000000-0000-0000-0000-000000000001';
 DECLARE @M1SectionId UNIQUEIDENTIFIER = '76000000-0000-0000-0000-000000000001';
+DECLARE @M1SharedMenuId UNIQUEIDENTIFIER = '75000000-0000-0000-0000-000000000002';
+DECLARE @M1SharedSectionId UNIQUEIDENTIFIER = '76000000-0000-0000-0000-000000000002';
 DECLARE @M1ScreenId UNIQUEIDENTIFIER = '74000000-0000-0000-0000-000000000001';
 DECLARE @M1ItemId UNIQUEIDENTIFIER = '77000000-0000-0000-0000-000000000001';
 DECLARE @M1SecondItemId UNIQUEIDENTIFIER = '77000000-0000-0000-0000-000000000002';
@@ -206,6 +208,28 @@ BEGIN TRANSACTION;
 UPDATE dbo.Menus
 SET Theme = NULL, DwellSeconds = 8, LoopWarningSeconds = 60, IsPutAway = 0, UpdatedUtc = @M1Now
 WHERE Id = @M1MenuId AND VenueId = @M1VenueId;
+
+-- M3 acceptance case 6 starts with one shared item on two menus. The owner judges
+-- the price explanation; they do not have to manufacture the condition first.
+MERGE dbo.Menus AS target
+USING (VALUES (@M1SharedMenuId, @M1VenueId, N'Harbor Evening Menu')) AS source (Id, VenueId, Name)
+    ON target.Id = source.Id
+WHEN MATCHED THEN UPDATE SET
+    VenueId = source.VenueId, Name = source.Name, IsActive = 1, IsPutAway = 0, UpdatedUtc = @M1Now
+WHEN NOT MATCHED THEN
+    INSERT (Id, VenueId, Name, IsActive, IsPutAway, CreatedUtc, UpdatedUtc)
+    VALUES (source.Id, source.VenueId, source.Name, 1, 0, @M1Now, @M1Now);
+
+MERGE dbo.MenuSections AS target
+USING (VALUES (@M1SharedSectionId, @M1VenueId, @M1SharedMenuId, N'Drinks', 0))
+    AS source (Id, VenueId, MenuId, Name, SortOrder)
+    ON target.Id = source.Id
+WHEN MATCHED THEN UPDATE SET
+    VenueId = source.VenueId, MenuId = source.MenuId, Name = source.Name,
+    SortOrder = source.SortOrder, UpdatedUtc = @M1Now
+WHEN NOT MATCHED THEN
+    INSERT (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+    VALUES (source.Id, source.VenueId, source.MenuId, source.Name, source.SortOrder, @M1Now, @M1Now);
 
 -- Prices are stored exactly as typed (Q115/Q190), so the fixture deliberately
 -- includes a market price alongside a decimal one. Matched rows are repaired,
@@ -241,6 +265,18 @@ WHEN MATCHED THEN UPDATE SET SortOrder = source.SortOrder, UpdatedUtc = @M1Now
 WHEN NOT MATCHED THEN
     INSERT (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
     VALUES (NEWID(), @M1VenueId, @M1MenuId, @M1SectionId, source.ItemId, source.SortOrder, @M1Now, @M1Now);
+
+-- Restore the second menu to exactly the one shared item on every fixture run.
+DELETE FROM dbo.Placements
+WHERE MenuId = @M1SharedMenuId AND ItemId <> @M1ItemId;
+
+MERGE dbo.Placements AS target
+USING (VALUES (@M1ItemId, 0)) AS source (ItemId, SortOrder)
+    ON target.MenuSectionId = @M1SharedSectionId AND target.ItemId = source.ItemId
+WHEN MATCHED THEN UPDATE SET SortOrder = source.SortOrder, UpdatedUtc = @M1Now
+WHEN NOT MATCHED THEN
+    INSERT (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
+    VALUES (NEWID(), @M1VenueId, @M1SharedMenuId, @M1SharedSectionId, source.ItemId, source.SortOrder, @M1Now, @M1Now);
 
 -- Demo-created library items for this venue go with their availability rows,
 -- so re-runs cannot accumulate lookalikes the demo might then pick up.

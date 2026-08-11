@@ -191,7 +191,7 @@ Four columns inside the rail: section rail 212px, canvas (flex), inspector 296px
 
 Top bar 58px: breadcrumb ("Menus / Summer Menu", "Menus" is the way back), Quick update / Build segmented control, Undo/Redo pair, "Viewing as **Bar** · 1920×1080 ▾", "▶ Play" accent button.
 
-**Section rail** `#fbfcfe`: uppercase "Sections" heading with a `+`, then rows — drag handle `⠿` (`#64748b`, must be legible; it is the reorder affordance), name, item count. Selected row: `#e0f2fe` with `inset 0 0 0 1px #87ceeb`. It is a **navigator, not a second editor** — items live only on the canvas.
+**Section rail** `#fbfcfe`: uppercase "Sections" heading with a `+`, then rows — drag handle `⠿` (`#64748b`, must be legible; it is the reorder affordance), name, item count, and a small red delete control. Selected row: `#e0f2fe` with `inset 0 0 0 1px #87ceeb`. The rail navigates and owns section deletion; section names and menu items are edited only on the canvas. *Amended 2026-08-10 by the Q96 owner override from the milestone 3 acceptance run.*
 
 **Canvas** `#f4f7fa`: View toggle (One section / Whole board) then the board card at 14px radius on `#faf8f2` with a strong drop shadow. The board is the real render. Selected item gets `0 0 0 2px #2a78d6` plus a blue drag pill hanging off its left edge. An 86'd item renders at 42% opacity, name struck through, with "86'd 6:40pm — hidden on all screens right now" in `#8a2929`.
 
