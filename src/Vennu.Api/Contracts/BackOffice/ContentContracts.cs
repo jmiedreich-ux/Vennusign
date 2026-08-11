@@ -212,7 +212,7 @@ public sealed record BuilderBoardResponse(
 public sealed record SectionResponse(Guid SectionId, string Name, int SortOrder);
 
 public sealed record PageResponse(Guid PageId, string Name, int SortOrder);
-public sealed record PageDeleteResponse(int MovedSectionCount, int RemovedAssignmentCount);
+public sealed record PageDeleteResponse(int MovedSectionCount, int DeletedSectionCount, int RemovedAssignmentCount);
 
 /// <summary>
 /// What a delete released back to the library, so the UI can say it rather than
@@ -274,6 +274,8 @@ public sealed record AssignmentResponse(
 public sealed record ScreenShowingResponse(
     Guid ScreenId,
     string ScreenName,
+    string? Location,
+    string Status,
     int WidthPixels,
     int HeightPixels,
     Guid? MenuId,

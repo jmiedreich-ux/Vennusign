@@ -19,3 +19,12 @@ test("capacity moves with a second geometry", () => {
   assert.notEqual(portrait4k.limit, landscape.limit);
   assert.equal(portrait4k.state, "fits");
 });
+
+test("an attached display theme changes the computed fit limit", () => {
+  const content = board(20);
+  const plain = calculateBoardCapacity(content, { width: 1920, height: 1080 }, null);
+  const themed = calculateBoardCapacity(content, { width: 1920, height: 1080 }, "evening");
+
+  assert.notEqual(themed.limit, plain.limit);
+  assert.ok(themed.limit < plain.limit);
+});

@@ -149,7 +149,7 @@
   border: 0;
   padding: var(--sky-space-3) var(--sky-space-4);
   background: transparent;
-  color: var(--sky-color-text-muted);
+  color: var(--sky-color-text-secondary);
 }
 
 .builder__page-tab {
@@ -170,12 +170,14 @@
 .builder__page-name-input::placeholder { color: var(--sky-color-text-muted); opacity: 1; }
 .builder__page-name-input:focus-visible { outline: 2px solid var(--sky-focus-color); outline-offset: -2px; }
 
-.builder__page-tab.is-active { color: var(--sky-text-primary); background: var(--sky-color-background-base); }
-.builder__page-actions { border: 0; background: var(--sky-color-background-base); padding: var(--sky-space-3); }
+.builder__page-tab.is-active { color: var(--sky-text-primary); background: var(--sky-color-surface); font-weight: var(--sky-font-weight-semibold); }
+.builder__add-page { font-weight: var(--sky-font-weight-semibold); }
+.builder__page-actions { border: 0; background: transparent; padding: var(--sky-space-2); }
 .builder__page-menu { position: absolute; z-index: 10; top: 100%; right: 0; display: grid; min-width: 9rem; border: 1px solid var(--sky-color-border); border-radius: var(--sky-radius-md); background: var(--sky-color-surface); box-shadow: var(--sky-panel-shadow); }
 .builder__page-menu button { border: 0; padding: var(--sky-space-3); background: transparent; text-align: left; }
 .builder__page-menu button:hover { background: var(--sky-color-surface-muted); }
-.builder__page-summary { display: flex; align-items: center; gap: var(--sky-space-3); padding: var(--sky-space-2) var(--sky-space-4); border-top: 1px solid var(--sky-color-border); }
+.builder__page-summary { position: relative; display: flex; align-items: center; gap: var(--sky-space-3); padding: var(--sky-space-2) var(--sky-space-4); border-top: 1px solid var(--sky-color-border); }
+.builder__page-summary .builder__page-menu { top: calc(100% - var(--sky-space-1)); left: var(--sky-space-4); }
 .builder__assignment-pill { display: inline-flex; align-items: center; gap: var(--sky-space-2); margin-left: auto; border: 1px solid var(--sky-color-border); border-radius: 999px; padding: var(--sky-space-2) var(--sky-space-3); background: var(--sky-color-surface); color: var(--sky-text-primary); }
 .builder__assignment-pill svg { width: 1rem; height: 1rem; }
 .builder__page-summary details { margin-left: auto; position: relative; }
@@ -185,6 +187,8 @@
 .builder__section-chips summary { border: 1px solid var(--sky-color-border); border-radius: var(--sky-radius-md); padding: var(--sky-space-2) var(--sky-space-3); background: var(--sky-color-surface); cursor: pointer; }
 .builder__section-chips > button { flex: 1 1 0; min-width: 0; max-width: 9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .builder__section-chips > button:first-child { flex: 0 0 auto; }
+.builder__section-chips > button[data-order]::before,
+.builder__section-more-menu button[data-order]::before { content: attr(data-order) ". "; font-variant-numeric: tabular-nums; }
 .builder__section-more { position: relative; flex: 0 0 auto; }
 .builder__section-more summary { display: inline-flex; align-items: center; gap: var(--sky-space-2); list-style: none; white-space: nowrap; }
 .builder__section-more summary::-webkit-details-marker { display: none; }
@@ -559,6 +563,10 @@
 }
 
 .builder__capacity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sky-space-3);
   margin: 0 var(--sky-space-5) var(--sky-space-3);
   padding: var(--sky-space-3) var(--sky-space-4);
   border: 1px solid var(--sky-color-warning-border);
@@ -1109,6 +1117,11 @@
   font-size: 13px;
   line-height: 1.5;
 }
+.builder__capacity > span { display: grid; gap: var(--sky-space-1); }
+.builder__capacity small { color: var(--sky-text-secondary); }
+.builder__fit-results { display: grid; gap: var(--sky-space-3); max-height: min(28rem, 55vh); margin: var(--sky-space-4) 0 0; padding: 0; overflow-y: auto; list-style: none; }
+.builder__fit-results li { display: grid; gap: var(--sky-space-1); padding: var(--sky-space-3); border: 1px solid var(--sky-color-border); border-radius: var(--sky-radius-md); }
+.builder__fit-results span { color: var(--sky-text-secondary); }
 
 .builder__assignment-dialog {
   display: grid;

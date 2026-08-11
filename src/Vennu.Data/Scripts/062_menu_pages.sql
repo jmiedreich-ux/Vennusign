@@ -65,6 +65,7 @@ GO
 -- Carry the owning page onto each placement so "once per page" is enforceable by
 -- a unique key under concurrent writes, rather than by an application pre-check.
 ALTER TABLE dbo.Placements ADD PageId UNIQUEIDENTIFIER NULL;
+GO
 UPDATE p SET PageId = s.PageId
 FROM dbo.Placements p INNER JOIN dbo.MenuSections s ON s.Id = p.MenuSectionId AND s.VenueId = p.VenueId;
 ALTER TABLE dbo.Placements ALTER COLUMN PageId UNIQUEIDENTIFIER NOT NULL;

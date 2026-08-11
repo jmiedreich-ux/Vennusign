@@ -74,7 +74,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
     /// itself rather than against a component that happens to honour them.
     /// </summary>
     [Fact]
-    public async Task Migration_DropsTheSectionArchiveFlagAndEnforcesOnePlacementPerBoard()
+    public async Task Migration_DropsTheSectionArchiveFlagAndEnforcesOnePlacementPerPage()
     {
         var dataAccess = fixture.CreateDataAccess();
 
@@ -90,10 +90,8 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
 
         foreach (var (constraint, expected) in new[]
         {
-            ("UQ_Placements_MenuItem", 1),
-            // Strictly implied by the above, because FK_Placements_SectionOnMenu
-            // already ties a placement's section to its menu. Kept alongside, it
-            // would only be a weaker duplicate of a rule already stated.
+            ("UQ_Placements_MenuItem", 0),
+            ("UQ_Placements_PageItem", 1),
             ("UQ_Placements_SectionItem", 0)
         })
         {
@@ -204,7 +202,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("cider"), Price = "7" },
             menuId, sectionId, itemsPerMenuLimit: 500);
@@ -257,7 +255,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
             new Item { VenueId = venueId, Name = fixture.UniqueValue("oysters"), Price = "MP" },
             menuId, sectionId, itemsPerMenuLimit: 500);
         Assert.Equal(ItemPlacementOutcomes.Created, outcome.Outcome);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
 
         var parsed = MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId));
 
@@ -281,7 +279,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
 
         var created = await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("lemonade"), Price = "9.5" },
@@ -323,7 +321,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("fizz"), Price = "12" },
             menuId, sectionId, itemsPerMenuLimit: 500);
@@ -372,7 +370,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         var first = await PublishCurrentAsync(repository, venueId, menuId);
 
         Assert.Equal(1, await repository.ClearMenuAssignmentsAsync(venueId, menuId));
@@ -405,7 +403,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("soda"), Price = "3" },
             menuId, sectionId, itemsPerMenuLimit: 500);
@@ -448,7 +446,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = "Burger", Price = "12" },
             menuId, sectionId, itemsPerMenuLimit: 500);
@@ -483,7 +481,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("cola"), Price = "3" },
             menuId, sectionId, itemsPerMenuLimit: 500);
@@ -516,7 +514,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("tea"), Price = "2" },
             menuId, sectionId, itemsPerMenuLimit: 500);
@@ -549,7 +547,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("cider"), Price = "6" },
             menuId, sectionId, itemsPerMenuLimit: 500);
@@ -585,7 +583,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         var version = await PublishCurrentAsync(repository, venueId, menuId);
         await ShelveAsync(repository, venueId, menuId);
 
@@ -620,7 +618,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("burger"), Price = "9" },
             menuId, sectionId, itemsPerMenuLimit: 500);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await PublishCurrentAsync(repository, venueId, menuId);
         var shelved = await ShelveAsync(repository, venueId, menuId);
 
@@ -667,7 +665,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         Assert.Null(before.MenuId);
 
         // Assigning is intent, not delivery: the screen is still showing nothing.
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         Assert.Null(Assert.Single(await repository.GetScreensShowingAsync(venueId)).MenuId);
 
         // Publishing is what reaches it.
@@ -698,11 +696,11 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var second = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
 
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = first });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = first }));
         await PublishCurrentAsync(repository, venueId, first);
         Assert.Equal(first, Assert.Single(await repository.GetScreensShowingAsync(venueId)).MenuId);
 
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = second });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = second }));
         await PublishCurrentAsync(repository, venueId, second);
         Assert.Equal(second, Assert.Single(await repository.GetScreensShowingAsync(venueId)).MenuId);
 
@@ -725,7 +723,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var screenA = await SeedScreenAsync(dataAccess, venueA);
         _ = await SeedScreenAsync(dataAccess, venueB);
 
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueA, ScreenId = screenA, MenuId = menuA });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueA, ScreenId = screenA, MenuId = menuA }));
         await PublishCurrentAsync(repository, venueA, menuA);
 
         Assert.Equal(screenA, Assert.Single(await repository.GetScreensShowingAsync(venueA)).ScreenId);
@@ -744,7 +742,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await PublishCurrentAsync(repository, venueId, menuId);
 
         await repository.TakeOffScreensAsync(venueId, menuId, "Chef", DateTime.UtcNow);
@@ -773,12 +771,12 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await PublishCurrentAsync(repository, venueId, menuId);
         await ShelveAsync(repository, venueId, menuId);
 
-        await Assert.ThrowsAsync<MenuPutAwayException>(() => repository.AssignScreenAsync(
-            new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
+        await Assert.ThrowsAsync<MenuPutAwayException>(async () => await repository.AssignScreenAsync(
+            await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId })));
         await Assert.ThrowsAsync<MenuPutAwayException>(() => PublishCurrentAsync(repository, venueId, menuId));
 
         // It is still off the shelf, so it still does not count against the ceiling.
@@ -799,7 +797,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         var live = await PublishCurrentAsync(repository, venueId, menuId);
 
         // The take-off empties the working assignment, but the screen still shows
@@ -837,13 +835,13 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var otherMenuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await PublishCurrentAsync(repository, venueId, menuId);
 
         // The first menu is taken off and the screen is given to another menu
         // before the take-off is ever published.
         await repository.TakeOffScreensAsync(venueId, menuId, "Owner", DateTime.UtcNow);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = otherMenuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = otherMenuId }));
 
         // There is no publish left that could release it, so nothing is pending.
         await Assert.ThrowsAsync<ScreensTakenByAnotherMenuException>(
@@ -869,13 +867,13 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuB = await SeedMenuAsync(dataAccess, venueId);
         var kept = await SeedScreenAsync(dataAccess, venueId);
         var taken = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = kept, MenuId = menuA });
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = taken, MenuId = menuA });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = kept, MenuId = menuA }));
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = taken, MenuId = menuA }));
         await PublishCurrentAsync(repository, venueId, menuA);
 
         // A is taken off both screens, then one of them is given to B.
         await repository.TakeOffScreensAsync(venueId, menuA, "Chef", DateTime.UtcNow);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = taken, MenuId = menuB });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = taken, MenuId = menuB }));
 
         var outcome = await PublishCurrentAsync(repository, venueId, menuA);
 
@@ -894,11 +892,11 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuA = await SeedMenuAsync(dataAccess, venueId);
         var menuB = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuA });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuA }));
         await PublishCurrentAsync(repository, venueId, menuA);
 
         await repository.TakeOffScreensAsync(venueId, menuA, "Chef", DateTime.UtcNow);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuB });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuB }));
 
         var refusal = await Assert.ThrowsAsync<ScreensTakenByAnotherMenuException>(
             () => PublishCurrentAsync(repository, venueId, menuA));
@@ -918,7 +916,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await PublishCurrentAsync(repository, venueId, menuId);
 
         Assert.Equal(1, await repository.TakeOffScreensAsync(venueId, menuId, "Chef", DateTime.UtcNow));
@@ -947,7 +945,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var venueId = await SeedVenueAsync(dataAccess);
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
 
         var refused = await repository.SetPutAwayAsync(
             venueId, menuId, isPutAway: true, activeMenuLimit: 50, "Owner", "Put the menu away.", DateTime.UtcNow);
@@ -1007,7 +1005,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var neverPublishedMenuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, publishedMenuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = publishedMenuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = publishedMenuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("shelf-ale"), Price = "5" },
             publishedMenuId, sectionId, itemsPerMenuLimit: 500);
@@ -1082,7 +1080,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("board-ale"), Price = "4" },
             menuId, sectionId, itemsPerMenuLimit: 500);
@@ -1130,7 +1128,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("history-ale"), Price = "3" },
             menuId, sectionId, itemsPerMenuLimit: 500);
@@ -1164,7 +1162,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("dupe-ale"), Price = "9" },
             menuId, sectionId, itemsPerMenuLimit: 500);
@@ -1280,7 +1278,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("stout"), Price = "8" },
             menuId, sectionId, itemsPerMenuLimit: 500);
@@ -1325,7 +1323,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("porter"), Price = "6" },
             menuId, sectionId, itemsPerMenuLimit: 500);
@@ -1365,7 +1363,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("saison"), Price = "8" },
             menuId, sectionId, itemsPerMenuLimit: 500);
@@ -1402,7 +1400,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var first = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
         var second = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 1);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await repository.CreateItemOnMenuAsync(
             new Item { VenueId = venueId, Name = fixture.UniqueValue("wings"), Price = "12" },
             menuId, first, itemsPerMenuLimit: 500);
@@ -1459,11 +1457,11 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuA = await SeedMenuAsync(dataAccess, venueId);
         var menuB = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuA });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuA }));
         var version = await PublishCurrentAsync(repository, venueId, menuA);
 
         await repository.TakeOffScreensAsync(venueId, menuA, "Chef", DateTime.UtcNow);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuB });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuB }));
 
         await Assert.ThrowsAsync<ScreensTakenByAnotherMenuException>(() => repository.RestoreSnapshotAsync(
             venueId, menuA, version.Event.Snapshot!, "Reviewer", "Went back.", DateTime.UtcNow));
@@ -1578,7 +1576,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuA = await SeedMenuAsync(dataAccess, venueA);
         var screenA = await SeedScreenAsync(dataAccess, venueA);
         var screenB = await SeedScreenAsync(dataAccess, venueB);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueA, ScreenId = screenA, MenuId = menuA });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueA, ScreenId = screenA, MenuId = menuA }));
         var published = (await PublishCurrentAsync(repository, venueA, menuA)).Event;
 
         await Assert.ThrowsAnyAsync<Exception>(() => dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
@@ -1601,7 +1599,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuA = await SeedMenuAsync(dataAccess, venueId);
         var menuB = await SeedMenuAsync(dataAccess, venueId);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuA });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuA }));
         var publishedOnA = (await PublishCurrentAsync(repository, venueId, menuA)).Event;
 
         await Assert.ThrowsAnyAsync<Exception>(() => repository.RecordHistoryAsync(new MenuHistoryEntry
@@ -1754,7 +1752,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
         await PublishCurrentAsync(repository, venueId, menuId);
 
         var added = Guid.NewGuid();
@@ -2151,7 +2149,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var menuId = await SeedMenuAsync(dataAccess, venueId);
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
         var screenId = await SeedScreenAsync(dataAccess, venueId);
-        await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId });
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
 
         var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("lemonade"), Price = "9.5" };
         await repository.CreateItemOnMenuAsync(item, menuId, sectionId, itemsPerMenuLimit: 500);
@@ -2217,6 +2215,17 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
             """,
             new { SectionId = sectionId, VenueId = venueId, MenuId = menuId, Name = fixture.UniqueValue("section"), SortOrder = sortOrder });
         return sectionId;
+    }
+
+    private static async Task<MenuScreenAssignment> WithFirstPageAsync(
+        ContentRepository repository,
+        MenuScreenAssignment assignment)
+    {
+        assignment.PageId = (await repository.GetPagesAsync(assignment.VenueId, assignment.MenuId))
+            .OrderBy(page => page.SortOrder)
+            .ThenBy(page => page.Id)
+            .First().Id;
+        return assignment;
     }
 
     /// <summary>

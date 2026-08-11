@@ -662,3 +662,37 @@ regression was added but is UNTESTED in this run.
 **Exact next action.** Push the committed remediation head to PR #697, obtain an
 independent exact-SHA review, then regenerate the owner workbook against that SHA
 and rerun only the three previously adjusted cases plus one surrounding-flow check.
+
+## M3-A Slice 1 independent-review remediation — 2026-08-11
+
+**What this established.** PR #697's exact-head REQUEST_CHANGES findings were
+fixed across their full paths. Migration 062 now separates the placement column
+addition from its carry update; legacy assignment test callers carry an exact page;
+restore again refuses a screen acquired by another menu while preserving valid
+cross-menu rotations; and snapshot expectations use the screen-plus-page identity.
+Page deletion keeps the decision open after a move conflict and can recover by
+deleting the page's sections. Assignment Save keeps staged choices after a refusal,
+retries only transient failures, and exact-pair removal is idempotent. Capacity has
+an inspectable Check fit result; six-section overflow, long-name identity, screen
+location/status and cross-menu labels match the approved page workflow.
+
+**Paths and evidence.** New, existing, duplicate-placement, populated/empty delete,
+move conflict, Cancel, failed Save, retry-safe removal, same-menu and cross-menu
+assignment, unassigned/landscape/portrait capacity, section overflow and focus
+recovery are covered. The corrected migration carried a customer-shaped legacy
+menu, section, item, placement, screen and assignment into Page 1 and
+`DBCC CHECKCONSTRAINTS` returned no violation; the disposable database was removed.
+Release solution build passed with five existing warnings; back office 197/197 and
+production build passed; desktop page Playwright 16/16; Test API 8/8; focused
+snapshot tests 17/17; LocalDB data integration 94/94. DataAccess remained at its
+known #688 baseline, 228 passed / 3 failed. CI remains suspended.
+
+**Boundaries.** The untracked owner workbook was not modified or committed. Azure
+and other external-service tests remain skipped under the standing exception.
+Future tier authority and theme-authored fit measurements remain owned by their
+later milestones; Slice 1 continues to use the documented maximum-tier defaults
+and its deterministic fit model.
+
+**Exact next action.** Commit and push this remediation to PR #697, obtain a fresh
+independent exact-SHA review, and only after approval regenerate the owner workbook
+for owner acceptance.

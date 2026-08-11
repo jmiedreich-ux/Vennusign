@@ -226,7 +226,7 @@ public sealed class MenuSnapshotDiffTests
         var change = Assert.Single(MenuSnapshot.Diff(Snapshot(onScreen: true), Snapshot(onScreen: false)));
 
         Assert.Equal(DraftTargetKinds.Screens, change.TargetKind);
-        Assert.Equal(ScreenId.ToString(), change.BeforeValue);
+        Assert.Equal($"{ScreenId}:{Guid.Empty}", change.BeforeValue);
         Assert.Equal(string.Empty, change.AfterValue);
     }
 

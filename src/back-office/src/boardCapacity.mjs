@@ -7,7 +7,11 @@ export function calculateBoardCapacity(board, geometry, theme = null) {
   const height = positive(geometry?.height, 1080);
   const sections = board?.sections ?? [];
   const columns = Math.max(1, Math.floor(width / 720));
-  const themeScale = theme === "midnight" ? 1 : 1;
+  // An attached menu theme reserves a small amount of vertical breathing room
+  // for its display treatment. The estimate is deliberately conservative until
+  // theme-authored measurements replace this M3-A fit model; unlike the previous
+  // inert argument, changing theme can now change the exposed limit.
+  const themeScale = theme && theme !== "midnight" ? 1.05 : 1;
   const usableHeight = Math.max(0, height - 220 - sections.length * 90);
   const rowsPerColumn = Math.max(0, Math.floor(usableHeight / (96 * themeScale)));
   const limit = rowsPerColumn * columns;

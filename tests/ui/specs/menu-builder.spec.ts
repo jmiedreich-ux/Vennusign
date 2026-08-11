@@ -54,7 +54,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", label: "firstopen" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await expect(page.getByTestId("view-one-section")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("viewing-chip").filter({ hasNotText: "Whole page" }).first()).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByTestId("rail-section").first()).toHaveAttribute("aria-current", "true");
     await expect(page.getByTestId("inspector-empty")).toBeVisible();
   });

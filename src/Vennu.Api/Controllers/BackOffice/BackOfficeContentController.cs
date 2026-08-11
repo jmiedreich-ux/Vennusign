@@ -206,7 +206,10 @@ public sealed class BackOfficeContentController(
         var outcome = await library.DeletePageAsync(VenueId, menuId, pageId, request?.MoveSectionsToPageId, request?.DeleteSections ?? false, cancellationToken).ConfigureAwait(false);
         return outcome.Outcome switch
         {
-            "deleted" => Ok(new PageDeleteResponse(outcome.MovedSectionCount, outcome.RemovedAssignmentCount)),
+            "deleted" => Ok(new PageDeleteResponse(
+                request?.DeleteSections == true ? 0 : outcome.AffectedSectionCount,
+                request?.DeleteSections == true ? outcome.AffectedSectionCount : 0,
+                outcome.RemovedAssignmentCount)),
             "last_page" => Conflict(new { reason = "last_page", message = "A menu always keeps one page." }),
             "move_required" => Conflict(new { reason = "move_required", message = "Choose another page for these sections before deleting this page." }),
             "item_conflict" => Conflict(new { reason = "item_conflict", message = "Those pages share an item, so their sections cannot be combined yet. Choose another page." }),
@@ -462,6 +465,8 @@ public sealed class BackOfficeContentController(
             .Select(screen => new ScreenShowingResponse(
                 screen.ScreenId,
                 screen.ScreenName,
+                screen.Location,
+                screen.Status,
                 screen.WidthPixels,
                 screen.HeightPixels,
                 screen.MenuId,
@@ -514,8 +519,8 @@ public sealed class BackOfficeContentController(
     [RequireCapability("screen.content.target")]
     public async Task<IActionResult> RemovePageAssignment(Guid screenId, Guid menuId, Guid pageId, CancellationToken cancellationToken)
     {
-        var removed = await library.ClearPageScreenAssignmentAsync(VenueId, screenId, menuId, pageId, cancellationToken).ConfigureAwait(false);
-        return removed ? NoContent() : NotFound(new { message = "That page is not assigned to this screen." });
+        await library.ClearPageScreenAssignmentAsync(VenueId, screenId, menuId, pageId, cancellationToken).ConfigureAwait(false);
+        return NoContent();
     }
 
     /// <summary>

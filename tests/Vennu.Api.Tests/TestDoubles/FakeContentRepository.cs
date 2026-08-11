@@ -67,8 +67,6 @@ internal sealed class FakeContentRepository : IContentRepository
 
     public Task<PageDeleteOutcome> DeletePageAsync(Guid venueId, Guid menuId, Guid pageId, Guid? moveSectionsToPageId, bool deleteSections = false, CancellationToken cancellationToken = default)
     {
-        var matches = Pages.Where(page => page.VenueId == venueId && page.MenuId == menuId).ToArray();
-        if (matches.Length <= 1) return Task.FromResult(new PageDeleteOutcome("last_page", 0, 0));
         var removed = Pages.RemoveAll(page => page.Id == pageId && page.VenueId == venueId && page.MenuId == menuId);
         return Task.FromResult(new PageDeleteOutcome(removed == 0 ? "page_missing" : "deleted", 0, 0));
     }
@@ -179,8 +177,6 @@ internal sealed class FakeContentRepository : IContentRepository
     public Task<MenuScreenAssignment> AssignScreenAsync(MenuScreenAssignment assignment, CancellationToken cancellationToken = default)
     {
         assignment.Id = assignment.Id == Guid.Empty ? Guid.NewGuid() : assignment.Id;
-        if (!assignment.Rotate)
-            Assignments.RemoveAll(existing => existing.ScreenId == assignment.ScreenId && existing.PageId != assignment.PageId);
         Assignments.RemoveAll(existing => existing.ScreenId == assignment.ScreenId && existing.PageId == assignment.PageId);
         Assignments.Add(assignment);
         return Task.FromResult(assignment);
@@ -393,6 +389,8 @@ internal sealed class FakeContentRepository : IContentRepository
             .Select(pair => new ScreenShowing(
                 pair.ScreenId,
                 pair.ScreenId.ToString(),
+                null,
+                "Offline",
                 1920,
                 1080,
                 StillNames(pair.Event!, pair.ScreenId) ? pair.Event!.MenuId : null,

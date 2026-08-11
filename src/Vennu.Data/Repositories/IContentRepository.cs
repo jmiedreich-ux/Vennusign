@@ -396,7 +396,7 @@ public interface IContentRepository
 /// <summary>Whether the menu was created, and the venue's active-menu count under the lock.</summary>
 public sealed record MenuCreateOutcome(bool Created, int ActiveMenuCount);
 
-public sealed record PageDeleteOutcome(string Outcome, int MovedSectionCount, int RemovedAssignmentCount);
+public sealed record PageDeleteOutcome(string Outcome, int AffectedSectionCount, int RemovedAssignmentCount);
 
 /// <summary>
 /// Whether the copy was made, the venue's active-menu count under the lock, and the
@@ -455,6 +455,8 @@ public sealed record PublishOutcome(MenuPublishEvent Event, IReadOnlyCollection<
 public sealed record ScreenShowing(
     Guid ScreenId,
     string ScreenName,
+    string? Location,
+    string Status,
     int WidthPixels,
     int HeightPixels,
     Guid? MenuId,

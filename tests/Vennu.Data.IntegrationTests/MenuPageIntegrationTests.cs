@@ -152,7 +152,7 @@ public sealed class MenuPageIntegrationTests(DatabaseFixture fixture)
             Assert.Equal("move_required", moveRequired.Outcome);
             var deleted = await repository.DeletePageAsync(venueId, menuId, first.Id, second.Id);
             Assert.Equal("deleted", deleted.Outcome);
-            Assert.Equal(2, deleted.MovedSectionCount);
+            Assert.Equal(2, deleted.AffectedSectionCount);
         }
         finally
         {

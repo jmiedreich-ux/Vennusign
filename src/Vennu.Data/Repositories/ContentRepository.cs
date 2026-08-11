@@ -273,6 +273,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         SELECT
             sc.Id AS ScreenId,
             sc.Name AS ScreenName,
+            sc.Location,
+            sc.Status,
             sc.WidthPixels,
             sc.HeightPixels,
             CASE WHEN named.ScreenId IS NULL THEN NULL ELSE last.MenuId END AS MenuId,
@@ -1195,6 +1197,28 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         SELECT screenId,COALESCE(pageId,(SELECT TOP (1) PageId FROM @Pages ORDER BY SortOrder,PageId)) FROM OPENJSON(@SnapshotJson, '$.screens')
         WITH (screenId UNIQUEIDENTIFIER '$.screenId',pageId UNIQUEIDENTIFIER '$.pageId');
 
+        -- A stale restore must not silently turn a screen another menu acquired
+        -- into a rotation. An existing exact pair is already shared deliberately
+        -- and can be restored without touching the other menu; a missing pair
+        -- requires a fresh assignment decision, so name the conflict instead.
+        IF EXISTS (
+            SELECT 1
+            FROM @Screens desired
+            INNER JOIN dbo.MenuScreenAssignments otherAssignment WITH (UPDLOCK, HOLDLOCK)
+              ON otherAssignment.ScreenId=desired.ScreenId
+             AND otherAssignment.VenueId=@VenueId
+             AND otherAssignment.MenuId<>@MenuId
+            WHERE NOT EXISTS (
+                SELECT 1 FROM dbo.MenuScreenAssignments ownAssignment WITH (UPDLOCK, HOLDLOCK)
+                WHERE ownAssignment.ScreenId=desired.ScreenId
+                  AND ownAssignment.PageId=desired.PageId
+                  AND ownAssignment.MenuId=@MenuId
+                  AND ownAssignment.VenueId=@VenueId))
+        BEGIN
+            ROLLBACK TRANSACTION;
+            THROW 51005, 'A screen from this version now belongs to another menu.', 1;
+        END;
+
         DELETE a
         FROM dbo.MenuScreenAssignments a
         WHERE a.VenueId = @VenueId AND a.MenuId = @MenuId
@@ -1566,18 +1590,18 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             """
             SET XACT_ABORT ON; BEGIN TRANSACTION;
             IF (SELECT COUNT(*) FROM dbo.MenuPages WITH (UPDLOCK,HOLDLOCK) WHERE VenueId=@VenueId AND MenuId=@MenuId) <= 1
-            BEGIN ROLLBACK; SELECT N'last_page' Outcome,0 MovedSectionCount,0 RemovedAssignmentCount; RETURN; END;
+            BEGIN ROLLBACK; SELECT N'last_page' Outcome,0 AffectedSectionCount,0 RemovedAssignmentCount; RETURN; END;
             IF NOT EXISTS (SELECT 1 FROM dbo.MenuPages WHERE Id=@PageId AND VenueId=@VenueId AND MenuId=@MenuId)
-            BEGIN ROLLBACK; SELECT N'page_missing' Outcome,0 MovedSectionCount,0 RemovedAssignmentCount; RETURN; END;
+            BEGIN ROLLBACK; SELECT N'page_missing' Outcome,0 AffectedSectionCount,0 RemovedAssignmentCount; RETURN; END;
             DECLARE @SectionCount int=(SELECT COUNT(*) FROM dbo.MenuSections WHERE PageId=@PageId AND VenueId=@VenueId);
             IF @SectionCount>0 AND @DeleteSections=0 AND (@MoveSectionsToPageId IS NULL OR NOT EXISTS (SELECT 1 FROM dbo.MenuPages WHERE Id=@MoveSectionsToPageId AND VenueId=@VenueId AND MenuId=@MenuId AND Id<>@PageId))
-            BEGIN ROLLBACK; SELECT N'move_required' Outcome,0 MovedSectionCount,0 RemovedAssignmentCount; RETURN; END;
+            BEGIN ROLLBACK; SELECT N'move_required' Outcome,0 AffectedSectionCount,0 RemovedAssignmentCount; RETURN; END;
             IF @SectionCount>0 AND @DeleteSections=0 AND EXISTS (
               SELECT 1 FROM dbo.Placements sourcePlacement
               INNER JOIN dbo.MenuSections sourceSection ON sourceSection.Id=sourcePlacement.MenuSectionId AND sourceSection.PageId=@PageId
               INNER JOIN dbo.Placements destinationPlacement ON destinationPlacement.PageId=@MoveSectionsToPageId AND destinationPlacement.ItemId=sourcePlacement.ItemId
               WHERE sourcePlacement.VenueId=@VenueId)
-            BEGIN ROLLBACK; SELECT N'item_conflict' Outcome,0 MovedSectionCount,0 RemovedAssignmentCount; RETURN; END;
+            BEGIN ROLLBACK; SELECT N'item_conflict' Outcome,0 AffectedSectionCount,0 RemovedAssignmentCount; RETURN; END;
             IF @SectionCount>0 AND @DeleteSections=0 BEGIN
               DECLARE @Offset int=ISNULL((SELECT MAX(SortOrder)+1 FROM dbo.MenuSections WHERE PageId=@MoveSectionsToPageId),0);
               UPDATE dbo.MenuSections SET PageId=@MoveSectionsToPageId, SortOrder=@Offset+SortOrder, UpdatedUtc=SYSUTCDATETIME() WHERE PageId=@PageId AND VenueId=@VenueId;
@@ -1592,12 +1616,12 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             DECLARE @PageCount int=(SELECT COUNT(*) FROM dbo.MenuPages WHERE VenueId=@VenueId AND MenuId=@MenuId);
             UPDATE dbo.MenuPages SET SortOrder=SortOrder+@PageCount+1 WHERE VenueId=@VenueId AND MenuId=@MenuId AND SortOrder>@OldOrder;
             UPDATE dbo.MenuPages SET SortOrder=SortOrder-@PageCount-2 WHERE VenueId=@VenueId AND MenuId=@MenuId AND SortOrder>@OldOrder+@PageCount+1;
-            COMMIT; SELECT N'deleted' Outcome,@SectionCount MovedSectionCount,@Assignments RemovedAssignmentCount;
+            COMMIT; SELECT N'deleted' Outcome,@SectionCount AffectedSectionCount,@Assignments RemovedAssignmentCount;
             """, new { VenueId = venueId, MenuId = menuId, PageId = pageId, MoveSectionsToPageId = moveSectionsToPageId, DeleteSections = deleteSections }, cancellationToken).ConfigureAwait(false)).Single();
-        return new PageDeleteOutcome(row.Outcome, row.MovedSectionCount, row.RemovedAssignmentCount);
+        return new PageDeleteOutcome(row.Outcome, row.AffectedSectionCount, row.RemovedAssignmentCount);
     }
 
-    private sealed record PageDeleteRow(string Outcome, int MovedSectionCount, int RemovedAssignmentCount);
+    private sealed record PageDeleteRow(string Outcome, int AffectedSectionCount, int RemovedAssignmentCount);
     private sealed record PageUpdateRow(int Value);
 
     public Task<Guid> CreateItemAsync(Item item, CancellationToken cancellationToken = default)

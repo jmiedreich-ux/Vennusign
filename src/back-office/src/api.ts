@@ -845,6 +845,8 @@ export type MenuHistoryEntry = {
 export type MenuScreenShowing = {
   screenId: string;
   screenName: string;
+  location: string | null;
+  status: string;
   widthPixels: number;
   heightPixels: number;
   menuId: string | null;
@@ -885,7 +887,7 @@ async function contentRequest(
     }
   });
 
-  if (response.status === 409) {
+  if ([400, 404, 409, 422].includes(response.status)) {
     // A named refusal, in the words the server chose.
     const body = (await response.json().catch(() => ({}))) as { reason?: string; message?: string };
     throw new MenuActionRefused(body.reason ?? "refused", body.message ?? "That is not something you can do right now.");
