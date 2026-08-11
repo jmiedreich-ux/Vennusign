@@ -1,5 +1,5 @@
 import { test, expect, findShelfCard, openAs, openMenuBuilderAs, apiBaseUrl, tokens } from "../fixtures";
-import { seed } from "../seed";
+import { backdateAvailability, seed } from "../seed";
 
 /**
  * The menu builder, in a browser.
@@ -764,10 +764,7 @@ test.describe("what the independent review found", () => {
      * single board-level note handed to both rows would satisfy it. Ninety minutes
      * is enough to change the rendered hour whatever the venue's timezone.
      */
-    const backdated = await page.request.post(`${apiBaseUrl}/api/test/seed/backdate-availability`, {
-      data: { accessToken: tokens.owner, itemId: data.itemId, minutesAgo: 90 }
-    });
-    expect(backdated.ok()).toBeTruthy();
+    await backdateAvailability(data.itemId, 90);
 
     await openMenuBuilderAs(page, "owner", data.menuId);
     await expect(page.getByTestId("board-item-note")).toHaveCount(2);

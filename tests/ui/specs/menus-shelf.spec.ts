@@ -245,16 +245,16 @@ test.describe("the shelf", () => {
     await openAs(page, "scale", "menu");
     await page.getByTestId("menus-home").waitFor();
 
-    // Decisions 9, 10 and 11, asserted against the rendered page rather than the
+    // Decisions 9 and 10 plus amendment A8, asserted against the rendered page rather than the
     // source: nobody ever sees these words.
     const shelf = page.getByTestId("menus-home");
-    for (const banned of ["unpublish", "supersede", "restore", "archive"]) {
+    for (const banned of ["unpublish", "supersede", "archive"]) {
       await expect(shelf, `the shelf says "${banned}"`).not.toContainText(new RegExp(banned, "i"));
     }
 
     // And with the card menu open, where the destructive wording lives.
     await page.getByTestId("card-actions").first().click();
-    for (const banned of ["unpublish", "supersede", "restore", "archive"]) {
+    for (const banned of ["unpublish", "supersede", "archive"]) {
       await expect(shelf, `the card menu says "${banned}"`).not.toContainText(new RegExp(banned, "i"));
     }
   });

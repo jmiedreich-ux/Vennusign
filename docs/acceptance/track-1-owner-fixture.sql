@@ -14,6 +14,7 @@ IF OBJECT_ID('dbo.CapabilityDefinitions', 'U') IS NULL
 DECLARE @OwnerUserId uniqueidentifier = '71000000-0000-0000-0000-000000000001';
 DECLARE @EditorUserId uniqueidentifier = '71000000-0000-0000-0000-000000000002';
 DECLARE @PublisherUserId uniqueidentifier = '71000000-0000-0000-0000-000000000003';
+DECLARE @CapacityUserId uniqueidentifier = '71000000-0000-0000-0000-000000000005';
 DECLARE @OrganizationId uniqueidentifier = '72000000-0000-0000-0000-000000000001';
 DECLARE @VenueId uniqueidentifier = '73000000-0000-0000-0000-000000000001';
 DECLARE @ScreenId uniqueidentifier = '74000000-0000-0000-0000-000000000001';
@@ -22,6 +23,9 @@ DECLARE @SectionId uniqueidentifier = '76000000-0000-0000-0000-000000000001';
 DECLARE @ItemId uniqueidentifier = '77000000-0000-0000-0000-000000000001';
 DECLARE @AllowanceId uniqueidentifier = '78000000-0000-0000-0000-000000000001';
 DECLARE @RolloutId uniqueidentifier = '79000000-0000-0000-0000-000000000001';
+DECLARE @CapacityVenueId uniqueidentifier = '73000000-0000-0000-0000-000000000003';
+DECLARE @CapacityScreenId uniqueidentifier = '74000000-0000-0000-0000-000000000003';
+DECLARE @CapacityAllowanceId uniqueidentifier = '78000000-0000-0000-0000-000000000003';
 
 BEGIN TRANSACTION;
 
@@ -29,7 +33,8 @@ MERGE dbo.CustomerUsers AS target
 USING (VALUES
     (@OwnerUserId, 'track1-owner@local.vennu.test', 'TRACK1-OWNER@LOCAL.VENNU.TEST', 'Track 1 Owner Review'),
     (@EditorUserId, 'track1-editor@local.vennu.test', 'TRACK1-EDITOR@LOCAL.VENNU.TEST', 'Track 1 Content Editor'),
-    (@PublisherUserId, 'track1-publisher@local.vennu.test', 'TRACK1-PUBLISHER@LOCAL.VENNU.TEST', 'Track 1 Publisher')
+    (@PublisherUserId, 'track1-publisher@local.vennu.test', 'TRACK1-PUBLISHER@LOCAL.VENNU.TEST', 'Track 1 Publisher'),
+    (@CapacityUserId, 'track1-capacity@local.vennu.test', 'TRACK1-CAPACITY@LOCAL.VENNU.TEST', 'Track 1 Capacity Check')
 ) AS source (Id, Email, NormalizedEmail, DisplayName)
 ON target.Id = source.Id
 WHEN MATCHED THEN UPDATE SET
@@ -53,7 +58,8 @@ MERGE dbo.OrganizationMemberships AS target
 USING (VALUES
     ('72100000-0000-0000-0000-000000000001', @OrganizationId, @OwnerUserId, 1),
     ('72100000-0000-0000-0000-000000000002', @OrganizationId, @EditorUserId, 3),
-    ('72100000-0000-0000-0000-000000000003', @OrganizationId, @PublisherUserId, 3)
+    ('72100000-0000-0000-0000-000000000003', @OrganizationId, @PublisherUserId, 3),
+    ('72100000-0000-0000-0000-000000000005', @OrganizationId, @CapacityUserId, 3)
 ) AS source (Id, OrganizationId, UserId, Role)
 ON target.OrganizationId = source.OrganizationId AND target.UserId = source.UserId
 WHEN MATCHED THEN UPDATE SET Role = source.Role, RevokedUtc = NULL, UpdatedUtc = SYSUTCDATETIME()
@@ -71,6 +77,14 @@ WHEN MATCHED THEN UPDATE SET
     PrimaryLanguage = source.PrimaryLanguage,
     OrganizationId = source.OrganizationId,
     UpdatedUtc = SYSUTCDATETIME()
+WHEN NOT MATCHED THEN INSERT (Id, Name, Timezone, Type, PrimaryLanguage, OrganizationId)
+    VALUES (source.Id, source.Name, source.Timezone, source.Type, source.PrimaryLanguage, source.OrganizationId);
+
+MERGE dbo.Venues AS target
+USING (VALUES (@CapacityVenueId, N'Capacity Check Venue', N'America/Los_Angeles', N'Bar', N'en', @OrganizationId))
+    AS source (Id, Name, Timezone, Type, PrimaryLanguage, OrganizationId)
+ON target.Id = source.Id
+WHEN MATCHED THEN UPDATE SET Name = source.Name, Timezone = source.Timezone, OrganizationId = source.OrganizationId, UpdatedUtc = SYSUTCDATETIME()
 WHEN NOT MATCHED THEN INSERT (Id, Name, Timezone, Type, PrimaryLanguage, OrganizationId)
     VALUES (source.Id, source.Name, source.Timezone, source.Type, source.PrimaryLanguage, source.OrganizationId);
 
@@ -107,6 +121,15 @@ WHEN MATCHED THEN UPDATE SET
     UpdatedUtc = SYSUTCDATETIME()
 WHEN NOT MATCHED THEN INSERT (Id, VenueId, ScreenKey, Name, Location, Status, Platform, AppVersion)
     VALUES (source.Id, source.VenueId, source.ScreenKey, source.Name, source.Location, N'Offline', N'web', N'track-1-review');
+
+MERGE dbo.Screens AS target
+USING (VALUES (@CapacityScreenId, @CapacityVenueId, N'sc-cap001', N'Capacity Existing Screen', N'Test wall'))
+    AS source (Id, VenueId, ScreenKey, Name, Location)
+ON target.Id = source.Id
+WHEN MATCHED THEN UPDATE SET VenueId = source.VenueId, ScreenKey = source.ScreenKey, Name = source.Name, Location = source.Location,
+    LastSeen = NULL, Status = N'Offline', Platform = N'web', AppVersion = N'ui-test', UpdatedUtc = SYSUTCDATETIME()
+WHEN NOT MATCHED THEN INSERT (Id, VenueId, ScreenKey, Name, Location, Status, Platform, AppVersion)
+    VALUES (source.Id, source.VenueId, source.ScreenKey, source.Name, source.Location, N'Offline', N'web', N'ui-test');
 
 MERGE dbo.Menus AS target
 USING (VALUES (@MenuId, @VenueId, N'Acceptance Menu')) AS source (Id, VenueId, Name)
@@ -152,7 +175,17 @@ WHERE OrganizationId = @OrganizationId
 INSERT dbo.CapabilityAllowances
     (Id, OrganizationId, VenueId, CapabilityId, LimitValue, StartsUtc)
 VALUES
-    (@AllowanceId, @OrganizationId, @VenueId, 'screen.device.pair', 1, DATEADD(minute, -1, SYSUTCDATETIME()));
+    (@AllowanceId, @OrganizationId, @VenueId, 'screen.device.pair', 100, DATEADD(minute, -1, SYSUTCDATETIME()));
+
+DELETE usage
+FROM dbo.CapabilityAllowanceUsage usage
+INNER JOIN dbo.CapabilityAllowances allowance ON allowance.Id = usage.AllowanceId
+WHERE allowance.OrganizationId = @OrganizationId AND allowance.VenueId = @CapacityVenueId
+  AND allowance.CapabilityId = 'screen.device.pair';
+DELETE dbo.CapabilityAllowances
+WHERE OrganizationId = @OrganizationId AND VenueId = @CapacityVenueId AND CapabilityId = 'screen.device.pair';
+INSERT dbo.CapabilityAllowances (Id, OrganizationId, VenueId, CapabilityId, LimitValue, StartsUtc)
+VALUES (@CapacityAllowanceId, @OrganizationId, @CapacityVenueId, 'screen.device.pair', 1, DATEADD(minute, -1, SYSUTCDATETIME()));
 
 DELETE dbo.CapabilityRollouts
 WHERE OrganizationId = @OrganizationId
@@ -172,7 +205,7 @@ SELECT
     @VenueId AS VenueId,
     @ScreenId AS ScreenId,
     'offline' AS InitialScreenState,
-    1 AS ScreenPairAllowance;
+    100 AS ScreenPairAllowance;
 
 -------------------------------------------------------------------------------
 -- Menus M1 spine fixture. LOCAL DEVELOPMENT ONLY.

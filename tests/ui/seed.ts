@@ -1,7 +1,21 @@
 import { request as playwrightRequest } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { apiBaseUrl, tokens, type VennuRole } from "./fixtures";
 
-/** Mirrors TestSeedController.SeedResponse. */
+const testApiBaseUrl = process.env.VENNU_TEST_API_URL ?? "https://localhost:7140";
+
+function testApiKey(): string {
+  if (process.env.VENNU_TEST_API_KEY) return process.env.VENNU_TEST_API_KEY;
+
+  try {
+    return readFileSync(resolve(import.meta.dirname, "..", "..", "artifacts", "ui-test-env", "test-api.key"), "utf8").trim();
+  } catch {
+    throw new Error("The Test API key is unavailable. Start the environment with scripts/start-ui-test-env.ps1.");
+  }
+}
+
+/** Response from the separately deployed Test API. */
 export type SeedResult = {
   organizationId: string;
   venueId: string;
@@ -29,7 +43,8 @@ export async function seed(
 ): Promise<SeedResult> {
   const context = await playwrightRequest.newContext({ ignoreHTTPSErrors: true });
   try {
-    const response = await context.post(`${apiBaseUrl}/api/test/seed`, {
+    const response = await context.post(`${testApiBaseUrl}/api/test/seed`, {
+      headers: { "X-Vennusign-Test-Api-Key": testApiKey() },
       data: {
         accessToken: tokens[options.role ?? "owner"],
         includeScreen: options.includeScreen ?? false,
@@ -45,7 +60,7 @@ export async function seed(
   }
 }
 
-/** Mirrors TestSeedController.ScaleSeedResponse. */
+/** Scale response from the separately deployed Test API. */
 export type ScaleSeedResult = {
   venueId: string;
   seededMenus: Array<{
@@ -67,7 +82,8 @@ export type ScaleSeedResult = {
 export async function scaleSeed(options: { menus?: number; screens?: number } = {}): Promise<ScaleSeedResult> {
   const context = await playwrightRequest.newContext({ ignoreHTTPSErrors: true });
   try {
-    const response = await context.post(`${apiBaseUrl}/api/test/seed/scale`, {
+    const response = await context.post(`${testApiBaseUrl}/api/test/seed/scale`, {
+      headers: { "X-Vennusign-Test-Api-Key": testApiKey() },
       data: {
         accessToken: tokens.scale,
         menus: options.menus ?? 13,
@@ -79,6 +95,21 @@ export async function scaleSeed(options: { menus?: number; screens?: number } = 
       throw new Error(`Scale seed failed (${response.status()}): ${await response.text()}`);
     }
     return (await response.json()) as ScaleSeedResult;
+  } finally {
+    await context.dispose();
+  }
+}
+
+export async function backdateAvailability(itemId: string, minutesAgo: number): Promise<void> {
+  const context = await playwrightRequest.newContext({ ignoreHTTPSErrors: true });
+  try {
+    const response = await context.post(`${testApiBaseUrl}/api/test/seed/backdate-availability`, {
+      headers: { "X-Vennusign-Test-Api-Key": testApiKey() },
+      data: { accessToken: tokens.owner, itemId, minutesAgo }
+    });
+    if (!response.ok()) {
+      throw new Error(`Availability backdate failed (${response.status()}): ${await response.text()}`);
+    }
   } finally {
     await context.dispose();
   }

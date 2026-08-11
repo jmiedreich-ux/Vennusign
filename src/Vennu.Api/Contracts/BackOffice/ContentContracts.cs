@@ -48,6 +48,11 @@ public sealed record MenuContextResponse(
     IReadOnlyDictionary<string, int> Ceilings,
     int MenuCount);
 
+public sealed record MenuBuilderConfigurationResponse(
+    long ImportFileSizeLimitBytes,
+    double PublishRetrySilenceThresholdSeconds,
+    int HistoryRetentionDepth);
+
 public sealed record AvailabilityResponse(
     Guid ItemId,
     string Name,

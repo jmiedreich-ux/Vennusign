@@ -12,7 +12,7 @@ const tokenStorageKey = "vennusign.back-office.token";
  * The default venue accumulates menus from every spec that seeds, so nothing there
  * can assert "exactly this many menus" while the suite runs in parallel.
  */
-export type VennuRole = "owner" | "editor" | "publisher" | "scale";
+export type VennuRole = "owner" | "editor" | "publisher" | "scale" | "capacity";
 
 /** Isolation tag of the seeded dataset this run targets. See run-track1-qa.ps1. */
 const tag = process.env.VENNU_ISOLATION_TAG ?? "0000";
@@ -26,7 +26,8 @@ const baselineTokens: Record<VennuRole, string> = {
   owner: "track1-owner-review",
   editor: "track1-content-editor",
   publisher: "track1-publisher",
-  scale: "track1-scale-check"
+  scale: "track1-scale-check",
+  capacity: "track1-capacity-check"
 };
 
 const tokenFor = (role: VennuRole) =>
@@ -36,7 +37,8 @@ export const tokens: Record<VennuRole, string> = {
   owner: process.env.VENNU_OWNER_TOKEN ?? tokenFor("owner"),
   editor: process.env.VENNU_EDITOR_TOKEN ?? tokenFor("editor"),
   publisher: process.env.VENNU_PUBLISHER_TOKEN ?? tokenFor("publisher"),
-  scale: process.env.VENNU_SCALE_TOKEN ?? tokenFor("scale")
+  scale: process.env.VENNU_SCALE_TOKEN ?? tokenFor("scale"),
+  capacity: process.env.VENNU_CAPACITY_TOKEN ?? tokenFor("capacity")
 };
 
 export const apiBaseUrl = process.env.VENNU_API_URL ?? "https://localhost:7138";

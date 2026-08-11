@@ -23,9 +23,10 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $logRoot = Join-Path $repoRoot 'artifacts\ui-test-env'
 $apiOrigin = 'https://localhost:7138'
+$testApiOrigin = 'https://localhost:7140'
 $backOfficeOrigin = 'https://localhost:5174'
 $displayOrigin = 'http://localhost:5175'
-$ports = @(7138, 5174, 5175)
+$ports = @(7138, 7140, 5174, 5175)
 
 function Stop-UiTestEnv {
     foreach ($port in $ports) {
@@ -84,7 +85,8 @@ DELETE m FROM dbo.Menus m INNER JOIN @Menus t ON t.Id = m.Id;
 DECLARE @Screens TABLE (Id uniqueidentifier);
 INSERT INTO @Screens (Id)
 SELECT Id FROM dbo.Screens
-WHERE ScreenKey LIKE 't[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]';
+WHERE ScreenKey LIKE 't[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]'
+   OR Name LIKE '% screen [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]';
 
 -- Every table with an FK to dbo.Screens must be cleared first.
 UPDATE dbo.CustomerOnboardingStates SET FirstScreenId = NULL
@@ -113,6 +115,11 @@ foreach ($port in $ports) {
 }
 
 New-Item -ItemType Directory -Force -Path $logRoot | Out-Null
+$testApiKeyBytes = New-Object byte[] 32
+$testApiKeyGenerator = [Security.Cryptography.RandomNumberGenerator]::Create()
+try { $testApiKeyGenerator.GetBytes($testApiKeyBytes) } finally { $testApiKeyGenerator.Dispose() }
+$testApiKey = ([BitConverter]::ToString($testApiKeyBytes) -replace '-', '').ToLowerInvariant()
+Set-Content -LiteralPath (Join-Path $logRoot 'test-api.key') -Value $testApiKey -NoNewline
 
 function Start-EnvProcess {
     param([string]$Name, [string]$FilePath, [string[]]$ArgumentList, [string]$WorkingDirectory)
@@ -145,6 +152,7 @@ $roles = @(
     @{ Key = 'editor';    BaselineToken = 'track1-content-editor'; Base = '71000000-0000-0000-0000-000000000002'; Name = 'Track 1 Content Editor'; Role = 'content_editor';     Venue = '73000000-0000-0000-0000-000000000001' },
     @{ Key = 'publisher'; BaselineToken = 'track1-publisher';      Base = '71000000-0000-0000-0000-000000000003'; Name = 'Track 1 Publisher';      Role = 'publisher';          Venue = '73000000-0000-0000-0000-000000000001' },
     @{ Key = 'scale';     BaselineToken = 'track1-scale-check';    Base = '71000000-0000-0000-0000-000000000004'; Name = 'Track 1 Scale Check';    Role = 'organization_owner'; Venue = '73000000-0000-0000-0000-000000000002' }
+    @{ Key = 'capacity';  BaselineToken = 'track1-capacity-check'; Base = '71000000-0000-0000-0000-000000000005'; Name = 'Track 1 Capacity Check'; Role = 'organization_owner'; Venue = '73000000-0000-0000-0000-000000000003' }
 )
 
 $env:ASPNETCORE_ENVIRONMENT = 'Development'
@@ -152,10 +160,12 @@ $env:ASPNETCORE_URLS = $apiOrigin
 # The whole point of this script: localhost is the browser's origin.
 $env:Cors__AllowedOrigins__0 = $backOfficeOrigin
 $env:Cors__AllowedOrigins__1 = $displayOrigin
-# The scale seed CLEARS the venue it seeds into, so it is off unless something
-# deliberately turns it on. This script is that something; nothing else sets it,
-# so a slot that merely carries the Development environment still refuses.
-$env:TestSupport__ScaleSeedEnabled = "true"
+$env:TestAutomation__ApiKey = $testApiKey
+$env:TestAutomation__Scopes__0 = 'availability.backdate'
+$env:TestAutomation__Scopes__1 = 'venue.reset'
+$env:TestAutomation__AvailabilityVenueIds__0 = (& $guid '73000000-0000-0000-0000-000000000001')
+$env:TestAutomation__AvailabilityVenueIds__1 = (& $guid '73000000-0000-0000-0000-000000000002')
+$env:TestAutomation__ResetVenueIds__0 = (& $guid '73000000-0000-0000-0000-000000000002')
 
 for ($index = 0; $index -lt $roles.Count; $index++) {
     $role = $roles[$index]
@@ -171,6 +181,13 @@ for ($index = 0; $index -lt $roles.Count; $index++) {
 Write-Host 'Starting API...'
 $null = Start-EnvProcess -Name 'api' -FilePath 'dotnet' -ArgumentList @('run', '--no-launch-profile', '--project', '.\src\Vennu.Api\Vennu.Api.csproj') -WorkingDirectory $repoRoot
 
+$env:ASPNETCORE_URLS = $testApiOrigin
+$env:TestApi__ApiKey = $testApiKey
+$env:TestApi__ProductApiBaseUrl = $apiOrigin
+$env:TestApi__ProductAutomationKey = $testApiKey
+Write-Host 'Starting Test API...'
+$null = Start-EnvProcess -Name 'test-api' -FilePath 'dotnet' -ArgumentList @('run', '--no-launch-profile', '--project', '.\src\Vennu.TestApi\Vennu.TestApi.csproj') -WorkingDirectory $repoRoot
+
 $env:VITE_VENNUSIGN_API_BASE_URL = $apiOrigin
 $env:VITE_VENNUSIGN_DISPLAY_BASE_URL = $displayOrigin
 Write-Host 'Starting Back Office...'
@@ -182,6 +199,7 @@ Write-Host 'Starting Display...'
 $null = Start-EnvProcess -Name 'display' -FilePath 'npm.cmd' -ArgumentList @('run', 'dev', '--', '--host', 'localhost', '--port', '5175') -WorkingDirectory (Join-Path $repoRoot 'src\display')
 
 Wait-ForHttp "$apiOrigin/health/version"
+Wait-ForHttp "$testApiOrigin/health/version"
 Wait-ForHttp $backOfficeOrigin
 Wait-ForHttp $displayOrigin
 
@@ -205,6 +223,7 @@ if (-not $SkipFixture) {
 
 Write-Host ''
 Write-Host "API:         $apiOrigin"
+Write-Host "Test API:    $testApiOrigin"
 Write-Host "Back Office: $backOfficeOrigin"
 Write-Host "Display:     $displayOrigin"
 Write-Host "Logs:        $logRoot"

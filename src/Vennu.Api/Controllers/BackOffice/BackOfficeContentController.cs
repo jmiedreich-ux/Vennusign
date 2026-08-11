@@ -1,9 +1,11 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Vennu.Api.BackOffice;
 using Vennu.Api.Contracts.BackOffice;
 using Vennu.Api.Services;
+using Vennu.Api.Menus;
 using Vennu.Data.Repositories;
 
 namespace Vennu.Api.Controllers.BackOffice;
@@ -17,7 +19,8 @@ namespace Vennu.Api.Controllers.BackOffice;
 [Authorize(Policy = BackOfficeAuthenticationDefaults.AuthorizationPolicy)]
 public sealed class BackOfficeContentController(
     ContentService content,
-    IContentRepository library) : ControllerBase
+    IContentRepository library,
+    IOptionsMonitor<MenuBuilderOptions> builderOptions) : ControllerBase
 {
     private Guid VenueId => Guid.Parse(
         User.FindFirstValue(BackOfficeAuthenticationDefaults.VenueIdClaim)!);
@@ -35,6 +38,22 @@ public sealed class BackOfficeContentController(
     {
         var context = await content.GetContextAsync(VenueId, cancellationToken).ConfigureAwait(false);
         return Ok(new MenuContextResponse(context.Timezone, context.Ceilings, context.MenuCount));
+    }
+
+    [HttpGet("configuration")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<MenuBuilderConfigurationResponse>> GetConfiguration(CancellationToken cancellationToken)
+    {
+        var options = builderOptions.CurrentValue;
+        var ceilings = await library.GetCeilingsAsync(VenueId, cancellationToken).ConfigureAwait(false);
+        var retention = ceilings.TryGetValue(MenuCeilings.HistoryRetention, out var configured)
+            ? configured
+            : options.HistoryRetentionDepth;
+
+        return Ok(new MenuBuilderConfigurationResponse(
+            options.ImportFileSizeLimitBytes,
+            options.PublishRetrySilenceThreshold.TotalSeconds,
+            retention));
     }
 
     // ----- The shelf -----------------------------------------------------------------
@@ -314,7 +333,9 @@ public sealed class BackOfficeContentController(
         CancellationToken cancellationToken)
     {
         var ceilings = await library.GetCeilingsAsync(VenueId, cancellationToken).ConfigureAwait(false);
-        var retention = ceilings.TryGetValue(MenuCeilings.HistoryRetention, out var configured) ? configured : 50;
+        var retention = ceilings.TryGetValue(MenuCeilings.HistoryRetention, out var configured)
+            ? configured
+            : builderOptions.CurrentValue.HistoryRetentionDepth;
 
         var entries = await library.GetHistoryAsync(VenueId, menuId, retention, cancellationToken).ConfigureAwait(false);
         return Ok(entries

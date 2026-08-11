@@ -214,6 +214,15 @@ builder.Services.AddScoped<IPosWebhookEventHandler, CloverRealtimeSyncHandler>()
 builder.Services.AddSingleton<IScreenUpdateNotifier, SignalRScreenUpdateNotifier>();
 builder.Services.AddScoped<IMenuItemManagementService, MenuItemManagementService>();
 builder.Services.AddScoped<ContentService>();
+builder.Services.AddOptions<Vennu.Api.Menus.MenuBuilderOptions>()
+    .Bind(builder.Configuration.GetSection(Vennu.Api.Menus.MenuBuilderOptions.SectionName))
+    .Validate(options => options.ImportFileSizeLimitBytes > 0, "Menus import file-size limit must be positive.")
+    .Validate(options => options.PublishRetrySilenceThreshold > TimeSpan.Zero, "Menus publish retry threshold must be positive.")
+    .Validate(options => options.HistoryRetentionDepth > 0, "Menus history retention depth must be positive.")
+    .ValidateOnStart();
+builder.Services.AddOptions<Vennu.Api.TestAutomation.TestAutomationOptions>()
+    .Bind(builder.Configuration.GetSection(Vennu.Api.TestAutomation.TestAutomationOptions.SectionName));
+builder.Services.AddSingleton<Vennu.Api.TestAutomation.TestAutomationAuthorization>();
 builder.Services.AddScoped<IScreenManagementService, ScreenManagementService>();
 builder.Services.AddScoped<IHaasPreRegistrationService, HaasPreRegistrationService>();
 builder.Services.AddScoped<IScreenTargetingService, ScreenTargetingService>();
