@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-10, after Menus Milestone 3 was built and gated.
+Updated 2026-08-11, after Menus Milestone 3 was merged and closed.
 
 ## Current State
 
@@ -25,35 +25,28 @@ Updated 2026-08-10, after Menus Milestone 3 was built and gated.
 
 ## Exact Next Action
 
-1. **The owner reruns the Menus Milestone 3 acceptance workbook.** The 2026-08-10
-   record remains **"Needs adjustment"**: 11 Pass, 2 Fail, 2 Needs Adjustment. Its
-   findings are implemented and locally gated, but that old record does not authorize
-   merge. After the rerun, the owner supplies the deferred visual notes as the second
-   pass promised in `docs/features/menus/m3-acceptance-findings.md`.
+1. **Menus M3-A, slice 0 — foundations.** Branch from `master` at `6bf0f75`. Work
+   plan: `docs/design/approved/menus/m3-a/work-plan.md`. Each slice is its own
+   independently mergeable PR per `AGENTS.md` — the M3 branch is deleted and must not
+   be continued. Claim it in `tracker/assignments.json` under your own owner name
+   before touching code.
 
-   Remediation removed the invented green availability panel, repaired real-mouse
-   handle-origin drag and added the insertion line, selected the previous/first
-   surviving section after deletion, moved delete into each Sections row, removed the
-   duplicate name field, changed workbook Undo to the on-screen button, and pre-seeded
-   Harbor Lemonade on two menus. The owner reaffirmed that mobile interactions are out
-   of scope (Q158/#681); desktop interaction is the M3 gate.
+2. **Two things carry forward from M3 and must not be lost.** The owner holds a set of
+   **deferred visual notes** on the builder — a second pass they held back until the
+   acceptance remediation was done, and which merging did not discharge. And
+   **migration 061 against a pre-migration dirty database remains UNVERIFIED** from
+   committed evidence, exactly as the independent review said; the committed coverage
+   proves post-schema behaviour, not the upgrade exercise.
 
-2. ~~Run the Menus Milestone 3 acceptance workbook~~ — done 2026-08-10, see above. Original text:
-   `docs/features/menus/m3-acceptance-workbook.html`, **fifteen** checks, about twelve
-   minutes. Two are marked as judgment calls rather than test results and are the ones
-   that most need an owner: the shared-price line (Q5's follow-up, resolved by judgment
-   while the owner slept) and whether a never-published menu should offer no discard
-   at all. **Checks 11–13 are new**: they cover the three behaviours the independent
-   review found missing — the canvas-heading rename, the bulk drawer and item drag —
-   all built since. Milestone 3 is on `feature/menus-m3-builder` (issue **#690**); the
-   PR is open, and the review's findings are answered at `b59d2d1`.
-2. Standing owner decisions carried out of Milestone 1: audit record kept as is (#677),
+3. Standing owner decisions carried out of Milestone 1: audit record kept as is (#677),
    legacy columns kept, and the three menu capabilities to become separately grantable
    (#686).
-3. The screen-conflict rule, settled 2026-08-09: a screen another menu now owns is never
+
+4. The screen-conflict rule, settled 2026-08-09: a screen another menu now owns is never
    touched by a stale act, and the conflict is always named — publish leaves it alone and
    reports it, restore refuses.
-4. The shelf rule, settled the same way: nothing puts a menu on a screen except a
+
+5. The shelf rule, settled the same way: nothing puts a menu on a screen except a
    deliberate, ceiling-checked put-back, and nothing takes a menu off the shelf while a
    screen is still showing it. "Still on a screen" means the **published** snapshot names
    one that no other menu has since been given — not merely that an assignment row exists
