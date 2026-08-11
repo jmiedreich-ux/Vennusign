@@ -17,7 +17,7 @@
 
 .builder {
   display: grid;
-  grid-template-rows: 58px 1fr auto;
+  grid-template-rows: 58px auto 1fr auto;
   /*
    * Bounded to the window, so the CANVAS scrolls rather than the page growing and
    * carrying the publish bar off the bottom. `height: 100%` resolved to auto here
@@ -125,6 +125,52 @@
 }
 
 /* ---- columns ------------------------------------------------------------- */
+
+.builder__pages {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: visible;
+  border-bottom: 1px solid var(--sky-color-border);
+  background: var(--sky-color-surface);
+}
+
+.builder__page-tabs {
+  display: flex;
+  align-items: end;
+  min-width: max-content;
+  padding-inline: var(--sky-space-5);
+}
+
+.builder__page-tab-wrap { position: relative; display: flex; align-items: center; }
+
+.builder__page-tab,
+.builder__add-page,
+.builder__pages input {
+  border: 0;
+  padding: var(--sky-space-3) var(--sky-space-4);
+  background: transparent;
+  color: var(--sky-color-text-muted);
+}
+
+.builder__page-tab {
+  font-family: var(--sky-font-family-page-tab);
+  text-transform: uppercase;
+  letter-spacing: var(--sky-letter-spacing-page-tab);
+}
+
+.builder__page-tab.is-active { color: var(--sky-text-primary); background: var(--sky-color-background-base); }
+.builder__page-actions { border: 0; background: var(--sky-color-background-base); padding: var(--sky-space-3); }
+.builder__page-menu { position: absolute; z-index: 10; top: 100%; right: 0; display: grid; min-width: 9rem; border: 1px solid var(--sky-color-border); border-radius: var(--sky-radius-md); background: var(--sky-color-surface); box-shadow: var(--sky-panel-shadow); }
+.builder__page-menu button { border: 0; padding: var(--sky-space-3); background: transparent; text-align: left; }
+.builder__page-menu button:hover { background: var(--sky-color-surface-muted); }
+.builder__page-summary { display: flex; align-items: center; gap: var(--sky-space-3); padding: var(--sky-space-2) var(--sky-space-4); border-top: 1px solid var(--sky-color-border); }
+.builder__page-summary details { margin-left: auto; position: relative; }
+.builder__page-summary details button { display: block; width: 100%; border: 0; padding: var(--sky-space-2); background: var(--sky-color-surface); text-align: left; }
+.builder__section-chips { display: flex; align-items: center; gap: var(--sky-space-2); flex-wrap: wrap; }
+.builder__section-chips button,
+.builder__section-chips summary { border: 1px solid var(--sky-color-border); border-radius: var(--sky-radius-md); padding: var(--sky-space-2) var(--sky-space-3); background: var(--sky-color-surface); cursor: pointer; }
+.builder__assignment-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sky-space-4); padding: var(--sky-space-3) 0; border-bottom: 1px solid var(--sky-color-border); }
+.builder__dialog--nested { z-index: 41; }
 
 .builder__columns {
   display: grid;
@@ -485,6 +531,15 @@
   background: #faf8f2;
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.09), 0 18px 44px rgb(15 23 42 / 0.14);
   overflow: hidden;
+}
+
+.builder__capacity {
+  margin: 0 var(--sky-space-5) var(--sky-space-3);
+  padding: var(--sky-space-3) var(--sky-space-4);
+  border: 1px solid var(--sky-color-warning-border);
+  border-radius: var(--sky-radius-md);
+  background: var(--sky-color-warning-soft);
+  color: var(--sky-text-primary);
 }
 
 /* The stage scales the logical board down to the canvas; its own box is the

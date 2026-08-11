@@ -9,6 +9,15 @@ namespace Vennu.Data.Repositories;
 /// </summary>
 public interface IContentRepository
 {
+    // ----- Pages -----------------------------------------------------------------
+
+    Task<IReadOnlyCollection<MenuPage>> GetPagesAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
+    Task<MenuPage?> CreatePageAsync(Guid venueId, Guid menuId, Guid pageId, string name, DateTime now, CancellationToken cancellationToken = default);
+    Task<bool> RenamePageAsync(Guid venueId, Guid menuId, Guid pageId, string name, DateTime now, CancellationToken cancellationToken = default);
+    Task<ReorderOutcome> ReorderPagesGuardedAsync(Guid venueId, Guid menuId, IReadOnlyCollection<Guid> pageIds, DateTime now, CancellationToken cancellationToken = default);
+    Task<MenuPage?> DuplicatePageAsync(Guid venueId, Guid menuId, Guid sourcePageId, Guid newPageId, DateTime now, CancellationToken cancellationToken = default);
+    Task<PageDeleteOutcome> DeletePageAsync(Guid venueId, Guid menuId, Guid pageId, Guid? moveSectionsToPageId, CancellationToken cancellationToken = default);
+
     // ----- Library and placements -------------------------------------------------
 
     Task<Guid> CreateItemAsync(Item item, CancellationToken cancellationToken = default);
@@ -61,6 +70,7 @@ public interface IContentRepository
         Guid sectionId,
         string name,
         DateTime now,
+        Guid? pageId = null,
         CancellationToken cancellationToken = default);
 
     Task<bool> RenameSectionAsync(
@@ -188,6 +198,8 @@ public interface IContentRepository
     Task<MenuScreenAssignment> AssignScreenAsync(MenuScreenAssignment assignment, CancellationToken cancellationToken = default);
 
     Task<bool> ClearScreenAssignmentAsync(Guid venueId, Guid screenId, CancellationToken cancellationToken = default);
+
+    Task<bool> ClearPageScreenAssignmentAsync(Guid venueId, Guid screenId, Guid menuId, Guid pageId, CancellationToken cancellationToken = default);
 
     Task<int> ClearMenuAssignmentsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
 
@@ -373,10 +385,18 @@ public interface IContentRepository
 
     /// <summary>Active menus only: put-away menus do not count against the ceiling.</summary>
     Task<int> CountMenusAsync(Guid venueId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Clears the allowlisted automation venue atomically. This remains product-owned
+    /// persistence; the separately deployed Test API can only request it over HTTP.
+    /// </summary>
+    Task ResetAutomationVenueAsync(Guid venueId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Whether the menu was created, and the venue's active-menu count under the lock.</summary>
 public sealed record MenuCreateOutcome(bool Created, int ActiveMenuCount);
+
+public sealed record PageDeleteOutcome(string Outcome, int MovedSectionCount, int RemovedAssignmentCount);
 
 /// <summary>
 /// Whether the copy was made, the venue's active-menu count under the lock, and the
@@ -435,6 +455,8 @@ public sealed record PublishOutcome(MenuPublishEvent Event, IReadOnlyCollection<
 public sealed record ScreenShowing(
     Guid ScreenId,
     string ScreenName,
+    int WidthPixels,
+    int HeightPixels,
     Guid? MenuId,
     string? MenuName,
     long? Version,
@@ -602,6 +624,10 @@ public static class MenuCeilings
     public const string ItemsPerMenu = "content.menu.items";
 
     public const string ImportLines = "content.menu.import.lines";
+
+    public const string ImportFileBytes = "content.menu.import.bytes";
+
+    public const string PublishRetrySilenceSeconds = "publishing.retry.silence.seconds";
 
     public const string HistoryRetention = "publishing.history.retention";
 }

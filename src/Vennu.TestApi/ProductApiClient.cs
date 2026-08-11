@@ -21,6 +21,24 @@ public sealed class ProductApiClient(HttpClient httpClient, IOptions<TestApiOpti
             ?? throw new InvalidOperationException($"The product API returned an empty response for {path}.");
     }
 
+    public async Task<T> SendPublicAsync<T>(HttpMethod method, string path, object? body, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(method, path);
+        if (body is not null) request.Content = JsonContent.Create(body);
+        using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+        return (await response.Content.ReadFromJsonAsync<T>(cancellationToken).ConfigureAwait(false))
+            ?? throw new InvalidOperationException($"The product API returned an empty response for {path}.");
+    }
+
+    public async Task SendPublicAsync(HttpMethod method, string path, object? body, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(method, path);
+        if (body is not null) request.Content = JsonContent.Create(body);
+        using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task SendAsync(
         HttpMethod method,
         string path,

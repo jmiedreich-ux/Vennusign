@@ -3,15 +3,15 @@
   "updatedUtc": "2026-08-11T08:55:04Z",
   "activeAssignments": [
     {
-      "assignment": "Menus M3-A — slice 0 (foundations)",
-      "issue": 692,
-      "branch": "feature/menus-m3a-s0-foundations",
+      "assignment": "Menus M3-A — slice 1 (pages, capacity, assignments)",
+      "issue": 696,
+      "branch": "feature/menus-m3a-s1-pages",
       "owner": "Codex for JeremyPC",
       "claimedUtc": "2026-08-11T08:55:04Z",
       "headAtClaim": "4b055853090eeb91ddc5841fe0006176839c0bad",
-      "status": "implemented locally; slice review and independent PR review gate",
+      "status": "implemented and locally gated; commit, PR and exact-SHA independent review gate",
       "startHere": "docs/design/approved/menus/m3-a/work-plan.md",
-      "notes": "Claimed from nextAvailableWorkPackage after M3 merged and closed. Slice 0 only; no user-visible change. Page-aware seed expansion follows the page schema/API in slice 1. Local gate: Test API 4/4, API configuration 5/5, automation authorization 1/1, back office 194/194 plus production build, desktop Playwright 75 passed and 2 explicit mobile skips. Regression tests were observed red with fixes reverted. CI is suspended."
+      "notes": "Slice 1 reconstructed from a safeguarded dirty-tree checkpoint after independent review found it was not versioned. Partial Slice 2 and Slice 6 work is excluded and preserved at local checkpoint 4aa0168. Page-shaped seed support is owned here because it delegates to the real page schema/API introduced here. Focused gate before commit: page Playwright 12/12, page LocalDB 2/2, back office 196/196 plus production build. Real-pointer reorder and assignment-removal regressions were observed red with fixes reverted. CI is suspended."
     }
   ],
   "desktopSessionLock": null,

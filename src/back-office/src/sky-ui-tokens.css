@@ -71,6 +71,7 @@
   --sky-font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   /* Page-tab display face only. Board typography remains owned by its theme. */
   --sky-font-family-page-tab: "Playfair Display", Georgia, serif;
+  --sky-letter-spacing-page-tab: 0.12em;
   --sky-font-size-xs: 0.75rem;
   --sky-font-size-sm: 0.875rem;
   --sky-font-size-md: 1rem;

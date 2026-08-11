@@ -220,6 +220,7 @@ builder.Services.AddOptions<Vennu.Api.Menus.MenuBuilderOptions>()
     .Validate(options => options.PublishRetrySilenceThreshold > TimeSpan.Zero, "Menus publish retry threshold must be positive.")
     .Validate(options => options.HistoryRetentionDepth > 0, "Menus history retention depth must be positive.")
     .ValidateOnStart();
+builder.Services.AddScoped<Vennu.Api.Menus.MenuBuilderConfigurationResolver>();
 builder.Services.AddOptions<Vennu.Api.TestAutomation.TestAutomationOptions>()
     .Bind(builder.Configuration.GetSection(Vennu.Api.TestAutomation.TestAutomationOptions.SectionName));
 builder.Services.AddSingleton<Vennu.Api.TestAutomation.TestAutomationAuthorization>();

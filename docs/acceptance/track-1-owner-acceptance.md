@@ -87,7 +87,7 @@ Expected result: editing and publishing are separate authorities. Locked navigat
 
 ### 3. Screen capacity and core recovery
 
-1. Sign in with `track1-owner-review` and open [Screens](https://localhost:5174/#/screens).
+1. Sign in with `track1-capacity-check` and open [Screens](https://localhost:5174/#/screens). This dedicated owner-capability fixture keeps the acceptance owner venue available for parallel real-endpoint seeding.
 2. Expand **Setup**.
 3. Confirm the page reports `1 of 1 active screens` and explains that the allowance has been reached.
 4. Confirm **Add screen** and **Pair screen** are disabled from the structured server `screen.device.pair` decision.

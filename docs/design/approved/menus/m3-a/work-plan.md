@@ -24,7 +24,7 @@ Small, and everything else assumes it.
 - **Amend the banned-words array** in `tests/ui/specs/menus-shelf.spec.ts`: remove `restore`, keep `unpublish`, `supersede`, `archive` (amendment A8). Ship this in whichever PR first renders the Finish menu if not done here.
 - **Three config values** with defaults, read at runtime, never hardcoded in a view: import file-size limit (tiered, starts at 5 MB), publish-retry-silence threshold (venue setting, ~30s), history retention depth (per tier).
 - **Capability check helper** for the gated controls, defaulting to on. The tier infrastructure does not exist yet and is not built here — the point is that each gated control is written so it *can* be switched off without touching layout.
-- **Seed API growth** — treated as a product surface, not test scaffolding: pages, multi-section pages, per-page assignments, explicit timestamps for history entries, a seeded item library with known names, and forced screen states (online, offline, never paired, has-not-taken-this-yet). This is the function that carries automated testing into a staging environment later, so it grows with the product rather than being retrofitted.
+- **Seed API foundation** — treated as a product surface, not test scaffolding: explicit timestamps for history entries, a seeded item library with known names, and forced screen states (online, offline, never paired, has-not-taken-this-yet). Page-shaped seed inputs land in Slice 1 with the page schema and product endpoints they must exercise; putting them here would require a test-only implementation ahead of the product API and contradict the rule below that the Test API does nothing itself.
 - **Move the seed onto its own deployable.** It lives inside the product API today as `POST /api/test/seed`, Development-only. Owner decision: it should not ship. Compiling it out of Release is the cheap option and it fails the staging requirement — staging runs a Release build, so a seeder excluded from Release cannot seed the environment it is meant to serve. Instead: a **separate deployable referencing the same data and domain layer**, deployed to local and staging and never to production, with its own auth secret. **One hard rule: it hands every call off to the product API and does nothing itself.** No direct writes, no domain calls, no SQL. Every seed then exercises real endpoints, so seeding is itself an API test and a data test — if the seeder breaks, the API broke, and a spec cannot pass against a state the product could never create.
 
   That leaves two states with no obvious endpoint, and each has an honest answer that needs no back door.
@@ -39,7 +39,7 @@ Small, and everything else assumes it.
 
   The cost of all of this is **specs that wait**: the retry threshold waits its real 30 seconds, retention waits its configured minute. A slower suite in exchange for evidence rather than assertion.
 
-**Done when:** the tokens and glyph set exist, the three settings resolve from config, the seed API creates every shape the later slices assert against, and the amended banned-words spec passes.
+**Done when:** the tokens and glyph set exist, the three settings resolve from config, the separately deployed seed delegates its supported shapes to real product endpoints, and the amended banned-words spec passes. Page-specific shapes are Slice 1's schema/API/seed vertical.
 
 ---
 
@@ -48,6 +48,7 @@ Small, and everything else assumes it.
 Roughly 15 branch paths (inventory groups B and C).
 
 - **Schema/API:** pages as first-class children of a menu — create, rename, duplicate, delete, reorder; page-to-screen assignment moves to the page.
+- **Seed API:** pages, multi-section pages and per-page assignments, added only now that the real product schema and endpoints exist.
 - **UI:** the horizontal tab rail with the folder join and uppercase Playfair names; `+ Add page` with inline naming; drag reorder; horizontal scroll past the width. Page header with name, live item count, page-actions `⋯` (rename, duplicate, delete), viewing chips (`Whole page` plus each section, collapsing behind `More` past five), and the assignment pill carrying the count and the route to Screen Assignments.
 - **Rules:** a menu always keeps one page. Delete offers to move contained sections. Duplicate copies sections and items but not assignments (A1, C3, C4). Capacity is only ever reported against assigned screens.
 - **Specs:** tab switch reloads sections, header, assignment and board; delete-with-sections offers the move; last page cannot be deleted; chips collapse at six; capacity never names an unassigned screen.

@@ -66,6 +66,8 @@ public class ScreensController : ControllerBase
             Location = string.IsNullOrWhiteSpace(request.Location) ? null : request.Location.Trim(),
             Platform = string.IsNullOrWhiteSpace(request.Platform) ? null : request.Platform.Trim(),
             AppVersion = string.IsNullOrWhiteSpace(request.AppVersion) ? null : request.AppVersion.Trim(),
+            WidthPixels = request.WidthPixels,
+            HeightPixels = request.HeightPixels,
             Status = "Offline"
         };
 

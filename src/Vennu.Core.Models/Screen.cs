@@ -28,6 +28,9 @@ public class Screen
 
     public string Status { get; set; } = "Offline";
 
+    public int WidthPixels { get; set; } = 1920;
+    public int HeightPixels { get; set; } = 1080;
+
     public string? Platform { get; set; }
 
     public string? AppVersion { get; set; }

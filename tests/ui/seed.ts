@@ -29,6 +29,9 @@ export type SeedResult = {
   itemPrice: number;
   screenId?: string;
   screenKey?: string;
+  pages: Array<{ pageId: string; name: string; sortOrder: number }>;
+  sections: Array<{ sectionId: string; pageId: string; name: string; sortOrder: number }>;
+  items: Array<{ itemId: string; sectionId: string; name: string; price: string }>;
 };
 
 /**
@@ -39,7 +42,7 @@ export type SeedResult = {
  * lanes were.
  */
 export async function seed(
-  options: { role?: VennuRole; includeScreen?: boolean; label?: string } = {}
+  options: { role?: VennuRole; includeScreen?: boolean; label?: string; pageCount?: number; sectionCount?: number; itemsPerSection?: number; screenState?: string; screenWidthPixels?: number; screenHeightPixels?: number } = {}
 ): Promise<SeedResult> {
   const context = await playwrightRequest.newContext({ ignoreHTTPSErrors: true });
   try {
@@ -47,8 +50,14 @@ export async function seed(
       headers: { "X-Vennusign-Test-Api-Key": testApiKey() },
       data: {
         accessToken: tokens[options.role ?? "owner"],
-        includeScreen: options.includeScreen ?? false,
-        label: options.label ?? "ui"
+        includeScreen: options.includeScreen ?? Boolean(options.screenState),
+        label: options.label ?? "ui",
+        pageCount: options.pageCount ?? 1,
+        sectionCount: options.sectionCount ?? 1,
+        itemsPerSection: options.itemsPerSection ?? 1,
+        screenState: options.screenState ?? "offline",
+        screenWidthPixels: options.screenWidthPixels ?? 1920,
+        screenHeightPixels: options.screenHeightPixels ?? 1080
       }
     });
     if (!response.ok()) {

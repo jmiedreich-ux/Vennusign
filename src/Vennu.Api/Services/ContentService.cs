@@ -319,6 +319,8 @@ public sealed class ContentService(
         Guid venueId,
         Guid screenId,
         Guid menuId,
+        Guid pageId,
+        bool rotate,
         string? author,
         CancellationToken cancellationToken = default)
     {
@@ -329,10 +331,15 @@ public sealed class ContentService(
                 VenueId = venueId,
                 ScreenId = screenId,
                 MenuId = menuId,
+                PageId = pageId,
+                Rotate = rotate,
                 AssignedUtc = now,
                 AssignedBy = author
             },
             cancellationToken).ConfigureAwait(false);
+
+        assignment = (await library.GetAssignmentsAsync(venueId, cancellationToken).ConfigureAwait(false))
+            .Single(current => current.ScreenId == screenId && current.MenuId == menuId && current.PageId == pageId);
 
         await library.RecordHistoryAsync(
             new MenuHistoryEntry
@@ -485,11 +492,12 @@ public sealed class ContentService(
         Guid menuId,
         Guid sectionId,
         string name,
+        Guid? pageId = null,
         CancellationToken cancellationToken = default)
     {
         var outcome = await library.CreateSectionOnMenuAsync(
             venueId, menuId, sectionId, NormalizeSectionName(name),
-            timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false);
+            timeProvider.GetUtcNow().UtcDateTime, pageId, cancellationToken).ConfigureAwait(false);
 
         if (outcome.Outcome == SectionOutcomes.Created)
         {

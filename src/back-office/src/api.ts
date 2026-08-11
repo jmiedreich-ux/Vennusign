@@ -789,8 +789,10 @@ export type BoardResponse = {
   theme: string | null;
   dwellSeconds: number;
   loopWarningSeconds: number;
+  pages: Array<{ pageId: string; name: string; sortOrder: number }>;
   sections: Array<{
     sectionId: string;
+    pageId: string;
     name: string | null;
     sortOrder: number;
     items: Array<{
@@ -843,6 +845,8 @@ export type MenuHistoryEntry = {
 export type MenuScreenShowing = {
   screenId: string;
   screenName: string;
+  widthPixels: number;
+  heightPixels: number;
   menuId: string | null;
   menuName: string | null;
   version: number | null;
@@ -1032,6 +1036,49 @@ export type PlaceOutcome = {
   itemCountOnMenu: number;
 };
 
+export type MenuPageAssignment = { screenId: string; menuId: string; pageId: string; menuName: string | null; pageName: string | null; assignedUtc: string; assignedBy: string | null };
+
+export async function loadMenuAssignments(configuration: BackOfficeConfiguration, accessToken: string): Promise<MenuPageAssignment[]> {
+  return (await contentRequest(configuration, accessToken, "/assignments")).json();
+}
+
+export async function assignMenuPage(configuration: BackOfficeConfiguration, accessToken: string, screenId: string, menuId: string, pageId: string, mode: "replace" | "rotate" = "replace"): Promise<MenuPageAssignment> {
+  return (await contentRequest(configuration, accessToken, `/screens/${screenId}/menu`, { method: "PUT", body: JSON.stringify({ menuId, pageId, mode }) })).json();
+}
+
+export async function removeMenuPageAssignment(configuration: BackOfficeConfiguration, accessToken: string, screenId: string, menuId: string, pageId: string): Promise<void> {
+  await contentRequest(configuration, accessToken, `/screens/${screenId}/menus/${menuId}/pages/${pageId}`, { method: "DELETE" });
+}
+
+export type MenuPage = { pageId: string; name: string; sortOrder: number };
+
+export async function loadMenuPages(configuration: BackOfficeConfiguration, accessToken: string, menuId: string): Promise<MenuPage[]> {
+  return (await contentRequest(configuration, accessToken, `/menus/${menuId}/pages`)).json();
+}
+
+export async function addMenuPage(configuration: BackOfficeConfiguration, accessToken: string, menuId: string, name: string): Promise<MenuPage> {
+  return (await contentRequest(configuration, accessToken, `/menus/${menuId}/pages`, { method: "POST", body: JSON.stringify({ name }) })).json();
+}
+
+export async function renameMenuPage(configuration: BackOfficeConfiguration, accessToken: string, menuId: string, pageId: string, name: string): Promise<void> {
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}`, { method: "PUT", body: JSON.stringify({ name }) });
+}
+
+export async function reorderMenuPages(configuration: BackOfficeConfiguration, accessToken: string, menuId: string, pageIds: string[]): Promise<void> {
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/order`, {
+    method: "PUT",
+    body: JSON.stringify({ pageIds })
+  });
+}
+
+export async function duplicateMenuPage(configuration: BackOfficeConfiguration, accessToken: string, menuId: string, pageId: string): Promise<MenuPage> {
+  return (await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}/duplicate`, { method: "POST" })).json();
+}
+
+export async function deleteMenuPage(configuration: BackOfficeConfiguration, accessToken: string, menuId: string, pageId: string, moveSectionsToPageId?: string): Promise<void> {
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}`, { method: "DELETE", body: JSON.stringify({ moveSectionsToPageId: moveSectionsToPageId ?? null }) });
+}
+
 export async function loadBuilderBoard(
   configuration: BackOfficeConfiguration,
   accessToken: string,
@@ -1044,12 +1091,13 @@ export async function addMenuSection(
   configuration: BackOfficeConfiguration,
   accessToken: string,
   menuId: string,
-  name: string
+  name: string,
+  pageId?: string | null
 ): Promise<{ sectionId: string; name: string; sortOrder: number }> {
   return (
     await contentRequest(configuration, accessToken, `/menus/${menuId}/sections`, {
       method: "POST",
-      body: JSON.stringify({ name })
+      body: JSON.stringify({ name, pageId: pageId ?? null })
     })
   ).json();
 }

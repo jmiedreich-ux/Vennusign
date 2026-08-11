@@ -574,6 +574,28 @@ And one the browser caught that nothing else could: moving the 86 notes into a
 entire application. 190 unit tests passed and the production build completed while
 the app rendered nothing at all.
 
+## M3-A Slice 1 reconstruction — 2026-08-11
+
+Independent review established that Slice 1 had been tested only in an uncommitted
+working tree at Slice 0 SHA `179de5f`. All 49 dirty files were first preserved in
+local safety commit `4aa0168`; the reviewable Slice 1 tree was then reconstructed on
+`feature/menus-m3a-s1-pages`. Partial Slice 2 page-history/section-reassignment work
+and the Slice 6 import landing remain only in that safety commit and are not claimed
+as shipped. Issue #696 owns Slice 1.
+
+The work-plan dependency was made explicit: page-shaped Test API seed support lands
+with Slice 1 because the separate Test API must delegate to the real page schema and
+product endpoints introduced here. The review's test-integrity findings are closed:
+page reorder uses a stepped real pointer and was observed failing with `onDrop`
+disabled; the dead/mojibake selector is gone; Q181 singular/zero copy is enforced;
+and browser coverage now includes populated deletion, Cancel, copied content and
+cross-menu naming. LocalDB now asserts exact FK/unique SQL errors and concurrent
+page-item uniqueness. Pre-commit focused evidence: page Playwright 12/12, page
+LocalDB 2/2, back office 196/196 and production build. CI remains suspended.
+
+Exact next action: commit and push Slice 1, open its PR, rerun gates at the committed
+SHA, then obtain an independent exact-SHA review before owner testing.
+
 ## Boundaries
 
 - Milestones 1 and 2 are merged and accepted, so milestone 3 may start. Milestones 4–6 stay closed until their predecessor is merged and accepted in turn.

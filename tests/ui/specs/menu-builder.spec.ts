@@ -211,7 +211,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", includeScreen: true, label: "eightysix" });
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
@@ -269,7 +269,7 @@ test.describe("the builder", () => {
     // act in this model, and the seed deliberately does not do it for you.
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
@@ -308,7 +308,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", includeScreen: true, label: "discard" });
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
     await page.getByTestId("publish").click();
@@ -388,7 +388,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", includeScreen: true, label: "viewing" });
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
@@ -417,7 +417,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", includeScreen: true, label: "review" });
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
@@ -442,7 +442,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", includeScreen: true, label: "goback" });
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
@@ -528,6 +528,7 @@ test.describe("the builder", () => {
     });
 
     await page.getByTestId("add-a-menu").first().click();
+    await page.getByTestId("start-blank").click();
     await page.getByTestId("new-menu-name").fill("One too many");
     await page.getByTestId("create-menu").click();
 
@@ -575,7 +576,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", includeScreen: true, label: "values" });
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
     await page.getByTestId("publish").click();

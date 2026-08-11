@@ -4,9 +4,12 @@ namespace Vennu.Api.Contracts.BackOffice;
 
 public sealed record AvailabilityRequest(bool IsAvailable);
 
-public sealed record AssignmentRequest(Guid MenuId);
+public sealed record AssignmentRequest(Guid MenuId, Guid PageId, string Mode = "replace");
 
-public sealed record SectionNameRequest(string Name);
+public sealed record PageNameRequest(string Name);
+public sealed record PageOrderRequest(IReadOnlyCollection<Guid> PageIds);
+public sealed record PageDeleteRequest(Guid? MoveSectionsToPageId);
+public sealed record SectionNameRequest(string Name, Guid? PageId = null);
 
 public sealed record SectionOrderRequest(IReadOnlyCollection<Guid> SectionIds);
 
@@ -154,10 +157,12 @@ public sealed record BoardResponse(
     string? Theme,
     int DwellSeconds,
     int LoopWarningSeconds,
+    IReadOnlyCollection<PageResponse> Pages,
     IReadOnlyCollection<BoardSectionResponse> Sections);
 
 public sealed record BoardSectionResponse(
     Guid SectionId,
+    Guid PageId,
     string? Name,
     int SortOrder,
     IReadOnlyCollection<BoardItemResponse> Items);
@@ -206,6 +211,9 @@ public sealed record BuilderBoardResponse(
 
 public sealed record SectionResponse(Guid SectionId, string Name, int SortOrder);
 
+public sealed record PageResponse(Guid PageId, string Name, int SortOrder);
+public sealed record PageDeleteResponse(int MovedSectionCount, int RemovedAssignmentCount);
+
 /// <summary>
 /// What a delete released back to the library, so the UI can say it rather than
 /// guess (Q96).
@@ -249,6 +257,9 @@ public sealed record MenuThemeResponse(string Key, string Name);
 public sealed record AssignmentResponse(
     Guid ScreenId,
     Guid MenuId,
+    Guid PageId,
+    string? MenuName,
+    string? PageName,
     DateTime AssignedUtc,
     string? AssignedBy);
 
@@ -263,6 +274,8 @@ public sealed record AssignmentResponse(
 public sealed record ScreenShowingResponse(
     Guid ScreenId,
     string ScreenName,
+    int WidthPixels,
+    int HeightPixels,
     Guid? MenuId,
     string? MenuName,
     long? Version,

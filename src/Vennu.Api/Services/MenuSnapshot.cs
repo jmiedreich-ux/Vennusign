@@ -36,6 +36,9 @@ public sealed class MenuSnapshot
     [JsonPropertyName("screens")]
     public List<SnapshotScreen>? Screens { get; set; }
 
+    [JsonPropertyName("pages")]
+    public List<SnapshotPage>? Pages { get; set; }
+
     [JsonPropertyName("sections")]
     public List<SnapshotSection>? Sections { get; set; }
 
@@ -69,6 +72,7 @@ public sealed class MenuSnapshot
         Compare(changes, DraftTargetKinds.Menu, null, "loopWarningSeconds", Number(published?.LoopWarningSeconds), Number(working.LoopWarningSeconds));
 
         CompareScreens(changes, published, working);
+        ComparePages(changes, published, working);
         CompareSections(changes, published, working);
         CompareItems(changes, published, working);
         ComparePlacements(changes, published, working);
@@ -80,9 +84,23 @@ public sealed class MenuSnapshot
     {
         // Take-off is permanent, so it waits here as a difference in which screens
         // the menu is on, and ships on the next publish (Q68).
-        var before = Join(published?.Screens?.Select(screen => screen.ScreenId.ToString()));
-        var after = Join(working.Screens?.Select(screen => screen.ScreenId.ToString()));
+        var before = Join(published?.Screens?.Select(screen => $"{screen.ScreenId}:{screen.PageId}"));
+        var after = Join(working.Screens?.Select(screen => $"{screen.ScreenId}:{screen.PageId}"));
         Compare(changes, DraftTargetKinds.Screens, null, "assignedScreens", before, after);
+    }
+
+    private static void ComparePages(List<SnapshotChange> changes, MenuSnapshot? published, MenuSnapshot working)
+    {
+        var before = (published?.Pages ?? []).ToDictionary(page => page.PageId);
+        var after = (working.Pages ?? []).ToDictionary(page => page.PageId);
+        foreach (var (pageId, page) in after)
+        {
+            before.TryGetValue(pageId, out var previous);
+            Compare(changes, DraftTargetKinds.Page, pageId, "name", previous?.Name, page.Name);
+            Compare(changes, DraftTargetKinds.Page, pageId, "sortOrder", Number(previous?.SortOrder), Number(page.SortOrder));
+        }
+        foreach (var pageId in before.Keys.Where(id => !after.ContainsKey(id)))
+            changes.Add(new SnapshotChange(DraftTargetKinds.Page, pageId, "present", "true", "false"));
     }
 
     private static void CompareSections(List<SnapshotChange> changes, MenuSnapshot? published, MenuSnapshot working)
@@ -94,6 +112,7 @@ public sealed class MenuSnapshot
         {
             before.TryGetValue(sectionId, out var previous);
             Compare(changes, DraftTargetKinds.Section, sectionId, "name", previous?.Name, section.Name);
+            Compare(changes, DraftTargetKinds.Section, sectionId, "pageId", previous?.PageId.ToString(), section.PageId.ToString());
             Compare(changes, DraftTargetKinds.Section, sectionId, "sortOrder", Number(previous?.SortOrder), Number(section.SortOrder));
         }
 
@@ -217,12 +236,28 @@ public sealed class SnapshotScreen
 {
     [JsonPropertyName("screenId")]
     public Guid ScreenId { get; set; }
+
+    [JsonPropertyName("pageId")]
+    public Guid PageId { get; set; }
+}
+
+public sealed class SnapshotPage
+{
+    [JsonPropertyName("pageId")]
+    public Guid PageId { get; set; }
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+    [JsonPropertyName("sortOrder")]
+    public int SortOrder { get; set; }
 }
 
 public sealed class SnapshotSection
 {
     [JsonPropertyName("sectionId")]
     public Guid SectionId { get; set; }
+
+    [JsonPropertyName("pageId")]
+    public Guid PageId { get; set; }
 
     [JsonPropertyName("name")]
     public string? Name { get; set; }

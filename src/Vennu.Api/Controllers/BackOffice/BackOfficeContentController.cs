@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Vennu.Api.BackOffice;
 using Vennu.Api.Contracts.BackOffice;
 using Vennu.Api.Services;
@@ -20,7 +19,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 public sealed class BackOfficeContentController(
     ContentService content,
     IContentRepository library,
-    IOptionsMonitor<MenuBuilderOptions> builderOptions) : ControllerBase
+    MenuBuilderConfigurationResolver configurationResolver) : ControllerBase
 {
     private Guid VenueId => Guid.Parse(
         User.FindFirstValue(BackOfficeAuthenticationDefaults.VenueIdClaim)!);
@@ -41,19 +40,13 @@ public sealed class BackOfficeContentController(
     }
 
     [HttpGet("configuration")]
-    [RequireCapability("content.item.update")]
     public async Task<ActionResult<MenuBuilderConfigurationResponse>> GetConfiguration(CancellationToken cancellationToken)
     {
-        var options = builderOptions.CurrentValue;
-        var ceilings = await library.GetCeilingsAsync(VenueId, cancellationToken).ConfigureAwait(false);
-        var retention = ceilings.TryGetValue(MenuCeilings.HistoryRetention, out var configured)
-            ? configured
-            : options.HistoryRetentionDepth;
-
+        var resolved = await configurationResolver.ResolveAsync(VenueId, cancellationToken).ConfigureAwait(false);
         return Ok(new MenuBuilderConfigurationResponse(
-            options.ImportFileSizeLimitBytes,
-            options.PublishRetrySilenceThreshold.TotalSeconds,
-            retention));
+            resolved.ImportFileSizeLimitBytes,
+            resolved.PublishRetrySilenceThresholdSeconds,
+            resolved.HistoryRetentionDepth));
     }
 
     // ----- The shelf -----------------------------------------------------------------
@@ -147,8 +140,10 @@ public sealed class BackOfficeContentController(
                 snapshot.Theme,
                 snapshot.DwellSeconds,
                 snapshot.LoopWarningSeconds,
+                [.. (snapshot.Pages ?? []).Select(page => new PageResponse(page.PageId, page.Name ?? string.Empty, page.SortOrder))],
                 [.. (snapshot.Sections ?? []).Select(section => new BoardSectionResponse(
                     section.SectionId,
+                    section.PageId,
                     section.Name,
                     section.SortOrder,
                     [.. (section.Items ?? []).Select(item => new BoardItemResponse(
@@ -157,6 +152,67 @@ public sealed class BackOfficeContentController(
                         item.Description,
                         item.Price,
                         item.SortOrder))]))]);
+
+    // ----- Pages --------------------------------------------------------------------
+
+    [HttpGet("menus/{menuId:guid}/pages")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<IReadOnlyCollection<PageResponse>>> GetPages(Guid menuId, CancellationToken cancellationToken)
+    {
+        var pages = await library.GetPagesAsync(VenueId, menuId, cancellationToken).ConfigureAwait(false);
+        return Ok(pages.Select(page => new PageResponse(page.Id, page.Name, page.SortOrder)).ToArray());
+    }
+
+    [HttpPost("menus/{menuId:guid}/pages")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<PageResponse>> AddPage(Guid menuId, PageNameRequest request, CancellationToken cancellationToken)
+    {
+        var name = request.Name?.Trim();
+        if (string.IsNullOrWhiteSpace(name)) return BadRequest(new { message = "Give this page a name." });
+        var page = await library.CreatePageAsync(VenueId, menuId, Guid.NewGuid(), name, DateTime.UtcNow, cancellationToken).ConfigureAwait(false);
+        return page is null ? NotFound(new { message = "That menu is not one of this venue's menus." }) : Ok(new PageResponse(page.Id, page.Name, page.SortOrder));
+    }
+
+    [HttpPut("menus/{menuId:guid}/pages/{pageId:guid}")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult> RenamePage(Guid menuId, Guid pageId, PageNameRequest request, CancellationToken cancellationToken)
+    {
+        var name = request.Name?.Trim();
+        if (string.IsNullOrWhiteSpace(name)) return BadRequest(new { message = "Give this page a name." });
+        return await library.RenamePageAsync(VenueId, menuId, pageId, name, DateTime.UtcNow, cancellationToken).ConfigureAwait(false)
+            ? NoContent() : NotFound(new { message = "That page is not on this menu." });
+    }
+
+    [HttpPut("menus/{menuId:guid}/pages/order")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult> ReorderPages(Guid menuId, PageOrderRequest request, CancellationToken cancellationToken)
+    {
+        var outcome = await library.ReorderPagesGuardedAsync(VenueId, menuId, request.PageIds, DateTime.UtcNow, cancellationToken).ConfigureAwait(false);
+        return outcome.Outcome == ReorderOutcomes.Reordered ? NoContent() : Conflict(new { reason = ReorderOutcomes.OrderStale, message = "The pages changed while you were dragging. Nothing moved — reload and try again." });
+    }
+
+    [HttpPost("menus/{menuId:guid}/pages/{pageId:guid}/duplicate")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<PageResponse>> DuplicatePage(Guid menuId, Guid pageId, CancellationToken cancellationToken)
+    {
+        var page = await library.DuplicatePageAsync(VenueId, menuId, pageId, Guid.NewGuid(), DateTime.UtcNow, cancellationToken).ConfigureAwait(false);
+        return page is null ? NotFound(new { message = "That page is not on this menu." }) : Ok(new PageResponse(page.Id, page.Name, page.SortOrder));
+    }
+
+    [HttpDelete("menus/{menuId:guid}/pages/{pageId:guid}")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<PageDeleteResponse>> DeletePage(Guid menuId, Guid pageId, [FromBody] PageDeleteRequest? request, CancellationToken cancellationToken)
+    {
+        var outcome = await library.DeletePageAsync(VenueId, menuId, pageId, request?.MoveSectionsToPageId, cancellationToken).ConfigureAwait(false);
+        return outcome.Outcome switch
+        {
+            "deleted" => Ok(new PageDeleteResponse(outcome.MovedSectionCount, outcome.RemovedAssignmentCount)),
+            "last_page" => Conflict(new { reason = "last_page", message = "A menu always keeps one page." }),
+            "move_required" => Conflict(new { reason = "move_required", message = "Choose another page for these sections before deleting this page." }),
+            "item_conflict" => Conflict(new { reason = "item_conflict", message = "Those pages share an item, so their sections cannot be combined yet. Choose another page." }),
+            _ => NotFound(new { message = "That page is not on this menu." })
+        };
+    }
 
     // ----- Availability -------------------------------------------------------------
 
@@ -332,10 +388,8 @@ public sealed class BackOfficeContentController(
         Guid menuId,
         CancellationToken cancellationToken)
     {
-        var ceilings = await library.GetCeilingsAsync(VenueId, cancellationToken).ConfigureAwait(false);
-        var retention = ceilings.TryGetValue(MenuCeilings.HistoryRetention, out var configured)
-            ? configured
-            : builderOptions.CurrentValue.HistoryRetentionDepth;
+        var retention = (await configurationResolver.ResolveAsync(VenueId, cancellationToken).ConfigureAwait(false))
+            .HistoryRetentionDepth;
 
         var entries = await library.GetHistoryAsync(VenueId, menuId, retention, cancellationToken).ConfigureAwait(false);
         return Ok(entries
@@ -390,7 +444,7 @@ public sealed class BackOfficeContentController(
     {
         var assignments = await library.GetAssignmentsAsync(VenueId, cancellationToken).ConfigureAwait(false);
         return Ok(assignments
-            .Select(assignment => new AssignmentResponse(assignment.ScreenId, assignment.MenuId, assignment.AssignedUtc, assignment.AssignedBy))
+            .Select(assignment => new AssignmentResponse(assignment.ScreenId, assignment.MenuId, assignment.PageId, assignment.MenuName, assignment.PageName, assignment.AssignedUtc, assignment.AssignedBy))
             .ToArray());
     }
 
@@ -408,6 +462,8 @@ public sealed class BackOfficeContentController(
             .Select(screen => new ScreenShowingResponse(
                 screen.ScreenId,
                 screen.ScreenName,
+                screen.WidthPixels,
+                screen.HeightPixels,
                 screen.MenuId,
                 screen.MenuName,
                 screen.Version,
@@ -425,15 +481,20 @@ public sealed class BackOfficeContentController(
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
+        if (request.PageId == Guid.Empty) return BadRequest(new { message = "Choose a page for this screen." });
+        if (request.Mode is not ("replace" or "rotate")) return BadRequest(new { message = "Choose replace or rotate." });
         try
         {
             var assignment = await content
-                .AssignAsync(VenueId, screenId, request.MenuId, Author, cancellationToken)
+                .AssignAsync(VenueId, screenId, request.MenuId, request.PageId, request.Mode == "rotate", Author, cancellationToken)
                 .ConfigureAwait(false);
 
             return Ok(new AssignmentResponse(
                 assignment.ScreenId,
                 assignment.MenuId,
+                assignment.PageId,
+                assignment.MenuName,
+                assignment.PageName,
                 assignment.AssignedUtc,
                 assignment.AssignedBy));
         }
@@ -447,6 +508,14 @@ public sealed class BackOfficeContentController(
             // which, or whether it exists at all.
             return NotFound(new { message = "That screen is not one of this venue's screens." });
         }
+    }
+
+    [HttpDelete("screens/{screenId:guid}/menus/{menuId:guid}/pages/{pageId:guid}")]
+    [RequireCapability("screen.content.target")]
+    public async Task<IActionResult> RemovePageAssignment(Guid screenId, Guid menuId, Guid pageId, CancellationToken cancellationToken)
+    {
+        var removed = await library.ClearPageScreenAssignmentAsync(VenueId, screenId, menuId, pageId, cancellationToken).ConfigureAwait(false);
+        return removed ? NoContent() : NotFound(new { message = "That page is not assigned to this screen." });
     }
 
     /// <summary>
@@ -527,7 +596,7 @@ public sealed class BackOfficeContentController(
 
         var sectionId = Guid.NewGuid();
         var outcome = await content
-            .AddSectionAsync(VenueId, menuId, sectionId, request.Name, cancellationToken)
+            .AddSectionAsync(VenueId, menuId, sectionId, request.Name, request.PageId, cancellationToken)
             .ConfigureAwait(false);
 
         return outcome.Outcome == SectionOutcomes.Created

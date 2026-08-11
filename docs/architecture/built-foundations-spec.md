@@ -41,13 +41,13 @@
 | Platform ops | 102 tests reported at last green run |
 | CI | `.github/workflows/ui-regression.yml` gates every commit (windows-latest, LocalDB start+poll, npm/Chromium caching); docs-only PRs skip Phase 02 (#668) |
 
-- **Test-data isolation:** `POST /api/test/seed` (Development-only, token-gated, 404 on wrong/absent token) creates a private menu/section/item/screen per test so specs run fully parallel; `start-ui-test-env.ps1 -PruneSeed` removes seeded rows and the Playwright global setup runs it automatically.
+- **Test-data isolation:** the separately deployed `Vennu.TestApi` owns `POST /api/test/seed`, runs locally/staging but not production, and authenticates with a generated environment secret. It has no product/data/domain dependency and delegates every state change to authorized product API endpoints over HTTP. `start-ui-test-env.ps1 -PruneSeed` removes seeded rows and Playwright global setup runs it automatically.
 - **Isolation tags:** the fixture machinery can stamp parallel datasets (`-0000-0000-<tag>-` GUIDs, tagged tokens/emails/screen keys) so multiple environments share one database without sharing rows.
-- **Two runnable environments, not interchangeable:** `start-ui-test-env.ps1` is local-only (localhost CORS — required for Playwright and owner acceptance); `run-track1-qa.ps1` publishes cloudflared tunnels with tunnel-origin CORS (required for hosted agents). Both bind 7138/5174/5175/5176.
+- **Two runnable environments, not interchangeable:** `start-ui-test-env.ps1` is local-only and binds product API 7138, Test API 7140, Back Office 5174 and display 5175; `run-track1-qa.ps1` publishes cloudflared tunnels with tunnel-origin CORS for hosted agents.
 
 ## 5. Acceptance and evidence machinery
 
-- **Deterministic fixture:** Harbor Acceptance Venue with Owner/Editor/Publisher tokens (`track1-owner-review` etc.), Acceptance Menu → Featured → Harbor Lemonade 4.50, Acceptance Screen `sc-t1demo` (Offline), a consumed 1-of-1 pair allowance, and the unavailable/temporarily-blocked/locale-fallback scenarios. Idempotent; reapplied on every environment start.
+- **Deterministic fixture:** Harbor Acceptance Venue with Owner/Editor/Publisher tokens (`track1-owner-review` etc.), Acceptance Menu → Featured → Harbor Lemonade 4.50 and Acceptance Screen `sc-t1demo` (Offline). A separate `track1-capacity-check` venue carries the consumed 1-of-1 allowance so ordinary Playwright seeding can exercise real screen-create endpoints in parallel. Idempotent; reapplied on every environment start.
 - **Owner acceptance workbook** (`docs/acceptance/track-1-owner-acceptance.html`): self-contained HTML, 20 cases in 8 journeys, one-click fragment-token sign-in, localStorage persistence, JSON export/import with a versioned schema, closure decision gated on complete + noted results. (v3 with per-case sign-in and per-step checkboxes exists but is stranded — §8.)
 - **Result record:** `vennusign.track1.owner-acceptance` JSON schema; the 2026-08-06 owner record (17 Pass / 1 NA / 2 Fail, closure "Needs adjustment") is the current acceptance baseline.
 

@@ -16,4 +16,7 @@ public class RegisterScreenRequest
 
     [StringLength(50)]
     public string? AppVersion { get; set; }
+
+    [Range(1, 16384)] public int WidthPixels { get; set; } = 1920;
+    [Range(1, 16384)] public int HeightPixels { get; set; } = 1080;
 }

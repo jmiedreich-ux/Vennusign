@@ -2197,6 +2197,8 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
             """
             INSERT dbo.Menus (Id, VenueId, Name, IsActive, CreatedUtc, UpdatedUtc)
             VALUES (@MenuId, @VenueId, @Name, 1, SYSUTCDATETIME(), SYSUTCDATETIME());
+            INSERT dbo.MenuPages (Id,VenueId,MenuId,Name,SortOrder,CreatedUtc,UpdatedUtc)
+            VALUES (NEWID(),@VenueId,@MenuId,N'Page 1',0,SYSUTCDATETIME(),SYSUTCDATETIME());
             SELECT 1 AS Value;
             """,
             new { MenuId = menuId, VenueId = venueId, Name = fixture.UniqueValue("menu") });
@@ -2208,8 +2210,9 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var sectionId = Guid.NewGuid();
         await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
             """
-            INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
-            VALUES (@SectionId, @VenueId, @MenuId, @Name, @SortOrder, SYSUTCDATETIME(), SYSUTCDATETIME());
+            INSERT dbo.MenuSections (Id, VenueId, MenuId, PageId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            SELECT @SectionId,@VenueId,@MenuId,p.Id,@Name,@SortOrder,SYSUTCDATETIME(),SYSUTCDATETIME()
+            FROM dbo.MenuPages p WHERE p.MenuId=@MenuId AND p.VenueId=@VenueId AND p.SortOrder=0;
             SELECT 1 AS Value;
             """,
             new { SectionId = sectionId, VenueId = venueId, MenuId = menuId, Name = fixture.UniqueValue("section"), SortOrder = sortOrder });

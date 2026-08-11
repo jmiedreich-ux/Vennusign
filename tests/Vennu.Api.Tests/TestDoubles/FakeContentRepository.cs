@@ -11,6 +11,8 @@ namespace Vennu.Api.Tests.TestDoubles;
 /// </summary>
 internal sealed class FakeContentRepository : IContentRepository
 {
+    public List<MenuPage> Pages { get; } = [];
+
     public List<Item> Items { get; } = [];
 
     public List<Placement> Placements { get; } = [];
@@ -31,7 +33,45 @@ internal sealed class FakeContentRepository : IContentRepository
 
     public int MenuCount { get; set; } = 1;
 
+    public List<Guid> ResetAutomationVenues { get; } = [];
+
     // ----- Library and placements -----
+
+    public Task<IReadOnlyCollection<MenuPage>> GetPagesAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyCollection<MenuPage>>(Pages.Where(page => page.VenueId == venueId && page.MenuId == menuId).OrderBy(page => page.SortOrder).ToArray());
+
+    public Task<MenuPage?> CreatePageAsync(Guid venueId, Guid menuId, Guid pageId, string name, DateTime now, CancellationToken cancellationToken = default)
+    {
+        var page = new MenuPage { Id = pageId, VenueId = venueId, MenuId = menuId, Name = name, SortOrder = Pages.Count(candidate => candidate.VenueId == venueId && candidate.MenuId == menuId), CreatedUtc = now, UpdatedUtc = now };
+        Pages.Add(page);
+        return Task.FromResult<MenuPage?>(page);
+    }
+
+    public Task<bool> RenamePageAsync(Guid venueId, Guid menuId, Guid pageId, string name, DateTime now, CancellationToken cancellationToken = default)
+    {
+        var page = Pages.SingleOrDefault(candidate => candidate.Id == pageId && candidate.VenueId == venueId && candidate.MenuId == menuId);
+        if (page is null) return Task.FromResult(false);
+        page.Name = name; page.UpdatedUtc = now; return Task.FromResult(true);
+    }
+
+    public Task<ReorderOutcome> ReorderPagesGuardedAsync(Guid venueId, Guid menuId, IReadOnlyCollection<Guid> pageIds, DateTime now, CancellationToken cancellationToken = default) =>
+        Task.FromResult(new ReorderOutcome("reordered", 0));
+
+    public Task<MenuPage?> DuplicatePageAsync(Guid venueId, Guid menuId, Guid sourcePageId, Guid newPageId, DateTime now, CancellationToken cancellationToken = default)
+    {
+        var source = Pages.SingleOrDefault(page => page.Id == sourcePageId && page.VenueId == venueId && page.MenuId == menuId);
+        if (source is null) return Task.FromResult<MenuPage?>(null);
+        var copy = new MenuPage { Id = newPageId, VenueId = venueId, MenuId = menuId, Name = source.Name + " copy", SortOrder = source.SortOrder + 1, CreatedUtc = now, UpdatedUtc = now };
+        Pages.Add(copy); return Task.FromResult<MenuPage?>(copy);
+    }
+
+    public Task<PageDeleteOutcome> DeletePageAsync(Guid venueId, Guid menuId, Guid pageId, Guid? moveSectionsToPageId, CancellationToken cancellationToken = default)
+    {
+        var matches = Pages.Where(page => page.VenueId == venueId && page.MenuId == menuId).ToArray();
+        if (matches.Length <= 1) return Task.FromResult(new PageDeleteOutcome("last_page", 0, 0));
+        var removed = Pages.RemoveAll(page => page.Id == pageId && page.VenueId == venueId && page.MenuId == menuId);
+        return Task.FromResult(new PageDeleteOutcome(removed == 0 ? "page_missing" : "deleted", 0, 0));
+    }
 
     public Task<Guid> CreateItemAsync(Item item, CancellationToken cancellationToken = default)
     {
@@ -139,14 +179,18 @@ internal sealed class FakeContentRepository : IContentRepository
     public Task<MenuScreenAssignment> AssignScreenAsync(MenuScreenAssignment assignment, CancellationToken cancellationToken = default)
     {
         assignment.Id = assignment.Id == Guid.Empty ? Guid.NewGuid() : assignment.Id;
-        // One menu per screen: assigning replaces whatever the screen showed.
-        Assignments.RemoveAll(existing => existing.ScreenId == assignment.ScreenId);
+        if (!assignment.Rotate)
+            Assignments.RemoveAll(existing => existing.ScreenId == assignment.ScreenId && existing.PageId != assignment.PageId);
+        Assignments.RemoveAll(existing => existing.ScreenId == assignment.ScreenId && existing.PageId == assignment.PageId);
         Assignments.Add(assignment);
         return Task.FromResult(assignment);
     }
 
     public Task<bool> ClearScreenAssignmentAsync(Guid venueId, Guid screenId, CancellationToken cancellationToken = default) =>
         Task.FromResult(Assignments.RemoveAll(a => a.VenueId == venueId && a.ScreenId == screenId) > 0);
+
+    public Task<bool> ClearPageScreenAssignmentAsync(Guid venueId, Guid screenId, Guid menuId, Guid pageId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Assignments.RemoveAll(a => a.VenueId == venueId && a.ScreenId == screenId && a.MenuId == menuId && a.PageId == pageId) > 0);
 
     public Task<int> ClearMenuAssignmentsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
         Task.FromResult(Assignments.RemoveAll(a => a.VenueId == venueId && a.MenuId == menuId));
@@ -349,6 +393,8 @@ internal sealed class FakeContentRepository : IContentRepository
             .Select(pair => new ScreenShowing(
                 pair.ScreenId,
                 pair.ScreenId.ToString(),
+                1920,
+                1080,
                 StillNames(pair.Event!, pair.ScreenId) ? pair.Event!.MenuId : null,
                 StillNames(pair.Event!, pair.ScreenId) ? pair.Event!.MenuId.ToString() : null,
                 StillNames(pair.Event!, pair.ScreenId) ? pair.Event!.Version : null,
@@ -458,6 +504,7 @@ internal sealed class FakeContentRepository : IContentRepository
         Guid sectionId,
         string name,
         DateTime now,
+        Guid? pageId = null,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException(
             "Adding a section reads its sort order under the lock that inserts it. "
@@ -759,4 +806,10 @@ internal sealed class FakeContentRepository : IContentRepository
 
     public Task<int> CountMenusAsync(Guid venueId, CancellationToken cancellationToken = default) =>
         Task.FromResult(MenuCount);
+
+    public Task ResetAutomationVenueAsync(Guid venueId, CancellationToken cancellationToken = default)
+    {
+        ResetAutomationVenues.Add(venueId);
+        return Task.CompletedTask;
+    }
 }

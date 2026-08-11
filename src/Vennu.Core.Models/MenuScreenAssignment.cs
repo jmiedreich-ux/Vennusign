@@ -1,9 +1,8 @@
 namespace Vennu.Core.Models;
 
 /// <summary>
-/// Which menu a screen is showing. Exactly one menu per screen this milestone,
-/// held as its own record so Schedules can point several menus at a screen later
-/// without a migration.
+/// One page in a screen's ordered rotation. A screen may carry several page
+/// assignments; the theme owns the interval while Menus owns page order.
 /// </summary>
 public sealed class MenuScreenAssignment
 {
@@ -14,6 +13,14 @@ public sealed class MenuScreenAssignment
     public Guid ScreenId { get; set; }
 
     public Guid MenuId { get; set; }
+
+    public Guid PageId { get; set; }
+
+    public string? MenuName { get; set; }
+
+    public string? PageName { get; set; }
+
+    public bool Rotate { get; set; }
 
     public DateTime AssignedUtc { get; set; }
 

@@ -5,6 +5,9 @@ import {
   MenuActionRefused,
   loadBackOfficeSession,
   addMenuSection,
+  addMenuPage,
+  deleteMenuPage,
+  duplicateMenuPage,
   deleteMenuSection,
   discardMenuDraft,
   loadBuilderBoard,
@@ -12,9 +15,14 @@ import {
   loadMenuAvailability,
   loadMenuHistory,
   loadMenuThemes,
+  loadMenuAssignments,
   loadScreensShowing,
+  assignMenuPage,
+  removeMenuPageAssignment,
   placeMenuItem,
   publishMenu,
+  renameMenuPage,
+  reorderMenuPages,
   removeMenuItem,
   renameMenuSection,
   reorderMenuItems,
@@ -26,6 +34,7 @@ import {
   type LibraryItem,
   type MenuAvailability,
   type MenuHistoryEntry,
+  type MenuPageAssignment,
   type MenuScreenShowing
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
@@ -57,6 +66,7 @@ import {
   venueTime
 } from "./builderModel.mjs";
 import type { BuilderPlace } from "./builderModel.d.mts";
+import { calculateBoardCapacity } from "./boardCapacity.mjs";
 import "../../board-engine/board-engine.css";
 import "./menu-builder.css";
 
@@ -329,6 +339,7 @@ export default function MenuBuilder({
   const [data, setData] = useState<BuilderBoard>();
   const [availability, setAvailability] = useState<MenuAvailability[]>([]);
   const [screens, setScreens] = useState<MenuScreenShowing[]>([]);
+  const [assignments, setAssignments] = useState<MenuPageAssignment[]>([]);
   const [place, setPlace] = useState<BuilderPlace>({ view: "one-section", sectionId: null, selectedItemId: null });
   const [saveState, setSaveState] = useState<SaveState>("clean");
   const [error, setError] = useState<string>();
@@ -344,11 +355,22 @@ export default function MenuBuilder({
   const [historyOpen, setHistoryOpen] = useState(false);
   const [history, setHistory] = useState<MenuHistoryEntry[]>();
   const [viewingOpen, setViewingOpen] = useState(false);
+  const [sectionPickerOpen, setSectionPickerOpen] = useState(false);
+  const [assignmentOpen, setAssignmentOpen] = useState(false);
+  const [assignmentDraft, setAssignmentDraft] = useState<Record<string, "replace" | "rotate" | "remove">>({});
+  const [assignmentChoiceScreenId, setAssignmentChoiceScreenId] = useState<string | null>(null);
   const [viewingScreenId, setViewingScreenId] = useState<string | null>(null);
   const undoStack = useRef<UndoStep[]>([]);
   const redoStack = useRef<UndoStep[]>([]);
   const [historyDepth, setHistoryDepth] = useState({ undo: 0, redo: 0 });
   const [confirmDelete, setConfirmDelete] = useState<{ sectionId: string; name: string; items: number } | null>(null);
+  const [activePageId, setActivePageId] = useState<string | null>(null);
+  const [addingPage, setAddingPage] = useState(false);
+  const [newPageName, setNewPageName] = useState("");
+  const [pageMenuId, setPageMenuId] = useState<string | null>(null);
+  const [draggedPageId, setDraggedPageId] = useState<string | null>(null);
+  const [editingPage, setEditingPage] = useState<{ pageId: string; name: string } | null>(null);
+  const [confirmPageDelete, setConfirmPageDelete] = useState<{ pageId: string; name: string; destinationPageId: string; sectionCount: number } | null>(null);
 
   const discardRef = useDialogFocus(confirmDiscard);
   const deleteRef = useDialogFocus(Boolean(confirmDelete));
@@ -356,22 +378,38 @@ export default function MenuBuilder({
   const seeAllRef = useDialogFocus(seeAllOpen);
   const reviewRef = useDialogFocus(reviewOpen);
   const historyRef = useDialogFocus(historyOpen);
+  const pageDeleteRef = useDialogFocus(Boolean(confirmPageDelete));
 
   const board = data?.board;
+  const pages = board?.pages ?? [];
+
+  useEffect(() => {
+    if (pages.length === 0) return;
+    if (!activePageId || !pages.some(page => page.pageId === activePageId)) setActivePageId(pages[0].pageId);
+  }, [activePageId, pages]);
+  useEffect(() => {
+    if (!board || !activePageId) return;
+    const pageSections = sectionsOf(board).filter(section => section.pageId === activePageId);
+    if (!pageSections.some(section => section.sectionId === place.sectionId)) {
+      setPlace(current => ({ ...current, sectionId: pageSections[0]?.sectionId ?? null, selectedItemId: null }));
+    }
+  }, [activePageId, board, place.sectionId]);
   const unavailableIds = useMemo(
     () => availability.filter(state => !state.isAvailable).map(state => state.itemId),
     [availability]
   );
 
   const refresh = useCallback(async () => {
-    const [next, states, showing] = await Promise.all([
+    const [next, states, showing, assigned] = await Promise.all([
       loadBuilderBoard(configuration, credential(), menuId),
       loadMenuAvailability(configuration, credential()),
-      loadScreensShowing(configuration, credential())
+      loadScreensShowing(configuration, credential()),
+      loadMenuAssignments(configuration, credential())
     ]);
     setData(next);
     setAvailability(states);
     setScreens(showing);
+    setAssignments(assigned);
     return next;
   }, [apiKey, configuration, menuId]);
 
@@ -538,6 +576,64 @@ export default function MenuBuilder({
     [deliver, onAccessTokenChange]
   );
 
+  const commitNewPage = async () => {
+    const name = newPageName.trim();
+    setAddingPage(false);
+    setNewPageName("");
+    if (!name) return;
+    let created: { pageId: string } | undefined;
+    await run(async () => { created = await addMenuPage(configuration, credential(), menuId, name); });
+    if (created) setActivePageId(created.pageId);
+  };
+
+  const commitPageRename = async () => {
+    const edit = editingPage;
+    setEditingPage(null);
+    if (!edit) return;
+    const name = edit.name.trim();
+    const current = pages.find(page => page.pageId === edit.pageId)?.name;
+    if (!name || name === current) return;
+    await run(() => renameMenuPage(configuration, credential(), menuId, edit.pageId, name));
+  };
+
+  const duplicatePage = async (pageId: string) => {
+    setPageMenuId(null);
+    let created: { pageId: string } | undefined;
+    await run(async () => { created = await duplicateMenuPage(configuration, credential(), menuId, pageId); });
+    if (created) setActivePageId(created.pageId);
+  };
+
+  const dropPage = async (targetPageId: string) => {
+    const sourcePageId = draggedPageId;
+    setDraggedPageId(null);
+    if (!sourcePageId || sourcePageId === targetPageId) return;
+    const ordered = pages.map(page => page.pageId);
+    const from = ordered.indexOf(sourcePageId);
+    const to = ordered.indexOf(targetPageId);
+    if (from < 0 || to < 0) return;
+    ordered.splice(to, 0, ordered.splice(from, 1)[0]);
+    await run(() => reorderMenuPages(configuration, credential(), menuId, ordered));
+  };
+
+  const removePage = async (pageId: string, destinationPageId?: string) => {
+    setPageMenuId(null);
+    setConfirmPageDelete(null);
+    await run(() => deleteMenuPage(configuration, credential(), menuId, pageId, destinationPageId || undefined));
+  };
+
+  const saveAssignments = async () => {
+    if (!activePageId) return;
+    const changes = Object.entries(assignmentDraft);
+    await run(async () => {
+      for (const [screenId, mode] of changes) {
+        if (mode === "remove") await removeMenuPageAssignment(configuration, credential(), screenId, menuId, activePageId);
+        else await assignMenuPage(configuration, credential(), screenId, menuId, activePageId, mode);
+      }
+    });
+    setAssignmentOpen(false);
+    setAssignmentDraft({});
+  };
+
   // ---- the section rail ----------------------------------------------------
 
   const [addingSection, setAddingSection] = useState(false);
@@ -557,7 +653,7 @@ export default function MenuBuilder({
     let created: { sectionId: string } | undefined;
     await run(
       async () => {
-        created = await addMenuSection(configuration, credential(), menuId, name);
+        created = await addMenuSection(configuration, credential(), menuId, name, activePageId);
       },
       {
         describe: `Add section "${name}"`,
@@ -565,7 +661,7 @@ export default function MenuBuilder({
           if (created) await deleteMenuSection(configuration, credential(), menuId, created.sectionId);
         },
         redo: async () => {
-          created = await addMenuSection(configuration, credential(), menuId, name);
+          created = await addMenuSection(configuration, credential(), menuId, name, activePageId);
         }
       }
     );
@@ -573,7 +669,7 @@ export default function MenuBuilder({
   };
 
   const moveSection = async (from: number, to: number) => {
-    const ids = sectionsOf(board).map(section => section.sectionId);
+    const ids = sectionsOf(board).filter(section => !activePageId || section.pageId === activePageId).map(section => section.sectionId);
     const next = reorder(ids, from, to);
     if (next.join() === ids.join()) return;
     await run(
@@ -586,8 +682,8 @@ export default function MenuBuilder({
     );
   };
 
-  const deleteSection = async (sectionId: string, name: string | null) => {
-    const sections = sectionsOf(board);
+  const deleteSection = async (sectionId: string, name: string) => {
+    const sections = sectionsOf(board).filter(section => !activePageId || section.pageId === activePageId);
     const deletedIndex = sections.findIndex(section => section.sectionId === sectionId);
     const nextSection = sections[deletedIndex - 1] ?? sections[deletedIndex + 1] ?? null;
     await run(async () => {
@@ -1257,11 +1353,23 @@ export default function MenuBuilder({
     reviewOpen ||
     historyOpen ||
     findOpen ||
+    assignmentOpen ||
     Boolean(signBackIn && !signInDeferred)
       ? ("" as const)
       : undefined;
-  const sections = sectionsOf(board);
-  const shown = canvasBoard(board, place);
+  const sections = sectionsOf(board).filter(section => !activePageId || section.pageId === activePageId);
+  const activePageItemCount = sections.reduce((count, section) => count + itemsOf(board, section.sectionId).length, 0);
+  const activePageAssignmentCount = assignments.filter(assignment => assignment.pageId === activePageId).length;
+  const pageBoard = { ...board, sections };
+  const shown = canvasBoard(pageBoard, place);
+  const activeAssignments = assignments.filter(assignment => assignment.menuId === menuId && assignment.pageId === activePageId);
+  const capacityResults = activeAssignments.flatMap(assignment => {
+    const screen = screens.find(candidate => candidate.screenId === assignment.screenId);
+    return screen
+      ? [calculateBoardCapacity(pageBoard, { width: screen.widthPixels, height: screen.heightPixels }, board.theme)]
+      : [];
+  });
+  const capacity = capacityResults.sort((left, right) => left.limit - right.limit)[0] ?? null;
   const offNote = availabilityLine(selectedAvailability, venueTimezone);
   /*
    * A note per 86'd item, keyed by item. The design writes it with the time
@@ -1385,6 +1493,84 @@ export default function MenuBuilder({
         </div>
       </header>
 
+      <nav className="builder__pages" aria-label="Menu pages" inert={behindScrim} data-testid="page-rail">
+        <div className="builder__page-tabs">
+          {pages.map(page => (
+            <div
+              className="builder__page-tab-wrap"
+              key={page.pageId}
+              draggable={!editingPage && !busy}
+              onDragStart={() => setDraggedPageId(page.pageId)}
+              onDragEnd={() => setDraggedPageId(null)}
+              onDragOver={event => event.preventDefault()}
+              onDrop={() => void dropPage(page.pageId)}
+              data-testid="page-tab-wrap"
+            >
+              {editingPage?.pageId === page.pageId ? (
+                <input
+                  autoFocus
+                  value={editingPage.name}
+                  onChange={event => setEditingPage({ pageId: page.pageId, name: event.target.value })}
+                  onBlur={() => void commitPageRename()}
+                  onKeyDown={event => { if (event.key === "Enter") void commitPageRename(); if (event.key === "Escape") setEditingPage(null); }}
+                  aria-label={`Rename ${page.name}`}
+                  data-testid="page-rename-input"
+                />
+              ) : <button
+                type="button"
+                className={`builder__page-tab${activePageId === page.pageId ? " is-active" : ""}`}
+                data-testid="page-tab"
+                data-page-id={page.pageId}
+                data-active={activePageId === page.pageId}
+                onClick={() => {
+                  setActivePageId(page.pageId);
+                  const firstSection = sectionsOf(board).find(section => section.pageId === page.pageId);
+                  setPlace(current => ({ ...current, sectionId: firstSection?.sectionId ?? null, selectedItemId: null }));
+                  setPageMenuId(null);
+                }}
+              >
+                {page.name}
+              </button>}
+              {activePageId === page.pageId ? (
+                <button type="button" className="builder__page-actions" data-testid="page-actions" aria-label={`Actions for ${page.name}`} onClick={() => setPageMenuId(open => open === page.pageId ? null : page.pageId)}>⋯</button>
+              ) : null}
+              {pageMenuId === page.pageId ? (
+                <div className="builder__page-menu" data-testid="page-menu">
+                  <button type="button" onClick={() => { setPageMenuId(null); setEditingPage({ pageId: page.pageId, name: page.name }); }}>Rename</button>
+                  <button type="button" onClick={() => void duplicatePage(page.pageId)}>Duplicate</button>
+                  <button type="button" disabled={pages.length === 1} onClick={() => {
+                    const destinationPageId = pages.find(candidate => candidate.pageId !== page.pageId)?.pageId ?? "";
+                    setPageMenuId(null);
+                    setConfirmPageDelete({ pageId: page.pageId, name: page.name, destinationPageId, sectionCount: sectionsOf(board).filter(section => section.pageId === page.pageId).length });
+                  }}>Delete</button>
+                </div>
+              ) : null}
+            </div>
+          ))}
+          {addingPage ? (
+            <input
+              autoFocus
+              value={newPageName}
+              onChange={event => setNewPageName(event.target.value)}
+              onBlur={() => void commitNewPage()}
+              onKeyDown={event => { if (event.key === "Enter") void commitNewPage(); if (event.key === "Escape") { setAddingPage(false); setNewPageName(""); } }}
+              aria-label="Page name"
+              data-testid="page-name-input"
+            />
+          ) : (
+            <button type="button" className="builder__add-page" data-testid="add-page" onClick={() => setAddingPage(true)}>+ Add page</button>
+          )}
+        </div>
+        {activePageId ? (
+          <div className="builder__page-summary" data-testid="page-summary">
+            <strong>{pages.find(page => page.pageId === activePageId)?.name}</strong>
+            {activePageItemCount > 0 ? <span>{activePageItemCount} {activePageItemCount === 1 ? "item" : "items"}</span> : null}
+            {activePageAssignmentCount > 0 ? <span data-testid="page-assignment-count">{activePageAssignmentCount} {activePageAssignmentCount === 1 ? "screen" : "screens"}</span> : null}
+            <button type="button" onClick={() => { setAssignmentDraft({}); setAssignmentOpen(true); }} data-testid="manage-page-screens">Manage screens</button>
+          </div>
+        ) : null}
+      </nav>
+
       <div className="builder__columns" inert={behindScrim}>
         <nav className="builder__rail" aria-label="Sections">
           <div className="builder__rail-head">
@@ -1479,19 +1665,29 @@ export default function MenuBuilder({
 
         <main className="builder__canvas">
           <div className="builder__canvas-head">
-            <div className="builder__view-toggle" role="group" aria-label="View">
-              {(["one-section", "whole-board"] as const).map(view => (
+            <div className="builder__section-chips" aria-label="Page sections" data-testid="section-chips">
+              <button
+                type="button"
+                aria-pressed={place.view === "whole-board"}
+                data-testid="view-whole-board"
+                onClick={() => setPlace(current => ({ ...current, view: "whole-board", selectedItemId: null }))}
+              >Whole page</button>
+              {sections.slice(0, 5).map((section, index) => (
                 <button
-                  key={view}
+                  key={section.sectionId}
                   type="button"
-                  className={place.view === view ? "is-selected" : ""}
-                  aria-pressed={place.view === view}
-                  data-testid={`view-${view}`}
-                  onClick={() => setPlace(current => ({ ...current, view }))}
-                >
-                  {view === "one-section" ? "One section" : "Whole board"}
-                </button>
+                  aria-pressed={place.view === "one-section" && place.sectionId === section.sectionId}
+                  data-testid={index === 0 ? "view-one-section" : undefined}
+                  onClick={() => setPlace(current => ({ ...current, view: "one-section", sectionId: section.sectionId, selectedItemId: null }))}
+                >{section.name}</button>
               ))}
+              {sections.length > 5 ? <details open={sectionPickerOpen}>
+                <summary onClick={event => { event.preventDefault(); setSectionPickerOpen(open => !open); }}>More</summary>
+                {sections.slice(5).map(section => <button key={section.sectionId} type="button" onClick={() => {
+                  setPlace(current => ({ ...current, view: "one-section", sectionId: section.sectionId, selectedItemId: null }));
+                  setSectionPickerOpen(false);
+                }}>{section.name}</button>)}
+              </details> : null}
             </div>
             {place.selectedItemId && isMissingPrice(selected?.item) ? (
               <p className="builder__flag" data-testid="missing-price-flag">
@@ -1499,6 +1695,22 @@ export default function MenuBuilder({
               </p>
             ) : null}
           </div>
+
+          {capacity && capacity.state !== "fits" ? (
+            <div
+              className={`builder__capacity builder__capacity--${capacity.state}`}
+              data-testid="capacity-banner"
+              data-capacity={capacity.state}
+              data-capacity-limit={capacity.limit}
+              data-dropped-items={capacity.dropped.join("|")}
+            >
+              {capacity.state === "overflow"
+                ? `${capacity.count} items do not fit this screen; ${capacity.dropped.join(", ")} will be dropped.`
+                : capacity.state === "nearly-full"
+                  ? `${capacity.count} of ${capacity.limit} item spaces used.`
+                  : `${capacity.count} items fit this screen.`}
+            </div>
+          ) : null}
 
           <div
             className="builder__board-card"
@@ -2307,6 +2519,75 @@ export default function MenuBuilder({
                 </li>
               ))}
             </ul>
+          </div>
+        </>
+      ) : null}
+
+      {assignmentOpen ? (
+        <>
+          <div className="builder__scrim" />
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="assign-page-title" data-testid="screen-assignments-view">
+            <h2 id="assign-page-title">Screen assignments</h2>
+            <p>Choose where {pages.find(page => page.pageId === activePageId)?.name} appears. Rotation timing comes from the theme.</p>
+            {screens.length === 0 ? <p>No paired screens.</p> : screens.map(screen => {
+              const existing = assignments.filter(assignment => assignment.screenId === screen.screenId);
+              const alreadyAssigned = existing.some(assignment => assignment.pageId === activePageId);
+              const staged = assignmentDraft[screen.screenId];
+              return <div key={screen.screenId} className="builder__assignment-row">
+                <span>{screen.screenName}</span>
+                {staged ? <span>{staged === "rotate" ? "Will rotate" : staged === "remove" ? "Will remove" : "Will replace"}</span> : alreadyAssigned ? (
+                  <button type="button" data-testid="remove-page-screen" onClick={() => setAssignmentDraft(current => ({ ...current, [screen.screenId]: "remove" }))}>Remove</button>
+                ) : (
+                  <button type="button" data-testid="assign-page-screen" onClick={() => {
+                    if (existing.length === 0) setAssignmentDraft(current => ({ ...current, [screen.screenId]: "replace" }));
+                    else setAssignmentChoiceScreenId(screen.screenId);
+                  }}>{existing.length === 0 ? "Assign" : "Choose…"}</button>
+                )}
+              </div>;
+            })}
+            <div className="builder__dialog-actions">
+              <button type="button" className="action-secondary" onClick={() => { setAssignmentOpen(false); setAssignmentDraft({}); }}>Cancel</button>
+              <button type="button" disabled={Object.keys(assignmentDraft).length === 0 || busy} onClick={() => void saveAssignments()}>Save</button>
+            </div>
+          </div>
+          {assignmentChoiceScreenId ? <div className="builder__dialog builder__dialog--nested" role="dialog" aria-modal="true" aria-labelledby="assignment-choice-title" data-testid="assignment-choice">
+            <h2 id="assignment-choice-title">This screen already has {(() => {
+              const existing = assignments.find(assignment => assignment.screenId === assignmentChoiceScreenId);
+              return existing?.pageName ?? pages.find(page => page.pageId === existing?.pageId)?.name ?? existing?.menuName ?? "another page";
+            })()}</h2>
+            <p>Rotate both pages, or replace the page already there.</p>
+            <div className="builder__dialog-actions">
+              <button type="button" onClick={() => { setAssignmentDraft(current => ({ ...current, [assignmentChoiceScreenId]: "rotate" })); setAssignmentChoiceScreenId(null); }}>Rotate both</button>
+              <button type="button" className="action-danger" onClick={() => { setAssignmentDraft(current => ({ ...current, [assignmentChoiceScreenId]: "replace" })); setAssignmentChoiceScreenId(null); }}>Replace</button>
+            </div>
+          </div> : null}
+        </>
+      ) : null}
+
+      {confirmPageDelete ? (
+        <>
+          <div className="builder__scrim" />
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="delete-page-title" ref={pageDeleteRef} data-testid="delete-page-dialog">
+            <h2 id="delete-page-title">Delete {confirmPageDelete.name}?</h2>
+            <p>
+              {confirmPageDelete.sectionCount > 0 ? "Its sections will move. " : "This page is empty. "}{assignments.filter(assignment => assignment.pageId === confirmPageDelete.pageId).length > 0
+                ? `${assignments.filter(assignment => assignment.pageId === confirmPageDelete.pageId).map(assignment => screens.find(screen => screen.screenId === assignment.screenId)?.screenName ?? "Unknown screen").join(", ")} will lose this assignment.`
+                : "No screens are assigned to this page."}
+            </p>
+            {confirmPageDelete.sectionCount > 0 ? <label>
+              Move sections to
+              <select
+                value={confirmPageDelete.destinationPageId}
+                onChange={event => setConfirmPageDelete(current => current ? { ...current, destinationPageId: event.target.value } : null)}
+                data-testid="delete-page-destination"
+              >
+                {pages.filter(page => page.pageId !== confirmPageDelete.pageId).map(page => <option key={page.pageId} value={page.pageId}>{page.name}</option>)}
+              </select>
+            </label> : null}
+            <div className="builder__dialog-actions">
+              <button type="button" className="action-secondary" onClick={() => setConfirmPageDelete(null)}>Cancel</button>
+              <button type="button" className="action-danger" disabled={confirmPageDelete.sectionCount > 0 && !confirmPageDelete.destinationPageId} onClick={() => void removePage(confirmPageDelete.pageId, confirmPageDelete.sectionCount > 0 ? confirmPageDelete.destinationPageId : undefined)}>Delete page</button>
+            </div>
           </div>
         </>
       ) : null}

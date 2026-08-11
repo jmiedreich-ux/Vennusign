@@ -25,14 +25,14 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         """;
 
     private const string PlacementsSql = """
-        SELECT Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc
+        SELECT Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc
         FROM dbo.Placements
         WHERE VenueId = @VenueId AND MenuId = @MenuId
         ORDER BY MenuSectionId, SortOrder, Id;
         """;
 
     private const string PlacementsForItemSql = """
-        SELECT Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc
+        SELECT Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc
         FROM dbo.Placements
         WHERE VenueId = @VenueId AND ItemId = @ItemId
         ORDER BY MenuId, SortOrder, Id;
@@ -84,21 +84,29 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             THROW 51006, 'This menu is put away. Put it back on the shelf before giving it a screen.', 1;
         END;
 
+        IF @Rotate = 0
+            DELETE dbo.MenuScreenAssignments WHERE ScreenId=@ScreenId AND VenueId=@VenueId AND PageId<>@PageId;
+
         MERGE dbo.MenuScreenAssignments WITH (HOLDLOCK) AS target
         USING (
-            SELECT s.Id AS ScreenId
+            SELECT s.Id AS ScreenId, p.Id AS PageId
             FROM dbo.Screens s
+            CROSS APPLY (
+                SELECT mp.Id
+                FROM dbo.MenuPages mp
+                WHERE mp.Id=@PageId AND mp.MenuId = @MenuId AND mp.VenueId = @VenueId
+            ) p
             WHERE s.Id = @ScreenId
               AND s.VenueId = @VenueId
               AND EXISTS (SELECT 1 FROM dbo.Menus m WHERE m.Id = @MenuId AND m.VenueId = @VenueId)
         ) AS source
-            ON target.ScreenId = source.ScreenId
+            ON target.ScreenId = source.ScreenId AND target.PageId = source.PageId
         WHEN MATCHED THEN
-            UPDATE SET MenuId = @MenuId, VenueId = @VenueId, AssignedUtc = @AssignedUtc, AssignedBy = @AssignedBy
+            UPDATE SET MenuId = @MenuId, PageId = source.PageId, VenueId = @VenueId, AssignedUtc = @AssignedUtc, AssignedBy = @AssignedBy
         WHEN NOT MATCHED THEN
-            INSERT (Id, VenueId, ScreenId, MenuId, AssignedUtc, AssignedBy)
-            VALUES (@Id, @VenueId, @ScreenId, @MenuId, @AssignedUtc, @AssignedBy)
-        OUTPUT inserted.Id, inserted.VenueId, inserted.ScreenId, inserted.MenuId, inserted.AssignedUtc, inserted.AssignedBy;
+            INSERT (Id, VenueId, ScreenId, MenuId, PageId, AssignedUtc, AssignedBy)
+            VALUES (@Id, @VenueId, @ScreenId, @MenuId, source.PageId, @AssignedUtc, @AssignedBy)
+        OUTPUT inserted.Id, inserted.VenueId, inserted.ScreenId, inserted.MenuId, inserted.PageId, inserted.AssignedUtc, inserted.AssignedBy;
 
         COMMIT TRANSACTION;
         """;
@@ -107,6 +115,15 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         DELETE FROM dbo.MenuScreenAssignments
         OUTPUT 1 AS Value
         WHERE VenueId = @VenueId AND ScreenId = @ScreenId;
+        """;
+
+    private const string ClearPageScreenAssignmentSql = """
+        DELETE FROM dbo.MenuScreenAssignments
+        OUTPUT 1 AS Value
+        WHERE VenueId = @VenueId
+          AND ScreenId = @ScreenId
+          AND MenuId = @MenuId
+          AND PageId = @PageId;
         """;
 
     private const string ClearMenuAssignmentsSql = """
@@ -256,6 +273,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         SELECT
             sc.Id AS ScreenId,
             sc.Name AS ScreenName,
+            sc.WidthPixels,
+            sc.HeightPixels,
             CASE WHEN named.ScreenId IS NULL THEN NULL ELSE last.MenuId END AS MenuId,
             CASE WHEN named.ScreenId IS NULL THEN NULL ELSE m.Name END AS MenuName,
             CASE WHEN named.ScreenId IS NULL THEN NULL ELSE last.Version END AS Version,
@@ -283,10 +302,12 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         """;
 
     private const string AssignmentsSql = """
-        SELECT Id, VenueId, ScreenId, MenuId, AssignedUtc, AssignedBy
-        FROM dbo.MenuScreenAssignments
-        WHERE VenueId = @VenueId
-        ORDER BY ScreenId;
+        SELECT a.Id,a.VenueId,a.ScreenId,a.MenuId,a.PageId,a.AssignedUtc,a.AssignedBy,m.Name MenuName,p.Name PageName
+        FROM dbo.MenuScreenAssignments a
+        INNER JOIN dbo.Menus m ON m.Id=a.MenuId AND m.VenueId=a.VenueId
+        INNER JOIN dbo.MenuPages p ON p.Id=a.PageId AND p.MenuId=a.MenuId AND p.VenueId=a.VenueId
+        WHERE a.VenueId = @VenueId
+        ORDER BY a.ScreenId,p.SortOrder,a.AssignedUtc;
         """;
 
     // The item update names the venue as well as the id: a caller carrying venue
@@ -326,6 +347,9 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         BEGIN
             INSERT dbo.Menus (Id, VenueId, Name, IsActive, CreatedUtc, UpdatedUtc)
             VALUES (@Id, @VenueId, @Name, 1, @Now, @Now);
+
+            INSERT dbo.MenuPages (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            VALUES (@PageId, @VenueId, @Id, N'Page 1', 0, @Now, @Now);
 
             COMMIT TRANSACTION;
             SELECT CAST(1 AS BIT) AS Created, @Active + 1 AS ActiveMenuCount;
@@ -367,8 +391,9 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 INSERT dbo.Items (Id, VenueId, Name, Description, Price, ImageUrl, Source, IsActive, CreatedUtc, UpdatedUtc)
                 VALUES (@ItemId, @VenueId, @Name, @Description, @Price, NULL, @Source, 1, @Now, @Now);
 
-                INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
-                VALUES (@PlacementId, @VenueId, @MenuId, @SectionId, @ItemId, @SortOrder, @Now, @Now);
+                INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
+                SELECT @PlacementId, @VenueId, @MenuId, @SectionId, PageId, @ItemId, @SortOrder, @Now, @Now
+                FROM dbo.MenuSections WHERE Id=@SectionId AND VenueId=@VenueId;
 
                 COMMIT TRANSACTION;
                 SELECT N'created' AS Outcome, @OnMenu + 1 AS ItemCountOnMenu, @SortOrder AS SortOrder;
@@ -413,12 +438,18 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         END
         ELSE
         BEGIN
+            DECLARE @ResolvedPageId UNIQUEIDENTIFIER = COALESCE(@RequestedPageId, (
+                SELECT TOP (1) Id FROM dbo.MenuPages
+                WHERE MenuId = @MenuId AND VenueId = @VenueId
+                ORDER BY SortOrder, Id));
+            IF NOT EXISTS (SELECT 1 FROM dbo.MenuPages WHERE Id=@ResolvedPageId AND MenuId=@MenuId AND VenueId=@VenueId)
+            BEGIN ROLLBACK; SELECT N'menu_missing' AS Outcome, 0 AS SortOrder; RETURN; END;
             DECLARE @Next INT = ISNULL((
                 SELECT MAX(SortOrder) FROM dbo.MenuSections WITH (UPDLOCK, HOLDLOCK)
-                WHERE MenuId = @MenuId AND VenueId = @VenueId), -1) + 1;
+                WHERE PageId = @ResolvedPageId AND VenueId = @VenueId), -1) + 1;
 
-            INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
-            VALUES (@SectionId, @VenueId, @MenuId, @Name, @Next, @Now, @Now);
+            INSERT dbo.MenuSections (Id, VenueId, MenuId, PageId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            VALUES (@SectionId, @VenueId, @MenuId, @ResolvedPageId, @Name, @Next, @Now, @Now);
 
             COMMIT TRANSACTION;
             SELECT N'created' AS Outcome, @Next AS SortOrder;
@@ -480,16 +511,19 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         SELECT TRY_CONVERT(UNIQUEIDENTIFIER, [value]), CAST([key] AS INT)
         FROM OPENJSON(@SectionIdsJson);
 
+        DECLARE @PageId UNIQUEIDENTIFIER = (
+            SELECT TOP (1) s.PageId FROM @Order o
+            INNER JOIN dbo.MenuSections s ON s.Id=o.SectionId AND s.MenuId=@MenuId AND s.VenueId=@VenueId);
         DECLARE @Live INT = (
             SELECT COUNT(*) FROM dbo.MenuSections WITH (UPDLOCK, HOLDLOCK)
-            WHERE MenuId = @MenuId AND VenueId = @VenueId);
+            WHERE MenuId = @MenuId AND VenueId = @VenueId AND PageId=@PageId);
 
         IF @Live <> (SELECT COUNT(*) FROM @Order)
            OR EXISTS (
                SELECT 1 FROM @Order o
                WHERE NOT EXISTS (
                    SELECT 1 FROM dbo.MenuSections s
-                   WHERE s.Id = o.SectionId AND s.MenuId = @MenuId AND s.VenueId = @VenueId))
+                   WHERE s.Id = o.SectionId AND s.MenuId = @MenuId AND s.VenueId = @VenueId AND s.PageId=@PageId))
         BEGIN
             ROLLBACK TRANSACTION;
             SELECT N'order_stale' AS Outcome, @Live AS Moved;
@@ -625,13 +659,16 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         END
         ELSE
         BEGIN
+            DECLARE @TargetPageId UNIQUEIDENTIFIER=(SELECT PageId FROM dbo.MenuSections WHERE Id=@SectionId AND VenueId=@VenueId);
             DECLARE @Existing UNIQUEIDENTIFIER = (
-                SELECT TOP (1) MenuSectionId FROM dbo.Placements WITH (UPDLOCK, HOLDLOCK)
-                WHERE MenuId = @MenuId AND ItemId = @ItemId AND VenueId = @VenueId);
+                SELECT TOP (1) p.MenuSectionId FROM dbo.Placements p WITH (UPDLOCK, HOLDLOCK)
+                INNER JOIN dbo.MenuSections s ON s.Id=p.MenuSectionId AND s.VenueId=p.VenueId
+                WHERE p.MenuId = @MenuId AND p.ItemId = @ItemId AND p.VenueId = @VenueId AND s.PageId=@TargetPageId);
 
             DECLARE @OnMenu INT = (
-                SELECT COUNT(*) FROM dbo.Placements WITH (UPDLOCK, HOLDLOCK)
+                SELECT COUNT(DISTINCT ItemId) FROM dbo.Placements WITH (UPDLOCK, HOLDLOCK)
                 WHERE MenuId = @MenuId AND VenueId = @VenueId);
+            DECLARE @AlreadyOnMenu BIT=CASE WHEN EXISTS(SELECT 1 FROM dbo.Placements WHERE MenuId=@MenuId AND VenueId=@VenueId AND ItemId=@ItemId) THEN 1 ELSE 0 END;
 
             IF @Existing IS NOT NULL
             BEGIN
@@ -639,7 +676,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 SELECT N'already_on_board' AS Outcome, @OnMenu AS ItemCountOnMenu, 0 AS SortOrder,
                        @Existing AS ExistingSectionId;
             END
-            ELSE IF @OnMenu >= @ItemsPerMenuLimit
+            ELSE IF @AlreadyOnMenu=0 AND @OnMenu >= @ItemsPerMenuLimit
             BEGIN
                 ROLLBACK TRANSACTION;
                 SELECT N'ceiling_reached' AS Outcome, @OnMenu AS ItemCountOnMenu, 0 AS SortOrder,
@@ -651,11 +688,12 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                     SELECT MAX(SortOrder) FROM dbo.Placements
                     WHERE MenuSectionId = @SectionId AND VenueId = @VenueId), -1) + 1;
 
-                INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
-                VALUES (@PlacementId, @VenueId, @MenuId, @SectionId, @ItemId, @Next, @Now, @Now);
+                INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
+                SELECT @PlacementId, @VenueId, @MenuId, @SectionId, PageId, @ItemId, @Next, @Now, @Now
+                FROM dbo.MenuSections WHERE Id=@SectionId AND VenueId=@VenueId;
 
                 COMMIT TRANSACTION;
-                SELECT N'placed' AS Outcome, @OnMenu + 1 AS ItemCountOnMenu, @Next AS SortOrder,
+                SELECT N'placed' AS Outcome, @OnMenu + CASE WHEN @AlreadyOnMenu=1 THEN 0 ELSE 1 END AS ItemCountOnMenu, @Next AS SortOrder,
                        CAST(NULL AS UNIQUEIDENTIFIER) AS ExistingSectionId;
             END
         END
@@ -724,14 +762,21 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             m.Id AS menuId, m.Name AS name, m.Theme AS theme,
             m.DwellSeconds AS dwellSeconds, m.LoopWarningSeconds AS loopWarningSeconds,
             JSON_QUERY((
-                SELECT CAST(a.ScreenId AS NVARCHAR(36)) AS screenId
+                SELECT CAST(a.ScreenId AS NVARCHAR(36)) AS screenId, a.PageId AS pageId
                 FROM dbo.MenuScreenAssignments a
                 WHERE a.MenuId = m.Id AND a.VenueId = @VenueId
                 ORDER BY a.ScreenId
                 FOR JSON PATH
             )) AS screens,
             JSON_QUERY((
-                SELECT s.Id AS sectionId, s.Name AS name, s.SortOrder AS sortOrder,
+                SELECT p.Id AS pageId, p.Name AS name, p.SortOrder AS sortOrder
+                FROM dbo.MenuPages p
+                WHERE p.MenuId = m.Id AND p.VenueId = @VenueId
+                ORDER BY p.SortOrder, p.Id
+                FOR JSON PATH
+            )) AS pages,
+            JSON_QUERY((
+                SELECT s.Id AS sectionId, s.PageId AS pageId, s.Name AS name, s.SortOrder AS sortOrder,
                     JSON_QUERY((
                         SELECT p.ItemId AS itemId, i.Name AS name, i.Description AS description,
                                i.Price AS price, p.SortOrder AS sortOrder
@@ -743,7 +788,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                     )) AS items
                 FROM dbo.MenuSections s
                 WHERE s.MenuId = m.Id AND s.VenueId = @VenueId
-                ORDER BY s.SortOrder, s.Id
+                ORDER BY (SELECT p.SortOrder FROM dbo.MenuPages p WHERE p.Id=s.PageId), s.SortOrder, s.Id
                 FOR JSON PATH
             )) AS sections
         FROM dbo.Menus m
@@ -893,6 +938,16 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             FROM dbo.Menus src
             WHERE src.Id = @SourceMenuId AND src.VenueId = @VenueId;
 
+            DECLARE @Pages TABLE (OldId UNIQUEIDENTIFIER, NewId UNIQUEIDENTIFIER);
+            INSERT @Pages (OldId, NewId)
+            SELECT p.Id, NEWID() FROM dbo.MenuPages p
+            WHERE p.MenuId = @SourceMenuId AND p.VenueId = @VenueId;
+
+            INSERT dbo.MenuPages (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            SELECT map.NewId, @VenueId, @NewMenuId, p.Name, p.SortOrder, @Now, @Now
+            FROM dbo.MenuPages p INNER JOIN @Pages map ON map.OldId = p.Id
+            WHERE p.VenueId = @VenueId;
+
             DECLARE @Sections TABLE (OldId UNIQUEIDENTIFIER, NewId UNIQUEIDENTIFIER);
 
             INSERT @Sections (OldId, NewId)
@@ -900,17 +955,19 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             FROM dbo.MenuSections s
             WHERE s.MenuId = @SourceMenuId AND s.VenueId = @VenueId;
 
-            INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
-            SELECT map.NewId, @VenueId, @NewMenuId, s.Name, s.SortOrder, @Now, @Now
+            INSERT dbo.MenuSections (Id, VenueId, MenuId, PageId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            SELECT map.NewId, @VenueId, @NewMenuId, pageMap.NewId, s.Name, s.SortOrder, @Now, @Now
             FROM dbo.MenuSections s
             INNER JOIN @Sections map ON map.OldId = s.Id
+            INNER JOIN @Pages pageMap ON pageMap.OldId = s.PageId
             WHERE s.VenueId = @VenueId;
 
             -- Same ItemId: the copy places the library's items, it does not clone them.
-            INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
-            SELECT NEWID(), @VenueId, @NewMenuId, map.NewId, p.ItemId, p.SortOrder, @Now, @Now
+            INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
+            SELECT NEWID(), @VenueId, @NewMenuId, map.NewId, pageMap.NewId, p.ItemId, p.SortOrder, @Now, @Now
             FROM dbo.Placements p
             INNER JOIN @Sections map ON map.OldId = p.MenuSectionId
+            INNER JOIN @Pages pageMap ON pageMap.OldId = p.PageId
             WHERE p.VenueId = @VenueId AND p.MenuId = @SourceMenuId;
 
             INSERT dbo.MenuHistoryEntries (Id, VenueId, MenuId, Kind, PublishEventId, ReplacedByVersion, Detail, Author, OccurredUtc)
@@ -982,19 +1039,6 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             THROW 51008, 'This menu is put away. Put it back on the shelf before going back to a version it was on a screen for.', 1;
         END;
 
-        -- A screen the recorded shape wants, which another menu has since been
-        -- given, is a named refusal. Restoring around it would report success and
-        -- leave the menu different from the version it claims to have gone back to.
-        IF EXISTS (
-            SELECT 1
-            FROM OPENJSON(@SnapshotJson, '$.screens') WITH (screenId UNIQUEIDENTIFIER '$.screenId') want
-            INNER JOIN dbo.MenuScreenAssignments a WITH (UPDLOCK, HOLDLOCK) ON a.ScreenId = want.screenId
-            WHERE a.MenuId <> @MenuId)
-        BEGIN
-            ROLLBACK TRANSACTION;
-            THROW 51005, 'A screen this version was on is now showing a different menu.', 1;
-        END;
-
         DECLARE @Menu TABLE (Name NVARCHAR(200), Theme NVARCHAR(40), DwellSeconds INT, LoopWarningSeconds INT);
         INSERT @Menu (Name, Theme, DwellSeconds, LoopWarningSeconds)
         SELECT name, theme, dwellSeconds, loopWarningSeconds
@@ -1020,12 +1064,26 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         FROM dbo.Menus m CROSS JOIN @Menu t
         WHERE m.Id = @MenuId AND m.VenueId = @VenueId;
 
-        DECLARE @Sections TABLE (SectionId UNIQUEIDENTIFIER, Name NVARCHAR(200), SortOrder INT, Items NVARCHAR(MAX));
-        INSERT @Sections (SectionId, Name, SortOrder, Items)
-        SELECT sectionId, name, sortOrder, items
+        DECLARE @Pages TABLE (PageId UNIQUEIDENTIFIER PRIMARY KEY, Name NVARCHAR(200), SortOrder INT);
+        INSERT @Pages SELECT pageId,name,sortOrder FROM OPENJSON(@SnapshotJson,'$.pages')
+          WITH (pageId UNIQUEIDENTIFIER '$.pageId',name NVARCHAR(200) '$.name',sortOrder INT '$.sortOrder');
+        IF NOT EXISTS (SELECT 1 FROM @Pages)
+          INSERT @Pages SELECT TOP (1) Id,Name,SortOrder FROM dbo.MenuPages WHERE VenueId=@VenueId AND MenuId=@MenuId ORDER BY SortOrder,Id;
+
+        DECLARE @PageCount int=(SELECT COUNT(*) FROM dbo.MenuPages WHERE VenueId=@VenueId AND MenuId=@MenuId);
+        UPDATE dbo.MenuPages SET SortOrder=SortOrder+@PageCount+100 WHERE VenueId=@VenueId AND MenuId=@MenuId;
+        UPDATE p SET Name=src.Name,SortOrder=src.SortOrder,UpdatedUtc=@OccurredUtc FROM dbo.MenuPages p JOIN @Pages src ON src.PageId=p.Id WHERE p.VenueId=@VenueId AND p.MenuId=@MenuId;
+        INSERT dbo.MenuPages (Id,VenueId,MenuId,Name,SortOrder,CreatedUtc,UpdatedUtc)
+          SELECT src.PageId,@VenueId,@MenuId,src.Name,src.SortOrder,@OccurredUtc,@OccurredUtc FROM @Pages src
+          WHERE NOT EXISTS (SELECT 1 FROM dbo.MenuPages p WHERE p.Id=src.PageId);
+
+        DECLARE @Sections TABLE (SectionId UNIQUEIDENTIFIER, PageId UNIQUEIDENTIFIER, Name NVARCHAR(200), SortOrder INT, Items NVARCHAR(MAX));
+        INSERT @Sections (SectionId, PageId, Name, SortOrder, Items)
+        SELECT sectionId, COALESCE(pageId,(SELECT TOP (1) PageId FROM @Pages ORDER BY SortOrder,PageId)), name, sortOrder, items
         FROM OPENJSON(@SnapshotJson, '$.sections')
         WITH (
             sectionId UNIQUEIDENTIFIER '$.sectionId',
+            pageId UNIQUEIDENTIFIER '$.pageId',
             name NVARCHAR(200) '$.name',
             sortOrder INT '$.sortOrder',
             items NVARCHAR(MAX) '$.items' AS JSON
@@ -1050,14 +1108,17 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
 
         UPDATE s
         SET s.Name = src.Name,
+            s.PageId = src.PageId,
             s.SortOrder = src.SortOrder,
             s.UpdatedUtc = @OccurredUtc
         FROM dbo.MenuSections s
         INNER JOIN @Sections src ON src.SectionId = s.Id
         WHERE s.VenueId = @VenueId AND s.MenuId = @MenuId;
 
-        INSERT dbo.MenuSections (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
-        SELECT src.SectionId, @VenueId, @MenuId, src.Name, src.SortOrder, @OccurredUtc, @OccurredUtc
+        INSERT dbo.MenuSections (Id, VenueId, MenuId, PageId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+        SELECT src.SectionId, @VenueId, @MenuId,
+               src.PageId,
+               src.Name, src.SortOrder, @OccurredUtc, @OccurredUtc
         FROM @Sections src
         WHERE NOT EXISTS (SELECT 1 FROM dbo.MenuSections s WHERE s.Id = src.SectionId);
 
@@ -1079,18 +1140,11 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
 
         DECLARE @Items TABLE (SectionId UNIQUEIDENTIFIER, ItemId UNIQUEIDENTIFIER, Name NVARCHAR(200), Description NVARCHAR(1000), Price NVARCHAR(40), SortOrder INT);
 
-        -- One placement per item per board (UQ_Placements_MenuItem, migration 061).
-        -- A snapshot recorded BEFORE that constraint existed can name the same item
-        -- in two sections, and restoring it verbatim would fail on the constraint --
-        -- turning an old version into one nobody can ever go back to. The first
-        -- occurrence by section order then item order wins: the copy a guest would
-        -- have read first on that board.
+        -- One library item may be placed on more than one page. It remains unique
+        -- inside a section, while its values still come from one item identity.
         WITH recorded AS
         (
-            SELECT sec.SectionId, i.itemId, i.name, i.description, i.price, i.sortOrder,
-                   ROW_NUMBER() OVER (
-                       PARTITION BY i.itemId
-                       ORDER BY sec.SortOrder, i.sortOrder) AS Rank
+            SELECT sec.SectionId, i.itemId, i.name, i.description, i.price, i.sortOrder
             FROM @Sections sec
             CROSS APPLY OPENJSON(sec.Items)
             WITH (
@@ -1102,9 +1156,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             ) i
         )
         INSERT @Items (SectionId, ItemId, Name, Description, Price, SortOrder)
-        SELECT SectionId, itemId, name, description, price, sortOrder
-        FROM recorded
-        WHERE Rank = 1;
+        SELECT SectionId, itemId, name, description, price, sortOrder FROM recorded;
 
         -- Values go back onto the items that already exist. Identity is permanent.
         UPDATE it
@@ -1129,30 +1181,38 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         INNER JOIN @Items src ON src.SectionId = p.MenuSectionId AND src.ItemId = p.ItemId
         WHERE p.VenueId = @VenueId AND p.MenuId = @MenuId;
 
-        INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
-        SELECT NEWID(), @VenueId, @MenuId, src.SectionId, src.ItemId, src.SortOrder, @OccurredUtc, @OccurredUtc
-        FROM @Items src
+        INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
+        SELECT NEWID(), @VenueId, @MenuId, src.SectionId, s.PageId, src.ItemId, src.SortOrder, @OccurredUtc, @OccurredUtc
+        FROM @Items src INNER JOIN dbo.MenuSections s ON s.Id=src.SectionId AND s.VenueId=@VenueId
         WHERE NOT EXISTS (
             SELECT 1 FROM dbo.Placements p
             WHERE p.MenuSectionId = src.SectionId AND p.ItemId = src.ItemId);
 
         -- Which screens the menu is on is part of the shape, so a restore puts that
         -- back too -- including undoing a take-off that has not shipped yet.
-        DECLARE @Screens TABLE (ScreenId UNIQUEIDENTIFIER);
-        INSERT @Screens (ScreenId)
-        SELECT screenId FROM OPENJSON(@SnapshotJson, '$.screens')
-        WITH (screenId UNIQUEIDENTIFIER '$.screenId');
+        DECLARE @Screens TABLE (ScreenId UNIQUEIDENTIFIER, PageId UNIQUEIDENTIFIER);
+        INSERT @Screens (ScreenId,PageId)
+        SELECT screenId,COALESCE(pageId,(SELECT TOP (1) PageId FROM @Pages ORDER BY SortOrder,PageId)) FROM OPENJSON(@SnapshotJson, '$.screens')
+        WITH (screenId UNIQUEIDENTIFIER '$.screenId',pageId UNIQUEIDENTIFIER '$.pageId');
 
         DELETE a
         FROM dbo.MenuScreenAssignments a
         WHERE a.VenueId = @VenueId AND a.MenuId = @MenuId
-          AND NOT EXISTS (SELECT 1 FROM @Screens s WHERE s.ScreenId = a.ScreenId);
+          AND NOT EXISTS (SELECT 1 FROM @Screens s WHERE s.ScreenId = a.ScreenId AND s.PageId=a.PageId);
 
-        INSERT dbo.MenuScreenAssignments (Id, VenueId, ScreenId, MenuId, AssignedUtc, AssignedBy)
-        SELECT NEWID(), @VenueId, s.ScreenId, @MenuId, @OccurredUtc, @Author
+        UPDATE a SET AssignedUtc=@OccurredUtc,AssignedBy=@Author
+        FROM dbo.MenuScreenAssignments a JOIN @Screens s ON s.ScreenId=a.ScreenId AND s.PageId=a.PageId
+        WHERE a.VenueId=@VenueId AND a.MenuId=@MenuId;
+
+        INSERT dbo.MenuScreenAssignments (Id, VenueId, ScreenId, MenuId, PageId, AssignedUtc, AssignedBy)
+        SELECT NEWID(), @VenueId, s.ScreenId, @MenuId, s.PageId,
+               @OccurredUtc, @Author
         FROM @Screens s
         INNER JOIN dbo.Screens sc ON sc.Id = s.ScreenId AND sc.VenueId = @VenueId
-        WHERE NOT EXISTS (SELECT 1 FROM dbo.MenuScreenAssignments a WHERE a.ScreenId = s.ScreenId);
+        WHERE NOT EXISTS (SELECT 1 FROM dbo.MenuScreenAssignments a WHERE a.ScreenId = s.ScreenId AND a.PageId=s.PageId);
+
+        DELETE p FROM dbo.MenuPages p WHERE p.VenueId=@VenueId AND p.MenuId=@MenuId
+          AND NOT EXISTS (SELECT 1 FROM @Pages src WHERE src.PageId=p.Id);
 
         INSERT dbo.MenuHistoryEntries (Id, VenueId, MenuId, Kind, PublishEventId, ReplacedByVersion, Detail, Author, OccurredUtc)
         VALUES (NEWID(), @VenueId, @MenuId, @Kind, NULL, NULL, @Detail, @Author, @OccurredUtc);
@@ -1250,7 +1310,10 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         INSERT @Conflicts (ScreenId)
         SELECT p.ScreenId
         FROM @PreviousScreens p
-        WHERE EXISTS (
+        WHERE NOT EXISTS (
+            SELECT 1 FROM dbo.MenuScreenAssignments ownAssignment WITH (UPDLOCK, HOLDLOCK)
+            WHERE ownAssignment.ScreenId=p.ScreenId AND ownAssignment.MenuId=@MenuId)
+          AND EXISTS (
             SELECT 1 FROM dbo.MenuScreenAssignments a WITH (UPDLOCK, HOLDLOCK)
             WHERE a.ScreenId = p.ScreenId AND a.MenuId <> @MenuId);
 
@@ -1435,6 +1498,104 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
 
     // ----- Library and placements -------------------------------------------------
 
+    public async Task<IReadOnlyCollection<MenuPage>> GetPagesAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<MenuPage, object>(
+            "SELECT Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc FROM dbo.MenuPages WHERE VenueId=@VenueId AND MenuId=@MenuId ORDER BY SortOrder, Id;",
+            new { VenueId = venueId, MenuId = menuId }, cancellationToken).ConfigureAwait(false)).ToArray();
+
+    public async Task<MenuPage?> CreatePageAsync(Guid venueId, Guid menuId, Guid pageId, string name, DateTime now, CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<MenuPage, object>(
+            """
+            SET XACT_ABORT ON; BEGIN TRANSACTION;
+            IF NOT EXISTS (SELECT 1 FROM dbo.Menus WITH (UPDLOCK, HOLDLOCK) WHERE Id=@MenuId AND VenueId=@VenueId)
+            BEGIN ROLLBACK; SELECT TOP (0) * FROM dbo.MenuPages; RETURN; END;
+            DECLARE @SortOrder int = ISNULL((SELECT MAX(SortOrder) FROM dbo.MenuPages WITH (UPDLOCK, HOLDLOCK) WHERE MenuId=@MenuId AND VenueId=@VenueId), -1) + 1;
+            INSERT dbo.MenuPages (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            OUTPUT inserted.* VALUES (@PageId, @VenueId, @MenuId, @Name, @SortOrder, @Now, @Now);
+            COMMIT;
+            """, new { VenueId = venueId, MenuId = menuId, PageId = pageId, Name = name, Now = now }, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
+
+    public async Task<bool> RenamePageAsync(Guid venueId, Guid menuId, Guid pageId, string name, DateTime now, CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<PageUpdateRow, object>(
+            "UPDATE dbo.MenuPages SET Name=@Name, UpdatedUtc=@Now OUTPUT 1 AS Value WHERE Id=@PageId AND MenuId=@MenuId AND VenueId=@VenueId;",
+            new { VenueId = venueId, MenuId = menuId, PageId = pageId, Name = name, Now = now }, cancellationToken).ConfigureAwait(false)).Any();
+
+    public async Task<ReorderOutcome> ReorderPagesGuardedAsync(Guid venueId, Guid menuId, IReadOnlyCollection<Guid> pageIds, DateTime now, CancellationToken cancellationToken = default)
+    {
+        var rows = await dataAccess.ExecuteSqlQueryAsync<string, object>(
+            """
+            SET XACT_ABORT ON; BEGIN TRANSACTION;
+            DECLARE @Order TABLE (Id uniqueidentifier PRIMARY KEY, SortOrder int NOT NULL);
+            INSERT @Order SELECT Id, SortOrder FROM OPENJSON(@OrderJson) WITH (Id uniqueidentifier '$.id', SortOrder int '$.sortOrder');
+            IF (SELECT COUNT(*) FROM @Order) <> (SELECT COUNT(*) FROM dbo.MenuPages WITH (UPDLOCK, HOLDLOCK) WHERE VenueId=@VenueId AND MenuId=@MenuId)
+               OR EXISTS (SELECT 1 FROM @Order o LEFT JOIN dbo.MenuPages p ON p.Id=o.Id AND p.VenueId=@VenueId AND p.MenuId=@MenuId WHERE p.Id IS NULL)
+            BEGIN ROLLBACK; SELECT N'order_stale'; RETURN; END;
+            DECLARE @Offset int = (SELECT COUNT(*) FROM @Order) + 1;
+            UPDATE p SET SortOrder = SortOrder + @Offset, UpdatedUtc=@Now FROM dbo.MenuPages p WHERE p.VenueId=@VenueId AND p.MenuId=@MenuId;
+            UPDATE p SET SortOrder = o.SortOrder, UpdatedUtc=@Now FROM dbo.MenuPages p JOIN @Order o ON o.Id=p.Id;
+            COMMIT; SELECT N'reordered';
+            """,
+            new { VenueId = venueId, MenuId = menuId, OrderJson = System.Text.Json.JsonSerializer.Serialize(pageIds.Select((id, index) => new { id, sortOrder = index })), Now = now }, cancellationToken).ConfigureAwait(false);
+        return new ReorderOutcome(rows.FirstOrDefault() ?? "order_stale", 0);
+    }
+
+    public async Task<MenuPage?> DuplicatePageAsync(Guid venueId, Guid menuId, Guid sourcePageId, Guid newPageId, DateTime now, CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<MenuPage, object>(
+            """
+            SET XACT_ABORT ON; BEGIN TRANSACTION;
+            DECLARE @SourceOrder int, @SourceName nvarchar(200);
+            SELECT @SourceOrder=SortOrder, @SourceName=Name FROM dbo.MenuPages WITH (UPDLOCK, HOLDLOCK) WHERE Id=@SourcePageId AND MenuId=@MenuId AND VenueId=@VenueId;
+            IF @SourceOrder IS NULL BEGIN ROLLBACK; SELECT TOP (0) * FROM dbo.MenuPages; RETURN; END;
+            DECLARE @PageCount int=(SELECT COUNT(*) FROM dbo.MenuPages WHERE MenuId=@MenuId AND VenueId=@VenueId);
+            UPDATE dbo.MenuPages SET SortOrder=SortOrder+@PageCount+1 WHERE MenuId=@MenuId AND VenueId=@VenueId AND SortOrder>@SourceOrder;
+            UPDATE dbo.MenuPages SET SortOrder=SortOrder-@PageCount WHERE MenuId=@MenuId AND VenueId=@VenueId AND SortOrder>@SourceOrder+@PageCount+1;
+            INSERT dbo.MenuPages (Id,VenueId,MenuId,Name,SortOrder,CreatedUtc,UpdatedUtc) VALUES (@NewPageId,@VenueId,@MenuId,CONCAT(@SourceName,N' copy'),@SourceOrder+1,@Now,@Now);
+            DECLARE @Sections TABLE (OldId uniqueidentifier PRIMARY KEY, NewId uniqueidentifier NOT NULL);
+            INSERT @Sections SELECT Id, NEWID() FROM dbo.MenuSections WHERE PageId=@SourcePageId AND VenueId=@VenueId;
+            INSERT dbo.MenuSections (Id,VenueId,MenuId,PageId,Name,SortOrder,CreatedUtc,UpdatedUtc)
+              SELECT x.NewId,@VenueId,@MenuId,@NewPageId,s.Name,s.SortOrder,@Now,@Now FROM dbo.MenuSections s JOIN @Sections x ON x.OldId=s.Id;
+            INSERT dbo.Placements (Id,VenueId,MenuId,MenuSectionId,PageId,ItemId,SortOrder,CreatedUtc,UpdatedUtc)
+              SELECT NEWID(),@VenueId,@MenuId,x.NewId,@NewPageId,p.ItemId,p.SortOrder,@Now,@Now FROM dbo.Placements p JOIN @Sections x ON x.OldId=p.MenuSectionId;
+            COMMIT;
+            SELECT Id,VenueId,MenuId,Name,SortOrder,CreatedUtc,UpdatedUtc FROM dbo.MenuPages WHERE Id=@NewPageId;
+            """, new { VenueId = venueId, MenuId = menuId, SourcePageId = sourcePageId, NewPageId = newPageId, Now = now }, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
+
+    public async Task<PageDeleteOutcome> DeletePageAsync(Guid venueId, Guid menuId, Guid pageId, Guid? moveSectionsToPageId, CancellationToken cancellationToken = default)
+    {
+        var row = (await dataAccess.ExecuteSqlQueryAsync<PageDeleteRow, object>(
+            """
+            SET XACT_ABORT ON; BEGIN TRANSACTION;
+            IF (SELECT COUNT(*) FROM dbo.MenuPages WITH (UPDLOCK,HOLDLOCK) WHERE VenueId=@VenueId AND MenuId=@MenuId) <= 1
+            BEGIN ROLLBACK; SELECT N'last_page' Outcome,0 MovedSectionCount,0 RemovedAssignmentCount; RETURN; END;
+            IF NOT EXISTS (SELECT 1 FROM dbo.MenuPages WHERE Id=@PageId AND VenueId=@VenueId AND MenuId=@MenuId)
+            BEGIN ROLLBACK; SELECT N'page_missing' Outcome,0 MovedSectionCount,0 RemovedAssignmentCount; RETURN; END;
+            DECLARE @SectionCount int=(SELECT COUNT(*) FROM dbo.MenuSections WHERE PageId=@PageId AND VenueId=@VenueId);
+            IF @SectionCount>0 AND (@MoveSectionsToPageId IS NULL OR NOT EXISTS (SELECT 1 FROM dbo.MenuPages WHERE Id=@MoveSectionsToPageId AND VenueId=@VenueId AND MenuId=@MenuId AND Id<>@PageId))
+            BEGIN ROLLBACK; SELECT N'move_required' Outcome,0 MovedSectionCount,0 RemovedAssignmentCount; RETURN; END;
+            IF @SectionCount>0 AND EXISTS (
+              SELECT 1 FROM dbo.Placements sourcePlacement
+              INNER JOIN dbo.MenuSections sourceSection ON sourceSection.Id=sourcePlacement.MenuSectionId AND sourceSection.PageId=@PageId
+              INNER JOIN dbo.Placements destinationPlacement ON destinationPlacement.PageId=@MoveSectionsToPageId AND destinationPlacement.ItemId=sourcePlacement.ItemId
+              WHERE sourcePlacement.VenueId=@VenueId)
+            BEGIN ROLLBACK; SELECT N'item_conflict' Outcome,0 MovedSectionCount,0 RemovedAssignmentCount; RETURN; END;
+            IF @SectionCount>0 BEGIN
+              DECLARE @Offset int=ISNULL((SELECT MAX(SortOrder)+1 FROM dbo.MenuSections WHERE PageId=@MoveSectionsToPageId),0);
+              UPDATE dbo.MenuSections SET PageId=@MoveSectionsToPageId, SortOrder=@Offset+SortOrder, UpdatedUtc=SYSUTCDATETIME() WHERE PageId=@PageId AND VenueId=@VenueId;
+            END;
+            DELETE dbo.MenuScreenAssignments WHERE PageId=@PageId AND VenueId=@VenueId; DECLARE @Assignments int=@@ROWCOUNT;
+            DECLARE @OldOrder int=(SELECT SortOrder FROM dbo.MenuPages WHERE Id=@PageId);
+            DELETE dbo.MenuPages WHERE Id=@PageId AND VenueId=@VenueId AND MenuId=@MenuId;
+            DECLARE @PageCount int=(SELECT COUNT(*) FROM dbo.MenuPages WHERE VenueId=@VenueId AND MenuId=@MenuId);
+            UPDATE dbo.MenuPages SET SortOrder=SortOrder+@PageCount+1 WHERE VenueId=@VenueId AND MenuId=@MenuId AND SortOrder>@OldOrder;
+            UPDATE dbo.MenuPages SET SortOrder=SortOrder-@PageCount-2 WHERE VenueId=@VenueId AND MenuId=@MenuId AND SortOrder>@OldOrder+@PageCount+1;
+            COMMIT; SELECT N'deleted' Outcome,@SectionCount MovedSectionCount,@Assignments RemovedAssignmentCount;
+            """, new { VenueId = venueId, MenuId = menuId, PageId = pageId, MoveSectionsToPageId = moveSectionsToPageId }, cancellationToken).ConfigureAwait(false)).Single();
+        return new PageDeleteOutcome(row.Outcome, row.MovedSectionCount, row.RemovedAssignmentCount);
+    }
+
+    private sealed record PageDeleteRow(string Outcome, int MovedSectionCount, int RemovedAssignmentCount);
+    private sealed record PageUpdateRow(int Value);
+
     public Task<Guid> CreateItemAsync(Item item, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -1480,6 +1641,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             new
             {
                 menu.Id,
+                PageId = Guid.NewGuid(),
                 VenueId = RequireId(menu.VenueId, nameof(menu.VenueId)),
                 menu.Name,
                 Limit = activeMenuLimit,
@@ -1555,6 +1717,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         Guid sectionId,
         string name,
         DateTime now,
+        Guid? pageId = null,
         CancellationToken cancellationToken = default)
     {
         var row = (await dataAccess.ExecuteSqlQueryAsync<SectionCreateRow, object>(
@@ -1565,7 +1728,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 MenuId = RequireId(menuId, nameof(menuId)),
                 SectionId = RequireId(sectionId, nameof(sectionId)),
                 Name = name,
-                Now = now
+                Now = now,
+                RequestedPageId = pageId
             },
             cancellationToken).ConfigureAwait(false)).Single();
 
@@ -1886,6 +2050,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                     VenueId = RequireId(assignment.VenueId, nameof(assignment.VenueId)),
                     ScreenId = RequireId(assignment.ScreenId, nameof(assignment.ScreenId)),
                     MenuId = RequireId(assignment.MenuId, nameof(assignment.MenuId)),
+                    PageId = RequireId(assignment.PageId, nameof(assignment.PageId)),
+                    assignment.Rotate,
                     AssignedUtc = assignment.AssignedUtc == default ? DateTime.UtcNow : assignment.AssignedUtc,
                     assignment.AssignedBy
                 },
@@ -1906,6 +2072,18 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             {
                 VenueId = RequireId(venueId, nameof(venueId)),
                 ScreenId = RequireId(screenId, nameof(screenId))
+            },
+            cancellationToken).ConfigureAwait(false)).Any();
+
+    public async Task<bool> ClearPageScreenAssignmentAsync(Guid venueId, Guid screenId, Guid menuId, Guid pageId, CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<ScalarResult, object>(
+            ClearPageScreenAssignmentSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                ScreenId = RequireId(screenId, nameof(screenId)),
+                MenuId = RequireId(menuId, nameof(menuId)),
+                PageId = RequireId(pageId, nameof(pageId))
             },
             cancellationToken).ConfigureAwait(false)).Any();
 
@@ -2268,6 +2446,48 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         return (int)result.Value;
     }
 
+    public async Task ResetAutomationVenueAsync(Guid venueId, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SET XACT_ABORT ON;
+            BEGIN TRANSACTION;
+            BEGIN TRY
+                DECLARE @Screens TABLE (Id UNIQUEIDENTIFIER PRIMARY KEY);
+                INSERT @Screens (Id) SELECT Id FROM dbo.Screens WITH (UPDLOCK, HOLDLOCK) WHERE VenueId = @VenueId;
+
+                UPDATE dbo.CustomerOnboardingStates
+                SET FirstScreenId = NULL, UpdatedUtc = SYSUTCDATETIME()
+                WHERE FirstScreenId IN (SELECT Id FROM @Screens);
+                DELETE FROM dbo.ScreenReplacementAudits
+                WHERE TargetScreenId IN (SELECT Id FROM @Screens) OR SourceScreenId IN (SELECT Id FROM @Screens);
+                DELETE FROM dbo.ScreenContentDeliveries WHERE ScreenId IN (SELECT Id FROM @Screens);
+                DELETE FROM dbo.ScreenPairingCodes WHERE ScreenId IN (SELECT Id FROM @Screens);
+                DELETE FROM dbo.PlaylistSlides WHERE VenueId = @VenueId;
+                DELETE FROM dbo.EmergencyBroadcasts WHERE VenueId = @VenueId;
+
+                DELETE FROM dbo.MenuPublishTargets WHERE VenueId = @VenueId;
+                DELETE FROM dbo.MenuHistoryEntries WHERE VenueId = @VenueId;
+                DELETE FROM dbo.MenuPublishEvents WHERE VenueId = @VenueId;
+                DELETE FROM dbo.MenuScreenAssignments WHERE VenueId = @VenueId;
+                DELETE FROM dbo.Placements WHERE VenueId = @VenueId;
+                DELETE FROM dbo.ItemAvailability WHERE VenueId = @VenueId;
+                DELETE FROM dbo.Items WHERE VenueId = @VenueId;
+                DELETE FROM dbo.MenuSections WHERE VenueId = @VenueId;
+                DELETE FROM dbo.MenuPages WHERE VenueId = @VenueId;
+                DELETE FROM dbo.Menus WHERE VenueId = @VenueId;
+                DELETE FROM dbo.Screens WHERE VenueId = @VenueId;
+                COMMIT TRANSACTION;
+            END TRY
+            BEGIN CATCH
+                IF XACT_STATE() <> 0 ROLLBACK TRANSACTION;
+                THROW;
+            END CATCH;
+            SELECT 1 AS Value;
+            """;
+        _ = await dataAccess.ExecuteSqlQueryAsync<ResetRow, object>(sql, new { VenueId = venueId }, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     // ----- Helpers ---------------------------------------------------------------------
 
     private static void ValidateItem(Item item)
@@ -2342,6 +2562,11 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
     private sealed class CountResult
     {
         public long Value { get; set; }
+    }
+
+    private sealed class ResetRow
+    {
+        public int Value { get; set; }
     }
 
     private sealed class ScalarResult
