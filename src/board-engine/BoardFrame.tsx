@@ -62,7 +62,8 @@ export function BoardFrame({ fallback, ...board }: BoardFrameProps) {
           style={{
             width: `${boardLogicalWidth}px`,
             height: `${boardLogicalHeight}px`,
-            transform: `scale(${scale})`
+            transform: `scale(${scale})`,
+            ["--board-scale" as string]: scale
           }}
         >
           <BoardRenderer {...board} />
