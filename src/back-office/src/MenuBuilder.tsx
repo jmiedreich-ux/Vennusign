@@ -379,6 +379,7 @@ export default function MenuBuilder({
   const [sectionPickerOpen, setSectionPickerOpen] = useState(false);
   const [assignmentOpen, setAssignmentOpen] = useState(false);
   const [fitOpen, setFitOpen] = useState(false);
+  const [canvasZoom, setCanvasZoom] = useState(1);
   const [assignmentDraft, setAssignmentDraft] = useState<Record<string, "replace" | "rotate" | "remove">>({});
   const [assignmentChoiceScreenId, setAssignmentChoiceScreenId] = useState<string | null>(null);
   const [assignmentChoicePageId, setAssignmentChoicePageId] = useState<string | null>(null);
@@ -1919,6 +1920,11 @@ export default function MenuBuilder({
                 }}>{section.name}</button>)}</div>
               </details> : null}
               </div>
+              {place.view === "whole-board" ? <div className="builder__zoom-controls" aria-label="Canvas zoom" data-testid="zoom-controls">
+                <button type="button" aria-label="Zoom out" disabled={canvasZoom <= 0.5} onClick={() => setCanvasZoom(value => Math.max(0.5, Number((value - 0.25).toFixed(2))))}>−</button>
+                <button type="button" aria-label="Fit canvas" aria-pressed={canvasZoom === 1} onClick={() => setCanvasZoom(1)}>Fit</button>
+                <button type="button" aria-label="Zoom in" disabled={canvasZoom >= 2} onClick={() => setCanvasZoom(value => Math.min(2, Number((value + 0.25).toFixed(2))))}>+</button>
+              </div> : null}
               {canAssignScreens ? <button type="button" className="builder__assignment-pill" onClick={() => { setAssignmentDraft({}); setAssignmentChoiceScreenId(null); setAssignmentChoicePageId(null); setAssignmentAddingScreenId(null); setAssignmentOpen(true); }} data-testid="assignment-pill"><SkyIcon name="screen-mark" /> {activePageAssignmentCount > 0 ? `On ${activePageAssignmentCount} ${activePageAssignmentCount === 1 ? "screen" : "screens"}${activePageScreenNames.length > 0 ? ` · ${activePageScreenNames.join(", ")}` : ""}` : "No screens yet"}<small>Manage</small><SkyIcon name="chevron" /></button> : null}
             </div> : null}
             {place.selectedItemId && isMissingPrice(selected?.item) ? (
@@ -1958,6 +1964,7 @@ export default function MenuBuilder({
             {place.view === "whole-board" ? (
               <BoardFrame
                 board={shown}
+                zoom={canvasZoom}
                 unavailableItemIds={unavailableIds}
                 surface="preview"
                 keepUnavailable

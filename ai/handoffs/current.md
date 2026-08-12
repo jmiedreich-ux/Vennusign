@@ -1,5 +1,11 @@
 # Vennusign Session Handoff
 
+## Northside Social whole-page editor — 2026-08-12
+
+The `design/northside-social-current` editor now fits the complete 1920×1080 board by both available dimensions, defaults to Fit, and offers editor-only zoom out/in/Fit controls. Inline heading, name, description, and price overlays inherit the measured rendered scale; selection survives zoom and saved edits survive reload. Shelf cards still use the unchanged default `BoardFrame` fit/crop behavior because zoom is supplied only by `MenuBuilder`.
+
+The Northside Test API showcase is covered at 1280×720, 1440×900, and 1920×1080. Its exhaustive real-mouse case clicks both Beer headings and all 16 Beer items' three editable fields, edits representative values, checks overlay alignment, exercises all zoom controls, switches Beer/Wine/Cocktails, and reloads for persistence. The focused suite passed 4/4; back-office unit/component tests, Test API tests (9/9), the back-office production build, and Product/Test API Release builds passed. A combined 67-case browser attempt reached the fixture venue's 50-menu seed ceiling after 34 passes; later failures were seed refusals, not product assertions. Exact next action: independent review of the pushed Northside editor commit; do not merge this design branch to master without owner direction.
+
 Updated 2026-08-12, at Menus M3-A Slice 2 owner acceptance and closure.
 
 ## Current State

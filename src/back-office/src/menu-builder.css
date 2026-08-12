@@ -756,6 +756,12 @@
   font-weight: 600;
 }
 
+.builder__zoom-controls { display: inline-flex; align-items: center; gap: 2px; border: 1px solid var(--sky-color-border); border-radius: var(--sky-radius-pill); padding: 2px; background: var(--sky-color-surface); }
+.builder__zoom-controls button { min-width: 30px; min-height: 30px; border: 0; border-radius: var(--sky-radius-pill); padding: 4px 8px; background: transparent; color: var(--sky-text-primary); font: inherit; font-size: var(--sky-font-size-xs); font-weight: var(--sky-font-weight-semibold); cursor: pointer; }
+.builder__zoom-controls button[aria-pressed="true"] { background: var(--sky-color-secondary); }
+.builder__zoom-controls button:disabled { cursor: default; opacity: 0.42; }
+.builder__zoom-controls button:focus-visible { outline: 2px solid var(--sky-selection); outline-offset: 1px; }
+
 .builder__flag {
   display: flex;
   align-items: center;

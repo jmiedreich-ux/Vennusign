@@ -42,7 +42,7 @@ export type SeedResult = {
  * lanes were.
  */
 export async function seed(
-  options: { role?: VennuRole; includeScreen?: boolean; label?: string; pageCount?: number; sectionCount?: number; itemsPerSection?: number; screenState?: string; screenWidthPixels?: number; screenHeightPixels?: number } = {}
+  options: { role?: VennuRole; includeScreen?: boolean; label?: string; pageCount?: number; sectionCount?: number; itemsPerSection?: number; screenState?: string; screenWidthPixels?: number; screenHeightPixels?: number; showcase?: "northside-social" } = {}
 ): Promise<SeedResult> {
   const context = await playwrightRequest.newContext({ ignoreHTTPSErrors: true });
   try {
@@ -55,6 +55,7 @@ export async function seed(
         pageCount: options.pageCount ?? 1,
         sectionCount: options.sectionCount ?? 1,
         itemsPerSection: options.itemsPerSection ?? 1,
+        showcase: options.showcase,
         screenState: options.screenState ?? "offline",
         screenWidthPixels: options.screenWidthPixels ?? 1920,
         screenHeightPixels: options.screenHeightPixels ?? 1080

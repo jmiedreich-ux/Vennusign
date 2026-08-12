@@ -140,9 +140,8 @@ test.describe("the builder", () => {
     const frame = canvas.getByTestId("board-frame");
     await expect(frame).toBeVisible();
 
-    const scale = await frame.evaluate(element =>
-      Number.parseFloat(getComputedStyle(element).getPropertyValue("--board-scale"))
-    );
+    await expect.poll(async () => Number(await frame.getAttribute("data-board-scale"))).toBeLessThan(1);
+    const scale = Number(await frame.getAttribute("data-board-scale"));
     expect(scale).toBeGreaterThan(0);
     expect(scale).toBeLessThan(1);
 
@@ -589,14 +588,14 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("rail-section").filter({ hasText: "Undo Me" })).toHaveCount(0);
   });
 
-  test("the theme picker shows the empty state rather than a look nobody built (Q86)", async ({ page }) => {
+  test("the theme picker shows only looks the venue has actually built (Q86)", async ({ page }) => {
     const data = await seed({ role: "owner", label: "theme" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
     await page.getByTestId("board-item").first().locator(".board-item-name").click();
     await page.getByTestId("open-theme-picker").click();
 
-    await expect(page.getByTestId("theme-empty")).toBeVisible();
+    await expect(page.getByTestId("theme-picker")).toContainText("Northside Social");
     await expect(page.getByTestId("theme-picker")).not.toContainText("Coastal");
   });
 

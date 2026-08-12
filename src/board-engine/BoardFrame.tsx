@@ -10,6 +10,8 @@ export type BoardFrameProps = BoardRendererProps & {
    * a lie about what a screen is showing.
    */
   fallback?: React.ReactNode;
+  /** Editor-only magnification applied after the frame has fitted the board. */
+  zoom?: number;
 };
 
 /**
@@ -31,7 +33,7 @@ export type BoardFrameProps = BoardRendererProps & {
  * here would be a second layout the player then has to unlearn. Clipping is what
  * an unpaginated TV does, and it is honest about it.
  */
-export function BoardFrame({ fallback, ...board }: BoardFrameProps) {
+export function BoardFrame({ fallback, zoom = 1, ...board }: BoardFrameProps) {
   const container = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
@@ -54,16 +56,18 @@ export function BoardFrame({ fallback, ...board }: BoardFrameProps) {
 
   const hasBoard = (board.board?.sections?.length ?? 0) > 0;
 
+  const renderedScale = scale * zoom;
+
   return (
-    <div className="board-frame" ref={container} data-testid="board-frame">
+    <div className="board-frame" ref={container} data-testid="board-frame" data-fit-scale={scale} data-board-scale={renderedScale} style={{ ["--board-scale" as string]: renderedScale }}>
       {hasBoard ? (
         <div
           className="board-frame-stage"
           style={{
             width: `${boardLogicalWidth}px`,
             height: `${boardLogicalHeight}px`,
-            transform: `scale(${scale})`,
-            ["--board-scale" as string]: scale
+            transform: `scale(${renderedScale})`,
+            ["--board-scale" as string]: renderedScale
           }}
         >
           <BoardRenderer {...board} />
