@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-12, during Menus M3-A Slice 2 review remediation.
+Updated 2026-08-12, at Menus M3-A Slice 2 owner acceptance and closure.
 
 ## Current State
 
@@ -25,16 +25,16 @@ Updated 2026-08-12, during Menus M3-A Slice 2 review remediation.
 
 ## Exact Next Action
 
-1. **Finish Menus M3-A Slice 2 remediation on PR #700.** The active branch is
-   `feature/menus-m3a-s2-sections-history`. Re-run the full local gate, commit and
-   push with `[skip ci]`, request an exact-head independent review, and only then
-   hand the Slice 2 workbook to the owner.
+1. **Begin Menus M3-A Slice 3 through the GitHub-first claim process.** Read its
+   work-plan scope, create/confirm the milestone issue, claim it in the tracker,
+   branch from updated `master`, and keep the schema → API → UI → Playwright slice
+   independently mergeable.
 
-2. Slice 1 is merged and owner-approved. Slice 2's first review blockers were a
-   case-only section rename no-op and stale page-history response overwrite. Both
-   remediations have focused regression tests with observed red/green evidence.
-   Remaining review follow-ups are tracked in #701 (page lifecycle history) and
-   #702 (idempotent section-create retry).
+2. Slice 2 is owner-accepted. Its first review blockers were a case-only section
+   rename no-op and stale page-history response overwrite; both have focused tests
+   with observed red/green evidence. The owner waived further review. Item-change
+   history remains with its later M3-A owner; #701 and #702 track the other explicit
+   follow-ups.
 
 3. Standing owner decisions carried out of Milestone 1: audit record kept as is (#677),
    legacy columns kept, and the three menu capabilities to become separately grantable

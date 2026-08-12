@@ -1,0 +1,22 @@
+{
+  "schema": "vennusign.m3a.s2.acceptance-record",
+  "version": 1,
+  "acceptedUtc": "2026-08-12T05:05:00Z",
+  "testedProductSha": "fa95b44d744e6963101f29fa7f5efaa97743e9d7",
+  "ownerDecision": "Accepted",
+  "reviewDecision": "Owner waived further independent review after the first review's two blockers were remediated with observed red-green regression evidence.",
+  "originalResults": {
+    "pass": 3,
+    "needsAdjustment": 1,
+    "fail": 1
+  },
+  "disposition": {
+    "case4": "Accepted for Slice 2. Section history works. Item-change history belongs to a later M3-A slice and is not a Slice 2 blocker.",
+    "case5": "Accepted by owner clarification. The owner reported uncertainty about the combined workbook instructions rather than a reproduced product defect; no rerun required."
+  },
+  "deferred": [
+    "Issue #701 tracks page lifecycle history.",
+    "Issue #702 tracks idempotent section-create retries.",
+    "Item-change and full menu history remain assigned to later M3-A slices by the approved work plan."
+  ]
+}

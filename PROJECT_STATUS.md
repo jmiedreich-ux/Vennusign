@@ -25,7 +25,7 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
   - **The independent review returned REQUEST_CHANGES with seven findings, and every one was real** — including a back office that did not compile in production mode, because `validate.ps1` built `src/display` and had never heard of `src/back-office`. An eighth was found in the review prompt itself, which had put an in-scope gap (Q103's item drag) on the do-not-file list. All eight are fixed at `b59d2d1`, each with a spec run against its own reverted fix and observed to fail. `validate.ps1` now builds both front ends.
   - **The owner ran the acceptance workbook 2026-08-10 and returned "Needs adjustment"** — 11 Pass, 2 Fail, 2 Needs Adjustment across fifteen checks. Record at `docs/features/menus/m3-acceptance-record.json`. **M3 does not merge on this record.** The two Fails: an invented green "On the board" panel that the design never specified (only the red 86 panel is, Q104), and item drag that does not work under a real mouse with no drop indicator — the latter passing its Playwright spec, which is the third green-spec-over-broken-feature in this milestone. Owner decisions taken on the back of it: the delete control moves into the Sections list (overriding Q96, recorded there), the duplicate section-name field goes, and keyboard is out of scope for the build.
   - **The acceptance findings are worked and locally gated.** The green availability panel is gone; human handle-origin drag works with a visible insertion line; deletion selects the previous/first surviving section; delete lives on each Sections row; the duplicate name field is gone; the workbook uses on-screen Undo; and the fixture pre-seeds one shared item on two menus. Every product regression was observed red with its fix absent. Mobile interactions remain out of scope (Q158/#681), reaffirmed by the owner.
-  - **Exact next action: finish Menus M3-A Slice 2 remediation on PR #700, rerun the local gate, obtain exact-head independent review, then run the owner workbook.** Slice 1 is merged and owner-approved. Slice 2 covers sections and page-scoped history; its first independent review found two blocking defects now under remediation. Page-lifecycle history and idempotent section-create retries are explicitly tracked in #701 and #702 rather than left implicit.
+  - **Exact next action: begin Menus M3-A Slice 3 through the GitHub-first claim process.** Slice 2 is owner-accepted and closing through PR #700. Page-lifecycle history and idempotent section-create retries remain explicitly tracked in #701 and #702.
   - The register has one open question again — **Q209**, deferred at M2 acceptance: the ⋯ card actions cover guest content now that Q98 removed the venue-name strip. It ships on its provisional default until settled.
 - Backlog from the Menus planning: issues #670–#683 (out-of-scope decisions, copy debt, accessibility debt).
 
@@ -37,10 +37,10 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
 
 ## Menus Feature Milestone Status
 
-Menus M3-A Slice 1 (pages, capacity and screen assignments) is merged and
-owner-approved. Slice 2 (sections and page-scoped history) is active on PR #700;
-its first independent review returned REQUEST_CHANGES and remediation is in
-progress. CI remains suspended, so exact-head local evidence is the gate.
+Menus M3-A Slices 1 and 2 are owner-approved. Slice 2's first independent review
+returned REQUEST_CHANGES; both blockers were remediated with observed red/green
+regression evidence. The owner accepted the product and explicitly waived any
+further independent review. CI remains suspended, so local evidence was the gate.
 
 | Milestone | Scope | Status |
 |---|---|---|

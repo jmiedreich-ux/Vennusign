@@ -1,19 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-12T06:40:00Z",
-  "activeAssignments": [
-    {
-      "assignment": "Menus M3-A — slice 2 (sections and page history)",
-      "issue": 699,
-      "branch": "feature/menus-m3a-s2-sections-history",
-      "owner": "Codex for JeremyPC",
-      "claimedUtc": "2026-08-12T03:28:00Z",
-      "headAtClaim": "4c9ccfb2e135073f7f32716ba16b84105b7d437c",
-      "status": "PR #700 independent review remediation; local exact-head gate pending",
-      "startHere": "docs/design/approved/menus/m3-a/work-plan.md",
-      "notes": "Slice 1 merged as 4c9ccfb after owner approval. Slice 2 review found case-only rename and stale-response race blockers; both are remediated with red/green regression evidence. #701 and #702 track explicitly deferred contract expansions. CI is suspended."
-    }
-  ],
+  "updatedUtc": "2026-08-12T05:05:00Z",
+  "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
@@ -38,13 +26,13 @@
     "releasedBy": "scope completed locally"
   },
   "lastCompletedAssignment": {
-    "assignment": "Menus M3-A — slice 1 (pages, capacity, assignments)",
-    "issue": 696,
-    "pr": 697,
-    "branch": "feature/menus-m3a-s1-pages (deleted)",
-    "mergedUtc": "2026-08-12T03:26:29Z",
-    "mergeCommit": "4c9ccfb2e135073f7f32716ba16b84105b7d437c",
-    "acceptance": "Owner approved after live visual/interaction remediation and explicitly waived further independent review.",
-    "notes": "Final local product gate: Release build 0 warnings/errors; back office 197/197 plus production build; LocalDB 97/97; desktop page 18/18 and builder 40/40. API 436/438 with excluded Azure and known #688 baseline failures. Owner override O1 records accepted canvas inline editing."
+    "assignment": "Menus M3-A — slice 2 (sections and page history)",
+    "issue": 699,
+    "pr": 700,
+    "branch": "feature/menus-m3a-s2-sections-history",
+    "completedUtc": "2026-08-12T05:05:00Z",
+    "acceptedProductSha": "fa95b44d744e6963101f29fa7f5efaa97743e9d7",
+    "acceptance": "Owner accepted after workbook review and explicitly waived further independent review.",
+    "notes": "Final local gate: Release 0 warnings/errors; LocalDB 98/98; focused API 27/27; Test API 8/8; back office 197/197 plus production build; desktop page Playwright 22/22. #701 and #702 retain explicit follow-ups."
   }
 }
