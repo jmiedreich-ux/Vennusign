@@ -845,5 +845,13 @@ another page does not increase that distinct count; adding a genuinely new menu 
 at the limit returns `ceiling_reached` with no placement or history write. The focused
 LocalDB regression is 2/2 with the stale inverse test, the service boundary regression
 is 1/1, Release/build/unit gates remain green, and the four isolated desktop Menus
-shards pass 68/68. The repository-wide exact-head Playwright shards are the remaining
-pre-review gate.
+shards pass 68/68. The repository-wide isolated gate discovered 220 cases: 142 passed
+and 78 were explicit mobile/keyboard scope skips, with no failures. One first attempt
+at the stale-Undo browser case exposed that its second-actor POST asserted only HTTP
+200, even though `already_on_board` also returns 200; it could therefore invoke Undo
+before the asynchronous removal completed. The test now waits for removal and proves
+the response is `placed` in the sibling section before Undo. That case and its full
+shard pass in fresh isolated venues.
+
+**Exact next action.** Commit the final evidence candidate and obtain independent
+review of that exact SHA. Owner acceptance remains the next gate after approval.

@@ -957,11 +957,14 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     await page.locator(`[data-item-id="${item.itemId}"]`).click();
     await page.getByTestId("remove-item").click();
     await page.getByTestId("remove-item-dialog").getByRole("button", { name: "Remove from this page" }).click();
+    await expect(page.locator(`[data-section-id="${source.sectionId}"] [data-item-id="${item.itemId}"]`)).toHaveCount(0);
     const secondActor = await page.request.post(
       `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/sections/${sibling.sectionId}/items`,
       { headers: owned, data: { itemId: item.itemId } }
     );
     expect(secondActor.ok()).toBeTruthy();
+    const secondActorOutcome = await secondActor.json();
+    expect(secondActorOutcome).toMatchObject({ outcome: "placed", sectionId: sibling.sectionId });
     await page.getByRole("button", { name: "Undo", exact: true }).click();
     await expect(page.getByText(/page changed after this action/i)).toBeVisible();
     await page.reload();
