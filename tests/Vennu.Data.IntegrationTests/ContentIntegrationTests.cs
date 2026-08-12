@@ -2262,6 +2262,54 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         Assert.Single(await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50), entry => entry.Kind == MenuHistoryKinds.ItemRemoved);
     }
 
+    [Fact]
+    public async Task PlacementUndoAndRedo_RefuseStaleSecondActorStateWithoutChangingPlacementOrHistory()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var pageId = (await repository.GetPagesAsync(venueId, menuId)).Single().Id;
+        var source = await SeedSectionAsync(dataAccess, venueId, menuId, 0);
+        var sibling = await SeedSectionAsync(dataAccess, venueId, menuId, 1);
+        var first = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("first") };
+        var removed = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("removed") };
+        var last = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("last") };
+        await repository.CreateItemOnMenuAsync(first, menuId, source, 500);
+        await repository.CreateItemOnMenuAsync(removed, menuId, source, 500);
+        await repository.CreateItemOnMenuAsync(last, menuId, source, 500);
+        Assert.True(await repository.RemoveItemFromPageAsync(venueId, menuId, pageId, removed.Id, DateTime.UtcNow));
+
+        // A second actor re-adds it elsewhere before the first actor presses Undo.
+        Assert.Equal(PlaceExistingOutcomes.Placed,
+            (await repository.PlaceExistingItemAsync(venueId, menuId, sibling, removed.Id, 500, DateTime.UtcNow)).Outcome);
+        var beforeUndoHistory = (await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50)).Count;
+        var staleUndo = await repository.TransitionPlacementGuardedAsync(
+            venueId, menuId, pageId, source, removed.Id,
+            [first.Id, last.Id], [first.Id, removed.Id, last.Id], DateTime.UtcNow, author: "stale actor");
+        Assert.Equal(ReorderOutcomes.OrderStale, staleUndo.Outcome);
+        Assert.Contains(await repository.GetPlacementsAsync(venueId, menuId),
+            placement => placement.ItemId == removed.Id && placement.MenuSectionId == sibling);
+        Assert.Equal(beforeUndoHistory, (await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50)).Count);
+
+        // Put the item back into the exact state Undo expected, perform Undo, then
+        // let another actor move it before Redo. Redo must not remove their work.
+        Assert.Equal(ReorderOutcomes.Reordered, (await repository.MovePlacementGuardedAsync(
+            venueId, menuId, removed.Id, sibling, source, [], [first.Id, removed.Id, last.Id],
+            DateTime.UtcNow)).Outcome);
+        Assert.Equal(ReorderOutcomes.Reordered, (await repository.MovePlacementGuardedAsync(
+            venueId, menuId, removed.Id, source, sibling, [first.Id, last.Id], [removed.Id],
+            DateTime.UtcNow)).Outcome);
+        var beforeRedoHistory = (await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50)).Count;
+        var staleRedo = await repository.TransitionPlacementGuardedAsync(
+            venueId, menuId, pageId, source, removed.Id,
+            [first.Id, removed.Id, last.Id], [first.Id, last.Id], DateTime.UtcNow, author: "stale actor");
+        Assert.Equal(ReorderOutcomes.OrderStale, staleRedo.Outcome);
+        Assert.Contains(await repository.GetPlacementsAsync(venueId, menuId),
+            placement => placement.ItemId == removed.Id && placement.MenuSectionId == sibling);
+        Assert.Equal(beforeRedoHistory, (await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50)).Count);
+    }
+
     /// <summary>
     /// Wildcards typed into a search box are characters, not operators: somebody
     /// looking for "50% off" should not be shown the whole library.

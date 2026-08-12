@@ -873,6 +873,22 @@ public sealed class BackOfficeContentController(
             ? NoContent()
             : NotFound(new { message = "That item is not on this board." });
 
+    [HttpPut("menus/{menuId:guid}/pages/{pageId:guid}/items/{itemId:guid}/transition")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult> TransitionItemPlacement(
+        Guid menuId, Guid pageId, Guid itemId, ItemPlacementTransitionRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request?.ExpectedItemIds is null || request.DesiredItemIds is null)
+            return Problem("Both expected and desired section orders are required.", statusCode: 400);
+        var outcome = await content.TransitionPlacementAsync(
+            VenueId, menuId, pageId, request.SectionId, itemId,
+            request.ExpectedItemIds, request.DesiredItemIds, Author, cancellationToken).ConfigureAwait(false);
+        return outcome.Outcome == ReorderOutcomes.Reordered
+            ? NoContent()
+            : Conflict(new { reason = ReorderOutcomes.OrderStale, message = "The page changed after this action. Nothing changed — reload and try again." });
+    }
+
     /// <summary>
     /// Edits an item. One item is one shared price across every board it sits on
     /// (Q5) — each board's screens still change only when that board publishes.

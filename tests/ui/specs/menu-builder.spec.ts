@@ -848,6 +848,13 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     });
     await page.getByTestId("open-add-item").click();
     await page.getByTestId("add-item-input").fill("Old Fashioned");
+    await expect(page.getByTestId("add-item-input")).toHaveAttribute("role", "combobox");
+    await expect(page.getByTestId("add-item-input")).toHaveAttribute("aria-expanded", "true");
+    await expect(page.getByRole("listbox")).toBeVisible();
+    await expect(page.getByTestId("add-item-input")).toHaveAttribute(
+      "aria-activedescendant",
+      await page.getByRole("option").first().getAttribute("id") ?? "missing-option-id"
+    );
     await expect(page.getByTestId("add-item-result").first()).toHaveAttribute("aria-selected", "true");
     await expect(page.getByTestId("add-item-result").first()).toHaveClass(/is-selected/);
     await page.getByTestId("add-item-input").press("Enter");
@@ -938,6 +945,28 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     await expect(rows).toHaveCount(2);
     await page.reload();
     await expect(rows).toHaveCount(2);
+  });
+
+  test("stale remove Undo refuses without deleting a second actor's placement", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "slice3-stale-remove-undo", sectionCount: 2, itemsPerSection: 2 });
+    const source = data.sections[0];
+    const sibling = data.sections[1];
+    const item = data.items.find(candidate => candidate.sectionId === source.sectionId)!;
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await page.locator(`[data-item-id="${item.itemId}"]`).click();
+    await page.getByTestId("remove-item").click();
+    await page.getByTestId("remove-item-dialog").getByRole("button", { name: "Remove from this page" }).click();
+    const secondActor = await page.request.post(
+      `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/sections/${sibling.sectionId}/items`,
+      { headers: owned, data: { itemId: item.itemId } }
+    );
+    expect(secondActor.ok()).toBeTruthy();
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect(page.getByText(/page changed after this action/i)).toBeVisible();
+    await page.reload();
+    await page.getByTestId("viewing-chip").filter({ hasText: "Whole page" }).click();
+    await expect(page.locator(`[data-section-id="${sibling.sectionId}"] [data-item-id="${item.itemId}"]`)).toBeVisible();
+    await expect(page.locator(`[data-section-id="${source.sectionId}"] [data-item-id="${item.itemId}"]`)).toHaveCount(0);
   });
 
   test("move and page removal routes refuse a role without content editing and malformed move order", async ({ page }) => {

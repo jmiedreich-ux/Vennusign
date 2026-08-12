@@ -158,6 +158,23 @@ public interface IContentRepository
         string? author = null);
 
     /// <summary>
+    /// Atomically restores or removes one placement only while the section still
+    /// has the exact order expected by the inverse action. Used by Undo/Redo so a
+    /// stale actor cannot overwrite another person's later placement.
+    /// </summary>
+    Task<ReorderOutcome> TransitionPlacementGuardedAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid pageId,
+        Guid sectionId,
+        Guid itemId,
+        IReadOnlyCollection<Guid> expectedItemIds,
+        IReadOnlyCollection<Guid> desiredItemIds,
+        DateTime now,
+        CancellationToken cancellationToken = default,
+        string? author = null);
+
+    /// <summary>
     /// Places an item the library already holds. Outcomes: <c>placed</c>,
     /// <c>already_on_board</c> (with the section it sits in, so the UI can jump
     /// rather than duplicate — Q112), <c>ceiling_reached</c>, <c>section_missing</c>,

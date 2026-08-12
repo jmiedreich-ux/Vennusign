@@ -804,3 +804,29 @@ workbook. No owner acceptance, PR, push or merge has occurred.
 
 **Exact next action.** Complete remediation validation, commit the new candidate,
 and send that exact SHA to the independent reviewer.
+
+## M3-A Slice 3 — second-review remediation — 2026-08-12
+
+The independent re-review of `c5679427d890a2d05e6824c6c55cd38f76012583`
+returned REQUEST_CHANGES for one destructive concurrency window, incomplete active-
+suggestion semantics, and records that still described already-completed gate work as
+outstanding. Remove Undo/Redo now uses one database-guarded transition: it proves the
+exact expected section order and page-wide absence/presence under the same locks that
+insert or delete the placement and write history. A second actor's re-add, move,
+reorder or removal therefore returns `order_stale` without changing placement or
+history. The add input now exposes a combobox controlling a listbox with an explicit
+active option.
+
+Executed on the remediation tree: Release solution build succeeded; back-office unit
+tests passed 198/198 and its production build succeeded; focused LocalDB stale Undo,
+stale Redo and adjacent item rules passed 3/3; focused desktop Playwright passed 4/4,
+including the accessible relationship and the second-actor stale Undo. A single-worker
+68-case desktop attempt passed its first 29 cases, then LocalDB began aborting concurrent
+session reads and the remaining cases failed at application setup; it is infrastructure
+evidence, not a product pass, and is not counted. The earlier complete 214-case isolated-
+shard gate remains the broad regression evidence; the changed paths have fresh focused
+coverage. CI remains suspended and Azure/external integrations remain owner-exempt.
+
+**Exact next action.** Commit this remediation candidate and obtain independent review
+of that exact SHA. Owner acceptance remains after approval; no push, PR or merge has
+occurred.

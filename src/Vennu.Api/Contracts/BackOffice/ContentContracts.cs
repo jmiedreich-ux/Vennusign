@@ -24,6 +24,11 @@ public sealed record ItemMoveRequest(
     IReadOnlyCollection<Guid> SourceItemIds,
     IReadOnlyCollection<Guid> DestinationItemIds);
 
+public sealed record ItemPlacementTransitionRequest(
+    Guid SectionId,
+    IReadOnlyCollection<Guid> ExpectedItemIds,
+    IReadOnlyCollection<Guid> DesiredItemIds);
+
 /// <summary>
 /// Placing something on a board. Exactly one of these is set: an ItemId places an
 /// item the library already holds; a Name creates one born with that text and an

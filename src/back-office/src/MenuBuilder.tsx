@@ -27,6 +27,7 @@ import {
   removeMenuItem,
   renameMenuSection,
   reorderMenuItems,
+  transitionMenuItemPlacement,
   reorderMenuSections,
   searchLibraryItems,
   setItemAvailability,
@@ -1218,6 +1219,7 @@ export default function MenuBuilder({
     const { item, sectionId } = selected;
     const sectionItems = itemsOf(board, sectionId);
     const originalOrder = sectionItems.map(candidate => candidate.itemId);
+    const removedOrder = originalOrder.filter(candidate => candidate !== item.itemId);
     const selectedIndex = sectionItems.findIndex(candidate => candidate.itemId === item.itemId);
     const nextSelection = sectionItems[selectedIndex + 1]?.itemId ?? sectionItems[selectedIndex - 1]?.itemId ?? null;
     const pageId = activePageId;
@@ -1230,16 +1232,12 @@ export default function MenuBuilder({
       },
       {
         describe: "Remove from this page",
-        undo: async () => {
-          await placeMenuItem(configuration, credential(), menuId, sectionId, { itemId: item.itemId });
-          try {
-            await reorderMenuItems(configuration, credential(), menuId, sectionId, originalOrder);
-          } catch (error) {
-            await removeMenuItem(configuration, credential(), menuId, pageId, item.itemId);
-            throw error;
-          }
-        },
-        redo: () => removeMenuItem(configuration, credential(), menuId, pageId, item.itemId)
+        undo: () => transitionMenuItemPlacement(configuration, credential(), menuId, pageId, item.itemId, {
+          sectionId, expectedItemIds: removedOrder, desiredItemIds: originalOrder
+        }),
+        redo: () => transitionMenuItemPlacement(configuration, credential(), menuId, pageId, item.itemId, {
+          sectionId, expectedItemIds: originalOrder, desiredItemIds: removedOrder
+        })
       }
     );
   };
@@ -2139,6 +2137,11 @@ export default function MenuBuilder({
                     placeholder="Find an item, or type a new one"
                     aria-label="Add an item"
                     data-testid="add-item-input"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded={hits.length > 0}
+                    aria-controls={`add-item-results-${place.sectionId}`}
+                    aria-activedescendant={hits[0] ? `add-item-option-${hits[0].itemId}` : undefined}
                     onChange={event => setAddQuery(event.target.value)}
                     onKeyDown={event => {
                       if (event.key === "Enter" && addQuery.trim()) {
@@ -2158,7 +2161,7 @@ export default function MenuBuilder({
                       if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
                     }}
                   />
-                  <ul className="builder__add-results" data-testid="add-item-results">
+                  <ul id={`add-item-results-${place.sectionId}`} role="listbox" className="builder__add-results" data-testid="add-item-results">
                     {hits.map(hit => {
                       const here = hit.boards.some(entry => entry.menuId === menuId);
                       const elsewhere = hit.boards.filter(entry => entry.menuId !== menuId);
@@ -2166,10 +2169,12 @@ export default function MenuBuilder({
                         <li key={hit.itemId}>
                           <button
                             type="button"
-                          data-testid="add-item-result"
-                          data-item-id={hit.itemId}
-                          aria-selected={hit === hits[0]}
-                          className={hit === hits[0] ? "is-selected" : undefined}
+                            id={`add-item-option-${hit.itemId}`}
+                            role="option"
+                            data-testid="add-item-result"
+                            data-item-id={hit.itemId}
+                            aria-selected={hit === hits[0]}
+                            className={hit === hits[0] ? "is-selected" : undefined}
                             onClick={() => void place_(place.sectionId!, { itemId: hit.itemId })}
                           >
                             <span className="builder__add-name">{hit.name}</span>

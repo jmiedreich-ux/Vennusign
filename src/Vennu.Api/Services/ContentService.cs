@@ -698,6 +698,19 @@ public sealed class ContentService(
         return removed;
     }
 
+    public async Task<ReorderOutcome> TransitionPlacementAsync(
+        Guid venueId, Guid menuId, Guid pageId, Guid sectionId, Guid itemId,
+        IReadOnlyCollection<Guid> expectedItemIds, IReadOnlyCollection<Guid> desiredItemIds,
+        string? author = null, CancellationToken cancellationToken = default)
+    {
+        var outcome = await library.TransitionPlacementGuardedAsync(
+            venueId, menuId, pageId, sectionId, itemId, expectedItemIds, desiredItemIds,
+            timeProvider.GetUtcNow().UtcDateTime, cancellationToken, author).ConfigureAwait(false);
+        if (outcome.Outcome == ReorderOutcomes.Reordered)
+            await NotifyAsync(venueId, "item-placement-transitioned", menuId, cancellationToken).ConfigureAwait(false);
+        return outcome;
+    }
+
     /// <summary>
     /// Edits an item's values. One item is one shared price across every board it
     /// sits on (Q5), so this reaches all of them — and each board's own screens

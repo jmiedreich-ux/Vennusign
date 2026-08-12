@@ -1233,6 +1233,20 @@ export async function removeMenuItem(
   await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}/items/${itemId}`, { method: "DELETE" });
 }
 
+export async function transitionMenuItemPlacement(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  pageId: string,
+  itemId: string,
+  request: { sectionId: string; expectedItemIds: string[]; desiredItemIds: string[] }
+): Promise<void> {
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}/items/${itemId}/transition`, {
+    method: "PUT",
+    body: JSON.stringify(request)
+  });
+}
+
 /**
  * Edits an item. One item is one shared price across every board it sits on (Q5);
  * each of those boards still changes its own screens only when it publishes.

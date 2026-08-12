@@ -613,6 +613,14 @@ internal sealed class FakeContentRepository : IContentRepository
             "Placing an existing item decides 'already on this board' and the ceiling under one lock. "
             + "Assert it in Vennu.Data.IntegrationTests against a real database.");
 
+    public Task<ReorderOutcome> TransitionPlacementGuardedAsync(
+        Guid venueId, Guid menuId, Guid pageId, Guid sectionId, Guid itemId,
+        IReadOnlyCollection<Guid> expectedItemIds, IReadOnlyCollection<Guid> desiredItemIds,
+        DateTime now, CancellationToken cancellationToken = default, string? author = null) =>
+        throw new NotSupportedException(
+            "Placement Undo/Redo proves the expected order under the database lock that writes it. "
+            + "Assert it in Vennu.Data.IntegrationTests against a real database.");
+
     public Task<bool> RemoveItemFromPageAsync(
         Guid venueId,
         Guid menuId,
