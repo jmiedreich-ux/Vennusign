@@ -201,6 +201,16 @@ public interface IContentRepository
 
     Task<bool> ClearPageScreenAssignmentAsync(Guid venueId, Guid screenId, Guid menuId, Guid pageId, CancellationToken cancellationToken = default);
 
+    /// <summary>Applies one page's staged screen changes as a single transaction.</summary>
+    Task ApplyPageScreenAssignmentsAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid pageId,
+        IReadOnlyCollection<PageScreenAssignmentChange> changes,
+        string? author,
+        DateTime occurredUtc,
+        CancellationToken cancellationToken = default);
+
     Task<int> ClearMenuAssignmentsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -397,6 +407,8 @@ public interface IContentRepository
 public sealed record MenuCreateOutcome(bool Created, int ActiveMenuCount);
 
 public sealed record PageDeleteOutcome(string Outcome, int AffectedSectionCount, int RemovedAssignmentCount);
+
+public sealed record PageScreenAssignmentChange(Guid ScreenId, string Mode);
 
 /// <summary>
 /// Whether the copy was made, the venue's active-menu count under the lock, and the

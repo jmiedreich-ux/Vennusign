@@ -682,7 +682,7 @@ assignment, unassigned/landscape/portrait capacity, section overflow and focus
 recovery are covered. The corrected migration carried a customer-shaped legacy
 menu, section, item, placement, screen and assignment into Page 1 and
 `DBCC CHECKCONSTRAINTS` returned no violation; the disposable database was removed.
-Release solution build passed with five existing warnings; back office 197/197 and
+Release solution build passed with existing analyzer warnings and no errors; back office 197/197 and
 production build passed; desktop page Playwright 16/16; Test API 8/8; focused
 snapshot tests 17/17; LocalDB data integration 94/94. DataAccess remained at its
 known #688 baseline, 228 passed / 3 failed. CI remains suspended.
@@ -696,3 +696,11 @@ and its deterministic fit model.
 **Exact next action.** Commit and push this remediation to PR #697, obtain a fresh
 independent exact-SHA review, and only after approval regenerate the owner workbook
 for owner acceptance.
+
+The exact-SHA review then found that Screen Assignments Save still issued one HTTP
+write per screen. It now sends one batch to a single database transaction: every
+screen and mode is validated before any assignment changes, replace/rotate/remove
+and attributable history commit together, and any stale screen or refusal rolls the
+whole Save back. LocalDB asserts a valid first change plus an invalid later screen
+leaves no assignment behind; the browser regression keeps the staged UI recoverable
+and verifies the prior screen owner remains unchanged.

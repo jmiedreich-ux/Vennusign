@@ -275,6 +275,7 @@ test.describe("menu pages", () => {
     await page.getByTestId("screen-assignments").getByTestId("screen-row").filter({ hasText: "rotation-choice screen" }).getByRole("button", { name: /^Choose/ }).click();
     await page.getByRole("button", { name: "Rotate both" }).click();
     await page.getByTestId("screen-assignments").getByRole("button", { name: "Save" }).click();
+    await expect(page.getByTestId("screen-assignments")).toHaveCount(0);
     response = await page.request.get(`${apiBaseUrl}/api/back-office/content/assignments`, { headers: { "X-Vennusign-Back-Office-Token": tokens.owner } });
     expect((await response.json()).filter((assignment: { screenId: string }) => assignment.screenId === data.screenId)).toHaveLength(2);
 
@@ -283,7 +284,7 @@ test.describe("menu pages", () => {
     response = await page.request.get(`${apiBaseUrl}/api/back-office/content/assignments`, { headers: { "X-Vennusign-Back-Office-Token": tokens.owner } });
     expect((await response.json()).filter((assignment: { screenId: string }) => assignment.screenId === data.screenId)).toHaveLength(2);
     const [removalResponse] = await Promise.all([
-      page.waitForResponse(candidate => candidate.request().method() === "DELETE" && candidate.url().includes(`/screens/${data.screenId}/menus/`)),
+      page.waitForResponse(candidate => candidate.request().method() === "PUT" && candidate.url().includes(`/menus/${data.menuId}/pages/`) && candidate.url().endsWith("/screens")),
       page.getByTestId("screen-assignments").getByRole("button", { name: "Save" }).click()
     ]);
     expect(removalResponse.status()).toBe(204);
@@ -336,6 +337,33 @@ test.describe("menu pages", () => {
     await expect(panel).toBeVisible();
     await expect(row).toContainText("Will replace");
     await expect(page.getByTestId("builder-error")).toContainText("put away");
+    await panel.getByRole("button", { name: "Cancel" }).click();
+  });
+
+  test("a later invalid screen rolls the whole assignment Save back", async ({ page }) => {
+    const candidate = await seed({ role: "owner", label: "atomic-assignment", pageCount: 2, sectionCount: 2, screenState: "has-not-taken-this-yet" });
+    await openMenuBuilderAs(page, "owner", candidate.menuId);
+    await page.getByTestId("page-tab").nth(1).click();
+    await page.getByTestId("assignment-pill").click();
+    const panel = page.getByTestId("screen-assignments");
+    const row = panel.getByTestId("screen-row").filter({ hasText: "atomic-assignment screen" });
+    await row.getByRole("button", { name: /^Choose/ }).click();
+    await page.getByRole("button", { name: "Replace" }).click();
+    await page.route(`**/menus/${candidate.menuId}/pages/*/screens`, async route => {
+      const body = route.request().postDataJSON() as { changes: Array<{ screenId: string; mode: string }> };
+      await route.continue({ postData: JSON.stringify({ changes: [...body.changes, { screenId: "00000000-0000-0000-0000-000000000099", mode: "replace" }] }) });
+    });
+    await panel.getByRole("button", { name: "Save" }).click();
+    await expect(panel).toBeVisible();
+    await expect(row).toContainText("Will replace");
+    await expect(page.getByTestId("builder-error")).toContainText("Nothing was changed");
+    const response = await page.request.get(`${apiBaseUrl}/api/back-office/content/assignments`, {
+      headers: { "X-Vennusign-Back-Office-Token": tokens.owner }
+    });
+    expect(response.ok()).toBeTruthy();
+    const assignments = await response.json() as Array<{ screenId: string; menuId: string }>;
+    expect(assignments).toContainEqual(expect.objectContaining({ screenId: candidate.screenId, pageId: candidate.pages[0].pageId }));
+    expect(assignments).not.toContainEqual(expect.objectContaining({ screenId: candidate.screenId, pageId: candidate.pages[1].pageId }));
     await panel.getByRole("button", { name: "Cancel" }).click();
   });
 });

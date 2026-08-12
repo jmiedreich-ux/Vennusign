@@ -17,8 +17,7 @@ import {
   loadMenuThemes,
   loadMenuAssignments,
   loadScreensShowing,
-  assignMenuPage,
-  removeMenuPageAssignment,
+  saveMenuPageAssignments,
   placeMenuItem,
   publishMenu,
   renameMenuPage,
@@ -646,12 +645,13 @@ export default function MenuBuilder({
   const saveAssignments = async () => {
     if (!activePageId) return;
     const changes = Object.entries(assignmentDraft);
-    await run(async () => {
-      for (const [screenId, mode] of changes) {
-        if (mode === "remove") await removeMenuPageAssignment(configuration, credential(), screenId, menuId, activePageId);
-        else await assignMenuPage(configuration, credential(), screenId, menuId, activePageId, mode);
-      }
-    }, undefined, () => {
+    await run(() => saveMenuPageAssignments(
+      configuration,
+      credential(),
+      menuId,
+      activePageId,
+      changes.map(([screenId, mode]) => ({ screenId, mode }))
+    ), undefined, () => {
       setAssignmentOpen(false);
       setAssignmentDraft({});
     });
@@ -1576,6 +1576,7 @@ export default function MenuBuilder({
         {activePageId ? (
           <div className="builder__page-summary" data-testid="page-summary">
             <strong data-testid="page-name">{pages.find(page => page.pageId === activePageId)?.name}</strong>
+            <span className="builder__page-actions-wrap">
             {canManagePages ? <button type="button" className="builder__page-actions" data-testid="page-actions" aria-label={`Actions for ${pages.find(page => page.pageId === activePageId)?.name}`} onClick={() => setPageMenuId(open => open === activePageId ? null : activePageId)}>⋯</button> : null}
             {pageMenuId === activePageId ? (() => {
               const page = pages.find(candidate => candidate.pageId === activePageId)!;
@@ -1589,6 +1590,7 @@ export default function MenuBuilder({
                 }}>Delete</button>
               </div>;
             })() : null}
+            </span>
             {activePageItemCount > 0 ? <span>{activePageItemCount} {activePageItemCount === 1 ? "item" : "items"}</span> : null}
             {activePageAssignmentCount > 0 ? <span data-testid="page-assignment-count">{activePageAssignmentCount} {activePageAssignmentCount === 1 ? "screen" : "screens"}</span> : null}
             {canAssignScreens ? <button type="button" className="builder__assignment-pill" onClick={() => { setAssignmentDraft({}); setAssignmentChoiceScreenId(null); setAssignmentOpen(true); }} data-testid="assignment-pill"><SkyIcon name="screen-mark" /> {activePageAssignmentCount > 0 ? `${activePageAssignmentCount} ${activePageAssignmentCount === 1 ? "screen" : "screens"}` : "Manage screens"}</button> : null}

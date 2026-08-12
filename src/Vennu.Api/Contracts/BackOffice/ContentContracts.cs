@@ -5,6 +5,8 @@ namespace Vennu.Api.Contracts.BackOffice;
 public sealed record AvailabilityRequest(bool IsAvailable);
 
 public sealed record AssignmentRequest(Guid MenuId, Guid PageId, string Mode = "replace");
+public sealed record PageAssignmentChangeRequest(Guid ScreenId, string Mode);
+public sealed record PageAssignmentsRequest(IReadOnlyCollection<PageAssignmentChangeRequest> Changes);
 
 public sealed record PageNameRequest(string Name);
 public sealed record PageOrderRequest(IReadOnlyCollection<Guid> PageIds);

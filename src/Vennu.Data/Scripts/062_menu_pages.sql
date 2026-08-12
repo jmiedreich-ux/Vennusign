@@ -81,4 +81,3 @@ ALTER TABLE dbo.Screens ADD
     HeightPixels INT NOT NULL CONSTRAINT DF_Screens_HeightPixels DEFAULT (1080),
     CONSTRAINT CK_Screens_Geometry_Positive CHECK (WidthPixels > 0 AND HeightPixels > 0);
 GO
-

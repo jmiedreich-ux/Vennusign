@@ -523,6 +523,37 @@ public sealed class BackOfficeContentController(
         return NoContent();
     }
 
+    [HttpPut("menus/{menuId:guid}/pages/{pageId:guid}/screens")]
+    [RequireCapability("screen.content.target")]
+    public async Task<IActionResult> SavePageAssignments(Guid menuId, Guid pageId, PageAssignmentsRequest request, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.Changes is null
+            || request.Changes.Any(change => change.ScreenId == Guid.Empty || change.Mode is not ("remove" or "replace" or "rotate"))
+            || request.Changes.Select(change => change.ScreenId).Distinct().Count() != request.Changes.Count)
+            return BadRequest(new { message = "Choose a valid change for every screen." });
+        try
+        {
+            await library.ApplyPageScreenAssignmentsAsync(
+                VenueId,
+                menuId,
+                pageId,
+                request.Changes.Select(change => new PageScreenAssignmentChange(change.ScreenId, change.Mode)).ToArray(),
+                Author,
+                DateTime.UtcNow,
+                cancellationToken).ConfigureAwait(false);
+            return NoContent();
+        }
+        catch (MenuPutAwayException exception)
+        {
+            return Conflict(new { reason = "menu_put_away", message = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { reason = "assignments_changed", message = exception.Message });
+        }
+    }
+
     /// <summary>
     /// Queues taking a menu off its screens. Unlike an 86 this is permanent, so it
     /// waits in the draft and reaches the screens on the next Publish (Q68). The

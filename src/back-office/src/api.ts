@@ -1081,6 +1081,19 @@ export async function deleteMenuPage(configuration: BackOfficeConfiguration, acc
   await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}`, { method: "DELETE", body: JSON.stringify({ moveSectionsToPageId: moveSectionsToPageId ?? null, deleteSections }) });
 }
 
+export async function saveMenuPageAssignments(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  pageId: string,
+  changes: Array<{ screenId: string; mode: "remove" | "replace" | "rotate" }>
+): Promise<void> {
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}/screens`, {
+    method: "PUT",
+    body: JSON.stringify({ changes })
+  });
+}
+
 export async function loadBuilderBoard(
   configuration: BackOfficeConfiguration,
   accessToken: string,

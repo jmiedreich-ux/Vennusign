@@ -126,6 +126,62 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
           AND PageId = @PageId;
         """;
 
+    private const string ApplyPageScreenAssignmentsSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        DECLARE @Changes TABLE (ScreenId UNIQUEIDENTIFIER NOT NULL PRIMARY KEY, Mode NVARCHAR(10) NOT NULL);
+        INSERT @Changes (ScreenId, Mode)
+        SELECT ScreenId, Mode
+        FROM OPENJSON(@ChangesJson)
+        WITH (ScreenId UNIQUEIDENTIFIER '$.screenId', Mode NVARCHAR(10) '$.mode');
+
+        IF EXISTS (SELECT 1 FROM dbo.Menus WITH (UPDLOCK, HOLDLOCK) WHERE Id=@MenuId AND VenueId=@VenueId AND IsPutAway=1)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            THROW 51006, 'This menu is put away. Put it back on the shelf before giving it a screen.', 1;
+        END;
+
+        IF EXISTS (SELECT 1 FROM @Changes WHERE Mode NOT IN (N'remove', N'replace', N'rotate'))
+           OR (SELECT COUNT(*) FROM @Changes) <> @ExpectedCount
+           OR NOT EXISTS (SELECT 1 FROM dbo.MenuPages WHERE Id=@PageId AND MenuId=@MenuId AND VenueId=@VenueId)
+           OR EXISTS (
+                SELECT 1 FROM @Changes c
+                WHERE NOT EXISTS (SELECT 1 FROM dbo.Screens s WITH (UPDLOCK, HOLDLOCK) WHERE s.Id=c.ScreenId AND s.VenueId=@VenueId)
+           )
+        BEGIN
+            ROLLBACK TRANSACTION;
+            THROW 51008, 'The screen assignment changed before it could be saved. Nothing was changed.', 1;
+        END;
+
+        DELETE a
+        FROM dbo.MenuScreenAssignments a
+        INNER JOIN @Changes c ON c.ScreenId=a.ScreenId AND c.Mode=N'remove'
+        WHERE a.VenueId=@VenueId AND a.MenuId=@MenuId AND a.PageId=@PageId;
+
+        DELETE a
+        FROM dbo.MenuScreenAssignments a
+        INNER JOIN @Changes c ON c.ScreenId=a.ScreenId AND c.Mode=N'replace'
+        WHERE a.VenueId=@VenueId AND a.PageId<>@PageId;
+
+        MERGE dbo.MenuScreenAssignments WITH (HOLDLOCK) AS target
+        USING (
+            SELECT c.ScreenId, c.Mode FROM @Changes c WHERE c.Mode IN (N'replace', N'rotate')
+        ) AS source
+        ON target.ScreenId=source.ScreenId AND target.PageId=@PageId
+        WHEN MATCHED THEN UPDATE SET MenuId=@MenuId, VenueId=@VenueId, AssignedUtc=@OccurredUtc, AssignedBy=@Author
+        WHEN NOT MATCHED THEN
+            INSERT (Id,VenueId,ScreenId,MenuId,PageId,AssignedUtc,AssignedBy)
+            VALUES (NEWID(),@VenueId,source.ScreenId,@MenuId,@PageId,@OccurredUtc,@Author);
+
+        IF EXISTS (SELECT 1 FROM @Changes)
+            INSERT dbo.MenuHistoryEntries (Id,VenueId,MenuId,Kind,PublishEventId,ReplacedByVersion,Detail,Author,OccurredUtc)
+            VALUES (NEWID(),@VenueId,@MenuId,N'assigned',NULL,NULL,N'Updated screen assignments.',@Author,@OccurredUtc);
+
+        COMMIT TRANSACTION;
+        SELECT 1 AS Value;
+        """;
+
     private const string ClearMenuAssignmentsSql = """
         DELETE FROM dbo.MenuScreenAssignments
         OUTPUT 1 AS Value
@@ -2114,6 +2170,43 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 PageId = RequireId(pageId, nameof(pageId))
             },
             cancellationToken).ConfigureAwait(false)).Any();
+
+    public async Task ApplyPageScreenAssignmentsAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid pageId,
+        IReadOnlyCollection<PageScreenAssignmentChange> changes,
+        string? author,
+        DateTime occurredUtc,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(changes);
+        var normalized = changes.ToArray();
+        try
+        {
+            await dataAccess.ExecuteSqlQueryAsync<ScalarResult, object>(
+                ApplyPageScreenAssignmentsSql,
+                new
+                {
+                    VenueId = RequireId(venueId, nameof(venueId)),
+                    MenuId = RequireId(menuId, nameof(menuId)),
+                    PageId = RequireId(pageId, nameof(pageId)),
+                    ChangesJson = System.Text.Json.JsonSerializer.Serialize(normalized.Select(change => new { screenId = change.ScreenId, mode = change.Mode })),
+                    ExpectedCount = normalized.Length,
+                    Author = author,
+                    OccurredUtc = occurredUtc == default ? DateTime.UtcNow : occurredUtc
+                },
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch (Microsoft.Data.SqlClient.SqlException exception) when (exception.Number == 51008)
+        {
+            throw new InvalidOperationException(exception.Message, exception);
+        }
+        catch (Microsoft.Data.SqlClient.SqlException exception) when (exception.Number == 51006)
+        {
+            throw new MenuPutAwayException(exception.Message);
+        }
+    }
 
     public async Task<int> ClearMenuAssignmentsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
         (await dataAccess.ExecuteSqlQueryAsync<ScalarResult, object>(

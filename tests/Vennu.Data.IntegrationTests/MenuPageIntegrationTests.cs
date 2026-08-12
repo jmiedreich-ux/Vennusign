@@ -10,6 +10,41 @@ public sealed class MenuPageIntegrationTests(DatabaseFixture fixture)
     : InvariantCheckedTests(fixture), IClassFixture<DatabaseFixture>
 {
     [Fact]
+    public async Task Assignment_batch_refusal_changes_nothing()
+    {
+        var data = fixture.CreateDataAccess();
+        var repository = new ContentRepository(data);
+        var venueId = Guid.NewGuid();
+        var screenId = Guid.NewGuid();
+        var now = DateTime.UtcNow;
+        await data.ExecuteSqlQueryAsync<Row, object>("""
+            INSERT dbo.Venues (Id,Name,Timezone,Type,PrimaryLanguage) VALUES (@VenueId,N'Atomic venue',N'UTC',N'Test',N'en');
+            INSERT dbo.Screens (Id,VenueId,ScreenKey,Name,Status)
+            VALUES (@ScreenId,@VenueId,LEFT(REPLACE(CONVERT(nvarchar(36),NEWID()),'-',''),8),N'First screen',N'Offline');
+            SELECT 1 Value;
+            """, new { VenueId = venueId, ScreenId = screenId });
+        try
+        {
+            var menu = new Menu { Id=Guid.NewGuid(), VenueId=venueId, Name="Atomic menu", CreatedUtc=now, UpdatedUtc=now };
+            Assert.True((await repository.CreateMenuWithinCeilingAsync(menu, 10)).Created);
+            var page = Assert.Single(await repository.GetPagesAsync(venueId, menu.Id));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => repository.ApplyPageScreenAssignmentsAsync(
+                venueId,
+                menu.Id,
+                page.Id,
+                [new(screenId, "replace"), new(Guid.NewGuid(), "replace")],
+                "integration",
+                now));
+            Assert.DoesNotContain(await repository.GetAssignmentsAsync(venueId), assignment => assignment.MenuId == menu.Id);
+        }
+        finally
+        {
+            await repository.ResetAutomationVenueAsync(venueId);
+            await data.ExecuteSqlQueryAsync<Row,object>("DELETE dbo.Venues WHERE Id=@VenueId; SELECT 1 Value;",new { VenueId=venueId });
+        }
+    }
+
+    [Fact]
     public async Task Cross_menu_rotation_survives_restoring_one_menus_snapshot()
     {
         var data = fixture.CreateDataAccess();
@@ -33,7 +68,7 @@ public sealed class MenuPageIntegrationTests(DatabaseFixture fixture)
             var pageB=Assert.Single(await repository.GetPagesAsync(venueId,menuB.Id));
             await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId=venueId,ScreenId=screenId,MenuId=menuA.Id,PageId=pageA.Id,AssignedUtc=now });
             var snapshotA=Assert.IsType<string>(await repository.GetWorkingSnapshotAsync(venueId,menuA.Id));
-            await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId=venueId,ScreenId=screenId,MenuId=menuB.Id,PageId=pageB.Id,Rotate=true,AssignedUtc=now });
+            await repository.ApplyPageScreenAssignmentsAsync(venueId, menuB.Id, pageB.Id, [new(screenId, "rotate")], "integration", now);
             await repository.RestoreSnapshotAsync(venueId,menuA.Id,snapshotA,"integration","restore",now);
             var rotation=(await repository.GetAssignmentsAsync(venueId)).Where(a=>a.ScreenId==screenId).ToArray();
             Assert.Equal(2,rotation.Length);

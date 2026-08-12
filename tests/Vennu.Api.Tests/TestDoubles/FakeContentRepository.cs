@@ -188,6 +188,23 @@ internal sealed class FakeContentRepository : IContentRepository
     public Task<bool> ClearPageScreenAssignmentAsync(Guid venueId, Guid screenId, Guid menuId, Guid pageId, CancellationToken cancellationToken = default) =>
         Task.FromResult(Assignments.RemoveAll(a => a.VenueId == venueId && a.ScreenId == screenId && a.MenuId == menuId && a.PageId == pageId) > 0);
 
+    public Task ApplyPageScreenAssignmentsAsync(Guid venueId, Guid menuId, Guid pageId, IReadOnlyCollection<PageScreenAssignmentChange> changes, string? author, DateTime occurredUtc, CancellationToken cancellationToken = default)
+    {
+        if (changes.Any(change => change.ScreenId == Guid.Empty))
+            throw new InvalidOperationException("The screen assignment changed before it could be saved. Nothing was changed.");
+        foreach (var change in changes)
+        {
+            if (change.Mode == "remove") Assignments.RemoveAll(a => a.VenueId == venueId && a.ScreenId == change.ScreenId && a.MenuId == menuId && a.PageId == pageId);
+            else
+            {
+                if (change.Mode == "replace") Assignments.RemoveAll(a => a.VenueId == venueId && a.ScreenId == change.ScreenId && a.PageId != pageId);
+                Assignments.RemoveAll(a => a.VenueId == venueId && a.ScreenId == change.ScreenId && a.PageId == pageId);
+                Assignments.Add(new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = venueId, ScreenId = change.ScreenId, MenuId = menuId, PageId = pageId, AssignedBy = author, AssignedUtc = occurredUtc });
+            }
+        }
+        return Task.CompletedTask;
+    }
+
     public Task<int> ClearMenuAssignmentsAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default) =>
         Task.FromResult(Assignments.RemoveAll(a => a.VenueId == venueId && a.MenuId == menuId));
 
