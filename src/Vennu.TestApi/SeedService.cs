@@ -15,6 +15,8 @@ public sealed class SeedService(ProductApiClient product)
         var label = string.IsNullOrWhiteSpace(request.Label) ? "seed" : request.Label.Trim();
         if (!ScreenSeedStates.IsSupported(request.ScreenState))
             throw new ProductApiException(StatusCodes.Status400BadRequest, "Unsupported screen seed state.");
+        if (string.Equals(request.Showcase, "northside-social", StringComparison.OrdinalIgnoreCase))
+            return await SeedNorthsideSocialAsync(token, session, request, cancellationToken).ConfigureAwait(false);
         var menuName = $"{label} menu {suffix}";
         const string itemDescription = "Seeded for an automated UI test.";
         const decimal itemPrice = 4.50m;
@@ -99,6 +101,133 @@ public sealed class SeedService(ProductApiClient product)
             firstItem.Name,
             itemDescription,
             itemPrice,
+            screenId,
+            screenKey,
+            sections,
+            items,
+            request.IncludeScreen ? request.ScreenState : null,
+            pages.Select(page => new SeedPage(page.PageId, page.Name, page.SortOrder)).ToArray());
+    }
+
+    private async Task<SeedResponse> SeedNorthsideSocialAsync(
+        string token,
+        SessionResponse session,
+        SeedRequest request,
+        CancellationToken cancellationToken)
+    {
+        const string menuName = "Northside Social";
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var menu = await product.SendAsync<MenuResponse>(
+            HttpMethod.Post, "/api/back-office/menus", token, new { name = menuName, theme = "northside-social" }, cancellationToken).ConfigureAwait(false);
+
+        var pages = (await product.SendAsync<IReadOnlyCollection<PageResponse>>(
+            HttpMethod.Get, $"/api/back-office/content/menus/{menu.Id}/pages", token, null, cancellationToken)
+            .ConfigureAwait(false)).OrderBy(page => page.SortOrder).ToList();
+        var beerPage = pages[0];
+        await product.SendAsync(HttpMethod.Put,
+            $"/api/back-office/content/menus/{menu.Id}/pages/{beerPage.PageId}", token, new { name = "Beer" }, cancellationToken)
+            .ConfigureAwait(false);
+        beerPage = beerPage with { Name = "Beer" };
+        pages[0] = beerPage;
+        pages.Add(await product.SendAsync<PageResponse>(HttpMethod.Post,
+            $"/api/back-office/content/menus/{menu.Id}/pages", token, new { name = "Wine" }, cancellationToken).ConfigureAwait(false));
+        pages.Add(await product.SendAsync<PageResponse>(HttpMethod.Post,
+            $"/api/back-office/content/menus/{menu.Id}/pages", token, new { name = "Cocktails" }, cancellationToken).ConfigureAwait(false));
+
+        var showcaseSections = new[]
+        {
+            new
+            {
+                Name = "Draft Beer",
+                Items = new[]
+                {
+                    new { Name = "Pilsner", Description = "Northside Brewing Co. · Pilsner", Price = "6" },
+                    new { Name = "Hazy IPA", Description = "Cloud Peak · New England IPA", Price = "7" },
+                    new { Name = "West Coast IPA", Description = "Greenline Brewing · West Coast IPA", Price = "7" },
+                    new { Name = "Pale Ale", Description = "Northside Brewing Co. · American Pale Ale", Price = "6" },
+                    new { Name = "Amber Ale", Description = "Maplewood Brewery · Amber Ale", Price = "6" },
+                    new { Name = "Stout", Description = "Blackstone Brewing · Oatmeal Stout", Price = "6" },
+                    new { Name = "Wheat Beer", Description = "Sunfield Brewing · Hefeweizen", Price = "6" },
+                    new { Name = "Seasonal", Description = "Ask your server", Price = "7" }
+                }
+            },
+            new
+            {
+                Name = "Cans & Bottles",
+                Items = new[]
+                {
+                    new { Name = "Mexican Lager", Description = "Modelo Especial", Price = "5" },
+                    new { Name = "Light Lager", Description = "Miller Lite", Price = "4" },
+                    new { Name = "Pale Ale", Description = "Sierra Nevada Pale Ale", Price = "6" },
+                    new { Name = "Hazy IPA", Description = "Founders Haze Traveler", Price = "6" },
+                    new { Name = "Fruited Sour", Description = "Urban Artifact · The Gadget", Price = "7" },
+                    new { Name = "Cider", Description = "Austin Eastciders Original Dry", Price = "6" },
+                    new { Name = "Non-Alcoholic IPA", Description = "Athletic Brewing · Run Wild", Price = "5" },
+                    new { Name = "Non-Alcoholic Lager", Description = "Heineken 0.0", Price = "5" }
+                }
+            }
+        };
+
+        var sections = new List<SeedSection>();
+        var items = new List<SeedItem>();
+        for (var sectionIndex = 0; sectionIndex < showcaseSections.Length; sectionIndex++)
+        {
+            var definition = showcaseSections[sectionIndex];
+            var section = await product.SendAsync<SectionResponse>(HttpMethod.Post,
+                $"/api/back-office/content/menus/{menu.Id}/sections", token,
+                new { name = definition.Name, pageId = beerPage.PageId }, cancellationToken).ConfigureAwait(false);
+            sections.Add(new SeedSection(section.SectionId, beerPage.PageId, section.Name, section.SortOrder));
+
+            for (var itemIndex = 0; itemIndex < definition.Items.Length; itemIndex++)
+            {
+                var definitionItem = definition.Items[itemIndex];
+                // A unique temporary name guarantees that repeated display names
+                // such as Hazy IPA become distinct, editable library records.
+                var temporaryName = $"northside-{sectionIndex + 1}-{itemIndex + 1}-{suffix}";
+                var placement = await product.SendAsync<PlaceResponse>(HttpMethod.Post,
+                    $"/api/back-office/content/menus/{menu.Id}/sections/{section.SectionId}/items", token,
+                    new { name = temporaryName }, cancellationToken).ConfigureAwait(false);
+                var itemId = placement.ItemId
+                    ?? throw new InvalidOperationException("The product API did not identify the showcase item it created.");
+                await product.SendAsync(HttpMethod.Put, $"/api/back-office/content/items/{itemId}", token,
+                    new { name = definitionItem.Name, description = definitionItem.Description, price = definitionItem.Price },
+                    cancellationToken).ConfigureAwait(false);
+                items.Add(new SeedItem(itemId, section.SectionId, definitionItem.Name, definitionItem.Price));
+            }
+        }
+
+        Guid? screenId = null;
+        string? screenKey = null;
+        if (request.IncludeScreen)
+        {
+            var screen = request.ScreenState == ScreenSeedStates.NeverPaired
+                ? await RegisterScreenAsync("Northside Social board", request.ScreenWidthPixels, request.ScreenHeightPixels, cancellationToken)
+                    .ConfigureAwait(false)
+                : await CreatePairedScreenAsync(token, "Northside Social board", request.ScreenWidthPixels, request.ScreenHeightPixels, cancellationToken)
+                    .ConfigureAwait(false);
+            screenId = screen.ScreenId;
+            screenKey = screen.ScreenKey;
+            if (request.ScreenState == ScreenSeedStates.Online)
+            {
+                _ = await product.SendPublicAsync<HeartbeatResponse>(HttpMethod.Post, $"/api/display/{screen.ScreenId}/heartbeat",
+                    new { status = "Online", platform = "web", appVersion = "northside-showcase" }, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        var firstSection = sections[0];
+        var firstItem = items[0];
+        return new SeedResponse(
+            session.OrganizationId ?? Guid.Empty,
+            session.VenueId,
+            menu.Id,
+            firstSection.SectionId,
+            firstItem.ItemId,
+            menuName,
+            firstSection.Name,
+            firstItem.Name,
+            showcaseSections[0].Items[0].Description,
+            decimal.Parse(firstItem.Price, System.Globalization.CultureInfo.InvariantCulture),
             screenId,
             screenKey,
             sections,
