@@ -490,6 +490,61 @@
   list-style: none;
 }
 
+.builder__page-history {
+  display: grid;
+  gap: var(--sky-space-3);
+  margin-top: auto;
+  padding-top: var(--sky-space-4);
+  border-top: 1px solid var(--sky-color-border);
+}
+
+.builder__page-history h3 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--sky-text-secondary);
+  font-size: var(--sky-font-size-xs);
+  font-weight: var(--sky-font-weight-semibold);
+  letter-spacing: var(--sky-letter-spacing-label);
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.builder__page-history-list {
+  display: grid;
+  gap: var(--sky-space-3);
+  max-height: 15rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.builder__page-history-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sky-space-2);
+  align-items: start;
+}
+
+.builder__page-history-list i {
+  width: .5rem;
+  height: .5rem;
+  margin-top: .3rem;
+  border: 2px solid var(--sky-color-primary);
+  border-radius: var(--sky-radius-pill);
+  background: var(--sky-color-surface);
+}
+
+.builder__page-history-list span,
+.builder__page-history-list small { display: grid; min-width: 0; }
+.builder__page-history-list strong { overflow-wrap: anywhere; color: var(--sky-text-primary); font-size: var(--sky-font-size-sm); line-height: 1.35; }
+.builder__page-history-list small { margin-top: var(--sky-space-1); color: var(--sky-text-secondary); font-size: var(--sky-font-size-xs); line-height: 1.35; }
+.builder__page-history-state { margin: 0; color: var(--sky-text-secondary); font-size: var(--sky-font-size-sm); line-height: 1.45; }
+.builder__page-history-state button { margin-left: var(--sky-space-1); }
+.builder__page-history footer { display: grid; gap: var(--sky-space-1); color: var(--sky-text-secondary); font-size: var(--sky-font-size-xs); }
+.builder__page-history footer button { justify-self: start; padding: 0; font-weight: var(--sky-font-weight-semibold); }
+
 .builder__rail-list li {
   position: relative;
   display: grid;

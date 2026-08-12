@@ -1770,6 +1770,57 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
     }
 
     [Fact]
+    public async Task SectionChanges_RecordOnlyTheirPageAndRefusalsRecordNothing()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var existing = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var page = Assert.Single(await repository.GetPagesAsync(venueId, menuId));
+        var now = DateTime.UtcNow;
+        var added = Guid.NewGuid();
+
+        Assert.Equal(SectionOutcomes.Created, (await repository.CreateSectionOnMenuAsync(
+            venueId, menuId, added, "Desserts", now, page.Id, "Jeremy")).Outcome);
+        Assert.True(await repository.RenameSectionAsync(
+            venueId, menuId, added, "Sweet things", now.AddSeconds(1), "Jeremy"));
+        Assert.Equal(ReorderOutcomes.Reordered, (await repository.ReorderSectionsGuardedAsync(
+            venueId, menuId, [added, existing], now.AddSeconds(2), "Jeremy")).Outcome);
+        await repository.CreateItemOnMenuAsync(new Item
+        {
+            Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("history-item"), Price = "8"
+        }, menuId, added, itemsPerMenuLimit: 500);
+
+        // A stale destination is refused before either the content or its history
+        // can change. This is the atomicity boundary Slice 2 depends on.
+        Assert.Equal(SectionOutcomes.DestinationMissing, (await repository.DeleteSectionAsync(
+            venueId, menuId, added, Guid.NewGuid(), false, "Jeremy", now.AddSeconds(3))).Outcome);
+
+        var history = await repository.GetPageHistoryAsync(venueId, menuId, page.Id, 20);
+        Assert.Equal(
+            [MenuHistoryKinds.SectionsReordered, MenuHistoryKinds.SectionRenamed, MenuHistoryKinds.SectionAdded],
+            history.Select(entry => entry.Kind).ToArray());
+        Assert.All(history, entry =>
+        {
+            Assert.Equal(page.Id, entry.PageId);
+            Assert.Equal(page.Name, entry.PageName);
+            Assert.Equal("Jeremy", entry.Author);
+            Assert.NotEqual(MenuHistoryKinds.Published, entry.Kind);
+        });
+        Assert.DoesNotContain(history, entry => entry.Kind == MenuHistoryKinds.SectionDeleted);
+
+        Assert.Equal(SectionOutcomes.Deleted, (await repository.DeleteSectionAsync(
+            venueId, menuId, added, null, true, "Jeremy", now.AddSeconds(4))).Outcome);
+        Assert.Equal(MenuHistoryKinds.SectionDeleted,
+            (await repository.GetPageHistoryAsync(venueId, menuId, page.Id, 20)).First().Kind);
+
+        Assert.Empty(await repository.GetPageHistoryAsync(Guid.NewGuid(), menuId, page.Id, 20));
+        Assert.Empty(await repository.GetPageHistoryAsync(venueId, Guid.NewGuid(), page.Id, 20));
+        Assert.Empty(await repository.GetPageHistoryAsync(venueId, menuId, Guid.NewGuid(), 20));
+    }
+
+    [Fact]
     public async Task AddSection_RefusesAMenuOfAnotherVenue()
     {
         var dataAccess = fixture.CreateDataAccess();

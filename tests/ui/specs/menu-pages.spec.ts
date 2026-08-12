@@ -35,6 +35,55 @@ test.describe("menu pages", () => {
     await expect(page.getByTestId("capacity-banner")).toHaveCount(0);
   });
 
+  test("page history follows the selected page, records section changes, and stays read-only", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "page-history", pageCount: 2, sectionCount: 2 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await expect(page.getByTestId("page-history")).toContainText(data.pages[0].name);
+    await expect(page.getByTestId("page-history-entry").first()).toContainText("Section added");
+
+    const firstRow = page.getByTestId("section-row").first();
+    await firstRow.getByRole("button", { name: /^Rename / }).click();
+    await page.getByTestId("section-rename-input").fill("Lunch favourites");
+    await page.getByTestId("section-rename-input").press("Enter");
+    await expect(page.getByTestId("page-history-entry").first()).toContainText("renamed to Lunch favourites");
+    await expect(page.getByTestId("page-history").getByRole("button")).toHaveCount(1);
+
+    await page.getByTestId("page-tab").nth(1).click();
+    await expect(page.getByTestId("page-history")).toContainText(data.pages[1].name);
+    await expect(page.getByTestId("page-history-entry").first()).toContainText("Section added");
+    await expect(page.getByTestId("page-history")).not.toContainText("Lunch favourites");
+
+    await page.getByTestId("menu-history-link").click();
+    await expect(page.getByTestId("history-dialog")).toBeVisible();
+  });
+
+  test("history capability removes only page history", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "history-off" });
+    await page.addInitScript(() => {
+      window.__VENNUSIGN_BACK_OFFICE_CONFIGURATION__ = { menuCapabilityOverrides: { history: false } };
+    });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await expect(page.getByTestId("page-history")).toHaveCount(0);
+    await expect(page.getByTestId("rail-section")).toBeVisible();
+    await expect(page.getByTestId("assignment-pill")).toBeVisible();
+  });
+
+  test("page history failure is honest and retryable without blocking section work", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "history-retry" });
+    let allowRetry = false;
+    await page.route(`**/api/back-office/content/menus/${data.menuId}/pages/*/history`, async route => {
+      if (!allowRetry) return route.fulfill({ status: 503, body: "temporarily unavailable" });
+      return route.fallback();
+    });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await expect(page.getByTestId("page-history")).toContainText("History couldn't load");
+    await expect(page.getByTestId("rail-section")).toBeVisible();
+    allowRetry = true;
+    await page.getByTestId("page-history").getByRole("button", { name: "Try again" }).click();
+    await expect(page.getByTestId("page-history-entry").first()).toContainText("Section added");
+  });
+
   test("tabs switch the page content and blank add is abandoned", async ({ page }) => {
     const data = await seed({ role: "owner", label: "pages", pageCount: 2, sectionCount: 2, itemsPerSection: 1 });
     await openMenuBuilderAs(page, "owner", data.menuId);
@@ -116,6 +165,7 @@ test.describe("menu pages", () => {
     await page.getByTestId("page-name-input").fill("Empty page");
     await page.getByTestId("page-name-input").press("Enter");
     await page.getByTestId("page-tab").getByText("Empty page", { exact: true }).click();
+    await expect(page.getByTestId("page-history-empty")).toBeVisible();
     await page.getByTestId("page-actions").click();
     await page.getByTestId("page-menu").getByRole("button", { name: "Delete" }).click();
     await expect(page.getByTestId("delete-page-dialog")).toContainText("This page is empty");

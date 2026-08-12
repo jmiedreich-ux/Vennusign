@@ -493,11 +493,12 @@ public sealed class ContentService(
         Guid sectionId,
         string name,
         Guid? pageId = null,
+        string? author = null,
         CancellationToken cancellationToken = default)
     {
         var outcome = await library.CreateSectionOnMenuAsync(
             venueId, menuId, sectionId, NormalizeSectionName(name),
-            timeProvider.GetUtcNow().UtcDateTime, pageId, cancellationToken).ConfigureAwait(false);
+            timeProvider.GetUtcNow().UtcDateTime, pageId, author, cancellationToken).ConfigureAwait(false);
 
         if (outcome.Outcome == SectionOutcomes.Created)
         {
@@ -512,11 +513,12 @@ public sealed class ContentService(
         Guid menuId,
         Guid sectionId,
         string name,
+        string? author = null,
         CancellationToken cancellationToken = default)
     {
         var renamed = await library.RenameSectionAsync(
             venueId, menuId, sectionId, NormalizeSectionName(name),
-            timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false);
+            timeProvider.GetUtcNow().UtcDateTime, author, cancellationToken).ConfigureAwait(false);
 
         if (renamed)
         {
@@ -536,10 +538,12 @@ public sealed class ContentService(
         Guid sectionId,
         Guid? moveItemsToSectionId,
         bool deletePlacements,
+        string? author = null,
         CancellationToken cancellationToken = default)
     {
         var outcome = await library
-            .DeleteSectionAsync(venueId, menuId, sectionId, moveItemsToSectionId, deletePlacements, cancellationToken)
+            .DeleteSectionAsync(venueId, menuId, sectionId, moveItemsToSectionId, deletePlacements,
+                author, timeProvider.GetUtcNow().UtcDateTime, cancellationToken)
             .ConfigureAwait(false);
 
         if (outcome.Outcome == SectionOutcomes.Deleted)
@@ -554,11 +558,12 @@ public sealed class ContentService(
         Guid venueId,
         Guid menuId,
         IReadOnlyCollection<Guid> sectionIds,
+        string? author = null,
         CancellationToken cancellationToken = default)
     {
         var outcome = await library.ReorderSectionsGuardedAsync(
             venueId, menuId, sectionIds,
-            timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false);
+            timeProvider.GetUtcNow().UtcDateTime, author, cancellationToken).ConfigureAwait(false);
 
         if (outcome.Outcome == ReorderOutcomes.Reordered)
         {

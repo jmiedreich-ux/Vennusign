@@ -123,7 +123,9 @@ public sealed record HistoryEntryResponse(
     string? Author,
     string? Detail,
     long? ReplacedByVersion,
-    long? Version);
+    long? Version,
+    Guid? PageId = null,
+    string? PageName = null);
 
 /// <summary>
 /// One card on the Menus home shelf.

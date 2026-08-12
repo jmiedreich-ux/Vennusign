@@ -840,6 +840,8 @@ export type MenuHistoryEntry = {
   replacedByVersion: number | null;
   /** The publish this entry names; null for the kinds that are not a publish. */
   version: number | null;
+  pageId: string | null;
+  pageName: string | null;
 };
 
 export type MenuScreenShowing = {
@@ -940,6 +942,15 @@ export async function loadMenuHistory(
   menuId: string
 ): Promise<MenuHistoryEntry[]> {
   return (await contentRequest(configuration, accessToken, `/menus/${menuId}/history`)).json();
+}
+
+export async function loadPageHistory(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  pageId: string
+): Promise<MenuHistoryEntry[]> {
+  return (await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}/history`)).json();
 }
 
 export async function duplicateMenu(

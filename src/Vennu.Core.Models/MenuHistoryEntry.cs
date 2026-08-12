@@ -14,6 +14,15 @@ public sealed class MenuHistoryEntry
 
     public Guid MenuId { get; set; }
 
+    /// <summary>
+    /// Immutable page attribution for page-scoped events. It is intentionally an
+    /// audit identity rather than a live navigation relationship: deleted pages
+    /// do not delete or anonymise their history.
+    /// </summary>
+    public Guid? PageId { get; set; }
+
+    public string? PageName { get; set; }
+
     public string Kind { get; set; } = MenuHistoryKinds.Published;
 
     public Guid? PublishEventId { get; set; }
@@ -63,6 +72,15 @@ public static class MenuHistoryKinds
     /// </summary>
     public const string Duplicated = "duplicated";
 
+    public const string SectionAdded = "section_added";
+
+    public const string SectionRenamed = "section_renamed";
+
+    public const string SectionsReordered = "sections_reordered";
+
+    public const string SectionDeleted = "section_deleted";
+
     public static bool IsSupported(string? value) =>
-        value is Published or DraftDiscarded or PutAway or PutBack or TakenOffScreens or Restored or Assigned or Duplicated;
+        value is Published or DraftDiscarded or PutAway or PutBack or TakenOffScreens or Restored or Assigned or Duplicated
+            or SectionAdded or SectionRenamed or SectionsReordered or SectionDeleted;
 }

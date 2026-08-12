@@ -14,6 +14,7 @@ import {
   goBackToMenuVersion,
   loadMenuAvailability,
   loadMenuHistory,
+  loadPageHistory,
   loadMenuThemes,
   loadMenuAssignments,
   loadScreensShowing,
@@ -341,6 +342,7 @@ export default function MenuBuilder({
   const canManagePages = hasMenuCapability("page-management", capabilityOverrides);
   const canAssignScreens = hasMenuCapability("screen-assignment", capabilityOverrides);
   const canViewCapacity = hasMenuCapability("capacity", capabilityOverrides);
+  const canViewHistory = hasMenuCapability("history", capabilityOverrides);
   /*
    * The credential every write reads, at the moment it is sent.
    *
@@ -371,6 +373,8 @@ export default function MenuBuilder({
   const [reviewOpen, setReviewOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [history, setHistory] = useState<MenuHistoryEntry[]>();
+  const [pageHistory, setPageHistory] = useState<MenuHistoryEntry[]>();
+  const [pageHistoryError, setPageHistoryError] = useState(false);
   const [viewingOpen, setViewingOpen] = useState(false);
   const [sectionPickerOpen, setSectionPickerOpen] = useState(false);
   const [assignmentOpen, setAssignmentOpen] = useState(false);
@@ -412,6 +416,15 @@ export default function MenuBuilder({
   const board = data?.board;
   const pages = board?.pages ?? [];
 
+  const refreshPageHistory = useCallback(async (pageId: string) => {
+    setPageHistoryError(false);
+    try {
+      setPageHistory(await loadPageHistory(configuration, credential(), menuId, pageId));
+    } catch {
+      setPageHistoryError(true);
+    }
+  }, [configuration, credential, menuId]);
+
   useEffect(() => {
     if (pages.length === 0) return;
     if (!activePageId || !pages.some(page => page.pageId === activePageId)) setActivePageId(pages[0].pageId);
@@ -423,6 +436,14 @@ export default function MenuBuilder({
       setPlace(current => ({ ...current, sectionId: pageSections[0]?.sectionId ?? null, selectedItemId: null }));
     }
   }, [activePageId, board, place.sectionId]);
+  useEffect(() => {
+    if (!activePageId) {
+      setPageHistory([]);
+      return;
+    }
+    setPageHistory(undefined);
+    void refreshPageHistory(activePageId);
+  }, [activePageId, data, refreshPageHistory]);
   const unavailableIds = useMemo(
     () => availability.filter(state => !state.isAvailable).map(state => state.itemId),
     [availability]
@@ -1835,6 +1856,20 @@ export default function MenuBuilder({
               </li>
             ) : null}
           </ul>
+          {canViewHistory ? <section className="builder__page-history" aria-labelledby="page-history-title" data-testid="page-history">
+            <h3 id="page-history-title">History · {pages.find(page => page.pageId === activePageId)?.name ?? "Page"}</h3>
+            {pageHistoryError ? <div className="builder__page-history-state" role="alert"><span>History couldn&apos;t load.</span><button type="button" className="builder__link" onClick={() => activePageId && void refreshPageHistory(activePageId)}>Try again</button></div>
+              : pageHistory === undefined ? <p className="builder__page-history-state" role="status">Loading history…</p>
+              : pageHistory.length === 0 ? <p className="builder__page-history-state" data-testid="page-history-empty">No changes on this page yet.</p>
+              : <ol className="builder__page-history-list">{pageHistory.map((entry, index) => <li key={`${entry.occurredUtc}:${entry.kind}:${entry.detail}:${index}`} data-testid="page-history-entry">
+                  <i aria-hidden="true" />
+                  <span><strong>{entry.detail ?? entry.kind.replaceAll("_", " ")}</strong><small>{entry.author ? `${entry.author} · ` : ""}{venueTime(entry.occurredUtc, venueTimezone)}</small></span>
+                </li>)}</ol>}
+            <footer>
+              <button type="button" className="builder__link" data-testid="menu-history-link" onClick={() => { setHistoryOpen(true); if (!history) loadMenuHistory(configuration, credential(), menuId).then(setHistory).catch(() => setHistory([])); }}>Menu history →</button>
+              <span>{data?.lastPublishedUtc ? `Published ${venueTime(data.lastPublishedUtc, venueTimezone)}` : "Never published"}</span>
+            </footer>
+          </section> : null}
         </nav>
 
         <main className="builder__canvas">

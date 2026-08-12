@@ -71,6 +71,7 @@ public interface IContentRepository
         string name,
         DateTime now,
         Guid? pageId = null,
+        string? author = null,
         CancellationToken cancellationToken = default);
 
     Task<bool> RenameSectionAsync(
@@ -79,6 +80,7 @@ public interface IContentRepository
         Guid sectionId,
         string name,
         DateTime now,
+        string? author = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -92,6 +94,8 @@ public interface IContentRepository
         Guid sectionId,
         Guid? moveItemsToSectionId,
         bool deletePlacements,
+        string? author = null,
+        DateTime? now = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -103,6 +107,7 @@ public interface IContentRepository
         Guid menuId,
         IReadOnlyCollection<Guid> sectionIds,
         DateTime now,
+        string? author = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -364,6 +369,13 @@ public interface IContentRepository
     Task<IReadOnlyCollection<MenuHistoryEntry>> GetHistoryAsync(
         Guid venueId,
         Guid menuId,
+        int limit,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyCollection<MenuHistoryEntry>> GetPageHistoryAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid pageId,
         int limit,
         CancellationToken cancellationToken = default);
 

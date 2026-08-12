@@ -521,6 +521,7 @@ internal sealed class FakeContentRepository : IContentRepository
         string name,
         DateTime now,
         Guid? pageId = null,
+        string? author = null,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException(
             "Adding a section reads its sort order under the lock that inserts it. "
@@ -532,6 +533,7 @@ internal sealed class FakeContentRepository : IContentRepository
         Guid sectionId,
         string name,
         DateTime now,
+        string? author = null,
         CancellationToken cancellationToken = default)
     {
         var section = Sections.SingleOrDefault(item =>
@@ -552,6 +554,8 @@ internal sealed class FakeContentRepository : IContentRepository
         Guid sectionId,
         Guid? moveItemsToSectionId,
         bool deletePlacements,
+        string? author = null,
+        DateTime? now = null,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException(
             "Deleting a section releases its placements in the same transaction. "
@@ -562,6 +566,7 @@ internal sealed class FakeContentRepository : IContentRepository
         Guid menuId,
         IReadOnlyCollection<Guid> sectionIds,
         DateTime now,
+        string? author = null,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException(
             "Reorder proves the caller's list still matches the menu under the lock that writes it. "
@@ -814,6 +819,21 @@ internal sealed class FakeContentRepository : IContentRepository
             History
                 .Where(entry => entry.VenueId == venueId && entry.MenuId == menuId)
                 .OrderByDescending(entry => entry.OccurredUtc)
+                .Take(limit)
+                .ToArray());
+
+    public Task<IReadOnlyCollection<MenuHistoryEntry>> GetPageHistoryAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid pageId,
+        int limit,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyCollection<MenuHistoryEntry>>(
+            History
+                .Where(entry => entry.VenueId == venueId && entry.MenuId == menuId && entry.PageId == pageId
+                    && entry.Kind != MenuHistoryKinds.Published)
+                .OrderByDescending(entry => entry.OccurredUtc)
+                .ThenByDescending(entry => entry.Id)
                 .Take(limit)
                 .ToArray());
 
