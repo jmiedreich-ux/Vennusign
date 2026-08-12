@@ -326,6 +326,19 @@ test("the engine draws no venue-name strip", async () => {
   assert.doesNotMatch(code, /venueName|venue-name|boardTitle|board-title/i);
 });
 
+test("the Northside showcase is canvas DOM and CSS, not a flattened image", async () => {
+  const renderer = await codeWithoutComments("BoardRenderer.tsx");
+  const css = await readFile(new URL("board-engine.css", engineRoot), "utf8");
+  const showcaseCss = css.slice(css.indexOf("/* Northside Social showcase"));
+
+  assert.match(renderer, /board\?\.theme/);
+  assert.match(renderer, /data-board-showcase/);
+  assert.match(renderer, /board-showcase-header/);
+  assert.match(renderer, /document\.sections\.map/);
+  assert.match(showcaseCss, /linear-gradient|radial-gradient/);
+  assert.doesNotMatch(showcaseCss, /url\s*\(/i);
+});
+
 test("the engine imports nothing from either application", async () => {
   // What this proves and what it does not: it proves the engine has no dependency
   // that would STOP the display player consuming it in milestone 4. It does not
