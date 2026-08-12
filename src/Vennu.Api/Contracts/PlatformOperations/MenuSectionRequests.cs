@@ -1,6 +1,6 @@
 namespace Vennu.Api.Contracts.PlatformOperations;
 
-public sealed record MenuCreateRequest(string Name);
+public sealed record MenuCreateRequest(string Name, string? Theme = null);
 
 public sealed record MenuSectionCreateRequest(string Name);
 
