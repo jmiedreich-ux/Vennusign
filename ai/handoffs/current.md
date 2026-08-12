@@ -776,3 +776,31 @@ are all outstanding. Nothing in this checkpoint is accepted or ready to merge.
 including stale orders, cross-page/cross-venue identifiers, idempotent removal and
 author/history mapping; then finish the desktop Playwright path matrix before the
 bounded Impeccable browser pass.
+
+## M3-A Slice 3 — gate and first-review result — 2026-08-12
+
+Implementation candidate `a110bf51205ff31f428f283438caf047b00f4dd2` completed the
+pre-review process in the owner-specified order: Release solution build, back-office
+198/198 unit tests and production build, focused API 56/56, focused LocalDB item
+rules/invariants, all 214 discovered Playwright cases across an isolated fixture
+(Menus mobile explicitly skipped under Q158), and a browser visual audit against
+the approved M3-A authority. The visual audit caught and corrected an add-result
+popup clipped by the publish bar. The full gate also repaired stale fixture PageId,
+isolated screen-key, token and screen-id assumptions. CI remains suspended.
+
+The independent exact-SHA review then returned REQUEST_CHANGES, as intended: literal
+search did not satisfy punctuation/spacing near-match, malformed source orders could
+include the moved item, remove Undo appended instead of restoring order, route-boundary
+coverage was incomplete, and controlled records were stale. Remediation now adds
+canonical punctuation-insensitive ranking and a visible selected suggestion, resolves
+the Enter/search race on both name and price, refuses duplicate/malformed guarded
+orders, restores exact order on remove Undo with compensating removal on refusal,
+and adds real-browser malformed/permission and Undo/Redo paths. Focused remediation
+Playwright is 5/5 and focused LocalDB search/move refusal is 3/3.
+
+**Still outstanding.** Rerun the affected/full gates on the remediation tree, commit
+a new exact SHA, obtain independent re-review, then prepare the owner acceptance
+workbook. No owner acceptance, PR, push or merge has occurred.
+
+**Exact next action.** Complete remediation validation, commit the new candidate,
+and send that exact SHA to the independent reviewer.

@@ -1217,6 +1217,7 @@ export default function MenuBuilder({
     }
     const { item, sectionId } = selected;
     const sectionItems = itemsOf(board, sectionId);
+    const originalOrder = sectionItems.map(candidate => candidate.itemId);
     const selectedIndex = sectionItems.findIndex(candidate => candidate.itemId === item.itemId);
     const nextSelection = sectionItems[selectedIndex + 1]?.itemId ?? sectionItems[selectedIndex - 1]?.itemId ?? null;
     const pageId = activePageId;
@@ -1231,6 +1232,12 @@ export default function MenuBuilder({
         describe: "Remove from this page",
         undo: async () => {
           await placeMenuItem(configuration, credential(), menuId, sectionId, { itemId: item.itemId });
+          try {
+            await reorderMenuItems(configuration, credential(), menuId, sectionId, originalOrder);
+          } catch (error) {
+            await removeMenuItem(configuration, credential(), menuId, pageId, item.itemId);
+            throw error;
+          }
         },
         redo: () => removeMenuItem(configuration, credential(), menuId, pageId, item.itemId)
       }
@@ -1243,6 +1250,14 @@ export default function MenuBuilder({
   const [addPrice, setAddPrice] = useState("");
   const [addSectionId, setAddSectionId] = useState<string | null>(null);
   const [hits, setHits] = useState<LibraryItem[]>([]);
+
+  const submitAdd = async (sectionId: string) => {
+    const name = addQuery.trim();
+    if (!name) return;
+    const matches = await searchLibraryItems(configuration, credential(), name, 8);
+    if (matches[0]) await place_(sectionId, { itemId: matches[0].itemId });
+    else await place_(sectionId, { name, price: addPrice });
+  };
 
   useEffect(() => {
     if (!addSectionId || addQuery.trim().length === 0) {
@@ -2127,8 +2142,7 @@ export default function MenuBuilder({
                     onChange={event => setAddQuery(event.target.value)}
                     onKeyDown={event => {
                       if (event.key === "Enter" && addQuery.trim()) {
-                        if (hits[0]) void place_(place.sectionId!, { itemId: hits[0].itemId });
-                        else void place_(place.sectionId!, { name: addQuery.trim(), price: addPrice });
+                        void submitAdd(place.sectionId!);
                       }
                       if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
                     }}
@@ -2140,7 +2154,7 @@ export default function MenuBuilder({
                     data-testid="add-item-price"
                     onChange={event => setAddPrice(event.target.value)}
                     onKeyDown={event => {
-                      if (event.key === "Enter" && addQuery.trim()) void place_(place.sectionId!, { name: addQuery.trim(), price: addPrice });
+                      if (event.key === "Enter" && addQuery.trim()) void submitAdd(place.sectionId!);
                       if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
                     }}
                   />
@@ -2155,6 +2169,7 @@ export default function MenuBuilder({
                           data-testid="add-item-result"
                           data-item-id={hit.itemId}
                           aria-selected={hit === hits[0]}
+                          className={hit === hits[0] ? "is-selected" : undefined}
                             onClick={() => void place_(place.sectionId!, { itemId: hit.itemId })}
                           >
                             <span className="builder__add-name">{hit.name}</span>

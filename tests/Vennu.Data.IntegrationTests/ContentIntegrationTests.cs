@@ -2226,15 +2226,20 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         await repository.CreateSectionOnMenuAsync(venueId, menuId, otherPageSection, "Other page", DateTime.UtcNow, secondPage);
         var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("guarded-move") };
         await repository.CreateItemOnMenuAsync(item, menuId, source, 500);
-        var historyBefore = (await repository.GetPageHistoryAsync(venueId, menuId, firstPage, 50)).Count;
 
         var crossPage = await repository.MovePlacementGuardedAsync(
             venueId, menuId, item.Id, source, otherPageSection, [], [item.Id], DateTime.UtcNow, author: "Jeremy");
         var stale = await repository.MovePlacementGuardedAsync(
             venueId, menuId, item.Id, source, sibling, [Guid.NewGuid()], [item.Id], DateTime.UtcNow, author: "Jeremy");
+        var survivor = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("survivor") };
+        await repository.CreateItemOnMenuAsync(survivor, menuId, source, 500);
+        var historyBefore = (await repository.GetPageHistoryAsync(venueId, menuId, firstPage, 50)).Count;
+        var malformed = await repository.MovePlacementGuardedAsync(
+            venueId, menuId, item.Id, source, sibling, [item.Id], [item.Id], DateTime.UtcNow, author: "Jeremy");
 
         Assert.Equal(ReorderOutcomes.OrderStale, crossPage.Outcome);
         Assert.Equal(ReorderOutcomes.OrderStale, stale.Outcome);
+        Assert.Equal(ReorderOutcomes.OrderStale, malformed.Outcome);
         Assert.Contains(await repository.GetPlacementsAsync(venueId, menuId), placement => placement.ItemId == item.Id && placement.MenuSectionId == source);
         Assert.Equal(historyBefore, (await repository.GetPageHistoryAsync(venueId, menuId, firstPage, 50)).Count);
     }

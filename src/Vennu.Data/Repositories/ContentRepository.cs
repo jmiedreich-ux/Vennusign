@@ -805,6 +805,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
            OR EXISTS (SELECT 1 FROM @SourceOrder o WHERE NOT EXISTS (SELECT 1 FROM dbo.Placements p WHERE p.MenuSectionId=@SourceSectionId AND p.ItemId=o.ItemId AND p.MenuId=@MenuId AND p.VenueId=@VenueId))
            OR EXISTS (SELECT 1 FROM @DestinationOrder o WHERE o.ItemId<>@ItemId AND NOT EXISTS (SELECT 1 FROM dbo.Placements p WHERE p.MenuSectionId=@DestinationSectionId AND p.ItemId=o.ItemId AND p.MenuId=@MenuId AND p.VenueId=@VenueId))
            OR NOT EXISTS (SELECT 1 FROM @DestinationOrder WHERE ItemId=@ItemId)
+           OR EXISTS (SELECT 1 FROM @SourceOrder WHERE ItemId=@ItemId)
         BEGIN
             ROLLBACK TRANSACTION;
             SELECT N'order_stale' AS Outcome, 0 AS Moved;
@@ -934,8 +935,11 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                i.Source, i.IsActive, i.CreatedUtc, i.UpdatedUtc
         FROM dbo.Items i
         WHERE i.VenueId = @VenueId
-          AND (@Pattern IS NULL OR i.Name LIKE @Pattern)
-        ORDER BY CASE WHEN @Prefix IS NOT NULL AND i.Name LIKE @Prefix THEN 0 ELSE 1 END,
+          AND (@Pattern IS NULL OR i.Name LIKE @Pattern
+               OR LOWER(REPLACE(TRANSLATE(i.Name,N'-_./,()''',N'        '),N' ',N'')) LIKE @NormalizedPattern)
+        ORDER BY CASE WHEN @Prefix IS NOT NULL AND i.Name LIKE @Prefix THEN 0
+                      WHEN @NormalizedPrefix IS NOT NULL AND LOWER(REPLACE(TRANSLATE(i.Name,N'-_./,()''',N'        '),N' ',N'')) LIKE @NormalizedPrefix THEN 1
+                      ELSE 2 END,
                  i.Name, i.Id;
         """;
 
@@ -2134,6 +2138,12 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
     {
         ArgumentNullException.ThrowIfNull(sourceItemIds);
         ArgumentNullException.ThrowIfNull(destinationItemIds);
+        if (sourceItemIds.Contains(itemId) || !destinationItemIds.Contains(itemId)
+            || sourceItemIds.Count != sourceItemIds.Distinct().Count()
+            || destinationItemIds.Count != destinationItemIds.Distinct().Count())
+        {
+            return new ReorderOutcome(ReorderOutcomes.OrderStale, 0);
+        }
         var row = (await dataAccess.ExecuteSqlQueryAsync<ReorderRow, object>(MovePlacementGuardedSql, new
         {
             VenueId = RequireId(venueId, nameof(venueId)),
@@ -2211,6 +2221,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             .Replace("[", "[[]", StringComparison.Ordinal)
             .Replace("%", "[%]", StringComparison.Ordinal)
             .Replace("_", "[_]", StringComparison.Ordinal);
+        var normalized = new string(trimmed.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
 
         return (await dataAccess.ExecuteSqlQueryAsync<Item, object>(
             SearchItemsSql,
@@ -2219,7 +2230,9 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 VenueId = RequireId(venueId, nameof(venueId)),
                 Take = take,
                 Pattern = trimmed.Length == 0 ? null : $"%{escaped}%",
-                Prefix = trimmed.Length == 0 ? null : $"{escaped}%"
+                Prefix = trimmed.Length == 0 ? null : $"{escaped}%",
+                NormalizedPattern = normalized.Length == 0 ? null : $"%{normalized}%",
+                NormalizedPrefix = normalized.Length == 0 ? null : $"{normalized}%"
             },
             cancellationToken).ConfigureAwait(false)).ToArray();
     }

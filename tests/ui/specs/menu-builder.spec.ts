@@ -842,9 +842,14 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
 
     await page.reload();
     await expect(page.getByTestId("canvas")).toContainText("Draft capacity item");
+    await page.request.put(`${apiBaseUrl}/api/back-office/content/items/${data.itemId}`, {
+      headers: owned,
+      data: { name: "Old-Fashioned", description: data.itemDescription, price: String(data.itemPrice) }
+    });
     await page.getByTestId("open-add-item").click();
-    await page.getByTestId("add-item-input").fill(data.itemName);
+    await page.getByTestId("add-item-input").fill("Old Fashioned");
     await expect(page.getByTestId("add-item-result").first()).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByTestId("add-item-result").first()).toHaveClass(/is-selected/);
     await page.getByTestId("add-item-input").press("Enter");
     await expect(page.getByText("That one is already on this board — here it is.")).toBeVisible();
 
@@ -916,6 +921,40 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     await page.reload();
     await page.getByTestId("page-tab").nth(1).click();
     await expect(page.locator(`[data-item-id="${shared.itemId}"]`)).toBeVisible();
+  });
+
+  test("removing a middle item then Undo restores its exact order, and Redo removes it again", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "slice3-remove-undo", itemsPerSection: 3 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    const rows = page.getByTestId("canvas").getByTestId("board-item");
+    const names = async () => rows.locator(".board-item-name").allTextContents();
+    const original = await names();
+    await rows.nth(1).click();
+    await page.getByTestId("remove-item").click();
+    await page.getByTestId("remove-item-dialog").getByRole("button", { name: "Remove from this page" }).click();
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect.poll(names).toEqual(original);
+    await page.getByRole("button", { name: "Redo", exact: true }).click();
+    await expect(rows).toHaveCount(2);
+    await page.reload();
+    await expect(rows).toHaveCount(2);
+  });
+
+  test("move and page removal routes refuse a role without content editing and malformed move order", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "slice3-route-guards", sectionCount: 2, itemsPerSection: 2 });
+    const item = data.items[0];
+    const denied = { "X-Vennusign-Back-Office-Token": tokens.publisher };
+    const moveUrl = `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/items/${item.itemId}/placement`;
+    const malformed = await page.request.put(moveUrl, { headers: owned, data: {
+      sourceSectionId: data.sections[0].sectionId, destinationSectionId: data.sections[1].sectionId,
+      sourceItemIds: [item.itemId], destinationItemIds: [item.itemId]
+    }});
+    expect(malformed.status()).toBe(409);
+    expect((await page.request.put(moveUrl, { headers: denied, data: {
+      sourceSectionId: data.sections[0].sectionId, destinationSectionId: data.sections[1].sectionId,
+      sourceItemIds: [data.items[1].itemId], destinationItemIds: [data.items[2].itemId, item.itemId]
+    }})).status()).toBe(403);
+    expect((await page.request.delete(`${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/pages/${data.pages[0].pageId}/items/${item.itemId}`, { headers: denied })).status()).toBe(403);
   });
 });
 

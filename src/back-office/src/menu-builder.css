@@ -1020,6 +1020,12 @@
   grid-column: 1 / -1;
 }
 
+.builder__add-results button.is-selected {
+  background: #e8f4fb;
+  outline: 2px solid var(--sky-selection, #2a78d6);
+  outline-offset: -2px;
+}
+
 .builder__add-results button {
   display: grid;
   gap: 2px;
