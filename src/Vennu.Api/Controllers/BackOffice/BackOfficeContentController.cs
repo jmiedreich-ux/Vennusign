@@ -761,7 +761,7 @@ public sealed class BackOfficeContentController(
         }
 
         var outcome = await content
-            .ReorderItemsAsync(VenueId, menuId, sectionId, request.ItemIds, cancellationToken)
+            .ReorderItemsAsync(VenueId, menuId, sectionId, request.ItemIds, Author, cancellationToken)
             .ConfigureAwait(false);
 
         return outcome.Outcome == ReorderOutcomes.Reordered
@@ -771,6 +771,26 @@ public sealed class BackOfficeContentController(
                 reason = ReorderOutcomes.OrderStale,
                 message = "The items changed while you were dragging. Nothing moved — reload and try again."
             });
+    }
+
+    [HttpPut("menus/{menuId:guid}/items/{itemId:guid}/placement")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult> MoveItem(
+        Guid menuId,
+        Guid itemId,
+        ItemMoveRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request?.SourceItemIds is null || request.DestinationItemIds is null)
+        {
+            return Problem("Both section orders are required.", statusCode: 400);
+        }
+        var outcome = await content.MoveItemAsync(
+            VenueId, menuId, itemId, request.SourceSectionId, request.DestinationSectionId,
+            request.SourceItemIds, request.DestinationItemIds, Author, cancellationToken).ConfigureAwait(false);
+        return outcome.Outcome == ReorderOutcomes.Reordered
+            ? NoContent()
+            : Conflict(new { reason = ReorderOutcomes.OrderStale, message = "The page changed while you were dragging. Nothing moved — reload and try again." });
     }
 
     /// <summary>
@@ -794,7 +814,7 @@ public sealed class BackOfficeContentController(
         if (request.ItemId is { } existingId)
         {
             var placed = await content
-                .PlaceExistingItemAsync(VenueId, menuId, sectionId, existingId, cancellationToken)
+                .PlaceExistingItemAsync(VenueId, menuId, sectionId, existingId, Author, cancellationToken)
                 .ConfigureAwait(false);
 
             return placed.Outcome switch
@@ -819,7 +839,7 @@ public sealed class BackOfficeContentController(
 
         var itemId = Guid.NewGuid();
         var created = await content
-            .AddNewItemAsync(VenueId, menuId, sectionId, itemId, request.Name!, cancellationToken)
+            .AddNewItemAsync(VenueId, menuId, sectionId, itemId, request.Name!, request.Price, Author, cancellationToken)
             .ConfigureAwait(false);
 
         return created.Outcome switch
@@ -842,13 +862,14 @@ public sealed class BackOfficeContentController(
     /// Takes an item off this board. It stays in the library, so it can be placed
     /// again here or anywhere else (Q97).
     /// </summary>
-    [HttpDelete("menus/{menuId:guid}/items/{itemId:guid}")]
+    [HttpDelete("menus/{menuId:guid}/pages/{pageId:guid}/items/{itemId:guid}")]
     [RequireCapability("content.item.update")]
     public async Task<ActionResult> RemoveItem(
         Guid menuId,
+        Guid pageId,
         Guid itemId,
         CancellationToken cancellationToken) =>
-        await content.RemoveItemFromMenuAsync(VenueId, menuId, itemId, cancellationToken).ConfigureAwait(false)
+        await content.RemoveItemFromPageAsync(VenueId, menuId, pageId, itemId, Author, cancellationToken).ConfigureAwait(false)
             ? NoContent()
             : NotFound(new { message = "That item is not on this board." });
 

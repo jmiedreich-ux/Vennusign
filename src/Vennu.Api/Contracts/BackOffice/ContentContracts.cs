@@ -18,12 +18,18 @@ public sealed record SectionOrderRequest(IReadOnlyCollection<Guid> SectionIds);
 
 public sealed record ItemOrderRequest(IReadOnlyCollection<Guid> ItemIds);
 
+public sealed record ItemMoveRequest(
+    Guid SourceSectionId,
+    Guid DestinationSectionId,
+    IReadOnlyCollection<Guid> SourceItemIds,
+    IReadOnlyCollection<Guid> DestinationItemIds);
+
 /// <summary>
 /// Placing something on a board. Exactly one of these is set: an ItemId places an
 /// item the library already holds; a Name creates one born with that text and an
 /// empty price and description (Q113).
 /// </summary>
-public sealed record PlaceRequest(Guid? ItemId, string? Name);
+public sealed record PlaceRequest(Guid? ItemId, string? Name, string? Price = null);
 
 /// <summary>
 /// An item's values. These are the item's, not this board's: one item is one

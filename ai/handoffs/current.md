@@ -740,3 +740,39 @@ authorize the accepted canvas inline editing, and the obsolete generated workboo
 that named an earlier SHA and stale seeded menu was removed. The owner-approved
 product candidate remains `1c52c2658966864d175b8666b0fc4722197afe92`;
 the closure commit changes authority/acceptance records only.
+
+## M3-A Slice 3 — implementation checkpoint — 2026-08-12
+
+**Claim.** GitHub issue #703 is open. Branch
+`feature/menus-m3a-s3-board-add-item` was created from `master` at `8bbafc2`; the
+tracker claim is committed at `14600fd`.
+
+**What is established locally, not yet complete.** Migration 066 widens the page
+history vocabulary for item add/reorder/move/remove. Existing create, place and
+reorder transactions now write page-attributed history; a guarded cross-section
+move validates both live section orders and moves/history-logs atomically; removal
+is page-scoped and preserves other-page placements. The existing board UI now calls
+those paths, supports cross-section and empty-section drops, confirms “Remove from
+this page” naming the page, accepts name then optional price in the add row, and
+evaluates capacity against the typed draft item. Accepted board, geometry, fit,
+selection, inline editing, inspector and page-history surfaces were reused.
+
+**Executed evidence.** Back-office unit tests passed 197/197. Back-office production
+build passed with the existing Vite chunk advisory. The Debug solution build passed
+after updating the legacy removal regression. Focused LocalDB integration tests
+passed 3/3: cross-menu preservation, cross-section atomic move/history, and same-menu
+cross-page removal isolation. The first database attempt selected the ambient
+`VENU_TEST_AZURE_SQL_CONNECTION_STRING` and correctly failed authentication; the
+successful run cleared that variable for the process and used LocalDB. No credential
+value was read or printed.
+
+**Not done.** API/controller refusal and permission tests, full invariant write-path
+coverage, complete desktop Playwright scenarios, exact UI styling/focus recovery,
+real-browser inspection, red-with-fix-reverted demonstrations, Release/full local
+gates, acceptance workbook, independent review, owner acceptance, push/PR and merge
+are all outstanding. Nothing in this checkpoint is accepted or ready to merge.
+
+**Exact next action.** Add focused API tests for create/place/reorder/move/remove,
+including stale orders, cross-page/cross-venue identifiers, idempotent removal and
+author/history mapping; then finish the desktop Playwright path matrix before the
+bounded Impeccable browser pass.

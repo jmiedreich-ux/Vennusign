@@ -18,6 +18,7 @@ import {
   loadMenuThemes,
   loadMenuAssignments,
   loadScreensShowing,
+  moveMenuItem,
   saveMenuPageAssignments,
   placeMenuItem,
   publishMenu,
@@ -857,8 +858,15 @@ export default function MenuBuilder({
     event.preventDefault();
     const row = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-item-id]");
     if (!row?.dataset.itemId || !row.dataset.sectionId) {
-      drag.target = null;
-      setDropTarget(null);
+      const section = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-section-id]");
+      if (section?.dataset.sectionId && itemsOf(board, section.dataset.sectionId).length === 0) {
+        const target: DropTarget = { itemId: "", sectionId: section.dataset.sectionId, edge: "after" };
+        drag.target = target;
+        setDropTarget(target);
+      } else {
+        drag.target = null;
+        setDropTarget(null);
+      }
       return;
     }
 
@@ -889,25 +897,44 @@ export default function MenuBuilder({
       suppressCanvasClick.current = false;
     }, 0);
 
-    if (drag.target.sectionId !== drag.sectionId) {
-      setError(
-        "Moving an item to another section arrives with Board view. For now, remove it here and add it there."
-      );
-      return;
-    }
-
     const ids = itemsOf(board, drag.sectionId).map(item => item.itemId);
     const remaining = ids.filter(id => id !== drag.itemId);
-    const targetIndex = remaining.indexOf(drag.target.itemId);
-    if (targetIndex < 0) return;
-    const insertionIndex = targetIndex + (drag.target.edge === "after" ? 1 : 0);
-    remaining.splice(insertionIndex, 0, drag.itemId);
-    if (remaining.join() === ids.join()) return;
+    const destinationBefore = itemsOf(board, drag.target.sectionId).map(item => item.itemId).filter(id => id !== drag.itemId);
+    const targetIndex = drag.target.itemId ? destinationBefore.indexOf(drag.target.itemId) : -1;
+    if (drag.target.itemId && targetIndex < 0) return;
+    const insertionIndex = drag.target.itemId ? targetIndex + (drag.target.edge === "after" ? 1 : 0) : 0;
+    const destinationAfter = [...destinationBefore];
+    destinationAfter.splice(insertionIndex, 0, drag.itemId);
 
-    void run(() => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, remaining), {
+    if (drag.target.sectionId !== drag.sectionId) {
+      void run(() => moveMenuItem(configuration, credential(), menuId, drag.itemId, {
+        sourceSectionId: drag.sectionId,
+        destinationSectionId: drag.target!.sectionId,
+        sourceItemIds: remaining,
+        destinationItemIds: destinationAfter
+      }), {
+        describe: "Move item to another section",
+        undo: () => moveMenuItem(configuration, credential(), menuId, drag.itemId, {
+          sourceSectionId: drag.target!.sectionId,
+          destinationSectionId: drag.sectionId,
+          sourceItemIds: destinationBefore,
+          destinationItemIds: ids
+        }),
+        redo: () => moveMenuItem(configuration, credential(), menuId, drag.itemId, {
+          sourceSectionId: drag.sectionId,
+          destinationSectionId: drag.target!.sectionId,
+          sourceItemIds: remaining,
+          destinationItemIds: destinationAfter
+        })
+      });
+      return;
+    }
+    if (destinationAfter.join() === ids.join()) return;
+
+    void run(() => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, destinationAfter), {
       describe: "Reorder items",
       undo: () => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, ids),
-      redo: () => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, remaining)
+      redo: () => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, destinationAfter)
     });
   };
 
@@ -1152,20 +1179,28 @@ export default function MenuBuilder({
     });
   };
 
+  const [confirmItemRemove, setConfirmItemRemove] = useState(false);
   const removeFromBoard = async () => {
     if (!selected) return;
+    if (!confirmItemRemove) {
+      setConfirmItemRemove(true);
+      return;
+    }
     const { item, sectionId } = selected;
+    const pageId = activePageId;
+    if (!pageId) return;
+    setConfirmItemRemove(false);
     await run(
       async () => {
-        await removeMenuItem(configuration, credential(), menuId, item.itemId);
+        await removeMenuItem(configuration, credential(), menuId, pageId, item.itemId);
         setPlace(current => ({ ...current, selectedItemId: null }));
       },
       {
-        describe: "Remove from this board",
+        describe: "Remove from this page",
         undo: async () => {
           await placeMenuItem(configuration, credential(), menuId, sectionId, { itemId: item.itemId });
         },
-        redo: () => removeMenuItem(configuration, credential(), menuId, item.itemId)
+        redo: () => removeMenuItem(configuration, credential(), menuId, pageId, item.itemId)
       }
     );
   };
@@ -1173,6 +1208,7 @@ export default function MenuBuilder({
   // ---- adding items --------------------------------------------------------
 
   const [addQuery, setAddQuery] = useState("");
+  const [addPrice, setAddPrice] = useState("");
   const [addSectionId, setAddSectionId] = useState<string | null>(null);
   const [hits, setHits] = useState<LibraryItem[]>([]);
 
@@ -1268,7 +1304,7 @@ export default function MenuBuilder({
         describe: `Add ${wanted.length} item${wanted.length === 1 ? "" : "s"} to this board`,
         undo: async () => {
           for (const itemId of landed) {
-            await removeMenuItem(configuration, credential(), menuId, itemId);
+            if (activePageId) await removeMenuItem(configuration, credential(), menuId, activePageId, itemId);
           }
         },
         redo: async () => {
@@ -1284,7 +1320,7 @@ export default function MenuBuilder({
     setPlacedNote(`${landed.length} placed`);
   };
 
-  const place_ = async (sectionId: string, request: { itemId?: string; name?: string }) => {
+  const place_ = async (sectionId: string, request: { itemId?: string; name?: string; price?: string }) => {
     let outcome: Awaited<ReturnType<typeof placeMenuItem>> | undefined;
     await run(
       async () => {
@@ -1294,7 +1330,7 @@ export default function MenuBuilder({
         describe: "Add to this board",
         undo: async () => {
           if (outcome?.itemId && outcome.outcome === "placed") {
-            await removeMenuItem(configuration, credential(), menuId, outcome.itemId);
+            if (activePageId) await removeMenuItem(configuration, credential(), menuId, activePageId, outcome.itemId);
           }
         },
         redo: async () => {
@@ -1324,6 +1360,7 @@ export default function MenuBuilder({
       }
     }
     setAddQuery("");
+    setAddPrice("");
     setAddSectionId(null);
   };
 
@@ -1489,6 +1526,7 @@ export default function MenuBuilder({
    */
   const behindScrim =
     confirmDiscard ||
+    confirmItemRemove ||
     Boolean(confirmDelete) ||
     themePickerOpen ||
     seeAllOpen ||
@@ -1504,13 +1542,19 @@ export default function MenuBuilder({
   const activePageItemCount = sections.reduce((count, section) => count + itemsOf(board, section.sectionId).length, 0);
   const activePageAssignmentCount = assignments.filter(assignment => assignment.pageId === activePageId).length;
   const activePageScreenNames = assignments.filter(assignment => assignment.pageId === activePageId).map(assignment => screens.find(screen => screen.screenId === assignment.screenId)?.screenName).filter((name): name is string => Boolean(name));
+  const capacitySections = addSectionId && addQuery.trim()
+    ? sections.map(section => section.sectionId === addSectionId
+      ? { ...section, items: [...section.items, { itemId: "draft-item", name: addQuery, description: null, price: addPrice || null, sortOrder: section.items.length }] }
+      : section)
+    : sections;
   const pageBoard = { ...board, sections };
+  const capacityBoard = { ...board, sections: capacitySections };
   const shown = canvasBoard(pageBoard, place);
   const activeAssignments = assignments.filter(assignment => assignment.menuId === menuId && assignment.pageId === activePageId);
   const capacityEvaluations = activeAssignments.flatMap(assignment => {
     const screen = screens.find(candidate => candidate.screenId === assignment.screenId);
     return screen
-      ? [{ screen, result: calculateBoardCapacity(pageBoard, { width: screen.widthPixels, height: screen.heightPixels }, board.theme) }]
+      ? [{ screen, result: calculateBoardCapacity(capacityBoard, { width: screen.widthPixels, height: screen.heightPixels }, board.theme) }]
       : [];
   });
   const capacity = [...capacityEvaluations].sort((left, right) => left.result.limit - right.result.limit)[0]?.result ?? null;
@@ -2036,9 +2080,18 @@ export default function MenuBuilder({
                     data-testid="add-item-input"
                     onChange={event => setAddQuery(event.target.value)}
                     onKeyDown={event => {
-                      if (event.key === "Enter" && addQuery.trim()) {
-                        void place_(place.sectionId!, { name: addQuery.trim() });
-                      }
+                      if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
+                    }}
+                  />
+                  <input
+                    value={addPrice}
+                    placeholder="Price (optional)"
+                    aria-label="Item price"
+                    data-testid="add-item-price"
+                    onChange={event => setAddPrice(event.target.value)}
+                    onKeyDown={event => {
+                      if (event.key === "Enter" && addQuery.trim()) void place_(place.sectionId!, { name: addQuery.trim(), price: addPrice });
+                      if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
                     }}
                   />
                   <ul className="builder__add-results" data-testid="add-item-results">
@@ -2049,8 +2102,9 @@ export default function MenuBuilder({
                         <li key={hit.itemId}>
                           <button
                             type="button"
-                            data-testid="add-item-result"
-                            data-item-id={hit.itemId}
+                          data-testid="add-item-result"
+                          data-item-id={hit.itemId}
+                          aria-selected={hit === hits[0]}
                             onClick={() => void place_(place.sectionId!, { itemId: hit.itemId })}
                           >
                             <span className="builder__add-name">{hit.name}</span>
@@ -2076,7 +2130,7 @@ export default function MenuBuilder({
                           type="button"
                           className="builder__add-create"
                           data-testid="add-item-create"
-                          onClick={() => void place_(place.sectionId!, { name: addQuery.trim() })}
+                          onClick={() => void place_(place.sectionId!, { name: addQuery.trim(), price: addPrice })}
                         >
                           Create “{addQuery.trim()}” as a new item
                         </button>
@@ -2222,7 +2276,7 @@ export default function MenuBuilder({
               ) : null}
 
               <button type="button" className="builder__quiet-danger" data-testid="remove-item" onClick={() => void removeFromBoard()}>
-                Remove from this board
+                Remove from this page
               </button>
 
               <p className="builder__theme-footer">
@@ -2660,6 +2714,19 @@ export default function MenuBuilder({
             </div>
           </div>
         </>
+      ) : null}
+
+      {confirmItemRemove && selected ? (
+        <div className="builder__scrim" role="presentation">
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="remove-item-title" data-testid="remove-item-dialog">
+            <h2 id="remove-item-title">Remove {selected.item.name} from {pages.find(page => page.pageId === activePageId)?.name ?? "this page"}?</h2>
+            <p>It stays in your item library, and on any other page using it.</p>
+            <div className="builder__dialog-actions">
+              <button type="button" className="secondary" onClick={() => setConfirmItemRemove(false)}>Cancel</button>
+              <button type="button" className="action-danger" onClick={() => void removeFromBoard()}>Remove from this page</button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {historyOpen ? (

@@ -1008,7 +1008,7 @@ test.describe("what the independent review found", () => {
       expect(made.ok()).toBeTruthy();
       const item = (await made.json()) as { itemId: string };
       const removed = await page.request.delete(
-        `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/items/${item.itemId}`,
+        `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/pages/${data.pages![0].pageId}/items/${item.itemId}`,
         { headers: owned }
       );
       expect(removed.ok()).toBeTruthy();

@@ -455,6 +455,14 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 SELECT @PlacementId, @VenueId, @MenuId, @SectionId, PageId, @ItemId, @SortOrder, @Now, @Now
                 FROM dbo.MenuSections WHERE Id=@SectionId AND VenueId=@VenueId;
 
+                INSERT dbo.MenuHistoryEntries
+                    (Id,VenueId,MenuId,PageId,PageName,Kind,Detail,Author,OccurredUtc)
+                SELECT NEWID(),@VenueId,@MenuId,s.PageId,p.Name,N'item_added',
+                       CONCAT(N'Item added — ',@Name),@Author,@Now
+                FROM dbo.MenuSections s INNER JOIN dbo.MenuPages p
+                  ON p.Id=s.PageId AND p.MenuId=s.MenuId AND p.VenueId=s.VenueId
+                WHERE s.Id=@SectionId AND s.MenuId=@MenuId AND s.VenueId=@VenueId;
+
                 COMMIT TRANSACTION;
                 SELECT N'created' AS Outcome, @OnMenu + 1 AS ItemCountOnMenu, @SortOrder AS SortOrder;
             END;
@@ -760,8 +768,60 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             INNER JOIN @Order o ON o.ItemId = p.ItemId
             WHERE p.MenuSectionId = @SectionId AND p.MenuId = @MenuId AND p.VenueId = @VenueId;
 
+            INSERT dbo.MenuHistoryEntries
+                (Id,VenueId,MenuId,PageId,PageName,Kind,Detail,Author,OccurredUtc)
+            SELECT NEWID(),@VenueId,@MenuId,s.PageId,pg.Name,N'items_reordered',
+                   CONCAT(N'Items reordered in ',s.Name),@Author,@Now
+            FROM dbo.MenuSections s INNER JOIN dbo.MenuPages pg
+              ON pg.Id=s.PageId AND pg.MenuId=s.MenuId AND pg.VenueId=s.VenueId
+            WHERE s.Id=@SectionId AND s.MenuId=@MenuId AND s.VenueId=@VenueId;
+
             COMMIT TRANSACTION;
             SELECT N'reordered' AS Outcome, @Live AS Moved;
+        END
+        """;
+
+    private const string MovePlacementGuardedSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        DECLARE @SourceOrder TABLE (ItemId UNIQUEIDENTIFIER PRIMARY KEY, Position INT NOT NULL);
+        DECLARE @DestinationOrder TABLE (ItemId UNIQUEIDENTIFIER PRIMARY KEY, Position INT NOT NULL);
+        INSERT @SourceOrder SELECT TRY_CONVERT(UNIQUEIDENTIFIER,[value]),CAST([key] AS INT) FROM OPENJSON(@SourceItemIdsJson);
+        INSERT @DestinationOrder SELECT TRY_CONVERT(UNIQUEIDENTIFIER,[value]),CAST([key] AS INT) FROM OPENJSON(@DestinationItemIdsJson);
+
+        DECLARE @PageId UNIQUEIDENTIFIER, @SourceName NVARCHAR(200), @DestinationName NVARCHAR(200), @ItemName NVARCHAR(200);
+        SELECT @PageId=s.PageId,@SourceName=s.Name FROM dbo.MenuSections s WITH (UPDLOCK,HOLDLOCK)
+          WHERE s.Id=@SourceSectionId AND s.MenuId=@MenuId AND s.VenueId=@VenueId;
+        SELECT @DestinationName=s.Name FROM dbo.MenuSections s WITH (UPDLOCK,HOLDLOCK)
+          WHERE s.Id=@DestinationSectionId AND s.MenuId=@MenuId AND s.VenueId=@VenueId AND s.PageId=@PageId;
+        SELECT @ItemName=i.Name FROM dbo.Items i WHERE i.Id=@ItemId AND i.VenueId=@VenueId;
+
+        IF @PageId IS NULL OR @DestinationName IS NULL
+           OR NOT EXISTS (SELECT 1 FROM dbo.Placements WHERE MenuSectionId=@SourceSectionId AND ItemId=@ItemId AND MenuId=@MenuId AND VenueId=@VenueId)
+           OR EXISTS (SELECT 1 FROM dbo.Placements WHERE MenuSectionId=@DestinationSectionId AND ItemId=@ItemId AND MenuId=@MenuId AND VenueId=@VenueId)
+           OR (SELECT COUNT(*) FROM dbo.Placements WITH (UPDLOCK,HOLDLOCK) WHERE MenuSectionId=@SourceSectionId AND MenuId=@MenuId AND VenueId=@VenueId) <> (SELECT COUNT(*)+1 FROM @SourceOrder)
+           OR (SELECT COUNT(*) FROM dbo.Placements WITH (UPDLOCK,HOLDLOCK) WHERE MenuSectionId=@DestinationSectionId AND MenuId=@MenuId AND VenueId=@VenueId) + 1 <> (SELECT COUNT(*) FROM @DestinationOrder)
+           OR EXISTS (SELECT 1 FROM @SourceOrder o WHERE NOT EXISTS (SELECT 1 FROM dbo.Placements p WHERE p.MenuSectionId=@SourceSectionId AND p.ItemId=o.ItemId AND p.MenuId=@MenuId AND p.VenueId=@VenueId))
+           OR EXISTS (SELECT 1 FROM @DestinationOrder o WHERE o.ItemId<>@ItemId AND NOT EXISTS (SELECT 1 FROM dbo.Placements p WHERE p.MenuSectionId=@DestinationSectionId AND p.ItemId=o.ItemId AND p.MenuId=@MenuId AND p.VenueId=@VenueId))
+           OR NOT EXISTS (SELECT 1 FROM @DestinationOrder WHERE ItemId=@ItemId)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT N'order_stale' AS Outcome, 0 AS Moved;
+        END
+        ELSE
+        BEGIN
+            UPDATE dbo.Placements SET MenuSectionId=@DestinationSectionId,SortOrder=1000000,UpdatedUtc=@Now
+              WHERE MenuSectionId=@SourceSectionId AND ItemId=@ItemId AND MenuId=@MenuId AND VenueId=@VenueId;
+            UPDATE p SET SortOrder=o.Position,UpdatedUtc=@Now FROM dbo.Placements p INNER JOIN @SourceOrder o ON o.ItemId=p.ItemId
+              WHERE p.MenuSectionId=@SourceSectionId AND p.MenuId=@MenuId AND p.VenueId=@VenueId;
+            UPDATE p SET SortOrder=o.Position,UpdatedUtc=@Now FROM dbo.Placements p INNER JOIN @DestinationOrder o ON o.ItemId=p.ItemId
+              WHERE p.MenuSectionId=@DestinationSectionId AND p.MenuId=@MenuId AND p.VenueId=@VenueId;
+            INSERT dbo.MenuHistoryEntries (Id,VenueId,MenuId,PageId,PageName,Kind,Detail,Author,OccurredUtc)
+            SELECT NEWID(),@VenueId,@MenuId,@PageId,p.Name,N'item_moved',CONCAT(@ItemName,N' moved from ',@SourceName,N' to ',@DestinationName),@Author,@Now
+              FROM dbo.MenuPages p WHERE p.Id=@PageId AND p.MenuId=@MenuId AND p.VenueId=@VenueId;
+            COMMIT TRANSACTION;
+            SELECT N'reordered' AS Outcome, 1 AS Moved;
         END
         """;
 
@@ -824,6 +884,14 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 SELECT @PlacementId, @VenueId, @MenuId, @SectionId, PageId, @ItemId, @Next, @Now, @Now
                 FROM dbo.MenuSections WHERE Id=@SectionId AND VenueId=@VenueId;
 
+                INSERT dbo.MenuHistoryEntries
+                    (Id,VenueId,MenuId,PageId,PageName,Kind,Detail,Author,OccurredUtc)
+                SELECT NEWID(),@VenueId,@MenuId,s.PageId,p.Name,N'item_added',
+                       CONCAT(N'Item added — ',i.Name),@Author,@Now
+                FROM dbo.MenuSections s INNER JOIN dbo.MenuPages p ON p.Id=s.PageId AND p.MenuId=s.MenuId AND p.VenueId=s.VenueId
+                INNER JOIN dbo.Items i ON i.Id=@ItemId AND i.VenueId=@VenueId
+                WHERE s.Id=@SectionId AND s.MenuId=@MenuId AND s.VenueId=@VenueId;
+
                 COMMIT TRANSACTION;
                 SELECT N'placed' AS Outcome, @OnMenu + CASE WHEN @AlreadyOnMenu=1 THEN 0 ELSE 1 END AS ItemCountOnMenu, @Next AS SortOrder,
                        CAST(NULL AS UNIQUEIDENTIFIER) AS ExistingSectionId;
@@ -835,10 +903,18 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
     /// Takes an item off this board. The item stays in the library (Q97) - only the
     /// placement goes, exactly as deleting a section releases everything it held.
     /// </summary>
-    private const string RemoveItemFromMenuSql = """
-        DELETE FROM dbo.Placements
-        OUTPUT 1 AS Value
-        WHERE MenuId = @MenuId AND ItemId = @ItemId AND VenueId = @VenueId;
+    private const string RemoveItemFromPageSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+        DECLARE @Removed TABLE (PageId UNIQUEIDENTIFIER, ItemName NVARCHAR(200));
+        DELETE p OUTPUT deleted.PageId,i.Name INTO @Removed(PageId,ItemName)
+        FROM dbo.Placements p INNER JOIN dbo.Items i ON i.Id=p.ItemId AND i.VenueId=p.VenueId
+        WHERE p.MenuId=@MenuId AND p.PageId=@PageId AND p.ItemId=@ItemId AND p.VenueId=@VenueId;
+        INSERT dbo.MenuHistoryEntries (Id,VenueId,MenuId,PageId,PageName,Kind,Detail,Author,OccurredUtc)
+        SELECT NEWID(),@VenueId,@MenuId,r.PageId,pg.Name,N'item_removed',CONCAT(r.ItemName,N' removed from this page'),@Author,@Now
+        FROM @Removed r INNER JOIN dbo.MenuPages pg ON pg.Id=r.PageId AND pg.MenuId=@MenuId AND pg.VenueId=@VenueId;
+        COMMIT TRANSACTION;
+        SELECT 1 AS Value FROM @Removed;
         """;
 
     /// <summary>
@@ -1826,7 +1902,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         Guid menuId,
         Guid sectionId,
         int itemsPerMenuLimit,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? author = null)
     {
         ArgumentNullException.ThrowIfNull(item);
         ValidateItem(item);
@@ -1849,7 +1926,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 item.Price,
                 item.Source,
                 Limit = itemsPerMenuLimit,
-                Now = DateTime.UtcNow
+                Now = item.CreatedUtc == default ? DateTime.UtcNow : item.CreatedUtc,
+                Author = author
             },
             cancellationToken).ConfigureAwait(false)).Single();
 
@@ -2015,7 +2093,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         Guid sectionId,
         IReadOnlyCollection<Guid> itemIds,
         DateTime now,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? author = null)
     {
         ArgumentNullException.ThrowIfNull(itemIds);
         var row = (await dataAccess.ExecuteSqlQueryAsync<ReorderRow, object>(
@@ -2026,10 +2105,40 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 MenuId = RequireId(menuId, nameof(menuId)),
                 SectionId = RequireId(sectionId, nameof(sectionId)),
                 ItemIdsJson = System.Text.Json.JsonSerializer.Serialize(itemIds),
-                Now = now
+                Now = now,
+                Author = author
             },
             cancellationToken).ConfigureAwait(false)).Single();
 
+        return new ReorderOutcome(row.Outcome, row.Moved);
+    }
+
+    public async Task<ReorderOutcome> MovePlacementGuardedAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid itemId,
+        Guid sourceSectionId,
+        Guid destinationSectionId,
+        IReadOnlyCollection<Guid> sourceItemIds,
+        IReadOnlyCollection<Guid> destinationItemIds,
+        DateTime now,
+        CancellationToken cancellationToken = default,
+        string? author = null)
+    {
+        ArgumentNullException.ThrowIfNull(sourceItemIds);
+        ArgumentNullException.ThrowIfNull(destinationItemIds);
+        var row = (await dataAccess.ExecuteSqlQueryAsync<ReorderRow, object>(MovePlacementGuardedSql, new
+        {
+            VenueId = RequireId(venueId, nameof(venueId)),
+            MenuId = RequireId(menuId, nameof(menuId)),
+            ItemId = RequireId(itemId, nameof(itemId)),
+            SourceSectionId = RequireId(sourceSectionId, nameof(sourceSectionId)),
+            DestinationSectionId = RequireId(destinationSectionId, nameof(destinationSectionId)),
+            SourceItemIdsJson = System.Text.Json.JsonSerializer.Serialize(sourceItemIds),
+            DestinationItemIdsJson = System.Text.Json.JsonSerializer.Serialize(destinationItemIds),
+            Now = now,
+            Author = author
+        }, cancellationToken).ConfigureAwait(false)).Single();
         return new ReorderOutcome(row.Outcome, row.Moved);
     }
 
@@ -2040,7 +2149,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         Guid itemId,
         int itemsPerMenuLimit,
         DateTime now,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? author = null)
     {
         var row = (await dataAccess.ExecuteSqlQueryAsync<PlaceExistingRow, object>(
             PlaceExistingItemSql,
@@ -2052,25 +2162,32 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 ItemId = RequireId(itemId, nameof(itemId)),
                 PlacementId = Guid.NewGuid(),
                 ItemsPerMenuLimit = itemsPerMenuLimit,
-                Now = now
+                Now = now,
+                Author = author
             },
             cancellationToken).ConfigureAwait(false)).Single();
 
         return new PlaceExistingOutcome(row.Outcome, row.ItemCountOnMenu, row.SortOrder, row.ExistingSectionId);
     }
 
-    public async Task<bool> RemoveItemFromMenuAsync(
+    public async Task<bool> RemoveItemFromPageAsync(
         Guid venueId,
         Guid menuId,
+        Guid pageId,
         Guid itemId,
-        CancellationToken cancellationToken = default) =>
+        DateTime now,
+        CancellationToken cancellationToken = default,
+        string? author = null) =>
         (await dataAccess.ExecuteSqlQueryAsync<ScalarResult, object>(
-            RemoveItemFromMenuSql,
+            RemoveItemFromPageSql,
             new
             {
                 VenueId = RequireId(venueId, nameof(venueId)),
                 MenuId = RequireId(menuId, nameof(menuId)),
-                ItemId = RequireId(itemId, nameof(itemId))
+                PageId = RequireId(pageId, nameof(pageId)),
+                ItemId = RequireId(itemId, nameof(itemId)),
+                Now = now,
+                Author = author
             },
             cancellationToken).ConfigureAwait(false)).Any();
 

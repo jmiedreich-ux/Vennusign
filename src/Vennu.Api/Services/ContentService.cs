@@ -578,17 +578,40 @@ public sealed class ContentService(
         Guid menuId,
         Guid sectionId,
         IReadOnlyCollection<Guid> itemIds,
+        string? author = null,
         CancellationToken cancellationToken = default)
     {
         var outcome = await library.ReorderPlacementsGuardedAsync(
             venueId, menuId, sectionId, itemIds,
-            timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false);
+            timeProvider.GetUtcNow().UtcDateTime, cancellationToken, author).ConfigureAwait(false);
 
         if (outcome.Outcome == ReorderOutcomes.Reordered)
         {
             await NotifyAsync(venueId, "items-reordered", menuId, cancellationToken).ConfigureAwait(false);
         }
 
+        return outcome;
+    }
+
+    public async Task<ReorderOutcome> MoveItemAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid itemId,
+        Guid sourceSectionId,
+        Guid destinationSectionId,
+        IReadOnlyCollection<Guid> sourceItemIds,
+        IReadOnlyCollection<Guid> destinationItemIds,
+        string? author = null,
+        CancellationToken cancellationToken = default)
+    {
+        var outcome = await library.MovePlacementGuardedAsync(
+            venueId, menuId, itemId, sourceSectionId, destinationSectionId,
+            sourceItemIds, destinationItemIds, timeProvider.GetUtcNow().UtcDateTime,
+            cancellationToken, author).ConfigureAwait(false);
+        if (outcome.Outcome == ReorderOutcomes.Reordered)
+        {
+            await NotifyAsync(venueId, "item-moved", menuId, cancellationToken).ConfigureAwait(false);
+        }
         return outcome;
     }
 
@@ -603,6 +626,8 @@ public sealed class ContentService(
         Guid sectionId,
         Guid itemId,
         string name,
+        string? price = null,
+        string? author = null,
         CancellationToken cancellationToken = default)
     {
         var ceilings = await library.GetResolvedCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
@@ -615,10 +640,11 @@ public sealed class ContentService(
                 Id = itemId,
                 VenueId = venueId,
                 Name = NormalizeItemName(name),
+                Price = string.IsNullOrWhiteSpace(price) ? null : price,
                 CreatedUtc = now,
                 UpdatedUtc = now
             },
-            menuId, sectionId, limit, cancellationToken).ConfigureAwait(false);
+            menuId, sectionId, limit, cancellationToken, author).ConfigureAwait(false);
 
         if (outcome.Outcome == ItemPlacementOutcomes.Created)
         {
@@ -633,6 +659,7 @@ public sealed class ContentService(
         Guid menuId,
         Guid sectionId,
         Guid itemId,
+        string? author = null,
         CancellationToken cancellationToken = default)
     {
         var ceilings = await library.GetResolvedCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
@@ -640,7 +667,7 @@ public sealed class ContentService(
 
         var outcome = await library.PlaceExistingItemAsync(
             venueId, menuId, sectionId, itemId, limit,
-            timeProvider.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false);
+            timeProvider.GetUtcNow().UtcDateTime, cancellationToken, author).ConfigureAwait(false);
 
         if (outcome.Outcome == PlaceExistingOutcomes.Placed)
         {
@@ -650,14 +677,17 @@ public sealed class ContentService(
         return outcome;
     }
 
-    public async Task<bool> RemoveItemFromMenuAsync(
+    public async Task<bool> RemoveItemFromPageAsync(
         Guid venueId,
         Guid menuId,
+        Guid pageId,
         Guid itemId,
+        string? author = null,
         CancellationToken cancellationToken = default)
     {
         var removed = await library
-            .RemoveItemFromMenuAsync(venueId, menuId, itemId, cancellationToken)
+            .RemoveItemFromPageAsync(venueId, menuId, pageId, itemId,
+                timeProvider.GetUtcNow().UtcDateTime, cancellationToken, author)
             .ConfigureAwait(false);
 
         if (removed)

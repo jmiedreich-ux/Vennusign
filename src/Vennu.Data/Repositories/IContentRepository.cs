@@ -48,7 +48,8 @@ public interface IContentRepository
         Guid menuId,
         Guid sectionId,
         int itemsPerMenuLimit,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        string? author = null);
 
     /// <summary>Rewrites a section's placement order; position in the list is the sort order.</summary>
     Task<int> ReorderPlacementsAsync(
@@ -136,7 +137,25 @@ public interface IContentRepository
         Guid sectionId,
         IReadOnlyCollection<Guid> itemIds,
         DateTime now,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        string? author = null);
+
+    /// <summary>
+    /// Atomically moves one placement between sibling sections on the same page
+    /// while proving both caller-supplied orders still describe the live rows.
+    /// Outcomes: <c>reordered</c>, <c>order_stale</c>.
+    /// </summary>
+    Task<ReorderOutcome> MovePlacementGuardedAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid itemId,
+        Guid sourceSectionId,
+        Guid destinationSectionId,
+        IReadOnlyCollection<Guid> sourceItemIds,
+        IReadOnlyCollection<Guid> destinationItemIds,
+        DateTime now,
+        CancellationToken cancellationToken = default,
+        string? author = null);
 
     /// <summary>
     /// Places an item the library already holds. Outcomes: <c>placed</c>,
@@ -151,14 +170,18 @@ public interface IContentRepository
         Guid itemId,
         int itemsPerMenuLimit,
         DateTime now,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        string? author = null);
 
-    /// <summary>Takes an item off one board. The item stays in the library (Q97).</summary>
-    Task<bool> RemoveItemFromMenuAsync(
+    /// <summary>Takes an item off one page. The item and its other placements remain.</summary>
+    Task<bool> RemoveItemFromPageAsync(
         Guid venueId,
         Guid menuId,
+        Guid pageId,
         Guid itemId,
-        CancellationToken cancellationToken = default);
+        DateTime now,
+        CancellationToken cancellationToken = default,
+        string? author = null);
 
     /// <summary>
     /// The add row's search over the whole venue library, 86'd items included
