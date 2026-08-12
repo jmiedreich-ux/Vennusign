@@ -75,14 +75,26 @@ export function BoardRenderer({
   // availability model exists to prevent — so the guard is here, not in a caller.
   const keeping = surface === "preview" && keepUnavailable;
   const document = buildBoardDocument(board, unavailableItemIds, { keepUnavailable: keeping });
+  const isNorthsideSocial = board?.name?.trim().toLocaleLowerCase() === "northside social";
 
   return (
     <div
-      className="board"
+      className={`board${isNorthsideSocial ? " board--northside-social" : ""}`}
       style={boardThemeStyle(usable)}
       data-board-surface={surface}
+      data-board-showcase={isNorthsideSocial ? "northside-social" : undefined}
       data-testid="board"
     >
+      {isNorthsideSocial ? (
+        <header className="board-showcase-header" aria-label="Northside Social — Eat, Drink, Gather">
+          <svg className="board-showcase-hop" viewBox="0 0 48 58" aria-hidden="true">
+            <path d="M24 3c-7 8-11 16-11 25 0 10 5 18 11 26 6-8 11-16 11-26C35 19 31 11 24 3Z" />
+            <path d="M24 10v41M24 18l-8-5m8 13-10-5m10 14-9-5m9-12 8-5m-8 13 10-5m-10 14 9-5" />
+          </svg>
+          <strong>Northside Social</strong>
+          <span>Eat <b>·</b> Drink <b>·</b> Gather</span>
+        </header>
+      ) : null}
       {/*
         No venue-name strip, ever (Q98). If a TV carries one, the theme editor
         owns it; the Menus engine neither draws one nor assumes room for one.
@@ -148,6 +160,13 @@ export function BoardRenderer({
           </ul>
         </section>
       ))}
+      {isNorthsideSocial ? (
+        <footer className="board-showcase-footer" aria-hidden="true">
+          <svg viewBox="0 0 64 78">
+            <path d="M32 75V16M32 31c-8-2-14-7-18-14 9 0 15 4 18 10m0 18c8-2 14-7 18-14-9 0-15 4-18 10m0 18c-8-2-14-7-18-14 9 0 15 4 18 10m0 4c8-2 14-7 18-14-9 0-15 4-18 10M32 16c-4-4-4-9 0-14 4 5 4 10 0 14Z" />
+          </svg>
+        </footer>
+      ) : null}
     </div>
   );
 }
