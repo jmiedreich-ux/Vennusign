@@ -122,6 +122,19 @@ public sealed class TestApiBoundaryTests
     }
 
     [Fact]
+    public async Task Northside_showcase_keeps_an_existing_menu_and_retries_with_a_unique_name()
+    {
+        var handler = new ProductContractHandler(refuseFirstNorthsideMenu: true);
+
+        var result = await Service(handler).SeedAsync(
+            new SeedRequest("venue-token", false, Showcase: "northside-social"), CancellationToken.None);
+
+        Assert.StartsWith("Northside Social ", result.MenuName, StringComparison.Ordinal);
+        Assert.Equal(2, handler.Paths.Count(path => path == "POST /api/back-office/menus"));
+        Assert.Equal(16, result.Items!.Count);
+    }
+
+    [Fact]
     public async Task Never_paired_state_registers_a_real_player_without_claiming_it()
     {
         var handler = new ProductContractHandler();
@@ -154,7 +167,7 @@ public sealed class TestApiBoundaryTests
         }
     }
 
-    private sealed class ProductContractHandler : HttpMessageHandler
+    private sealed class ProductContractHandler(bool refuseFirstNorthsideMenu = false) : HttpMessageHandler
     {
         private readonly Guid venueId = Guid.NewGuid();
         private int menus;
@@ -163,6 +176,7 @@ public sealed class TestApiBoundaryTests
         private int screens;
         private readonly Guid defaultPageId = Guid.NewGuid();
         private int pages = 1;
+        private bool refuseNorthside = refuseFirstNorthsideMenu;
 
         public List<string> Paths { get; } = [];
         public List<HttpRequestMessage> OrdinaryRequests { get; } = [];
@@ -172,6 +186,15 @@ public sealed class TestApiBoundaryTests
             var path = request.RequestUri!.AbsolutePath;
             Paths.Add($"{request.Method.Method} {path}");
             if (request.Headers.Contains("X-Vennusign-Back-Office-Token")) OrdinaryRequests.Add(request);
+
+            if (refuseNorthside && request.Method == HttpMethod.Post && path == "/api/back-office/menus")
+            {
+                refuseNorthside = false;
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent("A menu with that name already exists.", Encoding.UTF8, "text/plain")
+                });
+            }
 
             object? body = (request.Method.Method, path) switch
             {
