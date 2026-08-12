@@ -25,20 +25,30 @@ $payload = @{
 } | ConvertTo-Json
 
 $tempPayload = [IO.Path]::GetTempFileName()
+$tempResponse = [IO.Path]::GetTempFileName()
 try {
     [IO.File]::WriteAllText($tempPayload, $payload, [Text.UTF8Encoding]::new($false))
-    $response = & curl.exe -k -sS -f `
+    $statusCode = & curl.exe -k -sS `
+        -o $tempResponse `
+        -w "%{http_code}" `
         -H "X-Vennusign-Test-Api-Key: $TestApiKey" `
         -H "Content-Type: application/json" `
         --data-binary "@$tempPayload" `
         "$TestApiBaseUrl/api/test/seed"
 
     if ($LASTEXITCODE -ne 0) {
-        throw "The Northside Social seed request failed."
+        throw "The Northside Social seed request could not reach the Test API."
+    }
+
+    $response = [IO.File]::ReadAllText($tempResponse)
+    if ([int]$statusCode -lt 200 -or [int]$statusCode -ge 300) {
+        $detail = if ([string]::IsNullOrWhiteSpace($response)) { "No response body was returned." } else { $response.Trim() }
+        throw "The Northside Social seed request failed ($statusCode): $detail"
     }
 }
 finally {
     [IO.File]::Delete($tempPayload)
+    [IO.File]::Delete($tempResponse)
 }
 
 $seed = $response | ConvertFrom-Json
