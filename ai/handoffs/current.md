@@ -853,5 +853,9 @@ before the asynchronous removal completed. The test now waits for removal and pr
 the response is `placed` in the sibling section before Undo. That case and its full
 shard pass in fresh isolated venues.
 
-**Exact next action.** Commit the final evidence candidate and obtain independent
-review of that exact SHA. Owner acceptance remains the next gate after approval.
+Independent review of `e596d21e10f665a6232891aa78d17309a6b2bd21`
+returned COMMENT with no product or code blocker. Every prior finding is closed.
+
+**Exact next action.** Run the five-case Slice 3 owner acceptance workbook at
+`docs/features/menus/m3-a-s3-acceptance-workbook.html` against the reviewed candidate.
+Do not push, merge, close #703 or release the tracker claim until the owner accepts.
