@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-11, after Menus Milestone 3 was merged and closed.
+Updated 2026-08-12, during Menus M3-A Slice 2 review remediation.
 
 ## Current State
 
@@ -25,18 +25,16 @@ Updated 2026-08-11, after Menus Milestone 3 was merged and closed.
 
 ## Exact Next Action
 
-1. **Menus M3-A, slice 0 — foundations.** Branch from `master` at `6bf0f75`. Work
-   plan: `docs/design/approved/menus/m3-a/work-plan.md`. Each slice is its own
-   independently mergeable PR per `AGENTS.md` — the M3 branch is deleted and must not
-   be continued. Claim it in `tracker/assignments.json` under your own owner name
-   before touching code.
+1. **Finish Menus M3-A Slice 2 remediation on PR #700.** The active branch is
+   `feature/menus-m3a-s2-sections-history`. Re-run the full local gate, commit and
+   push with `[skip ci]`, request an exact-head independent review, and only then
+   hand the Slice 2 workbook to the owner.
 
-2. **Two things carry forward from M3 and must not be lost.** The owner holds a set of
-   **deferred visual notes** on the builder — a second pass they held back until the
-   acceptance remediation was done, and which merging did not discharge. And
-   **migration 061 against a pre-migration dirty database remains UNVERIFIED** from
-   committed evidence, exactly as the independent review said; the committed coverage
-   proves post-schema behaviour, not the upgrade exercise.
+2. Slice 1 is merged and owner-approved. Slice 2's first review blockers were a
+   case-only section rename no-op and stale page-history response overwrite. Both
+   remediations have focused regression tests with observed red/green evidence.
+   Remaining review follow-ups are tracked in #701 (page lifecycle history) and
+   #702 (idempotent section-create retry).
 
 3. Standing owner decisions carried out of Milestone 1: audit record kept as is (#677),
    legacy columns kept, and the three menu capabilities to become separately grantable

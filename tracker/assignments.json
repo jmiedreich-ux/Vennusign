@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-12T03:28:00Z",
+  "updatedUtc": "2026-08-12T06:40:00Z",
   "activeAssignments": [
     {
       "assignment": "Menus M3-A — slice 2 (sections and page history)",
@@ -9,9 +9,9 @@
       "owner": "Codex for JeremyPC",
       "claimedUtc": "2026-08-12T03:28:00Z",
       "headAtClaim": "4c9ccfb2e135073f7f32716ba16b84105b7d437c",
-      "status": "claimed; authority and existing-behavior gap audit in progress",
+      "status": "PR #700 independent review remediation; local exact-head gate pending",
       "startHere": "docs/design/approved/menus/m3-a/work-plan.md",
-      "notes": "Slice 1 merged as 4c9ccfb after owner approval and explicit waiver of further independent review. Section selection/add/rename/reorder/delete/reassignment shipped early there and must be gap-audited/reused. Principal missing vertical is page-scoped history under the section rail, with menu-level facts routed to full Menu history. CI is suspended."
+      "notes": "Slice 1 merged as 4c9ccfb after owner approval. Slice 2 review found case-only rename and stale-response race blockers; both are remediated with red/green regression evidence. #701 and #702 track explicitly deferred contract expansions. CI is suspended."
     }
   ],
   "desktopSessionLock": null,

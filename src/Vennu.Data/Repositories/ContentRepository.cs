@@ -531,7 +531,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         SET Name = @Name, UpdatedUtc = @Now
         OUTPUT inserted.PageId, deleted.Name INTO @Changed(PageId,OldName)
         WHERE Id = @SectionId AND MenuId = @MenuId AND VenueId = @VenueId
-          AND Name <> @Name;
+          AND Name COLLATE Latin1_General_100_BIN2 <> @Name COLLATE Latin1_General_100_BIN2;
 
         INSERT dbo.MenuHistoryEntries
             (Id,VenueId,MenuId,PageId,PageName,Kind,Detail,Author,OccurredUtc)
@@ -702,9 +702,9 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             SELECT N'not_found' AS Outcome, NULL AS Name, NULL AS Description, NULL AS Price;
         END
         ELSE IF @Guarded = 1
-           AND (@Name <> @ExpectedName
-             OR ISNULL(@Description, N'') <> ISNULL(@ExpectedDescription, N'')
-             OR ISNULL(@Price, N'') <> ISNULL(@ExpectedPrice, N''))
+           AND (@Name COLLATE Latin1_General_100_BIN2 <> @ExpectedName COLLATE Latin1_General_100_BIN2
+             OR ISNULL(@Description, N'') COLLATE Latin1_General_100_BIN2 <> ISNULL(@ExpectedDescription, N'') COLLATE Latin1_General_100_BIN2
+             OR ISNULL(@Price, N'') COLLATE Latin1_General_100_BIN2 <> ISNULL(@ExpectedPrice, N'') COLLATE Latin1_General_100_BIN2)
         BEGIN
             ROLLBACK TRANSACTION;
             SELECT N'item_changed' AS Outcome, @Name AS Name, @Description AS Description, @Price AS Price;

@@ -384,6 +384,7 @@ export default function MenuBuilder({
   const [assignmentChoicePageId, setAssignmentChoicePageId] = useState<string | null>(null);
   const [assignmentAddingScreenId, setAssignmentAddingScreenId] = useState<string | null>(null);
   const [viewingScreenId, setViewingScreenId] = useState<string | null>(null);
+  const pageHistoryRequest = useRef(0);
   const undoStack = useRef<UndoStep[]>([]);
   const redoStack = useRef<UndoStep[]>([]);
   const [historyDepth, setHistoryDepth] = useState({ undo: 0, redo: 0 });
@@ -417,11 +418,13 @@ export default function MenuBuilder({
   const pages = board?.pages ?? [];
 
   const refreshPageHistory = useCallback(async (pageId: string) => {
+    const request = ++pageHistoryRequest.current;
     setPageHistoryError(false);
     try {
-      setPageHistory(await loadPageHistory(configuration, credential(), menuId, pageId));
+      const entries = await loadPageHistory(configuration, credential(), menuId, pageId);
+      if (pageHistoryRequest.current === request) setPageHistory(entries);
     } catch {
-      setPageHistoryError(true);
+      if (pageHistoryRequest.current === request) setPageHistoryError(true);
     }
   }, [configuration, credential, menuId]);
 
@@ -438,6 +441,7 @@ export default function MenuBuilder({
   }, [activePageId, board, place.sectionId]);
   useEffect(() => {
     if (!activePageId) {
+      pageHistoryRequest.current += 1;
       setPageHistory([]);
       return;
     }

@@ -1785,8 +1785,14 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
             venueId, menuId, added, "Desserts", now, page.Id, "Jeremy")).Outcome);
         Assert.True(await repository.RenameSectionAsync(
             venueId, menuId, added, "Sweet things", now.AddSeconds(1), "Jeremy"));
+        Assert.True(await repository.RenameSectionAsync(
+            venueId, menuId, added, "SWEET THINGS", now.AddSeconds(2), "Jeremy"));
+        Assert.Contains(MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId))!.Sections!,
+            section => section.SectionId == added && section.Name == "SWEET THINGS");
+        Assert.True(await repository.RenameSectionAsync(
+            venueId, menuId, added, "SWEET THINGS", now.AddSeconds(3), "Jeremy"));
         Assert.Equal(ReorderOutcomes.Reordered, (await repository.ReorderSectionsGuardedAsync(
-            venueId, menuId, [added, existing], now.AddSeconds(2), "Jeremy")).Outcome);
+            venueId, menuId, [added, existing], now.AddSeconds(4), "Jeremy")).Outcome);
         await repository.CreateItemOnMenuAsync(new Item
         {
             Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("history-item"), Price = "8"
@@ -1795,11 +1801,11 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         // A stale destination is refused before either the content or its history
         // can change. This is the atomicity boundary Slice 2 depends on.
         Assert.Equal(SectionOutcomes.DestinationMissing, (await repository.DeleteSectionAsync(
-            venueId, menuId, added, Guid.NewGuid(), false, "Jeremy", now.AddSeconds(3))).Outcome);
+            venueId, menuId, added, Guid.NewGuid(), false, "Jeremy", now.AddSeconds(5))).Outcome);
 
         var history = await repository.GetPageHistoryAsync(venueId, menuId, page.Id, 20);
         Assert.Equal(
-            [MenuHistoryKinds.SectionsReordered, MenuHistoryKinds.SectionRenamed, MenuHistoryKinds.SectionAdded],
+            [MenuHistoryKinds.SectionsReordered, MenuHistoryKinds.SectionRenamed, MenuHistoryKinds.SectionRenamed, MenuHistoryKinds.SectionAdded],
             history.Select(entry => entry.Kind).ToArray());
         Assert.All(history, entry =>
         {
@@ -1811,7 +1817,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         Assert.DoesNotContain(history, entry => entry.Kind == MenuHistoryKinds.SectionDeleted);
 
         Assert.Equal(SectionOutcomes.Deleted, (await repository.DeleteSectionAsync(
-            venueId, menuId, added, null, true, "Jeremy", now.AddSeconds(4))).Outcome);
+            venueId, menuId, added, null, true, "Jeremy", now.AddSeconds(6))).Outcome);
         Assert.Equal(MenuHistoryKinds.SectionDeleted,
             (await repository.GetPageHistoryAsync(venueId, menuId, page.Id, 20)).First().Kind);
 

@@ -84,6 +84,28 @@ test.describe("menu pages", () => {
     await expect(page.getByTestId("page-history-entry").first()).toContainText("Section added");
   });
 
+  test("a late history response cannot replace the newly selected page's history", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "history-race", pageCount: 2, sectionCount: 2 });
+    let releaseFirst: (() => void) | undefined;
+    const firstReleased = new Promise<void>(resolve => { releaseFirst = resolve; });
+    let delayed = false;
+    await page.route(`**/api/back-office/content/menus/${data.menuId}/pages/${data.pages[0].pageId}/history`, async route => {
+      if (!delayed) {
+        delayed = true;
+        await firstReleased;
+      }
+      await route.fallback();
+    });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await page.getByTestId("page-tab").nth(1).click();
+    await expect(page.getByTestId("page-history")).toContainText(data.pages[1].name);
+    await expect(page.getByTestId("page-history-entry").first()).toContainText(data.sections[1].name);
+    releaseFirst!();
+    await page.waitForTimeout(300);
+    await expect(page.getByTestId("page-history-entry").first()).toContainText(data.sections[1].name);
+    await expect(page.getByTestId("page-history")).not.toContainText(data.sections[0].name);
+  });
+
   test("tabs switch the page content and blank add is abandoned", async ({ page }) => {
     const data = await seed({ role: "owner", label: "pages", pageCount: 2, sectionCount: 2, itemsPerSection: 1 });
     await openMenuBuilderAs(page, "owner", data.menuId);
