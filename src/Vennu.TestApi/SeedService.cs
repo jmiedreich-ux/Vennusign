@@ -115,10 +115,27 @@ public sealed class SeedService(ProductApiClient product)
         SeedRequest request,
         CancellationToken cancellationToken)
     {
-        const string menuName = "Northside Social";
         var suffix = Guid.NewGuid().ToString("N")[..8];
-        var menu = await product.SendAsync<MenuResponse>(
-            HttpMethod.Post, "/api/back-office/menus", token, new { name = menuName, theme = "northside-social" }, cancellationToken).ConfigureAwait(false);
+        var menuName = "Northside Social";
+        MenuResponse menu;
+        try
+        {
+            menu = await product.SendAsync<MenuResponse>(
+                HttpMethod.Post, "/api/back-office/menus", token, new { name = menuName, theme = "northside-social" }, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (ProductApiException exception) when (
+            exception.StatusCode == StatusCodes.Status400BadRequest &&
+            exception.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+        {
+            // Showcase databases commonly outlive the process that seeded them.
+            // Keep an earlier Northside menu intact and create another genuine,
+            // themed menu instead of making a repeat run destructive.
+            menuName = $"Northside Social {suffix}";
+            menu = await product.SendAsync<MenuResponse>(
+                HttpMethod.Post, "/api/back-office/menus", token, new { name = menuName, theme = "northside-social" }, cancellationToken)
+                .ConfigureAwait(false);
+        }
 
         var pages = (await product.SendAsync<IReadOnlyCollection<PageResponse>>(
             HttpMethod.Get, $"/api/back-office/content/menus/{menu.Id}/pages", token, null, cancellationToken)
