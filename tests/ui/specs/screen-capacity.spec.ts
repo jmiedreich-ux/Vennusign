@@ -40,7 +40,8 @@ test("3-1 existing screens keep every action while capacity is exhausted", async
   // Adding capacity is the only thing the allowance may block.
   await expect(page.getByTestId("pair-screen")).toBeDisabled();
 
-  const card = page.locator('[data-testid="screen-card"][data-screen-id="74000000-0000-0000-0000-000000000003"]');
+  const tag = (process.env.VENNU_ISOLATION_TAG ?? "0000").toLowerCase();
+  const card = page.locator(`[data-testid="screen-card"][data-screen-id="74000000-0000-0000-${tag}-000000000003"]`);
   await expect(card).toBeVisible();
   await expect(card.getByTestId("screen-preview"), "preview must remain available").toBeEnabled();
   await expect(card.getByTestId("screen-push"), "push must remain available").toBeEnabled();

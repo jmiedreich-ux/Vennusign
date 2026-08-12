@@ -910,6 +910,13 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         DELETE p OUTPUT deleted.PageId,i.Name INTO @Removed(PageId,ItemName)
         FROM dbo.Placements p INNER JOIN dbo.Items i ON i.Id=p.ItemId AND i.VenueId=p.VenueId
         WHERE p.MenuId=@MenuId AND p.PageId=@PageId AND p.ItemId=@ItemId AND p.VenueId=@VenueId;
+        ;WITH Ordered AS
+        (
+            SELECT p.Id,ROW_NUMBER() OVER (PARTITION BY p.MenuSectionId ORDER BY p.SortOrder,p.Id)-1 AS NewSortOrder
+            FROM dbo.Placements p WHERE p.MenuId=@MenuId AND p.PageId=@PageId AND p.VenueId=@VenueId
+        )
+        UPDATE p SET SortOrder=o.NewSortOrder,UpdatedUtc=@Now
+        FROM dbo.Placements p INNER JOIN Ordered o ON o.Id=p.Id;
         INSERT dbo.MenuHistoryEntries (Id,VenueId,MenuId,PageId,PageName,Kind,Detail,Author,OccurredUtc)
         SELECT NEWID(),@VenueId,@MenuId,r.PageId,pg.Name,N'item_removed',CONCAT(r.ItemName,N' removed from this page'),@Author,@Now
         FROM @Removed r INNER JOIN dbo.MenuPages pg ON pg.Id=r.PageId AND pg.MenuId=@MenuId AND pg.VenueId=@VenueId;

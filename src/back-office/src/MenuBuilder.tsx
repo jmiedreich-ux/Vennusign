@@ -399,6 +399,7 @@ export default function MenuBuilder({
   const [editingRailSection, setEditingRailSection] = useState<{ sectionId: string; name: string } | null>(null);
   const [draggedSectionId, setDraggedSectionId] = useState<string | null>(null);
   const [confirmPageDelete, setConfirmPageDelete] = useState<{ pageId: string; name: string; destinationPageId: string; sectionCount: number; mode: "move" | "delete" } | null>(null);
+  const [confirmItemRemove, setConfirmItemRemove] = useState(false);
 
   const discardRef = useDialogFocus(confirmDiscard);
   const deleteRef = useDialogFocus(Boolean(confirmDelete));
@@ -408,6 +409,7 @@ export default function MenuBuilder({
   const historyRef = useDialogFocus(historyOpen);
   const pageDeleteRef = useDialogFocus(Boolean(confirmPageDelete));
   const fitRef = useDialogFocus(fitOpen);
+  const itemRemoveRef = useDialogFocus(confirmItemRemove);
   const closeAssignmentChoice = () => {
     const trigger = assignmentChoiceScreenId;
     setAssignmentChoiceScreenId(null);
@@ -829,13 +831,10 @@ export default function MenuBuilder({
 
   const beginItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
-    const row = (event.target as HTMLElement).closest<HTMLElement>("[data-item-id]");
+    const handle = (event.target as HTMLElement).closest<HTMLElement>('[data-testid="item-drag-handle"]');
+    const row = handle?.closest<HTMLElement>("[data-item-id]");
     if (!row?.dataset.itemId || !row.dataset.sectionId) return;
-
-    // The pill hangs left of the logical row. Only that compact hit area starts
-    // a reorder; clicking the menu content keeps selecting and editing it.
-    const box = row.getBoundingClientRect();
-    if (event.clientX > box.left + 12) return;
+    event.preventDefault();
 
     pointerDrag.current = {
       pointerId: event.pointerId,
@@ -847,6 +846,8 @@ export default function MenuBuilder({
       target: null
     };
     event.currentTarget.setPointerCapture(event.pointerId);
+    const canvas = event.currentTarget;
+    window.addEventListener("pointerup", release => completeItemDrag(release.pointerId, canvas, release.clientX, release.clientY), { once: true });
   };
 
   const trackItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -856,9 +857,15 @@ export default function MenuBuilder({
 
     drag.active = true;
     event.preventDefault();
-    const row = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-item-id]");
+    const row = [...event.currentTarget.querySelectorAll<HTMLElement>("[data-item-id]")].find(candidate => {
+      const box = candidate.getBoundingClientRect();
+      return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+    });
     if (!row?.dataset.itemId || !row.dataset.sectionId) {
-      const section = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-section-id]");
+      const section = [...event.currentTarget.querySelectorAll<HTMLElement>("[data-section-id]")].find(candidate => {
+        const box = candidate.getBoundingClientRect();
+        return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+      });
       if (section?.dataset.sectionId && itemsOf(board, section.dataset.sectionId).length === 0) {
         const target: DropTarget = { itemId: "", sectionId: section.dataset.sectionId, edge: "after" };
         drag.target = target;
@@ -884,12 +891,31 @@ export default function MenuBuilder({
     );
   };
 
-  const finishItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+  function completeItemDrag(pointerId: number, _currentTarget: HTMLDivElement, clientX: number, clientY: number) {
     const drag = pointerDrag.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (!drag || drag.pointerId !== pointerId) return;
+    if (drag.active) {
+      const row = [..._currentTarget.querySelectorAll<HTMLElement>("[data-item-id]")].find(candidate => {
+        const box = candidate.getBoundingClientRect();
+        return clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom;
+      });
+      if (row?.dataset.itemId && row.dataset.sectionId) {
+        const box = row.getBoundingClientRect();
+        drag.target = { itemId: row.dataset.itemId, sectionId: row.dataset.sectionId, edge: clientY < box.top + box.height / 2 ? "before" : "after" };
+      } else {
+        const section = [..._currentTarget.querySelectorAll<HTMLElement>("[data-section-id]")].find(candidate => {
+          const box = candidate.getBoundingClientRect();
+          return clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom;
+        });
+        if (section?.dataset.sectionId && itemsOf(board, section.dataset.sectionId).length === 0) {
+          drag.target = { itemId: "", sectionId: section.dataset.sectionId, edge: "after" };
+        } else {
+          drag.target = null;
+        }
+      }
+    }
     pointerDrag.current = null;
     setDropTarget(null);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     if (!drag.active || !drag.target) return;
 
     suppressCanvasClick.current = true;
@@ -936,6 +962,10 @@ export default function MenuBuilder({
       undo: () => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, ids),
       redo: () => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, destinationAfter)
     });
+  }
+
+  const finishItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    completeItemDrag(event.pointerId, event.currentTarget, event.clientX, event.clientY);
   };
 
   const cancelItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -1179,7 +1209,6 @@ export default function MenuBuilder({
     });
   };
 
-  const [confirmItemRemove, setConfirmItemRemove] = useState(false);
   const removeFromBoard = async () => {
     if (!selected) return;
     if (!confirmItemRemove) {
@@ -1187,13 +1216,16 @@ export default function MenuBuilder({
       return;
     }
     const { item, sectionId } = selected;
+    const sectionItems = itemsOf(board, sectionId);
+    const selectedIndex = sectionItems.findIndex(candidate => candidate.itemId === item.itemId);
+    const nextSelection = sectionItems[selectedIndex + 1]?.itemId ?? sectionItems[selectedIndex - 1]?.itemId ?? null;
     const pageId = activePageId;
     if (!pageId) return;
     setConfirmItemRemove(false);
     await run(
       async () => {
         await removeMenuItem(configuration, credential(), menuId, pageId, item.itemId);
-        setPlace(current => ({ ...current, selectedItemId: null }));
+        setPlace(current => ({ ...current, selectedItemId: nextSelection }));
       },
       {
         describe: "Remove from this page",
@@ -1991,7 +2023,11 @@ export default function MenuBuilder({
             data-testid="canvas"
             onPointerDown={beginItemDrag}
             onPointerMove={trackItemDrag}
-            onPointerUp={finishItemDrag}
+            onPointerUpCapture={finishItemDrag}
+            onMouseUp={event => {
+              const drag = pointerDrag.current;
+              if (drag) completeItemDrag(drag.pointerId, event.currentTarget, event.clientX, event.clientY);
+            }}
             onPointerCancel={cancelItemDrag}
           >
             {place.view === "whole-board" ? (
@@ -2000,6 +2036,8 @@ export default function MenuBuilder({
                 unavailableItemIds={unavailableIds}
                 surface="preview"
                 keepUnavailable
+                itemsDraggable
+                keepEmptySections
                 unavailableNotes={boardNotes}
               />
             ) : (
@@ -2010,6 +2048,7 @@ export default function MenuBuilder({
                   surface="preview"
                   keepUnavailable
                   itemsDraggable
+                  keepEmptySections
                   unavailableNotes={boardNotes}
                 />
               </BoardStage>
@@ -2069,7 +2108,14 @@ export default function MenuBuilder({
           </div>
 
           {place.view === "one-section" && place.sectionId ? (
-            <div className="builder__add-row">
+            <div
+              className="builder__add-row"
+              onBlurCapture={event => {
+                if (addQuery.trim() || event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+                setAddPrice("");
+                setAddSectionId(null);
+              }}
+            >
               {addSectionId === place.sectionId ? (
                 <>
                   <input
@@ -2080,6 +2126,10 @@ export default function MenuBuilder({
                     data-testid="add-item-input"
                     onChange={event => setAddQuery(event.target.value)}
                     onKeyDown={event => {
+                      if (event.key === "Enter" && addQuery.trim()) {
+                        if (hits[0]) void place_(place.sectionId!, { itemId: hits[0].itemId });
+                        else void place_(place.sectionId!, { name: addQuery.trim(), price: addPrice });
+                      }
                       if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
                     }}
                   />
@@ -2718,7 +2768,7 @@ export default function MenuBuilder({
 
       {confirmItemRemove && selected ? (
         <div className="builder__scrim" role="presentation">
-          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="remove-item-title" data-testid="remove-item-dialog">
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="remove-item-title" data-testid="remove-item-dialog" ref={itemRemoveRef}>
             <h2 id="remove-item-title">Remove {selected.item.name} from {pages.find(page => page.pageId === activePageId)?.name ?? "this page"}?</h2>
             <p>It stays in your item library, and on any other page using it.</p>
             <div className="builder__dialog-actions">

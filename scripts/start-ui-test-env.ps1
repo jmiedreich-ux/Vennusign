@@ -216,6 +216,7 @@ if (-not $SkipFixture) {
             $sql = $sql -creplace "TRACK1-$($role.Key.ToUpperInvariant())@LOCAL\.VENNU\.TEST", "TRACK1-$($role.Key.ToUpperInvariant())-$IsolationTag@LOCAL.VENNU.TEST"
         }
         $sql = $sql -replace "N'sc-t1demo'", "N'sc-t1d$($IsolationTag.Substring($IsolationTag.Length - 3))'"
+        $sql = $sql -replace "N'sc-cap001'", "N'sc-ca$($IsolationTag.Substring($IsolationTag.Length - 4))'"
     }
     $generated = Join-Path $logRoot "fixture-$IsolationTag.sql"
     Set-Content -LiteralPath $generated -Value $sql -Encoding utf8

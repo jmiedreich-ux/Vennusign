@@ -15,6 +15,7 @@ import { backdateAvailability, seed } from "../seed";
  */
 
 test.describe("the builder", () => {
+  test.beforeEach(({}, testInfo) => test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed)."));
   test("a card opens the builder at its own address, and a refresh stays there", async ({ page }) => {
     const data = await seed({ role: "owner", label: "route" });
 
@@ -817,6 +818,107 @@ test.describe("the builder", () => {
   });
 });
 
+test.describe("M3-A Slice 3 page-scoped items", () => {
+  test.beforeEach(({}, testInfo) => test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed)."));
+  const owned = { "X-Vennusign-Back-Office-Token": tokens.owner };
+
+  test("inline add uses name then price, preselects a library match, abandons blank, and updates capacity while typing", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed).");
+    const data = await seed({ role: "owner", label: "slice3-add", screenState: "has-not-taken-this-yet", itemsPerSection: 18 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("open-add-item").click();
+    const name = page.getByTestId("add-item-input");
+    const price = page.getByTestId("add-item-price");
+    await expect(name).toBeFocused();
+    await name.fill("Draft capacity item");
+    await expect(page.getByTestId("capacity-banner")).toHaveAttribute("data-dropped-items", /Draft capacity item/);
+    await expect(page.getByTestId("add-item-create")).toBeVisible();
+    await name.press("Tab");
+    await expect(price).toBeFocused();
+    await price.fill("MP");
+    await price.press("Enter");
+    await expect(page.getByTestId("item-price")).toHaveValue("MP");
+
+    await page.reload();
+    await expect(page.getByTestId("canvas")).toContainText("Draft capacity item");
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("add-item-input").fill(data.itemName);
+    await expect(page.getByTestId("add-item-result").first()).toHaveAttribute("aria-selected", "true");
+    await page.getByTestId("add-item-input").press("Enter");
+    await expect(page.getByText("That one is already on this board — here it is.")).toBeVisible();
+
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("add-item-input").press("Escape");
+    await expect(page.getByTestId("add-item-input")).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByTestId("canvas")).not.toContainText("Unnamed item");
+  });
+
+  test("a real pointer moves an item across sections and into an empty section, then refresh preserves it", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed).");
+    const data = await seed({ role: "owner", label: "slice3-cross-drag", sectionCount: 2, itemsPerSection: 1 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await page.getByTestId("viewing-chip").filter({ hasText: "Whole page" }).click();
+
+    const sourceRow = page.locator(`[data-section-id="${data.sections[0].sectionId}"] [data-item-id]`).first();
+    const destinationRow = page.locator(`[data-section-id="${data.sections[1].sectionId}"] [data-item-id]`).first();
+    const handle = await sourceRow.getByTestId("item-drag-handle").boundingBox();
+    const target = await destinationRow.boundingBox();
+    expect(handle).not.toBeNull();
+    expect(target).not.toBeNull();
+    await page.mouse.move(handle!.x + handle!.width / 2, handle!.y + handle!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, { steps: 24 });
+    await page.mouse.up();
+    await expect(page.locator(`[data-section-id="${data.sections[1].sectionId}"] [data-item-id]`)).toHaveCount(2);
+
+    const movedRow = page.locator(`[data-section-id="${data.sections[1].sectionId}"] [data-item-id="${data.items[0].itemId}"]`);
+    const movedHandle = await movedRow.getByTestId("item-drag-handle").boundingBox();
+    const emptySection = await page.getByTestId("canvas").locator(`[data-section-id="${data.sections[0].sectionId}"]`).boundingBox();
+    expect(movedHandle).not.toBeNull();
+    expect(emptySection).not.toBeNull();
+    await page.mouse.move(movedHandle!.x + movedHandle!.width / 2, movedHandle!.y + movedHandle!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(emptySection!.x + emptySection!.width / 2, emptySection!.y + emptySection!.height / 2, { steps: 24 });
+    await page.mouse.up();
+    await expect(page.locator(`[data-section-id="${data.sections[0].sectionId}"] [data-item-id="${data.items[0].itemId}"]`)).toBeVisible();
+
+    await page.reload();
+    await page.getByTestId("viewing-chip").filter({ hasText: "Whole page" }).click();
+    await expect(page.locator(`[data-section-id="${data.sections[0].sectionId}"] [data-item-id="${data.items[0].itemId}"]`)).toBeVisible();
+    await expect(page.getByTestId("page-history-entry").first()).toContainText("moved");
+  });
+
+  test("removal names the page, cancel preserves it, confirm keeps the library and another page, and selection advances", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "slice3-remove", pageCount: 2, sectionCount: 2, itemsPerSection: 2 });
+    const shared = data.items.find(item => item.sectionId === data.sections[0].sectionId)!;
+    const placed = await page.request.post(
+      `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/sections/${data.sections[1].sectionId}/items`,
+      { headers: owned, data: { itemId: shared.itemId } }
+    );
+    expect(placed.ok()).toBeTruthy();
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await page.locator(`[data-item-id="${shared.itemId}"]`).click();
+    await page.getByTestId("remove-item").click();
+    const dialog = page.getByTestId("remove-item-dialog");
+    await expect(dialog).toContainText(data.pages[0].name);
+    await expect(dialog).toContainText("It stays in your item library, and on any other page using it.");
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(page.locator(`[data-item-id="${shared.itemId}"]`)).toBeVisible();
+
+    await page.getByTestId("remove-item").click();
+    await dialog.getByRole("button", { name: "Remove from this page" }).click();
+    await expect(page.locator(`[data-item-id="${shared.itemId}"]`)).toHaveCount(0);
+    await expect(page.getByTestId("inspector-empty")).toHaveCount(0);
+    await page.getByTestId("page-tab").nth(1).click();
+    await expect(page.locator(`[data-item-id="${shared.itemId}"]`)).toBeVisible();
+    await page.reload();
+    await page.getByTestId("page-tab").nth(1).click();
+    await expect(page.locator(`[data-item-id="${shared.itemId}"]`)).toBeVisible();
+  });
+});
+
 /**
  * The independent review of PR #691, answered in the browser.
  *
@@ -825,6 +927,7 @@ test.describe("the builder", () => {
  * against the code as it was before the fix, not only against the fix.
  */
 test.describe("what the independent review found", () => {
+  test.beforeEach(({}, testInfo) => test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed)."));
   const owned = { "X-Vennusign-Back-Office-Token": tokens.owner };
 
   test("a save that fails is retried on its own, and Publish waits for it (Q197)", async ({ page }) => {

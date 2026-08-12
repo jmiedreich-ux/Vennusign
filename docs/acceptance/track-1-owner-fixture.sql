@@ -312,10 +312,10 @@ USING (VALUES
     (@M1SecondItemId, 1)
 ) AS source (ItemId, SortOrder)
     ON target.MenuSectionId = @M1SectionId AND target.ItemId = source.ItemId
-WHEN MATCHED THEN UPDATE SET SortOrder = source.SortOrder, UpdatedUtc = @M1Now
+WHEN MATCHED THEN UPDATE SET PageId = @M1PageId, SortOrder = source.SortOrder, UpdatedUtc = @M1Now
 WHEN NOT MATCHED THEN
-    INSERT (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
-    VALUES (NEWID(), @M1VenueId, @M1MenuId, @M1SectionId, source.ItemId, source.SortOrder, @M1Now, @M1Now);
+    INSERT (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
+    VALUES (NEWID(), @M1VenueId, @M1MenuId, @M1SectionId, @M1PageId, source.ItemId, source.SortOrder, @M1Now, @M1Now);
 
 -- Restore the second menu to exactly the one shared item on every fixture run.
 DELETE FROM dbo.Placements
@@ -324,10 +324,10 @@ WHERE MenuId = @M1SharedMenuId AND ItemId <> @M1ItemId;
 MERGE dbo.Placements AS target
 USING (VALUES (@M1ItemId, 0)) AS source (ItemId, SortOrder)
     ON target.MenuSectionId = @M1SharedSectionId AND target.ItemId = source.ItemId
-WHEN MATCHED THEN UPDATE SET SortOrder = source.SortOrder, UpdatedUtc = @M1Now
+WHEN MATCHED THEN UPDATE SET PageId = @M1SharedPageId, SortOrder = source.SortOrder, UpdatedUtc = @M1Now
 WHEN NOT MATCHED THEN
-    INSERT (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
-    VALUES (NEWID(), @M1VenueId, @M1SharedMenuId, @M1SharedSectionId, source.ItemId, source.SortOrder, @M1Now, @M1Now);
+    INSERT (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
+    VALUES (NEWID(), @M1VenueId, @M1SharedMenuId, @M1SharedSectionId, @M1SharedPageId, source.ItemId, source.SortOrder, @M1Now, @M1Now);
 
 -- Demo-created library items for this venue go with their availability rows,
 -- so re-runs cannot accumulate lookalikes the demo might then pick up.

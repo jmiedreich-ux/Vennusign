@@ -2210,6 +2210,53 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         Assert.Single(await repository.GetPageHistoryAsync(venueId, menuId, firstPage, 50), entry => entry.Kind == MenuHistoryKinds.ItemRemoved);
     }
 
+    [Fact]
+    public async Task MovingAcrossPagesOrWithAStaleOrder_ChangesNothingAndWritesNoHistory()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var firstPage = (await repository.GetPagesAsync(venueId, menuId)).Single().Id;
+        var secondPage = Guid.NewGuid();
+        await repository.CreatePageAsync(venueId, menuId, secondPage, "Dinner", DateTime.UtcNow);
+        var source = await SeedSectionAsync(dataAccess, venueId, menuId, 0);
+        var sibling = await SeedSectionAsync(dataAccess, venueId, menuId, 1);
+        var otherPageSection = Guid.NewGuid();
+        await repository.CreateSectionOnMenuAsync(venueId, menuId, otherPageSection, "Other page", DateTime.UtcNow, secondPage);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("guarded-move") };
+        await repository.CreateItemOnMenuAsync(item, menuId, source, 500);
+        var historyBefore = (await repository.GetPageHistoryAsync(venueId, menuId, firstPage, 50)).Count;
+
+        var crossPage = await repository.MovePlacementGuardedAsync(
+            venueId, menuId, item.Id, source, otherPageSection, [], [item.Id], DateTime.UtcNow, author: "Jeremy");
+        var stale = await repository.MovePlacementGuardedAsync(
+            venueId, menuId, item.Id, source, sibling, [Guid.NewGuid()], [item.Id], DateTime.UtcNow, author: "Jeremy");
+
+        Assert.Equal(ReorderOutcomes.OrderStale, crossPage.Outcome);
+        Assert.Equal(ReorderOutcomes.OrderStale, stale.Outcome);
+        Assert.Contains(await repository.GetPlacementsAsync(venueId, menuId), placement => placement.ItemId == item.Id && placement.MenuSectionId == source);
+        Assert.Equal(historyBefore, (await repository.GetPageHistoryAsync(venueId, menuId, firstPage, 50)).Count);
+    }
+
+    [Fact]
+    public async Task RepeatingPageRemoval_IsAnIdempotentNoOpWithOneHistoryFact()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var pageId = (await repository.GetPagesAsync(venueId, menuId)).Single().Id;
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId, 0);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("idempotent-remove") };
+        await repository.CreateItemOnMenuAsync(item, menuId, sectionId, 500);
+
+        Assert.True(await repository.RemoveItemFromPageAsync(venueId, menuId, pageId, item.Id, DateTime.UtcNow, author: "Jeremy"));
+        Assert.False(await repository.RemoveItemFromPageAsync(venueId, menuId, pageId, item.Id, DateTime.UtcNow, author: "Jeremy"));
+
+        Assert.Single(await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50), entry => entry.Kind == MenuHistoryKinds.ItemRemoved);
+    }
+
     /// <summary>
     /// Wildcards typed into a search box are characters, not operators: somebody
     /// looking for "50% off" should not be shown the whole library.

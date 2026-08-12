@@ -44,6 +44,8 @@ export type BoardRendererProps = {
    * guest board never sets it, so a TV row is never draggable.
    */
   itemsDraggable?: boolean;
+  /** Keeps empty sections as editor drop targets. Ignored by guest surfaces. */
+  keepEmptySections?: boolean;
 };
 
 /**
@@ -65,7 +67,8 @@ export function BoardRenderer({
   surface = "guest",
   keepUnavailable = false,
   unavailableNotes = null,
-  itemsDraggable = false
+  itemsDraggable = false,
+  keepEmptySections = false
 }: BoardRendererProps) {
   // A theme written against a later engine is declined outright: rendering the
   // half we understand would be wrong without saying so.
@@ -74,7 +77,10 @@ export function BoardRenderer({
   // put a struck-through item on a real TV, which is the exact thing the
   // availability model exists to prevent — so the guard is here, not in a caller.
   const keeping = surface === "preview" && keepUnavailable;
-  const document = buildBoardDocument(board, unavailableItemIds, { keepUnavailable: keeping });
+  const document = buildBoardDocument(board, unavailableItemIds, {
+    keepUnavailable: keeping,
+    keepEmptySections: surface === "preview" && keepEmptySections
+  });
 
   return (
     <div
