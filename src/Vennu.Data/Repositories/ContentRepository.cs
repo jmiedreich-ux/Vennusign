@@ -942,8 +942,17 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
           SELECT @SectionExists=1 FROM dbo.MenuSections s WITH (UPDLOCK,HOLDLOCK)
           WHERE s.Id=@SectionId AND s.PageId=@PageId AND s.MenuId=@MenuId AND s.VenueId=@VenueId;
         SELECT @ItemName=Name FROM dbo.Items WHERE Id=@ItemId AND VenueId=@VenueId;
+        DECLARE @OnMenu INT=(SELECT COUNT(DISTINCT ItemId) FROM dbo.Placements WITH (UPDLOCK,HOLDLOCK)
+          WHERE MenuId=@MenuId AND VenueId=@VenueId);
+        DECLARE @AlreadyOnMenu BIT=CASE WHEN EXISTS(SELECT 1 FROM dbo.Placements
+          WHERE MenuId=@MenuId AND VenueId=@VenueId AND ItemId=@ItemId) THEN 1 ELSE 0 END;
 
-        IF @PageName IS NULL OR @SectionExists=0 OR @ItemName IS NULL OR @ExpectedHas=@DesiredHas
+        IF @DesiredHas=1 AND @AlreadyOnMenu=0 AND @OnMenu>=@ItemsPerMenuLimit
+        BEGIN
+          ROLLBACK TRANSACTION;
+          SELECT N'ceiling_reached' AS Outcome,0 AS Moved;
+        END
+        ELSE IF @PageName IS NULL OR @SectionExists=0 OR @ItemName IS NULL OR @ExpectedHas=@DesiredHas
            OR ABS((SELECT COUNT(*) FROM @Expected)-(SELECT COUNT(*) FROM @Desired))<>1
            OR EXISTS (
              SELECT 1 FROM @Expected e FULL OUTER JOIN (
@@ -2245,7 +2254,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
     public async Task<ReorderOutcome> TransitionPlacementGuardedAsync(
         Guid venueId, Guid menuId, Guid pageId, Guid sectionId, Guid itemId,
         IReadOnlyCollection<Guid> expectedItemIds, IReadOnlyCollection<Guid> desiredItemIds,
-        DateTime now, CancellationToken cancellationToken = default, string? author = null)
+        int itemsPerMenuLimit, DateTime now, CancellationToken cancellationToken = default, string? author = null)
     {
         ArgumentNullException.ThrowIfNull(expectedItemIds);
         ArgumentNullException.ThrowIfNull(desiredItemIds);
@@ -2263,6 +2272,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             VenueId = RequireId(venueId, nameof(venueId)), MenuId = RequireId(menuId, nameof(menuId)),
             PageId = RequireId(pageId, nameof(pageId)), SectionId = RequireId(sectionId, nameof(sectionId)),
             ItemId = RequireId(itemId, nameof(itemId)),
+            ItemsPerMenuLimit = itemsPerMenuLimit,
             ExpectedItemIdsJson = System.Text.Json.JsonSerializer.Serialize(expectedItemIds),
             DesiredItemIdsJson = System.Text.Json.JsonSerializer.Serialize(desiredItemIds), Now = now, Author = author
         }, cancellationToken).ConfigureAwait(false)).Single();

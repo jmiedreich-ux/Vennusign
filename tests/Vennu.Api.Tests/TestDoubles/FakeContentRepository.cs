@@ -32,6 +32,8 @@ internal sealed class FakeContentRepository : IContentRepository
     public Dictionary<string, int> Ceilings { get; } = new(StringComparer.Ordinal);
 
     public int MenuCount { get; set; } = 1;
+    public int? TransitionItemsPerMenuLimit { get; private set; }
+    public ReorderOutcome TransitionOutcome { get; set; } = new(ReorderOutcomes.Reordered, 1);
 
     public List<Guid> ResetAutomationVenues { get; } = [];
 
@@ -616,10 +618,11 @@ internal sealed class FakeContentRepository : IContentRepository
     public Task<ReorderOutcome> TransitionPlacementGuardedAsync(
         Guid venueId, Guid menuId, Guid pageId, Guid sectionId, Guid itemId,
         IReadOnlyCollection<Guid> expectedItemIds, IReadOnlyCollection<Guid> desiredItemIds,
-        DateTime now, CancellationToken cancellationToken = default, string? author = null) =>
-        throw new NotSupportedException(
-            "Placement Undo/Redo proves the expected order under the database lock that writes it. "
-            + "Assert it in Vennu.Data.IntegrationTests against a real database.");
+        int itemsPerMenuLimit, DateTime now, CancellationToken cancellationToken = default, string? author = null)
+    {
+        TransitionItemsPerMenuLimit = itemsPerMenuLimit;
+        return Task.FromResult(TransitionOutcome);
+    }
 
     public Task<bool> RemoveItemFromPageAsync(
         Guid venueId,

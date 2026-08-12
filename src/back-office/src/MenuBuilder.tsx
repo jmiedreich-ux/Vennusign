@@ -2139,7 +2139,7 @@ export default function MenuBuilder({
                     data-testid="add-item-input"
                     role="combobox"
                     aria-autocomplete="list"
-                    aria-expanded={hits.length > 0}
+                    aria-expanded={addQuery.trim().length > 0}
                     aria-controls={`add-item-results-${place.sectionId}`}
                     aria-activedescendant={hits[0] ? `add-item-option-${hits[0].itemId}` : undefined}
                     onChange={event => setAddQuery(event.target.value)}
@@ -2161,13 +2161,12 @@ export default function MenuBuilder({
                       if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
                     }}
                   />
-                  <ul id={`add-item-results-${place.sectionId}`} role="listbox" className="builder__add-results" data-testid="add-item-results">
+                  <div id={`add-item-results-${place.sectionId}`} role="listbox" className="builder__add-results" data-testid="add-item-results">
                     {hits.map(hit => {
                       const here = hit.boards.some(entry => entry.menuId === menuId);
                       const elsewhere = hit.boards.filter(entry => entry.menuId !== menuId);
                       return (
-                        <li key={hit.itemId}>
-                          <button
+                          <button key={hit.itemId}
                             type="button"
                             id={`add-item-option-${hit.itemId}`}
                             role="option"
@@ -2191,22 +2190,19 @@ export default function MenuBuilder({
                               {hit.isAvailable ? "" : " · 86'd right now"}
                             </span>
                           </button>
-                        </li>
                       );
                     })}
-                    {addQuery.trim() ? (
-                      <li>
-                        <button
-                          type="button"
-                          className="builder__add-create"
-                          data-testid="add-item-create"
-                          onClick={() => void place_(place.sectionId!, { name: addQuery.trim(), price: addPrice })}
-                        >
-                          Create “{addQuery.trim()}” as a new item
-                        </button>
-                      </li>
-                    ) : null}
-                  </ul>
+                  </div>
+                  {addQuery.trim() ? (
+                    <button
+                      type="button"
+                      className="builder__add-create"
+                      data-testid="add-item-create"
+                      onClick={() => void place_(place.sectionId!, { name: addQuery.trim(), price: addPrice })}
+                    >
+                      Create “{addQuery.trim()}” as a new item
+                    </button>
+                  ) : null}
                   {/* The bulk path lives on the add row, not on the rail's + (Q95). */}
                   <button
                     type="button"

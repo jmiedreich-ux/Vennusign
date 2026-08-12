@@ -703,9 +703,11 @@ public sealed class ContentService(
         IReadOnlyCollection<Guid> expectedItemIds, IReadOnlyCollection<Guid> desiredItemIds,
         string? author = null, CancellationToken cancellationToken = default)
     {
+        var ceilings = await library.GetResolvedCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var limit = ceilings.TryGetValue(MenuCeilings.ItemsPerMenu, out var configured) ? configured : int.MaxValue;
         var outcome = await library.TransitionPlacementGuardedAsync(
             venueId, menuId, pageId, sectionId, itemId, expectedItemIds, desiredItemIds,
-            timeProvider.GetUtcNow().UtcDateTime, cancellationToken, author).ConfigureAwait(false);
+            limit, timeProvider.GetUtcNow().UtcDateTime, cancellationToken, author).ConfigureAwait(false);
         if (outcome.Outcome == ReorderOutcomes.Reordered)
             await NotifyAsync(venueId, "item-placement-transitioned", menuId, cancellationToken).ConfigureAwait(false);
         return outcome;

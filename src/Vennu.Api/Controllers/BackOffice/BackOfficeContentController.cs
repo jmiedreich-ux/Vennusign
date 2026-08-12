@@ -884,9 +884,12 @@ public sealed class BackOfficeContentController(
         var outcome = await content.TransitionPlacementAsync(
             VenueId, menuId, pageId, request.SectionId, itemId,
             request.ExpectedItemIds, request.DesiredItemIds, Author, cancellationToken).ConfigureAwait(false);
-        return outcome.Outcome == ReorderOutcomes.Reordered
-            ? NoContent()
-            : Conflict(new { reason = ReorderOutcomes.OrderStale, message = "The page changed after this action. Nothing changed — reload and try again." });
+        return outcome.Outcome switch
+        {
+            ReorderOutcomes.Reordered => NoContent(),
+            PlaceExistingOutcomes.CeilingReached => Conflict(new { reason = PlaceExistingOutcomes.CeilingReached, message = "This menu is full. Nothing changed." }),
+            _ => Conflict(new { reason = ReorderOutcomes.OrderStale, message = "The page changed after this action. Nothing changed — reload and try again." })
+        };
     }
 
     /// <summary>

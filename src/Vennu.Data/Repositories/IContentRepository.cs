@@ -170,6 +170,7 @@ public interface IContentRepository
         Guid itemId,
         IReadOnlyCollection<Guid> expectedItemIds,
         IReadOnlyCollection<Guid> desiredItemIds,
+        int itemsPerMenuLimit,
         DateTime now,
         CancellationToken cancellationToken = default,
         string? author = null);

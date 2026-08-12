@@ -851,6 +851,7 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     await expect(page.getByTestId("add-item-input")).toHaveAttribute("role", "combobox");
     await expect(page.getByTestId("add-item-input")).toHaveAttribute("aria-expanded", "true");
     await expect(page.getByRole("listbox")).toBeVisible();
+    await expect(page.getByRole("listbox").getByTestId("add-item-create")).toHaveCount(0);
     await expect(page.getByTestId("add-item-input")).toHaveAttribute(
       "aria-activedescendant",
       await page.getByRole("option").first().getAttribute("id") ?? "missing-option-id"

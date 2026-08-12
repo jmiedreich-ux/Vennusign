@@ -830,3 +830,20 @@ coverage. CI remains suspended and Azure/external integrations remain owner-exem
 **Exact next action.** Commit this remediation candidate and obtain independent review
 of that exact SHA. Owner acceptance remains after approval; no push, PR or merge has
 occurred.
+
+The third independent review requested keyboard arrow navigation for the add-result
+combobox. The owner reaffirmed on 2026-08-12 that keyboard is out of scope. This is
+already the controlling Menus rule in `milestone-plan.md` and Q122/#673 specifically
+defers the add-row arrow/Enter flow. No new keyboard behavior or test will be built.
+The structural semantics still apply: the listbox owns only result options, Create is
+outside it, and expanded state describes the visible suggestion popup.
+
+The third review's other product finding is fixed: the public guarded transition
+route resolves the authoritative items-per-menu ceiling and the SQL transaction
+counts distinct menu items under its placement lock. Restoring an item already on
+another page does not increase that distinct count; adding a genuinely new menu item
+at the limit returns `ceiling_reached` with no placement or history write. The focused
+LocalDB regression is 2/2 with the stale inverse test, the service boundary regression
+is 1/1, Release/build/unit gates remain green, and the four isolated desktop Menus
+shards pass 68/68. The repository-wide exact-head Playwright shards are the remaining
+pre-review gate.

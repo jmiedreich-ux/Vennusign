@@ -69,6 +69,18 @@ public sealed class ContentServiceLogicTests
         return (service, library);
     }
 
+    [Fact]
+    public async Task PlacementTransition_PassesResolvedItemsCeilingToAtomicRepositoryBoundary()
+    {
+        var (service, library) = Build();
+        library.Ceilings[MenuCeilings.ItemsPerMenu] = 37;
+
+        await service.TransitionPlacementAsync(
+            VenueId, MenuId, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), [], [Guid.NewGuid()], "Owner");
+
+        Assert.Equal(37, library.TransitionItemsPerMenuLimit);
+    }
+
     // The statement refuses a publish whose diff was computed from a menu that has
     // since moved — the SQL suite proves that. What only the service can prove is
     // what happens next: it reads the menu again and ships what it actually is now,
