@@ -47,9 +47,16 @@ public sealed class MenuSectionManagementService(
         return new MenuEditorSnapshot(sections, itemGroups, new MenuEditorCapabilities(happyHour, allergenBadges, quickUpdate));
     }
 
+    public Task<Menu> CreateMenuAsync(
+        Guid venueId,
+        string name,
+        CancellationToken cancellationToken = default) =>
+        CreateMenuAsync(venueId, name, null, cancellationToken);
+
     public async Task<Menu> CreateMenuAsync(
         Guid venueId,
         string name,
+        string? theme,
         CancellationToken cancellationToken = default)
     {
         RequireId(venueId, nameof(venueId));
@@ -71,6 +78,7 @@ public sealed class MenuSectionManagementService(
             Id = Guid.NewGuid(),
             VenueId = venueId,
             Name = normalizedName,
+            Theme = string.IsNullOrWhiteSpace(theme) ? null : theme.Trim(),
             IsActive = true,
             CreatedUtc = now,
             UpdatedUtc = now
