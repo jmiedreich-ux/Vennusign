@@ -1,7 +1,19 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-12T05:05:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-12T21:24:44Z",
+  "activeAssignments": [
+    {
+      "assignment": "Menus M3-A — slice 3 (board and add-item)",
+      "issue": 703,
+      "branch": "feature/menus-m3a-s3-board-add-item",
+      "owner": "Codex for JeremyPC",
+      "claimedUtc": "2026-08-12T21:24:44Z",
+      "headAtClaim": "8bbafc274e52a065578d56ff1dc53cb10dadcd80",
+      "status": "claimed; item write-path and invariant audit in progress",
+      "startHere": "docs/design/approved/menus/m3-a/work-plan.md",
+      "notes": "Reuse the accepted board, assigned-screen geometry, fit engine, selection, inline editing, same-section drag, library search, inspector and page-history panel. Deliver inline name/price add, near-match reuse, atomic cross-section movement, page-scoped confirmed removal, live capacity feedback and attributable item history. Availability/86, publish/full history and import remain later slices. CI is suspended."
+    }
+  ],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
