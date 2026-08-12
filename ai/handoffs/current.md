@@ -733,3 +733,12 @@ tests were not run by owner scope. CI remains suspended.
 
 Exact next action: commit and push the accepted Slice 1 tree, obtain a fresh
 independent exact-SHA review on PR #697, then merge and release the tracker claim.
+
+The owner then explicitly waived any further independent review and directed that
+Slice 1 be closed and Slice 2 begun. The interrupted review found no product
+failure, but identified two controlled-record inconsistencies. They were corrected
+before merge: owner override O1 in `decisions.md` and the action inventory now
+authorize the accepted canvas inline editing, and the obsolete generated workbook
+that named an earlier SHA and stale seeded menu was removed. The owner-approved
+product candidate remains `1c52c2658966864d175b8666b0fc4722197afe92`;
+the closure commit changes authority/acceptance records only.

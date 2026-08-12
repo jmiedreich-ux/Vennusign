@@ -81,7 +81,7 @@ refinement needs recording.
 | # | Action | Trigger | Preconditions | Branches | End state | Status |
 |---|---|---|---|---|---|---|
 | E1 | Select item | Click row | — | — | Inspector loads that item | V2 |
-| E2 | Edit on the board | Click a row | — | **Nothing is edited on the board.** Adding is the only inline act; every edit happens in the panel. Reverses Q118, which allowed in-place price editing | Inspector loads the item | Decided |
+| E2 | Edit on the board | Click a section heading or an item's name, description or price | — | **Owner override O1:** the clicked value edits inline in the rendered theme typography; the matching inspector field is quietly cued · Enter/blur saves where applicable · Esc cancels · the inspector remains a complete alternative | Rail/board/inspector stay synchronized; no value is reformatted | Owner override 2026-08-11 |
 | E3 | Reorder or move item | Drag row | 2+ items on the page | Within its section → new order · **Across sections → the item moves to that section**, at the drop position · Dragging into an empty section is allowed | New order or new section | Decided |
 | E4 | Remove item | Control on the selected row | — | Always confirms, naming the page · Last item in a section → section remains, empty · Selection moves to the next valid item · Same action as H7 | Item removed from the page, kept in the library | Decided |
 | E5 | Add item | `+ Add an item` on the board, or the inspector button | A section is in scope | Row appears at the **end of that section**, caret in the name, Tab to price · Abandoned blank → silently discarded · Name near-matches the library → suggestion offered with the **existing item pre-selected**, since a tidied name is the common case (decision 33) · Unnamed at publish → listed at review to finish or drop, does not block the other changes · No price → legal (`MP` and blank are both real) | New draft item, inspector focused on it | Decided |
@@ -165,7 +165,7 @@ kept here so a branch and its amendment can be read together.
 | 4 | Decision 3 | An 86 still never queues — but its *cancellation* does, when it is a side effect of a queued edit (Available off) |
 | 5 | V2 §9 | Publish, exit, discard and restore sit behind one *Finish* menu; the change count is off the bar and lives in the menu |
 | 6 | Decision 11 | *Restore an earlier version* replaces *Go back to…*, and **"restore" leaves the banned-words list**. Decision 11's objection was that the word reads as version control; with restore-from-history deferred past M3 and the Finish menu action producing an ordinary draft, the word is now accurate. The `tests/ui` banned-words array drops it; "unpublish", "supersede" and "archive" stay |
-| 7 | Q118 | Nothing is edited on the board. Adding is the only inline act; edits happen in the panel |
+| 7 | Q118 / O1 | Existing section names and item name, description and price may be edited inline; the inspector remains a complete alternative |
 | 8 | V2 §5 | Viewing is chips — *Whole page* plus each section — collapsing behind *More ▾* past five |
 | 9 | V2 §7 | Items drag across sections, not only within one |
 | 10 | V2 §8 | Six add-item rules: end of section, name required, price optional, abandon-blank discards, unnamed listed at review, 86 inert until published once |
