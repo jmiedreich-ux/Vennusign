@@ -135,9 +135,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", label: "whole-page-edit", sectionCount: 2, itemsPerSection: 2 });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await page.getByTestId("viewing-chip").filter({ has: page.locator('[data-scope="whole-page"]') }).click().catch(async () => {
-      await page.locator('[data-testid="viewing-chip"][data-scope="whole-page"]').click();
-    });
+    await page.locator('[data-testid="viewing-chip"][data-scope="whole-page"]').click();
     const canvas = page.getByTestId("canvas");
     const frame = canvas.getByTestId("board-frame");
     await expect(frame).toBeVisible();
