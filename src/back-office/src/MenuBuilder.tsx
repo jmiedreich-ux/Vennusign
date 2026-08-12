@@ -773,11 +773,11 @@ export default function MenuBuilder({
   // ---- the canvas ----------------------------------------------------------
 
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [itemEdit, setItemEdit] = useState<{ itemId: string; field: "name" | "description" | "price"; value: string; box: DOMRect; typography: CSSProperties; caret: number } | null>(null);
+  const [itemEdit, setItemEdit] = useState<{ itemId: string; field: "name" | "description" | "price"; value: string; box: DOMRect; typography: CSSProperties; caret: number; scale: number } | null>(null);
   const itemEditRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const [inspectorCue, setInspectorCue] = useState<"name" | "description" | "price" | null>(null);
   const inspectorCueTimer = useRef<number>();
-  const [headingEdit, setHeadingEdit] = useState<{ sectionId: string; value: string; box: DOMRect; typography: CSSProperties } | null>(null);
+  const [headingEdit, setHeadingEdit] = useState<{ sectionId: string; value: string; box: DOMRect; typography: CSSProperties; scale: number } | null>(null);
 
   useEffect(() => () => {
     if (inspectorCueTimer.current) window.clearTimeout(inspectorCueTimer.current);
@@ -982,7 +982,7 @@ export default function MenuBuilder({
         const canvasBox = canvasRef.current.getBoundingClientRect();
         const box = heading.getBoundingClientRect();
         const computed = window.getComputedStyle(heading);
-        const stage = heading.closest<HTMLElement>(".builder__stage");
+        const stage = heading.closest<HTMLElement>(".builder__stage, .board-frame");
         const scale = Number.parseFloat(stage ? window.getComputedStyle(stage).getPropertyValue("--board-scale") : "1") || 1;
         const scaledLength = (value: string) => value.endsWith("px") ? `${Number.parseFloat(value) * scale}px` : value;
         setHeadingEdit({
@@ -994,6 +994,7 @@ export default function MenuBuilder({
             box.width,
             box.height
           ),
+          scale,
           typography: {
             fontFamily: computed.fontFamily,
             fontSize: scaledLength(computed.fontSize),
@@ -1019,7 +1020,7 @@ export default function MenuBuilder({
       const canvasBox = canvasRef.current.getBoundingClientRect();
       const cell = clicked.getBoundingClientRect();
       const computed = window.getComputedStyle(clicked);
-      const stage = clicked.closest<HTMLElement>(".builder__stage");
+      const stage = clicked.closest<HTMLElement>(".builder__stage, .board-frame");
       const scale = Number.parseFloat(stage ? window.getComputedStyle(stage).getPropertyValue("--board-scale") : "1") || 1;
       const scaledLength = (value: string) => value.endsWith("px") ? `${Number.parseFloat(value) * scale}px` : value;
       const found = findItem(board, itemId);
@@ -1036,6 +1037,7 @@ export default function MenuBuilder({
           cell.height
         ),
         caret: Math.max(0, Math.min((found.item[field] ?? "").length, Math.round(((event.clientX - cell.left) / Math.max(cell.width, 1)) * (found.item[field] ?? "").length))),
+        scale,
         typography: {
           fontFamily: computed.fontFamily,
           fontSize: scaledLength(computed.fontSize),
@@ -1980,7 +1982,7 @@ export default function MenuBuilder({
                 className={`builder__item-edit builder__item-edit--${itemEdit.field}`}
                 value={itemEdit.value} aria-label={itemEdit.field === "name" ? "Item name" : "Description"} data-testid={`${itemEdit.field}-edit`} maxLength={itemEdit.field === "name" ? 200 : 1000}
                 rows={1}
-                style={{ ...itemEdit.typography, left: `${itemEdit.box.left}px`, top: `${itemEdit.box.top}px`, width: `${Math.max(itemEdit.box.width, 160)}px`, height: `${Math.max(itemEdit.box.height, 34)}px` }}
+                style={{ ...itemEdit.typography, left: `${itemEdit.box.left}px`, top: `${itemEdit.box.top}px`, width: `${Math.max(itemEdit.box.width, 160 * itemEdit.scale)}px`, height: `${Math.max(itemEdit.box.height, 34 * itemEdit.scale)}px` }}
                 onChange={event => setItemEdit(current => (current ? { ...current, value: event.target.value } : current))}
                 onBlur={() => void commitItemEdit()}
                 onKeyDown={event => { if (itemEdit.field === "name" && event.key === "Enter") { event.preventDefault(); void commitItemEdit(); } if (event.key === "Escape") { setItemEdit(null); setInspectorCue(null); } }}
@@ -1988,7 +1990,7 @@ export default function MenuBuilder({
                 ref={itemEditRef as RefObject<HTMLInputElement>}
                 className="builder__item-edit builder__item-edit--price"
                 value={itemEdit.value} aria-label="Price" data-testid="price-edit" maxLength={40}
-                style={{ ...itemEdit.typography, left: `${itemEdit.box.left - 8}px`, top: `${itemEdit.box.top}px`, width: `${Math.max(itemEdit.box.width + 8, 68)}px`, height: `${Math.max(itemEdit.box.height, 24)}px` }}
+                style={{ ...itemEdit.typography, left: `${itemEdit.box.left - 8 * itemEdit.scale}px`, top: `${itemEdit.box.top}px`, width: `${Math.max(itemEdit.box.width + 8 * itemEdit.scale, 68 * itemEdit.scale)}px`, height: `${Math.max(itemEdit.box.height, 24 * itemEdit.scale)}px` }}
                 onChange={event => setItemEdit(current => (current ? { ...current, value: event.target.value } : current))}
                 onBlur={() => void commitItemEdit()}
                 onKeyDown={event => { if (event.key === "Enter") void commitItemEdit(); if (event.key === "Escape") { setItemEdit(null); setInspectorCue(null); } }}
@@ -2012,7 +2014,7 @@ export default function MenuBuilder({
                   ...headingEdit.typography,
                   left: `${headingEdit.box.left}px`,
                   top: `${headingEdit.box.top}px`,
-                  width: `${Math.max(headingEdit.box.width + 8, 120)}px`,
+                  width: `${Math.max(headingEdit.box.width + 8 * headingEdit.scale, 120 * headingEdit.scale)}px`,
                   height: `${headingEdit.box.height}px`
                 }}
                 onChange={event =>
