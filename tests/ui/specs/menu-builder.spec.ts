@@ -1,5 +1,5 @@
 import { test, expect, findShelfCard, openAs, openMenuBuilderAs, apiBaseUrl, tokens } from "../fixtures";
-import { seed } from "../seed";
+import { backdateAvailability, seed } from "../seed";
 
 /**
  * The menu builder, in a browser.
@@ -54,12 +54,12 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", label: "firstopen" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await expect(page.getByTestId("view-one-section")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("viewing-chip").filter({ hasNotText: "Whole page" }).first()).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByTestId("rail-section").first()).toHaveAttribute("aria-current", "true");
     await expect(page.getByTestId("inspector-empty")).toBeVisible();
   });
 
-  test("clicking an item selects it; clicking the price edits in place (Q118)", async ({ page }) => {
+  test("canvas name, description and price edit in place and softly cue the inspector", async ({ page }) => {
     const data = await seed({ role: "owner", label: "select" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
@@ -72,14 +72,132 @@ test.describe("the builder", () => {
     // board and not only in the panel.
     await expect(row).toHaveClass(/is-selected/);
 
-    // In-place editing is the price ONLY.
+    await expect(page.getByTestId("name-edit")).toBeVisible();
+    await expect(page.locator('[data-inspector-row="name"]')).toHaveClass(/is-cued/);
+    await expect(page.getByTestId("name-edit")).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    await expect(page.getByTestId("name-edit")).toHaveCSS("outline-style", "none");
+    const renderedTypography = await row.locator(".board-item-name").evaluate(element => {
+      const style = getComputedStyle(element);
+      const stage = element.closest<HTMLElement>(".builder__stage");
+      const scale = Number.parseFloat(stage ? getComputedStyle(stage).getPropertyValue("--board-scale") : "1") || 1;
+      return { family: style.fontFamily, size: `${Number.parseFloat(style.fontSize) * scale}px`, weight: style.fontWeight, transform: style.textTransform, color: style.color };
+    });
+    const editorTypography = await page.getByTestId("name-edit").evaluate(element => {
+      const style = getComputedStyle(element);
+      return { family: style.fontFamily, size: style.fontSize, weight: style.fontWeight, transform: style.textTransform, color: style.color };
+    });
+    expect(editorTypography).toEqual(renderedTypography);
+    await expect(row).toHaveCSS("outline-style", "none");
+    await expect(row).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    await expect(row.locator(".board-item-name")).toHaveCSS("visibility", "hidden");
+    await expect(page.locator('[data-inspector-row="name"]')).toHaveCSS("box-shadow", "none");
+    await page.waitForTimeout(1200);
+    await expect(page.locator('[data-inspector-row="name"]')).toHaveClass(/is-cued/);
+    await page.getByTestId("name-edit").fill("Canvas name");
+    await page.getByTestId("name-edit").press("Enter");
+    await expect(page.getByTestId("item-name")).toHaveValue("Canvas name");
+
+    await row.locator(".board-item-description").click();
+    await expect(page.getByTestId("description-edit")).toBeVisible();
+    await expect(page.locator('[data-inspector-row="description"]')).toHaveClass(/is-cued/);
+    const descriptionBox = await page.getByTestId("description-edit").boundingBox();
+    await page.getByTestId("description-edit").fill("Canvas description");
+    expect(await page.getByTestId("description-edit").boundingBox()).toEqual(descriptionBox);
+    await page.getByTestId("description-edit").blur();
+    await expect(page.getByTestId("item-description")).toHaveValue("Canvas description");
+
     await row.locator(".board-item-price").click();
     await expect(page.getByTestId("price-edit")).toBeVisible();
+    await expect(page.locator('[data-inspector-row="price"]')).toHaveClass(/is-cued/);
+    const priceClearance = await page.getByTestId("price-edit").evaluate(element => {
+      const editor = element.getBoundingClientRect();
+      const canvas = element.closest<HTMLElement>('[data-testid="canvas"]')!.getBoundingClientRect();
+      return canvas.right - editor.right;
+    });
+    expect(priceClearance).toBeGreaterThanOrEqual(0);
     await page.getByTestId("price-edit").fill("11.5");
     await page.getByTestId("price-edit").press("Enter");
 
     await expect(page.getByTestId("canvas")).toContainText("11.5");
     await expect(page.getByTestId("item-price")).toHaveValue("11.5");
+
+    await row.locator(".board-item-name").click();
+    await page.getByTestId("name-edit").fill("Cancelled name");
+    await page.getByTestId("name-edit").press("Escape");
+    await expect(page.getByTestId("item-name")).toHaveValue("Canvas name");
+    await page.reload();
+    await expect(page.getByTestId("canvas")).toContainText("Canvas name");
+    await expect(page.getByTestId("canvas")).toContainText("Canvas description");
+    await expect(page.getByTestId("canvas")).toContainText("11.5");
+  });
+
+  test("every rendered section and every item line edits in place, including after canvas scrolling", async ({ page }) => {
+    test.setTimeout(90_000);
+    const data = await seed({ role: "owner", label: "every-line", sectionCount: 3, itemsPerSection: 12 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    const canvas = page.getByTestId("canvas");
+    const assertEditorOver = async (target: ReturnType<typeof canvas.locator>, editorTestId: string) => {
+      await target.scrollIntoViewIfNeeded();
+      await target.click();
+      const editor = page.getByTestId(editorTestId);
+      await expect(editor).toBeVisible();
+      const targetBox = await target.boundingBox();
+      const editorBox = await editor.boundingBox();
+      expect(targetBox).not.toBeNull();
+      expect(editorBox).not.toBeNull();
+      const scrollTop = await canvas.evaluate(element => element.scrollTop);
+      expect(Math.abs(editorBox!.x - targetBox!.x), JSON.stringify({ editorBox, targetBox, scrollTop, editorTestId })).toBeLessThanOrEqual(10);
+      expect(Math.abs(editorBox!.y - targetBox!.y), JSON.stringify({ editorBox, targetBox, scrollTop, editorTestId })).toBeLessThanOrEqual(3);
+      await expect(editor).toHaveCSS("border-top-width", "0px");
+      await expect(editor).toHaveCSS("border-left-width", "0px");
+      await expect(editor).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+      return editor;
+    };
+
+    for (let sectionIndex = 0; sectionIndex < data.sections.length; sectionIndex += 1) {
+      await page.getByTestId("rail-section").nth(sectionIndex).click();
+      const heading = canvas.locator(".board-section-heading").first();
+      const editor = await assertEditorOver(heading, "heading-edit");
+      await editor.fill(`Edited section ${sectionIndex + 1}`);
+      await editor.press("Enter");
+      await expect(canvas.locator(".board-section-heading").first()).toContainText(`Edited section ${sectionIndex + 1}`);
+
+      const sectionItems = data.items.filter(item => item.sectionId === data.sections[sectionIndex].sectionId);
+      for (let itemIndex = 0; itemIndex < sectionItems.length; itemIndex += 1) {
+        const absoluteIndex = sectionIndex * sectionItems.length + itemIndex;
+        const row = canvas.getByTestId("board-item").nth(itemIndex);
+        const name = await assertEditorOver(row.locator(".board-item-name"), "name-edit");
+        if (itemIndex === sectionItems.length - 1)
+          expect(await canvas.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+        await name.fill(`Edited item ${absoluteIndex + 1}`);
+        await name.press("Enter");
+
+        const description = await assertEditorOver(row.locator(".board-item-description"), "description-edit");
+        const descriptionBox = await description.boundingBox();
+        await description.fill(`A deliberately long edited description for item ${absoluteIndex + 1} that exercises the complete rendered line.`);
+        expect(await description.boundingBox()).toEqual(descriptionBox);
+        await description.blur();
+
+        const price = await assertEditorOver(row.locator(".board-item-price"), "price-edit");
+        const priceBox = await price.boundingBox();
+        const canvasBox = await canvas.boundingBox();
+        expect(priceBox!.x + priceBox!.width).toBeLessThanOrEqual(canvasBox!.x + canvasBox!.width);
+        await price.fill(`${absoluteIndex + 10}.95`);
+        await price.press("Enter");
+      }
+    }
+
+    await page.reload();
+    for (let sectionIndex = 0; sectionIndex < data.sections.length; sectionIndex += 1) {
+      await expect(page.getByTestId("rail-section").nth(sectionIndex)).toContainText(`Edited section ${sectionIndex + 1}`);
+      await page.getByTestId("rail-section").nth(sectionIndex).click();
+      for (let itemIndex = 0; itemIndex < 12; itemIndex += 1) {
+        const absoluteIndex = sectionIndex * 12 + itemIndex;
+        await expect(canvas).toContainText(`Edited item ${absoluteIndex + 1}`);
+        await expect(canvas).toContainText(`${absoluteIndex + 10}.95`);
+      }
+    }
   });
 
   test("an edit survives a reload, and reaches no screen on its own", async ({ page }) => {
@@ -190,7 +308,8 @@ test.describe("the builder", () => {
     // and it has to be true.
     const sectionRow = page.getByTestId("rail-section").filter({ hasText: "Afters" }).locator("..");
     await sectionRow.getByTestId("delete-section").click();
-    await expect(page.getByTestId("section-name")).toHaveCount(0);
+    const dialog = page.getByTestId("delete-section-dialog");
+    await dialog.getByLabel("Delete section and return its items to the library").check();
     // Deleting a section asks first now — the irreversible act gets the guard the
     // reversible one always had.
     await page.getByTestId("confirm-delete-section").click();
@@ -207,11 +326,76 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("add-item-result").filter({ hasText: name })).toBeVisible();
   });
 
+  test("deleting a populated section can move every item to a sibling", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "section-move", sectionCount: 2, itemsPerSection: 1 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await page.getByTestId("rail-section").nth(1).click();
+    const removedItemName = data.items[1].name;
+    await expect(page.getByTestId("canvas")).toContainText(removedItemName);
+    await page.getByTestId("rail-section").nth(1).locator("..").getByTestId("delete-section").click();
+    const dialog = page.getByTestId("delete-section-dialog");
+    await expect(dialog.getByLabel("Move items to")).toBeChecked();
+    await dialog.getByTestId("confirm-delete-section").click();
+    await expect(page.getByTestId("builder-notice")).toContainText("1 item was moved");
+    await expect(page.getByTestId("rail-section")).toHaveCount(1);
+    await expect(page.getByTestId("canvas")).toContainText(removedItemName);
+  });
+
+  test("the board canvas scrolls while the page controls remain fixed", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "canvas-scroll", itemsPerSection: 25 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    const canvas = page.getByTestId("canvas");
+    await expect.poll(() => canvas.evaluate(node => node.scrollHeight > node.clientHeight)).toBe(true);
+    const pageHeaderBefore = await page.getByTestId("page-summary").boundingBox();
+    await canvas.hover();
+    await page.mouse.wheel(0, 900);
+    await expect.poll(() => canvas.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+    const pageHeaderAfter = await page.getByTestId("page-summary").boundingBox();
+    expect(pageHeaderAfter?.y).toBe(pageHeaderBefore?.y);
+  });
+
+  test("one-section canvas ends after its content instead of painting an empty screen", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "section-content-height", itemsPerSection: 1 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    const stage = page.locator(".builder__stage");
+    const canvas = page.getByTestId("canvas");
+    const stageBox = await stage.boundingBox();
+    const canvasBox = await canvas.boundingBox();
+    expect(stageBox).not.toBeNull();
+    expect(canvasBox).not.toBeNull();
+    expect(stageBox!.height).toBeLessThan(canvasBox!.width * 0.4);
+  });
+
+  test("the section rail renames and real-mouse reorders without extra arrow controls", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "section-rail", sectionCount: 3 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    const rows = page.getByTestId("section-row");
+    await expect(rows).toHaveCount(3);
+    await expect(page.getByRole("button", { name: /^Move .* (up|down)$/ })).toHaveCount(0);
+
+    const firstName = await rows.first().getByTestId("rail-section").textContent();
+    await rows.first().getByRole("button", { name: /^Rename / }).click();
+    await page.getByTestId("section-rename-input").fill("Lunch menu");
+    await page.getByTestId("section-rename-input").press("Enter");
+    await expect(rows.first().getByTestId("rail-section")).toContainText("Lunch menu");
+
+    const source = await rows.nth(1).boundingBox();
+    const target = await rows.nth(0).boundingBox();
+    expect(source).not.toBeNull();
+    expect(target).not.toBeNull();
+    await page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, { steps: 20 });
+    await page.mouse.up();
+    await expect(rows.nth(1).getByTestId("rail-section")).toContainText("Lunch menu");
+    expect(await rows.first().getByTestId("rail-section").textContent()).not.toBe(firstName);
+  });
+
   test("an 86'd item stays on the canvas but leaves the guest board at once", async ({ page }) => {
     const data = await seed({ role: "owner", includeScreen: true, label: "eightysix" });
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
@@ -269,7 +453,7 @@ test.describe("the builder", () => {
     // act in this model, and the seed deliberately does not do it for you.
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
@@ -308,7 +492,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", includeScreen: true, label: "discard" });
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
     await page.getByTestId("publish").click();
@@ -388,7 +572,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", includeScreen: true, label: "viewing" });
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
@@ -417,7 +601,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", includeScreen: true, label: "review" });
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
@@ -442,7 +626,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", includeScreen: true, label: "goback" });
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
@@ -546,7 +730,7 @@ test.describe("the builder", () => {
 
     await page.getByTestId("delete-section").click();
     const dialog = page.getByTestId("delete-section-dialog");
-    await expect(dialog).toContainText("goes back to your library");
+    await expect(dialog).toContainText("return to the library");
     await expect(dialog).toContainText("can't be undone");
 
     // Escape keeps it — the irreversible act now gets the guard the reversible
@@ -561,7 +745,9 @@ test.describe("the builder", () => {
     await page.getByTestId("new-section-name").fill("Next section");
     await page.getByTestId("new-section-name").press("Enter");
     const firstSection = page.getByTestId("rail-section").first().locator("..");
+    await firstSection.getByTestId("rail-section").click();
     await firstSection.getByTestId("delete-section").click();
+    await page.getByLabel("Delete section and return its items to the library").check();
     await page.getByTestId("confirm-delete-section").click();
     await expect(page.getByTestId("builder-notice")).toContainText("back to your library");
     await expect(page.getByTestId("rail-section").filter({ hasText: "Next section" })).toHaveAttribute(
@@ -575,7 +761,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", includeScreen: true, label: "values" });
     await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
       headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
-      data: { menuId: data.menuId }
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
     await page.getByTestId("publish").click();
@@ -764,10 +950,7 @@ test.describe("what the independent review found", () => {
      * single board-level note handed to both rows would satisfy it. Ninety minutes
      * is enough to change the rendered hour whatever the venue's timezone.
      */
-    const backdated = await page.request.post(`${apiBaseUrl}/api/test/seed/backdate-availability`, {
-      data: { accessToken: tokens.owner, itemId: data.itemId, minutesAgo: 90 }
-    });
-    expect(backdated.ok()).toBeTruthy();
+    await backdateAvailability(data.itemId, 90);
 
     await openMenuBuilderAs(page, "owner", data.menuId);
     await expect(page.getByTestId("board-item-note")).toHaveCount(2);
@@ -795,6 +978,11 @@ test.describe("what the independent review found", () => {
     await page.getByTestId("canvas").locator(".board-section-heading").first().click();
     const editor = page.getByTestId("heading-edit");
     await expect(editor).toBeFocused();
+    await expect(editor).toHaveCSS("border-top-width", "0px");
+    await expect(editor).toHaveCSS("border-right-width", "0px");
+    await expect(editor).toHaveCSS("border-left-width", "0px");
+    await expect(editor).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    await expect(page.getByTestId("canvas").locator(".board-section-heading").first()).toHaveCSS("visibility", "hidden");
 
     await editor.fill("Renamed On The Board");
     await editor.press("Enter");

@@ -8,7 +8,6 @@ import "@fontsource/playfair-display/400.css";
 import "@fontsource/playfair-display/600.css";
 import "@fontsource/playfair-display/400-italic.css";
 import App from "./App";
-import AdminThemeToggle from "./AdminThemeToggle";
 import CustomerOnboardingApp from "./CustomerOnboardingApp";
 import { initializeAdminTheme } from "./adminTheme.mjs";
 
@@ -17,7 +16,6 @@ initializeAdminTheme();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <AdminThemeToggle />
     {customerEntryRoute ? <CustomerOnboardingApp /> : <App />}
   </React.StrictMode>
 );

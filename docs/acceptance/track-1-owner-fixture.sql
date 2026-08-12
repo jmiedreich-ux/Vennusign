@@ -14,6 +14,7 @@ IF OBJECT_ID('dbo.CapabilityDefinitions', 'U') IS NULL
 DECLARE @OwnerUserId uniqueidentifier = '71000000-0000-0000-0000-000000000001';
 DECLARE @EditorUserId uniqueidentifier = '71000000-0000-0000-0000-000000000002';
 DECLARE @PublisherUserId uniqueidentifier = '71000000-0000-0000-0000-000000000003';
+DECLARE @CapacityUserId uniqueidentifier = '71000000-0000-0000-0000-000000000005';
 DECLARE @OrganizationId uniqueidentifier = '72000000-0000-0000-0000-000000000001';
 DECLARE @VenueId uniqueidentifier = '73000000-0000-0000-0000-000000000001';
 DECLARE @ScreenId uniqueidentifier = '74000000-0000-0000-0000-000000000001';
@@ -22,6 +23,9 @@ DECLARE @SectionId uniqueidentifier = '76000000-0000-0000-0000-000000000001';
 DECLARE @ItemId uniqueidentifier = '77000000-0000-0000-0000-000000000001';
 DECLARE @AllowanceId uniqueidentifier = '78000000-0000-0000-0000-000000000001';
 DECLARE @RolloutId uniqueidentifier = '79000000-0000-0000-0000-000000000001';
+DECLARE @CapacityVenueId uniqueidentifier = '73000000-0000-0000-0000-000000000003';
+DECLARE @CapacityScreenId uniqueidentifier = '74000000-0000-0000-0000-000000000003';
+DECLARE @CapacityAllowanceId uniqueidentifier = '78000000-0000-0000-0000-000000000003';
 
 BEGIN TRANSACTION;
 
@@ -29,7 +33,8 @@ MERGE dbo.CustomerUsers AS target
 USING (VALUES
     (@OwnerUserId, 'track1-owner@local.vennu.test', 'TRACK1-OWNER@LOCAL.VENNU.TEST', 'Track 1 Owner Review'),
     (@EditorUserId, 'track1-editor@local.vennu.test', 'TRACK1-EDITOR@LOCAL.VENNU.TEST', 'Track 1 Content Editor'),
-    (@PublisherUserId, 'track1-publisher@local.vennu.test', 'TRACK1-PUBLISHER@LOCAL.VENNU.TEST', 'Track 1 Publisher')
+    (@PublisherUserId, 'track1-publisher@local.vennu.test', 'TRACK1-PUBLISHER@LOCAL.VENNU.TEST', 'Track 1 Publisher'),
+    (@CapacityUserId, 'track1-capacity@local.vennu.test', 'TRACK1-CAPACITY@LOCAL.VENNU.TEST', 'Track 1 Capacity Check')
 ) AS source (Id, Email, NormalizedEmail, DisplayName)
 ON target.Id = source.Id
 WHEN MATCHED THEN UPDATE SET
@@ -53,7 +58,8 @@ MERGE dbo.OrganizationMemberships AS target
 USING (VALUES
     ('72100000-0000-0000-0000-000000000001', @OrganizationId, @OwnerUserId, 1),
     ('72100000-0000-0000-0000-000000000002', @OrganizationId, @EditorUserId, 3),
-    ('72100000-0000-0000-0000-000000000003', @OrganizationId, @PublisherUserId, 3)
+    ('72100000-0000-0000-0000-000000000003', @OrganizationId, @PublisherUserId, 3),
+    ('72100000-0000-0000-0000-000000000005', @OrganizationId, @CapacityUserId, 3)
 ) AS source (Id, OrganizationId, UserId, Role)
 ON target.OrganizationId = source.OrganizationId AND target.UserId = source.UserId
 WHEN MATCHED THEN UPDATE SET Role = source.Role, RevokedUtc = NULL, UpdatedUtc = SYSUTCDATETIME()
@@ -71,6 +77,14 @@ WHEN MATCHED THEN UPDATE SET
     PrimaryLanguage = source.PrimaryLanguage,
     OrganizationId = source.OrganizationId,
     UpdatedUtc = SYSUTCDATETIME()
+WHEN NOT MATCHED THEN INSERT (Id, Name, Timezone, Type, PrimaryLanguage, OrganizationId)
+    VALUES (source.Id, source.Name, source.Timezone, source.Type, source.PrimaryLanguage, source.OrganizationId);
+
+MERGE dbo.Venues AS target
+USING (VALUES (@CapacityVenueId, N'Capacity Check Venue', N'America/Los_Angeles', N'Bar', N'en', @OrganizationId))
+    AS source (Id, Name, Timezone, Type, PrimaryLanguage, OrganizationId)
+ON target.Id = source.Id
+WHEN MATCHED THEN UPDATE SET Name = source.Name, Timezone = source.Timezone, OrganizationId = source.OrganizationId, UpdatedUtc = SYSUTCDATETIME()
 WHEN NOT MATCHED THEN INSERT (Id, Name, Timezone, Type, PrimaryLanguage, OrganizationId)
     VALUES (source.Id, source.Name, source.Timezone, source.Type, source.PrimaryLanguage, source.OrganizationId);
 
@@ -108,18 +122,35 @@ WHEN MATCHED THEN UPDATE SET
 WHEN NOT MATCHED THEN INSERT (Id, VenueId, ScreenKey, Name, Location, Status, Platform, AppVersion)
     VALUES (source.Id, source.VenueId, source.ScreenKey, source.Name, source.Location, N'Offline', N'web', N'track-1-review');
 
+MERGE dbo.Screens AS target
+USING (VALUES (@CapacityScreenId, @CapacityVenueId, N'sc-cap001', N'Capacity Existing Screen', N'Test wall'))
+    AS source (Id, VenueId, ScreenKey, Name, Location)
+ON target.Id = source.Id
+WHEN MATCHED THEN UPDATE SET VenueId = source.VenueId, ScreenKey = source.ScreenKey, Name = source.Name, Location = source.Location,
+    LastSeen = NULL, Status = N'Offline', Platform = N'web', AppVersion = N'ui-test', UpdatedUtc = SYSUTCDATETIME()
+WHEN NOT MATCHED THEN INSERT (Id, VenueId, ScreenKey, Name, Location, Status, Platform, AppVersion)
+    VALUES (source.Id, source.VenueId, source.ScreenKey, source.Name, source.Location, N'Offline', N'web', N'ui-test');
+
 MERGE dbo.Menus AS target
 USING (VALUES (@MenuId, @VenueId, N'Acceptance Menu')) AS source (Id, VenueId, Name)
 ON target.Id = source.Id
 WHEN MATCHED THEN UPDATE SET Name = source.Name, IsActive = 1, UpdatedUtc = SYSUTCDATETIME()
 WHEN NOT MATCHED THEN INSERT (Id, VenueId, Name, IsActive) VALUES (source.Id, source.VenueId, source.Name, 1);
 
+DECLARE @PageId UNIQUEIDENTIFIER = (SELECT TOP (1) Id FROM dbo.MenuPages WHERE MenuId=@MenuId AND VenueId=@VenueId ORDER BY SortOrder, Id);
+IF @PageId IS NULL
+BEGIN
+    SET @PageId = '75500000-0000-0000-0000-000000000001';
+    INSERT dbo.MenuPages (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+    VALUES (@PageId, @VenueId, @MenuId, N'Page 1', 0, SYSUTCDATETIME(), SYSUTCDATETIME());
+END;
+
 MERGE dbo.MenuSections AS target
-USING (VALUES (@SectionId, @VenueId, @MenuId, N'Featured', 0)) AS source (Id, VenueId, MenuId, Name, SortOrder)
+USING (VALUES (@SectionId, @VenueId, @MenuId, @PageId, N'Featured', 0)) AS source (Id, VenueId, MenuId, PageId, Name, SortOrder)
 ON target.Id = source.Id
-WHEN MATCHED THEN UPDATE SET Name = source.Name, SortOrder = source.SortOrder, UpdatedUtc = SYSUTCDATETIME()
-WHEN NOT MATCHED THEN INSERT (Id, VenueId, MenuId, Name, SortOrder)
-    VALUES (source.Id, source.VenueId, source.MenuId, source.Name, source.SortOrder);
+WHEN MATCHED THEN UPDATE SET PageId=source.PageId, Name = source.Name, SortOrder = source.SortOrder, UpdatedUtc = SYSUTCDATETIME()
+WHEN NOT MATCHED THEN INSERT (Id, VenueId, MenuId, PageId, Name, SortOrder)
+    VALUES (source.Id, source.VenueId, source.MenuId, source.PageId, source.Name, source.SortOrder);
 
 MERGE dbo.MenuItems AS target
 USING (VALUES (@ItemId, @VenueId, @SectionId, N'Harbor Lemonade', N'Owner acceptance fixture', CAST(4.50 AS decimal(19,4)), 0))
@@ -152,7 +183,17 @@ WHERE OrganizationId = @OrganizationId
 INSERT dbo.CapabilityAllowances
     (Id, OrganizationId, VenueId, CapabilityId, LimitValue, StartsUtc)
 VALUES
-    (@AllowanceId, @OrganizationId, @VenueId, 'screen.device.pair', 1, DATEADD(minute, -1, SYSUTCDATETIME()));
+    (@AllowanceId, @OrganizationId, @VenueId, 'screen.device.pair', 100, DATEADD(minute, -1, SYSUTCDATETIME()));
+
+DELETE usage
+FROM dbo.CapabilityAllowanceUsage usage
+INNER JOIN dbo.CapabilityAllowances allowance ON allowance.Id = usage.AllowanceId
+WHERE allowance.OrganizationId = @OrganizationId AND allowance.VenueId = @CapacityVenueId
+  AND allowance.CapabilityId = 'screen.device.pair';
+DELETE dbo.CapabilityAllowances
+WHERE OrganizationId = @OrganizationId AND VenueId = @CapacityVenueId AND CapabilityId = 'screen.device.pair';
+INSERT dbo.CapabilityAllowances (Id, OrganizationId, VenueId, CapabilityId, LimitValue, StartsUtc)
+VALUES (@CapacityAllowanceId, @OrganizationId, @CapacityVenueId, 'screen.device.pair', 1, DATEADD(minute, -1, SYSUTCDATETIME()));
 
 DELETE dbo.CapabilityRollouts
 WHERE OrganizationId = @OrganizationId
@@ -172,7 +213,7 @@ SELECT
     @VenueId AS VenueId,
     @ScreenId AS ScreenId,
     'offline' AS InitialScreenState,
-    1 AS ScreenPairAllowance;
+    100 AS ScreenPairAllowance;
 
 -------------------------------------------------------------------------------
 -- Menus M1 spine fixture. LOCAL DEVELOPMENT ONLY.
@@ -197,6 +238,8 @@ DECLARE @M1ScreenId UNIQUEIDENTIFIER = '74000000-0000-0000-0000-000000000001';
 DECLARE @M1ItemId UNIQUEIDENTIFIER = '77000000-0000-0000-0000-000000000001';
 DECLARE @M1SecondItemId UNIQUEIDENTIFIER = '77000000-0000-0000-0000-000000000002';
 DECLARE @M1Now DATETIME2(7) = SYSUTCDATETIME();
+DECLARE @M1PageId UNIQUEIDENTIFIER = (SELECT TOP (1) Id FROM dbo.MenuPages WHERE MenuId=@M1MenuId AND VenueId=@M1VenueId ORDER BY SortOrder, Id);
+DECLARE @M1SharedPageId UNIQUEIDENTIFIER;
 
 BEGIN TRANSACTION;
 
@@ -220,16 +263,24 @@ WHEN NOT MATCHED THEN
     INSERT (Id, VenueId, Name, IsActive, IsPutAway, CreatedUtc, UpdatedUtc)
     VALUES (source.Id, source.VenueId, source.Name, 1, 0, @M1Now, @M1Now);
 
+SET @M1SharedPageId = (SELECT TOP (1) Id FROM dbo.MenuPages WHERE MenuId=@M1SharedMenuId AND VenueId=@M1VenueId ORDER BY SortOrder, Id);
+IF @M1SharedPageId IS NULL
+BEGIN
+    SET @M1SharedPageId = '75500000-0000-0000-0000-000000000002';
+    INSERT dbo.MenuPages (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+    VALUES (@M1SharedPageId, @M1VenueId, @M1SharedMenuId, N'Page 1', 0, @M1Now, @M1Now);
+END;
+
 MERGE dbo.MenuSections AS target
-USING (VALUES (@M1SharedSectionId, @M1VenueId, @M1SharedMenuId, N'Drinks', 0))
-    AS source (Id, VenueId, MenuId, Name, SortOrder)
+USING (VALUES (@M1SharedSectionId, @M1VenueId, @M1SharedMenuId, @M1SharedPageId, N'Drinks', 0))
+    AS source (Id, VenueId, MenuId, PageId, Name, SortOrder)
     ON target.Id = source.Id
 WHEN MATCHED THEN UPDATE SET
-    VenueId = source.VenueId, MenuId = source.MenuId, Name = source.Name,
+    VenueId = source.VenueId, MenuId = source.MenuId, PageId = source.PageId, Name = source.Name,
     SortOrder = source.SortOrder, UpdatedUtc = @M1Now
 WHEN NOT MATCHED THEN
-    INSERT (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
-    VALUES (source.Id, source.VenueId, source.MenuId, source.Name, source.SortOrder, @M1Now, @M1Now);
+    INSERT (Id, VenueId, MenuId, PageId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+    VALUES (source.Id, source.VenueId, source.MenuId, source.PageId, source.Name, source.SortOrder, @M1Now, @M1Now);
 
 -- Prices are stored exactly as typed (Q115/Q190), so the fixture deliberately
 -- includes a market price alongside a decimal one. Matched rows are repaired,
@@ -304,10 +355,10 @@ MERGE dbo.MenuScreenAssignments AS target
 USING (SELECT @M1ScreenId AS ScreenId) AS source
     ON target.ScreenId = source.ScreenId
 WHEN MATCHED THEN UPDATE SET
-    VenueId = @M1VenueId, MenuId = @M1MenuId, AssignedUtc = @M1Now, AssignedBy = N'fixture'
+    VenueId = @M1VenueId, MenuId = @M1MenuId, PageId = @M1PageId, AssignedUtc = @M1Now, AssignedBy = N'fixture'
 WHEN NOT MATCHED THEN
-    INSERT (Id, VenueId, ScreenId, MenuId, AssignedUtc, AssignedBy)
-    VALUES (NEWID(), @M1VenueId, @M1ScreenId, @M1MenuId, @M1Now, N'fixture');
+    INSERT (Id, VenueId, ScreenId, MenuId, PageId, AssignedUtc, AssignedBy)
+    VALUES (NEWID(), @M1VenueId, @M1ScreenId, @M1MenuId, @M1PageId, @M1Now, N'fixture');
 
 -- The publish chain is rebuilt from nothing every run: version 1 is the state
 -- seeded above, its shipped set is an honest empty [], and its snapshot uses

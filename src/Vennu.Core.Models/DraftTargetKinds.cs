@@ -11,6 +11,8 @@ public static class DraftTargetKinds
 
     public const string Section = "section";
 
+    public const string Page = "page";
+
     public const string Placement = "placement";
 
     public const string Item = "item";

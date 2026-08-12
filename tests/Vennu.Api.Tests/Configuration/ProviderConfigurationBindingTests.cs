@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Vennu.Api.Billing;
 using Vennu.Api.CustomerAuthentication;
+using Vennu.Api.Menus;
 using Vennu.Api.Pos;
 using Vennu.Api.Webhooks;
 
@@ -49,5 +50,35 @@ public sealed class ProviderConfigurationBindingTests
         Assert.Equal("toast-secret", toast.MenusSecret);
         Assert.Equal("clover-id", clover.ClientId);
         Assert.Equal("clover-secret", clover.ClientSecret);
+    }
+}
+
+public sealed class MenuBuilderConfigurationBindingTests
+{
+    [Fact]
+    public void DefaultsRemainUsableWhenNoOverrideExists()
+    {
+        var options = new MenuBuilderOptions();
+
+        Assert.Equal(5 * 1024 * 1024, options.ImportFileSizeLimitBytes);
+        Assert.Equal(TimeSpan.FromSeconds(30), options.PublishRetrySilenceThreshold);
+        Assert.Equal(50, options.HistoryRetentionDepth);
+    }
+
+    [Fact]
+    public void RuntimeSectionOverridesEveryBuilderSetting()
+    {
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Menus:Builder:ImportFileSizeLimitBytes"] = "7340032",
+            ["Menus:Builder:PublishRetrySilenceThreshold"] = "00:00:41",
+            ["Menus:Builder:HistoryRetentionDepth"] = "73"
+        }).Build();
+
+        var options = configuration.GetSection(MenuBuilderOptions.SectionName).Get<MenuBuilderOptions>()!;
+
+        Assert.Equal(7 * 1024 * 1024, options.ImportFileSizeLimitBytes);
+        Assert.Equal(TimeSpan.FromSeconds(41), options.PublishRetrySilenceThreshold);
+        Assert.Equal(73, options.HistoryRetentionDepth);
     }
 }

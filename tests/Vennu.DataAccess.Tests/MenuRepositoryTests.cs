@@ -79,7 +79,8 @@ public sealed class MenuRepositoryTests
             {
                 VenueId = Guid.NewGuid(),
                 ScreenId = Guid.NewGuid(),
-                MenuId = Guid.NewGuid()
+                MenuId = Guid.NewGuid(),
+                PageId = Guid.NewGuid()
             }));
 
         Assert.Contains("s.VenueId = @VenueId", capturedSql, StringComparison.Ordinal);

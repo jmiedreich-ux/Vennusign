@@ -1,16 +1,21 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-11T08:50:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-11T08:55:04Z",
+  "activeAssignments": [
+    {
+      "assignment": "Menus M3-A — slice 1 (pages, capacity, assignments)",
+      "issue": 696,
+      "branch": "feature/menus-m3a-s1-pages",
+      "owner": "Codex for JeremyPC",
+      "claimedUtc": "2026-08-11T08:55:04Z",
+      "headAtClaim": "4b055853090eeb91ddc5841fe0006176839c0bad",
+      "status": "owner-approved and locally gated; owner waived further independent review and directed merge/closure",
+      "startHere": "docs/design/approved/menus/m3-a/work-plan.md",
+      "notes": "Slice 1 reconstructed from a safeguarded dirty-tree checkpoint after independent review found it was not versioned. Partial Slice 2 and Slice 6 work is excluded and preserved at local checkpoint 4aa0168. Page-shaped seed support is owned here because it delegates to the real page schema/API introduced here. Focused gate before commit: page Playwright 12/12, page LocalDB 2/2, back office 196/196 plus production build. Real-pointer reorder and assignment-removal regressions were observed red with fixes reverted. CI is suspended."
+    }
+  ],
   "desktopSessionLock": null,
-  "nextAvailableWorkPackage": {
-    "assignment": "Menus M3-A — slice 0 (foundations)",
-    "branchFrom": "master",
-    "baseCommit": "6bf0f75",
-    "workPlan": "docs/design/approved/menus/m3-a/work-plan.md",
-    "unblockedBy": "M3 merged and closed 2026-08-11",
-    "notes": "Each slice is its own independently mergeable PR per AGENTS.md - do not continue on the retired M3 branch. Claim this into activeAssignments under your own owner name before touching code."
-  },
+  "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,

@@ -522,7 +522,7 @@ export default function App() {
       */}
       {upgradeNotice ? <p className="sidebar-upgrade-context" role="status">{upgradeNotice}</p> : null}
     </NavRail>
-    <main>
+    <main className={route.path === "menu" && openMenuId !== null ? "builder-shell" : undefined}>
       {/* The shelf carries its own header — the venue eyebrow, the status
           headline, and the actions beside it — so the generic page title would
           be a second heading saying "Menu" above it. Every other area keeps the
@@ -623,6 +623,7 @@ export default function App() {
             menuId={openMenuId!}
             venueTimezone={menuContext?.timezone ?? "UTC"}
             onBack={() => { window.location.hash = "#/menu"; }}
+            capabilityOverrides={configuration.menuCapabilityOverrides}
             /*
              * Signing back in from inside the builder signs the whole back office
              * back in, on the same storage the sign-in form uses. Otherwise one

@@ -14,6 +14,8 @@ public sealed class Placement
 
     public Guid MenuSectionId { get; set; }
 
+    public Guid PageId { get; set; }
+
     public Guid ItemId { get; set; }
 
     public int SortOrder { get; set; }

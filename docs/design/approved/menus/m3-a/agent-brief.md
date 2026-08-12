@@ -60,9 +60,17 @@ primary button (the owner's `#2a90e0` fails 4.5:1 with white; this passes at
 5.2:1), and `#d4552a` for the guest-facing SOLD OUT chip, whose contrast becomes
 the **theme's** responsibility per V2 correction #8.
 
-**Type.** Inter throughout, from `--sky-font-family`. Playfair Display is
-admitted as **one display token, page tabs only** — uppercase, letterspaced. It
-must not appear anywhere else in back-office chrome.
+**Final visual authority.** The nine exported screens under
+`exports/screens/` are the approved visual truth for all of M3-A. They
+supersede the earlier in-progress HTML design files for layout, hierarchy,
+placement and visual treatment. The action inventory remains authoritative for
+behaviour and branch outcomes. Where an exported screen and a superseded HTML
+file disagree visually, the exported screen wins.
+
+**Type.** Use the existing application typeface throughout, from
+`--sky-font-family`, including every page tab and its inline naming field. Page
+tabs may retain their approved uppercase and letterspacing treatment, but they
+must not use a special display face or page-only font token.
 
 ## 4 · Icons
 
@@ -122,7 +130,8 @@ Playwright specs in the same PR (`AGENTS.md`: schema → API → UI → specs to
 
 - Restyle the board renderer or the sold-out presentation — the theme owns both.
 - Add a colour, radius or spacing value that is not a token.
-- Use Playfair outside the page tabs.
+- Introduce or use a special page-tab font. Page tabs use the existing
+  application typeface like the rest of the back-office UI.
 - Reformat a price. Prices render exactly as typed; `MP` stays `MP`, `9.5` stays `9.5` (Q115/Q190).
 - Import a *Sold out* column. It is recognised and deliberately dropped — an 86 is a person's statement about tonight.
 - Put a rotation interval control anywhere in Menus. The theme owns it; Screen Assignments displays it read-only.

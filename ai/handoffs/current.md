@@ -574,6 +574,28 @@ And one the browser caught that nothing else could: moving the 86 notes into a
 entire application. 190 unit tests passed and the production build completed while
 the app rendered nothing at all.
 
+## M3-A Slice 1 reconstruction — 2026-08-11
+
+Independent review established that Slice 1 had been tested only in an uncommitted
+working tree at Slice 0 SHA `179de5f`. All 49 dirty files were first preserved in
+local safety commit `4aa0168`; the reviewable Slice 1 tree was then reconstructed on
+`feature/menus-m3a-s1-pages`. Partial Slice 2 page-history/section-reassignment work
+and the Slice 6 import landing remain only in that safety commit and are not claimed
+as shipped. Issue #696 owns Slice 1.
+
+The work-plan dependency was made explicit: page-shaped Test API seed support lands
+with Slice 1 because the separate Test API must delegate to the real page schema and
+product endpoints introduced here. The review's test-integrity findings are closed:
+page reorder uses a stepped real pointer and was observed failing with `onDrop`
+disabled; the dead/mojibake selector is gone; Q181 singular/zero copy is enforced;
+and browser coverage now includes populated deletion, Cancel, copied content and
+cross-menu naming. LocalDB now asserts exact FK/unique SQL errors and concurrent
+page-item uniqueness. Pre-commit focused evidence: page Playwright 12/12, page
+LocalDB 2/2, back office 196/196 and production build. CI remains suspended.
+
+Exact next action: commit and push Slice 1, open its PR, rerun gates at the committed
+SHA, then obtain an independent exact-SHA review before owner testing.
+
 ## Boundaries
 
 - Milestones 1 and 2 are merged and accepted, so milestone 3 may start. Milestones 4–6 stay closed until their predecessor is merged and accepted in turn.
@@ -615,3 +637,108 @@ chased, by owner instruction.
 The existing record remains "Needs adjustment" and M3 does not merge on it. After
 this set is handed back, provide the deferred visual notes for the promised second
 pass. Milestones 4–6 remain blocked.
+
+## M3-A Slice 1 owner-remediation — 2026-08-11
+
+**What this established.** The page rail, overflow section picker, populated-page
+deletion, and screen-assignment workflow were reworked from the owner's 4 Pass / 3
+Needs Adjustment record. Add-page naming now uses the page-tab visual language;
+section chips stay on one line with long names truncated and overflow in a bounded
+More menu; populated deletion explicitly offers move or delete-sections while
+retaining library items; and assignment management is a viewport-bounded,
+scrolling panel with screen geometry/current page context, staged Save/Cancel,
+and a recoverable nested rotate/replace choice. Delete-sections is enforced by the
+product API/repository transaction, not only presented by the UI.
+
+**Evidence.** Each new customer-visible regression was observed failing with its
+production fix removed, then restored: page-name typography, non-wrapping chips,
+delete-without-moving, and nested-choice focus recovery. Final local evidence:
+back office 196/196; production build passed (existing Vite chunk advisory only);
+desktop `menu-pages.spec.ts` 14/14; focused API 5/5; Test API 8/8. The Release
+solution build passed with 21 pre-existing warnings. Azure/external integration
+tests were skipped under the standing owner exception; the LocalDB deletion
+regression was added but is UNTESTED in this run.
+
+**Exact next action.** Push the committed remediation head to PR #697, obtain an
+independent exact-SHA review, then regenerate the owner workbook against that SHA
+and rerun only the three previously adjusted cases plus one surrounding-flow check.
+
+## M3-A Slice 1 independent-review remediation — 2026-08-11
+
+**What this established.** PR #697's exact-head REQUEST_CHANGES findings were
+fixed across their full paths. Migration 062 now separates the placement column
+addition from its carry update; legacy assignment test callers carry an exact page;
+restore again refuses a screen acquired by another menu while preserving valid
+cross-menu rotations; and snapshot expectations use the screen-plus-page identity.
+Page deletion keeps the decision open after a move conflict and can recover by
+deleting the page's sections. Assignment Save keeps staged choices after a refusal,
+retries only transient failures, and exact-pair removal is idempotent. Capacity has
+an inspectable Check fit result; six-section overflow, long-name identity, screen
+location/status and cross-menu labels match the approved page workflow.
+
+**Paths and evidence.** New, existing, duplicate-placement, populated/empty delete,
+move conflict, Cancel, failed Save, retry-safe removal, same-menu and cross-menu
+assignment, unassigned/landscape/portrait capacity, section overflow and focus
+recovery are covered. The corrected migration carried a customer-shaped legacy
+menu, section, item, placement, screen and assignment into Page 1 and
+`DBCC CHECKCONSTRAINTS` returned no violation; the disposable database was removed.
+Release solution build passed with existing analyzer warnings and no errors; back office 197/197 and
+production build passed; desktop page Playwright 16/16; Test API 8/8; focused
+snapshot tests 17/17; LocalDB data integration 94/94. DataAccess remained at its
+known #688 baseline, 228 passed / 3 failed. CI remains suspended.
+
+**Boundaries.** The untracked owner workbook was not modified or committed. Azure
+and other external-service tests remain skipped under the standing exception.
+Future tier authority and theme-authored fit measurements remain owned by their
+later milestones; Slice 1 continues to use the documented maximum-tier defaults
+and its deterministic fit model.
+
+**Exact next action.** Commit and push this remediation to PR #697, obtain a fresh
+independent exact-SHA review, and only after approval regenerate the owner workbook
+for owner acceptance.
+
+The exact-SHA review then found that Screen Assignments Save still issued one HTTP
+write per screen. It now sends one batch to a single database transaction: every
+screen and mode is validated before any assignment changes, replace/rotate/remove
+and attributable history commit together, and any stale screen or refusal rolls the
+whole Save back. LocalDB asserts a valid first change plus an invalid later screen
+leaves no assignment behind; the browser regression keeps the staged UI recoverable
+and verifies the prior screen owner remains unchanged.
+
+## M3-A Slice 1 owner closure — 2026-08-11
+
+The owner explicitly approved Slice 1 after an extended live visual pass against
+the final nine exported M3-A screens. The page rail, section rail, canvas scrolling,
+connected Screen Assignments surface, and canvas inline editing were reconciled in
+the real browser. Section headings and every item name, description and price now
+edit in place using the rendered theme typography. The exhaustive browser regression
+creates three sections with twelve items each, edits all 111 fields while scrolling,
+then refreshes and verifies persistence. Removing the canvas scroll-coordinate fix
+made the test fail with displacement exactly equal to `scrollTop`; restoring it
+returned the test to green.
+
+Some section CRUD behavior assigned to Slice 2 was delivered early at the owner's
+direction during this acceptance pass: section selection, inline rename, add,
+real-pointer reorder, populated delete with reassignment, and delete confirmation.
+Slice 2 must gap-audit and reuse it; it must not rebuild or double-claim it. Page
+history remains Slice 2 work.
+
+Local closure gate on the accepted tree: Release solution build passed with 0
+warnings and 0 errors; back office unit 197/197 and production build passed;
+LocalDB data integration 97/97; desktop `menu-pages.spec.ts` 18/18; desktop
+`menu-builder.spec.ts` 40/40. The API suite passed 436/438: the Azure credential
+test is excluded by standing owner policy and the existing #688 pairing-layout
+expectation remains the other known baseline failure. Mobile and external-service
+tests were not run by owner scope. CI remains suspended.
+
+Exact next action: commit and push the accepted Slice 1 tree, obtain a fresh
+independent exact-SHA review on PR #697, then merge and release the tracker claim.
+
+The owner then explicitly waived any further independent review and directed that
+Slice 1 be closed and Slice 2 begun. The interrupted review found no product
+failure, but identified two controlled-record inconsistencies. They were corrected
+before merge: owner override O1 in `decisions.md` and the action inventory now
+authorize the accepted canvas inline editing, and the obsolete generated workbook
+that named an earlier SHA and stale seeded menu was removed. The owner-approved
+product candidate remains `1c52c2658966864d175b8666b0fc4722197afe92`;
+the closure commit changes authority/acceptance records only.

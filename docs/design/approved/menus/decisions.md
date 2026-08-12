@@ -180,6 +180,17 @@ own capability check. Decision 4 still governs what absence looks like — a con
 outside the plan is gone, not disabled — but the ladder can move without touching
 layout.
 
+## Owner overrides — 11 August 2026
+
+**O1 · Existing board content may be edited inline.** This supersedes A6 and
+action-inventory E2. Clicking a section heading edits its name in place. Clicking
+an item's name, description, or price edits that field in place using the rendered
+theme typography; the corresponding inspector field receives a quiet location cue.
+The inspector remains a complete alternative editing route. Inline editing must
+remain aligned while the canvas scrolls, preserve prices exactly as typed, save by
+the same product endpoint as the inspector, and allow Escape to cancel without
+changing the saved value. The owner approved this interaction after live testing.
+
 ## Parked
 
 **Replacing the fallback card.** The generated logo-and-name card is the whole of it for now. Uploading or authoring an alternative is a later piece.

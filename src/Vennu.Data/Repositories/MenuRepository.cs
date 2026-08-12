@@ -16,7 +16,7 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
         """;
 
     private const string SectionsSql = """
-        SELECT Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc
+        SELECT Id, VenueId, MenuId, PageId, Name, SortOrder, CreatedUtc, UpdatedUtc
         FROM dbo.MenuSections
         WHERE VenueId = @VenueId AND MenuId = @MenuId
         ORDER BY SortOrder, Id;
@@ -155,11 +155,41 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
         SELECT @ExpectedCount AS ChangedCount;
         """;
 
-    public Task<Guid> CreateMenuAsync(Menu menu, CancellationToken cancellationToken = default) =>
-        InsertAsync(menu, cancellationToken);
+    public async Task<Guid> CreateMenuAsync(Menu menu, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(menu);
+        menu.Id = menu.Id == Guid.Empty ? Guid.NewGuid() : menu.Id;
+        var now = menu.CreatedUtc == default ? DateTime.UtcNow : menu.CreatedUtc;
+        const string sql = """
+            SET XACT_ABORT ON;
+            BEGIN TRANSACTION;
+            INSERT dbo.Menus (Id, VenueId, Name, IsActive, DwellSeconds, LoopWarningSeconds, Theme, IsPutAway, PublishedVersion, CreatedUtc, UpdatedUtc)
+            VALUES (@Id, @VenueId, @Name, @IsActive, @DwellSeconds, @LoopWarningSeconds, @Theme, @IsPutAway, @PublishedVersion, @Now, @Now);
+            INSERT dbo.MenuPages (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            VALUES (@PageId, @VenueId, @Id, N'Page 1', 0, @Now, @Now);
+            COMMIT TRANSACTION;
+            SELECT @Id AS Id;
+            """;
+        _ = await dataAccess.ExecuteSqlQueryAsync<IdRow, object>(sql, new
+        {
+            menu.Id, menu.VenueId, menu.Name, menu.IsActive, menu.DwellSeconds, menu.LoopWarningSeconds,
+            menu.Theme, menu.IsPutAway, menu.PublishedVersion, Now = now, PageId = Guid.NewGuid()
+        }, cancellationToken).ConfigureAwait(false);
+        return menu.Id;
+    }
 
-    public Task<Guid> CreateSectionAsync(MenuSection section, CancellationToken cancellationToken = default) =>
-        InsertAsync(section, cancellationToken);
+    public async Task<Guid> CreateSectionAsync(MenuSection section, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(section);
+        if (section.PageId == Guid.Empty)
+        {
+            var page = (await dataAccess.ExecuteSqlQueryAsync<IdRow, object>(
+                "SELECT TOP (1) Id FROM dbo.MenuPages WHERE VenueId=@VenueId AND MenuId=@MenuId ORDER BY SortOrder, Id;",
+                new { section.VenueId, section.MenuId }, cancellationToken).ConfigureAwait(false)).Single();
+            section.PageId = page.Id;
+        }
+        return await InsertAsync(section, cancellationToken).ConfigureAwait(false);
+    }
 
     public Task<Guid> CreateItemAsync(MenuItem item, CancellationToken cancellationToken = default) =>
         InsertAsync(item, cancellationToken);
@@ -310,4 +340,6 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
     {
         public int ChangedCount { get; set; }
     }
+
+    private sealed class IdRow { public Guid Id { get; set; } }
 }

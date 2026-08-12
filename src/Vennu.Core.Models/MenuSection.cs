@@ -8,6 +8,8 @@ public sealed class MenuSection
 
     public Guid MenuId { get; set; }
 
+    public Guid PageId { get; set; }
+
     public string Name { get; set; } = string.Empty;
 
     public int SortOrder { get; set; }

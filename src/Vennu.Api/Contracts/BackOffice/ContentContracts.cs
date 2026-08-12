@@ -4,9 +4,15 @@ namespace Vennu.Api.Contracts.BackOffice;
 
 public sealed record AvailabilityRequest(bool IsAvailable);
 
-public sealed record AssignmentRequest(Guid MenuId);
+public sealed record AssignmentRequest(Guid MenuId, Guid PageId, string Mode = "replace");
+public sealed record PageAssignmentChangeRequest(Guid ScreenId, Guid PageId, string Mode);
+public sealed record PageAssignmentsRequest(IReadOnlyCollection<PageAssignmentChangeRequest> Changes);
 
-public sealed record SectionNameRequest(string Name);
+public sealed record PageNameRequest(string Name);
+public sealed record PageOrderRequest(IReadOnlyCollection<Guid> PageIds);
+public sealed record PageDeleteRequest(Guid? MoveSectionsToPageId, bool DeleteSections = false);
+public sealed record SectionNameRequest(string Name, Guid? PageId = null);
+public sealed record SectionDeleteRequest(Guid? MoveItemsToSectionId, bool DeletePlacements = false);
 
 public sealed record SectionOrderRequest(IReadOnlyCollection<Guid> SectionIds);
 
@@ -47,6 +53,11 @@ public sealed record MenuContextResponse(
     string Timezone,
     IReadOnlyDictionary<string, int> Ceilings,
     int MenuCount);
+
+public sealed record MenuBuilderConfigurationResponse(
+    long ImportFileSizeLimitBytes,
+    double PublishRetrySilenceThresholdSeconds,
+    int HistoryRetentionDepth);
 
 public sealed record AvailabilityResponse(
     Guid ItemId,
@@ -149,10 +160,12 @@ public sealed record BoardResponse(
     string? Theme,
     int DwellSeconds,
     int LoopWarningSeconds,
+    IReadOnlyCollection<PageResponse> Pages,
     IReadOnlyCollection<BoardSectionResponse> Sections);
 
 public sealed record BoardSectionResponse(
     Guid SectionId,
+    Guid PageId,
     string? Name,
     int SortOrder,
     IReadOnlyCollection<BoardItemResponse> Items);
@@ -201,11 +214,14 @@ public sealed record BuilderBoardResponse(
 
 public sealed record SectionResponse(Guid SectionId, string Name, int SortOrder);
 
+public sealed record PageResponse(Guid PageId, string Name, int SortOrder);
+public sealed record PageDeleteResponse(int MovedSectionCount, int DeletedSectionCount, int RemovedAssignmentCount);
+
 /// <summary>
 /// What a delete released back to the library, so the UI can say it rather than
 /// guess (Q96).
 /// </summary>
-public sealed record SectionDeleteResponse(int ReleasedItemCount);
+public sealed record SectionDeleteResponse(int MovedItemCount, int ReleasedItemCount);
 
 /// <summary>
 /// The outcome of placing something. <c>already_on_board</c> is not a failure: it
@@ -244,6 +260,9 @@ public sealed record MenuThemeResponse(string Key, string Name);
 public sealed record AssignmentResponse(
     Guid ScreenId,
     Guid MenuId,
+    Guid PageId,
+    string? MenuName,
+    string? PageName,
     DateTime AssignedUtc,
     string? AssignedBy);
 
@@ -258,6 +277,11 @@ public sealed record AssignmentResponse(
 public sealed record ScreenShowingResponse(
     Guid ScreenId,
     string ScreenName,
+    string? Location,
+    string Status,
+    DateTime? LastSeenUtc,
+    int WidthPixels,
+    int HeightPixels,
     Guid? MenuId,
     string? MenuName,
     long? Version,

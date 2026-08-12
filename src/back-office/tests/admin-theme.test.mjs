@@ -22,11 +22,8 @@ test("shared tokens provide an explicit high-contrast Midnight palette", async (
   assert.match(tokens, /--sky-color-ink:\s*#f8fafc/i);
 });
 
-test("Back Office exposes the theme switch on every entry route", async () => {
+test("Back Office initializes its stored theme without exposing a global theme control", async () => {
   const main = await readFile(new URL("../src/main.tsx", import.meta.url), "utf8");
-  const toggle = await readFile(new URL("../src/AdminThemeToggle.tsx", import.meta.url), "utf8");
   assert.match(main, /initializeAdminTheme\(\)/);
-  assert.match(main, /<AdminThemeToggle \/>/);
-  assert.match(toggle, /aria-pressed=\{midnight\}/);
-  assert.match(toggle, /Use Midnight theme/);
+  assert.doesNotMatch(main, /AdminThemeToggle|Use Midnight theme/);
 });

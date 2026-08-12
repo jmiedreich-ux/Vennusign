@@ -54,13 +54,13 @@ internal static class ModelInvariants
             """),
 
         new(
-            "A screen shows one menu",
-            "Review #3. The assignment table was doing duty as both unpublished intent and current routing, "
-            + "which let two menus claim one screen.",
+            "A screen rotation contains each page once",
+            "M3-A amendment A13 permits pages from multiple menus to share a screen rotation. The impossible "
+            + "state is the same page appearing twice in one rotation.",
             """
-            SELECT CONCAT('screen ', ScreenId, ' is assigned to ', COUNT(*), ' menus') AS Offence
+            SELECT CONCAT('screen ', ScreenId, ' repeats page ', PageId, ' ', COUNT(*), ' times') AS Offence
             FROM dbo.MenuScreenAssignments
-            GROUP BY ScreenId
+            GROUP BY ScreenId, PageId
             HAVING COUNT(*) > 1;
             """),
 
@@ -161,16 +161,14 @@ internal static class ModelInvariants
             """),
 
         new(
-            "An item appears at most once on a board",
-            "Milestone 3 readiness pass. Q112 promises that picking an item already on this board JUMPS to it "
-            + "rather than placing a second copy, but the schema only constrained it once per SECTION - so the "
-            + "same item on two sections of one menu was legal, and it would render twice to a guest. "
-            + "UQ_Placements_MenuItem (migration 061) is the rule the product actually states; this asserts it "
-            + "against whatever any test left behind, including paths that write placements directly.",
+            "An item appears at most once on a page",
+            "M3-A pages may share one library identity, including through Duplicate page, but an item may not "
+            + "appear in two sections of the same rendered page. Migration 062 carries PageId onto placements "
+            + "and makes that rule a database invariant under concurrent writes.",
             """
-            SELECT CONCAT('menu ', p.MenuId, ' places item ', p.ItemId, ' ', COUNT(*), ' times') AS Offence
+            SELECT CONCAT('page ', p.PageId, ' places item ', p.ItemId, ' ', COUNT(*), ' times') AS Offence
             FROM dbo.Placements p
-            GROUP BY p.MenuId, p.ItemId
+            GROUP BY p.PageId, p.ItemId
             HAVING COUNT(*) > 1;
             """),
 
