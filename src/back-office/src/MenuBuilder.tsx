@@ -480,7 +480,10 @@ export default function MenuBuilder({
         } catch {
           remembered = null;
         }
-        setPlace(resumeState(next.board, remembered));
+        const resumed = resumeState(next.board, remembered);
+        setPlace(next.board.theme === "northside-social"
+          ? { ...resumed, view: "whole-board", selectedItemId: null }
+          : resumed);
       })
       .catch(() => {
         if (!cancelled) setError("This menu could not be opened. Check your connection and try again.");
