@@ -131,6 +131,67 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("canvas")).toContainText("11.5");
   });
 
+  test("whole-page fit keeps every inline editor aligned and persists its changes", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "whole-page-edit", sectionCount: 2, itemsPerSection: 2 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("viewing-chip").filter({ has: page.locator('[data-scope="whole-page"]') }).click().catch(async () => {
+      await page.locator('[data-testid="viewing-chip"][data-scope="whole-page"]').click();
+    });
+    const canvas = page.getByTestId("canvas");
+    const frame = canvas.getByTestId("board-frame");
+    await expect(frame).toBeVisible();
+
+    const scale = await frame.evaluate(element =>
+      Number.parseFloat(getComputedStyle(element).getPropertyValue("--board-scale"))
+    );
+    expect(scale).toBeGreaterThan(0);
+    expect(scale).toBeLessThan(1);
+
+    const assertEditorOver = async (target: ReturnType<typeof canvas.locator>, editorTestId: string) => {
+      await target.click();
+      const editor = page.getByTestId(editorTestId);
+      await expect(editor).toBeVisible();
+      const targetBox = await target.boundingBox();
+      const editorBox = await editor.boundingBox();
+      const canvasBox = await canvas.boundingBox();
+      expect(targetBox).not.toBeNull();
+      expect(editorBox).not.toBeNull();
+      expect(canvasBox).not.toBeNull();
+      expect(Math.abs(editorBox!.x - targetBox!.x)).toBeLessThanOrEqual(10);
+      expect(Math.abs(editorBox!.y - targetBox!.y)).toBeLessThanOrEqual(4);
+      expect(editorBox!.x + editorBox!.width).toBeLessThanOrEqual(canvasBox!.x + canvasBox!.width + 1);
+
+      const renderedSize = await target.evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize));
+      const editorSize = await editor.evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize));
+      expect(Math.abs(editorSize - renderedSize * scale)).toBeLessThanOrEqual(0.5);
+      return editor;
+    };
+
+    const firstRow = canvas.getByTestId("board-item").first();
+    const name = await assertEditorOver(firstRow.locator(".board-item-name"), "name-edit");
+    await name.fill("Whole page name");
+    await name.press("Enter");
+
+    const description = await assertEditorOver(firstRow.locator(".board-item-description"), "description-edit");
+    await description.fill("Whole page description");
+    await description.blur();
+
+    const price = await assertEditorOver(firstRow.locator(".board-item-price"), "price-edit");
+    await price.fill("12.75");
+    await price.press("Enter");
+
+    const heading = await assertEditorOver(canvas.locator(".board-section-heading").first(), "heading-edit");
+    await heading.fill("Whole page section");
+    await heading.press("Enter");
+
+    await page.reload();
+    await expect(canvas).toContainText("Whole page name");
+    await expect(canvas).toContainText("Whole page description");
+    await expect(canvas).toContainText("12.75");
+    await expect(canvas).toContainText("Whole page section");
+  });
+
   test("every rendered section and every item line edits in place, including after canvas scrolling", async ({ page }) => {
     test.setTimeout(90_000);
     const data = await seed({ role: "owner", label: "every-line", sectionCount: 3, itemsPerSection: 12 });
