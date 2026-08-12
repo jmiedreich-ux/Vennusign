@@ -10,7 +10,8 @@ public sealed record SeedRequest(
     string ScreenState = ScreenSeedStates.Offline,
     int PageCount = 1,
     int ScreenWidthPixels = 1920,
-    int ScreenHeightPixels = 1080);
+    int ScreenHeightPixels = 1080,
+    string? Showcase = null);
 
 public static class ScreenSeedStates
 {
