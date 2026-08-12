@@ -96,8 +96,9 @@ export function BoardRenderer({
         </header>
       ) : null}
       {/*
-        No venue-name strip, ever (Q98). If a TV carries one, the theme editor
-        owns it; the Menus engine neither draws one nor assumes room for one.
+        Ordinary boards still draw no venue-name strip (Q98). This isolated
+        showcase renders the menu's own name as authored display content so the
+        prototype can exercise a title-bearing theme without flattening the board.
       */}
       {document.sections.map((section) => (
         <section
