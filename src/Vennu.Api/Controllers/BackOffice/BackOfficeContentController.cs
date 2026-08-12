@@ -402,8 +402,33 @@ public sealed class BackOfficeContentController(
                 entry.Author,
                 entry.Detail,
                 entry.ReplacedByVersion,
-                entry.Version))
+                entry.Version,
+                entry.PageId,
+                entry.PageName))
             .ToArray());
+    }
+
+    [HttpGet("menus/{menuId:guid}/pages/{pageId:guid}/history")]
+    [RequireCapability("publishing.history.view")]
+    public async Task<ActionResult<IReadOnlyCollection<HistoryEntryResponse>>> GetPageHistory(
+        Guid menuId,
+        Guid pageId,
+        CancellationToken cancellationToken)
+    {
+        var retention = (await configurationResolver.ResolveAsync(VenueId, cancellationToken).ConfigureAwait(false))
+            .HistoryRetentionDepth;
+        var entries = await library
+            .GetPageHistoryAsync(VenueId, menuId, pageId, retention, cancellationToken)
+            .ConfigureAwait(false);
+        return Ok(entries.Select(entry => new HistoryEntryResponse(
+            entry.Kind,
+            entry.OccurredUtc,
+            entry.Author,
+            entry.Detail,
+            entry.ReplacedByVersion,
+            entry.Version,
+            entry.PageId,
+            entry.PageName)).ToArray());
     }
 
     /// <summary>
@@ -633,7 +658,7 @@ public sealed class BackOfficeContentController(
 
         var sectionId = Guid.NewGuid();
         var outcome = await content
-            .AddSectionAsync(VenueId, menuId, sectionId, request.Name, request.PageId, cancellationToken)
+            .AddSectionAsync(VenueId, menuId, sectionId, request.Name, request.PageId, Author, cancellationToken)
             .ConfigureAwait(false);
 
         return outcome.Outcome == SectionOutcomes.Created
@@ -655,7 +680,7 @@ public sealed class BackOfficeContentController(
             return Problem("A section needs a name.", statusCode: 400);
         }
 
-        return await content.RenameSectionAsync(VenueId, menuId, sectionId, request.Name, cancellationToken).ConfigureAwait(false)
+        return await content.RenameSectionAsync(VenueId, menuId, sectionId, request.Name, Author, cancellationToken).ConfigureAwait(false)
             ? NoContent()
             : NotFound(new { message = "That section is not on this menu." });
     }
@@ -678,7 +703,7 @@ public sealed class BackOfficeContentController(
         }
 
         var outcome = await content
-            .DeleteSectionAsync(VenueId, menuId, sectionId, request.MoveItemsToSectionId, request.DeletePlacements, cancellationToken)
+            .DeleteSectionAsync(VenueId, menuId, sectionId, request.MoveItemsToSectionId, request.DeletePlacements, Author, cancellationToken)
             .ConfigureAwait(false);
 
         return outcome.Outcome switch
@@ -709,7 +734,7 @@ public sealed class BackOfficeContentController(
         }
 
         var outcome = await content
-            .ReorderSectionsAsync(VenueId, menuId, request.SectionIds, cancellationToken)
+            .ReorderSectionsAsync(VenueId, menuId, request.SectionIds, Author, cancellationToken)
             .ConfigureAwait(false);
 
         return outcome.Outcome == ReorderOutcomes.Reordered

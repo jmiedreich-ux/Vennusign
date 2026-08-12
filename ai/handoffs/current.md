@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-11, after Menus Milestone 3 was merged and closed.
+Updated 2026-08-12, at Menus M3-A Slice 2 owner acceptance and closure.
 
 ## Current State
 
@@ -25,18 +25,16 @@ Updated 2026-08-11, after Menus Milestone 3 was merged and closed.
 
 ## Exact Next Action
 
-1. **Menus M3-A, slice 0 — foundations.** Branch from `master` at `6bf0f75`. Work
-   plan: `docs/design/approved/menus/m3-a/work-plan.md`. Each slice is its own
-   independently mergeable PR per `AGENTS.md` — the M3 branch is deleted and must not
-   be continued. Claim it in `tracker/assignments.json` under your own owner name
-   before touching code.
+1. **Begin Menus M3-A Slice 3 through the GitHub-first claim process.** Read its
+   work-plan scope, create/confirm the milestone issue, claim it in the tracker,
+   branch from updated `master`, and keep the schema → API → UI → Playwright slice
+   independently mergeable.
 
-2. **Two things carry forward from M3 and must not be lost.** The owner holds a set of
-   **deferred visual notes** on the builder — a second pass they held back until the
-   acceptance remediation was done, and which merging did not discharge. And
-   **migration 061 against a pre-migration dirty database remains UNVERIFIED** from
-   committed evidence, exactly as the independent review said; the committed coverage
-   proves post-schema behaviour, not the upgrade exercise.
+2. Slice 2 is owner-accepted. Its first review blockers were a case-only section
+   rename no-op and stale page-history response overwrite; both have focused tests
+   with observed red/green evidence. The owner waived further review. Item-change
+   history remains with its later M3-A owner; #701 and #702 track the other explicit
+   follow-ups.
 
 3. Standing owner decisions carried out of Milestone 1: audit record kept as is (#677),
    legacy columns kept, and the three menu capabilities to become separately grantable

@@ -511,16 +511,38 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             INSERT dbo.MenuSections (Id, VenueId, MenuId, PageId, Name, SortOrder, CreatedUtc, UpdatedUtc)
             VALUES (@SectionId, @VenueId, @MenuId, @ResolvedPageId, @Name, @Next, @Now, @Now);
 
+            INSERT dbo.MenuHistoryEntries
+                (Id,VenueId,MenuId,PageId,PageName,Kind,Detail,Author,OccurredUtc)
+            SELECT NEWID(),@VenueId,@MenuId,p.Id,p.Name,N'section_added',
+                   CONCAT(N'Section added — ', @Name),@Author,@Now
+            FROM dbo.MenuPages p
+            WHERE p.Id=@ResolvedPageId AND p.MenuId=@MenuId AND p.VenueId=@VenueId;
+
             COMMIT TRANSACTION;
             SELECT N'created' AS Outcome, @Next AS SortOrder;
         END
         """;
 
     private const string RenameSectionSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+        DECLARE @Changed TABLE (PageId UNIQUEIDENTIFIER, OldName NVARCHAR(200));
         UPDATE dbo.MenuSections
         SET Name = @Name, UpdatedUtc = @Now
-        OUTPUT 1 AS Value
-        WHERE Id = @SectionId AND MenuId = @MenuId AND VenueId = @VenueId;
+        OUTPUT inserted.PageId, deleted.Name INTO @Changed(PageId,OldName)
+        WHERE Id = @SectionId AND MenuId = @MenuId AND VenueId = @VenueId
+          AND Name COLLATE Latin1_General_100_BIN2 <> @Name COLLATE Latin1_General_100_BIN2;
+
+        INSERT dbo.MenuHistoryEntries
+            (Id,VenueId,MenuId,PageId,PageName,Kind,Detail,Author,OccurredUtc)
+        SELECT NEWID(),@VenueId,@MenuId,c.PageId,p.Name,N'section_renamed',
+               CONCAT(c.OldName,N' renamed to ',@Name),@Author,@Now
+        FROM @Changed c INNER JOIN dbo.MenuPages p
+          ON p.Id=c.PageId AND p.MenuId=@MenuId AND p.VenueId=@VenueId;
+        COMMIT TRANSACTION;
+        SELECT TOP (1) 1 AS Value
+        FROM dbo.MenuSections
+        WHERE Id=@SectionId AND MenuId=@MenuId AND VenueId=@VenueId;
         """;
 
     /// <summary>
@@ -544,6 +566,10 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 (SELECT COUNT(*) FROM dbo.Placements WHERE MenuSectionId = @SectionId AND VenueId = @VenueId);
             DECLARE @SourcePageId UNIQUEIDENTIFIER =
                 (SELECT PageId FROM dbo.MenuSections WHERE Id=@SectionId AND MenuId=@MenuId AND VenueId=@VenueId);
+            DECLARE @SourceName NVARCHAR(200) =
+                (SELECT Name FROM dbo.MenuSections WHERE Id=@SectionId AND MenuId=@MenuId AND VenueId=@VenueId);
+            DECLARE @PageName NVARCHAR(200) =
+                (SELECT Name FROM dbo.MenuPages WHERE Id=@SourcePageId AND MenuId=@MenuId AND VenueId=@VenueId);
 
             IF @PlacementCount > 0 AND @DeletePlacements = 0 AND NOT EXISTS (
                 SELECT 1 FROM dbo.MenuSections WITH (UPDLOCK, HOLDLOCK)
@@ -577,6 +603,13 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                     DELETE FROM dbo.Placements WHERE MenuSectionId=@SectionId AND VenueId=@VenueId;
 
                 DELETE FROM dbo.MenuSections WHERE Id=@SectionId AND MenuId=@MenuId AND VenueId=@VenueId;
+                INSERT dbo.MenuHistoryEntries
+                    (Id,VenueId,MenuId,PageId,PageName,Kind,Detail,Author,OccurredUtc)
+                VALUES (NEWID(),@VenueId,@MenuId,@SourcePageId,@PageName,N'section_deleted',
+                    CASE WHEN @PlacementCount=0 THEN CONCAT(N'Section deleted — ',@SourceName)
+                         WHEN @DeletePlacements=1 THEN CONCAT(@SourceName,N' deleted; ',@PlacementCount,N' items returned to the library')
+                         ELSE CONCAT(@SourceName,N' deleted; ',@PlacementCount,N' items moved') END,
+                    @Author,@Now);
                 COMMIT TRANSACTION;
                 SELECT N'deleted' AS Outcome,
                        CASE WHEN @DeletePlacements=0 THEN @PlacementCount ELSE 0 END AS Moved,
@@ -628,6 +661,13 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             UPDATE s SET s.SortOrder = o.Position, s.UpdatedUtc = @Now
             FROM dbo.MenuSections s INNER JOIN @Order o ON o.SectionId = s.Id;
 
+            INSERT dbo.MenuHistoryEntries
+                (Id,VenueId,MenuId,PageId,PageName,Kind,Detail,Author,OccurredUtc)
+            SELECT NEWID(),@VenueId,@MenuId,p.Id,p.Name,N'sections_reordered',
+                   N'Sections reordered',@Author,@Now
+            FROM dbo.MenuPages p
+            WHERE p.Id=@PageId AND p.MenuId=@MenuId AND p.VenueId=@VenueId;
+
             COMMIT TRANSACTION;
             SELECT N'reordered' AS Outcome, @Live AS Moved;
         END
@@ -662,9 +702,9 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             SELECT N'not_found' AS Outcome, NULL AS Name, NULL AS Description, NULL AS Price;
         END
         ELSE IF @Guarded = 1
-           AND (@Name <> @ExpectedName
-             OR ISNULL(@Description, N'') <> ISNULL(@ExpectedDescription, N'')
-             OR ISNULL(@Price, N'') <> ISNULL(@ExpectedPrice, N''))
+           AND (@Name COLLATE Latin1_General_100_BIN2 <> @ExpectedName COLLATE Latin1_General_100_BIN2
+             OR ISNULL(@Description, N'') COLLATE Latin1_General_100_BIN2 <> ISNULL(@ExpectedDescription, N'') COLLATE Latin1_General_100_BIN2
+             OR ISNULL(@Price, N'') COLLATE Latin1_General_100_BIN2 <> ISNULL(@ExpectedPrice, N'') COLLATE Latin1_General_100_BIN2)
         BEGIN
             ROLLBACK TRANSACTION;
             SELECT N'item_changed' AS Outcome, @Name AS Name, @Description AS Description, @Price AS Price;
@@ -1574,12 +1614,23 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
     // of what happened. Null for the kinds that are not a publish.
     private const string HistorySql = """
         SELECT TOP (@Limit)
-            h.Id, h.VenueId, h.MenuId, h.Kind, h.PublishEventId, h.ReplacedByVersion,
+            h.Id, h.VenueId, h.MenuId, h.PageId, h.PageName, h.Kind, h.PublishEventId, h.ReplacedByVersion,
             h.Detail, h.Author, h.OccurredUtc, e.Version
         FROM dbo.MenuHistoryEntries h
         LEFT JOIN dbo.MenuPublishEvents e
             ON e.Id = h.PublishEventId AND e.MenuId = h.MenuId AND e.VenueId = h.VenueId
         WHERE h.VenueId = @VenueId AND h.MenuId = @MenuId
+        ORDER BY h.OccurredUtc DESC, h.Id DESC;
+        """;
+
+    private const string PageHistorySql = """
+        SELECT TOP (@Limit)
+            h.Id, h.VenueId, h.MenuId, h.PageId, h.PageName, h.Kind,
+            h.PublishEventId, h.ReplacedByVersion, h.Detail, h.Author,
+            h.OccurredUtc, CAST(NULL AS BIGINT) AS Version
+        FROM dbo.MenuHistoryEntries h
+        WHERE h.VenueId=@VenueId AND h.MenuId=@MenuId AND h.PageId=@PageId
+          AND h.Kind<>N'published'
         ORDER BY h.OccurredUtc DESC, h.Id DESC;
         """;
 
@@ -1836,6 +1887,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         string name,
         DateTime now,
         Guid? pageId = null,
+        string? author = null,
         CancellationToken cancellationToken = default)
     {
         var row = (await dataAccess.ExecuteSqlQueryAsync<SectionCreateRow, object>(
@@ -1847,7 +1899,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 SectionId = RequireId(sectionId, nameof(sectionId)),
                 Name = name,
                 Now = now,
-                RequestedPageId = pageId
+                RequestedPageId = pageId,
+                Author = author
             },
             cancellationToken).ConfigureAwait(false)).Single();
 
@@ -1860,6 +1913,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         Guid sectionId,
         string name,
         DateTime now,
+        string? author = null,
         CancellationToken cancellationToken = default) =>
         (await dataAccess.ExecuteSqlQueryAsync<ScalarResult, object>(
             RenameSectionSql,
@@ -1869,7 +1923,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 MenuId = RequireId(menuId, nameof(menuId)),
                 SectionId = RequireId(sectionId, nameof(sectionId)),
                 Name = name,
-                Now = now
+                Now = now,
+                Author = author
             },
             cancellationToken).ConfigureAwait(false)).Any();
 
@@ -1879,6 +1934,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         Guid sectionId,
         Guid? moveItemsToSectionId,
         bool deletePlacements,
+        string? author = null,
+        DateTime? now = null,
         CancellationToken cancellationToken = default)
     {
         var row = (await dataAccess.ExecuteSqlQueryAsync<SectionDeleteRow, object>(
@@ -1889,7 +1946,9 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 MenuId = RequireId(menuId, nameof(menuId)),
                 SectionId = RequireId(sectionId, nameof(sectionId)),
                 MoveItemsToSectionId = moveItemsToSectionId,
-                DeletePlacements = deletePlacements
+                DeletePlacements = deletePlacements,
+                Author = author,
+                Now = now ?? DateTime.UtcNow
             },
             cancellationToken).ConfigureAwait(false)).Single();
 
@@ -1901,6 +1960,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         Guid menuId,
         IReadOnlyCollection<Guid> sectionIds,
         DateTime now,
+        string? author = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sectionIds);
@@ -1911,7 +1971,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 VenueId = RequireId(venueId, nameof(venueId)),
                 MenuId = RequireId(menuId, nameof(menuId)),
                 SectionIdsJson = System.Text.Json.JsonSerializer.Serialize(sectionIds),
-                Now = now
+                Now = now,
+                Author = author
             },
             cancellationToken).ConfigureAwait(false)).Single();
 
@@ -2578,6 +2639,23 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             {
                 VenueId = RequireId(venueId, nameof(venueId)),
                 MenuId = RequireId(menuId, nameof(menuId)),
+                Limit = RequireLimit(limit)
+            },
+            cancellationToken).ConfigureAwait(false)).ToArray();
+
+    public async Task<IReadOnlyCollection<MenuHistoryEntry>> GetPageHistoryAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid pageId,
+        int limit,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<MenuHistoryEntry, object>(
+            PageHistorySql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                MenuId = RequireId(menuId, nameof(menuId)),
+                PageId = RequireId(pageId, nameof(pageId)),
                 Limit = RequireLimit(limit)
             },
             cancellationToken).ConfigureAwait(false)).ToArray();

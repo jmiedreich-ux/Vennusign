@@ -139,6 +139,20 @@ internal static class ModelInvariants
             """),
 
         new(
+            "Page history names a page from its own menu and venue, unless that page was deleted",
+            "M3-A Slice 2 keeps immutable page attribution after hard deletion. While the page still exists, "
+            + "a history row may never borrow another menu's or venue's page identity.",
+            """
+            SELECT CONCAT('history entry ', h.Id, ' in menu ', h.MenuId,
+                          ' names live page ', h.PageId, ' from menu ', p.MenuId,
+                          ' and venue ', p.VenueId) AS Offence
+            FROM dbo.MenuHistoryEntries h
+            INNER JOIN dbo.MenuPages p ON p.Id=h.PageId
+            WHERE h.PageId IS NOT NULL
+              AND (p.MenuId<>h.MenuId OR p.VenueId<>h.VenueId);
+            """),
+
+        new(
             "A menu's published version is the version it last published",
             "Milestone 2. Two columns describing one fact, written by different statements and read by "
             + "different surfaces: the shelf card shows PublishedVersion, while the board it draws comes from "

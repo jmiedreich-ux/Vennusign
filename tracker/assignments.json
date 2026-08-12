@@ -1,19 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-11T08:55:04Z",
-  "activeAssignments": [
-    {
-      "assignment": "Menus M3-A — slice 1 (pages, capacity, assignments)",
-      "issue": 696,
-      "branch": "feature/menus-m3a-s1-pages",
-      "owner": "Codex for JeremyPC",
-      "claimedUtc": "2026-08-11T08:55:04Z",
-      "headAtClaim": "4b055853090eeb91ddc5841fe0006176839c0bad",
-      "status": "owner-approved and locally gated; owner waived further independent review and directed merge/closure",
-      "startHere": "docs/design/approved/menus/m3-a/work-plan.md",
-      "notes": "Slice 1 reconstructed from a safeguarded dirty-tree checkpoint after independent review found it was not versioned. Partial Slice 2 and Slice 6 work is excluded and preserved at local checkpoint 4aa0168. Page-shaped seed support is owned here because it delegates to the real page schema/API introduced here. Focused gate before commit: page Playwright 12/12, page LocalDB 2/2, back office 196/196 plus production build. Real-pointer reorder and assignment-removal regressions were observed red with fixes reverted. CI is suspended."
-    }
-  ],
+  "updatedUtc": "2026-08-12T05:05:00Z",
+  "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
@@ -38,13 +26,13 @@
     "releasedBy": "scope completed locally"
   },
   "lastCompletedAssignment": {
-    "assignment": "Menus milestone 3 — menu builder + adding items",
-    "issue": 690,
-    "pr": 691,
-    "branch": "feature/menus-m3-builder (deleted)",
-    "mergedUtc": "2026-08-11T08:44:10Z",
-    "mergeCommit": "6bf0f75",
-    "acceptance": "NOT a clean acceptance. The owner's record of 2026-08-10 stands at 'Needs adjustment' - 11 Pass, 2 Fail, 2 Needs Adjustment (docs/features/menus/m3-acceptance-record.json). Its findings were remediated and the owner instructed merge without a workbook rerun. Recorded as-is rather than rounded up.",
-    "notes": "Independent review returned REQUEST_CHANGES with seven findings, all real; an eighth was found in the review prompt itself. Both acceptance Fails were verified independently before merge - drag driven with discrete pointer events rather than dragTo, and the green availability panel confirmed absent - because both had previously passed their tests while broken. Gate at the merged head: back office 190/190 plus a clean production build, Playwright 142/0, Api 433, data integration 91/91, builder API 21/21, M1 demo 12/12; the four pre-existing failures on #688 unchanged. Carried forward: the owner's deferred visual notes on the builder, Q209 on its provisional default, the six provisional readiness-pass decisions, and migration 061 against a pre-migration dirty database still UNVERIFIED from committed evidence."
+    "assignment": "Menus M3-A — slice 2 (sections and page history)",
+    "issue": 699,
+    "pr": 700,
+    "branch": "feature/menus-m3a-s2-sections-history",
+    "completedUtc": "2026-08-12T05:05:00Z",
+    "acceptedProductSha": "fa95b44d744e6963101f29fa7f5efaa97743e9d7",
+    "acceptance": "Owner accepted after workbook review and explicitly waived further independent review.",
+    "notes": "Final local gate: Release 0 warnings/errors; LocalDB 98/98; focused API 27/27; Test API 8/8; back office 197/197 plus production build; desktop page Playwright 22/22. #701 and #702 retain explicit follow-ups."
   }
 }
