@@ -780,13 +780,14 @@ public sealed class ContentService(
     }
 
     /// <summary>
-    /// The menu themes this venue has. There are none, and there is no table for
-    /// them: menu themes are created in the theme editor, which does not exist yet,
-    /// and no named looks ship (Q86). The picker renders the empty state from this
-    /// rather than from a hard-coded list, so it needs no change when the first
-    /// theme is built.
+    /// The menu themes this build can render. Northside Social is the first
+    /// repeatable showcase theme; a menu still remains unthemed unless it is
+    /// explicitly attached during creation.
     /// </summary>
-    public static IReadOnlyList<MenuThemeResult> GetMenuThemes() => [];
+    public static IReadOnlyList<MenuThemeResult> GetMenuThemes() =>
+    [
+        new("northside-social", "Northside Social")
+    ];
 
     private static string NormalizeSectionName(string? name)
     {
