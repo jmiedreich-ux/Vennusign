@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent, type RefObject } from "react";
 
 import {
   BackOfficeApiError,
@@ -85,6 +85,17 @@ type Props = {
   onAccessTokenChange?: (token: string) => void;
   capabilityOverrides?: MenuCapabilityOverrides;
 };
+
+function screenState(screen: MenuScreenShowing, now = Date.now()) {
+  const raw = (screen.status || "Never paired").toLowerCase();
+  if (raw.includes("never")) return { key: "unpaired", text: "Never paired" };
+  const lastSeen = screen.lastSeenUtc ? new Date(screen.lastSeenUtc) : null;
+  const elapsedMinutes = lastSeen && Number.isFinite(lastSeen.getTime()) ? Math.max(0, Math.floor((now - lastSeen.getTime()) / 60_000)) : null;
+  const elapsed = elapsedMinutes === null ? null : elapsedMinutes < 60 ? `${elapsedMinutes}m` : elapsedMinutes < 1_440 ? `${Math.floor(elapsedMinutes / 60)}h` : `${Math.floor(elapsedMinutes / 1_440)}d`;
+  if (raw === "online" && elapsedMinutes !== null && elapsedMinutes >= 5) return { key: "stale", text: `Stale · no reply for ${elapsed}` };
+  if (raw.includes("offline")) return { key: "offline", text: elapsed ? `Offline · last seen ${elapsed} ago` : "Offline" };
+  return { key: "online", text: "Online" };
+}
 
 type SaveState = "clean" | "saving" | "failed";
 
@@ -366,17 +377,21 @@ export default function MenuBuilder({
   const [fitOpen, setFitOpen] = useState(false);
   const [assignmentDraft, setAssignmentDraft] = useState<Record<string, "replace" | "rotate" | "remove">>({});
   const [assignmentChoiceScreenId, setAssignmentChoiceScreenId] = useState<string | null>(null);
+  const [assignmentChoicePageId, setAssignmentChoicePageId] = useState<string | null>(null);
+  const [assignmentAddingScreenId, setAssignmentAddingScreenId] = useState<string | null>(null);
   const [viewingScreenId, setViewingScreenId] = useState<string | null>(null);
   const undoStack = useRef<UndoStep[]>([]);
   const redoStack = useRef<UndoStep[]>([]);
   const [historyDepth, setHistoryDepth] = useState({ undo: 0, redo: 0 });
-  const [confirmDelete, setConfirmDelete] = useState<{ sectionId: string; name: string; items: number } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ sectionId: string; name: string; items: number; destinationSectionId: string; mode: "move" | "delete" } | null>(null);
   const [activePageId, setActivePageId] = useState<string | null>(null);
   const [addingPage, setAddingPage] = useState(false);
   const [newPageName, setNewPageName] = useState("");
   const [pageMenuId, setPageMenuId] = useState<string | null>(null);
   const [draggedPageId, setDraggedPageId] = useState<string | null>(null);
   const [editingPage, setEditingPage] = useState<{ pageId: string; name: string } | null>(null);
+  const [editingRailSection, setEditingRailSection] = useState<{ sectionId: string; name: string } | null>(null);
+  const [draggedSectionId, setDraggedSectionId] = useState<string | null>(null);
   const [confirmPageDelete, setConfirmPageDelete] = useState<{ pageId: string; name: string; destinationPageId: string; sectionCount: number; mode: "move" | "delete" } | null>(null);
 
   const discardRef = useDialogFocus(confirmDiscard);
@@ -386,13 +401,12 @@ export default function MenuBuilder({
   const reviewRef = useDialogFocus(reviewOpen);
   const historyRef = useDialogFocus(historyOpen);
   const pageDeleteRef = useDialogFocus(Boolean(confirmPageDelete));
-  const assignmentRef = useDialogFocus(assignmentOpen && !assignmentChoiceScreenId);
-  const assignmentChoiceRef = useDialogFocus(Boolean(assignmentChoiceScreenId));
   const fitRef = useDialogFocus(fitOpen);
   const closeAssignmentChoice = () => {
     const trigger = assignmentChoiceScreenId;
     setAssignmentChoiceScreenId(null);
-    if (trigger) window.setTimeout(() => document.querySelector<HTMLButtonElement>(`[data-testid="assign-page-screen"][data-screen-id="${trigger}"]`)?.focus(), 0);
+    setAssignmentChoicePageId(null);
+    if (trigger) window.setTimeout(() => document.querySelector<HTMLButtonElement>(`[data-testid="add-screen-page"][data-screen-id="${trigger}"]`)?.focus(), 0);
   };
 
   const board = data?.board;
@@ -643,17 +657,19 @@ export default function MenuBuilder({
   };
 
   const saveAssignments = async () => {
-    if (!activePageId) return;
     const changes = Object.entries(assignmentDraft);
     await run(() => saveMenuPageAssignments(
       configuration,
       credential(),
       menuId,
-      activePageId,
-      changes.map(([screenId, mode]) => ({ screenId, mode }))
+      changes.map(([key, mode]) => {
+        const [screenId, pageId] = key.split(":");
+        return { screenId, pageId, mode };
+      })
     ), undefined, () => {
       setAssignmentOpen(false);
       setAssignmentDraft({});
+      setAssignmentAddingScreenId(null);
     });
   };
 
@@ -681,7 +697,7 @@ export default function MenuBuilder({
       {
         describe: `Add section "${name}"`,
         undo: async () => {
-          if (created) await deleteMenuSection(configuration, credential(), menuId, created.sectionId);
+          if (created) await deleteMenuSection(configuration, credential(), menuId, created.sectionId, undefined, true);
         },
         redo: async () => {
           created = await addMenuSection(configuration, credential(), menuId, name, activePageId);
@@ -705,19 +721,21 @@ export default function MenuBuilder({
     );
   };
 
-  const deleteSection = async (sectionId: string, name: string) => {
+  const deleteSection = async (sectionId: string, name: string, destinationSectionId?: string, deletePlacements = false) => {
     const sections = sectionsOf(board).filter(section => !activePageId || section.pageId === activePageId);
     const deletedIndex = sections.findIndex(section => section.sectionId === sectionId);
     const nextSection = sections[deletedIndex - 1] ?? sections[deletedIndex + 1] ?? null;
     await run(async () => {
-      const outcome = await deleteMenuSection(configuration, credential(), menuId, sectionId);
-      setNotice(releasedPhrase(outcome.releasedItemCount));
+      const outcome = await deleteMenuSection(configuration, credential(), menuId, sectionId, destinationSectionId, deletePlacements);
+      setNotice(outcome.movedItemCount > 0
+        ? `${outcome.movedItemCount} ${outcome.movedItemCount === 1 ? "item was" : "items were"} moved.`
+        : releasedPhrase(outcome.releasedItemCount));
       setPlace(current =>
         current.sectionId === sectionId
           ? { ...current, sectionId: nextSection?.sectionId ?? null, selectedItemId: null }
           : current
       );
-    });
+    }, undefined, () => setConfirmDelete(null));
     // Deliberately not undoable: the section's id is gone, so an "undo" would put
     // back something that only looked the same. Saying so beats a control that
     // half works — the items are in the library and can be placed again.
@@ -727,8 +745,23 @@ export default function MenuBuilder({
   // ---- the canvas ----------------------------------------------------------
 
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [priceEdit, setPriceEdit] = useState<{ itemId: string; value: string; box: DOMRect } | null>(null);
-  const [headingEdit, setHeadingEdit] = useState<{ sectionId: string; value: string; box: DOMRect } | null>(null);
+  const [itemEdit, setItemEdit] = useState<{ itemId: string; field: "name" | "description" | "price"; value: string; box: DOMRect; typography: CSSProperties; caret: number } | null>(null);
+  const itemEditRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const [inspectorCue, setInspectorCue] = useState<"name" | "description" | "price" | null>(null);
+  const inspectorCueTimer = useRef<number>();
+  const [headingEdit, setHeadingEdit] = useState<{ sectionId: string; value: string; box: DOMRect; typography: CSSProperties } | null>(null);
+
+  useEffect(() => () => {
+    if (inspectorCueTimer.current) window.clearTimeout(inspectorCueTimer.current);
+  }, []);
+
+  useEffect(() => {
+    const editor = itemEditRef.current;
+    if (!editor || !itemEdit) return;
+    editor.focus();
+    editor.setSelectionRange(itemEdit.caret, itemEdit.caret);
+  }, [itemEdit?.itemId, itemEdit?.field]);
+
 
   /**
    * Renames a section by typing over the canvas heading (Q96). The duplicate
@@ -867,6 +900,14 @@ export default function MenuBuilder({
     renameSection(edit.sectionId, edit.value.trim(), current);
   };
 
+  const commitRailSectionRename = () => {
+    const edit = editingRailSection;
+    setEditingRailSection(null);
+    if (!edit) return;
+    const current = sectionsOf(board).find(section => section.sectionId === edit.sectionId)?.name ?? "";
+    renameSection(edit.sectionId, edit.name.trim(), current);
+  };
+
   /*
    * The selection ring is drawn ON the board row, but the engine knows nothing
    * about selection — it renders a board and nothing else, which is the property
@@ -881,11 +922,21 @@ export default function MenuBuilder({
     const target = dropTarget;
     for (const row of canvas.querySelectorAll<HTMLElement>("[data-item-id]")) {
       row.classList.toggle("is-selected", row.dataset.itemId === place.selectedItemId);
+      const editingThis = row.dataset.itemId === itemEdit?.itemId;
+      row.querySelector<HTMLElement>(".board-item-name")?.classList.toggle("is-being-edited", editingThis && itemEdit?.field === "name");
+      row.querySelector<HTMLElement>(".board-item-description")?.classList.toggle("is-being-edited", editingThis && itemEdit?.field === "description");
+      row.querySelector<HTMLElement>(".board-item-price")?.classList.toggle("is-being-edited", editingThis && itemEdit?.field === "price");
       if (target && row.dataset.itemId === target.itemId && row.dataset.sectionId === target.sectionId) {
         row.dataset.dropEdge = target.edge;
       } else {
         delete row.dataset.dropEdge;
       }
+    }
+    for (const section of canvas.querySelectorAll<HTMLElement>("[data-section-id]")) {
+      section.querySelector<HTMLElement>(".board-section-heading")?.classList.toggle(
+        "is-being-edited",
+        section.dataset.sectionId === headingEdit?.sectionId
+      );
     }
   });
 
@@ -902,10 +953,29 @@ export default function MenuBuilder({
       if (named) {
         const canvasBox = canvasRef.current.getBoundingClientRect();
         const box = heading.getBoundingClientRect();
+        const computed = window.getComputedStyle(heading);
+        const stage = heading.closest<HTMLElement>(".builder__stage");
+        const scale = Number.parseFloat(stage ? window.getComputedStyle(stage).getPropertyValue("--board-scale") : "1") || 1;
+        const scaledLength = (value: string) => value.endsWith("px") ? `${Number.parseFloat(value) * scale}px` : value;
         setHeadingEdit({
           sectionId: named.sectionId,
           value: named.name ?? "",
-          box: new DOMRect(box.left - canvasBox.left, box.top - canvasBox.top, box.width, box.height)
+          box: new DOMRect(
+            box.left - canvasBox.left + canvasRef.current.scrollLeft,
+            box.top - canvasBox.top + canvasRef.current.scrollTop,
+            box.width,
+            box.height
+          ),
+          typography: {
+            fontFamily: computed.fontFamily,
+            fontSize: scaledLength(computed.fontSize),
+            fontWeight: computed.fontWeight,
+            fontStyle: computed.fontStyle,
+            lineHeight: scaledLength(computed.lineHeight),
+            letterSpacing: scaledLength(computed.letterSpacing),
+            textTransform: computed.textTransform as CSSProperties["textTransform"],
+            color: computed.color
+          }
         });
         return;
       }
@@ -916,36 +986,60 @@ export default function MenuBuilder({
     const itemId = row.dataset.itemId!;
     setPlace(current => ({ ...current, selectedItemId: itemId }));
 
-    // In-place editing is the price only (Q118). Clicking a name or description
-    // selects the item and focuses the matching inspector field instead.
-    const priceCell = (event.target as HTMLElement).closest<HTMLElement>(".board-item-price");
-    if (priceCell && canvasRef.current) {
+    const clicked = (event.target as HTMLElement).closest<HTMLElement>(".board-item-name, .board-item-description, .board-item-price");
+    if (clicked && canvasRef.current) {
       const canvasBox = canvasRef.current.getBoundingClientRect();
-      const cell = priceCell.getBoundingClientRect();
+      const cell = clicked.getBoundingClientRect();
+      const computed = window.getComputedStyle(clicked);
+      const stage = clicked.closest<HTMLElement>(".builder__stage");
+      const scale = Number.parseFloat(stage ? window.getComputedStyle(stage).getPropertyValue("--board-scale") : "1") || 1;
+      const scaledLength = (value: string) => value.endsWith("px") ? `${Number.parseFloat(value) * scale}px` : value;
       const found = findItem(board, itemId);
-      setPriceEdit({
+      if (!found) return;
+      const field = clicked.classList.contains("board-item-price") ? "price" : clicked.classList.contains("board-item-description") ? "description" : "name";
+      setItemEdit({
         itemId,
-        value: found?.item.price ?? "",
-        box: new DOMRect(cell.left - canvasBox.left, cell.top - canvasBox.top, cell.width, cell.height)
+        field,
+        value: found.item[field] ?? "",
+        box: new DOMRect(
+          cell.left - canvasBox.left + canvasRef.current.scrollLeft,
+          cell.top - canvasBox.top + canvasRef.current.scrollTop,
+          cell.width,
+          cell.height
+        ),
+        caret: Math.max(0, Math.min((found.item[field] ?? "").length, Math.round(((event.clientX - cell.left) / Math.max(cell.width, 1)) * (found.item[field] ?? "").length))),
+        typography: {
+          fontFamily: computed.fontFamily,
+          fontSize: scaledLength(computed.fontSize),
+          fontWeight: computed.fontWeight,
+          fontStyle: computed.fontStyle,
+          lineHeight: scaledLength(computed.lineHeight),
+          letterSpacing: scaledLength(computed.letterSpacing),
+          textTransform: computed.textTransform as CSSProperties["textTransform"],
+          color: computed.color,
+          textAlign: computed.textAlign as CSSProperties["textAlign"]
+        }
       });
+      setInspectorCue(field);
+      if (inspectorCueTimer.current) window.clearTimeout(inspectorCueTimer.current);
       return;
     }
-
-    const field = (event.target as HTMLElement).closest(".board-item-description") ? "description" : "name";
-    window.requestAnimationFrame(() => {
-      document.querySelector<HTMLElement>(`[data-inspector-field="${field}"]`)?.focus();
-    });
   };
 
-  const commitPrice = async () => {
-    const edit = priceEdit;
-    setPriceEdit(null);
+  const commitItemEdit = async () => {
+    const edit = itemEdit;
+    setItemEdit(null);
     if (!edit) return;
+    inspectorCueTimer.current = window.setTimeout(() => setInspectorCue(null), 900);
     const found = findItem(board, edit.itemId);
-    if (!found || (found.item.price ?? "") === edit.value) return;
+    if (!found) return;
 
     const was = { name: found.item.name ?? "", description: found.item.description, price: found.item.price };
-    const now = { ...was, price: edit.value.trim() === "" ? null : edit.value };
+    const normalized = edit.field === "name"
+      ? (edit.value.trim() === "" ? was.name : edit.value)
+      : (edit.value.trim() === "" ? null : edit.value);
+    if ((was[edit.field] ?? "") === (normalized ?? "")) return;
+    const now = { ...was, [edit.field]: normalized };
 
     /*
      * The inverses carry what they expect to find. Undo restores `was` only while
@@ -954,7 +1048,7 @@ export default function MenuBuilder({
      * unconditional inverse would erase them without either of you being told.
      */
     await run(() => updateMenuItemValues(configuration, credential(), edit.itemId, now), {
-      describe: "Change price",
+      describe: `Change ${edit.field}`,
       undo: () => updateMenuItemValues(configuration, credential(), edit.itemId, was, now),
       redo: () => updateMenuItemValues(configuration, credential(), edit.itemId, now, was)
     });
@@ -1285,7 +1379,7 @@ export default function MenuBuilder({
         setViewingOpen(false);
         setConfirmDiscard(false);
         setConfirmDelete(null);
-        setPriceEdit(null);
+        setItemEdit(null);
         setAddSectionId(null);
         return;
       }
@@ -1384,6 +1478,7 @@ export default function MenuBuilder({
   const sections = sectionsOf(board).filter(section => !activePageId || section.pageId === activePageId);
   const activePageItemCount = sections.reduce((count, section) => count + itemsOf(board, section.sectionId).length, 0);
   const activePageAssignmentCount = assignments.filter(assignment => assignment.pageId === activePageId).length;
+  const activePageScreenNames = assignments.filter(assignment => assignment.pageId === activePageId).map(assignment => screens.find(screen => screen.screenId === assignment.screenId)?.screenName).filter((name): name is string => Boolean(name));
   const pageBoard = { ...board, sections };
   const shown = canvasBoard(pageBoard, place);
   const activeAssignments = assignments.filter(assignment => assignment.menuId === menuId && assignment.pageId === activePageId);
@@ -1417,6 +1512,59 @@ export default function MenuBuilder({
   }
   const isOff = selectedAvailability?.isAvailable === false;
 
+  if (canAssignScreens && assignmentOpen) {
+    const assignmentKey = (screenId: string, pageId: string) => `${screenId}:${pageId}`;
+    const draftCount = Object.keys(assignmentDraft).length;
+    return (
+      <div className="builder builder--assignments" data-testid="screen-assignments" data-menu-id={menuId}>
+        <header className="builder__assignments-top">
+          <nav className="builder__crumbs" aria-label="Breadcrumb">
+            <button type="button" className="builder__crumb-link" onClick={onBack}>Menus</button><span aria-hidden="true">/</span>
+            <button type="button" className="builder__crumb-link" onClick={() => { setAssignmentOpen(false); setAssignmentDraft({}); }}>{board.name}</button><span aria-hidden="true">/</span><strong>Screens</strong>
+          </nav>
+          <div className="builder__assignments-actions">
+            <span className={`builder__assignments-save-state${draftCount > 0 ? " is-dirty" : ""}`} role="status" data-testid="assignment-save-state"><i aria-hidden="true" />{busy ? "Saving changes…" : draftCount > 0 ? `${draftCount} unsaved ${draftCount === 1 ? "change" : "changes"}` : "No unsaved changes"}</span>
+            <button type="button" className="builder__assignments-back" data-testid="assignments-back" onClick={() => { setAssignmentOpen(false); setAssignmentDraft({}); setAssignmentAddingScreenId(null); closeAssignmentChoice(); }}>Back to menu</button>
+            <button type="button" className="builder__assignments-save" disabled={draftCount === 0 || busy} onClick={() => void saveAssignments()}>Save changes and return</button>
+          </div>
+        </header>
+        <main className="builder__assignments-page">
+          {error ? <p className="builder__error" role="alert" data-testid="builder-error">{error}</p> : null}
+          <div className="builder__assignments-title">
+            <div><h1>Which screens show this menu</h1><p>Pages are assigned, not sections. A screen holding more than one page rotates between them.</p></div>
+            {screens.some(screen => screenState(screen).key !== "online") ? (() => { const count = screens.filter(screen => screenState(screen).key !== "online").length; return <p className="builder__assignments-needs"><strong>{count} {count === 1 ? "screen needs" : "screens need"} attention</strong><span>Review stale, offline and unpaired screens below.</span></p>; })() : null}
+          </div>
+          <div className="builder__assignments-table" role="table" aria-label="Screen assignments">
+            <div className="builder__assignments-columns" role="row"><span role="columnheader">Screen</span><span role="columnheader">Geometry</span><span role="columnheader">State</span><span role="columnheader">Pages showing, in order</span><span role="columnheader">Rotation · from the theme</span></div>
+            {screens.map(screen => {
+              const screenAssignments = assignments.filter(assignment => assignment.screenId === screen.screenId);
+              const replace = Object.entries(assignmentDraft).find(([key, mode]) => key.startsWith(`${screen.screenId}:`) && mode === "replace");
+              const visibleAssignments = screenAssignments.filter(assignment => assignmentDraft[assignmentKey(screen.screenId, assignment.pageId)] !== "remove" && (!replace || assignment.pageId === replace[0].split(":")[1]));
+              const additions = Object.entries(assignmentDraft).filter(([key, mode]) => key.startsWith(`${screen.screenId}:`) && mode !== "remove").map(([key]) => key.split(":")[1]);
+              const visiblePageIds = new Set(visibleAssignments.map(assignment => assignment.pageId));
+              for (const pageId of additions) visiblePageIds.add(pageId);
+              const { key: stateKey, text: stateText } = screenState(screen);
+              const canAdd = stateKey !== "unpaired" && pages.some(page => !visiblePageIds.has(page.pageId));
+              return <div key={screen.screenId} className={`builder__assignments-screen builder__assignments-screen--${stateKey}`} role="row" data-testid="screen-row" data-screen-id={screen.screenId} data-state={stateKey}>
+                <span className="builder__assignments-screen-name" role="cell"><strong>{screen.screenName}</strong><small>{screen.location || "Location not set"}</small></span>
+                <span role="cell">{screen.widthPixels > 0 && screen.heightPixels > 0 ? `${screen.widthPixels} × ${screen.heightPixels} · ${screen.heightPixels > screen.widthPixels ? "portrait" : "landscape"}` : "Not reported yet"}</span>
+                <span className={`builder__assignments-state builder__assignments-state--${stateKey}`} role="cell"><i aria-hidden="true" />{stateText}</span>
+                <span className="builder__assignments-pages" role="cell">
+                  {visibleAssignments.map(assignment => { const ownPage = assignment.menuId === menuId; const label = ownPage ? (assignment.pageName ?? pages.find(page => page.pageId === assignment.pageId)?.name ?? "Unnamed page") : `${assignment.menuName ?? "Another menu"} · ${assignment.pageName ?? "Unnamed page"}`; return <span className={`builder__assignment-chip${ownPage ? "" : " is-other-menu"}`} key={`${assignment.menuId}:${assignment.pageId}`}><SkyIcon name="drag" />{label}{ownPage ? <button type="button" aria-label={`Remove ${label} from ${screen.screenName}`} data-testid="remove-page-screen" onClick={() => setAssignmentDraft(current => ({ ...current, [assignmentKey(screen.screenId, assignment.pageId)]: "remove" }))}><SkyIcon name="close" /></button> : null}</span>; })}
+                  {additions.filter(pageId => !screenAssignments.some(assignment => assignment.pageId === pageId)).map(pageId => { const page = pages.find(candidate => candidate.pageId === pageId); return <span className="builder__assignment-chip is-staged" key={`new:${pageId}`}>{page?.name ?? "Unnamed page"}<button type="button" aria-label={`Undo adding ${page?.name ?? "page"}`} onClick={() => setAssignmentDraft(current => { const next = { ...current }; delete next[assignmentKey(screen.screenId, pageId)]; return next; })}><SkyIcon name="close" /></button></span>; })}
+                  {stateKey === "unpaired" ? <span>Pair it before assigning — we cannot draw for a screen whose size we have never been told.</span> : canAdd ? <span className="builder__assignment-add-wrap"><button type="button" className="builder__assignment-add" data-testid="add-screen-page" data-screen-id={screen.screenId} onClick={() => setAssignmentAddingScreenId(current => current === screen.screenId ? null : screen.screenId)}>+ Add a page</button>{assignmentAddingScreenId === screen.screenId ? <div className="builder__assignment-add-menu" data-testid="add-screen-page-menu">{pages.filter(page => !visiblePageIds.has(page.pageId)).map(page => <button type="button" key={page.pageId} onClick={() => { setAssignmentAddingScreenId(null); if (screenAssignments.length === 0) setAssignmentDraft(current => ({ ...current, [assignmentKey(screen.screenId, page.pageId)]: "replace" })); else { setAssignmentChoiceScreenId(screen.screenId); setAssignmentChoicePageId(page.pageId); } }}>{page.name}</button>)}</div> : null}</span> : null}
+                  {assignmentChoiceScreenId === screen.screenId && assignmentChoicePageId ? <span className="builder__assignment-choice" data-testid="assignment-choice"><strong>{screen.screenName} already has {screenAssignments.map(assignment => assignment.menuId === menuId ? (assignment.pageName ?? "an assigned page") : `${assignment.menuName ?? "another menu"} · ${assignment.pageName ?? "an assigned page"}`).join(", ")}</strong><span>Add {pages.find(page => page.pageId === assignmentChoicePageId)?.name} to the rotation, or replace everything already assigned.</span><span><button type="button" className="builder__link" onClick={closeAssignmentChoice}>Back</button><button type="button" onClick={() => { setAssignmentDraft(current => ({ ...current, [assignmentKey(screen.screenId, assignmentChoicePageId)]: "rotate" })); closeAssignmentChoice(); }}>Rotate together</button><button type="button" className="action-danger" onClick={() => { setAssignmentDraft(current => ({ ...current, [assignmentKey(screen.screenId, assignmentChoicePageId)]: "replace" })); closeAssignmentChoice(); }}>Replace</button></span></span> : null}
+                </span>
+                <span role="cell">{visiblePageIds.size > 1 ? `Set by the ${board.theme ?? "menu"} theme` : "One page — nothing to rotate"}</span>
+              </div>;
+            })}
+          </div>
+          <p className="builder__assignments-foot">{screens.length} {screens.length === 1 ? "screen" : "screens"} at this venue. Changes are saved to the menu draft only when you choose Save changes and return; they reach screens when you publish.</p>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="builder" data-testid="menu-builder" data-menu-id={menuId}>
       <header className="builder__top" inert={behindScrim}>
@@ -1428,6 +1576,8 @@ export default function MenuBuilder({
           <span className="builder__crumb-current" data-testid="builder-menu-name">
             {board.name}
           </span>
+          <SkyIcon name="pencil" />
+          <button type="button" className="builder__top-add-content" data-testid="top-add-content" onClick={() => setDrawerOpen(true)}>+ Add content</button>
         </nav>
 
         <div className="builder__top-actions">
@@ -1518,6 +1668,10 @@ export default function MenuBuilder({
       </header>
 
       <nav className="builder__pages" aria-label="Menu pages" inert={behindScrim} data-testid="page-rail">
+        <div className="builder__pages-intro">
+          <strong>Menu pages</strong>
+          <span>Choose a page to edit and preview.</span>
+        </div>
         <div className="builder__page-tabs">
           {pages.map(page => (
             <div
@@ -1570,50 +1724,37 @@ export default function MenuBuilder({
               data-testid="page-name-input"
             />
           ) : canManagePages ? (
-            <button type="button" className="builder__add-page" data-testid="add-page" onClick={() => setAddingPage(true)}>+ Add page</button>
+            <button type="button" className="builder__add-page" aria-label="Add page" data-testid="add-page" onClick={() => setAddingPage(true)}>+</button>
           ) : null}
         </div>
-        {activePageId ? (
-          <div className="builder__page-summary" data-testid="page-summary">
-            <strong data-testid="page-name">{pages.find(page => page.pageId === activePageId)?.name}</strong>
-            <span className="builder__page-actions-wrap">
-            {canManagePages ? <button type="button" className="builder__page-actions" data-testid="page-actions" aria-label={`Actions for ${pages.find(page => page.pageId === activePageId)?.name}`} onClick={() => setPageMenuId(open => open === activePageId ? null : activePageId)}>⋯</button> : null}
-            {pageMenuId === activePageId ? (() => {
-              const page = pages.find(candidate => candidate.pageId === activePageId)!;
-              return <div className="builder__page-menu" data-testid="page-menu">
-                <button type="button" onClick={() => { setPageMenuId(null); setEditingPage({ pageId: page.pageId, name: page.name }); }}>Rename</button>
-                <button type="button" onClick={() => void duplicatePage(page.pageId)}>Duplicate</button>
-                <button type="button" disabled={pages.length === 1} onClick={() => {
-                  const destinationPageId = pages.find(candidate => candidate.pageId !== page.pageId)?.pageId ?? "";
-                  setPageMenuId(null);
-                  setConfirmPageDelete({ pageId: page.pageId, name: page.name, destinationPageId, sectionCount: sectionsOf(board).filter(section => section.pageId === page.pageId).length, mode: "move" });
-                }}>Delete</button>
-              </div>;
-            })() : null}
-            </span>
-            {activePageItemCount > 0 ? <span>{activePageItemCount} {activePageItemCount === 1 ? "item" : "items"}</span> : null}
-            {activePageAssignmentCount > 0 ? <span data-testid="page-assignment-count">{activePageAssignmentCount} {activePageAssignmentCount === 1 ? "screen" : "screens"}</span> : null}
-            {canAssignScreens ? <button type="button" className="builder__assignment-pill" onClick={() => { setAssignmentDraft({}); setAssignmentChoiceScreenId(null); setAssignmentOpen(true); }} data-testid="assignment-pill"><SkyIcon name="screen-mark" /> {activePageAssignmentCount > 0 ? `${activePageAssignmentCount} ${activePageAssignmentCount === 1 ? "screen" : "screens"}` : "Manage screens"}</button> : null}
-          </div>
-        ) : null}
       </nav>
 
       <div className="builder__columns" inert={behindScrim}>
         <nav className="builder__rail" aria-label="Sections">
           <div className="builder__rail-head">
             <h2>Sections</h2>
-            <button type="button" onClick={() => setAddingSection(true)} aria-label="Add a section" data-testid="add-section">
-              +
-            </button>
           </div>
 
           <ul className="builder__rail-list">
             {sections.map((section, index) => (
-              <li key={section.sectionId} data-testid="section-row" data-section-id={section.sectionId} data-selected={place.sectionId === section.sectionId}>
-                <button
+              <li key={section.sectionId} data-testid="section-row" data-section-id={section.sectionId} data-selected={place.sectionId === section.sectionId} draggable={!editingRailSection && !busy} onDragStart={() => setDraggedSectionId(section.sectionId)} onDragEnd={() => setDraggedSectionId(null)} onDragOver={event => event.preventDefault()} onDrop={() => { const from = sections.findIndex(candidate => candidate.sectionId === draggedSectionId); if (from >= 0) void moveSection(from, index); setDraggedSectionId(null); }}>
+                {editingRailSection?.sectionId === section.sectionId ? <input
+                  autoFocus
+                  className="builder__rail-new builder__rail-rename"
+                  value={editingRailSection.name}
+                  maxLength={200}
+                  aria-label={`Rename ${section.name}`}
+                  data-testid="section-rename-input"
+                  onChange={event => setEditingRailSection({ sectionId: section.sectionId, name: event.target.value })}
+                  onBlur={commitRailSectionRename}
+                  onKeyDown={event => {
+                    if (event.key === "Enter") commitRailSectionRename();
+                    if (event.key === "Escape") setEditingRailSection(null);
+                  }}
+                /> : <button
                   type="button"
                   className={`builder__rail-row${place.sectionId === section.sectionId ? " is-selected" : ""}`}
-                  onClick={() => setPlace(current => ({ ...current, sectionId: section.sectionId, selectedItemId: null }))}
+                  onClick={() => setPlace(current => ({ ...current, view: "one-section", sectionId: section.sectionId, selectedItemId: null }))}
                   data-testid="rail-section"
                   data-section-id={section.sectionId}
                   aria-current={place.sectionId === section.sectionId}
@@ -1623,8 +1764,9 @@ export default function MenuBuilder({
                   </span>
                   <span className="builder__rail-name">{section.name}</span>
                   <span className="builder__rail-count">{itemsOf(board, section.sectionId).length}</span>
-                </button>
+                </button>}
                 <span className="builder__rail-actions">
+                  <button type="button" className="builder__rail-rename-action" aria-label={`Rename ${section.name}`} onClick={() => setEditingRailSection({ sectionId: section.sectionId, name: section.name ?? "" })}><SkyIcon name="pencil" /></button>
                   <span className="builder__rail-move">
                     <button
                       type="button"
@@ -1649,13 +1791,17 @@ export default function MenuBuilder({
                     data-testid="delete-section"
                     aria-label={`Delete ${section.name}`}
                     disabled={busy}
-                    onClick={() =>
+                    onClick={() => {
+                      const destination = sections.find(candidate => candidate.sectionId !== section.sectionId)?.sectionId ?? "";
+                      const items = itemsOf(board, section.sectionId).length;
                       setConfirmDelete({
                         sectionId: section.sectionId,
                         name: section.name ?? "this section",
-                        items: itemsOf(board, section.sectionId).length
-                      })
-                    }
+                        items,
+                        destinationSectionId: destination,
+                        mode: items > 0 && destination ? "move" : "delete"
+                      });
+                    }}
                   >
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                       <path d="M4 7h16M9 7V4h6v3m-9 0 1 13h10l1-13M10 11v5m4-5v5" />
@@ -1664,6 +1810,7 @@ export default function MenuBuilder({
                 </span>
               </li>
             ))}
+            {!addingSection ? <li className="builder__rail-add-row"><button type="button" className="builder__rail-add" onClick={() => setAddingSection(true)} data-testid="add-section">+ Add section</button></li> : null}
 
             {addingSection ? (
               <li>
@@ -1692,7 +1839,14 @@ export default function MenuBuilder({
 
         <main className="builder__canvas">
           <div className="builder__canvas-head">
-            <div className="builder__section-chips" aria-label="Page sections" data-testid="section-chips">
+            {activePageId ? <div className="builder__page-summary" data-testid="page-summary">
+              <span className="builder__page-identity"><strong data-testid="page-name">{pages.find(page => page.pageId === activePageId)?.name}</strong><small>{activePageItemCount} {activePageItemCount === 1 ? "item" : "items"}</small></span>
+              <span className="builder__page-actions-wrap">
+                {canManagePages ? <button type="button" className="builder__page-actions" data-testid="page-actions" aria-label={`Actions for ${pages.find(page => page.pageId === activePageId)?.name}`} onClick={() => setPageMenuId(open => open === activePageId ? null : activePageId)}>⋯</button> : null}
+                {pageMenuId === activePageId ? (() => { const page = pages.find(candidate => candidate.pageId === activePageId)!; return <div className="builder__page-menu" data-testid="page-menu"><button type="button" onClick={() => { setPageMenuId(null); setEditingPage({ pageId: page.pageId, name: page.name }); }}>Rename</button><button type="button" onClick={() => void duplicatePage(page.pageId)}>Duplicate</button><button type="button" disabled={pages.length === 1} onClick={() => { const destinationPageId = pages.find(candidate => candidate.pageId !== page.pageId)?.pageId ?? ""; setPageMenuId(null); setConfirmPageDelete({ pageId: page.pageId, name: page.name, destinationPageId, sectionCount: sectionsOf(board).filter(section => section.pageId === page.pageId).length, mode: "move" }); }}>Delete</button></div>; })() : null}
+              </span>
+              {activePageAssignmentCount > 0 ? <span className="sr-only" data-testid="page-assignment-count">{activePageAssignmentCount} {activePageAssignmentCount === 1 ? "screen" : "screens"}</span> : null}
+              <div className="builder__section-chips" aria-label="Page sections" data-testid="section-chips">
               <button
                 type="button"
                 aria-pressed={place.view === "whole-board"}
@@ -1720,7 +1874,9 @@ export default function MenuBuilder({
                   setSectionPickerOpen(false);
                 }}>{section.name}</button>)}</div>
               </details> : null}
-            </div>
+              </div>
+              {canAssignScreens ? <button type="button" className="builder__assignment-pill" onClick={() => { setAssignmentDraft({}); setAssignmentChoiceScreenId(null); setAssignmentChoicePageId(null); setAssignmentAddingScreenId(null); setAssignmentOpen(true); }} data-testid="assignment-pill"><SkyIcon name="screen-mark" /> {activePageAssignmentCount > 0 ? `On ${activePageAssignmentCount} ${activePageAssignmentCount === 1 ? "screen" : "screens"}${activePageScreenNames.length > 0 ? ` · ${activePageScreenNames.join(", ")}` : ""}` : "No screens yet"}<small>Manage</small><SkyIcon name="chevron" /></button> : null}
+            </div> : null}
             {place.selectedItemId && isMissingPrice(selected?.item) ? (
               <p className="builder__flag" data-testid="missing-price-flag">
                 No price yet. You can still publish it.
@@ -1776,26 +1932,24 @@ export default function MenuBuilder({
               </BoardStage>
             )}
 
-            {priceEdit ? (
-              <input
-                className="builder__price-edit"
-                autoFocus
-                value={priceEdit.value}
-                aria-label="Price"
-                data-testid="price-edit"
-                maxLength={40}
-                style={{
-                  left: `${priceEdit.box.left}px`,
-                  top: `${priceEdit.box.top}px`,
-                  width: `${Math.max(priceEdit.box.width, 64)}px`,
-                  height: `${priceEdit.box.height}px`
-                }}
-                onChange={event => setPriceEdit(current => (current ? { ...current, value: event.target.value } : current))}
-                onBlur={() => void commitPrice()}
-                onKeyDown={event => {
-                  if (event.key === "Enter") void commitPrice();
-                  if (event.key === "Escape") setPriceEdit(null);
-                }}
+            {itemEdit ? (
+              itemEdit.field === "description" || itemEdit.field === "name" ? <textarea
+                ref={itemEditRef as RefObject<HTMLTextAreaElement>}
+                className={`builder__item-edit builder__item-edit--${itemEdit.field}`}
+                value={itemEdit.value} aria-label={itemEdit.field === "name" ? "Item name" : "Description"} data-testid={`${itemEdit.field}-edit`} maxLength={itemEdit.field === "name" ? 200 : 1000}
+                rows={1}
+                style={{ ...itemEdit.typography, left: `${itemEdit.box.left}px`, top: `${itemEdit.box.top}px`, width: `${Math.max(itemEdit.box.width, 160)}px`, height: `${Math.max(itemEdit.box.height, 34)}px` }}
+                onChange={event => setItemEdit(current => (current ? { ...current, value: event.target.value } : current))}
+                onBlur={() => void commitItemEdit()}
+                onKeyDown={event => { if (itemEdit.field === "name" && event.key === "Enter") { event.preventDefault(); void commitItemEdit(); } if (event.key === "Escape") { setItemEdit(null); setInspectorCue(null); } }}
+              /> : <input
+                ref={itemEditRef as RefObject<HTMLInputElement>}
+                className="builder__item-edit builder__item-edit--price"
+                value={itemEdit.value} aria-label="Price" data-testid="price-edit" maxLength={40}
+                style={{ ...itemEdit.typography, left: `${itemEdit.box.left - 8}px`, top: `${itemEdit.box.top}px`, width: `${Math.max(itemEdit.box.width + 8, 68)}px`, height: `${Math.max(itemEdit.box.height, 24)}px` }}
+                onChange={event => setItemEdit(current => (current ? { ...current, value: event.target.value } : current))}
+                onBlur={() => void commitItemEdit()}
+                onKeyDown={event => { if (event.key === "Enter") void commitItemEdit(); if (event.key === "Escape") { setItemEdit(null); setInspectorCue(null); } }}
               />
             ) : null}
 
@@ -1813,9 +1967,10 @@ export default function MenuBuilder({
                 data-testid="heading-edit"
                 maxLength={200}
                 style={{
+                  ...headingEdit.typography,
                   left: `${headingEdit.box.left}px`,
                   top: `${headingEdit.box.top}px`,
-                  width: `${Math.max(headingEdit.box.width, 120)}px`,
+                  width: `${Math.max(headingEdit.box.width + 8, 120)}px`,
                   height: `${headingEdit.box.height}px`
                 }}
                 onChange={event =>
@@ -1979,7 +2134,7 @@ export default function MenuBuilder({
                 </div>
               )}
 
-              <label>
+              <label className={inspectorCue === "name" ? "is-cued" : undefined} data-inspector-row="name">
                 <span className="builder__label">Name</span>
                 <input
                   data-inspector-field="name"
@@ -1991,7 +2146,7 @@ export default function MenuBuilder({
                 />
               </label>
 
-              <label>
+              <label className={inspectorCue === "description" ? "is-cued" : undefined} data-inspector-row="description">
                 <span className="builder__label">Description</span>
                 <textarea
                   data-inspector-field="description"
@@ -2004,7 +2159,7 @@ export default function MenuBuilder({
                 />
               </label>
 
-              <label>
+              <label className={inspectorCue === "price" ? "is-cued" : undefined} data-inspector-row="price">
                 <span className="builder__label">Price</span>
                 <input
                   data-inspector-field="price"
@@ -2336,18 +2491,25 @@ export default function MenuBuilder({
             ref={deleteRef}
           >
             <h2 id="delete-section-title">Delete {confirmDelete.name}?</h2>
-            {/*
-              The count is in hand, so it is said rather than implied. "Nothing is
-              lost" only reassures if it names what survives - the items were never
-              IN the section; a placement put them there (Q96).
-            */}
             <p>
               {confirmDelete.items === 0
-                ? "It holds nothing, so nothing goes back to your library."
-                : confirmDelete.items === 1
-                  ? "Its item goes back to your library and comes off this board when you publish."
-                  : `Its ${confirmDelete.items} items go back to your library and come off this board when you publish.`}
+                ? "This section is empty."
+                : `${confirmDelete.items} ${confirmDelete.items === 1 ? "item" : "items"} ${confirmDelete.mode === "move" ? "will move" : "will return to the library"}. Library items are kept.`}
             </p>
+            {confirmDelete.items > 0 ? <fieldset className="builder__delete-page-choice">
+              <legend>What should happen to its items?</legend>
+              {sectionsOf(board).filter(section => section.pageId === activePageId && section.sectionId !== confirmDelete.sectionId).length > 0 ? <label>
+                <input type="radio" name="delete-section-mode" checked={confirmDelete.mode === "move"} onChange={() => setConfirmDelete(current => current ? { ...current, mode: "move" } : current)} />
+                Move items to
+                <select value={confirmDelete.destinationSectionId} onChange={event => setConfirmDelete(current => current ? { ...current, destinationSectionId: event.currentTarget.value } : current)}>
+                  {sectionsOf(board).filter(section => section.pageId === activePageId && section.sectionId !== confirmDelete.sectionId).map(section => <option key={section.sectionId} value={section.sectionId}>{section.name}</option>)}
+                </select>
+              </label> : null}
+              <label>
+                <input type="radio" name="delete-section-mode" checked={confirmDelete.mode === "delete"} onChange={() => setConfirmDelete(current => current ? { ...current, mode: "delete" } : current)} />
+                Delete section and return its items to the library
+              </label>
+            </fieldset> : null}
             <p className="builder__dialog-note">This can&apos;t be undone.</p>
             <div className="builder__dialog-actions">
               <button type="button" className="action-secondary" onClick={() => setConfirmDelete(null)}>
@@ -2359,11 +2521,10 @@ export default function MenuBuilder({
                 data-testid="confirm-delete-section"
                 onClick={() => {
                   const target = confirmDelete;
-                  setConfirmDelete(null);
-                  void deleteSection(target.sectionId, target.name);
+                  void deleteSection(target.sectionId, target.name, target.items > 0 && target.mode === "move" ? target.destinationSectionId : undefined, target.items === 0 || target.mode === "delete");
                 }}
               >
-                Delete
+                Delete section
               </button>
             </div>
           </div>
@@ -2552,58 +2713,6 @@ export default function MenuBuilder({
               ))}
             </ul>
           </div>
-        </>
-      ) : null}
-
-      {canAssignScreens && assignmentOpen ? (
-        <>
-          <div className="builder__scrim" />
-          <div className="builder__dialog builder__assignment-dialog" role="dialog" aria-modal={assignmentChoiceScreenId ? undefined : "true"} aria-labelledby="assign-page-title" data-testid="screen-assignments" ref={assignmentRef} inert={assignmentChoiceScreenId ? "" : undefined}>
-            <header className="builder__assignment-head">
-              <div><h2 id="assign-page-title">Screen assignments</h2><p>Choose where {pages.find(page => page.pageId === activePageId)?.name} appears.</p></div>
-              <span>Rotation timing comes from the theme.</span>
-            </header>
-            <div className="builder__assignment-list">
-            {screens.length === 0 ? <p>No paired screens.</p> : screens.map(screen => {
-              const existing = assignments.filter(assignment => assignment.screenId === screen.screenId);
-              const alreadyAssigned = existing.some(assignment => assignment.pageId === activePageId);
-              const staged = assignmentDraft[screen.screenId];
-              const state = screen.status.toLowerCase();
-              const assignmentNames = existing.map(assignment => {
-                const pageName = assignment.pageName ?? "Assigned page";
-                return assignment.menuId === menuId ? pageName : `${assignment.menuName ?? "Another menu"} — ${pageName}`;
-              });
-              return <div key={screen.screenId} className="builder__assignment-row" data-testid="screen-row" data-screen-id={screen.screenId} data-state={state}>
-                <span className="builder__assignment-identity"><strong>{screen.screenName}</strong><small>{screen.location ? `${screen.location} · ` : ""}{screen.widthPixels} × {screen.heightPixels} · {screen.status}{assignmentNames.length > 0 ? ` · ${assignmentNames.join(" + ")}` : " · Available"}</small></span>
-                {staged ? <span>{staged === "rotate" ? "Will rotate" : staged === "remove" ? "Will remove" : "Will replace"}</span> : alreadyAssigned ? (
-                  <button type="button" className="action-secondary" data-testid="remove-page-screen" onClick={() => setAssignmentDraft(current => ({ ...current, [screen.screenId]: "remove" }))}>Remove</button>
-                ) : (
-                  <button type="button" className="action-secondary" data-testid="assign-page-screen" data-screen-id={screen.screenId} onClick={() => {
-                    if (existing.length === 0) setAssignmentDraft(current => ({ ...current, [screen.screenId]: "replace" }));
-                    else setAssignmentChoiceScreenId(screen.screenId);
-                  }}>{existing.length === 0 ? "Assign" : "Choose…"}</button>
-                )}
-              </div>;
-            })}
-            </div>
-            <div className="builder__dialog-actions">
-              <button type="button" className="action-secondary" onClick={() => { setAssignmentChoiceScreenId(null); setAssignmentOpen(false); setAssignmentDraft({}); }}>Cancel</button>
-              <button type="button" disabled={Object.keys(assignmentDraft).length === 0 || busy} onClick={() => void saveAssignments()}>Save</button>
-            </div>
-          </div>
-          {assignmentChoiceScreenId ? <div className="builder__dialog builder__dialog--nested" role="dialog" aria-modal="true" aria-labelledby="assignment-choice-title" data-testid="assignment-choice" ref={assignmentChoiceRef} onKeyDown={event => { if (event.key === "Escape") closeAssignmentChoice(); }}>
-            <h2 id="assignment-choice-title">Choose assignment</h2>
-            <p>{screens.find(screen => screen.screenId === assignmentChoiceScreenId)?.screenName ?? "This screen"} already has {(() => {
-              const existing = assignments.find(assignment => assignment.screenId === assignmentChoiceScreenId);
-              const pageName = existing?.pageName ?? pages.find(page => page.pageId === existing?.pageId)?.name ?? "another page";
-              return existing?.menuId === menuId ? pageName : `${existing?.menuName ?? "Another menu"} — ${pageName}`;
-            })()}. Rotate both pages, or replace the page already there.</p>
-            <div className="builder__dialog-actions">
-              <button type="button" className="action-secondary" data-testid="cancel-assignment-choice" onClick={closeAssignmentChoice}>Back</button>
-              <button type="button" onClick={() => { setAssignmentDraft(current => ({ ...current, [assignmentChoiceScreenId]: "rotate" })); setAssignmentChoiceScreenId(null); }}>Rotate both</button>
-              <button type="button" className="action-danger" onClick={() => { setAssignmentDraft(current => ({ ...current, [assignmentChoiceScreenId]: "replace" })); setAssignmentChoiceScreenId(null); }}>Replace</button>
-            </div>
-          </div> : null}
         </>
       ) : null}
 

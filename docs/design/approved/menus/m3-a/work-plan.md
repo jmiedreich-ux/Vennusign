@@ -5,6 +5,13 @@ Everything here is designed, answered and recorded — see `menus/Menu Builder -
 for conventions, `menus/Menu Builder - action inventory.md` for acceptance criteria,
 and the amendments at the foot of `decisions.md`.
 
+**Final visual authority (owner ruling, 2026-08-11):** all nine PNGs under
+`exports/screens/` belong to M3-A and are the final approved screen references.
+They supersede the earlier in-progress HTML design files for visual layout,
+hierarchy, placement and treatment. The action inventory remains authoritative
+for behaviour. Page tabs use the normal application typeface; no special
+page-tab font is introduced or used.
+
 **Build target: maximum tier, every capability on**, each gated control wrapped in
 its own capability check (amendment A16).
 
@@ -20,7 +27,8 @@ tests, the Playwright gate and the owner demo, each reported with its output.
 Small, and everything else assumes it.
 
 - **Extend `SkyIcon.tsx` with six named paths** — drag handle, pencil, remove, chevron, warning, screen mark. Settled: one in-house set. Lucide stays where `navigation.mjs` already uses it, in the rail, and nowhere else. Same 24px viewBox, stroke 1.8, round caps, `aria-hidden`.
-- **Add the Playfair display token** — one token, page tabs only. Font loaded once, no other back-office use.
+- **Page-tab typography** — use the normal application typeface. No special
+  display font or page-only font token.
 - **Amend the banned-words array** in `tests/ui/specs/menus-shelf.spec.ts`: remove `restore`, keep `unpublish`, `supersede`, `archive` (amendment A8). Ship this in whichever PR first renders the Finish menu if not done here.
 - **Three config values** with defaults, read at runtime, never hardcoded in a view: import file-size limit (tiered, starts at 5 MB), publish-retry-silence threshold (venue setting, ~30s), history retention depth (per tier).
 - **Capability check helper** for the gated controls, defaulting to on. The tier infrastructure does not exist yet and is not built here — the point is that each gated control is written so it *can* be switched off without touching layout.
@@ -49,7 +57,14 @@ Roughly 15 branch paths (inventory groups B and C).
 
 - **Schema/API:** pages as first-class children of a menu — create, rename, duplicate, delete, reorder; page-to-screen assignment moves to the page.
 - **Seed API:** pages, multi-section pages and per-page assignments, added only now that the real product schema and endpoints exist.
-- **UI:** the horizontal tab rail with the folder join and uppercase Playfair names; `+ Add page` with inline naming; drag reorder; horizontal scroll past the width. Page header with name, live item count, page-actions `⋯` (rename, duplicate, delete), viewing chips (`Whole page` plus each section, collapsing behind `More` past five), and the assignment pill carrying the count and the route to Screen Assignments.
+- **UI:** match `exports/screens/01-builder-resting.png`: the horizontal tab
+  rail with the folder join and uppercase names in the normal application
+  typeface; compact `+` add-page affordance with inline naming; drag reorder;
+  horizontal scroll past the width. Page header with name, live item count,
+  page-actions `⋯` (rename, duplicate, delete), viewing chips (`Whole page`
+  plus each section, collapsing behind `More` past five), and the assignment
+  pill carrying the count and the route to the full connected Screen
+  Assignments surface in `exports/screens/07-screen-assignments.png`.
 - **Rules:** a menu always keeps one page. Delete offers to move contained sections. Duplicate copies sections and items but not assignments (A1, C3, C4). Capacity is only ever reported against assigned screens.
 - **Specs:** tab switch reloads sections, header, assignment and board; delete-with-sections offers the move; last page cannot be deleted; chips collapse at six; capacity never names an unassigned screen.
 
@@ -99,16 +114,21 @@ Roughly 20 paths (group I plus screens D and E).
 
 ---
 
-## Slice 6 · Import landing — the routes exist, and do nothing yet
+## Slice 6 · Import
 
-Small. Owner decision: the options are present, the imports are not built here.
+All import screens are part of M3-A. Implement the complete approved paths in
+`exports/screens/03-import-landing.png` through
+`06-import-review-spreadsheet.png`, together with their action-inventory
+branches.
 
-- **UI:** the landing with its four route cards, reached from *Create menu* and from *+ Add content*. **Photograph it, Paste text and Spreadsheet are inert** — present, described, not wired. POS is absent entirely until a till is attached (decisions 4 and 17).
-- **Start blank is the one that works** — confirmed by the owner — because it is not an import: it creates the page, names it, and opens the builder. It is load-bearing; without it there is no route into the builder in M3-A.
-- **Not built here:** upload, reading states, review for either source, add-or-replace, the five failure messages, the section picker, the page-name field. All are designed and approved — sections A2, A3, A4, B, B2 and F of the connected screens file — and become their own slices in a later milestone.
-- **Specs:** the landing renders four routes with POS absent; Start blank reaches the builder with a named page; the three import routes are inert and say so rather than failing.
-
-**Consequence for enumeration:** the import paths do not need turning into branch tables for M3-A. What does is Screen Assignments, publishing review, menu history and the after/empty/capability states — roughly 30-35 paths, not the 60-70 that included import.
+- **UI/API:** the landing with Photograph it, Paste text, Spreadsheet and Start
+  blank; spreadsheet upload; reading states; photo/paste and spreadsheet review;
+  add-or-replace; the five decided failure messages; section assignment; page
+  naming; and final creation of an editable draft. POS remains absent until a
+  till is attached (decisions 4 and 17).
+- **Start blank** remains the direct non-import route into the builder.
+- **Specs:** cover every import entry, validation, failure, retry, back/cancel,
+  review correction, add and replace outcome with real endpoints and real data.
 
 ---
 
@@ -122,7 +142,7 @@ Real tests against real data. Owner answers, 11 Aug 2026.
 | 2 | History needs backdated data | The **product API** gains timed history writes, exercised **only when called by the test API** — a real endpoint with an authorisation boundary, not a build-flagged back door. Grouping needs no dating: a tiny configured threshold does it |
 | 3 | Testing capability-off | Everything ships on. Controls are written so they can be switched off; the tier infrastructure does not exist yet, so absence is not asserted in M3-A |
 | 4 | Forcing screen states | Through the seed API — online, offline, never paired, has-not-taken-this-yet. POS is an add-on and out of scope |
-| 5 | Import fixtures | Not needed. The routes are inert in M3-A; fixtures land with the import slices in a later milestone |
+| 5 | Import fixtures | Required for M3-A's import slice: real photo/paste and spreadsheet inputs covering success, uncertainty, invalid, retry and replace paths |
 | 6 | Deterministic overflow | See below — researched, and it needs building |
 | 7 | Retry threshold | Specs wait the real ~30 seconds. No shortcut, no injected state |
 | 8 | Seeded item library | Seed a library with known names so a near-match is a real match |
@@ -155,8 +175,10 @@ critical path item of slice 1.
 
 ## Exit criteria for M3-A
 
-- All 93 builder paths have a passing spec, plus the ~30-35 paths for Screen Assignments, publishing review, menu history and the after/empty states once enumerated. Import paths are excluded — the routes are inert.
-- No literal colour, radius or spacing outside `sky-ui-tokens.css`; Playfair only on page tabs.
+- All 93 builder paths have a passing spec, plus the Screen Assignments,
+  publishing review, menu history, import, and after/empty/capability paths.
+- No literal colour, radius or spacing outside `sky-ui-tokens.css`; the normal
+  application typeface is used throughout, including page tabs.
 - The three config values are read, not hardcoded.
 - Every capability-gated control has its check in place and is on.
 - The fit engine exposes its computed limit, with the golden spec pinning it.
@@ -164,7 +186,6 @@ critical path item of slice 1.
 
 ## What M4+ may have to adjust
 
-- **Import, in its own slices** — upload, reading, review for photo/paste and spreadsheet, add-or-replace, the five failure messages, the section picker and the page-name field. All designed and approved already; sequence them as one milestone rather than spread across others.
 - **Menus home** — menu-level duplicate and delete have no home; the card also needs to carry an import waiting for review, and the no-menus-at-all empty state.
 - **Restore and history depth** — restore-from-history (*Go back to this*) is deferred; the diff view stays deliberately unbuilt.
 - **Quick Update** is the first mobile candidate and the only surface where the 86 lives elsewhere; it must not diverge from A3's vocabulary.

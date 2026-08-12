@@ -31,8 +31,7 @@ public sealed class MenuPageIntegrationTests(DatabaseFixture fixture)
             await Assert.ThrowsAsync<InvalidOperationException>(() => repository.ApplyPageScreenAssignmentsAsync(
                 venueId,
                 menu.Id,
-                page.Id,
-                [new(screenId, "replace"), new(Guid.NewGuid(), "replace")],
+                [new(screenId, page.Id, "replace"), new(Guid.NewGuid(), page.Id, "replace")],
                 "integration",
                 now));
             Assert.DoesNotContain(await repository.GetAssignmentsAsync(venueId), assignment => assignment.MenuId == menu.Id);
@@ -68,7 +67,7 @@ public sealed class MenuPageIntegrationTests(DatabaseFixture fixture)
             var pageB=Assert.Single(await repository.GetPagesAsync(venueId,menuB.Id));
             await repository.AssignScreenAsync(new MenuScreenAssignment { VenueId=venueId,ScreenId=screenId,MenuId=menuA.Id,PageId=pageA.Id,AssignedUtc=now });
             var snapshotA=Assert.IsType<string>(await repository.GetWorkingSnapshotAsync(venueId,menuA.Id));
-            await repository.ApplyPageScreenAssignmentsAsync(venueId, menuB.Id, pageB.Id, [new(screenId, "rotate")], "integration", now);
+            await repository.ApplyPageScreenAssignmentsAsync(venueId, menuB.Id, [new(screenId, pageB.Id, "rotate")], "integration", now);
             await repository.RestoreSnapshotAsync(venueId,menuA.Id,snapshotA,"integration","restore",now);
             var rotation=(await repository.GetAssignmentsAsync(venueId)).Where(a=>a.ScreenId==screenId).ToArray();
             Assert.Equal(2,rotation.Length);

@@ -15,9 +15,9 @@ test("M3-A exposes one in-house path for every approved builder glyph", async ()
   assert.match(icon, /aria-hidden="true"/);
 });
 
-test("the display face is a page-tab token rather than general chrome", async () => {
+test("page tabs use the normal application typeface", async () => {
   const tokens = await readFile(new URL("src/sky-ui-tokens.css", root), "utf8");
-  assert.match(tokens, /--sky-font-family-page-tab:\s*"Playfair Display"/);
+  assert.doesNotMatch(tokens, /--sky-font-family-page-tab/);
   assert.doesNotMatch(tokens, /--sky-font-family:\s*"Playfair Display"/);
 });
 

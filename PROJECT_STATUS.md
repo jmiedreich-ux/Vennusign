@@ -37,6 +37,13 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
 
 ## Menus Feature Milestone Status
 
+Menus M3-A Slice 1 (pages, capacity and screen assignments) is owner-approved
+after the 2026-08-11 visual and interaction remediation. The accepted working
+tree passed the local gate: Release solution build 0 warnings/errors; back office
+197/197 plus production build; LocalDB data integration 97/97; desktop page
+Playwright 18/18; desktop builder Playwright 40/40. It remains on PR #697 pending
+a fresh independent review of the committed exact SHA; it is not merged yet.
+
 | Milestone | Scope | Status |
 |---|---|---|
 | 1 | Item library + draft/publish spine + assignment | **complete** — merged and accepted 2026-08-09 (PR #685, #684) |

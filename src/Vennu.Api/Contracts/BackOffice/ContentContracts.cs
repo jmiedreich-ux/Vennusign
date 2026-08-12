@@ -5,13 +5,14 @@ namespace Vennu.Api.Contracts.BackOffice;
 public sealed record AvailabilityRequest(bool IsAvailable);
 
 public sealed record AssignmentRequest(Guid MenuId, Guid PageId, string Mode = "replace");
-public sealed record PageAssignmentChangeRequest(Guid ScreenId, string Mode);
+public sealed record PageAssignmentChangeRequest(Guid ScreenId, Guid PageId, string Mode);
 public sealed record PageAssignmentsRequest(IReadOnlyCollection<PageAssignmentChangeRequest> Changes);
 
 public sealed record PageNameRequest(string Name);
 public sealed record PageOrderRequest(IReadOnlyCollection<Guid> PageIds);
 public sealed record PageDeleteRequest(Guid? MoveSectionsToPageId, bool DeleteSections = false);
 public sealed record SectionNameRequest(string Name, Guid? PageId = null);
+public sealed record SectionDeleteRequest(Guid? MoveItemsToSectionId, bool DeletePlacements = false);
 
 public sealed record SectionOrderRequest(IReadOnlyCollection<Guid> SectionIds);
 
@@ -220,7 +221,7 @@ public sealed record PageDeleteResponse(int MovedSectionCount, int DeletedSectio
 /// What a delete released back to the library, so the UI can say it rather than
 /// guess (Q96).
 /// </summary>
-public sealed record SectionDeleteResponse(int ReleasedItemCount);
+public sealed record SectionDeleteResponse(int MovedItemCount, int ReleasedItemCount);
 
 /// <summary>
 /// The outcome of placing something. <c>already_on_board</c> is not a failure: it
@@ -278,6 +279,7 @@ public sealed record ScreenShowingResponse(
     string ScreenName,
     string? Location,
     string Status,
+    DateTime? LastSeenUtc,
     int WidthPixels,
     int HeightPixels,
     Guid? MenuId,

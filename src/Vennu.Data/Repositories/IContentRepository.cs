@@ -82,13 +82,16 @@ public interface IContentRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes a section and releases its items back to the library (Q96), saying
-    /// how many were released. Outcomes: <c>deleted</c>, <c>section_missing</c>.
+    /// Deletes a section, atomically moving its placements to a sibling or releasing
+    /// them back to the library. Outcomes: <c>deleted</c>, <c>section_missing</c>,
+    /// <c>destination_missing</c>, <c>destination_conflict</c>.
     /// </summary>
     Task<SectionDeleteOutcome> DeleteSectionAsync(
         Guid venueId,
         Guid menuId,
         Guid sectionId,
+        Guid? moveItemsToSectionId,
+        bool deletePlacements,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -201,11 +204,10 @@ public interface IContentRepository
 
     Task<bool> ClearPageScreenAssignmentAsync(Guid venueId, Guid screenId, Guid menuId, Guid pageId, CancellationToken cancellationToken = default);
 
-    /// <summary>Applies one page's staged screen changes as a single transaction.</summary>
+    /// <summary>Applies a menu's staged page/screen changes as a single transaction.</summary>
     Task ApplyPageScreenAssignmentsAsync(
         Guid venueId,
         Guid menuId,
-        Guid pageId,
         IReadOnlyCollection<PageScreenAssignmentChange> changes,
         string? author,
         DateTime occurredUtc,
@@ -408,7 +410,7 @@ public sealed record MenuCreateOutcome(bool Created, int ActiveMenuCount);
 
 public sealed record PageDeleteOutcome(string Outcome, int AffectedSectionCount, int RemovedAssignmentCount);
 
-public sealed record PageScreenAssignmentChange(Guid ScreenId, string Mode);
+public sealed record PageScreenAssignmentChange(Guid ScreenId, Guid PageId, string Mode);
 
 /// <summary>
 /// Whether the copy was made, the venue's active-menu count under the lock, and the
@@ -469,6 +471,7 @@ public sealed record ScreenShowing(
     string ScreenName,
     string? Location,
     string Status,
+    DateTime? LastSeenUtc,
     int WidthPixels,
     int HeightPixels,
     Guid? MenuId,
@@ -483,6 +486,8 @@ public static class SectionOutcomes
     public const string Deleted = "deleted";
     public const string MenuMissing = "menu_missing";
     public const string SectionMissing = "section_missing";
+    public const string DestinationMissing = "destination_missing";
+    public const string DestinationConflict = "destination_conflict";
 }
 
 public static class ReorderOutcomes
@@ -508,7 +513,7 @@ public static class PlaceExistingOutcomes
 
 public sealed record SectionCreateOutcome(string Outcome, int SortOrder);
 
-public sealed record SectionDeleteOutcome(string Outcome, int ReleasedItemCount);
+public sealed record SectionDeleteOutcome(string Outcome, int MovedItemCount, int ReleasedItemCount);
 
 public sealed record ReorderOutcome(string Outcome, int Moved);
 

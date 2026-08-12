@@ -527,17 +527,19 @@ public sealed class ContentService(
     }
 
     /// <summary>
-    /// Deletes a section, releasing its items back to the library (Q96). Nothing is
-    /// lost: the items were never in the section, a placement put them there.
+    /// Deletes a section, moving its placements to a sibling or releasing them back
+    /// to the library in the repository's single transaction.
     /// </summary>
     public async Task<SectionDeleteOutcome> DeleteSectionAsync(
         Guid venueId,
         Guid menuId,
         Guid sectionId,
+        Guid? moveItemsToSectionId,
+        bool deletePlacements,
         CancellationToken cancellationToken = default)
     {
         var outcome = await library
-            .DeleteSectionAsync(venueId, menuId, sectionId, cancellationToken)
+            .DeleteSectionAsync(venueId, menuId, sectionId, moveItemsToSectionId, deletePlacements, cancellationToken)
             .ConfigureAwait(false);
 
         if (outcome.Outcome == SectionOutcomes.Deleted)

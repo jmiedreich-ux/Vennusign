@@ -704,3 +704,32 @@ and attributable history commit together, and any stale screen or refusal rolls 
 whole Save back. LocalDB asserts a valid first change plus an invalid later screen
 leaves no assignment behind; the browser regression keeps the staged UI recoverable
 and verifies the prior screen owner remains unchanged.
+
+## M3-A Slice 1 owner closure — 2026-08-11
+
+The owner explicitly approved Slice 1 after an extended live visual pass against
+the final nine exported M3-A screens. The page rail, section rail, canvas scrolling,
+connected Screen Assignments surface, and canvas inline editing were reconciled in
+the real browser. Section headings and every item name, description and price now
+edit in place using the rendered theme typography. The exhaustive browser regression
+creates three sections with twelve items each, edits all 111 fields while scrolling,
+then refreshes and verifies persistence. Removing the canvas scroll-coordinate fix
+made the test fail with displacement exactly equal to `scrollTop`; restoring it
+returned the test to green.
+
+Some section CRUD behavior assigned to Slice 2 was delivered early at the owner's
+direction during this acceptance pass: section selection, inline rename, add,
+real-pointer reorder, populated delete with reassignment, and delete confirmation.
+Slice 2 must gap-audit and reuse it; it must not rebuild or double-claim it. Page
+history remains Slice 2 work.
+
+Local closure gate on the accepted tree: Release solution build passed with 0
+warnings and 0 errors; back office unit 197/197 and production build passed;
+LocalDB data integration 97/97; desktop `menu-pages.spec.ts` 18/18; desktop
+`menu-builder.spec.ts` 40/40. The API suite passed 436/438: the Azure credential
+test is excluded by standing owner policy and the existing #688 pairing-layout
+expectation remains the other known baseline failure. Mobile and external-service
+tests were not run by owner scope. CI remains suspended.
+
+Exact next action: commit and push the accepted Slice 1 tree, obtain a fresh
+independent exact-SHA review on PR #697, then merge and release the tracker claim.

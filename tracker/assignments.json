@@ -9,7 +9,7 @@
       "owner": "Codex for JeremyPC",
       "claimedUtc": "2026-08-11T08:55:04Z",
       "headAtClaim": "4b055853090eeb91ddc5841fe0006176839c0bad",
-      "status": "implemented and locally gated; commit, PR and exact-SHA independent review gate",
+      "status": "owner-approved and locally gated; commit/push accepted remediation and obtain fresh exact-SHA independent review before merge",
       "startHere": "docs/design/approved/menus/m3-a/work-plan.md",
       "notes": "Slice 1 reconstructed from a safeguarded dirty-tree checkpoint after independent review found it was not versioned. Partial Slice 2 and Slice 6 work is excluded and preserved at local checkpoint 4aa0168. Page-shaped seed support is owned here because it delegates to the real page schema/API introduced here. Focused gate before commit: page Playwright 12/12, page LocalDB 2/2, back office 196/196 plus production build. Real-pointer reorder and assignment-removal regressions were observed red with fixes reverted. CI is suspended."
     }

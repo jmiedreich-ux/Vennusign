@@ -847,6 +847,7 @@ export type MenuScreenShowing = {
   screenName: string;
   location: string | null;
   status: string;
+  lastSeenUtc: string | null;
   widthPixels: number;
   heightPixels: number;
   menuId: string | null;
@@ -1085,10 +1086,9 @@ export async function saveMenuPageAssignments(
   configuration: BackOfficeConfiguration,
   accessToken: string,
   menuId: string,
-  pageId: string,
-  changes: Array<{ screenId: string; mode: "remove" | "replace" | "rotate" }>
+  changes: Array<{ screenId: string; pageId: string; mode: "remove" | "replace" | "rotate" }>
 ): Promise<void> {
-  await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}/screens`, {
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/screens`, {
     method: "PUT",
     body: JSON.stringify({ changes })
   });
@@ -1130,15 +1130,20 @@ export async function renameMenuSection(
   });
 }
 
-/** Deleting a section releases its items back to the library; it says how many (Q96). */
+/** Deleting a section atomically moves its placements or releases them to the library. */
 export async function deleteMenuSection(
   configuration: BackOfficeConfiguration,
   accessToken: string,
   menuId: string,
-  sectionId: string
-): Promise<{ releasedItemCount: number }> {
+  sectionId: string,
+  moveItemsToSectionId?: string,
+  deletePlacements = false
+): Promise<{ movedItemCount: number; releasedItemCount: number }> {
   return (
-    await contentRequest(configuration, accessToken, `/menus/${menuId}/sections/${sectionId}`, { method: "DELETE" })
+    await contentRequest(configuration, accessToken, `/menus/${menuId}/sections/${sectionId}`, {
+      method: "DELETE",
+      body: JSON.stringify({ moveItemsToSectionId: moveItemsToSectionId ?? null, deletePlacements })
+    })
   ).json();
 }
 

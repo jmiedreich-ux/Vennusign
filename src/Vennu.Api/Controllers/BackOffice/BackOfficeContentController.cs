@@ -467,6 +467,7 @@ public sealed class BackOfficeContentController(
                 screen.ScreenName,
                 screen.Location,
                 screen.Status,
+                screen.LastSeenUtc,
                 screen.WidthPixels,
                 screen.HeightPixels,
                 screen.MenuId,
@@ -523,22 +524,22 @@ public sealed class BackOfficeContentController(
         return NoContent();
     }
 
-    [HttpPut("menus/{menuId:guid}/pages/{pageId:guid}/screens")]
+    [HttpPut("menus/{menuId:guid}/screens")]
     [RequireCapability("screen.content.target")]
-    public async Task<IActionResult> SavePageAssignments(Guid menuId, Guid pageId, PageAssignmentsRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> SavePageAssignments(Guid menuId, PageAssignmentsRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         if (request.Changes is null
-            || request.Changes.Any(change => change.ScreenId == Guid.Empty || change.Mode is not ("remove" or "replace" or "rotate"))
-            || request.Changes.Select(change => change.ScreenId).Distinct().Count() != request.Changes.Count)
+            || request.Changes.Any(change => change.ScreenId == Guid.Empty || change.PageId == Guid.Empty || change.Mode is not ("remove" or "replace" or "rotate"))
+            || request.Changes.Select(change => (change.ScreenId, change.PageId)).Distinct().Count() != request.Changes.Count
+            || request.Changes.GroupBy(change => change.ScreenId).Any(group => group.Count(change => change.Mode == "replace") > 1))
             return BadRequest(new { message = "Choose a valid change for every screen." });
         try
         {
             await library.ApplyPageScreenAssignmentsAsync(
                 VenueId,
                 menuId,
-                pageId,
-                request.Changes.Select(change => new PageScreenAssignmentChange(change.ScreenId, change.Mode)).ToArray(),
+                request.Changes.Select(change => new PageScreenAssignmentChange(change.ScreenId, change.PageId, change.Mode)).ToArray(),
                 Author,
                 DateTime.UtcNow,
                 cancellationToken).ConfigureAwait(false);
@@ -660,23 +661,34 @@ public sealed class BackOfficeContentController(
     }
 
     /// <summary>
-    /// Deletes a section and releases its items back to the library (Q96). Nothing
-    /// is lost, and the response says how much came back.
+    /// Deletes a section after the caller explicitly chooses whether its placements
+    /// move to a sibling section or return to the library.
     /// </summary>
     [HttpDelete("menus/{menuId:guid}/sections/{sectionId:guid}")]
     [RequireCapability("content.item.update")]
     public async Task<ActionResult<SectionDeleteResponse>> DeleteSection(
         Guid menuId,
         Guid sectionId,
+        [FromBody] SectionDeleteRequest? request,
         CancellationToken cancellationToken)
     {
+        if (request is null || (!request.DeletePlacements && request.MoveItemsToSectionId is null))
+        {
+            return BadRequest(new { message = "Choose where the section's items should go." });
+        }
+
         var outcome = await content
-            .DeleteSectionAsync(VenueId, menuId, sectionId, cancellationToken)
+            .DeleteSectionAsync(VenueId, menuId, sectionId, request.MoveItemsToSectionId, request.DeletePlacements, cancellationToken)
             .ConfigureAwait(false);
 
-        return outcome.Outcome == SectionOutcomes.Deleted
-            ? Ok(new SectionDeleteResponse(outcome.ReleasedItemCount))
-            : NotFound(new { message = "That section is not on this menu." });
+        return outcome.Outcome switch
+        {
+            SectionOutcomes.Deleted => Ok(new SectionDeleteResponse(outcome.MovedItemCount, outcome.ReleasedItemCount)),
+            SectionOutcomes.SectionMissing => NotFound(new { message = "That section is not on this menu." }),
+            SectionOutcomes.DestinationMissing => Conflict(new { message = "That destination section is no longer available. Nothing was changed." }),
+            SectionOutcomes.DestinationConflict => Conflict(new { message = "One or more items are already in that destination section. Nothing was changed." }),
+            _ => Conflict(new { message = "The section could not be deleted. Nothing was changed." })
+        };
     }
 
     /// <summary>

@@ -1800,13 +1800,51 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         await repository.CreateItemOnMenuAsync(first, menuId, sectionId, itemsPerMenuLimit: 500);
         await repository.CreateItemOnMenuAsync(second, menuId, sectionId, itemsPerMenuLimit: 500);
 
-        var outcome = await repository.DeleteSectionAsync(venueId, menuId, sectionId);
+        var outcome = await repository.DeleteSectionAsync(venueId, menuId, sectionId, null, deletePlacements: true);
 
         Assert.Equal(SectionOutcomes.Deleted, outcome.Outcome);
         Assert.Equal(2, outcome.ReleasedItemCount);
         Assert.Empty(await repository.GetPlacementsAsync(venueId, menuId));
         Assert.NotNull(await repository.GetItemAsync(venueId, first.Id));
         Assert.NotNull(await repository.GetItemAsync(venueId, second.Id));
+    }
+
+    [Fact]
+    public async Task DeleteSection_MovesEveryPlacementToASiblingAtomically()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var source = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var destination = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 1);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("move-me"), Price = "9" };
+        await repository.CreateItemOnMenuAsync(item, menuId, source, itemsPerMenuLimit: 500);
+
+        var outcome = await repository.DeleteSectionAsync(venueId, menuId, source, destination, deletePlacements: false);
+
+        Assert.Equal(SectionOutcomes.Deleted, outcome.Outcome);
+        Assert.Equal(1, outcome.MovedItemCount);
+        Assert.Equal(0, outcome.ReleasedItemCount);
+        Assert.All(await repository.GetPlacementsAsync(venueId, menuId), placement => Assert.Equal(destination, placement.MenuSectionId));
+    }
+
+    [Fact]
+    public async Task DeleteSection_RefusesAStaleDestinationWithoutChangingAnything()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var source = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("stay-put"), Price = "9" };
+        await repository.CreateItemOnMenuAsync(item, menuId, source, itemsPerMenuLimit: 500);
+
+        var outcome = await repository.DeleteSectionAsync(venueId, menuId, source, Guid.NewGuid(), deletePlacements: false);
+
+        Assert.Equal(SectionOutcomes.DestinationMissing, outcome.Outcome);
+        Assert.Contains(await repository.GetPlacementsAsync(venueId, menuId), placement => placement.MenuSectionId == source && placement.ItemId == item.Id);
+        Assert.Contains(MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId))!.Sections!, section => section.SectionId == source);
     }
 
     /// <summary>

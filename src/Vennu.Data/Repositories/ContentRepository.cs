@@ -130,11 +130,11 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         SET XACT_ABORT ON;
         BEGIN TRANSACTION;
 
-        DECLARE @Changes TABLE (ScreenId UNIQUEIDENTIFIER NOT NULL PRIMARY KEY, Mode NVARCHAR(10) NOT NULL);
-        INSERT @Changes (ScreenId, Mode)
-        SELECT ScreenId, Mode
+        DECLARE @Changes TABLE (ScreenId UNIQUEIDENTIFIER NOT NULL, PageId UNIQUEIDENTIFIER NOT NULL, Mode NVARCHAR(10) NOT NULL, PRIMARY KEY(ScreenId,PageId));
+        INSERT @Changes (ScreenId, PageId, Mode)
+        SELECT ScreenId, PageId, Mode
         FROM OPENJSON(@ChangesJson)
-        WITH (ScreenId UNIQUEIDENTIFIER '$.screenId', Mode NVARCHAR(10) '$.mode');
+        WITH (ScreenId UNIQUEIDENTIFIER '$.screenId', PageId UNIQUEIDENTIFIER '$.pageId', Mode NVARCHAR(10) '$.mode');
 
         IF EXISTS (SELECT 1 FROM dbo.Menus WITH (UPDLOCK, HOLDLOCK) WHERE Id=@MenuId AND VenueId=@VenueId AND IsPutAway=1)
         BEGIN
@@ -144,7 +144,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
 
         IF EXISTS (SELECT 1 FROM @Changes WHERE Mode NOT IN (N'remove', N'replace', N'rotate'))
            OR (SELECT COUNT(*) FROM @Changes) <> @ExpectedCount
-           OR NOT EXISTS (SELECT 1 FROM dbo.MenuPages WHERE Id=@PageId AND MenuId=@MenuId AND VenueId=@VenueId)
+           OR EXISTS (SELECT 1 FROM @Changes c WHERE NOT EXISTS (SELECT 1 FROM dbo.MenuPages p WHERE p.Id=c.PageId AND p.MenuId=@MenuId AND p.VenueId=@VenueId))
+           OR EXISTS (SELECT 1 FROM @Changes GROUP BY ScreenId HAVING SUM(CASE WHEN Mode=N'replace' THEN 1 ELSE 0 END) > 1)
            OR EXISTS (
                 SELECT 1 FROM @Changes c
                 WHERE NOT EXISTS (SELECT 1 FROM dbo.Screens s WITH (UPDLOCK, HOLDLOCK) WHERE s.Id=c.ScreenId AND s.VenueId=@VenueId)
@@ -157,22 +158,22 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         DELETE a
         FROM dbo.MenuScreenAssignments a
         INNER JOIN @Changes c ON c.ScreenId=a.ScreenId AND c.Mode=N'remove'
-        WHERE a.VenueId=@VenueId AND a.MenuId=@MenuId AND a.PageId=@PageId;
+        WHERE a.VenueId=@VenueId AND a.MenuId=@MenuId AND a.PageId=c.PageId;
 
         DELETE a
         FROM dbo.MenuScreenAssignments a
         INNER JOIN @Changes c ON c.ScreenId=a.ScreenId AND c.Mode=N'replace'
-        WHERE a.VenueId=@VenueId AND a.PageId<>@PageId;
+        WHERE a.VenueId=@VenueId AND a.PageId<>c.PageId;
 
         MERGE dbo.MenuScreenAssignments WITH (HOLDLOCK) AS target
         USING (
-            SELECT c.ScreenId, c.Mode FROM @Changes c WHERE c.Mode IN (N'replace', N'rotate')
+            SELECT c.ScreenId, c.PageId, c.Mode FROM @Changes c WHERE c.Mode IN (N'replace', N'rotate')
         ) AS source
-        ON target.ScreenId=source.ScreenId AND target.PageId=@PageId
+        ON target.ScreenId=source.ScreenId AND target.PageId=source.PageId
         WHEN MATCHED THEN UPDATE SET MenuId=@MenuId, VenueId=@VenueId, AssignedUtc=@OccurredUtc, AssignedBy=@Author
         WHEN NOT MATCHED THEN
             INSERT (Id,VenueId,ScreenId,MenuId,PageId,AssignedUtc,AssignedBy)
-            VALUES (NEWID(),@VenueId,source.ScreenId,@MenuId,@PageId,@OccurredUtc,@Author);
+            VALUES (NEWID(),@VenueId,source.ScreenId,@MenuId,source.PageId,@OccurredUtc,@Author);
 
         IF EXISTS (SELECT 1 FROM @Changes)
             INSERT dbo.MenuHistoryEntries (Id,VenueId,MenuId,Kind,PublishEventId,ReplacedByVersion,Detail,Author,OccurredUtc)
@@ -331,6 +332,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             sc.Name AS ScreenName,
             sc.Location,
             sc.Status,
+            sc.LastSeen AS LastSeenUtc,
             sc.WidthPixels,
             sc.HeightPixels,
             CASE WHEN named.ScreenId IS NULL THEN NULL ELSE last.MenuId END AS MenuId,
@@ -522,10 +524,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         """;
 
     /// <summary>
-    /// Deletes a section and releases its items back to the library (Q96). The
-    /// placements go; the items do not - they were never in the section, a
-    /// placement put them there. The released count is returned so the UI can say
-    /// what happened rather than guess at it.
+    /// Deletes a section after atomically moving its placements to a sibling or
+    /// releasing them to the library. Every refusal happens before a write.
     /// </summary>
     private const string DeleteSectionSql = """
         SET XACT_ABORT ON;
@@ -536,18 +536,52 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             WHERE Id = @SectionId AND MenuId = @MenuId AND VenueId = @VenueId)
         BEGIN
             ROLLBACK TRANSACTION;
-            SELECT N'section_missing' AS Outcome, 0 AS Released;
+            SELECT N'section_missing' AS Outcome, 0 AS Moved, 0 AS Released;
         END
         ELSE
         BEGIN
-            DECLARE @Released INT =
+            DECLARE @PlacementCount INT =
                 (SELECT COUNT(*) FROM dbo.Placements WHERE MenuSectionId = @SectionId AND VenueId = @VenueId);
+            DECLARE @SourcePageId UNIQUEIDENTIFIER =
+                (SELECT PageId FROM dbo.MenuSections WHERE Id=@SectionId AND MenuId=@MenuId AND VenueId=@VenueId);
 
-            DELETE FROM dbo.Placements WHERE MenuSectionId = @SectionId AND VenueId = @VenueId;
-            DELETE FROM dbo.MenuSections WHERE Id = @SectionId AND VenueId = @VenueId;
+            IF @PlacementCount > 0 AND @DeletePlacements = 0 AND NOT EXISTS (
+                SELECT 1 FROM dbo.MenuSections WITH (UPDLOCK, HOLDLOCK)
+                WHERE Id=@MoveItemsToSectionId AND Id<>@SectionId AND MenuId=@MenuId
+                  AND VenueId=@VenueId AND PageId=@SourcePageId)
+            BEGIN
+                ROLLBACK TRANSACTION;
+                SELECT N'destination_missing' AS Outcome, 0 AS Moved, 0 AS Released;
+            END
+            ELSE IF @PlacementCount > 0 AND @DeletePlacements = 0 AND EXISTS (
+                SELECT 1 FROM dbo.Placements sourcePlacement
+                INNER JOIN dbo.Placements destinationPlacement
+                    ON destinationPlacement.MenuSectionId=@MoveItemsToSectionId
+                   AND destinationPlacement.ItemId=sourcePlacement.ItemId
+                   AND destinationPlacement.VenueId=@VenueId
+                WHERE sourcePlacement.MenuSectionId=@SectionId AND sourcePlacement.VenueId=@VenueId)
+            BEGIN
+                ROLLBACK TRANSACTION;
+                SELECT N'destination_conflict' AS Outcome, 0 AS Moved, 0 AS Released;
+            END
+            ELSE
+            BEGIN
+                IF @PlacementCount > 0 AND @DeletePlacements = 0
+                BEGIN
+                    DECLARE @Offset INT = ISNULL((SELECT MAX(SortOrder)+1 FROM dbo.Placements WHERE MenuSectionId=@MoveItemsToSectionId AND VenueId=@VenueId),0);
+                    UPDATE dbo.Placements
+                    SET MenuSectionId=@MoveItemsToSectionId, SortOrder=@Offset+SortOrder, UpdatedUtc=SYSUTCDATETIME()
+                    WHERE MenuSectionId=@SectionId AND VenueId=@VenueId;
+                END
+                ELSE
+                    DELETE FROM dbo.Placements WHERE MenuSectionId=@SectionId AND VenueId=@VenueId;
 
-            COMMIT TRANSACTION;
-            SELECT N'deleted' AS Outcome, @Released AS Released;
+                DELETE FROM dbo.MenuSections WHERE Id=@SectionId AND MenuId=@MenuId AND VenueId=@VenueId;
+                COMMIT TRANSACTION;
+                SELECT N'deleted' AS Outcome,
+                       CASE WHEN @DeletePlacements=0 THEN @PlacementCount ELSE 0 END AS Moved,
+                       CASE WHEN @DeletePlacements=1 THEN @PlacementCount ELSE 0 END AS Released;
+            END
         END
         """;
 
@@ -1843,6 +1877,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         Guid venueId,
         Guid menuId,
         Guid sectionId,
+        Guid? moveItemsToSectionId,
+        bool deletePlacements,
         CancellationToken cancellationToken = default)
     {
         var row = (await dataAccess.ExecuteSqlQueryAsync<SectionDeleteRow, object>(
@@ -1851,11 +1887,13 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             {
                 VenueId = RequireId(venueId, nameof(venueId)),
                 MenuId = RequireId(menuId, nameof(menuId)),
-                SectionId = RequireId(sectionId, nameof(sectionId))
+                SectionId = RequireId(sectionId, nameof(sectionId)),
+                MoveItemsToSectionId = moveItemsToSectionId,
+                DeletePlacements = deletePlacements
             },
             cancellationToken).ConfigureAwait(false)).Single();
 
-        return new SectionDeleteOutcome(row.Outcome, row.Released);
+        return new SectionDeleteOutcome(row.Outcome, row.Moved, row.Released);
     }
 
     public async Task<ReorderOutcome> ReorderSectionsGuardedAsync(
@@ -2174,7 +2212,6 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
     public async Task ApplyPageScreenAssignmentsAsync(
         Guid venueId,
         Guid menuId,
-        Guid pageId,
         IReadOnlyCollection<PageScreenAssignmentChange> changes,
         string? author,
         DateTime occurredUtc,
@@ -2190,8 +2227,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 {
                     VenueId = RequireId(venueId, nameof(venueId)),
                     MenuId = RequireId(menuId, nameof(menuId)),
-                    PageId = RequireId(pageId, nameof(pageId)),
-                    ChangesJson = System.Text.Json.JsonSerializer.Serialize(normalized.Select(change => new { screenId = change.ScreenId, mode = change.Mode })),
+                    ChangesJson = System.Text.Json.JsonSerializer.Serialize(normalized.Select(change => new { screenId = change.ScreenId, pageId = change.PageId, mode = change.Mode })),
                     ExpectedCount = normalized.Length,
                     Author = author,
                     OccurredUtc = occurredUtc == default ? DateTime.UtcNow : occurredUtc
@@ -2749,6 +2785,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
     private sealed class SectionDeleteRow
     {
         public string Outcome { get; set; } = string.Empty;
+
+        public int Moved { get; set; }
 
         public int Released { get; set; }
     }
