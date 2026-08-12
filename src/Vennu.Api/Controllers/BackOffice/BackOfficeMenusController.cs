@@ -43,7 +43,14 @@ public sealed class BackOfficeMenusController(
     {
         try
         {
-            var menu = await sectionService.CreateMenuAsync(VenueId, request.Name, cancellationToken).ConfigureAwait(false);
+            var theme = string.IsNullOrWhiteSpace(request.Theme) ? null : request.Theme.Trim();
+            if (theme is not null && ContentService.GetMenuThemes().All(candidate =>
+                    !string.Equals(candidate.Key, theme, StringComparison.OrdinalIgnoreCase)))
+            {
+                return ValidationProblem("That menu theme is not available.");
+            }
+
+            var menu = await sectionService.CreateMenuAsync(VenueId, request.Name, theme, cancellationToken).ConfigureAwait(false);
             return CreatedAtAction(nameof(Get), menu);
         }
         catch (ArgumentException exception)
