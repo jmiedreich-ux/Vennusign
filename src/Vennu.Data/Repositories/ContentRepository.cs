@@ -405,8 +405,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         END
         ELSE
         BEGIN
-            INSERT dbo.Menus (Id, VenueId, Name, IsActive, CreatedUtc, UpdatedUtc)
-            VALUES (@Id, @VenueId, @Name, 1, @Now, @Now);
+            INSERT dbo.Menus (Id, VenueId, Name, Theme, IsActive, CreatedUtc, UpdatedUtc)
+            VALUES (@Id, @VenueId, @Name, @Theme, 1, @Now, @Now);
 
             INSERT dbo.MenuPages (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
             VALUES (@PageId, @VenueId, @Id, N'Page 1', 0, @Now, @Now);
@@ -1813,6 +1813,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 PageId = Guid.NewGuid(),
                 VenueId = RequireId(menu.VenueId, nameof(menu.VenueId)),
                 menu.Name,
+                menu.Theme,
                 Limit = activeMenuLimit,
                 Now = menu.CreatedUtc == default ? DateTime.UtcNow : menu.CreatedUtc
             },
