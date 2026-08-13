@@ -43,6 +43,7 @@ import BillingStatusCard from "./BillingStatusCard";
 import TierDecisionDialog from "./TierDecisionDialog";
 import AccountSecurity from "./AccountSecurity";
 import DaypartHome from "./DaypartHome";
+import QuickUpdateBoard from "./QuickUpdateBoard";
 import { useDestructiveReview } from "./DestructiveReviewDialog";
 import {
   clearPendingTierDecision,
@@ -130,6 +131,7 @@ export default function App() {
    * have to land back on the same menu, and React state survives none of them.
    */
   const openMenuId = menuIdFromHash(routeHash);
+  const quickUpdateOpen = routeHash.replace(/^#\/?/, "").split("?")[0] === "menu/quick-update";
   const openMenu = (menuId: string) => { window.location.hash = `#/menu/${menuId}`; };
   const [menuContext, setMenuContext] = useState<{ timezone: string }>();
 
@@ -602,6 +604,14 @@ export default function App() {
         ? <AccountSecurity configuration={configuration} customerSession={accessToken === customerSessionAccess} />
         : allowed && route.path === "pos"
         ? <PosIntegrationAdministration key={session.venueId} configuration={configuration} accessToken={accessToken} />
+        : allowed && route.path === "menu" && quickUpdateOpen
+        ? <QuickUpdateBoard
+            key={session.venueId}
+            configuration={configuration}
+            accessToken={accessToken}
+            venueTimezone={menuContext?.timezone ?? "UTC"}
+            review={review}
+          />
         : allowed && route.path === "menu" && openMenuId === null
         ? <MenusHome
             key={session.venueId}
@@ -614,6 +624,8 @@ export default function App() {
             onAddMenu={onAddMenu}
             starterMenuName={starterMenu}
             onFixScreens={() => { window.location.hash = "#/screens"; }}
+            onQuickUpdate={() => { window.location.hash = "#/menu/quick-update"; }}
+            canQuickUpdate={allowedCapabilityIds.includes("content.item.availability_update")}
           />
         : allowed && route.path === "menu"
         ? <MenuBuilder

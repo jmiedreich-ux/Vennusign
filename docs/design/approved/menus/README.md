@@ -8,6 +8,10 @@ This replaces an existing implementation whose core problems were: too many cont
 
 **Read `decisions.md` first.** Thirty-six numbered decisions, each settled with the product owner. They are written as rules, not descriptions, and the wireframes annotate themselves by decision number. Where this README and a decision disagree, the decision wins.
 
+## Slice 6 authority
+
+[`86-board-7b.png`](86-board-7b.png) is the approved operational 86-board layout. Decision 15's 2026-08-13 owner amendment governs behavior where the image's illustrative 10-second Undo conflicts with the later settled requirement to confirm every 86 action.
+
 ---
 
 ## About the design files
