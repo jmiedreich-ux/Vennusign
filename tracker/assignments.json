@@ -8,7 +8,7 @@
       "owner": "Codex for JeremyPC",
       "branch": "feature/menus-s6-86-board",
       "claimedUtc": "2026-08-13T06:30:00Z",
-      "status": "Product candidate 31d9d6a remediates review findings; independent exact-SHA re-review next; owner workbook prepared",
+      "status": "Product candidate 9813b82 remediates review findings; independent exact-SHA re-review next; owner workbook prepared",
       "notes": "Excludes Board View/Play #709, geometry, pagination, display player, canvas/theme layout, unplaced items, Slice 6-A import, Slice 7 redesign, and claimed mobile support."
     }
   ],
