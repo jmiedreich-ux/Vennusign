@@ -8,7 +8,7 @@
       "owner": "Codex for JeremyPC",
       "branch": "feature/menus-s6-86-board",
       "claimedUtc": "2026-08-13T06:30:00Z",
-      "status": "Product candidate e5364a5 closes behavior findings; two inverse service regressions required before independent re-review; owner workbook prepared",
+      "status": "Implementation and inverse delivered-vs-assignment regressions complete; bounded closeout committed without re-review or owner workbook by owner instruction",
       "notes": "Excludes Board View/Play #709, geometry, pagination, display player, canvas/theme layout, unplaced items, Slice 6-A import, Slice 7 redesign, and claimed mobile support."
     }
   ],

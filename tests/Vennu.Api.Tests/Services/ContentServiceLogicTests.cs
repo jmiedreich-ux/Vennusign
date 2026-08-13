@@ -153,6 +153,57 @@ public sealed class ContentServiceLogicTests
     }
 
     [Fact]
+    public async Task Availability_NotifiesDeliveredScreenAfterItsWorkingAssignmentWasRemoved()
+    {
+        var itemId = Guid.NewGuid();
+        var library = new FakeContentRepository();
+        library.Items.Add(new Item { Id = itemId, VenueId = VenueId, Name = "Berry Fizz" });
+        var published = Published(MenuId, itemId, 1, ScreenId);
+        library.PublishEvents.Add(published);
+        library.PublishTargets.Add(new MenuPublishTarget
+        {
+            Id = Guid.NewGuid(),
+            PublishEventId = published.Id,
+            ScreenId = ScreenId
+        });
+        // Deliberately no working assignment: delivery remains the screen truth
+        // until a later publish carries the assignment removal to that screen.
+        var notifier = new RecordingNotifier();
+        var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
+
+        var result = await service.SetAvailabilityAsync(VenueId, itemId, false, "Owner");
+
+        Assert.Equal(ScreenId, Assert.Single(result.ScreenIds));
+        Assert.Equal(ScreenId, Assert.Single(notifier.AvailabilityScreenIds));
+    }
+
+    [Fact]
+    public async Task Availability_DoesNotNotifyStagedAssignmentWithoutMatchingDelivery()
+    {
+        var itemId = Guid.NewGuid();
+        var library = new FakeContentRepository();
+        library.Items.Add(new Item { Id = itemId, VenueId = VenueId, Name = "Berry Fizz" });
+        library.Assignments.Add(new MenuScreenAssignment
+        {
+            Id = Guid.NewGuid(),
+            VenueId = VenueId,
+            ScreenId = ScreenId,
+            MenuId = MenuId,
+            PageId = Guid.NewGuid()
+        });
+        library.PublishEvents.Add(Published(MenuId, itemId, 1, ScreenId));
+        // Deliberately no publish target: the working assignment is staged, but
+        // no matching menu version has actually been delivered to the screen.
+        var notifier = new RecordingNotifier();
+        var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
+
+        var result = await service.SetAvailabilityAsync(VenueId, itemId, false, "Owner");
+
+        Assert.Empty(result.ScreenIds);
+        Assert.Empty(notifier.AvailabilityScreenIds);
+    }
+
+    [Fact]
     public async Task RestoreAllAvailability_NotifiesPublishedReachForEveryRestoredItem()
     {
         var first = Guid.NewGuid();
