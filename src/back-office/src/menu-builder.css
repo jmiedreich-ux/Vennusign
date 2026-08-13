@@ -84,7 +84,9 @@
 .builder__menu-name-input:focus-visible,
 .builder__page-inline-input:focus-visible { outline: 0; border-bottom-color: var(--sky-text-primary); }
 .builder__top input.builder__menu-name-input,
-.builder__top input.builder__menu-name-input:focus-visible { appearance: none; border: 0; border-bottom: 1px solid var(--sky-color-primary); border-radius: 0; outline: 0; box-shadow: none; }
+.builder__top input.builder__menu-name-input:focus-visible,
+.builder__view-breadcrumb input.builder__page-inline-input,
+.builder__view-breadcrumb input.builder__page-inline-input:focus-visible { appearance: none; border: 0; border-bottom: 1px solid var(--sky-color-primary); border-radius: 0; outline: 0; box-shadow: none; }
 
 .builder__top-actions {
   display: flex;
