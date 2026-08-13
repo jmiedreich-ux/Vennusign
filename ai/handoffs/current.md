@@ -853,9 +853,25 @@ before the asynchronous removal completed. The test now waits for removal and pr
 the response is `placed` in the sibling section before Undo. That case and its full
 shard pass in fresh isolated venues.
 
-Independent review of `e596d21e10f665a6232891aa78d17309a6b2bd21`
-returned COMMENT with no product or code blocker. Every prior finding is closed.
+The external independent review recorded on issue #703 superseded the earlier COMMENT
+and returned REQUEST_CHANGES against `e596d21e10f665a6232891aa78d17309a6b2bd21`.
+It found three blockers: Enter treated any substring search hit as a near match and
+silently discarded a typed price; price lacked an add-route server bound and the owner
+corrected its maximum from 40 to 12 characters; and the selected-row removal control
+from groups E/H was absent. It also found asymmetric canonicalisation, an empty painted
+listbox, generic transition ceiling copy, and an unusable acceptance workbook notes flow.
 
-**Exact next action.** Run the five-case Slice 3 owner acceptance workbook at
-`docs/features/menus/m3-a-s3-acceptance-workbook.html` against the reviewed candidate.
-Do not push, merge, close #703 or release the tracker claim until the owner accepts.
+The remediation in product SHA `0e7c54c94a62a51960c405693ddf42208a5bbafe`
+makes reuse require canonical equality, announces when an
+existing item's shared price wins, centralises SQL canonical search (including `&`),
+adds migration 067 with refusal-before-narrowing and historical snapshot preservation,
+enforces the 12-character API/domain/UI boundary, adds the selected-row removal action,
+omits the empty listbox, uses tier-aware ceiling copy, and repairs workbook notes,
+screenshots, advancement, gated acceptance and fixture instructions. Release/build,
+198/198 unit, focused API/migration 2/2, LocalDB and focused browser pass. The full
+isolated Playwright gate ran 16 fresh-environment shards: 220 cases discovered,
+142 passed, 78 explicit mobile/keyboard scope skips, and zero failures.
+
+**Exact next action.** Push the candidate and obtain independent re-review of exact
+product SHA `0e7c54c94a62a51960c405693ddf42208a5bbafe` before owner acceptance. Do not
+merge, close #703 or release the tracker claim until the owner accepts.
