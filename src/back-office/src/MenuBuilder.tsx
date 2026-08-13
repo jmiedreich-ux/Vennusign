@@ -442,6 +442,7 @@ export default function MenuBuilder({
   const [addingPage, setAddingPage] = useState(false);
   const [newPageName, setNewPageName] = useState("");
   const [pageMenuId, setPageMenuId] = useState<string | null>(null);
+  const pageActionsRef = useRef<HTMLSpanElement>(null);
   const [draggedPageId, setDraggedPageId] = useState<string | null>(null);
   const [editingPage, setEditingPage] = useState<{ pageId: string; name: string } | null>(null);
   const [editingRailSection, setEditingRailSection] = useState<{ sectionId: string; name: string } | null>(null);
@@ -483,6 +484,14 @@ export default function MenuBuilder({
     if (pages.length === 0) return;
     if (!activePageId || !pages.some(page => page.pageId === activePageId)) setActivePageId(pages[0].pageId);
   }, [activePageId, pages]);
+  useEffect(() => {
+    if (!pageMenuId) return;
+    const closePageMenu = (event: PointerEvent) => {
+      if (!pageActionsRef.current?.contains(event.target as Node)) setPageMenuId(null);
+    };
+    document.addEventListener("pointerdown", closePageMenu);
+    return () => document.removeEventListener("pointerdown", closePageMenu);
+  }, [pageMenuId]);
   useEffect(() => {
     if (!board || !activePageId) return;
     const pageSections = sectionsOf(board).filter(section => section.pageId === activePageId);
@@ -1909,7 +1918,7 @@ export default function MenuBuilder({
                 onClick={() => {
                   setActivePageId(page.pageId);
                   const firstSection = sectionsOf(board).find(section => section.pageId === page.pageId);
-                  setPlace(current => ({ ...current, sectionId: firstSection?.sectionId ?? null, selectedItemId: null }));
+                  setPlace(current => ({ ...current, view: "whole-board", sectionId: firstSection?.sectionId ?? null, selectedItemId: null }));
                   setPageMenuId(null);
                 }}
               >
@@ -2080,18 +2089,18 @@ export default function MenuBuilder({
                     onKeyDown={event => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") setEditingPage(null); }}
                     aria-label={`Rename ${activePage.name}`}
                     data-testid="page-rename-input"
-                  /> : place.view === "one-section" ? <button
-                    type="button"
-                    className="builder__page-scope"
-                    data-testid="page-scope"
-                    aria-label={`View all sections on ${activePage?.name ?? "this page"}`}
-                    title="View the full page"
-                    onClick={() => setPlace(current => ({ ...current, view: "whole-board", selectedItemId: null }))}
-                  ><span data-testid="page-name">{activePage?.name}</span></button> : <strong className="builder__page-current" data-testid="page-name">{activePage?.name}</strong>}
-                  <span className="builder__page-actions-wrap">
-                    {canManagePages ? <button type="button" className="builder__page-actions" data-testid="page-actions" aria-label={`Actions for ${activePage?.name}`} onClick={() => setPageMenuId(open => open === activePageId ? null : activePageId)}>⋯</button> : null}
-                    {pageMenuId === activePageId ? (() => { const page = pages.find(candidate => candidate.pageId === activePageId)!; return <div className="builder__page-menu" data-testid="page-menu"><button type="button" onClick={() => { setPageMenuId(null); setEditingPage({ pageId: page.pageId, name: page.name }); }}>Rename</button><button type="button" onClick={() => void duplicatePage(page.pageId)}>Duplicate</button><button type="button" disabled={pages.length === 1} onClick={() => { const destinationPageId = pages.find(candidate => candidate.pageId !== page.pageId)?.pageId ?? ""; setPageMenuId(null); setConfirmPageDelete({ pageId: page.pageId, name: page.name, destinationPageId, sectionCount: sectionsOf(board).filter(section => section.pageId === page.pageId).length, mode: "move" }); }}>Delete</button></div>; })() : null}
-                  </span>
+                  /> : canManagePages ? <span className="builder__page-actions-wrap" ref={pageActionsRef}>
+                    <button
+                      type="button"
+                      className="builder__page-crumb"
+                      data-testid="page-actions"
+                      aria-label={`${activePage?.name ?? "Page"} page actions`}
+                      aria-haspopup="menu"
+                      aria-expanded={pageMenuId === activePageId}
+                      onClick={() => setPageMenuId(open => open === activePageId ? null : activePageId)}
+                    ><span data-testid="page-name">{activePage?.name}</span><SkyIcon name="chevron" size={14} /></button>
+                    {pageMenuId === activePageId ? (() => { const page = pages.find(candidate => candidate.pageId === activePageId)!; return <div className="builder__page-menu" data-testid="page-menu" role="menu" aria-label={`${page.name} page actions`}><button type="button" role="menuitem" onClick={() => { setPageMenuId(null); setEditingPage({ pageId: page.pageId, name: page.name }); }}>Rename page</button><button type="button" role="menuitem" onClick={() => void duplicatePage(page.pageId)}>Duplicate page</button><hr /><button type="button" role="menuitem" className="builder__page-menu-danger" disabled={pages.length === 1} onClick={() => { const destinationPageId = pages.find(candidate => candidate.pageId !== page.pageId)?.pageId ?? ""; setPageMenuId(null); setConfirmPageDelete({ pageId: page.pageId, name: page.name, destinationPageId, sectionCount: sectionsOf(board).filter(section => section.pageId === page.pageId).length, mode: "move" }); }}>Delete page</button></div>; })() : null}
+                  </span> : <strong className="builder__page-current" data-testid="page-name">{activePage?.name}</strong>}
                   {place.view === "one-section" && activeSection ? <><span className="builder__view-separator" aria-hidden="true">/</span><strong className="builder__section-current" data-testid="section-scope">{activeSection.name}</strong></> : null}
                 </div>
                 <span className="builder__view-meta">{place.view === "whole-board" ? `${sections.length} ${sections.length === 1 ? "section" : "sections"} · ` : ""}{place.view === "one-section" && activeSection ? itemsOf(board, activeSection.sectionId).length : activePageItemCount} {(place.view === "one-section" && activeSection ? itemsOf(board, activeSection.sectionId).length : activePageItemCount) === 1 ? "item" : "items"}</span>

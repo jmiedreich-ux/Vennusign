@@ -2,6 +2,14 @@
 
 Updated 2026-08-13, after Menus M3-A Slice 3-A owner acceptance and merge closure.
 
+## 2026-08-13 — Menu Builder page-action crumb refinement (local, uncommitted)
+
+- Owner requested the page action menu move off the standalone ellipsis between the page and section path. The active page crumb is now the page-action trigger (`Page name` + trailing caret); the inert `/ Section name` path remains unchanged, and section-row actions remain in the Sections rail.
+- The menu is anchored under its owning page crumb and labels its scope explicitly: **Rename page**, **Duplicate page**, divider, destructive **Delete page**. Delete continues through the existing confirmation and guarded page lifecycle.
+- Selecting a page tab now returns that page to Whole page view, replacing the former second meaning of clicking the page crumb.
+- Search used to establish the behavior surface: `rg -n "page.*action|Rename page|Duplicate page|Delete page|pageMenu|ellipsis|MoreHorizontal|breadcrumb" src/back-office/src/MenuBuilder.tsx src/back-office/src --glob '*.tsx' --glob '*.css'`. Only the builder breadcrumb owns this page-action pattern; section rail actions and unrelated administration deletes were deliberately unchanged.
+- Evidence: `npm run build` in `src/back-office` passed. `npx playwright test specs/menu-pages.spec.ts --project=desktop` passed 21/22, with one unrelated LocalDB seed deadlock; the affected paths then passed serially 7/7, and the final focused crumb/menu case passed 1/1. `git diff --check` passed (line-ending warnings only). Full Playwright, mobile, other roles/tiers beyond the existing capability-hidden case, and CI are **UNTESTED** for this bounded one-off.
+
 ## Current State
 
 - Working model is **features and milestones** — read `AGENTS.md` first; the phase/track/WP workflow is retired.

@@ -117,7 +117,7 @@ test.describe("menu pages", () => {
     await tabs.nth(1).click();
     await expect(page.getByTestId("canvas")).toContainText(data.items[1].name);
     await expect(page.getByTestId("canvas")).not.toContainText(data.items[0].name);
-    await page.getByTestId("page-scope").click();
+    await page.locator('[data-testid="page-tab"][data-active="true"]').click();
     await expect(page.getByTestId("canvas")).toContainText(data.items[1].name);
     await expect(page.getByTestId("canvas")).not.toContainText(data.items[0].name);
 
@@ -143,9 +143,26 @@ test.describe("menu pages", () => {
   test("duplicate creates an unassigned page and the only page cannot be deleted", async ({ page }) => {
     const data = await seed({ role: "owner", label: "duplicate-page" });
     await openMenuBuilderAs(page, "owner", data.menuId);
-    await page.getByTestId("page-actions").click();
-    await expect(page.getByTestId("page-menu").getByRole("button", { name: "Delete" })).toBeDisabled();
-    await page.getByTestId("page-menu").getByRole("button", { name: "Duplicate" }).click();
+    const pageCrumb = page.getByTestId("page-actions");
+    await expect(pageCrumb).toHaveAccessibleName(`${data.pages[0].name} page actions`);
+    await expect(pageCrumb).toContainText(data.pages[0].name);
+    await expect(pageCrumb).not.toContainText("⋯");
+    await pageCrumb.click();
+    await expect(pageCrumb).toHaveAttribute("aria-expanded", "true");
+    const pageMenu = page.getByTestId("page-menu");
+    await expect(pageMenu).toHaveRole("menu");
+    await expect(pageMenu.locator("hr")).toHaveCount(1);
+    const crumbBox = await pageCrumb.boundingBox();
+    const menuBox = await pageMenu.boundingBox();
+    expect(crumbBox).not.toBeNull();
+    expect(menuBox).not.toBeNull();
+    expect(menuBox!.x).toBeCloseTo(crumbBox!.x, 0);
+    expect(menuBox!.y).toBeGreaterThanOrEqual(crumbBox!.y + crumbBox!.height);
+    await expect(pageMenu.getByRole("menuitem", { name: "Delete page" })).toBeDisabled();
+    await page.getByTestId("canvas").click({ position: { x: 500, y: 300 } });
+    await expect(pageMenu).toHaveCount(0);
+    await pageCrumb.click();
+    await page.getByTestId("page-menu").getByRole("menuitem", { name: "Duplicate page" }).click();
     await expect(page.getByTestId("page-tab")).toHaveCount(2);
     await page.getByTestId("page-tab").last().click();
     await expect(page.getByTestId("canvas")).toContainText(data.itemName);
@@ -156,7 +173,7 @@ test.describe("menu pages", () => {
     const data = await seed({ role: "owner", label: "page-lifecycle", pageCount: 2, sectionCount: 2 });
     await openMenuBuilderAs(page, "owner", data.menuId);
     await page.getByTestId("page-actions").click();
-    await page.getByTestId("page-menu").getByRole("button", { name: "Rename", exact: true }).click();
+    await page.getByTestId("page-menu").getByRole("menuitem", { name: "Rename page", exact: true }).click();
     const rename = page.getByTestId("page-rename-input");
     await expect(page.getByTestId("view-context").getByTestId("page-rename-input")).toBeVisible();
     await expect(page.locator(".builder__top").getByTestId("page-rename-input")).toHaveCount(0);
@@ -166,7 +183,7 @@ test.describe("menu pages", () => {
     await expect(page.getByTestId("page-tab").first()).not.toHaveText("Abandoned name");
 
     await page.getByTestId("page-actions").click();
-    await page.getByTestId("page-menu").getByRole("button", { name: "Rename", exact: true }).click();
+    await page.getByTestId("page-menu").getByRole("menuitem", { name: "Rename page", exact: true }).click();
     await page.getByTestId("page-rename-input").fill("Service page");
     await page.getByTestId("page-rename-input").press("Enter");
     await expect(page.getByTestId("page-tab").first()).toHaveText("Service page");
@@ -194,7 +211,7 @@ test.describe("menu pages", () => {
     await expect(page.getByTestId("page-history")).toBeVisible();
     await expect(page.getByText("No changes on this page yet.")).toHaveCount(0);
     await page.getByTestId("page-actions").click();
-    await page.getByTestId("page-menu").getByRole("button", { name: "Delete" }).click();
+    await page.getByTestId("page-menu").getByRole("menuitem", { name: "Delete page" }).click();
     await expect(page.getByTestId("delete-page-dialog")).toContainText("This page is empty");
     await expect(page.getByTestId("delete-page-destination")).toHaveCount(0);
     await page.getByTestId("delete-page-dialog").getByRole("button", { name: "Delete page" }).click();
@@ -214,7 +231,7 @@ test.describe("menu pages", () => {
   test("the section rail returns from Whole page to the selected section", async ({ page }) => {
     const data = await seed({ role: "owner", label: "rail-from-whole", sectionCount: 2, itemsPerSection: 1 });
     await openMenuBuilderAs(page, "owner", data.menuId);
-    await page.getByTestId("page-scope").click();
+    await page.locator('[data-testid="page-tab"][data-active="true"]').click();
     await expect(page.locator('[data-testid="rail-section"][aria-current="true"]')).toHaveCount(0);
     await expect(page.getByTestId("canvas")).toContainText(data.items[0].name);
     await expect(page.getByTestId("canvas")).toContainText(data.items[1].name);
@@ -230,7 +247,7 @@ test.describe("menu pages", () => {
     const data = await seed({ role: "owner", label: "populated-page-delete", pageCount: 2, sectionCount: 2, screenState: "has-not-taken-this-yet" });
     await openMenuBuilderAs(page, "owner", data.menuId);
     await page.getByTestId("page-actions").click();
-    await page.getByTestId("page-menu").getByRole("button", { name: "Delete" }).click();
+    await page.getByTestId("page-menu").getByRole("menuitem", { name: "Delete page" }).click();
     const dialog = page.getByTestId("delete-page-dialog");
     await expect(dialog).toContainText("populated-page-delete screen");
     await expect(page.getByTestId("delete-page-destination")).toHaveValue(data.pages[1].pageId);
@@ -238,10 +255,10 @@ test.describe("menu pages", () => {
     await expect(page.getByTestId("page-tab")).toHaveCount(2);
 
     await page.getByTestId("page-actions").click();
-    await page.getByTestId("page-menu").getByRole("button", { name: "Delete" }).click();
+    await page.getByTestId("page-menu").getByRole("menuitem", { name: "Delete page" }).click();
     await dialog.getByRole("button", { name: "Delete page" }).click();
     await expect(page.getByTestId("page-tab")).toHaveCount(1);
-    await page.getByTestId("page-scope").click();
+    await page.locator('[data-testid="page-tab"][data-active="true"]').click();
     await expect(page.getByTestId("canvas")).toContainText(data.items[0].name);
   });
 
@@ -249,14 +266,14 @@ test.describe("menu pages", () => {
     const data = await seed({ role: "owner", label: "discard-page-sections", pageCount: 2, sectionCount: 2 });
     await openMenuBuilderAs(page, "owner", data.menuId);
     await page.getByTestId("page-actions").click();
-    await page.getByTestId("page-menu").getByRole("button", { name: "Delete" }).click();
+    await page.getByTestId("page-menu").getByRole("menuitem", { name: "Delete page" }).click();
     const dialog = page.getByTestId("delete-page-dialog");
     await expect(dialog).toContainText("Library items will be kept");
     await dialog.getByRole("radio", { name: /Delete the page and its sections/ }).check();
     await expect(page.getByTestId("delete-page-destination")).toHaveCount(0);
     await dialog.getByRole("button", { name: "Delete page" }).click();
     await expect(page.getByTestId("page-tab")).toHaveCount(1);
-    await page.getByTestId("page-scope").click();
+    await page.locator('[data-testid="page-tab"][data-active="true"]').click();
     await expect(page.getByTestId("canvas")).not.toContainText(data.items[0].name);
     await expect(page.getByTestId("canvas")).toContainText(data.items[1].name);
   });
@@ -265,10 +282,10 @@ test.describe("menu pages", () => {
     const data = await seed({ role: "owner", label: "duplicate-delete-conflict" });
     await openMenuBuilderAs(page, "owner", data.menuId);
     await page.getByTestId("page-actions").click();
-    await page.getByTestId("page-menu").getByRole("button", { name: "Duplicate" }).click();
+    await page.getByTestId("page-menu").getByRole("menuitem", { name: "Duplicate page" }).click();
     await page.getByTestId("page-tab").first().click();
     await page.getByTestId("page-actions").click();
-    await page.getByTestId("page-menu").getByRole("button", { name: "Delete" }).click();
+    await page.getByTestId("page-menu").getByRole("menuitem", { name: "Delete page" }).click();
     const dialog = page.getByTestId("delete-page-dialog");
     await dialog.getByRole("button", { name: "Delete page" }).click();
     await expect(dialog).toBeVisible();

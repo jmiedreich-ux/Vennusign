@@ -931,7 +931,7 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed).");
     const data = await seed({ role: "owner", label: "slice3-cross-drag", sectionCount: 2, itemsPerSection: 1 });
     await openMenuBuilderAs(page, "owner", data.menuId);
-    await page.getByTestId("page-scope").click();
+    await page.locator('[data-testid="page-tab"][data-active="true"]').click();
 
     const sourceRow = page.locator(`[data-section-id="${data.sections[0].sectionId}"] [data-item-id]`).first();
     const destinationRow = page.locator(`[data-section-id="${data.sections[1].sectionId}"] [data-item-id]`).first();
