@@ -1347,6 +1347,13 @@ export async function setItemAvailability(
   ).json();
 }
 
+export async function restoreAllItemAvailability(
+  configuration: BackOfficeConfiguration,
+  accessToken: string
+): Promise<{ count: number; screenIds: string[] }> {
+  return (await contentRequest(configuration, accessToken, "/availability/restore-all", { method: "POST" })).json();
+}
+
 /**
  * The venue's timezone and its configured ceilings. Every Menus surface renders
  * times in the venue's local time (Q196), so the zone is read rather than taken

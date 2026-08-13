@@ -65,6 +65,20 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         ORDER BY ItemId;
         """;
 
+    private const string RestoreAllAvailabilitySql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        UPDATE availability WITH (UPDLOCK, HOLDLOCK)
+        SET IsAvailable = 1, ChangedUtc = @ChangedUtc, ChangedBy = @ChangedBy
+        OUTPUT inserted.VenueId, inserted.ItemId, inserted.IsAvailable, inserted.ChangedUtc, inserted.ChangedBy
+        FROM dbo.ItemAvailability availability
+        INNER JOIN dbo.Items item ON item.Id = availability.ItemId AND item.VenueId = availability.VenueId
+        WHERE availability.VenueId = @VenueId AND availability.IsAvailable = 0;
+
+        COMMIT TRANSACTION;
+        """;
+
     // A screen shows exactly one menu, so assigning replaces whatever it showed.
     // The screen id arrives from the route, so the venue owns neither side of this
     // by default. Both the screen and the menu must belong to the calling venue or
@@ -2449,6 +2463,21 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         (await dataAccess.ExecuteSqlQueryAsync<ItemAvailability, object>(
             AvailabilitySql,
             new { VenueId = RequireId(venueId, nameof(venueId)) },
+            cancellationToken).ConfigureAwait(false)).ToArray();
+
+    public async Task<IReadOnlyCollection<ItemAvailability>> RestoreAllAvailabilityAsync(
+        Guid venueId,
+        DateTime changedUtc,
+        string? changedBy,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<ItemAvailability, object>(
+            RestoreAllAvailabilitySql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                ChangedUtc = changedUtc == default ? DateTime.UtcNow : changedUtc,
+                ChangedBy = changedBy
+            },
             cancellationToken).ConfigureAwait(false)).ToArray();
 
     // ----- Assignment ---------------------------------------------------------------

@@ -39,24 +39,7 @@ public sealed class ContentService(
             },
             cancellationToken).ConfigureAwait(false);
 
-        // The honest count is every screen showing this item through any menu.
-        var assignments = await library.GetAssignmentsAsync(venueId, cancellationToken).ConfigureAwait(false);
-        var menuIdsShowingItem = new HashSet<Guid>();
-        foreach (var menuId in assignments.Select(assignment => assignment.MenuId).Distinct())
-        {
-            var published = await library.GetLatestPublishedBoardAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
-            var snapshot = MenuSnapshot.Parse(published?.Snapshot);
-            if ((snapshot?.Sections ?? []).SelectMany(section => section.Items ?? []).Any(item => item.ItemId == itemId))
-            {
-                menuIdsShowingItem.Add(menuId);
-            }
-        }
-
-        var screenIds = assignments
-            .Where(assignment => menuIdsShowingItem.Contains(assignment.MenuId))
-            .Select(assignment => assignment.ScreenId)
-            .Distinct()
-            .ToArray();
+        var screenIds = await GetScreensShowingItemAsync(venueId, itemId, cancellationToken).ConfigureAwait(false);
 
         // Telling the caller which screens are affected is not the same as changing
         // them. Push the change out, per screen and once for the venue, so the
@@ -73,6 +56,48 @@ public sealed class ContentService(
             .ConfigureAwait(false);
 
         return new AvailabilityResult(item, availability, screenIds);
+    }
+
+    public async Task<RestoreAllAvailabilityResult> RestoreAllAvailabilityAsync(
+        Guid venueId,
+        string? changedBy,
+        CancellationToken cancellationToken = default)
+    {
+        var changedUtc = timeProvider.GetUtcNow().UtcDateTime;
+        var restored = await library
+            .RestoreAllAvailabilityAsync(venueId, changedUtc, changedBy, cancellationToken)
+            .ConfigureAwait(false);
+        var affectedScreens = new HashSet<Guid>();
+        foreach (var state in restored)
+        {
+            var screenIds = await GetScreensShowingItemAsync(venueId, state.ItemId, cancellationToken).ConfigureAwait(false);
+            foreach (var screenId in screenIds)
+            {
+                affectedScreens.Add(screenId);
+                await notifier.NotifyScreenItemAvailabilityChangedAsync(
+                    screenId, state.ItemId.ToString(), true, cancellationToken).ConfigureAwait(false);
+            }
+            await notifier.NotifyVenueItemAvailabilityChangedAsync(
+                venueId, state.ItemId.ToString(), true, cancellationToken).ConfigureAwait(false);
+        }
+        return new RestoreAllAvailabilityResult(restored.Count, affectedScreens.ToArray());
+    }
+
+    private async Task<Guid[]> GetScreensShowingItemAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken)
+    {
+        var assignments = await library.GetAssignmentsAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var menuIdsShowingItem = new HashSet<Guid>();
+        foreach (var menuId in assignments.Select(assignment => assignment.MenuId).Distinct())
+        {
+            var published = await library.GetLatestPublishedBoardAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
+            var snapshot = MenuSnapshot.Parse(published?.Snapshot);
+            if ((snapshot?.Sections ?? []).SelectMany(section => section.Items ?? []).Any(item => item.ItemId == itemId))
+            {
+                menuIdsShowingItem.Add(menuId);
+            }
+        }
+        return assignments.Where(assignment => menuIdsShowingItem.Contains(assignment.MenuId))
+            .Select(assignment => assignment.ScreenId).Distinct().ToArray();
     }
 
     private static readonly System.Text.Json.JsonSerializerOptions JsonOptions =
@@ -903,6 +928,7 @@ public sealed class ContentService(
 }
 
 public sealed record AvailabilityResult(Item Item, ItemAvailability Availability, IReadOnlyCollection<Guid> ScreenIds);
+public sealed record RestoreAllAvailabilityResult(int Count, IReadOnlyCollection<Guid> ScreenIds);
 
 public sealed record RestoreResult(IReadOnlyList<SnapshotChange> Draft, int ReplacedChangeCount);
 

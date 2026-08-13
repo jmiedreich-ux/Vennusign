@@ -150,6 +150,36 @@ public sealed class ContentServiceLogicTests
         Assert.Equal(publishedScreen, Assert.Single(notifier.AvailabilityScreenIds));
     }
 
+    [Fact]
+    public async Task RestoreAllAvailability_NotifiesPublishedReachForEveryRestoredItem()
+    {
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
+        var library = new FakeContentRepository();
+        library.Items.AddRange([
+            new Item { Id = first, VenueId = VenueId, Name = "First" },
+            new Item { Id = second, VenueId = VenueId, Name = "Second" }
+        ]);
+        library.Availability.AddRange([
+            new ItemAvailability { VenueId = VenueId, ItemId = first, IsAvailable = false },
+            new ItemAvailability { VenueId = VenueId, ItemId = second, IsAvailable = false }
+        ]);
+        library.Assignments.Add(new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = ScreenId, MenuId = MenuId, PageId = Guid.NewGuid() });
+        library.PublishEvents.Add(new MenuPublishEvent {
+            Id = Guid.NewGuid(), VenueId = VenueId, MenuId = MenuId, Version = 1, PublishedUtc = DateTime.UtcNow,
+            Snapshot = MenuSnapshot.Serialize(new MenuSnapshot { MenuId = MenuId, Sections = [new SnapshotSection { SectionId = Guid.NewGuid(), Items = [new SnapshotItem { ItemId = first }, new SnapshotItem { ItemId = second }] }] })
+        });
+        var notifier = new RecordingNotifier();
+        var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
+
+        var result = await service.RestoreAllAvailabilityAsync(VenueId, "Owner");
+
+        Assert.Equal(2, result.Count);
+        Assert.Equal(ScreenId, Assert.Single(result.ScreenIds));
+        Assert.Equal(2, notifier.AvailabilityScreenIds.Count);
+        Assert.All(library.Availability, state => Assert.True(state.IsAvailable));
+    }
+
     private static MenuPublishEvent Published(Guid menuId, Guid? itemId, long version) => new()
     {
         Id = Guid.NewGuid(), VenueId = VenueId, MenuId = menuId, Version = version,

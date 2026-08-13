@@ -252,6 +252,14 @@ public sealed class BackOfficeContentController(
         }
     }
 
+    [HttpPost("availability/restore-all")]
+    [RequireCapability("content.item.availability_update")]
+    public async Task<ActionResult<RestoreAllAvailabilityResponse>> RestoreAllAvailability(CancellationToken cancellationToken)
+    {
+        var result = await content.RestoreAllAvailabilityAsync(VenueId, Author, cancellationToken).ConfigureAwait(false);
+        return Ok(new RestoreAllAvailabilityResponse(result.Count, result.ScreenIds));
+    }
+
     [HttpGet("availability")]
     [RequireCapability("content.item.update")]
     public async Task<ActionResult<IReadOnlyCollection<AvailabilityStateResponse>>> GetAvailability(

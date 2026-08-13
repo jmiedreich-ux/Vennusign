@@ -84,6 +84,10 @@ public sealed record AvailabilityStateResponse(
     DateTime ChangedUtc,
     string? ChangedBy);
 
+public sealed record RestoreAllAvailabilityResponse(
+    int Count,
+    IReadOnlyCollection<Guid> ScreenIds);
+
 /// <summary>
 /// Count is the menu's current difference from its screens — exactly what a
 /// publish will ship, not a tally of keystrokes.
