@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-13, at Menus M3-A Slice 3-A implementation handoff.
+Updated 2026-08-13, at Menus M3-A Slice 3-A owner acceptance and merge authorization.
 
 ## Current State
 
@@ -25,14 +25,10 @@ Updated 2026-08-13, at Menus M3-A Slice 3-A implementation handoff.
 
 ## Exact Next Action
 
-1. **Launch Menus M3-A Slice 3-A for owner acceptance from
-   `feature/menus-m3a-s3a-builder-refinements`.** For this slice only, the owner
-   explicitly waived independent agent review and Playwright review. The receiving
-   agent only downloads/starts the branch and makes the application available for
-   the owner's workbook walk; it does not review, test, complete, or sign the
-   workbook. This is a rare, slice-specific owner exception and does not alter the
-   normal review gates for later work. Canvas rendering and Slice 4
-   inspector/availability/86 work remain out of scope.
+1. **Merge PR #706 and close issue #704.** The owner accepted Slice 3-A after the
+   requested visual adjustment loop and instructed merge and close-out. Independent
+   agent review, Playwright, and CI remain waived for this slice only. Delete the
+   completed branch after merge. Do not begin Slice 4 without its approved plan.
 
 2. Slice 2 is owner-accepted. Its first review blockers were a case-only section
    rename no-op and stale page-history response overwrite; both have focused tests
@@ -971,3 +967,11 @@ the canvas context immediately before its three-dot actions, and uses the cleare
 `Page / Section` hierarchy recommended by the Impeccable layout pass. The menu-name
 editor explicitly suppresses the shared focus halo so its active treatment is one
 underline rather than a box.
+
+The owner confirmed the result is good and authorized merge and Slice 3-A close-out.
+PR #706 is the closure PR. The accepted product head is
+`b7f29481046d28f3d61878dd3b09e7d9c5ed56bc`; no further review, Playwright, or CI is
+required under the one-time owner exception.
+
+**Exact next action.** Merge PR #706, close issue #704, delete the completed branch,
+and synchronize the final merge SHA. Do not begin Slice 4.
