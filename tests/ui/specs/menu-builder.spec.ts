@@ -452,6 +452,8 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("availability-switch")).toBeVisible();
     await expect(page.getByTestId("availability-panel")).toHaveCount(0);
     await page.getByTestId("availability-switch").click();
+    await expect(page.getByTestId("builder-notice")).toContainText(`${data.itemName} is off`);
+    await expect(page.getByTestId("builder-notice")).toContainText("will catch up when it reconnects");
 
     // On the canvas it stays, struck through: you cannot turn back on what the
     // surface has hidden from you (Q104).

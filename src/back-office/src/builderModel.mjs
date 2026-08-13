@@ -182,9 +182,9 @@ export function sharedItemLine(boards, currentMenuId) {
  * the TIME matters, because the first question about an item that is off is when
  * it went off, and the sentence is useless without it.
  */
-export function unavailableNote(availability, timezone) {
+export function unavailableNote(availability, timezone, now = new Date()) {
   if (!availability || availability.isAvailable) return null;
-  const when = venueTime(availability.changedUtc, timezone);
+  const when = availabilityTime(availability.changedUtc, timezone, now);
   return when
     ? `86'd ${when} — hidden on all screens right now`
     : "86'd — hidden on all screens right now";
@@ -200,13 +200,102 @@ export function isMissingPrice(item) {
  * The time is the venue's, and the sentence names the consequence rather than the
  * state: "off" is a setting, "hidden on all screens right now" is what a guest sees.
  */
-export function availabilityLine(availability, timezone) {
+export function availabilityLine(availability, timezone, now = new Date()) {
   if (!availability || availability.isAvailable) return null;
-  const when = venueTime(availability.changedUtc, timezone);
+  const when = availabilityTime(availability.changedUtc, timezone, now);
   const stamp = when ? ` — 86'd ${when}` : "";
   // "not part of your draft" is verbatim copy in the design authority. It is the
   // sentence that separates this control from every other one on the page.
   return `Off right now${stamp}. Hidden on every screen showing it — not part of your draft. Turning it back on shows it immediately.`;
+}
+
+/** Q189: time today, "yesterday" for one venue day, weekday thereafter. */
+export function availabilityTime(utc, timezone, now = new Date()) {
+  if (!utc) return null;
+  const when = new Date(utc);
+  const current = now instanceof Date ? now : new Date(now);
+  if (Number.isNaN(when.getTime()) || Number.isNaN(current.getTime())) return null;
+
+  const zone = validTimeZone(timezone) ? timezone : "UTC";
+  const age = dayNumber(current, zone) - dayNumber(when, zone);
+  const time = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric", minute: "2-digit", timeZone: zone
+  }).format(when).replace(/\s([AP])M$/, (_, half) => `${half.toLowerCase()}m`);
+  if (age <= 0) return time;
+  if (age === 1) return `yesterday ${time}`;
+  const weekday = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: zone }).format(when);
+  return `${weekday} ${time}`;
+}
+
+function validTimeZone(timezone) {
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: timezone || "UTC" }).format();
+    return Boolean(timezone);
+  } catch {
+    return false;
+  }
+}
+
+function dayNumber(value, timezone) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    year: "numeric", month: "numeric", day: "numeric", timeZone: timezone
+  }).formatToParts(value);
+  const number = type => Number(parts.find(part => part.type === type)?.value);
+  return Date.UTC(number("year"), number("month") - 1, number("day")) / 86_400_000;
+}
+
+/**
+ * The immediate result of an availability change, with Q180's honest reach.
+ * A screen id is counted once even when the shared item reaches it through more
+ * than one menu. Offline exceptions are named instead of being included in an
+ * "all screens" claim they have not received yet.
+ */
+export function availabilityImpactNotice(itemName, isAvailable, screenIds, screens, now = Date.now()) {
+  const ids = [...new Set(Array.isArray(screenIds) ? screenIds : [])];
+  if (ids.length === 0) return isAvailable
+    ? `${itemName} is back on — it isn't on a screen right now.`
+    : `${itemName} is off — it isn't on a screen right now.`;
+
+  const affected = ids.map(id => (screens ?? []).find(screen => screen.screenId === id) ?? {
+    screenId: id,
+    screenName: "That screen",
+    status: "offline"
+  });
+  const state = screen => {
+    const raw = String(screen.status ?? "").toLowerCase();
+    if (raw.includes("offline")) return "offline";
+    const lastSeen = screen.lastSeenUtc ? new Date(screen.lastSeenUtc) : null;
+    return raw === "online" && lastSeen && Number.isFinite(lastSeen.getTime()) && now - lastSeen.getTime() >= 300_000
+      ? "stale"
+      : "online";
+  };
+  const offline = affected.filter(screen => state(screen) === "offline");
+  const stale = affected.filter(screen => state(screen) === "stale");
+  const reached = affected.filter(screen => state(screen) === "online");
+
+  if (offline.length === 0 && stale.length === 0) {
+    const verb = isAvailable ? "showing on" : "hidden on";
+    return ids.length === 1
+      ? `${itemName} is ${isAvailable ? "back on" : "off"} — ${verb} your screen immediately.`
+      : `${itemName} is ${isAvailable ? "back on" : "off"} — ${verb} all ${ids.length} screens immediately.`;
+  }
+
+  const reachedText = reached.length === 0
+    ? ""
+    : `${isAvailable ? "back on" : "off on"} ${names(reached.map(screen => screen.screenName))}; `;
+  const staleText = stale.length === 0 ? "" : stale.length === 1
+    ? `${stale[0].screenName} is stale, so confirm it there; `
+    : `${names(stale.map(screen => screen.screenName))} are stale, so confirm them there; `;
+  const offlineText = offline.length === 1
+    ? `${offline[0].screenName} will catch up when it reconnects.`
+    : offline.length > 1 ? `${names(offline.map(screen => screen.screenName))} will catch up when they reconnect.` : "";
+  return `${itemName} is ${isAvailable ? "back on" : "off"} — ${reachedText}${staleText}${offlineText}`.replace(/; $/, ".");
+}
+
+function names(values) {
+  if (values.length <= 1) return values[0] ?? "";
+  if (values.length === 2) return `${values[0]} and ${values[1]}`;
+  return `${values.slice(0, -1).join(", ")}, and ${values.at(-1)}`;
 }
 
 /**

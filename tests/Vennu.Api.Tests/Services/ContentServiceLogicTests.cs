@@ -93,6 +93,76 @@ public sealed class ContentServiceLogicTests
         Assert.Equal("Market Price", Assert.Single(library.Items).Price);
     }
 
+    [Fact]
+    public async Task Availability_UsesPublishedBoardsAndNotifiesEachAffectedScreenOnce()
+    {
+        var itemId = Guid.NewGuid();
+        var secondMenuId = Guid.NewGuid();
+        var library = new FakeContentRepository();
+        library.Items.Add(new Item { Id = itemId, VenueId = VenueId, Name = "Berry Fizz" });
+        library.Placements.AddRange([
+            new Placement { Id = Guid.NewGuid(), VenueId = VenueId, MenuId = MenuId, ItemId = itemId },
+            new Placement { Id = Guid.NewGuid(), VenueId = VenueId, MenuId = secondMenuId, ItemId = itemId }
+        ]);
+        library.Assignments.AddRange([
+            new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = ScreenId, MenuId = MenuId, PageId = Guid.NewGuid() },
+            new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = ScreenId, MenuId = secondMenuId, PageId = Guid.NewGuid() }
+        ]);
+        library.PublishEvents.AddRange([
+            Published(MenuId, itemId, 1),
+            Published(secondMenuId, itemId, 1)
+        ]);
+        var notifier = new RecordingNotifier();
+        var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
+
+        var result = await service.SetAvailabilityAsync(VenueId, itemId, false, "Owner");
+
+        Assert.Equal(ScreenId, Assert.Single(result.ScreenIds));
+        Assert.Equal(ScreenId, Assert.Single(notifier.AvailabilityScreenIds));
+    }
+
+    [Fact]
+    public async Task Availability_IgnoresDraftOnlyAddition_AndKeepsPublishedDraftRemoval()
+    {
+        var itemId = Guid.NewGuid();
+        var draftOnlyMenu = Guid.NewGuid();
+        var publishedMenu = Guid.NewGuid();
+        var draftOnlyScreen = Guid.NewGuid();
+        var publishedScreen = Guid.NewGuid();
+        var library = new FakeContentRepository();
+        library.Items.Add(new Item { Id = itemId, VenueId = VenueId, Name = "Berry Fizz" });
+        // Working rows say the inverse of what is published: this is the regression.
+        library.Placements.Add(new Placement { Id = Guid.NewGuid(), VenueId = VenueId, MenuId = draftOnlyMenu, ItemId = itemId });
+        library.Assignments.AddRange([
+            new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = draftOnlyScreen, MenuId = draftOnlyMenu, PageId = Guid.NewGuid() },
+            new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = publishedScreen, MenuId = publishedMenu, PageId = Guid.NewGuid() }
+        ]);
+        library.PublishEvents.AddRange([
+            Published(draftOnlyMenu, null, 1),
+            Published(publishedMenu, itemId, 1)
+        ]);
+        var notifier = new RecordingNotifier();
+        var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
+
+        var result = await service.SetAvailabilityAsync(VenueId, itemId, false, "Owner");
+
+        Assert.Equal(publishedScreen, Assert.Single(result.ScreenIds));
+        Assert.Equal(publishedScreen, Assert.Single(notifier.AvailabilityScreenIds));
+    }
+
+    private static MenuPublishEvent Published(Guid menuId, Guid? itemId, long version) => new()
+    {
+        Id = Guid.NewGuid(), VenueId = VenueId, MenuId = menuId, Version = version,
+        PublishedUtc = DateTime.UtcNow, Author = "Owner",
+        Snapshot = MenuSnapshot.Serialize(new MenuSnapshot
+        {
+            MenuId = menuId,
+            Sections = itemId.HasValue
+                ? [new SnapshotSection { SectionId = Guid.NewGuid(), Items = [new SnapshotItem { ItemId = itemId.Value, Name = "Berry Fizz" }] }]
+                : []
+        })
+    };
+
     // The statement refuses a publish whose diff was computed from a menu that has
     // since moved — the SQL suite proves that. What only the service can prove is
     // what happens next: it reads the menu again and ships what it actually is now,
@@ -159,11 +229,16 @@ public sealed class ContentServiceLogicTests
 
     private sealed class RecordingNotifier : Vennu.Api.Notifications.IScreenUpdateNotifier
     {
+        public List<Guid> AvailabilityScreenIds { get; } = [];
         public Task NotifyVenueContentUpdatedAsync(Guid venueId, object payload, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyScreenContentUpdatedAsync(Guid screenId, object payload, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyScreenThemeUpdatedAsync(Guid screenId, object theme, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyVenueThemeUpdatedAsync(Guid venueId, object theme, CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task NotifyScreenItemAvailabilityChangedAsync(Guid screenId, string itemId, bool available, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyScreenItemAvailabilityChangedAsync(Guid screenId, string itemId, bool available, CancellationToken cancellationToken = default)
+        {
+            AvailabilityScreenIds.Add(screenId);
+            return Task.CompletedTask;
+        }
         public Task NotifyVenueItemAvailabilityChangedAsync(Guid venueId, string itemId, bool available, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyScreenSyncTickAsync(Guid screenId, long serverTimeMs, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyVenueSyncTickAsync(Guid venueId, long serverTimeMs, CancellationToken cancellationToken = default) => Task.CompletedTask;

@@ -48,6 +48,7 @@ import { BoardFrame } from "../../board-engine/BoardFrame";
 import { boardLogicalWidth } from "../../board-engine/boardScale.mjs";
 import {
   availabilityLine,
+  availabilityImpactNotice,
   canDiscardDraft,
   canvasBoard,
   changeSentence,
@@ -1266,12 +1267,8 @@ export default function MenuBuilder({
     // Availability commits instantly and never joins the draft. It is deliberately
     // NOT on the undo stack: undo is for the queue, and this already went out.
     await run(async () => {
-      await setItemAvailability(configuration, credential(), selected.item.itemId, !isAvailable);
-      setNotice(
-        isAvailable
-          ? `${selected.item.name} is off. It is already gone from every screen showing it.`
-          : `${selected.item.name} is back on. It is showing again now.`
-      );
+      const result = await setItemAvailability(configuration, credential(), selected.item.itemId, !isAvailable);
+      setNotice(availabilityImpactNotice(selected.item.name ?? "Item", result.isAvailable, result.screenIds, screens));
     });
   };
 

@@ -40,13 +40,22 @@ public sealed class ContentService(
             cancellationToken).ConfigureAwait(false);
 
         // The honest count is every screen showing this item through any menu.
-        var placements = await library.GetPlacementsForItemAsync(venueId, itemId, cancellationToken).ConfigureAwait(false);
         var assignments = await library.GetAssignmentsAsync(venueId, cancellationToken).ConfigureAwait(false);
-        var menuIdsShowingItem = placements.Select(placement => placement.MenuId).ToHashSet();
+        var menuIdsShowingItem = new HashSet<Guid>();
+        foreach (var menuId in assignments.Select(assignment => assignment.MenuId).Distinct())
+        {
+            var published = await library.GetLatestPublishedBoardAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
+            var snapshot = MenuSnapshot.Parse(published?.Snapshot);
+            if ((snapshot?.Sections ?? []).SelectMany(section => section.Items ?? []).Any(item => item.ItemId == itemId))
+            {
+                menuIdsShowingItem.Add(menuId);
+            }
+        }
 
         var screenIds = assignments
             .Where(assignment => menuIdsShowingItem.Contains(assignment.MenuId))
             .Select(assignment => assignment.ScreenId)
+            .Distinct()
             .ToArray();
 
         // Telling the caller which screens are affected is not the same as changing

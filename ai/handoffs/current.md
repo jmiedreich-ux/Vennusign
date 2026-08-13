@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-13, after Menus M3-A Slice 3-A owner acceptance and merge closure.
+Updated 2026-08-13, for Menus Milestone 4 owner acceptance and merge closure.
 
 ## 2026-08-13 — Menu Builder page-action crumb refinement (local, uncommitted)
 
@@ -9,6 +9,15 @@ Updated 2026-08-13, after Menus M3-A Slice 3-A owner acceptance and merge closur
 - Selecting a page tab now returns that page to Whole page view, replacing the former second meaning of clicking the page crumb.
 - Search used to establish the behavior surface: `rg -n "page.*action|Rename page|Duplicate page|Delete page|pageMenu|ellipsis|MoreHorizontal|breadcrumb" src/back-office/src/MenuBuilder.tsx src/back-office/src --glob '*.tsx' --glob '*.css'`. Only the builder breadcrumb owns this page-action pattern; section rail actions and unrelated administration deletes were deliberately unchanged.
 - Evidence: `npm run build` in `src/back-office` passed. `npx playwright test specs/menu-pages.spec.ts --project=desktop` passed 21/22, with one unrelated LocalDB seed deadlock; the affected paths then passed serially 7/7, and the final focused crumb/menu case passed 1/1. `git diff --check` passed (line-ending warnings only). Full Playwright, mobile, other roles/tiers beyond the existing capability-hidden case, and CI are **UNTESTED** for this bounded one-off.
+
+## Menus M4 content/delivery foundations — review remediation, 2026-08-13
+
+- Implemented scope: the existing guest board projection remains the sole filtering boundary; availability impact now derives affected screens from each assigned menu's latest published snapshot, deduplicates screens, and never uses draft-only placement rows as on-screen truth. Push, push-all, reset, and unpair require `screen.content.target`; reset and unpair retain their dedicated recovery/device gates.
+- Copy paths: off and back-on distinguish zero, one, many, offline, stale, and mixed targets. Availability age uses venue-calendar today/yesterday/weekday forms.
+- Review of `0480568` returned REQUEST_CHANGES because the first implementation used working placements, overstated back-on delivery, and treated stale as immediate. Those findings are remediated locally with draft-add/draft-remove, duplicate reach, on/off, offline, stale, and mixed tests.
+- Executed evidence before first review: Release solution build passed; API units 420/420; Back Office units 202/202; production build passed; focused engine/model 65/65; focused API 13/13; affected Playwright 1/1; Impeccable detector clean. The broad Menu Builder attempt was **not a pass**: 27 passed before shared seed data reached the 50-menu ceiling, with one unrelated long-edit timeout.
+- Post-remediation focused evidence: builder model 35/35, production build passed, focused API 14/14. Full affected gates and exact-SHA re-review remain next.
+- Deferred: geometry, pagination, canvas/theme layout, `src/display`, playback, cutover, player 86 timing, reconnect, the 10-second line, and device compatibility.
 
 ## Current State
 
@@ -19,6 +28,7 @@ Updated 2026-08-13, after Menus M3-A Slice 3-A owner acceptance and merge closur
 - **Milestone 1 is merged.** PR #685 merged to `master` on 2026-08-09 as `cd449a3`, on 13 green exact-head checks at `2977bc3`; branch `feature/menus-m1-spine` is deleted, issue #684 closed. It was reworked five times: independent reviews #2 through #6 each returned REQUEST_CHANGES and each found real defects. All are closed, every one with a regression test verified to fail with its fix reverted.
 - **Milestone 1 is accepted** (owner, 2026-08-09). Milestone 1 shipped no new UI, and `AGENTS.md` gives a schema-only milestone a demo script rather than a workbook walk: `scripts/run-m1-demo.ps1` passes 12 of 12, including customer-visible assertions of what each screen is actually showing. `m1-acceptance-record.json` stays **superseded** — it was signed 2026-08-08 against the authored-draft implementation — and is kept as history; this note is the acceptance record. **Milestone 2 is unblocked.**
 - **Milestone 3 and its M3-A Slices 1–3-A are merged and owner-accepted.** Slice 3-A closed through PR #706 as `cdfd2bb`; issue #704 is closed and its branch is deleted. Its one-time independent-review, Playwright, and CI exception is exhausted and does not apply to successor work.
+- **Milestone 4 content and delivery foundations are claimed** in issue #707 on `feature/menus-m4-player-foundations`. The owner removed the display player and then geometry-driven pagination from this milestone on 2026-08-13. Published guest projection, truthful 86 impact, and screen-write authorization hygiene remain. Geometry, canvas/theme layout, `src/display`, playback, live cutover, player 86, reconnect, the 10-second line, and device compatibility are deferred.
 - **Milestone 2 is merged and accepted.** Owner ran the acceptance workbook 2026-08-10: 11 of 11 Pass, closure "Accept Milestone 2", record in `docs/features/menus/m2-acceptance-record.json`. One independent review, three blocking defects, all fixed at `4c61aa2`; the owner waived the second review that the first had asked for and closed the milestone on it. **Milestone 3 is unblocked.** Detail in §Milestone 2 — built and accepted.
 - **The register has one open question again: Q209**, deferred by the owner at M2 acceptance. The ⋯ card actions sit over the board and, now that Q98 removed the venue-name strip, they cover guest content — the first item's price on the accepted build. It ships on its provisional default until settled.
 - **The save model is settled: the draft is derived, not authored** (owner decision, milestone-plan §The save model). The live rows are the working state; the screens show the last published snapshot; the draft is the computed difference. Migration 058 creates no draft table, and the legacy editor now writes through `Items`/`Placements` so no path can change a screen without a publish.
@@ -34,10 +44,10 @@ Updated 2026-08-13, after Menus M3-A Slice 3-A owner acceptance and merge closur
 
 ## Exact Next Action
 
-1. **Do not begin Slice 4 until its owner-approved plan exists.** Slice 3-A is merged,
-   owner-accepted, and closed. PR #706 merged as `cdfd2bb`; issue #704 is closed and
-   the completed branch is deleted. The review/Playwright/CI waiver ended with this
-   slice and does not apply to successor work.
+1. **Complete PR #708 merge closure and stop.** The owner accepted Milestone 4 and
+   instructed merge without another review. The offline-screen manual setup was not
+   available; the owner explicitly accepted its automated coverage. After merge,
+   close #707, delete the completed branch, and do not begin the next milestone.
 
 2. Slice 2 is owner-accepted. Its first review blockers were a case-only section
    rename no-op and stale page-history response overwrite; both have focused tests

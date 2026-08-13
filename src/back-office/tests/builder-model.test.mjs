@@ -4,6 +4,8 @@ import test from "node:test";
 
 import {
   availabilityLine,
+  availabilityImpactNotice,
+  availabilityTime,
   bannedWords,
   boardsPhrase,
   canDiscardDraft,
@@ -221,6 +223,59 @@ test("the availability line names the consequence, not the setting (Q104)", () =
   // control from every other one on the page: everything else waits for Publish.
   assert.ok(line.includes("not part of your draft"), line);
   assert.equal(availabilityLine({ isAvailable: true }, "UTC"), null);
+});
+
+test("availability impact uses honest zero, one, many, and offline-screen forms (Q180)", () => {
+  const screens = [
+    { screenId: "bar", screenName: "Bar", status: "Online" },
+    { screenId: "patio", screenName: "Patio", status: "Online" },
+    { screenId: "lobby", screenName: "Lobby", status: "Offline" }
+  ];
+
+  assert.equal(
+    availabilityImpactNotice("Berry Fizz", false, [], screens),
+    "Berry Fizz is off — it isn't on a screen right now."
+  );
+  assert.equal(
+    availabilityImpactNotice("Berry Fizz", false, ["bar"], screens),
+    "Berry Fizz is off — hidden on your screen immediately."
+  );
+  assert.equal(
+    availabilityImpactNotice("Berry Fizz", false, ["bar", "patio"], screens),
+    "Berry Fizz is off — hidden on all 2 screens immediately."
+  );
+  assert.equal(
+    availabilityImpactNotice("Berry Fizz", false, ["bar", "patio", "lobby", "bar"], screens),
+    "Berry Fizz is off — off on Bar and Patio; Lobby will catch up when it reconnects."
+  );
+  assert.equal(
+    availabilityImpactNotice("Berry Fizz", true, ["bar"], screens),
+    "Berry Fizz is back on — showing on your screen immediately."
+  );
+  assert.equal(
+    availabilityImpactNotice("Berry Fizz", true, [], screens),
+    "Berry Fizz is back on — it isn't on a screen right now."
+  );
+  assert.equal(
+    availabilityImpactNotice("Berry Fizz", true, ["lobby"], screens),
+    "Berry Fizz is back on — Lobby will catch up when it reconnects."
+  );
+  const stale = { screenId: "kitchen", screenName: "Kitchen", status: "Online", lastSeenUtc: "2026-08-13T04:00:00Z" };
+  assert.equal(
+    availabilityImpactNotice("Berry Fizz", false, ["kitchen"], [stale], Date.parse("2026-08-13T05:00:00Z")),
+    "Berry Fizz is off — Kitchen is stale, so confirm it there."
+  );
+  assert.equal(
+    availabilityImpactNotice("Berry Fizz", true, ["bar", "kitchen", "lobby"], [...screens, stale], Date.parse("2026-08-13T05:00:00Z")),
+    "Berry Fizz is back on — back on Bar; Kitchen is stale, so confirm it there; Lobby will catch up when it reconnects."
+  );
+});
+
+test("availability age says time today, yesterday, then weekday in the venue timezone (Q189)", () => {
+  const now = new Date("2026-08-13T05:30:00Z");
+  assert.equal(availabilityTime("2026-08-13T04:40:00Z", "America/Denver", now), "10:40pm");
+  assert.equal(availabilityTime("2026-08-12T04:40:00Z", "America/Denver", now), "yesterday 10:40pm");
+  assert.equal(availabilityTime("2026-08-10T00:40:00Z", "America/Denver", now), "Sun 6:40pm");
 });
 
 test("the canvas note on an 86'd row carries the time it went off", () => {
