@@ -1633,9 +1633,14 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
             "UPDATE dbo.Menus SET IsPutAway = 1 WHERE Id = @MenuId; SELECT 1 AS Value;",
             new { MenuId = menuId });
 
-        var admitted = await repository.CreateMenuWithinCeilingAsync(
-            new Menu { VenueId = venueId, Name = fixture.UniqueValue("second") }, activeMenuLimit: 1);
+        var newMenu = new Menu { VenueId = venueId, Name = fixture.UniqueValue("second") };
+        var admitted = await repository.CreateMenuWithinCeilingAsync(newMenu, activeMenuLimit: 1);
         Assert.True(admitted.Created);
+        var section = Assert.Single(await dataAccess.ExecuteSqlQueryAsync<SectionSeedRow, object>(
+            "SELECT Name, PageId FROM dbo.MenuSections WHERE VenueId=@VenueId AND MenuId=@MenuId;",
+            new { VenueId = venueId, MenuId = newMenu.Id }));
+        Assert.Equal("Section 1", section.Name);
+        Assert.NotEqual(Guid.Empty, section.PageId);
     }
 
     [Fact]
@@ -2576,5 +2581,11 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
     private sealed class GuidRow
     {
         public Guid Value { get; set; }
+    }
+
+    private sealed class SectionSeedRow
+    {
+        public string Name { get; set; } = string.Empty;
+        public Guid PageId { get; set; }
     }
 }

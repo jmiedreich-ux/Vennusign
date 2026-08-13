@@ -142,7 +142,7 @@ export default function App() {
    */
   const onAddMenu = async (name: string) => {
     const created = await createMenu(configuration, accessToken, name);
-    openMenu(created.id);
+    window.location.hash = `#/menu/${created.id}?start=blank`;
   };
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [error, setError] = useState<string>();
@@ -634,6 +634,7 @@ export default function App() {
             apiKey={accessToken}
             menuId={openMenuId!}
             venueTimezone={menuContext?.timezone ?? "UTC"}
+            startBlank={routeHash.includes("?start=blank")}
             onBack={() => { window.location.hash = "#/menu"; }}
             capabilityOverrides={configuration.menuCapabilityOverrides}
             /*

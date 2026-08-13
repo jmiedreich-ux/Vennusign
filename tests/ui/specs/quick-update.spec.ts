@@ -46,5 +46,7 @@ test.describe("the 86 board", () => {
     await page.getByTestId("new-menu-name").fill(`Blank ${Date.now()}`);
     await dialog.getByRole("button", { name: "Start blank" }).click();
     await expect(page.getByTestId("menu-builder")).toBeVisible();
+    await expect(page.getByTestId("canvas")).toContainText("Section 1");
+    await expect(page.getByTestId("add-item-input")).toBeFocused();
   });
 });

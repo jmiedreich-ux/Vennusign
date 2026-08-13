@@ -411,6 +411,9 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             INSERT dbo.MenuPages (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
             VALUES (@PageId, @VenueId, @Id, N'Page 1', 0, @Now, @Now);
 
+            INSERT dbo.MenuSections (Id, VenueId, MenuId, PageId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            VALUES (@SectionId, @VenueId, @Id, @PageId, N'Section 1', 0, @Now, @Now);
+
             COMMIT TRANSACTION;
             SELECT CAST(1 AS BIT) AS Created, @Active + 1 AS ActiveMenuCount;
         END;
@@ -1962,6 +1965,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             {
                 menu.Id,
                 PageId = Guid.NewGuid(),
+                SectionId = Guid.NewGuid(),
                 VenueId = RequireId(menu.VenueId, nameof(menu.VenueId)),
                 menu.Name,
                 Limit = activeMenuLimit,
