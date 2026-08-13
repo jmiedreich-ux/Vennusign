@@ -42,6 +42,8 @@ Every decision settled with the owner across the menu work. These govern the wir
 
 **15 · Quick Update stays a separate path.** Changing "sold out" must not require the full editor. Not a view toggle on the builder.
 
+**Owner amendment, 2026-08-13 — the 86 board.** Quick Update is a three-column operational surface: bold rail labels are on-screen menus and their indented labels are authored sections; the center shows available placement tiles for the selected section; the right panel shows every currently 86'd on-screen placement across menus. A shared item is repeated once per placement so location stays visible, but availability remains one venue-scoped fact: every tile action requires confirmation, taking it off affects every published placement, and **Back on sale** restores it everywhere. Search is limited to items in currently published menus assigned to screens. Offline and stale screens never block the fact change and are named honestly in the result. Carryovers are items still off from an earlier venue day; Review focuses them and never restores automatically. Items on no published screen do not appear. Guest copy is **Sold out**; staff copy is **86**. The separate **New menu / Start blank** flow remains in the same milestone but does not live inside the 86 board. Planning-sheet decisions are `VennuSign Planning` Q12–Q20; these IDs are not the feature question-register Q12–Q20.
+
 **16 · Source-controlled fields are deferred.** POS-authoritative pricing with override, freshness and last-known-good is an advanced add-on, designed later.
 
 **17 · Getting a menu in is permanent.** Photo, paste and spreadsheet import live on the Menus home forever — not in a signup wizard. POS import is an add-on and appears only when attached.
