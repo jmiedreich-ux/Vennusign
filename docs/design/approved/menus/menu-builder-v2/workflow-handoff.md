@@ -44,6 +44,8 @@ Rules:
 - A menu always retains at least one page.
 - Tabs show page names only. Counts, assignments, and destructive actions stay in the selected-page header.
 - The page tab identifies which page is active; it does not also mean “entire page view.”
+- Tabs are borderless in the normal application typeface. The selected page is
+  indicated by a sky-blue underline, not a boxed or folder-shaped tab.
 
 ## 4. Left rail: sections only
 
@@ -84,6 +86,13 @@ The three navigation meanings are distinct:
 - Viewing: am I seeing the complete page or one focused section?
 
 Every Viewing option must carry the real section identifier, not a shared placeholder value.
+
+**Slice 3-A refinement:** do not repeat all section names as horizontal chips in
+this header. In focused-section view, render `Page name › Section name`; the page
+name is a button that returns to Entire page. In Entire-page view, render the
+page name as current text with the page's section and item totals. The left rail
+remains the section picker. This establishes the same scope with less repeated
+navigation and makes the way back to all sections explicit.
 
 ## 6. Page-to-screen assignment
 
@@ -138,6 +147,11 @@ Availability/sold-out timing must follow the authoritative Menus decisions. The 
 | Review & publish | Draft changes exist | Select Review & publish | Publishing review |
 | Save & exit | Builder | Select Save & exit | Save draft and return to Menus home; do not publish |
 
+Page history stays at the bottom of the Sections panel. Its event title is 12px,
+its attributable time line is 11px, and rows use the compact spacing scale. Put
+`View all` beside the History heading rather than leaving a second history route
+at the panel foot.
+
 ## 10. Publishing review
 
 Review shows every page, page sections, assigned screens, rotation/order, theme, availability/sold-out changes, capacity results, and content additions/changes/removals. From review the user can publish now, schedule if supported, or return to Builder. Physical screens change only after the explicit publish action.
@@ -172,3 +186,30 @@ flowchart TD
 8. Replace hard-coded sold-out presentation with theme-defined presentation.
 9. Wire Review & Publish, Save & Exit, breadcrumbs, history, help, and account paths.
 10. Ship browser assertions with the surface, covering variations and state transitions rather than only the happy path.
+
+## 13. Slice 3-A workspace refinement
+
+This is a UI-only refinement between M3-A Slices 3 and 4. It does not change the
+canvas renderer, board themes, geometry, availability, sold-out/86, or inspector
+data behavior.
+
+- Keep the global rail at 76px with each short route label visibly beneath its
+  icon. It has no expanded state.
+- Replace the temporary letter tile with the custom **Signal V**: two angled
+  screen faces forming a V, with the small white signal pixel at its base. Its
+  accessible product name is **VennueSign** in this scope.
+- The Sections/History panel and Item panel each have their own labeled collapse
+  control. Expanded widths remain 212px and 296px in the implemented workspace;
+  either collapses to 52px.
+- Collapsing one panel must not change the other. The remaining 52px rail shows
+  only the reopen control and never leaves a floating unlabeled icon.
+- Store `{ leftCollapsed, rightCollapsed }` under the browser-local builder
+  preference `vennusign.menu.builder.panels`. The preference is global to the
+  builder, not duplicated per menu, and survives reload and moving between
+  menus. Storage refusal may fall back to visit-only state without blocking the
+  builder.
+- The focused context reads `Page name › Section name`; selecting Page name
+  returns to the full page. In full-page view, the section rail has no false
+  selected state. Selecting any section returns to focused-section view.
+- Narrow desktop windows may stack the Item panel as before. A collapsed stacked
+  panel remains a compact labeled reopen strip; content cannot become unreachable.

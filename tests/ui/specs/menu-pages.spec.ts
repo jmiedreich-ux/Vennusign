@@ -117,7 +117,7 @@ test.describe("menu pages", () => {
     await tabs.nth(1).click();
     await expect(page.getByTestId("canvas")).toContainText(data.items[1].name);
     await expect(page.getByTestId("canvas")).not.toContainText(data.items[0].name);
-    await page.getByTestId("viewing-chip").filter({ hasText: "Whole page" }).click();
+    await page.getByTestId("page-scope").click();
     await expect(page.getByTestId("canvas")).toContainText(data.items[1].name);
     await expect(page.getByTestId("canvas")).not.toContainText(data.items[0].name);
 
@@ -197,28 +197,29 @@ test.describe("menu pages", () => {
     await expect(page.getByTestId("page-tab")).toHaveCount(2);
   });
 
-  test("six sections keep the sixth behind More and selecting it redraws the board", async ({ page }) => {
-    const data = await seed({ role: "owner", label: "section-chips", sectionCount: 6 });
+  test("all sections remain reachable in the rail without repeating them in the page header", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "section-rail", sectionCount: 6 });
     await openMenuBuilderAs(page, "owner", data.menuId);
-    const chipRow = page.getByTestId("section-chips");
-    await expect(chipRow.getByRole("button")).toHaveCount(6);
-    await expect(chipRow.getByText("More")).toBeVisible();
-    await expect(chipRow).toHaveCSS("flex-wrap", "nowrap");
-    await chipRow.getByText("More").click();
-    await page.getByTestId("section-chips").getByRole("button", { name: data.sections[5].name }).click();
+    await expect(page.getByTestId("section-chips")).toHaveCount(0);
+    await expect(page.getByTestId("rail-section")).toHaveCount(6);
+    await page.getByTestId("rail-section").nth(5).click();
     await expect(page.getByTestId("canvas")).toContainText(data.items[5].name);
+    await expect(page.getByTestId("section-scope")).toHaveText(data.sections[5].name);
   });
 
   test("the section rail returns from Whole page to the selected section", async ({ page }) => {
     const data = await seed({ role: "owner", label: "rail-from-whole", sectionCount: 2, itemsPerSection: 1 });
     await openMenuBuilderAs(page, "owner", data.menuId);
-    await page.getByTestId("viewing-chip").filter({ hasText: "Whole page" }).click();
+    await page.getByTestId("page-scope").click();
+    await expect(page.locator('[data-testid="rail-section"][aria-current="true"]')).toHaveCount(0);
     await expect(page.getByTestId("canvas")).toContainText(data.items[0].name);
     await expect(page.getByTestId("canvas")).toContainText(data.items[1].name);
     await page.getByTestId("rail-section").nth(1).click();
     await expect(page.getByTestId("canvas")).toContainText(data.items[1].name);
     await expect(page.getByTestId("canvas")).not.toContainText(data.items[0].name);
-    await expect(page.getByTestId("viewing-chip").nth(2)).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("page-summary")).toHaveAttribute("data-view", "section");
+    await expect(page.getByTestId("section-scope")).toHaveText(data.sections[1].name);
+    await expect(page.getByTestId("rail-section").nth(1)).toHaveAttribute("aria-current", "true");
   });
 
   test("populated page delete names the screen, offers a destination, and Cancel preserves the page", async ({ page }) => {
@@ -236,7 +237,7 @@ test.describe("menu pages", () => {
     await page.getByTestId("page-menu").getByRole("button", { name: "Delete" }).click();
     await dialog.getByRole("button", { name: "Delete page" }).click();
     await expect(page.getByTestId("page-tab")).toHaveCount(1);
-    await page.getByTestId("viewing-chip").filter({ hasText: "Whole page" }).click();
+    await page.getByTestId("page-scope").click();
     await expect(page.getByTestId("canvas")).toContainText(data.items[0].name);
   });
 
@@ -251,7 +252,7 @@ test.describe("menu pages", () => {
     await expect(page.getByTestId("delete-page-destination")).toHaveCount(0);
     await dialog.getByRole("button", { name: "Delete page" }).click();
     await expect(page.getByTestId("page-tab")).toHaveCount(1);
-    await page.getByTestId("viewing-chip").filter({ hasText: "Whole page" }).click();
+    await page.getByTestId("page-scope").click();
     await expect(page.getByTestId("canvas")).not.toContainText(data.items[0].name);
     await expect(page.getByTestId("canvas")).toContainText(data.items[1].name);
   });
@@ -293,7 +294,7 @@ test.describe("menu pages", () => {
   test("capacity evaluates the whole page while one section is being viewed", async ({ page }) => {
     await seed({ role: "owner", label: "whole-page-fit", sectionCount: 2, itemsPerSection: 10, screenState: "has-not-taken-this-yet" }).then(async data => {
       await openMenuBuilderAs(page, "owner", data.menuId);
-      await expect(page.getByTestId("viewing-chip").filter({ hasNotText: "Whole page" }).first()).toHaveAttribute("aria-pressed", "true");
+      await expect(page.getByTestId("page-summary")).toHaveAttribute("data-view", "section");
       await expect(page.getByTestId("capacity-banner")).toHaveAttribute("data-capacity", "overflowing");
       await expect(page.getByTestId("capacity-banner")).toHaveAttribute("data-capacity-limit", "14");
     });

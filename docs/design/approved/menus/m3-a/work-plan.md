@@ -92,6 +92,17 @@ Roughly 14 paths (group E).
 
 ---
 
+## Slice 3-A · Builder navigation and panel refinement
+
+Issue #704 carries the bounded workspace refinement approved after Slice 3
+acceptance. It replaces the repeated Whole-page/section chip row with the
+page › section context from Menu Builder V2, adds independently collapsible
+Sections/History and Item panels with browser persistence, compacts history
+rows, and installs the Signal V in the labeled 76px rail. Canvas rendering and
+all Slice 4 availability/86 behavior are explicitly excluded.
+
+---
+
 ## Slice 4 · Inspector, availability and the 86
 
 Roughly 13 paths (group H).

@@ -170,6 +170,50 @@ function BoardStage({ children }: { children: React.ReactNode }) {
 type UndoStep = { describe: string; undo: () => Promise<void>; redo: () => Promise<void> };
 
 const placeMemoryKey = (menuId: string) => `vennusign.menu.builder.${menuId}`;
+const panelMemoryKey = "vennusign.menu.builder.panels";
+
+type PanelPreferences = { leftCollapsed: boolean; rightCollapsed: boolean };
+
+function readPanelPreferences(): PanelPreferences {
+  try {
+    const stored = JSON.parse(localStorage.getItem(panelMemoryKey) ?? "null") as Partial<PanelPreferences> | null;
+    return {
+      leftCollapsed: stored?.leftCollapsed === true,
+      rightCollapsed: stored?.rightCollapsed === true
+    };
+  } catch {
+    return { leftCollapsed: false, rightCollapsed: false };
+  }
+}
+
+function PanelCollapseButton({
+  panel,
+  collapsed,
+  onClick
+}: {
+  panel: "sections and history" | "item";
+  collapsed: boolean;
+  onClick: () => void;
+}) {
+  const side = panel === "sections and history" ? "left" : "right";
+  const action = collapsed ? "Expand" : "Collapse";
+
+  return (
+    <button
+      type="button"
+      className={`builder__panel-collapse builder__panel-collapse--${side}`}
+      aria-expanded={!collapsed}
+      aria-label={`${action} ${panel} panel`}
+      title={`${action} ${panel} panel`}
+      data-testid={`${side}-panel-toggle`}
+      onClick={onClick}
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d={side === "left" ? "M14 6l-6 6 6 6" : "M10 6l6 6-6 6"} />
+      </svg>
+    </button>
+  );
+}
 
 /**
  * Moves focus into a dialog, keeps Tab inside it, and hands focus back on close.
@@ -378,7 +422,7 @@ export default function MenuBuilder({
   const [pageHistory, setPageHistory] = useState<MenuHistoryEntry[]>();
   const [pageHistoryError, setPageHistoryError] = useState(false);
   const [viewingOpen, setViewingOpen] = useState(false);
-  const [sectionPickerOpen, setSectionPickerOpen] = useState(false);
+  const [panelPreferences, setPanelPreferences] = useState(readPanelPreferences);
   const [assignmentOpen, setAssignmentOpen] = useState(false);
   const [fitOpen, setFitOpen] = useState(false);
   const [assignmentDraft, setAssignmentDraft] = useState<Record<string, "replace" | "rotate" | "remove">>({});
@@ -497,6 +541,15 @@ export default function MenuBuilder({
   useEffect(() => {
     sessionStorage.setItem(placeMemoryKey(menuId), JSON.stringify(place));
   }, [menuId, place]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(panelMemoryKey, JSON.stringify(panelPreferences));
+    } catch {
+      // Storage can be unavailable in privacy modes. The controls still work
+      // for this visit; persistence is the enhancement, never a blocker.
+    }
+  }, [panelPreferences]);
 
   const selected = useMemo(() => findItem(board, place.selectedItemId), [board, place.selectedItemId]);
   const selectedAvailability = useMemo(
@@ -1590,6 +1643,8 @@ export default function MenuBuilder({
       ? ("" as const)
       : undefined;
   const sections = sectionsOf(board).filter(section => !activePageId || section.pageId === activePageId);
+  const activePage = pages.find(page => page.pageId === activePageId);
+  const activeSection = sections.find(section => section.sectionId === place.sectionId);
   const activePageItemCount = sections.reduce((count, section) => count + itemsOf(board, section.sectionId).length, 0);
   const activePageAssignmentCount = assignments.filter(assignment => assignment.pageId === activePageId).length;
   const activePageScreenNames = assignments.filter(assignment => assignment.pageId === activePageId).map(assignment => screens.find(screen => screen.screenId === assignment.screenId)?.screenName).filter((name): name is string => Boolean(name));
@@ -1849,15 +1904,25 @@ export default function MenuBuilder({
         </div>
       </nav>
 
-      <div className="builder__columns" inert={behindScrim}>
-        <nav className="builder__rail" aria-label="Sections">
+      <div
+        className={`builder__columns${panelPreferences.leftCollapsed ? " is-left-collapsed" : ""}${panelPreferences.rightCollapsed ? " is-right-collapsed" : ""}`}
+        data-left-panel={panelPreferences.leftCollapsed ? "collapsed" : "expanded"}
+        data-right-panel={panelPreferences.rightCollapsed ? "collapsed" : "expanded"}
+        inert={behindScrim}
+      >
+        <nav className={`builder__rail${panelPreferences.leftCollapsed ? " is-collapsed" : ""}`} aria-label="Sections and history">
           <div className="builder__rail-head">
             <h2>Sections</h2>
+            <PanelCollapseButton
+              panel="sections and history"
+              collapsed={panelPreferences.leftCollapsed}
+              onClick={() => setPanelPreferences(current => ({ ...current, leftCollapsed: !current.leftCollapsed }))}
+            />
           </div>
 
           <ul className="builder__rail-list">
             {sections.map((section, index) => (
-              <li key={section.sectionId} data-testid="section-row" data-section-id={section.sectionId} data-selected={place.sectionId === section.sectionId} draggable={!editingRailSection && !busy} onDragStart={() => setDraggedSectionId(section.sectionId)} onDragEnd={() => setDraggedSectionId(null)} onDragOver={event => event.preventDefault()} onDrop={() => { const from = sections.findIndex(candidate => candidate.sectionId === draggedSectionId); if (from >= 0) void moveSection(from, index); setDraggedSectionId(null); }}>
+              <li key={section.sectionId} data-testid="section-row" data-section-id={section.sectionId} data-selected={place.view === "one-section" && place.sectionId === section.sectionId} draggable={!editingRailSection && !busy} onDragStart={() => setDraggedSectionId(section.sectionId)} onDragEnd={() => setDraggedSectionId(null)} onDragOver={event => event.preventDefault()} onDrop={() => { const from = sections.findIndex(candidate => candidate.sectionId === draggedSectionId); if (from >= 0) void moveSection(from, index); setDraggedSectionId(null); }}>
                 {editingRailSection?.sectionId === section.sectionId ? <input
                   autoFocus
                   className="builder__rail-new builder__rail-rename"
@@ -1873,11 +1938,11 @@ export default function MenuBuilder({
                   }}
                 /> : <button
                   type="button"
-                  className={`builder__rail-row${place.sectionId === section.sectionId ? " is-selected" : ""}`}
+                  className={`builder__rail-row${place.view === "one-section" && place.sectionId === section.sectionId ? " is-selected" : ""}`}
                   onClick={() => setPlace(current => ({ ...current, view: "one-section", sectionId: section.sectionId, selectedItemId: null }))}
                   data-testid="rail-section"
                   data-section-id={section.sectionId}
-                  aria-current={place.sectionId === section.sectionId}
+                  aria-current={place.view === "one-section" && place.sectionId === section.sectionId ? "true" : undefined}
                 >
                   <span className="builder__rail-handle" aria-hidden="true">
                     ⠿
@@ -1956,7 +2021,10 @@ export default function MenuBuilder({
             ) : null}
           </ul>
           {canViewHistory ? <section className="builder__page-history" aria-labelledby="page-history-title" data-testid="page-history">
-            <h3 id="page-history-title">History · {pages.find(page => page.pageId === activePageId)?.name ?? "Page"}</h3>
+            <header className="builder__page-history-header">
+              <h3 id="page-history-title">History · {activePage?.name ?? "Page"}</h3>
+              <button type="button" className="builder__link" data-testid="menu-history-link" onClick={() => { setHistoryOpen(true); if (!history) loadMenuHistory(configuration, credential(), menuId).then(setHistory).catch(() => setHistory([])); }}>View all</button>
+            </header>
             {pageHistoryError ? <div className="builder__page-history-state" role="alert"><span>History couldn&apos;t load.</span><button type="button" className="builder__link" onClick={() => activePageId && void refreshPageHistory(activePageId)}>Try again</button></div>
               : pageHistory === undefined ? <p className="builder__page-history-state" role="status">Loading history…</p>
               : pageHistory.length === 0 ? <p className="builder__page-history-state" data-testid="page-history-empty">No changes on this page yet.</p>
@@ -1965,7 +2033,6 @@ export default function MenuBuilder({
                   <span><strong>{entry.detail ?? entry.kind.replaceAll("_", " ")}</strong><small>{entry.author ? `${entry.author} · ` : ""}{venueTime(entry.occurredUtc, venueTimezone)}</small></span>
                 </li>)}</ol>}
             <footer>
-              <button type="button" className="builder__link" data-testid="menu-history-link" onClick={() => { setHistoryOpen(true); if (!history) loadMenuHistory(configuration, credential(), menuId).then(setHistory).catch(() => setHistory([])); }}>Menu history →</button>
               <span>{data?.lastPublishedUtc ? `Published ${venueTime(data.lastPublishedUtc, venueTimezone)}` : "Never published"}</span>
             </footer>
           </section> : null}
@@ -1973,42 +2040,26 @@ export default function MenuBuilder({
 
         <main className="builder__canvas">
           <div className="builder__canvas-head">
-            {activePageId ? <div className="builder__page-summary" data-testid="page-summary">
-              <span className="builder__page-identity"><strong data-testid="page-name">{pages.find(page => page.pageId === activePageId)?.name}</strong><small>{activePageItemCount} {activePageItemCount === 1 ? "item" : "items"}</small></span>
-              <span className="builder__page-actions-wrap">
-                {canManagePages ? <button type="button" className="builder__page-actions" data-testid="page-actions" aria-label={`Actions for ${pages.find(page => page.pageId === activePageId)?.name}`} onClick={() => setPageMenuId(open => open === activePageId ? null : activePageId)}>⋯</button> : null}
-                {pageMenuId === activePageId ? (() => { const page = pages.find(candidate => candidate.pageId === activePageId)!; return <div className="builder__page-menu" data-testid="page-menu"><button type="button" onClick={() => { setPageMenuId(null); setEditingPage({ pageId: page.pageId, name: page.name }); }}>Rename</button><button type="button" onClick={() => void duplicatePage(page.pageId)}>Duplicate</button><button type="button" disabled={pages.length === 1} onClick={() => { const destinationPageId = pages.find(candidate => candidate.pageId !== page.pageId)?.pageId ?? ""; setPageMenuId(null); setConfirmPageDelete({ pageId: page.pageId, name: page.name, destinationPageId, sectionCount: sectionsOf(board).filter(section => section.pageId === page.pageId).length, mode: "move" }); }}>Delete</button></div>; })() : null}
-              </span>
-              {activePageAssignmentCount > 0 ? <span className="sr-only" data-testid="page-assignment-count">{activePageAssignmentCount} {activePageAssignmentCount === 1 ? "screen" : "screens"}</span> : null}
-              <div className="builder__section-chips" aria-label="Page sections" data-testid="section-chips">
-              <button
-                type="button"
-                aria-pressed={place.view === "whole-board"}
-                data-testid="viewing-chip"
-                data-scope="whole-page"
-                onClick={() => setPlace(current => ({ ...current, view: "whole-board", selectedItemId: null }))}
-              >Whole page</button>
-              {sections.slice(0, 5).map((section, index) => (
-                <button
-                  key={section.sectionId}
-                  type="button"
-                  aria-pressed={place.view === "one-section" && place.sectionId === section.sectionId}
-                  data-testid="viewing-chip"
-                  data-scope={section.sectionId}
-                  data-order={index + 1}
-                  title={section.name ?? "Unnamed section"}
-                  aria-label={section.name ?? "Unnamed section"}
-                  onClick={() => setPlace(current => ({ ...current, view: "one-section", sectionId: section.sectionId, selectedItemId: null }))}
-                >{section.name}</button>
-              ))}
-              {sections.length > 5 ? <details className="builder__section-more" open={sectionPickerOpen} data-testid="section-picker">
-                <summary aria-label="More page sections" onClick={event => { event.preventDefault(); setSectionPickerOpen(open => !open); }}>More <SkyIcon name="chevron" /></summary>
-                <div className="builder__section-more-menu">{sections.slice(5).map((section, index) => <button key={section.sectionId} type="button" data-order={index + 6} title={section.name ?? "Unnamed section"} aria-label={section.name ?? "Unnamed section"} onClick={() => {
-                  setPlace(current => ({ ...current, view: "one-section", sectionId: section.sectionId, selectedItemId: null }));
-                  setSectionPickerOpen(false);
-                }}>{section.name}</button>)}</div>
-              </details> : null}
+            {activePageId ? <div className="builder__page-summary" data-testid="page-summary" data-view={place.view === "whole-board" ? "whole-page" : "section"}>
+              <div className="builder__view-context" data-testid="view-context">
+                <div className="builder__view-breadcrumb">
+                  {place.view === "one-section" ? <button
+                    type="button"
+                    className="builder__page-scope"
+                    data-testid="page-scope"
+                    aria-label={`View all sections on ${activePage?.name ?? "this page"}`}
+                    title="View the full page"
+                    onClick={() => setPlace(current => ({ ...current, view: "whole-board", selectedItemId: null }))}
+                  ><span data-testid="page-name">{activePage?.name}</span></button> : <strong className="builder__page-current" data-testid="page-name">{activePage?.name}</strong>}
+                  <span className="builder__page-actions-wrap">
+                    {canManagePages ? <button type="button" className="builder__page-actions" data-testid="page-actions" aria-label={`Actions for ${activePage?.name}`} onClick={() => setPageMenuId(open => open === activePageId ? null : activePageId)}>⋯</button> : null}
+                    {pageMenuId === activePageId ? (() => { const page = pages.find(candidate => candidate.pageId === activePageId)!; return <div className="builder__page-menu" data-testid="page-menu"><button type="button" onClick={() => { setPageMenuId(null); setEditingPage({ pageId: page.pageId, name: page.name }); }}>Rename</button><button type="button" onClick={() => void duplicatePage(page.pageId)}>Duplicate</button><button type="button" disabled={pages.length === 1} onClick={() => { const destinationPageId = pages.find(candidate => candidate.pageId !== page.pageId)?.pageId ?? ""; setPageMenuId(null); setConfirmPageDelete({ pageId: page.pageId, name: page.name, destinationPageId, sectionCount: sectionsOf(board).filter(section => section.pageId === page.pageId).length, mode: "move" }); }}>Delete</button></div>; })() : null}
+                  </span>
+                  {place.view === "one-section" && activeSection ? <><span className="builder__view-separator" aria-hidden="true">›</span><strong className="builder__section-current" data-testid="section-scope">{activeSection.name}</strong></> : null}
+                </div>
+                <span className="builder__view-meta">{place.view === "whole-board" ? `${sections.length} ${sections.length === 1 ? "section" : "sections"} · ` : ""}{place.view === "one-section" && activeSection ? itemsOf(board, activeSection.sectionId).length : activePageItemCount} {(place.view === "one-section" && activeSection ? itemsOf(board, activeSection.sectionId).length : activePageItemCount) === 1 ? "item" : "items"}</span>
               </div>
+              {activePageAssignmentCount > 0 ? <span className="sr-only" data-testid="page-assignment-count">{activePageAssignmentCount} {activePageAssignmentCount === 1 ? "screen" : "screens"}</span> : null}
               {canAssignScreens ? <button type="button" className="builder__assignment-pill" onClick={() => { setAssignmentDraft({}); setAssignmentChoiceScreenId(null); setAssignmentChoicePageId(null); setAssignmentAddingScreenId(null); setAssignmentOpen(true); }} data-testid="assignment-pill"><SkyIcon name="screen-mark" /> {activePageAssignmentCount > 0 ? `On ${activePageAssignmentCount} ${activePageAssignmentCount === 1 ? "screen" : "screens"}${activePageScreenNames.length > 0 ? ` · ${activePageScreenNames.join(", ")}` : ""}` : "No screens yet"}<small>Manage</small><SkyIcon name="chevron" /></button> : null}
             </div> : null}
             {place.selectedItemId && isMissingPrice(selected?.item) ? (
@@ -2239,7 +2290,16 @@ export default function MenuBuilder({
 
         </main>
 
-        <aside className="builder__inspector" aria-label="Item">
+        <aside className={`builder__inspector${panelPreferences.rightCollapsed ? " is-collapsed" : ""}`} aria-label="Item panel">
+          <div className="builder__inspector-toolbar">
+            <strong>Item</strong>
+            <PanelCollapseButton
+              panel="item"
+              collapsed={panelPreferences.rightCollapsed}
+              onClick={() => setPanelPreferences(current => ({ ...current, rightCollapsed: !current.rightCollapsed }))}
+            />
+          </div>
+          <div className="builder__inspector-body">
           {!selected || !draftItem ? (
             <p className="builder__inspector-empty" data-testid="inspector-empty">
               Select an item on the board to edit it.
@@ -2374,6 +2434,7 @@ export default function MenuBuilder({
               </p>
             </>
           )}
+          </div>
         </aside>
 
         {/*

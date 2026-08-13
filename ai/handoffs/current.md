@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-12, at Menus M3-A Slice 2 owner acceptance and closure.
+Updated 2026-08-13, at Menus M3-A Slice 3-A implementation handoff.
 
 ## Current State
 
@@ -25,10 +25,14 @@ Updated 2026-08-12, at Menus M3-A Slice 2 owner acceptance and closure.
 
 ## Exact Next Action
 
-1. **Begin Menus M3-A Slice 3 through the GitHub-first claim process.** Read its
-   work-plan scope, create/confirm the milestone issue, claim it in the tracker,
-   branch from updated `master`, and keep the schema → API → UI → Playwright slice
-   independently mergeable.
+1. **Launch Menus M3-A Slice 3-A for owner acceptance from
+   `feature/menus-m3a-s3a-builder-refinements`.** For this slice only, the owner
+   explicitly waived independent agent review and Playwright review. The receiving
+   agent only downloads/starts the branch and makes the application available for
+   the owner's workbook walk; it does not review, test, complete, or sign the
+   workbook. This is a rare, slice-specific owner exception and does not alter the
+   normal review gates for later work. Canvas rendering and Slice 4
+   inspector/availability/86 work remain out of scope.
 
 2. Slice 2 is owner-accepted. Its first review blockers were a case-only section
    rename no-op and stale page-history response overwrite; both have focused tests
@@ -905,3 +909,36 @@ PR #705 merged to `master` as `a3a421339670a3807a0c8418a2551752a1dcaaca`;
 issue #703 is closed and the completed branch is deleted.
 
 **Exact next action.** Begin no successor until its owner-approved plan exists.
+
+## M3-A Slice 3-A — implementation handoff — 2026-08-13
+
+Issue #704 was repurposed with owner approval for the bounded UI refinement between
+Slices 3 and 4. The implementation is on
+`feature/menus-m3a-s3a-builder-refinements`, based on accepted `master` SHA
+`370bd9a4a0003769e9dbeb6c2b84afeab05578d5`.
+
+The builder now replaces the repeated section-chip row with a `Page › Section`
+context, compacts history and keeps `View all` beside its heading, uses borderless
+page tabs with the sky-blue active underline, installs the Signal V and route labels
+in the fixed 76px rail, and allows the Sections/History and Item panels to collapse
+independently. Panel state is stored browser-wide under
+`vennusign.menu.builder.panels` and survives reload and moving between menus; storage
+refusal falls back to visit-local state.
+
+The owner explicitly excluded canvas-renderer changes, an expandable app rail, custom
+keyboard navigation, application-wide renaming, and all Slice 4 inspector,
+availability and 86 behavior. The acceptance workbook at
+`docs/features/menus/m3-a-s3a-acceptance-workbook.html` is for owner acceptance only;
+an agent must not complete or sign it.
+
+Local evidence recorded before publication: Back Office production build passed,
+198/198 Back Office tests passed, diff/whitespace checks passed, and 16/16 focused
+Slice 3-A contract assertions passed. The two affected Playwright specs compile and
+enumerate, but browser execution in the authoring workspace was **UNTESTED** because
+the Linux workspace lacks the repository's Windows LocalDB harness and its browser
+download returned an empty archive. On 2026-08-12 the owner gave a one-time waiver of
+independent agent and Playwright review for this special slice. The waiver applies
+only to Slice 3-A and does not create a standing exception.
+
+**Exact next action.** Pull and start Slice 3-A for the owner's acceptance workbook.
+Do not perform agent review or Playwright review under this one-time owner waiver.

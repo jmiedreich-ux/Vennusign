@@ -2,6 +2,11 @@
 
 Status: **owner-reviewed design direction, 2026-08-11**
 
+Slice 3-A refinement approved by the owner, 2026-08-12: the workspace now uses
+the page/section breadcrumb and collapsible-panel behavior recorded in
+`workflow-handoff.md` §13. This refinement supersedes the earlier selected-page
+chip row without changing canvas rendering.
+
 Live prototype: <https://vennue-menu-builder-m3.jmiedreich.chatgpt.site>
 
 This folder is the current implementation handoff for the Menu Builder. It supplements the approved Menus bundle one directory above and **supersedes older M2 guidance only where this V2 package explicitly differs**.
@@ -20,6 +25,10 @@ This folder is the current implementation handoff for the Menu Builder. It suppl
 - The left rail shows **sections only for the selected page**.
 - Pages—not sections—are assigned to screens.
 - A page can be viewed as the **entire page** or as one focused section.
+- In focused-section view, the page name is the breadcrumb action back to the
+  entire page; sections are not repeated as a second horizontal chip row.
+- The Sections/History and Item panels collapse independently and remember the
+  browser preference.
 - New menus open on the reusable **Import content** landing page before the blank builder.
 - Existing menus can reopen Import content from menu-level actions.
 - Page and section renaming occurs inline where the name appears.

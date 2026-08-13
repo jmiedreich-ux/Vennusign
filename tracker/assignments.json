@@ -1,7 +1,19 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-13T01:45:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-13T02:28:22Z",
+  "activeAssignments": [
+    {
+      "assignment": "Menus M3-A — slice 3-A (builder navigation and panel refinements)",
+      "issue": 704,
+      "branch": "feature/menus-m3a-s3a-builder-refinements",
+      "owner": "Codex",
+      "claimedUtc": "2026-08-13T02:08:10Z",
+      "headAtClaim": "370bd9a4a0003769e9dbeb6c2b84afeab05578d5",
+      "status": "implementation complete; awaiting owner acceptance under a one-time owner review waiver",
+      "startHere": "docs/design/approved/menus/menu-builder-v2/workflow-handoff.md",
+      "notes": "Implement the approved breadcrumb/context refinement, independently collapsible Sections/History and Item panels with browser persistence, compact history rows, visible compact-rail labels, and the Signal V. Do not change canvas rendering, themes, Slice 4 availability/86 behavior, or add an expanded rail. For Slice 3-A only, the owner explicitly waived independent agent and Playwright review; the receiving agent only starts the branch for owner acceptance. This is not a standing exception."
+    }
+  ],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],

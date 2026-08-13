@@ -34,6 +34,17 @@ function RouteIcon({ name }: { name: string }) {
   return <Icon size={15} strokeWidth={2} aria-hidden />;
 }
 
+function SignalV() {
+  return (
+    <svg className="rail-brand-mark" viewBox="0 0 44 44" aria-hidden="true">
+      <path className="rail-brand-mark__left" d="M7 7h9l7 19-4.5 11L7 7Z" />
+      <path className="rail-brand-mark__right" d="M28 7h9L25.5 37 21 26l7-19Z" />
+      <path className="rail-brand-mark__shine" d="M10.5 10h3.8l5.3 14.4M30.2 10h3.3l-5.7 15" />
+      <rect className="rail-brand-mark__signal" x="20" y="31" width="4" height="4" rx="1.2" />
+    </svg>
+  );
+}
+
 /**
  * The 76px icon rail, app-wide (build-decision 12).
  *
@@ -104,8 +115,8 @@ export default function NavRail({
 
   return (
     <aside className="app-rail" id="app-sidebar" data-open={open} data-testid="nav-rail">
-      <a className="rail-brand" href="#/home" aria-label="Vennusign Back Office">
-        <span aria-hidden>V</span>
+      <a className="rail-brand" href="#/home" aria-label="VennueSign Back Office" title="VennueSign">
+        <SignalV />
       </a>
 
       {/*
