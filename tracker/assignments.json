@@ -9,7 +9,7 @@
       "owner": "Codex for JeremyPC",
       "claimedUtc": "2026-08-12T21:24:44Z",
       "headAtClaim": "8bbafc274e52a065578d56ff1dc53cb10dadcd80",
-      "status": "owner acceptance returned Not accepted; search lifecycle remediation and cases 2/4/5 rerun required; Whole page deferred to #704",
+      "status": "owner search finding traced to missing acceptance data; fixture and focused search Playwright pass; awaiting focused owner retest",
       "startHere": "docs/design/approved/menus/m3-a/work-plan.md",
       "notes": "Reuse the accepted board, assigned-screen geometry, fit engine, selection, inline editing, same-section drag, library search, inspector and page-history panel. Deliver inline name/price add, near-match reuse, atomic cross-section movement, page-scoped confirmed removal, live capacity feedback and attributable item history. Availability/86, publish/full history and import remain later slices. CI is suspended."
     }

@@ -886,7 +886,13 @@ case 4 Not run; case 5 Needs Adjustment because the stale-Undo setup was unclear
 The stale concurrency behavior already has deterministic Playwright coverage, but the
 workbook must explain the expected refusal and setup more clearly.
 
-**Exact next action.** Reproduce and repair the add-item search lifecycle across query
-growth, deletion and reopen; add broad Playwright transitions, clarify case 5, rerun
-affected/full gates and independent review if product code changes, then return cases
-2, 4 and 5 for owner acceptance. Do not merge, close #703 or release the tracker claim.
+The focused search investigation found no product-code failure: the owner fixture
+promised `Old-Fashioned`, `Aussie Burger` and `Classic Burger` but contained none of
+them, and the live `Old` API query therefore correctly returned `[]`. The fixture now
+seeds all three as library-only items. Focused Playwright covers prefix results,
+no-match, delete-back restoration, close/reopen restoration, punctuation reuse and
+substring-safe creation; it passes 1/1 in a fresh isolated venue. Per owner direction,
+no unrelated or broad test suites were rerun.
+
+**Exact next action.** Restart the baseline owner environment and rerun the focused
+search acceptance check. Do not merge, close #703 or release the tracker claim.

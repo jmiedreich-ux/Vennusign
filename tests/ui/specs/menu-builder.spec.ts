@@ -842,10 +842,6 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
 
     await page.reload();
     await expect(page.getByTestId("canvas")).toContainText("Draft capacity item");
-    await page.request.put(`${apiBaseUrl}/api/back-office/content/items/${data.itemId}`, {
-      headers: owned,
-      data: { name: "Old-Fashioned", description: data.itemDescription, price: String(data.itemPrice) }
-    });
     await page.getByTestId("open-add-item").click();
     await page.getByTestId("add-item-input").fill("Old Fashioned");
     await expect(page.getByTestId("add-item-input")).toHaveAttribute("role", "combobox");
@@ -862,10 +858,19 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     await page.getByTestId("add-item-price").press("Enter");
     await expect(page.getByText("Used the existing Old-Fashioned. Its shared price was not changed.")).toBeVisible();
 
-    await page.request.put(`${apiBaseUrl}/api/back-office/content/items/${data.itemId}`, {
-      headers: owned,
-      data: { name: "Aussie Burger", description: data.itemDescription, price: String(data.itemPrice) }
-    });
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("add-item-input").fill("Old");
+    await expect(page.getByTestId("add-item-result").filter({ hasText: "Old-Fashioned" })).toBeVisible();
+    await page.getByTestId("add-item-input").fill("Old missing");
+    await expect(page.getByTestId("add-item-result")).toHaveCount(0);
+    await page.getByTestId("add-item-input").fill("Old");
+    await expect(page.getByTestId("add-item-result").filter({ hasText: "Old-Fashioned" })).toBeVisible();
+    await page.getByTestId("add-item-input").press("Escape");
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("add-item-input").fill("Old");
+    await expect(page.getByTestId("add-item-result").filter({ hasText: "Old-Fashioned" })).toBeVisible();
+    await page.getByTestId("add-item-input").press("Escape");
+
     await page.getByTestId("open-add-item").click();
     await page.getByTestId("add-item-input").fill("Burger");
     await page.getByTestId("add-item-price").fill("9");
