@@ -872,6 +872,11 @@ screenshots, advancement, gated acceptance and fixture instructions. Release/bui
 isolated Playwright gate ran 16 fresh-environment shards: 220 cases discovered,
 142 passed, 78 explicit mobile/keyboard scope skips, and zero failures.
 
-**Exact next action.** Push the candidate and obtain independent re-review of exact
-product SHA `0e7c54c94a62a51960c405693ddf42208a5bbafe` before owner acceptance. Do not
+Independent re-review APPROVED exact product SHA
+`0e7c54c94a62a51960c405693ddf42208a5bbafe`. Its only remaining finding was
+documentation-only: the workbook exposed inert screenshot inputs. Those controls are
+removed and the workbook now states plainly that its JSON exports outcomes and notes;
+any screenshots are saved separately. No further product review is required.
+
+**Exact next action.** Run the five-case Slice 3 owner acceptance workbook. Do not
 merge, close #703 or release the tracker claim until the owner accepts.
