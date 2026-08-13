@@ -46,13 +46,12 @@ Updated 2026-08-13, for Menus Milestone 4 owner acceptance and merge closure.
 
 ## Exact Next Action
 
-1. **Land the owner-supplied 86-board source image and finish the Slice 6 path audit;
-   do not implement yet.** Decision detail is synchronized into approved decision 15,
-   but the visual source is not yet a repository artifact. Reconcile every current
-   availability entry point found by the recorded `rg` search (`DaypartHome`, builder,
-   menu API, content API/service/repository, tests) and the existing Menus Home create
-   path. Then create the Slice 6 issue/claim/branch. Do not pull deferred Board View/Play
-   or Slice 6-A import work into Slice 6.
+1. **Complete the claimed Slice 6 path audit, land the owner-supplied source image,
+   then implement issue #710 on `feature/menus-s6-86-board`.** `PRODUCT.md` now holds
+   owner-provided product truth. Reconcile every current availability entry point found
+   by the recorded `rg` search (`DaypartHome`, builder, menu API, content API/service/
+   repository, tests) and the existing Menus Home create path. Do not pull deferred
+   Board View/Play #709, Slice 6-A import, or Slice 7 Menu Home redesign into Slice 6.
 
 2. Slice 2 is owner-accepted. Its first review blockers were a case-only section
    rename no-op and stale page-history response overwrite; both have focused tests
