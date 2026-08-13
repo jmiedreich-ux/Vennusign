@@ -894,5 +894,12 @@ no-match, delete-back restoration, close/reopen restoration, punctuation reuse a
 substring-safe creation; it passes 1/1 in a fresh isolated venue. Per owner direction,
 no unrelated or broad test suites were rerun.
 
-**Exact next action.** Restart the baseline owner environment and rerun the focused
-search acceptance check. Do not merge, close #703 or release the tracker claim.
+The owner reran acceptance: search and stale Undo passed. Whole page remains explicitly
+deferred to #704, and the not-run removal workbook case was waived by the owner's final
+acceptance. The sole requested close-out change makes Undo/Redo notices name the exact
+item and page; focused desktop Playwright passes 1/1 at
+`73074e030cf9c2d172b435aaeadfd0638bdb0793`. The owner accepted Slice 3, waived all
+further review, and instructed merge with no CI. PR #705 is the closure PR.
+
+**Exact next action.** Merge PR #705, close issue #703, delete the completed branch,
+and begin no successor until its owner-approved plan exists.
