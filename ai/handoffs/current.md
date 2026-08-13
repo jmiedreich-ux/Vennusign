@@ -22,6 +22,7 @@ Updated 2026-08-13, after Menus M3-A Slice 3-A owner acceptance and merge closur
 1. `docs/features/menus/milestone-plan.md` — milestones, cross-cutting rules, design follow-ups, quality gates.
 2. `docs/features/menus/open-questions.md` — recorded owner answers; they govern over older prose.
 3. `docs/design/approved/menus/README.md` + `decisions.md` — the design authority.
+4. [M3-A Slices 4–6 planning workbook](https://docs.google.com/spreadsheets/d/1DCtCrn5NAXCTNt5csmrjAOJvcCws7l9fdsnGQUCHFkM/edit) — the collaborative planning workspace. Decisions explored there must be synchronized into the controlled repository records before implementation.
 
 ## Exact Next Action
 
