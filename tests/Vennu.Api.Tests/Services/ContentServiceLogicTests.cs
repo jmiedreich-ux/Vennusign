@@ -108,10 +108,8 @@ public sealed class ContentServiceLogicTests
             new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = ScreenId, MenuId = MenuId, PageId = Guid.NewGuid() },
             new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = ScreenId, MenuId = secondMenuId, PageId = Guid.NewGuid() }
         ]);
-        library.PublishEvents.AddRange([
-            Published(MenuId, itemId, 1),
-            Published(secondMenuId, itemId, 1)
-        ]);
+        library.PublishEvents.AddRange([Published(MenuId, itemId, 1, ScreenId), Published(secondMenuId, itemId, 1, ScreenId)]);
+        library.PublishTargets.AddRange(library.PublishEvents.Select(entry => new MenuPublishTarget { Id = Guid.NewGuid(), PublishEventId = entry.Id, ScreenId = ScreenId }));
         var notifier = new RecordingNotifier();
         var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
 
@@ -138,8 +136,12 @@ public sealed class ContentServiceLogicTests
             new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = publishedScreen, MenuId = publishedMenu, PageId = Guid.NewGuid() }
         ]);
         library.PublishEvents.AddRange([
-            Published(draftOnlyMenu, null, 1),
-            Published(publishedMenu, itemId, 1)
+            Published(draftOnlyMenu, null, 1, draftOnlyScreen),
+            Published(publishedMenu, itemId, 1, publishedScreen)
+        ]);
+        library.PublishTargets.AddRange([
+            new MenuPublishTarget { Id = Guid.NewGuid(), PublishEventId = library.PublishEvents[0].Id, ScreenId = draftOnlyScreen },
+            new MenuPublishTarget { Id = Guid.NewGuid(), PublishEventId = library.PublishEvents[1].Id, ScreenId = publishedScreen }
         ]);
         var notifier = new RecordingNotifier();
         var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
@@ -170,8 +172,9 @@ public sealed class ContentServiceLogicTests
         library.Assignments.Add(new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = ScreenId, MenuId = MenuId, PageId = Guid.NewGuid() });
         library.PublishEvents.Add(new MenuPublishEvent {
             Id = Guid.NewGuid(), VenueId = VenueId, MenuId = MenuId, Version = 1, PublishedUtc = DateTime.UtcNow,
-            Snapshot = MenuSnapshot.Serialize(new MenuSnapshot { MenuId = MenuId, Sections = [new SnapshotSection { SectionId = Guid.NewGuid(), Items = [new SnapshotItem { ItemId = first }, new SnapshotItem { ItemId = second }] }] })
+            Snapshot = MenuSnapshot.Serialize(new MenuSnapshot { MenuId = MenuId, Screens = [new SnapshotScreen { ScreenId = ScreenId }], Sections = [new SnapshotSection { SectionId = Guid.NewGuid(), Items = [new SnapshotItem { ItemId = first }, new SnapshotItem { ItemId = second }] }] })
         });
+        library.PublishTargets.Add(new MenuPublishTarget { Id = Guid.NewGuid(), PublishEventId = library.PublishEvents[0].Id, ScreenId = ScreenId });
         var notifier = new RecordingNotifier();
         var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
 
@@ -184,13 +187,13 @@ public sealed class ContentServiceLogicTests
         Assert.False(library.Availability.Single(state => state.ItemId == hidden).IsAvailable);
     }
 
-    private static MenuPublishEvent Published(Guid menuId, Guid? itemId, long version) => new()
+    private static MenuPublishEvent Published(Guid menuId, Guid? itemId, long version, Guid screenId) => new()
     {
         Id = Guid.NewGuid(), VenueId = VenueId, MenuId = menuId, Version = version,
         PublishedUtc = DateTime.UtcNow, Author = "Owner",
         Snapshot = MenuSnapshot.Serialize(new MenuSnapshot
         {
-            MenuId = menuId,
+            MenuId = menuId, Screens = [new SnapshotScreen { ScreenId = screenId }],
             Sections = itemId.HasValue
                 ? [new SnapshotSection { SectionId = Guid.NewGuid(), Items = [new SnapshotItem { ItemId = itemId.Value, Name = "Berry Fizz" }] }]
                 : []

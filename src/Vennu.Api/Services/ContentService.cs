@@ -85,19 +85,21 @@ public sealed class ContentService(
 
     private async Task<Guid[]> GetScreensShowingItemAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken)
     {
-        var assignments = await library.GetAssignmentsAsync(venueId, cancellationToken).ConfigureAwait(false);
-        var menuIdsShowingItem = new HashSet<Guid>();
-        foreach (var menuId in assignments.Select(assignment => assignment.MenuId).Distinct())
+        var screens = await library.GetScreensShowingAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var matchingMenus = new HashSet<(Guid MenuId, long Version)>();
+        foreach (var screen in screens.Where(screen => screen.MenuId.HasValue && screen.Version.HasValue))
         {
-            var published = await library.GetLatestPublishedBoardAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
+            var key = (screen.MenuId!.Value, screen.Version!.Value);
+            if (matchingMenus.Contains(key)) continue;
+            var published = await library.GetPublishEventAsync(venueId, key.Item1, key.Item2, cancellationToken).ConfigureAwait(false);
             var snapshot = MenuSnapshot.Parse(published?.Snapshot);
             if ((snapshot?.Sections ?? []).SelectMany(section => section.Items ?? []).Any(item => item.ItemId == itemId))
             {
-                menuIdsShowingItem.Add(menuId);
+                matchingMenus.Add(key);
             }
         }
-        return assignments.Where(assignment => menuIdsShowingItem.Contains(assignment.MenuId))
-            .Select(assignment => assignment.ScreenId).Distinct().ToArray();
+        return screens.Where(screen => screen.MenuId.HasValue && screen.Version.HasValue && matchingMenus.Contains((screen.MenuId.Value, screen.Version.Value)))
+            .Select(screen => screen.ScreenId).Distinct().ToArray();
     }
 
     private static readonly System.Text.Json.JsonSerializerOptions JsonOptions =
