@@ -1,0 +1,39 @@
+{
+  "schema": "vennusign.m3a.s3.acceptance",
+  "version": 2,
+  "testedProductSha": "0e7c54c94a62a51960c405693ddf42208a5bbafe",
+  "ownerDecision": "Not accepted",
+  "exportedUtc": "2026-08-13T01:24:24.790Z",
+  "cases": [
+    {
+      "caseId": 1,
+      "title": "Add a new item with its price",
+      "status": "Pass",
+      "notes": ""
+    },
+    {
+      "caseId": 2,
+      "title": "Near matches are helpful without hijacking new names",
+      "status": "Fail",
+      "notes": "The search needs a lot more testing, you type old, everything in the list goes away, if you go back and type old, the previous list does not come back.  If you close and go back, same thing.  The search needs lots of testing and lots of different variations of the testing during the next Playwright testing runs."
+    },
+    {
+      "caseId": 3,
+      "title": "Move with the real pointer",
+      "status": "Needs Adjustment",
+      "notes": "whole page is not working, but pause this fix to a later Milestone, as some other work will be soon planned around the Canvas area and I don't want to waste anymore time on the canvas in this slice."
+    },
+    {
+      "caseId": 4,
+      "title": "Remove from the selected row without destroying the item",
+      "status": "Not run",
+      "notes": ""
+    },
+    {
+      "caseId": 5,
+      "title": "A stale Undo protects another person",
+      "status": "Needs Adjustment",
+      "notes": "I removed it from the first section in tab 1 and added it to the 2nd  section in tab 2, it didn't seem to have the problem.  Did I misunderstand the test?  sounds like this should be a playwrite test as well."
+    }
+  ]
+}

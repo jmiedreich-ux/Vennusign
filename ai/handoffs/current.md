@@ -878,5 +878,15 @@ documentation-only: the workbook exposed inert screenshot inputs. Those controls
 removed and the workbook now states plainly that its JSON exports outcomes and notes;
 any screenshots are saved separately. No further product review is required.
 
-**Exact next action.** Run the five-case Slice 3 owner acceptance workbook. Do not
-merge, close #703 or release the tracker claim until the owner accepts.
+Owner acceptance exported `m3-a-s3-acceptance-record.json` against the reviewed product
+SHA and returned **Not accepted**: case 1 Pass; case 2 Fail because add-item search
+results disappear and do not restore across query changes/reopen; case 3 Needs
+Adjustment but explicitly deferred by the owner to later planned Canvas work (#704);
+case 4 Not run; case 5 Needs Adjustment because the stale-Undo setup was unclear.
+The stale concurrency behavior already has deterministic Playwright coverage, but the
+workbook must explain the expected refusal and setup more clearly.
+
+**Exact next action.** Reproduce and repair the add-item search lifecycle across query
+growth, deletion and reopen; add broad Playwright transitions, clarify case 5, rerun
+affected/full gates and independent review if product code changes, then return cases
+2, 4 and 5 for owner acceptance. Do not merge, close #703 or release the tracker claim.
