@@ -65,6 +65,42 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         ORDER BY ItemId;
         """;
 
+    private const string RestoreAllAvailabilitySql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        DECLARE @PublishedItems TABLE (ItemId UNIQUEIDENTIFIER PRIMARY KEY);
+        INSERT @PublishedItems (ItemId)
+        SELECT DISTINCT items.itemId
+        FROM dbo.Screens screen WITH (UPDLOCK, HOLDLOCK)
+        CROSS APPLY
+        (
+            SELECT TOP (1) publish.Id, publish.Snapshot
+            FROM dbo.MenuPublishTargets target WITH (UPDLOCK, HOLDLOCK)
+            INNER JOIN dbo.MenuPublishEvents publish WITH (UPDLOCK, HOLDLOCK)
+                ON publish.Id = target.PublishEventId AND publish.VenueId = target.VenueId
+            WHERE target.VenueId = @VenueId AND target.ScreenId = screen.Id
+            ORDER BY publish.PublishedUtc DESC, publish.Id DESC
+        ) latest
+        CROSS APPLY OPENJSON(latest.Snapshot, '$.screens')
+            WITH (screenId UNIQUEIDENTIFIER '$.screenId') named
+        CROSS APPLY OPENJSON(latest.Snapshot, '$.sections')
+            WITH (items NVARCHAR(MAX) '$.items' AS JSON) sections
+        CROSS APPLY OPENJSON(sections.items)
+            WITH (itemId UNIQUEIDENTIFIER '$.itemId') items
+        WHERE screen.VenueId = @VenueId AND named.screenId = screen.Id AND items.itemId IS NOT NULL;
+
+        UPDATE availability WITH (UPDLOCK, HOLDLOCK)
+        SET IsAvailable = 1, ChangedUtc = @ChangedUtc, ChangedBy = @ChangedBy
+        OUTPUT inserted.VenueId, inserted.ItemId, inserted.IsAvailable, inserted.ChangedUtc, inserted.ChangedBy
+        FROM dbo.ItemAvailability availability
+        INNER JOIN dbo.Items item ON item.Id = availability.ItemId AND item.VenueId = availability.VenueId
+        INNER JOIN @PublishedItems published ON published.ItemId = availability.ItemId
+        WHERE availability.VenueId = @VenueId AND availability.IsAvailable = 0;
+
+        COMMIT TRANSACTION;
+        """;
+
     // A screen shows exactly one menu, so assigning replaces whatever it showed.
     // The screen id arrives from the route, so the venue owns neither side of this
     // by default. Both the screen and the menu must belong to the calling venue or
@@ -410,6 +446,9 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
 
             INSERT dbo.MenuPages (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
             VALUES (@PageId, @VenueId, @Id, N'Page 1', 0, @Now, @Now);
+
+            INSERT dbo.MenuSections (Id, VenueId, MenuId, PageId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            VALUES (@SectionId, @VenueId, @Id, @PageId, N'Section 1', 0, @Now, @Now);
 
             COMMIT TRANSACTION;
             SELECT CAST(1 AS BIT) AS Created, @Active + 1 AS ActiveMenuCount;
@@ -1962,6 +2001,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             {
                 menu.Id,
                 PageId = Guid.NewGuid(),
+                SectionId = Guid.NewGuid(),
                 VenueId = RequireId(menu.VenueId, nameof(menu.VenueId)),
                 menu.Name,
                 Limit = activeMenuLimit,
@@ -2445,6 +2485,21 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         (await dataAccess.ExecuteSqlQueryAsync<ItemAvailability, object>(
             AvailabilitySql,
             new { VenueId = RequireId(venueId, nameof(venueId)) },
+            cancellationToken).ConfigureAwait(false)).ToArray();
+
+    public async Task<IReadOnlyCollection<ItemAvailability>> RestoreAllAvailabilityAsync(
+        Guid venueId,
+        DateTime changedUtc,
+        string? changedBy,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<ItemAvailability, object>(
+            RestoreAllAvailabilitySql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                ChangedUtc = changedUtc == default ? DateTime.UtcNow : changedUtc,
+                ChangedBy = changedBy
+            },
             cancellationToken).ConfigureAwait(false)).ToArray();
 
     // ----- Assignment ---------------------------------------------------------------

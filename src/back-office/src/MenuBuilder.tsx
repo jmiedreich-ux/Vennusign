@@ -81,6 +81,7 @@ type Props = {
   apiKey: string;
   menuId: string;
   venueTimezone: string;
+  startBlank?: boolean;
   onBack: () => void;
   /**
    * Hands a freshly accepted venue access token back to the application, so
@@ -383,6 +384,7 @@ export default function MenuBuilder({
   apiKey,
   menuId,
   venueTimezone,
+  startBlank = false,
   onBack,
   onAccessTokenChange,
   capabilityOverrides
@@ -542,6 +544,7 @@ export default function MenuBuilder({
           remembered = null;
         }
         setPlace(resumeState(next.board, remembered));
+        if (startBlank) setAddSectionId(sectionsOf(next.board)[0]?.sectionId ?? null);
       })
       .catch(() => {
         if (!cancelled) setError("This menu could not be opened. Check your connection and try again.");
@@ -549,7 +552,7 @@ export default function MenuBuilder({
     return () => {
       cancelled = true;
     };
-  }, [menuId, refresh]);
+  }, [menuId, refresh, startBlank]);
 
   useEffect(() => {
     sessionStorage.setItem(placeMemoryKey(menuId), JSON.stringify(place));

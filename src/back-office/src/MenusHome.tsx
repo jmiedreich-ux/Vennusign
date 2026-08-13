@@ -43,6 +43,8 @@ type Props = {
   starterMenuName?: string;
   /** Screens, filtered to the ones needing attention (Q170). */
   onFixScreens: (screenIds: string[]) => void;
+  onQuickUpdate: () => void;
+  canQuickUpdate: boolean;
 };
 
 /**
@@ -59,7 +61,9 @@ export default function MenusHome({
   onOpenMenu,
   onAddMenu,
   starterMenuName,
-  onFixScreens
+  onFixScreens,
+  onQuickUpdate,
+  canQuickUpdate
 }: Props) {
   /**
    * Naming a new menu.
@@ -185,6 +189,7 @@ export default function MenusHome({
           <p className="menus-home__subline" data-testid="shelf-subline">{shelfSubLine(menus)}</p>
         </div>
         <div className="menus-home__actions">
+          {canQuickUpdate ? <button type="button" className="action-secondary" onClick={onQuickUpdate} data-testid="quick-update">86 board</button> : null}
           {screensNeedingAttention.length > 0 ? (
             <button
               type="button"
@@ -253,6 +258,7 @@ export default function MenusHome({
             accessToken={accessToken}
             venueName={venueName}
             onOpen={() => onOpenMenu(menu.menuId)}
+            onQuickUpdate={canQuickUpdate ? onQuickUpdate : undefined}
             onAct={act}
           />
         ))}
@@ -346,7 +352,7 @@ export default function MenusHome({
               }
             }}
           >
-            <h2 id="name-menu-title">What is this menu called?</h2>
+            <h2 id="name-menu-title">Start a blank menu</h2>
             <p>You can change what is on it once it opens. Nothing reaches a screen until you publish.</p>
             <label>
               <span>Menu name</span>
@@ -383,7 +389,7 @@ export default function MenusHome({
                 Cancel
               </button>
               <button type="submit" className="action-primary" data-testid="create-menu" disabled={creating}>
-                {creating ? "Creating…" : "Create it"}
+                {creating ? "Creating…" : "Start blank"}
               </button>
             </div>
           </form>
@@ -401,10 +407,11 @@ type CardProps = {
   accessToken: string;
   venueName: string;
   onOpen: () => void;
+  onQuickUpdate?: () => void;
   onAct: (menuId: string, run: () => Promise<string>) => Promise<void>;
 };
 
-function MenuCard({ menu, unavailable, busy, configuration, accessToken, venueName, onOpen, onAct }: CardProps) {
+function MenuCard({ menu, unavailable, busy, configuration, accessToken, venueName, onOpen, onQuickUpdate, onAct }: CardProps) {
   const [open, setOpen] = useState(false);
   const [takeOff, setTakeOff] = useState(false);
   const [history, setHistory] = useState<MenuHistoryEntry[] | null>(null);
@@ -540,7 +547,7 @@ function MenuCard({ menu, unavailable, busy, configuration, accessToken, venueNa
                   Duplicate; "Take off the screens" is alone below the last
                   divider (Q195, build-decision 16). */}
               <button type="button" onClick={onOpen}>Open</button>
-              <button type="button" onClick={onOpen}>Quick update</button>
+              {onQuickUpdate ? <button type="button" onClick={onQuickUpdate}>Quick update</button> : null}
               <hr />
               <button
                 type="button"

@@ -863,6 +863,13 @@ export type MenuScreenShowing = {
   publishedBy: string | null;
 };
 
+export type QuickUpdateBoardData = {
+  timezone: string;
+  menus: Array<Pick<ShelfMenu, "menuId" | "name" | "screenIds" | "board">>;
+  availability: MenuAvailability[];
+  screens: MenuScreenShowing[];
+};
+
 /**
  * A refusal the API named rather than a failure.
  *
@@ -1345,6 +1352,20 @@ export async function setItemAvailability(
       body: JSON.stringify({ isAvailable })
     })
   ).json();
+}
+
+export async function loadQuickUpdateBoard(
+  configuration: BackOfficeConfiguration,
+  accessToken: string
+): Promise<QuickUpdateBoardData> {
+  return (await contentRequest(configuration, accessToken, "/quick-update")).json();
+}
+
+export async function restoreAllItemAvailability(
+  configuration: BackOfficeConfiguration,
+  accessToken: string
+): Promise<{ count: number; screenIds: string[] }> {
+  return (await contentRequest(configuration, accessToken, "/availability/restore-all", { method: "POST" })).json();
 }
 
 /**

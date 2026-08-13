@@ -84,6 +84,22 @@ public sealed record AvailabilityStateResponse(
     DateTime ChangedUtc,
     string? ChangedBy);
 
+public sealed record RestoreAllAvailabilityResponse(
+    int Count,
+    IReadOnlyCollection<Guid> ScreenIds);
+
+public sealed record QuickUpdateBoardResponse(
+    string Timezone,
+    IReadOnlyCollection<QuickUpdateMenuResponse> Menus,
+    IReadOnlyCollection<AvailabilityStateResponse> Availability,
+    IReadOnlyCollection<ScreenShowingResponse> Screens);
+
+public sealed record QuickUpdateMenuResponse(
+    Guid MenuId,
+    string Name,
+    IReadOnlyCollection<Guid> ScreenIds,
+    BoardResponse Board);
+
 /// <summary>
 /// Count is the menu's current difference from its screens — exactly what a
 /// publish will ship, not a tally of keystrokes.

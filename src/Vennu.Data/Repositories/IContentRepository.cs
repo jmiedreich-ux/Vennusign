@@ -240,6 +240,12 @@ public interface IContentRepository
 
     Task<ItemAvailability> SetAvailabilityAsync(ItemAvailability availability, CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyCollection<ItemAvailability>> RestoreAllAvailabilityAsync(
+        Guid venueId,
+        DateTime changedUtc,
+        string? changedBy,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyCollection<ItemAvailability>> GetAvailabilityAsync(Guid venueId, CancellationToken cancellationToken = default);
 
     // ----- Menu to screen assignment ----------------------------------------------

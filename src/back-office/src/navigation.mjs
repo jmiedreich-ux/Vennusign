@@ -14,7 +14,7 @@
  */
 export const backOfficeRoutes = [
   { path: "home", label: "Home", railLabel: "Home", icon: "House", description: "Today at your venue", group: "Operate" },
-  { path: "menu", label: "Menu", railLabel: "Menu", icon: "UtensilsCrossed", description: "Items and quick updates", group: "Operate", capabilityId: "content.item.update", upgradeFeature: "quick_update" },
+  { path: "menu", label: "Menu", railLabel: "Menu", icon: "UtensilsCrossed", description: "Items and quick updates", group: "Operate", capabilityId: "content.item.update", alternativeCapabilityId: "content.item.availability_update", upgradeFeature: "quick_update" },
   { path: "schedules", label: "Schedules", railLabel: "Schedules", icon: "Clock", description: "Timing and broadcasts", group: "Operate", capabilityId: "schedule.entry.manage", upgradeFeature: "meal_periods" },
   { path: "tap-list", label: "Tap list", railLabel: "Taps", icon: "Beer", description: "Draft board operations", group: "Operate", capabilityId: "content.item.update", upgradeFeature: "all_layouts" },
   { path: "screens", label: "Screens", railLabel: "Screens", icon: "Monitor", description: "Boards and playback", group: "Design & delivery", capabilityId: "screen.device.view", upgradeFeature: "all_layouts" },
@@ -103,7 +103,9 @@ export function menuIdFromHash(hash) {
 }
 
 export function decisionForBackOfficeRoute(route, decisions) {
-  return route.capabilityId ? decisions.find(decision => decision.capabilityId === route.capabilityId) : undefined;
+  if (!route.capabilityId) return undefined;
+  const candidates = decisions.filter(decision => decision.capabilityId === route.capabilityId || decision.capabilityId === route.alternativeCapabilityId);
+  return candidates.find(decision => decision.decision === "allowed" || decision.decision === "allowed-with-conditions") ?? candidates[0];
 }
 
 export function canOpenBackOfficeRoute(route, decisions) {

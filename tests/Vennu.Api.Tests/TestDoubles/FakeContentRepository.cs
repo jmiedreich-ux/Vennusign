@@ -174,6 +174,21 @@ internal sealed class FakeContentRepository : IContentRepository
         Task.FromResult<IReadOnlyCollection<ItemAvailability>>(
             Availability.Where(state => state.VenueId == venueId).ToArray());
 
+    public Task<IReadOnlyCollection<ItemAvailability>> RestoreAllAvailabilityAsync(Guid venueId, DateTime changedUtc, string? changedBy, CancellationToken cancellationToken = default)
+    {
+        var published = PublishEvents.Where(entry => entry.VenueId == venueId)
+            .SelectMany(entry => MenuSnapshot.Parse(entry.Snapshot)?.Sections ?? [])
+            .SelectMany(section => section.Items ?? []).Select(item => item.ItemId).ToHashSet();
+        var restored = Availability.Where(state => state.VenueId == venueId && published.Contains(state.ItemId) && !state.IsAvailable).ToArray();
+        foreach (var state in restored)
+        {
+            state.IsAvailable = true;
+            state.ChangedUtc = changedUtc;
+            state.ChangedBy = changedBy;
+        }
+        return Task.FromResult<IReadOnlyCollection<ItemAvailability>>(restored);
+    }
+
     // ----- Assignment -----
 
     public Task<MenuScreenAssignment> AssignScreenAsync(MenuScreenAssignment assignment, CancellationToken cancellationToken = default)

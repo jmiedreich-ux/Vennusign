@@ -108,10 +108,8 @@ public sealed class ContentServiceLogicTests
             new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = ScreenId, MenuId = MenuId, PageId = Guid.NewGuid() },
             new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = ScreenId, MenuId = secondMenuId, PageId = Guid.NewGuid() }
         ]);
-        library.PublishEvents.AddRange([
-            Published(MenuId, itemId, 1),
-            Published(secondMenuId, itemId, 1)
-        ]);
+        library.PublishEvents.AddRange([Published(MenuId, itemId, 1, ScreenId), Published(secondMenuId, itemId, 1, ScreenId)]);
+        library.PublishTargets.AddRange(library.PublishEvents.Select(entry => new MenuPublishTarget { Id = Guid.NewGuid(), PublishEventId = entry.Id, ScreenId = ScreenId }));
         var notifier = new RecordingNotifier();
         var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
 
@@ -138,8 +136,12 @@ public sealed class ContentServiceLogicTests
             new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = publishedScreen, MenuId = publishedMenu, PageId = Guid.NewGuid() }
         ]);
         library.PublishEvents.AddRange([
-            Published(draftOnlyMenu, null, 1),
-            Published(publishedMenu, itemId, 1)
+            Published(draftOnlyMenu, null, 1, draftOnlyScreen),
+            Published(publishedMenu, itemId, 1, publishedScreen)
+        ]);
+        library.PublishTargets.AddRange([
+            new MenuPublishTarget { Id = Guid.NewGuid(), PublishEventId = library.PublishEvents[0].Id, ScreenId = draftOnlyScreen },
+            new MenuPublishTarget { Id = Guid.NewGuid(), PublishEventId = library.PublishEvents[1].Id, ScreenId = publishedScreen }
         ]);
         var notifier = new RecordingNotifier();
         var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
@@ -150,13 +152,99 @@ public sealed class ContentServiceLogicTests
         Assert.Equal(publishedScreen, Assert.Single(notifier.AvailabilityScreenIds));
     }
 
-    private static MenuPublishEvent Published(Guid menuId, Guid? itemId, long version) => new()
+    [Fact]
+    public async Task Availability_NotifiesDeliveredScreenAfterItsWorkingAssignmentWasRemoved()
+    {
+        var itemId = Guid.NewGuid();
+        var library = new FakeContentRepository();
+        library.Items.Add(new Item { Id = itemId, VenueId = VenueId, Name = "Berry Fizz" });
+        var published = Published(MenuId, itemId, 1, ScreenId);
+        library.PublishEvents.Add(published);
+        library.PublishTargets.Add(new MenuPublishTarget
+        {
+            Id = Guid.NewGuid(),
+            PublishEventId = published.Id,
+            ScreenId = ScreenId
+        });
+        // Deliberately no working assignment: delivery remains the screen truth
+        // until a later publish carries the assignment removal to that screen.
+        var notifier = new RecordingNotifier();
+        var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
+
+        var result = await service.SetAvailabilityAsync(VenueId, itemId, false, "Owner");
+
+        Assert.Equal(ScreenId, Assert.Single(result.ScreenIds));
+        Assert.Equal(ScreenId, Assert.Single(notifier.AvailabilityScreenIds));
+    }
+
+    [Fact]
+    public async Task Availability_DoesNotNotifyStagedAssignmentWithoutMatchingDelivery()
+    {
+        var itemId = Guid.NewGuid();
+        var library = new FakeContentRepository();
+        library.Items.Add(new Item { Id = itemId, VenueId = VenueId, Name = "Berry Fizz" });
+        library.Assignments.Add(new MenuScreenAssignment
+        {
+            Id = Guid.NewGuid(),
+            VenueId = VenueId,
+            ScreenId = ScreenId,
+            MenuId = MenuId,
+            PageId = Guid.NewGuid()
+        });
+        library.PublishEvents.Add(Published(MenuId, itemId, 1, ScreenId));
+        // Deliberately no publish target: the working assignment is staged, but
+        // no matching menu version has actually been delivered to the screen.
+        var notifier = new RecordingNotifier();
+        var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
+
+        var result = await service.SetAvailabilityAsync(VenueId, itemId, false, "Owner");
+
+        Assert.Empty(result.ScreenIds);
+        Assert.Empty(notifier.AvailabilityScreenIds);
+    }
+
+    [Fact]
+    public async Task RestoreAllAvailability_NotifiesPublishedReachForEveryRestoredItem()
+    {
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
+        var hidden = Guid.NewGuid();
+        var library = new FakeContentRepository();
+        library.Items.AddRange([
+            new Item { Id = first, VenueId = VenueId, Name = "First" },
+            new Item { Id = second, VenueId = VenueId, Name = "Second" },
+            new Item { Id = hidden, VenueId = VenueId, Name = "Hidden" }
+        ]);
+        library.Availability.AddRange([
+            new ItemAvailability { VenueId = VenueId, ItemId = first, IsAvailable = false },
+            new ItemAvailability { VenueId = VenueId, ItemId = second, IsAvailable = false },
+            new ItemAvailability { VenueId = VenueId, ItemId = hidden, IsAvailable = false }
+        ]);
+        library.Assignments.Add(new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = ScreenId, MenuId = MenuId, PageId = Guid.NewGuid() });
+        library.PublishEvents.Add(new MenuPublishEvent {
+            Id = Guid.NewGuid(), VenueId = VenueId, MenuId = MenuId, Version = 1, PublishedUtc = DateTime.UtcNow,
+            Snapshot = MenuSnapshot.Serialize(new MenuSnapshot { MenuId = MenuId, Screens = [new SnapshotScreen { ScreenId = ScreenId }], Sections = [new SnapshotSection { SectionId = Guid.NewGuid(), Items = [new SnapshotItem { ItemId = first }, new SnapshotItem { ItemId = second }] }] })
+        });
+        library.PublishTargets.Add(new MenuPublishTarget { Id = Guid.NewGuid(), PublishEventId = library.PublishEvents[0].Id, ScreenId = ScreenId });
+        var notifier = new RecordingNotifier();
+        var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
+
+        var result = await service.RestoreAllAvailabilityAsync(VenueId, "Owner");
+
+        Assert.Equal(2, result.Count);
+        Assert.Equal(ScreenId, Assert.Single(result.ScreenIds));
+        Assert.Equal(2, notifier.AvailabilityScreenIds.Count);
+        Assert.All(library.Availability.Where(state => state.ItemId != hidden), state => Assert.True(state.IsAvailable));
+        Assert.False(library.Availability.Single(state => state.ItemId == hidden).IsAvailable);
+    }
+
+    private static MenuPublishEvent Published(Guid menuId, Guid? itemId, long version, Guid screenId) => new()
     {
         Id = Guid.NewGuid(), VenueId = VenueId, MenuId = menuId, Version = version,
         PublishedUtc = DateTime.UtcNow, Author = "Owner",
         Snapshot = MenuSnapshot.Serialize(new MenuSnapshot
         {
-            MenuId = menuId,
+            MenuId = menuId, Screens = [new SnapshotScreen { ScreenId = screenId }],
             Sections = itemId.HasValue
                 ? [new SnapshotSection { SectionId = Guid.NewGuid(), Items = [new SnapshotItem { ItemId = itemId.Value, Name = "Berry Fizz" }] }]
                 : []

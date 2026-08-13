@@ -1,6 +1,19 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-13, for Menus Milestone 4 owner acceptance and merge closure.
+Updated 2026-08-13, for Menus Slice 6 exact-SHA review and owner acceptance.
+
+## 2026-08-13 — Menus Slice 6 product candidate
+
+- Product candidate `e5364a50ef29a8c4c119ebaf4ec5413662025149` implements issue #710 on `feature/menus-s6-86-board`. The approved authority image is `docs/design/approved/menus/86-board-7b.png`; later owner decisions override its illustrative Undo with confirmation before every 86.
+- The separate 86 board reads only published menus assigned to screens, repeats shared items once per published placement, searches that same bounded set, commits availability venue-wide, and reports proven reach with the existing offline/stale classifier. Carryover review never auto-restores. Single restore and atomic restore-all both confirm first.
+- Start blank stays on Menus Home. The existing ceiling-locked menu transaction now creates Page 1 and Section 1 atomically; the builder opens on that section with the add-item row focused. Duplicate/invalid/ceiling refusal behavior remains at the existing enforcement boundaries.
+- Behavior search: `rg -n "Quick Update|QuickUpdate|SetAvailability|availability|isAvailable|IsAvailable|New menu|Start blank|createMenu|create menu" src tests --glob '!**/node_modules/**' --glob '!**/dist/**'`. Changed: Menus Home/card entry points, App routing, the content availability service/repository/API for atomic restore-all, and the existing menu-create transaction. Unchanged deliberately: builder availability remains the full-editor alternative; Daypart Home is a separate dashboard summary; POS inventory and Tap availability are separate writers/domains; board engine remains the guest projection consumer.
+- Executed evidence: Release solution build passed; Back Office production build passed; Back Office units 202/202; focused API availability tests 3/3; focused LocalDB tests 2/2; affected Menus Playwright 12/12; isolated environment/sign-in 3/3, Slice 6 3/3, and navigation/entitlements 5/5; Impeccable detector clean. The blank-section and atomic restore-all LocalDB regressions were each observed failing with their fix removed and passing after restoration. `git diff --check` passed.
+- Broad Playwright is **NOT A PASS**: one run used an invalid isolation tag, and later monolithic attempts were invalidated by orphaned worker contention or hit the ten-minute command ceiling without a final report. A final one-worker attempt of only `single-venue-criterion-18.spec.ts` also produced no report before its three-minute command ceiling, so the newly added Quick Update surface in that sweep remains **UNTESTED by that named spec**; Quick Update itself passed its focused 3/3 and the affected Menus group passed 12/12. All orphaned processes and services were stopped. CI and external/Azure/device/mobile/player tests are not run by policy/scope.
+- Explicit exclusions: Board View/Play #709, display player, geometry/pagination, canvas/theme work, unplaced items, Slice 6-A import, Slice 7 redesign, and claimed mobile support.
+- Independent review found and the implementation now closes three boundary defects: availability-only staff use one bounded read model; restore-all selects and updates only delivered snapshot items inside one locked SQL transaction; and returned/notified reach is derived from each screen's exact delivered menu version rather than working assignments. Focused API tests passed 13/13 before the final reach change, the rebuilt ContentService set passed 10/10 after it, the LocalDB hidden-item boundary passed 1/1, Back Office units passed 202/202, production build passed, and the Release solution build passed.
+- Final review of `e5364a5` found no remaining product-code defect and requested two test-integrity regressions that deliberately invert assignment and delivery truth. Both are now present: published delivery after assignment removal still notifies/returns the screen, while a staged assignment without matching delivered content does not. Both failed against the old assignment helper (2/2 failed) and pass against the current delivered-version helper; the complete focused `ContentServiceLogicTests` set passes 12/12.
+- Owner instruction for this session: commit this bounded test closeout without another review or owner workbook. Services remain stopped and PR #711 remains a draft. Slice 6-A and Slice 7 remain blocked; no successor work is authorized.
 
 ## 2026-08-13 — Menu Builder page-action crumb refinement (local, uncommitted)
 
@@ -46,13 +59,12 @@ Updated 2026-08-13, for Menus Milestone 4 owner acceptance and merge closure.
 
 ## Exact Next Action
 
-1. **Land the owner-supplied 86-board source image and finish the Slice 6 path audit;
-   do not implement yet.** Decision detail is synchronized into approved decision 15,
-   but the visual source is not yet a repository artifact. Reconcile every current
-   availability entry point found by the recorded `rg` search (`DaypartHome`, builder,
-   menu API, content API/service/repository, tests) and the existing Menus Home create
-   path. Then create the Slice 6 issue/claim/branch. Do not pull deferred Board View/Play
-   or Slice 6-A import work into Slice 6.
+1. **Complete the claimed Slice 6 path audit, land the owner-supplied source image,
+   then implement issue #710 on `feature/menus-s6-86-board`.** `PRODUCT.md` now holds
+   owner-provided product truth. Reconcile every current availability entry point found
+   by the recorded `rg` search (`DaypartHome`, builder, menu API, content API/service/
+   repository, tests) and the existing Menus Home create path. Do not pull deferred
+   Board View/Play #709, Slice 6-A import, or Slice 7 Menu Home redesign into Slice 6.
 
 2. Slice 2 is owner-accepted. Its first review blockers were a case-only section
    rename no-op and stale page-history response overwrite; both have focused tests

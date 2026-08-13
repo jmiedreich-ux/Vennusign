@@ -1633,9 +1633,14 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
             "UPDATE dbo.Menus SET IsPutAway = 1 WHERE Id = @MenuId; SELECT 1 AS Value;",
             new { MenuId = menuId });
 
-        var admitted = await repository.CreateMenuWithinCeilingAsync(
-            new Menu { VenueId = venueId, Name = fixture.UniqueValue("second") }, activeMenuLimit: 1);
+        var newMenu = new Menu { VenueId = venueId, Name = fixture.UniqueValue("second") };
+        var admitted = await repository.CreateMenuWithinCeilingAsync(newMenu, activeMenuLimit: 1);
         Assert.True(admitted.Created);
+        var section = Assert.Single(await dataAccess.ExecuteSqlQueryAsync<SectionSeedRow, object>(
+            "SELECT Name, PageId FROM dbo.MenuSections WHERE VenueId=@VenueId AND MenuId=@MenuId;",
+            new { VenueId = venueId, MenuId = newMenu.Id }));
+        Assert.Equal("Section 1", section.Name);
+        Assert.NotEqual(Guid.Empty, section.PageId);
     }
 
     [Fact]
@@ -1737,6 +1742,39 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
 
         var afterToggle = Assert.Single(await repository.GetPlacedItemsForVenueAsync(venueId));
         Assert.False(afterToggle.IsAvailable);
+    }
+
+    [Fact]
+    public async Task RestoreAllAvailability_ChangesEveryOffItemInOneVenueAndNoOtherVenue()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var otherVenueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var first = new Item { VenueId = venueId, Name = fixture.UniqueValue("first") };
+        var second = new Item { VenueId = venueId, Name = fixture.UniqueValue("second") };
+        var hidden = new Item { VenueId = venueId, Name = fixture.UniqueValue("hidden") };
+        await repository.CreateItemOnMenuAsync(first, menuId, sectionId, 500);
+        await repository.CreateItemOnMenuAsync(second, menuId, sectionId, 500);
+        await repository.CreateItemAsync(hidden);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
+        await PublishCurrentAsync(repository, venueId, menuId);
+        var otherMenuId = await SeedMenuAsync(dataAccess, otherVenueId);
+        var otherSectionId = await SeedSectionAsync(dataAccess, otherVenueId, otherMenuId);
+        var other = new Item { VenueId = otherVenueId, Name = fixture.UniqueValue("other") };
+        await repository.CreateItemOnMenuAsync(other, otherMenuId, otherSectionId, 500);
+        foreach (var item in new[] { first, second, hidden, other })
+            await repository.SetAvailabilityAsync(new ItemAvailability { VenueId = item.VenueId, ItemId = item.Id, IsAvailable = false, ChangedBy = "Chef" });
+
+        var changed = await repository.RestoreAllAvailabilityAsync(venueId, DateTime.UtcNow, "Owner");
+
+        Assert.Equal(2, changed.Count);
+        Assert.All(changed, state => Assert.True(state.IsAvailable));
+        Assert.False((await repository.GetAvailabilityAsync(venueId)).Single(state => state.ItemId == hidden.Id).IsAvailable);
+        Assert.False(Assert.Single(await repository.GetAvailabilityAsync(otherVenueId)).IsAvailable);
     }
 
     // ---- helpers ----------------------------------------------------------------------
@@ -2576,5 +2614,11 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
     private sealed class GuidRow
     {
         public Guid Value { get; set; }
+    }
+
+    private sealed class SectionSeedRow
+    {
+        public string Name { get; set; } = string.Empty;
+        public Guid PageId { get; set; }
     }
 }

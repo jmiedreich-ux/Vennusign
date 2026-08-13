@@ -43,6 +43,7 @@ import BillingStatusCard from "./BillingStatusCard";
 import TierDecisionDialog from "./TierDecisionDialog";
 import AccountSecurity from "./AccountSecurity";
 import DaypartHome from "./DaypartHome";
+import QuickUpdateBoard from "./QuickUpdateBoard";
 import { useDestructiveReview } from "./DestructiveReviewDialog";
 import {
   clearPendingTierDecision,
@@ -130,6 +131,7 @@ export default function App() {
    * have to land back on the same menu, and React state survives none of them.
    */
   const openMenuId = menuIdFromHash(routeHash);
+  const quickUpdateOpen = routeHash.replace(/^#\/?/, "").split("?")[0] === "menu/quick-update";
   const openMenu = (menuId: string) => { window.location.hash = `#/menu/${menuId}`; };
   const [menuContext, setMenuContext] = useState<{ timezone: string }>();
 
@@ -140,7 +142,7 @@ export default function App() {
    */
   const onAddMenu = async (name: string) => {
     const created = await createMenu(configuration, accessToken, name);
-    openMenu(created.id);
+    window.location.hash = `#/menu/${created.id}?start=blank`;
   };
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [error, setError] = useState<string>();
@@ -310,11 +312,15 @@ export default function App() {
     return <main className="centered"><p className="loading">Opening your venue…</p></main>;
   }
 
-  const allowed = canOpenBackOfficeRoute(route, session.capabilityDecisions);
+  const quickUpdateAllowed = quickUpdateOpen && session.capabilityDecisions.some(decision =>
+    decision.capabilityId === "content.item.availability_update" &&
+    (decision.decision === "allowed" || decision.decision === "allowed-with-conditions"));
+  const allowed = quickUpdateAllowed || canOpenBackOfficeRoute(route, session.capabilityDecisions);
   const routeDecision = decisionForBackOfficeRoute(route, session.capabilityDecisions);
   const allowedCapabilityIds = session.capabilityDecisions
     .filter(decision => decision.decision === "allowed" || decision.decision === "allowed-with-conditions")
     .map(decision => decision.capabilityId);
+  const canEditMenus = allowedCapabilityIds.includes("content.item.update");
   const opportunities = billing
     ? listUpgradeOpportunities(
         billing.effectiveFeatures,
@@ -602,6 +608,13 @@ export default function App() {
         ? <AccountSecurity configuration={configuration} customerSession={accessToken === customerSessionAccess} />
         : allowed && route.path === "pos"
         ? <PosIntegrationAdministration key={session.venueId} configuration={configuration} accessToken={accessToken} />
+        : allowed && route.path === "menu" && (quickUpdateOpen || !canEditMenus)
+        ? <QuickUpdateBoard
+            key={session.venueId}
+            configuration={configuration}
+            accessToken={accessToken}
+            review={review}
+          />
         : allowed && route.path === "menu" && openMenuId === null
         ? <MenusHome
             key={session.venueId}
@@ -614,6 +627,8 @@ export default function App() {
             onAddMenu={onAddMenu}
             starterMenuName={starterMenu}
             onFixScreens={() => { window.location.hash = "#/screens"; }}
+            onQuickUpdate={() => { window.location.hash = "#/menu/quick-update"; }}
+            canQuickUpdate={allowedCapabilityIds.includes("content.item.availability_update")}
           />
         : allowed && route.path === "menu"
         ? <MenuBuilder
@@ -622,6 +637,7 @@ export default function App() {
             apiKey={accessToken}
             menuId={openMenuId!}
             venueTimezone={menuContext?.timezone ?? "UTC"}
+            startBlank={routeHash.includes("?start=blank")}
             onBack={() => { window.location.hash = "#/menu"; }}
             capabilityOverrides={configuration.menuCapabilityOverrides}
             /*
