@@ -7,14 +7,18 @@
 
 ## Purpose
 
-This folder preserves the current Theme Studio design decisions, mock reference, and owner-testing handoff. It is the restart point for continuing the design without reconstructing prior conversations.
+This folder preserves the current Theme Studio design decisions, mock reference, complete source, and owner-testing handoff. It is the restart point for continuing the design without reconstructing prior conversations.
 
 This bundle documents a working mock. It does not authorize production implementation or replace the Menus design authority under `docs/design/approved/menus/`.
 
-## Documents
+## Contents
 
 - [decisions.md](decisions.md) — current product and interaction decisions.
 - [owner-test-handoff.md](owner-test-handoff.md) — verified behavior, remaining tests, and the exact next action.
+- [mock-source/](mock-source/) — browseable authored React/TSX and CSS source.
+- [vennue-theme-studio-source-2026-08-13.zip](vennue-theme-studio-source-2026-08-13.zip) — exact complete tracked project recovery archive.
+
+The mock is authored in React/TSX and CSS rather than a standalone HTML file. `mock-source/app/page.tsx` and `mock-source/app/globals.css` contain the complete interactive experience; the ZIP preserves every tracked project file, including the lockfile, assets, tests, worker, configuration, and cached fonts.
 
 ## Current design outcome
 
