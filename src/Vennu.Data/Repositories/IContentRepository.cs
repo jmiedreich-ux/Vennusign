@@ -242,7 +242,6 @@ public interface IContentRepository
 
     Task<IReadOnlyCollection<ItemAvailability>> RestoreAllAvailabilityAsync(
         Guid venueId,
-        IReadOnlyCollection<Guid> itemIds,
         DateTime changedUtc,
         string? changedBy,
         CancellationToken cancellationToken = default);

@@ -1759,6 +1759,9 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         await repository.CreateItemOnMenuAsync(first, menuId, sectionId, 500);
         await repository.CreateItemOnMenuAsync(second, menuId, sectionId, 500);
         await repository.CreateItemAsync(hidden);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
+        await PublishCurrentAsync(repository, venueId, menuId);
         var otherMenuId = await SeedMenuAsync(dataAccess, otherVenueId);
         var otherSectionId = await SeedSectionAsync(dataAccess, otherVenueId, otherMenuId);
         var other = new Item { VenueId = otherVenueId, Name = fixture.UniqueValue("other") };
@@ -1766,7 +1769,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         foreach (var item in new[] { first, second, hidden, other })
             await repository.SetAvailabilityAsync(new ItemAvailability { VenueId = item.VenueId, ItemId = item.Id, IsAvailable = false, ChangedBy = "Chef" });
 
-        var changed = await repository.RestoreAllAvailabilityAsync(venueId, [first.Id, second.Id], DateTime.UtcNow, "Owner");
+        var changed = await repository.RestoreAllAvailabilityAsync(venueId, DateTime.UtcNow, "Owner");
 
         Assert.Equal(2, changed.Count);
         Assert.All(changed, state => Assert.True(state.IsAvailable));

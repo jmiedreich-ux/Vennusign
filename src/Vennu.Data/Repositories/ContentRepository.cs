@@ -71,9 +71,24 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
 
         DECLARE @PublishedItems TABLE (ItemId UNIQUEIDENTIFIER PRIMARY KEY);
         INSERT @PublishedItems (ItemId)
-        SELECT DISTINCT TRY_CONVERT(UNIQUEIDENTIFIER, [value])
-        FROM OPENJSON(@ItemIdsJson)
-        WHERE TRY_CONVERT(UNIQUEIDENTIFIER, [value]) IS NOT NULL;
+        SELECT DISTINCT items.itemId
+        FROM dbo.Screens screen WITH (UPDLOCK, HOLDLOCK)
+        CROSS APPLY
+        (
+            SELECT TOP (1) publish.Id, publish.Snapshot
+            FROM dbo.MenuPublishTargets target WITH (UPDLOCK, HOLDLOCK)
+            INNER JOIN dbo.MenuPublishEvents publish WITH (UPDLOCK, HOLDLOCK)
+                ON publish.Id = target.PublishEventId AND publish.VenueId = target.VenueId
+            WHERE target.VenueId = @VenueId AND target.ScreenId = screen.Id
+            ORDER BY publish.PublishedUtc DESC, publish.Id DESC
+        ) latest
+        CROSS APPLY OPENJSON(latest.Snapshot, '$.screens')
+            WITH (screenId UNIQUEIDENTIFIER '$.screenId') named
+        CROSS APPLY OPENJSON(latest.Snapshot, '$.sections')
+            WITH (items NVARCHAR(MAX) '$.items' AS JSON) sections
+        CROSS APPLY OPENJSON(sections.items)
+            WITH (itemId UNIQUEIDENTIFIER '$.itemId') items
+        WHERE screen.VenueId = @VenueId AND named.screenId = screen.Id AND items.itemId IS NOT NULL;
 
         UPDATE availability WITH (UPDLOCK, HOLDLOCK)
         SET IsAvailable = 1, ChangedUtc = @ChangedUtc, ChangedBy = @ChangedBy
@@ -2474,7 +2489,6 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
 
     public async Task<IReadOnlyCollection<ItemAvailability>> RestoreAllAvailabilityAsync(
         Guid venueId,
-        IReadOnlyCollection<Guid> itemIds,
         DateTime changedUtc,
         string? changedBy,
         CancellationToken cancellationToken = default) =>
@@ -2483,7 +2497,6 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             new
             {
                 VenueId = RequireId(venueId, nameof(venueId)),
-                ItemIdsJson = System.Text.Json.JsonSerializer.Serialize(itemIds.Distinct()),
                 ChangedUtc = changedUtc == default ? DateTime.UtcNow : changedUtc,
                 ChangedBy = changedBy
             },

@@ -64,9 +64,8 @@ public sealed class ContentService(
         CancellationToken cancellationToken = default)
     {
         var changedUtc = timeProvider.GetUtcNow().UtcDateTime;
-        var itemIds = await GetPublishedAssignedItemIdsAsync(venueId, cancellationToken).ConfigureAwait(false);
         var restored = await library
-            .RestoreAllAvailabilityAsync(venueId, itemIds, changedUtc, changedBy, cancellationToken)
+            .RestoreAllAvailabilityAsync(venueId, changedUtc, changedBy, cancellationToken)
             .ConfigureAwait(false);
         var affectedScreens = new HashSet<Guid>();
         foreach (var state in restored)
@@ -82,19 +81,6 @@ public sealed class ContentService(
                 venueId, state.ItemId.ToString(), true, cancellationToken).ConfigureAwait(false);
         }
         return new RestoreAllAvailabilityResult(restored.Count, affectedScreens.ToArray());
-    }
-
-    private async Task<Guid[]> GetPublishedAssignedItemIdsAsync(Guid venueId, CancellationToken cancellationToken)
-    {
-        var assignments = await library.GetAssignmentsAsync(venueId, cancellationToken).ConfigureAwait(false);
-        var itemIds = new HashSet<Guid>();
-        foreach (var menuId in assignments.Select(assignment => assignment.MenuId).Distinct())
-        {
-            var published = await library.GetLatestPublishedBoardAsync(venueId, menuId, cancellationToken).ConfigureAwait(false);
-            var snapshot = MenuSnapshot.Parse(published?.Snapshot);
-            foreach (var item in (snapshot?.Sections ?? []).SelectMany(section => section.Items ?? [])) itemIds.Add(item.ItemId);
-        }
-        return itemIds.ToArray();
     }
 
     private async Task<Guid[]> GetScreensShowingItemAsync(Guid venueId, Guid itemId, CancellationToken cancellationToken)
