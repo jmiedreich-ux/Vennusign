@@ -174,9 +174,9 @@ internal sealed class FakeContentRepository : IContentRepository
         Task.FromResult<IReadOnlyCollection<ItemAvailability>>(
             Availability.Where(state => state.VenueId == venueId).ToArray());
 
-    public Task<IReadOnlyCollection<ItemAvailability>> RestoreAllAvailabilityAsync(Guid venueId, DateTime changedUtc, string? changedBy, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyCollection<ItemAvailability>> RestoreAllAvailabilityAsync(Guid venueId, IReadOnlyCollection<Guid> itemIds, DateTime changedUtc, string? changedBy, CancellationToken cancellationToken = default)
     {
-        var restored = Availability.Where(state => state.VenueId == venueId && !state.IsAvailable).ToArray();
+        var restored = Availability.Where(state => state.VenueId == venueId && itemIds.Contains(state.ItemId) && !state.IsAvailable).ToArray();
         foreach (var state in restored)
         {
             state.IsAvailable = true;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { BackOfficeApiError, loadMenuAvailability, loadScreensShowing, loadShelf, restoreAllItemAvailability, setItemAvailability, type MenuAvailability, type MenuScreenShowing, type ShelfMenu } from "./api";
+import { BackOfficeApiError, loadQuickUpdateBoard, restoreAllItemAvailability, setItemAvailability, type MenuAvailability, type MenuScreenShowing, type ShelfMenu } from "./api";
 import type { BackOfficeConfiguration } from "./config";
 import { availabilityImpactNotice, availabilityTime } from "./builderModel.mjs";
 import type { DestructiveReviewRequest } from "./DestructiveReviewDialog";
@@ -8,13 +8,13 @@ import "./quick-update-board.css";
 
 type Placement = Readonly<{ key:string; itemId:string; itemName:string; menuId:string; menuName:string; sectionId:string; sectionName:string; screenIds:string[] }>;
 
-export default function QuickUpdateBoard({ configuration, accessToken, venueTimezone, review }: Readonly<{
-  configuration: BackOfficeConfiguration; accessToken: string; venueTimezone: string;
+export default function QuickUpdateBoard({ configuration, accessToken, review }: Readonly<{
+  configuration: BackOfficeConfiguration; accessToken: string;
   review: (request: DestructiveReviewRequest) => Promise<boolean>;
 }>) {
-  const [menus,setMenus]=useState<ShelfMenu[]|null>(null), [availability,setAvailability]=useState<MenuAvailability[]>([]), [screens,setScreens]=useState<MenuScreenShowing[]>([]);
+  const [menus,setMenus]=useState<ShelfMenu[]|null>(null), [availability,setAvailability]=useState<MenuAvailability[]>([]), [screens,setScreens]=useState<MenuScreenShowing[]>([]), [venueTimezone,setVenueTimezone]=useState("UTC");
   const [selectedSection,setSelectedSection]=useState<string|null>(null), [query,setQuery]=useState(""), [error,setError]=useState<string|null>(null), [notice,setNotice]=useState<string|null>(null), [busy,setBusy]=useState<string|null>(null);
-  const refresh=useCallback(async()=>{try{const [m,a,s]=await Promise.all([loadShelf(configuration,accessToken),loadMenuAvailability(configuration,accessToken),loadScreensShowing(configuration,accessToken)]);setMenus(m.filter(x=>x.screenIds.length>0&&x.board));setAvailability(a);setScreens(s);setError(null)}catch(f){setError(f instanceof BackOfficeApiError?f.message:"Vennusign could not load the 86 board.")}},[configuration,accessToken]);
+  const refresh=useCallback(async()=>{try{const data=await loadQuickUpdateBoard(configuration,accessToken);setMenus(data.menus as ShelfMenu[]);setAvailability(data.availability);setScreens(data.screens);setVenueTimezone(data.timezone);setError(null)}catch(f){setError(f instanceof BackOfficeApiError?f.message:"Vennusign could not load the 86 board.")}},[configuration,accessToken]);
   useEffect(()=>{void refresh()},[refresh]);
   const placements=useMemo<Placement[]>(()=>(menus??[]).flatMap(menu=>(menu.board?.sections??[]).flatMap(section=>section.items.map(item=>({key:`${menu.menuId}:${section.sectionId}:${item.itemId}`,itemId:item.itemId,itemName:item.name?.trim()||"Unnamed item",menuId:menu.menuId,menuName:menu.name,sectionId:section.sectionId,sectionName:section.name?.trim()||"Untitled section",screenIds:menu.screenIds})))),[menus]);
   const unavailable=useMemo(()=>new Map(availability.map(x=>[x.itemId,x])),[availability]);

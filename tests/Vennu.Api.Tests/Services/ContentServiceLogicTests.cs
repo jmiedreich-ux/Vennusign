@@ -155,14 +155,17 @@ public sealed class ContentServiceLogicTests
     {
         var first = Guid.NewGuid();
         var second = Guid.NewGuid();
+        var hidden = Guid.NewGuid();
         var library = new FakeContentRepository();
         library.Items.AddRange([
             new Item { Id = first, VenueId = VenueId, Name = "First" },
-            new Item { Id = second, VenueId = VenueId, Name = "Second" }
+            new Item { Id = second, VenueId = VenueId, Name = "Second" },
+            new Item { Id = hidden, VenueId = VenueId, Name = "Hidden" }
         ]);
         library.Availability.AddRange([
             new ItemAvailability { VenueId = VenueId, ItemId = first, IsAvailable = false },
-            new ItemAvailability { VenueId = VenueId, ItemId = second, IsAvailable = false }
+            new ItemAvailability { VenueId = VenueId, ItemId = second, IsAvailable = false },
+            new ItemAvailability { VenueId = VenueId, ItemId = hidden, IsAvailable = false }
         ]);
         library.Assignments.Add(new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = ScreenId, MenuId = MenuId, PageId = Guid.NewGuid() });
         library.PublishEvents.Add(new MenuPublishEvent {
@@ -177,7 +180,8 @@ public sealed class ContentServiceLogicTests
         Assert.Equal(2, result.Count);
         Assert.Equal(ScreenId, Assert.Single(result.ScreenIds));
         Assert.Equal(2, notifier.AvailabilityScreenIds.Count);
-        Assert.All(library.Availability, state => Assert.True(state.IsAvailable));
+        Assert.All(library.Availability.Where(state => state.ItemId != hidden), state => Assert.True(state.IsAvailable));
+        Assert.False(library.Availability.Single(state => state.ItemId == hidden).IsAvailable);
     }
 
     private static MenuPublishEvent Published(Guid menuId, Guid? itemId, long version) => new()

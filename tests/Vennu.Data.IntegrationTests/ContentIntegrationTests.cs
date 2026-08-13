@@ -1755,19 +1755,22 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
         var first = new Item { VenueId = venueId, Name = fixture.UniqueValue("first") };
         var second = new Item { VenueId = venueId, Name = fixture.UniqueValue("second") };
+        var hidden = new Item { VenueId = venueId, Name = fixture.UniqueValue("hidden") };
         await repository.CreateItemOnMenuAsync(first, menuId, sectionId, 500);
         await repository.CreateItemOnMenuAsync(second, menuId, sectionId, 500);
+        await repository.CreateItemAsync(hidden);
         var otherMenuId = await SeedMenuAsync(dataAccess, otherVenueId);
         var otherSectionId = await SeedSectionAsync(dataAccess, otherVenueId, otherMenuId);
         var other = new Item { VenueId = otherVenueId, Name = fixture.UniqueValue("other") };
         await repository.CreateItemOnMenuAsync(other, otherMenuId, otherSectionId, 500);
-        foreach (var item in new[] { first, second, other })
+        foreach (var item in new[] { first, second, hidden, other })
             await repository.SetAvailabilityAsync(new ItemAvailability { VenueId = item.VenueId, ItemId = item.Id, IsAvailable = false, ChangedBy = "Chef" });
 
-        var changed = await repository.RestoreAllAvailabilityAsync(venueId, DateTime.UtcNow, "Owner");
+        var changed = await repository.RestoreAllAvailabilityAsync(venueId, [first.Id, second.Id], DateTime.UtcNow, "Owner");
 
         Assert.Equal(2, changed.Count);
         Assert.All(changed, state => Assert.True(state.IsAvailable));
+        Assert.False((await repository.GetAvailabilityAsync(venueId)).Single(state => state.ItemId == hidden.Id).IsAvailable);
         Assert.False(Assert.Single(await repository.GetAvailabilityAsync(otherVenueId)).IsAvailable);
     }
 

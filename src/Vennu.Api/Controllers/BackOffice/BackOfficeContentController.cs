@@ -220,6 +220,33 @@ public sealed class BackOfficeContentController(
 
     // ----- Availability -------------------------------------------------------------
 
+    [HttpGet("quick-update")]
+    [RequireCapability("content.item.availability_update")]
+    public async Task<ActionResult<QuickUpdateBoardResponse>> GetQuickUpdateBoard(CancellationToken cancellationToken)
+    {
+        var shelf = (await content.GetShelfAsync(VenueId, cancellationToken).ConfigureAwait(false))
+            .Where(menu => menu.ScreenIds.Count > 0 && menu.PublishedBoard is not null)
+            .ToArray();
+        var itemIds = shelf.SelectMany(menu => menu.PublishedBoard!.Sections ?? [])
+            .SelectMany(section => section.Items ?? []).Select(item => item.ItemId).ToHashSet();
+        var availability = (await library.GetAvailabilityAsync(VenueId, cancellationToken).ConfigureAwait(false))
+            .Where(state => itemIds.Contains(state.ItemId))
+            .Select(state => new AvailabilityStateResponse(state.ItemId, state.IsAvailable, state.ChangedUtc, state.ChangedBy))
+            .ToArray();
+        var screenIds = shelf.SelectMany(menu => menu.ScreenIds).ToHashSet();
+        var screens = (await library.GetScreensShowingAsync(VenueId, cancellationToken).ConfigureAwait(false))
+            .Where(screen => screenIds.Contains(screen.ScreenId))
+            .Select(screen => new ScreenShowingResponse(screen.ScreenId, screen.ScreenName, screen.Location, screen.Status,
+                screen.LastSeenUtc, screen.WidthPixels, screen.HeightPixels, screen.MenuId, screen.MenuName,
+                screen.Version, screen.PublishedUtc, screen.Author)).ToArray();
+        var context = await content.GetContextAsync(VenueId, cancellationToken).ConfigureAwait(false);
+        return Ok(new QuickUpdateBoardResponse(
+            context.Timezone,
+            shelf.Select(menu => new QuickUpdateMenuResponse(menu.MenuId, menu.Name, menu.ScreenIds, ToBoardResponse(menu.PublishedBoard)!)).ToArray(),
+            availability,
+            screens));
+    }
+
     /// <summary>
     /// Turning availability off hides the item on every screen immediately.
     /// It is not part of any draft and it survives a publish.

@@ -69,11 +69,18 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         SET XACT_ABORT ON;
         BEGIN TRANSACTION;
 
+        DECLARE @PublishedItems TABLE (ItemId UNIQUEIDENTIFIER PRIMARY KEY);
+        INSERT @PublishedItems (ItemId)
+        SELECT DISTINCT TRY_CONVERT(UNIQUEIDENTIFIER, [value])
+        FROM OPENJSON(@ItemIdsJson)
+        WHERE TRY_CONVERT(UNIQUEIDENTIFIER, [value]) IS NOT NULL;
+
         UPDATE availability WITH (UPDLOCK, HOLDLOCK)
         SET IsAvailable = 1, ChangedUtc = @ChangedUtc, ChangedBy = @ChangedBy
         OUTPUT inserted.VenueId, inserted.ItemId, inserted.IsAvailable, inserted.ChangedUtc, inserted.ChangedBy
         FROM dbo.ItemAvailability availability
         INNER JOIN dbo.Items item ON item.Id = availability.ItemId AND item.VenueId = availability.VenueId
+        INNER JOIN @PublishedItems published ON published.ItemId = availability.ItemId
         WHERE availability.VenueId = @VenueId AND availability.IsAvailable = 0;
 
         COMMIT TRANSACTION;
@@ -2467,6 +2474,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
 
     public async Task<IReadOnlyCollection<ItemAvailability>> RestoreAllAvailabilityAsync(
         Guid venueId,
+        IReadOnlyCollection<Guid> itemIds,
         DateTime changedUtc,
         string? changedBy,
         CancellationToken cancellationToken = default) =>
@@ -2475,6 +2483,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             new
             {
                 VenueId = RequireId(venueId, nameof(venueId)),
+                ItemIdsJson = System.Text.Json.JsonSerializer.Serialize(itemIds.Distinct()),
                 ChangedUtc = changedUtc == default ? DateTime.UtcNow : changedUtc,
                 ChangedBy = changedBy
             },

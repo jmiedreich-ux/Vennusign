@@ -312,11 +312,15 @@ export default function App() {
     return <main className="centered"><p className="loading">Opening your venue…</p></main>;
   }
 
-  const allowed = canOpenBackOfficeRoute(route, session.capabilityDecisions);
+  const quickUpdateAllowed = quickUpdateOpen && session.capabilityDecisions.some(decision =>
+    decision.capabilityId === "content.item.availability_update" &&
+    (decision.decision === "allowed" || decision.decision === "allowed-with-conditions"));
+  const allowed = quickUpdateAllowed || canOpenBackOfficeRoute(route, session.capabilityDecisions);
   const routeDecision = decisionForBackOfficeRoute(route, session.capabilityDecisions);
   const allowedCapabilityIds = session.capabilityDecisions
     .filter(decision => decision.decision === "allowed" || decision.decision === "allowed-with-conditions")
     .map(decision => decision.capabilityId);
+  const canEditMenus = allowedCapabilityIds.includes("content.item.update");
   const opportunities = billing
     ? listUpgradeOpportunities(
         billing.effectiveFeatures,
@@ -604,12 +608,11 @@ export default function App() {
         ? <AccountSecurity configuration={configuration} customerSession={accessToken === customerSessionAccess} />
         : allowed && route.path === "pos"
         ? <PosIntegrationAdministration key={session.venueId} configuration={configuration} accessToken={accessToken} />
-        : allowed && route.path === "menu" && quickUpdateOpen
+        : allowed && route.path === "menu" && (quickUpdateOpen || !canEditMenus)
         ? <QuickUpdateBoard
             key={session.venueId}
             configuration={configuration}
             accessToken={accessToken}
-            venueTimezone={menuContext?.timezone ?? "UTC"}
             review={review}
           />
         : allowed && route.path === "menu" && openMenuId === null

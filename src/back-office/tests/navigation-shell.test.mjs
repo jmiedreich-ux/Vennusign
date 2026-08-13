@@ -24,6 +24,7 @@ test("navigation consumes structured server decisions using canonical capability
   const menu = backOfficeRoutes.find(route => route.path === "menu");
   assert.equal(canOpenBackOfficeRoute(menu, []), false);
   assert.equal(canOpenBackOfficeRoute(menu, [{ capabilityId: "content.item.update", decision: "allowed" }]), true);
+  assert.equal(canOpenBackOfficeRoute(menu, [{ capabilityId: "content.item.availability_update", decision: "allowed" }]), true);
   const pos = backOfficeRoutes.find(route => route.path === "pos");
   assert.equal(canOpenBackOfficeRoute(pos, []), false);
   assert.equal(canOpenBackOfficeRoute(pos, [{ capabilityId: "content.source.synchronize", decision: "unavailable" }]), false);
