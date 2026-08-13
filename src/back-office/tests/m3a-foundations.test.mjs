@@ -33,7 +33,7 @@ test("Slice 3-A keeps section scope in the rail and gives both side panels persi
   assert.match(builder, /rightCollapsed:\s*stored\?\.rightCollapsed === true/);
   assert.match(builder, /data-testid=\{`\$\{side\}-panel-toggle`\}/);
   assert.match(builder, /aria-expanded=\{!collapsed\}/);
-  assert.match(builder, /data-testid="page-scope"/);
+  assert.match(builder, /data-testid="page-name"/);
   assert.match(builder, /data-testid="section-scope"/);
   assert.doesNotMatch(builder, /data-testid="section-chips"/);
 
