@@ -1,7 +1,17 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-13T03:10:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-13T05:05:55Z",
+  "activeAssignments": [
+    {
+      "assignment": "Menus M4 — player foundations: guest projection, pagination, and geometry",
+      "issue": 707,
+      "owner": "Codex for JeremyPC",
+      "branch": "feature/menus-m4-player-foundations",
+      "claimedUtc": "2026-08-13T05:05:55Z",
+      "status": "Planning and path audit in progress",
+      "notes": "Owner-approved 2026-08-13 boundary excludes src/display integration and all live-player acceptance claims."
+    }
+  ],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
