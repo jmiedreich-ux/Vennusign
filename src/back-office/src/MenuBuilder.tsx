@@ -1793,24 +1793,6 @@ export default function MenuBuilder({
               <SkyIcon name="pencil" />
             </button>
           </>}
-          {activePage ? <>
-            <span aria-hidden="true">/</span>
-            {editingPage?.pageId === activePage.pageId ? <input
-              className="builder__page-inline-input"
-              autoFocus
-              value={editingPage.name}
-              onChange={event => setEditingPage({ pageId: activePage.pageId, name: event.target.value })}
-              onBlur={() => void commitPageRename()}
-              onKeyDown={event => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") setEditingPage(null); }}
-              aria-label={`Rename ${activePage.name}`}
-              data-testid="page-rename-input"
-            /> : <>
-              <span className="builder__page-inline-name" data-testid="active-page-name">{activePage.name}</span>
-              {canManagePages ? <button type="button" className="builder__menu-name-edit" aria-label={`Rename ${activePage.name}`} onClick={() => setEditingPage({ pageId: activePage.pageId, name: activePage.name })}>
-                <SkyIcon name="pencil" />
-              </button> : null}
-            </>}
-          </> : null}
           <button type="button" className="builder__top-add-content" data-testid="top-add-content" onClick={() => setDrawerOpen(true)}>+ Add content</button>
         </nav>
 
@@ -2089,7 +2071,16 @@ export default function MenuBuilder({
             {activePageId ? <div className="builder__page-summary" data-testid="page-summary" data-view={place.view === "whole-board" ? "whole-page" : "section"}>
               <div className="builder__view-context" data-testid="view-context">
                 <div className="builder__view-breadcrumb">
-                  {place.view === "one-section" ? <button
+                  {editingPage?.pageId === activePageId && activePage ? <input
+                    className="builder__page-inline-input"
+                    autoFocus
+                    value={editingPage.name}
+                    onChange={event => setEditingPage({ pageId: activePage.pageId, name: event.target.value })}
+                    onBlur={() => void commitPageRename()}
+                    onKeyDown={event => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") setEditingPage(null); }}
+                    aria-label={`Rename ${activePage.name}`}
+                    data-testid="page-rename-input"
+                  /> : place.view === "one-section" ? <button
                     type="button"
                     className="builder__page-scope"
                     data-testid="page-scope"
@@ -2101,7 +2092,7 @@ export default function MenuBuilder({
                     {canManagePages ? <button type="button" className="builder__page-actions" data-testid="page-actions" aria-label={`Actions for ${activePage?.name}`} onClick={() => setPageMenuId(open => open === activePageId ? null : activePageId)}>⋯</button> : null}
                     {pageMenuId === activePageId ? (() => { const page = pages.find(candidate => candidate.pageId === activePageId)!; return <div className="builder__page-menu" data-testid="page-menu"><button type="button" onClick={() => { setPageMenuId(null); setEditingPage({ pageId: page.pageId, name: page.name }); }}>Rename</button><button type="button" onClick={() => void duplicatePage(page.pageId)}>Duplicate</button><button type="button" disabled={pages.length === 1} onClick={() => { const destinationPageId = pages.find(candidate => candidate.pageId !== page.pageId)?.pageId ?? ""; setPageMenuId(null); setConfirmPageDelete({ pageId: page.pageId, name: page.name, destinationPageId, sectionCount: sectionsOf(board).filter(section => section.pageId === page.pageId).length, mode: "move" }); }}>Delete</button></div>; })() : null}
                   </span>
-                  {place.view === "one-section" && activeSection ? <><span className="builder__view-separator" aria-hidden="true">›</span><strong className="builder__section-current" data-testid="section-scope">{activeSection.name}</strong></> : null}
+                  {place.view === "one-section" && activeSection ? <><span className="builder__view-separator" aria-hidden="true">/</span><strong className="builder__section-current" data-testid="section-scope">{activeSection.name}</strong></> : null}
                 </div>
                 <span className="builder__view-meta">{place.view === "whole-board" ? `${sections.length} ${sections.length === 1 ? "section" : "sections"} · ` : ""}{place.view === "one-section" && activeSection ? itemsOf(board, activeSection.sectionId).length : activePageItemCount} {(place.view === "one-section" && activeSection ? itemsOf(board, activeSection.sectionId).length : activePageItemCount) === 1 ? "item" : "items"}</span>
               </div>

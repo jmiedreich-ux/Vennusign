@@ -158,7 +158,8 @@ test.describe("menu pages", () => {
     await page.getByTestId("page-actions").click();
     await page.getByTestId("page-menu").getByRole("button", { name: "Rename", exact: true }).click();
     const rename = page.getByTestId("page-rename-input");
-    await expect(page.locator(".builder__top").getByTestId("page-rename-input")).toBeVisible();
+    await expect(page.getByTestId("view-context").getByTestId("page-rename-input")).toBeVisible();
+    await expect(page.locator(".builder__top").getByTestId("page-rename-input")).toHaveCount(0);
     await expect(page.getByTestId("page-rail").getByTestId("page-rename-input")).toHaveCount(0);
     await rename.fill("Abandoned name");
     await rename.press("Escape");

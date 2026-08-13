@@ -965,3 +965,9 @@ metadata, restored centered vertical `Sections` and `Items` identities in collap
 desktop rails, and moved active-page renaming into the top context beside the menu name
 instead of replacing its tab. The Back Office production build and Impeccable layout
 scan passed; browser execution remains waived for this slice.
+
+The final breadcrumb correction keeps the top bar menu-only, places page rename in
+the canvas context immediately before its three-dot actions, and uses the clearer
+`Page / Section` hierarchy recommended by the Impeccable layout pass. The menu-name
+editor explicitly suppresses the shared focus halo so its active treatment is one
+underline rather than a box.
