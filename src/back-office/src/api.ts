@@ -1189,6 +1189,19 @@ export async function reorderMenuItems(
   });
 }
 
+export async function moveMenuItem(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  itemId: string,
+  request: { sourceSectionId: string; destinationSectionId: string; sourceItemIds: string[]; destinationItemIds: string[] }
+): Promise<void> {
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/items/${itemId}/placement`, {
+    method: "PUT",
+    body: JSON.stringify(request)
+  });
+}
+
 /**
  * Put something in a section: an item the library already holds, or a new one born
  * with the typed name. `already_on_board` is not a failure — it carries the section
@@ -1199,7 +1212,7 @@ export async function placeMenuItem(
   accessToken: string,
   menuId: string,
   sectionId: string,
-  request: { itemId?: string; name?: string }
+  request: { itemId?: string; name?: string; price?: string }
 ): Promise<PlaceOutcome> {
   return (
     await contentRequest(configuration, accessToken, `/menus/${menuId}/sections/${sectionId}/items`, {
@@ -1209,14 +1222,29 @@ export async function placeMenuItem(
   ).json();
 }
 
-/** Takes an item off this board. It stays in the library (Q97). */
+/** Takes an item off one page. It stays in the library and on other pages. */
 export async function removeMenuItem(
   configuration: BackOfficeConfiguration,
   accessToken: string,
   menuId: string,
+  pageId: string,
   itemId: string
 ): Promise<void> {
-  await contentRequest(configuration, accessToken, `/menus/${menuId}/items/${itemId}`, { method: "DELETE" });
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}/items/${itemId}`, { method: "DELETE" });
+}
+
+export async function transitionMenuItemPlacement(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  pageId: string,
+  itemId: string,
+  request: { sectionId: string; expectedItemIds: string[]; desiredItemIds: string[] }
+): Promise<void> {
+  await contentRequest(configuration, accessToken, `/menus/${menuId}/pages/${pageId}/items/${itemId}/transition`, {
+    method: "PUT",
+    body: JSON.stringify(request)
+  });
 }
 
 /**

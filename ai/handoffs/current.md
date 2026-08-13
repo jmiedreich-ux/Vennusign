@@ -740,3 +740,166 @@ authorize the accepted canvas inline editing, and the obsolete generated workboo
 that named an earlier SHA and stale seeded menu was removed. The owner-approved
 product candidate remains `1c52c2658966864d175b8666b0fc4722197afe92`;
 the closure commit changes authority/acceptance records only.
+
+## M3-A Slice 3 — implementation checkpoint — 2026-08-12
+
+**Claim.** GitHub issue #703 is open. Branch
+`feature/menus-m3a-s3-board-add-item` was created from `master` at `8bbafc2`; the
+tracker claim is committed at `14600fd`.
+
+**What is established locally, not yet complete.** Migration 066 widens the page
+history vocabulary for item add/reorder/move/remove. Existing create, place and
+reorder transactions now write page-attributed history; a guarded cross-section
+move validates both live section orders and moves/history-logs atomically; removal
+is page-scoped and preserves other-page placements. The existing board UI now calls
+those paths, supports cross-section and empty-section drops, confirms “Remove from
+this page” naming the page, accepts name then optional price in the add row, and
+evaluates capacity against the typed draft item. Accepted board, geometry, fit,
+selection, inline editing, inspector and page-history surfaces were reused.
+
+**Executed evidence.** Back-office unit tests passed 197/197. Back-office production
+build passed with the existing Vite chunk advisory. The Debug solution build passed
+after updating the legacy removal regression. Focused LocalDB integration tests
+passed 3/3: cross-menu preservation, cross-section atomic move/history, and same-menu
+cross-page removal isolation. The first database attempt selected the ambient
+`VENU_TEST_AZURE_SQL_CONNECTION_STRING` and correctly failed authentication; the
+successful run cleared that variable for the process and used LocalDB. No credential
+value was read or printed.
+
+**Not done.** API/controller refusal and permission tests, full invariant write-path
+coverage, complete desktop Playwright scenarios, exact UI styling/focus recovery,
+real-browser inspection, red-with-fix-reverted demonstrations, Release/full local
+gates, acceptance workbook, independent review, owner acceptance, push/PR and merge
+are all outstanding. Nothing in this checkpoint is accepted or ready to merge.
+
+**Exact next action.** Add focused API tests for create/place/reorder/move/remove,
+including stale orders, cross-page/cross-venue identifiers, idempotent removal and
+author/history mapping; then finish the desktop Playwright path matrix before the
+bounded Impeccable browser pass.
+
+## M3-A Slice 3 — gate and first-review result — 2026-08-12
+
+Implementation candidate `a110bf51205ff31f428f283438caf047b00f4dd2` completed the
+pre-review process in the owner-specified order: Release solution build, back-office
+198/198 unit tests and production build, focused API 56/56, focused LocalDB item
+rules/invariants, all 214 discovered Playwright cases across an isolated fixture
+(Menus mobile explicitly skipped under Q158), and a browser visual audit against
+the approved M3-A authority. The visual audit caught and corrected an add-result
+popup clipped by the publish bar. The full gate also repaired stale fixture PageId,
+isolated screen-key, token and screen-id assumptions. CI remains suspended.
+
+The independent exact-SHA review then returned REQUEST_CHANGES, as intended: literal
+search did not satisfy punctuation/spacing near-match, malformed source orders could
+include the moved item, remove Undo appended instead of restoring order, route-boundary
+coverage was incomplete, and controlled records were stale. Remediation now adds
+canonical punctuation-insensitive ranking and a visible selected suggestion, resolves
+the Enter/search race on both name and price, refuses duplicate/malformed guarded
+orders, restores exact order on remove Undo with compensating removal on refusal,
+and adds real-browser malformed/permission and Undo/Redo paths. Focused remediation
+Playwright is 5/5 and focused LocalDB search/move refusal is 3/3.
+
+**Still outstanding.** Rerun the affected/full gates on the remediation tree, commit
+a new exact SHA, obtain independent re-review, then prepare the owner acceptance
+workbook. No owner acceptance, PR, push or merge has occurred.
+
+**Exact next action.** Complete remediation validation, commit the new candidate,
+and send that exact SHA to the independent reviewer.
+
+## M3-A Slice 3 — second-review remediation — 2026-08-12
+
+The independent re-review of `c5679427d890a2d05e6824c6c55cd38f76012583`
+returned REQUEST_CHANGES for one destructive concurrency window, incomplete active-
+suggestion semantics, and records that still described already-completed gate work as
+outstanding. Remove Undo/Redo now uses one database-guarded transition: it proves the
+exact expected section order and page-wide absence/presence under the same locks that
+insert or delete the placement and write history. A second actor's re-add, move,
+reorder or removal therefore returns `order_stale` without changing placement or
+history. The add input now exposes a combobox controlling a listbox with an explicit
+active option.
+
+Executed on the remediation tree: Release solution build succeeded; back-office unit
+tests passed 198/198 and its production build succeeded; focused LocalDB stale Undo,
+stale Redo and adjacent item rules passed 3/3; focused desktop Playwright passed 4/4,
+including the accessible relationship and the second-actor stale Undo. A single-worker
+68-case desktop attempt passed its first 29 cases, then LocalDB began aborting concurrent
+session reads and the remaining cases failed at application setup; it is infrastructure
+evidence, not a product pass, and is not counted. The earlier complete 214-case isolated-
+shard gate remains the broad regression evidence; the changed paths have fresh focused
+coverage. CI remains suspended and Azure/external integrations remain owner-exempt.
+
+**Exact next action.** Commit this remediation candidate and obtain independent review
+of that exact SHA. Owner acceptance remains after approval; no push, PR or merge has
+occurred.
+
+The third independent review requested keyboard arrow navigation for the add-result
+combobox. The owner reaffirmed on 2026-08-12 that keyboard is out of scope. This is
+already the controlling Menus rule in `milestone-plan.md` and Q122/#673 specifically
+defers the add-row arrow/Enter flow. No new keyboard behavior or test will be built.
+The structural semantics still apply: the listbox owns only result options, Create is
+outside it, and expanded state describes the visible suggestion popup.
+
+The third review's other product finding is fixed: the public guarded transition
+route resolves the authoritative items-per-menu ceiling and the SQL transaction
+counts distinct menu items under its placement lock. Restoring an item already on
+another page does not increase that distinct count; adding a genuinely new menu item
+at the limit returns `ceiling_reached` with no placement or history write. The focused
+LocalDB regression is 2/2 with the stale inverse test, the service boundary regression
+is 1/1, Release/build/unit gates remain green, and the four isolated desktop Menus
+shards pass 68/68. The repository-wide isolated gate discovered 220 cases: 142 passed
+and 78 were explicit mobile/keyboard scope skips, with no failures. One first attempt
+at the stale-Undo browser case exposed that its second-actor POST asserted only HTTP
+200, even though `already_on_board` also returns 200; it could therefore invoke Undo
+before the asynchronous removal completed. The test now waits for removal and proves
+the response is `placed` in the sibling section before Undo. That case and its full
+shard pass in fresh isolated venues.
+
+The external independent review recorded on issue #703 superseded the earlier COMMENT
+and returned REQUEST_CHANGES against `e596d21e10f665a6232891aa78d17309a6b2bd21`.
+It found three blockers: Enter treated any substring search hit as a near match and
+silently discarded a typed price; price lacked an add-route server bound and the owner
+corrected its maximum from 40 to 12 characters; and the selected-row removal control
+from groups E/H was absent. It also found asymmetric canonicalisation, an empty painted
+listbox, generic transition ceiling copy, and an unusable acceptance workbook notes flow.
+
+The remediation in product SHA `0e7c54c94a62a51960c405693ddf42208a5bbafe`
+makes reuse require canonical equality, announces when an
+existing item's shared price wins, centralises SQL canonical search (including `&`),
+adds migration 067 with refusal-before-narrowing and historical snapshot preservation,
+enforces the 12-character API/domain/UI boundary, adds the selected-row removal action,
+omits the empty listbox, uses tier-aware ceiling copy, and repairs workbook notes,
+screenshots, advancement, gated acceptance and fixture instructions. Release/build,
+198/198 unit, focused API/migration 2/2, LocalDB and focused browser pass. The full
+isolated Playwright gate ran 16 fresh-environment shards: 220 cases discovered,
+142 passed, 78 explicit mobile/keyboard scope skips, and zero failures.
+
+Independent re-review APPROVED exact product SHA
+`0e7c54c94a62a51960c405693ddf42208a5bbafe`. Its only remaining finding was
+documentation-only: the workbook exposed inert screenshot inputs. Those controls are
+removed and the workbook now states plainly that its JSON exports outcomes and notes;
+any screenshots are saved separately. No further product review is required.
+
+Owner acceptance exported `m3-a-s3-acceptance-record.json` against the reviewed product
+SHA and returned **Not accepted**: case 1 Pass; case 2 Fail because add-item search
+results disappear and do not restore across query changes/reopen; case 3 Needs
+Adjustment but explicitly deferred by the owner to later planned Canvas work (#704);
+case 4 Not run; case 5 Needs Adjustment because the stale-Undo setup was unclear.
+The stale concurrency behavior already has deterministic Playwright coverage, but the
+workbook must explain the expected refusal and setup more clearly.
+
+The focused search investigation found no product-code failure: the owner fixture
+promised `Old-Fashioned`, `Aussie Burger` and `Classic Burger` but contained none of
+them, and the live `Old` API query therefore correctly returned `[]`. The fixture now
+seeds all three as library-only items. Focused Playwright covers prefix results,
+no-match, delete-back restoration, close/reopen restoration, punctuation reuse and
+substring-safe creation; it passes 1/1 in a fresh isolated venue. Per owner direction,
+no unrelated or broad test suites were rerun.
+
+The owner reran acceptance: search and stale Undo passed. Whole page remains explicitly
+deferred to #704, and the not-run removal workbook case was waived by the owner's final
+acceptance. The sole requested close-out change makes Undo/Redo notices name the exact
+item and page; focused desktop Playwright passes 1/1 at
+`73074e030cf9c2d172b435aaeadfd0638bdb0793`. The owner accepted Slice 3, waived all
+further review, and instructed merge with no CI. PR #705 is the closure PR.
+
+**Exact next action.** Merge PR #705, close issue #703, delete the completed branch,
+and begin no successor until its owner-approved plan exists.

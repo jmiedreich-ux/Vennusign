@@ -224,6 +224,17 @@ internal static class ModelInvariants
             FROM dbo.Placements p
             WHERE NOT EXISTS (SELECT 1 FROM dbo.MenuSections s WHERE s.Id = p.MenuSectionId);
             """),
+
+        new(
+            "Every item placement history fact retains page attribution",
+            "M3-A Slice 3 writes item add, reorder, move and removal in the same transaction as the placement change. "
+            + "A page-less fact cannot appear in the selected page timeline and loses the customer-visible context of the act.",
+            """
+            SELECT CONCAT('history ', h.Id, ' kind ', h.Kind, ' has no complete page attribution') AS Offence
+            FROM dbo.MenuHistoryEntries h
+            WHERE h.Kind IN (N'item_added',N'items_reordered',N'item_moved',N'item_removed')
+              AND (h.PageId IS NULL OR NULLIF(LTRIM(RTRIM(h.PageName)),N'') IS NULL);
+            """),
     ];
 
     /// <summary>

@@ -5,6 +5,7 @@ using Vennu.Api.BackOffice;
 using Vennu.Api.Contracts.BackOffice;
 using Vennu.Api.Services;
 using Vennu.Api.Menus;
+using Vennu.Core.Models;
 using Vennu.Data.Repositories;
 
 namespace Vennu.Api.Controllers.BackOffice;
@@ -761,7 +762,7 @@ public sealed class BackOfficeContentController(
         }
 
         var outcome = await content
-            .ReorderItemsAsync(VenueId, menuId, sectionId, request.ItemIds, cancellationToken)
+            .ReorderItemsAsync(VenueId, menuId, sectionId, request.ItemIds, Author, cancellationToken)
             .ConfigureAwait(false);
 
         return outcome.Outcome == ReorderOutcomes.Reordered
@@ -771,6 +772,26 @@ public sealed class BackOfficeContentController(
                 reason = ReorderOutcomes.OrderStale,
                 message = "The items changed while you were dragging. Nothing moved — reload and try again."
             });
+    }
+
+    [HttpPut("menus/{menuId:guid}/items/{itemId:guid}/placement")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult> MoveItem(
+        Guid menuId,
+        Guid itemId,
+        ItemMoveRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request?.SourceItemIds is null || request.DestinationItemIds is null)
+        {
+            return Problem("Both section orders are required.", statusCode: 400);
+        }
+        var outcome = await content.MoveItemAsync(
+            VenueId, menuId, itemId, request.SourceSectionId, request.DestinationSectionId,
+            request.SourceItemIds, request.DestinationItemIds, Author, cancellationToken).ConfigureAwait(false);
+        return outcome.Outcome == ReorderOutcomes.Reordered
+            ? NoContent()
+            : Conflict(new { reason = ReorderOutcomes.OrderStale, message = "The page changed while you were dragging. Nothing moved — reload and try again." });
     }
 
     /// <summary>
@@ -791,10 +812,15 @@ public sealed class BackOfficeContentController(
             return Problem("Name an item to create, or an item to place.", statusCode: 400);
         }
 
+        if (request.Price?.Trim().Length > Item.PriceMaxLength)
+        {
+            return Problem($"Price must be {Item.PriceMaxLength} characters or fewer.", statusCode: 400);
+        }
+
         if (request.ItemId is { } existingId)
         {
             var placed = await content
-                .PlaceExistingItemAsync(VenueId, menuId, sectionId, existingId, cancellationToken)
+                .PlaceExistingItemAsync(VenueId, menuId, sectionId, existingId, Author, cancellationToken)
                 .ConfigureAwait(false);
 
             return placed.Outcome switch
@@ -819,7 +845,7 @@ public sealed class BackOfficeContentController(
 
         var itemId = Guid.NewGuid();
         var created = await content
-            .AddNewItemAsync(VenueId, menuId, sectionId, itemId, request.Name!, cancellationToken)
+            .AddNewItemAsync(VenueId, menuId, sectionId, itemId, request.Name!, request.Price, Author, cancellationToken)
             .ConfigureAwait(false);
 
         return created.Outcome switch
@@ -842,15 +868,41 @@ public sealed class BackOfficeContentController(
     /// Takes an item off this board. It stays in the library, so it can be placed
     /// again here or anywhere else (Q97).
     /// </summary>
-    [HttpDelete("menus/{menuId:guid}/items/{itemId:guid}")]
+    [HttpDelete("menus/{menuId:guid}/pages/{pageId:guid}/items/{itemId:guid}")]
     [RequireCapability("content.item.update")]
     public async Task<ActionResult> RemoveItem(
         Guid menuId,
+        Guid pageId,
         Guid itemId,
         CancellationToken cancellationToken) =>
-        await content.RemoveItemFromMenuAsync(VenueId, menuId, itemId, cancellationToken).ConfigureAwait(false)
+        await content.RemoveItemFromPageAsync(VenueId, menuId, pageId, itemId, Author, cancellationToken).ConfigureAwait(false)
             ? NoContent()
             : NotFound(new { message = "That item is not on this board." });
+
+    [HttpPut("menus/{menuId:guid}/pages/{pageId:guid}/items/{itemId:guid}/transition")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult> TransitionItemPlacement(
+        Guid menuId, Guid pageId, Guid itemId, ItemPlacementTransitionRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request?.ExpectedItemIds is null || request.DesiredItemIds is null)
+            return Problem("Both expected and desired section orders are required.", statusCode: 400);
+        var outcome = await content.TransitionPlacementAsync(
+            VenueId, menuId, pageId, request.SectionId, itemId,
+            request.ExpectedItemIds, request.DesiredItemIds, Author, cancellationToken).ConfigureAwait(false);
+        return outcome.Outcome switch
+        {
+            ReorderOutcomes.Reordered => NoContent(),
+            PlaceExistingOutcomes.CeilingReached => Conflict(new
+            {
+                reason = PlaceExistingOutcomes.CeilingReached,
+                message = await content.DescribeCeilingRefusalAsync(
+                    VenueId, MenuCeilings.ItemsPerMenu, request.DesiredItemIds.Count, cancellationToken).ConfigureAwait(false)
+                    ?? "This menu is full. Nothing changed."
+            }),
+            _ => Conflict(new { reason = ReorderOutcomes.OrderStale, message = "The page changed after this action. Nothing changed — reload and try again." })
+        };
+    }
 
     /// <summary>
     /// Edits an item. One item is one shared price across every board it sits on
@@ -866,6 +918,11 @@ public sealed class BackOfficeContentController(
         if (request is null)
         {
             return Problem("Item values are required.", statusCode: 400);
+        }
+        if (request.Price?.Trim().Length > Item.PriceMaxLength
+            || request.ExpectedPrice?.Trim().Length > Item.PriceMaxLength)
+        {
+            return Problem($"Price must be {Item.PriceMaxLength} characters or fewer.", statusCode: 400);
         }
 
         /*

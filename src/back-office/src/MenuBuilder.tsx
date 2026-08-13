@@ -18,6 +18,7 @@ import {
   loadMenuThemes,
   loadMenuAssignments,
   loadScreensShowing,
+  moveMenuItem,
   saveMenuPageAssignments,
   placeMenuItem,
   publishMenu,
@@ -26,6 +27,7 @@ import {
   removeMenuItem,
   renameMenuSection,
   reorderMenuItems,
+  transitionMenuItemPlacement,
   reorderMenuSections,
   searchLibraryItems,
   setItemAvailability,
@@ -398,6 +400,7 @@ export default function MenuBuilder({
   const [editingRailSection, setEditingRailSection] = useState<{ sectionId: string; name: string } | null>(null);
   const [draggedSectionId, setDraggedSectionId] = useState<string | null>(null);
   const [confirmPageDelete, setConfirmPageDelete] = useState<{ pageId: string; name: string; destinationPageId: string; sectionCount: number; mode: "move" | "delete" } | null>(null);
+  const [confirmItemRemove, setConfirmItemRemove] = useState(false);
 
   const discardRef = useDialogFocus(confirmDiscard);
   const deleteRef = useDialogFocus(Boolean(confirmDelete));
@@ -407,6 +410,7 @@ export default function MenuBuilder({
   const historyRef = useDialogFocus(historyOpen);
   const pageDeleteRef = useDialogFocus(Boolean(confirmPageDelete));
   const fitRef = useDialogFocus(fitOpen);
+  const itemRemoveRef = useDialogFocus(confirmItemRemove);
   const closeAssignmentChoice = () => {
     const trigger = assignmentChoiceScreenId;
     setAssignmentChoiceScreenId(null);
@@ -828,13 +832,10 @@ export default function MenuBuilder({
 
   const beginItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
-    const row = (event.target as HTMLElement).closest<HTMLElement>("[data-item-id]");
+    const handle = (event.target as HTMLElement).closest<HTMLElement>('[data-testid="item-drag-handle"]');
+    const row = handle?.closest<HTMLElement>("[data-item-id]");
     if (!row?.dataset.itemId || !row.dataset.sectionId) return;
-
-    // The pill hangs left of the logical row. Only that compact hit area starts
-    // a reorder; clicking the menu content keeps selecting and editing it.
-    const box = row.getBoundingClientRect();
-    if (event.clientX > box.left + 12) return;
+    event.preventDefault();
 
     pointerDrag.current = {
       pointerId: event.pointerId,
@@ -846,6 +847,8 @@ export default function MenuBuilder({
       target: null
     };
     event.currentTarget.setPointerCapture(event.pointerId);
+    const canvas = event.currentTarget;
+    window.addEventListener("pointerup", release => completeItemDrag(release.pointerId, canvas, release.clientX, release.clientY), { once: true });
   };
 
   const trackItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -855,10 +858,23 @@ export default function MenuBuilder({
 
     drag.active = true;
     event.preventDefault();
-    const row = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-item-id]");
+    const row = [...event.currentTarget.querySelectorAll<HTMLElement>("[data-item-id]")].find(candidate => {
+      const box = candidate.getBoundingClientRect();
+      return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+    });
     if (!row?.dataset.itemId || !row.dataset.sectionId) {
-      drag.target = null;
-      setDropTarget(null);
+      const section = [...event.currentTarget.querySelectorAll<HTMLElement>("[data-section-id]")].find(candidate => {
+        const box = candidate.getBoundingClientRect();
+        return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+      });
+      if (section?.dataset.sectionId && itemsOf(board, section.dataset.sectionId).length === 0) {
+        const target: DropTarget = { itemId: "", sectionId: section.dataset.sectionId, edge: "after" };
+        drag.target = target;
+        setDropTarget(target);
+      } else {
+        drag.target = null;
+        setDropTarget(null);
+      }
       return;
     }
 
@@ -876,12 +892,31 @@ export default function MenuBuilder({
     );
   };
 
-  const finishItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+  function completeItemDrag(pointerId: number, _currentTarget: HTMLDivElement, clientX: number, clientY: number) {
     const drag = pointerDrag.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (!drag || drag.pointerId !== pointerId) return;
+    if (drag.active) {
+      const row = [..._currentTarget.querySelectorAll<HTMLElement>("[data-item-id]")].find(candidate => {
+        const box = candidate.getBoundingClientRect();
+        return clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom;
+      });
+      if (row?.dataset.itemId && row.dataset.sectionId) {
+        const box = row.getBoundingClientRect();
+        drag.target = { itemId: row.dataset.itemId, sectionId: row.dataset.sectionId, edge: clientY < box.top + box.height / 2 ? "before" : "after" };
+      } else {
+        const section = [..._currentTarget.querySelectorAll<HTMLElement>("[data-section-id]")].find(candidate => {
+          const box = candidate.getBoundingClientRect();
+          return clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom;
+        });
+        if (section?.dataset.sectionId && itemsOf(board, section.dataset.sectionId).length === 0) {
+          drag.target = { itemId: "", sectionId: section.dataset.sectionId, edge: "after" };
+        } else {
+          drag.target = null;
+        }
+      }
+    }
     pointerDrag.current = null;
     setDropTarget(null);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     if (!drag.active || !drag.target) return;
 
     suppressCanvasClick.current = true;
@@ -889,26 +924,49 @@ export default function MenuBuilder({
       suppressCanvasClick.current = false;
     }, 0);
 
-    if (drag.target.sectionId !== drag.sectionId) {
-      setError(
-        "Moving an item to another section arrives with Board view. For now, remove it here and add it there."
-      );
-      return;
-    }
-
     const ids = itemsOf(board, drag.sectionId).map(item => item.itemId);
     const remaining = ids.filter(id => id !== drag.itemId);
-    const targetIndex = remaining.indexOf(drag.target.itemId);
-    if (targetIndex < 0) return;
-    const insertionIndex = targetIndex + (drag.target.edge === "after" ? 1 : 0);
-    remaining.splice(insertionIndex, 0, drag.itemId);
-    if (remaining.join() === ids.join()) return;
+    const destinationBefore = itemsOf(board, drag.target.sectionId).map(item => item.itemId).filter(id => id !== drag.itemId);
+    const targetIndex = drag.target.itemId ? destinationBefore.indexOf(drag.target.itemId) : -1;
+    if (drag.target.itemId && targetIndex < 0) return;
+    const insertionIndex = drag.target.itemId ? targetIndex + (drag.target.edge === "after" ? 1 : 0) : 0;
+    const destinationAfter = [...destinationBefore];
+    destinationAfter.splice(insertionIndex, 0, drag.itemId);
 
-    void run(() => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, remaining), {
+    if (drag.target.sectionId !== drag.sectionId) {
+      void run(() => moveMenuItem(configuration, credential(), menuId, drag.itemId, {
+        sourceSectionId: drag.sectionId,
+        destinationSectionId: drag.target!.sectionId,
+        sourceItemIds: remaining,
+        destinationItemIds: destinationAfter
+      }), {
+        describe: "Move item to another section",
+        undo: () => moveMenuItem(configuration, credential(), menuId, drag.itemId, {
+          sourceSectionId: drag.target!.sectionId,
+          destinationSectionId: drag.sectionId,
+          sourceItemIds: destinationBefore,
+          destinationItemIds: ids
+        }),
+        redo: () => moveMenuItem(configuration, credential(), menuId, drag.itemId, {
+          sourceSectionId: drag.sectionId,
+          destinationSectionId: drag.target!.sectionId,
+          sourceItemIds: remaining,
+          destinationItemIds: destinationAfter
+        })
+      });
+      return;
+    }
+    if (destinationAfter.join() === ids.join()) return;
+
+    void run(() => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, destinationAfter), {
       describe: "Reorder items",
       undo: () => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, ids),
-      redo: () => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, remaining)
+      redo: () => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, destinationAfter)
     });
+  }
+
+  const finishItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    completeItemDrag(event.pointerId, event.currentTarget, event.clientX, event.clientY);
   };
 
   const cancelItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -1154,18 +1212,33 @@ export default function MenuBuilder({
 
   const removeFromBoard = async () => {
     if (!selected) return;
+    if (!confirmItemRemove) {
+      setConfirmItemRemove(true);
+      return;
+    }
     const { item, sectionId } = selected;
+    const sectionItems = itemsOf(board, sectionId);
+    const originalOrder = sectionItems.map(candidate => candidate.itemId);
+    const removedOrder = originalOrder.filter(candidate => candidate !== item.itemId);
+    const selectedIndex = sectionItems.findIndex(candidate => candidate.itemId === item.itemId);
+    const nextSelection = sectionItems[selectedIndex + 1]?.itemId ?? sectionItems[selectedIndex - 1]?.itemId ?? null;
+    const pageId = activePageId;
+    if (!pageId) return;
+    const pageName = pages.find(page => page.pageId === pageId)?.name ?? "this page";
+    setConfirmItemRemove(false);
     await run(
       async () => {
-        await removeMenuItem(configuration, credential(), menuId, item.itemId);
-        setPlace(current => ({ ...current, selectedItemId: null }));
+        await removeMenuItem(configuration, credential(), menuId, pageId, item.itemId);
+        setPlace(current => ({ ...current, selectedItemId: nextSelection }));
       },
       {
-        describe: "Remove from this board",
-        undo: async () => {
-          await placeMenuItem(configuration, credential(), menuId, sectionId, { itemId: item.itemId });
-        },
-        redo: () => removeMenuItem(configuration, credential(), menuId, item.itemId)
+        describe: `Remove “${item.name}” from “${pageName}”`,
+        undo: () => transitionMenuItemPlacement(configuration, credential(), menuId, pageId, item.itemId, {
+          sectionId, expectedItemIds: removedOrder, desiredItemIds: originalOrder
+        }),
+        redo: () => transitionMenuItemPlacement(configuration, credential(), menuId, pageId, item.itemId, {
+          sectionId, expectedItemIds: originalOrder, desiredItemIds: removedOrder
+        })
       }
     );
   };
@@ -1173,8 +1246,22 @@ export default function MenuBuilder({
   // ---- adding items --------------------------------------------------------
 
   const [addQuery, setAddQuery] = useState("");
+  const [addPrice, setAddPrice] = useState("");
   const [addSectionId, setAddSectionId] = useState<string | null>(null);
   const [hits, setHits] = useState<LibraryItem[]>([]);
+  const canonicalItemName = (value: string) => value.toLocaleLowerCase().replaceAll("&", "and").replace(/[^a-z0-9]/g, "");
+
+  const submitAdd = async (sectionId: string) => {
+    const name = addQuery.trim();
+    if (!name) return;
+    const matches = await searchLibraryItems(configuration, credential(), name, 8);
+    const canonical = canonicalItemName(name);
+    const match = matches.find(candidate => canonicalItemName(candidate.name) === canonical);
+    if (match) {
+      await place_(sectionId, { itemId: match.itemId });
+      if (addPrice.trim()) setNotice(`Used the existing ${match.name}. Its shared price was not changed.`);
+    } else await place_(sectionId, { name, price: addPrice });
+  };
 
   useEffect(() => {
     if (!addSectionId || addQuery.trim().length === 0) {
@@ -1268,7 +1355,7 @@ export default function MenuBuilder({
         describe: `Add ${wanted.length} item${wanted.length === 1 ? "" : "s"} to this board`,
         undo: async () => {
           for (const itemId of landed) {
-            await removeMenuItem(configuration, credential(), menuId, itemId);
+            if (activePageId) await removeMenuItem(configuration, credential(), menuId, activePageId, itemId);
           }
         },
         redo: async () => {
@@ -1284,7 +1371,7 @@ export default function MenuBuilder({
     setPlacedNote(`${landed.length} placed`);
   };
 
-  const place_ = async (sectionId: string, request: { itemId?: string; name?: string }) => {
+  const place_ = async (sectionId: string, request: { itemId?: string; name?: string; price?: string }) => {
     let outcome: Awaited<ReturnType<typeof placeMenuItem>> | undefined;
     await run(
       async () => {
@@ -1294,7 +1381,7 @@ export default function MenuBuilder({
         describe: "Add to this board",
         undo: async () => {
           if (outcome?.itemId && outcome.outcome === "placed") {
-            await removeMenuItem(configuration, credential(), menuId, outcome.itemId);
+            if (activePageId) await removeMenuItem(configuration, credential(), menuId, activePageId, outcome.itemId);
           }
         },
         redo: async () => {
@@ -1324,6 +1411,7 @@ export default function MenuBuilder({
       }
     }
     setAddQuery("");
+    setAddPrice("");
     setAddSectionId(null);
   };
 
@@ -1338,7 +1426,7 @@ export default function MenuBuilder({
       await step.undo();
       await refresh();
       redoStack.current = [...redoStack.current, step];
-      setNotice(`Undid: ${step.describe.toLowerCase()}.`);
+      setNotice(`Undid: ${step.describe}.`);
     } catch (failure) {
       /*
        * The server refuses a stale inverse by name and in its own words — it knows
@@ -1366,7 +1454,7 @@ export default function MenuBuilder({
       await step.redo();
       await refresh();
       undoStack.current = [...undoStack.current, step];
-      setNotice(`Redid: ${step.describe.toLowerCase()}.`);
+      setNotice(`Redid: ${step.describe}.`);
     } catch (failure) {
       setError(
         failure instanceof MenuActionRefused
@@ -1489,6 +1577,7 @@ export default function MenuBuilder({
    */
   const behindScrim =
     confirmDiscard ||
+    confirmItemRemove ||
     Boolean(confirmDelete) ||
     themePickerOpen ||
     seeAllOpen ||
@@ -1504,13 +1593,19 @@ export default function MenuBuilder({
   const activePageItemCount = sections.reduce((count, section) => count + itemsOf(board, section.sectionId).length, 0);
   const activePageAssignmentCount = assignments.filter(assignment => assignment.pageId === activePageId).length;
   const activePageScreenNames = assignments.filter(assignment => assignment.pageId === activePageId).map(assignment => screens.find(screen => screen.screenId === assignment.screenId)?.screenName).filter((name): name is string => Boolean(name));
+  const capacitySections = addSectionId && addQuery.trim()
+    ? sections.map(section => section.sectionId === addSectionId
+      ? { ...section, items: [...section.items, { itemId: "draft-item", name: addQuery, description: null, price: addPrice || null, sortOrder: section.items.length }] }
+      : section)
+    : sections;
   const pageBoard = { ...board, sections };
+  const capacityBoard = { ...board, sections: capacitySections };
   const shown = canvasBoard(pageBoard, place);
   const activeAssignments = assignments.filter(assignment => assignment.menuId === menuId && assignment.pageId === activePageId);
   const capacityEvaluations = activeAssignments.flatMap(assignment => {
     const screen = screens.find(candidate => candidate.screenId === assignment.screenId);
     return screen
-      ? [{ screen, result: calculateBoardCapacity(pageBoard, { width: screen.widthPixels, height: screen.heightPixels }, board.theme) }]
+      ? [{ screen, result: calculateBoardCapacity(capacityBoard, { width: screen.widthPixels, height: screen.heightPixels }, board.theme) }]
       : [];
   });
   const capacity = [...capacityEvaluations].sort((left, right) => left.result.limit - right.result.limit)[0]?.result ?? null;
@@ -1947,7 +2042,11 @@ export default function MenuBuilder({
             data-testid="canvas"
             onPointerDown={beginItemDrag}
             onPointerMove={trackItemDrag}
-            onPointerUp={finishItemDrag}
+            onPointerUpCapture={finishItemDrag}
+            onMouseUp={event => {
+              const drag = pointerDrag.current;
+              if (drag) completeItemDrag(drag.pointerId, event.currentTarget, event.clientX, event.clientY);
+            }}
             onPointerCancel={cancelItemDrag}
           >
             {place.view === "whole-board" ? (
@@ -1956,7 +2055,11 @@ export default function MenuBuilder({
                 unavailableItemIds={unavailableIds}
                 surface="preview"
                 keepUnavailable
+                itemsDraggable
+                keepEmptySections
                 unavailableNotes={boardNotes}
+                selectedItemId={place.selectedItemId}
+                onRemoveItem={() => void removeFromBoard()}
               />
             ) : (
               <BoardStage>
@@ -1966,7 +2069,10 @@ export default function MenuBuilder({
                   surface="preview"
                   keepUnavailable
                   itemsDraggable
+                  keepEmptySections
                   unavailableNotes={boardNotes}
+                  selectedItemId={place.selectedItemId}
+                  onRemoveItem={() => void removeFromBoard()}
                 />
               </BoardStage>
             )}
@@ -1984,7 +2090,7 @@ export default function MenuBuilder({
               /> : <input
                 ref={itemEditRef as RefObject<HTMLInputElement>}
                 className="builder__item-edit builder__item-edit--price"
-                value={itemEdit.value} aria-label="Price" data-testid="price-edit" maxLength={40}
+                value={itemEdit.value} aria-label="Price" data-testid="price-edit" maxLength={12}
                 style={{ ...itemEdit.typography, left: `${itemEdit.box.left - 8}px`, top: `${itemEdit.box.top}px`, width: `${Math.max(itemEdit.box.width + 8, 68)}px`, height: `${Math.max(itemEdit.box.height, 24)}px` }}
                 onChange={event => setItemEdit(current => (current ? { ...current, value: event.target.value } : current))}
                 onBlur={() => void commitItemEdit()}
@@ -2025,7 +2131,14 @@ export default function MenuBuilder({
           </div>
 
           {place.view === "one-section" && place.sectionId ? (
-            <div className="builder__add-row">
+            <div
+              className="builder__add-row"
+              onBlurCapture={event => {
+                if (addQuery.trim() || event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+                setAddPrice("");
+                setAddSectionId(null);
+              }}
+            >
               {addSectionId === place.sectionId ? (
                 <>
                   <input
@@ -2034,23 +2147,44 @@ export default function MenuBuilder({
                     placeholder="Find an item, or type a new one"
                     aria-label="Add an item"
                     data-testid="add-item-input"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded={hits.length > 0}
+                    aria-controls={hits.length > 0 ? `add-item-results-${place.sectionId}` : undefined}
+                    aria-activedescendant={hits[0] ? `add-item-option-${hits[0].itemId}` : undefined}
                     onChange={event => setAddQuery(event.target.value)}
                     onKeyDown={event => {
                       if (event.key === "Enter" && addQuery.trim()) {
-                        void place_(place.sectionId!, { name: addQuery.trim() });
+                        void submitAdd(place.sectionId!);
                       }
+                      if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
                     }}
                   />
-                  <ul className="builder__add-results" data-testid="add-item-results">
+                  <input
+                    value={addPrice}
+                    placeholder="Price (optional)"
+                    aria-label="Item price"
+                    data-testid="add-item-price"
+                    maxLength={12}
+                    onChange={event => setAddPrice(event.target.value)}
+                    onKeyDown={event => {
+                      if (event.key === "Enter" && addQuery.trim()) void submitAdd(place.sectionId!);
+                      if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
+                    }}
+                  />
+                  {hits.length > 0 ? <div id={`add-item-results-${place.sectionId}`} role="listbox" className="builder__add-results" data-testid="add-item-results">
                     {hits.map(hit => {
                       const here = hit.boards.some(entry => entry.menuId === menuId);
                       const elsewhere = hit.boards.filter(entry => entry.menuId !== menuId);
                       return (
-                        <li key={hit.itemId}>
-                          <button
+                          <button key={hit.itemId}
                             type="button"
+                            id={`add-item-option-${hit.itemId}`}
+                            role="option"
                             data-testid="add-item-result"
                             data-item-id={hit.itemId}
+                            aria-selected={hit === hits[0]}
+                            className={hit === hits[0] ? "is-selected" : undefined}
                             onClick={() => void place_(place.sectionId!, { itemId: hit.itemId })}
                           >
                             <span className="builder__add-name">{hit.name}</span>
@@ -2067,22 +2201,19 @@ export default function MenuBuilder({
                               {hit.isAvailable ? "" : " · 86'd right now"}
                             </span>
                           </button>
-                        </li>
                       );
                     })}
-                    {addQuery.trim() ? (
-                      <li>
-                        <button
-                          type="button"
-                          className="builder__add-create"
-                          data-testid="add-item-create"
-                          onClick={() => void place_(place.sectionId!, { name: addQuery.trim() })}
-                        >
-                          Create “{addQuery.trim()}” as a new item
-                        </button>
-                      </li>
-                    ) : null}
-                  </ul>
+                  </div> : null}
+                  {addQuery.trim() ? (
+                    <button
+                      type="button"
+                      className="builder__add-create"
+                      data-testid="add-item-create"
+                      onClick={() => void place_(place.sectionId!, { name: addQuery.trim(), price: addPrice })}
+                    >
+                      Create “{addQuery.trim()}” as a new item
+                    </button>
+                  ) : null}
                   {/* The bulk path lives on the add row, not on the rail's + (Q95). */}
                   <button
                     type="button"
@@ -2203,7 +2334,7 @@ export default function MenuBuilder({
                 <input
                   data-inspector-field="price"
                   data-testid="item-price"
-                  maxLength={40}
+                  maxLength={12}
                   value={draftItem.price}
                   placeholder="9.5, MP, or leave it"
                   onChange={event => setDraftItem({ ...draftItem, price: event.target.value })}
@@ -2222,7 +2353,7 @@ export default function MenuBuilder({
               ) : null}
 
               <button type="button" className="builder__quiet-danger" data-testid="remove-item" onClick={() => void removeFromBoard()}>
-                Remove from this board
+                Remove from this page
               </button>
 
               <p className="builder__theme-footer">
@@ -2660,6 +2791,19 @@ export default function MenuBuilder({
             </div>
           </div>
         </>
+      ) : null}
+
+      {confirmItemRemove && selected ? (
+        <div className="builder__scrim" role="presentation">
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="remove-item-title" data-testid="remove-item-dialog" ref={itemRemoveRef}>
+            <h2 id="remove-item-title">Remove {selected.item.name} from {pages.find(page => page.pageId === activePageId)?.name ?? "this page"}?</h2>
+            <p>It stays in your item library, and on any other page using it.</p>
+            <div className="builder__dialog-actions">
+              <button type="button" className="secondary" onClick={() => setConfirmItemRemove(false)}>Cancel</button>
+              <button type="button" className="action-danger" onClick={() => void removeFromBoard()}>Remove from this page</button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {historyOpen ? (

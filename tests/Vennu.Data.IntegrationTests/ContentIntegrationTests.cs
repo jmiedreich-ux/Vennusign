@@ -2150,11 +2150,188 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         await repository.CreateItemOnMenuAsync(item, lunch, lunchSection, itemsPerMenuLimit: 500);
         await repository.PlaceExistingItemAsync(venueId, dinner, dinnerSection, item.Id, 500, DateTime.UtcNow);
 
-        Assert.True(await repository.RemoveItemFromMenuAsync(venueId, lunch, item.Id));
+        var lunchPage = (await repository.GetPlacementsAsync(venueId, lunch)).Single().PageId;
+        Assert.True(await repository.RemoveItemFromPageAsync(venueId, lunch, lunchPage, item.Id, DateTime.UtcNow));
 
         Assert.Empty(await repository.GetPlacementsAsync(venueId, lunch));
         Assert.Single(await repository.GetPlacementsAsync(venueId, dinner));
         Assert.NotNull(await repository.GetItemAsync(venueId, item.Id));
+    }
+
+    [Fact]
+    public async Task MovingAnItemAcrossSections_CommitsBothOrdersAndOnePageHistoryFact()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var pageId = (await repository.GetPagesAsync(venueId, menuId)).Single().Id;
+        var source = await SeedSectionAsync(dataAccess, venueId, menuId, 0);
+        var destination = await SeedSectionAsync(dataAccess, venueId, menuId, 1);
+        var moved = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("move") };
+        var stays = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("stay") };
+        await repository.CreateItemOnMenuAsync(moved, menuId, source, 500);
+        await repository.CreateItemOnMenuAsync(stays, menuId, destination, 500);
+
+        var outcome = await repository.MovePlacementGuardedAsync(
+            venueId, menuId, moved.Id, source, destination, [], [stays.Id, moved.Id],
+            DateTime.UtcNow, author: "Jeremy");
+
+        Assert.Equal(ReorderOutcomes.Reordered, outcome.Outcome);
+        var placements = await repository.GetPlacementsAsync(venueId, menuId);
+        Assert.DoesNotContain(placements, placement => placement.MenuSectionId == source);
+        Assert.Equal([stays.Id, moved.Id], placements.Where(p => p.MenuSectionId == destination).OrderBy(p => p.SortOrder).Select(p => p.ItemId));
+        var history = await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50);
+        Assert.Single(history, entry => entry.Kind == MenuHistoryKinds.ItemMoved && entry.Detail!.Contains(moved.Name));
+    }
+
+    [Fact]
+    public async Task RemovingFromOnePage_PreservesTheSameItemOnAnotherPage()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var firstPage = (await repository.GetPagesAsync(venueId, menuId)).Single().Id;
+        var secondPage = Guid.NewGuid();
+        Assert.NotNull(await repository.CreatePageAsync(venueId, menuId, secondPage, "Dinner", DateTime.UtcNow));
+        var firstSection = await SeedSectionAsync(dataAccess, venueId, menuId, 0);
+        var secondSection = Guid.NewGuid();
+        Assert.Equal("created", (await repository.CreateSectionOnMenuAsync(venueId, menuId, secondSection, "Dinner", DateTime.UtcNow, secondPage)).Outcome);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("shared-page") };
+        await repository.CreateItemOnMenuAsync(item, menuId, firstSection, 500);
+        Assert.Equal(PlaceExistingOutcomes.Placed, (await repository.PlaceExistingItemAsync(venueId, menuId, secondSection, item.Id, 500, DateTime.UtcNow)).Outcome);
+
+        Assert.True(await repository.RemoveItemFromPageAsync(venueId, menuId, firstPage, item.Id, DateTime.UtcNow, author: "Jeremy"));
+
+        var remaining = await repository.GetPlacementsAsync(venueId, menuId);
+        Assert.Single(remaining);
+        Assert.Equal(secondPage, remaining.Single().PageId);
+        Assert.Single(await repository.GetPageHistoryAsync(venueId, menuId, firstPage, 50), entry => entry.Kind == MenuHistoryKinds.ItemRemoved);
+    }
+
+    [Fact]
+    public async Task MovingAcrossPagesOrWithAStaleOrder_ChangesNothingAndWritesNoHistory()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var firstPage = (await repository.GetPagesAsync(venueId, menuId)).Single().Id;
+        var secondPage = Guid.NewGuid();
+        await repository.CreatePageAsync(venueId, menuId, secondPage, "Dinner", DateTime.UtcNow);
+        var source = await SeedSectionAsync(dataAccess, venueId, menuId, 0);
+        var sibling = await SeedSectionAsync(dataAccess, venueId, menuId, 1);
+        var otherPageSection = Guid.NewGuid();
+        await repository.CreateSectionOnMenuAsync(venueId, menuId, otherPageSection, "Other page", DateTime.UtcNow, secondPage);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("guarded-move") };
+        await repository.CreateItemOnMenuAsync(item, menuId, source, 500);
+
+        var crossPage = await repository.MovePlacementGuardedAsync(
+            venueId, menuId, item.Id, source, otherPageSection, [], [item.Id], DateTime.UtcNow, author: "Jeremy");
+        var stale = await repository.MovePlacementGuardedAsync(
+            venueId, menuId, item.Id, source, sibling, [Guid.NewGuid()], [item.Id], DateTime.UtcNow, author: "Jeremy");
+        var survivor = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("survivor") };
+        await repository.CreateItemOnMenuAsync(survivor, menuId, source, 500);
+        var historyBefore = (await repository.GetPageHistoryAsync(venueId, menuId, firstPage, 50)).Count;
+        var malformed = await repository.MovePlacementGuardedAsync(
+            venueId, menuId, item.Id, source, sibling, [item.Id], [item.Id], DateTime.UtcNow, author: "Jeremy");
+
+        Assert.Equal(ReorderOutcomes.OrderStale, crossPage.Outcome);
+        Assert.Equal(ReorderOutcomes.OrderStale, stale.Outcome);
+        Assert.Equal(ReorderOutcomes.OrderStale, malformed.Outcome);
+        Assert.Contains(await repository.GetPlacementsAsync(venueId, menuId), placement => placement.ItemId == item.Id && placement.MenuSectionId == source);
+        Assert.Equal(historyBefore, (await repository.GetPageHistoryAsync(venueId, menuId, firstPage, 50)).Count);
+    }
+
+    [Fact]
+    public async Task RepeatingPageRemoval_IsAnIdempotentNoOpWithOneHistoryFact()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var pageId = (await repository.GetPagesAsync(venueId, menuId)).Single().Id;
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId, 0);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("idempotent-remove") };
+        await repository.CreateItemOnMenuAsync(item, menuId, sectionId, 500);
+
+        Assert.True(await repository.RemoveItemFromPageAsync(venueId, menuId, pageId, item.Id, DateTime.UtcNow, author: "Jeremy"));
+        Assert.False(await repository.RemoveItemFromPageAsync(venueId, menuId, pageId, item.Id, DateTime.UtcNow, author: "Jeremy"));
+
+        Assert.Single(await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50), entry => entry.Kind == MenuHistoryKinds.ItemRemoved);
+    }
+
+    [Fact]
+    public async Task PlacementUndoAndRedo_RefuseStaleSecondActorStateWithoutChangingPlacementOrHistory()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var pageId = (await repository.GetPagesAsync(venueId, menuId)).Single().Id;
+        var source = await SeedSectionAsync(dataAccess, venueId, menuId, 0);
+        var sibling = await SeedSectionAsync(dataAccess, venueId, menuId, 1);
+        var first = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("first") };
+        var removed = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("removed") };
+        var last = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("last") };
+        await repository.CreateItemOnMenuAsync(first, menuId, source, 500);
+        await repository.CreateItemOnMenuAsync(removed, menuId, source, 500);
+        await repository.CreateItemOnMenuAsync(last, menuId, source, 500);
+        Assert.True(await repository.RemoveItemFromPageAsync(venueId, menuId, pageId, removed.Id, DateTime.UtcNow));
+
+        // A second actor re-adds it elsewhere before the first actor presses Undo.
+        Assert.Equal(PlaceExistingOutcomes.Placed,
+            (await repository.PlaceExistingItemAsync(venueId, menuId, sibling, removed.Id, 500, DateTime.UtcNow)).Outcome);
+        var beforeUndoHistory = (await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50)).Count;
+        var staleUndo = await repository.TransitionPlacementGuardedAsync(
+            venueId, menuId, pageId, source, removed.Id,
+            [first.Id, last.Id], [first.Id, removed.Id, last.Id], 500, DateTime.UtcNow, author: "stale actor");
+        Assert.Equal(ReorderOutcomes.OrderStale, staleUndo.Outcome);
+        Assert.Contains(await repository.GetPlacementsAsync(venueId, menuId),
+            placement => placement.ItemId == removed.Id && placement.MenuSectionId == sibling);
+        Assert.Equal(beforeUndoHistory, (await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50)).Count);
+
+        // Put the item back into the exact state Undo expected, perform Undo, then
+        // let another actor move it before Redo. Redo must not remove their work.
+        Assert.Equal(ReorderOutcomes.Reordered, (await repository.MovePlacementGuardedAsync(
+            venueId, menuId, removed.Id, sibling, source, [], [first.Id, removed.Id, last.Id],
+            DateTime.UtcNow)).Outcome);
+        Assert.Equal(ReorderOutcomes.Reordered, (await repository.MovePlacementGuardedAsync(
+            venueId, menuId, removed.Id, source, sibling, [first.Id, last.Id], [removed.Id],
+            DateTime.UtcNow)).Outcome);
+        var beforeRedoHistory = (await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50)).Count;
+        var staleRedo = await repository.TransitionPlacementGuardedAsync(
+            venueId, menuId, pageId, source, removed.Id,
+            [first.Id, removed.Id, last.Id], [first.Id, last.Id], 500, DateTime.UtcNow, author: "stale actor");
+        Assert.Equal(ReorderOutcomes.OrderStale, staleRedo.Outcome);
+        Assert.Contains(await repository.GetPlacementsAsync(venueId, menuId),
+            placement => placement.ItemId == removed.Id && placement.MenuSectionId == sibling);
+        Assert.Equal(beforeRedoHistory, (await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50)).Count);
+    }
+
+    [Fact]
+    public async Task PlacementTransition_EnforcesDistinctItemCeilingWithoutWritingPlacementOrHistory()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var pageId = (await repository.GetPagesAsync(venueId, menuId)).Single().Id;
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId, 0);
+        var existing = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("at-limit") };
+        var candidate = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("over-limit") };
+        await repository.CreateItemOnMenuAsync(existing, menuId, sectionId, 500);
+        await repository.CreateItemAsync(candidate);
+        var historyBefore = (await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50)).Count;
+
+        var outcome = await repository.TransitionPlacementGuardedAsync(
+            venueId, menuId, pageId, sectionId, candidate.Id,
+            [existing.Id], [existing.Id, candidate.Id], itemsPerMenuLimit: 1, now: DateTime.UtcNow, author: "caller");
+
+        Assert.Equal(PlaceExistingOutcomes.CeilingReached, outcome.Outcome);
+        Assert.DoesNotContain(await repository.GetPlacementsAsync(venueId, menuId), placement => placement.ItemId == candidate.Id);
+        Assert.Equal(historyBefore, (await repository.GetPageHistoryAsync(venueId, menuId, pageId, 50)).Count);
     }
 
     /// <summary>
@@ -2201,6 +2378,19 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         // An 86'd item is still findable and still placeable (Q112) - it is off, not
         // gone.
         Assert.Contains(await repository.SearchItemsAsync(venueId, name, take: 20), found => found.Id == item.Id);
+    }
+
+    [Fact]
+    public async Task SearchingTheLibrary_CanonicalisesAmpersandsAndPunctuationInSql()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("Fish & Chips!") };
+        await repository.CreateItemAsync(item);
+
+        var query = item.Name.Replace("&", "and", StringComparison.Ordinal).Replace("!", "", StringComparison.Ordinal);
+        Assert.Contains(await repository.SearchItemsAsync(venueId, query, 20), hit => hit.Id == item.Id);
     }
 
     /// <summary>

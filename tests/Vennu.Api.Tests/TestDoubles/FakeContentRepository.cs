@@ -32,6 +32,8 @@ internal sealed class FakeContentRepository : IContentRepository
     public Dictionary<string, int> Ceilings { get; } = new(StringComparer.Ordinal);
 
     public int MenuCount { get; set; } = 1;
+    public int? TransitionItemsPerMenuLimit { get; private set; }
+    public ReorderOutcome TransitionOutcome { get; set; } = new(ReorderOutcomes.Reordered, 1);
 
     public List<Guid> ResetAutomationVenues { get; } = [];
 
@@ -303,7 +305,8 @@ internal sealed class FakeContentRepository : IContentRepository
         Guid menuId,
         Guid sectionId,
         int itemsPerMenuLimit,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? author = null)
     {
         if (!Sections.Any(section => section.Id == sectionId && section.MenuId == menuId && section.VenueId == item.VenueId))
         {
@@ -578,9 +581,25 @@ internal sealed class FakeContentRepository : IContentRepository
         Guid sectionId,
         IReadOnlyCollection<Guid> itemIds,
         DateTime now,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken = default,
+        string? author = null) =>
         throw new NotSupportedException(
             "Reorder proves the caller's list still matches the section under the lock that writes it. "
+            + "Assert it in Vennu.Data.IntegrationTests against a real database.");
+
+    public Task<ReorderOutcome> MovePlacementGuardedAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid itemId,
+        Guid sourceSectionId,
+        Guid destinationSectionId,
+        IReadOnlyCollection<Guid> sourceItemIds,
+        IReadOnlyCollection<Guid> destinationItemIds,
+        DateTime now,
+        CancellationToken cancellationToken = default,
+        string? author = null) =>
+        throw new NotSupportedException(
+            "Cross-section movement proves both orders and commits the placement and history under one lock. "
             + "Assert it in Vennu.Data.IntegrationTests against a real database.");
 
     public Task<PlaceExistingOutcome> PlaceExistingItemAsync(
@@ -590,19 +609,33 @@ internal sealed class FakeContentRepository : IContentRepository
         Guid itemId,
         int itemsPerMenuLimit,
         DateTime now,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken = default,
+        string? author = null) =>
         throw new NotSupportedException(
             "Placing an existing item decides 'already on this board' and the ceiling under one lock. "
             + "Assert it in Vennu.Data.IntegrationTests against a real database.");
 
-    public Task<bool> RemoveItemFromMenuAsync(
+    public Task<ReorderOutcome> TransitionPlacementGuardedAsync(
+        Guid venueId, Guid menuId, Guid pageId, Guid sectionId, Guid itemId,
+        IReadOnlyCollection<Guid> expectedItemIds, IReadOnlyCollection<Guid> desiredItemIds,
+        int itemsPerMenuLimit, DateTime now, CancellationToken cancellationToken = default, string? author = null)
+    {
+        TransitionItemsPerMenuLimit = itemsPerMenuLimit;
+        return Task.FromResult(TransitionOutcome);
+    }
+
+    public Task<bool> RemoveItemFromPageAsync(
         Guid venueId,
         Guid menuId,
+        Guid pageId,
         Guid itemId,
-        CancellationToken cancellationToken = default)
+        DateTime now,
+        CancellationToken cancellationToken = default,
+        string? author = null)
     {
         var removed = Placements.RemoveAll(placement =>
-            placement.VenueId == venueId && placement.MenuId == menuId && placement.ItemId == itemId);
+            placement.VenueId == venueId && placement.MenuId == menuId
+            && placement.PageId == pageId && placement.ItemId == itemId);
         return Task.FromResult(removed > 0);
     }
 

@@ -172,7 +172,7 @@ try {
         ("first section is now '$(@($board.board.sections)[0].name)'")
 
     # ---- 7. Removing, and deleting a section ---------------------------------
-    Invoke-Api DELETE "/menus/$menuId/items/$($place.itemId)" | Out-Null
+    Invoke-Api DELETE "/menus/$menuId/pages/$($board.board.pages[0].pageId)/items/$($place.itemId)" | Out-Null
     $stillInLibrary = @(Expand-Api (Invoke-Api GET '/items?query=Harbor&take=20') | Where-Object { $_.itemId -eq $place.itemId })
     Assert-That 'Removing an item from a board leaves it in the library' ($stillInLibrary.Count -eq 1) `
         ("library still holds it: $($stillInLibrary.Count)")

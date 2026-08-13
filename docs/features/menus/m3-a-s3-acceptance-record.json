@@ -1,0 +1,21 @@
+{
+  "schema": "vennusign.m3a.s3.acceptance-record",
+  "version": 1,
+  "acceptedUtc": "2026-08-13T01:42:23.388Z",
+  "testedProductSha": "0e7c54c94a62a51960c405693ddf42208a5bbafe",
+  "finalProductSha": "73074e030cf9c2d172b435aaeadfd0638bdb0793",
+  "ownerDecision": "Accepted",
+  "reviewDecision": "Independent review approved the tested product SHA. The owner accepted the focused search retest, requested one final Undo/Redo wording correction, explicitly waived further review, and instructed merge without CI.",
+  "originalResults": { "pass": 3, "needsAdjustment": 1, "notRun": 1, "fail": 0 },
+  "disposition": {
+    "case2": "Accepted after the missing named search data was added to the owner fixture and focused Playwright covered prefix, no-match, delete-back, reopen, punctuation reuse and substring-safe creation.",
+    "case3": "Deferred by owner ruling to later planned Canvas work; tracked in issue #704 and not a Slice 3 blocker.",
+    "case4": "Waived by the owner's explicit final acceptance and close-out instruction; deterministic removal, Undo/Redo, refresh and stale-actor Playwright coverage remains green.",
+    "case5": "Accepted. The owner requested concrete Undo/Redo toast wording; final product SHA names the item and page and passed its focused Playwright regression."
+  },
+  "validation": {
+    "search": "Focused desktop Playwright 1/1 passed in a fresh isolated venue.",
+    "undoRedoCopy": "Focused desktop Playwright 1/1 passed in a fresh isolated venue.",
+    "ci": "Not run by owner instruction; CI remains suspended."
+  }
+}

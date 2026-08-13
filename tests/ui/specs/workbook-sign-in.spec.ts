@@ -1,4 +1,4 @@
-import { test, expect } from "../fixtures";
+import { test, expect, tokens } from "../fixtures";
 
 /**
  * The owner acceptance workbook offers one-click sign-in links per role. The token
@@ -7,9 +7,9 @@ import { test, expect } from "../fixtures";
  * clean is not enough: a query string would already have been sent.
  */
 const roles = [
-  { token: "track1-owner-review", displayName: "Track 1 Owner Review" },
-  { token: "track1-content-editor", displayName: "Track 1 Content Editor" },
-  { token: "track1-publisher", displayName: "Track 1 Publisher" }
+  { token: tokens.owner, displayName: "Track 1 Owner Review" },
+  { token: tokens.editor, displayName: "Track 1 Content Editor" },
+  { token: tokens.publisher, displayName: "Track 1 Publisher" }
 ];
 
 for (const role of roles) {

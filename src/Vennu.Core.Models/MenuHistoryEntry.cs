@@ -80,7 +80,16 @@ public static class MenuHistoryKinds
 
     public const string SectionDeleted = "section_deleted";
 
+    public const string ItemAdded = "item_added";
+
+    public const string ItemsReordered = "items_reordered";
+
+    public const string ItemMoved = "item_moved";
+
+    public const string ItemRemoved = "item_removed";
+
     public static bool IsSupported(string? value) =>
         value is Published or DraftDiscarded or PutAway or PutBack or TakenOffScreens or Restored or Assigned or Duplicated
-            or SectionAdded or SectionRenamed or SectionsReordered or SectionDeleted;
+            or SectionAdded or SectionRenamed or SectionsReordered or SectionDeleted
+            or ItemAdded or ItemsReordered or ItemMoved or ItemRemoved;
 }

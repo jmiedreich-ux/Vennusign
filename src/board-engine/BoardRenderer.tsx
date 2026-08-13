@@ -44,6 +44,11 @@ export type BoardRendererProps = {
    * guest board never sets it, so a TV row is never draggable.
    */
   itemsDraggable?: boolean;
+  /** Keeps empty sections as editor drop targets. Ignored by guest surfaces. */
+  keepEmptySections?: boolean;
+  /** Preview-only selected-row removal action. Guest boards never render it. */
+  selectedItemId?: string | null;
+  onRemoveItem?: ((itemId: string) => void) | null;
 };
 
 /**
@@ -65,7 +70,10 @@ export function BoardRenderer({
   surface = "guest",
   keepUnavailable = false,
   unavailableNotes = null,
-  itemsDraggable = false
+  itemsDraggable = false,
+  keepEmptySections = false,
+  selectedItemId = null,
+  onRemoveItem = null
 }: BoardRendererProps) {
   // A theme written against a later engine is declined outright: rendering the
   // half we understand would be wrong without saying so.
@@ -74,7 +82,10 @@ export function BoardRenderer({
   // put a struck-through item on a real TV, which is the exact thing the
   // availability model exists to prevent — so the guard is here, not in a caller.
   const keeping = surface === "preview" && keepUnavailable;
-  const document = buildBoardDocument(board, unavailableItemIds, { keepUnavailable: keeping });
+  const document = buildBoardDocument(board, unavailableItemIds, {
+    keepUnavailable: keeping,
+    keepEmptySections: surface === "preview" && keepEmptySections
+  });
 
   return (
     <div
@@ -124,6 +135,11 @@ export function BoardRenderer({
                   <span className="board-item-drag-handle" data-testid="item-drag-handle" aria-hidden="true">
                     ⠿
                   </span>
+                ) : null}
+                {surface === "preview" && onRemoveItem && selectedItemId === item.itemId ? (
+                  <button type="button" className="board-item-remove" data-testid="board-item-remove"
+                    aria-label="Remove from this page"
+                    onClick={event => { event.stopPropagation(); onRemoveItem(item.itemId); }}>−</button>
                 ) : null}
                 <p className="board-item-line">
                   <span className="board-item-name">{item.name}</span>

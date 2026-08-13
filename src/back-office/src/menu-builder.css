@@ -900,6 +900,7 @@
   color: var(--sky-selection, #2a78d6);
   font-size: calc(14px / var(--board-scale, 1));
   transition: opacity 90ms ease;
+  touch-action: none;
   user-select: none;
 }
 
@@ -965,6 +966,9 @@
 
 .builder__add-row {
   position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(92px, 0.24fr);
+  gap: 8px;
 }
 
 .builder__add-open {
@@ -997,7 +1001,8 @@
  */
 .builder__add-results {
   position: absolute;
-  top: calc(100% + 6px);
+  top: auto;
+  bottom: calc(100% + 6px);
   left: 0;
   right: 0;
   z-index: 20;
@@ -1012,6 +1017,13 @@
   background: #fff;
   box-shadow: 0 18px 48px rgb(15 23 42 / 0.16);
   list-style: none;
+  grid-column: 1 / -1;
+}
+
+.builder__add-results button.is-selected {
+  background: #e8f4fb;
+  outline: 2px solid var(--sky-selection, #2a78d6);
+  outline-offset: -2px;
 }
 
 .builder__add-results button {
@@ -1029,6 +1041,20 @@
 
 .builder__add-results button:hover {
   background: var(--sky-color-surface-muted, #f1f5f9);
+}
+
+.board-item-remove {
+  position: absolute;
+  right: -30px;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  color: #a52630;
+  background: #fae9eb;
+  font: 800 18px/1 sans-serif;
+  cursor: pointer;
 }
 
 .builder__add-name {

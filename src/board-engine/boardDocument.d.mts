@@ -62,7 +62,7 @@ export type BoardItem = {
  * document, marked, because you cannot turn back on what the surface has hidden
  * from you (Q104). A guest board never sets it.
  */
-export type BoardDocumentOptions = { keepUnavailable?: boolean };
+export type BoardDocumentOptions = { keepUnavailable?: boolean; keepEmptySections?: boolean };
 
 export const missingPrice: string;
 

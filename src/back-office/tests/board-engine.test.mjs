@@ -109,6 +109,16 @@ test("a section that was always empty is not on the board", () => {
   assert.deepEqual(document.sections.map((section) => section.sectionId), ["drinks"]);
 });
 
+test("an editing document can keep an empty section as a drop target", () => {
+  const document = buildBoardDocument(
+    board({ sections: [{ sectionId: "empty", name: "Coming soon", sortOrder: 0, items: [] }] }),
+    [],
+    { keepEmptySections: true }
+  );
+
+  assert.deepEqual(document.sections.map((section) => section.sectionId), ["empty"]);
+});
+
 test("86'ing everything leaves a board with nothing to draw, not a broken one", () => {
   const document = buildBoardDocument(board(), ["fizz", "cider", "olives"]);
 

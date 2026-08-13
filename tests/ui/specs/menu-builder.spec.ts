@@ -15,6 +15,7 @@ import { backdateAvailability, seed } from "../seed";
  */
 
 test.describe("the builder", () => {
+  test.beforeEach(({}, testInfo) => test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed)."));
   test("a card opens the builder at its own address, and a refresh stays there", async ({ page }) => {
     const data = await seed({ role: "owner", label: "route" });
 
@@ -817,6 +818,206 @@ test.describe("the builder", () => {
   });
 });
 
+test.describe("M3-A Slice 3 page-scoped items", () => {
+  test.beforeEach(({}, testInfo) => test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed)."));
+  const owned = { "X-Vennusign-Back-Office-Token": tokens.owner };
+
+  test("inline add uses name then price, preselects a library match, abandons blank, and updates capacity while typing", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed).");
+    const data = await seed({ role: "owner", label: "slice3-add", screenState: "has-not-taken-this-yet", itemsPerSection: 18 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("open-add-item").click();
+    const name = page.getByTestId("add-item-input");
+    const price = page.getByTestId("add-item-price");
+    await expect(name).toBeFocused();
+    await name.fill("Draft capacity item");
+    await expect(page.getByTestId("capacity-banner")).toHaveAttribute("data-dropped-items", /Draft capacity item/);
+    await expect(page.getByTestId("add-item-create")).toBeVisible();
+    await name.press("Tab");
+    await expect(price).toBeFocused();
+    await price.fill("Market Price");
+    await price.press("Enter");
+    await expect(page.getByTestId("item-price")).toHaveValue("Market Price");
+
+    await page.reload();
+    await expect(page.getByTestId("canvas")).toContainText("Draft capacity item");
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("add-item-input").fill("Old Fashioned");
+    await expect(page.getByTestId("add-item-input")).toHaveAttribute("role", "combobox");
+    await expect(page.getByTestId("add-item-input")).toHaveAttribute("aria-expanded", "true");
+    await expect(page.getByRole("listbox")).toBeVisible();
+    await expect(page.getByRole("listbox").getByTestId("add-item-create")).toHaveCount(0);
+    await expect(page.getByTestId("add-item-input")).toHaveAttribute(
+      "aria-activedescendant",
+      await page.getByRole("option").first().getAttribute("id") ?? "missing-option-id"
+    );
+    await expect(page.getByTestId("add-item-result").first()).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByTestId("add-item-result").first()).toHaveClass(/is-selected/);
+    await page.getByTestId("add-item-price").fill("12");
+    await page.getByTestId("add-item-price").press("Enter");
+    await expect(page.getByText("Used the existing Old-Fashioned. Its shared price was not changed.")).toBeVisible();
+
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("add-item-input").fill("Old");
+    await expect(page.getByTestId("add-item-result").filter({ hasText: "Old-Fashioned" })).toBeVisible();
+    await page.getByTestId("add-item-input").fill("Old missing");
+    await expect(page.getByTestId("add-item-result")).toHaveCount(0);
+    await page.getByTestId("add-item-input").fill("Old");
+    await expect(page.getByTestId("add-item-result").filter({ hasText: "Old-Fashioned" })).toBeVisible();
+    await page.getByTestId("add-item-input").press("Escape");
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("add-item-input").fill("Old");
+    await expect(page.getByTestId("add-item-result").filter({ hasText: "Old-Fashioned" })).toBeVisible();
+    await page.getByTestId("add-item-input").press("Escape");
+
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("add-item-input").fill("Burger");
+    await page.getByTestId("add-item-price").fill("9");
+    await page.getByTestId("add-item-price").press("Enter");
+    await expect(page.getByTestId("canvas").locator(".board-item-name", { hasText: /^Burger$/ })).toBeVisible();
+    await expect(page.getByTestId("item-price")).toHaveValue("9");
+
+    const tooLong = await page.request.post(
+      `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/sections/${data.sectionId}/items`,
+      { headers: owned, data: { name: "Too long price", price: "Market Price!" } }
+    );
+    expect(tooLong.status()).toBe(400);
+    expect(await tooLong.text()).toContain("12 characters or fewer");
+
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("add-item-input").press("Escape");
+    await expect(page.getByTestId("add-item-input")).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByTestId("canvas")).not.toContainText("Unnamed item");
+  });
+
+  test("a real pointer moves an item across sections and into an empty section, then refresh preserves it", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed).");
+    const data = await seed({ role: "owner", label: "slice3-cross-drag", sectionCount: 2, itemsPerSection: 1 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await page.getByTestId("viewing-chip").filter({ hasText: "Whole page" }).click();
+
+    const sourceRow = page.locator(`[data-section-id="${data.sections[0].sectionId}"] [data-item-id]`).first();
+    const destinationRow = page.locator(`[data-section-id="${data.sections[1].sectionId}"] [data-item-id]`).first();
+    const handle = await sourceRow.getByTestId("item-drag-handle").boundingBox();
+    const target = await destinationRow.boundingBox();
+    expect(handle).not.toBeNull();
+    expect(target).not.toBeNull();
+    await page.mouse.move(handle!.x + handle!.width / 2, handle!.y + handle!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, { steps: 24 });
+    await page.mouse.up();
+    await expect(page.locator(`[data-section-id="${data.sections[1].sectionId}"] [data-item-id]`)).toHaveCount(2);
+
+    const movedRow = page.locator(`[data-section-id="${data.sections[1].sectionId}"] [data-item-id="${data.items[0].itemId}"]`);
+    const movedHandle = await movedRow.getByTestId("item-drag-handle").boundingBox();
+    const emptySection = await page.getByTestId("canvas").locator(`[data-section-id="${data.sections[0].sectionId}"]`).boundingBox();
+    expect(movedHandle).not.toBeNull();
+    expect(emptySection).not.toBeNull();
+    await page.mouse.move(movedHandle!.x + movedHandle!.width / 2, movedHandle!.y + movedHandle!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(emptySection!.x + emptySection!.width / 2, emptySection!.y + emptySection!.height / 2, { steps: 24 });
+    await page.mouse.up();
+    await expect(page.locator(`[data-section-id="${data.sections[0].sectionId}"] [data-item-id="${data.items[0].itemId}"]`)).toBeVisible();
+
+    await page.reload();
+    await page.getByTestId("viewing-chip").filter({ hasText: "Whole page" }).click();
+    await expect(page.locator(`[data-section-id="${data.sections[0].sectionId}"] [data-item-id="${data.items[0].itemId}"]`)).toBeVisible();
+    await expect(page.getByTestId("page-history-entry").first()).toContainText("moved");
+  });
+
+  test("removal names the page, cancel preserves it, confirm keeps the library and another page, and selection advances", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "slice3-remove", pageCount: 2, sectionCount: 2, itemsPerSection: 2 });
+    const shared = data.items.find(item => item.sectionId === data.sections[0].sectionId)!;
+    const placed = await page.request.post(
+      `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/sections/${data.sections[1].sectionId}/items`,
+      { headers: owned, data: { itemId: shared.itemId } }
+    );
+    expect(placed.ok()).toBeTruthy();
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await page.locator(`[data-item-id="${shared.itemId}"]`).click();
+    await expect(page.getByTestId("board-item-remove")).toHaveAccessibleName("Remove from this page");
+    await page.getByTestId("board-item-remove").click();
+    const dialog = page.getByTestId("remove-item-dialog");
+    await expect(dialog).toContainText(data.pages[0].name);
+    await expect(dialog).toContainText("It stays in your item library, and on any other page using it.");
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(page.locator(`[data-item-id="${shared.itemId}"]`)).toBeVisible();
+
+    await page.getByTestId("remove-item").click();
+    await dialog.getByRole("button", { name: "Remove from this page" }).click();
+    await expect(page.locator(`[data-item-id="${shared.itemId}"]`)).toHaveCount(0);
+    await expect(page.getByTestId("inspector-empty")).toHaveCount(0);
+    await page.getByTestId("page-tab").nth(1).click();
+    await expect(page.locator(`[data-item-id="${shared.itemId}"]`)).toBeVisible();
+    await page.reload();
+    await page.getByTestId("page-tab").nth(1).click();
+    await expect(page.locator(`[data-item-id="${shared.itemId}"]`)).toBeVisible();
+  });
+
+  test("removing a middle item then Undo restores its exact order, and Redo removes it again", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "slice3-remove-undo", itemsPerSection: 3 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    const rows = page.getByTestId("canvas").getByTestId("board-item");
+    const names = async () => rows.locator(".board-item-name").allTextContents();
+    const original = await names();
+    await rows.nth(1).click();
+    await page.getByTestId("remove-item").click();
+    await page.getByTestId("remove-item-dialog").getByRole("button", { name: "Remove from this page" }).click();
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect(page.getByText(`Undid: Remove “${original[1]}” from “${data.pages[0].name}”.`)).toBeVisible();
+    await expect.poll(names).toEqual(original);
+    await page.getByRole("button", { name: "Redo", exact: true }).click();
+    await expect(page.getByText(`Redid: Remove “${original[1]}” from “${data.pages[0].name}”.`)).toBeVisible();
+    await expect(rows).toHaveCount(2);
+    await page.reload();
+    await expect(rows).toHaveCount(2);
+  });
+
+  test("stale remove Undo refuses without deleting a second actor's placement", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "slice3-stale-remove-undo", sectionCount: 2, itemsPerSection: 2 });
+    const source = data.sections[0];
+    const sibling = data.sections[1];
+    const item = data.items.find(candidate => candidate.sectionId === source.sectionId)!;
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await page.locator(`[data-item-id="${item.itemId}"]`).click();
+    await page.getByTestId("remove-item").click();
+    await page.getByTestId("remove-item-dialog").getByRole("button", { name: "Remove from this page" }).click();
+    await expect(page.locator(`[data-section-id="${source.sectionId}"] [data-item-id="${item.itemId}"]`)).toHaveCount(0);
+    const secondActor = await page.request.post(
+      `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/sections/${sibling.sectionId}/items`,
+      { headers: owned, data: { itemId: item.itemId } }
+    );
+    expect(secondActor.ok()).toBeTruthy();
+    const secondActorOutcome = await secondActor.json();
+    expect(secondActorOutcome).toMatchObject({ outcome: "placed", sectionId: sibling.sectionId });
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect(page.getByText(/page changed after this action/i)).toBeVisible();
+    await page.reload();
+    await page.getByTestId("viewing-chip").filter({ hasText: "Whole page" }).click();
+    await expect(page.locator(`[data-section-id="${sibling.sectionId}"] [data-item-id="${item.itemId}"]`)).toBeVisible();
+    await expect(page.locator(`[data-section-id="${source.sectionId}"] [data-item-id="${item.itemId}"]`)).toHaveCount(0);
+  });
+
+  test("move and page removal routes refuse a role without content editing and malformed move order", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "slice3-route-guards", sectionCount: 2, itemsPerSection: 2 });
+    const item = data.items[0];
+    const denied = { "X-Vennusign-Back-Office-Token": tokens.publisher };
+    const moveUrl = `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/items/${item.itemId}/placement`;
+    const malformed = await page.request.put(moveUrl, { headers: owned, data: {
+      sourceSectionId: data.sections[0].sectionId, destinationSectionId: data.sections[1].sectionId,
+      sourceItemIds: [item.itemId], destinationItemIds: [item.itemId]
+    }});
+    expect(malformed.status()).toBe(409);
+    expect((await page.request.put(moveUrl, { headers: denied, data: {
+      sourceSectionId: data.sections[0].sectionId, destinationSectionId: data.sections[1].sectionId,
+      sourceItemIds: [data.items[1].itemId], destinationItemIds: [data.items[2].itemId, item.itemId]
+    }})).status()).toBe(403);
+    expect((await page.request.delete(`${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/pages/${data.pages[0].pageId}/items/${item.itemId}`, { headers: denied })).status()).toBe(403);
+  });
+});
+
 /**
  * The independent review of PR #691, answered in the browser.
  *
@@ -825,6 +1026,7 @@ test.describe("the builder", () => {
  * against the code as it was before the fix, not only against the fix.
  */
 test.describe("what the independent review found", () => {
+  test.beforeEach(({}, testInfo) => test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed)."));
   const owned = { "X-Vennusign-Back-Office-Token": tokens.owner };
 
   test("a save that fails is retried on its own, and Publish waits for it (Q197)", async ({ page }) => {
@@ -1008,7 +1210,7 @@ test.describe("what the independent review found", () => {
       expect(made.ok()).toBeTruthy();
       const item = (await made.json()) as { itemId: string };
       const removed = await page.request.delete(
-        `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/items/${item.itemId}`,
+        `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/pages/${data.pages![0].pageId}/items/${item.itemId}`,
         { headers: owned }
       );
       expect(removed.ok()).toBeTruthy();

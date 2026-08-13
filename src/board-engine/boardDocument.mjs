@@ -41,6 +41,7 @@ export const missingPrice = "—";
 export function buildBoardDocument(board, unavailableItemIds, options) {
   const off = toIdSet(unavailableItemIds);
   const keepUnavailable = options?.keepUnavailable === true;
+  const keepEmptySections = options?.keepEmptySections === true;
 
   const sections = (board?.sections ?? [])
     .slice()
@@ -66,7 +67,7 @@ export function buildBoardDocument(board, unavailableItemIds, options) {
     // Judged after the 86 removals: a section can be full of items and still
     // have nothing to show tonight. An editing surface keeps such a section,
     // because that is where the items you would turn back on live.
-    .filter((section) => section.items.length > 0);
+    .filter((section) => keepEmptySections || section.items.length > 0);
 
   return {
     menuId: String(board?.menuId ?? ""),

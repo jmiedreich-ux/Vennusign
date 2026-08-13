@@ -237,6 +237,9 @@ DECLARE @M1SharedSectionId UNIQUEIDENTIFIER = '76000000-0000-0000-0000-000000000
 DECLARE @M1ScreenId UNIQUEIDENTIFIER = '74000000-0000-0000-0000-000000000001';
 DECLARE @M1ItemId UNIQUEIDENTIFIER = '77000000-0000-0000-0000-000000000001';
 DECLARE @M1SecondItemId UNIQUEIDENTIFIER = '77000000-0000-0000-0000-000000000002';
+DECLARE @M1OldFashionedItemId UNIQUEIDENTIFIER = '77000000-0000-0000-0000-000000000003';
+DECLARE @M1AussieBurgerItemId UNIQUEIDENTIFIER = '77000000-0000-0000-0000-000000000004';
+DECLARE @M1ClassicBurgerItemId UNIQUEIDENTIFIER = '77000000-0000-0000-0000-000000000005';
 DECLARE @M1Now DATETIME2(7) = SYSUTCDATETIME();
 DECLARE @M1PageId UNIQUEIDENTIFIER = (SELECT TOP (1) Id FROM dbo.MenuPages WHERE MenuId=@M1MenuId AND VenueId=@M1VenueId ORDER BY SortOrder, Id);
 DECLARE @M1SharedPageId UNIQUEIDENTIFIER;
@@ -288,7 +291,10 @@ WHEN NOT MATCHED THEN
 MERGE dbo.Items AS target
 USING (VALUES
     (@M1ItemId, @M1VenueId, N'Harbor Lemonade', N'House lemonade, over crushed ice.', N'9.5'),
-    (@M1SecondItemId, @M1VenueId, N'Market Oysters', N'Half dozen, whatever came in today.', N'MP')
+    (@M1SecondItemId, @M1VenueId, N'Market Oysters', N'Half dozen, whatever came in today.', N'MP'),
+    (@M1OldFashionedItemId, @M1VenueId, N'Old-Fashioned', N'Acceptance search punctuation case.', N'12'),
+    (@M1AussieBurgerItemId, @M1VenueId, N'Aussie Burger', N'Acceptance search substring case.', N'14'),
+    (@M1ClassicBurgerItemId, @M1VenueId, N'Classic Burger', N'Acceptance search substring case.', N'11')
 ) AS source (Id, VenueId, Name, Description, Price)
     ON target.Id = source.Id
 WHEN MATCHED THEN UPDATE SET
@@ -312,10 +318,10 @@ USING (VALUES
     (@M1SecondItemId, 1)
 ) AS source (ItemId, SortOrder)
     ON target.MenuSectionId = @M1SectionId AND target.ItemId = source.ItemId
-WHEN MATCHED THEN UPDATE SET SortOrder = source.SortOrder, UpdatedUtc = @M1Now
+WHEN MATCHED THEN UPDATE SET PageId = @M1PageId, SortOrder = source.SortOrder, UpdatedUtc = @M1Now
 WHEN NOT MATCHED THEN
-    INSERT (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
-    VALUES (NEWID(), @M1VenueId, @M1MenuId, @M1SectionId, source.ItemId, source.SortOrder, @M1Now, @M1Now);
+    INSERT (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
+    VALUES (NEWID(), @M1VenueId, @M1MenuId, @M1SectionId, @M1PageId, source.ItemId, source.SortOrder, @M1Now, @M1Now);
 
 -- Restore the second menu to exactly the one shared item on every fixture run.
 DELETE FROM dbo.Placements
@@ -324,19 +330,19 @@ WHERE MenuId = @M1SharedMenuId AND ItemId <> @M1ItemId;
 MERGE dbo.Placements AS target
 USING (VALUES (@M1ItemId, 0)) AS source (ItemId, SortOrder)
     ON target.MenuSectionId = @M1SharedSectionId AND target.ItemId = source.ItemId
-WHEN MATCHED THEN UPDATE SET SortOrder = source.SortOrder, UpdatedUtc = @M1Now
+WHEN MATCHED THEN UPDATE SET PageId = @M1SharedPageId, SortOrder = source.SortOrder, UpdatedUtc = @M1Now
 WHEN NOT MATCHED THEN
-    INSERT (Id, VenueId, MenuId, MenuSectionId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
-    VALUES (NEWID(), @M1VenueId, @M1SharedMenuId, @M1SharedSectionId, source.ItemId, source.SortOrder, @M1Now, @M1Now);
+    INSERT (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
+    VALUES (NEWID(), @M1VenueId, @M1SharedMenuId, @M1SharedSectionId, @M1SharedPageId, source.ItemId, source.SortOrder, @M1Now, @M1Now);
 
 -- Demo-created library items for this venue go with their availability rows,
 -- so re-runs cannot accumulate lookalikes the demo might then pick up.
 DELETE FROM dbo.ItemAvailability
-WHERE VenueId = @M1VenueId AND ItemId NOT IN (@M1ItemId, @M1SecondItemId);
+WHERE VenueId = @M1VenueId AND ItemId NOT IN (@M1ItemId, @M1SecondItemId, @M1OldFashionedItemId, @M1AussieBurgerItemId, @M1ClassicBurgerItemId);
 
 DELETE FROM dbo.Items
 WHERE VenueId = @M1VenueId
-  AND Id NOT IN (@M1ItemId, @M1SecondItemId)
+  AND Id NOT IN (@M1ItemId, @M1SecondItemId, @M1OldFashionedItemId, @M1AussieBurgerItemId, @M1ClassicBurgerItemId)
   AND NOT EXISTS (SELECT 1 FROM dbo.Placements p WHERE p.ItemId = dbo.Items.Id);
 
 -- Both canonical items start the workbook available, whatever the last run did.
