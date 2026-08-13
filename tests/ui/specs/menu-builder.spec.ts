@@ -966,8 +966,10 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     await page.getByTestId("remove-item").click();
     await page.getByTestId("remove-item-dialog").getByRole("button", { name: "Remove from this page" }).click();
     await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect(page.getByText(`Undid: Remove “${original[1]}” from “${data.pages[0].name}”.`)).toBeVisible();
     await expect.poll(names).toEqual(original);
     await page.getByRole("button", { name: "Redo", exact: true }).click();
+    await expect(page.getByText(`Redid: Remove “${original[1]}” from “${data.pages[0].name}”.`)).toBeVisible();
     await expect(rows).toHaveCount(2);
     await page.reload();
     await expect(rows).toHaveCount(2);

@@ -1224,6 +1224,7 @@ export default function MenuBuilder({
     const nextSelection = sectionItems[selectedIndex + 1]?.itemId ?? sectionItems[selectedIndex - 1]?.itemId ?? null;
     const pageId = activePageId;
     if (!pageId) return;
+    const pageName = pages.find(page => page.pageId === pageId)?.name ?? "this page";
     setConfirmItemRemove(false);
     await run(
       async () => {
@@ -1231,7 +1232,7 @@ export default function MenuBuilder({
         setPlace(current => ({ ...current, selectedItemId: nextSelection }));
       },
       {
-        describe: "Remove from this page",
+        describe: `Remove “${item.name}” from “${pageName}”`,
         undo: () => transitionMenuItemPlacement(configuration, credential(), menuId, pageId, item.itemId, {
           sectionId, expectedItemIds: removedOrder, desiredItemIds: originalOrder
         }),
@@ -1425,7 +1426,7 @@ export default function MenuBuilder({
       await step.undo();
       await refresh();
       redoStack.current = [...redoStack.current, step];
-      setNotice(`Undid: ${step.describe.toLowerCase()}.`);
+      setNotice(`Undid: ${step.describe}.`);
     } catch (failure) {
       /*
        * The server refuses a stale inverse by name and in its own words — it knows
@@ -1453,7 +1454,7 @@ export default function MenuBuilder({
       await step.redo();
       await refresh();
       undoStack.current = [...undoStack.current, step];
-      setNotice(`Redid: ${step.describe.toLowerCase()}.`);
+      setNotice(`Redid: ${step.describe}.`);
     } catch (failure) {
       setError(
         failure instanceof MenuActionRefused
