@@ -92,6 +92,26 @@ public sealed class MenuSectionManagementService(
         return menu;
     }
 
+    public async Task<Menu?> RenameMenuAsync(
+        Guid venueId,
+        Guid menuId,
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        RequireId(venueId, nameof(venueId));
+        RequireId(menuId, nameof(menuId));
+        var normalizedName = NormalizeMenuName(name);
+        var menus = await repository.GetMenusAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var menu = menus.SingleOrDefault(candidate => candidate.Id == menuId);
+        if (menu is null) return null;
+        if (menus.Any(candidate => candidate.Id != menuId && string.Equals(candidate.Name, normalizedName, StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException("A menu with that name already exists.", nameof(name));
+        menu.Name = normalizedName;
+        menu.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
+        await repository.UpdateMenuAsync(menu, cancellationToken).ConfigureAwait(false);
+        return menu;
+    }
+
     public async Task<MenuSection> CreateAsync(
         Guid venueId,
         Guid menuId,

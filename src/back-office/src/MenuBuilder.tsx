@@ -22,6 +22,7 @@ import {
   saveMenuPageAssignments,
   placeMenuItem,
   publishMenu,
+  renameMenu,
   renameMenuPage,
   reorderMenuPages,
   removeMenuItem,
@@ -421,6 +422,8 @@ export default function MenuBuilder({
   const [history, setHistory] = useState<MenuHistoryEntry[]>();
   const [pageHistory, setPageHistory] = useState<MenuHistoryEntry[]>();
   const [pageHistoryError, setPageHistoryError] = useState(false);
+  const [editingMenuName, setEditingMenuName] = useState(false);
+  const [menuNameDraft, setMenuNameDraft] = useState("");
   const [viewingOpen, setViewingOpen] = useState(false);
   const [panelPreferences, setPanelPreferences] = useState(readPanelPreferences);
   const [assignmentOpen, setAssignmentOpen] = useState(false);
@@ -1648,6 +1651,26 @@ export default function MenuBuilder({
   const activePageItemCount = sections.reduce((count, section) => count + itemsOf(board, section.sectionId).length, 0);
   const activePageAssignmentCount = assignments.filter(assignment => assignment.pageId === activePageId).length;
   const activePageScreenNames = assignments.filter(assignment => assignment.pageId === activePageId).map(assignment => screens.find(screen => screen.screenId === assignment.screenId)?.screenName).filter((name): name is string => Boolean(name));
+  const currentMenuName = board.name ?? "Untitled menu";
+  const beginMenuRename = () => {
+    setMenuNameDraft(currentMenuName);
+    setEditingMenuName(true);
+  };
+  const commitMenuRename = () => {
+    const name = menuNameDraft.trim();
+    if (!name || name === currentMenuName) {
+      setEditingMenuName(false);
+      return;
+    }
+    void run(
+      () => renameMenu(configuration, credential(), menuId, name),
+      undefined,
+      () => {
+        setEditingMenuName(false);
+        setNotice(`Menu renamed to ${name}.`);
+      }
+    );
+  };
   const capacitySections = addSectionId && addQuery.trim()
     ? sections.map(section => section.sectionId === addSectionId
       ? { ...section, items: [...section.items, { itemId: "draft-item", name: addQuery, description: null, price: addPrice || null, sortOrder: section.items.length }] }
@@ -1748,10 +1771,28 @@ export default function MenuBuilder({
             Menus
           </button>
           <span aria-hidden="true">/</span>
-          <span className="builder__crumb-current" data-testid="builder-menu-name">
-            {board.name}
-          </span>
-          <SkyIcon name="pencil" />
+          {editingMenuName ? <input
+            className="builder__menu-name-input"
+            data-testid="menu-name-input"
+            aria-label="Menu name"
+            autoFocus
+            maxLength={200}
+            value={menuNameDraft}
+            onChange={event => setMenuNameDraft(event.target.value)}
+            onBlur={commitMenuRename}
+            onKeyDown={event => {
+              if (event.key === "Enter") event.currentTarget.blur();
+              if (event.key === "Escape") {
+                setMenuNameDraft(currentMenuName);
+                setEditingMenuName(false);
+              }
+            }}
+          /> : <>
+            <span className="builder__crumb-current" data-testid="builder-menu-name">{currentMenuName}</span>
+            <button type="button" className="builder__menu-name-edit" data-testid="edit-menu-name" aria-label={`Edit ${currentMenuName} menu name`} onClick={beginMenuRename}>
+              <SkyIcon name="pencil" />
+            </button>
+          </>}
           <button type="button" className="builder__top-add-content" data-testid="top-add-content" onClick={() => setDrawerOpen(true)}>+ Add content</button>
         </nav>
 
@@ -2027,7 +2068,7 @@ export default function MenuBuilder({
             </header>
             {pageHistoryError ? <div className="builder__page-history-state" role="alert"><span>History couldn&apos;t load.</span><button type="button" className="builder__link" onClick={() => activePageId && void refreshPageHistory(activePageId)}>Try again</button></div>
               : pageHistory === undefined ? <p className="builder__page-history-state" role="status">Loading history…</p>
-              : pageHistory.length === 0 ? <p className="builder__page-history-state" data-testid="page-history-empty">No changes on this page yet.</p>
+              : pageHistory.length === 0 ? null
               : <ol className="builder__page-history-list">{pageHistory.map((entry, index) => <li key={`${entry.occurredUtc}:${entry.kind}:${entry.detail}:${index}`} data-testid="page-history-entry">
                   <i aria-hidden="true" />
                   <span><strong>{entry.detail ?? entry.kind.replaceAll("_", " ")}</strong><small>{entry.author ? `${entry.author} · ` : ""}{venueTime(entry.occurredUtc, venueTimezone)}</small></span>
@@ -2060,7 +2101,11 @@ export default function MenuBuilder({
                 <span className="builder__view-meta">{place.view === "whole-board" ? `${sections.length} ${sections.length === 1 ? "section" : "sections"} · ` : ""}{place.view === "one-section" && activeSection ? itemsOf(board, activeSection.sectionId).length : activePageItemCount} {(place.view === "one-section" && activeSection ? itemsOf(board, activeSection.sectionId).length : activePageItemCount) === 1 ? "item" : "items"}</span>
               </div>
               {activePageAssignmentCount > 0 ? <span className="sr-only" data-testid="page-assignment-count">{activePageAssignmentCount} {activePageAssignmentCount === 1 ? "screen" : "screens"}</span> : null}
-              {canAssignScreens ? <button type="button" className="builder__assignment-pill" onClick={() => { setAssignmentDraft({}); setAssignmentChoiceScreenId(null); setAssignmentChoicePageId(null); setAssignmentAddingScreenId(null); setAssignmentOpen(true); }} data-testid="assignment-pill"><SkyIcon name="screen-mark" /> {activePageAssignmentCount > 0 ? `On ${activePageAssignmentCount} ${activePageAssignmentCount === 1 ? "screen" : "screens"}${activePageScreenNames.length > 0 ? ` · ${activePageScreenNames.join(", ")}` : ""}` : "No screens yet"}<small>Manage</small><SkyIcon name="chevron" /></button> : null}
+              {canAssignScreens ? <button type="button" className="builder__assignment-pill" onClick={() => { setAssignmentDraft({}); setAssignmentChoiceScreenId(null); setAssignmentChoicePageId(null); setAssignmentAddingScreenId(null); setAssignmentOpen(true); }} data-testid="assignment-pill">
+                <SkyIcon name="screen-mark" />
+                <span className="builder__assignment-pill-copy"><strong>{activePageAssignmentCount > 0 ? `On ${activePageAssignmentCount} ${activePageAssignmentCount === 1 ? "screen" : "screens"}${activePageScreenNames.length > 0 ? ` · ${activePageScreenNames.join(", ")}` : ""}` : "No screens assigned"}</strong><small>Manage screens</small></span>
+                <SkyIcon name="chevron" />
+              </button> : null}
             </div> : null}
             {place.selectedItemId && isMissingPrice(selected?.item) ? (
               <p className="builder__flag" data-testid="missing-price-flag">

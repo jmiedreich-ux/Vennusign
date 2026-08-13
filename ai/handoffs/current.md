@@ -942,3 +942,19 @@ only to Slice 3-A and does not create a standing exception.
 
 **Exact next action.** Pull and start Slice 3-A for the owner's acceptance workbook.
 Do not perform agent review or Playwright review under this one-time owner waiver.
+
+## M3-A Slice 3-A — owner adjustment handoff — 2026-08-12
+
+During owner acceptance, four bounded builder refinements were requested: collapsed
+Sections and Item rails now retain only their arrow control; page History follows the
+section list instead of pinning to the rail bottom and no longer prints an empty-state
+sentence; the screen-assignment control now presents a clearer status with a distinct
+`Manage screens` action label; and the menu-name pencil now opens an inline editor that
+persists the trimmed, venue-scoped name while refusing duplicates.
+
+Affected Release API build, Back Office production build, and 10/10 focused API unit
+tests passed. `git diff --check` passed. Per the owner's Slice 3-A exception, Playwright,
+CI, and another independent review were not run.
+
+**Exact next action.** Owner confirms the four acceptance adjustments on the running
+Back Office, then Slice 3-A can be merged; do not begin Slice 4.

@@ -188,7 +188,8 @@ test.describe("menu pages", () => {
     await page.getByTestId("page-name-input").fill("Empty page");
     await page.getByTestId("page-name-input").press("Enter");
     await page.getByTestId("page-tab").getByText("Empty page", { exact: true }).click();
-    await expect(page.getByTestId("page-history-empty")).toBeVisible();
+    await expect(page.getByTestId("page-history")).toBeVisible();
+    await expect(page.getByText("No changes on this page yet.")).toHaveCount(0);
     await page.getByTestId("page-actions").click();
     await page.getByTestId("page-menu").getByRole("button", { name: "Delete" }).click();
     await expect(page.getByTestId("delete-page-dialog")).toContainText("This page is empty");
