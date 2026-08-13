@@ -1043,6 +1043,20 @@
   background: var(--sky-color-surface-muted, #f1f5f9);
 }
 
+.board-item-remove {
+  position: absolute;
+  right: -30px;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  color: #a52630;
+  background: #fae9eb;
+  font: 800 18px/1 sans-serif;
+  cursor: pointer;
+}
+
 .builder__add-name {
   font-size: 13px;
   font-weight: 600;

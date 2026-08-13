@@ -6,6 +6,20 @@ namespace Vennu.Api.Tests;
 public sealed class MigrationResourceTests
 {
     [Fact]
+    public void ItemPriceMigration_IsEmbeddedNarrowsWithoutSilentDataLossAndKeepsSnapshotReadsWide()
+    {
+        var assembly = typeof(DatabaseMigrator).Assembly;
+        var scriptName = Assert.Single(DatabaseMigrator.GetEmbeddedScriptNames()
+            .Where(name => name.EndsWith(".Scripts.067_item_price_and_canonical_name.sql", StringComparison.Ordinal)));
+        using var stream = Assert.IsAssignableFrom<Stream>(assembly.GetManifestResourceStream(scriptName));
+        using var reader = new StreamReader(stream);
+        var sql = reader.ReadToEnd();
+        Assert.Contains("LEN(Price) > 12", sql, StringComparison.Ordinal);
+        Assert.Contains("THROW 51067", sql, StringComparison.Ordinal);
+        Assert.Contains("ALTER COLUMN Price NVARCHAR(12) NULL", sql, StringComparison.Ordinal);
+        Assert.Contains("WHAT THIS DISCARDS: nothing", sql, StringComparison.Ordinal);
+    }
+    [Fact]
     public void ScopedAuthorityMigration_IsEmbeddedInOrderAndSeedsProtectedContracts()
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();

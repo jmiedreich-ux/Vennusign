@@ -5,6 +5,7 @@ using Vennu.Api.BackOffice;
 using Vennu.Api.Contracts.BackOffice;
 using Vennu.Api.Services;
 using Vennu.Api.Menus;
+using Vennu.Core.Models;
 using Vennu.Data.Repositories;
 
 namespace Vennu.Api.Controllers.BackOffice;
@@ -811,6 +812,11 @@ public sealed class BackOfficeContentController(
             return Problem("Name an item to create, or an item to place.", statusCode: 400);
         }
 
+        if (request.Price?.Trim().Length > Item.PriceMaxLength)
+        {
+            return Problem($"Price must be {Item.PriceMaxLength} characters or fewer.", statusCode: 400);
+        }
+
         if (request.ItemId is { } existingId)
         {
             var placed = await content
@@ -887,7 +893,13 @@ public sealed class BackOfficeContentController(
         return outcome.Outcome switch
         {
             ReorderOutcomes.Reordered => NoContent(),
-            PlaceExistingOutcomes.CeilingReached => Conflict(new { reason = PlaceExistingOutcomes.CeilingReached, message = "This menu is full. Nothing changed." }),
+            PlaceExistingOutcomes.CeilingReached => Conflict(new
+            {
+                reason = PlaceExistingOutcomes.CeilingReached,
+                message = await content.DescribeCeilingRefusalAsync(
+                    VenueId, MenuCeilings.ItemsPerMenu, request.DesiredItemIds.Count, cancellationToken).ConfigureAwait(false)
+                    ?? "This menu is full. Nothing changed."
+            }),
             _ => Conflict(new { reason = ReorderOutcomes.OrderStale, message = "The page changed after this action. Nothing changed — reload and try again." })
         };
     }
@@ -906,6 +918,11 @@ public sealed class BackOfficeContentController(
         if (request is null)
         {
             return Problem("Item values are required.", statusCode: 400);
+        }
+        if (request.Price?.Trim().Length > Item.PriceMaxLength
+            || request.ExpectedPrice?.Trim().Length > Item.PriceMaxLength)
+        {
+            return Problem($"Price must be {Item.PriceMaxLength} characters or fewer.", statusCode: 400);
         }
 
         /*

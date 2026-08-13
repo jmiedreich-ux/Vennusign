@@ -81,6 +81,18 @@ public sealed class ContentServiceLogicTests
         Assert.Equal(37, library.TransitionItemsPerMenuLimit);
     }
 
+    [Fact]
+    public async Task AddNewItem_BoundsPriceToTheDomainMaximum()
+    {
+        var (service, library) = Build();
+        var sectionId = Guid.NewGuid();
+        library.Sections.Add(new MenuSection { Id = sectionId, VenueId = VenueId, MenuId = MenuId, Name = "Main" });
+
+        await service.AddNewItemAsync(VenueId, MenuId, sectionId, Guid.NewGuid(), "Burger", "Market Price extra");
+
+        Assert.Equal("Market Price", Assert.Single(library.Items).Price);
+    }
+
     // The statement refuses a publish whose diff was computed from a menu that has
     // since moved — the SQL suite proves that. What only the service can prove is
     // what happens next: it reads the menu again and ships what it actually is now,

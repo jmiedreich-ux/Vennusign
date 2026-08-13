@@ -10,7 +10,7 @@ public sealed class Item
 
     public const int DescriptionMaxLength = 1000;
 
-    public const int PriceMaxLength = 40;
+    public const int PriceMaxLength = 12;
 
     public Guid Id { get; set; }
 

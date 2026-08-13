@@ -2380,6 +2380,19 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         Assert.Contains(await repository.SearchItemsAsync(venueId, name, take: 20), found => found.Id == item.Id);
     }
 
+    [Fact]
+    public async Task SearchingTheLibrary_CanonicalisesAmpersandsAndPunctuationInSql()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("Fish & Chips!") };
+        await repository.CreateItemAsync(item);
+
+        var query = item.Name.Replace("&", "and", StringComparison.Ordinal).Replace("!", "", StringComparison.Ordinal);
+        Assert.Contains(await repository.SearchItemsAsync(venueId, query, 20), hit => hit.Id == item.Id);
+    }
+
     /// <summary>
     /// "Also on Late Night" (Q123) reads menu names from the rows that own them, so
     /// a renamed menu cannot be described by a stale label.

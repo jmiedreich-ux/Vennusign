@@ -640,7 +640,7 @@ public sealed class ContentService(
                 Id = itemId,
                 VenueId = venueId,
                 Name = NormalizeItemName(name),
-                Price = string.IsNullOrWhiteSpace(price) ? null : price,
+                Price = Trim(price, Item.PriceMaxLength),
                 CreatedUtc = now,
                 UpdatedUtc = now
             },
@@ -737,7 +737,7 @@ public sealed class ContentService(
         // refuses it anyway, and a refusal a person cannot see is a lost edit.
         item.Name = NormalizeItemName(name, fallback: item.Name);
         item.Description = Trim(description, 1000);
-        item.Price = Trim(price, 40);
+        item.Price = Trim(price, Item.PriceMaxLength);
         item.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
 
         /*
@@ -751,7 +751,7 @@ public sealed class ContentService(
             : new ItemValueExpectation(
                 NormalizeItemName(expected.Name, fallback: expected.Name),
                 Trim(expected.Description, 1000),
-                Trim(expected.Price, 40));
+                Trim(expected.Price, Item.PriceMaxLength));
 
         var outcome = await library
             .UpdateItemValuesGuardedAsync(

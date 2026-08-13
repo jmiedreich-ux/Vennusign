@@ -699,7 +699,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         SET XACT_ABORT ON;
         BEGIN TRANSACTION;
 
-        DECLARE @Name NVARCHAR(200), @Description NVARCHAR(1000), @Price NVARCHAR(40);
+        DECLARE @Name NVARCHAR(200), @Description NVARCHAR(1000), @Price NVARCHAR(12);
         SELECT @Name = Name, @Description = Description, @Price = Price
         FROM dbo.Items WITH (UPDLOCK, HOLDLOCK)
         WHERE Id = @ItemId AND VenueId = @VenueId;
@@ -1000,9 +1000,9 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         FROM dbo.Items i
         WHERE i.VenueId = @VenueId
           AND (@Pattern IS NULL OR i.Name LIKE @Pattern
-               OR LOWER(REPLACE(TRANSLATE(i.Name,N'-_./,()''',N'        '),N' ',N'')) LIKE @NormalizedPattern)
+               OR (dbo.CanonicalItemName(@CanonicalQuery)<>N'' AND dbo.CanonicalItemName(i.Name) LIKE N'%' + dbo.CanonicalItemName(@CanonicalQuery) + N'%'))
         ORDER BY CASE WHEN @Prefix IS NOT NULL AND i.Name LIKE @Prefix THEN 0
-                      WHEN @NormalizedPrefix IS NOT NULL AND LOWER(REPLACE(TRANSLATE(i.Name,N'-_./,()''',N'        '),N' ',N'')) LIKE @NormalizedPrefix THEN 1
+                      WHEN @CanonicalQuery IS NOT NULL AND dbo.CanonicalItemName(i.Name) LIKE dbo.CanonicalItemName(@CanonicalQuery) + N'%' THEN 1
                       ELSE 2 END,
                  i.Name, i.Id;
         """;
@@ -2313,7 +2313,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             .Replace("[", "[[]", StringComparison.Ordinal)
             .Replace("%", "[%]", StringComparison.Ordinal)
             .Replace("_", "[_]", StringComparison.Ordinal);
-        var normalized = new string(trimmed.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
+        // Canonicalisation lives in dbo.CanonicalItemName so the query and stored
+        // names cannot drift on punctuation such as '&', '+', '#', '%' or '!'.
 
         return (await dataAccess.ExecuteSqlQueryAsync<Item, object>(
             SearchItemsSql,
@@ -2323,8 +2324,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 Take = take,
                 Pattern = trimmed.Length == 0 ? null : $"%{escaped}%",
                 Prefix = trimmed.Length == 0 ? null : $"{escaped}%",
-                NormalizedPattern = normalized.Length == 0 ? null : $"%{normalized}%",
-                NormalizedPrefix = normalized.Length == 0 ? null : $"{normalized}%"
+                CanonicalQuery = trimmed.Length == 0 ? null : trimmed
             },
             cancellationToken).ConfigureAwait(false)).ToArray();
     }

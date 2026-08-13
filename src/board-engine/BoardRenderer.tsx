@@ -46,6 +46,9 @@ export type BoardRendererProps = {
   itemsDraggable?: boolean;
   /** Keeps empty sections as editor drop targets. Ignored by guest surfaces. */
   keepEmptySections?: boolean;
+  /** Preview-only selected-row removal action. Guest boards never render it. */
+  selectedItemId?: string | null;
+  onRemoveItem?: ((itemId: string) => void) | null;
 };
 
 /**
@@ -68,7 +71,9 @@ export function BoardRenderer({
   keepUnavailable = false,
   unavailableNotes = null,
   itemsDraggable = false,
-  keepEmptySections = false
+  keepEmptySections = false,
+  selectedItemId = null,
+  onRemoveItem = null
 }: BoardRendererProps) {
   // A theme written against a later engine is declined outright: rendering the
   // half we understand would be wrong without saying so.
@@ -130,6 +135,11 @@ export function BoardRenderer({
                   <span className="board-item-drag-handle" data-testid="item-drag-handle" aria-hidden="true">
                     ⠿
                   </span>
+                ) : null}
+                {surface === "preview" && onRemoveItem && selectedItemId === item.itemId ? (
+                  <button type="button" className="board-item-remove" data-testid="board-item-remove"
+                    aria-label="Remove from this page"
+                    onClick={event => { event.stopPropagation(); onRemoveItem(item.itemId); }}>−</button>
                 ) : null}
                 <p className="board-item-line">
                   <span className="board-item-name">{item.name}</span>

@@ -1248,13 +1248,18 @@ export default function MenuBuilder({
   const [addPrice, setAddPrice] = useState("");
   const [addSectionId, setAddSectionId] = useState<string | null>(null);
   const [hits, setHits] = useState<LibraryItem[]>([]);
+  const canonicalItemName = (value: string) => value.toLocaleLowerCase().replaceAll("&", "and").replace(/[^a-z0-9]/g, "");
 
   const submitAdd = async (sectionId: string) => {
     const name = addQuery.trim();
     if (!name) return;
     const matches = await searchLibraryItems(configuration, credential(), name, 8);
-    if (matches[0]) await place_(sectionId, { itemId: matches[0].itemId });
-    else await place_(sectionId, { name, price: addPrice });
+    const canonical = canonicalItemName(name);
+    const match = matches.find(candidate => canonicalItemName(candidate.name) === canonical);
+    if (match) {
+      await place_(sectionId, { itemId: match.itemId });
+      if (addPrice.trim()) setNotice(`Used the existing ${match.name}. Its shared price was not changed.`);
+    } else await place_(sectionId, { name, price: addPrice });
   };
 
   useEffect(() => {
@@ -2052,6 +2057,8 @@ export default function MenuBuilder({
                 itemsDraggable
                 keepEmptySections
                 unavailableNotes={boardNotes}
+                selectedItemId={place.selectedItemId}
+                onRemoveItem={() => void removeFromBoard()}
               />
             ) : (
               <BoardStage>
@@ -2063,6 +2070,8 @@ export default function MenuBuilder({
                   itemsDraggable
                   keepEmptySections
                   unavailableNotes={boardNotes}
+                  selectedItemId={place.selectedItemId}
+                  onRemoveItem={() => void removeFromBoard()}
                 />
               </BoardStage>
             )}
@@ -2080,7 +2089,7 @@ export default function MenuBuilder({
               /> : <input
                 ref={itemEditRef as RefObject<HTMLInputElement>}
                 className="builder__item-edit builder__item-edit--price"
-                value={itemEdit.value} aria-label="Price" data-testid="price-edit" maxLength={40}
+                value={itemEdit.value} aria-label="Price" data-testid="price-edit" maxLength={12}
                 style={{ ...itemEdit.typography, left: `${itemEdit.box.left - 8}px`, top: `${itemEdit.box.top}px`, width: `${Math.max(itemEdit.box.width + 8, 68)}px`, height: `${Math.max(itemEdit.box.height, 24)}px` }}
                 onChange={event => setItemEdit(current => (current ? { ...current, value: event.target.value } : current))}
                 onBlur={() => void commitItemEdit()}
@@ -2139,8 +2148,8 @@ export default function MenuBuilder({
                     data-testid="add-item-input"
                     role="combobox"
                     aria-autocomplete="list"
-                    aria-expanded={addQuery.trim().length > 0}
-                    aria-controls={`add-item-results-${place.sectionId}`}
+                    aria-expanded={hits.length > 0}
+                    aria-controls={hits.length > 0 ? `add-item-results-${place.sectionId}` : undefined}
                     aria-activedescendant={hits[0] ? `add-item-option-${hits[0].itemId}` : undefined}
                     onChange={event => setAddQuery(event.target.value)}
                     onKeyDown={event => {
@@ -2155,13 +2164,14 @@ export default function MenuBuilder({
                     placeholder="Price (optional)"
                     aria-label="Item price"
                     data-testid="add-item-price"
+                    maxLength={12}
                     onChange={event => setAddPrice(event.target.value)}
                     onKeyDown={event => {
                       if (event.key === "Enter" && addQuery.trim()) void submitAdd(place.sectionId!);
                       if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
                     }}
                   />
-                  <div id={`add-item-results-${place.sectionId}`} role="listbox" className="builder__add-results" data-testid="add-item-results">
+                  {hits.length > 0 ? <div id={`add-item-results-${place.sectionId}`} role="listbox" className="builder__add-results" data-testid="add-item-results">
                     {hits.map(hit => {
                       const here = hit.boards.some(entry => entry.menuId === menuId);
                       const elsewhere = hit.boards.filter(entry => entry.menuId !== menuId);
@@ -2192,7 +2202,7 @@ export default function MenuBuilder({
                           </button>
                       );
                     })}
-                  </div>
+                  </div> : null}
                   {addQuery.trim() ? (
                     <button
                       type="button"
@@ -2323,7 +2333,7 @@ export default function MenuBuilder({
                 <input
                   data-inspector-field="price"
                   data-testid="item-price"
-                  maxLength={40}
+                  maxLength={12}
                   value={draftItem.price}
                   placeholder="9.5, MP, or leave it"
                   onChange={event => setDraftItem({ ...draftItem, price: event.target.value })}

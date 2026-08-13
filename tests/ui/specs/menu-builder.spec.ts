@@ -836,9 +836,9 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     await expect(page.getByTestId("add-item-create")).toBeVisible();
     await name.press("Tab");
     await expect(price).toBeFocused();
-    await price.fill("MP");
+    await price.fill("Market Price");
     await price.press("Enter");
-    await expect(page.getByTestId("item-price")).toHaveValue("MP");
+    await expect(page.getByTestId("item-price")).toHaveValue("Market Price");
 
     await page.reload();
     await expect(page.getByTestId("canvas")).toContainText("Draft capacity item");
@@ -858,8 +858,27 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     );
     await expect(page.getByTestId("add-item-result").first()).toHaveAttribute("aria-selected", "true");
     await expect(page.getByTestId("add-item-result").first()).toHaveClass(/is-selected/);
-    await page.getByTestId("add-item-input").press("Enter");
-    await expect(page.getByText("That one is already on this board — here it is.")).toBeVisible();
+    await page.getByTestId("add-item-price").fill("12");
+    await page.getByTestId("add-item-price").press("Enter");
+    await expect(page.getByText("Used the existing Old-Fashioned. Its shared price was not changed.")).toBeVisible();
+
+    await page.request.put(`${apiBaseUrl}/api/back-office/content/items/${data.itemId}`, {
+      headers: owned,
+      data: { name: "Aussie Burger", description: data.itemDescription, price: String(data.itemPrice) }
+    });
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("add-item-input").fill("Burger");
+    await page.getByTestId("add-item-price").fill("9");
+    await page.getByTestId("add-item-price").press("Enter");
+    await expect(page.getByTestId("canvas").locator(".board-item-name", { hasText: /^Burger$/ })).toBeVisible();
+    await expect(page.getByTestId("item-price")).toHaveValue("9");
+
+    const tooLong = await page.request.post(
+      `${apiBaseUrl}/api/back-office/content/menus/${data.menuId}/sections/${data.sectionId}/items`,
+      { headers: owned, data: { name: "Too long price", price: "Market Price!" } }
+    );
+    expect(tooLong.status()).toBe(400);
+    expect(await tooLong.text()).toContain("12 characters or fewer");
 
     await page.getByTestId("open-add-item").click();
     await page.getByTestId("add-item-input").press("Escape");
@@ -913,7 +932,8 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     expect(placed.ok()).toBeTruthy();
     await openMenuBuilderAs(page, "owner", data.menuId);
     await page.locator(`[data-item-id="${shared.itemId}"]`).click();
-    await page.getByTestId("remove-item").click();
+    await expect(page.getByTestId("board-item-remove")).toHaveAccessibleName("Remove from this page");
+    await page.getByTestId("board-item-remove").click();
     const dialog = page.getByTestId("remove-item-dialog");
     await expect(dialog).toContainText(data.pages[0].name);
     await expect(dialog).toContainText("It stays in your item library, and on any other page using it.");
