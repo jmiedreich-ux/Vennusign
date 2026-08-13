@@ -44,13 +44,11 @@ Updated 2026-08-13, after Menus Milestone 4 content/delivery-foundation planning
 
 ## Exact Next Action
 
-1. **Remediate and re-review Menus Milestone 4 content and delivery foundations**
-   from issue #707 on `feature/menus-m4-player-foundations`. Review of exact SHA
-   `0480568` found that availability reach used working placements rather than
-   published snapshots, on-copy overstated zero/offline delivery, and stale screens
-   were treated as immediate. Fix and test those paths, rerun affected gates, then
-   obtain exact-SHA re-review. Geometry, pagination, canvas/theme, and display-player
-   behavior remain excluded. The Slice 3-A waiver is exhausted and does not apply.
+1. **Run owner acceptance for Menus Milestone 4 content and delivery foundations**
+   using `docs/features/menus/m4-acceptance-workbook.html`. Independent re-review
+   APPROVED product SHA `c56bbbfcd800b34bc649c1169738c75a543fe09d` after all
+   findings were remediated. Geometry, pagination, canvas/theme, and display-player
+   behavior remain excluded. Merge only after the owner returns an accepted record.
 
 2. Slice 2 is owner-accepted. Its first review blockers were a case-only section
    rename no-op and stale page-history response overwrite; both have focused tests
