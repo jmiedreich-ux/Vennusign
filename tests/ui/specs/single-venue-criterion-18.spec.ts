@@ -35,7 +35,7 @@ const groupAffordances = [
   "Local menus"
 ];
 
-const surfaces = ["menu", "home", "screens", "billing"] as const;
+const surfaces = ["menu", "/menu/quick-update", "home", "screens", "billing"] as const;
 
 for (const surface of surfaces) {
   test(`criterion 18 — ${surface} renders zero venue affordances for a single-venue account`, async ({ page }) => {
