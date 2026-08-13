@@ -33,4 +33,4 @@ running build, not only by their specs; record in `m2-acceptance-record.json`.
 | 15 | (Group) An 86 at one venue never affects another, never prompts | later build | **deferred to a later build** (Q194) |
 | 16 | (Group) A pending group menu never applies on its own | later build | **deferred to a later build** (Q194) |
 | 17 | (Group) Demoting trust reverts nothing on a screen | later build | **deferred to a later build** (Q194) |
-| 18 | A single-venue account renders the same components with zero venue affordances | M2 named spec · re-checked every UI milestone (Q194) | **met, re-checked at M3** — the named spec is `tests/ui/specs/single-venue-criterion-18.spec.ts`. **Re-check it at every UI milestone**: add each new surface to its `surfaces` list rather than writing a second spec |
+| 18 | A single-venue account renders the same components with zero venue affordances | M2 named spec · re-checked every UI milestone (Q194) | **met, re-checked at Slice 6** — `tests/ui/specs/single-venue-criterion-18.spec.ts` now sweeps `#/menu/quick-update` as well as the prior surfaces |
