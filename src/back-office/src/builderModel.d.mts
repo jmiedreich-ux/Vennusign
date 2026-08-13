@@ -71,7 +71,8 @@ export function availabilityImpactNotice(
   itemName: string,
   isAvailable: boolean,
   screenIds: readonly string[] | null | undefined,
-  screens: readonly { screenId: string; screenName: string; status: string }[]
+  screens: readonly { screenId: string; screenName: string; status: string; lastSeenUtc?: string | null }[],
+  now?: number
 ): string;
 
 export function publishBlockedReason(state: {

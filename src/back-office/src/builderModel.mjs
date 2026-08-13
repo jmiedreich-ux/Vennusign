@@ -250,33 +250,46 @@ function dayNumber(value, timezone) {
  * than one menu. Offline exceptions are named instead of being included in an
  * "all screens" claim they have not received yet.
  */
-export function availabilityImpactNotice(itemName, isAvailable, screenIds, screens) {
-  if (isAvailable) return `${itemName} is back on. It is showing again now.`;
-
+export function availabilityImpactNotice(itemName, isAvailable, screenIds, screens, now = Date.now()) {
   const ids = [...new Set(Array.isArray(screenIds) ? screenIds : [])];
-  if (ids.length === 0) return `${itemName} is off — it isn't on a screen right now.`;
+  if (ids.length === 0) return isAvailable
+    ? `${itemName} is back on — it isn't on a screen right now.`
+    : `${itemName} is off — it isn't on a screen right now.`;
 
   const affected = ids.map(id => (screens ?? []).find(screen => screen.screenId === id) ?? {
     screenId: id,
     screenName: "That screen",
     status: "offline"
   });
-  const offline = affected.filter(screen => String(screen.status ?? "").toLowerCase().includes("offline"));
-  const reached = affected.filter(screen => !offline.includes(screen));
+  const state = screen => {
+    const raw = String(screen.status ?? "").toLowerCase();
+    if (raw.includes("offline")) return "offline";
+    const lastSeen = screen.lastSeenUtc ? new Date(screen.lastSeenUtc) : null;
+    return raw === "online" && lastSeen && Number.isFinite(lastSeen.getTime()) && now - lastSeen.getTime() >= 300_000
+      ? "stale"
+      : "online";
+  };
+  const offline = affected.filter(screen => state(screen) === "offline");
+  const stale = affected.filter(screen => state(screen) === "stale");
+  const reached = affected.filter(screen => state(screen) === "online");
 
-  if (offline.length === 0) {
+  if (offline.length === 0 && stale.length === 0) {
+    const verb = isAvailable ? "showing on" : "hidden on";
     return ids.length === 1
-      ? `${itemName} is off — hidden on your screen immediately.`
-      : `${itemName} is off — hidden on all ${ids.length} screens immediately.`;
+      ? `${itemName} is ${isAvailable ? "back on" : "off"} — ${verb} your screen immediately.`
+      : `${itemName} is ${isAvailable ? "back on" : "off"} — ${verb} all ${ids.length} screens immediately.`;
   }
 
   const reachedText = reached.length === 0
     ? ""
-    : `off on ${names(reached.map(screen => screen.screenName))}; `;
+    : `${isAvailable ? "back on" : "off on"} ${names(reached.map(screen => screen.screenName))}; `;
+  const staleText = stale.length === 0 ? "" : stale.length === 1
+    ? `${stale[0].screenName} is stale, so confirm it there; `
+    : `${names(stale.map(screen => screen.screenName))} are stale, so confirm them there; `;
   const offlineText = offline.length === 1
     ? `${offline[0].screenName} will catch up when it reconnects.`
-    : `${names(offline.map(screen => screen.screenName))} will catch up when they reconnect.`;
-  return `${itemName} is off — ${reachedText}${offlineText}`;
+    : offline.length > 1 ? `${names(offline.map(screen => screen.screenName))} will catch up when they reconnect.` : "";
+  return `${itemName} is ${isAvailable ? "back on" : "off"} — ${reachedText}${staleText}${offlineText}`.replace(/; $/, ".");
 }
 
 function names(values) {

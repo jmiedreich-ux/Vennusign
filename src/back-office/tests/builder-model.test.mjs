@@ -250,7 +250,24 @@ test("availability impact uses honest zero, one, many, and offline-screen forms 
   );
   assert.equal(
     availabilityImpactNotice("Berry Fizz", true, ["bar"], screens),
-    "Berry Fizz is back on. It is showing again now."
+    "Berry Fizz is back on — showing on your screen immediately."
+  );
+  assert.equal(
+    availabilityImpactNotice("Berry Fizz", true, [], screens),
+    "Berry Fizz is back on — it isn't on a screen right now."
+  );
+  assert.equal(
+    availabilityImpactNotice("Berry Fizz", true, ["lobby"], screens),
+    "Berry Fizz is back on — Lobby will catch up when it reconnects."
+  );
+  const stale = { screenId: "kitchen", screenName: "Kitchen", status: "Online", lastSeenUtc: "2026-08-13T04:00:00Z" };
+  assert.equal(
+    availabilityImpactNotice("Berry Fizz", false, ["kitchen"], [stale], Date.parse("2026-08-13T05:00:00Z")),
+    "Berry Fizz is off — Kitchen is stale, so confirm it there."
+  );
+  assert.equal(
+    availabilityImpactNotice("Berry Fizz", true, ["bar", "kitchen", "lobby"], [...screens, stale], Date.parse("2026-08-13T05:00:00Z")),
+    "Berry Fizz is back on — back on Bar; Kitchen is stale, so confirm it there; Lobby will catch up when it reconnects."
   );
 });
 

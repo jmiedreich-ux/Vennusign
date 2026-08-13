@@ -10,6 +10,15 @@ Updated 2026-08-13, after Menus Milestone 4 content/delivery-foundation planning
 - Search used to establish the behavior surface: `rg -n "page.*action|Rename page|Duplicate page|Delete page|pageMenu|ellipsis|MoreHorizontal|breadcrumb" src/back-office/src/MenuBuilder.tsx src/back-office/src --glob '*.tsx' --glob '*.css'`. Only the builder breadcrumb owns this page-action pattern; section rail actions and unrelated administration deletes were deliberately unchanged.
 - Evidence: `npm run build` in `src/back-office` passed. `npx playwright test specs/menu-pages.spec.ts --project=desktop` passed 21/22, with one unrelated LocalDB seed deadlock; the affected paths then passed serially 7/7, and the final focused crumb/menu case passed 1/1. `git diff --check` passed (line-ending warnings only). Full Playwright, mobile, other roles/tiers beyond the existing capability-hidden case, and CI are **UNTESTED** for this bounded one-off.
 
+## Menus M4 content/delivery foundations — review remediation, 2026-08-13
+
+- Implemented scope: the existing guest board projection remains the sole filtering boundary; availability impact now derives affected screens from each assigned menu's latest published snapshot, deduplicates screens, and never uses draft-only placement rows as on-screen truth. Push, push-all, reset, and unpair require `screen.content.target`; reset and unpair retain their dedicated recovery/device gates.
+- Copy paths: off and back-on distinguish zero, one, many, offline, stale, and mixed targets. Availability age uses venue-calendar today/yesterday/weekday forms.
+- Review of `0480568` returned REQUEST_CHANGES because the first implementation used working placements, overstated back-on delivery, and treated stale as immediate. Those findings are remediated locally with draft-add/draft-remove, duplicate reach, on/off, offline, stale, and mixed tests.
+- Executed evidence before first review: Release solution build passed; API units 420/420; Back Office units 202/202; production build passed; focused engine/model 65/65; focused API 13/13; affected Playwright 1/1; Impeccable detector clean. The broad Menu Builder attempt was **not a pass**: 27 passed before shared seed data reached the 50-menu ceiling, with one unrelated long-edit timeout.
+- Post-remediation focused evidence: builder model 35/35, production build passed, focused API 14/14. Full affected gates and exact-SHA re-review remain next.
+- Deferred: geometry, pagination, canvas/theme layout, `src/display`, playback, cutover, player 86 timing, reconnect, the 10-second line, and device compatibility.
+
 ## Current State
 
 - Working model is **features and milestones** — read `AGENTS.md` first; the phase/track/WP workflow is retired.
@@ -35,11 +44,13 @@ Updated 2026-08-13, after Menus Milestone 4 content/delivery-foundation planning
 
 ## Exact Next Action
 
-1. **Execute Menus Milestone 4 content and delivery foundations from issue #707** on
-   `feature/menus-m4-player-foundations`. Preserve the owner-approved boundary:
-   published guest projection, 86 truth, and authorization hygiene are in scope;
-   geometry, pagination, canvas/theme, and display-player behavior are not. The Slice 3-A
-   review/Playwright/CI waiver is exhausted and does not apply.
+1. **Remediate and re-review Menus Milestone 4 content and delivery foundations**
+   from issue #707 on `feature/menus-m4-player-foundations`. Review of exact SHA
+   `0480568` found that availability reach used working placements rather than
+   published snapshots, on-copy overstated zero/offline delivery, and stale screens
+   were treated as immediate. Fix and test those paths, rerun affected gates, then
+   obtain exact-SHA re-review. Geometry, pagination, canvas/theme, and display-player
+   behavior remain excluded. The Slice 3-A waiver is exhausted and does not apply.
 
 2. Slice 2 is owner-accepted. Its first review blockers were a case-only section
    rename no-op and stale page-history response overwrite; both have focused tests
