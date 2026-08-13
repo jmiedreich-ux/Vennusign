@@ -27,7 +27,8 @@ The cancellation above cleared the roadmap deliberately. The reset has since pro
   - **The acceptance findings are worked and locally gated.** The green availability panel is gone; human handle-origin drag works with a visible insertion line; deletion selects the previous/first surviving section; delete lives on each Sections row; the duplicate name field is gone; the workbook uses on-screen Undo; and the fixture pre-seeds one shared item on two menus. Every product regression was observed red with its fix absent. Mobile interactions remain out of scope (Q158/#681), reaffirmed by the owner.
   - **Menus M3-A Slice 3 is merged and owner-accepted.** PR #705 merged to `master` as `a3a4213`; issue #703 is closed and the feature branch is deleted. Search acceptance passed after repairing its missing named fixture data; focused Playwright covers the full query lifecycle. The owner's final requested change makes Undo/Redo notices name the item and page and passes focused Playwright 1/1 at `73074e0`. The owner waived further review and instructed merge without CI.
   - **Menus M3-A Slice 3-A is merged and owner-accepted.** PR #706 merged to `master` as `cdfd2bb`; issue #704 is closed and the feature branch is deleted. The bounded refinement delivered compact page/history navigation, inline menu/page renaming, the Signal V rail, and independently persistent panel collapse. The owner completed the visual adjustment loop and accepted the result. Canvas rendering and Slice 4 behavior remain excluded. For this special slice only, the owner explicitly waived independent agent and Playwright review and instructed no CI; this is not a standing exception.
-  - **Milestone 4 content and delivery foundations are owner-accepted and closing** — issue #707, PR #708. It ships published-snapshot availability reach, truthful zero/one/many/offline/stale impact wording, venue-relative 86 age, and screen-write authorization hygiene. The owner accepted the unavailable offline manual setup on automated evidence and instructed merge without another review. Geometry, pagination, canvas/theme layout, `src/display`, and all live-player claims remain deferred.
+  - **Milestone 4 content and delivery foundations are merged and owner-accepted** — issue #707 is closed; PR #708 merged as `43ce604`. It ships published-snapshot availability reach, truthful zero/one/many/offline/stale impact wording, venue-relative 86 age, and screen-write authorization hygiene. The owner accepted the unavailable offline manual setup on automated evidence. Geometry, pagination, canvas/theme layout, `src/display`, and all live-player claims remain deferred.
+  - **The owner planning workbook now controls the successor sequence.** Slice 5 Board View + Play is entirely out of scope for the current sequence, not the next build; deferred bundle #709 preserves it. Slice 6 is next. Its Quick Update redesign was supplied by the owner on 2026-08-13: a three-column 86 board with a section rail, available-item tile grid, and an across-menu off-list. The source artifact must still be landed in the approved Menus design bundle before implementation. Blank menu creation remains its other planned workstream. Paste import/matching/replacement moved to Slice 6-A. Slice 7 remains Menu Home completion after redesign.
   - The register has one open question again — **Q209**, deferred at M2 acceptance: the ⋯ card actions cover guest content now that Q98 removed the venue-name strip. It ships on its provisional default until settled.
 - Backlog from the Menus planning: issues #670–#683 (out-of-scope decisions, copy debt, accessibility debt).
 
@@ -49,9 +50,11 @@ further independent review. CI remains suspended, so local evidence was the gate
 | 1 | Item library + draft/publish spine + assignment | **complete** — merged and accepted 2026-08-09 (PR #685, #684) |
 | 2 | App shell + render engine + Menus home | **complete** — merged and accepted 2026-08-10 (PR #689, #687) |
 | 3 | Builder + adding items | **complete** — merged to `master` as `6bf0f75` 2026-08-11 (PR #691, issue #690); closed on a remediated "Needs adjustment" record at the owner's instruction |
-| 4 | Display player + geometry + delivery | not started — requires an owner-approved plan |
-| 5 | Board view + Play | blocked on 4 |
-| 6 | Quick Update + import + confirm step | blocked on 5 |
+| 4 | Content and delivery foundations | **complete** — merged and owner-accepted 2026-08-13 (PR #708, issue #707) |
+| 5 | Board view + Play | **out of scope for the current sequence** — retained in backlog issue #709 |
+| 6 | Quick Update + blank creation | **next; design received, authority landing and path audit required** |
+| 6-A | Paste import + matching + replacement + confirmation | blocked on accepted Slice 6 |
+| 7 | Menu Home completion | needs redesign and planning |
 
 ## Validation Policy
 

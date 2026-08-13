@@ -24,11 +24,11 @@ running build, not only by their specs; record in `m2-acceptance-record.json`.
 | 6 | Take off the screens always shows what will replace the menu before confirming | M2 | **met** — `menus-shelf.spec.ts` opens the dialog and asserts the fallback card, the affected screens and the verbatim sentence |
 | 7 | Undo is a keystroke; named in no settings page, plan comparison, or marketing surface | M3 | **met** — ⌘Z/⌘⇧Z in `MenuBuilder.tsx`, asserted in `menu-builder.spec.ts`; session-scoped, never persisted, and named in no settings page or plan comparison |
 | 8 | A capability outside the plan renders nothing — no disabled control, no tooltip, no placeholder | M2 (shell gating) · every UI milestone | **met** — named spec in `navigation-and-entitlements.spec.ts`, asserting both halves: outside-the-plan renders nothing anywhere, and a permission refusal still renders and still says so (decisions 4 and 5) |
-| 9 | Play renders against device-reported geometry; an unpaired screen is unselectable in Play | M4 (partial) · M5 (complete) | pending |
-| 10 | Import surfaces only the rows the parser was unsure about | M6 | pending |
+| 9 | Play renders against device-reported geometry; an unpaired screen is unselectable in Play | later canvas/player build | **deferred** — owner moved Slice 5 Board View + Play out of the current sequence on 2026-08-13 |
+| 10 | Import surfaces only the rows the parser was unsure about | M6-A | pending |
 | 11 | Spreadsheet headings any order/case, extra columns tolerated | later build | **deferred to a later build** (Q194) |
-| 12 | Import into an existing menu replaces content, preserves layout/theme/86s | M6 | pending |
-| 13 | Thirty near-miss matches produce one grouped question | M6 | pending |
+| 12 | Import into an existing menu replaces content, preserves layout/theme/86s | M6-A | pending |
+| 13 | Thirty near-miss matches produce one grouped question | M6-A | pending |
 | 14 | (Group) Locked field visible with its reason, never hidden | later build | **deferred to a later build** (Q194) |
 | 15 | (Group) An 86 at one venue never affects another, never prompts | later build | **deferred to a later build** (Q194) |
 | 16 | (Group) A pending group menu never applies on its own | later build | **deferred to a later build** (Q194) |
