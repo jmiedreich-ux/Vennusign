@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-13, after Menus Milestone 4 content/delivery-foundation planning and claim.
+Updated 2026-08-13, for Menus Milestone 4 owner acceptance and merge closure.
 
 ## 2026-08-13 — Menu Builder page-action crumb refinement (local, uncommitted)
 
@@ -44,11 +44,10 @@ Updated 2026-08-13, after Menus Milestone 4 content/delivery-foundation planning
 
 ## Exact Next Action
 
-1. **Run owner acceptance for Menus Milestone 4 content and delivery foundations**
-   using `docs/features/menus/m4-acceptance-workbook.html`. Independent re-review
-   APPROVED product SHA `c56bbbfcd800b34bc649c1169738c75a543fe09d` after all
-   findings were remediated. Geometry, pagination, canvas/theme, and display-player
-   behavior remain excluded. Merge only after the owner returns an accepted record.
+1. **Complete PR #708 merge closure and stop.** The owner accepted Milestone 4 and
+   instructed merge without another review. The offline-screen manual setup was not
+   available; the owner explicitly accepted its automated coverage. After merge,
+   close #707, delete the completed branch, and do not begin the next milestone.
 
 2. Slice 2 is owner-accepted. Its first review blockers were a case-only section
    rename no-op and stale page-history response overwrite; both have focused tests

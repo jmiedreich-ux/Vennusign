@@ -1,0 +1,24 @@
+{
+  "milestone": "Menus M4 content and delivery foundations",
+  "productSha": "c56bbbfcd800b34bc649c1169738c75a543fe09d",
+  "acceptedUtc": "2026-08-13T05:41:24.125Z",
+  "result": "Accepted",
+  "ownerOverride": "Owner instructed closure and merge on 2026-08-13. The assigned-offline-screen manual setup was unavailable; its automated coverage was accepted in place of another manual run.",
+  "cases": [
+    {
+      "name": "Item stays editable when turned off",
+      "result": "Pass",
+      "notes": ""
+    },
+    {
+      "name": "Zero-screen wording",
+      "result": "Pass",
+      "notes": ""
+    },
+    {
+      "name": "Assigned offline-screen wording",
+      "result": "Accepted by owner on automated evidence",
+      "notes": "No screens were offline at the time of manual testing."
+    }
+  ]
+}

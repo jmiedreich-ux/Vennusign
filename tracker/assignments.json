@@ -1,17 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-13T05:05:55Z",
-  "activeAssignments": [
-    {
-      "assignment": "Menus M4 — content and delivery foundations",
-      "issue": 707,
-      "owner": "Codex for JeremyPC",
-      "branch": "feature/menus-m4-player-foundations",
-      "claimedUtc": "2026-08-13T05:05:55Z",
-      "status": "Independent review approved; preparing owner acceptance",
-      "notes": "Owner-approved 2026-08-13 boundary excludes geometry, pagination, canvas/theme work, src/display integration, and all live-player acceptance claims."
-    }
-  ],
+  "updatedUtc": "2026-08-13T05:41:24Z",
+  "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
@@ -36,6 +26,16 @@
     "releasedBy": "scope completed locally"
   },
   "lastCompletedAssignment": {
+    "assignment": "Menus M4 — content and delivery foundations",
+    "issue": 707,
+    "pr": 708,
+    "branch": "feature/menus-m4-player-foundations",
+    "completedUtc": "2026-08-13T05:41:24Z",
+    "acceptedProductSha": "c56bbbfcd800b34bc649c1169738c75a543fe09d",
+    "acceptance": "Owner accepted and instructed merge. The unavailable offline-screen manual setup was accepted on automated evidence.",
+    "notes": "Player, geometry, pagination, canvas/theme layout, device proof, and all live-player behavior remain deferred."
+  },
+  "previousCompletedAssignment": {
     "assignment": "Menus M3-A — slice 3-A (builder navigation and panel refinements)",
     "issue": 704,
     "pr": 706,
