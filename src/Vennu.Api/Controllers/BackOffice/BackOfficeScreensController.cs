@@ -121,6 +121,7 @@ public sealed class BackOfficeScreensController(
     }
 
     [HttpPost("{screenId:guid}/push")]
+    [RequireCapability("screen.content.target")]
     public async Task<IActionResult> Push(
         Guid venueId,
         Guid screenId,
@@ -143,6 +144,8 @@ public sealed class BackOfficeScreensController(
     }
 
     [HttpPost("{screenId:guid}/reset")]
+    [RequireCapability("screen.content.target")]
+    [RequireCapability("screen.delivery.recover")]
     public async Task<ActionResult<ScreenManagementItem>> Reset(
         Guid venueId,
         Guid screenId,
@@ -153,6 +156,8 @@ public sealed class BackOfficeScreensController(
     }
 
     [HttpDelete("{screenId:guid}/pairing")]
+    [RequireCapability("screen.content.target")]
+    [RequireCapability("screen.device.unpair")]
     public async Task<IActionResult> Unpair(
         Guid venueId,
         Guid screenId,
@@ -162,6 +167,7 @@ public sealed class BackOfficeScreensController(
             : NotFound();
 
     [HttpPost("push-all")]
+    [RequireCapability("screen.content.target")]
     public async Task<ActionResult<ScreenPushAllResult>> PushAll(
         Guid venueId,
         CancellationToken cancellationToken)

@@ -93,6 +93,30 @@ public sealed class ContentServiceLogicTests
         Assert.Equal("Market Price", Assert.Single(library.Items).Price);
     }
 
+    [Fact]
+    public async Task Availability_CountsAndNotifiesEachAffectedScreenOnceAcrossMenusAndPages()
+    {
+        var itemId = Guid.NewGuid();
+        var secondMenuId = Guid.NewGuid();
+        var library = new FakeContentRepository();
+        library.Items.Add(new Item { Id = itemId, VenueId = VenueId, Name = "Berry Fizz" });
+        library.Placements.AddRange([
+            new Placement { Id = Guid.NewGuid(), VenueId = VenueId, MenuId = MenuId, ItemId = itemId },
+            new Placement { Id = Guid.NewGuid(), VenueId = VenueId, MenuId = secondMenuId, ItemId = itemId }
+        ]);
+        library.Assignments.AddRange([
+            new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = ScreenId, MenuId = MenuId, PageId = Guid.NewGuid() },
+            new MenuScreenAssignment { Id = Guid.NewGuid(), VenueId = VenueId, ScreenId = ScreenId, MenuId = secondMenuId, PageId = Guid.NewGuid() }
+        ]);
+        var notifier = new RecordingNotifier();
+        var service = new ContentService(library, new FakeVenueRepository(), notifier, TimeProvider.System);
+
+        var result = await service.SetAvailabilityAsync(VenueId, itemId, false, "Owner");
+
+        Assert.Equal(ScreenId, Assert.Single(result.ScreenIds));
+        Assert.Equal(ScreenId, Assert.Single(notifier.AvailabilityScreenIds));
+    }
+
     // The statement refuses a publish whose diff was computed from a menu that has
     // since moved — the SQL suite proves that. What only the service can prove is
     // what happens next: it reads the menu again and ships what it actually is now,
@@ -159,11 +183,16 @@ public sealed class ContentServiceLogicTests
 
     private sealed class RecordingNotifier : Vennu.Api.Notifications.IScreenUpdateNotifier
     {
+        public List<Guid> AvailabilityScreenIds { get; } = [];
         public Task NotifyVenueContentUpdatedAsync(Guid venueId, object payload, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyScreenContentUpdatedAsync(Guid screenId, object payload, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyScreenThemeUpdatedAsync(Guid screenId, object theme, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyVenueThemeUpdatedAsync(Guid venueId, object theme, CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task NotifyScreenItemAvailabilityChangedAsync(Guid screenId, string itemId, bool available, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task NotifyScreenItemAvailabilityChangedAsync(Guid screenId, string itemId, bool available, CancellationToken cancellationToken = default)
+        {
+            AvailabilityScreenIds.Add(screenId);
+            return Task.CompletedTask;
+        }
         public Task NotifyVenueItemAvailabilityChangedAsync(Guid venueId, string itemId, bool available, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyScreenSyncTickAsync(Guid screenId, long serverTimeMs, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task NotifyVenueSyncTickAsync(Guid venueId, long serverTimeMs, CancellationToken cancellationToken = default) => Task.CompletedTask;

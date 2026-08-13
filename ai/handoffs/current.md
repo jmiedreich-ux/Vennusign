@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-13, after Menus Milestone 4 player-foundation planning and claim.
+Updated 2026-08-13, after Menus Milestone 4 content/delivery-foundation planning and claim.
 
 ## 2026-08-13 — Menu Builder page-action crumb refinement (local, uncommitted)
 
@@ -19,7 +19,7 @@ Updated 2026-08-13, after Menus Milestone 4 player-foundation planning and claim
 - **Milestone 1 is merged.** PR #685 merged to `master` on 2026-08-09 as `cd449a3`, on 13 green exact-head checks at `2977bc3`; branch `feature/menus-m1-spine` is deleted, issue #684 closed. It was reworked five times: independent reviews #2 through #6 each returned REQUEST_CHANGES and each found real defects. All are closed, every one with a regression test verified to fail with its fix reverted.
 - **Milestone 1 is accepted** (owner, 2026-08-09). Milestone 1 shipped no new UI, and `AGENTS.md` gives a schema-only milestone a demo script rather than a workbook walk: `scripts/run-m1-demo.ps1` passes 12 of 12, including customer-visible assertions of what each screen is actually showing. `m1-acceptance-record.json` stays **superseded** — it was signed 2026-08-08 against the authored-draft implementation — and is kept as history; this note is the acceptance record. **Milestone 2 is unblocked.**
 - **Milestone 3 and its M3-A Slices 1–3-A are merged and owner-accepted.** Slice 3-A closed through PR #706 as `cdfd2bb`; issue #704 is closed and its branch is deleted. Its one-time independent-review, Playwright, and CI exception is exhausted and does not apply to successor work.
-- **Milestone 4 player foundations are claimed** in issue #707 on `feature/menus-m4-player-foundations`. The owner amended the former player scope on 2026-08-13: this milestone builds published guest projection, deterministic pagination for explicit geometry, heartbeat geometry, truthful Back Office geometry/86 states, and screen-write authorization hygiene. It does not change `src/display` or claim playback, live cutover, immediate player 86, reconnect, the 10-second screen line, or real-device compatibility.
+- **Milestone 4 content and delivery foundations are claimed** in issue #707 on `feature/menus-m4-player-foundations`. The owner removed the display player and then geometry-driven pagination from this milestone on 2026-08-13. Published guest projection, truthful 86 impact, and screen-write authorization hygiene remain. Geometry, canvas/theme layout, `src/display`, playback, live cutover, player 86, reconnect, the 10-second line, and device compatibility are deferred.
 - **Milestone 2 is merged and accepted.** Owner ran the acceptance workbook 2026-08-10: 11 of 11 Pass, closure "Accept Milestone 2", record in `docs/features/menus/m2-acceptance-record.json`. One independent review, three blocking defects, all fixed at `4c61aa2`; the owner waived the second review that the first had asked for and closed the milestone on it. **Milestone 3 is unblocked.** Detail in §Milestone 2 — built and accepted.
 - **The register has one open question again: Q209**, deferred by the owner at M2 acceptance. The ⋯ card actions sit over the board and, now that Q98 removed the venue-name strip, they cover guest content — the first item's price on the accepted build. It ships on its provisional default until settled.
 - **The save model is settled: the draft is derived, not authored** (owner decision, milestone-plan §The save model). The live rows are the working state; the screens show the last published snapshot; the draft is the computed difference. Migration 058 creates no draft table, and the legacy editor now writes through `Items`/`Placements` so no path can change a screen without a publish.
@@ -35,10 +35,10 @@ Updated 2026-08-13, after Menus Milestone 4 player-foundation planning and claim
 
 ## Exact Next Action
 
-1. **Execute Menus Milestone 4 player foundations from issue #707** on
+1. **Execute Menus Milestone 4 content and delivery foundations from issue #707** on
    `feature/menus-m4-player-foundations`. Preserve the owner-approved boundary:
-   contracts, deterministic layout, device-reported geometry, Back Office truth, and
-   authorization hygiene are in scope; display-player behavior is not. The Slice 3-A
+   published guest projection, 86 truth, and authorization hygiene are in scope;
+   geometry, pagination, canvas/theme, and display-player behavior are not. The Slice 3-A
    review/Playwright/CI waiver is exhausted and does not apply.
 
 2. Slice 2 is owner-accepted. Its first review blockers were a case-only section

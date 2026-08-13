@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Vennu.Api.Contracts.PlatformOperations;
 using Vennu.Api.Controllers.BackOffice;
 using Vennu.Api.Services;
+using Vennu.Api.BackOffice;
 using Vennu.Data.Services;
 
 namespace Vennu.Api.Tests.Controllers;
@@ -10,6 +11,21 @@ namespace Vennu.Api.Tests.Controllers;
 [Trait("Category", "Unit")]
 public sealed class BackOfficeScreensControllerTests
 {
+    [Theory]
+    [InlineData(nameof(BackOfficeScreensController.Push))]
+    [InlineData(nameof(BackOfficeScreensController.PushAll))]
+    [InlineData(nameof(BackOfficeScreensController.Reset))]
+    [InlineData(nameof(BackOfficeScreensController.Unpair))]
+    public void ScreenMutationRoutes_RequireContentTargetCapability(string action)
+    {
+        var method = typeof(BackOfficeScreensController).GetMethod(action);
+        var capabilities = method!.GetCustomAttributes(typeof(RequireCapabilityAttribute), inherit: true)
+            .Cast<RequireCapabilityAttribute>()
+            .Select(attribute => Assert.Single(attribute.Arguments!))
+            .ToArray();
+        Assert.Contains("screen.content.target", capabilities);
+    }
+
     [Fact]
     public async Task Create_ReturnsConflict_WhenScreenLimitIsReached()
     {

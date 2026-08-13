@@ -47,6 +47,7 @@ public sealed class ContentService(
         var screenIds = assignments
             .Where(assignment => menuIdsShowingItem.Contains(assignment.MenuId))
             .Select(assignment => assignment.ScreenId)
+            .Distinct()
             .ToArray();
 
         // Telling the caller which screens are affected is not the same as changing

@@ -56,13 +56,23 @@ export function boardsPhrase(boards: LibraryItem["boards"] | null | undefined, c
 export function sharedItemLine(boards: LibraryItem["boards"] | null | undefined, currentMenuId: string): string | null;
 export function unavailableNote(
   availability: MenuAvailability | null | undefined,
-  timezone: string | null | undefined
+  timezone: string | null | undefined,
+  now?: Date
 ): string | null;
 export function isMissingPrice(item: { price?: string | null } | null | undefined): boolean;
 export function availabilityLine(
   availability: MenuAvailability | null | undefined,
-  timezone: string | null | undefined
+  timezone: string | null | undefined,
+  now?: Date
 ): string | null;
+export function availabilityTime(utc: string | null | undefined, timezone: string | null | undefined, now?: Date): string | null;
+
+export function availabilityImpactNotice(
+  itemName: string,
+  isAvailable: boolean,
+  screenIds: readonly string[] | null | undefined,
+  screens: readonly { screenId: string; screenName: string; status: string }[]
+): string;
 
 export function publishBlockedReason(state: {
   draftCount: number;
