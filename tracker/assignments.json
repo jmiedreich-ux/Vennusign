@@ -31,8 +31,9 @@
     "pr": 705,
     "branch": "feature/menus-m3a-s3-board-add-item",
     "completedUtc": "2026-08-13T01:45:00Z",
+    "mergeSha": "a3a421339670a3807a0c8418a2551752a1dcaaca",
     "acceptedProductSha": "73074e030cf9c2d172b435aaeadfd0638bdb0793",
     "acceptance": "Owner accepted after focused search retest, waived further review, and instructed merge without CI.",
-    "notes": "Independent review approved 0e7c54c. Final owner-requested Undo/Redo wording passed focused Playwright 1/1. Whole page Canvas work is deferred to #704."
+    "notes": "PR #705 merged and issue #703 closed. Independent review approved 0e7c54c. Final owner-requested Undo/Redo wording passed focused Playwright 1/1. Whole page Canvas work is deferred to #704."
   }
 }
