@@ -55,9 +55,44 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", label: "firstopen" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await expect(page.getByTestId("viewing-chip").filter({ hasNotText: "Whole page" }).first()).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("page-summary")).toHaveAttribute("data-view", "section");
+    await expect(page.getByTestId("section-scope")).toHaveText(data.sections![0].name);
     await expect(page.getByTestId("rail-section").first()).toHaveAttribute("aria-current", "true");
     await expect(page.getByTestId("inspector-empty")).toBeVisible();
+  });
+
+  test("the section/history and item panels collapse independently and remember the browser preference", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "panel-preferences" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    const workspace = page.locator(".builder__columns");
+    const left = page.getByTestId("left-panel-toggle");
+    const right = page.getByTestId("right-panel-toggle");
+    await expect(left).toHaveAttribute("aria-expanded", "true");
+    await expect(right).toHaveAttribute("aria-expanded", "true");
+
+    await left.click();
+    await expect(workspace).toHaveAttribute("data-left-panel", "collapsed");
+    await expect(workspace).toHaveAttribute("data-right-panel", "expanded");
+    await expect(page.getByTestId("page-history")).toBeHidden();
+
+    await right.click();
+    await expect(workspace).toHaveAttribute("data-right-panel", "collapsed");
+    await expect(page.getByTestId("inspector-empty")).toBeHidden();
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("vennusign.menu.builder.panels"))).toContain('"leftCollapsed":true');
+
+    await page.reload();
+    await expect(page.getByTestId("menu-builder")).toBeVisible();
+    await expect(workspace).toHaveAttribute("data-left-panel", "collapsed");
+    await expect(workspace).toHaveAttribute("data-right-panel", "collapsed");
+    await expect(left).toHaveAccessibleName("Expand sections and history panel");
+    await expect(right).toHaveAccessibleName("Expand item panel");
+
+    await left.click();
+    await right.click();
+    await page.reload();
+    await expect(workspace).toHaveAttribute("data-left-panel", "expanded");
+    await expect(workspace).toHaveAttribute("data-right-panel", "expanded");
   });
 
   test("canvas name, description and price edit in place and softly cue the inspector", async ({ page }) => {
@@ -896,7 +931,7 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158, owner reaffirmed).");
     const data = await seed({ role: "owner", label: "slice3-cross-drag", sectionCount: 2, itemsPerSection: 1 });
     await openMenuBuilderAs(page, "owner", data.menuId);
-    await page.getByTestId("viewing-chip").filter({ hasText: "Whole page" }).click();
+    await page.getByTestId("page-scope").click();
 
     const sourceRow = page.locator(`[data-section-id="${data.sections[0].sectionId}"] [data-item-id]`).first();
     const destinationRow = page.locator(`[data-section-id="${data.sections[1].sectionId}"] [data-item-id]`).first();
@@ -922,7 +957,7 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     await expect(page.locator(`[data-section-id="${data.sections[0].sectionId}"] [data-item-id="${data.items[0].itemId}"]`)).toBeVisible();
 
     await page.reload();
-    await page.getByTestId("viewing-chip").filter({ hasText: "Whole page" }).click();
+    await expect(page.getByTestId("page-summary")).toHaveAttribute("data-view", "whole-page");
     await expect(page.locator(`[data-section-id="${data.sections[0].sectionId}"] [data-item-id="${data.items[0].itemId}"]`)).toBeVisible();
     await expect(page.getByTestId("page-history-entry").first()).toContainText("moved");
   });
@@ -995,7 +1030,7 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     await page.getByRole("button", { name: "Undo", exact: true }).click();
     await expect(page.getByText(/page changed after this action/i)).toBeVisible();
     await page.reload();
-    await page.getByTestId("viewing-chip").filter({ hasText: "Whole page" }).click();
+    await expect(page.getByTestId("page-summary")).toHaveAttribute("data-view", "whole-page");
     await expect(page.locator(`[data-section-id="${sibling.sectionId}"] [data-item-id="${item.itemId}"]`)).toBeVisible();
     await expect(page.locator(`[data-section-id="${source.sectionId}"] [data-item-id="${item.itemId}"]`)).toHaveCount(0);
   });

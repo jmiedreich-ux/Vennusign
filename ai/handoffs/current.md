@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-12, at Menus M3-A Slice 2 owner acceptance and closure.
+Updated 2026-08-13, at Menus M3-A Slice 3-A owner acceptance and merge authorization.
 
 ## Current State
 
@@ -25,10 +25,10 @@ Updated 2026-08-12, at Menus M3-A Slice 2 owner acceptance and closure.
 
 ## Exact Next Action
 
-1. **Begin Menus M3-A Slice 3 through the GitHub-first claim process.** Read its
-   work-plan scope, create/confirm the milestone issue, claim it in the tracker,
-   branch from updated `master`, and keep the schema → API → UI → Playwright slice
-   independently mergeable.
+1. **Merge PR #706 and close issue #704.** The owner accepted Slice 3-A after the
+   requested visual adjustment loop and instructed merge and close-out. Independent
+   agent review, Playwright, and CI remain waived for this slice only. Delete the
+   completed branch after merge. Do not begin Slice 4 without its approved plan.
 
 2. Slice 2 is owner-accepted. Its first review blockers were a case-only section
    rename no-op and stale page-history response overwrite; both have focused tests
@@ -905,3 +905,73 @@ PR #705 merged to `master` as `a3a421339670a3807a0c8418a2551752a1dcaaca`;
 issue #703 is closed and the completed branch is deleted.
 
 **Exact next action.** Begin no successor until its owner-approved plan exists.
+
+## M3-A Slice 3-A — implementation handoff — 2026-08-13
+
+Issue #704 was repurposed with owner approval for the bounded UI refinement between
+Slices 3 and 4. The implementation is on
+`feature/menus-m3a-s3a-builder-refinements`, based on accepted `master` SHA
+`370bd9a4a0003769e9dbeb6c2b84afeab05578d5`.
+
+The builder now replaces the repeated section-chip row with a `Page › Section`
+context, compacts history and keeps `View all` beside its heading, uses borderless
+page tabs with the sky-blue active underline, installs the Signal V and route labels
+in the fixed 76px rail, and allows the Sections/History and Item panels to collapse
+independently. Panel state is stored browser-wide under
+`vennusign.menu.builder.panels` and survives reload and moving between menus; storage
+refusal falls back to visit-local state.
+
+The owner explicitly excluded canvas-renderer changes, an expandable app rail, custom
+keyboard navigation, application-wide renaming, and all Slice 4 inspector,
+availability and 86 behavior. The acceptance workbook at
+`docs/features/menus/m3-a-s3a-acceptance-workbook.html` is for owner acceptance only;
+an agent must not complete or sign it.
+
+Local evidence recorded before publication: Back Office production build passed,
+198/198 Back Office tests passed, diff/whitespace checks passed, and 16/16 focused
+Slice 3-A contract assertions passed. The two affected Playwright specs compile and
+enumerate, but browser execution in the authoring workspace was **UNTESTED** because
+the Linux workspace lacks the repository's Windows LocalDB harness and its browser
+download returned an empty archive. On 2026-08-12 the owner gave a one-time waiver of
+independent agent and Playwright review for this special slice. The waiver applies
+only to Slice 3-A and does not create a standing exception.
+
+**Exact next action.** Pull and start Slice 3-A for the owner's acceptance workbook.
+Do not perform agent review or Playwright review under this one-time owner waiver.
+
+## M3-A Slice 3-A — owner adjustment handoff — 2026-08-12
+
+During owner acceptance, four bounded builder refinements were requested: collapsed
+Sections and Item rails now retain only their arrow control; page History follows the
+section list instead of pinning to the rail bottom and no longer prints an empty-state
+sentence; the screen-assignment control now presents a clearer status with a distinct
+`Manage screens` action label; and the menu-name pencil now opens an inline editor that
+persists the trimmed, venue-scoped name while refusing duplicates.
+
+Affected Release API build, Back Office production build, and 10/10 focused API unit
+tests passed. `git diff --check` passed. Per the owner's Slice 3-A exception, Playwright,
+CI, and another independent review were not run.
+
+**Exact next action.** Owner confirms the four acceptance adjustments on the running
+Back Office, then Slice 3-A can be merged; do not begin Slice 4.
+
+The owner's follow-up layout pass further reduced both rename editors to a single
+underline, made History occupy the remaining expanded section rail without publication
+metadata, restored centered vertical `Sections` and `Items` identities in collapsed
+desktop rails, and moved active-page renaming into the top context beside the menu name
+instead of replacing its tab. The Back Office production build and Impeccable layout
+scan passed; browser execution remains waived for this slice.
+
+The final breadcrumb correction keeps the top bar menu-only, places page rename in
+the canvas context immediately before its three-dot actions, and uses the clearer
+`Page / Section` hierarchy recommended by the Impeccable layout pass. The menu-name
+editor explicitly suppresses the shared focus halo so its active treatment is one
+underline rather than a box.
+
+The owner confirmed the result is good and authorized merge and Slice 3-A close-out.
+PR #706 is the closure PR. The accepted product head is
+`b7f29481046d28f3d61878dd3b09e7d9c5ed56bc`; no further review, Playwright, or CI is
+required under the one-time owner exception.
+
+**Exact next action.** Merge PR #706, close issue #704, delete the completed branch,
+and synchronize the final merge SHA. Do not begin Slice 4.

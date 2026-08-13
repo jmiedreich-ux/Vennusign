@@ -125,6 +125,9 @@ test("the rail keeps the handles the mobile drawer and the specs address", async
   assert.match(rail, /data-route=\{route\.path\}/);
   assert.match(rail, /data-unlocked=\{unlocked\}/);
   assert.match(rail, /data-active=/);
+  assert.match(rail, /aria-label="VennueSign Back Office"/);
+  assert.match(rail, /rail-brand-mark__signal/);
+  assert.match(rail, /className="rail-item-label"/);
 });
 
 test("the rail's styling comes from tokens rather than baked-in values", async () => {

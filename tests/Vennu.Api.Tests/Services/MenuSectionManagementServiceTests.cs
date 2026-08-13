@@ -45,6 +45,31 @@ public sealed class MenuSectionManagementServiceTests
     }
 
     [Fact]
+    public async Task RenameMenuAsync_TrimsAndPersistsNameWithoutCrossingVenueOrDuplicating()
+    {
+        var venueId = Guid.NewGuid();
+        var menuId = Guid.NewGuid();
+        var repository = new FakeMenuRepository
+        {
+            Menus =
+            [
+                new Menu { Id = menuId, VenueId = venueId, Name = "Lunch" },
+                new Menu { Id = Guid.NewGuid(), VenueId = venueId, Name = "Dinner" }
+            ]
+        };
+        var service = CreateService(repository);
+
+        var renamed = await service.RenameMenuAsync(venueId, menuId, "  Brunch  ");
+        var duplicate = await Assert.ThrowsAsync<ArgumentException>(() => service.RenameMenuAsync(venueId, menuId, " dinner "));
+        var missing = await service.RenameMenuAsync(Guid.NewGuid(), menuId, "Other");
+
+        Assert.Equal("Brunch", renamed?.Name);
+        Assert.Equal(renamed, repository.UpdatedMenu);
+        Assert.Contains("already exists", duplicate.Message);
+        Assert.Null(missing);
+    }
+
+    [Fact]
     public async Task CreateAsync_TrimsNameAndAppendsSection()
     {
         var venueId = Guid.NewGuid();
@@ -154,6 +179,7 @@ public sealed class MenuSectionManagementServiceTests
         public MenuSection? CreatedSection { get; private set; }
         public Menu? CreatedMenu { get; private set; }
         public MenuSection? UpdatedSection { get; private set; }
+        public Menu? UpdatedMenu { get; private set; }
         public IReadOnlyCollection<Guid>? ReorderedSectionIds { get; private set; }
 
         public Task<Guid> CreateMenuAsync(Menu menu, CancellationToken cancellationToken = default)
@@ -173,7 +199,11 @@ public sealed class MenuSectionManagementServiceTests
             return Task.FromResult(true);
         }
         public Task<bool> UpdateItemAsync(MenuItem item, CancellationToken cancellationToken = default) => Task.FromResult(true);
-        public Task<bool> UpdateMenuAsync(Menu menu, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<bool> UpdateMenuAsync(Menu menu, CancellationToken cancellationToken = default)
+        {
+            UpdatedMenu = menu;
+            return Task.FromResult(true);
+        }
         public Task<int> ReorderSectionsAsync(Guid venueId, Guid menuId, IReadOnlyCollection<Guid> sectionIds, DateTime updatedUtc, CancellationToken cancellationToken = default)
         {
             ReorderedSectionIds = sectionIds;

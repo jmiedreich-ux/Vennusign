@@ -251,12 +251,18 @@ body, .shell > main, .customer-entry { background: var(--sky-page-gradient); }
 }
 
 .rail-brand {
-  width: 34px; height: 34px; flex: none;
+  width: 44px; height: 44px; flex: none;
   display: grid; place-items: center; margin-bottom: var(--sky-space-2);
-  border-radius: var(--sky-radius-sm-plus);
-  color: var(--sky-color-ink); background: var(--sky-color-primary);
-  font-weight: var(--sky-font-weight-bold); text-decoration: none;
+  border-radius: var(--sky-radius-md);
+  background: linear-gradient(145deg, var(--sky-color-secondary), var(--sky-color-primary));
+  box-shadow: var(--sky-shadow-card);
+  text-decoration: none;
 }
+.rail-brand-mark { width: 34px; height: 34px; overflow: visible; }
+.rail-brand-mark__left { fill: var(--sky-rail-background); }
+.rail-brand-mark__right { fill: var(--sky-action-link-text); }
+.rail-brand-mark__shine { fill: none; stroke: var(--sky-color-surface-raised); stroke-linecap: round; stroke-width: 1.4; opacity: .48; }
+.rail-brand-mark__signal { fill: var(--sky-color-surface-raised); }
 
 .rail-section { display: flex; flex-direction: column; align-items: center; gap: 5px; }
 

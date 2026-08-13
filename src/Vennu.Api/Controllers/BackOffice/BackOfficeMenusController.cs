@@ -52,6 +52,20 @@ public sealed class BackOfficeMenusController(
         }
     }
 
+    [HttpPut("{menuId:guid}")]
+    public async Task<ActionResult<Menu>> RenameMenu(Guid menuId, MenuCreateRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var menu = await sectionService.RenameMenuAsync(VenueId, menuId, request.Name, cancellationToken).ConfigureAwait(false);
+            return menu is null ? NotFound() : Ok(menu);
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationProblem(exception.Message);
+        }
+    }
+
     /*
      * The section and item writes retired with the editor they served (milestone
      * 3). The builder writes through api/back-office/content, where each rule is

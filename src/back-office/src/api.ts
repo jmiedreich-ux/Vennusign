@@ -469,6 +469,10 @@ export async function createMenu(
   })).json() as Promise<MenuEditorSnapshot["menus"][number]["menu"]>;
 }
 
+export async function renameMenu(configuration: BackOfficeConfiguration, accessToken: string, menuId: string, name: string): Promise<void> {
+  await menuRequest(configuration, accessToken, `/${menuId}`, { method: "PUT", body: JSON.stringify({ name }) });
+}
+
 /*
  * The section and item writes that used to live here went with the editor they
  * served. Milestone 3's builder writes through `api/back-office/content`, where
