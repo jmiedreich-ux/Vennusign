@@ -1793,6 +1793,24 @@ export default function MenuBuilder({
               <SkyIcon name="pencil" />
             </button>
           </>}
+          {activePage ? <>
+            <span aria-hidden="true">/</span>
+            {editingPage?.pageId === activePage.pageId ? <input
+              className="builder__page-inline-input"
+              autoFocus
+              value={editingPage.name}
+              onChange={event => setEditingPage({ pageId: activePage.pageId, name: event.target.value })}
+              onBlur={() => void commitPageRename()}
+              onKeyDown={event => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") setEditingPage(null); }}
+              aria-label={`Rename ${activePage.name}`}
+              data-testid="page-rename-input"
+            /> : <>
+              <span className="builder__page-inline-name" data-testid="active-page-name">{activePage.name}</span>
+              {canManagePages ? <button type="button" className="builder__menu-name-edit" aria-label={`Rename ${activePage.name}`} onClick={() => setEditingPage({ pageId: activePage.pageId, name: activePage.name })}>
+                <SkyIcon name="pencil" />
+              </button> : null}
+            </>}
+          </> : null}
           <button type="button" className="builder__top-add-content" data-testid="top-add-content" onClick={() => setDrawerOpen(true)}>+ Add content</button>
         </nav>
 
@@ -1900,17 +1918,7 @@ export default function MenuBuilder({
               onDrop={() => void dropPage(page.pageId)}
               data-testid="page-tab-wrap"
             >
-              {editingPage?.pageId === page.pageId ? (
-                <input
-                  autoFocus
-                  value={editingPage.name}
-                  onChange={event => setEditingPage({ pageId: page.pageId, name: event.target.value })}
-                  onBlur={() => void commitPageRename()}
-                  onKeyDown={event => { if (event.key === "Enter") void commitPageRename(); if (event.key === "Escape") setEditingPage(null); }}
-                  aria-label={`Rename ${page.name}`}
-                  data-testid="page-rename-input"
-                />
-              ) : <button
+              <button
                 type="button"
                 className={`builder__page-tab${activePageId === page.pageId ? " is-active" : ""}`}
                 data-testid="page-tab"
@@ -1924,7 +1932,7 @@ export default function MenuBuilder({
                 }}
               >
                 {page.name}
-              </button>}
+              </button>
             </div>
           ))}
           {canManagePages && addingPage ? (
@@ -2073,9 +2081,6 @@ export default function MenuBuilder({
                   <i aria-hidden="true" />
                   <span><strong>{entry.detail ?? entry.kind.replaceAll("_", " ")}</strong><small>{entry.author ? `${entry.author} · ` : ""}{venueTime(entry.occurredUtc, venueTimezone)}</small></span>
                 </li>)}</ol>}
-            <footer>
-              <span>{data?.lastPublishedUtc ? `Published ${venueTime(data.lastPublishedUtc, venueTimezone)}` : "Never published"}</span>
-            </footer>
           </section> : null}
         </nav>
 
@@ -2337,7 +2342,7 @@ export default function MenuBuilder({
 
         <aside className={`builder__inspector${panelPreferences.rightCollapsed ? " is-collapsed" : ""}`} aria-label="Item panel">
           <div className="builder__inspector-toolbar">
-            <strong>Item</strong>
+            <strong>Items</strong>
             <PanelCollapseButton
               panel="item"
               collapsed={panelPreferences.rightCollapsed}

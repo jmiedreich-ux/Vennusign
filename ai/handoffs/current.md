@@ -958,3 +958,10 @@ CI, and another independent review were not run.
 
 **Exact next action.** Owner confirms the four acceptance adjustments on the running
 Back Office, then Slice 3-A can be merged; do not begin Slice 4.
+
+The owner's follow-up layout pass further reduced both rename editors to a single
+underline, made History occupy the remaining expanded section rail without publication
+metadata, restored centered vertical `Sections` and `Items` identities in collapsed
+desktop rails, and moved active-page renaming into the top context beside the menu name
+instead of replacing its tab. The Back Office production build and Impeccable layout
+scan passed; browser execution remains waived for this slice.
