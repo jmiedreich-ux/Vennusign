@@ -1,19 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-13T03:25:00Z",
-  "activeAssignments": [
-    {
-      "assignment": "Menus M3-A — slice 3-A (builder navigation and panel refinements)",
-      "issue": 704,
-      "branch": "feature/menus-m3a-s3a-builder-refinements",
-      "owner": "Codex",
-      "claimedUtc": "2026-08-13T02:08:10Z",
-      "headAtClaim": "370bd9a4a0003769e9dbeb6c2b84afeab05578d5",
-      "status": "owner accepted; PR #706 open and authorized to merge without CI under the one-time Slice 3-A review waiver",
-      "startHere": "docs/design/approved/menus/menu-builder-v2/workflow-handoff.md",
-      "notes": "Implement the approved breadcrumb/context refinement, independently collapsible Sections/History and Item panels with browser persistence, compact history rows, visible compact-rail labels, and the Signal V. Do not change canvas rendering, themes, Slice 4 availability/86 behavior, or add an expanded rail. For Slice 3-A only, the owner explicitly waived independent agent and Playwright review; the receiving agent only starts the branch for owner acceptance. This is not a standing exception."
-    }
-  ],
+  "updatedUtc": "2026-08-13T03:10:00Z",
+  "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
@@ -38,14 +26,14 @@
     "releasedBy": "scope completed locally"
   },
   "lastCompletedAssignment": {
-    "assignment": "Menus M3-A — slice 3 (board and add-item)",
-    "issue": 703,
-    "pr": 705,
-    "branch": "feature/menus-m3a-s3-board-add-item",
-    "completedUtc": "2026-08-13T01:45:00Z",
-    "mergeSha": "a3a421339670a3807a0c8418a2551752a1dcaaca",
-    "acceptedProductSha": "73074e030cf9c2d172b435aaeadfd0638bdb0793",
-    "acceptance": "Owner accepted after focused search retest, waived further review, and instructed merge without CI.",
-    "notes": "PR #705 merged and issue #703 closed. Independent review approved 0e7c54c. Final owner-requested Undo/Redo wording passed focused Playwright 1/1. Whole page Canvas work is deferred to #704."
+    "assignment": "Menus M3-A — slice 3-A (builder navigation and panel refinements)",
+    "issue": 704,
+    "pr": 706,
+    "branch": "feature/menus-m3a-s3a-builder-refinements",
+    "completedUtc": "2026-08-13T03:09:31Z",
+    "mergeSha": "cdfd2bbf7ad0d2211ebbd0d5c5914dff754a6583",
+    "acceptedProductSha": "b7f29481046d28f3d61878dd3b09e7d9c5ed56bc",
+    "acceptance": "Owner completed the visual adjustment loop, accepted Slice 3-A, and instructed merge and close-out without CI.",
+    "notes": "PR #706 merged and issue #704 closed. Independent review and Playwright were waived for this one-time Slice 3-A exception; affected builds, focused API unit tests, diff checks, and Impeccable scans passed. The completed branch was deleted."
   }
 }
