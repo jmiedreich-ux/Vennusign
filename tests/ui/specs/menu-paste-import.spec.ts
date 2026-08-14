@@ -30,10 +30,15 @@ test.describe("paste import review", () => {
     await page.getByRole("button", { name: "Create a new menu" }).click();
     await expect(page.getByRole("heading", { name: "Create this menu?" })).toBeVisible();
     const savedName = `Imported ${seeded.menuName}`;
-    await page.getByLabel("Menu name").fill(savedName);
+    const menuName = page.getByLabel("Menu name");
+    await menuName.fill(savedName);
+    expect(await menuName.evaluate(element => {
+      const style = getComputedStyle(element);
+      return { outlineWidth: style.outlineWidth, outlineColor: style.outlineColor, boxShadow: style.boxShadow };
+    })).toEqual({ outlineWidth: "2px", outlineColor: "rgb(9, 111, 145)", boxShadow: "none" });
     await Promise.all([
       page.waitForResponse(response => response.url().includes("/destination/create") && response.request().method() === "PUT"),
-      page.getByLabel("Menu name").press("Tab")
+      menuName.press("Tab")
     ]);
 
     await page.reload();

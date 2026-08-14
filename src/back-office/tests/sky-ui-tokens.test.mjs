@@ -38,3 +38,12 @@ test("Back Office consumes the shared token source", async () => {
   assert.match(styles, /background:\s*var\(--sky-page-background\)/);
   assert.match(styles, /font-family:\s*var\(--sky-font-family\)/);
 });
+
+test("focus uses one contrast-safe accent ring without a heavy ink halo", async () => {
+  const tokens = await readFile(new URL("src/sky-ui-tokens.css", root), "utf8");
+
+  assert.match(tokens, /--sky-focus-color:\s*#096f91/);
+  assert.match(tokens, /--sky-focus-width:\s*2px/);
+  assert.match(tokens, /--sky-focus-halo:\s*none/);
+  assert.doesNotMatch(tokens, /--sky-focus-halo:\s*0 0 0/);
+});

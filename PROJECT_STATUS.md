@@ -55,7 +55,7 @@ further independent review. CI remains suspended, so local evidence was the gate
 | 5 | Board view + Play | **out of scope for the current sequence** — retained in backlog issue #709 |
 | 6 | Quick Update + blank creation | **complete** — PR #711 merged to `master` as `3429684` on 2026-08-13; additional review and owner workbook skipped by owner instruction |
 | 6-A1 | Paste, parse, and review | **complete** — PR #716 merged as `ac4cc98`; issue #714 closed; owner accepted 7/7 against product `547aea7` |
-| 6-A2 | Create a new menu from an import | **owner acceptance ready** — draft PR #719 at product `b1e62c4`; local gates, UI finish review and exact-head independent engineering review approved; run `m6a2-acceptance-workbook.html` before merge |
+| 6-A2 | Create a new menu from an import | **owner accepted; finish review pending** — owner passed 6/6 against product `b1e62c4`; the requested shared focus-ring correction is implemented and locally verified; exact-head re-review remains before merge |
 | 6-A3 | Replace an existing menu from an import | **planned after 6-A2 owner acceptance** — target conflict handling, snapshots, restore and preservation invariants |
 | 7 | Menu Home completion | needs redesign and planning |
 

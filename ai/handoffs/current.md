@@ -16,7 +16,9 @@ Updated 2026-08-14, for Menus 6-A1 owner acceptance and merge closeout.
 
 **6-A2 review result.** Independent engineering review approves exact PR head `3c69b7b` with product `b1e62c4`; the Impeccable finish review also approves. The short owner workbook is `docs/features/menus/m6a2-acceptance-workbook.html`.
 
-**Exact next action.** Run the 6-A2 owner acceptance workbook against product `b1e62c4` and record the downloaded JSON. Do not merge or begin 6-A3 before owner acceptance.
+**6-A2 owner acceptance.** The owner accepted all 6/6 workbook cases against product `b1e62c4` at `2026-08-14T04:39:39.105Z`; the durable record is `docs/features/menus/m6a2-acceptance-record.json`. During acceptance the owner flagged the shared heavy black focus halo. The correction replaces it everywhere with one contrast-safe 2px dark-sky ring, with a focused static regression and a computed-style Playwright assertion.
+
+**Exact next action.** Obtain exact-head independent review of the post-acceptance focus correction, then merge PR #719 and synchronize completion records. Do not begin 6-A3 before the merge closeout.
 
 ## 2026-08-13 — Menus Slice 6-A paste-import design approval
 

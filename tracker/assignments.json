@@ -8,7 +8,7 @@
       "owner": "Codex for JeremyPC",
       "branch": "feature/menus-m6a2-create-import",
       "claimedUtc": "2026-08-14T03:51:28Z",
-      "status": "Owner acceptance ready at product b1e62c4; draft PR #719; exact-head engineering review approved",
+      "status": "Owner accepted 6/6 at b1e62c4; requested focus-ring correction implemented; exact-head finish review pending",
       "notes": "Create-only destination and atomic idempotent confirmation. Excludes 6-A3 replacement, publishing, spreadsheet/photo/POS import, mobile support, and keyboard-specific interaction design/testing."
     }
   ],
