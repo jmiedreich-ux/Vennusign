@@ -14,7 +14,9 @@ Updated 2026-08-14, for Menus 6-A1 owner acceptance and merge closeout.
 
 **6-A2 implementation checkpoint.** The path/invariant/test matrix is on issue #718. Product head `b1e62c4` is pushed in draft PR #719. It adds migration 069, atomic/idempotent create confirmation, transaction-local permission and current allowance enforcement, persisted destination/name/completion state, menu-scoped imported price overrides through builder/history paths, truthful completion UI, invariants, LocalDB/API/static/Playwright coverage, and an Impeccable APPROVE verdict. Full API was 478/479; the sole failure is the pre-existing unrelated E2E layout expectation (`default` versus current `photo_grid`). Azure/external tests remain skipped by owner exception.
 
-**Exact next action.** Finish the independent engineering re-review of PR #719 at `b1e62c4`; address every material finding and rerun affected local gates. When approved, prepare and run the 6-A2 owner acceptance workbook. Do not merge or begin 6-A3 before owner acceptance.
+**6-A2 review result.** Independent engineering review approves exact PR head `3c69b7b` with product `b1e62c4`; the Impeccable finish review also approves. The short owner workbook is `docs/features/menus/m6a2-acceptance-workbook.html`.
+
+**Exact next action.** Run the 6-A2 owner acceptance workbook against product `b1e62c4` and record the downloaded JSON. Do not merge or begin 6-A3 before owner acceptance.
 
 ## 2026-08-13 — Menus Slice 6-A paste-import design approval
 
