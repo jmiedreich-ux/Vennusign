@@ -28,7 +28,9 @@ Behavior search: `rg -n "MenuImportDestinations|ConfirmReplaceAsync|SetReplaceDe
 
 **6-A3 review result.** Independent engineering review and the Impeccable finish review approve exact product head `58e8258`. Review fixes add migration 071 and complete deterministic working-menu fingerprints under transaction locks, real child-edit conflict regressions for confirm and restore, immutable completed-session provenance, exact nullable price-override restoration, refreshed conflict facts, and plain-language added/removed/changed confirmation detail. Focused API/migration tests pass 51/51; MenuImport LocalDB passes 12/12 with Azure unset; Back Office build/static pass 204/204; focused desktop replacement Playwright passes 1/1. CI and Azure/external integration remain skipped by owner policy. Residual non-blocking risk: the working projection is duplicated in three SQL paths and future fields must update all three.
 
-**Exact next action.** Owner runs `docs/features/menus/m6a3-acceptance-workbook.html` against product `58e8258` and returns the downloaded JSON. Do not merge PR #721 or start later work before acceptance.
+**6-A3 owner acceptance.** The owner accepted all 7/7 workbook cases against product `58e8258` at `2026-08-14T05:40:26.942Z`; durable evidence is `docs/features/menus/m6a3-acceptance-record.json`.
+
+**Exact next action.** Review the acceptance-record-only head, merge PR #721, close issue #720, delete the feature branch, synchronize final merge records and release the claim. Do not start later work before closeout.
 
 ## 2026-08-13 — Menus Slice 6-A paste-import design approval
 

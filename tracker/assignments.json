@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-14T05:50:00Z",
+  "updatedUtc": "2026-08-14T05:55:00Z",
   "activeAssignments": [
     {
       "assignment": "Menus 6-A3 — replace an existing menu from paste import",
@@ -8,8 +8,8 @@
       "owner": "Codex for JeremyPC",
       "branch": "feature/menus-m6a3-replace-import",
       "claimedUtc": "2026-08-14T04:49:00Z",
-      "status": "Exact head 58e8258 independently approved; owner acceptance pending",
-      "notes": "Product 58e8258 adds atomic replacement, complete working-state conflict leases, immutable snapshots, stale-safe restore with preserved price-sharing semantics, truthful UI and Playwright coverage. Engineering and Impeccable reviews approve; workbook m6a3-acceptance-workbook.html is ready. Excludes publishing, spreadsheet/photo/POS import, mobile below 900px, and keyboard-specific interaction design/testing."
+      "status": "Owner accepted 7/7 against product 58e8258; merge pending",
+      "notes": "Engineering, Impeccable, workbook, and owner gates pass. Durable acceptance is m6a3-acceptance-record.json at 2026-08-14T05:40:26.942Z. Merge PR #721, close issue #720, delete the branch, then release the claim."
     }
   ],
   "desktopSessionLock": null,
