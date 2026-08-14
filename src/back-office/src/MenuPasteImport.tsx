@@ -5,12 +5,17 @@ import {
   acceptSafeMenuImportMatches,
   answerMenuImport,
   confirmMenuImportCreate,
+  confirmMenuImportReplace,
+  loadShelf,
   loadMenuImport,
   setMenuImportLineSection,
   setMenuImportCreateDestination,
+  setMenuImportReplaceDestination,
+  restoreMenuImportReplacement,
   startMenuImport,
   type MenuImportQuestion,
-  type MenuImportSession
+  type MenuImportSession,
+  type ShelfMenu
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
 import "./menu-paste-import.css";
@@ -25,6 +30,9 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
   const [error, setError] = useState<string | null>(null);
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [menuName, setMenuName] = useState("New menu");
+  const [menus,setMenus]=useState<ShelfMenu[]>([]);
+  const [restoreConfirm,setRestoreConfirm]=useState(false);
+  const [restored,setRestored]=useState(false);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -36,6 +44,8 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
       .finally(() => { if (current) setLoading(false); });
     return () => { current = false; };
   }, [configuration, accessToken, sessionId]);
+
+  useEffect(()=>{if(session?.session.status!=="resolved"||session.session.completedMenuId)return;let active=true;loadShelf(configuration,accessToken).then(value=>{if(active)setMenus(value.filter(menu=>!menu.isPutAway));}).catch(()=>{if(active)setError("Menus could not be loaded. Your review is still saved.");});return()=>{active=false;};},[configuration,accessToken,session?.session.status,session?.session.completedMenuId]);
 
   const unresolved = useMemo(() => session?.questions.filter(question => !question.answer) ?? [], [session]);
   const safeCount = unresolved.filter(question => question.candidates.length === 1 && question.candidates[0].isSafe).length;
@@ -85,25 +95,35 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
   if (session.session.completedMenuId) return <main className="paste-import import-destination" data-testid="menu-import-complete" aria-labelledby="import-complete-title">
     <button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button>
     <section className="destination-card completion-card"><div className="completion-check"><Check aria-hidden="true" /></div>
-      <h1 id="import-complete-title">{session.session.proposedMenuName} is ready to review</h1><p className="not-live">Not live yet</p>
-      <p>The menu and its imported items are saved as working content. Nothing changed on your screens.</p>
-      <dl><div><dt>Items added</dt><dd>{session.session.itemCount}</dd></div><div><dt>Published screens changed</dt><dd>0</dd></div></dl>
+      <h1 id="import-complete-title">{session.session.proposedMenuName??session.session.targetMenuName} is ready to review</h1><p className="not-live">Not live yet</p>
+      <p>{session.session.destination==="replace"?"The imported version is saved as working content. The menu identity and what is live on screens stayed unchanged.":"The menu and its imported items are saved as working content. Nothing changed on your screens."}</p>
+      <dl><div><dt>{session.session.destination==="replace"?"Items now in draft":"Items added"}</dt><dd>{session.session.itemCount}</dd></div><div><dt>Published screens changed</dt><dd>0</dd></div></dl>
+      {(restored||session.session.completedSnapshotRestoredUtc)&&<p className="restore-result" role="status">The working draft from before this import has been restored. Screens still have not changed.</p>}
+      {session.session.completedSnapshotId&&!restored&&!session.session.completedSnapshotRestoredUtc&&<div className="restore-option">{restoreConfirm?<><strong>Restore the draft from before this import?</strong><p>The imported draft will be replaced. Published screens stay unchanged.</p><div><button className="import-secondary" disabled={busy} onClick={()=>setRestoreConfirm(false)}>Keep imported draft</button><button className="import-primary" disabled={busy} onClick={()=>void(async()=>{setBusy(true);setError(null);try{await restoreMenuImportReplacement(configuration,accessToken,session.session.completedSnapshotId!);setRestored(true);setRestoreConfirm(false);}catch(failure){setError(failure instanceof Error?failure.message:"The previous draft could not be restored.");}finally{setBusy(false);}})()}>Restore previous draft</button></div></>:<button className="restore-link" onClick={()=>setRestoreConfirm(true)}>Restore the draft from before this import</button>}</div>}
+      {error&&<p className="import-error" role="alert">{error}</p>}
       <div className="destination-actions"><button className="import-secondary" onClick={onBack}>Done for now</button><button className="import-primary" onClick={() => onOpenMenu(session.session.completedMenuId!)}>Review draft in builder</button></div>
     </section>
   </main>;
 
   if (session.session.status === "resolved") return <main className="paste-import import-destination" data-testid="menu-import-create" aria-labelledby="destination-title">
     <button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button>
-    <section className="destination-card"><h1 id="destination-title">{session.session.destination ? "Create this menu?" : "Where should these items go?"}</h1>
+    <section className="destination-card"><h1 id="destination-title">{session.session.destination==="create"?"Create this menu?":session.session.destination==="replace"?`Replace ${session.session.targetMenuName}?`:"Where should these items go?"}</h1>
       {!session.session.destination ? <><p>Your review is saved. Creating is the first step that changes menu working content.</p>{error && <p className="import-error" role="alert">{error}</p>}
         <button className="destination-choice" disabled={busy} onClick={() => void mutate(current => setMenuImportCreateDestination(configuration, accessToken, current, menuName))}><strong>Create a new menu</strong><span>Build a new unpublished menu from all {session.session.itemCount} imported items.</span></button>
-        <p className="future-destination">Replacing an existing menu opens in milestone 6-A3.</p></> :
+        <div className="replace-options"><h2>Replace an existing menu</h2><p>The pasted menu becomes its new unpublished draft. What guests see stays live until you publish.</p>{menus.length?<div className="target-list">{menus.map(menu=><button type="button" key={menu.menuId} disabled={busy} onClick={()=>void mutate(current=>setMenuImportReplaceDestination(configuration,accessToken,current,menu.menuId))}><span><strong>{menu.name}</strong><small>{menu.publishedVersion===null?"Never published":`${menu.draftCount} unpublished ${menu.draftCount===1?"change":"changes"}`}</small></span><ChevronRight aria-hidden="true"/></button>)}</div>:<p className="future-destination">No active menus are available to replace.</p>}</div></> : session.session.destination==="create"?
       <form onSubmit={event => { event.preventDefault(); void (async () => { setBusy(true); setError(null); try { let current = session; if (menuName.trim() !== session.session.proposedMenuName) current = await setMenuImportCreateDestination(configuration, accessToken, session, menuName); const created = await confirmMenuImportCreate(configuration, accessToken, current); setSession(created.import); } catch (failure) { if (failure instanceof MenuImportApiError && failure.current) setSession(failure.current); setError(failure instanceof Error ? failure.message : "This menu could not be created. Nothing changed."); } finally { setBusy(false); } })(); }}>
         <p>Confirm the name, item count, and publishing state. Everything is created together or nothing changes.</p>
         <label htmlFor="import-menu-name">Menu name</label><input id="import-menu-name" required maxLength={200} value={menuName} onChange={event => setMenuName(event.target.value)} onBlur={() => { if (menuName.trim() && menuName.trim() !== session.session.proposedMenuName) void mutate(current => setMenuImportCreateDestination(configuration, accessToken, current, menuName)); }} />
         <div className="confirm-facts"><div><strong>{session.session.itemCount}</strong><span>items will be added</span></div><div><strong>0</strong><span>screens change now</span></div></div>
         <p className="not-live">Not live yet — publishing remains a separate action.</p>{error && <p className="import-error" role="alert">{error}</p>}
         <div className="destination-actions"><button type="button" className="import-secondary" disabled={busy} onClick={onBack}>Back</button><button type="submit" className="import-primary" disabled={busy || !menuName.trim()} onMouseDown={event => event.preventDefault()}>{busy ? "Creating…" : "Create menu"}</button></div>
+      </form>:<form onSubmit={event=>{event.preventDefault();void(async()=>{setBusy(true);setError(null);try{const replaced=await confirmMenuImportReplace(configuration,accessToken,session);setSession(replaced.import);}catch(failure){if(failure instanceof MenuImportApiError&&failure.current)setSession(failure.current);setError(failure instanceof Error?failure.message:"This menu could not be replaced. Nothing changed.");}finally{setBusy(false);}})();}}>
+        <p>Confirm the target and consequences. Replacement happens together or nothing changes.</p>
+        <div className="replacement-target"><strong>{session.session.targetMenuName}</strong><span>{session.session.targetHadPublishedVersion?"The published version stays on screens.":"This menu has never been published."}</span></div>
+        <div className="confirm-facts replacement-facts"><div><strong>{session.session.itemCount}</strong><span>items in the new draft</span></div><div><strong>{(session.session.targetAddedCount??0)+(session.session.targetRemovedCount??0)+(session.session.targetChangedCount??0)}</strong><span>{`${(session.session.targetAddedCount??0)+(session.session.targetRemovedCount??0)+(session.session.targetChangedCount??0)===1?"unpublished change":"unpublished changes"} already present`}</span><small>{`${session.session.targetAddedCount??0} ${(session.session.targetAddedCount??0)===1?"item added":"items added"} · ${session.session.targetRemovedCount??0} removed · ${session.session.targetChangedCount??0} changed`}</small></div><div><strong>0</strong><span>screens change now</span></div></div>
+        <details><summary>What will be preserved</summary><p>Menu identity, theme, screen assignments, published version, and current 86 status. A restorable copy of today’s working draft is saved first.</p></details>
+        <p className="not-live">Not live yet — publishing remains a separate action.</p>{error&&<p className="import-error" role="alert">{error}</p>}
+        <div className="destination-actions"><button type="button" className="import-secondary" disabled={busy} onClick={()=>setSession({...session,session:{...session.session,destination:null,targetMenuId:null,targetUpdatedUtc:null,targetMenuName:null}})}>Choose another menu</button><button type="submit" className="import-primary" disabled={busy}>{busy?"Replacing…":"Replace menu"}</button></div>
       </form>}
     </section>
   </main>;

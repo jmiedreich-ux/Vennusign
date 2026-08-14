@@ -16,7 +16,18 @@ public sealed record MenuImportSession(
     string? Destination = null,
     string? ProposedMenuName = null,
     Guid? CompletedMenuId = null,
-    DateTime? CompletedUtc = null);
+    DateTime? CompletedUtc = null,
+    Guid? TargetMenuId = null,
+    DateTime? TargetUpdatedUtc = null,
+    Guid? CompletedSnapshotId = null,
+    string? TargetMenuName = null,
+    bool? TargetHadPublishedVersion = null,
+    int? TargetWorkingItemCount = null,
+    int? TargetPublishedItemCount = null,
+    int? TargetAddedCount = null,
+    int? TargetRemovedCount = null,
+    int? TargetChangedCount = null,
+    DateTime? CompletedSnapshotRestoredUtc = null);
 
 public sealed record MenuImportSourceLine(
     Guid SessionId,
@@ -72,7 +83,14 @@ public static class MenuImportStatuses
 public static class MenuImportDestinations
 {
     public const string Create = "create";
+    public const string Replace = "replace";
 }
+
+public sealed record MenuImportReplacementFacts(Guid MenuId, string MenuName, DateTime TargetUpdatedUtc,
+    bool HasPublishedVersion, int WorkingItemCount, int PublishedItemCount, int Added, int Removed, int Changed);
+
+public sealed record MenuImportReplacementSnapshot(Guid Id, Guid VenueId, Guid MenuId, Guid SessionId,
+    DateTime CreatedUtc, string? CreatedBy, DateTime ExpiresUtc, DateTime? RestoredUtc, string? RestoredBy);
 
 public static class MenuImportChoices
 {

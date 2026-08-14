@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-14, for Menus 6-A2 owner acceptance and merge closeout.
+Updated 2026-08-14, for Menus 6-A3 owner acceptance.
 
 ## 2026-08-14 — Menus 6-A1 accepted product candidate
 
@@ -20,7 +20,17 @@ Updated 2026-08-14, for Menus 6-A2 owner acceptance and merge closeout.
 
 **6-A2 merge closeout.** Exact-head independent review approved `95f6e5c`. PR #719 merged to `master` as `b27159dee0d20600daab14ad0b0d280c4dbd5e72` at `2026-08-14T04:45:58Z`; issue #718 closed one second later and the remote feature branch is absent. The acceptance-requested focus treatment now uses one contrast-safe 2px ring with no black halo, including the intentionally light paste controls in Midnight.
 
-**Exact next action.** Create and claim the 6-A3 replacement milestone issue, branch `feature/menus-m6a3-replace-import` from merged `master`, and audit the locked replacement/snapshot/restore paths before implementation. Do not begin publishing or another feature.
+**6-A3 implementation checkpoint.** Issue #720 is claimed on `feature/menus-m6a3-replace-import` from merged/closed 6-A2 master (`d703e42`). Product `bf77919` is pushed in draft PR #721. Migration 070 and the replacement aggregate persist the selected target/revision and server-computed published-versus-working facts, create one immutable complete pre-import checkpoint under the same SQL transaction as replacement, resolve permission/current item allowance/snapshot retention under locks, preserve menu identity/theme/pages/assignments/published version/availability, keep pasted shared-item prices menu-scoped, and refuse stale targets or stale restores without mutation. Completion remains Not live yet and exposes deliberate restore of the previous working draft.
+
+Executed evidence: Release API build passed with seven existing warnings; focused API/migration tests 51/51; MenuImport LocalDB 12/12 with Azure unset; fresh LocalDB migration 070 plus replacement/restore regression passed; Back Office production build passed; static 204/204; focused Playwright desktop passed create, replacement/restore and near-match cases while mobile passed the below-900 refusal, with inverse project cases intentionally skipped; `git diff --check` passed; Impeccable detector returned `[]`. CI is suspended and Azure/external integration remains skipped by owner policy.
+
+Behavior search: `rg -n "MenuImportDestinations|ConfirmReplaceAsync|SetReplaceDestinationAsync|RestoreReplacementAsync|CompletedSnapshotId|ImportedPriceOverride" src tests --glob "*.cs" --glob "*.ts" --glob "*.tsx" --glob "*.sql"`. Changed consumers are the import aggregate/repository/service/controller, Back Office API/surface, migration/invariants, UI fixture cleanup and focused tests. Existing builder duplication/history/publish price consumers remain unchanged because they already preserve `ImportedPriceOverride`; publishing and non-paste import routes remain out of scope.
+
+**6-A3 review result.** Independent engineering review and the Impeccable finish review approve exact product head `58e8258`. Review fixes add migration 071 and complete deterministic working-menu fingerprints under transaction locks, real child-edit conflict regressions for confirm and restore, immutable completed-session provenance, exact nullable price-override restoration, refreshed conflict facts, and plain-language added/removed/changed confirmation detail. Focused API/migration tests pass 51/51; MenuImport LocalDB passes 12/12 with Azure unset; Back Office build/static pass 204/204; focused desktop replacement Playwright passes 1/1. CI and Azure/external integration remain skipped by owner policy. Residual non-blocking risk: the working projection is duplicated in three SQL paths and future fields must update all three.
+
+**6-A3 owner acceptance.** The owner accepted all 7/7 workbook cases against product `58e8258` at `2026-08-14T05:40:26.942Z`; durable evidence is `docs/features/menus/m6a3-acceptance-record.json`.
+
+**Exact next action.** Review the acceptance-record-only head, merge PR #721, close issue #720, delete the feature branch, synchronize final merge records and release the claim. Do not start later work before closeout.
 
 ## 2026-08-13 — Menus Slice 6-A paste-import design approval
 

@@ -1,0 +1,15 @@
+{
+  "milestone": "Menus 6-A3 — replace an existing menu from an import",
+  "productSha": "58e8258",
+  "acceptedUtc": "2026-08-14T05:40:26.942Z",
+  "result": "Accepted",
+  "cases": [
+    { "name": "Replacement is a deliberate destination", "result": "Pass", "notes": "" },
+    { "name": "The existing draft is explained plainly", "result": "Pass", "notes": "" },
+    { "name": "Target choice survives interruption", "result": "Pass", "notes": "" },
+    { "name": "Confirmation preserves live truth", "result": "Pass", "notes": "" },
+    { "name": "The saved version can be restored deliberately", "result": "Pass", "notes": "" },
+    { "name": "Retry cannot replace or restore twice", "result": "Pass", "notes": "" },
+    { "name": "Supported width behavior remains deliberate", "result": "Pass", "notes": "" }
+  ]
+}

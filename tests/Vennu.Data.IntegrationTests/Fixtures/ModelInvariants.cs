@@ -97,14 +97,16 @@ internal static class ModelInvariants
             """),
 
         new(
-            "Completed imports are one same-venue unpublished menu with traced content",
-            "Menus 6-A2. Completion may never point across venues, create a published object, or lose a created placement's source line.",
+            "Completed imports preserve their destination-specific truth",
+            "Menus 6-A2/6-A3. Create completion is unpublished and traced; replacement completion has exactly one immutable pre-import checkpoint.",
             """
             SELECT Offence FROM (
                 SELECT CONCAT('session ',s.Id,' has an invalid completed menu') Offence
                 FROM dbo.MenuImportSessions s
                 LEFT JOIN dbo.Menus m ON m.Id=s.CompletedMenuId AND m.VenueId=s.VenueId
-                WHERE s.CompletedMenuId IS NOT NULL AND (m.Id IS NULL OR m.PublishedVersion IS NOT NULL OR s.CompletedUtc IS NULL OR s.Destination<>N'create')
+                WHERE s.CompletedMenuId IS NOT NULL AND (m.Id IS NULL OR s.CompletedUtc IS NULL OR
+                  (s.Destination=N'create' AND (m.PublishedVersion IS NOT NULL OR s.CompletedSnapshotId IS NOT NULL)) OR
+                  (s.Destination=N'replace' AND (s.CompletedSnapshotId IS NULL OR NOT EXISTS(SELECT 1 FROM dbo.MenuImportReplacementSnapshots snap WHERE snap.Id=s.CompletedSnapshotId AND snap.SessionId=s.Id AND snap.MenuId=s.CompletedMenuId))))
                 UNION ALL
                 SELECT CONCAT('created line ',cl.SessionId,'/',cl.LineNumber,' disagrees with its placement')
                 FROM dbo.MenuImportCreatedLines cl
