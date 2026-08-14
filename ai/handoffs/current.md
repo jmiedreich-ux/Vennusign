@@ -1,6 +1,17 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-13, for Menus Slice 6 exact-SHA review and owner acceptance.
+Updated 2026-08-13, for Menus Slice 6-A design approval and implementation setup.
+
+## 2026-08-13 — Menus Slice 6-A paste-import design approval
+
+- The owner approved `VennuSign_-_Paste_import_storyboard_v4.pptx`. Canonical authority is now `docs/design/approved/menus/paste-import/`: the storyboard, compact customer-flow image, editable Mermaid confirmation sequence and rendered sequence.
+- Approved decisions are synchronized into `docs/design/approved/menus/decisions.md` decisions 33 and 37–43. Conservative matching permits automatic identity only for case/punctuation/spacing normalization; ambiguous rows are never preselected. Parsing/review persist a resumable import session, and final confirmation is the only atomic/idempotent menu mutation. Destination is chosen after review. Screens remain unchanged until Publish.
+- Owner-approved product decisions: dependency-aware answer preservation; server-computed unpublished-change breakdown; one `Imported items` fallback with reason metadata; explicit reversible line-to-section promotion; all historical replacement snapshots with tier/configuration policy; tier/configuration import-session retention; and no silent cross-menu price mutation.
+- Replacement preserves menu identity, theme, assignments, published snapshot and active 86 state. Completion says `Not live yet` and offers `Review draft in builder` or `Done for now`. Below the 900px supported floor, preserve the session and offer a wider-window handoff.
+- Keyboard-specific interaction design/testing remains excluded. Semantic controls, accessible names/relationships, visible focus and screen-reader-compatible status/error announcements remain required.
+- Slice 6 was already merged through PR #711 as `3429684`; the tracker is cleared. Slice 6-A implementation is not claimed and has not started.
+
+**Exact next action.** Create the Slice 6-A GitHub milestone issue with the approved path/test matrix, record the claim, create `feature/menus-m6a-paste-import`, and only then begin schema → API → UI → Playwright implementation.
 
 ## 2026-08-13 — Menus Slice 6 product candidate
 
@@ -13,7 +24,7 @@ Updated 2026-08-13, for Menus Slice 6 exact-SHA review and owner acceptance.
 - Explicit exclusions: Board View/Play #709, display player, geometry/pagination, canvas/theme work, unplaced items, Slice 6-A import, Slice 7 redesign, and claimed mobile support.
 - Independent review found and the implementation now closes three boundary defects: availability-only staff use one bounded read model; restore-all selects and updates only delivered snapshot items inside one locked SQL transaction; and returned/notified reach is derived from each screen's exact delivered menu version rather than working assignments. Focused API tests passed 13/13 before the final reach change, the rebuilt ContentService set passed 10/10 after it, the LocalDB hidden-item boundary passed 1/1, Back Office units passed 202/202, production build passed, and the Release solution build passed.
 - Final review of `e5364a5` found no remaining product-code defect and requested two test-integrity regressions that deliberately invert assignment and delivery truth. Both are now present: published delivery after assignment removal still notifies/returns the screen, while a staged assignment without matching delivered content does not. Both failed against the old assignment helper (2/2 failed) and pass against the current delivered-version helper; the complete focused `ContentServiceLogicTests` set passes 12/12.
-- Owner instruction for this session: commit this bounded test closeout without another review or owner workbook. Services remain stopped and PR #711 remains a draft. Slice 6-A and Slice 7 remain blocked; no successor work is authorized.
+- Closure update: the owner instructed this bounded test closeout be committed without another review or owner workbook. PR #711 subsequently merged as `3429684`. Slice 6-A was blocked at this historical point; its design is now approved by the newer handoff section above. Slice 7 remains unplanned.
 
 ## 2026-08-13 — Menu Builder page-action crumb refinement (local, uncommitted)
 

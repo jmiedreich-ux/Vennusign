@@ -1,17 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-13T07:45:00Z",
-  "activeAssignments": [
-    {
-      "assignment": "Menus Slice 6 — 86 board and blank menu creation",
-      "issue": 710,
-      "owner": "Codex for JeremyPC",
-      "branch": "feature/menus-s6-86-board",
-      "claimedUtc": "2026-08-13T06:30:00Z",
-      "status": "Implementation and inverse delivered-vs-assignment regressions complete; bounded closeout committed without re-review or owner workbook by owner instruction",
-      "notes": "Excludes Board View/Play #709, geometry, pagination, display player, canvas/theme layout, unplaced items, Slice 6-A import, Slice 7 redesign, and claimed mobile support."
-    }
-  ],
+  "updatedUtc": "2026-08-14T01:45:00Z",
+  "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
@@ -36,14 +26,15 @@
     "releasedBy": "scope completed locally"
   },
   "lastCompletedAssignment": {
-    "assignment": "Menus M4 — content and delivery foundations",
-    "issue": 707,
-    "pr": 708,
-    "branch": "feature/menus-m4-player-foundations",
-    "completedUtc": "2026-08-13T05:41:24Z",
-    "acceptedProductSha": "c56bbbfcd800b34bc649c1169738c75a543fe09d",
-    "acceptance": "Owner accepted and instructed merge. The unavailable offline-screen manual setup was accepted on automated evidence.",
-    "notes": "Player, geometry, pagination, canvas/theme layout, device proof, and all live-player behavior remain deferred."
+    "assignment": "Menus Slice 6 — 86 board and blank menu creation",
+    "issue": 710,
+    "pr": 711,
+    "branch": "feature/menus-s6-86-board",
+    "completedUtc": "2026-08-13T21:40:33Z",
+    "mergeSha": "34296844d67327077017cf71968f7391df0da8b6",
+    "acceptedProductSha": "99a3eab8f0261adc25b0944b69f9ad9a8c76eb25",
+    "acceptance": "Owner instructed merge after the bounded regression closeout; another review and owner workbook were explicitly skipped.",
+    "notes": "Slice 6-A paste import design is now approved, but no implementation assignment is active. Next action: create its GitHub milestone issue, claim and branch."
   },
   "previousCompletedAssignment": {
     "assignment": "Menus M3-A — slice 3-A (builder navigation and panel refinements)",

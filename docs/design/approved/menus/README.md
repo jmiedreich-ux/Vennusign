@@ -160,20 +160,20 @@ Below, a "Not in use" strip: 11px/600 uppercase label, then pill chips (999px ra
 **POS variant:** when the POS add-on is attached, a fourth route appears and leads. When it is not, there is no trace of it — decision 4.
 
 ### M1a — Import
-**Lo-fi.** Four routes, one ending.
+**Approved paste authority:** `paste-import/README.md` and `paste-import/paste-import-storyboard-v4.pptx`. The older lo-fi material below remains orientation for future photo, spreadsheet and POS routes; the approved paste bundle wins on any conflict.
 
 - **Photo:** drop zone → reading state that names what it found as it finds it ("7 sections found", "41 items", progress on descriptions) → confirm. Camera is a peer of upload, not hidden behind it.
 - **Paste:** a textarea that parses live and reports "Looks like 2 sections and 6 items" before you commit. A caps line becomes a section; no syntax to learn.
 - **Spreadsheet:** we publish the headings we read — **Item** and **Price** required, Description / Section / Sold out / Size optional. Any order, any case, extra columns allowed. A template is offered, never required. Matched columns are shown as facts; unmatched columns are the only question. **There is no mapping step** — decision 31.
 - **POS:** pick categories, not items. States up front that the POS becomes the price source and that a hand-typed price wins until cleared.
 
-**All four converge on one confirm step** (decision 30):
-- Headline names the ratio: "We read 41 of 45 items. Four need you, plus a name check."
-- One card per unclear item, each with a **crop of the original beside it** so the operator answers without hunting for the paper menu.
-- Question shapes: fill a price, confirm a spelling, one-item-with-sizes vs two items, no-price (show "MP" / type one / leave it out).
-- **Near-misses are one grouped question, never N questions** — a list with a row per item, each pre-ticked as *the same item*, plus "Untick all". A reprint with 30 tweaked names must not produce 30 questions (decision 33).
-- The 41 correct rows are not shown, not counted down, not paged through. "See all 45" exists and is not the default (decision 18).
-- Actions: "Done — open in the builder" primary, "Skip these for now" inline. Skipping flags them on the canvas.
+**All routes converge on review and explicit final confirmation** (decisions 30, 33 and 37–43):
+- Paste creates a resumable import session. It creates or replaces no menu working rows until final confirmation.
+- Review makes unresolved questions prominent and keeps settled inventory behind progressive disclosure.
+- Normalization limited to case, punctuation and spacing may match automatically. Semantic near-misses form one grouped question, with no row preselected and no global **Untick all** action.
+- Every source line stays traceable. Unplaced content lands once in **Imported items** and keeps a reason code.
+- Create versus replace is chosen after review. Replacement shows target identity, what changes, what remains live, and the server-computed unpublished-change breakdown.
+- Confirmation is atomic and idempotent. Completion says **Not live yet** and offers **Review draft in builder** or **Done for now**.
 
 **Importing into an existing menu replaces it** — decision 32. Not a merge. The board keeps its layout and theme; anything 86'd stays 86'd.
 
@@ -331,7 +331,7 @@ Checkable restatements of the rules. These are the things most likely to be got 
 10. Import surfaces only rows the parser was unsure about; correctly-read rows are not shown by default.
 11. A spreadsheet with the published headings in any order, any case, plus unknown extra columns, imports successfully and asks only about the extra columns.
 12. Importing into an existing menu replaces its content, preserves its layout and theme, and preserves active 86s.
-13. Thirty near-miss name matches produce **one** grouped question, pre-ticked as *same item*.
+13. Thirty near-miss name matches produce **one** grouped question; safe normalization matches may be accepted as a bounded group, while ambiguous rows are not preselected.
 14. (Group) A venue below Trusted cannot change a price on a group menu, and the locked field is **visible with its reason**, not hidden.
 15. (Group) An 86 at one venue never affects another venue, and never prompts.
 16. (Group) A pending group menu never applies on its own, at any age.
