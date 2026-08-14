@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-14, for Menus 6-A2 owner acceptance and merge closeout.
+Updated 2026-08-14, for Menus 6-A3 owner acceptance.
 
 ## 2026-08-14 — Menus 6-A1 accepted product candidate
 
@@ -26,7 +26,9 @@ Executed evidence: Release API build passed with seven existing warnings; focuse
 
 Behavior search: `rg -n "MenuImportDestinations|ConfirmReplaceAsync|SetReplaceDestinationAsync|RestoreReplacementAsync|CompletedSnapshotId|ImportedPriceOverride" src tests --glob "*.cs" --glob "*.ts" --glob "*.tsx" --glob "*.sql"`. Changed consumers are the import aggregate/repository/service/controller, Back Office API/surface, migration/invariants, UI fixture cleanup and focused tests. Existing builder duplication/history/publish price consumers remain unchanged because they already preserve `ImportedPriceOverride`; publishing and non-paste import routes remain out of scope.
 
-**Exact next action.** Obtain an independent full-diff review of PR #721 at exact product head `bf77919`; resolve any material finding, then produce the 6-A3 owner acceptance workbook. Do not merge or start another milestone before owner acceptance.
+**6-A3 review result.** Independent engineering review and the Impeccable finish review approve exact product head `58e8258`. Review fixes add migration 071 and complete deterministic working-menu fingerprints under transaction locks, real child-edit conflict regressions for confirm and restore, immutable completed-session provenance, exact nullable price-override restoration, refreshed conflict facts, and plain-language added/removed/changed confirmation detail. Focused API/migration tests pass 51/51; MenuImport LocalDB passes 12/12 with Azure unset; Back Office build/static pass 204/204; focused desktop replacement Playwright passes 1/1. CI and Azure/external integration remain skipped by owner policy. Residual non-blocking risk: the working projection is duplicated in three SQL paths and future fields must update all three.
+
+**Exact next action.** Owner runs `docs/features/menus/m6a3-acceptance-workbook.html` against product `58e8258` and returns the downloaded JSON. Do not merge PR #721 or start later work before acceptance.
 
 ## 2026-08-13 — Menus Slice 6-A paste-import design approval
 
