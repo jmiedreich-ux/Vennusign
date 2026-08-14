@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-14, for Menus 6-A1 owner acceptance and merge closeout.
+Updated 2026-08-14, for Menus 6-A2 owner acceptance and merge closeout.
 
 ## 2026-08-14 — Menus 6-A1 accepted product candidate
 
@@ -18,7 +18,9 @@ Updated 2026-08-14, for Menus 6-A1 owner acceptance and merge closeout.
 
 **6-A2 owner acceptance.** The owner accepted all 6/6 workbook cases against product `b1e62c4` at `2026-08-14T04:39:39.105Z`; the durable record is `docs/features/menus/m6a2-acceptance-record.json`. During acceptance the owner flagged the shared heavy black focus halo. The correction replaces it everywhere with one contrast-safe 2px dark-sky ring, with a focused static regression and a computed-style Playwright assertion.
 
-**Exact next action.** Obtain exact-head independent review of the post-acceptance focus correction, then merge PR #719 and synchronize completion records. Do not begin 6-A3 before the merge closeout.
+**6-A2 merge closeout.** Exact-head independent review approved `95f6e5c`. PR #719 merged to `master` as `b27159dee0d20600daab14ad0b0d280c4dbd5e72` at `2026-08-14T04:45:58Z`; issue #718 closed one second later and the remote feature branch is absent. The acceptance-requested focus treatment now uses one contrast-safe 2px ring with no black halo, including the intentionally light paste controls in Midnight.
+
+**Exact next action.** Create and claim the 6-A3 replacement milestone issue, branch `feature/menus-m6a3-replace-import` from merged `master`, and audit the locked replacement/snapshot/restore paths before implementation. Do not begin publishing or another feature.
 
 ## 2026-08-13 — Menus Slice 6-A paste-import design approval
 

@@ -1,17 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-14T04:25:00Z",
-  "activeAssignments": [
-    {
-      "assignment": "Menus 6-A2 — create a new menu from an import",
-      "issue": 718,
-      "owner": "Codex for JeremyPC",
-      "branch": "feature/menus-m6a2-create-import",
-      "claimedUtc": "2026-08-14T03:51:28Z",
-      "status": "Owner accepted 6/6 at b1e62c4; requested focus-ring correction implemented; exact-head finish review pending",
-      "notes": "Create-only destination and atomic idempotent confirmation. Excludes 6-A3 replacement, publishing, spreadsheet/photo/POS import, mobile support, and keyboard-specific interaction design/testing."
-    }
-  ],
+  "updatedUtc": "2026-08-14T04:45:59Z",
+  "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
@@ -36,6 +26,17 @@
     "releasedBy": "scope completed locally"
   },
   "lastCompletedAssignment": {
+    "assignment": "Menus 6-A2 — create a new menu from an import",
+    "issue": 718,
+    "pr": 719,
+    "branch": "feature/menus-m6a2-create-import",
+    "completedUtc": "2026-08-14T04:45:58Z",
+    "mergeSha": "b27159dee0d20600daab14ad0b0d280c4dbd5e72",
+    "acceptedProductSha": "b1e62c4",
+    "acceptance": "Owner accepted all 6 workbook checks at 2026-08-14T04:39:39.105Z; post-acceptance focus correction independently approved at exact PR head 95f6e5c.",
+    "notes": "PR #719 merged and issue #718 closed. 6-A3 replacement is the exact next milestone; publishing remains excluded."
+  },
+  "previousCompletedAssignment": {
     "assignment": "Menus 6-A1 — paste, parse, and resumable review",
     "issue": 714,
     "pr": 716,
@@ -46,7 +47,7 @@
     "acceptance": "Owner accepted all 7 workbook checks at 2026-08-14T03:43:13.198Z; independent exact-head review approved.",
     "notes": "PR #716 merged and issue #714 closed. 6-A2 create-new-menu confirmation is the exact next milestone; 6-A3 replacement remains excluded."
   },
-  "previousCompletedAssignment": {
+  "priorCompletedAssignment": {
     "assignment": "Menus Slice 6 — 86 board and blank menu creation",
     "issue": 710,
     "pr": 711,

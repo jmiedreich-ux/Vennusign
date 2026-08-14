@@ -132,7 +132,7 @@ The schema everything else stands on. No visible UI change yet beyond keeping th
 - Acceptance workbook: paste/read progress, clean and ambiguous review, fallback and promotion, refresh/resume, sign-in recovery, expiry, permission/tier change, smallest/largest supported widths, and maximum-size evidence. Criterion 10.
 
 #### Milestone 6-A2 — create a new menu
-- **Delivery status (2026-08-14): owner accepted; finish review pending.** Owner passed 6/6 against product `b1e62c4`. The acceptance-requested shared focus-ring correction is implemented and locally verified; exact-head re-review remains before merge.
+- **Delivery status (2026-08-14): complete.** Owner passed 6/6 against product `b1e62c4`; the acceptance-requested focus correction was independently approved at exact PR head `95f6e5c`. PR #719 merged as `b27159d`, issue #718 closed, and the feature branch was deleted.
 - From a fully resolved 6-A1 session, choose **Create a new menu**, enter/confirm its name, and perform the first menu mutation only at final confirmation.
 - Recheck the session lease, permission, tier, ceilings and revision under one set-based, atomic, idempotent transaction. A refusal rolls back all menu changes and preserves still-valid session answers; retry cannot create duplicates.
 - Paste prices are menu-scoped and never silently mutate another menu. Completion says **Not live yet** and offers **Review draft in builder** or **Done for now**; screens remain unchanged until later Publish.
