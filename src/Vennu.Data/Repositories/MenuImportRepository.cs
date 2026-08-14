@@ -89,7 +89,7 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
         var session = new MenuImportSession(row.Id, row.VenueId, row.RawPaste, row.ParseRevision, row.Status, row.LineCount,
             row.ItemCount, row.ExpiresUtc, row.CreatedUtc, row.UpdatedUtc, row.UpdatedBy, row.Revision);
         return new(session, lines, questions.Select(q => new MenuImportReviewQuestion(session.Id, session.VenueId,
-            q.QuestionKey, q.Fingerprint, q.Kind, q.DisplayOrder, q.Required, q.ParseRevision, q.LineNumbers, q.Candidates, q.Answer)).ToArray());
+            q.QuestionKey, q.Fingerprint, q.Kind, q.DisplayOrder, q.Required, q.ParseRevision, q.LineNumbers ?? [], q.Candidates ?? [], q.Answer)).ToArray());
     }
 
     private static void ValidateAggregate(MenuImportAggregate aggregate)
@@ -119,7 +119,7 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
     private sealed record QuestionLinePayload(string QuestionKey, int LineNumber);
     private sealed record CandidatePayload(string QuestionKey, Guid ItemId, string DisplayName, string? DisplayPrice, string MatchRule, bool IsSafe);
     private sealed record QuestionRead(string QuestionKey, string Fingerprint, string Kind, int DisplayOrder, bool Required, long ParseRevision,
-        IReadOnlyCollection<int> LineNumbers, IReadOnlyCollection<MenuImportCandidate> Candidates, MenuImportAnswer? Answer);
+        IReadOnlyCollection<int>? LineNumbers, IReadOnlyCollection<MenuImportCandidate>? Candidates, MenuImportAnswer? Answer);
     private sealed record ResultRow(string Result);
     private sealed record CountRow(int Count);
     private sealed class AggregateRow

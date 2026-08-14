@@ -25,7 +25,9 @@ import { loadBackOfficeConfiguration } from "./config";
 import {
   canOpenBackOfficeRoute,
   decisionForBackOfficeRoute,
+  isMenuImportHash,
   menuIdFromHash,
+  menuImportSessionIdFromHash,
   resolveBackOfficeRoute,
   backOfficeNavigationGroups,
   type BackOfficeRoute
@@ -33,6 +35,7 @@ import {
 import NavRail from "./NavRail";
 import MenuBuilder from "./MenuBuilder";
 import MenusHome from "./MenusHome";
+import MenuPasteImport from "./MenuPasteImport";
 import PosIntegrationAdministration from "./PosIntegrationAdministration";
 import VenueOperations from "./VenueOperations";
 import InlineFeatureHint from "./InlineFeatureHint";
@@ -131,6 +134,8 @@ export default function App() {
    * have to land back on the same menu, and React state survives none of them.
    */
   const openMenuId = menuIdFromHash(routeHash);
+  const importOpen = isMenuImportHash(routeHash);
+  const importSessionId = menuImportSessionIdFromHash(routeHash);
   const quickUpdateOpen = routeHash.replace(/^#\/?/, "").split("?")[0] === "menu/quick-update";
   const openMenu = (menuId: string) => { window.location.hash = `#/menu/${menuId}`; };
   const [menuContext, setMenuContext] = useState<{ timezone: string }>();
@@ -614,6 +619,15 @@ export default function App() {
             configuration={configuration}
             accessToken={accessToken}
             review={review}
+          />
+        : allowed && route.path === "menu" && importOpen
+        ? <MenuPasteImport
+            key={importSessionId ?? "new-import"}
+            configuration={configuration}
+            accessToken={accessToken}
+            sessionId={importSessionId}
+            onBack={() => { window.location.hash = "#/menu"; }}
+            onStarted={id => { window.location.hash = `#/menu/import/${id}`; }}
           />
         : allowed && route.path === "menu" && openMenuId === null
         ? <MenusHome

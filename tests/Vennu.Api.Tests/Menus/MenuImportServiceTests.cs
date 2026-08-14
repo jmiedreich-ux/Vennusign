@@ -39,6 +39,19 @@ public sealed class MenuImportServiceTests
     }
 
     [Fact]
+    public async Task Start_refuses_before_writing_when_item_ceiling_is_exceeded()
+    {
+        var (service, repository, content) = CreateService();
+        content.Ceilings[MenuCeilings.ItemsPerMenu] = 1;
+
+        var exception = await Assert.ThrowsAsync<MenuImportValidationException>(() =>
+            service.StartAsync(VenueId, "Burger  12\nSalad  10", null, default));
+
+        Assert.Contains("2 items", exception.Message);
+        Assert.Null(repository.Created);
+    }
+
+    [Fact]
     public async Task Promotion_reparses_and_increments_revision_without_changing_raw_paste()
     {
         var (service, repository, _) = CreateService();

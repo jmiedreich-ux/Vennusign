@@ -4,6 +4,9 @@ import test from "node:test";
 import {
   canOpenBackOfficeRoute,
   isBackOfficeRouteVisible,
+  isMenuImportHash,
+  menuIdFromHash,
+  menuImportSessionIdFromHash,
   resolveBackOfficeRoute,
   backOfficeRoutes,
   backOfficeNavigationGroups,
@@ -18,6 +21,16 @@ test("Back Office shell exposes only implemented customer routes", () => {
   assert.equal(resolveBackOfficeRoute("#/screens").path, "screens");
   assert.equal(resolveBackOfficeRoute("#/unknown").path, "home");
   assert.deepEqual(backOfficeNavigationGroups.map(group => group.label), ["Operate", "Design & delivery", "Connect", "Account"]);
+});
+
+test("paste import routes never masquerade as a menu builder id", () => {
+  const sessionId = "160955c9-b634-4dcd-8f60-472ccb0f863c";
+  assert.equal(isMenuImportHash("#/menu/import"), true);
+  assert.equal(isMenuImportHash(`#/menu/import/${sessionId}`), true);
+  assert.equal(menuIdFromHash("#/menu/import"), null);
+  assert.equal(menuIdFromHash(`#/menu/import/${sessionId}`), null);
+  assert.equal(menuImportSessionIdFromHash("#/menu/import"), null);
+  assert.equal(menuImportSessionIdFromHash(`#/menu/import/${sessionId}`), sessionId);
 });
 
 test("navigation consumes structured server decisions using canonical capability IDs", () => {

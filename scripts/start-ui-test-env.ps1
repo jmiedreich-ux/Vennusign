@@ -57,6 +57,20 @@ DECLARE @SeedItems TABLE (Id uniqueidentifier);
 INSERT INTO @SeedItems (Id)
 SELECT DISTINCT p.ItemId FROM dbo.Placements p INNER JOIN @Menus m ON m.Id = p.MenuId;
 
+-- A paste-review session may have matched one of these seeded library items.
+-- It is temporary test state and owns the candidate FK, so remove the complete
+-- session before pruning the item. This mirrors production expiry cleanup.
+DECLARE @ImportSessions TABLE (Id uniqueidentifier PRIMARY KEY);
+INSERT INTO @ImportSessions (Id)
+SELECT DISTINCT c.SessionId
+FROM dbo.MenuImportCandidates c INNER JOIN @SeedItems i ON i.Id = c.ItemId;
+DELETE a FROM dbo.MenuImportAnswers a INNER JOIN @ImportSessions s ON s.Id = a.SessionId;
+DELETE c FROM dbo.MenuImportCandidates c INNER JOIN @ImportSessions s ON s.Id = c.SessionId;
+DELETE ql FROM dbo.MenuImportQuestionLines ql INNER JOIN @ImportSessions s ON s.Id = ql.SessionId;
+DELETE q FROM dbo.MenuImportReviewQuestions q INNER JOIN @ImportSessions s ON s.Id = q.SessionId;
+DELETE l FROM dbo.MenuImportSourceLines l INNER JOIN @ImportSessions s ON s.Id = l.SessionId;
+DELETE x FROM dbo.MenuImportSessions x INNER JOIN @ImportSessions s ON s.Id = x.Id;
+
 DELETE p FROM dbo.Placements p INNER JOIN @Menus m ON m.Id = p.MenuId;
 
 DELETE a FROM dbo.ItemAvailability a

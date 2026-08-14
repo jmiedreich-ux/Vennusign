@@ -1379,3 +1379,66 @@ export async function loadMenuContext(
 ): Promise<{ timezone: string; ceilings: Record<string, number>; menuCount: number }> {
   return (await contentRequest(configuration, accessToken, "/context")).json();
 }
+
+export type MenuImportCandidate = { itemId: string; displayName: string; displayPrice: string | null; matchRule: string; isSafe: boolean };
+export type MenuImportAnswer = { fingerprint: string; choice: string; selectedItemId: string | null; parseRevision: number; answeredUtc: string; answeredBy: string | null };
+export type MenuImportQuestion = {
+  questionKey: string; fingerprint: string; kind: "identity" | "unreadable"; displayOrder: number; required: boolean;
+  lineNumbers: number[]; candidates: MenuImportCandidate[]; answer: MenuImportAnswer | null;
+};
+export type MenuImportLine = {
+  lineNumber: number; rawText: string; disposition: "blank" | "section" | "item" | "unresolved" | "fallback";
+  parsedName: string | null; parsedDescription: string | null; parsedPrice: string | null; parserReason: string | null;
+};
+export type MenuImportSession = {
+  session: { id: string; rawPaste: string; parseRevision: number; status: "reviewing" | "resolved"; lineCount: number; itemCount: number; expiresUtc: string; revision: string };
+  lines: MenuImportLine[];
+  questions: MenuImportQuestion[];
+};
+
+export class MenuImportApiError extends Error {
+  constructor(public readonly status: number, public readonly reason: string, message: string, public readonly current?: MenuImportSession) { super(message); }
+}
+
+async function menuImportRequest(configuration: BackOfficeConfiguration, accessToken: string, path: string, init?: RequestInit): Promise<MenuImportSession> {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/back-office/menu-imports${path}`, {
+    ...init,
+    headers: { "Content-Type": "application/json", "X-Vennusign-Back-Office-Token": accessToken, ...init?.headers }
+  });
+  const body = await response.json().catch(() => ({})) as MenuImportSession & { reason?: string; message?: string; current?: MenuImportSession };
+  if (!response.ok) throw new MenuImportApiError(response.status, body.reason ?? "unavailable", body.message ?? "This import is unavailable.", body.current ? normalizeMenuImport(body.current) : undefined);
+  return normalizeMenuImport(body);
+}
+
+function normalizeMenuImport(value: MenuImportSession): MenuImportSession {
+  return {
+    ...value,
+    lines: value.lines ?? [],
+    questions: (value.questions ?? []).map(question => ({
+      ...question,
+      lineNumbers: question.lineNumbers ?? [],
+      candidates: question.candidates ?? [],
+      answer: question.answer ?? null
+    }))
+  };
+}
+
+export function startMenuImport(configuration: BackOfficeConfiguration, accessToken: string, rawPaste: string) {
+  return menuImportRequest(configuration, accessToken, "", { method: "POST", body: JSON.stringify({ rawPaste }) });
+}
+export function loadMenuImport(configuration: BackOfficeConfiguration, accessToken: string, sessionId: string) {
+  return menuImportRequest(configuration, accessToken, `/${sessionId}`);
+}
+export function answerMenuImport(configuration: BackOfficeConfiguration, accessToken: string, session: MenuImportSession, question: MenuImportQuestion, choice: string, selectedItemId?: string) {
+  return menuImportRequest(configuration, accessToken, `/${session.session.id}/answers/${encodeURIComponent(question.questionKey)}`, {
+    method: "PUT", headers: { "If-Match": `"${session.session.revision}"` }, body: JSON.stringify({ fingerprint: question.fingerprint, choice, selectedItemId })
+  });
+}
+export function acceptSafeMenuImportMatches(configuration: BackOfficeConfiguration, accessToken: string, session: MenuImportSession) {
+  return menuImportRequest(configuration, accessToken, `/${session.session.id}/accept-safe-matches`, { method: "POST", headers: { "If-Match": `"${session.session.revision}"` } });
+}
+export function setMenuImportLineSection(configuration: BackOfficeConfiguration, accessToken: string, session: MenuImportSession, lineNumber: number, promoted: boolean) {
+  return menuImportRequest(configuration, accessToken, `/${session.session.id}/lines/${lineNumber}/${promoted ? "promote-to-section" : "section-promotion"}`, {
+    method: promoted ? "POST" : "DELETE", headers: { "If-Match": `"${session.session.revision}"` }
+  });
+}

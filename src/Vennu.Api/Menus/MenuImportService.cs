@@ -30,9 +30,13 @@ public sealed class MenuImportService(
 
         var id = Guid.NewGuid();
         var parsed = parser.Parse(id, venueId, rawPaste, 1, await content.GetItemsAsync(venueId, cancellationToken).ConfigureAwait(false));
+        var itemLimit = ceilings.GetValueOrDefault(MenuCeilings.ItemsPerMenu, MenuCeilings.Defaults[MenuCeilings.ItemsPerMenu]);
+        if (parsed.ItemCount > itemLimit)
+            throw new MenuImportValidationException($"That paste contains {parsed.ItemCount:N0} items, over this venue's {itemLimit:N0}-item limit. Split it into two imports.");
         var retention = ceilings.GetValueOrDefault(MenuCeilings.ImportSessionRetentionMinutes, DefaultRetentionMinutes);
         var session = new MenuImportSession(id, venueId, rawPaste, 1, Status(parsed.Questions), lineCount, parsed.ItemCount,
             now.AddMinutes(retention), now, now, actor, []);
+        _ = await imports.DeleteExpiredAsync(now, 100, cancellationToken).ConfigureAwait(false);
         return await imports.CreateAsync(new(session, parsed.Lines, parsed.Questions), cancellationToken).ConfigureAwait(false);
     }
 
