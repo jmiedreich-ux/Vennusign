@@ -128,7 +128,8 @@ public interface IContentRepository
         string? price,
         ItemValueExpectation? expected,
         DateTime now,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        Guid? menuId = null);
 
     /// <inheritdoc cref="ReorderSectionsGuardedAsync"/>
     Task<ReorderOutcome> ReorderPlacementsGuardedAsync(

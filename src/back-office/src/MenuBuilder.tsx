@@ -1199,10 +1199,10 @@ export default function MenuBuilder({
      * edit and the keystroke somebody else may have changed the same item, and an
      * unconditional inverse would erase them without either of you being told.
      */
-    await run(() => updateMenuItemValues(configuration, credential(), edit.itemId, now), {
+    await run(() => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, now), {
       describe: `Change ${edit.field}`,
-      undo: () => updateMenuItemValues(configuration, credential(), edit.itemId, was, now),
-      redo: () => updateMenuItemValues(configuration, credential(), edit.itemId, now, was)
+      undo: () => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, was, now),
+      redo: () => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, now, was)
     });
   };
 
@@ -1257,10 +1257,10 @@ export default function MenuBuilder({
     }
 
     const was = { name: before.name ?? "", description: before.description, price: before.price };
-    await run(() => updateMenuItemValues(configuration, credential(), before.itemId, next), {
+    await run(() => updateMenuItemValues(configuration, credential(), menuId, before.itemId, next), {
       describe: "Edit item",
-      undo: () => updateMenuItemValues(configuration, credential(), before.itemId, was, next),
-      redo: () => updateMenuItemValues(configuration, credential(), before.itemId, next, was)
+      undo: () => updateMenuItemValues(configuration, credential(), menuId, before.itemId, was, next),
+      redo: () => updateMenuItemValues(configuration, credential(), menuId, before.itemId, next, was)
     });
   };
 

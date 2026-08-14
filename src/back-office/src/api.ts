@@ -1259,8 +1259,8 @@ export async function transitionMenuItemPlacement(
 }
 
 /**
- * Edits an item. One item is one shared price across every board it sits on (Q5);
- * each of those boards still changes its own screens only when it publishes.
+ * Edits an item in the open menu. Imported placement-price overrides stay
+ * menu-scoped; ordinary library prices remain shared until each board publishes.
  */
 /**
  * Edits an item. `expected` makes it conditional: the values the caller believes
@@ -1273,11 +1273,12 @@ export async function transitionMenuItemPlacement(
 export async function updateMenuItemValues(
   configuration: BackOfficeConfiguration,
   accessToken: string,
+  menuId: string,
   itemId: string,
   values: { name: string; description: string | null; price: string | null },
   expected?: { name: string; description: string | null; price: string | null }
 ): Promise<void> {
-  await contentRequest(configuration, accessToken, `/items/${itemId}`, {
+  await contentRequest(configuration, accessToken, `/items/${itemId}?menuId=${encodeURIComponent(menuId)}`, {
     method: "PUT",
     body: JSON.stringify(
       expected
@@ -1391,7 +1392,7 @@ export type MenuImportLine = {
   parsedName: string | null; parsedDescription: string | null; parsedPrice: string | null; parserReason: string | null;
 };
 export type MenuImportSession = {
-  session: { id: string; rawPaste: string; parseRevision: number; status: "reviewing" | "resolved"; lineCount: number; itemCount: number; expiresUtc: string; revision: string };
+  session: { id: string; rawPaste: string; parseRevision: number; status: "reviewing" | "resolved"; lineCount: number; itemCount: number; expiresUtc: string; revision: string; destination: "create" | null; proposedMenuName: string | null; completedMenuId: string | null; completedUtc: string | null };
   lines: MenuImportLine[];
   questions: MenuImportQuestion[];
 };
@@ -1413,6 +1414,7 @@ async function menuImportRequest(configuration: BackOfficeConfiguration, accessT
 function normalizeMenuImport(value: MenuImportSession): MenuImportSession {
   return {
     ...value,
+    session: { ...value.session, destination: value.session.destination ?? null, proposedMenuName: value.session.proposedMenuName ?? null, completedMenuId: value.session.completedMenuId ?? null, completedUtc: value.session.completedUtc ?? null },
     lines: value.lines ?? [],
     questions: (value.questions ?? []).map(question => ({
       ...question,
@@ -1441,4 +1443,17 @@ export function setMenuImportLineSection(configuration: BackOfficeConfiguration,
   return menuImportRequest(configuration, accessToken, `/${session.session.id}/lines/${lineNumber}/${promoted ? "promote-to-section" : "section-promotion"}`, {
     method: promoted ? "POST" : "DELETE", headers: { "If-Match": `"${session.session.revision}"` }
   });
+}
+export function setMenuImportCreateDestination(configuration: BackOfficeConfiguration, accessToken: string, session: MenuImportSession, menuName: string) {
+  return menuImportRequest(configuration, accessToken, `/${session.session.id}/destination/create`, {
+    method: "PUT", headers: { "If-Match": `"${session.session.revision}"` }, body: JSON.stringify({ menuName })
+  });
+}
+export async function confirmMenuImportCreate(configuration: BackOfficeConfiguration, accessToken: string, session: MenuImportSession) {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/back-office/menu-imports/${session.session.id}/destination/create/confirm`, {
+    method: "POST", headers: { "Content-Type": "application/json", "X-Vennusign-Back-Office-Token": accessToken, "If-Match": `"${session.session.revision}"` }
+  });
+  const body = await response.json().catch(() => ({})) as { result?: string; menuId?: string; import?: MenuImportSession; reason?: string; message?: string; current?: MenuImportSession };
+  if (!response.ok) throw new MenuImportApiError(response.status, body.reason ?? "unavailable", body.message ?? "This menu could not be created.", body.current ? normalizeMenuImport(body.current) : undefined);
+  return { result: body.result!, menuId: body.menuId!, import: normalizeMenuImport(body.import!) };
 }

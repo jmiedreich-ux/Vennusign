@@ -70,6 +70,32 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
             .ConfigureAwait(false)).Single().Count;
     }
 
+    public Task<MenuImportMutationOutcome> SetCreateDestinationAsync(Guid venueId, Guid sessionId, byte[] expectedRevision,
+        string menuName, DateTime nowUtc, string? actor, CancellationToken cancellationToken = default) =>
+        MutateAsync(SetCreateDestinationSql, new
+        {
+            VenueId = RequireId(venueId, nameof(venueId)), SessionId = RequireId(sessionId, nameof(sessionId)),
+            ExpectedRevision = RequireRevision(expectedRevision), MenuName = RequireMenuName(menuName), Now = nowUtc, Actor = actor
+        }, cancellationToken);
+
+    public async Task<MenuImportCreateOutcome> ConfirmCreateAsync(Guid venueId, Guid sessionId, byte[] expectedRevision,
+        Guid actorUserId, IReadOnlyCollection<string> systemRoleKeys, DateTime nowUtc, string? actor,
+        CancellationToken cancellationToken = default)
+    {
+        var result = (await dataAccess.ExecuteSqlQueryAsync<CreateResultRow, object>(ConfirmCreateSql, new
+        {
+            VenueId = RequireId(venueId, nameof(venueId)), SessionId = RequireId(sessionId, nameof(sessionId)),
+            ExpectedRevision = RequireRevision(expectedRevision), ActorUserId = RequireId(actorUserId, nameof(actorUserId)),
+            SystemRolesJson = JsonSerializer.Serialize(systemRoleKeys ?? throw new ArgumentNullException(nameof(systemRoleKeys))),
+            DefaultMenuLimit = MenuCeilings.Defaults[MenuCeilings.MenusPerVenue],
+            DefaultItemLimit = MenuCeilings.Defaults[MenuCeilings.ItemsPerMenu],
+            Now = nowUtc, Actor = actor, MenuId = Guid.NewGuid(), PageId = Guid.NewGuid()
+        }, cancellationToken).ConfigureAwait(false)).Single();
+        var aggregate = result.Result is MenuImportMutationOutcome.NotFound or MenuImportMutationOutcome.Expired
+            ? null : await GetAsync(venueId, sessionId, nowUtc, cancellationToken).ConfigureAwait(false);
+        return new(result.Result, aggregate, result.MenuId);
+    }
+
     private async Task<MenuImportMutationOutcome> MutateAsync<T>(string sql, T parameters, CancellationToken cancellationToken)
     {
         var result = (await dataAccess.ExecuteSqlQueryAsync<ResultRow, T>(sql, parameters, cancellationToken).ConfigureAwait(false)).Single();
@@ -96,10 +122,11 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
 
     private static MenuImportAggregate Hydrate(AggregateRow row)
     {
-        var lines = JsonSerializer.Deserialize<List<MenuImportSourceLine>>(row.LinesJson, JsonOptions) ?? [];
-        var questions = JsonSerializer.Deserialize<List<QuestionRead>>(row.QuestionsJson, JsonOptions) ?? [];
+        var lines = JsonSerializer.Deserialize<List<MenuImportSourceLine>>(row.LinesJson ?? "[]", JsonOptions) ?? [];
+        var questions = JsonSerializer.Deserialize<List<QuestionRead>>(row.QuestionsJson ?? "[]", JsonOptions) ?? [];
         var session = new MenuImportSession(row.Id, row.VenueId, row.RawPaste, row.ParseRevision, row.Status, row.LineCount,
-            row.ItemCount, row.ExpiresUtc, row.CreatedUtc, row.UpdatedUtc, row.UpdatedBy, row.Revision);
+            row.ItemCount, row.ExpiresUtc, row.CreatedUtc, row.UpdatedUtc, row.UpdatedBy, row.Revision,
+            row.Destination, row.ProposedMenuName, row.CompletedMenuId, row.CompletedUtc);
         return new(session, lines, questions.Select(q => new MenuImportReviewQuestion(session.Id, session.VenueId,
             q.QuestionKey, q.Fingerprint, q.Kind, q.DisplayOrder, q.Required, q.ParseRevision, q.LineNumbers ?? [], q.Candidates ?? [], q.Answer)).ToArray());
     }
@@ -125,6 +152,12 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
         return choice;
     }
     private static string RequireFingerprint(string value) => value is { Length: 64 } ? value : throw new ArgumentException("A 64-character fingerprint is required.", nameof(value));
+    private static string RequireMenuName(string value)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
+        var normalized = value.Trim();
+        return normalized.Length <= 200 ? normalized : throw new ArgumentException("Menu name cannot exceed 200 characters.", nameof(value));
+    }
 
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
     private sealed record QuestionPayload(string QuestionKey, string Fingerprint, string Kind, int DisplayOrder, bool Required, long ParseRevision);
@@ -133,6 +166,7 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
     private sealed record QuestionRead(string QuestionKey, string Fingerprint, string Kind, int DisplayOrder, bool Required, long ParseRevision,
         IReadOnlyCollection<int>? LineNumbers, IReadOnlyCollection<MenuImportCandidate>? Candidates, MenuImportAnswer? Answer);
     private sealed record ResultRow(string Result);
+    private sealed record CreateResultRow(string Result, Guid? MenuId);
     private sealed record CountRow(int Count);
     private sealed class AggregateRow
     {
@@ -147,9 +181,13 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
         public DateTime CreatedUtc { get; init; }
         public DateTime UpdatedUtc { get; init; }
         public string? UpdatedBy { get; init; }
+        public string? Destination { get; init; }
+        public string? ProposedMenuName { get; init; }
+        public Guid? CompletedMenuId { get; init; }
+        public DateTime? CompletedUtc { get; init; }
         public byte[] Revision { get; init; } = [];
-        public string LinesJson { get; init; } = "[]";
-        public string QuestionsJson { get; init; } = "[]";
+        public string? LinesJson { get; init; } = "[]";
+        public string? QuestionsJson { get; init; } = "[]";
     }
 
     private const string InsertDerivedSql = """
@@ -174,6 +212,7 @@ VALUES (@SessionId, @VenueId, @RawPaste, @ParseRevision, @Status, @LineCount, @I
 
     private const string ReadSql = """
 SELECT s.Id, s.VenueId, s.RawPaste, s.ParseRevision, s.Status, s.LineCount, s.ItemCount, s.ExpiresUtc, s.CreatedUtc, s.UpdatedUtc, s.UpdatedBy, s.Revision,
+ s.Destination, s.ProposedMenuName, s.CompletedMenuId, s.CompletedUtc,
  (SELECT l.SessionId, l.VenueId, l.LineNumber, l.RawText, l.Disposition, l.ParsedName, l.ParsedDescription, l.ParsedPrice, l.ParserReason, l.ParseRevision FROM dbo.MenuImportSourceLines l WHERE l.SessionId=s.Id ORDER BY l.LineNumber FOR JSON PATH) LinesJson,
  (SELECT q.QuestionKey, q.Fingerprint, q.Kind, q.DisplayOrder, q.Required, q.ParseRevision,
    JSON_QUERY(COALESCE((SELECT N'['+STRING_AGG(CONVERT(nvarchar(max), ql.LineNumber),N',') WITHIN GROUP (ORDER BY ql.LineNumber)+N']' FROM dbo.MenuImportQuestionLines ql WHERE ql.SessionId=q.SessionId AND ql.QuestionKey=q.QuestionKey),N'[]')) LineNumbers,
@@ -181,6 +220,93 @@ SELECT s.Id, s.VenueId, s.RawPaste, s.ParseRevision, s.Status, s.LineCount, s.It
    JSON_QUERY((SELECT a.Fingerprint, a.Choice, a.SelectedItemId, a.ParseRevision, a.AnsweredUtc, a.AnsweredBy FROM dbo.MenuImportAnswers a WHERE a.SessionId=q.SessionId AND a.QuestionKey=q.QuestionKey FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)) Answer
   FROM dbo.MenuImportReviewQuestions q WHERE q.SessionId=s.Id ORDER BY q.DisplayOrder, q.QuestionKey FOR JSON PATH) QuestionsJson
 FROM dbo.MenuImportSessions s WHERE s.Id=@SessionId AND s.VenueId=@VenueId AND s.ExpiresUtc>@Now;
+""";
+
+    private const string SetCreateDestinationSql = """
+SET XACT_ABORT ON; BEGIN TRANSACTION; DECLARE @Result nvarchar(20)=N'updated';
+DECLARE @CurrentRevision varbinary(8), @CurrentExpiry datetime2, @Status nvarchar(20), @Completed uniqueidentifier;
+SELECT @CurrentRevision=Revision,@CurrentExpiry=ExpiresUtc,@Status=Status,@Completed=CompletedMenuId
+FROM dbo.MenuImportSessions WITH (UPDLOCK,HOLDLOCK) WHERE Id=@SessionId AND VenueId=@VenueId;
+IF @CurrentRevision IS NULL SET @Result=N'not_found';
+ELSE IF @CurrentExpiry<=@Now SET @Result=N'expired';
+ELSE IF @CurrentRevision<>@ExpectedRevision SET @Result=N'conflict';
+ELSE IF @Status<>N'resolved' OR @Completed IS NOT NULL SET @Result=N'invalid';
+IF @Result=N'updated' UPDATE dbo.MenuImportSessions
+ SET Destination=N'create',ProposedMenuName=@MenuName,UpdatedUtc=@Now,UpdatedBy=@Actor WHERE Id=@SessionId;
+COMMIT; SELECT @Result Result;
+""";
+
+    private const string ConfirmCreateSql = """
+SET XACT_ABORT ON; BEGIN TRANSACTION;
+DECLARE @Result nvarchar(24)=N'created', @ExistingMenu uniqueidentifier, @Name nvarchar(200), @Expiry datetime2,
+ @Revision varbinary(8), @Status nvarchar(20), @Active int, @OrganizationId uniqueidentifier,
+ @MenuLimit int=@DefaultMenuLimit, @ItemLimit int=@DefaultItemLimit;
+SELECT @ExistingMenu=CompletedMenuId,@Name=ProposedMenuName,@Expiry=ExpiresUtc,@Revision=Revision,@Status=Status
+FROM dbo.MenuImportSessions WITH (UPDLOCK,HOLDLOCK) WHERE Id=@SessionId AND VenueId=@VenueId;
+IF @Revision IS NULL SET @Result=N'not_found';
+ELSE IF @ExistingMenu IS NOT NULL BEGIN SET @Result=N'already_completed'; SET @MenuId=@ExistingMenu; END
+ELSE IF @Expiry<=@Now SET @Result=N'expired';
+ELSE IF @Revision<>@ExpectedRevision SET @Result=N'conflict';
+ELSE IF @Status<>N'resolved' OR @Name IS NULL SET @Result=N'invalid';
+ELSE IF EXISTS(SELECT 1 FROM dbo.MenuImportReviewQuestions q WHERE q.SessionId=@SessionId AND q.Required=1
+ AND NOT EXISTS(SELECT 1 FROM dbo.MenuImportAnswers a WHERE a.SessionId=q.SessionId AND a.QuestionKey=q.QuestionKey AND a.Fingerprint=q.Fingerprint)) SET @Result=N'invalid';
+IF @Result=N'created' BEGIN
+ SELECT @OrganizationId=OrganizationId FROM dbo.Venues WITH (UPDLOCK,HOLDLOCK) WHERE Id=@VenueId;
+ IF NOT EXISTS(
+  SELECT 1 FROM OPENJSON(@SystemRolesJson) roles
+  JOIN dbo.AuthorityRolePermissions rp WITH (UPDLOCK,HOLDLOCK) ON rp.RoleKey=roles.[value] AND rp.PermissionId=N'content.menu.import'
+  UNION ALL
+  SELECT 1 FROM dbo.ScopedRoleAssignments assignment WITH (UPDLOCK,HOLDLOCK)
+  JOIN dbo.AuthorityRolePermissions rp WITH (UPDLOCK,HOLDLOCK) ON rp.RoleKey=assignment.RoleKey AND rp.PermissionId=N'content.menu.import'
+  WHERE assignment.ActorUserId=@ActorUserId AND assignment.RevokedUtc IS NULL AND assignment.StartsUtc<=@Now
+   AND (assignment.ExpiresUtc IS NULL OR assignment.ExpiresUtc>@Now)
+   AND ((assignment.ScopeType=4 AND assignment.ScopeId=@VenueId) OR (assignment.ScopeType=2 AND assignment.ScopeId=@OrganizationId))
+ ) SET @Result=N'permission_denied';
+END
+IF @Result=N'created' BEGIN
+ SELECT TOP (1) @MenuLimit=LimitValue FROM dbo.CapabilityAllowances WITH (UPDLOCK,HOLDLOCK)
+ WHERE CapabilityId=N'content.menu.count' AND (VenueId=@VenueId OR (VenueId IS NULL AND OrganizationId=@OrganizationId))
+  AND StartsUtc<=@Now AND (EndsUtc IS NULL OR EndsUtc>@Now)
+ ORDER BY CASE WHEN VenueId=@VenueId THEN 0 ELSE 1 END,StartsUtc DESC;
+ SELECT TOP (1) @ItemLimit=LimitValue FROM dbo.CapabilityAllowances WITH (UPDLOCK,HOLDLOCK)
+ WHERE CapabilityId=N'content.menu.items' AND (VenueId=@VenueId OR (VenueId IS NULL AND OrganizationId=@OrganizationId))
+  AND StartsUtc<=@Now AND (EndsUtc IS NULL OR EndsUtc>@Now)
+ ORDER BY CASE WHEN VenueId=@VenueId THEN 0 ELSE 1 END,StartsUtc DESC;
+ SELECT @Active=COUNT(*) FROM dbo.Menus WITH (UPDLOCK,HOLDLOCK) WHERE VenueId=@VenueId AND IsPutAway=0;
+ IF @Active+1>@MenuLimit SET @Result=N'menu_limit';
+ ELSE IF EXISTS(SELECT 1 FROM dbo.Menus WHERE VenueId=@VenueId AND UPPER(LTRIM(RTRIM(Name)))=UPPER(@Name)) SET @Result=N'name_conflict';
+END
+IF @Result=N'created' BEGIN
+ CREATE TABLE #Sections(LineNumber int PRIMARY KEY, SectionId uniqueidentifier NOT NULL, Name nvarchar(200) NOT NULL, SortOrder int NOT NULL);
+ INSERT #Sections SELECT LineNumber,NEWID(),ParsedName,ROW_NUMBER() OVER(ORDER BY LineNumber)-1
+ FROM dbo.MenuImportSourceLines WHERE SessionId=@SessionId AND Disposition=N'section';
+ CREATE TABLE #Rows(LineNumber int PRIMARY KEY,ItemId uniqueidentifier NOT NULL,Existing bit NOT NULL,Fallback bit NOT NULL,Name nvarchar(200) NULL,Description nvarchar(1000) NULL,Price nvarchar(12) NULL,SectionId uniqueidentifier NULL,SortOrder int NULL);
+ INSERT #Rows(LineNumber,ItemId,Existing,Fallback,Name,Description,Price)
+ SELECT l.LineNumber,COALESCE(a.SelectedItemId,NEWID()),CASE WHEN a.SelectedItemId IS NULL THEN 0 ELSE 1 END,
+  CASE WHEN l.Disposition=N'unresolved' THEN 1 ELSE 0 END,
+  CASE WHEN l.Disposition=N'item' THEN l.ParsedName ELSE NULLIF(LTRIM(RTRIM(l.RawText)),N'') END,l.ParsedDescription,l.ParsedPrice
+ FROM dbo.MenuImportSourceLines l LEFT JOIN dbo.MenuImportQuestionLines ql ON ql.SessionId=l.SessionId AND ql.LineNumber=l.LineNumber
+ LEFT JOIN dbo.MenuImportAnswers a ON a.SessionId=ql.SessionId AND a.QuestionKey=ql.QuestionKey
+ WHERE l.SessionId=@SessionId AND (l.Disposition=N'item' OR (l.Disposition=N'unresolved' AND a.Choice=N'fallback'));
+ IF (SELECT COUNT(*) FROM #Rows)>@ItemLimit SET @Result=N'item_limit';
+ ELSE IF EXISTS(SELECT 1 FROM #Rows WHERE Name IS NULL OR LEN(Name)>200) OR EXISTS(SELECT ItemId FROM #Rows GROUP BY ItemId HAVING COUNT(*)>1) SET @Result=N'invalid_content';
+ ELSE BEGIN
+  IF EXISTS(SELECT 1 FROM #Rows r WHERE r.Fallback=1 OR NOT EXISTS(SELECT 1 FROM #Sections s WHERE s.LineNumber<r.LineNumber)) INSERT #Sections VALUES(0,NEWID(),N'Imported items',-1);
+  UPDATE r SET SectionId=CASE WHEN r.Fallback=1 THEN (SELECT SectionId FROM #Sections WHERE LineNumber=0) ELSE COALESCE((SELECT TOP 1 s.SectionId FROM #Sections s WHERE s.LineNumber<r.LineNumber ORDER BY s.LineNumber DESC),(SELECT SectionId FROM #Sections WHERE LineNumber=0)) END FROM #Rows r;
+  WITH ranked AS (SELECT LineNumber,ROW_NUMBER() OVER(PARTITION BY SectionId ORDER BY LineNumber)-1 SortOrder FROM #Rows) UPDATE r SET SortOrder=x.SortOrder FROM #Rows r JOIN ranked x ON x.LineNumber=r.LineNumber;
+  INSERT dbo.Menus(Id,VenueId,Name,IsActive,CreatedUtc,UpdatedUtc) VALUES(@MenuId,@VenueId,@Name,1,@Now,@Now);
+  INSERT dbo.MenuPages(Id,VenueId,MenuId,Name,SortOrder,CreatedUtc,UpdatedUtc) VALUES(@PageId,@VenueId,@MenuId,N'Page 1',0,@Now,@Now);
+  INSERT dbo.MenuSections(Id,VenueId,MenuId,PageId,Name,SortOrder,CreatedUtc,UpdatedUtc) SELECT SectionId,@VenueId,@MenuId,@PageId,Name,ROW_NUMBER() OVER(ORDER BY SortOrder,LineNumber)-1,@Now,@Now FROM #Sections;
+  INSERT dbo.Items(Id,VenueId,Name,Description,Price,Source,IsActive,CreatedUtc,UpdatedUtc) SELECT ItemId,@VenueId,Name,Description,Price,N'import',1,@Now,@Now FROM #Rows WHERE Existing=0;
+  CREATE TABLE #Placed(LineNumber int PRIMARY KEY,PlacementId uniqueidentifier NOT NULL); INSERT #Placed SELECT LineNumber,NEWID() FROM #Rows;
+  INSERT dbo.Placements(Id,VenueId,MenuId,MenuSectionId,PageId,ItemId,SortOrder,CreatedUtc,UpdatedUtc,ImportedPriceOverride)
+   SELECT p.PlacementId,@VenueId,@MenuId,r.SectionId,@PageId,r.ItemId,r.SortOrder,@Now,@Now,CASE WHEN r.Existing=1 THEN r.Price END FROM #Rows r JOIN #Placed p ON p.LineNumber=r.LineNumber;
+  INSERT dbo.MenuImportCreatedLines(SessionId,VenueId,LineNumber,MenuId,MenuSectionId,PlacementId) SELECT @SessionId,@VenueId,r.LineNumber,@MenuId,r.SectionId,p.PlacementId FROM #Rows r JOIN #Placed p ON p.LineNumber=r.LineNumber;
+  UPDATE dbo.MenuImportSessions SET ItemCount=(SELECT COUNT(*) FROM #Rows),CompletedMenuId=@MenuId,CompletedUtc=@Now,UpdatedUtc=@Now,UpdatedBy=@Actor WHERE Id=@SessionId;
+ END
+END
+IF @Result<>N'created' AND @Result<>N'already_completed' SET @MenuId=NULL;
+COMMIT; SELECT @Result Result,@MenuId MenuId;
 """;
 
     private const string AnswerSql = """
@@ -240,7 +366,7 @@ END COMMIT; SELECT @Result Result;
     private const string DeleteExpiredSql = """
 SET XACT_ABORT ON; BEGIN TRANSACTION; CREATE TABLE #Sessions(Id uniqueidentifier PRIMARY KEY);
 INSERT #Sessions SELECT TOP (@BatchSize) Id FROM dbo.MenuImportSessions WITH (UPDLOCK, READPAST) WHERE ExpiresUtc<=@Now ORDER BY ExpiresUtc;
-DELETE a FROM dbo.MenuImportAnswers a JOIN #Sessions s ON s.Id=a.SessionId; DELETE c FROM dbo.MenuImportCandidates c JOIN #Sessions s ON s.Id=c.SessionId; DELETE ql FROM dbo.MenuImportQuestionLines ql JOIN #Sessions s ON s.Id=ql.SessionId; DELETE q FROM dbo.MenuImportReviewQuestions q JOIN #Sessions s ON s.Id=q.SessionId; DELETE l FROM dbo.MenuImportSourceLines l JOIN #Sessions s ON s.Id=l.SessionId; DELETE session FROM dbo.MenuImportSessions session JOIN #Sessions s ON s.Id=session.Id;
+DELETE cl FROM dbo.MenuImportCreatedLines cl JOIN #Sessions s ON s.Id=cl.SessionId; DELETE a FROM dbo.MenuImportAnswers a JOIN #Sessions s ON s.Id=a.SessionId; DELETE c FROM dbo.MenuImportCandidates c JOIN #Sessions s ON s.Id=c.SessionId; DELETE ql FROM dbo.MenuImportQuestionLines ql JOIN #Sessions s ON s.Id=ql.SessionId; DELETE q FROM dbo.MenuImportReviewQuestions q JOIN #Sessions s ON s.Id=q.SessionId; DELETE l FROM dbo.MenuImportSourceLines l JOIN #Sessions s ON s.Id=l.SessionId; DELETE session FROM dbo.MenuImportSessions session JOIN #Sessions s ON s.Id=session.Id;
 DECLARE @Count int=@@ROWCOUNT; COMMIT; SELECT @Count [Count];
 """;
 }

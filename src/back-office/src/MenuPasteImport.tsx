@@ -4,8 +4,10 @@ import {
   MenuImportApiError,
   acceptSafeMenuImportMatches,
   answerMenuImport,
+  confirmMenuImportCreate,
   loadMenuImport,
   setMenuImportLineSection,
+  setMenuImportCreateDestination,
   startMenuImport,
   type MenuImportQuestion,
   type MenuImportSession
@@ -13,22 +15,23 @@ import {
 import type { BackOfficeConfiguration } from "./config";
 import "./menu-paste-import.css";
 
-type Props = { configuration: BackOfficeConfiguration; accessToken: string; sessionId: string | null; onBack: () => void; onStarted: (id: string) => void };
+type Props = { configuration: BackOfficeConfiguration; accessToken: string; sessionId: string | null; onBack: () => void; onStarted: (id: string) => void; onOpenMenu: (id: string) => void };
 
-export default function MenuPasteImport({ configuration, accessToken, sessionId, onBack, onStarted }: Props) {
+export default function MenuPasteImport({ configuration, accessToken, sessionId, onBack, onStarted, onOpenMenu }: Props) {
   const [paste, setPaste] = useState("");
   const [session, setSession] = useState<MenuImportSession | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(Boolean(sessionId));
   const [error, setError] = useState<string | null>(null);
   const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [menuName, setMenuName] = useState("New menu");
 
   useEffect(() => {
     if (!sessionId) return;
     let current = true;
     setLoading(true);
     loadMenuImport(configuration, accessToken, sessionId)
-      .then(value => { if (current) { setSession(value); setError(null); } })
+      .then(value => { if (current) { setSession(value); setMenuName(value.session.proposedMenuName ?? "New menu"); setError(null); } })
       .catch(failure => { if (current) setError(failure instanceof Error ? failure.message : "This import could not be resumed."); })
       .finally(() => { if (current) setLoading(false); });
     return () => { current = false; };
@@ -51,7 +54,6 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
 
   if (window.innerWidth < 900) return <main className="paste-import narrow-import" data-testid="menu-import-narrow" aria-labelledby="import-narrow-title">
     <div className="import-mark"><ClipboardPaste aria-hidden="true" /></div>
-    <p className="import-kicker">Menu import</p>
     <h1 id="import-narrow-title">Importing a menu needs a wider window</h1>
     <p>{sessionId ? "Your work is saved. Open this same link in a window at least 900px wide to continue." : "Open this page in a window at least 900px wide to start an import."}</p>
     {session?.session.expiresUtc && <p className="expiry">Saved until {formatExpiry(session.session.expiresUtc)}</p>}
@@ -80,6 +82,32 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
   if (loading) return <main className="paste-import import-loading" aria-live="polite"><div className="import-spinner" /> Resuming your import…</main>;
   if (!session) return <main className="paste-import import-unavailable"><button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button><h1>We couldn’t resume this import</h1>{error && <p role="alert">{error}</p>}</main>;
 
+  if (session.session.completedMenuId) return <main className="paste-import import-destination" data-testid="menu-import-complete" aria-labelledby="import-complete-title">
+    <button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button>
+    <section className="destination-card completion-card"><div className="completion-check"><Check aria-hidden="true" /></div>
+      <h1 id="import-complete-title">{session.session.proposedMenuName} is ready to review</h1><p className="not-live">Not live yet</p>
+      <p>The menu and its imported items are saved as working content. Nothing changed on your screens.</p>
+      <dl><div><dt>Items added</dt><dd>{session.session.itemCount}</dd></div><div><dt>Published screens changed</dt><dd>0</dd></div></dl>
+      <div className="destination-actions"><button className="import-secondary" onClick={onBack}>Done for now</button><button className="import-primary" onClick={() => onOpenMenu(session.session.completedMenuId!)}>Review draft in builder</button></div>
+    </section>
+  </main>;
+
+  if (session.session.status === "resolved") return <main className="paste-import import-destination" data-testid="menu-import-create" aria-labelledby="destination-title">
+    <button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button>
+    <section className="destination-card"><h1 id="destination-title">{session.session.destination ? "Create this menu?" : "Where should these items go?"}</h1>
+      {!session.session.destination ? <><p>Your review is saved. Creating is the first step that changes menu working content.</p>{error && <p className="import-error" role="alert">{error}</p>}
+        <button className="destination-choice" disabled={busy} onClick={() => void mutate(current => setMenuImportCreateDestination(configuration, accessToken, current, menuName))}><strong>Create a new menu</strong><span>Build a new unpublished menu from all {session.session.itemCount} imported items.</span></button>
+        <p className="future-destination">Replacing an existing menu opens in milestone 6-A3.</p></> :
+      <form onSubmit={event => { event.preventDefault(); void (async () => { setBusy(true); setError(null); try { let current = session; if (menuName.trim() !== session.session.proposedMenuName) current = await setMenuImportCreateDestination(configuration, accessToken, session, menuName); const created = await confirmMenuImportCreate(configuration, accessToken, current); setSession(created.import); } catch (failure) { if (failure instanceof MenuImportApiError && failure.current) setSession(failure.current); setError(failure instanceof Error ? failure.message : "This menu could not be created. Nothing changed."); } finally { setBusy(false); } })(); }}>
+        <p>Confirm the name, item count, and publishing state. Everything is created together or nothing changes.</p>
+        <label htmlFor="import-menu-name">Menu name</label><input id="import-menu-name" required maxLength={200} value={menuName} onChange={event => setMenuName(event.target.value)} onBlur={() => { if (menuName.trim() && menuName.trim() !== session.session.proposedMenuName) void mutate(current => setMenuImportCreateDestination(configuration, accessToken, current, menuName)); }} />
+        <div className="confirm-facts"><div><strong>{session.session.itemCount}</strong><span>items will be added</span></div><div><strong>0</strong><span>screens change now</span></div></div>
+        <p className="not-live">Not live yet — publishing remains a separate action.</p>{error && <p className="import-error" role="alert">{error}</p>}
+        <div className="destination-actions"><button type="button" className="import-secondary" disabled={busy} onClick={onBack}>Back</button><button type="submit" className="import-primary" disabled={busy || !menuName.trim()} onMouseDown={event => event.preventDefault()}>{busy ? "Creating…" : "Create menu"}</button></div>
+      </form>}
+    </section>
+  </main>;
+
   return <main className="paste-import import-review" data-testid="menu-import-review" aria-labelledby="review-title">
     <div className="import-review-header">
       <button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button>
@@ -101,7 +129,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     <section className="inventory-panel"><button aria-expanded={inventoryOpen} onClick={() => setInventoryOpen(value => !value)}>{inventoryOpen ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />} Review all {session.session.lineCount} pasted lines</button>
       {inventoryOpen && <ol>{session.lines.map(line => <li key={line.lineNumber}><span>{line.lineNumber}</span><code>{line.rawText || "(blank line)"}</code><em>{line.disposition}</em>{line.disposition === "section" && !isNaturalHeading(line.rawText) && <button disabled={busy} onClick={() => void mutate(current => setMenuImportLineSection(configuration, accessToken, current, line.lineNumber, false))}><RotateCcw aria-hidden="true" /> Undo section</button>}</li>)}</ol>}
     </section>
-    <p className="import-status" aria-live="polite">{busy ? "Saving your answer…" : session.session.status === "resolved" ? "All required answers are saved." : `${unresolved.length} answers remaining.`}</p>
+    <p className="import-status" aria-live="polite">{busy ? "Saving your answer…" : `${unresolved.length} answers remaining.`}</p>
   </main>;
 }
 

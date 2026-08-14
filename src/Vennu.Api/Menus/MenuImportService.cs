@@ -87,11 +87,33 @@ public sealed class MenuImportService(
     public Task<int> DeleteExpiredAsync(int batchSize, CancellationToken cancellationToken) =>
         imports.DeleteExpiredAsync(clock.GetUtcNow().UtcDateTime, batchSize, cancellationToken);
 
+    public async Task<MenuImportMutationOutcome> SetCreateDestinationAsync(Guid venueId, Guid sessionId, byte[] revision,
+        string menuName, string? actor, CancellationToken cancellationToken)
+    {
+        var current = await RefreshDependenciesAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        if (current is null) return new(MenuImportMutationOutcome.NotFound, null);
+        if (!current.Session.Revision.SequenceEqual(revision)) return new(MenuImportMutationOutcome.Conflict, current);
+        return await imports.SetCreateDestinationAsync(venueId, sessionId, revision, menuName,
+            clock.GetUtcNow().UtcDateTime, actor, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<MenuImportCreateOutcome> ConfirmCreateAsync(Guid venueId, Guid sessionId, byte[] revision,
+        Guid actorUserId, IReadOnlyCollection<string> systemRoleKeys, string? actor, CancellationToken cancellationToken)
+    {
+        var current = await RefreshDependenciesAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        if (current is null) return new(MenuImportMutationOutcome.NotFound, null, null);
+        if (current.Session.CompletedMenuId is null && !current.Session.Revision.SequenceEqual(revision))
+            return new(MenuImportMutationOutcome.Conflict, current, null);
+        return await imports.ConfirmCreateAsync(venueId, sessionId, revision, actorUserId, systemRoleKeys,
+            clock.GetUtcNow().UtcDateTime, actor, cancellationToken).ConfigureAwait(false);
+    }
+
     private async Task<MenuImportAggregate?> RefreshDependenciesAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken)
     {
         var now = clock.GetUtcNow().UtcDateTime;
         var current = await imports.GetAsync(venueId, sessionId, now, cancellationToken).ConfigureAwait(false);
         if (current is null) return null;
+        if (current.Session.CompletedMenuId is not null) return current;
         var overrides = current.Lines.Where(line => line.Disposition == "section" && !IsNaturalHeading(line.RawText))
             .Select(line => line.LineNumber).ToHashSet();
         var resolved = await configuration.ResolveAsync(venueId, cancellationToken).ConfigureAwait(false);

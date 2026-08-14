@@ -97,6 +97,23 @@ internal static class ModelInvariants
             """),
 
         new(
+            "Completed imports are one same-venue unpublished menu with traced content",
+            "Menus 6-A2. Completion may never point across venues, create a published object, or lose a created placement's source line.",
+            """
+            SELECT Offence FROM (
+                SELECT CONCAT('session ',s.Id,' has an invalid completed menu') Offence
+                FROM dbo.MenuImportSessions s
+                LEFT JOIN dbo.Menus m ON m.Id=s.CompletedMenuId AND m.VenueId=s.VenueId
+                WHERE s.CompletedMenuId IS NOT NULL AND (m.Id IS NULL OR m.PublishedVersion IS NOT NULL OR s.CompletedUtc IS NULL OR s.Destination<>N'create')
+                UNION ALL
+                SELECT CONCAT('created line ',cl.SessionId,'/',cl.LineNumber,' disagrees with its placement')
+                FROM dbo.MenuImportCreatedLines cl
+                LEFT JOIN dbo.Placements p ON p.Id=cl.PlacementId
+                WHERE p.Id IS NULL OR p.VenueId<>cl.VenueId OR p.MenuId<>cl.MenuId OR p.MenuSectionId<>cl.MenuSectionId
+            ) breaches;
+            """),
+
+        new(
             "A screen rotation contains each page once",
             "M3-A amendment A13 permits pages from multiple menus to share a screen rotation. The impossible "
             + "state is the same page appearing twice in one rotation.",

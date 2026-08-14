@@ -1,0 +1,14 @@
+{
+  "milestone": "Menus 6-A2 — create a new menu from an import",
+  "productSha": "b1e62c4",
+  "acceptedUtc": "2026-08-14T04:39:39.105Z",
+  "result": "Accepted",
+  "cases": [
+    { "name": "Create is a deliberate next step", "result": "Pass", "notes": "" },
+    { "name": "Destination survives interruption", "result": "Pass", "notes": "" },
+    { "name": "Confirmation tells the whole truth", "result": "Pass", "notes": "" },
+    { "name": "The draft is editable, not published", "result": "Pass", "notes": "" },
+    { "name": "Retry cannot duplicate the result", "result": "Pass", "notes": "" },
+    { "name": "Supported width behavior remains deliberate", "result": "Pass", "notes": "" }
+  ]
+}

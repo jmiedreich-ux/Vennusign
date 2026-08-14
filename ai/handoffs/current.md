@@ -10,7 +10,15 @@ Updated 2026-08-14, for Menus 6-A1 owner acceptance and merge closeout.
 - Behavior search used for the multiplier: `rg -n "menu-import|MenuImport|paste import|Paste what you have|Accept safe matches|Imported items" src tests docs/features/menus --glob '!**/node_modules/**' --glob '!**/dist/**'`. The changed locations are the import aggregate/migration/repository/service/controller, direct Back Office route and UI, fixture cleanup, focused API/LocalDB/browser tests, and the 6-A1 workbook. Existing Add-a-menu, create/replace, publishing, POS and screen paths remain unchanged because they belong to 6-A2/6-A3 or later flows.
 - Explicitly deferred: menu creation (6-A2), replacement/locking/snapshots/restore (6-A3), spreadsheet/photo/POS import, publishing, mobile support below the 900px refusal floor, and keyboard-specific interaction design/testing.
 
-**Exact next action.** Create the Menus 6-A2 GitHub milestone issue from the approved create-new-menu scope, record its claim, and create `feature/menus-m6a2-create-import`; then begin its schema → API → UI → Playwright implementation. Do not pull 6-A3 replacement behavior into 6-A2.
+**6-A2 claim.** Issue #718 is claimed on `feature/menus-m6a2-create-import` from merged `master` (`0a52304`). Its outcome is create-only: a resolved import confirms exactly one unpublished working menu atomically and idempotently, then truthfully says Not live yet. 6-A3 replacement remains excluded.
+
+**6-A2 implementation checkpoint.** The path/invariant/test matrix is on issue #718. Product head `b1e62c4` is pushed in draft PR #719. It adds migration 069, atomic/idempotent create confirmation, transaction-local permission and current allowance enforcement, persisted destination/name/completion state, menu-scoped imported price overrides through builder/history paths, truthful completion UI, invariants, LocalDB/API/static/Playwright coverage, and an Impeccable APPROVE verdict. Full API was 478/479; the sole failure is the pre-existing unrelated E2E layout expectation (`default` versus current `photo_grid`). Azure/external tests remain skipped by owner exception.
+
+**6-A2 review result.** Independent engineering review approves exact PR head `3c69b7b` with product `b1e62c4`; the Impeccable finish review also approves. The short owner workbook is `docs/features/menus/m6a2-acceptance-workbook.html`.
+
+**6-A2 owner acceptance.** The owner accepted all 6/6 workbook cases against product `b1e62c4` at `2026-08-14T04:39:39.105Z`; the durable record is `docs/features/menus/m6a2-acceptance-record.json`. During acceptance the owner flagged the shared heavy black focus halo. The correction replaces it everywhere with one contrast-safe 2px dark-sky ring, with a focused static regression and a computed-style Playwright assertion.
+
+**Exact next action.** Obtain exact-head independent review of the post-acceptance focus correction, then merge PR #719 and synchronize completion records. Do not begin 6-A3 before the merge closeout.
 
 ## 2026-08-13 — Menus Slice 6-A paste-import design approval
 

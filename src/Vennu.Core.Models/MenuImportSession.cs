@@ -12,7 +12,11 @@ public sealed record MenuImportSession(
     DateTime CreatedUtc,
     DateTime UpdatedUtc,
     string? UpdatedBy,
-    byte[] Revision);
+    byte[] Revision,
+    string? Destination = null,
+    string? ProposedMenuName = null,
+    Guid? CompletedMenuId = null,
+    DateTime? CompletedUtc = null);
 
 public sealed record MenuImportSourceLine(
     Guid SessionId,
@@ -63,6 +67,11 @@ public static class MenuImportStatuses
 {
     public const string Reviewing = "reviewing";
     public const string Resolved = "resolved";
+}
+
+public static class MenuImportDestinations
+{
+    public const string Create = "create";
 }
 
 public static class MenuImportChoices
