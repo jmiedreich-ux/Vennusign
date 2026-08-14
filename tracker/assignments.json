@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-14T04:49:00Z",
+  "updatedUtc": "2026-08-14T05:15:00Z",
   "activeAssignments": [
     {
       "assignment": "Menus 6-A3 — replace an existing menu from paste import",
@@ -8,8 +8,8 @@
       "owner": "Codex for JeremyPC",
       "branch": "feature/menus-m6a3-replace-import",
       "claimedUtc": "2026-08-14T04:49:00Z",
-      "status": "Claimed; implementation-readiness audit in progress",
-      "notes": "Atomic replacement, target lease/conflict, complete working snapshot and restore. Excludes publishing, spreadsheet/photo/POS import, mobile below 900px, and keyboard-specific interaction design/testing."
+      "status": "Product implemented in draft PR #721; independent review and owner acceptance pending",
+      "notes": "Product bf77919 adds atomic replacement, stale target/restore conflict refusal, complete immutable working snapshots, tier-resolved retention/restore eligibility, truthful UI and Playwright coverage. Excludes publishing, spreadsheet/photo/POS import, mobile below 900px, and keyboard-specific interaction design/testing."
     }
   ],
   "desktopSessionLock": null,
