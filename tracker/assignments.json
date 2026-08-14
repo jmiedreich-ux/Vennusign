@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-14T02:13:39Z",
+  "updatedUtc": "2026-08-14T03:43:13Z",
   "activeAssignments": [
     {
       "assignment": "Menus 6-A1 — paste, parse, and resumable review",
@@ -8,7 +8,7 @@
       "owner": "Codex for JeremyPC",
       "branch": "feature/menus-m6a1-paste-review",
       "claimedUtc": "2026-08-14T02:13:39Z",
-      "status": "Readiness audit complete on issue #714; implementation may start with migration 068 and invariant tests",
+      "status": "Owner accepted 7/7 against product 547aea7; independent review approved; PR and merge closeout next",
       "notes": "No menu mutation. Excludes 6-A2 create confirmation, 6-A3 replacement, spreadsheet/photo/POS import, mobile support, publishing, and keyboard-specific interaction design/testing."
     }
   ],
