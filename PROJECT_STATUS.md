@@ -55,7 +55,7 @@ further independent review. CI remains suspended, so local evidence was the gate
 | 5 | Board view + Play | **out of scope for the current sequence** — retained in backlog issue #709 |
 | 6 | Quick Update + blank creation | **complete** — PR #711 merged to `master` as `3429684` on 2026-08-13; additional review and owner workbook skipped by owner instruction |
 | 6-A1 | Paste, parse, and review | **complete** — PR #716 merged as `ac4cc98`; issue #714 closed; owner accepted 7/7 against product `547aea7` |
-| 6-A2 | Create a new menu from an import | **next** — create/claim its GitHub milestone issue and branch before implementation |
+| 6-A2 | Create a new menu from an import | **claimed** — issue #718 on `feature/menus-m6a2-create-import`; implementation path audit next |
 | 6-A3 | Replace an existing menu from an import | **planned after 6-A2 owner acceptance** — target conflict handling, snapshots, restore and preservation invariants |
 | 7 | Menu Home completion | needs redesign and planning |
 

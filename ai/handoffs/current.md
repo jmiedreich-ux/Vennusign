@@ -10,7 +10,9 @@ Updated 2026-08-14, for Menus 6-A1 owner acceptance and merge closeout.
 - Behavior search used for the multiplier: `rg -n "menu-import|MenuImport|paste import|Paste what you have|Accept safe matches|Imported items" src tests docs/features/menus --glob '!**/node_modules/**' --glob '!**/dist/**'`. The changed locations are the import aggregate/migration/repository/service/controller, direct Back Office route and UI, fixture cleanup, focused API/LocalDB/browser tests, and the 6-A1 workbook. Existing Add-a-menu, create/replace, publishing, POS and screen paths remain unchanged because they belong to 6-A2/6-A3 or later flows.
 - Explicitly deferred: menu creation (6-A2), replacement/locking/snapshots/restore (6-A3), spreadsheet/photo/POS import, publishing, mobile support below the 900px refusal floor, and keyboard-specific interaction design/testing.
 
-**Exact next action.** Create the Menus 6-A2 GitHub milestone issue from the approved create-new-menu scope, record its claim, and create `feature/menus-m6a2-create-import`; then begin its schema → API → UI → Playwright implementation. Do not pull 6-A3 replacement behavior into 6-A2.
+**6-A2 claim.** Issue #718 is claimed on `feature/menus-m6a2-create-import` from merged `master` (`0a52304`). Its outcome is create-only: a resolved import confirms exactly one unpublished working menu atomically and idempotently, then truthfully says Not live yet. 6-A3 replacement remains excluded.
+
+**Exact next action.** Audit every existing menu-create transaction, import-session consumer, route, name validator, idempotency pattern and related test before changing schema. Publish the complete path/invariant/test matrix on issue #718, then implement schema → API → UI → Playwright without pulling in replacement behavior.
 
 ## 2026-08-13 — Menus Slice 6-A paste-import design approval
 
