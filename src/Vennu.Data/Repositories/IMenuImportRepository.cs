@@ -42,7 +42,28 @@ public interface IMenuImportRepository
         IReadOnlyCollection<string> systemRoleKeys, DateTime nowUtc, string? actor,
         CancellationToken cancellationToken = default);
 
+    Task<MenuImportReplaceDestinationOutcome> SetReplaceDestinationAsync(Guid venueId, Guid sessionId,
+        byte[] expectedRevision, Guid menuId, DateTime nowUtc, string? actor, CancellationToken cancellationToken = default);
+
+    Task<MenuImportCreateOutcome> ConfirmReplaceAsync(Guid venueId, Guid sessionId, byte[] expectedRevision,
+        Guid actorUserId, IReadOnlyCollection<string> systemRoleKeys, DateTime nowUtc, string? actor,
+        CancellationToken cancellationToken = default);
+
+    Task<MenuImportRestoreOutcome> RestoreReplacementAsync(Guid venueId, Guid snapshotId, Guid actorUserId,
+        IReadOnlyCollection<string> systemRoleKeys, DateTime nowUtc, string? actor, CancellationToken cancellationToken = default);
+
     Task<int> DeleteExpiredAsync(DateTime nowUtc, int batchSize, CancellationToken cancellationToken = default);
+}
+
+public sealed record MenuImportReplaceDestinationOutcome(string Result, MenuImportAggregate? Aggregate, MenuImportReplacementFacts? Facts);
+public sealed record MenuImportRestoreOutcome(string Result, Guid? MenuId)
+{
+    public const string Restored="restored";
+    public const string Expired="expired";
+    public const string AlreadyRestored="already_restored";
+    public const string PermissionDenied="permission_denied";
+    public const string Conflict="conflict";
+    public const string NotFound="not_found";
 }
 
 public sealed record MenuImportCreateOutcome(string Result, MenuImportAggregate? Aggregate, Guid? MenuId)

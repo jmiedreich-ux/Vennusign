@@ -71,6 +71,22 @@ test.describe("paste import review", () => {
     await expect(page.getByRole("button", { name: "Back to menus" })).toBeVisible();
   });
 
+  test("replaces an existing menu as an unpublished draft and resumes the selected target",async({page},testInfo)=>{
+    test.skip(testInfo.project.name!=="desktop","The replacement workflow has a separate below-900 refusal.");
+    const seeded=await seed({label:"paste-replace"});await openAs(page,"owner","/menu/import");
+    await page.getByLabel("Menu text").fill(`REPLACEMENT\nNew ${seeded.menuName} special  19`);await page.getByRole("button",{name:"Read menu"}).click();
+    await expect(page.getByRole("heading",{name:"Where should these items go?"})).toBeVisible();
+    await page.getByRole("button",{name:new RegExp(seeded.menuName)}).click();
+    await expect(page.getByRole("heading",{name:`Replace ${seeded.menuName}?`})).toBeVisible();
+    await expect(page.getByText("publishing remains a separate action",{exact:false})).toBeVisible();
+    await expect(page.getByText("screens change now")).toBeVisible();await page.reload();
+    await expect(page.getByRole("heading",{name:`Replace ${seeded.menuName}?`})).toBeVisible();
+    await page.getByRole("button",{name:"Replace menu"}).click();await expect(page.getByTestId("menu-import-complete")).toBeVisible();
+    await expect(page.getByText("Not live yet",{exact:true})).toBeVisible();await expect(page.getByText("Published screens changed")).toBeVisible();
+    await page.getByRole("button",{name:"Restore the draft from before this import"}).click();await expect(page.getByText("Restore the draft from before this import?")).toBeVisible();
+    await page.getByRole("button",{name:"Restore previous draft"}).click();await expect(page.getByRole("status")).toContainText("working draft from before this import has been restored");
+  });
+
   test("thirty semantic near misses render as one group with no preselection", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
     const seeded = await seed({ label: "near-match-group" });

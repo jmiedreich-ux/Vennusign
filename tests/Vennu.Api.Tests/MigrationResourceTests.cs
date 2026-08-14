@@ -6,6 +6,12 @@ namespace Vennu.Api.Tests;
 public sealed class MigrationResourceTests
 {
     [Fact]
+    public void MenuImportReplaceMigration_IsEmbeddedOrderedAndKeepsHistoricalSnapshotsIndependentOfSessions()
+    {
+        var scripts=DatabaseMigrator.GetEmbeddedScriptNames();var scriptName=Assert.Single(scripts,name=>name.EndsWith(".Scripts.070_menu_import_replace.sql",StringComparison.Ordinal));using var stream=Assert.IsAssignableFrom<Stream>(typeof(DatabaseMigrator).Assembly.GetManifestResourceStream(scriptName));using var reader=new StreamReader(stream);var sql=reader.ReadToEnd();
+        Assert.Contains("CREATE TABLE dbo.MenuImportReplacementSnapshots",sql,StringComparison.Ordinal);Assert.Contains("snapshot_retention_days",sql,StringComparison.Ordinal);Assert.Contains("restore_enabled",sql,StringComparison.Ordinal);Assert.Contains("CompletedSnapshotId",sql,StringComparison.Ordinal);Assert.DoesNotContain("FK_MenuImportReplacementSnapshots_Session",sql,StringComparison.Ordinal);Assert.Equal(scripts.OrderBy(name=>name,StringComparer.OrdinalIgnoreCase),scripts);
+    }
+    [Fact]
     public void MenuImportCreateMigration_IsEmbeddedOrderedAndAddsAtomicCompletionShape()
     {
         var scripts = DatabaseMigrator.GetEmbeddedScriptNames();

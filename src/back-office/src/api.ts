@@ -1392,7 +1392,7 @@ export type MenuImportLine = {
   parsedName: string | null; parsedDescription: string | null; parsedPrice: string | null; parserReason: string | null;
 };
 export type MenuImportSession = {
-  session: { id: string; rawPaste: string; parseRevision: number; status: "reviewing" | "resolved"; lineCount: number; itemCount: number; expiresUtc: string; revision: string; destination: "create" | null; proposedMenuName: string | null; completedMenuId: string | null; completedUtc: string | null };
+  session: { id: string; rawPaste: string; parseRevision: number; status: "reviewing" | "resolved"; lineCount: number; itemCount: number; expiresUtc: string; revision: string; destination: "create" | "replace" | null; proposedMenuName: string | null; completedMenuId: string | null; completedUtc: string | null; targetMenuId: string | null; targetUpdatedUtc: string | null; completedSnapshotId: string | null; targetMenuName: string | null; targetHadPublishedVersion: boolean | null; targetWorkingItemCount: number | null; targetPublishedItemCount: number | null; targetAddedCount: number | null; targetRemovedCount: number | null; targetChangedCount: number | null; completedSnapshotRestoredUtc:string|null };
   lines: MenuImportLine[];
   questions: MenuImportQuestion[];
 };
@@ -1414,7 +1414,7 @@ async function menuImportRequest(configuration: BackOfficeConfiguration, accessT
 function normalizeMenuImport(value: MenuImportSession): MenuImportSession {
   return {
     ...value,
-    session: { ...value.session, destination: value.session.destination ?? null, proposedMenuName: value.session.proposedMenuName ?? null, completedMenuId: value.session.completedMenuId ?? null, completedUtc: value.session.completedUtc ?? null },
+    session: { ...value.session, destination: value.session.destination ?? null, proposedMenuName: value.session.proposedMenuName ?? null, completedMenuId: value.session.completedMenuId ?? null, completedUtc: value.session.completedUtc ?? null, targetMenuId:value.session.targetMenuId??null,targetUpdatedUtc:value.session.targetUpdatedUtc??null,completedSnapshotId:value.session.completedSnapshotId??null,targetMenuName:value.session.targetMenuName??null,targetHadPublishedVersion:value.session.targetHadPublishedVersion??null,targetWorkingItemCount:value.session.targetWorkingItemCount??null,targetPublishedItemCount:value.session.targetPublishedItemCount??null,targetAddedCount:value.session.targetAddedCount??null,targetRemovedCount:value.session.targetRemovedCount??null,targetChangedCount:value.session.targetChangedCount??null,completedSnapshotRestoredUtc:value.session.completedSnapshotRestoredUtc??null },
     lines: value.lines ?? [],
     questions: (value.questions ?? []).map(question => ({
       ...question,
@@ -1456,4 +1456,19 @@ export async function confirmMenuImportCreate(configuration: BackOfficeConfigura
   const body = await response.json().catch(() => ({})) as { result?: string; menuId?: string; import?: MenuImportSession; reason?: string; message?: string; current?: MenuImportSession };
   if (!response.ok) throw new MenuImportApiError(response.status, body.reason ?? "unavailable", body.message ?? "This menu could not be created.", body.current ? normalizeMenuImport(body.current) : undefined);
   return { result: body.result!, menuId: body.menuId!, import: normalizeMenuImport(body.import!) };
+}
+export async function setMenuImportReplaceDestination(configuration:BackOfficeConfiguration,accessToken:string,session:MenuImportSession,menuId:string){
+ const response=await venueFetch(`${configuration.apiBaseUrl}/api/back-office/menu-imports/${session.session.id}/destination/replace`,{method:"PUT",headers:{"Content-Type":"application/json","X-Vennusign-Back-Office-Token":accessToken,"If-Match":`"${session.session.revision}"`},body:JSON.stringify({menuId})});
+ const body=await response.json().catch(()=>({})) as {import?:MenuImportSession;reason?:string;message?:string;current?:MenuImportSession};
+ if(!response.ok)throw new MenuImportApiError(response.status,body.reason??"unavailable",body.message??"That menu could not be selected.",body.current?normalizeMenuImport(body.current):undefined);
+ return normalizeMenuImport(body.import!);
+}
+export async function confirmMenuImportReplace(configuration:BackOfficeConfiguration,accessToken:string,session:MenuImportSession){
+ const response=await venueFetch(`${configuration.apiBaseUrl}/api/back-office/menu-imports/${session.session.id}/destination/replace/confirm`,{method:"POST",headers:{"Content-Type":"application/json","X-Vennusign-Back-Office-Token":accessToken,"If-Match":`"${session.session.revision}"`}});
+ const body=await response.json().catch(()=>({})) as {result?:string;menuId?:string;import?:MenuImportSession;reason?:string;message?:string;current?:MenuImportSession};
+ if(!response.ok)throw new MenuImportApiError(response.status,body.reason??"unavailable",body.message??"This menu could not be replaced. Nothing changed.",body.current?normalizeMenuImport(body.current):undefined);
+ return {result:body.result!,menuId:body.menuId!,import:normalizeMenuImport(body.import!)};
+}
+export async function restoreMenuImportReplacement(configuration:BackOfficeConfiguration,accessToken:string,snapshotId:string){
+ const response=await venueFetch(`${configuration.apiBaseUrl}/api/back-office/menu-imports/replacement-snapshots/${snapshotId}/restore`,{method:"POST",headers:{"Content-Type":"application/json","X-Vennusign-Back-Office-Token":accessToken}});const body=await response.json().catch(()=>({})) as {result?:string;menuId?:string;message?:string;reason?:string};if(!response.ok)throw new MenuImportApiError(response.status,body.reason??"unavailable",body.message??"The previous draft could not be restored.");return body;
 }

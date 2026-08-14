@@ -98,6 +98,38 @@ public sealed class BackOfficeMenuImportsController(MenuImportService imports) :
         catch (MenuImportValidationException exception) { return Conflict(new { reason = "allowance_changed", message = exception.Message }); }
     }
 
+    [HttpPut("{sessionId:guid}/destination/replace")]
+    public async Task<ActionResult<MenuImportReplaceDestinationResponse>> SetReplaceDestination(Guid sessionId,SetReplaceDestinationRequest request,CancellationToken cancellationToken)
+    {
+        var outcome=await imports.SetReplaceDestinationAsync(VenueId,sessionId,RequiredRevision(),request.MenuId,Actor,cancellationToken);
+        if(outcome.Result==MenuImportMutationOutcome.Updated&&outcome.Aggregate is not null){SetEtag(outcome.Aggregate);return Ok(new MenuImportReplaceDestinationResponse(outcome.Aggregate,outcome.Facts!));}
+        if(outcome.Result==MenuImportMutationOutcome.Conflict&&outcome.Aggregate is not null){SetEtag(outcome.Aggregate);return Conflict(new{reason="stale_revision",message="This import changed in another window.",current=outcome.Aggregate});}
+        if(outcome.Result=="target_missing")return NotFound(new{reason="target_missing",message="That menu is no longer available to replace."});
+        if(outcome.Result==MenuImportMutationOutcome.Expired)return StatusCode(410,new{reason="expired",message="This import has expired."});
+        return Conflict(new{reason="not_ready",message="Finish the review before choosing a menu to replace."});
+    }
+
+    [HttpPost("{sessionId:guid}/destination/replace/confirm")]
+    public async Task<ActionResult<MenuImportCreateResponse>> ConfirmReplace(Guid sessionId,CancellationToken cancellationToken)
+    {
+        var outcome=await imports.ConfirmReplaceAsync(VenueId,sessionId,RequiredRevision(),ActorUserId,SystemRoleKeys,Actor,cancellationToken);
+        if(outcome.Result is MenuImportCreateOutcome.Created or MenuImportCreateOutcome.AlreadyCompleted){if(outcome.Aggregate is not null)SetEtag(outcome.Aggregate);return Ok(new MenuImportCreateResponse(outcome.Result,outcome.MenuId!.Value,outcome.Aggregate!));}
+        if(outcome.Result=="target_conflict")return Conflict(new{reason="target_conflict",message="That menu changed after you selected it. Nothing was replaced; review the latest menu and try again."});
+        if(outcome.Result=="target_missing")return NotFound(new{reason="target_missing",message="That menu is no longer available. Nothing was replaced."});
+        if(outcome.Result==MenuImportCreateOutcome.PermissionDenied)return StatusCode(403,new{reason="permission_required",message="You no longer have permission to replace this menu."});
+        if(outcome.Result==MenuImportCreateOutcome.ItemLimit)return Conflict(new{reason="item_limit",message="This import no longer fits the venue's item limit. Nothing was replaced."});
+        if(outcome.Result==MenuImportMutationOutcome.Conflict&&outcome.Aggregate is not null){SetEtag(outcome.Aggregate);return Conflict(new{reason="stale_revision",message="This import changed in another window.",current=outcome.Aggregate});}
+        if(outcome.Result==MenuImportMutationOutcome.Expired)return StatusCode(410,new{reason="expired",message="This import has expired."});
+        return Conflict(new{reason="not_ready",message="The replacement could not be completed. Nothing was changed."});
+    }
+
+    [HttpPost("replacement-snapshots/{snapshotId:guid}/restore")]
+    public async Task<IActionResult> RestoreReplacement(Guid snapshotId,CancellationToken cancellationToken)
+    {
+        var outcome=await imports.RestoreReplacementAsync(VenueId,snapshotId,ActorUserId,SystemRoleKeys,Actor,cancellationToken);
+        return outcome.Result switch { MenuImportRestoreOutcome.Restored=>Ok(new{outcome.Result,outcome.MenuId}),MenuImportRestoreOutcome.Expired=>StatusCode(410,new{reason="expired",message="This saved version is no longer eligible for restore."}),MenuImportRestoreOutcome.PermissionDenied=>StatusCode(403,new{reason="permission_required",message="You cannot restore this saved version."}),MenuImportRestoreOutcome.AlreadyRestored=>Conflict(new{reason="already_restored",message="This saved version has already been restored."}),MenuImportRestoreOutcome.Conflict=>Conflict(new{reason="target_conflict",message="This menu changed after the import. Nothing was restored; review the current draft first."}),_=>NotFound(new{reason="not_found",message="That saved version could not be found."})};
+    }
+
     private async Task<ActionResult<MenuImportAggregate>> Mutate(Func<Task<MenuImportMutationOutcome>> action)
     {
         try { return await Respond(await action().ConfigureAwait(false)); }
@@ -128,4 +160,6 @@ public sealed class BackOfficeMenuImportsController(MenuImportService imports) :
 public sealed record StartMenuImportRequest(string RawPaste);
 public sealed record PutMenuImportAnswerRequest(string Fingerprint, string Choice, Guid? SelectedItemId);
 public sealed record SetCreateDestinationRequest(string MenuName);
+public sealed record SetReplaceDestinationRequest(Guid MenuId);
+public sealed record MenuImportReplaceDestinationResponse(MenuImportAggregate Import,MenuImportReplacementFacts Facts);
 public sealed record MenuImportCreateResponse(string Result, Guid MenuId, MenuImportAggregate Import);

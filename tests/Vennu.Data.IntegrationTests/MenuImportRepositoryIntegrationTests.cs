@@ -234,6 +234,35 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
     }
 
     [Fact]
+    public async Task Replace_is_atomic_idempotent_preserves_menu_truth_and_can_restore_working_content()
+    {
+        var data=fixture.CreateDataAccess();var venue=new Venue{Name=fixture.UniqueValue("replace-venue"),Timezone="UTC",Type="Restaurant",PrimaryLanguage="en"};var venueId=await new VenueRepository(data).CreateAsync(venue);var now=DateTime.UtcNow;
+        var menuId=Guid.NewGuid();var pageId=Guid.NewGuid();var sectionId=Guid.NewGuid();var oldItemId=Guid.NewGuid();
+        await data.ExecuteSqlQueryAsync<CountRow,object>("""
+        INSERT dbo.Menus(Id,VenueId,Name,IsActive,Theme,PublishedVersion,CreatedUtc,UpdatedUtc)VALUES(@MenuId,@VenueId,N'House menu',1,N'night',1,@Now,@Now);
+        INSERT dbo.MenuPages(Id,VenueId,MenuId,Name,SortOrder,CreatedUtc,UpdatedUtc)VALUES(@PageId,@VenueId,@MenuId,N'Page 1',0,@Now,@Now);
+        INSERT dbo.MenuSections(Id,VenueId,MenuId,PageId,Name,SortOrder,CreatedUtc,UpdatedUtc)VALUES(@SectionId,@VenueId,@MenuId,@PageId,N'Old section',0,@Now,@Now);
+        INSERT dbo.Items(Id,VenueId,Name,Price,Source,IsActive,CreatedUtc,UpdatedUtc)VALUES(@OldItemId,@VenueId,N'Old item',N'7',N'manual',1,@Now,@Now);
+        INSERT dbo.Placements(Id,VenueId,MenuId,MenuSectionId,PageId,ItemId,SortOrder,CreatedUtc,UpdatedUtc)VALUES(NEWID(),@VenueId,@MenuId,@SectionId,@PageId,@OldItemId,0,@Now,@Now);
+        DECLARE @Snapshot nvarchar(max)=(SELECT @MenuId menuId,N'House menu' name,N'night' theme,8 dwellSeconds,60 loopWarningSeconds,JSON_QUERY(N'[]')screens,JSON_QUERY((SELECT @PageId pageId,N'Page 1'name,0 sortOrder FOR JSON PATH))pages,JSON_QUERY((SELECT @SectionId sectionId,@PageId pageId,N'Old section'name,0 sortOrder,JSON_QUERY((SELECT @OldItemId itemId,N'Old item'name,N'7'price,0 sortOrder FOR JSON PATH))items FOR JSON PATH))sections FOR JSON PATH,WITHOUT_ARRAY_WRAPPER);
+        DECLARE @EventId uniqueidentifier=NEWID();INSERT dbo.MenuPublishEvents(Id,VenueId,MenuId,Version,ChangeCount,Snapshot,PublishedUtc,Author)VALUES(@EventId,@VenueId,@MenuId,1,0,@Snapshot,@Now,N'publisher');
+        INSERT dbo.MenuHistoryEntries(Id,VenueId,MenuId,Kind,PublishEventId,Detail,Author,OccurredUtc)VALUES(NEWID(),@VenueId,@MenuId,N'published',@EventId,N'Published version 1.',N'publisher',@Now);SELECT 1 Value;
+        """,new{MenuId=menuId,VenueId=venueId,PageId=pageId,SectionId=sectionId,OldItemId=oldItemId,Now=now});
+        var repository=new MenuImportRepository(data);var sessionId=Guid.NewGuid();var line=new MenuImportSourceLine(sessionId,venueId,1,"New item  12","item","New item",null,"12",null,1);var started=await repository.CreateAsync(new(new(sessionId,venueId,line.RawText,1,MenuImportStatuses.Resolved,1,1,now.AddHours(1),now,now,null,[]),[line],[]));
+        var selected=await repository.SetReplaceDestinationAsync(venueId,sessionId,started.Session.Revision,menuId,now.AddSeconds(1),"owner");
+        await data.ExecuteSqlQueryAsync<CountRow,object>("UPDATE dbo.Menus SET UpdatedUtc=@Changed WHERE Id=@MenuId;SELECT 1 Value;",new{Changed=now.AddSeconds(2),MenuId=menuId});
+        var stale=await repository.ConfirmReplaceAsync(venueId,sessionId,selected.Aggregate!.Session.Revision,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(3),"owner");Assert.Equal("target_conflict",stale.Result);Assert.Equal("Old item",Assert.Single(await new ContentRepository(data).GetPlacedItemsForVenueAsync(venueId)).Name);Assert.Null(stale.Aggregate!.Session.CompletedSnapshotId);
+        selected=await repository.SetReplaceDestinationAsync(venueId,sessionId,stale.Aggregate.Session.Revision,menuId,now.AddSeconds(4),"owner");
+        var first=await repository.ConfirmReplaceAsync(venueId,sessionId,selected.Aggregate!.Session.Revision,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(5),"owner");
+        var retry=await repository.ConfirmReplaceAsync(venueId,sessionId,selected.Aggregate.Session.Revision,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(6),"owner");
+        Assert.Equal(MenuImportCreateOutcome.Created,first.Result);Assert.Equal(MenuImportCreateOutcome.AlreadyCompleted,retry.Result);Assert.Equal(menuId,first.MenuId);var preserved=Assert.Single(await new MenuRepository(data).GetMenusAsync(venueId));Assert.Equal("night",preserved.Theme);Assert.Equal(1,preserved.PublishedVersion);
+        var replacement=Assert.Single(await new ContentRepository(data).GetPlacedItemsForVenueAsync(venueId));Assert.Equal("New item",replacement.Name);
+        var snapshotId=first.Aggregate!.Session.CompletedSnapshotId!.Value;await data.ExecuteSqlQueryAsync<CountRow,object>("UPDATE dbo.Menus SET UpdatedUtc=@Changed WHERE Id=@MenuId;SELECT 1 Value;",new{Changed=now.AddSeconds(6.5),MenuId=menuId});var staleRestore=await repository.RestoreReplacementAsync(venueId,snapshotId,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(7),"owner");Assert.Equal(MenuImportRestoreOutcome.Conflict,staleRestore.Result);Assert.Equal("New item",Assert.Single(await new ContentRepository(data).GetPlacedItemsForVenueAsync(venueId)).Name);await data.ExecuteSqlQueryAsync<CountRow,object>("UPDATE dbo.Menus SET UpdatedUtc=@Changed WHERE Id=@MenuId;SELECT 1 Value;",new{Changed=now.AddSeconds(5),MenuId=menuId});
+        var restored=await repository.RestoreReplacementAsync(venueId,snapshotId,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(7.5),"owner");Assert.Equal(MenuImportRestoreOutcome.Restored,restored.Result);Assert.Equal("Old item",Assert.Single(await new ContentRepository(data).GetPlacedItemsForVenueAsync(venueId)).Name);
+        Assert.Equal(MenuImportRestoreOutcome.AlreadyRestored,(await repository.RestoreReplacementAsync(venueId,snapshotId,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(8),"owner")).Result);
+    }
+
+    [Fact]
     public async Task Safe_match_acceptance_and_reparse_preserve_only_still_valid_answer()
     {
         var dataAccess = fixture.CreateDataAccess();

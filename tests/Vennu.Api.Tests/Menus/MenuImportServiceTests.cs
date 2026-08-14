@@ -195,6 +195,9 @@ public sealed class MenuImportServiceTests
             Current = Current! with { Session = Current.Session with { CompletedMenuId = menuId, CompletedUtc = nowUtc } };
             return Task.FromResult(new MenuImportCreateOutcome(MenuImportCreateOutcome.Created, Current, menuId));
         }
+        public Task<MenuImportReplaceDestinationOutcome> SetReplaceDestinationAsync(Guid venueId,Guid sessionId,byte[] expectedRevision,Guid menuId,DateTime nowUtc,string? actor,CancellationToken cancellationToken=default)=>throw new NotImplementedException();
+        public Task<MenuImportCreateOutcome> ConfirmReplaceAsync(Guid venueId,Guid sessionId,byte[] expectedRevision,Guid actorUserId,IReadOnlyCollection<string> systemRoleKeys,DateTime nowUtc,string? actor,CancellationToken cancellationToken=default)=>throw new NotImplementedException();
+        public Task<MenuImportRestoreOutcome> RestoreReplacementAsync(Guid venueId,Guid snapshotId,Guid actorUserId,IReadOnlyCollection<string> systemRoleKeys,DateTime nowUtc,string? actor,CancellationToken cancellationToken=default)=>throw new NotImplementedException();
         public Task<int> DeleteExpiredAsync(DateTime nowUtc, int batchSize, CancellationToken cancellationToken = default) => Task.FromResult(0);
     }
 

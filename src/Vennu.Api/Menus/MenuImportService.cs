@@ -108,6 +108,28 @@ public sealed class MenuImportService(
             clock.GetUtcNow().UtcDateTime, actor, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<MenuImportReplaceDestinationOutcome> SetReplaceDestinationAsync(Guid venueId,Guid sessionId,byte[] revision,
+        Guid menuId,string? actor,CancellationToken cancellationToken)
+    {
+        var current=await RefreshDependenciesAsync(venueId,sessionId,cancellationToken).ConfigureAwait(false);
+        if(current is null)return new(MenuImportMutationOutcome.NotFound,null,null);
+        if(!current.Session.Revision.SequenceEqual(revision))return new(MenuImportMutationOutcome.Conflict,current,null);
+        return await imports.SetReplaceDestinationAsync(venueId,sessionId,revision,menuId,clock.GetUtcNow().UtcDateTime,actor,cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<MenuImportCreateOutcome> ConfirmReplaceAsync(Guid venueId,Guid sessionId,byte[] revision,Guid actorUserId,
+        IReadOnlyCollection<string> systemRoleKeys,string? actor,CancellationToken cancellationToken)
+    {
+        var current=await RefreshDependenciesAsync(venueId,sessionId,cancellationToken).ConfigureAwait(false);
+        if(current is null)return new(MenuImportMutationOutcome.NotFound,null,null);
+        if(current.Session.CompletedMenuId is null&&!current.Session.Revision.SequenceEqual(revision))return new(MenuImportMutationOutcome.Conflict,current,null);
+        return await imports.ConfirmReplaceAsync(venueId,sessionId,revision,actorUserId,systemRoleKeys,clock.GetUtcNow().UtcDateTime,actor,cancellationToken).ConfigureAwait(false);
+    }
+
+    public Task<MenuImportRestoreOutcome> RestoreReplacementAsync(Guid venueId,Guid snapshotId,Guid actorUserId,
+        IReadOnlyCollection<string> systemRoleKeys,string? actor,CancellationToken cancellationToken)=>
+        imports.RestoreReplacementAsync(venueId,snapshotId,actorUserId,systemRoleKeys,clock.GetUtcNow().UtcDateTime,actor,cancellationToken);
+
     private async Task<MenuImportAggregate?> RefreshDependenciesAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken)
     {
         var now = clock.GetUtcNow().UtcDateTime;

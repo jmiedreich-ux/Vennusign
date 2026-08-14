@@ -64,11 +64,18 @@ DECLARE @ImportSessions TABLE (Id uniqueidentifier PRIMARY KEY);
 INSERT INTO @ImportSessions (Id)
 SELECT DISTINCT c.SessionId
 FROM dbo.MenuImportCandidates c INNER JOIN @SeedItems i ON i.Id = c.ItemId;
+INSERT INTO @ImportSessions (Id)
+SELECT s.Id FROM dbo.MenuImportSessions s INNER JOIN @Menus m ON m.Id IN (s.TargetMenuId,s.CompletedMenuId)
+WHERE NOT EXISTS (SELECT 1 FROM @ImportSessions existing WHERE existing.Id=s.Id);
+DELETE cl FROM dbo.MenuImportCreatedLines cl INNER JOIN @ImportSessions s ON s.Id=cl.SessionId;
 DELETE a FROM dbo.MenuImportAnswers a INNER JOIN @ImportSessions s ON s.Id = a.SessionId;
 DELETE c FROM dbo.MenuImportCandidates c INNER JOIN @ImportSessions s ON s.Id = c.SessionId;
 DELETE ql FROM dbo.MenuImportQuestionLines ql INNER JOIN @ImportSessions s ON s.Id = ql.SessionId;
 DELETE q FROM dbo.MenuImportReviewQuestions q INNER JOIN @ImportSessions s ON s.Id = q.SessionId;
 DELETE l FROM dbo.MenuImportSourceLines l INNER JOIN @ImportSessions s ON s.Id = l.SessionId;
+UPDATE x SET CompletedSnapshotId=NULL FROM dbo.MenuImportSessions x INNER JOIN @ImportSessions s ON s.Id=x.Id;
+DELETE snap FROM dbo.MenuImportReplacementSnapshots snap
+WHERE snap.SessionId IN (SELECT Id FROM @ImportSessions) OR snap.MenuId IN (SELECT Id FROM @Menus);
 DELETE x FROM dbo.MenuImportSessions x INNER JOIN @ImportSessions s ON s.Id = x.Id;
 
 DELETE p FROM dbo.Placements p INNER JOIN @Menus m ON m.Id = p.MenuId;
