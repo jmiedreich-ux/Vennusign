@@ -46,4 +46,5 @@ test("focus uses one contrast-safe accent ring without a heavy ink halo", async 
   assert.match(tokens, /--sky-focus-width:\s*2px/);
   assert.match(tokens, /--sky-focus-halo:\s*none/);
   assert.doesNotMatch(tokens, /--sky-focus-halo:\s*0 0 0/);
+  assert.match(tokens, /:root\[data-sky-theme="midnight"\][\s\S]*--sky-focus-color:\s*#38bdf8/);
 });

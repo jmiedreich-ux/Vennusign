@@ -34,8 +34,14 @@ test.describe("paste import review", () => {
     await menuName.fill(savedName);
     expect(await menuName.evaluate(element => {
       const style = getComputedStyle(element);
-      return { outlineWidth: style.outlineWidth, outlineColor: style.outlineColor, boxShadow: style.boxShadow };
-    })).toEqual({ outlineWidth: "2px", outlineColor: "rgb(9, 111, 145)", boxShadow: "none" });
+      return { outlineWidth: style.outlineWidth, outlineColor: style.outlineColor, backgroundColor: style.backgroundColor, boxShadow: style.boxShadow };
+    })).toEqual({ outlineWidth: "2px", outlineColor: "rgb(9, 111, 145)", backgroundColor: "rgb(251, 253, 255)", boxShadow: "none" });
+    await page.evaluate(() => document.documentElement.dataset.skyTheme = "midnight");
+    expect(await menuName.evaluate(element => {
+      const style = getComputedStyle(element);
+      return { outlineWidth: style.outlineWidth, outlineColor: style.outlineColor, backgroundColor: style.backgroundColor, boxShadow: style.boxShadow };
+    })).toEqual({ outlineWidth: "2px", outlineColor: "rgb(9, 111, 145)", backgroundColor: "rgb(251, 253, 255)", boxShadow: "none" });
+    await page.evaluate(() => delete document.documentElement.dataset.skyTheme);
     await Promise.all([
       page.waitForResponse(response => response.url().includes("/destination/create") && response.request().method() === "PUT"),
       menuName.press("Tab")

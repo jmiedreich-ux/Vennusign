@@ -10,7 +10,7 @@
 .paste-start-card > p:not(.import-kicker):not(.import-error) { color: #5a6e81; line-height: 1.65; max-width: 600px; }
 .paste-start label { display: block; margin: 28px 0 9px; font-weight: 800; }
 .paste-start textarea { box-sizing: border-box; width: 100%; resize: vertical; min-height: 250px; padding: 20px; border: 1px solid #aebdca; border-radius: 14px; color: #173047; background: #fbfdff; line-height: 1.6; }
-.paste-start textarea:focus { outline: var(--sky-focus-ring); outline-offset: var(--sky-focus-offset); border-color: var(--sky-focus-color); box-shadow: none; }
+.paste-start textarea:focus { outline: 2px solid #096f91; outline-offset: var(--sky-focus-offset); border-color: #096f91; box-shadow: none; }
 .paste-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
 .import-primary, .import-secondary, .safe-match-banner button { min-height: 44px; border-radius: 12px; padding: 0 20px; font-weight: 800; cursor: pointer; }
 .import-primary, .safe-match-banner button { border: 1px solid #096f91; color: white; background: #087fa5; box-shadow: 0 8px 20px rgba(8, 127, 165, .18); }
@@ -62,6 +62,6 @@
 .destination-card > p, .destination-card form > p { color: #5a7082; line-height: 1.6; }
 .destination-choice { display: grid; gap: 6px; width: 100%; margin-top: 28px; padding: 22px; text-align: left; border: 1px solid #7ec8df; border-radius: 14px; color: #173d55; background: #effaff; cursor: pointer; }
 .destination-choice strong { font-size: 1.1rem; }.destination-choice span, .future-destination { color: #60798b; }
-.destination-card label { display: block; margin: 28px 0 8px; font-weight: 800; }.destination-card input { box-sizing: border-box; width: 100%; min-height: 48px; padding: 10px 14px; border: 1px solid #9fb2c1; border-radius: 11px; color: #173047; font: inherit; }.destination-card input:focus { outline: var(--sky-focus-ring); outline-offset: var(--sky-focus-offset); border-color: var(--sky-focus-color); box-shadow: none; }
+.destination-card label { display: block; margin: 28px 0 8px; font-weight: 800; }.destination-card input { box-sizing: border-box; width: 100%; min-height: 48px; padding: 10px 14px; border: 1px solid #9fb2c1; border-radius: 11px; color: #173047; background: #fbfdff; font: inherit; }.destination-card input:focus { outline: 2px solid #096f91; outline-offset: var(--sky-focus-offset); border-color: #096f91; box-shadow: none; }
 .confirm-facts, .completion-card dl { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; overflow: hidden; margin: 24px 0; border: 1px solid #d7e2e8; border-radius: 14px; background: #d7e2e8; }.confirm-facts > div, .completion-card dl > div { display: grid; gap: 4px; padding: 18px; background: #f9fcfd; }.confirm-facts strong, .completion-card dd { margin: 0; color: #087fa5; font-size: 1.4rem; font-weight: 850; }.confirm-facts span, .completion-card dt { color: #607688; font-size: .85rem; }
 .not-live { color: #925d0a !important; font-weight: 850; }.destination-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 28px; }.completion-check { display: grid; place-items: center; width: 52px; height: 52px; margin-bottom: 20px; border-radius: 50%; color: white; background: #247b5d; }.completion-check svg { width: 28px; }
