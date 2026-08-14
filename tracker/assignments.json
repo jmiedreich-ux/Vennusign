@@ -1,17 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-14T03:43:13Z",
-  "activeAssignments": [
-    {
-      "assignment": "Menus 6-A1 — paste, parse, and resumable review",
-      "issue": 714,
-      "owner": "Codex for JeremyPC",
-      "branch": "feature/menus-m6a1-paste-review",
-      "claimedUtc": "2026-08-14T02:13:39Z",
-      "status": "Owner accepted 7/7 against product 547aea7; independent review approved; PR and merge closeout next",
-      "notes": "No menu mutation. Excludes 6-A2 create confirmation, 6-A3 replacement, spreadsheet/photo/POS import, mobile support, publishing, and keyboard-specific interaction design/testing."
-    }
-  ],
+  "updatedUtc": "2026-08-14T03:45:49Z",
+  "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
@@ -36,6 +26,17 @@
     "releasedBy": "scope completed locally"
   },
   "lastCompletedAssignment": {
+    "assignment": "Menus 6-A1 — paste, parse, and resumable review",
+    "issue": 714,
+    "pr": 716,
+    "branch": "feature/menus-m6a1-paste-review",
+    "completedUtc": "2026-08-14T03:45:49Z",
+    "mergeSha": "ac4cc984015909f40f6bd280633ad8532fdb4e41",
+    "acceptedProductSha": "547aea7",
+    "acceptance": "Owner accepted all 7 workbook checks at 2026-08-14T03:43:13.198Z; independent exact-head review approved.",
+    "notes": "PR #716 merged and issue #714 closed. 6-A2 create-new-menu confirmation is the exact next milestone; 6-A3 replacement remains excluded."
+  },
+  "previousCompletedAssignment": {
     "assignment": "Menus Slice 6 — 86 board and blank menu creation",
     "issue": 710,
     "pr": 711,
@@ -44,17 +45,6 @@
     "mergeSha": "34296844d67327077017cf71968f7391df0da8b6",
     "acceptedProductSha": "99a3eab8f0261adc25b0944b69f9ad9a8c76eb25",
     "acceptance": "Owner instructed merge after the bounded regression closeout; another review and owner workbook were explicitly skipped.",
-    "notes": "Slice 6-A paste import design is approved and delivery is split into 6-A1 paste/parse/review, 6-A2 create, and 6-A3 replace. No implementation assignment is active. Next action: create the 6-A1 GitHub milestone issue, claim, and feature/menus-m6a1-paste-review branch."
-  },
-  "previousCompletedAssignment": {
-    "assignment": "Menus M3-A — slice 3-A (builder navigation and panel refinements)",
-    "issue": 704,
-    "pr": 706,
-    "branch": "feature/menus-m3a-s3a-builder-refinements",
-    "completedUtc": "2026-08-13T03:09:31Z",
-    "mergeSha": "cdfd2bbf7ad0d2211ebbd0d5c5914dff754a6583",
-    "acceptedProductSha": "b7f29481046d28f3d61878dd3b09e7d9c5ed56bc",
-    "acceptance": "Owner completed the visual adjustment loop, accepted Slice 3-A, and instructed merge and close-out without CI.",
-    "notes": "PR #706 merged and issue #704 closed. Independent review and Playwright were waived for this one-time Slice 3-A exception; affected builds, focused API unit tests, diff checks, and Impeccable scans passed. The completed branch was deleted."
+    "notes": "Slice 6-A paste import design is approved and delivery is split into 6-A1 paste/parse/review, 6-A2 create, and 6-A3 replace."
   }
 }
