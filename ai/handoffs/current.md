@@ -12,9 +12,9 @@ Updated 2026-08-14, for Menus 6-A1 owner acceptance and merge closeout.
 
 **6-A2 claim.** Issue #718 is claimed on `feature/menus-m6a2-create-import` from merged `master` (`0a52304`). Its outcome is create-only: a resolved import confirms exactly one unpublished working menu atomically and idempotently, then truthfully says Not live yet. 6-A3 replacement remains excluded.
 
-**6-A2 implementation checkpoint.** The path/invariant/test matrix is on issue #718. Product head `6d42fd6` is pushed in draft PR #719. It adds migration 069, atomic/idempotent create confirmation, persisted destination/name/completion state, menu-scoped imported price overrides through builder/history paths, truthful completion UI, invariants, LocalDB/API/static/Playwright coverage, and an Impeccable APPROVE verdict. Full API was 478/479; the sole failure is the pre-existing unrelated E2E layout expectation (`default` versus current `photo_grid`). Azure/external tests remain skipped by owner exception.
+**6-A2 implementation checkpoint.** The path/invariant/test matrix is on issue #718. Product head `b1e62c4` is pushed in draft PR #719. It adds migration 069, atomic/idempotent create confirmation, transaction-local permission and current allowance enforcement, persisted destination/name/completion state, menu-scoped imported price overrides through builder/history paths, truthful completion UI, invariants, LocalDB/API/static/Playwright coverage, and an Impeccable APPROVE verdict. Full API was 478/479; the sole failure is the pre-existing unrelated E2E layout expectation (`default` versus current `photo_grid`). Azure/external tests remain skipped by owner exception.
 
-**Exact next action.** Finish the independent engineering review of PR #719 at `6d42fd6`; address every material finding and rerun affected local gates. When approved, prepare and run the 6-A2 owner acceptance workbook. Do not merge or begin 6-A3 before owner acceptance.
+**Exact next action.** Finish the independent engineering re-review of PR #719 at `b1e62c4`; address every material finding and rerun affected local gates. When approved, prepare and run the 6-A2 owner acceptance workbook. Do not merge or begin 6-A3 before owner acceptance.
 
 ## 2026-08-13 — Menus Slice 6-A paste-import design approval
 

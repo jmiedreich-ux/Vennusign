@@ -132,7 +132,7 @@ The schema everything else stands on. No visible UI change yet beyond keeping th
 - Acceptance workbook: paste/read progress, clean and ambiguous review, fallback and promotion, refresh/resume, sign-in recovery, expiry, permission/tier change, smallest/largest supported widths, and maximum-size evidence. Criterion 10.
 
 #### Milestone 6-A2 — create a new menu
-- **Delivery status (2026-08-14): implemented; review pending.** Draft PR #719 is at product `6d42fd6`; local deterministic/LocalDB/browser gates and UI finish review are complete. Independent engineering review and owner acceptance remain before merge.
+- **Delivery status (2026-08-14): implemented; re-review pending.** Draft PR #719 is at product `b1e62c4`; the atomic authority correction plus focused local deterministic/LocalDB gates and UI finish review are complete. Independent engineering re-review and owner acceptance remain before merge.
 - From a fully resolved 6-A1 session, choose **Create a new menu**, enter/confirm its name, and perform the first menu mutation only at final confirmation.
 - Recheck the session lease, permission, tier, ceilings and revision under one set-based, atomic, idempotent transaction. A refusal rolls back all menu changes and preserves still-valid session answers; retry cannot create duplicates.
 - Paste prices are menu-scoped and never silently mutate another menu. Completion says **Not live yet** and offers **Review draft in builder** or **Done for now**; screens remain unchanged until later Publish.
