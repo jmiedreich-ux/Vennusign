@@ -16,7 +16,8 @@ public sealed class MenuPasteParser
     private static readonly Regex PriceAtEnd = new(@"^(?<name>.+?)(?:\s{2,}|\s+[.·•-]{2,}\s*)(?<price>\$?\d+(?:\.\d{1,2})?|MP)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex Spaces = new(@"\s+", RegexOptions.Compiled);
 
-    public ParsedMenuPaste Parse(Guid sessionId, Guid venueId, string rawPaste, long revision, IReadOnlyCollection<Item> library)
+    public ParsedMenuPaste Parse(Guid sessionId, Guid venueId, string rawPaste, long revision, IReadOnlyCollection<Item> library,
+        IReadOnlySet<int>? sectionOverrides = null)
     {
         ArgumentNullException.ThrowIfNull(rawPaste);
         ArgumentNullException.ThrowIfNull(library);
@@ -39,7 +40,7 @@ public sealed class MenuPasteParser
                 continue;
             }
 
-            if (IsHeading(trimmed))
+            if (IsHeading(trimmed) || sectionOverrides?.Contains(number) == true)
             {
                 lines.Add(Line("section", trimmed));
                 continue;

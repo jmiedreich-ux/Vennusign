@@ -34,7 +34,7 @@ CREATE TABLE dbo.MenuImportSourceLines
     SessionId UNIQUEIDENTIFIER NOT NULL,
     VenueId UNIQUEIDENTIFIER NOT NULL,
     LineNumber INT NOT NULL,
-    RawText NVARCHAR(2000) NOT NULL,
+    RawText NVARCHAR(MAX) NOT NULL,
     Disposition NVARCHAR(24) NOT NULL,
     ParsedName NVARCHAR(200) NULL,
     ParsedDescription NVARCHAR(1000) NULL,
@@ -127,7 +127,7 @@ IF NOT EXISTS (SELECT 1 FROM dbo.CapabilityDefinitions WHERE CapabilityId = 'con
     VALUES ('content.menu.import.session_retention_minutes', 1, 1, 2);
 GO
 
-INSERT dbo.CapabilityAllowances (Id, OrganizationId, VenueId, CapabilityId, LimitValue, EffectiveFromUtc, EffectiveUntilUtc)
+INSERT dbo.CapabilityAllowances (Id, OrganizationId, VenueId, CapabilityId, LimitValue, StartsUtc, EndsUtc)
 SELECT NEWID(), venue.OrganizationId, venue.Id, 'content.menu.import.session_retention_minutes', 1440, SYSUTCDATETIME(), NULL
 FROM dbo.Venues venue
 WHERE venue.OrganizationId IS NOT NULL
