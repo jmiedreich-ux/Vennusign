@@ -123,7 +123,13 @@ public sealed class MenuImportService(
         var current=await RefreshDependenciesAsync(venueId,sessionId,cancellationToken).ConfigureAwait(false);
         if(current is null)return new(MenuImportMutationOutcome.NotFound,null,null);
         if(current.Session.CompletedMenuId is null&&!current.Session.Revision.SequenceEqual(revision))return new(MenuImportMutationOutcome.Conflict,current,null);
-        return await imports.ConfirmReplaceAsync(venueId,sessionId,revision,actorUserId,systemRoleKeys,clock.GetUtcNow().UtcDateTime,actor,cancellationToken).ConfigureAwait(false);
+        var outcome=await imports.ConfirmReplaceAsync(venueId,sessionId,revision,actorUserId,systemRoleKeys,clock.GetUtcNow().UtcDateTime,actor,cancellationToken).ConfigureAwait(false);
+        if(outcome.Result=="target_conflict"&&outcome.Aggregate?.Session.TargetMenuId is Guid targetMenuId)
+        {
+            var refreshed=await imports.SetReplaceDestinationAsync(venueId,sessionId,outcome.Aggregate.Session.Revision,targetMenuId,clock.GetUtcNow().UtcDateTime,actor,cancellationToken).ConfigureAwait(false);
+            if(refreshed.Result==MenuImportMutationOutcome.Updated)return outcome with { Aggregate=refreshed.Aggregate };
+        }
+        return outcome;
     }
 
     public Task<MenuImportRestoreOutcome> RestoreReplacementAsync(Guid venueId,Guid snapshotId,Guid actorUserId,

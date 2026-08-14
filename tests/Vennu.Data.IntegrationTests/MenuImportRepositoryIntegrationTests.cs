@@ -104,6 +104,7 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         Assert.Equal(MenuImportCreateOutcome.AlreadyCompleted, retry.Result);
         Assert.Equal(first.MenuId, retry.MenuId);
         Assert.Equal(first.MenuId, retry.Aggregate!.Session.CompletedMenuId);
+        Assert.Equal(MenuImportCreateOutcome.AlreadyCompleted,(await repository.SetReplaceDestinationAsync(venueId,id,retry.Aggregate.Session.Revision,first.MenuId!.Value,now.AddSeconds(1),"late-owner")).Result);
         var menus = await new MenuRepository(fixture.CreateDataAccess()).GetMenusAsync(venueId);
         Assert.Single(menus, menu => menu.Id == first.MenuId && menu.PublishedVersion is null);
     }
@@ -250,15 +251,18 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         """,new{MenuId=menuId,VenueId=venueId,PageId=pageId,SectionId=sectionId,OldItemId=oldItemId,Now=now});
         var repository=new MenuImportRepository(data);var sessionId=Guid.NewGuid();var line=new MenuImportSourceLine(sessionId,venueId,1,"New item  12","item","New item",null,"12",null,1);var started=await repository.CreateAsync(new(new(sessionId,venueId,line.RawText,1,MenuImportStatuses.Resolved,1,1,now.AddHours(1),now,now,null,[]),[line],[]));
         var selected=await repository.SetReplaceDestinationAsync(venueId,sessionId,started.Session.Revision,menuId,now.AddSeconds(1),"owner");
-        await data.ExecuteSqlQueryAsync<CountRow,object>("UPDATE dbo.Menus SET UpdatedUtc=@Changed WHERE Id=@MenuId;SELECT 1 Value;",new{Changed=now.AddSeconds(2),MenuId=menuId});
+        var content=new ContentRepository(data);Assert.True(await content.RenameSectionAsync(venueId,menuId,sectionId,"Someone else's section",now.AddSeconds(2),"other-owner"));
         var stale=await repository.ConfirmReplaceAsync(venueId,sessionId,selected.Aggregate!.Session.Revision,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(3),"owner");Assert.Equal("target_conflict",stale.Result);Assert.Equal("Old item",Assert.Single(await new ContentRepository(data).GetPlacedItemsForVenueAsync(venueId)).Name);Assert.Null(stale.Aggregate!.Session.CompletedSnapshotId);
+        Assert.True(await content.RenameSectionAsync(venueId,menuId,sectionId,"Old section",now.AddSeconds(3.5),"other-owner"));
         selected=await repository.SetReplaceDestinationAsync(venueId,sessionId,stale.Aggregate.Session.Revision,menuId,now.AddSeconds(4),"owner");
         var first=await repository.ConfirmReplaceAsync(venueId,sessionId,selected.Aggregate!.Session.Revision,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(5),"owner");
         var retry=await repository.ConfirmReplaceAsync(venueId,sessionId,selected.Aggregate.Session.Revision,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(6),"owner");
+        Assert.Equal(MenuImportCreateOutcome.AlreadyCompleted,(await repository.SetReplaceDestinationAsync(venueId,sessionId,retry.Aggregate!.Session.Revision,menuId,now.AddSeconds(6.25),"late-owner")).Result);
         Assert.Equal(MenuImportCreateOutcome.Created,first.Result);Assert.Equal(MenuImportCreateOutcome.AlreadyCompleted,retry.Result);Assert.Equal(menuId,first.MenuId);var preserved=Assert.Single(await new MenuRepository(data).GetMenusAsync(venueId));Assert.Equal("night",preserved.Theme);Assert.Equal(1,preserved.PublishedVersion);
         var replacement=Assert.Single(await new ContentRepository(data).GetPlacedItemsForVenueAsync(venueId));Assert.Equal("New item",replacement.Name);
-        var snapshotId=first.Aggregate!.Session.CompletedSnapshotId!.Value;await data.ExecuteSqlQueryAsync<CountRow,object>("UPDATE dbo.Menus SET UpdatedUtc=@Changed WHERE Id=@MenuId;SELECT 1 Value;",new{Changed=now.AddSeconds(6.5),MenuId=menuId});var staleRestore=await repository.RestoreReplacementAsync(venueId,snapshotId,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(7),"owner");Assert.Equal(MenuImportRestoreOutcome.Conflict,staleRestore.Result);Assert.Equal("New item",Assert.Single(await new ContentRepository(data).GetPlacedItemsForVenueAsync(venueId)).Name);await data.ExecuteSqlQueryAsync<CountRow,object>("UPDATE dbo.Menus SET UpdatedUtc=@Changed WHERE Id=@MenuId;SELECT 1 Value;",new{Changed=now.AddSeconds(5),MenuId=menuId});
+        var snapshotId=first.Aggregate!.Session.CompletedSnapshotId!.Value;Assert.True(await content.RenameSectionAsync(venueId,menuId,replacement.MenuSectionId,"Edited after import",now.AddSeconds(6.5),"other-owner"));var staleRestore=await repository.RestoreReplacementAsync(venueId,snapshotId,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(7),"owner");Assert.Equal(MenuImportRestoreOutcome.Conflict,staleRestore.Result);Assert.Equal("New item",Assert.Single(await new ContentRepository(data).GetPlacedItemsForVenueAsync(venueId)).Name);Assert.True(await content.RenameSectionAsync(venueId,menuId,replacement.MenuSectionId,"Imported items",now.AddSeconds(7.25),"other-owner"));
         var restored=await repository.RestoreReplacementAsync(venueId,snapshotId,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(7.5),"owner");Assert.Equal(MenuImportRestoreOutcome.Restored,restored.Result);Assert.Equal("Old item",Assert.Single(await new ContentRepository(data).GetPlacedItemsForVenueAsync(venueId)).Name);
+        _=await content.UpdateItemValuesGuardedAsync(venueId,oldItemId,"Old item",null,"8",null,now.AddSeconds(7.75));Assert.Equal("8",Assert.Single(await content.GetPlacedItemsForVenueAsync(venueId)).Price);
         Assert.Equal(MenuImportRestoreOutcome.AlreadyRestored,(await repository.RestoreReplacementAsync(venueId,snapshotId,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(8),"owner")).Result);
     }
 

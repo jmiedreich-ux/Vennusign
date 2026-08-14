@@ -114,7 +114,7 @@ public sealed class BackOfficeMenuImportsController(MenuImportService imports) :
     {
         var outcome=await imports.ConfirmReplaceAsync(VenueId,sessionId,RequiredRevision(),ActorUserId,SystemRoleKeys,Actor,cancellationToken);
         if(outcome.Result is MenuImportCreateOutcome.Created or MenuImportCreateOutcome.AlreadyCompleted){if(outcome.Aggregate is not null)SetEtag(outcome.Aggregate);return Ok(new MenuImportCreateResponse(outcome.Result,outcome.MenuId!.Value,outcome.Aggregate!));}
-        if(outcome.Result=="target_conflict")return Conflict(new{reason="target_conflict",message="That menu changed after you selected it. Nothing was replaced; review the latest menu and try again."});
+        if(outcome.Result=="target_conflict"){if(outcome.Aggregate is not null)SetEtag(outcome.Aggregate);return Conflict(new{reason="target_conflict",message="That menu changed after you selected it. Nothing was replaced; review the latest menu and try again.",current=outcome.Aggregate});}
         if(outcome.Result=="target_missing")return NotFound(new{reason="target_missing",message="That menu is no longer available. Nothing was replaced."});
         if(outcome.Result==MenuImportCreateOutcome.PermissionDenied)return StatusCode(403,new{reason="permission_required",message="You no longer have permission to replace this menu."});
         if(outcome.Result==MenuImportCreateOutcome.ItemLimit)return Conflict(new{reason="item_limit",message="This import no longer fits the venue's item limit. Nothing was replaced."});

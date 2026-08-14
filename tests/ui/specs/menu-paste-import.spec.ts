@@ -79,7 +79,7 @@ test.describe("paste import review", () => {
     await page.getByRole("button",{name:new RegExp(seeded.menuName)}).click();
     await expect(page.getByRole("heading",{name:`Replace ${seeded.menuName}?`})).toBeVisible();
     await expect(page.getByText("publishing remains a separate action",{exact:false})).toBeVisible();
-    await expect(page.getByText("screens change now")).toBeVisible();await page.reload();
+    await expect(page.getByText("screens change now")).toBeVisible();await expect(page.getByText(/\d+ items? added · \d+ removed · \d+ changed/)).toBeVisible();await expect(page.getByText(/unpublished (change|changes) already present/)).toBeVisible();await page.reload();
     await expect(page.getByRole("heading",{name:`Replace ${seeded.menuName}?`})).toBeVisible();
     await page.getByRole("button",{name:"Replace menu"}).click();await expect(page.getByTestId("menu-import-complete")).toBeVisible();
     await expect(page.getByText("Not live yet",{exact:true})).toBeVisible();await expect(page.getByText("Published screens changed")).toBeVisible();
