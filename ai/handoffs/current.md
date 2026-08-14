@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-13, for Menus Slice 6-A design approval and implementation setup.
+Updated 2026-08-13, for Menus Slice 6-A delivery planning and 6-A1 implementation setup.
 
 ## 2026-08-13 — Menus Slice 6-A paste-import design approval
 
@@ -10,8 +10,9 @@ Updated 2026-08-13, for Menus Slice 6-A design approval and implementation setup
 - Replacement preserves menu identity, theme, assignments, published snapshot and active 86 state. Completion says `Not live yet` and offers `Review draft in builder` or `Done for now`. Below the 900px supported floor, preserve the session and offer a wider-window handoff.
 - Keyboard-specific interaction design/testing remains excluded. Semantic controls, accessible names/relationships, visible focus and screen-reader-compatible status/error announcements remain required.
 - Slice 6 was already merged through PR #711 as `3429684`; the tracker is cleared. Slice 6-A implementation is not claimed and has not started.
+- Owner approved splitting implementation into three sequential vertical milestones: **6-A1 paste/parse/review** (resumable resolved session; no menu mutation), **6-A2 create new menu** (atomic/idempotent confirmation and truthful completion), and **6-A3 replace existing menu** (target locking/conflicts, snapshots/restore and preservation invariants). Each includes schema, API, UI, Playwright coverage and its own owner workbook. Do not split by technical layer.
 
-**Exact next action.** Create the Slice 6-A GitHub milestone issue with the approved path/test matrix, record the claim, create `feature/menus-m6a-paste-import`, and only then begin schema → API → UI → Playwright implementation.
+**Exact next action.** Create the Slice 6-A1 GitHub milestone issue with its approved path/test matrix, record the claim, create `feature/menus-m6a1-paste-review`, and only then begin its schema → API → UI → Playwright implementation. 6-A2 cannot start until 6-A1 is merged and its owner workbook accepted; 6-A3 has the same dependency on 6-A2.
 
 ## 2026-08-13 — Menus Slice 6 product candidate
 

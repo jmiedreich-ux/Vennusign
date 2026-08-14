@@ -34,7 +34,7 @@
     "mergeSha": "34296844d67327077017cf71968f7391df0da8b6",
     "acceptedProductSha": "99a3eab8f0261adc25b0944b69f9ad9a8c76eb25",
     "acceptance": "Owner instructed merge after the bounded regression closeout; another review and owner workbook were explicitly skipped.",
-    "notes": "Slice 6-A paste import design is now approved, but no implementation assignment is active. Next action: create its GitHub milestone issue, claim and branch."
+    "notes": "Slice 6-A paste import design is approved and delivery is split into 6-A1 paste/parse/review, 6-A2 create, and 6-A3 replace. No implementation assignment is active. Next action: create the 6-A1 GitHub milestone issue, claim, and feature/menus-m6a1-paste-review branch."
   },
   "previousCompletedAssignment": {
     "assignment": "Menus M3-A — slice 3-A (builder navigation and panel refinements)",
