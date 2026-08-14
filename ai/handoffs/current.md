@@ -22,6 +22,8 @@ Updated 2026-08-14, for Menus 6-A2 owner acceptance and merge closeout.
 
 **Exact next action.** Create and claim the 6-A3 replacement milestone issue, branch `feature/menus-m6a3-replace-import` from merged `master`, and audit the locked replacement/snapshot/restore paths before implementation. Do not begin publishing or another feature.
 
+**6-A3 claim.** Issue #720 is claimed on `feature/menus-m6a3-replace-import` from merged/closed 6-A2 master (`d703e42`). The issue carries the success, stale-target, lock-loss, permission/tier, idempotency, preservation and restore path matrix plus five model invariants. Implementation has not started; the exact next action is the schema/contract/readiness audit.
+
 ## 2026-08-13 — Menus Slice 6-A paste-import design approval
 
 - The owner approved `VennuSign_-_Paste_import_storyboard_v4.pptx`. Canonical authority is now `docs/design/approved/menus/paste-import/`: the storyboard, compact customer-flow image, editable Mermaid confirmation sequence and rendered sequence.

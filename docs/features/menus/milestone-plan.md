@@ -139,6 +139,7 @@ The schema everything else stands on. No visible UI change yet beyond keeping th
 - Acceptance workbook: create happy path, validation on entry and edit, abandon/back/resume, expiry, refusal, permission/tier change, double-submit/retry/idempotency, truthful completion and builder handoff. Criterion 12 and the create portion of criterion 13.
 
 #### Milestone 6-A3 — replace an existing menu
+- **Delivery status (2026-08-14): claimed; readiness audit running.** Issue #720 on `feature/menus-m6a3-replace-import`; no implementation yet.
 - From a fully resolved 6-A1 session, choose **Replace an existing menu** and show target identity, the server-computed unpublished-change total/category breakdown, what changes, and what stays live.
 - Recheck the import-session and target leases, permission, tier, ceilings and revisions under one set-based, atomic, idempotent transaction. Preserve menu identity, theme, assignments, published snapshot and active availability/86 state. Conflict, stale target, lock loss or refusal changes no menu data and preserves still-valid review work.
 - Atomically preserve the complete pre-import working state. Keep all historical replacement snapshots; centralized configuration and tier determine stored scope, retention, restore eligibility and limits. Restoration creates a new working revision and never rewinds published history.

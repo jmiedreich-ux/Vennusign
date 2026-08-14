@@ -1,7 +1,17 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-14T04:45:59Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-14T04:49:00Z",
+  "activeAssignments": [
+    {
+      "assignment": "Menus 6-A3 — replace an existing menu from paste import",
+      "issue": 720,
+      "owner": "Codex for JeremyPC",
+      "branch": "feature/menus-m6a3-replace-import",
+      "claimedUtc": "2026-08-14T04:49:00Z",
+      "status": "Claimed; implementation-readiness audit in progress",
+      "notes": "Atomic replacement, target lease/conflict, complete working snapshot and restore. Excludes publishing, spreadsheet/photo/POS import, mobile below 900px, and keyboard-specific interaction design/testing."
+    }
+  ],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
