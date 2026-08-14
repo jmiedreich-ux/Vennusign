@@ -25,10 +25,10 @@ running build, not only by their specs; record in `m2-acceptance-record.json`.
 | 7 | Undo is a keystroke; named in no settings page, plan comparison, or marketing surface | M3 | **met** — ⌘Z/⌘⇧Z in `MenuBuilder.tsx`, asserted in `menu-builder.spec.ts`; session-scoped, never persisted, and named in no settings page or plan comparison |
 | 8 | A capability outside the plan renders nothing — no disabled control, no tooltip, no placeholder | M2 (shell gating) · every UI milestone | **met** — named spec in `navigation-and-entitlements.spec.ts`, asserting both halves: outside-the-plan renders nothing anywhere, and a permission refusal still renders and still says so (decisions 4 and 5) |
 | 9 | Play renders against device-reported geometry; an unpaired screen is unselectable in Play | later canvas/player build | **deferred** — owner moved Slice 5 Board View + Play out of the current sequence on 2026-08-13 |
-| 10 | Import makes unresolved rows prominent; settled inventory is collapsed by default and remains inspectable | M6-A | pending |
+| 10 | Import makes unresolved rows prominent; settled inventory is collapsed by default and remains inspectable | M6-A1 | **met in 6-A1** — `menu-paste-import.spec.ts` asserts unresolved-first review and the collapsed inspectable inventory; owner workbook check 2 re-verifies the hierarchy |
 | 11 | Spreadsheet headings any order/case, extra columns tolerated | later build | **deferred to a later build** (Q194) |
 | 12 | Import into an existing menu replaces content, preserves layout/theme/86s | M6-A | pending |
-| 13 | Thirty near-miss matches produce one grouped question; safe normalization matches may be batch-accepted, ambiguous rows are never preselected | M6-A | pending |
+| 13 | Thirty near-miss matches produce one grouped question; safe normalization matches may be batch-accepted, ambiguous rows are never preselected | M6-A1 | **met in 6-A1** — named Playwright cases assert the bounded safe batch and a 30-row semantic group with no preselection |
 | 14 | (Group) Locked field visible with its reason, never hidden | later build | **deferred to a later build** (Q194) |
 | 15 | (Group) An 86 at one venue never affects another, never prompts | later build | **deferred to a later build** (Q194) |
 | 16 | (Group) A pending group menu never applies on its own | later build | **deferred to a later build** (Q194) |
