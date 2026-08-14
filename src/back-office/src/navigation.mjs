@@ -99,7 +99,19 @@ export function menuIdFromHash(hash) {
     .replace(/^#\/?/, "")
     .split("?")[0];
   const [head, id] = value.split("/");
-  return head === "menu" && id ? decodeURIComponent(id) : null;
+  return head === "menu" && id && id !== "import" ? decodeURIComponent(id) : null;
+}
+
+export function menuImportSessionIdFromHash(hash) {
+  const value = String(hash ?? "").replace(/^#\/?/, "").split("?")[0];
+  const [head, route, id] = value.split("/");
+  return head === "menu" && route === "import" && id ? decodeURIComponent(id) : null;
+}
+
+export function isMenuImportHash(hash) {
+  const value = String(hash ?? "").replace(/^#\/?/, "").split("?")[0];
+  const [head, route] = value.split("/");
+  return head === "menu" && route === "import";
 }
 
 export function decisionForBackOfficeRoute(route, decisions) {

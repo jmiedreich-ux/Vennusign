@@ -1,0 +1,28 @@
+sequenceDiagram
+  autonumber
+  actor U as Operator
+  participant UI as Back Office
+  participant API as Import API
+  participant DB as SQL Server
+
+  U->>UI: Paste menu text
+  UI->>API: POST import (bounded text)
+  API->>DB: Acquire import-session lease and persist parsed session
+  DB-->>API: Session revision and expiry
+  API-->>UI: Parsed inventory and review questions
+  U->>UI: Resolve all items, choose destination, confirm
+  UI->>API: Confirm (session revision, target revision, idempotency key)
+  API->>DB: Begin transaction and lock session plus target menu
+  API->>DB: Recheck lease, permissions, ceilings, and revisions
+
+  alt Valid and unchanged
+    API->>DB: Create or replace all working rows
+    API->>DB: Write idempotent commit record
+    DB-->>API: Commit with menu ID
+    API-->>UI: Import complete with menu ID and counts
+    UI-->>U: Show Not live yet, then choose builder or done
+  else Conflict or refusal
+    API->>DB: Roll back all changes
+    DB-->>API: Named refusal or current revision
+    API-->>UI: Keep input and require refresh or correction
+  end

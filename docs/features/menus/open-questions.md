@@ -1020,6 +1020,8 @@ The crop-beside-question pattern is the confirm step's signature and the shared 
 
 *Answer:* Owner (2026-08-07): flagged/guessed items are resolved **at import** — "when items get imported they are flagged after the fact and should never reach this point." A machine guess must never render on a live board. Stronger than the recommendation (which allowed publishing with a rendered guess). FLAG — reconciliation needed with the drawn "Skip these for now" path (README M1a): skipping must force resolution before publish or the skip path goes; design pass required before slice 6 builds the confirm step.
 
+*Superseding owner amendment (2026-08-13):* Resolved by the approved paste-import storyboard. There is no skip-to-builder path. Every required ambiguity must be answered before final confirmation; before that point only the resumable import session exists, not menu working rows.
+
 <sub>Menus.dc.html confirm footer [wf-import-actions]</sub>
 
 ### Q84 · BLOCKING
@@ -1031,6 +1033,8 @@ Decision 32's replace-by-import is in scope for slice 6 but no drawn surface sta
 *Recommended:* A destination line on the route surface itself — "This will be a new menu · or replace one you have ▾" — keeping one import flow and the six-item ⋯ menu.
 
 *Answer:* Accepted recommended (2026-08-07): destination line on the import route surface itself — "This will be a new menu · or replace one you have ▾" — one import flow, six-item ⋯ menu unchanged.
+
+*Superseding owner amendment (2026-08-13):* Create versus replace is chosen after review, immediately before confirmation. This avoids choosing or locking a target before the operator understands what was parsed. The existing six-item menu-card menu remains unchanged.
 
 <sub>decisions.md 32; build-decisions 16; slice-plan slice 6 [wf-import-actions]</sub>
 
@@ -1138,6 +1142,8 @@ Otherwise a half-imported state exists to reason about.
 
 *Answer:* Accepted recommended (2026-08-07): draft created the moment the route commits; abandoning the confirm behaves identically to "Skip these for now"; the confirm is one-shot, flags live on the canvas afterwards. Cross-reference Q83 (owner): flagged items must be resolved before publish, so an abandoned confirm leaves a menu that cannot publish until its flags are cleared.
 
+*Superseding owner amendment (2026-08-13):* Route commit creates a persisted import session only. Menu working rows are created or replaced exactly once at final confirmation. Leaving and returning resumes the session while valid; expiry removes its raw and derived data according to tier configuration.
+
 <sub>Menus.dc.html M1a intro [wf-import-actions]</sub>
 
 ### Q93 · minor
@@ -1150,6 +1156,8 @@ A duplicate is visible and fixable; a wrong merge silently rewrites another menu
 
 *Answer:* Accepted recommended (2026-08-07): tidying-level only — case, punctuation, spacing, an obvious one-letter typo; anything more distant is a new item. When in doubt, new item.
 
+*Superseding owner amendment (2026-08-13):* Only case, punctuation and spacing normalization may match automatically. Even an obvious-looking one-letter typo is semantic and requires an operator identity decision. When in doubt, new item.
+
 <sub>decisions.md 33 [decisions-doc]</sub>
 
 ### Q94 · minor
@@ -1161,6 +1169,8 @@ Two affordances per row with no stated relationship.
 *Recommended:* Yes — a readable synonym, not a third state.
 
 *Answer:* Owner (2026-08-07): go beyond the binary — a near-miss row can open a small picker of other close library matches, in case the machine matched the wrong existing item. Same/Different remains the fast path; the picker is the correction path. Needs a small design spot in the confirm step (slice 6).
+
+*Superseding owner amendment (2026-08-13):* The design spot is approved. Ambiguous rows offer **Same item**, **New item**, and another close candidate. No ambiguous row is preselected and there is no **Untick all** action. A bounded **Accept safe matches** action applies only to normalization-safe rows and leaves ambiguous rows unanswered.
 
 <sub>Menus.dc.html near-miss rows [wf-import-actions]</sub>
 

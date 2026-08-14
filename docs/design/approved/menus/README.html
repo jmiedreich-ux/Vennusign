@@ -155,21 +155,21 @@ a{color:#1a5aa8}
 <p><strong>Empty state (zero menus):</strong> the grid is replaced entirely. Centered, max-width 860px: "Let's get your menu in." at 34px/600, sub-line, then three route cards in a row (Photo highlighted with 2px <code>#87ceeb</code> and <code>#f2fbff</code>), then "or start from a blank board" as an underlined link. <strong>Onboarding is the empty state of this screen, not a wizard</strong> — decision 17. There is nothing to fall out of and nothing to re-enter.</p>
 <p><strong>POS variant:</strong> when the POS add-on is attached, a fourth route appears and leads. When it is not, there is no trace of it — decision 4.</p>
 <h3>M1a — Import</h3>
-<p><strong>Lo-fi.</strong> Four routes, one ending.</p>
+<p><strong>Approved paste authority:</strong> <code>paste-import/README.md</code> and <code>paste-import/paste-import-storyboard-v4.pptx</code>. The older lo-fi material below remains orientation for future photo, spreadsheet and POS routes; the approved paste bundle wins on any conflict.</p>
 <ul>
 <li><strong>Photo:</strong> drop zone → reading state that names what it found as it finds it ("7 sections found", "41 items", progress on descriptions) → confirm. Camera is a peer of upload, not hidden behind it.</li>
 <li><strong>Paste:</strong> a textarea that parses live and reports "Looks like 2 sections and 6 items" before you commit. A caps line becomes a section; no syntax to learn.</li>
 <li><strong>Spreadsheet:</strong> we publish the headings we read — <strong>Item</strong> and <strong>Price</strong> required, Description / Section / Sold out / Size optional. Any order, any case, extra columns allowed. A template is offered, never required. Matched columns are shown as facts; unmatched columns are the only question. <strong>There is no mapping step</strong> — decision 31.</li>
 <li><strong>POS:</strong> pick categories, not items. States up front that the POS becomes the price source and that a hand-typed price wins until cleared.</li>
 </ul>
-<p><strong>All four converge on one confirm step</strong> (decision 30):</p>
+<p><strong>All routes converge on review and explicit final confirmation</strong> (decisions 30, 33 and 37–43):</p>
 <ul>
-<li>Headline names the ratio: "We read 41 of 45 items. Four need you, plus a name check."</li>
-<li>One card per unclear item, each with a <strong>crop of the original beside it</strong> so the operator answers without hunting for the paper menu.</li>
-<li>Question shapes: fill a price, confirm a spelling, one-item-with-sizes vs two items, no-price (show "MP" / type one / leave it out).</li>
-<li><strong>Near-misses are one grouped question, never N questions</strong> — a list with a row per item, each pre-ticked as <em>the same item</em>, plus "Untick all". A reprint with 30 tweaked names must not produce 30 questions (decision 33).</li>
-<li>The 41 correct rows are not shown, not counted down, not paged through. "See all 45" exists and is not the default (decision 18).</li>
-<li>Actions: "Done — open in the builder" primary, "Skip these for now" inline. Skipping flags them on the canvas.</li>
+<li>Paste creates a resumable import session. It creates or replaces no menu working rows until final confirmation.</li>
+<li>Review makes unresolved questions prominent and keeps settled inventory behind progressive disclosure.</li>
+<li>Normalization limited to case, punctuation and spacing may match automatically. Semantic near-misses form one grouped question, with no row preselected and no global <strong>Untick all</strong> action.</li>
+<li>Every source line stays traceable. Unplaced content lands once in <strong>Imported items</strong> and keeps a reason code.</li>
+<li>Create versus replace is chosen after review. Replacement shows target identity, what changes, what remains live, and the server-computed unpublished-change breakdown.</li>
+<li>Confirmation is atomic and idempotent. Completion says <strong>Not live yet</strong> and offers <strong>Review draft in builder</strong> or <strong>Done for now</strong>.</li>
 </ul>
 <p><strong>Importing into an existing menu replaces it</strong> — decision 32. Not a merge. The board keeps its layout and theme; anything 86'd stays 86'd.</p>
 <h3>M1b — The named actions</h3>
@@ -273,7 +273,7 @@ a{color:#1a5aa8}
 <li>Import surfaces only rows the parser was unsure about; correctly-read rows are not shown by default.</li>
 <li>A spreadsheet with the published headings in any order, any case, plus unknown extra columns, imports successfully and asks only about the extra columns.</li>
 <li>Importing into an existing menu replaces its content, preserves its layout and theme, and preserves active 86s.</li>
-<li>Thirty near-miss name matches produce <strong>one</strong> grouped question, pre-ticked as <em>same item</em>.</li>
+<li>Thirty near-miss name matches produce <strong>one</strong> grouped question; safe normalization matches may be accepted as a bounded group, while ambiguous rows are not preselected.</li>
 <li>(Group) A venue below Trusted cannot change a price on a group menu, and the locked field is <strong>visible with its reason</strong>, not hidden.</li>
 <li>(Group) An 86 at one venue never affects another venue, and never prompts.</li>
 <li>(Group) A pending group menu never applies on its own, at any age.</li>

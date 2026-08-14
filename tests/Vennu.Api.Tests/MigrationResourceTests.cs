@@ -6,6 +6,28 @@ namespace Vennu.Api.Tests;
 public sealed class MigrationResourceTests
 {
     [Fact]
+    public void MenuImportSessionMigration_IsEmbeddedOrderedAndDoesNotMutateMenus()
+    {
+        var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
+        var scriptName = Assert.Single(scripts.Where(name => name.EndsWith(".Scripts.068_menu_import_sessions.sql", StringComparison.Ordinal)));
+        Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
+
+        using var stream = Assert.IsAssignableFrom<Stream>(typeof(DatabaseMigrator).Assembly.GetManifestResourceStream(scriptName));
+        using var reader = new StreamReader(stream);
+        var sql = reader.ReadToEnd();
+
+        Assert.Contains("WHAT THIS DISCARDS: nothing", sql, StringComparison.Ordinal);
+        Assert.Contains("CREATE TABLE dbo.MenuImportSessions", sql, StringComparison.Ordinal);
+        Assert.Contains("CREATE TABLE dbo.MenuImportSourceLines", sql, StringComparison.Ordinal);
+        Assert.Contains("CREATE TABLE dbo.MenuImportReviewQuestions", sql, StringComparison.Ordinal);
+        Assert.Contains("CREATE TABLE dbo.MenuImportCandidates", sql, StringComparison.Ordinal);
+        Assert.Contains("CREATE TABLE dbo.MenuImportAnswers", sql, StringComparison.Ordinal);
+        Assert.Contains("content.menu.import.session_retention_minutes", sql, StringComparison.Ordinal);
+        Assert.DoesNotContain("ALTER TABLE dbo.Menus", sql, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("ALTER TABLE dbo.Items", sql, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void ItemPriceMigration_IsEmbeddedNarrowsWithoutSilentDataLossAndKeepsSnapshotReadsWide()
     {
         var assembly = typeof(DatabaseMigrator).Assembly;

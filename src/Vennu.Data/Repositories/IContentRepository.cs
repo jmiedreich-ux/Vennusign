@@ -705,6 +705,8 @@ public static class MenuCeilings
 
     public const string ImportFileBytes = "content.menu.import.bytes";
 
+    public const string ImportSessionRetentionMinutes = "content.menu.import.session_retention_minutes";
+
     public const string PublishRetrySilenceSeconds = "publishing.retry.silence.seconds";
 
     public const string HistoryRetention = "publishing.history.retention";

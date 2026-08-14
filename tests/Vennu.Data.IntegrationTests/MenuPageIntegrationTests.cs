@@ -186,7 +186,9 @@ public sealed class MenuPageIntegrationTests(DatabaseFixture fixture)
             Assert.Equal("move_required", moveRequired.Outcome);
             var deleted = await repository.DeletePageAsync(venueId, menuId, first.Id, second.Id);
             Assert.Equal("deleted", deleted.Outcome);
-            Assert.Equal(2, deleted.AffectedSectionCount);
+            // CreateMenuWithinCeilingAsync creates Section 1; this test then adds
+            // Mains and Sides, so all three move with the deleted page.
+            Assert.Equal(3, deleted.AffectedSectionCount);
         }
         finally
         {

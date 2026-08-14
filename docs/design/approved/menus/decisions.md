@@ -82,13 +82,31 @@ Every decision settled with the owner across the menu work. These govern the wir
 
 **32 · Importing into an existing menu replaces it.** Not a merge. A reprint is the new menu, so the file wins outright — no row-by-row reconciliation to design or explain. The board keeps its layout and theme, and anything currently 86'd stays 86'd (decision 3: availability is a fact about tonight, not about the menu). Same four routes, same confirm step, queued as a draft like any other edit.
 
-**33 · Imported items match the library by name.** Same name updates the item you already have; a new name makes a new one. Near-misses ("Old-Fashioned" vs "Old Fashioned") are surfaced as **one grouped question** in the confirm step — a list with a row each — pre-ticked as *the same item*, since a tidied name is the common case. Thirty near-misses is one question, never thirty.
+**33 · Imported items match conservatively.** An exact name, including normalization limited to case, punctuation and spacing, may match automatically. Anything semantic—including an obvious-looking typo—is an operator identity decision. Near-misses are surfaced as **one grouped question**, never thirty separate questions, and no row is preselected. The fast path may accept a bounded set of safe normalization matches; ambiguous rows remain unanswered until the operator chooses **Same item**, **New item**, or another close library candidate.
 
 **34 · Head office menus are only replaced by head office.** A venue cannot import over a group menu at any trust level — 86 and, at Trusted, price and item changes are the ceiling. Venues import freely into **their own local menus**, with the same four routes.
 
 **35 · Time lives in Schedules, not in Menus.** A menu has no hours of its own; Schedules points at menus. Menus owns only what happens when nothing is pointed at a screen.
 
 **36 · One fallback, every empty moment.** The venue fallback covers a scheduled gap, a menu taken off the screens, and anything else that empties a screen — the same object in all cases (decision 14). For now it is the generated logo-and-name card only; authoring a replacement comes later.
+
+## Paste-import amendments — 13 August 2026
+
+Approved storyboard and supporting artifacts live in `paste-import/`. These decisions supersede Q83, Q84, Q92, Q93 and Q94 where those earlier answers conflict.
+
+**37 · Final confirmation is the only menu mutation.** Parsing and review persist an import session, not menu working rows. The operator resolves every required question, chooses create or replace after review, and then confirms once. Confirmation is atomic and idempotent; a refusal rolls everything back while preserving the session and its valid answers.
+
+**38 · Completion tells the publishing truth.** A successful import creates or replaces unpublished working state only. Screens and the published snapshot remain unchanged until a later Publish. Both outcomes say **Not live yet** and offer **Review draft in builder** or **Done for now**; the product never auto-navigates or implies that a screen changed.
+
+**39 · Review answers survive only while their dependencies do.** Refresh preserves answers whose source line and candidate identity remain unchanged. A changed target, parser result, permission, allowance or candidate invalidates only affected answers, and the UI names what was cleared and why.
+
+**40 · Replacement explains and preserves.** The server computes a structured delta against the target's published snapshot and returns a plain-language unpublished-change breakdown. Replacement preserves menu identity, theme, assignments, published snapshot and active availability/86 state. Before replacement, the transaction records a restorable version of the complete unpublished working state.
+
+**41 · Imported items is one predictable fallback.** Every pasted line remains traceable and appears exactly once. Content that cannot be placed confidently lands in one customer-facing **Imported items** section. Parser-cause metadata is retained for plain-language explanation and diagnostics, not used to create multiple automatic sections. An eligible unreadable line becomes a section only through an explicit reversible operator action.
+
+**42 · Retention is configuration and tier policy.** Preserve all historical replacement snapshots. A centralized configuration table resolved by subscription tier controls snapshot scope, retention, restore eligibility, tier limits and import-session lifetime. Only a successful user mutation may renew an import session; passive reads do not. The UI shows the resolved absolute expiry. Expired raw paste and derived review data are deleted together.
+
+**43 · Paste import has no silent cross-menu price effect.** A pasted price change is menu-scoped. If the persistence model shares price globally, confirmation must create an explicit menu-specific override/copy or refuse until the operator knowingly chooses a broader action. An import never silently changes another menu.
 
 ## Amendments — 11 August 2026
 

@@ -6,6 +6,16 @@ namespace Vennu.Api.Tests.Controllers;
 [Trait("Category", "Unit")]
 public sealed class BackOfficeContentCapabilityTests
 {
+    [Fact]
+    public void PasteImportRoutes_RequireImportCapability()
+    {
+        var capability = Assert.Single(typeof(BackOfficeMenuImportsController)
+            .GetCustomAttributes(typeof(RequireCapabilityAttribute), inherit: true)
+            .Cast<RequireCapabilityAttribute>());
+
+        Assert.Equal("content.menu.import", Assert.Single(capability.Arguments!));
+    }
+
     [Theory]
     [InlineData(nameof(BackOfficeContentController.GetQuickUpdateBoard))]
     [InlineData(nameof(BackOfficeContentController.SetAvailability))]

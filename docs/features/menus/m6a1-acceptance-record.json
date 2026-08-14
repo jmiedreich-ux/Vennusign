@@ -1,0 +1,15 @@
+{
+  "milestone": "Menus 6-A1 — paste, parse, and review",
+  "productSha": "547aea7",
+  "acceptedUtc": "2026-08-14T03:43:13.198Z",
+  "result": "Accepted",
+  "cases": [
+    { "name": "Paste is truthful and bounded", "result": "Pass", "notes": "" },
+    { "name": "Unresolved work leads", "result": "Pass", "notes": "" },
+    { "name": "Safe and ambiguous matches stay different", "result": "Pass", "notes": "" },
+    { "name": "Fallback and section promotion are reversible", "result": "Pass", "notes": "" },
+    { "name": "Refresh resumes the same truth", "result": "Pass", "notes": "" },
+    { "name": "Completion stops before mutation", "result": "Pass", "notes": "" },
+    { "name": "Supported width behavior is deliberate", "result": "Pass", "notes": "" }
+  ]
+}

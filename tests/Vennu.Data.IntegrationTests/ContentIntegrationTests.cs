@@ -1492,7 +1492,9 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
             venueA, menuB, before!, "Intruder", "Cross-tenant restore.", DateTime.UtcNow));
 
         Assert.Equal(before, await repository.GetWorkingSnapshotAsync(venueB, menuB));
-        Assert.Empty(await repository.GetHistoryAsync(venueB, menuB, 10));
+        Assert.DoesNotContain(
+            await repository.GetHistoryAsync(venueB, menuB, 10),
+            entry => entry.Kind == MenuHistoryKinds.Restored);
     }
 
     // ---- cross-tenant access ----------------------------------------------------
@@ -1836,20 +1838,23 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
             Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("history-item"), Price = "8"
         }, menuId, added, itemsPerMenuLimit: 500);
 
+        var historyBeforeRefusal = await repository.GetPageHistoryAsync(venueId, menuId, page.Id, 20);
+
         // A stale destination is refused before either the content or its history
         // can change. This is the atomicity boundary Slice 2 depends on.
         Assert.Equal(SectionOutcomes.DestinationMissing, (await repository.DeleteSectionAsync(
             venueId, menuId, added, Guid.NewGuid(), false, "Jeremy", now.AddSeconds(5))).Outcome);
 
         var history = await repository.GetPageHistoryAsync(venueId, menuId, page.Id, 20);
+        Assert.Equal(historyBeforeRefusal.Select(entry => entry.Id), history.Select(entry => entry.Id));
         Assert.Equal(
-            [MenuHistoryKinds.SectionsReordered, MenuHistoryKinds.SectionRenamed, MenuHistoryKinds.SectionRenamed, MenuHistoryKinds.SectionAdded],
+            [MenuHistoryKinds.SectionsReordered, MenuHistoryKinds.SectionRenamed, MenuHistoryKinds.SectionRenamed, MenuHistoryKinds.ItemAdded, MenuHistoryKinds.SectionAdded],
             history.Select(entry => entry.Kind).ToArray());
         Assert.All(history, entry =>
         {
             Assert.Equal(page.Id, entry.PageId);
             Assert.Equal(page.Name, entry.PageName);
-            Assert.Equal("Jeremy", entry.Author);
+            Assert.Equal(entry.Kind == MenuHistoryKinds.ItemAdded ? null : "Jeremy", entry.Author);
             Assert.NotEqual(MenuHistoryKinds.Published, entry.Kind);
         });
         Assert.DoesNotContain(history, entry => entry.Kind == MenuHistoryKinds.SectionDeleted);
