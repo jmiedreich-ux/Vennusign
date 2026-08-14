@@ -1,0 +1,74 @@
+namespace Vennu.Core.Models;
+
+public sealed record MenuImportSession(
+    Guid Id,
+    Guid VenueId,
+    string RawPaste,
+    long ParseRevision,
+    string Status,
+    int LineCount,
+    int ItemCount,
+    DateTime ExpiresUtc,
+    DateTime CreatedUtc,
+    DateTime UpdatedUtc,
+    string? UpdatedBy,
+    byte[] Revision);
+
+public sealed record MenuImportSourceLine(
+    Guid SessionId,
+    Guid VenueId,
+    int LineNumber,
+    string RawText,
+    string Disposition,
+    string? ParsedName,
+    string? ParsedDescription,
+    string? ParsedPrice,
+    string? ParserReason,
+    long ParseRevision);
+
+public sealed record MenuImportReviewQuestion(
+    Guid SessionId,
+    Guid VenueId,
+    string QuestionKey,
+    string Fingerprint,
+    string Kind,
+    int DisplayOrder,
+    bool Required,
+    long ParseRevision,
+    IReadOnlyCollection<int> LineNumbers,
+    IReadOnlyCollection<MenuImportCandidate> Candidates,
+    MenuImportAnswer? Answer);
+
+public sealed record MenuImportCandidate(
+    Guid ItemId,
+    string DisplayName,
+    string? DisplayPrice,
+    string MatchRule,
+    bool IsSafe);
+
+public sealed record MenuImportAnswer(
+    string Fingerprint,
+    string Choice,
+    Guid? SelectedItemId,
+    long ParseRevision,
+    DateTime AnsweredUtc,
+    string? AnsweredBy);
+
+public sealed record MenuImportAggregate(
+    MenuImportSession Session,
+    IReadOnlyCollection<MenuImportSourceLine> Lines,
+    IReadOnlyCollection<MenuImportReviewQuestion> Questions);
+
+public static class MenuImportStatuses
+{
+    public const string Reviewing = "reviewing";
+    public const string Resolved = "resolved";
+}
+
+public static class MenuImportChoices
+{
+    public const string SameItem = "same_item";
+    public const string NewItem = "new_item";
+    public const string Section = "section";
+    public const string Fallback = "fallback";
+}

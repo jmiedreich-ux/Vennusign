@@ -15,6 +15,8 @@ Updated 2026-08-13, for Menus Slice 6-A delivery planning and 6-A1 implementatio
 
 **Exact next action.** On issue #714 and `feature/menus-m6a1-paste-review`, implement migration 068 and its migration-resource assertions plus the import-session invariants in the automatic LocalDB sweep. Then continue repository → parser → API → UI → Playwright in the audited order. 6-A2 cannot start until 6-A1 is merged and its owner workbook accepted; 6-A3 has the same dependency on 6-A2.
 
+**Implementation checkpoint, 2026-08-13.** Migration 068 now defines the relational import-session aggregate and tier-resolved retention allowance without touching menu content; core import records, three automatic model invariants, and the deterministic paste parser/matcher are present. Focused migration/parser tests pass 45/45 and the Release solution build passes with pre-existing warnings. A punctuation-boundary normalization regression was observed failing and fixed. LocalDB execution is **NOT A PASS**: the integration fixture attempted an invalid `sqladmin` login, so migration application and invariant execution remain untested until the approved LocalDB connection is restored. Next implementation action is `IMenuImportRepository` plus its LocalDB tests; do not treat the credential failure as a skipped passing suite.
+
 ## 2026-08-13 — Menus Slice 6 product candidate
 
 - Product candidate `e5364a50ef29a8c4c119ebaf4ec5413662025149` implements issue #710 on `feature/menus-s6-86-board`. The approved authority image is `docs/design/approved/menus/86-board-7b.png`; later owner decisions override its illustrative Undo with confirmation before every 86.

@@ -54,6 +54,49 @@ internal static class ModelInvariants
             """),
 
         new(
+            "Import review rows never cross venues or revisions",
+            "Menus 6-A1. Temporary review state is still tenant data; a child borrowed from another venue or parse revision can expose another venue or apply a stale answer.",
+            """
+            SELECT Offence FROM (
+                SELECT CONCAT('line ', l.SessionId, '/', l.LineNumber, ' disagrees with its session') AS Offence
+                FROM dbo.MenuImportSourceLines l INNER JOIN dbo.MenuImportSessions s ON s.Id=l.SessionId
+                WHERE l.VenueId<>s.VenueId OR l.ParseRevision<>s.ParseRevision
+                UNION ALL
+                SELECT CONCAT('question ', q.SessionId, '/', q.QuestionKey, ' disagrees with its session')
+                FROM dbo.MenuImportReviewQuestions q INNER JOIN dbo.MenuImportSessions s ON s.Id=q.SessionId
+                WHERE q.VenueId<>s.VenueId OR q.ParseRevision<>s.ParseRevision
+                UNION ALL
+                SELECT CONCAT('answer ', a.SessionId, '/', a.QuestionKey, ' is stale')
+                FROM dbo.MenuImportAnswers a
+                INNER JOIN dbo.MenuImportReviewQuestions q ON q.SessionId=a.SessionId AND q.QuestionKey=a.QuestionKey
+                WHERE a.VenueId<>q.VenueId OR a.ParseRevision<>q.ParseRevision OR a.Fingerprint<>q.Fingerprint
+            ) breaches;
+            """),
+
+        new(
+            "Import matching never silently accepts ambiguity",
+            "Menus 6-A1. Only a unique exact-normalized candidate may be safe; semantic candidates and multi-candidate questions always require a person.",
+            """
+            SELECT CONCAT('question ', c.SessionId, '/', c.QuestionKey, ' marks an ambiguous candidate safe') AS Offence
+            FROM dbo.MenuImportCandidates c
+            WHERE c.IsSafe=1 AND (
+                c.MatchRule<>N'exact_normalized'
+                OR (SELECT COUNT(*) FROM dbo.MenuImportCandidates peers WHERE peers.SessionId=c.SessionId AND peers.QuestionKey=c.QuestionKey)>1
+            );
+            """),
+
+        new(
+            "Resolved import sessions have every required answer",
+            "Menus 6-A1. Resolved means destination-ready; it cannot coexist with an unanswered required question.",
+            """
+            SELECT CONCAT('session ', s.Id, ' is resolved with unanswered question ', q.QuestionKey) AS Offence
+            FROM dbo.MenuImportSessions s
+            INNER JOIN dbo.MenuImportReviewQuestions q ON q.SessionId=s.Id AND q.VenueId=s.VenueId AND q.Required=1
+            LEFT JOIN dbo.MenuImportAnswers a ON a.SessionId=q.SessionId AND a.QuestionKey=q.QuestionKey
+            WHERE s.Status=N'resolved' AND a.SessionId IS NULL;
+            """),
+
+        new(
             "A screen rotation contains each page once",
             "M3-A amendment A13 permits pages from multiple menus to share a screen rotation. The impossible "
             + "state is the same page appearing twice in one rotation.",
