@@ -36,6 +36,8 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
 
   const unresolved = useMemo(() => session?.questions.filter(question => !question.answer) ?? [], [session]);
   const safeCount = unresolved.filter(question => question.candidates.length === 1 && question.candidates[0].isSafe).length;
+  const nearMisses = unresolved.filter(question => question.kind === "identity" && question.candidates.length > 0 && question.candidates.every(candidate => !candidate.isSafe));
+  const standaloneQuestions = unresolved.filter(question => !nearMisses.includes(question));
 
   const mutate = useCallback(async (run: (current: MenuImportSession) => Promise<MenuImportSession>) => {
     if (!session) return;
@@ -88,7 +90,10 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     {error && <p className="import-error review-error" role="alert">{error}</p>}
     {safeCount > 0 && <section className="safe-match-banner" data-testid="safe-match-banner"><Sparkles aria-hidden="true" /><div><strong>{safeCount} {safeCount === 1 ? "safe match" : "safe matches"}</strong><p>Same name after differences in capitals, punctuation, or spacing.</p></div><button disabled={busy} onClick={() => void mutate(current => acceptSafeMenuImportMatches(configuration, accessToken, current))}>Accept {safeCount} safe {safeCount === 1 ? "match" : "matches"}</button></section>}
     <section className="question-stack" aria-label="Items needing review">
-      {unresolved.map(question => <QuestionCard key={question.questionKey} session={session} question={question} busy={busy}
+      {nearMisses.length > 0 && <article className="grouped-question" data-testid="near-match-group"><p className="import-kicker">One grouped question</p><h2>Check these possible matches</h2><p>{nearMisses.length} pasted {nearMisses.length === 1 ? "item has" : "items have"} a similar library name. Nothing is selected for you.</p><div className="grouped-question-rows">{nearMisses.map(question => <QuestionCard key={question.questionKey} session={session} question={question} busy={busy}
+        onAnswer={(choice, itemId) => void mutate(current => answerMenuImport(configuration, accessToken, current, question, choice, itemId))}
+        onPromote={() => void 0} />)}</div></article>}
+      {standaloneQuestions.map(question => <QuestionCard key={question.questionKey} session={session} question={question} busy={busy}
         onAnswer={(choice, itemId) => void mutate(current => answerMenuImport(configuration, accessToken, current, question, choice, itemId))}
         onPromote={() => void mutate(current => setMenuImportLineSection(configuration, accessToken, current, question.lineNumbers[0], true))} />)}
       {!unresolved.length && <div className="review-complete" data-testid="import-review-complete"><span><Check aria-hidden="true" /></span><div><h2>Ready for the next step</h2><p>This saved review can now be used to create or replace a menu when those destination steps open.</p></div></div>}
@@ -102,8 +107,8 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
 
 function QuestionCard({ session, question, busy, onAnswer, onPromote }: { session: MenuImportSession; question: MenuImportQuestion; busy: boolean; onAnswer: (choice: string, itemId?: string) => void; onPromote: () => void }) {
   const line = session.lines.find(candidate => candidate.lineNumber === question.lineNumbers[0]);
-  if (question.kind === "unreadable") return <article className="question-card"><div className="question-number">Line {line?.lineNumber}</div><h2>What should this line become?</h2><blockquote>{line?.rawText}</blockquote><p>We couldn’t confidently read this as an item or heading.</p><div className="question-actions"><button disabled={busy} onClick={onPromote}>Make it a section</button><button disabled={busy} onClick={() => onAnswer("fallback")}>Keep in Imported items</button></div></article>;
-  return <article className="question-card"><div className="question-number">Line {line?.lineNumber}</div><h2>Is “{line?.parsedName}” already in your library?</h2><blockquote>{line?.rawText}</blockquote><div className="candidate-list">{question.candidates.map(candidate => <button disabled={busy} key={candidate.itemId} onClick={() => onAnswer("same_item", candidate.itemId)}><span><strong>{candidate.displayName}</strong><small>{candidate.isSafe ? "Safe name match" : "Possible match"}</small></span><em>{candidate.displayPrice ?? "No price"}</em></button>)}</div><button className="new-item-choice" disabled={busy} onClick={() => onAnswer("new_item")}>No, add as a new item</button></article>;
+  if (question.kind === "unreadable") return <div className="question-card"><div className="question-number">Line {line?.lineNumber}</div><h2>What should this line become?</h2><blockquote>{line?.rawText}</blockquote><p>We couldn’t confidently read this as an item or heading.</p><div className="question-actions"><button disabled={busy} onClick={onPromote}>Make it a section</button><button disabled={busy} onClick={() => onAnswer("fallback")}>Keep in Imported items</button></div></div>;
+  return <div className="question-card"><div className="question-number">Line {line?.lineNumber}</div><h2>Is “{line?.parsedName}” already in your library?</h2><blockquote>{line?.rawText}</blockquote><div className="candidate-list">{question.candidates.map(candidate => <button disabled={busy} key={candidate.itemId} onClick={() => onAnswer("same_item", candidate.itemId)}><span><strong>{candidate.displayName}</strong><small>{candidate.isSafe ? "Safe name match" : "Possible match"}</small></span><em>{candidate.displayPrice ?? "No price"}</em></button>)}</div><button className="new-item-choice" disabled={busy} onClick={() => onAnswer("new_item")}>No, add as a new item</button></div>;
 }
 
 function formatExpiry(value: string) { return new Intl.DateTimeFormat(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" }).format(new Date(value)); }

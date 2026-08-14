@@ -41,16 +41,27 @@ public sealed class MenuImportService(
     }
 
     public Task<MenuImportAggregate?> GetAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken) =>
-        imports.GetAsync(venueId, sessionId, clock.GetUtcNow().UtcDateTime, cancellationToken);
+        RefreshDependenciesAsync(venueId, sessionId, cancellationToken);
 
-    public Task<MenuImportMutationOutcome> PutAnswerAsync(Guid venueId, Guid sessionId, byte[] revision, string questionKey,
-        string fingerprint, string choice, Guid? selectedItemId, string? actor, CancellationToken cancellationToken) =>
-        imports.PutAnswerAsync(venueId, sessionId, revision, questionKey, fingerprint, choice, selectedItemId,
-            clock.GetUtcNow().UtcDateTime, actor, cancellationToken);
+    public async Task<MenuImportMutationOutcome> PutAnswerAsync(Guid venueId, Guid sessionId, byte[] revision, string questionKey,
+        string fingerprint, string choice, Guid? selectedItemId, string? actor, CancellationToken cancellationToken)
+    {
+        var current = await RefreshDependenciesAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        if (current is null) return new(MenuImportMutationOutcome.NotFound, null);
+        if (!current.Session.Revision.SequenceEqual(revision)) return new(MenuImportMutationOutcome.Conflict, current);
+        return await imports.PutAnswerAsync(venueId, sessionId, revision, questionKey, fingerprint, choice, selectedItemId,
+            clock.GetUtcNow().UtcDateTime, actor, cancellationToken).ConfigureAwait(false);
+    }
 
-    public Task<MenuImportMutationOutcome> AcceptSafeMatchesAsync(Guid venueId, Guid sessionId, byte[] revision, string? actor,
-        CancellationToken cancellationToken) => imports.AcceptSafeMatchesAsync(venueId, sessionId, revision,
-            clock.GetUtcNow().UtcDateTime, actor, cancellationToken);
+    public async Task<MenuImportMutationOutcome> AcceptSafeMatchesAsync(Guid venueId, Guid sessionId, byte[] revision, string? actor,
+        CancellationToken cancellationToken)
+    {
+        var current = await RefreshDependenciesAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        if (current is null) return new(MenuImportMutationOutcome.NotFound, null);
+        if (!current.Session.Revision.SequenceEqual(revision)) return new(MenuImportMutationOutcome.Conflict, current);
+        return await imports.AcceptSafeMatchesAsync(venueId, sessionId, revision,
+            clock.GetUtcNow().UtcDateTime, actor, cancellationToken).ConfigureAwait(false);
+    }
 
     public async Task<MenuImportMutationOutcome> SetSectionOverrideAsync(Guid venueId, Guid sessionId, byte[] revision, int lineNumber,
         bool isSection, string? actor, CancellationToken cancellationToken)
@@ -71,6 +82,39 @@ public sealed class MenuImportService(
 
     public Task<int> DeleteExpiredAsync(int batchSize, CancellationToken cancellationToken) =>
         imports.DeleteExpiredAsync(clock.GetUtcNow().UtcDateTime, batchSize, cancellationToken);
+
+    private async Task<MenuImportAggregate?> RefreshDependenciesAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken)
+    {
+        var now = clock.GetUtcNow().UtcDateTime;
+        var current = await imports.GetAsync(venueId, sessionId, now, cancellationToken).ConfigureAwait(false);
+        if (current is null) return null;
+        var overrides = current.Lines.Where(line => line.Disposition == "section" && !IsNaturalHeading(line.RawText))
+            .Select(line => line.LineNumber).ToHashSet();
+        var parsed = parser.Parse(sessionId, venueId, current.Session.RawPaste, current.Session.ParseRevision + 1,
+            await content.GetItemsAsync(venueId, cancellationToken).ConfigureAwait(false), overrides);
+        if (SameDependencies(current, parsed)) return current;
+
+        var next = current.Session with
+        {
+            ParseRevision = current.Session.ParseRevision + 1,
+            Status = Status(parsed.Questions),
+            LineCount = parsed.Lines.Count,
+            ItemCount = parsed.ItemCount,
+            UpdatedUtc = now,
+            Revision = []
+        };
+        var replaced = await imports.ReplaceParseAsync(new(next, parsed.Lines, parsed.Questions), current.Session.Revision, cancellationToken).ConfigureAwait(false);
+        return replaced.Aggregate;
+    }
+
+    private static bool SameDependencies(MenuImportAggregate current, ParsedMenuPaste parsed) =>
+        current.Lines.Select(line => (line.LineNumber, line.Disposition, line.ParsedName, line.ParsedPrice, line.ParserReason))
+            .SequenceEqual(parsed.Lines.Select(line => (line.LineNumber, line.Disposition, line.ParsedName, line.ParsedPrice, line.ParserReason))) &&
+        current.Questions.Select(QuestionShape).SequenceEqual(parsed.Questions.Select(QuestionShape));
+
+    private static string QuestionShape(MenuImportReviewQuestion question) => string.Join('|',
+        question.QuestionKey, question.Fingerprint, question.Kind, string.Join(',', question.LineNumbers),
+        string.Join(';', question.Candidates.Select(candidate => $"{candidate.ItemId}:{candidate.DisplayName}:{candidate.DisplayPrice}:{candidate.MatchRule}:{candidate.IsSafe}")));
 
     private static string Status(IReadOnlyCollection<MenuImportReviewQuestion> questions) => questions.Any(q => q.Required) ? MenuImportStatuses.Reviewing : MenuImportStatuses.Resolved;
     private static int CountLines(string value) => value.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n').Split('\n').Length;

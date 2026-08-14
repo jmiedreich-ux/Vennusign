@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -22,8 +21,9 @@ public sealed class MenuPasteParser
         ArgumentNullException.ThrowIfNull(rawPaste);
         ArgumentNullException.ThrowIfNull(library);
 
-        var lookup = library.Where(item => item.IsActive).GroupBy(item => NormalizeIdentity(item.Name), StringComparer.Ordinal)
-            .ToDictionary(group => group.Key, group => group.OrderBy(item => item.Id).ToArray(), StringComparer.Ordinal);
+        var normalizedLibrary = library.Where(item => item.IsActive).Select(item => new { Item = item, Identity = NormalizeIdentity(item.Name) }).ToArray();
+        var lookup = normalizedLibrary.GroupBy(entry => entry.Identity, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Select(entry => entry.Item).OrderBy(item => item.Id).ToArray(), StringComparer.Ordinal);
         var lines = new List<MenuImportSourceLine>();
         var questions = new List<MenuImportReviewQuestion>();
         var itemCount = 0;
@@ -40,13 +40,13 @@ public sealed class MenuPasteParser
                 continue;
             }
 
-            if (IsHeading(trimmed) || sectionOverrides?.Contains(number) == true)
+            var match = PriceAtEnd.Match(trimmed);
+            if (!match.Success && (IsHeading(trimmed) || sectionOverrides?.Contains(number) == true))
             {
                 lines.Add(Line("section", trimmed));
                 continue;
             }
 
-            var match = PriceAtEnd.Match(trimmed);
             if (!match.Success)
             {
                 var question = Question("unreadable", trimmed, []);
@@ -70,12 +70,24 @@ public sealed class MenuPasteParser
                 questions.Add(Question("identity", name, candidates.Select(candidate =>
                     new MenuImportCandidate(candidate.Id, candidate.Name, candidate.Price, "exact_normalized", false)).ToArray()));
             }
+            else
+            {
+                var pastedIdentity = NormalizeIdentity(name);
+                var nearMatches = normalizedLibrary
+                    .Select(entry => new { entry.Item, Distance = EditDistance(pastedIdentity, entry.Identity) })
+                    .Where(match => match.Distance <= NearMatchLimit(pastedIdentity.Length))
+                    .OrderBy(match => match.Distance).ThenBy(match => match.Item.Name).ThenBy(match => match.Item.Id)
+                    .Take(3)
+                    .Select(match => new MenuImportCandidate(match.Item.Id, match.Item.Name, match.Item.Price, "semantic", false))
+                    .ToArray();
+                if (nearMatches.Length > 0) questions.Add(Question("identity", name, nearMatches));
+            }
 
             lines.Add(Line("item", name, price));
 
             MenuImportReviewQuestion Question(string kind, string value, IReadOnlyCollection<MenuImportCandidate> candidatesForQuestion)
             {
-                var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"{kind}\n{value}\n{string.Join(',', candidatesForQuestion.Select(c => c.ItemId))}"))).ToLowerInvariant();
+                var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"{number}\n{kind}\n{value}\n{string.Join(',', candidatesForQuestion.Select(c => c.ItemId))}"))).ToLowerInvariant();
                 return new MenuImportReviewQuestion(sessionId, venueId, $"line-{number}-{kind}", fingerprint, kind, questions.Count, true, revision, [number], candidatesForQuestion, null);
             }
 
@@ -88,12 +100,12 @@ public sealed class MenuPasteParser
 
     public static string NormalizeIdentity(string value)
     {
-        var decomposed = value.Normalize(NormalizationForm.FormD);
-        var builder = new StringBuilder(decomposed.Length);
-        foreach (var character in decomposed)
+        var builder = new StringBuilder(value.Length);
+        foreach (var character in value.Normalize(NormalizationForm.FormC))
         {
-            if (CharUnicodeInfo.GetUnicodeCategory(character) == UnicodeCategory.NonSpacingMark) continue;
-            builder.Append(char.IsWhiteSpace(character) || char.IsPunctuation(character) || char.IsSymbol(character)
+            // Only ornamental punctuation is safe to discard. Symbols and
+            // meaningful connectors remain identity-bearing.
+            builder.Append(char.IsWhiteSpace(character) || character is '.' or ',' or '!' or '?' or ':' or ';' or '-' or '–' or '—' or '·' or '•'
                 ? ' '
                 : char.ToUpperInvariant(character));
         }
@@ -102,4 +114,22 @@ public sealed class MenuPasteParser
 
     private static bool IsHeading(string value) =>
         value.Any(char.IsLetter) && value.Where(char.IsLetter).All(char.IsUpper) && value.Length <= Item.NameMaxLength;
+
+    private static int NearMatchLimit(int length) => Math.Clamp((int)Math.Ceiling(length * .2), 1, 3);
+
+    private static int EditDistance(string left, string right)
+    {
+        if (left.Length == 0) return right.Length;
+        if (right.Length == 0) return left.Length;
+        var previous = Enumerable.Range(0, right.Length + 1).ToArray();
+        var current = new int[right.Length + 1];
+        for (var i = 1; i <= left.Length; i++)
+        {
+            current[0] = i;
+            for (var j = 1; j <= right.Length; j++)
+                current[j] = Math.Min(Math.Min(current[j - 1] + 1, previous[j] + 1), previous[j - 1] + (left[i - 1] == right[j - 1] ? 0 : 1));
+            (previous, current) = (current, previous);
+        }
+        return previous[right.Length];
+    }
 }

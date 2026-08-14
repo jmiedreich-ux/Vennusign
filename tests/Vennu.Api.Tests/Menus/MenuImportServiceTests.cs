@@ -80,6 +80,24 @@ public sealed class MenuImportServiceTests
         Assert.Equal("section", repository.Replaced.Lines.Single(line => line.LineNumber == 2).Disposition);
     }
 
+    [Fact]
+    public async Task Get_reparses_when_a_library_candidate_dependency_changes()
+    {
+        var (service, repository, content) = CreateService();
+        var item = new Item { Id = Guid.NewGuid(), VenueId = VenueId, Name = "Burger", Price = "12", IsActive = true };
+        content.Items.Add(item);
+        var started = await service.StartAsync(VenueId, "Burger  14", null, default);
+        Assert.True(Assert.Single(Assert.Single(started.Questions).Candidates).IsSafe);
+
+        item.IsActive = false;
+        var refreshed = await service.GetAsync(VenueId, started.Session.Id, default);
+
+        Assert.NotNull(refreshed);
+        Assert.Equal(2, refreshed.Session.ParseRevision);
+        Assert.Empty(refreshed.Questions);
+        Assert.NotNull(repository.Replaced);
+    }
+
     private static (MenuImportService Service, ImportRepositoryFake Repository, FakeContentRepository Content) CreateService()
     {
         var repository = new ImportRepositoryFake();

@@ -145,6 +145,13 @@ BEGIN
     VALUES (@PageId, @VenueId, @MenuId, N'Page 1', 0, SYSUTCDATETIME(), SYSUTCDATETIME());
 END;
 
+-- Preserve any demo-created sections but move them out of the canonical slot
+-- before Featured is restored there. Without this, rerunning the fixture after
+-- page tests can collide on the page/sort-order uniqueness invariant.
+UPDATE dbo.MenuSections
+SET SortOrder = SortOrder + 1000, UpdatedUtc = SYSUTCDATETIME()
+WHERE PageId = @PageId AND Id <> @SectionId AND SortOrder < 1000;
+
 MERGE dbo.MenuSections AS target
 USING (VALUES (@SectionId, @VenueId, @MenuId, @PageId, N'Featured', 0)) AS source (Id, VenueId, MenuId, PageId, Name, SortOrder)
 ON target.Id = source.Id
@@ -337,6 +344,25 @@ WHEN NOT MATCHED THEN
 
 -- Demo-created library items for this venue go with their availability rows,
 -- so re-runs cannot accumulate lookalikes the demo might then pick up.
+-- Paste-review sessions are temporary too, and their candidate rows hold an FK
+-- to those library items. Reset the complete aggregate before pruning items.
+DELETE a FROM dbo.MenuImportAnswers a
+INNER JOIN dbo.MenuImportSessions s ON s.Id = a.SessionId
+WHERE s.VenueId = @M1VenueId;
+DELETE c FROM dbo.MenuImportCandidates c
+INNER JOIN dbo.MenuImportSessions s ON s.Id = c.SessionId
+WHERE s.VenueId = @M1VenueId;
+DELETE ql FROM dbo.MenuImportQuestionLines ql
+INNER JOIN dbo.MenuImportSessions s ON s.Id = ql.SessionId
+WHERE s.VenueId = @M1VenueId;
+DELETE q FROM dbo.MenuImportReviewQuestions q
+INNER JOIN dbo.MenuImportSessions s ON s.Id = q.SessionId
+WHERE s.VenueId = @M1VenueId;
+DELETE l FROM dbo.MenuImportSourceLines l
+INNER JOIN dbo.MenuImportSessions s ON s.Id = l.SessionId
+WHERE s.VenueId = @M1VenueId;
+DELETE FROM dbo.MenuImportSessions WHERE VenueId = @M1VenueId;
+
 DELETE FROM dbo.ItemAvailability
 WHERE VenueId = @M1VenueId AND ItemId NOT IN (@M1ItemId, @M1SecondItemId, @M1OldFashionedItemId, @M1AussieBurgerItemId, @M1ClassicBurgerItemId);
 

@@ -44,12 +44,33 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
     }
 
     [Fact]
+    public async Task Concurrent_answers_with_the_same_revision_allow_exactly_one_writer()
+    {
+        var (repository, venueId) = await CreateRepositoryAndVenue();
+        var aggregate = Aggregate(venueId, DateTime.UtcNow.AddHours(1));
+        var created = await repository.CreateAsync(aggregate);
+
+        var writes = await Task.WhenAll(
+            repository.PutAnswerAsync(venueId, aggregate.Session.Id, created.Session.Revision,
+                "line-1-unreadable", aggregate.Questions.Single().Fingerprint, MenuImportChoices.Fallback, null,
+                DateTime.UtcNow, "first"),
+            repository.PutAnswerAsync(venueId, aggregate.Session.Id, created.Session.Revision,
+                "line-1-unreadable", aggregate.Questions.Single().Fingerprint, MenuImportChoices.NewItem, null,
+                DateTime.UtcNow, "second"));
+
+        Assert.Single(writes, write => write.Result == MenuImportMutationOutcome.Updated);
+        Assert.Single(writes, write => write.Result == MenuImportMutationOutcome.Conflict);
+    }
+
+    [Fact]
     public async Task Expired_session_is_refused_then_deleted_in_a_bounded_batch()
     {
         var (repository, venueId) = await CreateRepositoryAndVenue();
         var aggregate = Aggregate(venueId, DateTime.UtcNow.AddMilliseconds(100));
         var created = await repository.CreateAsync(aggregate);
-        var afterExpiry = aggregate.Session.ExpiresUtc.AddTicks(1);
+        // Stay well beyond any provider precision/round-trip boundary; this test
+        // proves expiry semantics, not SQL Server's sub-millisecond rounding.
+        var afterExpiry = aggregate.Session.ExpiresUtc.AddMinutes(1);
 
         Assert.Null(await repository.GetAsync(venueId, aggregate.Session.Id, afterExpiry));
         var mutation = await repository.PutAnswerAsync(venueId, aggregate.Session.Id, created.Session.Revision,

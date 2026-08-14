@@ -43,4 +43,20 @@ test.describe("paste import review", () => {
     await expect(page.getByRole("heading", { name: "Importing a menu needs a wider window" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Back to menus" })).toBeVisible();
   });
+
+  test("thirty semantic near misses render as one group with no preselection", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
+    const seeded = await seed({ label: "near-match-group" });
+    const typo = `${seeded.itemName.slice(0, -1)}x`;
+    await openAs(page, "owner", "/menu/import");
+    await page.getByLabel("Menu text").fill(Array.from({ length: 30 }, () => `${typo}  ${seeded.itemPrice}`).join("\n"));
+    await page.getByRole("button", { name: "Read menu" }).click();
+
+    const group = page.getByTestId("near-match-group");
+    await expect(group).toHaveCount(1);
+    await expect(group).toContainText("30 pasted items have a similar library name");
+    await expect(group.getByRole("button", { name: new RegExp(seeded.itemName, "i") })).toHaveCount(30);
+    await expect(page.getByTestId("safe-match-banner")).toHaveCount(0);
+    await expect(page.getByText("Nothing is selected for you.")).toBeVisible();
+  });
 });

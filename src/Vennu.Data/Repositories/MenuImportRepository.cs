@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Data.SqlClient;
 using Vennu.Core.Models;
 using Vennu.DataAccess;
 
@@ -10,8 +11,19 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
     {
         ArgumentNullException.ThrowIfNull(aggregate);
         ValidateAggregate(aggregate);
-        _ = (await dataAccess.ExecuteSqlQueryAsync<ResultRow, object>(CreateSql, Parameters(aggregate), cancellationToken)
-            .ConfigureAwait(false)).Single();
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                _ = (await dataAccess.ExecuteSqlQueryAsync<ResultRow, object>(CreateSql, Parameters(aggregate), cancellationToken)
+                    .ConfigureAwait(false)).Single();
+                break;
+            }
+            catch (SqlException exception) when (exception.Number == 1205 && attempt < 3)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(40 * attempt), cancellationToken).ConfigureAwait(false);
+            }
+        }
         return await GetAsync(aggregate.Session.VenueId, aggregate.Session.Id, aggregate.Session.CreatedUtc, cancellationToken)
             .ConfigureAwait(false) ?? throw new InvalidOperationException("The import session was not readable after creation.");
     }
@@ -174,9 +186,11 @@ FROM dbo.MenuImportSessions s WHERE s.Id=@SessionId AND s.VenueId=@VenueId AND s
     private const string AnswerSql = """
 SET XACT_ABORT ON; BEGIN TRANSACTION;
 DECLARE @Result nvarchar(20)=N'updated';
-IF NOT EXISTS(SELECT 1 FROM dbo.MenuImportSessions WHERE Id=@SessionId AND VenueId=@VenueId) SET @Result=N'not_found';
-ELSE IF EXISTS(SELECT 1 FROM dbo.MenuImportSessions WHERE Id=@SessionId AND VenueId=@VenueId AND ExpiresUtc<=@Now) SET @Result=N'expired';
-ELSE IF NOT EXISTS(SELECT 1 FROM dbo.MenuImportSessions WHERE Id=@SessionId AND VenueId=@VenueId AND Revision=@ExpectedRevision) SET @Result=N'conflict';
+DECLARE @CurrentRevision varbinary(8), @CurrentExpiry datetime2;
+SELECT @CurrentRevision=Revision,@CurrentExpiry=ExpiresUtc FROM dbo.MenuImportSessions WITH (UPDLOCK,HOLDLOCK) WHERE Id=@SessionId AND VenueId=@VenueId;
+IF @CurrentRevision IS NULL SET @Result=N'not_found';
+ELSE IF @CurrentExpiry<=@Now SET @Result=N'expired';
+ELSE IF @CurrentRevision<>@ExpectedRevision SET @Result=N'conflict';
 ELSE IF NOT EXISTS(SELECT 1 FROM dbo.MenuImportReviewQuestions q WHERE q.SessionId=@SessionId AND q.VenueId=@VenueId AND q.QuestionKey=@QuestionKey AND q.Fingerprint=@Fingerprint AND q.ParseRevision=(SELECT ParseRevision FROM dbo.MenuImportSessions WHERE Id=@SessionId)) SET @Result=N'invalid';
 ELSE IF @Choice=N'same_item' AND NOT EXISTS(SELECT 1 FROM dbo.MenuImportCandidates WHERE SessionId=@SessionId AND QuestionKey=@QuestionKey AND ItemId=@SelectedItemId) SET @Result=N'invalid';
 IF @Result=N'updated' BEGIN
@@ -190,9 +204,11 @@ COMMIT; SELECT @Result Result;
 
     private const string AcceptSafeSql = """
 SET XACT_ABORT ON; BEGIN TRANSACTION; DECLARE @Result nvarchar(20)=N'updated';
-IF NOT EXISTS(SELECT 1 FROM dbo.MenuImportSessions WHERE Id=@SessionId AND VenueId=@VenueId) SET @Result=N'not_found';
-ELSE IF EXISTS(SELECT 1 FROM dbo.MenuImportSessions WHERE Id=@SessionId AND VenueId=@VenueId AND ExpiresUtc<=@Now) SET @Result=N'expired';
-ELSE IF NOT EXISTS(SELECT 1 FROM dbo.MenuImportSessions WHERE Id=@SessionId AND VenueId=@VenueId AND Revision=@ExpectedRevision) SET @Result=N'conflict';
+DECLARE @CurrentRevision varbinary(8), @CurrentExpiry datetime2;
+SELECT @CurrentRevision=Revision,@CurrentExpiry=ExpiresUtc FROM dbo.MenuImportSessions WITH (UPDLOCK,HOLDLOCK) WHERE Id=@SessionId AND VenueId=@VenueId;
+IF @CurrentRevision IS NULL SET @Result=N'not_found';
+ELSE IF @CurrentExpiry<=@Now SET @Result=N'expired';
+ELSE IF @CurrentRevision<>@ExpectedRevision SET @Result=N'conflict';
 IF @Result=N'updated' BEGIN
  INSERT dbo.MenuImportAnswers(SessionId,VenueId,QuestionKey,Fingerprint,Choice,SelectedItemId,ParseRevision,AnsweredUtc,AnsweredBy)
  SELECT q.SessionId,q.VenueId,q.QuestionKey,q.Fingerprint,N'same_item',MIN(c.ItemId),q.ParseRevision,@Now,@Actor FROM dbo.MenuImportReviewQuestions q JOIN dbo.MenuImportCandidates c ON c.SessionId=q.SessionId AND c.QuestionKey=q.QuestionKey AND c.IsSafe=1
@@ -204,9 +220,11 @@ END COMMIT; SELECT @Result Result;
 
     private static readonly string ReplaceSql = """
 SET XACT_ABORT ON; BEGIN TRANSACTION; DECLARE @Result nvarchar(20)=N'updated';
-IF NOT EXISTS(SELECT 1 FROM dbo.MenuImportSessions WHERE Id=@SessionId AND VenueId=@VenueId) SET @Result=N'not_found';
-ELSE IF EXISTS(SELECT 1 FROM dbo.MenuImportSessions WHERE Id=@SessionId AND VenueId=@VenueId AND ExpiresUtc<=@Now) SET @Result=N'expired';
-ELSE IF NOT EXISTS(SELECT 1 FROM dbo.MenuImportSessions WHERE Id=@SessionId AND VenueId=@VenueId AND Revision=@ExpectedRevision) SET @Result=N'conflict';
+DECLARE @CurrentRevision varbinary(8), @CurrentExpiry datetime2;
+SELECT @CurrentRevision=Revision,@CurrentExpiry=ExpiresUtc FROM dbo.MenuImportSessions WITH (UPDLOCK,HOLDLOCK) WHERE Id=@SessionId AND VenueId=@VenueId;
+IF @CurrentRevision IS NULL SET @Result=N'not_found';
+ELSE IF @CurrentExpiry<=@Now SET @Result=N'expired';
+ELSE IF @CurrentRevision<>@ExpectedRevision SET @Result=N'conflict';
 IF @Result=N'updated' BEGIN
  SELECT * INTO #Answers FROM dbo.MenuImportAnswers WHERE SessionId=@SessionId;
  DELETE FROM dbo.MenuImportAnswers WHERE SessionId=@SessionId; DELETE FROM dbo.MenuImportCandidates WHERE SessionId=@SessionId; DELETE FROM dbo.MenuImportQuestionLines WHERE SessionId=@SessionId; DELETE FROM dbo.MenuImportReviewQuestions WHERE SessionId=@SessionId; DELETE FROM dbo.MenuImportSourceLines WHERE SessionId=@SessionId;
