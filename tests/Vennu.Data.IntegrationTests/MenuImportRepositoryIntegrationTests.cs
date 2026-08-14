@@ -97,8 +97,8 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
             MenuImportStatuses.Resolved, 2, 1, now.AddHours(1), now, now, null, []), lines, []));
         var named = await repository.SetCreateDestinationAsync(venueId, id, created.Session.Revision, " Dinner menu ", now, "owner");
 
-        var first = await repository.ConfirmCreateAsync(venueId, id, named.Aggregate!.Session.Revision, 50, 500, now, "owner");
-        var retry = await repository.ConfirmCreateAsync(venueId, id, named.Aggregate.Session.Revision, 50, 500, now, "owner");
+        var first = await Confirm(repository, venueId, id, named.Aggregate!.Session.Revision, now, "owner");
+        var retry = await Confirm(repository, venueId, id, named.Aggregate.Session.Revision, now, "owner");
 
         Assert.Equal(MenuImportCreateOutcome.Created, first.Result);
         Assert.Equal(MenuImportCreateOutcome.AlreadyCompleted, retry.Result);
@@ -125,7 +125,7 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         var answered = await repository.PutAnswerAsync(venueId, id, started.Session.Revision, question.QuestionKey, fingerprint, MenuImportChoices.SameItem, libraryItem.Id, now, "owner");
         var named = await repository.SetCreateDestinationAsync(venueId, id, answered.Aggregate!.Session.Revision, "Imported dinner", now, "owner");
 
-        var created = await repository.ConfirmCreateAsync(venueId, id, named.Aggregate!.Session.Revision, 50, 500, now, "owner");
+        var created = await Confirm(repository, venueId, id, named.Aggregate!.Session.Revision, now, "owner");
 
         Assert.Equal("12", (await new ContentRepository(dataAccess).GetItemAsync(venueId, libraryItem.Id))!.Price);
         var placed = Assert.Single(await new ContentRepository(dataAccess).GetPlacedItemsForVenueAsync(venueId));
@@ -147,8 +147,8 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         var named = await repository.SetCreateDestinationAsync(venueId, id, started.Session.Revision, fixture.UniqueValue("concurrent-import"), now, "owner");
 
         var outcomes = await Task.WhenAll(
-            repository.ConfirmCreateAsync(venueId, id, named.Aggregate!.Session.Revision, 50, 500, now, "one"),
-            repository.ConfirmCreateAsync(venueId, id, named.Aggregate.Session.Revision, 50, 500, now, "two"));
+            Confirm(repository, venueId, id, named.Aggregate!.Session.Revision, now, "one"),
+            Confirm(repository, venueId, id, named.Aggregate.Session.Revision, now, "two"));
 
         Assert.Single(outcomes, outcome => outcome.Result == MenuImportCreateOutcome.Created);
         Assert.Single(outcomes, outcome => outcome.Result == MenuImportCreateOutcome.AlreadyCompleted);
@@ -166,13 +166,71 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         var started=await repository.CreateAsync(new(new(id,venueId,line.RawText,1,MenuImportStatuses.Resolved,1,1,now.AddHours(1),now,now,null,[]),[line],[]));
         var named=await repository.SetCreateDestinationAsync(venueId,id,started.Session.Revision,existingName,now,"owner");
 
-        var refused=await repository.ConfirmCreateAsync(venueId,id,named.Aggregate!.Session.Revision,50,500,now,"owner");
+        var refused=await Confirm(repository,venueId,id,named.Aggregate!.Session.Revision,now,"owner");
 
         Assert.Equal(MenuImportCreateOutcome.NameConflict,refused.Result);
         Assert.Null(refused.Aggregate!.Session.CompletedMenuId);
         Assert.Single(await new MenuRepository(fixture.CreateDataAccess()).GetMenusAsync(venueId));
         var renamed=await repository.SetCreateDestinationAsync(venueId,id,refused.Aggregate.Session.Revision,fixture.UniqueValue("retry-menu"),now.AddSeconds(1),"owner");
-        Assert.Equal(MenuImportCreateOutcome.Created,(await repository.ConfirmCreateAsync(venueId,id,renamed.Aggregate!.Session.Revision,50,500,now.AddSeconds(1),"owner")).Result);
+        Assert.Equal(MenuImportCreateOutcome.Created,(await Confirm(repository,venueId,id,renamed.Aggregate!.Session.Revision,now.AddSeconds(1),"owner")).Result);
+    }
+
+    [Fact]
+    public async Task Confirm_create_uses_the_allowance_current_inside_its_transaction()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var venue = new Venue { Name = fixture.UniqueValue("allowance-venue"), Timezone = "UTC", Type = "Restaurant", PrimaryLanguage = "en" };
+        var venueId = await new VenueRepository(dataAccess).CreateAsync(venue);
+        var content = new ContentRepository(dataAccess);
+        var now = DateTime.UtcNow;
+        Assert.True((await content.CreateMenuWithinCeilingAsync(
+            new Menu { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("existing"), CreatedUtc = now }, 50)).Created);
+        var organizationId = (await dataAccess.ExecuteSqlQueryAsync<GuidRow, object>(
+            "SELECT OrganizationId AS Value FROM dbo.Venues WHERE Id=@VenueId;", new { VenueId = venueId })).Single().Value;
+
+        var repository = new MenuImportRepository(dataAccess);
+        var id = Guid.NewGuid();
+        var line = new MenuImportSourceLine(id, venueId, 1, "Soup  9", "item", "Soup", null, "9", null, 1);
+        var started = await repository.CreateAsync(new(new(id, venueId, line.RawText, 1, MenuImportStatuses.Resolved,
+            1, 1, now.AddHours(1), now, now, null, []), [line], []));
+        var named = await repository.SetCreateDestinationAsync(venueId, id, started.Session.Revision,
+            fixture.UniqueValue("refused-import"), now, "owner");
+
+        // This represents an allowance reduction after the review/service read but
+        // before confirmation. The enforcement boundary must read this row itself.
+        await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            DELETE dbo.CapabilityAllowances WHERE VenueId=@VenueId AND CapabilityId='content.menu.count';
+            INSERT dbo.CapabilityAllowances(Id,OrganizationId,VenueId,CapabilityId,LimitValue,StartsUtc,EndsUtc)
+            VALUES(NEWID(),@OrganizationId,@VenueId,'content.menu.count',1,DATEADD(day,-1,@Now),NULL);
+            SELECT 1 AS Value;
+            """, new { VenueId = venueId, OrganizationId = organizationId, Now = now });
+
+        var refused = await Confirm(repository, venueId, id, named.Aggregate!.Session.Revision, now, "owner");
+
+        Assert.Equal(MenuImportCreateOutcome.MenuLimit, refused.Result);
+        Assert.Null(refused.Aggregate!.Session.CompletedMenuId);
+        Assert.Single(await new MenuRepository(dataAccess).GetMenusAsync(venueId));
+    }
+
+    [Fact]
+    public async Task Confirm_create_rechecks_current_permission_inside_its_transaction()
+    {
+        var (repository, venueId) = await CreateRepositoryAndVenue();
+        var now = DateTime.UtcNow;
+        var id = Guid.NewGuid();
+        var line = new MenuImportSourceLine(id, venueId, 1, "Soup  9", "item", "Soup", null, "9", null, 1);
+        var started = await repository.CreateAsync(new(new(id, venueId, line.RawText, 1, MenuImportStatuses.Resolved,
+            1, 1, now.AddHours(1), now, now, null, []), [line], []));
+        var named = await repository.SetCreateDestinationAsync(venueId, id, started.Session.Revision,
+            fixture.UniqueValue("permission-import"), now, "owner");
+
+        var refused = await repository.ConfirmCreateAsync(venueId, id, named.Aggregate!.Session.Revision,
+            Guid.NewGuid(), ["role-without-import-permission"], now, "owner");
+
+        Assert.Equal(MenuImportCreateOutcome.PermissionDenied, refused.Result);
+        Assert.Null(refused.Aggregate!.Session.CompletedMenuId);
+        Assert.Empty(await new MenuRepository(fixture.CreateDataAccess()).GetMenusAsync(venueId));
     }
 
     [Fact]
@@ -222,4 +280,11 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         var question = new MenuImportReviewQuestion(id, venueId, "line-1-unreadable", fingerprint, "unreadable", 0, true, 1, [1], [], null);
         return new(new MenuImportSession(id, venueId, raw, 1, MenuImportStatuses.Reviewing, 1, 0, expiresUtc, now, now, null, []), [line], [question]);
     }
+
+    private static Task<MenuImportCreateOutcome> Confirm(MenuImportRepository repository, Guid venueId, Guid sessionId,
+        byte[] revision, DateTime now, string actor) => repository.ConfirmCreateAsync(venueId, sessionId, revision,
+        Guid.NewGuid(), ["organization_administrator"], now, actor);
+
+    private sealed class CountRow { public int Value { get; set; } }
+    private sealed class GuidRow { public Guid Value { get; set; } }
 }

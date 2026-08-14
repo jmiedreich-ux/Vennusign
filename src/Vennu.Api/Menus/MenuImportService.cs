@@ -98,16 +98,13 @@ public sealed class MenuImportService(
     }
 
     public async Task<MenuImportCreateOutcome> ConfirmCreateAsync(Guid venueId, Guid sessionId, byte[] revision,
-        string? actor, CancellationToken cancellationToken)
+        Guid actorUserId, IReadOnlyCollection<string> systemRoleKeys, string? actor, CancellationToken cancellationToken)
     {
         var current = await RefreshDependenciesAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
         if (current is null) return new(MenuImportMutationOutcome.NotFound, null, null);
         if (current.Session.CompletedMenuId is null && !current.Session.Revision.SequenceEqual(revision))
             return new(MenuImportMutationOutcome.Conflict, current, null);
-        var ceilings = await content.GetCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
-        return await imports.ConfirmCreateAsync(venueId, sessionId, revision,
-            ceilings.GetValueOrDefault(MenuCeilings.MenusPerVenue, MenuCeilings.Defaults[MenuCeilings.MenusPerVenue]),
-            ceilings.GetValueOrDefault(MenuCeilings.ItemsPerMenu, MenuCeilings.Defaults[MenuCeilings.ItemsPerMenu]),
+        return await imports.ConfirmCreateAsync(venueId, sessionId, revision, actorUserId, systemRoleKeys,
             clock.GetUtcNow().UtcDateTime, actor, cancellationToken).ConfigureAwait(false);
     }
 

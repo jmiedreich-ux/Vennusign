@@ -149,10 +149,11 @@ public sealed class MenuImportServiceTests
         var started = await service.StartAsync(VenueId, "DINNER\nBurger  12", "owner", default);
         var named = await service.SetCreateDestinationAsync(VenueId, started.Session.Id, started.Session.Revision, "Dinner", "owner", default);
 
-        var outcome = await service.ConfirmCreateAsync(VenueId, started.Session.Id, named.Aggregate!.Session.Revision, "owner", default);
+        var outcome = await service.ConfirmCreateAsync(VenueId, started.Session.Id, named.Aggregate!.Session.Revision,
+            Guid.NewGuid(), ["organization_administrator"], "owner", default);
 
         Assert.Equal(MenuImportCreateOutcome.Created, outcome.Result);
-        Assert.Equal((7, 33), repository.ConfirmLimits);
+        Assert.True(repository.ConfirmCalled);
     }
 
     private static (MenuImportService Service, ImportRepositoryFake Repository, FakeContentRepository Content) CreateService()
@@ -170,7 +171,7 @@ public sealed class MenuImportServiceTests
         public MenuImportAggregate? Created { get; private set; }
         public MenuImportAggregate? Replaced { get; private set; }
         public MenuImportAggregate? Current { get; set; }
-        public (int Menus, int Items)? ConfirmLimits { get; private set; }
+        public bool ConfirmCalled { get; private set; }
         public Task<MenuImportAggregate> CreateAsync(MenuImportAggregate aggregate, CancellationToken cancellationToken = default)
         {
             Created = Current = aggregate with { Session = aggregate.Session with { Revision = new byte[8] } }; return Task.FromResult(Current);
@@ -187,9 +188,9 @@ public sealed class MenuImportServiceTests
             Current = Current! with { Session = Current.Session with { Destination = MenuImportDestinations.Create, ProposedMenuName = menuName, Revision = new byte[8] } };
             return Task.FromResult(new MenuImportMutationOutcome(MenuImportMutationOutcome.Updated, Current));
         }
-        public Task<MenuImportCreateOutcome> ConfirmCreateAsync(Guid venueId, Guid sessionId, byte[] expectedRevision, int activeMenuLimit, int itemsPerMenuLimit, DateTime nowUtc, string? actor, CancellationToken cancellationToken = default)
+        public Task<MenuImportCreateOutcome> ConfirmCreateAsync(Guid venueId, Guid sessionId, byte[] expectedRevision, Guid actorUserId, IReadOnlyCollection<string> systemRoleKeys, DateTime nowUtc, string? actor, CancellationToken cancellationToken = default)
         {
-            ConfirmLimits = (activeMenuLimit, itemsPerMenuLimit);
+            ConfirmCalled = true;
             var menuId = Guid.NewGuid();
             Current = Current! with { Session = Current.Session with { CompletedMenuId = menuId, CompletedUtc = nowUtc } };
             return Task.FromResult(new MenuImportCreateOutcome(MenuImportCreateOutcome.Created, Current, menuId));

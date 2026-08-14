@@ -79,13 +79,17 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
         }, cancellationToken);
 
     public async Task<MenuImportCreateOutcome> ConfirmCreateAsync(Guid venueId, Guid sessionId, byte[] expectedRevision,
-        int activeMenuLimit, int itemsPerMenuLimit, DateTime nowUtc, string? actor, CancellationToken cancellationToken = default)
+        Guid actorUserId, IReadOnlyCollection<string> systemRoleKeys, DateTime nowUtc, string? actor,
+        CancellationToken cancellationToken = default)
     {
         var result = (await dataAccess.ExecuteSqlQueryAsync<CreateResultRow, object>(ConfirmCreateSql, new
         {
             VenueId = RequireId(venueId, nameof(venueId)), SessionId = RequireId(sessionId, nameof(sessionId)),
-            ExpectedRevision = RequireRevision(expectedRevision), MenuLimit = activeMenuLimit,
-            ItemLimit = itemsPerMenuLimit, Now = nowUtc, Actor = actor, MenuId = Guid.NewGuid(), PageId = Guid.NewGuid()
+            ExpectedRevision = RequireRevision(expectedRevision), ActorUserId = RequireId(actorUserId, nameof(actorUserId)),
+            SystemRolesJson = JsonSerializer.Serialize(systemRoleKeys ?? throw new ArgumentNullException(nameof(systemRoleKeys))),
+            DefaultMenuLimit = MenuCeilings.Defaults[MenuCeilings.MenusPerVenue],
+            DefaultItemLimit = MenuCeilings.Defaults[MenuCeilings.ItemsPerMenu],
+            Now = nowUtc, Actor = actor, MenuId = Guid.NewGuid(), PageId = Guid.NewGuid()
         }, cancellationToken).ConfigureAwait(false)).Single();
         var aggregate = result.Result is MenuImportMutationOutcome.NotFound or MenuImportMutationOutcome.Expired
             ? null : await GetAsync(venueId, sessionId, nowUtc, cancellationToken).ConfigureAwait(false);
@@ -235,7 +239,8 @@ COMMIT; SELECT @Result Result;
     private const string ConfirmCreateSql = """
 SET XACT_ABORT ON; BEGIN TRANSACTION;
 DECLARE @Result nvarchar(24)=N'created', @ExistingMenu uniqueidentifier, @Name nvarchar(200), @Expiry datetime2,
- @Revision varbinary(8), @Status nvarchar(20), @Active int;
+ @Revision varbinary(8), @Status nvarchar(20), @Active int, @OrganizationId uniqueidentifier,
+ @MenuLimit int=@DefaultMenuLimit, @ItemLimit int=@DefaultItemLimit;
 SELECT @ExistingMenu=CompletedMenuId,@Name=ProposedMenuName,@Expiry=ExpiresUtc,@Revision=Revision,@Status=Status
 FROM dbo.MenuImportSessions WITH (UPDLOCK,HOLDLOCK) WHERE Id=@SessionId AND VenueId=@VenueId;
 IF @Revision IS NULL SET @Result=N'not_found';
@@ -246,6 +251,27 @@ ELSE IF @Status<>N'resolved' OR @Name IS NULL SET @Result=N'invalid';
 ELSE IF EXISTS(SELECT 1 FROM dbo.MenuImportReviewQuestions q WHERE q.SessionId=@SessionId AND q.Required=1
  AND NOT EXISTS(SELECT 1 FROM dbo.MenuImportAnswers a WHERE a.SessionId=q.SessionId AND a.QuestionKey=q.QuestionKey AND a.Fingerprint=q.Fingerprint)) SET @Result=N'invalid';
 IF @Result=N'created' BEGIN
+ SELECT @OrganizationId=OrganizationId FROM dbo.Venues WITH (UPDLOCK,HOLDLOCK) WHERE Id=@VenueId;
+ IF NOT EXISTS(
+  SELECT 1 FROM OPENJSON(@SystemRolesJson) roles
+  JOIN dbo.AuthorityRolePermissions rp WITH (UPDLOCK,HOLDLOCK) ON rp.RoleKey=roles.[value] AND rp.PermissionId=N'content.menu.import'
+  UNION ALL
+  SELECT 1 FROM dbo.ScopedRoleAssignments assignment WITH (UPDLOCK,HOLDLOCK)
+  JOIN dbo.AuthorityRolePermissions rp WITH (UPDLOCK,HOLDLOCK) ON rp.RoleKey=assignment.RoleKey AND rp.PermissionId=N'content.menu.import'
+  WHERE assignment.ActorUserId=@ActorUserId AND assignment.RevokedUtc IS NULL AND assignment.StartsUtc<=@Now
+   AND (assignment.ExpiresUtc IS NULL OR assignment.ExpiresUtc>@Now)
+   AND ((assignment.ScopeType=4 AND assignment.ScopeId=@VenueId) OR (assignment.ScopeType=2 AND assignment.ScopeId=@OrganizationId))
+ ) SET @Result=N'permission_denied';
+END
+IF @Result=N'created' BEGIN
+ SELECT TOP (1) @MenuLimit=LimitValue FROM dbo.CapabilityAllowances WITH (UPDLOCK,HOLDLOCK)
+ WHERE CapabilityId=N'content.menu.count' AND (VenueId=@VenueId OR (VenueId IS NULL AND OrganizationId=@OrganizationId))
+  AND StartsUtc<=@Now AND (EndsUtc IS NULL OR EndsUtc>@Now)
+ ORDER BY CASE WHEN VenueId=@VenueId THEN 0 ELSE 1 END,StartsUtc DESC;
+ SELECT TOP (1) @ItemLimit=LimitValue FROM dbo.CapabilityAllowances WITH (UPDLOCK,HOLDLOCK)
+ WHERE CapabilityId=N'content.menu.items' AND (VenueId=@VenueId OR (VenueId IS NULL AND OrganizationId=@OrganizationId))
+  AND StartsUtc<=@Now AND (EndsUtc IS NULL OR EndsUtc>@Now)
+ ORDER BY CASE WHEN VenueId=@VenueId THEN 0 ELSE 1 END,StartsUtc DESC;
  SELECT @Active=COUNT(*) FROM dbo.Menus WITH (UPDLOCK,HOLDLOCK) WHERE VenueId=@VenueId AND IsPutAway=0;
  IF @Active+1>@MenuLimit SET @Result=N'menu_limit';
  ELSE IF EXISTS(SELECT 1 FROM dbo.Menus WHERE VenueId=@VenueId AND UPPER(LTRIM(RTRIM(Name)))=UPPER(@Name)) SET @Result=N'name_conflict';
