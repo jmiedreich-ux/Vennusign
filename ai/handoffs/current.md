@@ -30,7 +30,9 @@ Behavior search: `rg -n "MenuImportDestinations|ConfirmReplaceAsync|SetReplaceDe
 
 **6-A3 owner acceptance.** The owner accepted all 7/7 workbook cases against product `58e8258` at `2026-08-14T05:40:26.942Z`; durable evidence is `docs/features/menus/m6a3-acceptance-record.json`.
 
-**Exact next action.** Review the acceptance-record-only head, merge PR #721, close issue #720, delete the feature branch, synchronize final merge records and release the claim. Do not start later work before closeout.
+**6-A3 merge closeout.** Acceptance-record head `61bdd29` was independently approved. PR #721 merged to `master` as `c32fda22f5bd843ffcc2e8015089c7ab9c2d22ec` at `2026-08-14T05:42:02Z`; issue #720 closed one second later, the remote feature branch is absent, and `origin/master` contains product `58e8258`. The active claim is released.
+
+**Exact next action.** Stop. Menus milestone 7 remains marked “needs redesign and planning”; no successor milestone is approved or claimed. Resume only from a fresh owner planning decision.
 
 ## 2026-08-13 — Menus Slice 6-A paste-import design approval
 
