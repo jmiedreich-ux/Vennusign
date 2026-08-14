@@ -67,8 +67,9 @@ public sealed class MenuImportService(
     public async Task<MenuImportMutationOutcome> SetSectionOverrideAsync(Guid venueId, Guid sessionId, byte[] revision, int lineNumber,
         bool isSection, string? actor, CancellationToken cancellationToken)
     {
-        var current = await imports.GetAsync(venueId, sessionId, clock.GetUtcNow().UtcDateTime, cancellationToken).ConfigureAwait(false);
+        var current = await RefreshDependenciesAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
         if (current is null) return new(MenuImportMutationOutcome.NotFound, null);
+        if (!current.Session.Revision.SequenceEqual(revision)) return new(MenuImportMutationOutcome.Conflict, current);
         if (lineNumber < 1 || current.Lines.All(line => line.LineNumber != lineNumber)) return new(MenuImportMutationOutcome.Invalid, null);
         var overrides = current.Lines.Where(line => line.Disposition == "section" && !IsNaturalHeading(line.RawText))
             .Select(line => line.LineNumber).ToHashSet();

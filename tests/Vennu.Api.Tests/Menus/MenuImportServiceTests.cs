@@ -114,6 +114,19 @@ public sealed class MenuImportServiceTests
         Assert.NotNull(repository.Replaced);
     }
 
+    [Fact]
+    public async Task Promotion_refuses_a_stale_open_session_after_its_allowance_drops()
+    {
+        var (service, _, content) = CreateService();
+        var started = await service.StartAsync(VenueId, "Lunch specials\nBurger  12", null, default);
+        content.Ceilings[MenuCeilings.ImportLines] = 1;
+
+        var exception = await Assert.ThrowsAsync<MenuImportValidationException>(() =>
+            service.SetSectionOverrideAsync(VenueId, started.Session.Id, started.Session.Revision, 1, true, null, default));
+
+        Assert.Contains("no longer fits", exception.Message);
+    }
+
     private static (MenuImportService Service, ImportRepositoryFake Repository, FakeContentRepository Content) CreateService()
     {
         var repository = new ImportRepositoryFake();
