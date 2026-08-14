@@ -29,7 +29,8 @@ public sealed class MenuImportService(
         if (lineCount > lineLimit) throw new MenuImportValidationException(MenuCeilings.DescribeRefusal(MenuCeilings.ImportLines, lineCount, lineLimit));
 
         var id = Guid.NewGuid();
-        var parsed = parser.Parse(id, venueId, rawPaste, 1, await content.GetItemsAsync(venueId, cancellationToken).ConfigureAwait(false));
+        var parsed = parser.Parse(id, venueId, rawPaste, 1, await content.GetItemsAsync(venueId, cancellationToken).ConfigureAwait(false),
+            dependencyStamp: DependencyStamp(resolved, ceilings));
         var itemLimit = ceilings.GetValueOrDefault(MenuCeilings.ItemsPerMenu, MenuCeilings.Defaults[MenuCeilings.ItemsPerMenu]);
         if (parsed.ItemCount > itemLimit)
             throw new MenuImportValidationException($"That paste contains {parsed.ItemCount:N0} items, over this venue's {itemLimit:N0}-item limit. Split it into two imports.");
@@ -74,7 +75,9 @@ public sealed class MenuImportService(
         if (isSection) overrides.Add(lineNumber); else overrides.Remove(lineNumber);
         var nextRevision = current.Session.ParseRevision + 1;
         var parsed = parser.Parse(sessionId, venueId, current.Session.RawPaste, nextRevision,
-            await content.GetItemsAsync(venueId, cancellationToken).ConfigureAwait(false), overrides);
+            await content.GetItemsAsync(venueId, cancellationToken).ConfigureAwait(false), overrides,
+            DependencyStamp(await configuration.ResolveAsync(venueId, cancellationToken).ConfigureAwait(false),
+                await content.GetCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false)));
         var now = clock.GetUtcNow().UtcDateTime;
         var nextSession = current.Session with { ParseRevision = nextRevision, Status = Status(parsed.Questions), LineCount = parsed.Lines.Count, ItemCount = parsed.ItemCount, UpdatedUtc = now, UpdatedBy = actor, Revision = [] };
         return await imports.ReplaceParseAsync(new(nextSession, parsed.Lines, parsed.Questions), revision, cancellationToken).ConfigureAwait(false);
@@ -90,8 +93,14 @@ public sealed class MenuImportService(
         if (current is null) return null;
         var overrides = current.Lines.Where(line => line.Disposition == "section" && !IsNaturalHeading(line.RawText))
             .Select(line => line.LineNumber).ToHashSet();
+        var resolved = await configuration.ResolveAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var ceilings = await content.GetCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var lineLimit = ceilings.GetValueOrDefault(MenuCeilings.ImportLines, DefaultLineLimit);
+        var itemLimit = ceilings.GetValueOrDefault(MenuCeilings.ItemsPerMenu, MenuCeilings.Defaults[MenuCeilings.ItemsPerMenu]);
+        if (current.Session.LineCount > lineLimit || current.Session.ItemCount > itemLimit || Encoding.UTF8.GetByteCount(current.Session.RawPaste) > resolved.ImportFileSizeLimitBytes)
+            throw new MenuImportValidationException("This saved import no longer fits the venue's current import limits. Paste a smaller menu to continue.");
         var parsed = parser.Parse(sessionId, venueId, current.Session.RawPaste, current.Session.ParseRevision + 1,
-            await content.GetItemsAsync(venueId, cancellationToken).ConfigureAwait(false), overrides);
+            await content.GetItemsAsync(venueId, cancellationToken).ConfigureAwait(false), overrides, DependencyStamp(resolved, ceilings));
         if (SameDependencies(current, parsed)) return current;
 
         var next = current.Session with
@@ -115,6 +124,12 @@ public sealed class MenuImportService(
     private static string QuestionShape(MenuImportReviewQuestion question) => string.Join('|',
         question.QuestionKey, question.Fingerprint, question.Kind, string.Join(',', question.LineNumbers),
         string.Join(';', question.Candidates.Select(candidate => $"{candidate.ItemId}:{candidate.DisplayName}:{candidate.DisplayPrice}:{candidate.MatchRule}:{candidate.IsSafe}")));
+
+    private static string DependencyStamp(ResolvedMenuBuilderConfiguration resolved, IReadOnlyDictionary<string, int> ceilings) =>
+        string.Join('|', resolved.ImportFileSizeLimitBytes,
+            ceilings.GetValueOrDefault(MenuCeilings.ImportLines, DefaultLineLimit),
+            ceilings.GetValueOrDefault(MenuCeilings.ItemsPerMenu, MenuCeilings.Defaults[MenuCeilings.ItemsPerMenu]),
+            ceilings.GetValueOrDefault(MenuCeilings.ImportSessionRetentionMinutes, DefaultRetentionMinutes));
 
     private static string Status(IReadOnlyCollection<MenuImportReviewQuestion> questions) => questions.Any(q => q.Required) ? MenuImportStatuses.Reviewing : MenuImportStatuses.Resolved;
     private static int CountLines(string value) => value.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n').Split('\n').Length;

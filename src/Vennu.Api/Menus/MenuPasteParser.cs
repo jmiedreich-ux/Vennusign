@@ -16,7 +16,7 @@ public sealed class MenuPasteParser
     private static readonly Regex Spaces = new(@"\s+", RegexOptions.Compiled);
 
     public ParsedMenuPaste Parse(Guid sessionId, Guid venueId, string rawPaste, long revision, IReadOnlyCollection<Item> library,
-        IReadOnlySet<int>? sectionOverrides = null)
+        IReadOnlySet<int>? sectionOverrides = null, string dependencyStamp = "")
     {
         ArgumentNullException.ThrowIfNull(rawPaste);
         ArgumentNullException.ThrowIfNull(library);
@@ -87,7 +87,10 @@ public sealed class MenuPasteParser
 
             MenuImportReviewQuestion Question(string kind, string value, IReadOnlyCollection<MenuImportCandidate> candidatesForQuestion)
             {
-                var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"{number}\n{kind}\n{value}\n{string.Join(',', candidatesForQuestion.Select(c => c.ItemId))}"))).ToLowerInvariant();
+                var candidateShape = string.Join('\n', candidatesForQuestion.Select(candidate =>
+                    $"{candidate.ItemId}|{candidate.DisplayName}|{candidate.DisplayPrice}|{candidate.MatchRule}|{candidate.IsSafe}"));
+                var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+                    $"{number}\n{kind}\n{value}\n{candidateShape}\n{dependencyStamp}"))).ToLowerInvariant();
                 return new MenuImportReviewQuestion(sessionId, venueId, $"line-{number}-{kind}", fingerprint, kind, questions.Count, true, revision, [number], candidatesForQuestion, null);
             }
 

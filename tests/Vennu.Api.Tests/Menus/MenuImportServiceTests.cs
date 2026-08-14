@@ -98,6 +98,22 @@ public sealed class MenuImportServiceTests
         Assert.NotNull(repository.Replaced);
     }
 
+    [Fact]
+    public async Task Get_invalidates_question_identity_when_an_import_allowance_changes()
+    {
+        var (service, repository, content) = CreateService();
+        var started = await service.StartAsync(VenueId, "Chef note", null, default);
+        var originalFingerprint = Assert.Single(started.Questions).Fingerprint;
+
+        content.Ceilings[MenuCeilings.ImportLines] = 1999;
+        var refreshed = await service.GetAsync(VenueId, started.Session.Id, default);
+
+        Assert.NotNull(refreshed);
+        Assert.NotEqual(originalFingerprint, Assert.Single(refreshed.Questions).Fingerprint);
+        Assert.Equal(2, refreshed.Session.ParseRevision);
+        Assert.NotNull(repository.Replaced);
+    }
+
     private static (MenuImportService Service, ImportRepositoryFake Repository, FakeContentRepository Content) CreateService()
     {
         var repository = new ImportRepositoryFake();

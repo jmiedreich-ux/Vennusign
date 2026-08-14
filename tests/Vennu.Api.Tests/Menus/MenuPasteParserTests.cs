@@ -96,4 +96,18 @@ public sealed class MenuPasteParserTests
 
         Assert.Empty(result.Questions);
     }
+
+    [Fact]
+    public void Parse_Candidate_display_change_invalidates_the_question_fingerprint()
+    {
+        var venueId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var original = new Item { Id = itemId, VenueId = venueId, Name = "Burger", Price = "12", IsActive = true };
+        var changed = new Item { Id = itemId, VenueId = venueId, Name = "Burger", Price = "13", IsActive = true };
+
+        var first = parser.Parse(Guid.NewGuid(), venueId, "Burger  14", 1, [original]);
+        var second = parser.Parse(Guid.NewGuid(), venueId, "Burger  14", 2, [changed]);
+
+        Assert.NotEqual(Assert.Single(first.Questions).Fingerprint, Assert.Single(second.Questions).Fingerprint);
+    }
 }

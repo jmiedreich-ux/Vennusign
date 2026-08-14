@@ -35,7 +35,9 @@ public sealed class BackOfficeMenuImportsController(MenuImportService imports) :
     [HttpGet("{sessionId:guid}")]
     public async Task<ActionResult<MenuImportAggregate>> Get(Guid sessionId, CancellationToken cancellationToken)
     {
-        var aggregate = await imports.GetAsync(VenueId, sessionId, cancellationToken).ConfigureAwait(false);
+        MenuImportAggregate? aggregate;
+        try { aggregate = await imports.GetAsync(VenueId, sessionId, cancellationToken).ConfigureAwait(false); }
+        catch (MenuImportValidationException exception) { return Conflict(new { reason = "allowance_changed", message = exception.Message }); }
         if (aggregate is null) return NotFound(new { reason = "missing_or_expired", message = "This import is no longer available." });
         SetEtag(aggregate);
         return Ok(aggregate);
@@ -43,20 +45,26 @@ public sealed class BackOfficeMenuImportsController(MenuImportService imports) :
 
     [HttpPut("{sessionId:guid}/answers/{questionKey}")]
     public async Task<ActionResult<MenuImportAggregate>> PutAnswer(Guid sessionId, string questionKey, PutMenuImportAnswerRequest request,
-        CancellationToken cancellationToken) => await Respond(await imports.PutAnswerAsync(VenueId, sessionId, RequiredRevision(), questionKey,
-            request.Fingerprint, request.Choice, request.SelectedItemId, Actor, cancellationToken).ConfigureAwait(false));
+        CancellationToken cancellationToken) => await Mutate(() => imports.PutAnswerAsync(VenueId, sessionId, RequiredRevision(), questionKey,
+            request.Fingerprint, request.Choice, request.SelectedItemId, Actor, cancellationToken));
 
     [HttpPost("{sessionId:guid}/accept-safe-matches")]
     public async Task<ActionResult<MenuImportAggregate>> AcceptSafeMatches(Guid sessionId, CancellationToken cancellationToken) =>
-        await Respond(await imports.AcceptSafeMatchesAsync(VenueId, sessionId, RequiredRevision(), Actor, cancellationToken).ConfigureAwait(false));
+        await Mutate(() => imports.AcceptSafeMatchesAsync(VenueId, sessionId, RequiredRevision(), Actor, cancellationToken));
 
     [HttpPost("{sessionId:guid}/lines/{lineNumber:int}/promote-to-section")]
     public async Task<ActionResult<MenuImportAggregate>> Promote(Guid sessionId, int lineNumber, CancellationToken cancellationToken) =>
-        await Respond(await imports.SetSectionOverrideAsync(VenueId, sessionId, RequiredRevision(), lineNumber, true, Actor, cancellationToken).ConfigureAwait(false));
+        await Mutate(() => imports.SetSectionOverrideAsync(VenueId, sessionId, RequiredRevision(), lineNumber, true, Actor, cancellationToken));
 
     [HttpDelete("{sessionId:guid}/lines/{lineNumber:int}/section-promotion")]
     public async Task<ActionResult<MenuImportAggregate>> UndoPromotion(Guid sessionId, int lineNumber, CancellationToken cancellationToken) =>
-        await Respond(await imports.SetSectionOverrideAsync(VenueId, sessionId, RequiredRevision(), lineNumber, false, Actor, cancellationToken).ConfigureAwait(false));
+        await Mutate(() => imports.SetSectionOverrideAsync(VenueId, sessionId, RequiredRevision(), lineNumber, false, Actor, cancellationToken));
+
+    private async Task<ActionResult<MenuImportAggregate>> Mutate(Func<Task<MenuImportMutationOutcome>> action)
+    {
+        try { return await Respond(await action().ConfigureAwait(false)); }
+        catch (MenuImportValidationException exception) { return Conflict(new { reason = "allowance_changed", message = exception.Message }); }
+    }
 
     private async Task<ActionResult<MenuImportAggregate>> Respond(MenuImportMutationOutcome outcome)
     {
