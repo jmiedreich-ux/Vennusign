@@ -60,6 +60,41 @@ public sealed class BackOfficeMenuImportsController(MenuImportService imports) :
     public async Task<ActionResult<MenuImportAggregate>> UndoPromotion(Guid sessionId, int lineNumber, CancellationToken cancellationToken) =>
         await Mutate(() => imports.SetSectionOverrideAsync(VenueId, sessionId, RequiredRevision(), lineNumber, false, Actor, cancellationToken));
 
+    [HttpPut("{sessionId:guid}/destination/create")]
+    public async Task<ActionResult<MenuImportAggregate>> SetCreateDestination(Guid sessionId, SetCreateDestinationRequest request,
+        CancellationToken cancellationToken)
+    {
+        try { return await Mutate(() => imports.SetCreateDestinationAsync(VenueId, sessionId, RequiredRevision(), request.MenuName, Actor, cancellationToken)); }
+        catch (ArgumentException exception) { return BadRequest(new { reason = "invalid_name", message = exception.Message }); }
+    }
+
+    [HttpPost("{sessionId:guid}/destination/create/confirm")]
+    public async Task<ActionResult<MenuImportCreateResponse>> ConfirmCreate(Guid sessionId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var outcome = await imports.ConfirmCreateAsync(VenueId, sessionId, RequiredRevision(), Actor, cancellationToken).ConfigureAwait(false);
+            if (outcome.Result is MenuImportCreateOutcome.Created or MenuImportCreateOutcome.AlreadyCompleted)
+            {
+                if (outcome.Aggregate is not null) SetEtag(outcome.Aggregate);
+                return Ok(new MenuImportCreateResponse(outcome.Result, outcome.MenuId!.Value, outcome.Aggregate!));
+            }
+            if (outcome.Result == MenuImportMutationOutcome.Conflict && outcome.Aggregate is not null)
+            {
+                SetEtag(outcome.Aggregate);
+                return Conflict(new { reason = "stale_revision", message = "This import changed in another window. Review the latest state and try again.", current = outcome.Aggregate });
+            }
+            if (outcome.Result == MenuImportCreateOutcome.NameConflict) return Conflict(new { reason = "name_conflict", message = "A menu with that name already exists. Choose another name." });
+            if (outcome.Result == MenuImportCreateOutcome.MenuLimit) return Conflict(new { reason = "menu_limit", message = "This venue has reached its menu limit. Put a menu away, then try again." });
+            if (outcome.Result == MenuImportCreateOutcome.ItemLimit) return Conflict(new { reason = "item_limit", message = "This import no longer fits the venue's item limit. Nothing was created." });
+            if (outcome.Result == MenuImportCreateOutcome.InvalidContent) return Conflict(new { reason = "invalid_content", message = "One or more pasted lines cannot become menu items yet. Return to review and correct them." });
+            if (outcome.Result == MenuImportMutationOutcome.Expired) return StatusCode(StatusCodes.Status410Gone, new { reason = "expired", message = "This import has expired. Paste the menu again to restart." });
+            if (outcome.Result == MenuImportMutationOutcome.Invalid) return Conflict(new { reason = "not_ready", message = "Finish every required review answer before creating the menu." });
+            return NotFound(new { reason = "not_found", message = "This import could not be found." });
+        }
+        catch (MenuImportValidationException exception) { return Conflict(new { reason = "allowance_changed", message = exception.Message }); }
+    }
+
     private async Task<ActionResult<MenuImportAggregate>> Mutate(Func<Task<MenuImportMutationOutcome>> action)
     {
         try { return await Respond(await action().ConfigureAwait(false)); }
@@ -89,3 +124,5 @@ public sealed class BackOfficeMenuImportsController(MenuImportService imports) :
 
 public sealed record StartMenuImportRequest(string RawPaste);
 public sealed record PutMenuImportAnswerRequest(string Fingerprint, string Choice, Guid? SelectedItemId);
+public sealed record SetCreateDestinationRequest(string MenuName);
+public sealed record MenuImportCreateResponse(string Result, Guid MenuId, MenuImportAggregate Import);

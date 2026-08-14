@@ -628,6 +628,7 @@ export default function App() {
             sessionId={importSessionId}
             onBack={() => { window.location.hash = "#/menu"; }}
             onStarted={id => { window.location.hash = `#/menu/import/${id}`; }}
+            onOpenMenu={openMenu}
           />
         : allowed && route.path === "menu" && openMenuId === null
         ? <MenusHome

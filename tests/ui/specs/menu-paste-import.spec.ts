@@ -2,7 +2,7 @@ import { test, expect, openAs } from "../fixtures";
 import { seed } from "../seed";
 
 test.describe("paste import review", () => {
-  test("reads, saves, resumes, accepts only a safe match, and resolves the remaining line", async ({ page }, testInfo) => {
+  test("reviews, resumes, and creates one truthful unpublished menu", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
     const seeded = await seed({ label: "paste-import" });
     const pageErrors: string[] = [];
@@ -26,14 +26,30 @@ test.describe("paste import review", () => {
     await page.getByRole("button", { name: "Accept 1 safe match" }).click();
     await expect(page.getByRole("heading", { name: "1 item needs you" })).toBeVisible();
     await page.getByRole("button", { name: "Keep in Imported items" }).click();
-    await expect(page.getByTestId("import-review-complete")).toBeVisible();
-    await expect(page.getByText("No menu has been changed.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
+    await page.getByRole("button", { name: "Create a new menu" }).click();
+    await expect(page.getByRole("heading", { name: "Create this menu?" })).toBeVisible();
+    const savedName = `Imported ${seeded.menuName}`;
+    await page.getByLabel("Menu name").fill(savedName);
+    await Promise.all([
+      page.waitForResponse(response => response.url().includes("/destination/create") && response.request().method() === "PUT"),
+      page.getByLabel("Menu name").press("Tab")
+    ]);
 
     await page.reload();
-    await expect(page.getByTestId("import-review-complete")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Create this menu?" })).toBeVisible();
+    await expect(page.getByLabel("Menu name")).toHaveValue(savedName);
+    await page.getByRole("button", { name: "Create menu" }).click();
+    await expect(page.getByTestId("menu-import-complete")).toBeVisible();
+    await expect(page.getByText("Not live yet", { exact: true })).toBeVisible();
+    await expect(page.getByText("Published screens changed")).toBeVisible();
+    await expect(page.getByText("0", { exact: true })).toBeVisible();
+    await page.reload();
+    await expect(page.getByTestId("menu-import-complete")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Review draft in builder" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Done for now" })).toBeVisible();
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await expect(page.getByTestId("import-review-complete")).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), "the wide review must not overflow horizontally").toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), "the wide completion must not overflow horizontally").toBe(true);
   });
 
   test("below 900px refuses compression and gives a return path", async ({ page }, testInfo) => {

@@ -750,9 +750,9 @@ public sealed class ContentService(
     }
 
     /// <summary>
-    /// Edits an item's values. One item is one shared price across every board it
-    /// sits on (Q5), so this reaches all of them — and each board's own screens
-    /// still change only when that board publishes.
+    /// Edits an item's values. Name and description remain shared. A placement
+    /// carrying an import price override changes that menu's price only (decision
+    /// 43); otherwise the library price still reaches every placement (Q5).
     /// </summary>
     public async Task<ItemEditResult> UpdateItemValuesAsync(
         Guid venueId,
@@ -761,7 +761,8 @@ public sealed class ContentService(
         string? description,
         string? price,
         ItemValueExpectation? expected = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        Guid? menuId = null)
     {
         var item = await library.GetItemAsync(venueId, itemId, cancellationToken).ConfigureAwait(false);
         if (item is null)
@@ -798,7 +799,8 @@ public sealed class ContentService(
                 item.Price,
                 guard,
                 item.UpdatedUtc,
-                cancellationToken)
+                cancellationToken,
+                menuId)
             .ConfigureAwait(false);
 
         if (outcome.Outcome != "updated")

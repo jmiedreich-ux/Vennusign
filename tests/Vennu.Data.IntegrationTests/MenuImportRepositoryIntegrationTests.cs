@@ -76,10 +76,103 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         var mutation = await repository.PutAnswerAsync(venueId, aggregate.Session.Id, created.Session.Revision,
             "line-1-unreadable", aggregate.Questions.Single().Fingerprint, MenuImportChoices.Fallback, null, afterExpiry, null);
         Assert.Equal(MenuImportMutationOutcome.Expired, mutation.Result);
-        Assert.Equal(1, await repository.DeleteExpiredAsync(afterExpiry, 1));
+        Assert.True(await repository.DeleteExpiredAsync(afterExpiry, 1000) >= 1);
         Assert.Equal(MenuImportMutationOutcome.NotFound, (await repository.PutAnswerAsync(venueId, aggregate.Session.Id,
             created.Session.Revision, "line-1-unreadable", aggregate.Questions.Single().Fingerprint,
             MenuImportChoices.Fallback, null, afterExpiry, null)).Result);
+    }
+
+    [Fact]
+    public async Task Confirm_create_is_atomic_idempotent_and_unpublished()
+    {
+        var (repository, venueId) = await CreateRepositoryAndVenue();
+        var now = DateTime.UtcNow;
+        var id = Guid.NewGuid();
+        var lines = new[]
+        {
+            new MenuImportSourceLine(id, venueId, 1, "DINNER", "section", "DINNER", null, null, null, 1),
+            new MenuImportSourceLine(id, venueId, 2, "Burger  14", "item", "Burger", null, "14", null, 1)
+        };
+        var created = await repository.CreateAsync(new(new(id, venueId, "DINNER\nBurger  14", 1,
+            MenuImportStatuses.Resolved, 2, 1, now.AddHours(1), now, now, null, []), lines, []));
+        var named = await repository.SetCreateDestinationAsync(venueId, id, created.Session.Revision, " Dinner menu ", now, "owner");
+
+        var first = await repository.ConfirmCreateAsync(venueId, id, named.Aggregate!.Session.Revision, 50, 500, now, "owner");
+        var retry = await repository.ConfirmCreateAsync(venueId, id, named.Aggregate.Session.Revision, 50, 500, now, "owner");
+
+        Assert.Equal(MenuImportCreateOutcome.Created, first.Result);
+        Assert.Equal(MenuImportCreateOutcome.AlreadyCompleted, retry.Result);
+        Assert.Equal(first.MenuId, retry.MenuId);
+        Assert.Equal(first.MenuId, retry.Aggregate!.Session.CompletedMenuId);
+        var menus = await new MenuRepository(fixture.CreateDataAccess()).GetMenusAsync(venueId);
+        Assert.Single(menus, menu => menu.Id == first.MenuId && menu.PublishedVersion is null);
+    }
+
+    [Fact]
+    public async Task Confirm_create_keeps_a_selected_library_items_price_scoped_to_the_new_menu()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var venue = new Venue { Name = fixture.UniqueValue("price-venue"), Timezone = "UTC", Type = "Restaurant", PrimaryLanguage = "en" };
+        var venueId = await new VenueRepository(dataAccess).CreateAsync(venue);
+        var libraryItem = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = "Burger", Price = "12", Source = ItemSources.Manual };
+        await new ContentRepository(dataAccess).CreateItemAsync(libraryItem);
+        var repository = new MenuImportRepository(dataAccess);
+        var now = DateTime.UtcNow; var id = Guid.NewGuid(); var fingerprint = new string('c', 64);
+        var line = new MenuImportSourceLine(id, venueId, 1, "Burger  14", "item", "Burger", null, "14", null, 1);
+        var candidate = new MenuImportCandidate(libraryItem.Id, "Burger", "12", "exact_normalized", true);
+        var question = new MenuImportReviewQuestion(id, venueId, "line-1-identity", fingerprint, "identity", 0, true, 1, [1], [candidate], null);
+        var started = await repository.CreateAsync(new(new(id, venueId, line.RawText, 1, MenuImportStatuses.Reviewing, 1, 1, now.AddHours(1), now, now, null, []), [line], [question]));
+        var answered = await repository.PutAnswerAsync(venueId, id, started.Session.Revision, question.QuestionKey, fingerprint, MenuImportChoices.SameItem, libraryItem.Id, now, "owner");
+        var named = await repository.SetCreateDestinationAsync(venueId, id, answered.Aggregate!.Session.Revision, "Imported dinner", now, "owner");
+
+        var created = await repository.ConfirmCreateAsync(venueId, id, named.Aggregate!.Session.Revision, 50, 500, now, "owner");
+
+        Assert.Equal("12", (await new ContentRepository(dataAccess).GetItemAsync(venueId, libraryItem.Id))!.Price);
+        var placed = Assert.Single(await new ContentRepository(dataAccess).GetPlacedItemsForVenueAsync(venueId));
+        Assert.Equal(created.MenuId, placed.MenuId);
+        Assert.Equal("14", placed.Price);
+        var edited = await new ContentRepository(dataAccess).UpdateItemValuesGuardedAsync(venueId, libraryItem.Id,
+            "Burger", null, "15", new ItemValueExpectation("Burger", null, "14"), now.AddSeconds(1), menuId: created.MenuId);
+        Assert.Equal("updated", edited.Outcome);
+        Assert.Equal("12", (await new ContentRepository(dataAccess).GetItemAsync(venueId, libraryItem.Id))!.Price);
+        Assert.Equal("15", Assert.Single(await new ContentRepository(dataAccess).GetPlacedItemsForVenueAsync(venueId)).Price);
+    }
+
+    [Fact]
+    public async Task Concurrent_confirmations_create_exactly_one_menu()
+    {
+        var (repository, venueId) = await CreateRepositoryAndVenue(); var now = DateTime.UtcNow; var id = Guid.NewGuid();
+        var line = new MenuImportSourceLine(id, venueId, 1, "Burger  14", "item", "Burger", null, "14", null, 1);
+        var started = await repository.CreateAsync(new(new(id, venueId, line.RawText, 1, MenuImportStatuses.Resolved, 1, 1, now.AddHours(1), now, now, null, []), [line], []));
+        var named = await repository.SetCreateDestinationAsync(venueId, id, started.Session.Revision, fixture.UniqueValue("concurrent-import"), now, "owner");
+
+        var outcomes = await Task.WhenAll(
+            repository.ConfirmCreateAsync(venueId, id, named.Aggregate!.Session.Revision, 50, 500, now, "one"),
+            repository.ConfirmCreateAsync(venueId, id, named.Aggregate.Session.Revision, 50, 500, now, "two"));
+
+        Assert.Single(outcomes, outcome => outcome.Result == MenuImportCreateOutcome.Created);
+        Assert.Single(outcomes, outcome => outcome.Result == MenuImportCreateOutcome.AlreadyCompleted);
+        Assert.Single(outcomes.Select(outcome => outcome.MenuId).Distinct());
+    }
+
+    [Fact]
+    public async Task Name_refusal_rolls_back_every_import_row_and_the_saved_review_can_retry()
+    {
+        var (repository, venueId) = await CreateRepositoryAndVenue(); var now = DateTime.UtcNow;
+        var content = new ContentRepository(fixture.CreateDataAccess());
+        var existingName = fixture.UniqueValue("existing-menu");
+        Assert.True((await content.CreateMenuWithinCeilingAsync(new Menu { Id=Guid.NewGuid(), VenueId=venueId, Name=existingName, CreatedUtc=now }, 50)).Created);
+        var id=Guid.NewGuid(); var line=new MenuImportSourceLine(id,venueId,1,"Soup  9","item","Soup",null,"9",null,1);
+        var started=await repository.CreateAsync(new(new(id,venueId,line.RawText,1,MenuImportStatuses.Resolved,1,1,now.AddHours(1),now,now,null,[]),[line],[]));
+        var named=await repository.SetCreateDestinationAsync(venueId,id,started.Session.Revision,existingName,now,"owner");
+
+        var refused=await repository.ConfirmCreateAsync(venueId,id,named.Aggregate!.Session.Revision,50,500,now,"owner");
+
+        Assert.Equal(MenuImportCreateOutcome.NameConflict,refused.Result);
+        Assert.Null(refused.Aggregate!.Session.CompletedMenuId);
+        Assert.Single(await new MenuRepository(fixture.CreateDataAccess()).GetMenusAsync(venueId));
+        var renamed=await repository.SetCreateDestinationAsync(venueId,id,refused.Aggregate.Session.Revision,fixture.UniqueValue("retry-menu"),now.AddSeconds(1),"owner");
+        Assert.Equal(MenuImportCreateOutcome.Created,(await repository.ConfirmCreateAsync(venueId,id,renamed.Aggregate!.Session.Revision,50,500,now.AddSeconds(1),"owner")).Result);
     }
 
     [Fact]

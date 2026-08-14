@@ -940,14 +940,15 @@ public sealed class BackOfficeContentController(
     }
 
     /// <summary>
-    /// Edits an item. One item is one shared price across every board it sits on
-    /// (Q5) — each board's screens still change only when that board publishes.
+    /// Edits an item in the open menu. Imported price overrides stay menu-scoped;
+    /// ordinary library prices remain shared. Screens still wait for publish.
     /// </summary>
     [HttpPut("items/{itemId:guid}")]
     [RequireCapability("content.item.update")]
     public async Task<ActionResult<BoardItemResponse>> UpdateItem(
         Guid itemId,
         ItemValuesRequest request,
+        [FromQuery] Guid? menuId,
         CancellationToken cancellationToken)
     {
         if (request is null)
@@ -978,7 +979,8 @@ public sealed class BackOfficeContentController(
                 request.Description,
                 request.Price,
                 expected,
-                cancellationToken)
+                cancellationToken,
+                menuId)
             .ConfigureAwait(false);
 
         if (result.Outcome == "item_changed")

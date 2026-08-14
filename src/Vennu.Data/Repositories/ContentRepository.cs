@@ -738,10 +738,12 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         SET XACT_ABORT ON;
         BEGIN TRANSACTION;
 
-        DECLARE @Name NVARCHAR(200), @Description NVARCHAR(1000), @Price NVARCHAR(12);
-        SELECT @Name = Name, @Description = Description, @Price = Price
-        FROM dbo.Items WITH (UPDLOCK, HOLDLOCK)
-        WHERE Id = @ItemId AND VenueId = @VenueId;
+        DECLARE @Name NVARCHAR(200), @Description NVARCHAR(1000), @Price NVARCHAR(12), @HasOverride BIT=0;
+        SELECT @Name=i.Name,@Description=i.Description,@Price=COALESCE(p.ImportedPriceOverride,i.Price),
+               @HasOverride=CASE WHEN p.ImportedPriceOverride IS NULL THEN 0 ELSE 1 END
+        FROM dbo.Items i WITH (UPDLOCK,HOLDLOCK)
+        LEFT JOIN dbo.Placements p WITH (UPDLOCK,HOLDLOCK) ON p.ItemId=i.Id AND p.VenueId=i.VenueId AND p.MenuId=@MenuId
+        WHERE i.Id=@ItemId AND i.VenueId=@VenueId;
 
         IF @@ROWCOUNT = 0
         BEGIN
@@ -758,12 +760,11 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         END
         ELSE
         BEGIN
-            UPDATE dbo.Items
-            SET Name = @NewName,
-                Description = @NewDescription,
-                Price = @NewPrice,
-                UpdatedUtc = @Now
-            WHERE Id = @ItemId AND VenueId = @VenueId;
+            UPDATE dbo.Items SET Name=@NewName,Description=@NewDescription,
+                Price=CASE WHEN @HasOverride=1 THEN Price ELSE @NewPrice END,UpdatedUtc=@Now
+            WHERE Id=@ItemId AND VenueId=@VenueId;
+            IF @HasOverride=1 UPDATE dbo.Placements SET ImportedPriceOverride=@NewPrice,UpdatedUtc=@Now
+                WHERE ItemId=@ItemId AND VenueId=@VenueId AND MenuId=@MenuId;
 
             COMMIT TRANSACTION;
             SELECT N'updated' AS Outcome, @NewName AS Name, @NewDescription AS Description, @NewPrice AS Price;
@@ -1064,7 +1065,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
     // What the editor renders: every placement in the venue with its item values
     // and its live availability, in board order.
     private const string PlacedItemsSql = """
-        SELECT p.MenuId, p.MenuSectionId, p.ItemId, i.Name, i.Description, i.Price, p.SortOrder,
+        SELECT p.MenuId, p.MenuSectionId, p.ItemId, i.Name, i.Description, COALESCE(p.ImportedPriceOverride,i.Price) AS Price, p.SortOrder,
                CAST(ISNULL(a.IsAvailable, 1) AS BIT) AS IsAvailable, i.IsActive,
                p.CreatedUtc, p.UpdatedUtc
         FROM dbo.Placements p
@@ -1101,7 +1102,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 SELECT s.Id AS sectionId, s.PageId AS pageId, s.Name AS name, s.SortOrder AS sortOrder,
                     JSON_QUERY((
                         SELECT p.ItemId AS itemId, i.Name AS name, i.Description AS description,
-                               i.Price AS price, p.SortOrder AS sortOrder
+                               COALESCE(p.ImportedPriceOverride,i.Price) AS price,
+                               p.ImportedPriceOverride AS importedPriceOverride, p.SortOrder AS sortOrder
                         FROM dbo.Placements p
                         INNER JOIN dbo.Items i ON i.Id = p.ItemId AND i.VenueId = p.VenueId
                         WHERE p.MenuSectionId = s.Id AND p.VenueId = @VenueId
@@ -1285,8 +1287,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             WHERE s.VenueId = @VenueId;
 
             -- Same ItemId: the copy places the library's items, it does not clone them.
-            INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
-            SELECT NEWID(), @VenueId, @NewMenuId, map.NewId, pageMap.NewId, p.ItemId, p.SortOrder, @Now, @Now
+            INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc, ImportedPriceOverride)
+            SELECT NEWID(), @VenueId, @NewMenuId, map.NewId, pageMap.NewId, p.ItemId, p.SortOrder, @Now, @Now, p.ImportedPriceOverride
             FROM dbo.Placements p
             INNER JOIN @Sections map ON map.OldId = p.MenuSectionId
             INNER JOIN @Pages pageMap ON pageMap.OldId = p.PageId
@@ -1460,13 +1462,13 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         WHERE s.VenueId = @VenueId AND s.MenuId = @MenuId
           AND NOT EXISTS (SELECT 1 FROM @Sections src WHERE src.SectionId = s.Id);
 
-        DECLARE @Items TABLE (SectionId UNIQUEIDENTIFIER, ItemId UNIQUEIDENTIFIER, Name NVARCHAR(200), Description NVARCHAR(1000), Price NVARCHAR(40), SortOrder INT);
+        DECLARE @Items TABLE (SectionId UNIQUEIDENTIFIER, ItemId UNIQUEIDENTIFIER, Name NVARCHAR(200), Description NVARCHAR(1000), Price NVARCHAR(40), ImportedPriceOverride NVARCHAR(12), SortOrder INT);
 
         -- One library item may be placed on more than one page. It remains unique
         -- inside a section, while its values still come from one item identity.
         WITH recorded AS
         (
-            SELECT sec.SectionId, i.itemId, i.name, i.description, i.price, i.sortOrder
+            SELECT sec.SectionId, i.itemId, i.name, i.description, i.price, i.importedPriceOverride, i.sortOrder
             FROM @Sections sec
             CROSS APPLY OPENJSON(sec.Items)
             WITH (
@@ -1474,17 +1476,18 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 name NVARCHAR(200) '$.name',
                 description NVARCHAR(1000) '$.description',
                 price NVARCHAR(40) '$.price',
+                importedPriceOverride NVARCHAR(12) '$.importedPriceOverride',
                 sortOrder INT '$.sortOrder'
             ) i
         )
-        INSERT @Items (SectionId, ItemId, Name, Description, Price, SortOrder)
-        SELECT SectionId, itemId, name, description, price, sortOrder FROM recorded;
+        INSERT @Items (SectionId, ItemId, Name, Description, Price, ImportedPriceOverride, SortOrder)
+        SELECT SectionId, itemId, name, description, price, importedPriceOverride, sortOrder FROM recorded;
 
         -- Values go back onto the items that already exist. Identity is permanent.
         UPDATE it
         SET it.Name = src.Name,
             it.Description = src.Description,
-            it.Price = src.Price,
+            it.Price = CASE WHEN src.ImportedPriceOverride IS NULL THEN src.Price ELSE it.Price END,
             it.UpdatedUtc = @OccurredUtc
         FROM dbo.Items it
         INNER JOIN @Items src ON src.ItemId = it.Id
@@ -1498,13 +1501,13 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
           AND NOT EXISTS (SELECT 1 FROM @Items src WHERE src.SectionId = p.MenuSectionId AND src.ItemId = p.ItemId);
 
         UPDATE p
-        SET p.SortOrder = src.SortOrder, p.UpdatedUtc = @OccurredUtc
+        SET p.SortOrder = src.SortOrder, p.ImportedPriceOverride=src.ImportedPriceOverride, p.UpdatedUtc = @OccurredUtc
         FROM dbo.Placements p
         INNER JOIN @Items src ON src.SectionId = p.MenuSectionId AND src.ItemId = p.ItemId
         WHERE p.VenueId = @VenueId AND p.MenuId = @MenuId;
 
-        INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
-        SELECT NEWID(), @VenueId, @MenuId, src.SectionId, s.PageId, src.ItemId, src.SortOrder, @OccurredUtc, @OccurredUtc
+        INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc, ImportedPriceOverride)
+        SELECT NEWID(), @VenueId, @MenuId, src.SectionId, s.PageId, src.ItemId, src.SortOrder, @OccurredUtc, @OccurredUtc, src.ImportedPriceOverride
         FROM @Items src INNER JOIN dbo.MenuSections s ON s.Id=src.SectionId AND s.VenueId=@VenueId
         WHERE NOT EXISTS (
             SELECT 1 FROM dbo.Placements p
@@ -2180,7 +2183,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         string? price,
         ItemValueExpectation? expected,
         DateTime now,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        Guid? menuId = null)
     {
         var row = (await dataAccess.ExecuteSqlQueryAsync<ItemUpdateRow, object>(
             UpdateItemValuesGuardedSql,
@@ -2195,6 +2199,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 ExpectedName = expected?.Name,
                 ExpectedDescription = expected?.Description,
                 ExpectedPrice = expected?.Price,
+                MenuId = menuId,
                 Now = now
             },
             cancellationToken).ConfigureAwait(false)).Single();

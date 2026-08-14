@@ -108,7 +108,8 @@ internal sealed class FakeContentRepository : IContentRepository
         string? price,
         ItemValueExpectation? expected,
         DateTime now,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        Guid? menuId = null)
     {
         var item = Items.SingleOrDefault(candidate => candidate.VenueId == venueId && candidate.Id == itemId);
         if (item is null)

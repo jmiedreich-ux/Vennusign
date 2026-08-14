@@ -33,7 +33,26 @@ public interface IMenuImportRepository
         byte[] expectedRevision,
         CancellationToken cancellationToken = default);
 
+    Task<MenuImportMutationOutcome> SetCreateDestinationAsync(
+        Guid venueId, Guid sessionId, byte[] expectedRevision, string menuName,
+        DateTime nowUtc, string? actor, CancellationToken cancellationToken = default);
+
+    Task<MenuImportCreateOutcome> ConfirmCreateAsync(
+        Guid venueId, Guid sessionId, byte[] expectedRevision, int activeMenuLimit,
+        int itemsPerMenuLimit, DateTime nowUtc, string? actor,
+        CancellationToken cancellationToken = default);
+
     Task<int> DeleteExpiredAsync(DateTime nowUtc, int batchSize, CancellationToken cancellationToken = default);
+}
+
+public sealed record MenuImportCreateOutcome(string Result, MenuImportAggregate? Aggregate, Guid? MenuId)
+{
+    public const string Created = "created";
+    public const string AlreadyCompleted = "already_completed";
+    public const string NameConflict = "name_conflict";
+    public const string MenuLimit = "menu_limit";
+    public const string ItemLimit = "item_limit";
+    public const string InvalidContent = "invalid_content";
 }
 
 public sealed record MenuImportMutationOutcome(string Result, MenuImportAggregate? Aggregate)
