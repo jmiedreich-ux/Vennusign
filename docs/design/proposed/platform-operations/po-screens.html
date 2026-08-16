@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Platform Operations — screen wireframes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1b1d21;
+  --ink-2:#4a4f57;
+  --ink-3:#878d96;
+  --rule:#d4d7dc;
+  --rule-soft:#e6e8eb;
+  --paper:#f7f7f5;
+  --card:#ffffff;
+  --live:#1f5f8b;      /* assigned / current */
+  --moving:#b06f18;    /* in motion, waiting */
+  --halt:#a13d33;      /* reverted / breach */
+  --ok:#3d6b4a;        /* healthy */
+  --pending:#c3c7cd;   /* not yet moved */
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'IBM Plex Sans',system-ui,sans-serif;
+  font-size:14px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+/* ---------- chrome ---------- */
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:8px}
+.masthead h1{
+  font-size:19px;font-weight:600;margin:0;letter-spacing:-.01em;
+}
+.masthead .sub{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-3);
+  text-transform:uppercase;letter-spacing:.09em;margin-top:5px;
+}
+.wfnote{
+  font-size:12.5px;color:var(--ink-2);margin:14px 0 22px;max-width:62ch;
+}
+
+/* screen nav */
+nav.screens{
+  display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--rule);
+  background:var(--card);margin-bottom:26px;border-radius:2px;overflow:hidden;
+}
+nav.screens button{
+  flex:1 1 auto;min-width:118px;
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;
+  text-transform:uppercase;
+  background:var(--card);border:0;border-right:1px solid var(--rule-soft);
+  padding:11px 8px;cursor:pointer;color:var(--ink-3);text-align:left;
+}
+nav.screens button:last-child{border-right:0}
+nav.screens button .n{display:block;font-size:9px;color:var(--pending);margin-bottom:2px}
+nav.screens button:hover{background:#f2f3f4;color:var(--ink)}
+nav.screens button[aria-current="true"]{background:var(--ink);color:#fff}
+nav.screens button[aria-current="true"] .n{color:#8d949c}
+nav.screens button:focus-visible{outline:2px solid var(--live);outline-offset:-2px}
+
+/* screen container */
+.screen{display:none}
+.screen.on{display:block}
+.screen-head{margin-bottom:16px}
+.screen-head h2{
+  font-size:16px;margin:0 0 3px;font-weight:600;letter-spacing:-.01em;
+}
+.screen-head p{margin:0;font-size:12.5px;color:var(--ink-2);max-width:66ch}
+
+/* generic frame = the wireframed app window */
+.frame{border:1px solid var(--rule);background:var(--card);border-radius:2px}
+.frame > .bar{
+  border-bottom:1px solid var(--rule);padding:9px 14px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+  text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);
+}
+.frame > .bar .crumb{color:var(--ink)}
+.frame > .bar .spacer{flex:1}
+.body{padding:16px}
+
+/* ---------- signature: the distribution band ---------- */
+.band{margin:0 0 4px}
+.band .track{display:flex;height:30px;border:1px solid var(--ink);border-radius:1px;overflow:hidden}
+.band .seg{
+  display:flex;align-items:center;justify-content:center;
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;color:#fff;
+  white-space:nowrap;overflow:hidden;
+}
+.band .seg.prev{background:var(--live)}
+.band .seg.next{background:var(--moving)}
+.band .seg.old{background:#6a7078}
+.band .seg.rev{background:var(--halt)}
+.band .legend{
+  display:flex;gap:16px;flex-wrap:wrap;margin-top:7px;
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-2);
+}
+.band .legend i{display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:-1px}
+.band-cap{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--ink-3);margin-bottom:6px;
+}
+
+/* ---------- board ---------- */
+.board{display:grid;grid-template-columns:repeat(6,1fr);gap:0;border-top:1px solid var(--rule)}
+.col{border-right:1px solid var(--rule-soft);min-height:250px;padding:0 0 10px}
+.col:last-child{border-right:0}
+.col > h3{
+  margin:0;padding:9px 10px;font-family:'IBM Plex Mono',monospace;
+  font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
+  border-bottom:1px dashed var(--rule);font-weight:500;
+}
+.col.po > h3{color:var(--ink);border-bottom:1px solid var(--ink)}
+.col.po{background:#fdfdfc}
+.card{
+  margin:9px 8px;border:1px solid var(--rule);padding:9px;border-radius:2px;background:#fff;
+}
+.card.act{border-color:var(--ink);border-left:3px solid var(--moving)}
+.card .v{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600}
+.card .meta{font-size:10.5px;color:var(--ink-3);margin-top:3px;line-height:1.35}
+.card .tag{
+  display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;
+  text-transform:uppercase;letter-spacing:.06em;
+  border:1px solid var(--rule);padding:1px 5px;margin-top:6px;color:var(--ink-2);
+}
+.gatemark{
+  font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.07em;
+  color:var(--moving);border-top:1px solid var(--moving);
+  padding:5px 10px 0;margin:6px 8px 0;text-transform:uppercase;
+}
+.po-span{
+  border-top:1px solid var(--ink);margin-top:2px;padding:6px 10px;
+  font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--ink);
+}
+
+/* ---------- generic table ---------- */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{
+  text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;
+  text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:500;
+  border-bottom:1px solid var(--ink);padding:6px 8px;
+}
+td{padding:8px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.num{font-family:'IBM Plex Mono',monospace;text-align:right}
+.state{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;
+  letter-spacing:.06em;white-space:nowrap;
+}
+.state::before{content:"";display:inline-block;width:7px;height:7px;margin-right:6px;vertical-align:0}
+.s-moved::before{background:var(--moving)}
+.s-live::before{background:var(--live)}
+.s-wait::before{background:var(--pending)}
+.s-rev::before{background:var(--halt)}
+.s-ok::before{background:var(--ok)}
+
+/* ---------- detail layout ---------- */
+.split{display:grid;grid-template-columns:1.55fr 1fr;gap:0}
+.split > *{padding:16px}
+.split > *:first-child{border-right:1px solid var(--rule-soft)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:12.5px}
+.kv dt{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--ink-3);padding-top:2px;
+}
+.kv dd{margin:0}
+h4.sec{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:500;
+  margin:0 0 9px;padding-bottom:5px;border-bottom:1px solid var(--rule);
+}
+h4.sec + h4.sec, .body > h4.sec:not(:first-child){margin-top:22px}
+
+/* gate panel */
+.gate{
+  border:1px solid var(--ink);border-left:4px solid var(--moving);
+  padding:13px;margin-top:18px;background:#fffdf9;
+}
+.gate .lbl{
+  font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--moving);
+}
+.gate p{margin:7px 0 12px;font-size:12.5px;color:var(--ink-2)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{
+  font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:500;
+  padding:7px 14px;border:1px solid var(--ink);background:var(--ink);color:#fff;
+  border-radius:2px;cursor:pointer;
+}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.danger{background:var(--halt);border-color:var(--halt)}
+.btn:focus-visible{outline:2px solid var(--live);outline-offset:2px}
+
+/* metric row */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--rule)}
+.metrics div{padding:11px 13px;border-right:1px solid var(--rule-soft)}
+.metrics div:last-child{border-right:0}
+.metrics .lab{
+  font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+.metrics .val{font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:600;margin-top:3px}
+.metrics .val.warn{color:var(--halt)}
+.metrics .val.good{color:var(--ok)}
+.metrics .delta{font-size:10.5px;color:var(--ink-3);font-family:'IBM Plex Mono',monospace}
+
+/* sparkline-ish comparison bars */
+.cmp{margin-top:5px}
+.cmp .row{display:flex;align-items:center;gap:9px;margin-bottom:5px;font-size:11.5px}
+.cmp .name{font-family:'IBM Plex Mono',monospace;width:66px;color:var(--ink-2);flex:none}
+.cmp .barwrap{flex:1;height:13px;background:var(--rule-soft);position:relative}
+.cmp .bar{height:100%;background:var(--live)}
+.cmp .bar.b2{background:var(--moving)}
+.cmp .bar.hot{background:var(--halt)}
+.cmp .fig{font-family:'IBM Plex Mono',monospace;width:52px;text-align:right;flex:none}
+
+/* search bar mock */
+.search{
+  border:1px solid var(--rule);padding:8px 11px;font-family:'IBM Plex Mono',monospace;
+  font-size:12px;color:var(--ink-3);margin-bottom:13px;background:#fbfbfa;
+}
+.search::before{content:"⌕  ";color:var(--ink-3)}
+
+/* calendar */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--rule);border-bottom:0}
+.cal .d{border-right:1px solid var(--rule-soft);border-bottom:1px solid var(--rule-soft);padding:8px;min-height:104px}
+.cal .d:nth-child(7n){border-right:0}
+.cal .d .dn{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-3);
+  display:flex;justify-content:space-between;margin-bottom:6px;
+}
+.cal .d.today{background:#fbfaf6}
+.cal .d.today .dn{color:var(--ink);font-weight:600}
+.slot{
+  font-family:'IBM Plex Mono',monospace;font-size:9.5px;padding:3px 4px;margin-bottom:3px;
+  border-left:3px solid var(--moving);background:#faf7f2;color:var(--ink-2);
+}
+.slot.dense{border-left-color:var(--halt);background:#fdf5f4}
+.warnstrip{
+  border:1px solid var(--halt);border-left:4px solid var(--halt);padding:10px 12px;
+  font-size:12.5px;margin-bottom:14px;background:#fdf6f5;
+}
+.warnstrip b{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--halt);display:block;margin-bottom:3px}
+
+.empty{
+  border:1px dashed var(--rule);padding:26px;text-align:center;color:var(--ink-3);
+  font-size:12.5px;
+}
+.footnote{
+  margin-top:14px;font-size:11.5px;color:var(--ink-3);border-top:1px solid var(--rule-soft);
+  padding-top:10px;max-width:70ch;
+}
+
+@media (max-width:900px){
+  .board{grid-template-columns:repeat(2,1fr)}
+  .col{border-bottom:1px solid var(--rule-soft)}
+  .split{grid-template-columns:1fr}
+  .split > *:first-child{border-right:0;border-bottom:1px solid var(--rule-soft)}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .cal{grid-template-columns:repeat(2,1fr)}
+  .cal .d:nth-child(7n){border-right:1px solid var(--rule-soft)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <h1>Platform Operations — operator screens</h1>
+  <div class="sub">Wireframes · concept only · not approved for build</div>
+</header>
+<p class="wfnote">
+  Seven screens covering the operator's half of the release cycle, from an approved candidate
+  through waves to retirement. Structure and content only — no visual design intent.
+  The distribution band recurs on every screen: it is the one fact these screens exist to show.
+</p>
+
+<nav class="screens" role="tablist" aria-label="Screens">
+  <button role="tab" aria-current="true" data-t="s1"><span class="n">01</span>Release board</button>
+  <button role="tab" data-t="s2"><span class="n">02</span>Release detail</button>
+  <button role="tab" data-t="s3"><span class="n">03</span>Rollout progress</button>
+  <button role="tab" data-t="s4"><span class="n">04</span>Cohort health</button>
+  <button role="tab" data-t="s5"><span class="n">05</span>Customer versions</button>
+  <button role="tab" data-t="s6"><span class="n">06</span>Version inventory</button>
+  <button role="tab" data-t="s7"><span class="n">07</span>Window schedule</button>
+</nav>
+
+<!-- ============ 01 BOARD ============ -->
+<section class="screen on" id="s1">
+  <div class="screen-head">
+    <h2>01 · Release board</h2>
+    <p>Candidates moving through phases. Everything left of Approved is engineering's view, rendered for context but not actionable here.</p>
+  </div>
+  <div class="frame">
+    <div class="bar"><span class="crumb">Releases</span><span>/ board</span><span class="spacer"></span><span>app · production</span></div>
+    <div class="board">
+      <div class="col">
+        <h3>Built</h3>
+        <div class="card">
+          <div class="v">1.6.0-rc1</div>
+          <div class="meta">4 components · 11 commits<br>build 4519 · 20 min ago</div>
+          <span class="tag">capability-adding</span>
+        </div>
+      </div>
+      <div class="col">
+        <h3>Staging</h3>
+        <div class="card">
+          <div class="v">1.5.1</div>
+          <div class="meta">Vennu.Api only<br>build 4502 · deployed 2 h ago</div>
+          <span class="tag">corrective</span>
+        </div>
+      </div>
+      <div class="col po">
+        <h3>Approved</h3>
+        <div class="card act">
+          <div class="v">1.5.1</div>
+          <div class="meta">Declared by k.ross<br>fixes VS-4471, VS-4488</div>
+          <span class="tag">corrective · fast path</span>
+        </div>
+        <div class="gatemark">Gate 1 — approve for customers</div>
+      </div>
+      <div class="col po">
+        <h3>Rolling out</h3>
+        <div class="card act">
+          <div class="v">1.5.0</div>
+          <div class="meta">Wave 2 of 4 · 38 of 214 orgs<br>next gate in 6 h</div>
+          <span class="tag">capability-adding</span>
+        </div>
+        <div class="gatemark">Gate 2 — advance wave</div>
+      </div>
+      <div class="col po">
+        <h3>Live</h3>
+        <div class="card">
+          <div class="v">1.4.2</div>
+          <div class="meta">176 orgs · 41 days<br>superseded by 1.5.0</div>
+        </div>
+        <div class="card">
+          <div class="v">1.5.0</div>
+          <div class="meta">38 orgs · rolling</div>
+        </div>
+      </div>
+      <div class="col po">
+        <h3>Retired</h3>
+        <div class="card">
+          <div class="v">1.3.8</div>
+          <div class="meta">0 orgs · torn down 12 Aug<br>deregistered</div>
+        </div>
+      </div>
+    </div>
+    <div class="po-span">Operator acts from Approved rightward · columns left of it are read-only</div>
+  </div>
+  <p class="footnote">
+    Two cards sit in Live at once during a rollout. That is normal operation, not a conflict —
+    the board has to render it without implying something is wrong.
+  </p>
+</section>
+
+<!-- ============ 02 RELEASE DETAIL ============ -->
+<section class="screen" id="s2">
+  <div class="screen-head">
+    <h2>02 · Release detail</h2>
+    <p>One candidate, at Gate 1. The question here is whether this should reach customers and in what order — not whether the build passed.</p>
+  </div>
+  <div class="frame">
+    <div class="bar"><span>Releases</span><span>/</span><span class="crumb mono">1.5.1</span><span class="spacer"></span><span>approved · awaiting gate 1</span></div>
+    <div class="split">
+      <div>
+        <h4 class="sec">Classification</h4>
+        <dl class="kv">
+          <dt>Version</dt><dd class="mono">1.5.1 &nbsp;<span style="color:var(--ink-3)">(proposed, unedited)</span></dd>
+          <dt>Category</dt><dd>Corrective — no migration, no contract change</dd>
+          <dt>Source</dt><dd class="mono">a3f9c21 · master</dd>
+          <dt>Declared</dt><dd>k.ross · 16 Aug 09:12 · GitHub Release</dd>
+          <dt>Components</dt><dd class="mono">Vennu.Api 1.5.1<br><span style="color:var(--ink-3)">back-office 1.5.0 · display 1.5.0 · board-engine 1.4.0 (carried forward)</span></dd>
+        </dl>
+
+        <h4 class="sec">Resolves</h4>
+        <table>
+          <tr><td class="mono">VS-4471</td><td>Happy hour price reverts after schedule boundary</td><td class="num">14 orgs</td></tr>
+          <tr><td class="mono">VS-4488</td><td>Toast sync stalls on 401 without retry</td><td class="num">3 orgs</td></tr>
+        </table>
+
+        <h4 class="sec">Structural checks</h4>
+        <table>
+          <tr><td>Database migration present</td><td class="state s-ok">none</td></tr>
+          <tr><td>Stored-procedure contract</td><td class="state s-ok">unchanged</td></tr>
+          <tr><td>API contract major</td><td class="state s-ok">unchanged</td></tr>
+          <tr><td>Qualifies for corrective fast path</td><td class="state s-ok">yes</td></tr>
+        </table>
+      </div>
+      <div>
+        <h4 class="sec">Proposed rollout</h4>
+        <div class="band">
+          <div class="band-cap">17 affected orgs move first</div>
+          <div class="track">
+            <div class="seg next" style="flex:17">17</div>
+            <div class="seg prev" style="flex:197">197 hold</div>
+          </div>
+          <div class="legend">
+            <span><i style="background:var(--moving)"></i>affected — no window wait</span>
+            <span><i style="background:var(--live)"></i>unaffected — windowed</span>
+          </div>
+        </div>
+
+        <h4 class="sec" style="margin-top:22px">Why these first</h4>
+        <p style="font-size:12.5px;color:var(--ink-2);margin:0">
+          17 organizations reported one of the linked tickets. A customer already affected is not
+          protected by waiting, so the fix reaches them on approval rather than at their window.
+          They are also the only ones who can confirm it worked.
+        </p>
+
+        <div class="gate">
+          <div class="lbl">Gate 1 · approve for customers</div>
+          <p>Sends 1.5.1 to 17 affected organizations immediately. Remaining 197 stay on 1.5.0 until wave 2.</p>
+          <div class="btnrow">
+            <button class="btn">Approve rollout</button>
+            <button class="btn ghost">Edit version</button>
+            <button class="btn ghost">Hold</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 ROLLOUT PROGRESS ============ -->
+<section class="screen" id="s3">
+  <div class="screen-head">
+    <h2>03 · Rollout progress</h2>
+    <p>The working screen during waves. A version part-way through is not one state — this is what the Rolling out card opens into.</p>
+  </div>
+  <div class="frame">
+    <div class="bar"><span>Releases</span><span>/</span><span class="mono">1.5.0</span><span>/</span><span class="crumb">rollout</span><span class="spacer"></span><span>wave 2 of 4 · running</span></div>
+    <div class="body">
+      <div class="band">
+        <div class="band-cap">214 organizations</div>
+        <div class="track">
+          <div class="seg next" style="flex:38">1.5.0 · 38</div>
+          <div class="seg prev" style="flex:174">1.4.2 · 174</div>
+          <div class="seg rev" style="flex:2">2</div>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--moving)"></i>moved</span>
+          <span><i style="background:var(--live)"></i>not yet moved</span>
+          <span><i style="background:var(--halt)"></i>reverted</span>
+        </div>
+      </div>
+
+      <h4 class="sec" style="margin-top:22px">Wave 2 · 24 organizations</h4>
+      <table>
+        <thead><tr><th>Organization</th><th>Venues</th><th>Window (local)</th><th>State</th><th>Moved at</th></tr></thead>
+        <tbody>
+          <tr><td>Fogline Brewing</td><td class="num">1</td><td class="mono">03:00 PT</td><td class="state s-moved">moved</td><td class="mono">03:01</td></tr>
+          <tr><td>Casa Miel</td><td class="num">3</td><td class="mono">04:00 CT</td><td class="state s-moved">moved</td><td class="mono">04:02</td></tr>
+          <tr><td>Pike &amp; Vine</td><td class="num">2</td><td class="mono">03:30 PT</td><td class="state s-moved">moved</td><td class="mono">03:31</td></tr>
+          <tr><td>Northgate Taproom</td><td class="num">1</td><td class="mono">05:00 ET</td><td class="state s-rev">reverted</td><td class="mono">05:00 → 05:14</td></tr>
+          <tr><td>El Trompo</td><td class="num">4</td><td class="mono">03:00 MT</td><td class="state s-wait">waiting</td><td class="mono" style="color:var(--ink-3)">in 9 h 12 m</td></tr>
+          <tr><td>Harbor Light Kitchen</td><td class="num">2</td><td class="mono">02:00 ET</td><td class="state s-wait">waiting</td><td class="mono" style="color:var(--ink-3)">in 8 h 12 m</td></tr>
+          <tr><td colspan="5" style="color:var(--ink-3);font-size:12px">18 more…</td></tr>
+        </tbody>
+      </table>
+
+      <div class="gate">
+        <div class="lbl">Gate 2 · advance to wave 3</div>
+        <p>Locked until every organization in wave 2 has passed its window plus 24 h of live traffic.
+           6 organizations have not yet reached their window.</p>
+        <div class="btnrow">
+          <button class="btn" disabled style="opacity:.4;cursor:not-allowed">Advance wave</button>
+          <button class="btn ghost">Hold rollout</button>
+          <button class="btn danger">Revert wave 2</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="footnote">
+    A wave does not finish at one moment. The gate is time-bounded per organization, so the
+    screen has to show what is still outstanding rather than a single percentage.
+  </p>
+</section>
+
+<!-- ============ 04 COHORT HEALTH ============ -->
+<section class="screen" id="s4">
+  <div class="screen-head">
+    <h2>04 · Cohort health</h2>
+    <p>Telemetry split by version. The screen an operator reads before approving a gate — and the one that justifies the version dimension on every metric.</p>
+  </div>
+  <div class="frame">
+    <div class="bar"><span>Releases</span><span>/</span><span class="mono">1.5.0</span><span>/</span><span class="crumb">health</span><span class="spacer"></span><span>last 6 h · auto-halt armed</span></div>
+    <div class="body">
+      <div class="warnstrip">
+        <b>Auto-halt triggered · 1 organization</b>
+        Northgate Taproom exceeded the error-rate threshold 14 minutes after moving and was reverted
+        to 1.4.2 automatically. Rollout is held pending review.
+      </div>
+
+      <div class="metrics">
+        <div><div class="lab">Error rate · 1.5.0</div><div class="val warn">2.4%</div><div class="delta">1.4.2 → 0.3%</div></div>
+        <div><div class="lab">p95 latency · 1.5.0</div><div class="val">318 ms</div><div class="delta">1.4.2 → 296 ms</div></div>
+        <div><div class="lab">Screens connected</div><div class="val good">112 / 114</div><div class="delta">2 offline &gt; 5 min</div></div>
+        <div><div class="lab">Orgs on 1.5.0</div><div class="val">38</div><div class="delta">1 reverted</div></div>
+      </div>
+
+      <h4 class="sec" style="margin-top:22px">Error rate by organization · 1.5.0 cohort</h4>
+      <div class="cmp">
+        <div class="row"><span class="name">Northgate</span><span class="barwrap"><span class="bar hot" style="width:88%"></span></span><span class="fig">11.2%</span></div>
+        <div class="row"><span class="name">Casa Miel</span><span class="barwrap"><span class="bar b2" style="width:9%"></span></span><span class="fig">0.9%</span></div>
+        <div class="row"><span class="name">Fogline</span><span class="barwrap"><span class="bar b2" style="width:4%"></span></span><span class="fig">0.4%</span></div>
+        <div class="row"><span class="name">Pike &amp; Vine</span><span class="barwrap"><span class="bar b2" style="width:3%"></span></span><span class="fig">0.3%</span></div>
+        <div class="row"><span class="name mono" style="color:var(--ink-3)">1.4.2 avg</span><span class="barwrap"><span class="bar" style="width:3%"></span></span><span class="fig">0.3%</span></div>
+      </div>
+
+      <h4 class="sec" style="margin-top:22px">Signal coverage</h4>
+      <table>
+        <tr><td>Organizations whose window has passed</td><td class="num">18 / 24</td><td class="state s-wait">incomplete</td></tr>
+        <tr><td>Menu publish exercised on 1.5.0</td><td class="num">14 orgs</td><td class="state s-ok">observed</td></tr>
+        <tr><td>POS sync exercised on 1.5.0</td><td class="num">2 orgs</td><td class="state s-wait">thin</td></tr>
+        <tr><td>Paste import exercised on 1.5.0</td><td class="num">0 orgs</td><td class="state s-wait">not observed</td></tr>
+      </table>
+      <p class="footnote" style="margin-top:10px">
+        A clean signal may mean the version is healthy, or that nobody exercised the broken path.
+        Coverage is shown next to health so the gate is not approved on silence.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 CUSTOMER VERSIONS ============ -->
+<section class="screen" id="s5">
+  <div class="screen-head">
+    <h2>05 · Customer versions</h2>
+    <p>Answers “what is this customer running” during a support call. Searchable, one row per organization.</p>
+  </div>
+  <div class="frame">
+    <div class="bar"><span class="crumb">Customers</span><span>/ versions</span><span class="spacer"></span><span>214 organizations · 3 versions live</span></div>
+    <div class="body">
+      <div class="search">Search organization, venue, or version…</div>
+      <table>
+        <thead><tr><th>Organization</th><th>Tier</th><th>Venues</th><th>Screens</th><th>Version</th><th>Window</th><th>Last moved</th></tr></thead>
+        <tbody>
+          <tr><td>Casa Miel</td><td>Growth</td><td class="num">3</td><td class="num">7</td><td class="mono state s-moved">1.5.0</td><td class="mono">04:00 CT</td><td class="mono">16 Aug 04:02</td></tr>
+          <tr><td>El Trompo</td><td>Growth</td><td class="num">4</td><td class="num">9</td><td class="mono state s-live">1.4.2</td><td class="mono">03:00 MT</td><td class="mono">06 Jul 03:01</td></tr>
+          <tr><td>Fogline Brewing</td><td>Starter</td><td class="num">1</td><td class="num">2</td><td class="mono state s-moved">1.5.0</td><td class="mono">03:00 PT</td><td class="mono">16 Aug 03:01</td></tr>
+          <tr><td>Harbor Light Kitchen</td><td>Growth</td><td class="num">2</td><td class="num">5</td><td class="mono state s-live">1.4.2</td><td class="mono">02:00 ET</td><td class="mono">06 Jul 02:01</td></tr>
+          <tr><td>Northgate Taproom</td><td>Starter</td><td class="num">1</td><td class="num">1</td><td class="mono state s-rev">1.4.2</td><td class="mono">05:00 ET</td><td class="mono">16 Aug 05:14 · reverted</td></tr>
+          <tr><td>Pike &amp; Vine</td><td>Growth</td><td class="num">2</td><td class="num">6</td><td class="mono state s-moved">1.5.0</td><td class="mono">03:30 PT</td><td class="mono">16 Aug 03:31</td></tr>
+          <tr><td>The Rookery</td><td>Enterprise</td><td class="num">11</td><td class="num">34</td><td class="mono state s-live">1.4.2</td><td class="mono">04:00 ET</td><td class="mono">06 Jul 04:03</td></tr>
+        </tbody>
+      </table>
+      <p class="footnote">
+        Reverted organizations show the version they are on now, with the revert noted — not the
+        version they briefly held. Support needs what is running, not what was intended.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 VERSION INVENTORY ============ -->
+<section class="screen" id="s6">
+  <div class="screen-head">
+    <h2>06 · Version inventory</h2>
+    <p>Every registered version and its customer count. Where a version reaching zero becomes visible and teardown is initiated.</p>
+  </div>
+  <div class="frame">
+    <div class="bar"><span class="crumb">Versions</span><span>/ registered</span><span class="spacer"></span><span>4 registered · 3 serving</span></div>
+    <div class="body">
+      <div class="band">
+        <div class="band-cap">Customer distribution across live versions</div>
+        <div class="track">
+          <div class="seg next" style="flex:38">1.5.0 · 38</div>
+          <div class="seg prev" style="flex:174">1.4.2 · 174</div>
+          <div class="seg old" style="flex:2">1.4.1 · 2</div>
+        </div>
+      </div>
+
+      <table style="margin-top:20px">
+        <thead><tr><th>Version</th><th>Registered</th><th>Commit</th><th>Orgs</th><th>Health</th><th>State</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="mono">1.5.0</td><td class="mono">14 Aug 02:10</td><td class="mono">7c1e004</td>
+            <td class="num">38</td><td class="state s-ok">nominal</td><td class="state s-moved">rolling out</td>
+          </tr>
+          <tr>
+            <td class="mono">1.4.2</td><td class="mono">06 Jul 01:40</td><td class="mono">b91d33a</td>
+            <td class="num">174</td><td class="state s-ok">nominal</td><td class="state s-live">serving</td>
+          </tr>
+          <tr>
+            <td class="mono">1.4.1</td><td class="mono">28 Jun 02:05</td><td class="mono">4e0aa17</td>
+            <td class="num">2</td><td class="state s-ok">nominal</td><td class="state s-wait">draining</td>
+          </tr>
+          <tr>
+            <td class="mono" style="color:var(--ink-3)">1.3.8</td><td class="mono" style="color:var(--ink-3)">19 May 02:00</td>
+            <td class="mono" style="color:var(--ink-3)">2a77fe1</td>
+            <td class="num" style="color:var(--ink-3)">0</td><td style="color:var(--ink-3)">—</td>
+            <td class="state s-ok">retirable</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="gate" style="border-left-color:var(--ok)">
+        <div class="lbl" style="color:var(--ok)">Retire 1.3.8</div>
+        <p>No organization has been assigned to 1.3.8 for 26 days. Tearing down deregisters it from
+           the router and releases its instance.</p>
+        <div class="btnrow">
+          <button class="btn">Retire version</button>
+          <button class="btn ghost">Keep registered</button>
+        </div>
+      </div>
+
+      <p class="footnote">
+        Draining is not a separate mechanism — it is simply a version with a small remaining count
+        and no inbound assignment. Worth labelling so an operator can tell it apart from a stall.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 07 WINDOW SCHEDULE ============ -->
+<section class="screen" id="s7">
+  <div class="screen-head">
+    <h2>07 · Window schedule</h2>
+    <p>Which organizations move tonight. Windows recur daily and cluster around similar local hours, so the clustering itself needs surfacing.</p>
+  </div>
+  <div class="frame">
+    <div class="bar"><span class="crumb">Schedule</span><span>/ maintenance windows</span><span class="spacer"></span><span>week of 16 Aug · all timezones</span></div>
+    <div class="body">
+      <div class="warnstrip">
+        <b>Window cluster · Tue 18 Aug</b>
+        19 organizations share the 03:00–03:30 local band in US Pacific. Consider splitting across
+        two nights rather than moving them together.
+      </div>
+
+      <div class="cal">
+        <div class="d today">
+          <div class="dn"><span>Sun 16</span><span>6</span></div>
+          <div class="slot">02:00 ET · 1 org</div>
+          <div class="slot">03:00 PT · 2 orgs</div>
+          <div class="slot">04:00 CT · 3 orgs</div>
+        </div>
+        <div class="d">
+          <div class="dn"><span>Mon 17</span><span>4</span></div>
+          <div class="slot">03:00 MT · 4 orgs</div>
+        </div>
+        <div class="d">
+          <div class="dn"><span>Tue 18</span><span>21</span></div>
+          <div class="slot dense">03:00 PT · 19 orgs</div>
+          <div class="slot">05:00 ET · 2 orgs</div>
+        </div>
+        <div class="d">
+          <div class="dn"><span>Wed 19</span><span>3</span></div>
+          <div class="slot">04:00 ET · 3 orgs</div>
+        </div>
+        <div class="d">
+          <div class="dn"><span>Thu 20</span><span>0</span></div>
+        </div>
+        <div class="d">
+          <div class="dn"><span>Fri 21</span><span>0</span></div>
+        </div>
+        <div class="d">
+          <div class="dn"><span>Sat 22</span><span>0</span></div>
+        </div>
+      </div>
+
+      <h4 class="sec" style="margin-top:22px">Tonight · 16 Aug</h4>
+      <table>
+        <thead><tr><th>Local time</th><th>Organization</th><th>Venues</th><th>From → to</th><th>State</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">02:00 ET</td><td>Harbor Light Kitchen</td><td class="num">2</td><td class="mono">1.4.2 → 1.5.0</td><td class="state s-wait">scheduled</td></tr>
+          <tr><td class="mono">03:00 MT</td><td>El Trompo</td><td class="num">4</td><td class="mono">1.4.2 → 1.5.0</td><td class="state s-wait">scheduled</td></tr>
+          <tr><td class="mono">04:00 ET</td><td>The Rookery</td><td class="num">11</td><td class="mono">1.4.2 → 1.5.0</td><td class="state s-wait">deferred to wave 4</td></tr>
+        </tbody>
+      </table>
+
+      <p class="footnote">
+        Windows are a customer commitment, not an operations preference — this screen shows when
+        movement is permitted, not when it is convenient. Timezone spread is the only thing
+        naturally relieving the cluster.
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  var btns = document.querySelectorAll('nav.screens button');
+  btns.forEach(function(b){
+    b.addEventListener('click', function(){
+      btns.forEach(function(x){ x.setAttribute('aria-current','false'); });
+      b.setAttribute('aria-current','true');
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
+      document.getElementById(b.dataset.t).classList.add('on');
+      window.scrollTo({top:0,behavior:'auto'});
+    });
+  });
+})();
+</script>
+</div>
+</body>
+</html>
