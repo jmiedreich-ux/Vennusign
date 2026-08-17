@@ -21,6 +21,32 @@ import CustomerOnboardingTimeline from "./CustomerOnboardingTimeline";
 import SignupMarketingExperience from "./SignupMarketingExperience";
 import { authenticatedCustomerDestination, canonicalOnboardingPath, safeLocalReturnPath } from "./customerEntryRouting.mjs";
 
+const REMEMBERED_METHOD_KEY = "vennusign.customerAuth.lastMethod";
+
+const METHOD_LABELS: Record<string, string> = {
+  Google: "Continue with Google",
+  Apple: "Continue with Apple",
+  Passkey: "Use a passkey",
+  EmailLink: "Email me a sign-in link"
+};
+
+function readRememberedMethod(): string | undefined {
+  try {
+    return localStorage.getItem(REMEMBERED_METHOD_KEY) ?? undefined;
+  } catch {
+    // Private browsing or storage disabled - fall back to showing every option, same as a first visit.
+    return undefined;
+  }
+}
+
+function rememberMethod(method: string) {
+  try {
+    localStorage.setItem(REMEMBERED_METHOD_KEY, method);
+  } catch {
+    // Nothing to persist; next visit just shows every option again.
+  }
+}
+
 export default function CustomerOnboardingApp() {
   const configuration = useMemo(loadBackOfficeConfiguration, []);
   const entryPath = useMemo(() => window.location.pathname.replace(/\/$/, "") || "/", []);
@@ -40,6 +66,12 @@ export default function CustomerOnboardingApp() {
   const [notice, setNotice] = useState<string>();
   const [pairingCode, setPairingCode] = useState("");
   const detectedTimezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", []);
+  const rememberedMethod = useMemo(readRememberedMethod, []);
+  const [showAllMethods, setShowAllMethods] = useState(!rememberedMethod);
+
+  useEffect(() => {
+    if (session?.authenticationMethod) rememberMethod(session.authenticationMethod);
+  }, [session?.authenticationMethod]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -197,6 +229,23 @@ export default function CustomerOnboardingApp() {
       <div className="customer-entry__auth-card" id="signup-auth-card">
         <h2>{entryPath === "/signin" ? "Sign in to Vennusign" : "Start with your account"}</h2>
         <p>No password to remember.</p>
+        {rememberedMethod && !showAllMethods ? <>
+          <p className="customer-entry__remembered-tag">✓ Continue as you did last time</p>
+          {rememberedMethod === "Google" ?
+            <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}>{METHOD_LABELS.Google}</a>
+          : rememberedMethod === "Apple" ?
+            <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple", authenticationReturnPath)}>{METHOD_LABELS.Apple}</a>
+          : rememberedMethod === "Passkey" ? <form onSubmit={usePasskey}>
+            <label htmlFor="passkeyEmail">Email for your passkey</label>
+            <input id="passkeyEmail" name="passkeyEmail" type="email" autoComplete="username webauthn" required />
+            <button type="submit" disabled={busy === "passkey"}>{busy === "passkey" ? "Checking passkey…" : METHOD_LABELS.Passkey}</button>
+          </form> : <form onSubmit={sendEmail}>
+            <label htmlFor="email">Verified account email</label>
+            <input id="email" name="email" type="email" autoComplete="email" required />
+            <button type="submit" disabled={busy === "email"}>{busy === "email" ? "Sending…" : METHOD_LABELS.EmailLink}</button>
+          </form>}
+          <button className="customer-entry__more-options" type="button" onClick={() => setShowAllMethods(true)}>More ways to sign in</button>
+        </> : <>
         <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}>Continue with Google</a>
         <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple", authenticationReturnPath)}>Continue with Apple</a>
         <div className="customer-entry__divider"><span>Returning customers</span></div>
@@ -210,6 +259,7 @@ export default function CustomerOnboardingApp() {
           <input id="email" name="email" type="email" autoComplete="email" required />
           <button className="quiet" type="submit" disabled={busy === "email"}>{busy === "email" ? "Sending…" : "Email me a sign-in link"}</button>
         </form>
+        </>}
       </div>
       </section>
     </> : !onboarding ? <section className="customer-onboarding customer-onboarding__panel" aria-labelledby="onboarding-unavailable-heading">

@@ -125,6 +125,9 @@ nav { display: grid; gap: 8px; }nav a { display: grid; gap: 3px; padding: 13px; 
 .customer-entry__provider--dark { border-color: #17231f; color: #fff; background: #17231f; }
 .customer-entry__divider { display: flex; align-items: center; gap: 10px; margin: 23px 0 15px; color: #75837e; font-size: .72rem; font-weight: 800; text-transform: uppercase; }
 .customer-entry__divider::before, .customer-entry__divider::after { content: ""; flex: 1; height: 1px; background: #dbe3df; }
+.customer-entry__remembered-tag { margin: 0 0 14px; padding: 4px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; font-weight: 700; color: #1a7a4c; background: #e3f5e9; }
+.customer-entry__more-options { display: block; width: 100%; margin-top: 16px; padding: 8px; border: none; background: none; color: #63756e; font-size: .85rem; font-weight: 700; text-align: center; cursor: pointer; }
+.customer-entry__more-options:hover { color: #163e32; text-decoration: underline; }
 .customer-entry form { display: grid; gap: 8px; margin-top: 15px; }
 .customer-entry label { color: #324f45; font-size: .78rem; font-weight: 800; }
 .customer-entry input, .customer-entry select { min-width: 0; border: 1px solid #b9cac1; border-radius: 11px; padding: 12px 13px; color: #173d32; background: var(--sky-card-background); }

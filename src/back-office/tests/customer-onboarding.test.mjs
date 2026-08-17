@@ -87,3 +87,16 @@ test("customer timeline is ordered, resumable, and server-authoritative", () => 
   assert.match(timeline, /onboarding\.progress/);
   assert.doesNotMatch(timeline, /fetch\(|request\(|onClick/);
 });
+
+test("returning visitor sees one remembered method by default, not every option at once", () => {
+  assert.match(app, /REMEMBERED_METHOD_KEY/);
+  assert.match(app, /localStorage\.getItem\(REMEMBERED_METHOD_KEY\)/);
+  assert.match(app, /localStorage\.setItem\(REMEMBERED_METHOD_KEY, method\)/);
+  assert.match(app, /session\.authenticationMethod/);
+  assert.match(app, /Continue as you did last time/);
+  assert.match(app, /More ways to sign in/);
+  assert.match(app, /rememberedMethod && !showAllMethods/);
+  // Storage failures (private browsing, disabled storage) fall back to showing every
+  // option, the same as a first visit - never a broken or empty screen.
+  assert.match(app, /catch \{\s*\/\/ Private browsing or storage disabled/);
+});
