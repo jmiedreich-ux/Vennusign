@@ -1131,8 +1131,19 @@ identity, or deploy workflow at all yet — today's work covers `dev` only, and
 deliberately does not yet implement the version-folder/branching model from the
 concept doc above, since that remains unapproved design.
 
+While diagnosing the migration-lock hang above, application logs were repeatedly
+pulled from the wrong place: `LogFiles/*_docker.log` is platform/container-lifecycle
+only. The app's own `Console.WriteLine`/DbUp output was landing in
+`LogFiles/StartupLogs/{date}_{machine}_success.log` /`_failure.log`, which is a
+startup-diagnostic feature, not general application logging — "Application Logging
+(Filesystem)" was off entirely on all four dev apps (`applicationLogs.fileSystem.level:
+Off`). Turned on for all four (`az webapp log config --application-logging
+filesystem --level information --docker-container-logging filesystem`) so app output
+now lands in the standard, always-on `LogFiles/Application/` location instead of only
+being visible by accident during a container's startup window.
+
 **Exact next action.** Decide whether to capture the App Service configuration
-(connection string, startup commands, runtime, timeout) as infrastructure-as-code
-or leave it as manual Azure state; then continue either with the GitHub issue
-backlog or with formalizing the release-engineering concept into an approved
-work package.
+(connection string, startup commands, runtime, timeout, and now application
+logging) as infrastructure-as-code or leave it as manual Azure state; then continue
+either with the GitHub issue backlog or with formalizing the release-engineering
+concept into an approved work package.
