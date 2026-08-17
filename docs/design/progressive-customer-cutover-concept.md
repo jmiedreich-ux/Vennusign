@@ -6,7 +6,7 @@ This document records an exploratory Vennusign deployment concept. It is not an 
 
 The concept is a deployment strategy in which multiple already-built release versions run concurrently, and each customer is assigned to one of them. A new release is published alongside the versions already serving customers, and customers are moved to it progressively, on a schedule, rather than in a single atomic cutover.
 
-The component that performs this assignment is the **Version Router (VR)**. *(Decided.)*
+The component that performs this assignment is the **Version Discovery Service (VDS)**. *(Decided.)*
 
 Items marked *(decided)* are settled working decisions within this concept. They do not change the status above: the concept as a whole remains unapproved, and settled items still require work-package governance and architecture review before implementation.
 
@@ -27,17 +27,17 @@ The number of versions supported concurrently is a decision, not an unlimited pr
 - Movement should be deterministic and auditable per customer (or per organization/venue — see Decisions Required), not a statistical per-request coin flip. Once a customer is moved, they stay on that version until deliberately moved again.
 - A partially-complete rollout can be paused or reversed without affecting customers who have not yet moved, and ideally without disrupting customers already healthy on the new version.
 
-## What the Version Router is, and is not
+## What the Version Discovery Service is, and is not
 
-The Version Router points a customer's traffic at the correct already-running deployment version.
+The Version Discovery Service points a customer's traffic at the correct already-running deployment version.
 
-VR is **not** the deployment process. It does not build, promote, move, or configure artifacts. Deployment happens beforehand; by the time VR is involved, every version it can point to is already running. A cutover is therefore an assignment change, not a deployment event — there is no per-customer deployment work to schedule or spread.
+VDS is **not** the deployment process. It does not build, promote, move, or configure artifacts. Deployment happens beforehand; by the time VDS is involved, every version it can point to is already running. A cutover is therefore an assignment change, not a deployment event — there is no per-customer deployment work to schedule or spread.
 
 Consequences of this boundary:
 
-- Any concurrency or capacity limit belongs to the deployment process, not to VR, and must be supplied to VR rather than inferred by it.
-- VR requires a result signal back from whatever performs deployment (succeeded, failed, reverted), or its assignment table will drift from what is actually running.
-- Version retirement needs a defined owner: something must know when the last customer has left a version so it can be shut down. VR holds the assignment data that answers this, but retirement itself is outside VR.
+- Any concurrency or capacity limit belongs to the deployment process, not to VDS, and must be supplied to VDS rather than inferred by it.
+- VDS requires a result signal back from whatever performs deployment (succeeded, failed, reverted), or its assignment table will drift from what is actually running.
+- Version retirement needs a defined owner: something must know when the last customer has left a version so it can be shut down. VDS holds the assignment data that answers this, but retirement itself is outside VDS.
 
 ## Why this is not simply DNS-level weighted routing
 
@@ -49,11 +49,11 @@ Note also that Azure Traffic Manager is an existing product name. Naming this co
 
 `docs/operations/DEPLOYMENT_VERSIONING.md` establishes that Vennusign already builds and promotes immutable, versioned artifacts, and that production never rebuilds a staging-approved component. That document owns version *identity*: the release manifest as canonical source, per-component semantic versions, carried-forward artifact identity, database migration ordering, stored-procedure contract versions, and the runtime version values exposed at `/health/version`. It explicitly places customer schedules, migration waves, rollback orchestration, and retirement outside its foundation.
 
-This concept assumes that model rather than replacing it: the concurrently-running versions are already-built, already-promoted artifact versions. VR decides which version a given customer's traffic reaches; it does not rebuild, reconfigure, or re-version the artifacts themselves. VR consumes version identity and owns customer assignment.
+This concept assumes that model rather than replacing it: the concurrently-running versions are already-built, already-promoted artifact versions. VDS decides which version a given customer's traffic reaches; it does not rebuild, reconfigure, or re-version the artifacts themselves. VDS consumes version identity and owns customer assignment.
 
 ## Source of schedule and selection data
 
-The customer maintenance window is stored in the customer's Vennu profile in Platform Operations, alongside tier and KPI data. VR reads this data; it does not author it. A single source therefore supplies both *who* is eligible to move and *when* they may move.
+The customer maintenance window is stored in the customer's Vennu profile in Platform Operations, alongside tier and KPI data. VDS reads this data; it does not author it. A single source therefore supplies both *who* is eligible to move and *when* they may move.
 
 Cost-allocation KPIs are intended to live in the same profile, at venue and organization level. Exact per-customer Azure cost is not directly observable — Azure bills shared resources such as a SQL database, storage account, or App Service plan, and no customer appears in that bill. The workable approach is to measure per-customer activity (API calls, payload sizes, compute time, SignalR connection-minutes, storage bytes) and allocate Azure cost against those activity drivers. The resulting figure is an allocation rather than a measurement, and its accuracy depends on choosing an appropriate driver per resource; that per-resource driver selection is not decided here.
 
@@ -76,16 +76,16 @@ Several of these inputs (screens per venue, fallback availability) are not cost 
 
 A maintenance window protects a working customer from disruption. A customer who is already broken is not being protected by waiting, so a fix reaches them immediately rather than at their next window. The distinction is about the change's effect on that specific customer, not about severity in the abstract.
 
-This makes "is this organization affected by the bug being fixed" a per-organization input to VR. Linking the fix to the originating support ticket supplies that input from a source already maintained. Two gaps follow:
+This makes "is this organization affected by the bug being fixed" a per-organization input to VDS. Linking the fix to the originating support ticket supplies that input from a source already maintained. Two gaps follow:
 
 - **Silent breakage.** Affected organizations that never filed a ticket appear healthy and would wait for their window. A shared error signature may allow telemetry-based detection to supplement ticket linkage.
-- **Fix-to-ticket traceability.** The release manifest names components and commits, not tickets. Something must declare which tickets a build resolves, or VR cannot match a release to the customers it unblocks.
+- **Fix-to-ticket traceability.** The release manifest names components and commits, not tickets. Something must declare which tickets a build resolves, or VDS cannot match a release to the customers it unblocks.
 
 Because reporting organizations receive the fix first, they are also the only parties able to confirm it worked, which makes them a natural validation cohort.
 
 Maintenance windows are expected to recur — commonly daily, at the same local time — rather than being rare one-off slots. Windows will therefore cluster around similar local hours; differing customer time zones spread this somewhat.
 
-Everything routes through VR regardless of urgency, and there is no bypass path for hotfixes *(decided)*: a bypass would duplicate VR's function with less scrutiny and would lose per-customer version visibility precisely when it matters most. A hotfix is a wave shape within VR, not an exception to it, and remains recorded, revertible, and reportable.
+Everything routes through VDS regardless of urgency, and there is no bypass path for hotfixes *(decided)*: a bypass would duplicate VDS's function with less scrutiny and would lose per-customer version visibility precisely when it matters most. A hotfix is a wave shape within VDS, not an exception to it, and remains recorded, revertible, and reportable.
 
 ## Automation
 
@@ -104,21 +104,21 @@ Because windows are per-customer, a wave does not complete at a single moment. A
 Four responsibilities are kept separate. Collapsing any two of them costs something specific.
 
 1. **Build and promote.** Already established in `DEPLOYMENT_VERSIONING.md`: immutable versioned artifacts, staging-approved components never rebuilt in production. Unchanged by this concept.
-2. **Run a version.** Deployment stands up an instance and confirms it healthy. Owns infrastructure and any concurrency limit. Not VR.
-3. **Register it.** After promotion, the version is registered with VR as a routable target carrying zero assigned customers. *(Decided: registration lives with Platform Operations. It is a step in the PO release workflow rather than a separate component.)*
-4. **Assign.** VR moves customers according to the schedule. The only step that affects customers.
+2. **Run a version.** Deployment stands up an instance and confirms it healthy. Owns infrastructure and any concurrency limit. Not VDS.
+3. **Register it.** After promotion, the version is registered with VDS as a routable target carrying zero assigned customers. *(Decided: registration lives with Platform Operations. It is a step in the PO release workflow rather than a separate component.)*
+4. **Assign.** VDS moves customers according to the schedule. The only step that affects customers.
 
 The seam between 3 and 4 is the one that matters. Registration is a fact about what exists; assignment is a decision about customers. If deploying a version implicitly begins serving traffic, progressive delivery is lost.
 
-The corresponding boundary: PO tells VR that a version exists and when it may be retired; PO does not move customers. Otherwise two components decide assignment.
+The corresponding boundary: PO tells VDS that a version exists and when it may be retired; PO does not move customers. Otherwise two components decide assignment.
 
-Retirement runs the sequence backwards — VR reports that no customer remains assigned to a version, PO tears it down and deregisters it. This also answers version-retirement ownership, since VR holds the assignment data and PO performs the teardown.
+Retirement runs the sequence backwards — VDS reports that no customer remains assigned to a version, PO tears it down and deregisters it. This also answers version-retirement ownership, since VDS holds the assignment data and PO performs the teardown.
 
 ### Environments
 
 *This subsection is a working proposal from a branching/testing discussion, not yet decided in the sense the rest of this document marks items decided.*
 
-Environment is a PO-managed attribute rather than a fixed deployment target: a Platform Operations setup declares which environment it manages — `app` in production, `dev` or `staging` elsewhere — and that declaration takes effect at release, going through the same register/assign workflow a production rollout uses. Dev and staging therefore exercise the real PO/VR path rather than a separate one, which is also how this concept intends to close part of the gap noted below about staging being unable to validate the rollout mechanism itself.
+Environment is a PO-managed attribute rather than a fixed deployment target: a Platform Operations setup declares which environment it manages — `app` in production, `dev` or `staging` elsewhere — and that declaration takes effect at release, going through the same register/assign workflow a production rollout uses. Dev and staging therefore exercise the real PO/VDS path rather than a separate one, which is also how this concept intends to close part of the gap noted below about staging being unable to validate the rollout mechanism itself.
 
 Because all engineering testing happens in dev, dev (and probably staging) needs to run more than one version concurrently — a hotfix under test against a currently-live version and the next version under active development must coexist without colliding. This differs from the single-version-per-environment assumption below for dev/staging; only `app` carries real customers.
 
@@ -127,11 +127,11 @@ Because all engineering testing happens in dev, dev (and probably staging) needs
 - `master` is the trunk: it always builds toward the next, not-yet-shipped version. A merge to master deploys to dev under that next version's folder.
 - Each version still supported in the field gets a long-lived `release/X.Y` branch, cut from master at ship time. How many stay open concurrently is a policy choice — informally 2-3 — not yet a decision (see Decisions Required).
 - A hotfix branches from the relevant `release/X.Y`, deploys to its own dev version folder for isolated testing, merges back into that release branch, and is cherry-picked forward into master and any other still-open release branches so the fix is not lost on the next release.
-- A `release/X.Y` branch retires once VR reports no customer remains assigned to that version (see Retirement above).
+- A `release/X.Y` branch retires once VDS reports no customer remains assigned to that version (see Retirement above).
 
 **Version folders.** Each deployed build lands in `dev\release\[version]\[app]` (and, later, the same shape under staging/app), one folder per app: `api`, `back-office`, `board-engine`, `display`, `po`, `theme-studio`. `workbook` and `tv` are not separate apps and do not get their own folder — `tv` is served from within `display`.
 
-**The version chooser.** `dev.vennusign.com` (and its staging equivalent) is not a bypass — it is the front door into the real PO assignment workflow. Landing there and choosing a version creates or selects a real assignment against a dev-scoped test venue through the PO backend, exactly as a production rollout would, so the rest of the request is routed by VR like any other customer. This also means dev exercises PO itself, not only the versions under test. It does not yet cover Display — see Open Questions.
+**The version chooser.** `dev.vennusign.com` (and its staging equivalent) is not a bypass — it is the front door into the real PO assignment workflow. Landing there and choosing a version creates or selects a real assignment against a dev-scoped test venue through the PO backend, exactly as a production rollout would, so the rest of the request is routed by VDS like any other customer. This also means dev exercises PO itself, not only the versions under test. It does not yet cover Display — see Open Questions.
 
 ```
 LOCAL          dev codes
@@ -153,7 +153,7 @@ STAGING        artifacts built once, deployed, approved here
 APP            same artifacts promoted, never rebuilt
                  |
                previous and new version both running
-               VR assigns customers between them
+               VDS assigns customers between them
                                             <- GATE 2, between waves
 ```
 
@@ -201,7 +201,7 @@ Withdrawal splits at the point customers are involved.
 
 **Before any customer is assigned**, withdrawal is clean. The development team deleting or unpublishing the release is a judgment call they are positioned to make, nothing is serving customers, and PO drops the card.
 
-**After customers have been assigned**, the same GitHub action cannot mean the same thing. Deleting a release does not unassign anyone, and the engineer performing it may not know how many customers are currently on that version. PO acts on the event by initiating rollback through VR, with timing determined by severity:
+**After customers have been assigned**, the same GitHub action cannot mean the same thing. Deleting a release does not unassign anyone, and the engineer performing it may not know how many customers are currently on that version. PO acts on the event by initiating rollback through VDS, with timing determined by severity:
 
 - Default is **window-timed** — customers revert at their next maintenance window, mirroring the treatment of non-corrective changes.
 - **Immediate** rollback applies when the fault is severe enough that waiting causes more harm than the disruption of reverting mid-service.
@@ -211,7 +211,7 @@ Severity is not carried by GitHub's release event. The convention is a label —
 - **Absence must default to the safe option.** An untagged withdrawal is treated as window-timed and flagged for operator review. The mechanism cannot depend on someone remembering the convention at two in the morning.
 - **The label is a signal, not a command.** It records what engineering believes; the PO operator decides what happens to customers and may override in either direction.
 
-The boundary holds throughout: PO decides, VR executes, and GitHub never writes assignment directly.
+The boundary holds throughout: PO decides, VDS executes, and GitHub never writes assignment directly.
 
 The webhook payload carries the action, the release object (tag, body, author, timestamps, draft and prerelease flags), the repository and the sender. PO holds a GitHub credential already, for workflow dispatch, so it can read further detail from the API as needed — the tagged commit, the diff, linked pull requests and their labels.
 
@@ -219,7 +219,7 @@ A related case: if a tag is force-pushed so that a version number comes to point
 
 ### Orchestration
 
-*(Decided.)* PO is a frontend over disconnected services rather than an orchestrator holding infrastructure credentials. A PO backend sits between the frontend and those services, holding operator permissions and release state, so approval authority lives in one component rather than being reimplemented in each service. VR therefore needs no operator authentication of its own: it accepts writes from the PO backend as a service identity, and serves lookups to the enforcement point and the Webhook Receiver.
+*(Decided.)* PO is a frontend over disconnected services rather than an orchestrator holding infrastructure credentials. A PO backend sits between the frontend and those services, holding operator permissions and release state, so approval authority lives in one component rather than being reimplemented in each service. VDS therefore needs no operator authentication of its own: it accepts writes from the PO backend as a service identity, and serves lookups to the Product Router and the Webhook Receiver.
 
 CI/CD is expected to live in GitHub Actions, since the repository is already there and the approval sophistication that would otherwise favor Azure DevOps is being built into PO regardless. Trust runs one way: the PO backend dispatches workflows and polls the GitHub API for run status, so Actions never calls back into the network and no inbound endpoint is required. Azure deployment credentials remain in GitHub via federated identity rather than stored keys.
 
@@ -234,7 +234,7 @@ CI/CD is expected to live in GitHub Actions, since the repository is already the
           +-----------+      |      +-----------+
           |                  v                  v
           |           +--------------+   +--------------+
-          |           |      VR      |   |  connection  |
+          |           |     VDS      |   |  connection  |
           |           +------+-------+   |   manager    |
           |                  v           +--------------+
           |          assignment table
@@ -256,35 +256,35 @@ Note that no release pipeline currently exists in the repository: `.github/workf
 
 Two directions are needed.
 
-**Upward — VR learning what is running.** VR cannot route to versions it does not know about, and its set of routable targets should not be hand-maintained. This is the registration step above, driven by PO after promotion rather than by instances self-registering on startup, so that a version becomes known to VR only once it is intended to be routable.
+**Upward — VDS learning what is running.** VDS cannot route to versions it does not know about, and its set of routable targets should not be hand-maintained. This is the registration step above, driven by PO after promotion rather than by instances self-registering on startup, so that a version becomes known to VDS only once it is intended to be routable.
 
 ### Application Discovery Service (ADS)
 
-*(Decided, from a labor-automation discussion: given how many maintenance releases are expected, "what's running and where" cannot be a manually maintained mapping.)* ADS tells the rest of the system where everything currently is in a given environment — not only API versions, but every deployed app (`api`, `back-office`, `display`, `po`, `theme-studio`, and whatever else is added). It is a new internal component, not a fourth thing callers talk to. VR remains the only lookup the enforcement point and the Webhook Receiver call — "VR remains a lookup and stays off the data path" still holds — and VR delegates internally in two steps:
+*(Decided, from a labor-automation discussion: given how many maintenance releases are expected, "what's running and where" cannot be a manually maintained mapping.)* ADS tells the rest of the system where everything currently is in a given environment — not only API versions, but every deployed app (`api`, `back-office`, `display`, `po`, `theme-studio`, and whatever else is added). It is a new internal component, not a fourth thing callers talk to. VDS remains the only lookup the Product Router and the Webhook Receiver call — "VDS remains a lookup and stays off the data path" still holds — and VDS delegates internally in two steps:
 
-1. **Customer → version.** VR's own assignment table, PO-driven, changes rarely (on a schedule or a deliberate rollback).
+1. **Customer → version.** VDS's own assignment table, PO-driven, changes rarely (on a schedule or a deliberate rollback).
 2. **(App, version) → healthy instance.** Delegated to ADS, refreshed continuously.
 
-These two are kept apart deliberately. Assignment is business logic that only PO/VR's data can decide; instance location and health is infrastructure state that changes independently of any release, so it needs its own always-on process rather than being derived from a point-in-time deploy check.
+These two are kept apart deliberately. Assignment is business logic that only PO/VDS's data can decide; instance location and health is infrastructure state that changes independently of any release, so it needs its own always-on process rather than being derived from a point-in-time deploy check.
 
-**Why this needs to be a separate, continuously-running concern, not a deploy-time check.** The deploy pipeline's health check (see Release lifecycle and responsibilities) is a one-time gate — it confirms an instance is healthy before registering it, then the pipeline exits. A version can go on serving customers for weeks after that, and can go unhealthy for reasons that have nothing to do with deployment: a crash, an Azure platform restart, resource exhaustion. ADS polls every registered instance of every app on an ongoing basis, independent of deploy events, so VR's routing decision reflects current state, not a stale "it was healthy when we shipped it" snapshot. This is also the concrete mechanism behind the health-threshold monitoring already listed as an automation candidate above.
+**Why this needs to be a separate, continuously-running concern, not a deploy-time check.** The deploy pipeline's health check (see Release lifecycle and responsibilities) is a one-time gate — it confirms an instance is healthy before registering it, then the pipeline exits. A version can go on serving customers for weeks after that, and can go unhealthy for reasons that have nothing to do with deployment: a crash, an Azure platform restart, resource exhaustion. ADS polls every registered instance of every app on an ongoing basis, independent of deploy events, so VDS's routing decision reflects current state, not a stale "it was healthy when we shipped it" snapshot. This is also the concrete mechanism behind the health-threshold monitoring already listed as an automation candidate above.
 
 **Registration is automated, not manual.** ADS's table is populated by the deploy pipeline itself as part of the health-gate-then-register sequence already decided — no one hand-enters an App Service hostname per release, per app. This is what actually solves the labor problem for frequent maintenance releases; ADS existing as its own component helps by giving that automation one place to write to, but the labor reduction comes from the pipeline doing the registration call, not from ADS's existence alone.
 
-**Multiple instances per (app, version).** ADS's registration model is (app, version) → a *set* of instances, not one instance, since a version may scale out to more than one App Service (a capacity decision, owned by deployment per the existing boundary — "any concurrency or capacity limit belongs to the deployment process, not to VR"). ADS continuously health-polls each instance in the set and, when VR asks "where for this app at this version," returns a currently-healthy instance from it — or the whole healthy set, if VR delegates the actual traffic distribution to a standard per-version load-balancing layer (an Azure Front Door/Application Gateway backend pool scoped to that version's instances, fed by ADS's registration) rather than ADS implementing its own layer-7 balancing. Which of those two — ADS picks one instance and hands it back, versus ADS feeds a real load balancer's backend pool — is not decided here.
+**Multiple instances per (app, version).** ADS's registration model is (app, version) → a *set* of instances, not one instance, since a version may scale out to more than one App Service (a capacity decision, owned by deployment per the existing boundary — "any concurrency or capacity limit belongs to the deployment process, not to VDS"). ADS continuously health-polls each instance in the set and, when VDS asks "where for this app at this version," returns a currently-healthy instance from it — or the whole healthy set, if VDS delegates the actual traffic distribution to a standard per-version load-balancing layer (an Azure Front Door/Application Gateway backend pool scoped to that version's instances, fed by ADS's registration) rather than ADS implementing its own layer-7 balancing. Which of those two — ADS picks one instance and hands it back, versus ADS feeds a real load balancer's backend pool — is not decided here.
 
 **Downward — a client learning it is stale.** `/health/version` already exposes runtime version values. A loaded single-page application does not re-ask: Back Office fetches its bundle once and may run for hours across a cutover, leaving old client code calling a newer API. A version identifier returned on API responses, compared against what the client booted with, lets the client detect the mismatch and reload. Display is less affected, since it already recovers authoritative content periodically.
 
-Frontend surfaces are expected to follow the same assignment as the API, so VR routes the initial bundle load as well. Which version a running client is *using* still requires the staleness check above.
+Frontend surfaces are expected to follow the same assignment as the API, so VDS routes the initial bundle load as well. Which version a running client is *using* still requires the staleness check above.
 
-### Every request routes through VR, not only the bundle load
+### Every request routes through VDS, not only the bundle load
 
-*(Gap identified in a later discussion; decided in shape, not in mechanism.)* Routing the initial page/bundle load through VR is not sufficient on its own. Two categories of traffic were being implicitly assumed to hit some generic, un-versioned endpoint instead of going through the same VR decision, and both need to be brought in line:
+*(Gap identified in a later discussion; decided in shape, not in mechanism.)* Routing the initial page/bundle load through VDS is not sufficient on its own. Two categories of traffic were being implicitly assumed to hit some generic, un-versioned endpoint instead of going through the same VDS decision, and both need to be brought in line:
 
-- **Frontend → API calls.** Once a Back Office/PO/Display bundle has loaded, every subsequent `fetch()` it makes to the API must land on the *same* version that bundle and that customer/venue are assigned to — not a generic `app.api.vennusign.com` that might resolve to whichever version happens to be "current." A bundle from v1.4 calling a v1.5 API mid-session is exactly the frontend/backend mismatch VR exists to prevent, and it is not caught by the staleness check above, since that check only detects the client's *own* bundle going stale, not a single request landing on the wrong version.
-- **Service-to-service calls.** Calls between Vennusign's own backend services (for example, once a PO backend exists, calls it makes into the API on a customer's behalf) need the same VR-aware routing as customer-facing traffic — they cannot assume a single generic API endpoint either.
+- **Frontend → API calls.** Once a Back Office/PO/Display bundle has loaded, every subsequent `fetch()` it makes to the API must land on the *same* version that bundle and that customer/venue are assigned to — not a generic `app.api.vennusign.com` that might resolve to whichever version happens to be "current." A bundle from v1.4 calling a v1.5 API mid-session is exactly the frontend/backend mismatch VDS exists to prevent, and it is not caught by the staleness check above, since that check only detects the client's *own* bundle going stale, not a single request landing on the wrong version.
+- **Service-to-service calls.** Calls between Vennusign's own backend services (for example, once a PO backend exists, calls it makes into the API on a customer's behalf) need the same VDS-aware routing as customer-facing traffic — they cannot assume a single generic API endpoint either.
 
-This is the enforcement point's job, not a new component: "Routes the request and the bundle load" already covers both by name, but is easy to underbuild as only the SPA's initial `index.html`/bundle route and quietly leave ordinary API calls on a generic endpoint. The enforcement point should sit in front of *all* traffic to a versioned app — page loads and API calls, browser-originated and service-originated alike — resolving customer/caller → version → healthy instance (VR, then ADS) on every request, not only the first one in a session.
+This is the Product Router's job, not a new component: "Routes the request and the bundle load" already covers both by name, but is easy to underbuild as only the SPA's initial `index.html`/bundle route and quietly leave ordinary API calls on a generic endpoint. The Product Router should sit in front of *all* traffic to a versioned app — page loads and API calls, browser-originated and service-originated alike — resolving customer/caller → version → healthy instance (VDS, then ADS) on every request, not only the first one in a session.
 
 Whether that means literally one edge/gateway hop per request (matching the "gateway in front of Vennu.Api" candidate already listed under Design Considerations) or a resolved-once-per-session endpoint that the frontend bundle then reuses directly is not decided here — see "Where the decision is enforced" below, which this sharpens but does not resolve.
 
@@ -305,7 +305,7 @@ Much of the classification is structural rather than interpretive, because `DEPL
 Where judgment is genuinely required — no schema or contract change, but the diff adds capability rather than correcting behavior — classification is produced by an AI classifier (see below), not left to the structural checks alone. Two constraints on that:
 
 - Categories map to the structural vocabulary already in use (schema-affecting, contract-affecting, capability-adding, corrective, documentation-only) rather than generic semantic-versioning language, so that a proposed classification can be checked against the diff. A classification of "corrective" for a change containing a migration is a contradiction the pipeline should catch. The commit history already carries a strong conventional-commit signal (`feat`, `fix`, `docs` with module scopes) that the classifier can use alongside the diff itself.
-- The **category itself must be recorded**, not only the resulting version number. VR's corrective-release handling depends on knowing why a release is patch-level; a version number alone does not carry that.
+- The **category itself must be recorded**, not only the resulting version number. VDS's corrective-release handling depends on knowing why a release is patch-level; a version number alone does not carry that.
 
 **Codenames.** A release may carry a friendly codename (e.g. "Mosaic") alongside its number everywhere it's used in conversation — the release board, release notes, the `release/X.Y` branch's description — but the codename is never the source of truth and is not itself part of the tag; see Release candidacy below. The first version is Mosaic.
 
@@ -321,7 +321,7 @@ Where judgment is genuinely required — no schema or contract change, but the d
 
 ### Per-component selective release
 
-*(Decided, resolving the Module granularity item under Observed constraints.)* Not every release needs every app rebuilt or redeployed. A path-filter step (diffing changed files since the last release tag, per app directory) determines which of the six apps — `api`, `back-office`, `board-engine`, `display`, `po`, `theme-studio` — actually changed. Only those get classified, version-bumped, built, tagged, and deployed; an app the filter did not touch keeps its existing version, artifact, and running instance untouched, and is not re-registered with VR.
+*(Decided, resolving the Module granularity item under Observed constraints.)* Not every release needs every app rebuilt or redeployed. A path-filter step (diffing changed files since the last release tag, per app directory) determines which of the six apps — `api`, `back-office`, `board-engine`, `display`, `po`, `theme-studio` — actually changed. Only those get classified, version-bumped, built, tagged, and deployed; an app the filter did not touch keeps its existing version, artifact, and running instance untouched, and is not re-registered with VDS.
 
 This is what the release manifest's per-component `"state"` field is for: `"changed"` for anything the path filter matched, `"unchanged"` for everything else, carrying forward its existing `version`, `sourceCommit`, and `buildId` rather than regenerating them. This also follows directly from `DEPLOYMENT_VERSIONING.md`'s rule that production never rebuilds a staging-approved component — an unchanged component isn't merely skipped as an optimization, it is not supposed to be rebuilt at all.
 
@@ -329,7 +329,7 @@ Consequence: a single release can leave components at different versions — `ap
 
 ## Observed constraints in the current codebase
 
-These are noted from reading `src/Vennu.Api` as it stands. They are observations, not decisions or assigned work, and several are not VR's to resolve.
+These are noted from reading `src/Vennu.Api` as it stands. They are observations, not decisions or assigned work, and several are not VDS's to resolve.
 
 - **Background services assume a single running instance.** `HeartbeatMonitor`, `ScheduledContentActivationService`, `HappyHourEvaluatorService`, `PromotionActivationService`, `PosWebhookWorker`, and `ToastPollingService` are registered via `AddHostedService` inside the API host. A second concurrently-running API version runs a second copy of each. These services iterate all venues rather than an assigned subset, and hold last-known transition state in per-process `ConcurrentDictionary` fields, so two instances would neither see each other's work nor agree on what has already fired. See the Background services section below.
 - **SignalR has no backplane.** `AddSignalR()` is registered without Azure SignalR Service or a Redis backplane. `VennuHub` groups (`screen:{id}`, `venue:{id}`, `wall:{id}`) are therefore per-process, and `SignalRScreenUpdateNotifier` on one instance cannot reach connections held by another. This affects any multi-instance topology, not only version rollout. See the Real-time connections section below.
@@ -354,13 +354,13 @@ That same document also records that persistent content-change events cause the 
 
 Three shapes were considered for running background services alongside multiple API versions: moving them out of the versioned API host into a single separate worker; leader election, where all instances run the services but one holds a lease; and assignment-aware processing, where each instance handles only the venues assigned to its own version.
 
-**Assignment-aware is decided.** Leader election was set aside because the elected leader runs an arbitrary version, so a venue assigned to an older version would have its scheduled content and promotions evaluated by newer logic — quietly breaking the guarantee VR exists to provide. Moving the services out entirely has the same effect. Assignment-aware processing keeps background behavior consistent with request routing, with VR as the single source of truth for both.
+**Assignment-aware is decided.** Leader election was set aside because the elected leader runs an arbitrary version, so a venue assigned to an older version would have its scheduled content and promotions evaluated by newer logic — quietly breaking the guarantee VDS exists to provide. Moving the services out entirely has the same effect. Assignment-aware processing keeps background behavior consistent with request routing, with VDS as the single source of truth for both.
 
 Implications:
 
 - `GetAllAsync()` becomes "venues assigned to my version." Each instance needs its own version identity, which is already available at runtime as `VENNU_COMPONENT_VERSION`.
 - With no venue owned by two instances, the per-process `ConcurrentDictionary` state stops being a correctness problem between instances. It remains a problem across handover and restart — see below.
-- Behavior when VR is unavailable needs defining. Processing no venues is safer than processing all of them.
+- Behavior when VDS is unavailable needs defining. Processing no venues is safer than processing all of them.
 - `ToastPollingCoordinator` already keeps its due-time in the database (`NextSyncAttemptUtc`) rather than in memory, and survives handover cleanly. It is the model the others should follow. Note that it is not a lease: two instances reading "due" would both poll, which assignment-aware filtering resolves.
 
 ### Transition state must be persisted
@@ -377,9 +377,9 @@ Severity if deferred: for scheduled feature rollouts the spurious publish lands 
 
 ## POS Webhook Receiver
 
-POS providers (Square, Toast, Clover) post to a single endpoint, so the receiving instance may not be running the version the affected venue is assigned to. A thin **POS Webhook Receiver (WR)** is placed in front of the API versions. *(Decided: a separate receiver, not handled inside VR; WR owns its own registration mapping and exposes a registration API.)*
+POS providers (Square, Toast, Clover) post to a single endpoint, so the receiving instance may not be running the version the affected venue is assigned to. A thin **POS Webhook Receiver (WR)** is placed in front of the API versions. *(Decided: a separate receiver, not handled inside VDS; WR owns its own registration mapping and exposes a registration API.)*
 
-WR performs four steps: verify the provider signature, resolve the provider's external merchant/location identifier to a Vennu venue, consult VR for that venue's assigned version, and forward the payload to that version.
+WR performs four steps: verify the provider signature, resolve the provider's external merchant/location identifier to a Vennu venue, consult VDS for that venue's assigned version, and forward the payload to that version.
 
 ```
   Square / Toast / Clover
@@ -390,7 +390,7 @@ WR performs four steps: verify the provider signature, resolve the provider's ex
   │                      │
   │ 1. verify signature  │
   │ 2. merchant → venue  │
-  │ 3. ask VR ───────────┼──────►  Version Router
+  │ 3. ask VDS ──────────┼──────►  Version Discovery Service
   │ 4. forward           │◄───────  (venue → version)
   └──────────┬───────────┘
              │
@@ -400,7 +400,7 @@ WR performs four steps: verify the provider signature, resolve the provider's ex
     v1.4          v1.5
 ```
 
-VR remains a lookup and stays off the data path. Merging webhook handling into VR itself was considered and set aside: it would turn a control-plane decision service into a data-plane request handler holding POS secrets and provider signature logic, changing VR's security surface, release cadence, and failure mode — a VR outage would drop POS events rather than merely block new assignments.
+VDS remains a lookup and stays off the data path. Merging webhook handling into VDS itself was considered and set aside: it would turn a control-plane decision service into a data-plane request handler holding POS secrets and provider signature logic, changing VDS's security surface, release cadence, and failure mode — a VDS outage would drop POS events rather than merely block new assignments.
 
 WR owns its own registration mapping (provider, external identifier, venue) rather than reading Vennu domain data, and exposes a registration API rather than having the mapping written into shared storage by other components. The API calls that endpoint when a venue links or unlinks a POS provider; WR only ever reads its own table. This keeps the contract an API surface that can be versioned, rather than a table shape every live API version must agree on.
 
@@ -410,13 +410,13 @@ Points to resolve for that registration API:
 - **Idempotency.** Reconnects and retries will re-register the same pair; registration should upsert on (provider, external identifier) rather than insert.
 - **Reconciliation.** A lost registration causes that venue's webhooks to disappear silently. The API should be able to re-assert its complete registration set so drift is recoverable.
 
-Also unresolved: forwarded requests must not be re-verified by the receiving version, but must not be forgeable either, so the internal forwarding path needs its own trust boundary (network isolation or a signed internal token). And because WR depends on VR to route, WR needs defined behavior when VR is unavailable — queue, or fall back to a cached last-known assignment.
+Also unresolved: forwarded requests must not be re-verified by the receiving version, but must not be forgeable either, so the internal forwarding path needs its own trust boundary (network isolation or a signed internal token). And because WR depends on VDS to route, WR needs defined behavior when VDS is unavailable — queue, or fall back to a cached last-known assignment.
 
-Note that WR is infrastructure sitting in front of every version and is therefore difficult to version itself; it should stay thin enough to change rarely. Note also that "WR" and "VR" are easily confused when spoken; prefer the full names in discussion.
+Note that WR is infrastructure sitting in front of every version and is therefore difficult to version itself; it should stay thin enough to change rarely. Note also that "WR" and "VDS" are easily confused when spoken; prefer the full names in discussion.
 
 ## Deploying the supporting components
 
-VR, the Webhook Receiver, and the connection manager cannot use the mechanism they enable. VR cannot route traffic to itself, and the Webhook Receiver sits in front of every version. They therefore deploy conventionally — one version at a time, all customers at once — which means each needs the properties progressive delivery was meant to make unnecessary:
+VDS, the Webhook Receiver, and the connection manager cannot use the mechanism they enable. VDS cannot route traffic to itself, and the Webhook Receiver sits in front of every version. They therefore deploy conventionally — one version at a time, all customers at once — which means each needs the properties progressive delivery was meant to make unnecessary:
 
 - **Backward-compatible changes only.** There is no per-customer safety net, so a bad deployment reaches everyone.
 - **Slot swap or rolling instances** for zero-downtime replacement.
@@ -424,7 +424,7 @@ VR, the Webhook Receiver, and the connection manager cannot use the mechanism th
 
 This is the substance of the instruction to keep these components thin: thin is not an aesthetic preference but a consequence of not being able to roll them out progressively, so their change frequency must stay low.
 
-There is also a bootstrap order, not merely a dependency graph. VR must be deployed and healthy before any versioned instance is registered; the Webhook Receiver must be in place before POS traffic is routed through it.
+There is also a bootstrap order, not merely a dependency graph. VDS must be deployed and healthy before any versioned instance is registered; the Webhook Receiver must be in place before POS traffic is routed through it.
 
 Whether these components deploy together as a single infrastructure release or separately is undecided. Separate deployment is more work but prevents a Webhook Receiver change from being able to break routing.
 
@@ -432,7 +432,7 @@ Whether these components deploy together as a single infrastructure release or s
 
 Concurrent versions do not require a particular App Service tier: multiple apps can share one App Service plan on any dedicated tier, and the practical limit is resource utilization rather than a fixed count. Compute is dedicated at the plan level rather than per app, so concurrently running versions divide the plan's CPU and memory between them.
 
-Deployment slots are a separate matter and are **not** available on Basic; Standard is the lowest tier that offers them. Slots are also the wrong tool for the versioned API, since a slot swap is atomic and moves every customer at once — precisely what VR exists to avoid. Slots suit the supporting components above, where all-at-once with instant swap-back is the desired behavior.
+Deployment slots are a separate matter and are **not** available on Basic; Standard is the lowest tier that offers them. Slots are also the wrong tool for the versioned API, since a slot swap is atomic and moves every customer at once — precisely what VDS exists to avoid. Slots suit the supporting components above, where all-at-once with instant swap-back is the desired behavior.
 
 One figure worth carrying into the connection-layer decision: a Windows app on the Basic tier scaled to two instances allows 350 concurrent connections per instance. Since each display holds a persistent connection, that ceiling is reached well before SignalR's own scaling characteristics become the binding constraint. Current tier and screen-count projections should be confirmed against the Azure pricing calculator for the relevant region and operating system rather than taken from general figures.
 
@@ -444,7 +444,7 @@ One figure worth carrying into the connection-layer decision: a Windows app on t
 - **Schedule representation.** What advances the rollout — a time-based ramp, explicit per-organization allow-listing, or manual approval gates between steps — is undecided. Window-waiving for corrective releases should be a first-class property of the schedule model rather than something operators work around.
 - **Concurrent rollouts.** If more than one rollout can be in flight at once, a customer may be eligible to move under two schedules simultaneously. Precedence and conflict behavior need defining.
 - **Rollback.** Moving a customer back to their previous version must be at least as safe and immediate as moving them forward.
-- **Observability.** The diagnostic concept in `docs/design/customer-support-diagnostic-agent-concept.md` already treats "deployment version" as a correlatable field. VR should report, per customer, which version they are currently assigned to, so that concept's causal analysis can account for version skew during a rollout. Per-customer telemetry carrying a version dimension is also what indicates whether a new version is healthy for an early cohort.
+- **Observability.** The diagnostic concept in `docs/design/customer-support-diagnostic-agent-concept.md` already treats "deployment version" as a correlatable field. VDS should report, per customer, which version they are currently assigned to, so that concept's causal analysis can account for version skew during a rollout. Per-customer telemetry carrying a version dimension is also what indicates whether a new version is healthy for an early cohort.
 - **Where the decision is enforced.** Candidate options include an edge/gateway layer in front of Vennu.Api (and possibly in front of the frontend apps), or a per-customer flag read inside the API itself. These have different operational and cost implications and are not decided here.
 
 ## Candidate approaches (not decisions)
@@ -476,14 +476,14 @@ Raised during discussion and not yet resolved. Recorded so they are not lost.
 - The shared connection-membership mechanism (Azure SignalR Service, Redis backplane, or a purpose-built connection manager), including the screen-count and cost assumptions behind that choice.
 - Rollback and abort semantics.
 - Where the routing/assignment decision is enforced (gateway vs. in-application).
-- The handoff contract between VR and the deployment process, including result reporting.
+- The handoff contract between VDS and the deployment process, including result reporting.
 - Session and data-protection key sharing across concurrently running versions, so that moving a customer does not invalidate an active session.
 - Staleness detection and reload behavior for a loaded Back Office client whose assigned version changes mid-session.
 - Which ticket system supplies bug-to-customer linkage, and how a release declares the tickets it resolves.
 - Per-resource cost-allocation drivers.
-- Background service behavior when VR is unavailable, and whether transition-state persistence lands before or with the first rollout.
+- Background service behavior when VDS is unavailable, and whether transition-state persistence lands before or with the first rollout.
 - Authentication, idempotency, and reconciliation semantics for the Webhook Receiver registration API.
-- Trust boundary for forwarded webhook requests, and Webhook Receiver behavior when VR is unavailable.
+- Trust boundary for forwarded webhook requests, and Webhook Receiver behavior when VDS is unavailable.
 - How this interacts with the immutable release-manifest/versioning model already in place.
 - Observability requirements, including per-customer version visibility tied to the diagnostic-agent concept.
 - Cost and operational ownership of any new routing or gateway component.
