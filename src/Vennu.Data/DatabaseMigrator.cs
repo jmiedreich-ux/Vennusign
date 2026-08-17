@@ -30,11 +30,20 @@ public static class DatabaseMigrator
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
+        Console.WriteLine("DatabaseMigrator: ensuring database exists...");
         EnsureDatabase.For.SqlDatabase(connectionString);
 
         using var gate = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
         gate.Open();
+
+        // AcquireMigrationLock blocks for up to its @LockTimeout (currently 180s) with
+        // no output of its own, so a stuck or contended lock was previously silent from
+        // here until either it threw or the process was killed. The line either side
+        // makes that wait visible and timed instead of indistinguishable from a hang.
+        Console.WriteLine("DatabaseMigrator: acquiring migration lock...");
+        var lockStopwatch = System.Diagnostics.Stopwatch.StartNew();
         AcquireMigrationLock(gate);
+        Console.WriteLine($"DatabaseMigrator: migration lock acquired after {lockStopwatch.Elapsed}.");
 
         try
         {
@@ -43,6 +52,7 @@ public static class DatabaseMigrator
         finally
         {
             ReleaseMigrationLock(gate);
+            Console.WriteLine("DatabaseMigrator: migration lock released.");
         }
     }
 
