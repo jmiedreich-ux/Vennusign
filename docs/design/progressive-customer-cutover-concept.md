@@ -277,6 +277,17 @@ These two are kept apart deliberately. Assignment is business logic that only PO
 
 Frontend surfaces are expected to follow the same assignment as the API, so VR routes the initial bundle load as well. Which version a running client is *using* still requires the staleness check above.
 
+### Every request routes through VR, not only the bundle load
+
+*(Gap identified in a later discussion; decided in shape, not in mechanism.)* Routing the initial page/bundle load through VR is not sufficient on its own. Two categories of traffic were being implicitly assumed to hit some generic, un-versioned endpoint instead of going through the same VR decision, and both need to be brought in line:
+
+- **Frontend → API calls.** Once a Back Office/PO/Display bundle has loaded, every subsequent `fetch()` it makes to the API must land on the *same* version that bundle and that customer/venue are assigned to — not a generic `app.api.vennusign.com` that might resolve to whichever version happens to be "current." A bundle from v1.4 calling a v1.5 API mid-session is exactly the frontend/backend mismatch VR exists to prevent, and it is not caught by the staleness check above, since that check only detects the client's *own* bundle going stale, not a single request landing on the wrong version.
+- **Service-to-service calls.** Calls between Vennusign's own backend services (for example, once a PO backend exists, calls it makes into the API on a customer's behalf) need the same VR-aware routing as customer-facing traffic — they cannot assume a single generic API endpoint either.
+
+This is the enforcement point's job, not a new component: "Routes the request and the bundle load" already covers both by name, but is easy to underbuild as only the SPA's initial `index.html`/bundle route and quietly leave ordinary API calls on a generic endpoint. The enforcement point should sit in front of *all* traffic to a versioned app — page loads and API calls, browser-originated and service-originated alike — resolving customer/caller → version → healthy instance (VR, then ADS) on every request, not only the first one in a session.
+
+Whether that means literally one edge/gateway hop per request (matching the "gateway in front of Vennu.Api" candidate already listed under Design Considerations) or a resolved-once-per-session endpoint that the frontend bundle then reuses directly is not decided here — see "Where the decision is enforced" below, which this sharpens but does not resolve.
+
 ## Version number determination
 
 *(Decided, from a branching/automation discussion.)* Version numbers should be derived automatically, with a declared major release remaining a human decision and any automatic proposal always overridable.
