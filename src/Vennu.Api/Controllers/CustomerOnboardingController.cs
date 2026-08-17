@@ -17,12 +17,12 @@ public sealed class CustomerOnboardingController(ICustomerOnboardingService onbo
         CancellationToken cancellationToken) =>
         Ok(await onboarding.GetPublicPlansAsync(cancellationToken).ConfigureAwait(false));
 
-    [Authorize(Policy = CustomerAuthenticationDefaults.AuthorizationPolicy)]
+    [Authorize(Policy = CustomerAuthenticationDefaults.MfaSatisfiedAuthorizationPolicy)]
     [HttpGet]
     public async Task<ActionResult<CustomerOnboardingSnapshot>> Get(CancellationToken cancellationToken) =>
         Ok(await onboarding.GetAsync(UserId(), cancellationToken).ConfigureAwait(false));
 
-    [Authorize(Policy = CustomerAuthenticationDefaults.AuthorizationPolicy)]
+    [Authorize(Policy = CustomerAuthenticationDefaults.MfaSatisfiedAuthorizationPolicy)]
     [HttpPost("organization")]
     public async Task<ActionResult<CustomerOnboardingSnapshot>> CreateOrganization(
         CreateOnboardingOrganizationRequest request,
@@ -44,7 +44,7 @@ public sealed class CustomerOnboardingController(ICustomerOnboardingService onbo
         }
     }
 
-    [Authorize(Policy = CustomerAuthenticationDefaults.AuthorizationPolicy)]
+    [Authorize(Policy = CustomerAuthenticationDefaults.MfaSatisfiedAuthorizationPolicy)]
     [HttpPost("trial")]
     public async Task<ActionResult<CustomerOnboardingSnapshot>> StartTrial(
         SelectOnboardingTrialRequest request,
@@ -68,7 +68,7 @@ public sealed class CustomerOnboardingController(ICustomerOnboardingService onbo
         }
     }
 
-    [Authorize(Policy = CustomerAuthenticationDefaults.AuthorizationPolicy)]
+    [Authorize(Policy = CustomerAuthenticationDefaults.MfaSatisfiedAuthorizationPolicy)]
     [HttpPost("checkout")]
     public async Task<ActionResult<CreateOnboardingCheckoutResponse>> CreateCheckout(
         CreateOnboardingCheckoutRequest request,
@@ -97,7 +97,7 @@ public sealed class CustomerOnboardingController(ICustomerOnboardingService onbo
         }
     }
 
-    [Authorize(Policy = CustomerAuthenticationDefaults.AuthorizationPolicy)]
+    [Authorize(Policy = CustomerAuthenticationDefaults.MfaSatisfiedAuthorizationPolicy)]
     [HttpPost("venue")]
     public async Task<ActionResult<CustomerOnboardingSnapshot>> CreateVenue(
         CreateOnboardingVenueRequest request,
@@ -117,7 +117,7 @@ public sealed class CustomerOnboardingController(ICustomerOnboardingService onbo
         catch (InvalidOperationException exception) { return Conflict(exception.Message); }
     }
 
-    [Authorize(Policy = CustomerAuthenticationDefaults.AuthorizationPolicy)]
+    [Authorize(Policy = CustomerAuthenticationDefaults.MfaSatisfiedAuthorizationPolicy)]
     [HttpPost("first-screen")]
     public async Task<ActionResult<CustomerOnboardingSnapshot>> ClaimFirstScreen(
         ClaimOnboardingFirstScreenRequest request,

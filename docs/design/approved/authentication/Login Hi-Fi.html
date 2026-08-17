@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vennusign — Sign in (hi-fi reference)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./sky-ui-tokens.css">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--sky-font-family);
+    background: #e8eef4;
+    color: var(--sky-text-primary);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .bundle-label {
+    font: 600 11px/1 var(--sky-font-family);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin: 0 0 11px;
+  }
+
+  .bundle {
+    padding: 36px 40px 60px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  .frame {
+    width: 420px;
+  }
+
+  .screen {
+    width: 420px;
+    height: 620px;
+    border-radius: var(--sky-radius-xl);
+    background: var(--sky-page-gradient);
+    box-shadow: var(--sky-panel-shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sky-space-6);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .screen[data-sky-theme="midnight"] { color-scheme: dark; }
+
+  .brand {
+    position: absolute;
+    top: var(--sky-space-6);
+    left: var(--sky-space-6);
+    display: flex;
+    align-items: center;
+    gap: var(--sky-space-2);
+  }
+  .brand-mark {
+    width: 30px; height: 30px;
+    border-radius: var(--sky-radius-sm);
+    background: var(--sky-color-ink);
+    color: var(--sky-color-primary);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px;
+  }
+  .brand-word {
+    font-weight: 600; font-size: var(--sky-font-size-sm);
+    letter-spacing: -0.01em;
+    color: var(--sky-text-primary);
+  }
+
+  .card {
+    width: 100%;
+    max-width: 320px;
+    background: var(--sky-card-background);
+    border: var(--sky-card-border);
+    border-radius: var(--sky-card-radius);
+    box-shadow: var(--sky-panel-shadow);
+    padding: var(--sky-space-6) var(--sky-space-5) var(--sky-space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sky-space-5);
+  }
+
+  .card-head { display: flex; flex-direction: column; gap: 6px; text-align: left; }
+  .card-eyebrow {
+    font-size: var(--sky-font-size-xs);
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--sky-text-muted);
+  }
+  .card-title {
+    font-size: var(--sky-font-size-xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: var(--sky-line-height-tight);
+    margin: 0;
+  }
+  .card-sub {
+    font-size: var(--sky-font-size-sm);
+    color: var(--sky-text-secondary);
+    line-height: var(--sky-line-height-body);
+    margin: 0;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sky-space-2);
+    width: 100%;
+    border-radius: var(--sky-button-radius);
+    padding: 13px var(--sky-space-4);
+    font-size: var(--sky-font-size-sm);
+    font-weight: 600;
+    font-family: var(--sky-font-family);
+    border: none;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: var(--sky-color-ink);
+    color: var(--sky-color-surface);
+  }
+  .btn-primary .glyph { color: var(--sky-color-primary); }
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--sky-control-border);
+    color: var(--sky-text-primary);
+  }
+  .btn-ghost {
+    background: transparent;
+    border: none;
+    color: var(--sky-text-secondary);
+    font-weight: 500;
+    padding: 8px;
+  }
+  .btn:focus-visible {
+    outline: var(--sky-focus-ring);
+    outline-offset: var(--sky-focus-offset);
+  }
+
+  .remembered-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: var(--sky-font-size-xs);
+    font-weight: 600;
+    color: var(--sky-positive-text);
+    background: var(--sky-color-live-surface);
+    border-radius: var(--sky-badge-radius);
+    padding: 3px 8px;
+    align-self: flex-start;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: var(--sky-space-3);
+    font-size: var(--sky-font-size-xs);
+    color: var(--sky-text-muted);
+  }
+  .divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--sky-color-border);
+  }
+
+  .method-list { display: flex; flex-direction: column; gap: var(--sky-space-2); }
+
+  .fine-print {
+    font-size: var(--sky-font-size-xs);
+    color: var(--sky-text-muted);
+    line-height: var(--sky-line-height-body);
+    text-align: center;
+  }
+  .fine-print a { color: var(--sky-text-secondary); }
+
+  .otp-row { display: flex; gap: 8px; justify-content: center; }
+  .otp-box {
+    width: 40px; height: 48px;
+    border: 1px solid var(--sky-control-border);
+    border-radius: var(--sky-radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums;
+    background: var(--sky-color-surface);
+  }
+  .otp-box.filled { border-color: var(--sky-color-primary); background: var(--sky-color-secondary); }
+  .otp-box.cursor { border-color: var(--sky-color-primary); border-width: 2px; }
+
+  .dev-strip {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--sky-color-warning-surface);
+    color: var(--sky-warning-text);
+    font-size: var(--sky-font-size-xs);
+    font-weight: 600;
+    text-align: center;
+    padding: 10px;
+    letter-spacing: .02em;
+  }
+
+  .glyph { width: 16px; height: 16px; display: inline-flex; }
+</style>
+</head>
+<body>
+
+<div class="bundle">
+
+  <div class="frame">
+    <p class="bundle-label">1 · Sign-in — returning visitor (remembered method)</p>
+    <div class="screen">
+      <div class="brand"><div class="brand-mark">V</div><div class="brand-word">Vennusign</div></div>
+      <div class="card">
+        <div class="card-head">
+          <span class="remembered-tag">✓ Continue as you did last time</span>
+          <h1 class="card-title">Welcome back</h1>
+          <p class="card-sub">Sign in to Back Office to keep managing your menus and screens.</p>
+        </div>
+        <button class="btn btn-primary">
+          <svg class="glyph" viewBox="0 0 24 24" fill="none"><path d="M21.6 12.23c0-.68-.06-1.33-.17-1.96H12v3.71h5.4a4.62 4.62 0 0 1-2 3.03v2.5h3.24c1.9-1.75 2.96-4.33 2.96-7.28Z" fill="#4285F4"/><path d="M12 22c2.7 0 4.97-.9 6.63-2.44l-3.24-2.5c-.9.6-2.05.96-3.4.96-2.6 0-4.8-1.76-5.6-4.12H3.06v2.59A10 10 0 0 0 12 22Z" fill="#34A853"/><path d="M6.4 13.9a5.98 5.98 0 0 1 0-3.8V7.51H3.06a10 10 0 0 0 0 8.98l3.34-2.6Z" fill="#FBBC05"/><path d="M12 5.98c1.47 0 2.79.5 3.82 1.5l2.87-2.87A9.6 9.6 0 0 0 12 2a10 10 0 0 0-8.94 5.51l3.34 2.6C7.2 7.74 9.4 5.98 12 5.98Z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+        <button class="btn btn-ghost" style="justify-content: center; margin-top: -8px;">More ways to sign in ▾</button>
+        <p class="fine-print">By continuing you agree to Vennusign's Terms and Privacy Policy.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="frame">
+    <p class="bundle-label">2 · Sign-in — first visit / "more ways" expanded</p>
+    <div class="screen">
+      <div class="brand"><div class="brand-mark">V</div><div class="brand-word">Vennusign</div></div>
+      <div class="card">
+        <div class="card-head">
+          <span class="card-eyebrow">Back Office</span>
+          <h1 class="card-title">Sign in</h1>
+          <p class="card-sub">Choose how you'd like to continue.</p>
+        </div>
+        <div class="method-list">
+          <button class="btn btn-secondary">
+            <svg class="glyph" viewBox="0 0 24 24" fill="none"><path d="M21.6 12.23c0-.68-.06-1.33-.17-1.96H12v3.71h5.4a4.62 4.62 0 0 1-2 3.03v2.5h3.24c1.9-1.75 2.96-4.33 2.96-7.28Z" fill="#4285F4"/><path d="M12 22c2.7 0 4.97-.9 6.63-2.44l-3.24-2.5c-.9.6-2.05.96-3.4.96-2.6 0-4.8-1.76-5.6-4.12H3.06v2.59A10 10 0 0 0 12 22Z" fill="#34A853"/><path d="M6.4 13.9a5.98 5.98 0 0 1 0-3.8V7.51H3.06a10 10 0 0 0 0 8.98l3.34-2.6Z" fill="#FBBC05"/><path d="M12 5.98c1.47 0 2.79.5 3.82 1.5l2.87-2.87A9.6 9.6 0 0 0 12 2a10 10 0 0 0-8.94 5.51l3.34 2.6C7.2 7.74 9.4 5.98 12 5.98Z" fill="#EA4335"/></svg>
+            Continue with Google
+          </button>
+          <button class="btn btn-secondary">
+            <svg class="glyph" viewBox="0 0 24 24" fill="var(--sky-text-primary)"><path d="M16.36 1.43c.1 1.1-.31 2.18-1.02 2.98-.72.8-1.9 1.42-3.03 1.33a3.24 3.24 0 0 1 .95-2.9c.73-.83 1.98-1.44 3.1-1.41Zm2.86 17.36c-.42.98-.62 1.42-1.16 2.29-.75 1.2-1.8 2.7-3.11 2.71-1.16.02-1.46-.75-3.03-.74-1.57 0-1.9.75-3.06.73-1.31-.02-2.31-1.36-3.06-2.55C3.6 18.19 2.99 14.85 4.1 12.6c.79-1.61 2.2-2.63 3.73-2.65 1.25-.02 2.42.84 3.18.84.75 0 2.17-1.04 3.66-.89.62.03 2.37.25 3.5 1.9-.09.06-2.09 1.22-2.07 3.63.02 2.88 2.53 3.84 2.56 3.36Z"/></svg>
+            Continue with Apple
+          </button>
+          <button class="btn btn-secondary">
+            <span class="glyph" style="font-size:14px;line-height:16px;">🔑</span>
+            Continue with Vennusign
+          </button>
+        </div>
+        <div class="divider">or</div>
+        <button class="btn btn-ghost" style="border: 1px solid transparent; justify-content: center; color: var(--sky-text-muted); font-weight: 500;">Email me a sign-in link instead</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="frame">
+    <p class="bundle-label">3 · MFA step-up — required unless Passkey was used</p>
+    <div class="screen">
+      <div class="brand"><div class="brand-mark">V</div><div class="brand-word">Vennusign</div></div>
+      <div class="card">
+        <div class="card-head" style="align-items: center; text-align: center;">
+          <span class="card-eyebrow">Verify it's you</span>
+          <h1 class="card-title" style="text-align:center;">Enter your code</h1>
+          <p class="card-sub" style="text-align:center;">Open your authenticator app and enter the 6-digit code for Vennusign.</p>
+        </div>
+        <div class="otp-row">
+          <div class="otp-box filled">4</div>
+          <div class="otp-box filled">1</div>
+          <div class="otp-box filled">9</div>
+          <div class="otp-box cursor">2</div>
+          <div class="otp-box">·</div>
+          <div class="otp-box">·</div>
+        </div>
+        <button class="btn btn-primary" style="background: var(--sky-color-primary); color: var(--sky-color-ink);">Verify and continue</button>
+        <p class="fine-print">Lost access? <a href="#">Use a recovery code</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="frame">
+    <p class="bundle-label">4 · Dev / stage — MFA off, auto sign-in (config-gated, never reaches app)</p>
+    <div class="screen" data-sky-theme="midnight" style="background: radial-gradient(circle at top right, #17344a, #0b1120 54%); color: #f8fafc;">
+      <div class="brand"><div class="brand-mark" style="background:#f8fafc;color:#0b1120;">V</div><div class="brand-word" style="color:#f8fafc;">Vennusign · dev</div></div>
+      <div class="card" style="background:#1e293b;border-color:#334155;">
+        <div class="card-head">
+          <span class="remembered-tag" style="background:#123d2d;color:#65d99c;">✓ Signed in automatically</span>
+          <h1 class="card-title" style="color:#f8fafc;">Choose a version to test</h1>
+          <p class="card-sub" style="color:#cbd5e1;">MFA is off in dev. This screen never exists in app.</p>
+        </div>
+        <div class="method-list">
+          <button class="btn btn-secondary" style="border-color:#475569;color:#f8fafc;">mosaic · v1.0.0</button>
+          <button class="btn btn-secondary" style="border-color:#475569;color:#f8fafc;">next (master) · v1.1.0-dev</button>
+        </div>
+      </div>
+      <div class="dev-strip" style="background:#493518;color:#f4c15d;">DEV ENVIRONMENT — CONFIG: RequireMfa = false</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -6,10 +6,16 @@ namespace Vennu.Api.CustomerAuthentication;
 public sealed class CustomerAuthenticationOptionsValidator : IValidateOptions<CustomerAuthenticationOptions>
 {
     private readonly bool isDevelopment;
+    private readonly bool isProduction;
 
-    public CustomerAuthenticationOptionsValidator() : this(false) { }
-    public CustomerAuthenticationOptionsValidator(IHostEnvironment environment) : this(environment.IsDevelopment()) { }
-    public CustomerAuthenticationOptionsValidator(bool isDevelopment) => this.isDevelopment = isDevelopment;
+    public CustomerAuthenticationOptionsValidator() : this(false, false) { }
+    public CustomerAuthenticationOptionsValidator(IHostEnvironment environment)
+        : this(environment.IsDevelopment(), environment.IsProduction()) { }
+    public CustomerAuthenticationOptionsValidator(bool isDevelopment, bool isProduction = false)
+    {
+        this.isDevelopment = isDevelopment;
+        this.isProduction = isProduction;
+    }
 
     public ValidateOptionsResult Validate(string? name, CustomerAuthenticationOptions options)
     {
@@ -40,6 +46,8 @@ public sealed class CustomerAuthenticationOptionsValidator : IValidateOptions<Cu
             failures.Add("CustomerAuthentication:Passkeys:Origins must contain exact HTTPS origins within the relying-party domain.");
         if (!isDevelopment && (serverDomain == "localhost" || options.Passkeys.Origins.Any(origin => Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.IsLoopback)))
             failures.Add("Localhost passkey relying-party settings are accepted only in Development.");
+        if (isProduction && !options.RequireMfa)
+            failures.Add("CustomerAuthentication:RequireMfa cannot be false in Production. Per decisions.md #7-#8 (docs/design/approved/authentication), this is a structural guarantee, not a default: the app refuses to start rather than run app/production without mandatory MFA.");
         return failures.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(failures);
     }
 

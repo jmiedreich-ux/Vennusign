@@ -16,6 +16,7 @@ using Vennu.Api.Configuration;
 using Vennu.Api.Release;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Fido2NetLib;
 using Azure.Identity;
@@ -161,7 +162,14 @@ builder.Services.AddAuthorization(options =>
         policy => policy
             .AddAuthenticationSchemes(CustomerAuthenticationDefaults.AuthenticationScheme)
             .RequireAuthenticatedUser());
+    options.AddPolicy(
+        CustomerAuthenticationDefaults.MfaSatisfiedAuthorizationPolicy,
+        policy => policy
+            .AddAuthenticationSchemes(CustomerAuthenticationDefaults.AuthenticationScheme)
+            .RequireAuthenticatedUser()
+            .AddRequirements(new MfaSatisfiedRequirement()));
 });
+builder.Services.AddSingleton<IAuthorizationHandler, MfaSatisfiedAuthorizationHandler>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
