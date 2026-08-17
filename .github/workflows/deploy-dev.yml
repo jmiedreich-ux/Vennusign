@@ -1,0 +1,132 @@
+name: deploy-dev
+
+# Deploys master to the single-version dev environment. Does not re-run tests:
+# a merge to master already passed phase02-tests.yml/ui-regression.yml as
+# required PR checks, so this workflow only builds and deploys.
+#
+# Only master triggers a deploy. release/* and hotfix/* branches, version
+# folders, and the AI release classifier are future work — see
+# docs/design/progressive-customer-cutover-concept.md.
+
+on:
+  push:
+    branches: [master]
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    outputs:
+      dotnet_api: ${{ steps.classify.outputs.dotnet_api }}
+      platform_operations: ${{ steps.classify.outputs.platform_operations }}
+      back_office: ${{ steps.classify.outputs.back_office }}
+      display: ${{ steps.classify.outputs.display }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Collect changed paths since previous commit
+        run: git diff --name-only HEAD^ HEAD > changed-paths.txt || git ls-files > changed-paths.txt
+      - name: Classify changed apps
+        id: classify
+        run: bash scripts/ci/classify-changes.sh changed-paths.txt
+
+  deploy-api:
+    if: needs.classify.outputs.dotnet_api == 'true'
+    needs: classify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - name: Publish
+        run: dotnet publish src/Vennu.Api/Vennu.Api.csproj -c Release -o publish/api
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: vennusign-dev-api
+          package: publish/api
+
+  deploy-back-office:
+    if: needs.classify.outputs.back_office == 'true'
+    needs: classify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install and build
+        working-directory: src/back-office
+        run: |
+          npm ci
+          npm run build
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: vennusign-dev-back-office
+          package: src/back-office/dist
+
+  deploy-display:
+    if: needs.classify.outputs.display == 'true'
+    needs: classify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install and build
+        working-directory: src/display
+        run: |
+          npm ci
+          npm run build
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: vennusign-dev-display
+          package: src/display/dist
+
+  deploy-po:
+    if: needs.classify.outputs.platform_operations == 'true'
+    needs: classify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install and build
+        working-directory: src/platform-operations
+        run: |
+          npm ci
+          npm run build
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: vennusign-dev-po
+          package: src/platform-operations/dist

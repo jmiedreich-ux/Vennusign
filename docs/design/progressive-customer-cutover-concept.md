@@ -116,17 +116,36 @@ Retirement runs the sequence backwards — VR reports that no customer remains a
 
 ### Environments
 
-Dev, staging, and app each run a single version. Concurrent versions exist only in app, so VR, the Webhook Receiver, and assignment-aware background filtering are exercised only there. Staging cannot validate the rollout mechanism itself; that is a known gap.
+*This subsection is a working proposal from a branching/testing discussion, not yet decided in the sense the rest of this document marks items decided.*
+
+Environment is a PO-managed attribute rather than a fixed deployment target: a Platform Operations setup declares which environment it manages — `app` in production, `dev` or `staging` elsewhere — and that declaration takes effect at release, going through the same register/assign workflow a production rollout uses. Dev and staging therefore exercise the real PO/VR path rather than a separate one, which is also how this concept intends to close part of the gap noted below about staging being unable to validate the rollout mechanism itself.
+
+Because all engineering testing happens in dev, dev (and probably staging) needs to run more than one version concurrently — a hotfix under test against a currently-live version and the next version under active development must coexist without colliding. This differs from the single-version-per-environment assumption below for dev/staging; only `app` carries real customers.
+
+**Branching model** *(proposed, not decided)*:
+
+- `master` is the trunk: it always builds toward the next, not-yet-shipped version. A merge to master deploys to dev under that next version's folder.
+- Each version still supported in the field gets a long-lived `release/X.Y` branch, cut from master at ship time. How many stay open concurrently is a policy choice — informally 2-3 — not yet a decision (see Decisions Required).
+- A hotfix branches from the relevant `release/X.Y`, deploys to its own dev version folder for isolated testing, merges back into that release branch, and is cherry-picked forward into master and any other still-open release branches so the fix is not lost on the next release.
+- A `release/X.Y` branch retires once VR reports no customer remains assigned to that version (see Retirement above).
+
+**Version folders.** Each deployed build lands in `dev\release\[version]\[app]` (and, later, the same shape under staging/app), one folder per app: `api`, `back-office`, `board-engine`, `display`, `po`, `theme-studio`. `workbook` and `tv` are not separate apps and do not get their own folder — `tv` is served from within `display`.
+
+**The version chooser.** `dev.vennusign.com` (and its staging equivalent) is not a bypass — it is the front door into the real PO assignment workflow. Landing there and choosing a version creates or selects a real assignment against a dev-scoped test venue through the PO backend, exactly as a production rollout would, so the rest of the request is routed by VR like any other customer. This also means dev exercises PO itself, not only the versions under test. It does not yet cover Display — see Open Questions.
 
 ```
 LOCAL          dev codes
                  |
 PR             build + test on pull request
                  |
-MERGE to master
-                 |
-DEV            auto-deploy on merge, single version
-                 |
+MERGE to master (next version) -----------+
+                 |                        |
+DEV            auto-deploy per version   hotfix/* off release/X.Y,
+               folder:                    deploys to its own
+               dev\release\[version]\     dev\release\[version]\[app],
+               [app]; version chooser     merges back + cherry-picks
+               assigns a test venue       to master and open releases
+                 |                        |
                operator: "cut release"
                  |
 STAGING        artifacts built once, deployed, approved here
@@ -171,6 +190,8 @@ The board is the summary; the version detail view is where an operator actually 
 *(Decided.)* A release becomes a candidate in PO through a deliberate manual action in GitHub, not automatically on a successful staging deployment. A green pipeline means the workflow completed, not that anyone assessed what changed; keeping the declaration manual leaves that judgment with the people who know the change, consistent with PO's scope beginning at approved-for-production.
 
 The concrete marker is expected to be a GitHub Release on the tag: a first-class object with an author and timestamp, giving an audit record of who declared the candidate, and carrying the version number already computed at build.
+
+*(Decided: tag format.)* The tag is `v{productVersion}` straight from the release manifest — e.g. `v1.0.0`, and `v1.0.1` for a hotfix — kept machine-clean so it sorts correctly and drives the workflow trigger without ambiguity. A codename (see Version number determination) goes on the GitHub Release itself, not the tag — e.g. release title "v1.0.0 — Mosaic" — since a friendly name is for people reading the release board or notes, not for the tag's own mechanics. The `release/X.Y` branch likewise uses the numeric major.minor (`release/1.0`), not the codename, so the branch name doesn't need renaming if the codename ever changes; "1.0 = Mosaic" is documented once, on the release board.
 
 PO learns of it by webhook, with a low-frequency poll as fallback. Webhook delivery can fail, and a missed event would mean a candidate silently never appears; releases are infrequent enough that polling costs little. Note that a webhook requires an inbound endpoint on the PO backend, which runs against the otherwise one-directional trust model described under Orchestration; polling alone remains acceptable, as this path is not latency-sensitive.
 
@@ -237,22 +258,63 @@ Two directions are needed.
 
 **Upward — VR learning what is running.** VR cannot route to versions it does not know about, and its set of routable targets should not be hand-maintained. This is the registration step above, driven by PO after promotion rather than by instances self-registering on startup, so that a version becomes known to VR only once it is intended to be routable.
 
+### Application Discovery Service (ADS)
+
+*(Decided, from a labor-automation discussion: given how many maintenance releases are expected, "what's running and where" cannot be a manually maintained mapping.)* ADS tells the rest of the system where everything currently is in a given environment — not only API versions, but every deployed app (`api`, `back-office`, `display`, `po`, `theme-studio`, and whatever else is added). It is a new internal component, not a fourth thing callers talk to. VR remains the only lookup the enforcement point and the Webhook Receiver call — "VR remains a lookup and stays off the data path" still holds — and VR delegates internally in two steps:
+
+1. **Customer → version.** VR's own assignment table, PO-driven, changes rarely (on a schedule or a deliberate rollback).
+2. **(App, version) → healthy instance.** Delegated to ADS, refreshed continuously.
+
+These two are kept apart deliberately. Assignment is business logic that only PO/VR's data can decide; instance location and health is infrastructure state that changes independently of any release, so it needs its own always-on process rather than being derived from a point-in-time deploy check.
+
+**Why this needs to be a separate, continuously-running concern, not a deploy-time check.** The deploy pipeline's health check (see Release lifecycle and responsibilities) is a one-time gate — it confirms an instance is healthy before registering it, then the pipeline exits. A version can go on serving customers for weeks after that, and can go unhealthy for reasons that have nothing to do with deployment: a crash, an Azure platform restart, resource exhaustion. ADS polls every registered instance of every app on an ongoing basis, independent of deploy events, so VR's routing decision reflects current state, not a stale "it was healthy when we shipped it" snapshot. This is also the concrete mechanism behind the health-threshold monitoring already listed as an automation candidate above.
+
+**Registration is automated, not manual.** ADS's table is populated by the deploy pipeline itself as part of the health-gate-then-register sequence already decided — no one hand-enters an App Service hostname per release, per app. This is what actually solves the labor problem for frequent maintenance releases; ADS existing as its own component helps by giving that automation one place to write to, but the labor reduction comes from the pipeline doing the registration call, not from ADS's existence alone.
+
+**Multiple instances per (app, version).** ADS's registration model is (app, version) → a *set* of instances, not one instance, since a version may scale out to more than one App Service (a capacity decision, owned by deployment per the existing boundary — "any concurrency or capacity limit belongs to the deployment process, not to VR"). ADS continuously health-polls each instance in the set and, when VR asks "where for this app at this version," returns a currently-healthy instance from it — or the whole healthy set, if VR delegates the actual traffic distribution to a standard per-version load-balancing layer (an Azure Front Door/Application Gateway backend pool scoped to that version's instances, fed by ADS's registration) rather than ADS implementing its own layer-7 balancing. Which of those two — ADS picks one instance and hands it back, versus ADS feeds a real load balancer's backend pool — is not decided here.
+
 **Downward — a client learning it is stale.** `/health/version` already exposes runtime version values. A loaded single-page application does not re-ask: Back Office fetches its bundle once and may run for hours across a cutover, leaving old client code calling a newer API. A version identifier returned on API responses, compared against what the client booted with, lets the client detect the mismatch and reload. Display is less affected, since it already recovers authoritative content periodically.
 
 Frontend surfaces are expected to follow the same assignment as the API, so VR routes the initial bundle load as well. Which version a running client is *using* still requires the staleness check above.
 
 ## Version number determination
 
-Version numbers should be derived automatically, with a declared major release remaining a human decision and any automatic proposal always overridable.
+*(Decided, from a branching/automation discussion.)* Version numbers should be derived automatically, with a declared major release remaining a human decision and any automatic proposal always overridable.
 
 The derivation separates two things: **classification** of a change is a judgment, while **incrementing** from a classification is arithmetic. Keeping them apart means the resulting number is deterministic given a category.
 
+**MAJOR.MINOR.PATCH, on the manifest's `productVersion`:**
+
+- **MAJOR** — set once, deliberately, by a human (e.g. a `MAJOR` value in the release manifest or repo config). Nothing ever auto-bumps it.
+- **MINOR** — a new capability, backward-compatible. Computed automatically at "cut release" on master; cuts a new `release/X.Y` branch (X.Y → X.(Y+1)).
+- **PATCH** — corrective only, on an existing `release/X.Y` branch (a hotfix). Computed automatically at the hotfix merge; if the diff doesn't structurally qualify as corrective (see below), the workflow fails the gate rather than tagging, since that case needs a human to reclassify or retarget it as MINOR.
+
 Much of the classification is structural rather than interpretive, because `DEPLOYMENT_VERSIONING.md` already defines the relevant boundaries: whether a migration is present, whether a stored-procedure contract version changed, whether an API contract major changed. These are readable from the diff and the manifest, and are the same checks that gate the corrective-release fast path described under Automation.
 
-Where judgment is genuinely required — no schema or contract change, but the diff adds capability rather than correcting behavior — classification may be produced by other means, including an AI classifier. Two constraints on that:
+Where judgment is genuinely required — no schema or contract change, but the diff adds capability rather than correcting behavior — classification is produced by an AI classifier (see below), not left to the structural checks alone. Two constraints on that:
 
-- Categories should map to the structural vocabulary already in use (schema-affecting, contract-affecting, capability-adding, corrective, documentation-only) rather than generic semantic-versioning language, so that a proposed classification can be checked against the diff. A classification of "corrective" for a change containing a migration is a contradiction the pipeline should catch. The commit history already carries a strong conventional-commit signal (`feat`, `fix`, `docs` with module scopes) that can be used before or alongside any model.
+- Categories map to the structural vocabulary already in use (schema-affecting, contract-affecting, capability-adding, corrective, documentation-only) rather than generic semantic-versioning language, so that a proposed classification can be checked against the diff. A classification of "corrective" for a change containing a migration is a contradiction the pipeline should catch. The commit history already carries a strong conventional-commit signal (`feat`, `fix`, `docs` with module scopes) that the classifier can use alongside the diff itself.
 - The **category itself must be recorded**, not only the resulting version number. VR's corrective-release handling depends on knowing why a release is patch-level; a version number alone does not carry that.
+
+**Codenames.** A release may carry a friendly codename (e.g. "Mosaic") alongside its number everywhere it's used in conversation — the release board, release notes, the `release/X.Y` branch's description — but the codename is never the source of truth and is not itself part of the tag; see Release candidacy below. The first version is Mosaic.
+
+### AI-assisted classification
+
+*(Decided in shape; the prompt and schema are not written yet.)* The classifier runs as its own step inside the release-cut/hotfix workflow, not inside the everyday PR/build/test CI — it has no trigger in common with a normal push to a feature branch, so daily development never invokes it.
+
+- **Trigger.** `workflow_dispatch` for "cut release" on master, and `push` scoped to `release/*` branches for hotfixes. Nothing else.
+- **Inputs.** The diff since the last release tag (or since the release branch's cut point, for a hotfix), the commit messages, and the current release manifest.
+- **Mechanism.** A direct call to the Claude Messages API from a small script step (`scripts/release/classify-release.mjs` or `.py`), using **structured outputs / forced tool-use** — the model is required to return the classification through a defined tool call and schema, not free text that then needs parsing. This is preferred over running `anthropics/claude-code-action` here: that action is built for multi-turn interactive work (review, iterative fixes) and does not enforce a JSON schema on its output, whereas this step is single-turn and needs a guaranteed-valid result.
+- **Auth.** Workload Identity Federation (GitHub OIDC → Anthropic) rather than a stored API key — the same keyless pattern already used for Azure's federated-identity deployment credentials, so no new long-lived secret is introduced.
+- **Validation.** The classifier's output feeds the plain-code structural validator described above before any version number is computed. The AI proposes; the structural check and, ultimately, whoever approves the release cut, can each override it.
+
+### Per-component selective release
+
+*(Decided, resolving the Module granularity item under Observed constraints.)* Not every release needs every app rebuilt or redeployed. A path-filter step (diffing changed files since the last release tag, per app directory) determines which of the six apps — `api`, `back-office`, `board-engine`, `display`, `po`, `theme-studio` — actually changed. Only those get classified, version-bumped, built, tagged, and deployed; an app the filter did not touch keeps its existing version, artifact, and running instance untouched, and is not re-registered with VR.
+
+This is what the release manifest's per-component `"state"` field is for: `"changed"` for anything the path filter matched, `"unchanged"` for everything else, carrying forward its existing `version`, `sourceCommit`, and `buildId` rather than regenerating them. This also follows directly from `DEPLOYMENT_VERSIONING.md`'s rule that production never rebuilds a staging-approved component — an unchanged component isn't merely skipped as an optimization, it is not supposed to be rebuilt at all.
+
+Consequence: a single release can leave components at different versions — `api` might reach `1.2.0` while `display` stays at `1.1.3` because nothing in it changed. That divergence is expected, not an error state.
 
 ## Observed constraints in the current codebase
 
@@ -389,7 +451,8 @@ Raised during discussion and not yet resolved. Recorded so they are not lost.
 - **Screen count and the connection-layer objection.** Whether the concern with SignalR is cost or scale determines whether a purpose-built connection manager is warranted, and the projected screen count determines whether the scaling concern binds at all.
 - **Per-customer telemetry with a version dimension.** Without it, cohort health cannot be assessed, which removes the point of waves. Nothing currently emits it.
 - **Frontend staleness detection.** A loaded Back Office client continues calling a newer API with older code across a cutover. Deferred, not resolved.
-- **Module granularity.** Noted under observed constraints and not revisited. It has no fix, only a cost.
+- **Module granularity.** Resolved by per-component selective release (see Version number determination): each app versions and deploys independently based on whether it actually changed, rather than the whole product moving together. What remains a cost, not a fix, is that this makes six potentially-different app versions to track per environment instead of one.
+- **Thin-client version testing (Display/TV).** The version chooser under Environments works for browser-session surfaces (Back Office, PO frontend) via a real PO assignment, but Display is a persistent-connection thin client (Tizen/webOS), not a page load per request. How it participates in dev/stage version testing is undecided — candidates include a dedicated pairing/config mechanism, or dev-only switches built into the product and stripped from production. Deferred until it is next in front of us.
 
 ## Decisions required before planning
 
@@ -405,7 +468,6 @@ Raised during discussion and not yet resolved. Recorded so they are not lost.
 - The handoff contract between VR and the deployment process, including result reporting.
 - Session and data-protection key sharing across concurrently running versions, so that moving a customer does not invalidate an active session.
 - Staleness detection and reload behavior for a loaded Back Office client whose assigned version changes mid-session.
-- Which classification method produces the non-structural part of a version bump, and how a proposed classification is validated against the diff.
 - Which ticket system supplies bug-to-customer linkage, and how a release declares the tickets it resolves.
 - Per-resource cost-allocation drivers.
 - Background service behavior when VR is unavailable, and whether transition-state persistence lands before or with the first rollout.
@@ -415,5 +477,8 @@ Raised during discussion and not yet resolved. Recorded so they are not lost.
 - Observability requirements, including per-customer version visibility tied to the diagnostic-agent concept.
 - Cost and operational ownership of any new routing or gateway component.
 - Interaction with the subdomain/hosting structure currently being established (`app.<service>.vennusign.com` per-environment, per-service pattern) — how many concurrent app instances per production service this implies, and how that maps to that naming scheme.
+- How many `release/X.Y` branches stay open concurrently, formalizing the informal "2-3" figure from the branching-model proposal under Environments.
+- Thin-client (Display/TV) participation in dev/stage version testing, per Open Questions.
+- Whether ADS resolves a single healthy instance per (app, version) itself, or feeds a standard Azure load-balancing layer scoped per version, per Application Discovery Service (ADS).
 
 No implementation should begin from this concept alone. Approved scope, issue and work-package governance, architecture review, and acceptance criteria remain necessary.
