@@ -288,6 +288,8 @@ This is the Product Router's job, not a new component: "Routes the request and t
 
 Whether that means literally one edge/gateway hop per request (matching the "gateway in front of Vennu.Api" candidate already listed under Design Considerations) or a resolved-once-per-session endpoint that the frontend bundle then reuses directly is not decided here — see "Where the decision is enforced" below, which this sharpens but does not resolve.
 
+[`progressive-customer-cutover-thin-layer-flow.html`](progressive-customer-cutover-thin-layer-flow.html) diagrams the mechanism this section describes: Product Router and WR each independently asking VDS, VDS delegating instance discovery to ADS internally, and the request-forwarding hop staying separate from both lookups.
+
 ## Version number determination
 
 *(Decided, from a branching/automation discussion.)* Version numbers should be derived automatically, with a declared major release remaining a human decision and any automatic proposal always overridable.
