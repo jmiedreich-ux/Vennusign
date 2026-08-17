@@ -1061,3 +1061,78 @@ issue #704 is closed and the local and remote completed branches are deleted. Sl
 3-A is closed. The one-time review, Playwright, and CI exception is exhausted.
 
 **Exact next action.** Do not begin Slice 4 until its owner-approved plan exists.
+
+## Release engineering foundations — dev deploy pipeline stood up — 2026-08-16/17
+
+Separate track from Menus: a branching/versioning/deployment discussion produced
+significant additions to `docs/design/progressive-customer-cutover-concept.md`
+(branching model — master/release/X.Y/hotfix; dev/stage version folders and version
+chooser; git tag and codename conventions; automated MAJOR/MINOR/PATCH versioning
+with AI-assisted release classification; per-component selective release; and the
+Application Discovery Service, ADS, giving VR continuous (app, version) -> healthy
+instance resolution). All still concept-stage per that document's own status line —
+not approved scope.
+
+Ahead of that, a real dev deploy pipeline was stood up and proven working today.
+`.github/workflows/deploy-dev.yml` builds and deploys `api`, `back-office`,
+`display`, `po` to their `vennusign-dev-*` App Services on push to `master`, gated
+so PR-time test workflows and the deploy workflow never share a trigger. Backing
+Azure OIDC identity (`vennusign-github-actions-dev`, federated credential trusting
+`repo:jmiedreich-ux/Vennusign:ref:refs/heads/master`, `Website Contributor` scoped to
+`rg-basic-website` only) was created out of band, not via any script in the repo.
+
+`board-engine` was found to have no independent deploy target — it is a shared
+source library imported by `back-office` (and likely `display`) via a tsconfig/vite
+path alias, not a standalone app. The `vennusign-dev-board-engine` App Service and
+its subdomain, created earlier in the same session before this was discovered,
+remain unused; nobody has decided yet whether to remove them.
+
+The first real deploy run surfaced three problems, all now fixed directly in Azure
+(none via a repo-tracked script yet):
+
+- `vennusign-dev-api` had no `ConnectionStrings__VennuDatabase` app setting. Set to
+  point at the existing `dev_vennusign` database on `dev-vennusign.database.windows.net`
+  (australiaeast; a different region from the App Services' Central US, not yet
+  addressed). The firewall already allowed Azure services, so this alone should have
+  been sufficient.
+- The three static SPA apps (`back-office`, `display`, `po`) are Vite builds with no
+  server process, deployed onto Node-runtime App Services that had nothing to execute.
+  Fixed by setting the startup command to `pm2 serve /home/site/wwwroot --no-daemon --spa`
+  on all three.
+- `vennusign-dev-api` still failed to start after the connection string fix, with
+  zero application log output across several restarts. Traced to
+  `DatabaseMigrator.Run` (`src/Vennu.Data/DatabaseMigrator.cs`): it opens a SQL
+  session and blocks on `sp_getapplock` (session-scoped, 180s timeout) before doing
+  anything else, and produces no console output until *after* that lock is acquired.
+  Repeated restarts during troubleshooting almost certainly piled up orphaned
+  session locks from hard-killed containers, compounding the wait each time. Also
+  changed `linuxFxVersion` from `DOTNETCORE|10.0` to `DOTNETCORE|9.0` to match the
+  app's `net9.0` target (harmless, but not confirmed to have been the actual
+  blocker), and raised `WEBSITES_CONTAINER_START_TIME_LIMIT` to 600 to give the
+  migration headroom. Letting one restart run undisturbed, without further
+  interruption, is what actually resolved it.
+
+Fixed in the repo: `src/Vennu.Data/DatabaseMigrator.cs` now logs before
+`EnsureDatabase`, before and after lock acquisition (with elapsed wait time), and on
+lock release — commit `84e7699`. Previously this whole sequence was silent, which is
+why the above took so long to diagnose: DbUp's own `.LogToConsole()` only starts
+after the lock is already held.
+
+Current state: all four dev apps confirmed live and serving real content —
+`dev.api.vennusign.com` (`/health/version` 200), `dev.back-office.vennusign.com`,
+`dev.display.vennusign.com`, `dev.po.vennusign.com`.
+
+Not yet done: none of the Azure-side fixes above (connection string, `pm2 serve`
+startup command, runtime pin, `WEBSITES_CONTAINER_START_TIME_LIMIT`) are captured
+anywhere in the repo or as infrastructure-as-code — they exist only as live Azure
+App Service configuration. `theme-studio`'s dev subdomain and App Service exist with
+no application deployed to it yet. `stage`/`app` tiers have no custom domains, OIDC
+identity, or deploy workflow at all yet — today's work covers `dev` only, and
+deliberately does not yet implement the version-folder/branching model from the
+concept doc above, since that remains unapproved design.
+
+**Exact next action.** Decide whether to capture the App Service configuration
+(connection string, startup commands, runtime, timeout) as infrastructure-as-code
+or leave it as manual Azure state; then continue either with the GitHub issue
+backlog or with formalizing the release-engineering concept into an approved
+work package.
