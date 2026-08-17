@@ -124,6 +124,6 @@ export function revokeCustomerSession(configuration: BackOfficeConfiguration) {
   return request<void>(`${configuration.apiBaseUrl}/api/customer-auth/session`, { method: "DELETE" });
 }
 
-export function externalSignInUrl(configuration: BackOfficeConfiguration, provider: "google" | "apple", returnPath = "/onboarding") {
+export function externalSignInUrl(configuration: BackOfficeConfiguration, provider: "google" | "apple" | "vennusign", returnPath = "/onboarding") {
   return `${configuration.apiBaseUrl}/api/customer-auth/external/${provider}?returnPath=${encodeURIComponent(returnPath)}`;
 }

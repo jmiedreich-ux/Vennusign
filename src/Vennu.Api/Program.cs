@@ -132,7 +132,14 @@ builder.Services
     .AddOpenIdConnect(CustomerAuthenticationDefaults.GoogleScheme, options =>
         ConfigureCustomerOidc(options, "https://accounts.google.com", "/signin-customer-google", customerAuthentication.Google, false))
     .AddOpenIdConnect(CustomerAuthenticationDefaults.AppleScheme, options =>
-        ConfigureCustomerOidc(options, "https://appleid.apple.com", "/signin-customer-apple", customerAuthentication.Apple, true));
+        ConfigureCustomerOidc(options, "https://appleid.apple.com", "/signin-customer-apple", customerAuthentication.Apple, true))
+    .AddOpenIdConnect(CustomerAuthenticationDefaults.EntraScheme, options =>
+        ConfigureCustomerOidc(options, customerAuthentication.Entra.Authority, "/signin-customer-entra", new CustomerOidcProviderOptions
+        {
+            Enabled = customerAuthentication.Entra.Enabled,
+            ClientId = customerAuthentication.Entra.ClientId,
+            ClientSecret = customerAuthentication.Entra.ClientSecret
+        }, false));
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(

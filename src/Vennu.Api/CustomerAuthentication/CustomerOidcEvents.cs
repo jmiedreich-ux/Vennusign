@@ -15,6 +15,7 @@ public sealed class CustomerOidcEvents(
         {
             CustomerAuthenticationDefaults.GoogleScheme => ExternalIdentityProvider.Google,
             CustomerAuthenticationDefaults.AppleScheme => ExternalIdentityProvider.Apple,
+            CustomerAuthenticationDefaults.EntraScheme => ExternalIdentityProvider.Vennusign,
             _ => throw new InvalidOperationException("Unsupported customer OIDC scheme.")
         };
         var subject = context.Principal?.FindFirstValue("sub");
@@ -33,9 +34,13 @@ public sealed class CustomerOidcEvents(
             email,
             true,
             context.Principal?.FindFirstValue("name") ?? email), context.HttpContext.RequestAborted).ConfigureAwait(false);
-        var method = provider == ExternalIdentityProvider.Google
-            ? CustomerAuthenticationMethod.Google
-            : CustomerAuthenticationMethod.Apple;
+        var method = provider switch
+        {
+            ExternalIdentityProvider.Google => CustomerAuthenticationMethod.Google,
+            ExternalIdentityProvider.Apple => CustomerAuthenticationMethod.Apple,
+            ExternalIdentityProvider.Vennusign => CustomerAuthenticationMethod.Vennusign,
+            _ => throw new InvalidOperationException("Unsupported external identity provider.")
+        };
         var session = await sessionService.IssueAsync(user.Id, method, context.HttpContext.RequestAborted).ConfigureAwait(false);
         CustomerSessionCookie.Append(context.Response, session.Token, session.Session.ExpiresUtc);
     }

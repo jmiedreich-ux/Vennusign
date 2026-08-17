@@ -24,6 +24,17 @@ public sealed class CustomerAuthenticationOptionsValidator : IValidateOptions<Cu
             failures.Add("CustomerAuthentication:FrontendOrigin must be an absolute HTTPS origin without a path, query, fragment, or user information.");
         ValidateProvider(options.Google, "Google", failures);
         ValidateProvider(options.Apple, "Apple", failures);
+        if (options.Entra.Enabled)
+        {
+            if (string.IsNullOrWhiteSpace(options.Entra.CiamDomain))
+                failures.Add("CustomerAuthentication:Entra:CiamDomain is required when enabled.");
+            if (!Guid.TryParse(options.Entra.TenantId, out _))
+                failures.Add("CustomerAuthentication:Entra:TenantId must be a GUID when enabled.");
+            if (string.IsNullOrWhiteSpace(options.Entra.ClientId))
+                failures.Add("CustomerAuthentication:Entra:ClientId is required when enabled.");
+            if (string.IsNullOrWhiteSpace(options.Entra.ClientSecret))
+                failures.Add("CustomerAuthentication:Entra:ClientSecret is required when enabled.");
+        }
         if (options.EmailDelivery.Enabled &&
             (options.EmailDelivery.Endpoint is null || !options.EmailDelivery.Endpoint.IsAbsoluteUri ||
              options.EmailDelivery.Endpoint.Scheme != Uri.UriSchemeHttps))

@@ -26,6 +26,7 @@ public sealed class CustomerAuthenticationController(
         {
             "google" => (CustomerAuthenticationDefaults.GoogleScheme, options.Value.Google.Enabled),
             "apple" => (CustomerAuthenticationDefaults.AppleScheme, options.Value.Apple.Enabled),
+            "vennusign" => (CustomerAuthenticationDefaults.EntraScheme, options.Value.Entra.Enabled),
             _ => (string.Empty, false)
         };
         if (string.IsNullOrEmpty(scheme)) return NotFound();

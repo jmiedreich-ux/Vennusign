@@ -16,6 +16,15 @@ public static class CustomerAuthenticationDefaults
     public const string ExternalCookieScheme = "CustomerExternal";
     public const string GoogleScheme = "CustomerGoogle";
     public const string AppleScheme = "CustomerApple";
+
+    /// <summary>
+    /// Entra External ID tenant. Currently only used for "Sign in with Vennusign" (Entra's own
+    /// local account) - Google/Apple still route through <see cref="GoogleScheme"/> /
+    /// <see cref="AppleScheme"/> directly. See
+    /// docs/design/approved/authentication/decisions.md for the target state where all three
+    /// route through this scheme.
+    /// </summary>
+    public const string EntraScheme = "CustomerEntra";
     public const string SessionCookieName = "__Host-Vennusign.CustomerSession";
     public const string LegacySessionCookieName = "__Host-Vennu.CustomerSession";
 }

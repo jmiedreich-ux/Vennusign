@@ -22,6 +22,7 @@ public sealed class CustomerAuthenticationOptions
     public Uri FrontendOrigin { get; set; } = new("https://app.vennu.com");
     public CustomerOidcProviderOptions Google { get; set; } = new();
     public CustomerOidcProviderOptions Apple { get; set; } = new();
+    public CustomerEntraOptions Entra { get; set; } = new();
     public CustomerEmailDeliveryOptions EmailDelivery { get; set; } = new();
     public CustomerPasskeyOptions Passkeys { get; set; } = new();
 }
@@ -37,6 +38,26 @@ public sealed class CustomerOidcProviderOptions
     public bool Enabled { get; set; }
     public string ClientId { get; set; } = string.Empty;
     public string ClientSecret { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Microsoft Entra External ID (CIAM) tenant that brokers "Sign in with Vennusign" (its own
+/// local account) and, in future, Google/Apple federation - see
+/// docs/design/approved/authentication/decisions.md. Not used for Google/Apple yet: those still
+/// run through <see cref="CustomerAuthenticationOptions.Google"/> /
+/// <see cref="CustomerAuthenticationOptions.Apple"/> directly until that migration happens.
+/// </summary>
+public sealed class CustomerEntraOptions
+{
+    public bool Enabled { get; set; }
+
+    /// <summary>The CIAM subdomain, e.g. "vennusign" for vennusign.ciamlogin.com.</summary>
+    public string CiamDomain { get; set; } = string.Empty;
+    public string TenantId { get; set; } = string.Empty;
+    public string ClientId { get; set; } = string.Empty;
+    public string ClientSecret { get; set; } = string.Empty;
+
+    public string Authority => $"https://{CiamDomain}.ciamlogin.com/{TenantId}/v2.0";
 }
 
 public sealed class CustomerEmailDeliveryOptions

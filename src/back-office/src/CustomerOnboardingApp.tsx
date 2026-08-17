@@ -26,6 +26,7 @@ const REMEMBERED_METHOD_KEY = "vennusign.customerAuth.lastMethod";
 const METHOD_LABELS: Record<string, string> = {
   Google: "Continue with Google",
   Apple: "Continue with Apple",
+  Vennusign: "Continue with Vennusign",
   Passkey: "Use a passkey",
   EmailLink: "Email me a sign-in link"
 };
@@ -235,6 +236,8 @@ export default function CustomerOnboardingApp() {
             <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}>{METHOD_LABELS.Google}</a>
           : rememberedMethod === "Apple" ?
             <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple", authenticationReturnPath)}>{METHOD_LABELS.Apple}</a>
+          : rememberedMethod === "Vennusign" ?
+            <a className="customer-entry__provider" href={externalSignInUrl(configuration, "vennusign", authenticationReturnPath)}>{METHOD_LABELS.Vennusign}</a>
           : rememberedMethod === "Passkey" ? <form onSubmit={usePasskey}>
             <label htmlFor="passkeyEmail">Email for your passkey</label>
             <input id="passkeyEmail" name="passkeyEmail" type="email" autoComplete="username webauthn" required />
@@ -248,6 +251,7 @@ export default function CustomerOnboardingApp() {
         </> : <>
         <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}>Continue with Google</a>
         <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple", authenticationReturnPath)}>Continue with Apple</a>
+        <a className="customer-entry__provider" href={externalSignInUrl(configuration, "vennusign", authenticationReturnPath)}>Continue with Vennusign</a>
         <div className="customer-entry__divider"><span>Returning customers</span></div>
         <form onSubmit={usePasskey}>
           <label htmlFor="passkeyEmail">Email for your passkey</label>

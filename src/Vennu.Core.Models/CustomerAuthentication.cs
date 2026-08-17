@@ -7,7 +7,10 @@ public enum CustomerAuthenticationMethod
     EmailLink = 3,
     Passkey = 4,
     Totp = 5,
-    RecoveryCode = 6
+    RecoveryCode = 6,
+
+    /// <summary>Entra External ID's own local account ("Sign in with Vennusign").</summary>
+    Vennusign = 7
 }
 
 public enum CustomerAuthenticationAssurance { Primary = 1, Strong = 2, Recovery = 3 }
