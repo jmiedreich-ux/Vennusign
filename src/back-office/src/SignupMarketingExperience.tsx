@@ -1,6 +1,34 @@
 import { useState } from "react";
 import type { PublicOnboardingPlan } from "./customerOnboardingApi";
 
+const faqs = [
+  {
+    q: "What is Vennusign?",
+    a: "A digital signage platform that knows what matters for your industry — menus for restaurants, offers for retail, schedules for venues. Manage your content in one workspace, then push changes live to every paired screen."
+  },
+  {
+    q: "What hardware do I need?",
+    a: "Vennusign runs on its own web player, Android TV, Fire TV, Samsung Tizen, and LG webOS — pair whatever screen you already have with a one-time six-digit code."
+  },
+  {
+    q: "Can I preview a change before it goes live?",
+    a: "Yes. Every change is previewed and reviewed before it reaches a screen, and delivery state stays visible so you always know what is actually live."
+  },
+  {
+    q: "What does it cost?",
+    a: "Plans are shown below with venue and screen limits. Choose one after you create your account — some plans include a trial period."
+  },
+  {
+    q: "Do I have to finish setup in one sitting?",
+    a: "No. Your onboarding progress is saved automatically, so you can leave and pick up exactly where you left off."
+  },
+  {
+    // TODO: replace with a real support address before this ships.
+    q: "Can I talk to someone before I start?",
+    a: "Yes — email [support email] and we will walk through it with you before you create an account."
+  }
+] as const;
+
 const demoMoments = [
   {
     id: "breakfast",
@@ -31,12 +59,23 @@ export default function SignupMarketingExperience({ plans }: { plans: PublicOnbo
 
   return <div className="signup-marketing">
     <section className="signup-marketing__hero" aria-labelledby="signup-heading">
-      <span>Digital menus, without the friction</span>
-      <h1 id="signup-heading">Put your first screen live.</h1>
-      <p>See the product before you sign up. Then create your organization, choose an available plan, and pair a display with one secure code.</p>
-      <div className="signup-marketing__actions">
-        <a className="signup-marketing__primary" href="#signup-auth-card">Start setup</a>
-        <a href="#live-product-demo">Try the live demo</a>
+      <div className="signup-marketing__hero-panel">
+        <div className="signup-marketing__hero-device" aria-hidden="true">
+          <div className="signup-marketing__hero-device-screen">
+            <span>VENNU CAFE · Evening</span>
+            <strong>Dinner presentation is ready</strong>
+            <div className="signup-marketing__hero-device-bars"><i /><i /></div>
+          </div>
+        </div>
+        <span>Digital menus, without the friction</span>
+        <h1 id="signup-heading">Put your first screen live.</h1>
+        <p>See the product before you sign up. Then create your organization, choose an available plan, and pair a display with one secure code.</p>
+        <div className="signup-marketing__actions">
+          <a className="signup-marketing__primary" href="#signup-auth-card">Start setup</a>
+          <a href="#live-product-demo">Try the live demo</a>
+          <a className="signup-marketing__book-demo" href="#signup-faq">Book a demo instead</a>
+        </div>
+        <p className="signup-marketing__no-cc">No credit card required to try it.</p>
       </div>
       <ul className="signup-marketing__proof" aria-label="Product proof points">
         <li><strong>One workspace</strong><span>Menus, screens, schedules, and daily service controls.</span></li>
@@ -68,6 +107,28 @@ export default function SignupMarketingExperience({ plans }: { plans: PublicOnbo
         <li><span>2</span><div><strong>Enter the code in setup</strong><p>Vennusign links the display to the authorized venue selected by your saved journey.</p></div></li>
         <li><span>3</span><div><strong>Wait for the Online heartbeat</strong><p>Pairing and live status stay distinct, so setup never claims success before the player reports in.</p></div></li>
       </ol>
+      <p className="signup-pairing-story__hardware">Runs on Vennusign&rsquo;s own web player, Android TV, Fire TV, Samsung Tizen, and LG webOS — pair whatever screen you already have.</p>
+    </section>
+
+    <section className="signup-data-note" aria-labelledby="signup-data-heading">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" />
+        <path d="M9.5 12l1.8 1.8L15 10" />
+      </svg>
+      <div>
+        <h2 id="signup-data-heading">Your menu data stays yours.</h2>
+        <p>Every venue&rsquo;s data is isolated to its own workspace, and every change &mdash; who made it and when &mdash; is recorded and visible to your team.</p>
+      </div>
+    </section>
+
+    <section id="signup-faq" className="signup-faq" aria-labelledby="signup-faq-heading">
+      <div><span>Questions</span><h2 id="signup-faq-heading">Before you start setup.</h2></div>
+      <div className="signup-faq__list">
+        {faqs.map(faq => <details key={faq.q}>
+          <summary>{faq.q}</summary>
+          <p>{faq.a}</p>
+        </details>)}
+      </div>
     </section>
 
     <section className="signup-pricing" aria-labelledby="signup-pricing-heading">

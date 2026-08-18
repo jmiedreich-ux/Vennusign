@@ -18,6 +18,7 @@
   --sky-color-background-base: #f4f9fd;
   --sky-color-text-secondary: #475569;
   --sky-color-text-muted: #64748b;
+  --sky-color-text-on-dark: #f8fafc;
   --sky-color-text-on-dark-muted: #94a3b8;
 
   /* Reserved status colors. Always pair these with a label or icon. */
