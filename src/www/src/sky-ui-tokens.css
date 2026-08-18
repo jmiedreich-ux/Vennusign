@@ -1,0 +1,209 @@
+/*
+ * Sky UI shared design-token contract.
+ *
+ * Duplicated verbatim from src/back-office/src/sky-ui-tokens.css - each
+ * frontend app bundles its own copy, since they are independently
+ * deployable and cannot share a source module across projects. Keep the
+ * two files in sync by hand; component selectors stay in each app's own
+ * stylesheet, not here.
+ */
+:root {
+  color-scheme: light;
+
+  /* Locked owner palette. Sky is a fill/focus accent, never text on light. */
+  --sky-color-primary: #87ceeb;
+  --sky-color-surface: #f8fafc;
+  --sky-color-surface-raised: #ffffff;
+  --sky-color-ink: #0f172a;
+  --sky-color-secondary: #e0f2fe;
+  --sky-color-border: #e2e8f0;
+  --sky-color-background-base: #f4f9fd;
+  --sky-color-text-secondary: #475569;
+  --sky-color-text-muted: #64748b;
+  --sky-color-text-on-dark: #f8fafc;
+  --sky-color-text-on-dark-muted: #94a3b8;
+
+  /* Reserved status colors. Always pair these with a label or icon. */
+  --sky-color-live: #178a52;
+  --sky-color-live-surface: #e0f4e9;
+  --sky-color-off: #b03a33;
+  --sky-color-off-surface: #fbe7e5;
+  --sky-color-warning: #c9871a;
+  --sky-color-warning-surface: #fdf1dc;
+  --sky-color-emergency: #c22e26;
+  --sky-color-promotion: #7c5cbf;
+  --sky-label-accent: #267252;
+  --sky-positive-text: #18603f;
+  --sky-danger-text: #8a2929;
+  --sky-warning-text: #7d5911;
+  --sky-danger-solid: #991b1b;
+  --sky-warning-solid: #854d0e;
+
+  /* Semantic color aliases used by components. */
+  --sky-page-background: var(--sky-color-surface);
+  --sky-card-background: var(--sky-color-surface-raised);
+  --sky-text-primary: var(--sky-color-ink);
+  --sky-text-secondary: var(--sky-color-text-secondary);
+  --sky-text-muted: var(--sky-color-text-muted);
+  --sky-small-text: var(--sky-color-text-muted);
+  --sky-action-primary-background: var(--sky-color-primary);
+  --sky-action-primary-text: var(--sky-color-ink);
+  --sky-action-link-text: #1d6fb8;
+  --sky-action-dark-background: var(--sky-color-ink);
+  --sky-action-dark-text: var(--sky-color-surface);
+  --sky-control-hover-background: var(--sky-color-secondary);
+  --sky-control-border: var(--sky-color-border);
+  --sky-sidebar-background: var(--sky-color-ink);
+  --sky-sidebar-text: var(--sky-color-surface);
+  --sky-badge-background: var(--sky-color-secondary);
+  --sky-badge-text: var(--sky-color-ink);
+  --sky-panel-shadow: 0 18px 52px rgb(15 23 42 / 0.12);
+  --sky-focus-color: #096f91;
+  --sky-focus-width: 2px;
+  --sky-focus-offset: 2px;
+  --sky-focus-ring: var(--sky-focus-width) solid var(--sky-focus-color);
+  /* One dark-sky ring clears 3:1 on light surfaces without making ordinary
+     controls look double-bordered. */
+  --sky-focus-halo: none;
+
+  /* Typography. */
+  --sky-font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Page tabs use the application face; only their tracking is specialized. */
+  --sky-letter-spacing-page-tab: 0.12em;
+  --sky-letter-spacing-label: 0.08em;
+  --sky-font-size-xs: 0.75rem;
+  --sky-font-size-sm: 0.875rem;
+  --sky-font-size-md: 1rem;
+  --sky-font-size-lg: 1.25rem;
+  --sky-font-size-xl: 1.5rem;
+  --sky-font-weight-regular: 400;
+  --sky-font-weight-medium: 500;
+  --sky-font-weight-semibold: 600;
+  --sky-font-weight-bold: 700;
+  --sky-line-height-tight: 1.25;
+  --sky-line-height-body: 1.55;
+
+  /* Spacing and shape. */
+  --sky-space-1: 0.25rem;
+  --sky-space-2: 0.5rem;
+  --sky-space-3: 0.75rem;
+  --sky-space-4: 1rem;
+  --sky-space-5: 1.5rem;
+  --sky-space-6: 2rem;
+  --sky-space-7: 3rem;
+  --sky-radius-sm: 0.5rem;
+  --sky-radius-md: 0.75rem;
+  --sky-radius-lg: 1rem;
+  --sky-radius-xl: 1.5rem;
+  --sky-radius-pill: 999px;
+
+  /* Component foundations; full Sky visual adoption is RWP-00.12. */
+  --sky-button-radius: var(--sky-radius-md);
+  --sky-input-radius: var(--sky-radius-md);
+  --sky-card-radius: var(--sky-radius-lg);
+  --sky-badge-radius: var(--sky-radius-sm);
+  --sky-card-border: 1px solid var(--sky-color-border);
+  --sky-page-gradient: radial-gradient(circle at top right, var(--sky-color-secondary), var(--sky-color-background-base) 54%);
+
+  /* ---------------------------------------------------------------------------
+     Menus additions, batches 1 and 2. Approved as build-decision 8 and Q178;
+     merged here by Menus milestone 2, the first work that consumes them.
+     Nothing above is changed - these are additions, and the exact hi-fi values.
+
+     The BOARD palette is deliberately absent. A board's surface, inks and
+     leaders belong to menu-theme definitions consumed by the render engine, not
+     to the UI contract (Q178/Q86), and no named look exists to enshrine here.
+     --------------------------------------------------------------------------- */
+
+  /* Type - filling the 9-16px range the existing 12/14/16/20/24 scale skips,
+     and adding the display sizes the Menus headlines need. */
+  --sky-font-size-2xs: 0.5625rem;      /*  9px - nav rail labels only */
+  --sky-font-size-xxs: 0.6875rem;      /* 11px - dense metadata, board annotations */
+  --sky-font-size-xs-plus: 0.71875rem; /* 11.5px */
+  --sky-font-size-sm-minus: 0.78125rem;/* 12.5px - status lines, chips */
+  --sky-font-size-sm-plus: 0.84375rem; /* 13.5px - button text */
+  --sky-font-size-md-plus: 0.96875rem; /* 15.5px - card titles */
+  --sky-font-size-2xl: 1.8125rem;      /* 29px - page headline */
+  --sky-font-size-3xl: 2.125rem;       /* 34px - empty-state headline */
+
+  /* Letter-spacing - optical correction at display sizes. */
+  --sky-tracking-tight: -0.018em;
+  --sky-tracking-tighter: -0.028em;
+
+  /* Neutrals the palette does not cover: the page behind a frame, subtle fills,
+     and a hairline lighter than --sky-color-border. */
+  --sky-color-shell: #e8eef4;
+  --sky-color-hairline: #eef2f6;
+  --sky-color-fill-subtle: #f4f7fa;
+  --sky-color-surface-tint: #fbfcfe;
+  --sky-color-border-dashed: #cbd9e4;
+  --sky-color-accent-wash: #f2fbff;
+
+  /* Elevation - the contract defines one panel shadow; cards need less. */
+  --sky-shadow-card: 0 1px 2px rgb(15 23 42 / 0.09), 0 10px 24px rgb(15 23 42 / 0.10);
+  --sky-shadow-button: 0 4px 12px rgb(15 23 42 / 0.2);
+  --sky-shadow-hairline: 0 1px 2px rgb(15 23 42 / 0.04);
+
+  /* Batch 2: the remaining exact hi-fi values. */
+
+  /* Selection - the builder's canvas ring and drag pill (Q178, named). */
+  --sky-color-selection: #2a78d6;
+
+  /* Borders and hairlines. */
+  --sky-color-ink-divider: #1e293b;      /* divider on dark ink surfaces (the nav rail) */
+  --sky-color-border-input: #dbe3ec;
+  --sky-color-border-control: #cbd5e1;   /* checkbox border; "not on a screen" status dot */
+  --sky-color-hairline-strong: #e9eef4;  /* publish-bar top border */
+  --sky-color-live-border: #dbe7de;      /* online screen-chip border */
+
+  /* Radii between the existing 8/12/16/24px steps. */
+  --sky-radius-sm-plus: 0.5625rem;   /*  9px - the board's glass chip */
+  --sky-radius-md-minus: 0.625rem;   /* 10px - accent button, text field, chips */
+  --sky-radius-lg-minus: 0.875rem;   /* 14px - menu card / board frame, add-a-menu tile */
+
+  /* A glass chip over a board render branches on the board's lightness: a
+     light-glass chip on a cream board is invisible, which was a real defect twice. */
+  --sky-glass-on-dark-fill: rgb(248 250 252 / 0.16);
+  --sky-glass-on-dark-border: rgb(248 250 252 / 0.24);
+  --sky-glass-on-light-fill: rgb(15 23 42 / 0.42);
+  --sky-glass-on-light-border: rgb(15 23 42 / 0.12);
+
+  /* The nav rail (design README, Components). */
+  --sky-rail-width: 76px;
+  --sky-rail-item-width: 56px;
+  --sky-rail-background: var(--sky-color-ink);
+  --sky-rail-item-color: var(--sky-color-text-on-dark-muted);
+  --sky-rail-item-active-background: var(--sky-color-primary);
+  --sky-rail-item-active-color: var(--sky-color-ink);
+}
+
+:root[data-sky-theme="midnight"] {
+  color-scheme: dark;
+  --sky-focus-color: #38bdf8;
+  --sky-color-surface: #111827;
+  --sky-color-surface-raised: #1e293b;
+  --sky-color-ink: #f8fafc;
+  --sky-color-secondary: #17344a;
+  --sky-color-border: #475569;
+  --sky-color-background-base: #0b1120;
+  --sky-color-text-secondary: #cbd5e1;
+  --sky-color-text-muted: #94a3b8;
+  --sky-color-live: #65d99c;
+  --sky-color-live-surface: #123d2d;
+  --sky-color-off: #ff8a83;
+  --sky-color-off-surface: #4a2024;
+  --sky-color-warning: #f4c15d;
+  --sky-color-warning-surface: #493518;
+  --sky-label-accent: #87ceeb;
+  --sky-positive-text: #65d99c;
+  --sky-danger-text: #ff8a83;
+  --sky-warning-text: #f4c15d;
+  --sky-action-primary-text: #0f172a;
+  --sky-action-dark-background: #e2e8f0;
+  --sky-action-dark-text: #0f172a;
+  --sky-sidebar-background: #0b1120;
+  --sky-sidebar-text: #f8fafc;
+  --sky-badge-text: #f8fafc;
+  --sky-panel-shadow: 0 18px 52px rgb(0 0 0 / 0.34);
+  --sky-page-gradient: radial-gradient(circle at top right, #17344a, #0b1120 54%);
+}
