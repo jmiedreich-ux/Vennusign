@@ -81,7 +81,10 @@ function Board({ venueName, period, compact }: { venueName: string; period: Boar
     {period.style === "daily-special-hero" ? (() => {
       const featured = period.items[featuredIndex];
       const secondary = period.items.filter((_, i) => i !== featuredIndex);
-      return <div className="board__hero">
+      return <>
+        {period.photo ? <img className="board__hero-media" src={period.photo} alt="" aria-hidden="true" /> : null}
+        <div className="board__hero-scrim" aria-hidden="true" />
+        <div className="board__hero">
         <em className="board__hero-pill">Featured now</em>
         <p className="board__hero-headline">{period.headline}</p>
         <div className="board__hero-featured">
@@ -93,12 +96,15 @@ function Board({ venueName, period, compact }: { venueName: string; period: Boar
             <span>{item.name}</span><data value={item.price}>{item.price}</data>
           </div>)}
         </div>
-      </div>;
+        </div>
+      </>;
     })() : period.style === "photo-grid" ? <>
       <p className="board__headline">{period.headline}</p>
       <div className="board__photo-grid">
         {period.items.map((item, index) => <div key={item.name} className={`board__photo-card${item.tag === "sold-out" ? " board__photo-card--sold-out" : ""}`}>
-          <div className="board__photo-swatch" style={{ "--photo-accent": PHOTO_ACCENT_PALETTE[index % PHOTO_ACCENT_PALETTE.length] } as React.CSSProperties} />
+          {item.photo
+            ? <img className="board__photo-image" src={item.photo} alt={item.name} loading="lazy" />
+            : <div className="board__photo-swatch" style={{ "--photo-accent": PHOTO_ACCENT_PALETTE[index % PHOTO_ACCENT_PALETTE.length] } as React.CSSProperties} />}
           <div className="board__photo-copy">
             <span>{item.name}</span>
             <data value={item.price}>{item.price}</data>
@@ -106,6 +112,94 @@ function Board({ venueName, period, compact }: { venueName: string; period: Boar
           <ItemTag item={item} />
         </div>)}
       </div>
+    </> : period.style === "movie-poster-board" ? <>
+      <p className="board__headline">{period.headline}</p>
+      <div className="board__poster-row">
+        {period.items.map(item => <div key={item.name} className="board__poster-card">
+          {item.photo ? <img className="board__poster-art" src={item.photo} alt={item.name} loading="lazy" /> : null}
+          <strong>{item.name}</strong>
+          {item.detail ? <small>{item.detail}</small> : null}
+          {item.times ? <div className="board__poster-times">
+            {item.times.map(time => <span key={time}>{time}</span>)}
+          </div> : null}
+          <ItemTag item={item} />
+        </div>)}
+      </div>
+    </> : period.style === "flight-board" ? <>
+      <p className="board__headline">{period.headline}</p>
+      <div className="board__flight-rows">
+        <div className="board__flight-row board__flight-row--head" aria-hidden="true">
+          <span>Time</span><span>Destination</span><span>Flight</span><span>Gate</span><span>Status</span>
+        </div>
+        {period.items.map(item => <div key={item.name} className={`board__flight-row board__flight-row--${item.status ?? "on-time"}`}>
+          <data value={item.timeLabel}>{item.timeLabel}</data>
+          <span className="board__flight-city">{item.name}</span>
+          <span>{item.detail}</span>
+          <span>{item.price}</span>
+          <em>{item.status === "on-time" ? "On time" : item.status === "boarding" ? "Boarding" : item.status === "delayed" ? "Delayed" : "Landed"}</em>
+        </div>)}
+      </div>
+    </> : period.style === "promo-splash" ? (() => {
+      const lead = period.items[0];
+      const rest = period.items.slice(1);
+      return <div className="board__promo">
+        <p className="board__promo-headline">{period.headline}</p>
+        <div className="board__promo-burst">
+          <span>{lead.name}</span>
+          <data value={lead.price}>{lead.price}</data>
+        </div>
+        <div className="board__promo-deals">
+          {rest.map(item => <div key={item.name}>
+            <span>{item.name}</span><data value={item.price}>{item.price}</data>
+          </div>)}
+        </div>
+      </div>;
+    })() : period.style === "photo-tile-board" ? <>
+      <p className="board__headline">{period.headline}</p>
+      <div className="board__tile-grid">
+        {period.items.map(item => <div key={item.name} className="board__tile">
+          {item.photo ? <div className="board__tile-photo">
+            <img src={item.photo} alt={item.name} loading="lazy" />
+            <data value={item.price}>{item.price}</data>
+          </div> : null}
+          <span className="board__tile-name">{item.name}</span>
+          {item.detail ? <small>{item.detail}</small> : null}
+          <ItemTag item={item} />
+        </div>)}
+      </div>
+    </> : period.style === "letterboard-special" ? <>
+      <p className="board__headline">{period.headline}</p>
+      <small className="board__letter-sub">Served daily · {period.time}</small>
+      <ol className="board__letter-list">
+        {period.items.map(item => <li key={item.name}>
+          <span>{item.name}</span>
+          <data value={item.price}>{item.price}</data>
+          <ItemTag item={item} />
+        </li>)}
+      </ol>
+    </> : period.style === "classic-chalkboard" ? <>
+      <p className="board__headline">{period.headline}</p>
+      {period.categories ? <div className="board__chalk-categories">
+        {period.categories.map(category => <div key={category.name} className="board__chalk-category">
+          <div className="board__chalk-category-heading">
+            <h3>{category.name}</h3>
+            {category.price ? <strong>{category.price}</strong> : null}
+          </div>
+          <ul className="board__list">
+            {category.items.map(item => <li key={item.name} className={item.tag === "sold-out" ? "board__item--sold-out" : undefined}>
+              <span>{item.name}</span>
+              {category.price ? null : <data value={item.price} className="board__item-price">{item.price}</data>}
+              <ItemTag item={item} />
+            </li>)}
+          </ul>
+        </div>)}
+      </div> : <ul className="board__list">
+        {period.items.map(item => <li key={item.name} className={item.tag === "sold-out" ? "board__item--sold-out" : undefined}>
+          <span>{item.name}</span>
+          <data value={item.price} className="board__item-price">{item.price}</data>
+          <ItemTag item={item} />
+        </li>)}
+      </ul>}
     </> : period.style === "digital-tap-board" ? <>
       <p className="board__headline">{period.headline}</p>
       <div className="board__tap-grid">

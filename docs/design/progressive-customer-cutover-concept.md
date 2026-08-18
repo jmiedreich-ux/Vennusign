@@ -271,7 +271,7 @@ These two are kept apart deliberately. Assignment is business logic that only PO
 
 **Registration is automated, not manual.** ADS's table is populated by the deploy pipeline itself as part of the health-gate-then-register sequence already decided — no one hand-enters an App Service hostname per release, per app. This is what actually solves the labor problem for frequent maintenance releases; ADS existing as its own component helps by giving that automation one place to write to, but the labor reduction comes from the pipeline doing the registration call, not from ADS's existence alone.
 
-**Multiple instances per (app, version).** ADS's registration model is (app, version) → a *set* of instances, not one instance, since a version may scale out to more than one App Service (a capacity decision, owned by deployment per the existing boundary — "any concurrency or capacity limit belongs to the deployment process, not to VDS"). ADS continuously health-polls each instance in the set and, when VDS asks "where for this app at this version," returns a currently-healthy instance from it — or the whole healthy set, if VDS delegates the actual traffic distribution to a standard per-version load-balancing layer (an Azure Front Door/Application Gateway backend pool scoped to that version's instances, fed by ADS's registration) rather than ADS implementing its own layer-7 balancing. Which of those two — ADS picks one instance and hands it back, versus ADS feeds a real load balancer's backend pool — is not decided here.
+**Multiple instances per (app, version).** ADS's registration model is (app, version) → a *set* of instances, not one instance, since a version may scale out to more than one App Service (a capacity decision, owned by deployment per the existing boundary — "any concurrency or capacity limit belongs to the deployment process, not to VDS"; spinning up an additional App Service instance is deployment's act, not ADS's). ADS continuously health-polls each instance in the set. *(Decided.)* ADS does not pick an instance and hand it back itself: it feeds a standard per-version load-balancing layer (an Azure Front Door/Application Gateway backend pool scoped to that version's instances, fed by ADS's registration), and that layer performs the actual traffic distribution. This keeps ADS as registry and health-reporter, not a data-path component making per-request selection decisions.
 
 **Downward — a client learning it is stale.** `/health/version` already exposes runtime version values. A loaded single-page application does not re-ask: Back Office fetches its bundle once and may run for hours across a cutover, leaving old client code calling a newer API. A version identifier returned on API responses, compared against what the client booted with, lets the client detect the mismatch and reload. Display is less affected, since it already recovers authoritative content periodically.
 
@@ -416,9 +416,17 @@ Also unresolved: forwarded requests must not be re-verified by the receiving ver
 
 Note that WR is infrastructure sitting in front of every version and is therefore difficult to version itself; it should stay thin enough to change rarely. Note also that "WR" and "VDS" are easily confused when spoken; prefer the full names in discussion.
 
+## System Monitor
+
+*(Decided: exists as its own component.)* ADS continuously health-polls every instance, but its role stays deliberately narrow — report which instances are healthy, feed the load balancer's backend pool (see Application Discovery Service (ADS) above). It does not decide anything or act beyond that reporting. System Monitor is the component that watches fleet health and capacity signals on an ongoing basis and can act on them, including requesting additional capacity — filling the "monitoring error rate and latency per version, halting on threshold breach" gap already named under Automation, which nothing previously owned.
+
+**System Monitor triggers deployment; it does not perform deployment.** *(Decided.)* When System Monitor decides a version needs another instance, it calls the existing deployment pipeline's dispatch mechanism — the same GitHub Actions dispatch-and-poll path already used for PO-driven releases — rather than holding Azure credentials or provisioning infrastructure itself. "Build and promote," "run a version," and "register it" stay owned by exactly what already owns them (see Release lifecycle and responsibilities); System Monitor becomes a new caller of that trigger, alongside PO.
+
+**Reasons for triggering are not limited to capacity.** *(Decided in principle, not in exhaustive list.)* Capacity is the clearest case, but System Monitor's scope is not capacity-only — an instance failing repeated ADS health checks, a version breaching an error-rate or latency threshold, or other operational conditions are all legitimate triggers. The specific set of conditions, and whether threshold-breach detection additionally feeds VDS's wave-halt/revert automation rather than only triggering a redeploy, is not decided here.
+
 ## Deploying the supporting components
 
-VDS, the Webhook Receiver, and the connection manager cannot use the mechanism they enable. VDS cannot route traffic to itself, and the Webhook Receiver sits in front of every version. They therefore deploy conventionally — one version at a time, all customers at once — which means each needs the properties progressive delivery was meant to make unnecessary:
+VDS, the Webhook Receiver, the connection manager, and System Monitor cannot use the mechanism they enable. VDS cannot route traffic to itself, the Webhook Receiver sits in front of every version, and System Monitor is what triggers new instances into existence in the first place. They therefore deploy conventionally — one version at a time, all customers at once — which means each needs the properties progressive delivery was meant to make unnecessary:
 
 - **Backward-compatible changes only.** There is no per-customer safety net, so a bad deployment reaches everyone.
 - **Slot swap or rolling instances** for zero-downtime replacement.
@@ -447,7 +455,7 @@ One figure worth carrying into the connection-layer decision: a Windows app on t
 - **Concurrent rollouts.** If more than one rollout can be in flight at once, a customer may be eligible to move under two schedules simultaneously. Precedence and conflict behavior need defining.
 - **Rollback.** Moving a customer back to their previous version must be at least as safe and immediate as moving them forward.
 - **Observability.** The diagnostic concept in `docs/design/customer-support-diagnostic-agent-concept.md` already treats "deployment version" as a correlatable field. VDS should report, per customer, which version they are currently assigned to, so that concept's causal analysis can account for version skew during a rollout. Per-customer telemetry carrying a version dimension is also what indicates whether a new version is healthy for an early cohort.
-- **Where the decision is enforced.** Candidate options include an edge/gateway layer in front of Vennu.Api (and possibly in front of the frontend apps), or a per-customer flag read inside the API itself. These have different operational and cost implications and are not decided here.
+- **Where the decision is enforced.** *(Decided.)* The Product Router does the traffic shaping: it is the component that inspects the caller/customer on each request, resolves version and healthy instance via VDS (then ADS), and forwards accordingly. This is application-level routing at a distinct component in front of Vennu.Api and the frontend apps — not a per-customer flag read inside a single deployment. Product Router's own hosting (separate App Service vs. bundled with VDS/WR) and implementation language remain open.
 
 ## Candidate approaches (not decisions)
 
@@ -477,7 +485,6 @@ Raised during discussion and not yet resolved. Recorded so they are not lost.
 - Definition of when a wave counts as observed.
 - The shared connection-membership mechanism (Azure SignalR Service, Redis backplane, or a purpose-built connection manager), including the screen-count and cost assumptions behind that choice.
 - Rollback and abort semantics.
-- Where the routing/assignment decision is enforced (gateway vs. in-application).
 - The handoff contract between VDS and the deployment process, including result reporting.
 - Session and data-protection key sharing across concurrently running versions, so that moving a customer does not invalidate an active session.
 - Staleness detection and reload behavior for a loaded Back Office client whose assigned version changes mid-session.
@@ -486,12 +493,12 @@ Raised during discussion and not yet resolved. Recorded so they are not lost.
 - Background service behavior when VDS is unavailable, and whether transition-state persistence lands before or with the first rollout.
 - Authentication, idempotency, and reconciliation semantics for the Webhook Receiver registration API.
 - Trust boundary for forwarded webhook requests, and Webhook Receiver behavior when VDS is unavailable.
+- System Monitor's exhaustive trigger-condition list, and whether its threshold-breach detection also feeds VDS's wave-halt/revert automation.
 - How this interacts with the immutable release-manifest/versioning model already in place.
 - Observability requirements, including per-customer version visibility tied to the diagnostic-agent concept.
 - Cost and operational ownership of any new routing or gateway component.
 - Interaction with the subdomain/hosting structure currently being established (`app.<service>.vennusign.com` per-environment, per-service pattern) — how many concurrent app instances per production service this implies, and how that maps to that naming scheme.
 - How many `release/X.Y` branches stay open concurrently, formalizing the informal "2-3" figure from the branching-model proposal under Environments.
 - Thin-client (Display/TV) participation in dev/stage version testing, per Open Questions.
-- Whether ADS resolves a single healthy instance per (app, version) itself, or feeds a standard Azure load-balancing layer scoped per version, per Application Discovery Service (ADS).
 
 No implementation should begin from this concept alone. Approved scope, issue and work-package governance, architecture review, and acceptance criteria remain necessary.
