@@ -126,7 +126,7 @@ export function revokeCustomerSession(configuration: BackOfficeConfiguration) {
 
 export function externalSignInUrl(
   configuration: BackOfficeConfiguration,
-  provider: "google" | "apple" | "vennusign",
+  provider: "google" | "vennusign",
   returnPath = "/onboarding",
   intent?: "signup"
 ) {

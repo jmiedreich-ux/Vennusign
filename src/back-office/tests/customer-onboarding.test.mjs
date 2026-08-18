@@ -2,9 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [app, marketing, timeline, api, passkey, passkeyManagement, security, navigation, main, styles] = await Promise.all([
+const [app, showcase, timeline, api, passkey, passkeyManagement, security, navigation, main, styles] = await Promise.all([
   readFile(new URL("../src/CustomerOnboardingApp.tsx", import.meta.url), "utf8"),
-  readFile(new URL("../src/SignupMarketingExperience.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../src/TemplateShowcase.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/CustomerOnboardingTimeline.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/customerOnboardingApi.ts", import.meta.url), "utf8"),
   readFile(new URL("../src/passkeySignIn.ts", import.meta.url), "utf8"),
@@ -27,15 +27,17 @@ test("account security exposes discoverable passkey lifecycle and recovery state
   assert.match(passkey, /canceled or timed out/);
 });
 
-test("public entry exposes passwordless routes and returning-user recovery", () => {
-  assert.match(app, /authVerb\} Google/);
-  assert.match(app, /authVerb\} Apple/);
-  assert.match(app, /authVerb\} Vennusign/);
-  assert.match(app, /"Sign in with" : "Continue with"/);
+test("public entry is a unified landing page with no marketing content", () => {
+  assert.match(app, /Continue with Google/);
+  assert.match(app, /Continue with Vennusign/);
   assert.match(app, /Use a passkey/);
-  assert.match(app, /Email me a sign-in link/);
-  assert.match(marketing, /Public pricing/);
-  assert.match(marketing, /No public plans are available right now/);
+  assert.doesNotMatch(app, /Apple/);
+  assert.doesNotMatch(app, /Email me a sign-in link/);
+  assert.doesNotMatch(app, /SignupMarketingExperience/);
+  assert.match(app, /customer-landing/);
+  assert.match(app, /TemplateShowcase/);
+  assert.match(showcase, /prefers-reduced-motion/);
+  assert.match(showcase, /Daily Specials/);
   assert.match(main, /\/signup/);
   assert.match(main, /\/signin/);
   assert.match(main, /\/onboarding/);
@@ -97,7 +99,7 @@ test("returning visitor sees one remembered method by default, not every option 
   assert.match(app, /session\.authenticationMethod/);
   assert.match(app, /Continue as you did last time/);
   assert.match(app, /More ways to sign in/);
-  assert.match(app, /rememberedMethod && !showAllMethods/);
+  assert.match(app, /rememberedMethod && KNOWN_METHODS\.has\(rememberedMethod\) && !showAllMethods/);
   // Storage failures (private browsing, disabled storage) fall back to showing every
   // option, the same as a first visit - never a broken or empty screen.
   assert.match(app, /catch \{\s*\/\/ Private browsing or storage disabled/);
