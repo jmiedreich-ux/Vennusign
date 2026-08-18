@@ -136,9 +136,26 @@ function Board({ venueName, period, compact }: { venueName: string; period: Boar
 // One example of every distinct real layout, so a visitor sees the full range of
 // styles at a glance in a horizontal showcase, instead of waiting for the timeline
 // above to cycle around to it.
-const styleShowcase = venueExamples
-  .flatMap(v => v.periods.map(period => ({ venue: v, period })))
-  .filter((entry, index, all) => all.findIndex(e => e.period.style === entry.period.style) === index);
+const allPeriods = venueExamples.flatMap(v => v.periods.map(period => ({ venue: v, period })));
+const styleShowcase = allPeriods.filter((entry, index, all) => all.findIndex(e => e.period.style === entry.period.style) === index);
+
+// The hero's whole job is to prove "rich screen designs" in the first five seconds -
+// so it rotates through a few of the flashiest real boards instead of describing them.
+const heroShowcase = ["late-night", "draft-list", "cocktail-hour"]
+  .map(id => allPeriods.find(entry => entry.period.id === id)!);
+
+function HeroDeviceShowcase() {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = setInterval(() => setIndex(i => (i + 1) % heroShowcase.length), 3400);
+    return () => clearInterval(id);
+  }, []);
+  const entry = heroShowcase[index];
+  return <div className="signup-marketing__hero-device" aria-hidden="true">
+    <Board venueName={entry.venue.venueName} period={entry.period} compact />
+  </div>;
+}
 
 export default function Home() {
   const flatPeriods = useMemo(
@@ -185,13 +202,7 @@ export default function Home() {
     <main className="site-home">
       <section className="signup-marketing__hero" aria-labelledby="home-heading">
         <div className="signup-marketing__hero-panel">
-          <div className="signup-marketing__hero-device" aria-hidden="true">
-            <div className="signup-marketing__hero-device-screen">
-              <span>VENNU CAFE · Evening</span>
-              <strong>Dinner presentation is ready</strong>
-              <div className="signup-marketing__hero-device-bars"><i /><i /></div>
-            </div>
-          </div>
+          <HeroDeviceShowcase />
           <span>Digital menus, without the friction</span>
           <h1 id="home-heading">Put your first screen live.</h1>
           <p>See the product before you sign up. Then create your organization, choose an available plan, and pair a display with one secure code.</p>
