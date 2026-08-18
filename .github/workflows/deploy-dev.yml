@@ -70,6 +70,8 @@ jobs:
           node-version: 22
       - name: Install and build
         working-directory: src/back-office
+        env:
+          VITE_VENNUSIGN_API_BASE_URL: https://vennusign-dev-api.azurewebsites.net
         run: |
           npm ci
           npm run build
@@ -94,6 +96,8 @@ jobs:
           node-version: 22
       - name: Install and build
         working-directory: src/display
+        env:
+          VITE_API_BASE_URL: https://vennusign-dev-api.azurewebsites.net
         run: |
           npm ci
           npm run build
@@ -118,6 +122,10 @@ jobs:
           node-version: 22
       - name: Install and build
         working-directory: src/platform-operations
+        env:
+          VITE_VENNUSIGN_API_BASE_URL: https://vennusign-dev-api.azurewebsites.net
+          VITE_VENNUSIGN_DISPLAY_BASE_URL: https://vennusign-dev-display.azurewebsites.net
+          VITE_VENNUSIGN_BACK_OFFICE_BASE_URL: https://dev.back-office.vennusign.com
         run: |
           npm ci
           npm run build
