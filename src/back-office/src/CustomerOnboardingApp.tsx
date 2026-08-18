@@ -24,9 +24,6 @@ import { authenticatedCustomerDestination, canonicalOnboardingPath, safeLocalRet
 const REMEMBERED_METHOD_KEY = "vennusign.customerAuth.lastMethod";
 
 const METHOD_LABELS: Record<string, string> = {
-  Google: "Continue with Google",
-  Apple: "Continue with Apple",
-  Vennusign: "Continue with Vennusign",
   Passkey: "Use a passkey",
   EmailLink: "Email me a sign-in link"
 };
@@ -58,6 +55,9 @@ export default function CustomerOnboardingApp() {
   const authenticationReturnPath = useMemo(() => returnPath === canonicalOnboardingPath
     ? canonicalOnboardingPath
     : `${canonicalOnboardingPath}?returnPath=${encodeURIComponent(returnPath)}`, [returnPath]);
+  const isSignIn = entryPath === "/signin";
+  const authIntent = isSignIn ? undefined : "signup";
+  const authVerb = isSignIn ? "Sign in with" : "Continue with";
   const [plans, setPlans] = useState<PublicOnboardingPlan[]>([]);
   const [session, setSession] = useState<CustomerSession>();
   const [onboarding, setOnboarding] = useState<CustomerOnboardingSnapshot>();
@@ -233,11 +233,11 @@ export default function CustomerOnboardingApp() {
         {rememberedMethod && !showAllMethods ? <>
           <p className="customer-entry__remembered-tag">✓ Continue as you did last time</p>
           {rememberedMethod === "Google" ?
-            <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}>{METHOD_LABELS.Google}</a>
+            <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", authenticationReturnPath, authIntent)}>{authVerb} Google</a>
           : rememberedMethod === "Apple" ?
-            <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple", authenticationReturnPath)}>{METHOD_LABELS.Apple}</a>
+            <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple", authenticationReturnPath, authIntent)}>{authVerb} Apple</a>
           : rememberedMethod === "Vennusign" ?
-            <a className="customer-entry__provider" href={externalSignInUrl(configuration, "vennusign", authenticationReturnPath)}>{METHOD_LABELS.Vennusign}</a>
+            <a className="customer-entry__provider" href={externalSignInUrl(configuration, "vennusign", authenticationReturnPath, authIntent)}>{authVerb} Vennusign</a>
           : rememberedMethod === "Passkey" ? <form onSubmit={usePasskey}>
             <label htmlFor="passkeyEmail">Email for your passkey</label>
             <input id="passkeyEmail" name="passkeyEmail" type="email" autoComplete="username webauthn" required />
@@ -249,10 +249,10 @@ export default function CustomerOnboardingApp() {
           </form>}
           <button className="customer-entry__more-options" type="button" onClick={() => setShowAllMethods(true)}>More ways to sign in</button>
         </> : <>
-        <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}>Continue with Google</a>
-        <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple", authenticationReturnPath)}>Continue with Apple</a>
-        <a className="customer-entry__provider" href={externalSignInUrl(configuration, "vennusign", authenticationReturnPath)}>Continue with Vennusign</a>
-        <div className="customer-entry__divider"><span>Returning customers</span></div>
+        <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", authenticationReturnPath, authIntent)}>{authVerb} Google</a>
+        <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple", authenticationReturnPath, authIntent)}>{authVerb} Apple</a>
+        <a className="customer-entry__provider" href={externalSignInUrl(configuration, "vennusign", authenticationReturnPath, authIntent)}>{authVerb} Vennusign</a>
+        <div className="customer-entry__divider"><span>{isSignIn ? "Or use another method" : "Returning customers"}</span></div>
         <form onSubmit={usePasskey}>
           <label htmlFor="passkeyEmail">Email for your passkey</label>
           <input id="passkeyEmail" name="passkeyEmail" type="email" autoComplete="username webauthn" required />

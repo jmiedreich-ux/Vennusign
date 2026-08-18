@@ -28,9 +28,10 @@ test("account security exposes discoverable passkey lifecycle and recovery state
 });
 
 test("public entry exposes passwordless routes and returning-user recovery", () => {
-  assert.match(app, /Continue with Google/);
-  assert.match(app, /Continue with Apple/);
-  assert.match(app, /Continue with Vennusign/);
+  assert.match(app, /authVerb\} Google/);
+  assert.match(app, /authVerb\} Apple/);
+  assert.match(app, /authVerb\} Vennusign/);
+  assert.match(app, /"Sign in with" : "Continue with"/);
   assert.match(app, /Use a passkey/);
   assert.match(app, /Email me a sign-in link/);
   assert.match(marketing, /Public pricing/);
