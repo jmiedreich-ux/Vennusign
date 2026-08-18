@@ -7,6 +7,11 @@ name: deploy-dev
 # Only master triggers a deploy. release/* and hotfix/* branches, version
 # folders, and the AI release classifier are future work — see
 # docs/design/progressive-customer-cutover-concept.md.
+#
+# Each deploy job targets the "dev" GitHub Environment, which requires a
+# reviewer to approve before the job runs. The build/classify steps still
+# run automatically on every push; only the actual Azure deploy pauses for
+# approval, so merges can land on master without immediately going live.
 
 on:
   push:
@@ -42,6 +47,7 @@ jobs:
     if: needs.classify.outputs.dotnet_api == 'true'
     needs: classify
     runs-on: ubuntu-latest
+    environment: dev
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -63,6 +69,7 @@ jobs:
     if: needs.classify.outputs.back_office == 'true'
     needs: classify
     runs-on: ubuntu-latest
+    environment: dev
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -89,6 +96,7 @@ jobs:
     if: needs.classify.outputs.display == 'true'
     needs: classify
     runs-on: ubuntu-latest
+    environment: dev
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -115,6 +123,7 @@ jobs:
     if: needs.classify.outputs.platform_operations == 'true'
     needs: classify
     runs-on: ubuntu-latest
+    environment: dev
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
