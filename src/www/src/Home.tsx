@@ -33,12 +33,11 @@ const faqs = [
 
 const AUTO_ADVANCE_MS = 4800;
 
-// A stable, purely decorative color per item, standing in for a photo on the Photo Grid layout.
-function swatchHue(name: string): number {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) % 360;
-  return hash;
-}
+// The real Photo Grid layout shows a shimmer-loading placeholder when an item has no
+// photo yet - this reuses that same idea (a neutral shimmer, not a fake "photo") with a
+// thin accent stripe cycling through a small curated palette, instead of a raw per-item
+// hue rotation.
+const PHOTO_ACCENT_PALETTE = ["#d9a15b", "#8fae7c", "#c97b63", "#8ba7c9", "#c9a4d4", "#7ec9be"];
 
 function ItemTag({ item }: { item: BoardItem }) {
   if (!item.tag) return null;
@@ -59,7 +58,7 @@ function HappyHourBanner({ endsLabel }: { endsLabel: string }) {
   </div>;
 }
 
-function Board({ venueName, period }: { venueName: string; period: BoardPeriod }) {
+function Board({ venueName, period, compact }: { venueName: string; period: BoardPeriod; compact?: boolean }) {
   const [featuredIndex, setFeaturedIndex] = useState(0);
   const isHero = period.style === "daily-special-hero";
   useEffect(() => {
@@ -72,7 +71,7 @@ function Board({ venueName, period }: { venueName: string; period: BoardPeriod }
 
   const glowStyle = period.glow ? ({ "--board-glow": period.glow } as React.CSSProperties) : undefined;
 
-  return <div className={`board board--${period.style}`} style={glowStyle} aria-live="polite">
+  return <div className={`board board--${period.style}${compact ? " board--compact" : ""}`} style={glowStyle} aria-live="polite">
     {period.happyHourEndsLabel ? <HappyHourBanner endsLabel={period.happyHourEndsLabel} /> : null}
     <div className="board__header">
       <span>{venueName}</span>
@@ -98,8 +97,8 @@ function Board({ venueName, period }: { venueName: string; period: BoardPeriod }
     })() : period.style === "photo-grid" ? <>
       <p className="board__headline">{period.headline}</p>
       <div className="board__photo-grid">
-        {period.items.map(item => <div key={item.name} className={`board__photo-card${item.tag === "sold-out" ? " board__photo-card--sold-out" : ""}`}>
-          <div className="board__photo-swatch" style={{ background: `linear-gradient(155deg, hsl(${swatchHue(item.name)} 70% 62%), hsl(${swatchHue(item.name)} 70% 38%))` }} />
+        {period.items.map((item, index) => <div key={item.name} className={`board__photo-card${item.tag === "sold-out" ? " board__photo-card--sold-out" : ""}`}>
+          <div className="board__photo-swatch" style={{ "--photo-accent": PHOTO_ACCENT_PALETTE[index % PHOTO_ACCENT_PALETTE.length] } as React.CSSProperties} />
           <div className="board__photo-copy">
             <span>{item.name}</span>
             <data value={item.price}>{item.price}</data>
@@ -133,6 +132,13 @@ function Board({ venueName, period }: { venueName: string; period: BoardPeriod }
     <small className="board__footnote">Preview only · no venue data is changed</small>
   </div>;
 }
+
+// One example of every distinct real layout, so a visitor sees the full range of
+// styles at a glance in a horizontal showcase, instead of waiting for the timeline
+// above to cycle around to it.
+const styleShowcase = venueExamples
+  .flatMap(v => v.periods.map(period => ({ venue: v, period })))
+  .filter((entry, index, all) => all.findIndex(e => e.period.style === entry.period.style) === index);
 
 export default function Home() {
   const flatPeriods = useMemo(
@@ -230,6 +236,16 @@ export default function Home() {
         </div>
 
         <Board venueName={active.venue.venueName} period={active.period} />
+      </section>
+
+      <section className="board-showcase" aria-labelledby="board-showcase-heading">
+        <div><span>Every one is a real layout</span><h2 id="board-showcase-heading">Chalkboards. Neon. Tap boards. All of it.</h2></div>
+        <p>Scroll to see the full range &mdash; these are the same layouts shown one at a time above, side by side.</p>
+        <div className="board-showcase__strip">
+          {styleShowcase.map(entry => <div key={entry.period.id} className="board-showcase__item">
+            <Board venueName={entry.venue.venueName} period={entry.period} compact />
+          </div>)}
+        </div>
       </section>
 
       <section className="signup-pairing-story" aria-labelledby="pairing-story-heading">
