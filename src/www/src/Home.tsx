@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { signupUrl, signinUrl } from "./config";
-import { venueExamples, boardTagLabel, type BoardPeriod } from "./boardExamples";
+import { venueExamples, boardTagLabel, type BoardPeriod, type BoardItem, type VenueExample } from "./boardExamples";
 import { loadPublicPlans, type PublicOnboardingPlan } from "./plansApi";
 
 const faqs = [
@@ -31,11 +31,134 @@ const faqs = [
   }
 ] as const;
 
+const AUTO_ADVANCE_MS = 4800;
+
+// A stable, purely decorative color per item, standing in for a photo on the Photo Grid layout.
+function swatchHue(name: string): number {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) % 360;
+  return hash;
+}
+
+function ItemTag({ item }: { item: BoardItem }) {
+  if (!item.tag) return null;
+  return <em className={`board-tag board-tag--${item.tag}`}>{boardTagLabel[item.tag]}</em>;
+}
+
+function HappyHourBanner({ endsLabel }: { endsLabel: string }) {
+  const [secondsLeft, setSecondsLeft] = useState(9 * 60 + 42);
+  useEffect(() => {
+    const id = setInterval(() => setSecondsLeft(s => (s <= 0 ? 12 * 60 : s - 1)), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const minutes = Math.floor(secondsLeft / 60);
+  const seconds = secondsLeft % 60;
+  return <div className="happy-hour-banner">
+    <strong>Happy hour</strong>
+    <span>{minutes}:{seconds.toString().padStart(2, "0")} left · {endsLabel}</span>
+  </div>;
+}
+
+function Board({ venueName, period }: { venueName: string; period: BoardPeriod }) {
+  const [featuredIndex, setFeaturedIndex] = useState(0);
+  const isHero = period.style === "daily-special-hero";
+  useEffect(() => {
+    if (!isHero) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
+    const id = setInterval(() => setFeaturedIndex(i => (i + 1) % period.items.length), 3200);
+    return () => clearInterval(id);
+  }, [isHero, period.items.length]);
+
+  const glowStyle = period.glow ? ({ "--board-glow": period.glow } as React.CSSProperties) : undefined;
+
+  return <div className={`board board--${period.style}`} style={glowStyle} aria-live="polite">
+    {period.happyHourEndsLabel ? <HappyHourBanner endsLabel={period.happyHourEndsLabel} /> : null}
+    <div className="board__header">
+      <span>{venueName}</span>
+      {period.happyHourEndsLabel ? null : <strong>{period.label}</strong>}
+    </div>
+
+    {period.style === "daily-special-hero" ? (() => {
+      const featured = period.items[featuredIndex];
+      const secondary = period.items.filter((_, i) => i !== featuredIndex);
+      return <div className="board__hero">
+        <em className="board__hero-pill">Featured now</em>
+        <p className="board__hero-headline">{period.headline}</p>
+        <div className="board__hero-featured">
+          <span>{featured.name}</span>
+          <data value={featured.price}>{featured.price}</data>
+        </div>
+        <div className="board__hero-secondary">
+          {secondary.map(item => <div key={item.name}>
+            <span>{item.name}</span><data value={item.price}>{item.price}</data>
+          </div>)}
+        </div>
+      </div>;
+    })() : period.style === "photo-grid" ? <>
+      <p className="board__headline">{period.headline}</p>
+      <div className="board__photo-grid">
+        {period.items.map(item => <div key={item.name} className={`board__photo-card${item.tag === "sold-out" ? " board__photo-card--sold-out" : ""}`}>
+          <div className="board__photo-swatch" style={{ background: `linear-gradient(155deg, hsl(${swatchHue(item.name)} 70% 62%), hsl(${swatchHue(item.name)} 70% 38%))` }} />
+          <div className="board__photo-copy">
+            <span>{item.name}</span>
+            <data value={item.price}>{item.price}</data>
+          </div>
+          <ItemTag item={item} />
+        </div>)}
+      </div>
+    </> : period.style === "digital-tap-board" ? <>
+      <p className="board__headline">{period.headline}</p>
+      <div className="board__tap-grid">
+        {period.items.map(item => <div key={item.name} className={`board__tap-card${item.tag === "sold-out" ? " board__tap-card--sold-out" : ""}`}>
+          <svg width="22" height="26" viewBox="0 0 22 26" aria-hidden="true"><path d="M3 2h16l-2 20a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L3 2Z" fill="none" stroke="currentColor" strokeWidth="1.6" /><path d="M3 8h16" stroke="currentColor" strokeWidth="1.2" opacity=".5" /></svg>
+          <div className="board__tap-copy">
+            <span>{item.name}</span>
+            {item.detail ? <small>{item.detail}</small> : null}
+          </div>
+          <data value={item.price}>{item.price}</data>
+          {item.tag === "new" ? <em className="board__tap-brewing">Now brewing</em> : <ItemTag item={item} />}
+        </div>)}
+      </div>
+    </> : <>
+      <p className="board__headline">{period.headline}</p>
+      <ul className="board__list">
+        {period.items.map(item => <li key={item.name} className={item.tag === "sold-out" ? "board__item--sold-out" : undefined}>
+          <span>{item.name}</span>
+          <data value={item.price} className="board__item-price">{item.price}</data>
+          <ItemTag item={item} />
+        </li>)}
+      </ul>
+    </>}
+    <small className="board__footnote">Preview only · no venue data is changed</small>
+  </div>;
+}
+
 export default function Home() {
-  const [venueId, setVenueId] = useState<(typeof venueExamples)[number]["id"]>("restaurant");
-  const venue = venueExamples.find(v => v.id === venueId) ?? venueExamples[0];
-  const [periodId, setPeriodId] = useState<string>(venue.periods[0].id);
-  const activePeriod: BoardPeriod = venue.periods.find(p => p.id === periodId) ?? venue.periods[0];
+  const flatPeriods = useMemo(
+    () => venueExamples.flatMap(v => v.periods.map(period => ({ venue: v as VenueExample, period }))),
+    []
+  );
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [autoPlaying, setAutoPlaying] = useState(true);
+  const active = flatPeriods[activeIndex];
+
+  useEffect(() => {
+    if (!autoPlaying) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = setInterval(() => setActiveIndex(i => (i + 1) % flatPeriods.length), AUTO_ADVANCE_MS);
+    return () => clearInterval(id);
+  }, [autoPlaying, flatPeriods.length]);
+
+  function jumpTo(index: number) {
+    setActiveIndex(index);
+    setAutoPlaying(false);
+  }
+
+  function selectVenue(id: VenueExample["id"]) {
+    const index = flatPeriods.findIndex(entry => entry.venue.id === id);
+    if (index >= 0) jumpTo(index);
+  }
 
   const [plans, setPlans] = useState<PublicOnboardingPlan[]>([]);
   useEffect(() => {
@@ -43,12 +166,6 @@ export default function Home() {
     loadPublicPlans(controller.signal).then(setPlans).catch(() => {});
     return () => controller.abort();
   }, []);
-
-  function selectVenue(id: (typeof venueExamples)[number]["id"]) {
-    setVenueId(id);
-    const next = venueExamples.find(v => v.id === id) ?? venueExamples[0];
-    setPeriodId(next.periods[0].id);
-  }
 
   return <div className="site">
     <header className="site-nav">
@@ -88,36 +205,31 @@ export default function Home() {
 
       <section className="signup-demo" id="live-product-demo" aria-labelledby="live-demo-heading">
         <header>
-          <div><span>Interactive product preview</span><h2 id="live-demo-heading">A day on your menu</h2></div>
-          <p>Two venue types, real service periods, and a different board look for each.</p>
+          <div><span>Real Vennusign board styles</span><h2 id="live-demo-heading">People eat with their eyes first.</h2></div>
+          <p>So Vennusign screens are built the same way. Two venues, nine boards, cycling on their own below — touch nothing, or jump straight to one.</p>
         </header>
 
         <div className="signup-demo__venue-toggle" role="group" aria-label="Choose a venue type">
-          {venueExamples.map(v => <button key={v.id} type="button" aria-pressed={v.id === venue.id} onClick={() => selectVenue(v.id)}>{v.label}</button>)}
+          {venueExamples.map(v => <button key={v.id} type="button" aria-pressed={v.id === active.venue.id} onClick={() => selectVenue(v.id)}>{v.label}</button>)}
         </div>
 
         <div className="signup-demo__tabs" role="group" aria-label="Preview a service period">
-          {venue.periods.map(period => <button key={period.id} type="button" aria-pressed={period.id === activePeriod.id} onClick={() => setPeriodId(period.id)}>{period.label}<span>{period.time}</span></button>)}
+          {active.venue.periods.map(period => {
+            const index = flatPeriods.findIndex(entry => entry.period.id === period.id);
+            return <button key={period.id} type="button" aria-pressed={period.id === active.period.id} onClick={() => jumpTo(index)}>{period.label}<span>{period.time}</span></button>;
+          })}
         </div>
 
-        <div className={`signup-demo__screen signup-demo__screen--${activePeriod.style}`} aria-live="polite">
-          <div className="signup-demo__screen-header">
-            <span>{venue.venueName}</span>
-            <strong>
-              {activePeriod.label}
-              {activePeriod.style === "live" ? <em className="signup-demo__live-badge">Live</em> : null}
-            </strong>
+        <div className="signup-demo__playhead">
+          <button type="button" className="signup-demo__playhead-toggle" onClick={() => setAutoPlaying(p => !p)} aria-pressed={autoPlaying}>
+            {autoPlaying ? "Auto-playing" : "Paused — resume"}
+          </button>
+          <div className="signup-demo__playhead-dots" aria-hidden="true">
+            {flatPeriods.map((entry, index) => <span key={entry.period.id} className={index === activeIndex ? "is-active" : undefined} />)}
           </div>
-          <p>{activePeriod.headline}</p>
-          <ul>
-            {activePeriod.items.map(item => <li key={item.name} className={item.tag === "sold-out" ? "signup-demo__item--sold-out" : undefined}>
-              <span>{item.name}</span>
-              <span className="signup-demo__item-price">{item.price}</span>
-              {item.tag ? <em className={`signup-demo__tag signup-demo__tag--${item.tag}`}>{boardTagLabel[item.tag]}</em> : null}
-            </li>)}
-          </ul>
-          <small>Preview only · no venue data is changed</small>
         </div>
+
+        <Board venueName={active.venue.venueName} period={active.period} />
       </section>
 
       <section className="signup-pairing-story" aria-labelledby="pairing-story-heading">
