@@ -15,13 +15,12 @@ import {
   type CustomerSession,
   type PublicOnboardingPlan
 } from "./customerOnboardingApi";
-import { signInWithPasskey } from "./passkeySignIn";
 import CustomerOnboardingTimeline from "./CustomerOnboardingTimeline";
 import TemplateShowcase from "./TemplateShowcase";
 import { authenticatedCustomerDestination, canonicalOnboardingPath, safeLocalReturnPath } from "./customerEntryRouting.mjs";
 
 const REMEMBERED_METHOD_KEY = "vennusign.customerAuth.lastMethod";
-const KNOWN_METHODS = new Set(["Google", "Vennusign", "Passkey"]);
+const KNOWN_METHODS = new Set(["Google", "Vennusign"]);
 
 const GoogleMark = () => <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
   <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.68-3.87 2.68-6.62Z"/>
@@ -123,23 +122,6 @@ export default function CustomerOnboardingApp() {
     finally { setBusy(undefined); }
   };
 
-  const usePasskey = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const email = String(new FormData(event.currentTarget).get("passkeyEmail") ?? "").trim();
-    void run("passkey", async () => {
-      await signInWithPasskey(configuration, email);
-      const activeSession = await loadCustomerSession(configuration);
-      const snapshot = await loadCustomerOnboarding(configuration);
-      const destination = authenticatedCustomerDestination(entryPath, returnPath, snapshot);
-      if (destination) {
-        window.location.replace(destination);
-        return;
-      }
-      setSession(activeSession);
-      setOnboarding(snapshot);
-    });
-  };
-
   const createOrganization = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -219,26 +201,15 @@ export default function CustomerOnboardingApp() {
           <p className="customer-entry__remembered-tag">✓ Continue as you did last time</p>
           {rememberedMethod === "Google" ?
             <a className="customer-entry__provider customer-entry__provider--google" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}><GoogleMark />Continue with Google</a>
-          : rememberedMethod === "Vennusign" ?
-            <a className="customer-entry__provider customer-entry__provider--primary" href={externalSignInUrl(configuration, "vennusign", authenticationReturnPath)}>Continue with Vennusign</a>
-          : <form onSubmit={usePasskey}>
-            <label htmlFor="passkeyEmail">Email for your passkey</label>
-            <input id="passkeyEmail" name="passkeyEmail" type="email" autoComplete="username webauthn" required />
-            <button type="submit" disabled={busy === "passkey"}>{busy === "passkey" ? "Checking passkey…" : "Use a passkey"}</button>
-          </form>}
+          : <a className="customer-entry__provider customer-entry__provider--primary" href={externalSignInUrl(configuration, "vennusign", authenticationReturnPath)}>Continue with Vennusign</a>}
           <button className="customer-entry__more-options" type="button" onClick={() => setShowAllMethods(true)}>More ways to sign in</button>
         </> : <>
         <a className="customer-entry__provider customer-entry__provider--primary" href={externalSignInUrl(configuration, "vennusign", authenticationReturnPath)}>Continue with Vennusign</a>
         <a className="customer-entry__provider customer-entry__provider--google" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}><GoogleMark />Continue with Google</a>
-        <div className="customer-entry__divider"><span>Or</span></div>
-        <form onSubmit={usePasskey}>
-          <label htmlFor="passkeyEmail">Email for your passkey</label>
-          <input id="passkeyEmail" name="passkeyEmail" type="email" autoComplete="username webauthn" required />
-          <button type="submit" disabled={busy === "passkey"}>{busy === "passkey" ? "Checking passkey…" : "Use a passkey"}</button>
-        </form>
         </>}
       </div>
       </div>
+      <div className="customer-landing__divider" aria-hidden="true" />
       <TemplateShowcase />
     </section> : !onboarding ? <section className="customer-onboarding customer-onboarding__panel" aria-labelledby="onboarding-unavailable-heading">
       <span>Progress unavailable</span>

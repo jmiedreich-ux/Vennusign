@@ -30,11 +30,12 @@ test("account security exposes discoverable passkey lifecycle and recovery state
 test("public entry is a unified landing page with no marketing content", () => {
   assert.match(app, /Continue with Google/);
   assert.match(app, /Continue with Vennusign/);
-  assert.match(app, /Use a passkey/);
   assert.doesNotMatch(app, /Apple/);
+  assert.doesNotMatch(app, /Use a passkey/);
   assert.doesNotMatch(app, /Email me a sign-in link/);
   assert.doesNotMatch(app, /SignupMarketingExperience/);
   assert.match(app, /customer-landing/);
+  assert.match(app, /customer-landing__divider/);
   assert.match(app, /TemplateShowcase/);
   assert.match(showcase, /prefers-reduced-motion/);
   assert.match(showcase, /Daily Specials/);
