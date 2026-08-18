@@ -15,7 +15,7 @@ const SPECIALS = [
 
 const MENU_COLUMNS = [
   { title: "Starters", rows: [["Burrata & Peach", "$14"], ["Charred Octopus", "$18"], ["Soup du Jour", "$9"]] },
-  { title: "Mains", rows: [["Braised Short Rib", "$29"], ["Roasted Half Chicken", "$22"], ["Wild Mushroom Tagliatelle", "$21"]] },
+  { title: "Mains", rows: [["Short Rib", "$29"], ["Half Chicken", "$22"], ["Mushroom Pasta", "$21"]] },
   { title: "Desserts", rows: [["Basque Cheesecake", "$11"], ["Olive Oil Cake", "$10"], ["Affogato", "$8"]] }
 ];
 

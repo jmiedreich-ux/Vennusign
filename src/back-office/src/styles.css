@@ -159,8 +159,8 @@ nav { display: grid; gap: 8px; }nav a { display: grid; gap: 3px; padding: 13px; 
 .template-mock__col-chip--1 { background: #8a6a3f; }
 .template-mock__col-chip--2 { background: #7c5cbf; }
 .template-mock__col-title { font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #6b5a42; }
-.template-mock__col-row { display: flex; align-items: baseline; gap: 4px; font-size: .74rem; }
-.template-mock__col-row span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.template-mock__col-row { display: flex; align-items: baseline; gap: 4px; font-size: .72rem; min-width: 0; }
+.template-mock__col-row span:first-child { min-width: 0; flex-shrink: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .template-mock__col-row span:last-child { font-weight: 700; flex-shrink: 0; }
 .template-mock__leader--dark { border-bottom-color: #b8a077; }
 
