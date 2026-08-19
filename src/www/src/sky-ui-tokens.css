@@ -1,9 +1,11 @@
 /*
  * Sky UI shared design-token contract.
  *
- * This file is the single token source for both admin applications. Keep
- * component selectors in each application stylesheet; later visual packages
- * can adopt these semantic aliases without redefining palette values.
+ * Duplicated verbatim from src/back-office/src/sky-ui-tokens.css - each
+ * frontend app bundles its own copy, since they are independently
+ * deployable and cannot share a source module across projects. Keep the
+ * two files in sync by hand; component selectors stay in each app's own
+ * stylesheet, not here.
  */
 :root {
   color-scheme: light;

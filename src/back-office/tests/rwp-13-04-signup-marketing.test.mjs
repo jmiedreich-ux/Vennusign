@@ -25,6 +25,16 @@ test("marketing experience covers interactive demo, proof, pricing, and pairing"
   assert.match(marketing, /Online heartbeat/);
 });
 
+test("marketing experience covers trust signals and pre-signup questions", () => {
+  assert.match(marketing, /No credit card required to try it/);
+  assert.match(marketing, /Book a demo instead/);
+  assert.match(marketing, /Android TV, Fire TV, Samsung Tizen, and LG webOS/);
+  assert.match(marketing, /Your menu data stays yours/);
+  assert.match(marketing, /const faqs = \[/);
+  assert.match(marketing, /What is Vennusign\?/);
+  assert.match(marketing, /faqs\.map/);
+});
+
 test("preview is explicit, non-authoritative, responsive, and reduced-motion compatible", () => {
   assert.match(marketing, /Preview only · no venue data is changed/);
   assert.match(marketing, /cannot start a trial or subscription/);
