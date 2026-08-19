@@ -130,16 +130,21 @@ builder.Services
         options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
     })
     .AddOpenIdConnect(CustomerAuthenticationDefaults.GoogleScheme, options =>
-        ConfigureCustomerOidc(options, "https://accounts.google.com", "/signin-customer-google", customerAuthentication.Google, false))
+        ConfigureCustomerOidc(options, "https://accounts.google.com", "/signin-customer-google", customerAuthentication.Google, useFormPost: false, getClaimsFromUserInfoEndpoint: true))
     .AddOpenIdConnect(CustomerAuthenticationDefaults.AppleScheme, options =>
-        ConfigureCustomerOidc(options, "https://appleid.apple.com", "/signin-customer-apple", customerAuthentication.Apple, true))
+        ConfigureCustomerOidc(options, "https://appleid.apple.com", "/signin-customer-apple", customerAuthentication.Apple, useFormPost: true, getClaimsFromUserInfoEndpoint: false))
     .AddOpenIdConnect(CustomerAuthenticationDefaults.EntraScheme, options =>
         ConfigureCustomerOidc(options, customerAuthentication.Entra.Authority, "/signin-customer-entra", new CustomerOidcProviderOptions
         {
             Enabled = customerAuthentication.Entra.Enabled,
             ClientId = customerAuthentication.Entra.ClientId,
             ClientSecret = customerAuthentication.Entra.ClientSecret
-        }, false));
+            // Entra External ID's UserInfo endpoint returns an incomplete claim set for local
+            // accounts - it drops email_verified even though the ID token itself carries it
+            // correctly, which made every local-account sign-in fail CustomerOidcEvents'
+            // verified-identity check. The ID token alone already has everything needed, so
+            // skip the UserInfo round-trip for this provider.
+        }, useFormPost: false, getClaimsFromUserInfoEndpoint: false));
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(
@@ -317,7 +322,8 @@ static void ConfigureCustomerOidc(
     string authority,
     string callbackPath,
     CustomerOidcProviderOptions provider,
-    bool useFormPost)
+    bool useFormPost,
+    bool getClaimsFromUserInfoEndpoint)
 {
     options.Authority = authority;
     options.ClientId = string.IsNullOrWhiteSpace(provider.ClientId) ? "not-configured" : provider.ClientId;
@@ -330,7 +336,7 @@ static void ConfigureCustomerOidc(
     options.RequireHttpsMetadata = true;
     options.MapInboundClaims = false;
     options.SaveTokens = false;
-    options.GetClaimsFromUserInfoEndpoint = !useFormPost;
+    options.GetClaimsFromUserInfoEndpoint = getClaimsFromUserInfoEndpoint;
     options.RemoteAuthenticationTimeout = TimeSpan.FromMinutes(10);
     options.Scope.Clear();
     options.Scope.Add("openid");
