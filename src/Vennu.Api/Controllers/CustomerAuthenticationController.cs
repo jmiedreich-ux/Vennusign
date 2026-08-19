@@ -18,7 +18,7 @@ public sealed class CustomerAuthenticationController(
     ILogger<CustomerAuthenticationController> logger) : ControllerBase
 {
     [HttpGet("external/{provider}")]
-    public IActionResult BeginExternalSignIn(string provider, [FromQuery] string returnPath = "/")
+    public IActionResult BeginExternalSignIn(string provider, [FromQuery] string returnPath = "/", [FromQuery] string? intent = null)
     {
         if (!CustomerReturnUri.TryCreate(options.Value.FrontendOrigin, returnPath, out var returnUri))
             return BadRequest("A local return path and valid trusted frontend origin are required.");
@@ -31,7 +31,9 @@ public sealed class CustomerAuthenticationController(
         };
         if (string.IsNullOrEmpty(scheme)) return NotFound();
         if (!enabled) return Problem("The requested identity provider is not configured.", statusCode: StatusCodes.Status503ServiceUnavailable);
-        return Challenge(new AuthenticationProperties { RedirectUri = returnUri.AbsoluteUri }, scheme);
+        var properties = new AuthenticationProperties { RedirectUri = returnUri.AbsoluteUri };
+        if (intent == "signup") properties.Items["intent"] = "signup";
+        return Challenge(properties, scheme);
     }
 
     [HttpPost("email-links")]

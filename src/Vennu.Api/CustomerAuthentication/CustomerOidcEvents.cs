@@ -9,6 +9,18 @@ public sealed class CustomerOidcEvents(
     ICustomerAccountService accountService,
     ICustomerSessionService sessionService) : OpenIdConnectEvents
 {
+    public override Task RedirectToIdentityProvider(RedirectContext context)
+    {
+        if (context.Scheme.Name == CustomerAuthenticationDefaults.EntraScheme &&
+            context.Properties is not null &&
+            context.Properties.Items.TryGetValue("intent", out var intent) &&
+            intent == "signup")
+        {
+            context.ProtocolMessage.SetParameter("prompt", "create");
+        }
+        return Task.CompletedTask;
+    }
+
     public override async Task TokenValidated(TokenValidatedContext context)
     {
         var provider = context.Scheme.Name switch

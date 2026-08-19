@@ -378,6 +378,7 @@ blob-report/
 # Local Google OAuth client secrets and signup notes - never commit
 docs/Google/
 **/client_secret_*.json
+docs/Google Cloud Console - Vennusign.json
 
 # runtime logs (never commit)
 vennu-api-*.txt

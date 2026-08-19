@@ -8,10 +8,9 @@ const [app, marketing, styles] = await Promise.all([
   readFile(new URL("../src/styles.css", import.meta.url), "utf8")
 ]);
 
-test("signup uses the marketing experience while sign-in stays task focused", () => {
-  assert.match(app, /entryPath === "\/signin"/);
-  assert.match(app, /<SignupMarketingExperience plans=\{plans\}/);
-  assert.match(app, /Return to your Vennusign workspace/);
+test("signup and sign-in are a unified entry page; marketing experience lives on the home page app instead", () => {
+  assert.doesNotMatch(app, /<SignupMarketingExperience/);
+  assert.doesNotMatch(app, /import SignupMarketingExperience/);
   assert.match(app, /id="signup-auth-card"/);
 });
 

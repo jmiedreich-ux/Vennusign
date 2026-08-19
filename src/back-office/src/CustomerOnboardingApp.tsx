@@ -8,7 +8,6 @@ import {
   loadCustomerOnboarding,
   loadCustomerSession,
   loadPublicPlans,
-  requestEmailLink,
   claimOnboardingFirstScreen,
   revokeCustomerSession,
   startOnboardingTrial,
@@ -16,20 +15,19 @@ import {
   type CustomerSession,
   type PublicOnboardingPlan
 } from "./customerOnboardingApi";
-import { signInWithPasskey } from "./passkeySignIn";
 import CustomerOnboardingTimeline from "./CustomerOnboardingTimeline";
-import SignupMarketingExperience from "./SignupMarketingExperience";
+import TemplateShowcase from "./TemplateShowcase";
 import { authenticatedCustomerDestination, canonicalOnboardingPath, safeLocalReturnPath } from "./customerEntryRouting.mjs";
 
 const REMEMBERED_METHOD_KEY = "vennusign.customerAuth.lastMethod";
+const KNOWN_METHODS = new Set(["Google", "Vennusign"]);
 
-const METHOD_LABELS: Record<string, string> = {
-  Google: "Continue with Google",
-  Apple: "Continue with Apple",
-  Vennusign: "Continue with Vennusign",
-  Passkey: "Use a passkey",
-  EmailLink: "Email me a sign-in link"
-};
+const GoogleMark = () => <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+  <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.68-3.87 2.68-6.62Z"/>
+  <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.96v2.33A9 9 0 0 0 9 18Z"/>
+  <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.66 9c0-.59.1-1.17.29-1.7V4.97H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.03l2.99-2.33Z"/>
+  <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.97l2.99 2.33C4.66 5.17 6.65 3.58 9 3.58Z"/>
+</svg>;
 
 function readRememberedMethod(): string | undefined {
   try {
@@ -124,32 +122,6 @@ export default function CustomerOnboardingApp() {
     finally { setBusy(undefined); }
   };
 
-  const sendEmail = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const email = String(new FormData(event.currentTarget).get("email") ?? "").trim();
-    void run("email", async () => {
-      await requestEmailLink(configuration, email, authenticationReturnPath);
-      setNotice("If that verified account exists, a secure sign-in link is on its way.");
-    });
-  };
-
-  const usePasskey = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const email = String(new FormData(event.currentTarget).get("passkeyEmail") ?? "").trim();
-    void run("passkey", async () => {
-      await signInWithPasskey(configuration, email);
-      const activeSession = await loadCustomerSession(configuration);
-      const snapshot = await loadCustomerOnboarding(configuration);
-      const destination = authenticatedCustomerDestination(entryPath, returnPath, snapshot);
-      if (destination) {
-        window.location.replace(destination);
-        return;
-      }
-      setSession(activeSession);
-      setOnboarding(snapshot);
-    });
-  };
-
   const createOrganization = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -220,53 +192,26 @@ export default function CustomerOnboardingApp() {
     {notice ? <p className="customer-entry__notice" role="status">{notice}</p> : null}
     {error ? <p className="customer-entry__error" role="alert">{error}</p> : null}
 
-    {!session ? <>
-      {entryPath === "/signin" ? <section className="customer-entry__signin-intro" aria-labelledby="signup-heading">
-        <span>Return to your Vennusign workspace</span>
-        <h1 id="signup-heading">Welcome back.</h1>
-        <p>Sign in to resume an unfinished opening checklist or enter your authorized Back Office workspace.</p>
-      </section> : <SignupMarketingExperience plans={plans} />}
-      <section className="customer-entry__auth" aria-label="Secure account access">
+    {!session ? <section className="customer-landing">
+      <div className="customer-landing__auth" aria-label="Secure account access">
       <div className="customer-entry__auth-card" id="signup-auth-card">
-        <h2>{entryPath === "/signin" ? "Sign in to Vennusign" : "Start with your account"}</h2>
+        <h2>Sign in to Vennusign</h2>
         <p>No password to remember.</p>
-        {rememberedMethod && !showAllMethods ? <>
+        {rememberedMethod && KNOWN_METHODS.has(rememberedMethod) && !showAllMethods ? <>
           <p className="customer-entry__remembered-tag">✓ Continue as you did last time</p>
           {rememberedMethod === "Google" ?
-            <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}>{METHOD_LABELS.Google}</a>
-          : rememberedMethod === "Apple" ?
-            <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple", authenticationReturnPath)}>{METHOD_LABELS.Apple}</a>
-          : rememberedMethod === "Vennusign" ?
-            <a className="customer-entry__provider" href={externalSignInUrl(configuration, "vennusign", authenticationReturnPath)}>{METHOD_LABELS.Vennusign}</a>
-          : rememberedMethod === "Passkey" ? <form onSubmit={usePasskey}>
-            <label htmlFor="passkeyEmail">Email for your passkey</label>
-            <input id="passkeyEmail" name="passkeyEmail" type="email" autoComplete="username webauthn" required />
-            <button type="submit" disabled={busy === "passkey"}>{busy === "passkey" ? "Checking passkey…" : METHOD_LABELS.Passkey}</button>
-          </form> : <form onSubmit={sendEmail}>
-            <label htmlFor="email">Verified account email</label>
-            <input id="email" name="email" type="email" autoComplete="email" required />
-            <button type="submit" disabled={busy === "email"}>{busy === "email" ? "Sending…" : METHOD_LABELS.EmailLink}</button>
-          </form>}
+            <a className="customer-entry__provider customer-entry__provider--google" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}><GoogleMark />Continue with Google</a>
+          : <a className="customer-entry__provider customer-entry__provider--primary" href={externalSignInUrl(configuration, "vennusign", authenticationReturnPath)}>Continue with Vennusign</a>}
           <button className="customer-entry__more-options" type="button" onClick={() => setShowAllMethods(true)}>More ways to sign in</button>
         </> : <>
-        <a className="customer-entry__provider" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}>Continue with Google</a>
-        <a className="customer-entry__provider customer-entry__provider--dark" href={externalSignInUrl(configuration, "apple", authenticationReturnPath)}>Continue with Apple</a>
-        <a className="customer-entry__provider" href={externalSignInUrl(configuration, "vennusign", authenticationReturnPath)}>Continue with Vennusign</a>
-        <div className="customer-entry__divider"><span>Returning customers</span></div>
-        <form onSubmit={usePasskey}>
-          <label htmlFor="passkeyEmail">Email for your passkey</label>
-          <input id="passkeyEmail" name="passkeyEmail" type="email" autoComplete="username webauthn" required />
-          <button type="submit" disabled={busy === "passkey"}>{busy === "passkey" ? "Checking passkey…" : "Use a passkey"}</button>
-        </form>
-        <form onSubmit={sendEmail}>
-          <label htmlFor="email">Verified account email</label>
-          <input id="email" name="email" type="email" autoComplete="email" required />
-          <button className="quiet" type="submit" disabled={busy === "email"}>{busy === "email" ? "Sending…" : "Email me a sign-in link"}</button>
-        </form>
+        <a className="customer-entry__provider customer-entry__provider--primary" href={externalSignInUrl(configuration, "vennusign", authenticationReturnPath)}>Continue with Vennusign</a>
+        <a className="customer-entry__provider customer-entry__provider--google" href={externalSignInUrl(configuration, "google", authenticationReturnPath)}><GoogleMark />Continue with Google</a>
         </>}
       </div>
-      </section>
-    </> : !onboarding ? <section className="customer-onboarding customer-onboarding__panel" aria-labelledby="onboarding-unavailable-heading">
+      </div>
+      <div className="customer-landing__divider" aria-hidden="true" />
+      <TemplateShowcase />
+    </section> : !onboarding ? <section className="customer-onboarding customer-onboarding__panel" aria-labelledby="onboarding-unavailable-heading">
       <span>Progress unavailable</span>
       <h1 id="onboarding-unavailable-heading">We could not safely load your onboarding yet.</h1>
       <p>Your saved progress has not been changed and Vennusign did not create a replacement journey. Refresh, sign in again, or contact support if your organization access changed.</p>
