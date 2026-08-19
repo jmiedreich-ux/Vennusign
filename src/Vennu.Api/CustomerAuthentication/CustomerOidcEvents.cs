@@ -21,6 +21,21 @@ public sealed class CustomerOidcEvents(
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Whether the address a provider returned can be treated as verified.
+    ///
+    /// Google and Apple are third-party providers, so we require them to assert
+    /// <c>email_verified</c> before trusting the address they hand us. Entra External ID is
+    /// Vennusign's own provider - "Sign in with Vennusign" is its local-account flow, which
+    /// proves control of the address with an emailed code before the account can exist - and
+    /// it does not emit an <c>email_verified</c> claim at all. Requiring one there rejected
+    /// every valid local-account sign-in with "The provider did not return a verified customer
+    /// identity", which is why this is keyed on the provider instead of applied flat.
+    /// </summary>
+    public static bool HasVerifiedEmail(ExternalIdentityProvider provider, string? emailVerifiedClaim) =>
+        provider == ExternalIdentityProvider.Vennusign
+        || (bool.TryParse(emailVerifiedClaim, out var verified) && verified);
+
     public override async Task TokenValidated(TokenValidatedContext context)
     {
         var provider = context.Scheme.Name switch
@@ -32,8 +47,7 @@ public sealed class CustomerOidcEvents(
         };
         var subject = context.Principal?.FindFirstValue("sub");
         var email = context.Principal?.FindFirstValue("email");
-        var verifiedValue = context.Principal?.FindFirstValue("email_verified");
-        var emailVerified = bool.TryParse(verifiedValue, out var verified) && verified;
+        var emailVerified = HasVerifiedEmail(provider, context.Principal?.FindFirstValue("email_verified"));
         if (string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(email) || !emailVerified)
         {
             context.Fail("The provider did not return a verified customer identity.");

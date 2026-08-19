@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Vennu.Api.CustomerAuthentication;
 using Vennu.Api.Tests.E2E;
+using Vennu.Core.Models;
 
 namespace Vennu.Api.Tests.CustomerAuthentication;
 
@@ -177,5 +178,36 @@ public sealed class CustomerAuthenticationSecurityTests : IClassFixture<VennuApi
         Assert.Contains("secure", cookie, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("samesite=lax", cookie, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("path=/", cookie, StringComparison.OrdinalIgnoreCase);
+    }
+
+    // Entra does not emit an email_verified claim, so requiring one rejected every
+    // "Sign in with Vennusign" local account - including freshly created ones that had
+    // just completed Entra's own emailed-code verification.
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("false")]
+    [InlineData("true")]
+    public void VennusignProvider_IsVerifiedWithoutAnEmailVerifiedClaim(string? claim)
+    {
+        Assert.True(CustomerOidcEvents.HasVerifiedEmail(ExternalIdentityProvider.Vennusign, claim));
+    }
+
+    // Third-party providers must still assert it themselves.
+    [Theory]
+    [InlineData(ExternalIdentityProvider.Google, null, false)]
+    [InlineData(ExternalIdentityProvider.Google, "", false)]
+    [InlineData(ExternalIdentityProvider.Google, "false", false)]
+    [InlineData(ExternalIdentityProvider.Google, "not-a-bool", false)]
+    [InlineData(ExternalIdentityProvider.Google, "true", true)]
+    [InlineData(ExternalIdentityProvider.Apple, null, false)]
+    [InlineData(ExternalIdentityProvider.Apple, "false", false)]
+    [InlineData(ExternalIdentityProvider.Apple, "true", true)]
+    public void ThirdPartyProviders_StillRequireTheEmailVerifiedClaim(
+        ExternalIdentityProvider provider,
+        string? claim,
+        bool expected)
+    {
+        Assert.Equal(expected, CustomerOidcEvents.HasVerifiedEmail(provider, claim));
     }
 }
