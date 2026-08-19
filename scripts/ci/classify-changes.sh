@@ -78,7 +78,7 @@ while IFS= read -r path || [[ -n "$path" ]]; do
   esac
 
   case "$path" in
-    docs/*|ai/handoffs/*|PROJECT_STATUS.md|tracker/assignments.json|AGENTS.md|AI_DEVELOPMENT_GUIDE.md|.github/pull_request_template.md|.github/copilot-instructions.md|.github/ISSUE_TEMPLATE/*|*.md|.github/workflows/*|scripts/ci/*|scripts/set-platform-operations-key.ps1|Vennusign.sln|Directory.*|src/Vennu.Api/*|tests/Vennu.Api.Tests/*|src/Vennu.Core.Models/*|src/Vennu.Data/*|src/Vennu.DataAccess/*|src/DataAcess.sql/*|tests/Vennu.DataAccess.Tests/*|src/platform-operations/*|src/back-office/*|src/display/*|src/tv/android/*|src/tv/tizen/*|src/tv/webos/*|tools/Vennu.DevControl/*|tools/Vennu.DevControl.Tests/*)
+    docs/*|ai/handoffs/*|PROJECT_STATUS.md|tracker/assignments.json|AGENTS.md|AI_DEVELOPMENT_GUIDE.md|.github/pull_request_template.md|.github/copilot-instructions.md|.github/ISSUE_TEMPLATE/*|*.md|.gitignore|.github/workflows/*|scripts/ci/*|scripts/set-platform-operations-key.ps1|Vennusign.sln|Directory.*|src/Vennu.Api/*|tests/Vennu.Api.Tests/*|src/Vennu.Core.Models/*|src/Vennu.Data/*|src/Vennu.DataAccess/*|src/DataAcess.sql/*|tests/Vennu.DataAccess.Tests/*|src/platform-operations/*|src/back-office/*|src/display/*|src/tv/android/*|src/tv/tizen/*|src/tv/webos/*|tools/Vennu.DevControl/*|tools/Vennu.DevControl.Tests/*)
       ;;
     *)
       # New or cross-cutting paths must fail safe until their affected-area mapping is explicit.
