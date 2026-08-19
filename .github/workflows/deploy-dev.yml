@@ -33,6 +33,7 @@ jobs:
       platform_operations: ${{ steps.classify.outputs.platform_operations }}
       back_office: ${{ steps.classify.outputs.back_office }}
       display: ${{ steps.classify.outputs.display }}
+      www: ${{ steps.classify.outputs.www }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -118,6 +119,34 @@ jobs:
         with:
           app-name: vennusign-dev-display
           package: src/display/dist
+
+  deploy-www:
+    if: needs.classify.outputs.www == 'true'
+    needs: classify
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install and build
+        working-directory: src/www
+        env:
+          VITE_VENNUSIGN_API_BASE_URL: https://vennusign-dev-api.azurewebsites.net
+          VITE_VENNUSIGN_BACK_OFFICE_BASE_URL: https://dev.back-office.vennusign.com
+        run: |
+          npm ci
+          npm run build
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: vennusign-dev
+          package: src/www/dist
 
   deploy-po:
     if: needs.classify.outputs.platform_operations == 'true'

@@ -45,6 +45,12 @@ run_scenario display src/display/src/main.tsx
 assert_output display display true
 assert_output display android_tv false
 
+run_scenario www src/www/src/Home.tsx
+assert_output www www true
+assert_output www display false
+assert_output www back_office false
+assert_output www full false
+
 run_scenario tv src/tv/tizen/scripts/validate.mjs
 assert_output tv tizen true
 assert_output tv android_tv false

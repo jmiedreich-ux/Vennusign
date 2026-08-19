@@ -11,6 +11,7 @@ dotnet_data_access=false
 platform_operations=false
 back_office=false
 display=false
+www=false
 android_tv=false
 tizen=false
 webos=false
@@ -54,6 +55,9 @@ while IFS= read -r path || [[ -n "$path" ]]; do
     src/display/*)
       display=true
       ;;
+    src/www/*)
+      www=true
+      ;;
     src/tv/android/*)
       android_tv=true
       ;;
@@ -78,7 +82,7 @@ while IFS= read -r path || [[ -n "$path" ]]; do
   esac
 
   case "$path" in
-    docs/*|ai/handoffs/*|PROJECT_STATUS.md|tracker/assignments.json|AGENTS.md|AI_DEVELOPMENT_GUIDE.md|.github/pull_request_template.md|.github/copilot-instructions.md|.github/ISSUE_TEMPLATE/*|*.md|.gitignore|.github/workflows/*|scripts/ci/*|scripts/set-platform-operations-key.ps1|Vennusign.sln|Directory.*|src/Vennu.Api/*|tests/Vennu.Api.Tests/*|src/Vennu.Core.Models/*|src/Vennu.Data/*|src/Vennu.DataAccess/*|src/DataAcess.sql/*|tests/Vennu.DataAccess.Tests/*|src/platform-operations/*|src/back-office/*|src/display/*|src/tv/android/*|src/tv/tizen/*|src/tv/webos/*|tools/Vennu.DevControl/*|tools/Vennu.DevControl.Tests/*)
+    docs/*|ai/handoffs/*|PROJECT_STATUS.md|tracker/assignments.json|AGENTS.md|AI_DEVELOPMENT_GUIDE.md|.github/pull_request_template.md|.github/copilot-instructions.md|.github/ISSUE_TEMPLATE/*|*.md|.gitignore|.github/workflows/*|scripts/ci/*|scripts/set-platform-operations-key.ps1|Vennusign.sln|Directory.*|src/Vennu.Api/*|tests/Vennu.Api.Tests/*|src/Vennu.Core.Models/*|src/Vennu.Data/*|src/Vennu.DataAccess/*|src/DataAcess.sql/*|tests/Vennu.DataAccess.Tests/*|src/platform-operations/*|src/back-office/*|src/display/*|src/www/*|src/tv/android/*|src/tv/tizen/*|src/tv/webos/*|tools/Vennu.DevControl/*|tools/Vennu.DevControl.Tests/*)
       ;;
     *)
       # New or cross-cutting paths must fail safe until their affected-area mapping is explicit.
@@ -94,6 +98,7 @@ if [[ "$full" == true ]]; then
   platform_operations=true
   back_office=true
   display=true
+  www=true
   android_tv=true
   tizen=true
   webos=true
@@ -108,6 +113,7 @@ fi
   echo "platform_operations=$platform_operations"
   echo "back_office=$back_office"
   echo "display=$display"
+  echo "www=$www"
   echo "android_tv=$android_tv"
   echo "tizen=$tizen"
   echo "webos=$webos"
