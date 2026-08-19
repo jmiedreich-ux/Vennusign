@@ -3,7 +3,7 @@ export const apiBaseUrl = (
 ).replace(/\/$/, "");
 
 export const backOfficeBaseUrl = (
-  import.meta.env.VITE_VENNUSIGN_BACK_OFFICE_BASE_URL ?? "https://localhost:5174"
+  import.meta.env.VITE_VENNUSIGN_BACK_OFFICE_BASE_URL ?? "https://dev.back-office.vennusign.com"
 ).replace(/\/$/, "");
 
 export const signupUrl = `${backOfficeBaseUrl}/signup`;

@@ -33,6 +33,23 @@ import generalTso from "./assets/chinese/general-tso.webp";
 import sweetSourChicken from "./assets/chinese/sweet-sour-chicken.webp";
 import beefBroccoli from "./assets/chinese/beef-broccoli.webp";
 import loMein from "./assets/chinese/lo-mein.webp";
+import kungPao from "./assets/chinese/kung-pao.webp";
+import shrimpFriedRice from "./assets/chinese/shrimp-fried-rice.webp";
+import mongolianBeef from "./assets/chinese/mongolian-beef.webp";
+import eggRolls from "./assets/chinese/egg-rolls.webp";
+import wokHero from "./assets/chinese/wok-hero.webp";
+import orangeChicken from "./assets/chinese/orange-chicken.webp";
+import sesameChicken from "./assets/chinese/sesame-chicken.webp";
+import crabRangoon from "./assets/chinese/crab-rangoon.webp";
+import wontonSoup from "./assets/chinese/wonton-soup.webp";
+import mooShuPork from "./assets/chinese/moo-shu-pork.webp";
+import pepperSteak from "./assets/chinese/pepper-steak.webp";
+import szechuanShrimp from "./assets/chinese/szechuan-shrimp.webp";
+import vegFriedRice from "./assets/chinese/veg-fried-rice.webp";
+import bbqSpareRibs from "./assets/chinese/bbq-spare-ribs.webp";
+import hotSourSoup from "./assets/chinese/hot-sour-soup.webp";
+import cashewChicken from "./assets/chinese/cashew-chicken.webp";
+import beefChowFun from "./assets/chinese/beef-chow-fun.webp";
 import loungeBreakfast from "./assets/airport/lounge-breakfast.webp";
 import loungeSandwich from "./assets/airport/lounge-sandwich.webp";
 import loungeEspresso from "./assets/airport/lounge-espresso.webp";
@@ -658,19 +675,32 @@ export const venueExamples: VenueExample[] = [
           { name: "General Tso's Chicken", price: "$10.95", photo: generalTso, tag: "popular" },
           { name: "Sweet & Sour Chicken", price: "$9.95", photo: sweetSourChicken },
           { name: "Beef w. Broccoli", price: "$11.25", photo: beefBroccoli },
-          { name: "House Special Lo Mein", price: "$9.75", photo: loMein }
+          { name: "House Special Lo Mein", price: "$9.75", photo: loMein },
+          { name: "Kung Pao Chicken", price: "$10.50", photo: kungPao, tag: "new" },
+          { name: "Shrimp Fried Rice", price: "$10.25", photo: shrimpFriedRice },
+          { name: "Mongolian Beef", price: "$11.95", photo: mongolianBeef },
+          { name: "Egg Rolls (2)", price: "$4.50", photo: eggRolls },
+          { name: "Orange Chicken", price: "$10.95", photo: orangeChicken },
+          { name: "Sesame Chicken", price: "$10.95", photo: sesameChicken }
         ]
       },
       {
         id: "combo-platters",
-        label: "Combos",
+        label: "House Favorites",
         time: "All day",
-        headline: "Combination platters",
+        headline: "House favorites",
         style: "photo-tile-board",
         items: [
-          { name: "C1 · General Tso's Combo", price: "$11.50", detail: "w. pork fried rice & egg roll", photo: generalTso },
-          { name: "C2 · Sweet & Sour Combo", price: "$10.75", detail: "w. pork fried rice & egg roll", photo: sweetSourChicken },
-          { name: "C3 · Beef Broccoli Combo", price: "$11.75", detail: "w. pork fried rice & egg roll", photo: beefBroccoli, tag: "chef-pick" }
+          { name: "Crab Rangoon (6)", price: "$6.50", photo: crabRangoon },
+          { name: "Wonton Soup", price: "$5.50", photo: wontonSoup },
+          { name: "Moo Shu Pork", price: "$10.50", photo: mooShuPork },
+          { name: "Pepper Steak w. Onion", price: "$11.50", photo: pepperSteak },
+          { name: "Szechuan Shrimp", price: "$12.95", photo: szechuanShrimp, tag: "new" },
+          { name: "Vegetable Fried Rice", price: "$8.50", photo: vegFriedRice },
+          { name: "B-B-Q Spare Ribs", price: "$12.50", photo: bbqSpareRibs, tag: "popular" },
+          { name: "Hot & Sour Soup", price: "$5.50", photo: hotSourSoup },
+          { name: "Cashew Chicken", price: "$10.95", photo: cashewChicken },
+          { name: "Beef Chow Fun", price: "$11.25", photo: beefChowFun }
         ]
       },
       {
@@ -684,6 +714,20 @@ export const venueExamples: VenueExample[] = [
           { name: "2 large entrées", price: "Your pick" },
           { name: "Pork fried rice", price: "Large" },
           { name: "4 egg rolls + soup", price: "Included" }
+        ]
+      },
+      {
+        id: "wok-fired",
+        label: "Wok Fired",
+        time: "Made to order",
+        headline: "Fresh wok-fired, every order",
+        style: "daily-special-hero",
+        photo: wokHero,
+        items: [
+          { name: "Chef's Wok Special", price: "$13.95" },
+          { name: "Double Happiness Combo", price: "$16.95" },
+          { name: "Triple Delight", price: "$15.50" },
+          { name: "Seafood Delight", price: "$17.25" }
         ]
       }
     ]

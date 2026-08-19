@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { signupUrl, signinUrl } from "./config";
-import { venueExamples, boardTagLabel, type BoardPeriod, type BoardItem, type VenueExample } from "./boardExamples";
+import { venueExamples, type VenueExample } from "./boardExamples";
 import { loadPublicPlans, type PublicOnboardingPlan } from "./plansApi";
+import { Board, ScreenWall } from "./Board";
 
 const faqs = [
   {
@@ -33,200 +34,6 @@ const faqs = [
 
 const AUTO_ADVANCE_MS = 4800;
 
-// The real Photo Grid layout shows a shimmer-loading placeholder when an item has no
-// photo yet - this reuses that same idea (a neutral shimmer, not a fake "photo") with a
-// thin accent stripe cycling through a small curated palette, instead of a raw per-item
-// hue rotation.
-const PHOTO_ACCENT_PALETTE = ["#d9a15b", "#8fae7c", "#c97b63", "#8ba7c9", "#c9a4d4", "#7ec9be"];
-
-function ItemTag({ item }: { item: BoardItem }) {
-  if (!item.tag) return null;
-  return <em className={`board-tag board-tag--${item.tag}`}>{boardTagLabel[item.tag]}</em>;
-}
-
-function HappyHourBanner({ endsLabel }: { endsLabel: string }) {
-  const [secondsLeft, setSecondsLeft] = useState(9 * 60 + 42);
-  useEffect(() => {
-    const id = setInterval(() => setSecondsLeft(s => (s <= 0 ? 12 * 60 : s - 1)), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const minutes = Math.floor(secondsLeft / 60);
-  const seconds = secondsLeft % 60;
-  return <div className="happy-hour-banner">
-    <strong>Happy hour</strong>
-    <span>{minutes}:{seconds.toString().padStart(2, "0")} left · {endsLabel}</span>
-  </div>;
-}
-
-function Board({ venueName, period, compact }: { venueName: string; period: BoardPeriod; compact?: boolean }) {
-  const [featuredIndex, setFeaturedIndex] = useState(0);
-  const isHero = period.style === "daily-special-hero";
-  useEffect(() => {
-    if (!isHero) return;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduceMotion) return;
-    const id = setInterval(() => setFeaturedIndex(i => (i + 1) % period.items.length), 3200);
-    return () => clearInterval(id);
-  }, [isHero, period.items.length]);
-
-  const glowStyle = period.glow ? ({ "--board-glow": period.glow } as React.CSSProperties) : undefined;
-
-  return <div className={`board board--${period.style}${compact ? " board--compact" : ""}`} style={glowStyle} aria-live="polite">
-    {period.happyHourEndsLabel ? <HappyHourBanner endsLabel={period.happyHourEndsLabel} /> : null}
-    <div className="board__header">
-      <span>{venueName}</span>
-      {period.happyHourEndsLabel ? null : <strong>{period.label}</strong>}
-    </div>
-
-    {period.style === "daily-special-hero" ? (() => {
-      const featured = period.items[featuredIndex];
-      const secondary = period.items.filter((_, i) => i !== featuredIndex);
-      return <>
-        {period.photo ? <img className="board__hero-media" src={period.photo} alt="" aria-hidden="true" /> : null}
-        <div className="board__hero-scrim" aria-hidden="true" />
-        <div className="board__hero">
-        <em className="board__hero-pill">Featured now</em>
-        <p className="board__hero-headline">{period.headline}</p>
-        <div className="board__hero-featured">
-          <span>{featured.name}</span>
-          <data value={featured.price}>{featured.price}</data>
-        </div>
-        <div className="board__hero-secondary">
-          {secondary.map(item => <div key={item.name}>
-            <span>{item.name}</span><data value={item.price}>{item.price}</data>
-          </div>)}
-        </div>
-        </div>
-      </>;
-    })() : period.style === "photo-grid" ? <>
-      <p className="board__headline">{period.headline}</p>
-      <div className="board__photo-grid">
-        {period.items.map((item, index) => <div key={item.name} className={`board__photo-card${item.tag === "sold-out" ? " board__photo-card--sold-out" : ""}`}>
-          {item.photo
-            ? <img className="board__photo-image" src={item.photo} alt={item.name} loading="lazy" />
-            : <div className="board__photo-swatch" style={{ "--photo-accent": PHOTO_ACCENT_PALETTE[index % PHOTO_ACCENT_PALETTE.length] } as React.CSSProperties} />}
-          <div className="board__photo-copy">
-            <span>{item.name}</span>
-            <data value={item.price}>{item.price}</data>
-          </div>
-          <ItemTag item={item} />
-        </div>)}
-      </div>
-    </> : period.style === "movie-poster-board" ? <>
-      <p className="board__headline">{period.headline}</p>
-      <div className="board__poster-row">
-        {period.items.map(item => <div key={item.name} className="board__poster-card">
-          {item.photo ? <img className="board__poster-art" src={item.photo} alt={item.name} loading="lazy" /> : null}
-          <strong>{item.name}</strong>
-          {item.detail ? <small>{item.detail}</small> : null}
-          {item.times ? <div className="board__poster-times">
-            {item.times.map(time => <span key={time}>{time}</span>)}
-          </div> : null}
-          <ItemTag item={item} />
-        </div>)}
-      </div>
-    </> : period.style === "flight-board" ? <>
-      <p className="board__headline">{period.headline}</p>
-      <div className="board__flight-rows">
-        <div className="board__flight-row board__flight-row--head" aria-hidden="true">
-          <span>Time</span><span>Destination</span><span>Flight</span><span>Gate</span><span>Status</span>
-        </div>
-        {period.items.map(item => <div key={item.name} className={`board__flight-row board__flight-row--${item.status ?? "on-time"}`}>
-          <data value={item.timeLabel}>{item.timeLabel}</data>
-          <span className="board__flight-city">{item.name}</span>
-          <span>{item.detail}</span>
-          <span>{item.price}</span>
-          <em>{item.status === "on-time" ? "On time" : item.status === "boarding" ? "Boarding" : item.status === "delayed" ? "Delayed" : "Landed"}</em>
-        </div>)}
-      </div>
-    </> : period.style === "promo-splash" ? (() => {
-      const lead = period.items[0];
-      const rest = period.items.slice(1);
-      return <div className="board__promo">
-        <p className="board__promo-headline">{period.headline}</p>
-        <div className="board__promo-burst">
-          <span>{lead.name}</span>
-          <data value={lead.price}>{lead.price}</data>
-        </div>
-        <div className="board__promo-deals">
-          {rest.map(item => <div key={item.name}>
-            <span>{item.name}</span><data value={item.price}>{item.price}</data>
-          </div>)}
-        </div>
-      </div>;
-    })() : period.style === "photo-tile-board" ? <>
-      <p className="board__headline">{period.headline}</p>
-      <div className="board__tile-grid">
-        {period.items.map(item => <div key={item.name} className="board__tile">
-          {item.photo ? <div className="board__tile-photo">
-            <img src={item.photo} alt={item.name} loading="lazy" />
-            <data value={item.price}>{item.price}</data>
-          </div> : null}
-          <span className="board__tile-name">{item.name}</span>
-          {item.detail ? <small>{item.detail}</small> : null}
-          <ItemTag item={item} />
-        </div>)}
-      </div>
-    </> : period.style === "letterboard-special" ? <>
-      <p className="board__headline">{period.headline}</p>
-      <small className="board__letter-sub">Served daily · {period.time}</small>
-      <ol className="board__letter-list">
-        {period.items.map(item => <li key={item.name}>
-          <span>{item.name}</span>
-          <data value={item.price}>{item.price}</data>
-          <ItemTag item={item} />
-        </li>)}
-      </ol>
-    </> : period.style === "classic-chalkboard" ? <>
-      <p className="board__headline">{period.headline}</p>
-      {period.categories ? <div className="board__chalk-categories">
-        {period.categories.map(category => <div key={category.name} className="board__chalk-category">
-          <div className="board__chalk-category-heading">
-            <h3>{category.name}</h3>
-            {category.price ? <strong>{category.price}</strong> : null}
-          </div>
-          <ul className="board__list">
-            {category.items.map(item => <li key={item.name} className={item.tag === "sold-out" ? "board__item--sold-out" : undefined}>
-              <span>{item.name}</span>
-              {category.price ? null : <data value={item.price} className="board__item-price">{item.price}</data>}
-              <ItemTag item={item} />
-            </li>)}
-          </ul>
-        </div>)}
-      </div> : <ul className="board__list">
-        {period.items.map(item => <li key={item.name} className={item.tag === "sold-out" ? "board__item--sold-out" : undefined}>
-          <span>{item.name}</span>
-          <data value={item.price} className="board__item-price">{item.price}</data>
-          <ItemTag item={item} />
-        </li>)}
-      </ul>}
-    </> : period.style === "digital-tap-board" ? <>
-      <p className="board__headline">{period.headline}</p>
-      <div className="board__tap-grid">
-        {period.items.map(item => <div key={item.name} className={`board__tap-card${item.tag === "sold-out" ? " board__tap-card--sold-out" : ""}`}>
-          <svg width="22" height="26" viewBox="0 0 22 26" aria-hidden="true"><path d="M3 2h16l-2 20a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L3 2Z" fill="none" stroke="currentColor" strokeWidth="1.6" /><path d="M3 8h16" stroke="currentColor" strokeWidth="1.2" opacity=".5" /></svg>
-          <div className="board__tap-copy">
-            <span>{item.name}</span>
-            {item.detail ? <small>{item.detail}</small> : null}
-          </div>
-          <data value={item.price}>{item.price}</data>
-          {item.tag === "new" ? <em className="board__tap-brewing">Now brewing</em> : <ItemTag item={item} />}
-        </div>)}
-      </div>
-    </> : <>
-      <p className="board__headline">{period.headline}</p>
-      <ul className="board__list">
-        {period.items.map(item => <li key={item.name} className={item.tag === "sold-out" ? "board__item--sold-out" : undefined}>
-          <span>{item.name}</span>
-          <data value={item.price} className="board__item-price">{item.price}</data>
-          <ItemTag item={item} />
-        </li>)}
-      </ul>
-    </>}
-    <small className="board__footnote">Preview only · no venue data is changed</small>
-  </div>;
-}
-
 // One example of every distinct real layout, so a visitor sees the full range of
 // styles at a glance in a horizontal showcase, instead of waiting for the timeline
 // above to cycle around to it.
@@ -246,10 +53,21 @@ function HeroDeviceShowcase() {
     return () => clearInterval(id);
   }, []);
   const entry = heroShowcase[index];
-  return <div className="signup-marketing__hero-device" aria-hidden="true">
-    <Board venueName={entry.venue.venueName} period={entry.period} compact />
+  return <div className="home-hero__demo" aria-hidden="true">
+    <Board venueName={entry.venue.venueName} period={entry.period} />
   </div>;
 }
+
+// Many real venues - the reference case is Chinese takeout counters - don't run one
+// screen, they run two or three mounted side by side, each showing something different.
+// This proves that arrangement instead of describing it: a shared physical frame around
+// several independent boards, exactly like the photos of real backlit menu walls.
+const chineseWall = ["lunch-special", "house-favorites", "combo-platters"]
+  .map(id => allPeriods.find(entry => entry.period.id === id)!);
+
+// "Preview a live board render" in the verification loop's first step is a specific,
+// checkable claim - so it gets a real rendered board next to it, not an illustration.
+const loopVisualEntry = allPeriods.find(entry => entry.period.id === "dinner")!;
 
 export default function Home() {
   const flatPeriods = useMemo(
@@ -288,36 +106,77 @@ export default function Home() {
     <header className="site-nav">
       <span className="site-nav__brand">Vennusign</span>
       <nav className="site-nav__links">
+        <a href="#home-loop-heading">Product</a>
+        <a href="/restaurants">Restaurants &amp; QSRs</a>
+        <a href="/corporate-comms">Corporate Comms</a>
+        <a href="#home-pricing-heading">Pricing</a>
         <a href={signinUrl}>Sign in</a>
         <a className="site-nav__signup" href={signupUrl}>Sign up</a>
       </nav>
     </header>
 
     <main className="site-home">
-      <section className="signup-marketing__hero" aria-labelledby="home-heading">
-        <div className="signup-marketing__hero-panel">
-          <HeroDeviceShowcase />
-          <span>Digital menus, without the friction</span>
-          <h1 id="home-heading">Put your first screen live.</h1>
-          <p>See the product before you sign up. Then create your organization, choose an available plan, and pair a display with one secure code.</p>
-          <div className="signup-marketing__actions">
-            <a className="signup-marketing__primary" href={signupUrl}>Start setup</a>
-            <a href="#live-product-demo">Try the live demo</a>
-            <a className="signup-marketing__book-demo" href="#home-faq">Book a demo instead</a>
-          </div>
-          <p className="signup-marketing__no-cc">No credit card required to try it.</p>
+      <section className="home-hero" aria-labelledby="home-heading">
+        <span className="home-hero__eyebrow">Enterprise digital signage CMS</span>
+        <h1 id="home-heading">Vennusign runs your screens. <span>And proves it.</span></h1>
+        <p className="home-hero__lede">Stop guessing if your content updated. Publish menus and campaigns, verify delivery with undeniable proof of play, and let dropped players recover themselves.</p>
+        <div className="home-hero__actions">
+          <a className="signup-marketing__primary" href={signupUrl}>Start your free trial</a>
+          <a className="home-hero__secondary" href="#home-faq">Book a demo</a>
         </div>
-        <ul className="signup-marketing__proof" aria-label="Product proof points">
+        <p className="home-hero__no-cc">No credit card required to try it.</p>
+        <HeroDeviceShowcase />
+        <ul className="home-hero__proof" aria-label="Product proof points">
           <li><strong>One workspace</strong><span>Menus, screens, schedules, and daily service controls.</span></li>
           <li><strong>Safe changes</strong><span>Preview, review, and visible delivery state before you move on.</span></li>
           <li><strong>Resumable setup</strong><span>Your authoritative onboarding progress is saved between visits.</span></li>
         </ul>
       </section>
 
-      <section className="signup-demo" id="live-product-demo" aria-labelledby="live-demo-heading">
+      <section className="home-problem" aria-labelledby="home-problem-heading">
+        <h2 id="home-problem-heading">Dispatched is not the same as displayed.</h2>
+        <p>Most digital signage software tells you a file was &ldquo;sent&rdquo; to a player. It doesn&rsquo;t tell you if the screen is black, frozen, or showing yesterday&rsquo;s prices.</p>
+        <p>When your revenue relies on accurate menus and timely promotions, blind spots cost you money. Vennusign closes the gap between what you scheduled and what your customers actually see.</p>
+      </section>
+
+      <section className="home-loop" aria-labelledby="home-loop-heading">
+        <div className="home-loop__intro">
+          <h2 id="home-loop-heading">The Vennusign verification loop</h2>
+          <p>Every update follows a strict, trackable path. Order matters, and the system proves where your content stands at every step.</p>
+        </div>
+        <div className="home-loop__grid">
+          <div className="home-loop__step">
+            <span className="home-loop__number">1</span>
+            <h3>Edit &amp; preview</h3>
+            <p className="home-loop__tag">See it before they do</p>
+            <p>Use the Menu Builder to edit sections, 86 sold-out items, and update pricing. Preview a live board render so you know exactly how it will look on the physical display.</p>
+            <div className="home-loop__visual"><Board venueName={loopVisualEntry.venue.venueName} period={loopVisualEntry.period} compact /></div>
+          </div>
+          <div className="home-loop__step">
+            <span className="home-loop__number">2</span>
+            <h3>Target &amp; publish</h3>
+            <p className="home-loop__tag">Push to one screen or a thousand</p>
+            <p>Group your screens by location, region, or hardware type. Push updates instantly or schedule them for a future campaign window.</p>
+          </div>
+          <div className="home-loop__step">
+            <span className="home-loop__number">3</span>
+            <h3>Verify (proof)</h3>
+            <p className="home-loop__tag">Timestamped and confirmed</p>
+            <p>Vennusign doesn&rsquo;t just send the file &mdash; it listens for confirmation. Get detailed, timestamped playback logs verifying your content actually rendered.</p>
+          </div>
+          <div className="home-loop__step">
+            <span className="home-loop__number">4</span>
+            <h3>Recover</h3>
+            <p className="home-loop__tag">Self-healing hardware</p>
+            <p>If a player drops or a screen goes dark, Vennusign detects the failure and instantly initiates automated recovery protocols to bring the screen back online.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="signup-demo" id="live-product-demo" aria-labelledby="home-proof-heading">
         <header>
-          <div><span>Real Vennusign board styles</span><h2 id="live-demo-heading">People eat with their eyes first.</h2></div>
-          <p>So Vennusign screens are built the same way. Two venues, nine boards, cycling on their own below — touch nothing, or jump straight to one.</p>
+          <div><span>Not a mockup &mdash; the real renderer</span><h2 id="home-proof-heading">Every board here is what a Vennusign screen actually runs.</h2></div>
+          <p>Seven industries, twelve board styles, cycling on their own below &mdash; touch nothing, or jump straight to one.</p>
         </header>
 
         <div className="signup-demo__venue-toggle" role="group" aria-label="Choose a venue type">
@@ -353,6 +212,53 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="screen-wall-section" aria-labelledby="screen-wall-heading">
+        <div><span>One system, several screens</span><h2 id="screen-wall-heading">Mount two or three together, run each one differently.</h2></div>
+        <p>Real counters rarely run one screen &mdash; a lunch-special board next to a photo menu is the common case, not the exception. Same account, same content model, independent screens.</p>
+        <ScreenWall periods={chineseWall} />
+      </section>
+
+      <section className="home-status" aria-labelledby="home-status-heading">
+        <div className="home-status__intro">
+          <h2 id="home-status-heading">Every screen tells the truth.</h2>
+          <p>No more calling the store manager to ask, &ldquo;Is the TV on?&rdquo; Vennusign uses a fixed set of verifiable states so your network status never relies on guesswork.</p>
+        </div>
+        <div className="home-status__table-wrap">
+          <table className="home-status__table">
+            <thead>
+              <tr><th>Status</th><th>What it means for you</th><th>Automated action</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span className="home-status__dot home-status__dot--live" aria-hidden="true" />Live</td>
+                <td>Content is applied, playing, and visually confirmed.</td>
+                <td>Logs proof-of-play data for your reporting.</td>
+              </tr>
+              <tr>
+                <td><span className="home-status__dot home-status__dot--warning" aria-hidden="true" />Warning</td>
+                <td>Screen is connected but experiencing playback variance or delays.</td>
+                <td>Flags for review before it affects customers.</td>
+              </tr>
+              <tr>
+                <td><span className="home-status__dot home-status__dot--off" aria-hidden="true" />Off</td>
+                <td>The player or screen has lost connection.</td>
+                <td>Triggers Vennusign&rsquo;s automated recovery loop.</td>
+              </tr>
+              <tr>
+                <td><span className="home-status__dot home-status__dot--promo" aria-hidden="true" />Promotion</td>
+                <td>Scheduled, limited-time campaign overriding default content.</td>
+                <td>Reverts to standard play automatically when the window ends.</td>
+              </tr>
+              <tr>
+                <td><span className="home-status__dot home-status__dot--emergency" aria-hidden="true" />Emergency</td>
+                <td>Total broadcast override for critical communications.</td>
+                <td>Forces all targeted screens to emergency messaging instantly.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <section className="signup-pairing-story" aria-labelledby="pairing-story-heading">
         <div><span>From account to screen</span><h2 id="pairing-story-heading">Pair once. Know when it is live.</h2></div>
         <ol>
@@ -361,6 +267,19 @@ export default function Home() {
           <li><span>3</span><div><strong>Wait for the Online heartbeat</strong><p>Pairing and live status stay distinct, so setup never claims success before the player reports in.</p></div></li>
         </ol>
         <p className="signup-pairing-story__hardware">Runs on Vennusign&rsquo;s own web player, Android TV, Fire TV, Samsung Tizen, and LG webOS &mdash; pair whatever screen you already have.</p>
+      </section>
+
+      <section className="home-hardware" aria-labelledby="home-hardware-heading">
+        <div>
+          <h2 id="home-hardware-heading">Don&rsquo;t rip and replace. Just verify.</h2>
+          <p>Vennusign acts as a verification layer over the hardware you already own. Whether you use ChromeOS, Android, Amazon Fire Sticks, or proprietary commercial media players, you get the same enterprise-grade proof of play and status tracking.</p>
+          <div className="home-hardware__badges">
+            <span>ChromeOS</span>
+            <span>Android</span>
+            <span>FireOS</span>
+            <span>Windows</span>
+          </div>
+        </div>
       </section>
 
       <section className="signup-data-note" aria-labelledby="home-data-heading">
@@ -395,6 +314,26 @@ export default function Home() {
         <p className="signup-pricing__note">Plan availability and entitlement are confirmed by Vennusign during onboarding.</p>
         <a className="signup-marketing__primary site-home__final-cta" href={signupUrl}>Start setup</a>
       </section>
+
+      <section className="home-cta-banner" aria-labelledby="home-cta-heading">
+        <h2 id="home-cta-heading">Ready to stop guessing?</h2>
+        <p>Join the operations teams that trust Vennusign to keep their screens live, accurate, and profitable.</p>
+        <div className="home-cta-banner__actions">
+          <a className="home-cta-banner__primary" href={signupUrl}>Start your 14-day free trial</a>
+          <a className="home-cta-banner__secondary" href="#home-faq">Talk to sales</a>
+        </div>
+        <p className="home-cta-banner__note">No credit card required to start.</p>
+      </section>
     </main>
+
+    <footer className="site-footer">
+      <span className="site-nav__brand">Vennusign</span>
+      <nav className="site-footer__links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Contact</a>
+      </nav>
+      <p className="site-footer__copyright">&copy; 2026 Vennusign. All rights reserved.</p>
+    </footer>
   </div>;
 }

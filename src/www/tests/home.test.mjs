@@ -11,7 +11,7 @@ const [home, boardExamples, styles] = await Promise.all([
 test("home page covers nav, hero, and an auto-playing showcase", () => {
   assert.match(home, /Sign in/);
   assert.match(home, /Sign up/);
-  assert.match(home, /Put your first screen live/);
+  assert.match(home, /Vennusign runs your screens\. <span>And proves it\.<\/span>/);
   assert.match(home, /No credit card required to try it/);
   assert.match(home, /AUTO_ADVANCE_MS/);
   assert.match(home, /setAutoPlaying/);
