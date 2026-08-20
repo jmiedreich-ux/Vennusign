@@ -2,6 +2,22 @@
 
 Updated 2026-08-20, for the public marketing site, customer sign-in repair, and QA mail tooling.
 
+## 2026-08-20 — A customer signed in to Back Office for the first time
+
+**The first time anyone has reached Back Office as a customer, through the real sign-in.** Not a seeded session token, not a workbook link: Entra sign-in, customer session cookie, Back Office open. Every prior attempt in this product's life failed somewhere in that chain.
+
+Five defects stood between sign-in and Back Office, and each was only visible once the previous one was fixed:
+
+1. `email_verified` was required but Entra never emits it (`1d8337e7`).
+2. An intermediate fix disabled the UserInfo call on a wrong theory, which dropped `email` instead (`ef906aa9`, reverted).
+3. Identity resolution ran in `TokenValidated`, before UserInfo claims are merged — so it read `email` at the one point in the pipeline where it cannot exist (`03a39467`).
+4. The session cookie was `SameSite=Lax` on an `azurewebsites.net` host while the SPA ran on `dev.back-office.vennusign.com`. Cross-site, so the browser withheld it: sign-in succeeded and the SPA got 401 (#731, fixed by `03e55efc` moving every app to its registered subdomain).
+5. `authenticatedCustomerDestination` returned `/onboarding` to visitors already on `/onboarding`, so the page replaced its own URL forever (`720ce6bd`). This one had always been there; it needed a working session to reach it, so fixing 4 exposed it.
+
+Two more were cleared the same evening to make the journey usable: `Cors:AllowedOrigins` carried only the Back Office origins, so the display application could not call the API at all and the pairing screen showed "Pairing unavailable" — adding `dev.display.vennusign.com` fixed pairing and, as a side effect, #725. And the B1 App Service plan wedged completely under 28 apps on one core; the plan is temporarily on **B3** for this testing round and returns to B1 afterwards.
+
+**Durable lesson.** Four of these five reported as an authentication failure while the customer was, in fact, authenticated. When the symptom is generic, the question worth asking early is *where in the pipeline is this value read*, not *is the value configured* — configuration was correct for several of them the whole time.
+
 ## 2026-08-19/20 — Onboarding M1: durable go-live, headless QA onboarding, and a sign-in defect that blocks every customer
 
 **The premise that "customer sign-in works on dev" is half true, and the missing half blocks everyone — issue #731.** The Entra handshake works and writes a real session; the Back Office SPA then cannot use it. `__Host-Vennusign.CustomerSession` is `SameSite=Lax` and set on `vennusign-dev-api.azurewebsites.net`, while the SPA is served from `dev.back-office.vennusign.com`. Different registrable domains, so every XHR the SPA makes is cross-site and the browser withholds a Lax cookie. Proof, one browser and one cookie jar immediately after a successful sign-in: a page-context `fetch` to `/api/customer-auth/session` returns **401**, while a request-context fetch with the same jar returns **200** with `qamurphy@vennusign.com`. The customer is dropped back on "Sign in to Vennusign" with no error. CORS is NOT the cause and is already correct on both hosts (preflight returns `Access-Control-Allow-Origin: https://dev.back-office.vennusign.com` with credentials on each). The fix is to move the API to `dev.api.vennusign.com`, which already serves this API and is same-site with the SPA: change `VITE_VENNUSIGN_API_BASE_URL` in `deploy-dev.yml` (three jobs, lines 82/136/164) and the Entra redirect URI on client `9cf572dc-db8e-44c5-acdf-d4dd258ccd6f` together — the cookie must be set and read on the same host. Stage needs the same check. The 2026-08-20 verification missed this because it confirmed the callback, the cookie and the `CustomerUsers` row; none of those exercise the SPA reading the session back from its own origin.
