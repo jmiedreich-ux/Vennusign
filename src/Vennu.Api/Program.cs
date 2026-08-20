@@ -314,7 +314,13 @@ app.MapControllers();
 app.MapHub<VennuHub>("/hubs/vennusign");
 app.MapHub<VennuHub>("/hubs/vennu");
 app.MapGet("/", () => Results.Ok(new { status = "ok", service = "Vennusign.Api" }));
-app.MapGet("/health/version", () => Results.Ok(ReleaseVersionMetadata.FromEnvironment()));
+// The database schema is the one field here that is not the build talking about
+// itself, so it is read from the database rather than handed in by the deploy.
+// See Vennu.Data.DatabaseSchemaVersion for why that distinction is worth the read.
+var schemaVersion = new Vennu.Data.DatabaseSchemaVersion(
+    builder.Configuration.GetConnectionString("VennuDatabase"));
+app.MapGet("/health/version", () => Results.Ok(
+    ReleaseVersionMetadata.FromEnvironment(schemaVersion.Current())));
 
 app.Run();
 
