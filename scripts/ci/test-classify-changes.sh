@@ -83,6 +83,11 @@ assert_output gitignore docs_only false
 assert_output gitignore dotnet_api false
 assert_output gitignore back_office false
 
+run_scenario uitests tests/ui/specs/example.spec.ts
+assert_output uitests full false
+assert_output uitests back_office false
+assert_output uitests dotnet_api false
+
 run_scenario unknown config/new-runtime-policy.json
 assert_output unknown full true
 assert_output unknown dotnet_api true
