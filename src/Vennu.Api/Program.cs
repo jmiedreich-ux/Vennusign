@@ -139,12 +139,13 @@ builder.Services
             Enabled = customerAuthentication.Entra.Enabled,
             ClientId = customerAuthentication.Entra.ClientId,
             ClientSecret = customerAuthentication.Entra.ClientSecret
-            // Entra External ID's UserInfo endpoint returns an incomplete claim set for local
-            // accounts - it drops email_verified even though the ID token itself carries it
-            // correctly, which made every local-account sign-in fail CustomerOidcEvents'
-            // verified-identity check. The ID token alone already has everything needed, so
-            // skip the UserInfo round-trip for this provider.
-        }, useFormPost: false, getClaimsFromUserInfoEndpoint: false));
+            // Entra's ID token does not carry the email claim on its own; the UserInfo
+            // endpoint is what supplies it, so this round-trip is required rather than
+            // optional. (An earlier change disabled it on the mistaken theory that UserInfo
+            // was overwriting email_verified. It cannot - OIDC claim actions only add claims
+            // that are not already present - and Entra never sends email_verified at all,
+            // which CustomerOidcEvents.HasVerifiedEmail now accounts for.)
+        }, useFormPost: false, getClaimsFromUserInfoEndpoint: true));
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(

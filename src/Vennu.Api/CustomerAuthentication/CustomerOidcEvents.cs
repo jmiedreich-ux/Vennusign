@@ -7,7 +7,8 @@ namespace Vennu.Api.CustomerAuthentication;
 
 public sealed class CustomerOidcEvents(
     ICustomerAccountService accountService,
-    ICustomerSessionService sessionService) : OpenIdConnectEvents
+    ICustomerSessionService sessionService,
+    ILogger<CustomerOidcEvents> logger) : OpenIdConnectEvents
 {
     public override Task RedirectToIdentityProvider(RedirectContext context)
     {
@@ -50,6 +51,16 @@ public sealed class CustomerOidcEvents(
         var emailVerified = HasVerifiedEmail(provider, context.Principal?.FindFirstValue("email_verified"));
         if (string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(email) || !emailVerified)
         {
+            // Which of the three conditions failed is otherwise invisible - the browser only
+            // ever sees one generic message - and getting this wrong costs a deploy cycle to
+            // re-diagnose. Claim *types* only, never values: these carry customer PII.
+            logger.LogWarning(
+                "Customer sign-in rejected for {Provider}: hasSubject={HasSubject}, hasEmail={HasEmail}, emailVerified={EmailVerified}, claimTypes={ClaimTypes}",
+                provider,
+                !string.IsNullOrWhiteSpace(subject),
+                !string.IsNullOrWhiteSpace(email),
+                emailVerified,
+                string.Join(",", context.Principal?.Claims.Select(claim => claim.Type).Distinct() ?? []));
             context.Fail("The provider did not return a verified customer identity.");
             return;
         }
