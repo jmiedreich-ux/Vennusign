@@ -1173,3 +1173,48 @@ being visible by accident during a container's startup window.
 logging) as infrastructure-as-code or leave it as manual Azure state; then continue
 either with the GitHub issue backlog or with formalizing the release-engineering
 concept into an approved work package.
+
+
+## Keystone — thin layer and discovery services named and scoped — 2026-08-20
+
+Separate track from Menus, and a continuation of the release-engineering thread above.
+The cutover design artboards in the Claude Design project "Vennusign screen mockups"
+were brought in line with `docs/design/progressive-customer-cutover-concept.md`, which
+had been renamed out from under them: `Cutover Architecture v2.dc.html` now uses VDS,
+Product Router, ADS and System Monitor rather than "Version Router" and "enforcement
+point", carries ADS's two-step resolution and System Monitor as a fourth unversionable
+component, and drops the enforcement-location question from its undecided list since
+that is now decided. A new `Cutover Sequences.dc.html` artboard renders the same system
+as five sequence diagrams, and `cutover/mermaid-source.md` was rewritten to match with a
+third diagram added. `docs/design/proposed/README.md` line 16 still says "Version
+Router" and was left alone.
+
+The feature that builds those components is now codenamed **Keystone**. What was settled
+about it is recorded in `docs/features/keystone/decisions-so-far.md`: separate App
+Services rather than one bundled app, one shared Standard-tier plan for Keystone rather
+than a plan each, and — the boundary that matters most — that plan kept separate from
+the versioned `Vennu.Api` plan, because concurrent versions divide their plan's CPU and
+would starve the Product Router that sits on every request. VDS + ADS is the recommended
+first slice on bootstrap-order grounds but the owner has not confirmed it.
+
+Two things are deliberately open. **Tier and plan cost** was deferred by the owner:
+Standard is a tier change from the current `rg-basic-website` arrangement and needs its
+own conversation before any plan is provisioned. And Keystone is a **new feature area**
+with no design authority — the concept doc is still explicitly unapproved, so nothing
+here authorizes implementation, and its `Decisions required before planning` list
+includes items Keystone cannot route around (unit of assignment, behaviour when VDS is
+unavailable, the connection mechanism, the forwarded-webhook trust boundary).
+
+Method note: the `superpowers` plugin (github.com/obra/superpowers, 6.3.0, MIT) was
+installed at **user scope** at the owner's request, to drive this build through its
+brainstorming -> worktree -> written plan -> subagent-driven development -> red/green TDD
+-> code review -> branch finishing workflow. It activates through a `SessionStart` hook
+matching `startup|clear|compact`, so it affects every new session in every project, not
+only Keystone work; reinstalling at project scope would narrow that. No feature record or
+design authority was pre-written, deliberately, since brainstorming is that workflow's
+first stage.
+
+**Exact next action.** In a fresh session, run the superpowers brainstorming stage on
+Keystone to produce the feature's design authority and question register, and let it
+settle the first slice; do not provision any App Service Plan until the cost
+conversation has happened.
