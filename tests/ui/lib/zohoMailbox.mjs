@@ -10,30 +10,70 @@
  * until someone deletes it by hand, so every entry point here either cleans up in
  * a `finally` or is explicitly a sweep. Prefer `withDisposableMailbox`.
  *
- * Credentials live outside the repo in ~/.config/vennusign-zoho.json (or
- * $VENNUSIGN_ZOHO_CONFIG). The refresh token does not expire; access tokens are
- * minted per run and never persisted.
+ * Credentials come from Azure Key Vault (`kv-vennusign-dev`), falling back to a
+ * machine-local ~/.config/vennusign-zoho.json for developer convenience. Neither
+ * is in the repo. The refresh token does not expire; access tokens are minted per
+ * run and never persisted.
  */
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
 const API = "https://mail.zoho.com/api";
 const CONFIG_PATH = process.env.VENNUSIGN_ZOHO_CONFIG ?? join(homedir(), ".config", "vennusign-zoho.json");
+const KEY_VAULT = process.env.VENNUSIGN_ZOHO_KEY_VAULT ?? "kv-vennusign-dev";
+const SECRET_KEYS = ["client_id", "client_secret", "refresh_token", "dc", "zoid"];
 
 /** Mailboxes we create are always prefixed so a sweep can recognise its own litter. */
 export const QA_PREFIX = "qa-murphy-";
 
-function config() {
-  try {
-    return JSON.parse(readFileSync(CONFIG_PATH, "utf8"));
-  } catch (cause) {
-    throw new Error(
-      `Zoho credentials not found at ${CONFIG_PATH}. This file is machine-local and is not in the repo; ` +
-      `on a fresh machine or in CI, supply client_id/client_secret/refresh_token/dc/zoid.`,
-      { cause }
-    );
+/**
+ * Reads credentials from Key Vault so a fresh machine or CI runner needs no local
+ * file - only an Azure identity holding Key Vault Secrets User on the vault.
+ * Returns null when the CLI is absent or unauthenticated, so the local file can
+ * still serve.
+ */
+function configFromKeyVault() {
+  const azure = process.env.AZ_CLI_PATH ?? "az";
+  const values = {};
+  for (const key of SECRET_KEYS) {
+    try {
+      values[key] = execFileSync(
+        azure,
+        ["keyvault", "secret", "show", "--vault-name", KEY_VAULT,
+         "--name", `zoho-mail-${key.replaceAll("_", "-")}`, "--query", "value", "-o", "tsv"],
+        { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }
+      ).trim();
+    } catch {
+      return null;
+    }
   }
+  return values;
+}
+
+let cachedConfig = null;
+
+function config() {
+  if (cachedConfig) return cachedConfig;
+
+  // The local file wins when present: it is what a developer machine already has,
+  // and it avoids a Key Vault round-trip per secret per run.
+  try {
+    cachedConfig = JSON.parse(readFileSync(CONFIG_PATH, "utf8"));
+    return cachedConfig;
+  } catch {
+    // fall through to Key Vault
+  }
+
+  cachedConfig = configFromKeyVault();
+  if (cachedConfig) return cachedConfig;
+
+  throw new Error(
+    `Zoho credentials unavailable. Looked for ${CONFIG_PATH} (machine-local, deliberately not in the repo), ` +
+    `then Key Vault "${KEY_VAULT}" via the az CLI. Either create that file, or sign in to Azure with an ` +
+    `identity holding Key Vault Secrets User on the vault.`
+  );
 }
 
 let cachedToken = null;
