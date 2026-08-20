@@ -22,6 +22,7 @@ public class DisplayController : ControllerBase
     private readonly ITapListRepository? tapListRepository;
     private readonly TimeProvider timeProvider;
     private readonly IScreenContentDeliveryService? deliveryService;
+    private readonly ICustomerOnboardingRepository? customerOnboarding;
 
     public DisplayController(
         IScreenRepository screenRepository,
@@ -34,9 +35,10 @@ public class DisplayController : ControllerBase
         TimeProvider? timeProvider = null,
         IDateRangePromotionService? promotionService = null,
         ITapListRepository? tapListRepository = null,
-        IScreenContentDeliveryService? deliveryService = null) =>
-        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.emergencyBroadcastService, this.promotionService, this.tapListRepository, this.timeProvider, this.deliveryService) =
-        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, emergencyBroadcastService, promotionService, tapListRepository, timeProvider ?? TimeProvider.System, deliveryService);
+        IScreenContentDeliveryService? deliveryService = null,
+        ICustomerOnboardingRepository? customerOnboarding = null) =>
+        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.emergencyBroadcastService, this.promotionService, this.tapListRepository, this.timeProvider, this.deliveryService, this.customerOnboarding) =
+        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, emergencyBroadcastService, promotionService, tapListRepository, timeProvider ?? TimeProvider.System, deliveryService, customerOnboarding);
 
     [HttpGet("{screenId:guid}/content")]
     [ProducesResponseType<DisplayContentResponse>(StatusCodes.Status200OK)]
@@ -285,6 +287,17 @@ public class DisplayController : ControllerBase
         if (!updated)
         {
             return NotFound(new ProblemDetails { Title = "Screen not found.", Detail = $"Screen '{screenId}' was not found.", Status = StatusCodes.Status404NotFound });
+        }
+
+        // This heartbeat is the only moment Vennusign can observe a display coming online, and
+        // it is the moment onboarding's go-live step is satisfied. Latch it here rather than in
+        // the onboarding read: a player that comes online while nobody has the onboarding page
+        // open would otherwise never be recorded, and the customer would be returned to the
+        // opening checklist on their next sign-in. The latch is a no-op for every screen that no
+        // onboarding journey names as its first display, and for every heartbeat after the first.
+        if (customerOnboarding is not null && status.Equals("Online", StringComparison.OrdinalIgnoreCase))
+        {
+            await customerOnboarding.LatchGoLiveByFirstScreenAsync(screenId, lastSeenUtc, cancellationToken);
         }
 
         return Ok(new ScreenHeartbeatResponse

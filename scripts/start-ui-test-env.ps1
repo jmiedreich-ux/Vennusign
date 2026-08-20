@@ -16,7 +16,11 @@ param(
     [string]$IsolationTag = '0000',
     [switch]$SkipFixture,
     [switch]$Stop,
-    [switch]$PruneSeed
+    [switch]$PruneSeed,
+    # The display dev server's port. Overridable because 5175 is a popular default
+    # and something else on the machine may already own it; nothing here depends on
+    # the number, only on the API and the front ends agreeing on it.
+    [int]$DisplayPort = 5175
 )
 
 $ErrorActionPreference = 'Stop'
@@ -25,8 +29,8 @@ $logRoot = Join-Path $repoRoot 'artifacts\ui-test-env'
 $apiOrigin = 'https://localhost:7138'
 $testApiOrigin = 'https://localhost:7140'
 $backOfficeOrigin = 'https://localhost:5174'
-$displayOrigin = 'http://localhost:5175'
-$ports = @(7138, 7140, 5174, 5175)
+$displayOrigin = "http://localhost:$DisplayPort"
+$ports = @(7138, 7140, 5174, $DisplayPort)
 
 function Stop-UiTestEnv {
     foreach ($port in $ports) {
@@ -212,15 +216,15 @@ $env:TestApi__ProductAutomationKey = $testApiKey
 Write-Host 'Starting Test API...'
 $null = Start-EnvProcess -Name 'test-api' -FilePath 'dotnet' -ArgumentList @('run', '--no-launch-profile', '--project', '.\src\Vennu.TestApi\Vennu.TestApi.csproj') -WorkingDirectory $repoRoot
 
-$env:VITE_VENNUSIGN_API_BASE_URL = $apiOrigin
-$env:VITE_VENNUSIGN_DISPLAY_BASE_URL = $displayOrigin
+$env:VITE_API_URL = $apiOrigin
+$env:VITE_DISPLAY_URL = $displayOrigin
 Write-Host 'Starting Back Office...'
 $null = Start-EnvProcess -Name 'back-office' -FilePath 'npm.cmd' -ArgumentList @('run', 'dev', '--', '--host', 'localhost', '--port', '5174') -WorkingDirectory (Join-Path $repoRoot 'src\back-office')
 
-$env:VITE_API_BASE_URL = $apiOrigin
-$env:VITE_SIGNALR_HUB_URL = "$apiOrigin/hubs/vennusign"
+$env:VITE_API_URL = $apiOrigin
+$env:VITE_SIGNALR_URL = "$apiOrigin/hubs/vennusign"
 Write-Host 'Starting Display...'
-$null = Start-EnvProcess -Name 'display' -FilePath 'npm.cmd' -ArgumentList @('run', 'dev', '--', '--host', 'localhost', '--port', '5175') -WorkingDirectory (Join-Path $repoRoot 'src\display')
+$null = Start-EnvProcess -Name 'display' -FilePath 'npm.cmd' -ArgumentList @('run', 'dev', '--', '--host', 'localhost', '--port', "$DisplayPort") -WorkingDirectory (Join-Path $repoRoot 'src\display')
 
 Wait-ForHttp "$apiOrigin/health/version"
 Wait-ForHttp "$testApiOrigin/health/version"

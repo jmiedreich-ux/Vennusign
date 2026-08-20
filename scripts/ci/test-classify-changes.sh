@@ -93,4 +93,23 @@ assert_output unknown full true
 assert_output unknown dotnet_api true
 assert_output unknown display true
 
+# Nothing under tests/ ships, so a test-only change deploys nothing - including
+# the .NET test projects, which used to imply a deploy of the code they exercise.
+run_scenario dotnettests tests/Vennu.Api.Tests/Controllers/DisplayControllerTests.cs tests/Vennu.DataAccess.Tests/CustomerOnboardingServiceTests.cs tests/Vennu.Data.IntegrationTests/CustomerOnboardingGoLiveMigrationTests.cs
+assert_output dotnettests full false
+assert_output dotnettests dotnet_api false
+assert_output dotnettests dotnet_data_access false
+assert_output dotnettests back_office false
+
+# The local development and QA launchers produce nothing that is deployed.
+run_scenario localscripts scripts/start-dev.ps1 scripts/start-ui-test-env.ps1
+assert_output localscripts full false
+assert_output localscripts dotnet_api false
+assert_output localscripts display false
+
+# But scripts/ci/* decides this classification, so it still forces a full run.
+run_scenario ciscripts scripts/ci/classify-changes.sh
+assert_output ciscripts full true
+assert_output ciscripts dotnet_api true
+
 echo "Change classification scenarios passed."

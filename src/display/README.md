@@ -18,11 +18,11 @@ npm ci
 Configure `.env.local` when the API is hosted on a different origin:
 
 ```text
-VITE_API_BASE_URL=https://localhost:7001
-VITE_SIGNALR_HUB_URL=https://localhost:7001/hubs/vennusign
+VITE_API_URL=https://localhost:7001
+VITE_SIGNALR_URL=https://localhost:7001/hubs/vennusign
 ```
 
-The hub URL defaults to `<VITE_API_BASE_URL>/hubs/vennusign` when it is not supplied.
+The hub URL defaults to `<VITE_API_URL>/hubs/vennusign` when it is not supplied.
 
 ## Commands
 

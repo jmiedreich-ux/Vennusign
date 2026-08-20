@@ -33,6 +33,10 @@ export type CustomerOnboardingSnapshot = {
   checkoutPending: boolean;
   firstScreenStatus: "not-paired" | "paired-offline" | "online";
   firstScreenLastSeenUtc?: string;
+  // When this account first went live. Set once and never cleared, so a display that is
+  // currently offline does not un-complete onboarding: progress.goLive follows this, and
+  // firstScreenStatus reports the display's live state independently.
+  goLiveAchievedUtc?: string;
   progress: { account: boolean; plan: boolean; venue: boolean; firstScreen: boolean; goLive: boolean };
   updatedUtc: string;
 };

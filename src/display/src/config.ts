@@ -2,9 +2,9 @@ function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
 }
 
-const apiBaseUrl = trimTrailingSlash(import.meta.env.VITE_API_BASE_URL ?? '');
+const apiBaseUrl = trimTrailingSlash(import.meta.env.VITE_API_URL ?? '');
 const signalRHubUrl =
-  import.meta.env.VITE_SIGNALR_HUB_URL ?? `${apiBaseUrl}/hubs/vennusign`;
+  import.meta.env.VITE_SIGNALR_URL ?? `${apiBaseUrl}/hubs/vennusign`;
 
 export const displayConfig = Object.freeze({
   apiBaseUrl,

@@ -105,3 +105,16 @@ test("returning visitor sees one remembered method by default, not every option 
   // option, the same as a first visit - never a broken or empty screen.
   assert.match(app, /catch \{\s*\/\/ Private browsing or storage disabled/);
 });
+
+test("go live is a recorded achievement, and device status is reported separately", () => {
+  // The panel must not be driven by firstScreenStatus: a display that has gone live and is
+  // currently offline is a complete setup with an offline device, not an unfinished checklist.
+  assert.match(app, /customer-onboarding__go-live \$\{onboarding\.progress\.goLive \? "is-online" : "is-waiting"\}/);
+  assert.match(app, /\{onboarding\.progress\.goLive \? <div className="customer-onboarding__celebration"/);
+  assert.match(app, /Your setup is complete/);
+  assert.match(app, /Live since/);
+  assert.match(app, /onboarding\.goLiveAchievedUtc \? <div><dt>Live since<\/dt>/);
+  // The device row still tells the truth about right now.
+  assert.match(app, /<dt>Device<\/dt><dd>\{onboarding\.firstScreenStatus === "online" \? "Online" : "Offline \/ waiting"\}/);
+  assert.match(api, /goLiveAchievedUtc\?: string;/);
+});

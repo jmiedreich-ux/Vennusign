@@ -21,3 +21,15 @@ test('external and protocol-relative returns cannot escape the local application
   assert.equal(safeLocalReturnPath('//attacker.example', '/onboarding'), '/onboarding');
   assert.equal(safeLocalReturnPath('/\\attacker.example', '/onboarding'), '/onboarding');
 });
+
+test('a customer who has gone live is not sent back to onboarding when the display is offline', () => {
+  // progress.goLive is the achievement, latched on the first Online heartbeat and never
+  // cleared. Displays that are powered down overnight report paired-offline the next morning;
+  // that must not read as unfinished onboarding.
+  const wentLiveNowOffline = { firstScreenStatus: 'paired-offline', goLiveAchievedUtc: '2026-08-19T02:00:00Z', progress: { goLive: true } };
+  assert.equal(authenticatedCustomerDestination('/signin', '/', wentLiveNowOffline), '/');
+  assert.equal(authenticatedCustomerDestination('/signin', '/screens', wentLiveNowOffline), '/screens');
+
+  const neverLive = { firstScreenStatus: 'paired-offline', progress: { goLive: false } };
+  assert.equal(authenticatedCustomerDestination('/signin', '/screens', neverLive), '/onboarding');
+});

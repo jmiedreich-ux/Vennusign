@@ -32,7 +32,7 @@ while IFS= read -r path || [[ -n "$path" ]]; do
     .github/workflows/*|scripts/ci/*|Vennusign.sln|Directory.*)
       full=true
       ;;
-    src/Vennu.Api/*|tests/Vennu.Api.Tests/*)
+    src/Vennu.Api/*)
       dotnet_api=true
       ;;
     src/Vennu.Core.Models/*)
@@ -42,7 +42,7 @@ while IFS= read -r path || [[ -n "$path" ]]; do
     src/Vennu.Data/*)
       dotnet_api=true
       ;;
-    src/Vennu.DataAccess/*|src/DataAcess.sql/*|tests/Vennu.DataAccess.Tests/*)
+    src/Vennu.DataAccess/*|src/DataAcess.sql/*)
       dotnet_api=true
       dotnet_data_access=true
       ;;
@@ -73,6 +73,12 @@ while IFS= read -r path || [[ -n "$path" ]]; do
     scripts/set-platform-operations-key.ps1)
       dev_control=true
       ;;
+    # Nothing under tests/ is deployed, and the remaining scripts/ entries are
+    # local development and QA launchers. A change to either ships nothing, so it
+    # must not trigger a deploy of anything. scripts/ci/* still forces a full run
+    # above, because it decides this classification.
+    tests/*|scripts/*)
+      ;;
   esac
 
   case "$path" in
@@ -82,7 +88,7 @@ while IFS= read -r path || [[ -n "$path" ]]; do
   esac
 
   case "$path" in
-    docs/*|ai/handoffs/*|PROJECT_STATUS.md|tracker/assignments.json|AGENTS.md|AI_DEVELOPMENT_GUIDE.md|.github/pull_request_template.md|.github/copilot-instructions.md|.github/ISSUE_TEMPLATE/*|*.md|.gitignore|.github/workflows/*|scripts/ci/*|scripts/set-platform-operations-key.ps1|Vennusign.sln|Directory.*|src/Vennu.Api/*|tests/Vennu.Api.Tests/*|src/Vennu.Core.Models/*|src/Vennu.Data/*|src/Vennu.DataAccess/*|src/DataAcess.sql/*|tests/Vennu.DataAccess.Tests/*|tests/ui/*|src/platform-operations/*|src/back-office/*|src/display/*|src/www/*|src/tv/android/*|src/tv/tizen/*|src/tv/webos/*|tools/Vennu.DevControl/*|tools/Vennu.DevControl.Tests/*)
+    docs/*|ai/handoffs/*|PROJECT_STATUS.md|tracker/assignments.json|AGENTS.md|AI_DEVELOPMENT_GUIDE.md|.github/pull_request_template.md|.github/copilot-instructions.md|.github/ISSUE_TEMPLATE/*|*.md|.gitignore|.github/workflows/*|scripts/ci/*|scripts/set-platform-operations-key.ps1|Vennusign.sln|Directory.*|src/Vennu.Api/*|tests/Vennu.Api.Tests/*|src/Vennu.Core.Models/*|src/Vennu.Data/*|src/Vennu.DataAccess/*|src/DataAcess.sql/*|tests/Vennu.DataAccess.Tests/*|tests/*|scripts/*|src/platform-operations/*|src/back-office/*|src/display/*|src/www/*|src/tv/android/*|src/tv/tizen/*|src/tv/webos/*|tools/Vennu.DevControl/*|tools/Vennu.DevControl.Tests/*)
       ;;
     *)
       # New or cross-cutting paths must fail safe until their affected-area mapping is explicit.

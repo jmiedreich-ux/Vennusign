@@ -378,6 +378,59 @@ public class DisplayControllerTests
     }
 
     [Fact]
+    public async Task Heartbeat_RecordsGoLive_OnlyForAnOnlineReportOfAJourneysFirstScreen()
+    {
+        var screenId = Guid.NewGuid();
+        var lastSeenUtc = default(DateTime);
+        var screenRepository = new FakeScreenRepository
+        {
+            UpdateHeartbeatAsyncHandler = (_, seen, _, _) => { lastSeenUtc = seen; return Task.FromResult(true); }
+        };
+        var onboarding = new GoLiveLatchFake();
+        var sut = new DisplayController(screenRepository, new FakeVenueRepository(), new FakeMenuRepository(), customerOnboarding: onboarding);
+
+        // An offline or degraded report is not the moment a customer goes live.
+        await sut.Heartbeat(screenId, new ScreenHeartbeatRequest { Status = "Offline" }, CancellationToken.None);
+        Assert.Empty(onboarding.Calls);
+
+        // The Online report is, and it carries the same timestamp written to the screen.
+        await sut.Heartbeat(screenId, new ScreenHeartbeatRequest { Status = "  online  " }, CancellationToken.None);
+        var call = Assert.Single(onboarding.Calls);
+        Assert.Equal(screenId, call.ScreenId);
+        Assert.Equal(lastSeenUtc, call.AchievedUtc);
+    }
+
+    [Fact]
+    public async Task Heartbeat_ForAnUnknownScreen_DoesNotRecordGoLive()
+    {
+        var screenRepository = new FakeScreenRepository
+        {
+            UpdateHeartbeatAsyncHandler = (_, _, _, _) => Task.FromResult(false)
+        };
+        var onboarding = new GoLiveLatchFake();
+        var sut = new DisplayController(screenRepository, new FakeVenueRepository(), new FakeMenuRepository(), customerOnboarding: onboarding);
+
+        var result = await sut.Heartbeat(Guid.NewGuid(), new ScreenHeartbeatRequest { Status = "Online" }, CancellationToken.None);
+
+        Assert.IsType<NotFoundObjectResult>(result.Result);
+        Assert.Empty(onboarding.Calls);
+    }
+
+    private sealed class GoLiveLatchFake : ICustomerOnboardingRepository
+    {
+        public List<(Guid ScreenId, DateTime AchievedUtc)> Calls { get; } = [];
+        public Task<CustomerOnboardingState?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+        public Task<CustomerOnboardingState> SaveAsync(CustomerOnboardingState state, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+        public Task<CustomerOnboardingState?> LatchGoLiveByFirstScreenAsync(Guid screenId, DateTime achievedUtc, CancellationToken cancellationToken = default)
+        {
+            Calls.Add((screenId, achievedUtc));
+            return Task.FromResult<CustomerOnboardingState?>(null);
+        }
+    }
+
+    [Fact]
     public async Task GetContent_AndReceipt_UseSameAuthoritativeRevision()
     {
         var screen = new Screen { Id = Guid.NewGuid(), VenueId = Guid.NewGuid(), ScreenKey = "ABC123XYZ" };

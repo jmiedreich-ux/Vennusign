@@ -13,7 +13,7 @@ public sealed class DevelopmentServiceCatalogTests
         Assert.Equal("https://localhost:7138", api.Url);
         Assert.Contains("--launch-profile https", api.Arguments, StringComparison.Ordinal);
         Assert.Equal("https://localhost:5174/", backOffice.Url);
-        Assert.Contains("VITE_VENNUSIGN_API_BASE_URL=https://localhost:7138", backOffice.Environment);
+        Assert.Contains("VITE_API_URL=https://localhost:7138", backOffice.Environment);
     }
 
     [Fact]
