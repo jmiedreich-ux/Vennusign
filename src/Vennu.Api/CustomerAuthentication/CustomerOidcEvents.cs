@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Vennu.Core.Models;
 using Vennu.Data.Services;
@@ -37,7 +38,19 @@ public sealed class CustomerOidcEvents(
         provider == ExternalIdentityProvider.Vennusign
         || (bool.TryParse(emailVerifiedClaim, out var verified) && verified);
 
-    public override async Task TokenValidated(TokenValidatedContext context)
+    /// <summary>
+    /// Identity resolution runs in <see cref="RemoteAuthenticationEvents.TicketReceived"/>, not
+    /// <see cref="OpenIdConnectEvents.TokenValidated"/>, and the difference is load-bearing:
+    /// TokenValidated fires straight after ID-token validation, *before* the handler calls the
+    /// UserInfo endpoint and merges its claims. Entra External ID's ID token carries no
+    /// <c>email</c> claim - it only supplies the address via UserInfo
+    /// (https://graph.microsoft.com/oidc/userinfo) - so a check for <c>email</c> in
+    /// TokenValidated rejected every Entra sign-in no matter how the tenant, app registration,
+    /// optional claims, or Graph permissions were configured. TicketReceived is the last event
+    /// before the handler completes, after UserInfo claims are in the principal for every
+    /// provider that uses it.
+    /// </summary>
+    public override async Task TicketReceived(TicketReceivedContext context)
     {
         var provider = context.Scheme.Name switch
         {
