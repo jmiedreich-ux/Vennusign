@@ -412,4 +412,25 @@ public sealed class MigrationResourceTests
         Assert.Contains(scripts, name => name.EndsWith(".Scripts.001_baseline.sql", StringComparison.Ordinal));
         Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
     }
+
+    [Fact]
+    public void CustomerOnboardingGoLiveMigration_IsEmbeddedOrderedAndBackfillsExistingLiveAccounts()
+    {
+        var scripts = DatabaseMigrator.GetEmbeddedScriptNames();
+        var scriptName = Assert.Single(scripts, name => name.EndsWith(".Scripts.073_customer_onboarding_go_live_achieved.sql", StringComparison.Ordinal));
+        using var stream = Assert.IsAssignableFrom<Stream>(typeof(DatabaseMigrator).Assembly.GetManifestResourceStream(scriptName));
+        using var reader = new StreamReader(stream);
+        var sql = reader.ReadToEnd();
+
+        Assert.Contains("ADD GoLiveAchievedUtc DATETIME2(7) NULL", sql, StringComparison.Ordinal);
+        Assert.Contains("COL_LENGTH(N'dbo.CustomerOnboardingStates', N'GoLiveAchievedUtc') IS NULL", sql, StringComparison.Ordinal);
+
+        // Customers who already reached go-live must not be asked to onboard again, so the
+        // migration backfills them from the first screen's proof that it once reported in.
+        Assert.Contains("UPDATE onboarding", sql, StringComparison.Ordinal);
+        Assert.Contains("screen.LastSeen IS NOT NULL", sql, StringComparison.Ordinal);
+        Assert.Contains("onboarding.GoLiveAchievedUtc IS NULL", sql, StringComparison.Ordinal);
+
+        Assert.Equal(scripts.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), scripts);
+    }
 }

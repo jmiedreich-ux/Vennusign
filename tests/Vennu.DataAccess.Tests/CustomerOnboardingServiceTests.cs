@@ -97,7 +97,7 @@ public sealed class CustomerOnboardingServiceTests
     }
 
     [Fact]
-    public async Task ClaimFirstScreen_LinksDeviceButRequiresOnlineHeartbeatForGoLive()
+    public async Task ClaimFirstScreen_RequiresOnlineHeartbeatForGoLiveAndKeepsItWhenTheDisplayGoesOffline()
     {
         var userId = Guid.NewGuid();
         var organizationId = Guid.NewGuid();
@@ -127,9 +127,57 @@ public sealed class CustomerOnboardingServiceTests
 
         screens.Screen.Status = "Online";
         screens.Screen.LastSeen = Now.UtcDateTime;
+        Assert.False((await service.GetAsync(userId)).Progress.GoLive);
+
+        // The heartbeat that reports Online is what records the achievement; a screen that is
+        // merely observed Online during a read does not complete onboarding on its own.
+        await states.LatchGoLiveByFirstScreenAsync(screenId, Now.UtcDateTime);
+
         var online = await service.GetAsync(userId);
         Assert.Equal("online", online.FirstScreenStatus);
         Assert.True(online.Progress.GoLive);
+        Assert.Equal(Now.UtcDateTime, online.GoLiveAchievedUtc);
+
+        // HeartbeatMonitor returns a silent screen to Offline. That is a device fact, not an
+        // onboarding fact: the customer stays done and is not sent back to the checklist.
+        screens.Screen.Status = "Offline";
+        var later = await service.GetAsync(userId);
+        Assert.Equal("paired-offline", later.FirstScreenStatus);
+        Assert.True(later.Progress.GoLive);
+        Assert.Equal("go-live", later.CurrentStep);
+        Assert.Equal(Now.UtcDateTime, later.GoLiveAchievedUtc);
+    }
+
+    [Fact]
+    public async Task GoLiveAchievement_IsLatchedOnceAndSurvivesLaterSaves()
+    {
+        var userId = Guid.NewGuid();
+        var screenId = Guid.NewGuid();
+        var firstOnlineUtc = Now.UtcDateTime;
+        var states = new OnboardingFake(new CustomerOnboardingState
+        {
+            UserId = userId, OrganizationId = Guid.NewGuid(), VenueId = Guid.NewGuid(), FirstScreenId = screenId,
+            CreatedUtc = firstOnlineUtc, UpdatedUtc = firstOnlineUtc
+        });
+
+        Assert.NotNull(await states.LatchGoLiveByFirstScreenAsync(screenId, firstOnlineUtc));
+        await states.LatchGoLiveByFirstScreenAsync(screenId, firstOnlineUtc.AddHours(6));
+
+        // Every heartbeat after the first leaves the original timestamp alone, so the value is
+        // when this account went live rather than when its display last checked in.
+        Assert.Equal(firstOnlineUtc, states.State!.GoLiveAchievedUtc);
+
+        // A screen no journey names as its first display is not an onboarding event at all.
+        Assert.Null(await states.LatchGoLiveByFirstScreenAsync(Guid.NewGuid(), firstOnlineUtc));
+
+        // A caller that read the state before the latch must not write the achievement away.
+        var stale = new CustomerOnboardingState
+        {
+            UserId = userId, OrganizationId = states.State.OrganizationId, VenueId = states.State.VenueId,
+            FirstScreenId = screenId, GoLiveAchievedUtc = null, CreatedUtc = firstOnlineUtc, UpdatedUtc = firstOnlineUtc.AddHours(7)
+        };
+        await states.SaveAsync(stale);
+        Assert.Equal(firstOnlineUtc, states.State!.GoLiveAchievedUtc);
     }
 
     [Fact]
@@ -200,7 +248,19 @@ public sealed class CustomerOnboardingServiceTests
         public Task<CustomerOnboardingState?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default) =>
             Task.FromResult(State?.UserId == userId ? State : null);
         public Task<CustomerOnboardingState> SaveAsync(CustomerOnboardingState state, CancellationToken cancellationToken = default)
-        { State = state; return Task.FromResult(state); }
+        {
+            // Mirrors the COALESCE in the stored MERGE: a save never clears an achievement a
+            // heartbeat latched after the caller read this state.
+            state.GoLiveAchievedUtc ??= State?.UserId == state.UserId ? State?.GoLiveAchievedUtc : null;
+            State = state;
+            return Task.FromResult(state);
+        }
+        public Task<CustomerOnboardingState?> LatchGoLiveByFirstScreenAsync(Guid screenId, DateTime achievedUtc, CancellationToken cancellationToken = default)
+        {
+            if (State?.FirstScreenId != screenId) return Task.FromResult<CustomerOnboardingState?>(null);
+            State.GoLiveAchievedUtc ??= achievedUtc;
+            return Task.FromResult<CustomerOnboardingState?>(State);
+        }
     }
 
     private sealed class TierFake(params SubscriptionTier[] values) : ISubscriptionTierRepository

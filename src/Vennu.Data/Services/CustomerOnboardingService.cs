@@ -42,6 +42,7 @@ public sealed record CustomerOnboardingSnapshot(
     bool CheckoutPending,
     string FirstScreenStatus,
     DateTime? FirstScreenLastSeenUtc,
+    DateTime? GoLiveAchievedUtc,
     CustomerOnboardingProgress Progress,
     DateTime UpdatedUtc);
 
@@ -267,7 +268,13 @@ public sealed class CustomerOnboardingService(
             ? await screens.GetByIdAsync(firstScreenId, cancellationToken).ConfigureAwait(false)
             : null;
         var firstScreenComplete = firstScreen is not null;
-        var goLiveComplete = firstScreen is not null && firstScreen.Status.Equals("Online", StringComparison.OrdinalIgnoreCase);
+        var firstScreenOnlineNow = firstScreen is not null && firstScreen.Status.Equals("Online", StringComparison.OrdinalIgnoreCase);
+        // Completing onboarding is an achievement, not a live device reading. HeartbeatMonitor
+        // returns an Online screen to Offline after its stale threshold, so deriving completion
+        // from current status sent every customer whose display was powered down back to the
+        // opening checklist. The achievement is latched on the heartbeat that first reports
+        // Online; current status still drives what the go-live panel says.
+        var goLiveComplete = state.GoLiveAchievedUtc is not null;
         var currentStep = state.OrganizationId is null ? "account"
             : !planComplete ? "plan"
             : !venueComplete ? "venue"
@@ -286,8 +293,9 @@ public sealed class CustomerOnboardingService(
             subscription?.Status ?? "none",
             subscription?.TrialEndsAt,
             state.SelectedTierId is not null && subscription is null,
-            firstScreen is null ? "not-paired" : goLiveComplete ? "online" : "paired-offline",
+            firstScreen is null ? "not-paired" : firstScreenOnlineNow ? "online" : "paired-offline",
             firstScreen?.LastSeen,
+            state.GoLiveAchievedUtc,
             new CustomerOnboardingProgress(true, planComplete, venueComplete, firstScreenComplete, goLiveComplete),
             state.UpdatedUtc);
     }
