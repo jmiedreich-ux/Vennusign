@@ -2,6 +2,26 @@
 
 Updated 2026-08-20, for the public marketing site, customer sign-in repair, and QA mail tooling.
 
+## 2026-08-20 — End-of-session state and exact next action
+
+**The whole journey works end to end on dev for the first time.** Sign in with Entra, onboard, pair a screen, build a menu, publish, see it on the display. Every step of that was broken this morning.
+
+**Environment.** `appsrv-basic-web` is back on **B1 x 1 worker**. It was raised to B3 for this session's testing because the B1 wedged completely — 28 apps on one core, 84% memory at idle, and the API stopped responding entirely. Expect slow cold starts again (36s for Back Office, 49s for the API were measured on B1; both were sub-second on B3). Billing is hourly, so the B3 window cost pennies. **Hosting options are costed in a sheet the owner holds** (Azure retail prices, Central US Linux, 2026-08-20): the cheapest meaningful step is a second B1 so production stops sharing a worker with dev and stage deploys (+$13/month); note P0v3 is cheaper than S1 ($62.05 vs $69.35) with more than twice the memory and 20 deployment slots instead of 5.
+
+**Deploy pipeline is materially different now.** One approval for a whole batch via a single `gate` job — the Azure credentials are repository secrets, so only the gate needs `environment: dev`. Jobs run sequentially, API first, because five parallel deploys on a shared worker killed three of them. Build configuration moved out of the workflow into `src/<app>/env/dev.env`, so editing the workflow now deploys **nothing**, editing an app's config deploys **that app**, and `scripts/ci/*` still forces a full run. Each build fails loudly if a `VITE_*` value is empty, because Vite silently substitutes an empty string and would ship a bundle calling `/api/...` on its own origin.
+
+**No `*.azurewebsites.net` hostname remains in any URL** — not in the workflow, and not in any app setting across all 26 apps (swept and verified). `Cors:AllowedOrigins` on the dev API is now the three subdomains: back-office, www, display. Adding the display origin is what fixed the pairing screen; adding www closed #725.
+
+**Standing rule from the owner: stop proving product behaviour with fakes.** The display bug survived for months because its unit coverage seeded `dbo.MenuItems` and asserted against it — a table with zero rows product-wide. Prefer integration tests against a real database; `DisplayBoardProjectionTests` is the pattern.
+
+**Untested and known.** The two signed-in Playwright cases in `tests/ui/specs/customer-onboarding.spec.ts` still cannot run locally (#735: localhost is not a registered Entra redirect URI). Nobody has run them against dev now that sign-in works — that is the cheapest remaining verification and it would prove both the durable go-live fix and the headless onboarding path. Local integration tests need `VENU_TEST_AZURE_SQL_CONNECTION_STRING` unset; it was removed from the registry, but any shell started before that still carries a copy.
+
+**Open issues from this session**, roughly by value: #740 a green `deploy-api` does not mean the new API is running (bit us twice) · #737 a changed provider subject locks a customer out permanently with an unhandled 500 · #729 the plan step dead-ends when Platform Operations has no selectable tier · #730 screen registration accepts a platform the heartbeat rejects with a 500 and a stack trace · #733 www falls back to a dev hostname in product code · #726 deploys never set version variables, which blocks any deploy self-verification · #736 (closed by `66a853df`) · #738 display diagnostics, deliberately future work · #739 fixed, but note the display cannot express a non-numeric price.
+
+**Also worth knowing:** every visit to `dev.display.vennusign.com/pair` registers a NEW screen, and the venue has accumulated nine orphaned ones. Nothing cleans them up and nothing warns. Not filed yet.
+
+**Exact next action.** Nothing is claimed and no milestone is approved. The highest-value next step is to run `specs/customer-onboarding.spec.ts` signed in against dev and act on what it finds; after that, #740 and #737 are the two defects that cost the most per occurrence. Resume only from an owner decision.
+
 ## 2026-08-20 — A menu built in the product reached a screen for the first time
 
 Content authored in the builder, published, and rendered on a display. The full journey now runs end to end for the first time: sign in, onboard, pair a screen, build a menu, publish, and watch it appear.

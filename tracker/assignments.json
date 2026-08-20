@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-20T04:15:00Z",
+  "updatedUtc": "2026-08-20T08:30:00Z",
   "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
@@ -26,15 +26,15 @@
     "releasedBy": "scope completed locally"
   },
   "lastCompletedAssignment": {
-    "assignment": "Onboarding M1 - durable go-live and headless QA onboarding",
+    "assignment": "Onboarding M1 plus the defects blocking the first end-to-end journey",
     "issue": 728,
     "pr": null,
-    "branch": "feature/onboarding-m1-durable-go-live",
-    "completedUtc": "2026-08-20T04:15:00Z",
-    "mergeSha": null,
+    "branch": "feature/onboarding-m1-durable-go-live (merged to master)",
+    "completedUtc": "2026-08-20T08:30:00Z",
+    "mergeSha": "9e4932d2",
     "acceptedProductSha": null,
-    "acceptance": "Merged at the owner's direct instruction without a PR or independent review; no acceptance workbook was run.",
-    "notes": "Go-live is now a latched achievement (migration 073). QA can complete onboarding headlessly via src/display's own pairing and heartbeat modules. Blocked on an Entra redirect URI for dev.api.vennusign.com before #731 is actually closed; the two signed-in Playwright cases remain UNTESTED and cannot run locally (#735)."
+    "acceptance": "No workbook and no independent review; merged and deployed at the owner's direct instruction during a live testing session.",
+    "notes": "Sign in, onboard, pair, build a menu, publish and display now work end to end on dev for the first time. Deployed: durable go-live (073), registered subdomains, one-approval sequential deploys, per-app build config, the shared loader, and the display board projection. Untested: the two signed-in Playwright cases against dev. See ai/handoffs/current.md."
   },
   "previousCompletedAssignment": {
     "assignment": "Menus 6-A1 \u2014 paste, parse, and resumable review",
