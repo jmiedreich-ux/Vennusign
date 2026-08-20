@@ -212,13 +212,13 @@ $env:TestApi__ProductAutomationKey = $testApiKey
 Write-Host 'Starting Test API...'
 $null = Start-EnvProcess -Name 'test-api' -FilePath 'dotnet' -ArgumentList @('run', '--no-launch-profile', '--project', '.\src\Vennu.TestApi\Vennu.TestApi.csproj') -WorkingDirectory $repoRoot
 
-$env:VITE_VENNUSIGN_API_BASE_URL = $apiOrigin
-$env:VITE_VENNUSIGN_DISPLAY_BASE_URL = $displayOrigin
+$env:VITE_API_URL = $apiOrigin
+$env:VITE_DISPLAY_URL = $displayOrigin
 Write-Host 'Starting Back Office...'
 $null = Start-EnvProcess -Name 'back-office' -FilePath 'npm.cmd' -ArgumentList @('run', 'dev', '--', '--host', 'localhost', '--port', '5174') -WorkingDirectory (Join-Path $repoRoot 'src\back-office')
 
-$env:VITE_API_BASE_URL = $apiOrigin
-$env:VITE_SIGNALR_HUB_URL = "$apiOrigin/hubs/vennusign"
+$env:VITE_API_URL = $apiOrigin
+$env:VITE_SIGNALR_URL = "$apiOrigin/hubs/vennusign"
 Write-Host 'Starting Display...'
 $null = Start-EnvProcess -Name 'display' -FilePath 'npm.cmd' -ArgumentList @('run', 'dev', '--', '--host', 'localhost', '--port', '5175') -WorkingDirectory (Join-Path $repoRoot 'src\display')
 

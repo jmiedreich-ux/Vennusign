@@ -470,12 +470,12 @@ try {
 
     $null = Start-OwnedProcess -Name 'api' -FilePath 'dotnet' -ArgumentList @('run', '--no-launch-profile', '--project', '.\src\Vennu.Api\Vennu.Api.csproj') -WorkingDirectory $repoRoot
 
-    $env:VITE_VENNUSIGN_API_BASE_URL = $apiPublic
-    $env:VITE_VENNUSIGN_DISPLAY_BASE_URL = $displayPublic
+    $env:VITE_API_URL = $apiPublic
+    $env:VITE_DISPLAY_URL = $displayPublic
     $null = Start-OwnedProcess -Name 'back-office' -FilePath 'npm.cmd' -ArgumentList @('run', 'dev', '--', '--host', 'localhost', '--port', '5174') -WorkingDirectory (Join-Path $repoRoot 'src\back-office')
 
-    $env:VITE_API_BASE_URL = $apiPublic
-    $env:VITE_SIGNALR_HUB_URL = "$apiPublic/hubs/vennusign"
+    $env:VITE_API_URL = $apiPublic
+    $env:VITE_SIGNALR_URL = "$apiPublic/hubs/vennusign"
     $null = Start-OwnedProcess -Name 'display' -FilePath 'npm.cmd' -ArgumentList @('run', 'dev', '--', '--host', 'localhost', '--port', '5175') -WorkingDirectory (Join-Path $repoRoot 'src\display')
     $null = Start-OwnedProcess -Name 'workbook' -FilePath 'python' -ArgumentList @('-m', 'http.server', '5176', '--bind', 'localhost', '--directory', (Join-Path $repoRoot 'docs\acceptance')) -WorkingDirectory $repoRoot
 

@@ -26,19 +26,19 @@ Start-DevShell -WorkingDirectory $repoRoot -Commands @(
 )
 
 Start-DevShell -WorkingDirectory "$repoRoot\src\platform-operations" -Commands @(
-    "`$env:VITE_VENNUSIGN_API_BASE_URL = '$apiBaseUrl'"
-    "`$env:VITE_VENNUSIGN_DISPLAY_BASE_URL = '$displayBaseUrl'"
-    "`$env:VITE_VENNUSIGN_BACK_OFFICE_BASE_URL = '$backOfficeBaseUrl'"
+    "`$env:VITE_API_URL = '$apiBaseUrl'"
+    "`$env:VITE_DISPLAY_URL = '$displayBaseUrl'"
+    "`$env:VITE_BACK_OFFICE_URL = '$backOfficeBaseUrl'"
     'npm run dev -- --host localhost --port 5173'
 )
 
 Start-DevShell -WorkingDirectory "$repoRoot\src\back-office" -Commands @(
-    "`$env:VITE_VENNUSIGN_API_BASE_URL = '$apiBaseUrl'"
+    "`$env:VITE_API_URL = '$apiBaseUrl'"
     'npm run dev -- --host localhost --port 5174'
 )
 
 Start-DevShell -WorkingDirectory "$repoRoot\src\display" -Commands @(
-    "`$env:VITE_API_BASE_URL = '$apiBaseUrl'"
-    "`$env:VITE_SIGNALR_HUB_URL = '$apiBaseUrl/hubs/vennusign'"
+    "`$env:VITE_API_URL = '$apiBaseUrl'"
+    "`$env:VITE_SIGNALR_URL = '$apiBaseUrl/hubs/vennusign'"
     'npm run dev -- --host localhost --port 5175'
 )

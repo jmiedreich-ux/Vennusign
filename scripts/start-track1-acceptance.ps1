@@ -44,14 +44,14 @@ $apiCommands += 'dotnet run --launch-profile https --project .\src\Vennu.Api\Ven
 Start-AcceptanceShell -WorkingDirectory $repoRoot -Commands $apiCommands
 
 Start-AcceptanceShell -WorkingDirectory "$repoRoot\src\back-office" -Commands @(
-    "`$env:VITE_VENNUSIGN_API_BASE_URL = '$apiBaseUrl'"
-    "`$env:VITE_VENNUSIGN_DISPLAY_BASE_URL = '$displayBaseUrl'"
+    "`$env:VITE_API_URL = '$apiBaseUrl'"
+    "`$env:VITE_DISPLAY_URL = '$displayBaseUrl'"
     'npm run dev -- --host localhost --port 5174'
 )
 
 Start-AcceptanceShell -WorkingDirectory "$repoRoot\src\display" -Commands @(
-    "`$env:VITE_API_BASE_URL = '$apiBaseUrl'"
-    "`$env:VITE_SIGNALR_HUB_URL = '$apiBaseUrl/hubs/vennusign'"
+    "`$env:VITE_API_URL = '$apiBaseUrl'"
+    "`$env:VITE_SIGNALR_URL = '$apiBaseUrl/hubs/vennusign'"
     'npm run dev -- --host localhost --port 5175'
 )
 
