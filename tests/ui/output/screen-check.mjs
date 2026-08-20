@@ -1,0 +1,13 @@
+import { chromium } from "@playwright/test";
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
+const errs = [];
+p.on("console", m => { if (m.type() === "error") errs.push(m.text().slice(0, 160)); });
+p.on("requestfailed", r => errs.push("FAILED " + r.url().slice(0, 110) + " :: " + (r.failure()?.errorText ?? "")));
+await p.goto("https://dev.display.vennusign.com/display/0D7E32D9-C5D4-4666-BE52-3CA5A0FE4A84", { waitUntil: "domcontentloaded" });
+await p.waitForTimeout(12000);
+console.log("url:", p.url());
+console.log("text:", (await p.locator("body").innerText().catch(() => "")).replace(/\n+/g, " | ").slice(0, 300));
+console.log("errors:", errs.length ? errs.slice(0, 6).join("\n  ") : "none");
+await p.screenshot({ path: "C:/Users/JeremyPC/AppData/Local/Temp/screen.png" });
+await b.close();

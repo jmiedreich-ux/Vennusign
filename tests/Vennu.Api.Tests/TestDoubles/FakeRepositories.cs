@@ -99,6 +99,21 @@ internal sealed class FakeMenuRepository : IMenuRepository
     public IReadOnlyCollection<MenuSection> Sections { get; set; } = [];
     public IReadOnlyCollection<MenuItem> Items { get; set; } = [];
 
+    /// Items as the builder stores them - Placements joined to Items. Defaults to
+    /// Items so existing cases keep working, but a case can set it on its own to
+    /// prove the display reads the content model rather than the legacy table.
+    public IReadOnlyCollection<MenuItem>? BoardItems { get; set; }
+
+    public Task<IReadOnlyCollection<MenuItem>> GetBoardItemsAsync(Guid venueId, Guid sectionId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyCollection<MenuItem>>((BoardItems ?? Items)
+            .Where(item => item.MenuSectionId == sectionId)
+            .OrderBy(item => item.SortOrder)
+            .ThenBy(item => item.Id)
+            .ToArray());
+
+    public Task<IReadOnlyCollection<MenuSection>> GetSectionsForPageAsync(Guid venueId, Guid pageId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyCollection<MenuSection>>(Sections.Where(section => section.PageId == pageId).ToArray());
+
     public Task<Guid> CreateMenuAsync(Menu menu, CancellationToken cancellationToken = default) => Task.FromResult(menu.Id);
     public Task<Guid> CreateSectionAsync(MenuSection section, CancellationToken cancellationToken = default) => Task.FromResult(section.Id);
     public Task<Guid> CreateItemAsync(MenuItem item, CancellationToken cancellationToken = default) => Task.FromResult(item.Id);

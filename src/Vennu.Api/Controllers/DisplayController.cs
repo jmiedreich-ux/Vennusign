@@ -23,6 +23,7 @@ public class DisplayController : ControllerBase
     private readonly TimeProvider timeProvider;
     private readonly IScreenContentDeliveryService? deliveryService;
     private readonly ICustomerOnboardingRepository? customerOnboarding;
+    private readonly IContentRepository? contentRepository;
 
     public DisplayController(
         IScreenRepository screenRepository,
@@ -36,9 +37,10 @@ public class DisplayController : ControllerBase
         IDateRangePromotionService? promotionService = null,
         ITapListRepository? tapListRepository = null,
         IScreenContentDeliveryService? deliveryService = null,
-        ICustomerOnboardingRepository? customerOnboarding = null) =>
-        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.emergencyBroadcastService, this.promotionService, this.tapListRepository, this.timeProvider, this.deliveryService, this.customerOnboarding) =
-        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, emergencyBroadcastService, promotionService, tapListRepository, timeProvider ?? TimeProvider.System, deliveryService, customerOnboarding);
+        ICustomerOnboardingRepository? customerOnboarding = null,
+        IContentRepository? contentRepository = null) =>
+        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.emergencyBroadcastService, this.promotionService, this.tapListRepository, this.timeProvider, this.deliveryService, this.customerOnboarding, this.contentRepository) =
+        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, emergencyBroadcastService, promotionService, tapListRepository, timeProvider ?? TimeProvider.System, deliveryService, customerOnboarding, contentRepository);
 
     [HttpGet("{screenId:guid}/content")]
     [ProducesResponseType<DisplayContentResponse>(StatusCodes.Status200OK)]
@@ -145,8 +147,20 @@ public class DisplayController : ControllerBase
             }
             return Ok(response);
         }
-        var menu = (await menuRepository.GetMenusAsync(venueId, cancellationToken))
-            .FirstOrDefault(candidate => candidate.IsActive);
+        // What this screen was actually assigned, which is the whole point of
+        // assigning it. Reading "the venue's first active menu and all of its
+        // sections" instead meant every screen in a venue showed the same thing
+        // and a second menu could never be reached.
+        var assignment = contentRepository is null
+            ? null
+            : (await contentRepository.GetAssignmentsAsync(venueId, cancellationToken))
+                .FirstOrDefault(candidate => candidate.ScreenId == screen.Id);
+
+        var menus = await menuRepository.GetMenusAsync(venueId, cancellationToken);
+        var menu = assignment is null
+            ? menus.FirstOrDefault(candidate => candidate.IsActive)
+            : menus.FirstOrDefault(candidate => candidate.Id == assignment.MenuId)
+              ?? menus.FirstOrDefault(candidate => candidate.IsActive);
 
         response.VenueName = venue?.Name;
         response.MenuName = menu?.Name;
@@ -156,11 +170,18 @@ public class DisplayController : ControllerBase
             return Ok(response);
         }
 
-        var sections = await menuRepository.GetSectionsAsync(venueId, menu.Id, cancellationToken);
+        // An assigned screen shows that page. An unassigned one keeps the older
+        // behaviour rather than going blank.
+        var sections = assignment?.PageId is Guid assignedPage
+            ? await menuRepository.GetSectionsForPageAsync(venueId, assignedPage, cancellationToken)
+            : await menuRepository.GetSectionsAsync(venueId, menu.Id, cancellationToken);
         var displaySections = new List<DisplayMenuSectionResponse>();
         foreach (var section in sections)
         {
-            var items = await menuRepository.GetActiveItemsAsync(venueId, section.Id, cancellationToken);
+            // Items come from Placements joined to Items. dbo.MenuItems, which this
+            // used to read, is not written by the builder and is empty, so every
+            // menu built in the product produced an empty board.
+            var items = await menuRepository.GetActiveBoardItemsAsync(venueId, section.Id, cancellationToken);
             displaySections.Add(new DisplayMenuSectionResponse
             {
                 Id = section.Id,

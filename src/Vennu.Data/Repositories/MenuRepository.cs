@@ -22,6 +22,53 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
         ORDER BY SortOrder, Id;
         """;
 
+    /// <summary>
+    /// What a screen should actually show.
+    ///
+    /// Menu content lives in dbo.Items joined to a board through dbo.Placements.
+    /// The older dbo.MenuItems table is not written by the builder and is empty,
+    /// so reading it returned nothing for every menu built in the product - which
+    /// is why published menus never reached a screen.
+    ///
+    /// Availability is the 86 board: an item with no ItemAvailability row has
+    /// never been 86'd and is available, so the absence of a row means yes.
+    /// </summary>
+    private const string BoardItemsSql = """
+        SELECT p.ItemId AS Id,
+               i.VenueId,
+               p.MenuSectionId,
+               i.Name,
+               i.Description,
+               -- Items.Price is NVARCHAR: the content model keeps a price exactly as
+               -- it was typed. The display contract carries a decimal, so anything
+               -- that is not a number (a market price, a dash) converts to NULL and
+               -- lands as 0 here. See the note on this in issue #739.
+               ISNULL(TRY_CONVERT(DECIMAL(10, 2), i.Price), 0) AS Price,
+               CAST(NULL AS DECIMAL(10, 2)) AS HappyHourPrice,
+               ISNULL(a.IsAvailable, CAST(1 AS BIT)) AS IsAvailable,
+               CAST(NULL AS INT) AS QuantityAvailable,
+               CAST(NULL AS NVARCHAR(400)) AS Tags,
+               i.ImageUrl,
+               CAST(0 AS BIT) AS IsPopular,
+               i.IsActive,
+               p.SortOrder,
+               i.CreatedUtc,
+               i.UpdatedUtc
+        FROM dbo.Placements p
+        INNER JOIN dbo.Items i ON i.Id = p.ItemId AND i.VenueId = p.VenueId
+        LEFT JOIN dbo.ItemAvailability a ON a.ItemId = p.ItemId AND a.VenueId = p.VenueId
+        WHERE p.VenueId = @VenueId AND p.MenuSectionId = @MenuSectionId
+        ORDER BY p.SortOrder, p.Id;
+        """;
+
+    /// <summary>Sections on one page, for a screen that has been assigned that page.</summary>
+    private const string SectionsForPageSql = """
+        SELECT Id, VenueId, MenuId, PageId, Name, SortOrder, CreatedUtc, UpdatedUtc
+        FROM dbo.MenuSections
+        WHERE VenueId = @VenueId AND PageId = @PageId
+        ORDER BY SortOrder, Id;
+        """;
+
     private const string ItemsSql = """
         SELECT Id, VenueId, MenuSectionId, Name, Description, Price, HappyHourPrice,
                IsAvailable, QuantityAvailable, Tags, ImageUrl, IsPopular, IsActive, SortOrder,
@@ -284,6 +331,32 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
             {
                 VenueId = RequireId(venueId, nameof(venueId)),
                 MenuId = RequireId(menuId, nameof(menuId))
+            },
+            cancellationToken).ConfigureAwait(false)).ToArray();
+
+    public async Task<IReadOnlyCollection<MenuItem>> GetBoardItemsAsync(
+        Guid venueId,
+        Guid sectionId,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<MenuItem, object>(
+            BoardItemsSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                MenuSectionId = RequireId(sectionId, nameof(sectionId))
+            },
+            cancellationToken).ConfigureAwait(false)).ToArray();
+
+    public async Task<IReadOnlyCollection<MenuSection>> GetSectionsForPageAsync(
+        Guid venueId,
+        Guid pageId,
+        CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<MenuSection, object>(
+            SectionsForPageSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                PageId = RequireId(pageId, nameof(pageId))
             },
             cancellationToken).ConfigureAwait(false)).ToArray();
 
