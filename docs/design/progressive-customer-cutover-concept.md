@@ -424,9 +424,13 @@ Note that WR is infrastructure sitting in front of every version and is therefor
 
 **Reasons for triggering are not limited to capacity.** *(Decided in principle, not in exhaustive list.)* Capacity is the clearest case, but System Monitor's scope is not capacity-only — an instance failing repeated ADS health checks, a version breaching an error-rate or latency threshold, or other operational conditions are all legitimate triggers. The specific set of conditions, and whether threshold-breach detection additionally feeds VDS's wave-halt/revert automation rather than only triggering a redeploy, is not decided here.
 
+**Plan-level scaling is a direct action, not a deployment.** *(Decided.)* Changing an App Service Plan's instance count or SKU tier is a direct Azure management API call — it does not build, promote, or register anything, so it does not cross the "System Monitor triggers deployment; it does not perform deployment" rule above. System Monitor may perform plan-level scaling directly, governed by configured parameters (thresholds, min/max bounds per plan): the Basic-tier substitute for the autoscale rules Standard+ gets natively (see Hosting constraints), and a supplement to them where they do exist. This is distinct from adding a new (app, version) App Service instance, which still goes through the deployment pipeline. System Monitor's parameters decide which applies — plan-level scaling first, while within configured bounds; the deployment-pipeline trigger when it isn't.
+
+**When capacity cannot be increased.** *(Decided in principle.)* Some ceilings are absolute regardless of which scaling path is used: an Azure subscription/region quota, or a deliberate cost guardrail (including the min/max bounds System Monitor is configured with). System Monitor must not retry a blocked action indefinitely. On a failed or ceiling-blocked scaling attempt — plan-level or pipeline-triggered — it escalates rather than retrying silently: alerting an operator, and reporting the condition to VDS so the version is treated as out of headroom — halting assignment of *new* customers to it, and, if the version is already unhealthy under its current load, a candidate for reverting its most recently-moved customers to a version with headroom. This gives the "does threshold-breach detection feed VDS's wave-halt/revert automation" question a concrete case where the answer is yes; the exact halt/revert mechanism inside VDS remains open (see Decisions required).
+
 ## Deploying the supporting components
 
-VDS, the Webhook Receiver, the connection manager, and System Monitor cannot use the mechanism they enable. VDS cannot route traffic to itself, the Webhook Receiver sits in front of every version, and System Monitor is what triggers new instances into existence in the first place. They therefore deploy conventionally — one version at a time, all customers at once — which means each needs the properties progressive delivery was meant to make unnecessary:
+VDS, the Webhook Receiver, the connection manager, and System Monitor cannot use the mechanism they enable. VDS cannot route traffic to itself, the Webhook Receiver sits in front of every version, and System Monitor is what scales capacity — directly at the plan level, or by triggering a new instance — into existence in the first place. They therefore deploy conventionally — one version at a time, all customers at once — which means each needs the properties progressive delivery was meant to make unnecessary:
 
 - **Backward-compatible changes only.** There is no per-customer safety net, so a bad deployment reaches everyone.
 - **Slot swap or rolling instances** for zero-downtime replacement.
@@ -493,7 +497,7 @@ Raised during discussion and not yet resolved. Recorded so they are not lost.
 - Background service behavior when VDS is unavailable, and whether transition-state persistence lands before or with the first rollout.
 - Authentication, idempotency, and reconciliation semantics for the Webhook Receiver registration API.
 - Trust boundary for forwarded webhook requests, and Webhook Receiver behavior when VDS is unavailable.
-- System Monitor's exhaustive trigger-condition list, and whether its threshold-breach detection also feeds VDS's wave-halt/revert automation.
+- System Monitor's exhaustive trigger-condition list, and the exact mechanism VDS uses to halt/revert when notified a version is out of headroom or unhealthy.
 - How this interacts with the immutable release-manifest/versioning model already in place.
 - Observability requirements, including per-customer version visibility tied to the diagnostic-agent concept.
 - Cost and operational ownership of any new routing or gateway component.
