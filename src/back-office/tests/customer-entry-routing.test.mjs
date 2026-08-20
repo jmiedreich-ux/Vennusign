@@ -33,3 +33,23 @@ test('a customer who has gone live is not sent back to onboarding when the displ
   const neverLive = { firstScreenStatus: 'paired-offline', progress: { goLive: false } };
   assert.equal(authenticatedCustomerDestination('/signin', '/screens', neverLive), '/onboarding');
 });
+
+test('a customer already on the onboarding page is never redirected to it again', () => {
+  // The regression this exists for: returning the current path makes the caller
+  // replace() the URL it is already on, so the page reloads, resolves the same
+  // answer, and replaces again - forever. Every unfinished step must be covered,
+  // because every one of them lands the visitor on /onboarding.
+  for (const step of ['account', 'plan', 'venue', 'first-screen', 'go-live']) {
+    const incomplete = { currentStep: step, progress: { goLive: false } };
+    assert.equal(
+      authenticatedCustomerDestination('/onboarding', '/onboarding', incomplete), undefined,
+      `step ${step} must not redirect to the page it is already on`);
+    assert.equal(
+      authenticatedCustomerDestination('/onboarding', '/screens', incomplete), undefined,
+      `step ${step} must stay put even when a return path was requested`);
+  }
+
+  // Arriving from anywhere else still routes to onboarding, which is the point of it.
+  assert.equal(authenticatedCustomerDestination('/signin', '/screens', { progress: { goLive: false } }), '/onboarding');
+});
+
