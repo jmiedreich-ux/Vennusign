@@ -62,10 +62,20 @@ assert_output closure dotnet_api true
 assert_output closure platform_operations true
 assert_output closure android_tv true
 
+# Orchestration only. Each app's build configuration lives in src/<app>/env/*.env,
+# so editing a workflow no longer changes what any application is compiled with.
 run_scenario workflow .github/workflows/phase02-tests.yml
-assert_output workflow full true
-assert_output workflow webos true
-assert_output workflow dev_control true
+assert_output workflow full false
+assert_output workflow dotnet_api false
+assert_output workflow back_office false
+assert_output workflow display false
+
+# But changing what an app is BUILT WITH deploys exactly that app.
+run_scenario appconfig src/back-office/env/dev.env
+assert_output appconfig full false
+assert_output appconfig back_office true
+assert_output appconfig www false
+assert_output appconfig dotnet_api false
 
 run_scenario dev-control tools/Vennu.DevControl/MainWindow.xaml tools/Vennu.DevControl.Tests/BootstrapConfigurationTests.cs
 assert_output dev-control full false

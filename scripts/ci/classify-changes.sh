@@ -29,8 +29,16 @@ while IFS= read -r path || [[ -n "$path" ]]; do
   esac
 
   case "$path" in
-    .github/workflows/*|scripts/ci/*|Vennusign.sln|Directory.*)
+    scripts/ci/*|Vennusign.sln|Directory.*)
       full=true
+      ;;
+    # Editing the deploy workflow no longer implies rebuilding every application.
+    # Each app's build configuration now lives beside it in src/<app>/env/*.env,
+    # so a change to what an app is COMPILED WITH classifies as that app, and a
+    # change to how the jobs are ORCHESTRATED ships nothing on its own. While
+    # those values were inline here, the two were indistinguishable and this had
+    # to fail safe by deploying all five. See issue #736.
+    .github/workflows/*)
       ;;
     src/Vennu.Api/*)
       dotnet_api=true

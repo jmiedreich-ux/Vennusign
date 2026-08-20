@@ -78,9 +78,20 @@ jobs:
           node-version: 22
       - name: Install and build
         working-directory: src/back-office
-        env:
-          VITE_API_URL: https://dev.api.vennusign.com
         run: |
+          # Build configuration lives beside the app, not here, so editing
+          # this workflow no longer implies rebuilding every application.
+          set -a && . ./env/dev.env && set +a
+          # Vite bakes these in at build time and silently substitutes an empty
+          # string for anything unset, which ships a bundle that calls "/api/..."
+          # on its own origin and fails for every visitor. Fail the deploy here
+          # instead, where the cause is obvious.
+          for required in $(grep -oE '^VITE_[A-Z_]+' ./env/dev.env); do
+            if [ -z "$(eval echo \$$required)" ]; then
+              echo "::error::$required is empty after sourcing env/dev.env - refusing to build a misconfigured bundle"
+              exit 1
+            fi
+          done
           npm ci
           npm run build
       - uses: azure/login@v2
@@ -105,9 +116,20 @@ jobs:
           node-version: 22
       - name: Install and build
         working-directory: src/display
-        env:
-          VITE_API_URL: https://dev.api.vennusign.com
         run: |
+          # Build configuration lives beside the app, not here, so editing
+          # this workflow no longer implies rebuilding every application.
+          set -a && . ./env/dev.env && set +a
+          # Vite bakes these in at build time and silently substitutes an empty
+          # string for anything unset, which ships a bundle that calls "/api/..."
+          # on its own origin and fails for every visitor. Fail the deploy here
+          # instead, where the cause is obvious.
+          for required in $(grep -oE '^VITE_[A-Z_]+' ./env/dev.env); do
+            if [ -z "$(eval echo \$$required)" ]; then
+              echo "::error::$required is empty after sourcing env/dev.env - refusing to build a misconfigured bundle"
+              exit 1
+            fi
+          done
           npm ci
           npm run build
       - uses: azure/login@v2
@@ -132,10 +154,20 @@ jobs:
           node-version: 22
       - name: Install and build
         working-directory: src/www
-        env:
-          VITE_API_URL: https://dev.api.vennusign.com
-          VITE_BACK_OFFICE_URL: https://dev.back-office.vennusign.com
         run: |
+          # Build configuration lives beside the app, not here, so editing
+          # this workflow no longer implies rebuilding every application.
+          set -a && . ./env/dev.env && set +a
+          # Vite bakes these in at build time and silently substitutes an empty
+          # string for anything unset, which ships a bundle that calls "/api/..."
+          # on its own origin and fails for every visitor. Fail the deploy here
+          # instead, where the cause is obvious.
+          for required in $(grep -oE '^VITE_[A-Z_]+' ./env/dev.env); do
+            if [ -z "$(eval echo \$$required)" ]; then
+              echo "::error::$required is empty after sourcing env/dev.env - refusing to build a misconfigured bundle"
+              exit 1
+            fi
+          done
           npm ci
           npm run build
       - uses: azure/login@v2
@@ -160,11 +192,20 @@ jobs:
           node-version: 22
       - name: Install and build
         working-directory: src/platform-operations
-        env:
-          VITE_API_URL: https://dev.api.vennusign.com
-          VITE_DISPLAY_URL: https://dev.display.vennusign.com
-          VITE_BACK_OFFICE_URL: https://dev.back-office.vennusign.com
         run: |
+          # Build configuration lives beside the app, not here, so editing
+          # this workflow no longer implies rebuilding every application.
+          set -a && . ./env/dev.env && set +a
+          # Vite bakes these in at build time and silently substitutes an empty
+          # string for anything unset, which ships a bundle that calls "/api/..."
+          # on its own origin and fails for every visitor. Fail the deploy here
+          # instead, where the cause is obvious.
+          for required in $(grep -oE '^VITE_[A-Z_]+' ./env/dev.env); do
+            if [ -z "$(eval echo \$$required)" ]; then
+              echo "::error::$required is empty after sourcing env/dev.env - refusing to build a misconfigured bundle"
+              exit 1
+            fi
+          done
           npm ci
           npm run build
       - uses: azure/login@v2
