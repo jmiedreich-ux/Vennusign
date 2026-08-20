@@ -79,7 +79,7 @@ jobs:
       - name: Install and build
         working-directory: src/back-office
         env:
-          VITE_VENNUSIGN_API_BASE_URL: https://vennusign-dev-api.azurewebsites.net
+          VITE_VENNUSIGN_API_BASE_URL: https://dev.api.vennusign.com
         run: |
           npm ci
           npm run build
@@ -106,7 +106,7 @@ jobs:
       - name: Install and build
         working-directory: src/display
         env:
-          VITE_API_BASE_URL: https://vennusign-dev-api.azurewebsites.net
+          VITE_API_BASE_URL: https://dev.api.vennusign.com
         run: |
           npm ci
           npm run build
@@ -133,7 +133,7 @@ jobs:
       - name: Install and build
         working-directory: src/www
         env:
-          VITE_VENNUSIGN_API_BASE_URL: https://vennusign-dev-api.azurewebsites.net
+          VITE_VENNUSIGN_API_BASE_URL: https://dev.api.vennusign.com
           VITE_VENNUSIGN_BACK_OFFICE_BASE_URL: https://dev.back-office.vennusign.com
         run: |
           npm ci
@@ -161,8 +161,8 @@ jobs:
       - name: Install and build
         working-directory: src/platform-operations
         env:
-          VITE_VENNUSIGN_API_BASE_URL: https://vennusign-dev-api.azurewebsites.net
-          VITE_VENNUSIGN_DISPLAY_BASE_URL: https://vennusign-dev-display.azurewebsites.net
+          VITE_VENNUSIGN_API_BASE_URL: https://dev.api.vennusign.com
+          VITE_VENNUSIGN_DISPLAY_BASE_URL: https://dev.display.vennusign.com
           VITE_VENNUSIGN_BACK_OFFICE_BASE_URL: https://dev.back-office.vennusign.com
         run: |
           npm ci
