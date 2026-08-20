@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-14T05:43:00Z",
+  "updatedUtc": "2026-08-20T04:15:00Z",
   "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
@@ -26,18 +26,18 @@
     "releasedBy": "scope completed locally"
   },
   "lastCompletedAssignment": {
-    "assignment": "Menus 6-A2 — create a new menu from an import",
-    "issue": 718,
-    "pr": 719,
-    "branch": "feature/menus-m6a2-create-import",
-    "completedUtc": "2026-08-14T04:45:58Z",
-    "mergeSha": "b27159dee0d20600daab14ad0b0d280c4dbd5e72",
-    "acceptedProductSha": "b1e62c4",
-    "acceptance": "Owner accepted all 6 workbook checks at 2026-08-14T04:39:39.105Z; post-acceptance focus correction independently approved at exact PR head 95f6e5c.",
-    "notes": "PR #719 merged and issue #718 closed. 6-A3 replacement is the exact next milestone; publishing remains excluded."
+    "assignment": "Onboarding M1 - durable go-live and headless QA onboarding",
+    "issue": 728,
+    "pr": null,
+    "branch": "feature/onboarding-m1-durable-go-live",
+    "completedUtc": "2026-08-20T04:15:00Z",
+    "mergeSha": null,
+    "acceptedProductSha": null,
+    "acceptance": "Merged at the owner's direct instruction without a PR or independent review; no acceptance workbook was run.",
+    "notes": "Go-live is now a latched achievement (migration 073). QA can complete onboarding headlessly via src/display's own pairing and heartbeat modules. Blocked on an Entra redirect URI for dev.api.vennusign.com before #731 is actually closed; the two signed-in Playwright cases remain UNTESTED and cannot run locally (#735)."
   },
   "previousCompletedAssignment": {
-    "assignment": "Menus 6-A1 — paste, parse, and resumable review",
+    "assignment": "Menus 6-A1 \u2014 paste, parse, and resumable review",
     "issue": 714,
     "pr": 716,
     "branch": "feature/menus-m6a1-paste-review",
@@ -48,7 +48,7 @@
     "notes": "PR #716 merged and issue #714 closed. 6-A2 create-new-menu confirmation is the exact next milestone; 6-A3 replacement remains excluded."
   },
   "priorCompletedAssignment": {
-    "assignment": "Menus Slice 6 — 86 board and blank menu creation",
+    "assignment": "Menus Slice 6 \u2014 86 board and blank menu creation",
     "issue": 710,
     "pr": 711,
     "branch": "feature/menus-s6-86-board",
