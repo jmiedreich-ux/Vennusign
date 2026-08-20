@@ -44,11 +44,29 @@ jobs:
         id: classify
         run: bash scripts/ci/classify-changes.sh changed-paths.txt
 
-  deploy-api:
-    if: needs.classify.outputs.dotnet_api == 'true'
+  # One approval for the whole deployment, not one per application. Environment
+  # protection gates every job that names the environment, so with `environment: dev`
+  # on all five deploy jobs a sequential chain asked five separate times, arriving
+  # minutes apart. This job is the only thing that names it; everything else waits
+  # on this. The Azure credentials are repository secrets, so the deploy jobs do not
+  # need the environment to read them.
+  gate:
+    if: >-
+      needs.classify.outputs.dotnet_api == 'true' ||
+      needs.classify.outputs.back_office == 'true' ||
+      needs.classify.outputs.display == 'true' ||
+      needs.classify.outputs.www == 'true' ||
+      needs.classify.outputs.platform_operations == 'true'
     needs: classify
     runs-on: ubuntu-latest
     environment: dev
+    steps:
+      - run: echo "Deployment approved for dev."
+
+  deploy-api:
+    if: needs.classify.outputs.dotnet_api == 'true'
+    needs: [classify, gate]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -68,9 +86,8 @@ jobs:
 
   deploy-back-office:
     if: ${{ !failure() && !cancelled() && needs.classify.outputs.back_office == 'true' }}
-    needs: [classify, deploy-api]
+    needs: [classify, gate, deploy-api]
     runs-on: ubuntu-latest
-    environment: dev
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -106,9 +123,8 @@ jobs:
 
   deploy-display:
     if: ${{ !failure() && !cancelled() && needs.classify.outputs.display == 'true' }}
-    needs: [classify, deploy-back-office]
+    needs: [classify, gate, deploy-back-office]
     runs-on: ubuntu-latest
-    environment: dev
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -144,9 +160,8 @@ jobs:
 
   deploy-www:
     if: ${{ !failure() && !cancelled() && needs.classify.outputs.www == 'true' }}
-    needs: [classify, deploy-display]
+    needs: [classify, gate, deploy-display]
     runs-on: ubuntu-latest
-    environment: dev
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -182,9 +197,8 @@ jobs:
 
   deploy-po:
     if: ${{ !failure() && !cancelled() && needs.classify.outputs.platform_operations == 'true' }}
-    needs: [classify, deploy-www]
+    needs: [classify, gate, deploy-www]
     runs-on: ubuntu-latest
-    environment: dev
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
