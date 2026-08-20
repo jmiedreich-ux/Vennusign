@@ -67,8 +67,8 @@ jobs:
           package: publish/api
 
   deploy-back-office:
-    if: needs.classify.outputs.back_office == 'true'
-    needs: classify
+    if: ${{ !failure() && !cancelled() && needs.classify.outputs.back_office == 'true' }}
+    needs: [classify, deploy-api]
     runs-on: ubuntu-latest
     environment: dev
     steps:
@@ -94,8 +94,8 @@ jobs:
           package: src/back-office/dist
 
   deploy-display:
-    if: needs.classify.outputs.display == 'true'
-    needs: classify
+    if: ${{ !failure() && !cancelled() && needs.classify.outputs.display == 'true' }}
+    needs: [classify, deploy-back-office]
     runs-on: ubuntu-latest
     environment: dev
     steps:
@@ -121,8 +121,8 @@ jobs:
           package: src/display/dist
 
   deploy-www:
-    if: needs.classify.outputs.www == 'true'
-    needs: classify
+    if: ${{ !failure() && !cancelled() && needs.classify.outputs.www == 'true' }}
+    needs: [classify, deploy-display]
     runs-on: ubuntu-latest
     environment: dev
     steps:
@@ -149,8 +149,8 @@ jobs:
           package: src/www/dist
 
   deploy-po:
-    if: needs.classify.outputs.platform_operations == 'true'
-    needs: classify
+    if: ${{ !failure() && !cancelled() && needs.classify.outputs.platform_operations == 'true' }}
+    needs: [classify, deploy-www]
     runs-on: ubuntu-latest
     environment: dev
     steps:
