@@ -279,3 +279,25 @@ test("take off the screens always shows what replaces it first (criterion 6)", a
     /It stays on your Menus home and keeps its history\. You can put it back at any time\./
   );
 });
+
+test("the empty shelf can actually open the name-a-menu dialog", async () => {
+  // The regression: the dialog was rendered only in the populated-shelf return,
+  // while the empty shelf returned early. Clicking the one button a brand-new
+  // customer is offered set the state, re-rendered the same empty state, and
+  // showed nothing - no dialog, no error, no console output.
+  const source = await readFile(new URL("../src/MenusHome.tsx", import.meta.url), "utf8");
+
+  const emptyBranch = source.slice(
+    source.indexOf("menus.length === 0"),
+    source.indexOf("menus-home__header"));
+  assert.match(emptyBranch, /data-testid="add-a-menu"/,
+    "the empty shelf still offers Add a menu");
+  assert.match(emptyBranch, /\{nameMenuDialog\}/,
+    "the empty shelf must render the dialog its only button opens");
+
+  // And it is one shared dialog, not two copies that can drift apart.
+  assert.equal((source.match(/const nameMenuDialog =/g) ?? []).length, 1);
+  assert.equal((source.match(/\{nameMenuDialog\}/g) ?? []).length, 2);
+  assert.equal((source.match(/data-testid="name-menu-dialog"/g) ?? []).length, 1);
+});
+

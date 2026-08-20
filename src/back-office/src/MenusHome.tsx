@@ -164,6 +164,92 @@ export default function MenusHome({
     );
   }
 
+  // The naming dialog belongs to both returns below. It used to live only in the
+  // populated-shelf branch, so on the empty shelf - where every new customer starts,
+  // and the only button is "Add a menu" - the click set the state and rendered the
+  // same empty state again. No dialog, no error, nothing at all.
+  const nameMenuDialog = <>
+    {namingMenu ? (
+      <>
+        <div className="menu-card__scrim" onClick={() => setNamingMenu(false)} data-testid="name-menu-scrim" />
+        <form
+          className="menu-card__dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="name-menu-title"
+          data-testid="name-menu-dialog"
+          onSubmit={async event => {
+            event.preventDefault();
+            const name = newMenuName.trim();
+            if (!name) return;
+            setCreating(true);
+            setNamingError(null);
+            try {
+              await onAddMenu(name);
+              setNamingMenu(false);
+              setNewMenuName("");
+            } catch (failure) {
+              /*
+               * A refusal is shown where the person is looking, in the server's
+               * own words, with the dialog still open and the name they typed
+               * still in it. This used to fail silently: the ceiling refusal
+               * carried good copy and the screen swallowed all of it.
+               */
+              setNamingError(
+                failure instanceof BackOfficeApiError || failure instanceof MenuActionRefused
+                  ? failure.message
+                  : "Vennusign could not create that menu. Nothing changed."
+              );
+            } finally {
+              setCreating(false);
+            }
+          }}
+        >
+          <h2 id="name-menu-title">Start a blank menu</h2>
+          <p>You can change what is on it once it opens. Nothing reaches a screen until you publish.</p>
+          <label>
+            <span>Menu name</span>
+            <input
+              autoFocus
+              required
+              maxLength={200}
+              value={newMenuName}
+              data-testid="new-menu-name"
+              onChange={event => setNewMenuName(event.target.value)}
+              onKeyDown={event => {
+                if (event.key === "Escape") {
+                  setNamingMenu(false);
+                  setNewMenuName("");
+                }
+              }}
+            />
+          </label>
+          {namingError ? (
+            <p className="menu-card__dialog-refusal" role="alert" data-testid="create-menu-error">
+              {namingError}
+            </p>
+          ) : null}
+          <div className="menu-card__dialog-actions">
+            <button
+              type="button"
+              className="action-secondary"
+              onClick={() => {
+                setNamingMenu(false);
+                setNewMenuName("");
+                setNamingError(null);
+              }}
+            >
+              Cancel
+            </button>
+            <button type="submit" className="action-primary" data-testid="create-menu" disabled={creating}>
+              {creating ? "Creating…" : "Start blank"}
+            </button>
+          </div>
+        </form>
+      </>
+    ) : null}
+  </>;
+
   // Onboarding is the empty state of this screen, not a wizard (decision 17):
   // there is nothing to fall out of and nothing to re-enter.
   if (menus.length === 0) {
@@ -174,6 +260,7 @@ export default function MenusHome({
         <button type="button" className="action-primary" onClick={() => setNamingMenu(true)} data-testid="add-a-menu">
           Add a menu
         </button>
+        {nameMenuDialog}
       </section>
     );
   }
@@ -316,85 +403,7 @@ export default function MenusHome({
         </section>
       ) : null}
 
-      {namingMenu ? (
-        <>
-          <div className="menu-card__scrim" onClick={() => setNamingMenu(false)} data-testid="name-menu-scrim" />
-          <form
-            className="menu-card__dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="name-menu-title"
-            data-testid="name-menu-dialog"
-            onSubmit={async event => {
-              event.preventDefault();
-              const name = newMenuName.trim();
-              if (!name) return;
-              setCreating(true);
-              setNamingError(null);
-              try {
-                await onAddMenu(name);
-                setNamingMenu(false);
-                setNewMenuName("");
-              } catch (failure) {
-                /*
-                 * A refusal is shown where the person is looking, in the server's
-                 * own words, with the dialog still open and the name they typed
-                 * still in it. This used to fail silently: the ceiling refusal
-                 * carried good copy and the screen swallowed all of it.
-                 */
-                setNamingError(
-                  failure instanceof BackOfficeApiError || failure instanceof MenuActionRefused
-                    ? failure.message
-                    : "Vennusign could not create that menu. Nothing changed."
-                );
-              } finally {
-                setCreating(false);
-              }
-            }}
-          >
-            <h2 id="name-menu-title">Start a blank menu</h2>
-            <p>You can change what is on it once it opens. Nothing reaches a screen until you publish.</p>
-            <label>
-              <span>Menu name</span>
-              <input
-                autoFocus
-                required
-                maxLength={200}
-                value={newMenuName}
-                data-testid="new-menu-name"
-                onChange={event => setNewMenuName(event.target.value)}
-                onKeyDown={event => {
-                  if (event.key === "Escape") {
-                    setNamingMenu(false);
-                    setNewMenuName("");
-                  }
-                }}
-              />
-            </label>
-            {namingError ? (
-              <p className="menu-card__dialog-refusal" role="alert" data-testid="create-menu-error">
-                {namingError}
-              </p>
-            ) : null}
-            <div className="menu-card__dialog-actions">
-              <button
-                type="button"
-                className="action-secondary"
-                onClick={() => {
-                  setNamingMenu(false);
-                  setNewMenuName("");
-                  setNamingError(null);
-                }}
-              >
-                Cancel
-              </button>
-              <button type="submit" className="action-primary" data-testid="create-menu" disabled={creating}>
-                {creating ? "Creating…" : "Start blank"}
-              </button>
-            </div>
-          </form>
-        </>
-      ) : null}
+      {nameMenuDialog}
     </section>
   );
 }
