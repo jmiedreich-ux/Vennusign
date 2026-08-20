@@ -2,6 +2,24 @@
 
 Updated 2026-08-20, for the public marketing site, customer sign-in repair, and QA mail tooling.
 
+## 2026-08-20 — A menu built in the product reached a screen for the first time
+
+Content authored in the builder, published, and rendered on a display. The full journey now runs end to end for the first time: sign in, onboard, pair a screen, build a menu, publish, and watch it appear.
+
+```
+menu: Weekday
+sections: 1
+  'Lunch' -> [('Tuna Fish', 5.0, available), ('Hamsandwhich', 5.5, available)]
+```
+
+**It had never worked, and the reason is worth keeping.** `DisplayController` read items from `dbo.MenuItems`. The builder writes content to `dbo.Items` joined to a board through `dbo.Placements`. `dbo.MenuItems` holds **zero rows in the entire database** — so every menu ever built in the product produced an empty board. `SliceSections` then discarded the empty section, so the API reported *no sections* rather than *one empty section*, which reads as "the menu is empty" instead of "the query is looking in the wrong place". That misdirection cost an hour of the investigation, and is the argument for #738's diagnostics view.
+
+The same projection also ignored `MenuScreenAssignments` entirely, resolving content as "the venue's first active menu and all of its sections". Per-screen targeting and multi-page menus could not work; both were fixed together in `28730fab`.
+
+**Why a green suite said otherwise.** The display's unit coverage seeds `dbo.MenuItems` and asserts against it, so it passed for months against a table the product had stopped writing. The owner's response to this is now the standing rule: **stop proving product behaviour with fakes.** The replacement is `DisplayBoardProjectionTests`, an integration test that builds a menu the way the builder does — `Items` plus `Placements` — and asserts the projection returns it, including the 86 case and that `dbo.MenuItems` stays empty throughout. A fake agreeing with a test says nothing about the schema.
+
+**Two deploys lied today.** `deploy-api` reported success twice while the previous build was still serving — once hiding migration 073, once hiding this fix — and only a manual `az webapp restart` picked up the new code. A green `deploy-api` is not evidence the new API is running (#740).
+
 ## 2026-08-20 — A customer signed in to Back Office for the first time
 
 **The first time anyone has reached Back Office as a customer, through the real sign-in.** Not a seeded session token, not a workbook link: Entra sign-in, customer session cookie, Back Office open. Every prior attempt in this product's life failed somewhere in that chain.
