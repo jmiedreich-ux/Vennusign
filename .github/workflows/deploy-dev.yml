@@ -25,6 +25,12 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  # Every dev application lives in this one resource group. The post-deploy
+  # verification steps need it to restart an app that did not pick up its
+  # new build; the deploy action itself resolves the app by name alone.
+  AZURE_RESOURCE_GROUP: rg-basic-website
+
 jobs:
   classify:
     runs-on: ubuntu-latest
@@ -83,6 +89,30 @@ jobs:
         with:
           app-name: vennusign-dev-api
           package: publish/api
+      # Two things at once, and the order is load-bearing.
+      #
+      # Writing these settings is what tells the running API which commit it is,
+      # so /health/version stops reporting "local" and a deploy becomes provable
+      # from outside (#726). Writing them is ALSO what forces the recycle: an app
+      # settings change restarts the app, where OneDeploy only requests a recycle
+      # and, under load, does not get one (#740).
+      #
+      # They cannot be written before the package is uploaded. That would restart
+      # the OLD build carrying the NEW commit id, and the check below would go
+      # green while the previous code was still serving - the exact lie this is
+      # here to catch.
+      - name: Stamp the running build with the commit it came from
+        run: |
+          az webapp config appsettings set \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name vennusign-dev-api \
+            --settings VENNU_SOURCE_COMMIT=${{ github.sha }} VENNU_BUILD_ID=${{ github.run_id }} \
+            --output none
+      - name: Confirm dev.api.vennusign.com is serving this commit
+        run: |
+          bash scripts/ci/confirm-deployment.sh \
+            "$AZURE_RESOURCE_GROUP" vennusign-dev-api \
+            https://dev.api.vennusign.com/health/version ${{ github.sha }}
 
   deploy-back-office:
     if: ${{ !failure() && !cancelled() && needs.classify.outputs.back_office == 'true' }}
@@ -111,6 +141,11 @@ jobs:
           done
           npm ci
           npm run build
+          # A static build carries no identity of its own, so nothing outside the
+          # deploy job can tell a new bundle from the previous one still being
+          # served (#726). This writes dist/version.json for the check that
+          # follows the deploy (#740).
+          bash ../../scripts/ci/stamp-build-version.sh ./dist
       - uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -120,6 +155,11 @@ jobs:
         with:
           app-name: vennusign-dev-back-office
           package: src/back-office/dist
+      - name: Confirm dev.back-office.vennusign.com is serving this commit
+        run: |
+          bash scripts/ci/confirm-deployment.sh \
+            "$AZURE_RESOURCE_GROUP" vennusign-dev-back-office \
+            https://dev.back-office.vennusign.com/version.json ${{ github.sha }}
 
   deploy-display:
     if: ${{ !failure() && !cancelled() && needs.classify.outputs.display == 'true' }}
@@ -148,6 +188,11 @@ jobs:
           done
           npm ci
           npm run build
+          # A static build carries no identity of its own, so nothing outside the
+          # deploy job can tell a new bundle from the previous one still being
+          # served (#726). This writes dist/version.json for the check that
+          # follows the deploy (#740).
+          bash ../../scripts/ci/stamp-build-version.sh ./dist
       - uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -157,6 +202,11 @@ jobs:
         with:
           app-name: vennusign-dev-display
           package: src/display/dist
+      - name: Confirm dev.display.vennusign.com is serving this commit
+        run: |
+          bash scripts/ci/confirm-deployment.sh \
+            "$AZURE_RESOURCE_GROUP" vennusign-dev-display \
+            https://dev.display.vennusign.com/version.json ${{ github.sha }}
 
   deploy-www:
     if: ${{ !failure() && !cancelled() && needs.classify.outputs.www == 'true' }}
@@ -185,6 +235,11 @@ jobs:
           done
           npm ci
           npm run build
+          # A static build carries no identity of its own, so nothing outside the
+          # deploy job can tell a new bundle from the previous one still being
+          # served (#726). This writes dist/version.json for the check that
+          # follows the deploy (#740).
+          bash ../../scripts/ci/stamp-build-version.sh ./dist
       - uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -194,6 +249,11 @@ jobs:
         with:
           app-name: vennusign-dev
           package: src/www/dist
+      - name: Confirm dev.vennusign.com is serving this commit
+        run: |
+          bash scripts/ci/confirm-deployment.sh \
+            "$AZURE_RESOURCE_GROUP" vennusign-dev \
+            https://dev.vennusign.com/version.json ${{ github.sha }}
 
   deploy-po:
     if: ${{ !failure() && !cancelled() && needs.classify.outputs.platform_operations == 'true' }}
@@ -222,6 +282,11 @@ jobs:
           done
           npm ci
           npm run build
+          # A static build carries no identity of its own, so nothing outside the
+          # deploy job can tell a new bundle from the previous one still being
+          # served (#726). This writes dist/version.json for the check that
+          # follows the deploy (#740).
+          bash ../../scripts/ci/stamp-build-version.sh ./dist
       - uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -231,3 +296,8 @@ jobs:
         with:
           app-name: vennusign-dev-po
           package: src/platform-operations/dist
+      - name: Confirm dev.po.vennusign.com is serving this commit
+        run: |
+          bash scripts/ci/confirm-deployment.sh \
+            "$AZURE_RESOURCE_GROUP" vennusign-dev-po \
+            https://dev.po.vennusign.com/version.json ${{ github.sha }}
