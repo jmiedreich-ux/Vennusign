@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [app, showcase, timeline, api, passkey, passkeyManagement, security, navigation, main, styles] = await Promise.all([
+const [app, showcase, timeline, api, passkey, passkeyManagement, security, navigation, main, styles, loader] = await Promise.all([
   readFile(new URL("../src/CustomerOnboardingApp.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/TemplateShowcase.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/CustomerOnboardingTimeline.tsx", import.meta.url), "utf8"),
@@ -12,7 +12,8 @@ const [app, showcase, timeline, api, passkey, passkeyManagement, security, navig
   readFile(new URL("../src/AccountSecurity.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/navigation.mjs", import.meta.url), "utf8"),
   readFile(new URL("../src/main.tsx", import.meta.url), "utf8"),
-  readFile(new URL("../src/styles.css", import.meta.url), "utf8")
+  readFile(new URL("../src/styles.css", import.meta.url), "utf8"),
+  readFile(new URL("../src/VennusignLoader.tsx", import.meta.url), "utf8")
 ]);
 
 test("account security exposes discoverable passkey lifecycle and recovery states", () => {
@@ -118,3 +119,23 @@ test("go live is a recorded achievement, and device status is reported separatel
   assert.match(app, /<dt>Device<\/dt><dd>\{onboarding\.firstScreenStatus === "online" \? "Online" : "Offline \/ waiting"\}/);
   assert.match(api, /goLiveAchievedUtc\?: string;/);
 });
+
+test("one loader is used everywhere, and its motion is optional", () => {
+  // Every waiting state is the same screen waking up, so the product does not
+  // present four different ideas of what "loading" looks like.
+  assert.match(app, /<VennusignLoader variant="modal"/);
+  assert.match(loader, /variant === "modal"/);
+
+  // Motion is decoration. Stopped, the screen must still read as a full board
+  // rather than an empty rectangle, so the reduced-motion rule restores the rows.
+  const reduced = styles.slice(styles.indexOf("prefers-reduced-motion", styles.indexOf(".vennu-loader")));
+  assert.match(reduced, /\.vennu-loader__screen[^}]*animation: none/);
+  assert.match(reduced, /\.vennu-loader__row[^}]*opacity: 1/);
+
+  // The sentence is the message; the animation is hidden from assistive tech.
+  assert.match(loader, /role="status"/);
+  assert.match(loader, /aria-live="polite"/);
+  assert.match(loader, /aria-busy="true"/);
+  assert.match(loader, /vennu-loader__art" aria-hidden="true"/);
+});
+

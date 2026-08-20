@@ -4,6 +4,7 @@ import { loadMenuEditor, type MenuEditorSnapshot } from './api';
 import type { BackOfficeConfiguration } from './config';
 import { buildPersonalizedLockedPreview, supportsPersonalizedLockedPreview } from './lockedPreview.mjs';
 import type { UpgradeOpportunity } from './upgradeExperience.mjs';
+import VennusignLoader from "./VennusignLoader";
 
 type Props = {
   opportunity: Readonly<UpgradeOpportunity>;
@@ -38,7 +39,7 @@ export default function LockedSectionPreview({ opportunity, configuration, acces
   return (
     <section className="locked-section-preview" data-testid="locked-preview" data-feature={opportunity.featureKey} aria-labelledby={`locked-${opportunity.featureKey}`}>
       {personalized ? <div className="locked-section-glimpse personalized-locked-preview" aria-label={`Preview using ${venueName} menu content`}>
-        {previewState === 'loading' ? <p role="status">Loading your venue preview…</p>
+        {previewState === 'loading' ? <VennusignLoader message="Loading your venue preview…" />
           : previewState === 'error' ? <div className="personalized-locked-preview__state" role="status"><strong>Preview unavailable</strong><span>Your content is unchanged. Open this page again to retry.</span></div>
           : !preview || preview.sections.length === 0 ? <div className="personalized-locked-preview__state"><strong>{venueName}</strong><span>Add active menu items to personalize this preview.</span></div>
           : <>

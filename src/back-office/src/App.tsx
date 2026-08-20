@@ -64,6 +64,7 @@ import {
 } from "./upgradeExperience.mjs";
 import "./styles.css";
 import { revokeCustomerSession } from "./customerOnboardingApi";
+import VennusignLoader from "./VennusignLoader";
 
 const tokenStorageKey = "vennusign.back-office.token";
 const customerSessionAccess = "customer-session";
@@ -314,7 +315,7 @@ export default function App() {
   }
 
   if (!session) {
-    return <main className="centered"><p className="loading">Opening your venue…</p></main>;
+    return <main className="centered"><VennusignLoader variant="modal" message="Opening your venue…" /></main>;
   }
 
   const quickUpdateAllowed = quickUpdateOpen && session.capabilityDecisions.some(decision =>

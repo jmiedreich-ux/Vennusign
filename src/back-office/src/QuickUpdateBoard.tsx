@@ -5,6 +5,7 @@ import type { BackOfficeConfiguration } from "./config";
 import { availabilityImpactNotice, availabilityTime } from "./builderModel.mjs";
 import type { DestructiveReviewRequest } from "./DestructiveReviewDialog";
 import "./quick-update-board.css";
+import VennusignLoader from "./VennusignLoader";
 
 type Placement = Readonly<{ key:string; itemId:string; itemName:string; menuId:string; menuName:string; sectionId:string; sectionName:string; screenIds:string[] }>;
 
@@ -27,7 +28,7 @@ export default function QuickUpdateBoard({ configuration, accessToken, review }:
   const carryoverItems=offItems.filter(item=>{const age=availabilityTime(unavailable.get(item.itemId)?.changedUtc,venueTimezone)??"";return age.startsWith("yesterday")||/^[A-Z][a-z]{2} /.test(age)});
   const change=async(item:Placement,isAvailable:boolean)=>{const all=placements.filter(x=>x.itemId===item.itemId), names=[...new Set(all.flatMap(x=>x.screenIds).map(id=>screens.find(s=>s.screenId===id)?.screenName).filter((x):x is string=>Boolean(x)))];const confirmed=await review({title:isAvailable?`Put ${item.itemName} back on sale?`:`86 ${item.itemName}?`,consequence:isAvailable?`This restores it everywhere it appears${names.length?` on ${names.join(", ")}`:""}.`:`Guests will see Sold out everywhere it appears${names.length?` on ${names.join(", ")}`:""}.`,confirmLabel:isAvailable?"Put back on sale":"86 item",tone:isAvailable?"caution":"danger"});if(!confirmed)return;setBusy(item.itemId);try{const result=await setItemAvailability(configuration,accessToken,item.itemId,isAvailable);setNotice(availabilityImpactNotice(result.name,isAvailable,result.screenIds,screens));await refresh()}catch(f){setNotice(f instanceof Error?f.message:"Nothing changed. Try again.")}finally{setBusy(null)}};
   const restoreAll=async()=>{const confirmed=await review({title:`Put all ${offItems.length} back on sale?`,consequence:"Every 86 at this venue will be cleared. Offline and stale screens catch up when they reconnect.",confirmLabel:"Put all back on sale",tone:"caution"});if(!confirmed)return;setBusy("all");try{const result=await restoreAllItemAvailability(configuration,accessToken);const deferred=screens.filter(screen=>result.screenIds.includes(screen.screenId)&&(/offline/i.test(screen.status)||(screen.status.toLowerCase()==="online"&&screen.lastSeenUtc&&Date.now()-new Date(screen.lastSeenUtc).getTime()>=300000))).map(screen=>screen.screenName);setNotice(`${result.count} ${result.count===1?"item is":"items are"} back on sale.${deferred.length?` Confirm ${deferred.join(", ")} after they reconnect or report in.`:""}`);await refresh()}catch(f){setNotice(f instanceof Error?f.message:"Nothing changed. Try again.")}finally{setBusy(null)}};
-  if(menus===null)return <section className="quick-update-state" role="status">Loading the 86 board…</section>;
+  if(menus===null)return <section className="quick-update-state"><VennusignLoader message="Loading the 86 board…" /></section>;
   if(error)return <section className="quick-update-state" role="alert"><p>{error}</p><button onClick={()=>void refresh()}>Try again</button></section>;
   if(!menus.length)return <section className="quick-update-state"><h1>Nothing is on the screens yet</h1><p>Publish and assign a menu before using the 86 board.</p></section>;
   return <section className="quick-update" data-testid="quick-update-board">

@@ -13,6 +13,7 @@ import {
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
 import { useDestructiveReview } from "./DestructiveReviewDialog";
+import VennusignLoader from "./VennusignLoader";
 
 type Props = {
   configuration: BackOfficeConfiguration;
@@ -265,6 +266,6 @@ export default function ThemeBuilder({ configuration, apiKey, venueId, advancedE
           ? <iframe key={previewUrl} src={previewUrl} title="Exact TV theme preview" />
           : <p>Add a venue screen to enable the player-backed preview.</p>}
       </div>
-    </div> : loadFailed ? <div className="state error" role="alert"><p>Theme state is unavailable.</p><button type="button" disabled={loading} onClick={() => void load()}>Retry theme controls</button></div> : <p role="status">Loading theme…</p>}
+    </div> : loadFailed ? <div className="state error" role="alert"><p>Theme state is unavailable.</p><button type="button" disabled={loading} onClick={() => void load()}>Retry theme controls</button></div> : <VennusignLoader message="Loading theme…" />}
   </article>;
 }

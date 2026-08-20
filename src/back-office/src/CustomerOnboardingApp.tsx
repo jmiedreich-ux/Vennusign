@@ -18,6 +18,7 @@ import {
 import CustomerOnboardingTimeline from "./CustomerOnboardingTimeline";
 import TemplateShowcase from "./TemplateShowcase";
 import { authenticatedCustomerDestination, canonicalOnboardingPath, safeLocalReturnPath } from "./customerEntryRouting.mjs";
+import VennusignLoader from "./VennusignLoader";
 
 const REMEMBERED_METHOD_KEY = "vennusign.customerAuth.lastMethod";
 const KNOWN_METHODS = new Set(["Google", "Vennusign"]);
@@ -182,7 +183,7 @@ export default function CustomerOnboardingApp() {
     setNotice("You are signed out. Your onboarding progress remains saved.");
   });
 
-  if (loading) return <main className="customer-entry centered"><p className="loading" role="status">Opening secure signup…</p></main>;
+  if (loading) return <main className="customer-entry centered"><VennusignLoader variant="modal" message="Warming up your Vennusign screen…" /></main>;
 
   return <main className="customer-entry">
     <header className="customer-entry__header">

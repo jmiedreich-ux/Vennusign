@@ -30,6 +30,7 @@ import {
 } from "./menusShelf.mjs";
 import "../../board-engine/board-engine.css";
 import "./menus-home.css";
+import VennusignLoader from "./VennusignLoader";
 
 type Props = {
   configuration: BackOfficeConfiguration;
@@ -159,7 +160,7 @@ export default function MenusHome({
   if (menus === null) {
     return (
       <section className="menus-home" data-testid="menus-home">
-        <p className="state" role="status">Loading your menus…</p>
+        <VennusignLoader message="Loading your menus…" />
       </section>
     );
   }
