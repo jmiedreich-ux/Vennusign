@@ -1,3 +1,4 @@
 {
-  "VENU_TEST_AZURE_SQL_CONNECTION_STRING": "Server=tcp:<server>.database.windows.net,1433;Initial Catalog=<dev-database>;User ID=<user>;Password=<password>;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  "_comment": "This file no longer decides which database a run uses, and must never carry a credential. Runs default to LocalDB, which needs no user and no password. To target Azure for a run, set VENU_TEST_TARGET=azure in the environment; the credentials come from Key Vault kv-vennusign-dev (sql-dev-server, sql-dev-database, sql-dev-username, sql-dev-password). Override the vault with VENU_TEST_AZURE_KEY_VAULT.",
+  "VENU_TEST_RESET_TABLES": "false"
 }

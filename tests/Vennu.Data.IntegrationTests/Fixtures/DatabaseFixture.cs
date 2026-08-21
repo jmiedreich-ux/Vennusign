@@ -3,7 +3,6 @@ namespace Vennu.Data.IntegrationTests.Fixtures;
 public sealed class DatabaseFixture : IAsyncLifetime
 {
     private const string SettingsFileName = "app.settings.json";
-    private const string ConnectionStringVariable = "VENU_TEST_AZURE_SQL_CONNECTION_STRING";
     private const string ResetTablesVariable = "VENU_TEST_RESET_TABLES";
     private static readonly SemaphoreSlim initializationLock = new(1, 1);
 
@@ -17,18 +16,12 @@ public sealed class DatabaseFixture : IAsyncLifetime
 
     public bool ResetTablesBeforeEachTest => IsEnabled(GetSetting(ResetTablesVariable));
 
-    /// <summary>
-    /// Where these tests run unless someone deliberately says otherwise: a local
-    /// database, on this machine, that the run owns.
-    /// </summary>
-    private const string LocalDbConnectionString =
-        @"Server=(localdb)\MSSQLLocalDB;Database=vennusign_dev_tests;Integrated Security=true;TrustServerCertificate=true;Connection Timeout=30;";
-
     public async Task InitializeAsync()
     {
-        // LocalDB is the default everywhere - here and in CI. Azure is reached only by
-        // setting the environment variable for that run, which is a deliberate act that
-        // ends when the run does.
+        // LocalDB is the default everywhere - here and in CI - and needs no user and no
+        // password. Azure is reached only by asking for it for that run, which is a
+        // deliberate act that ends when the run does, and its credentials come from Key
+        // Vault rather than from anything anyone typed. See TestDatabaseTarget.
         //
         // It used to work the other way round. A gitignored app.settings.json supplied an
         // Azure connection string, so every local run silently went to a shared remote
@@ -39,15 +32,26 @@ public sealed class DatabaseFixture : IAsyncLifetime
         // Still read for its other toggles; it can no longer decide which database.
         LoadSettings();
 
-        var configured = Environment.GetEnvironmentVariable(ConnectionStringVariable);
-        var usingOverride = !string.IsNullOrWhiteSpace(configured);
-        ConnectionString = usingOverride ? configured : LocalDbConnectionString;
+        var target = Environment.GetEnvironmentVariable(TestDatabaseTarget.TargetVariable);
+
+        var warning = TestDatabaseTarget.RetiredVariableWarning(
+            Environment.GetEnvironmentVariable(TestDatabaseTarget.RetiredConnectionStringVariable), target);
+        if (warning is not null)
+        {
+            Console.WriteLine(warning);
+        }
+
+        var usingAzure = TestDatabaseTarget.WantsAzure(target);
+        ConnectionString = usingAzure
+            ? TestDatabaseTarget.ResolveAzureConnectionString(
+                TestDatabaseTarget.VaultName(Environment.GetEnvironmentVariable(TestDatabaseTarget.VaultVariable)))
+            : TestDatabaseTarget.LocalDbConnectionString;
 
         EnsureDevDatabase(ConnectionString!);
 
-        Console.WriteLine(usingOverride
-            ? $"[integration] {ConnectionStringVariable} is set: running against {DescribeTarget(ConnectionString!)}."
-            : $"[integration] running against local {DescribeTarget(ConnectionString!)}.");
+        Console.WriteLine(usingAzure
+            ? $"[integration] {TestDatabaseTarget.TargetVariable}=azure: running against {DescribeTarget(ConnectionString!)} with Key Vault credentials."
+            : $"[integration] running against local {DescribeTarget(ConnectionString!)} - no user, no password.");
 
         await initializationLock.WaitAsync();
         try
@@ -101,7 +105,8 @@ public sealed class DatabaseFixture : IAsyncLifetime
     {
         if (!IsAvailable)
         {
-            throw new InvalidOperationException($"Azure SQL connection string not configured. Set the {ConnectionStringVariable} environment variable.");
+            throw new InvalidOperationException(
+                $"No test database is configured. Runs default to LocalDB; set {TestDatabaseTarget.TargetVariable}=azure to target Azure.");
         }
 
         var configuration = new ConfigurationBuilder()
