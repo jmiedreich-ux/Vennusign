@@ -1,6 +1,18 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-21, for deploy verification, build stamping, and the database audit.
+Updated 2026-08-21, for deploy verification, build stamping, the database audit, and test credential hygiene.
+
+## 2026-08-21 — Test credentials, a destructive test, and what is actually running on the plan
+
+**A test was running `DELETE FROM dbo.Venues` against whatever an environment variable pointed at (#751, fixed in `ae206191`).** `AzureSqlPhase02IntegrationTests` deleted every pairing code, screen and venue from whatever `VENU_TEST_AZURE_SQL_CONNECTION_STRING` named, with no guard — `DatabaseFixture` has `EnsureDevDatabase`, this had nothing. On this machine that variable named the dev product database. **The only thing between that test and 147 venues and 128 screens was a stale password.** It was invisible because it returned silently when the variable was unset, so on a cleaned-up machine it looked like a passing test that ran nothing. It now creates its own database, uses it, drops it — and runs for the first time.
+
+**Credentials now follow the target.** LocalDB is the default and needs no user and no password. Azure is `VENU_TEST_TARGET=azure`, and the credentials come from Key Vault `kv-vennusign-dev`. `VENU_TEST_AZURE_SQL_CONNECTION_STRING` is retired: it is ignored, loudly, and the message names both the replacement and why it is still set when nobody set it. Red then green in the same poisoned environment: **115 failed / 8 passed before, 131 / 0 after**, with the variable still inherited. `AGENTS.md` carries the rule now — a test never carries a credential, and never deletes from a database it did not create.
+
+**Rule from the owner: `az` and `git` are always available.** Do not report a CLI as missing or design around its absence; if it is not on PATH here, it is in a venv, in WSL, or on the other OS side. Stated after I reported "Windows az: absent" and began building a fallback.
+
+**28 apps on the B1 plan, 17 of which do nothing (#748).** Measured from Azure Monitor rather than by probing, because 28 cold starts would wedge the plan. Fifteen have had **zero** requests in 30 days and none has a custom domain; `vennusign-stage-api` has 4 and `vennusign-stage-back-office` has 1. Stopping them is free and reversible and is worth trying before paying for a bigger tier. Two things stand out: **production has a marketing site and no API behind it** — `vennusign-app` serves www.vennusign.com with real traffic while `vennusign-app-api` has had zero requests in 30 days — and `appsrv-basic-web` is an unrelated site, `comfortableretreat.com`, which is the second-busiest app on the same worker as every Vennusign environment.
+
+**Also filed:** #749 (`ScreenContentDeliveries` empty while `MenuPublishTargets` holds 102 — the #739 shape, worth confirming) and #750 (`dbo.LayoutTemplates`, 8 seeded rows referenced by nothing, likely pre-seeding for #709).
 
 ## 2026-08-21 — A green deploy now has to prove the new build is running
 
