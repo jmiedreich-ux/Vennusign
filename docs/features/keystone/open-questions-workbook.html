@@ -1,0 +1,881 @@
+<title>Keystone Question Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --ink: #1b1f24;
+    --muted: #5b6470;
+    --faint: #8c94a1;
+    --line: #c7cdd6;
+    --line-soft: #e2e6ec;
+    --surface: #ffffff;
+    --page: #f3f5f8;
+    --accent: #b45309;
+    --accent-ink: #8a3f07;
+    --accent-soft: #fdf0e1;
+    --on-accent: #ffffff;
+    --fill: #eef2f8;
+    --done: #2d6a4f;
+    --done-soft: #e6f2ec;
+    --shadow: 0 1px 2px rgba(27,31,36,.06), 0 4px 12px rgba(27,31,36,.05);
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8eaed;
+      --muted: #a3acb8;
+      --faint: #79828e;
+      --line: #333a44;
+      --line-soft: #262d35;
+      --surface: #1c2127;
+      --page: #12161a;
+      --accent: #e08c3c;
+      --accent-ink: #f0a55c;
+      --accent-soft: #2e2317;
+      --on-accent: #241a10;
+      --fill: #232a33;
+      --done: #74c69d;
+      --done-soft: #1a2a22;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #e8eaed;
+    --muted: #a3acb8;
+    --faint: #79828e;
+    --line: #333a44;
+    --line-soft: #262d35;
+    --surface: #1c2127;
+    --page: #12161a;
+    --accent: #e08c3c;
+    --accent-ink: #f0a55c;
+    --accent-soft: #2e2317;
+    --on-accent: #241a10;
+    --fill: #232a33;
+    --done: #74c69d;
+    --done-soft: #1a2a22;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  code, .mono { font-family: var(--mono); font-size: .88em; }
+  code {
+    background: var(--fill);
+    padding: 1px 5px;
+    border-radius: 4px;
+    overflow-wrap: break-word;
+  }
+
+  /* ---------- header ---------- */
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: .85rem 1rem .7rem;
+  }
+
+  .masthead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .75rem;
+    max-width: 44rem;
+    margin: 0 auto;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  .count {
+    font-family: var(--mono);
+    font-size: .82rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .meter {
+    max-width: 44rem;
+    margin: .6rem auto 0;
+    height: 3px;
+    background: var(--line-soft);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .meter span {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: var(--done);
+    transition: width .25s ease;
+  }
+
+  .filters {
+    display: flex;
+    gap: .4rem;
+    max-width: 44rem;
+    margin: .7rem auto 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+
+  .chip {
+    flex: 0 0 auto;
+    font-family: var(--sans);
+    font-size: .8rem;
+    font-weight: 500;
+    padding: .38rem .7rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .chip[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--surface);
+  }
+
+  /* ---------- list ---------- */
+
+  main {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 1rem 1rem 7rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+  }
+
+  .intro {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .intro p { margin: 0 0 .6rem; color: var(--muted); font-size: .92rem; }
+  .intro p:last-child { margin-bottom: 0; }
+  .intro strong { color: var(--ink); font-weight: 600; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .card.answered { border-color: var(--done); }
+  .card.hidden { display: none; }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .8rem .9rem;
+    cursor: pointer;
+    user-select: none;
+    min-height: 46px;
+  }
+
+  .qid {
+    font-family: var(--mono);
+    font-size: .84rem;
+    font-weight: 500;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    flex: 0 0 auto;
+  }
+
+  .pill {
+    font-size: .66rem;
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    padding: .16rem .45rem;
+    border-radius: 4px;
+    flex: 0 0 auto;
+  }
+  .pill.blocking { background: var(--accent); color: var(--on-accent); }
+  .pill.important { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+  .pill.minor { background: transparent; color: var(--faint); }
+
+  .tick {
+    margin-left: auto;
+    flex: 0 0 auto;
+    font-family: var(--mono);
+    font-size: .76rem;
+    color: var(--done);
+    font-weight: 500;
+  }
+
+  .card-head .summary {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: .88rem;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .card-body { padding: 0 .9rem 1rem; }
+  .card:not(.open) .card-body { display: none; }
+
+  .q {
+    font-family: var(--serif);
+    font-size: 1.08rem;
+    line-height: 1.4;
+    margin: 0 0 .6rem;
+    text-wrap: pretty;
+  }
+
+  .ctx {
+    font-size: .9rem;
+    color: var(--muted);
+    margin: 0 0 .85rem;
+  }
+
+  .rec {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    padding: .7rem .8rem;
+    margin-bottom: .9rem;
+  }
+  .rec-label {
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    display: block;
+    margin-bottom: .25rem;
+  }
+  .rec p { margin: 0; font-size: .91rem; color: var(--ink); }
+
+  .options { display: flex; flex-direction: column; gap: .45rem; }
+
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    width: 100%;
+    min-height: 46px;
+    padding: .6rem .75rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: .93rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+  }
+  .opt:hover { border-color: var(--faint); }
+  .opt[aria-pressed="true"] {
+    border-color: var(--done);
+    background: var(--done-soft);
+    color: var(--ink);
+  }
+  .opt .dot {
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    flex: 0 0 auto;
+  }
+  .opt[aria-pressed="true"] .dot {
+    border-color: var(--done);
+    background: var(--done);
+    box-shadow: inset 0 0 0 3px var(--surface);
+  }
+
+  textarea {
+    width: 100%;
+    margin-top: .5rem;
+    min-height: 88px;
+    padding: .65rem .7rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: .95rem;
+    line-height: 1.45;
+    resize: vertical;
+  }
+  textarea:focus-visible, .opt:focus-visible, .chip:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .refs {
+    margin-top: .8rem;
+    font-family: var(--mono);
+    font-size: .74rem;
+    color: var(--faint);
+    overflow-wrap: break-word;
+  }
+
+  /* ---------- bottom bar ---------- */
+
+  .bar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 30;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    padding: .7rem 1rem calc(.7rem + env(safe-area-inset-bottom));
+  }
+  .bar-inner {
+    max-width: 44rem;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+  }
+  .bar .status {
+    flex: 1 1 auto;
+    font-size: .85rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .btn {
+    flex: 0 0 auto;
+    min-height: 42px;
+    padding: .55rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--surface);
+    font-family: var(--sans);
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+
+  /* ---------- export sheet ---------- */
+
+  .sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(0,0,0,.45);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .sheet[hidden] { display: none; }
+  .sheet-panel {
+    background: var(--surface);
+    width: 100%;
+    max-width: 44rem;
+    max-height: 88vh;
+    border-radius: 14px 14px 0 0;
+    padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+    overflow: hidden;
+  }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+  .sheet-head h2 { margin: 0; font-size: 1rem; font-weight: 600; }
+  .sheet p { margin: 0; font-size: .87rem; color: var(--muted); }
+  .out {
+    flex: 1 1 auto;
+    min-height: 180px;
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.5;
+    white-space: pre;
+    overflow: auto;
+    background: var(--page);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: .7rem;
+    color: var(--ink);
+  }
+  .sheet-actions { display: flex; gap: .5rem; }
+  .sheet-actions .btn { flex: 1 1 auto; }
+
+  @media (min-width: 640px) {
+    body { font-size: 16.5px; }
+    .q { font-size: 1.16rem; }
+    .sheet { align-items: center; }
+    .sheet-panel { border-radius: 14px; max-height: 80vh; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<header>
+  <div class="masthead">
+    <h1>Keystone Question Register</h1>
+    <span class="count" id="count">0/34</span>
+  </div>
+  <div class="meter"><span id="meter"></span></div>
+  <div class="filters" id="filters">
+    <button class="chip" data-filter="all" aria-pressed="true">All 34</button>
+    <button class="chip" data-filter="open" aria-pressed="false">Unanswered</button>
+    <button class="chip" data-filter="blocking" aria-pressed="false">Blocking 11</button>
+    <button class="chip" data-filter="important" aria-pressed="false">Important 21</button>
+    <button class="chip" data-filter="minor" aria-pressed="false">Minor 2</button>
+  </div>
+</header>
+
+<main id="list">
+  <div class="intro">
+    <p><strong>Three valid answers to every question.</strong> Accept the recommendation, write your own, or defer it. Deferring is a real answer — it stays tracked, and if a slice can't wait, the recommendation runs provisionally and gets flagged in that slice's acceptance workbook.</p>
+    <p><strong>Blocking</strong> means slice 1 or 2 needs it before that work starts. Answers save on this device as you go. Tap <strong>Export</strong> at the bottom when you want to send them back.</p>
+  </div>
+</main>
+
+<div class="bar">
+  <div class="bar-inner">
+    <span class="status" id="status">0 answered · 34 to go</span>
+    <button class="btn ghost" id="collapseAll" type="button">Collapse</button>
+    <button class="btn" id="exportBtn" type="button">Export</button>
+  </div>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-panel">
+    <div class="sheet-head">
+      <h2>Your answers</h2>
+      <button class="btn ghost" id="closeSheet" type="button">Close</button>
+    </div>
+    <p>Copy this and paste it back into the conversation.</p>
+    <div class="out" id="out"></div>
+    <div class="sheet-actions">
+      <button class="btn" id="copyBtn" type="button">Copy to clipboard</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  { id:"Q1", p:"blocking", g:"VDS availability — the unworked item",
+    q:"What does the Product Router do when VDS is unavailable?",
+    c:"The Router sits on every request and can't answer without VDS. Failing closed takes the product down for an outage in the component meant to make outages survivable — but stale data can send a customer to a version they were deliberately moved off.",
+    r:"Serve from a cached last-known assignment with no expiry during the outage, and emit a loud degraded-mode signal. Assignments change rarely and deliberately, so the cache is almost always still right, whereas an unavailable Router is certainly an outage.",
+    refs:"decisions 11, 12, 17 · concept: Decisions required before planning" },
+  { id:"Q2", p:"blocking", g:"VDS availability — the unworked item",
+    q:"What does the POS Webhook Receiver do when VDS is unavailable?",
+    c:"WR fails differently from the Router: providers retry, and a dropped webhook is lost sales data rather than a visible outage. The concept names queue-or-cache without choosing.",
+    r:"Queue, and drain when VDS returns. WR isn't latency-sensitive to the provider (fast 200, then async processing is the normal shape), so queueing loses nothing and avoids forwarding to a stale version.",
+    refs:"concept: POS Webhook Receiver · decision 33" },
+  { id:"Q3", p:"blocking", g:"VDS availability — the unworked item",
+    q:"How long may a cached assignment be served, and does it differ between the Router and WR?",
+    c:"Q1's recommendation says no expiry during an outage. That's deliberate, but it needs a bound stated or the cache quietly becomes the source of truth.",
+    r:"No time expiry, but hard invalidation the moment VDS returns, plus a degraded-mode alert from the very first cache-served request. Time-based expiry turns a VDS outage into a staggered product outage, which is worse than slightly stale routing.",
+    refs:"Q1 · decision 12" },
+  { id:"Q4", p:"important", g:"VDS availability — the unworked item",
+    q:"What do assignment-aware background services do when VDS is unavailable?",
+    c:"Not Keystone's code — these live in the versioned API — but Keystone's contract decides the answer. The concept states a preference without settling it.",
+    r:"Process no venues, and alert. Background work deferred by minutes is recoverable; two versions both processing every venue is not.",
+    refs:"concept: Background services" },
+
+  { id:"Q5", p:"blocking", g:"VDS contract",
+    q:"Does VDS return a version only, or a version and a resolved instance?",
+    c:"The concept has VDS delegating instance discovery to ADS internally, so callers see one lookup. That still leaves whether the Router gets a target to forward to or resolves the instance itself.",
+    r:"Version and a resolved target. One round trip on a hop paid on every request, and it keeps ADS entirely invisible to callers as the concept intends.",
+    refs:"concept: Application Discovery Service · decision 45" },
+  { id:"Q6", p:"blocking", g:"VDS contract",
+    q:"Does ADS feed a load-balancer backend pool, or does the Router pick the instance?",
+    c:"The concept decided ADS feeds an Azure Front Door or Application Gateway pool. No Front Door, App Gateway or APIM exists anywhere today — the Product Router would be Vennusign's first gateway hop — and adding a managed load balancer is a cost decision next to the deferred tier conversation.",
+    r:"The Router picks, from the healthy set ADS reports, until a measured reason to add a load-balancing layer appears. Avoids introducing a paid component into a design whose cost conversation is parked, and the Router is already on every request.",
+    refs:"concept: Multiple instances per (app, version) · decisions 40–43" },
+  { id:"Q7", p:"important", g:"VDS contract",
+    q:"How many versions may run concurrently, and what bounds that number?",
+    c:"Named in the concept's required list. It bounds plan sizing, release-branch policy, and how long a wave may straddle.",
+    r:"Three, as a configured maximum rather than an architectural limit, with the release cut refusing to register a fourth until one retires. Matches the informal 2–3 already noted for release branches.",
+    refs:"concept: Framing · Decisions required before planning" },
+  { id:"Q8", p:"important", g:"VDS contract",
+    q:"What does VDS return for a venue with no assignment?",
+    c:"A venue created during onboarding has never been assigned. Decision 28 says new customers start on the default version — but that could be an explicit assignment written at creation, or a fallback computed at lookup.",
+    r:"An explicit assignment written when the venue is created. A computed fallback leaves no record of why a customer is where they are, which breaks the per-customer auditability the concept requires.",
+    refs:"decisions 27, 28" },
+
+  { id:"Q9", p:"important", g:"ADS",
+    q:"Health poll interval, and how many consecutive failures mark an instance unhealthy?",
+    c:"ADS polls every registered instance of every app continuously, independent of deploy events.",
+    r:"Poll every 10 seconds; unhealthy after 3 consecutive failures; healthy again after 2 consecutive successes. Fast enough that a crashed instance leaves the pool in well under a minute, slow enough not to become a load source itself.",
+    refs:"concept: Why this needs to be a separate, continuously-running concern" },
+  { id:"Q10", p:"important", g:"ADS",
+    q:"How is ADS's registration endpoint authenticated?",
+    c:"The deploy pipeline calls it to register a newly-healthy instance. An openly callable endpoint would let anyone insert a routing target — a traffic-hijacking primitive.",
+    r:"The same asymmetric signed-token scheme as decisions 31–33, with the pipeline holding its own key identity, plus network restriction. One mechanism rather than two.",
+    refs:"decisions 31–33 · concept: Registration is automated, not manual" },
+  { id:"Q11", p:"important", g:"ADS",
+    q:"What happens when every instance of a version is unhealthy?",
+    c:"Customers are assigned to that version and there is nowhere healthy to send them.",
+    r:"Serve 503 with a retry hint, alert, and do not silently reroute to another version. Serving someone a different version than they're assigned is the exact failure this feature prevents, and it would happen when nobody is watching for it. Rerouting is an operator decision through PO.",
+    refs:"decisions 11, 25, 35" },
+
+  { id:"Q12", p:"blocking", g:"Product Router",
+    q:"What is the Product Router built with?",
+    c:"It's the first gateway hop Vennusign has had, and it sits on every request.",
+    r:"YARP — Microsoft's .NET reverse proxy library, built for programmable per-request routing, and the repo is .NET 9. Decision 18 holds regardless: the wire contract, not a shared assembly, binds Keystone to concurrently-running versions.",
+    refs:"decisions 14, 18 · AGENTS.md: Target .NET 9" },
+  { id:"Q13", p:"important", g:"Product Router",
+    q:"What latency budget does the Router hop get, and what happens when it's exceeded?",
+    c:"Decision 43 says the Router graduates to its own plan when its added p99 becomes measurable, which presumes a number to measure against.",
+    r:"15 ms added p95, measured from the first slice that puts it on the request path, with a breach treated as a capacity signal rather than a failure.",
+    refs:"decisions 41, 43" },
+  { id:"Q14", p:"important", g:"Product Router",
+    q:"Where does DNS point, and what terminates TLS?",
+    c:"Today five App Services each serve their own hostname. With a Router in front, something must own the customer-facing name.",
+    r:"DNS points at the Router, which terminates TLS and forwards over the internal network. Any other arrangement reintroduces a per-version hostname, which decision 15 forbids.",
+    refs:"decisions 15, 40" },
+
+  { id:"Q15", p:"important", g:"Internal tokens",
+    q:"Signing algorithm, and key rotation cadence?",
+    c:"Every internal hop carries a signed token; the Router signs and each version verifies.",
+    r:"ES256, rotating quarterly, accepting the previous public key through one rotation period — so a rotation never needs every live version redeployed simultaneously, which decision 2 makes impossible anyway.",
+    refs:"decisions 31, 32" },
+  { id:"Q16", p:"important", g:"Internal tokens",
+    q:"Token time-to-live?",
+    c:"These are per-request credentials, not sessions.",
+    r:"60 seconds. Long enough to absorb clock skew between App Services, short enough that a captured token is useless before it can be meaningfully replayed.",
+    refs:"decision 32" },
+  { id:"Q17", p:"important", g:"Internal tokens",
+    q:"Where does the Router's private key live, and how does it reach the Router?",
+    c:"A forgeable Router token would let anyone assert any tenant to any version.",
+    r:"Key Vault, reached by managed identity, never an app setting. kv-vennusign-dev already exists and already holds the project's credentials.",
+    refs:"decisions 31, 37" },
+
+  { id:"Q18", p:"blocking", g:"The URL restructure",
+    q:"Is the /o/{orgId} segment kept, given the Router only ever keys on venue?",
+    c:"Decision 25 makes the org segment non-routing. It earns its place for the application — org-scoped surfaces, multi-venue functions, reporting — but it's redundant to Keystone and makes every URL longer.",
+    r:"Keep it. Org-scoped surfaces need a coherent home that isn't 'under an arbitrary venue', and it expresses the hierarchy honestly. The cost is URL length; the benefit is that /o/{orgId} is a real place.",
+    refs:"decisions 19, 25" },
+  { id:"Q19", p:"important", g:"The URL restructure",
+    q:"What happens when a URL carries a valid venueId under the wrong orgId?",
+    c:"Bookmarks go stale, venues can in principle move between organizations, and the segment is forgeable.",
+    r:"The Router ignores the org segment entirely and routes on the venue. The application then corrects the URL to the venue's real organization, so a stale link self-heals rather than erroring.",
+    refs:"decisions 11, 19, 25" },
+  { id:"Q20", p:"important", g:"The URL restructure",
+    q:"Do the front ends move to relative API URLs, and is anything blocked by that?",
+    c:"Decision 13 depends on it — the tenant is inherited from the bundle's own path only if calls are relative. Today loadBackOfficeConfiguration supplies an absolute apiBaseUrl.",
+    r:"Yes, relative, keeping the absolute base only for local development against a separately-hosted API. Anything that genuinely can't be relative must carry the tenant explicitly rather than silently routing to the default version.",
+    refs:"decisions 13, 14" },
+
+  { id:"Q21", p:"important", g:"The default-version pointer",
+    q:"Who may advance the default-version pointer, and is it gated?",
+    c:"Decision 27 makes it a deliberate act. It's also the single pointer that, set wrongly, affects every sign-in.",
+    r:"PO operators with release authority, gated behind the same approval as advancing a wave, and never automatic on registration.",
+    refs:"decision 27" },
+  { id:"Q22", p:"important", g:"The default-version pointer",
+    q:"What happens if the default pointer names a version being retired?",
+    c:"Retirement runs when no customer remains assigned — but unattributed traffic isn't a customer assignment, so a version could be 'empty' and still serving every sign-in.",
+    r:"Refuse retirement while a version is the default. The pointer must be advanced first, which makes the ordering explicit rather than implicit.",
+    refs:"decisions 27, 28 · concept: Release lifecycle" },
+
+  { id:"Q23", p:"important", g:"Waves and scheduling",
+    q:"What is a maintenance window, concretely?",
+    c:"The concept says windows live in the Vennu profile and are commonly daily at the same local time, but never fixes the shape.",
+    r:"A recurring daily local-time range per venue, with an optional per-venue override for a specific date. Anything richer is schedule modelling no evidence yet demands.",
+    refs:"decisions 23, 24 · concept: Source of schedule and selection data" },
+  { id:"Q24", p:"important", g:"Waves and scheduling",
+    q:"When does a wave count as observed?",
+    c:"Named in the concept's required list. Windows are per-venue, so a wave doesn't complete at a single moment.",
+    r:"Every venue in the wave has passed its window and accumulated a defined period of live traffic since moving. No venue advances on an observation period that didn't include its own window.",
+    refs:"decision 24 · concept: Automation" },
+  { id:"Q25", p:"important", g:"Waves and scheduling",
+    q:"What happens when a venue is eligible under two in-flight rollouts?",
+    c:"Named in the concept's required list.",
+    r:"Newest rollout wins, and the older one records the venue as superseded rather than skipped — so the audit trail explains why it never moved.",
+    refs:"concept: Decisions required before planning" },
+  { id:"Q26", p:"important", g:"Waves and scheduling",
+    q:"What are rollback and abort semantics?",
+    c:"Named in the concept's required list. The constraint is stated — moving back must be at least as safe and immediate as moving forward — but the mechanism isn't.",
+    r:"Rollback is an ordinary assignment change through the same path as a rollout, with two differences: it ignores windows when the customer is already broken, and it halts the wave that produced it.",
+    refs:"decisions 23, 24 · concept: Withdrawing a release" },
+
+  { id:"Q27", p:"blocking", g:"Observability",
+    q:"Where does per-customer telemetry with a version dimension come from?",
+    c:"Nothing emits it today. Without it, cohort health can't be assessed — which removes the point of waves. This isn't an add-on; it's what makes progressive delivery mean anything.",
+    r:"The Router emits it. It's the one component that sees every request and already knows both the tenant and the resolved version, which also makes it available before any versioned application changes.",
+    refs:"decisions 11, 44 · concept: Open questions carried forward" },
+  { id:"Q28", p:"important", g:"Observability",
+    q:"Where does the hint/authority mismatch signal go, and what is done with it?",
+    c:"Decision 11 makes the mismatch the built-in detector for assignment drift, which only helps if something watches it.",
+    r:"The same telemetry pipeline as Q27, with an alert threshold rather than per-event alerting — a low background rate is expected from stale bookmarks.",
+    refs:"decisions 11, 35" },
+
+  { id:"Q29", p:"blocking", g:"Secrets migration",
+    q:"Who owns moving durable secrets off Data Protection, and does existing data need migrating?",
+    c:"Decision 37 settles the destination but not the path. Existing POS credentials and strong-auth factors are currently encrypted with a per-app key ring.",
+    r:"Owned by the Vennu.Api area rather than Keystone, with no data migration — nothing is live, so existing dev values are disposable and can be re-entered. If that turns out to be false for any environment, the answer becomes a dual-read migration.",
+    refs:"decisions 36, 37" },
+
+  { id:"Q30", p:"blocking", g:"Sequencing and scope",
+    q:"Does #726 land before slice 1, or with it?",
+    c:"Decision 46 makes it a prerequisite — decision 35's mis-forwarding check can't work against \"0.0.0-local\".",
+    r:"Before slice 1, as its own small change. It's independently valuable, since it's also what makes any deploy verifiable, and it's cheap.",
+    refs:"decisions 35, 46 · issue #726" },
+  { id:"Q31", p:"blocking", g:"Sequencing and scope",
+    q:"Does the pre-auth app split land before the URL restructure, or after?",
+    c:"Decision 48 recommends splitting onboarding into its own app. The URL restructure moves back office under a tenant prefix. Wrong order means doing the entry routes twice.",
+    r:"The split first. main.tsx's two-way switch is already the seam, and splitting first means the URL restructure only ever touches the post-auth app.",
+    refs:"decisions 19, 21, 48" },
+  { id:"Q32", p:"important", g:"Sequencing and scope",
+    q:"Is provisioning automation inside Keystone's scope, or a prerequisite feature alongside it?",
+    c:"Decision 47 states the gap without assigning it. Deployment is fully automated for the apps that exist but names its targets directly, so it can't stand up a new version.",
+    r:"A prerequisite feature alongside. The concept explicitly keeps the deployment process outside VDS, and routing between versions is separable from standing those versions up. It can't be nobody's, though.",
+    refs:"decisions 45, 47 · concept: What the VDS is, and is not" },
+  { id:"Q33", p:"important", g:"Sequencing and scope",
+    q:"Does Keystone decide the shared connection-membership mechanism, or also build it?",
+    c:"Parked as #742. Restated here so the register is complete.",
+    r:"Decide only. Azure SignalR Service is the one Keystone item that certainly costs money, and tier and plan cost are deliberately deferred.",
+    refs:"issue #742 · decisions 1, 41" },
+  { id:"Q34", p:"minor", g:"Sequencing and scope",
+    q:"Does Keystone own correcting the concept document?",
+    c:"#743 records that the concept still places the version chooser at dev.vennusign.com and misidentifies PO. The correction is known; the owner of the edit isn't.",
+    r:"Yes, as part of landing the design authority — the concept is Keystone's source document, and leaving a known-false statement in it sends the next reader wrong.",
+    refs:"issue #743 · decisions 38, 39" }
+];
+
+const KEY = "keystone.register.v1";
+let answers = {};
+try { answers = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { answers = {}; }
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(answers)); } catch (e) { /* private mode */ }
+}
+
+const list = document.getElementById("list");
+let filter = "all";
+let lastGroup = "";
+
+QUESTIONS.forEach(function (item) {
+  if (item.g !== lastGroup) {
+    const h = document.createElement("h2");
+    h.textContent = item.g;
+    h.style.cssText = "margin:1.1rem 0 -.1rem;font-size:.72rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);";
+    h.dataset.group = item.g;
+    list.appendChild(h);
+    lastGroup = item.g;
+  }
+
+  const card = document.createElement("section");
+  card.className = "card";
+  card.dataset.id = item.id;
+  card.dataset.p = item.p;
+
+  const pillText = item.p === "blocking" ? "Blocking" : item.p === "important" ? "Important" : "Minor";
+
+  card.innerHTML =
+    '<div class="card-head">' +
+      '<span class="qid">' + item.id + '</span>' +
+      '<span class="pill ' + item.p + '">' + pillText + '</span>' +
+      '<span class="summary"></span>' +
+      '<span class="tick"></span>' +
+    '</div>' +
+    '<div class="card-body">' +
+      '<p class="q"></p>' +
+      '<p class="ctx"></p>' +
+      '<div class="rec"><span class="rec-label">Recommended</span><p></p></div>' +
+      '<div class="options">' +
+        '<button class="opt" type="button" data-choice="rec"><span class="dot"></span>Accept the recommendation</button>' +
+        '<button class="opt" type="button" data-choice="own"><span class="dot"></span>Write my own answer</button>' +
+        '<button class="opt" type="button" data-choice="defer"><span class="dot"></span>Decide later</button>' +
+      '</div>' +
+      '<textarea placeholder="Your answer — a sentence is enough." hidden></textarea>' +
+      '<div class="refs"></div>' +
+    '</div>';
+
+  card.querySelector(".q").textContent = item.q;
+  card.querySelector(".ctx").textContent = item.c;
+  card.querySelector(".rec p").textContent = item.r;
+  card.querySelector(".refs").textContent = item.refs;
+
+  const head = card.querySelector(".card-head");
+  const ta = card.querySelector("textarea");
+
+  head.addEventListener("click", function () { card.classList.toggle("open"); });
+
+  card.querySelectorAll(".opt").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      const choice = btn.dataset.choice;
+      const cur = answers[item.id];
+      if (cur && cur.choice === choice && choice !== "own") {
+        delete answers[item.id];
+      } else {
+        answers[item.id] = { choice: choice, text: choice === "own" ? (cur && cur.text) || "" : "" };
+      }
+      save();
+      render();
+      if (answers[item.id] && answers[item.id].choice === "own") { ta.focus(); }
+    });
+  });
+
+  ta.addEventListener("input", function () {
+    if (!answers[item.id]) { answers[item.id] = { choice: "own", text: "" }; }
+    answers[item.id].text = ta.value;
+    save();
+    updateCard(card, item);
+    updateTotals();
+  });
+
+  list.appendChild(card);
+});
+
+function isAnswered(a) {
+  if (!a) return false;
+  if (a.choice === "own") return (a.text || "").trim().length > 0;
+  return true;
+}
+
+function updateCard(card, item) {
+  const a = answers[item.id];
+  const done = isAnswered(a);
+  card.classList.toggle("answered", done);
+
+  card.querySelectorAll(".opt").forEach(function (b) {
+    b.setAttribute("aria-pressed", String(!!a && a.choice === b.dataset.choice));
+  });
+
+  const ta = card.querySelector("textarea");
+  ta.hidden = !(a && a.choice === "own");
+  if (a && a.choice === "own" && ta.value !== (a.text || "")) { ta.value = a.text || ""; }
+
+  const tick = card.querySelector(".tick");
+  const summary = card.querySelector(".summary");
+
+  if (done) {
+    tick.textContent = a.choice === "rec" ? "recommended" : a.choice === "defer" ? "deferred" : "answered";
+    summary.textContent = card.classList.contains("open") ? "" : item.q;
+  } else {
+    tick.textContent = "";
+    summary.textContent = card.classList.contains("open") ? "" : item.q;
+  }
+}
+
+function matches(card) {
+  if (filter === "all") return true;
+  if (filter === "open") return !isAnswered(answers[card.dataset.id]);
+  return card.dataset.p === filter;
+}
+
+function updateTotals() {
+  const n = QUESTIONS.filter(function (q) { return isAnswered(answers[q.id]); }).length;
+  const total = QUESTIONS.length;
+  document.getElementById("count").textContent = n + "/" + total;
+  document.getElementById("meter").style.width = (n / total * 100) + "%";
+  const left = total - n;
+  document.getElementById("status").textContent =
+    n + " answered · " + (left === 0 ? "all done" : left + " to go");
+}
+
+function render() {
+  const cards = list.querySelectorAll(".card");
+  cards.forEach(function (card) {
+    const item = QUESTIONS.find(function (q) { return q.id === card.dataset.id; });
+    updateCard(card, item);
+    card.classList.toggle("hidden", !matches(card));
+  });
+  list.querySelectorAll("h2[data-group]").forEach(function (h) {
+    let sib = h.nextElementSibling;
+    let any = false;
+    while (sib && sib.classList.contains("card")) {
+      if (!sib.classList.contains("hidden")) { any = true; break; }
+      sib = sib.nextElementSibling;
+    }
+    h.style.display = any ? "" : "none";
+  });
+  updateTotals();
+}
+
+document.getElementById("filters").addEventListener("click", function (e) {
+  const btn = e.target.closest(".chip");
+  if (!btn) return;
+  filter = btn.dataset.filter;
+  document.querySelectorAll(".chip").forEach(function (c) {
+    c.setAttribute("aria-pressed", String(c === btn));
+  });
+  render();
+});
+
+document.getElementById("collapseAll").addEventListener("click", function () {
+  const anyOpen = list.querySelector(".card.open");
+  list.querySelectorAll(".card").forEach(function (c) { c.classList.toggle("open", !anyOpen); });
+  document.getElementById("collapseAll").textContent = anyOpen ? "Expand" : "Collapse";
+  render();
+});
+
+function buildExport() {
+  const shorthand = [];
+  const detail = [];
+  QUESTIONS.forEach(function (q) {
+    const a = answers[q.id];
+    if (!isAnswered(a)) return;
+    if (a.choice === "rec") { shorthand.push(q.id + " rec"); }
+    else if (a.choice === "defer") { shorthand.push(q.id + " defer"); }
+    else {
+      shorthand.push(q.id + ": " + a.text.trim().replace(/\s+/g, " "));
+      detail.push(q.id + " — " + q.q + "\n    " + a.text.trim());
+    }
+  });
+  const unanswered = QUESTIONS.filter(function (q) { return !isAnswered(answers[q.id]); }).map(function (q) { return q.id; });
+
+  let out = "Keystone register answers\n\n";
+  out += shorthand.length ? shorthand.join(", ") + "\n" : "(nothing answered yet)\n";
+  if (detail.length) { out += "\nWritten answers in full:\n\n" + detail.join("\n\n") + "\n"; }
+  if (unanswered.length) { out += "\nNot yet answered: " + unanswered.join(", ") + "\n"; }
+  return out;
+}
+
+const sheet = document.getElementById("sheet");
+document.getElementById("exportBtn").addEventListener("click", function () {
+  document.getElementById("out").textContent = buildExport();
+  sheet.hidden = false;
+});
+document.getElementById("closeSheet").addEventListener("click", function () { sheet.hidden = true; });
+sheet.addEventListener("click", function (e) { if (e.target === sheet) { sheet.hidden = true; } });
+
+document.getElementById("copyBtn").addEventListener("click", function () {
+  const btn = document.getElementById("copyBtn");
+  const text = buildExport();
+  const done = function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = "Copy to clipboard"; }, 1600); };
+  const fail = function () { btn.textContent = "Select the text above to copy"; setTimeout(function () { btn.textContent = "Copy to clipboard"; }, 2400); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(fail);
+  } else { fail(); }
+});
+
+render();
+</script>
