@@ -1,0 +1,445 @@
+<title>Keystone Decisions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --ink: #1b1f24;
+    --muted: #5b6470;
+    --faint: #8c94a1;
+    --line: #c7cdd6;
+    --line-soft: #e2e6ec;
+    --surface: #ffffff;
+    --page: #f3f5f8;
+    --accent: #b45309;
+    --accent-ink: #8a3f07;
+    --accent-soft: #fdf0e1;
+    --on-accent: #ffffff;
+    --fill: #eef2f8;
+    --shadow: 0 1px 2px rgba(27,31,36,.06), 0 4px 12px rgba(27,31,36,.05);
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8eaed;
+      --muted: #a3acb8;
+      --faint: #79828e;
+      --line: #333a44;
+      --line-soft: #262d35;
+      --surface: #1c2127;
+      --page: #12161a;
+      --accent: #e08c3c;
+      --accent-ink: #f0a55c;
+      --accent-soft: #2e2317;
+      --on-accent: #241a10;
+      --fill: #232a33;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #e8eaed;
+    --muted: #a3acb8;
+    --faint: #79828e;
+    --line: #333a44;
+    --line-soft: #262d35;
+    --surface: #1c2127;
+    --page: #12161a;
+    --accent: #e08c3c;
+    --accent-ink: #f0a55c;
+    --accent-soft: #2e2317;
+    --on-accent: #241a10;
+    --fill: #232a33;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: .87em;
+    background: var(--fill);
+    padding: 1px 5px;
+    border-radius: 4px;
+    overflow-wrap: break-word;
+  }
+
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- header ---------- */
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: .8rem 1rem;
+  }
+  .masthead {
+    max-width: 46rem;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+  }
+  .masthead h1 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    flex: 1 1 auto;
+  }
+  .masthead .of {
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--faint);
+    white-space: nowrap;
+  }
+  .toc-btn {
+    flex: 0 0 auto;
+    min-height: 36px;
+    padding: .35rem .75rem;
+    border-radius: 7px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: .82rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* ---------- contents ---------- */
+
+  nav.toc {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: .25rem 1rem 1rem;
+  }
+  nav.toc[hidden] { display: none; }
+  nav.toc ol {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: .1rem;
+    counter-reset: sec;
+  }
+  nav.toc a {
+    display: flex;
+    align-items: baseline;
+    gap: .6rem;
+    padding: .45rem .2rem;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: .92rem;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  nav.toc a:hover { color: var(--accent-ink); }
+  nav.toc .range {
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--faint);
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  /* ---------- body ---------- */
+
+  main {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 1.25rem 1rem 4rem;
+  }
+
+  .status {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: .85rem .9rem;
+    margin-bottom: 1.5rem;
+  }
+  .status p { margin: 0 0 .5rem; font-size: .91rem; }
+  .status p:last-child { margin-bottom: 0; }
+  .status strong { font-weight: 600; }
+
+  section { margin-bottom: 2.25rem; }
+
+  h2 {
+    font-family: var(--sans);
+    font-size: .74rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin: 0 0 .9rem;
+    padding-bottom: .45rem;
+    border-bottom: 1px solid var(--line);
+    scroll-margin-top: 4.5rem;
+  }
+
+  .rule {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: .3rem;
+    padding: .9rem 0;
+    border-bottom: 1px solid var(--line-soft);
+    scroll-margin-top: 4.5rem;
+  }
+  .rule:last-child { border-bottom: none; }
+  .rule:target .lead { color: var(--accent-ink); }
+
+  .num {
+    font-family: var(--mono);
+    font-size: .82rem;
+    font-weight: 500;
+    color: var(--faint);
+    text-decoration: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .num:hover { color: var(--accent-ink); }
+
+  .lead {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.04rem;
+    line-height: 1.4;
+    text-wrap: pretty;
+  }
+  .rule p { margin: .35rem 0 0; font-size: .95rem; color: var(--muted); text-wrap: pretty; }
+  .rule p strong { color: var(--ink); font-weight: 600; }
+
+  pre {
+    margin: .7rem 0 0;
+    padding: .8rem .9rem;
+    background: var(--fill);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: .78rem;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
+  .note {
+    margin-top: 1rem;
+    padding: .75rem .85rem;
+    background: var(--fill);
+    border-radius: 8px;
+    font-size: .91rem;
+    color: var(--muted);
+  }
+  .note strong { color: var(--ink); font-weight: 600; }
+
+  footer {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 3rem;
+    border-top: 1px solid var(--line);
+    font-size: .87rem;
+    color: var(--muted);
+  }
+
+  @media (min-width: 680px) {
+    body { font-size: 16.5px; }
+    .rule {
+      grid-template-columns: 3.25rem 1fr;
+      column-gap: 1rem;
+      row-gap: 0;
+    }
+    .num { grid-row: 1 / span 9; padding-top: .3rem; text-align: right; }
+    .lead { font-size: 1.1rem; }
+  }
+</style>
+
+<header>
+  <div class="masthead">
+    <h1>Keystone Decisions</h1>
+    <span class="of">48 rules</span>
+    <button class="toc-btn" id="tocBtn" type="button" aria-expanded="false">Contents</button>
+  </div>
+</header>
+
+<nav class="toc" id="toc" hidden><ol id="tocList"></ol></nav>
+
+<main>
+  <div class="status">
+    <p><strong>Proposed, not approved.</strong> Every decision here was settled with the owner across six brainstorming sittings on 2026-08-20. Moving this bundle to <code>docs/design/approved/keystone/</code> is the owner's act and has not happened. Until it does, this document governs nothing.</p>
+    <p>The source concept remains explicitly unapproved. The conversational record these were distilled from is <code>docs/features/keystone/decisions-so-far.md</code>, which keeps the reasoning, the alternatives rejected, and the code evidence behind each item.</p>
+    <p>Where any other document disagrees with this one, this one wins. Open questions live in the <strong>question register</strong> and are never resolved silently.</p>
+  </div>
+  <div id="content"></div>
+</main>
+
+<footer>
+  Repository copy: <code>docs/design/proposed/keystone/decisions.md</code>. Register: <code>docs/features/keystone/open-questions.md</code>.
+</footer>
+
+<script>
+const SECTIONS = [
+  { t: "Scope and naming", items: [
+    { n:1, lead:"Keystone is the thin layer and the discovery services.", body:"In scope: <strong>Product Router</strong>, <strong>POS Webhook Receiver</strong>, <strong>connection membership</strong>, <strong>Version Discovery Service (VDS)</strong>, and <strong>Application Discovery Service (ADS)</strong>. <strong>System Monitor</strong> is named in the concept and is later work." },
+    { n:2, lead:"Keystone cannot roll itself out progressively.", body:"It deploys all-customers-at-once, backward-compatible only, with immediate rollback as the sole recovery path. Every constraint that follows descends from that one fact, which is also what the codename records: the stone placed first, that everything bears on, and that cannot be removed while the arch stands." },
+    { n:3, lead:"The names are settled.", body:"VDS, Product Router, ADS, System Monitor. &ldquo;Version Router&rdquo; and &ldquo;enforcement point&rdquo; are retired and must not reappear. Prefer full names in speech: &ldquo;WR&rdquo; and &ldquo;VDS&rdquo; are easily confused when spoken." },
+    { n:4, lead:"Keystone is a feature codename, not a release codename.", body:"Release codenames are separate; v1.0 is Mosaic." }
+  ]},
+  { t: "The pre-auth / post-auth line", items: [
+    { n:5, lead:"Pre-auth means no verifiable tenant exists.", body:"Not that one failed to be sent &mdash; that there is none. It covers the public site, a TV at <code>/pair</code> before it is claimed, <code>POST /api/screens</code>, the pairing-code lifecycle and its status poll, and the sign-in round trip itself." },
+    { n:6, lead:"Post-auth means the tenant is derivable from a durable authority.", body:"The customer session for back office, the screen record for a paired display, the Webhook Receiver&rsquo;s registration for a POS event." },
+    { n:7, lead:"The line is crossed at exactly two events.", body:"A person crosses at sign-in; a device crosses at claim. Before those, no plumbing produces a tenant. After them, it is always re-derivable." },
+    { n:8, lead:"Pre-auth writes nothing.", body:"A device acquires an identity without creating a product row; the row appears at claim, on the post-auth side, where a tenant exists. Routing pre-auth calls to a designated version was rejected because it makes that traffic silently dependent on one version staying alive. Moving those endpoints into the thin layer was rejected because it would couple Keystone to the product&rsquo;s <code>Screens</code> schema &mdash; the coupling the Webhook Receiver&rsquo;s own registration table exists to avoid." },
+    { n:9, lead:"Context is stamped at the crossing.", body:"Both crossings are already server-controlled responses that need only gain a field: the sign-in redirect, and the pairing-status response that reports a claim. Neither needs a new mechanism." }
+  ]},
+  { t: "TenantContext", items: [
+    { n:10, lead:"TenantContext states which tenant a request is <em>about</em>.", body:"Named for the subject, not the caller, and deliberately: &ldquo;who am I&rdquo; and &ldquo;who is this about&rdquo; diverge whenever a support user acts on a customer&rsquo;s venue, which <code>SupportAccessGrants</code> makes a real case." },
+    { n:11, lead:"Hint and authority are separate sources, always.", body:"Every routing input the Router reads is caller-asserted and unverified; it selects a version and nothing else. Every authorization decision stays inside the versioned application, derived from a durable authority. Where the two disagree the authority wins, the request is <strong>not</strong> served as though the hint were true, and the disagreement is emitted as telemetry &mdash; a mismatch means the Router mis-routed, which makes this the built-in detector for assignment drift during a rollout." },
+    { n:12, lead:"TenantContext is a cache, never the authority.", body:"A cookie, a storage entry or a path segment holding a tenant is an optimisation. If it is lost the tenant must still be re-derivable from something durable. Nothing may become unroutable because a browser was cleared." },
+    { n:13, lead:"The public contract is the URL path.", body:"A bundle served from <code>/o/{orgId}/v/{venueId}/</code> making a relative call has the tenant resolved into it by the browser, so the tenant rides along with no client code and nothing can forget to send it. The TenantContext <em>header</em> considered earlier is retired." },
+    { n:14, lead:"The Router consumes the tenant prefix and forwards the bare path.", body:"API route templates are therefore unchanged: <code>BackOfficeMenusController</code> stays at <code>api/back-office/menus</code>. The tenant travels onward in the internal token, so no versioned application ever parses a tenant out of a URL." },
+    { n:15, lead:"The Router forwards; it never hands out per-version hostnames.", body:"The <code>__Host-</code> prefix on <code>__Host-Vennusign.CustomerSession</code> forbids a <code>Domain</code> attribute, pinning the cookie to the exact host that set it, so a per-version hostname would destroy the session at every cutover. This settles the concept&rsquo;s open question between one hop per request and a resolved-once-per-session endpoint, in favour of same-host forwarding." },
+    { n:16, lead:"One extraction rule, never coupled to a versioned route shape.", body:"The Router must not pattern-match a versioned API route &mdash; route shapes belong to a version, and the thin layer cannot be coupled to something that changes underneath it." },
+    { n:17, lead:"Self-correction is mandatory, not a fallback.", body:"A path can be stale, a cache can be cleared, a first visit has neither, so there is no arrangement in which the Router always knows. Every client boots, learns its true tenant from its first authenticated call, compares against the version that served it, and reloads on disagreement." },
+    { n:18, lead:"The wire format is additive-only, permanently.", body:"Keystone cannot roll out progressively and an older live version cannot be retro-updated to understand a change, so nothing may ever be removed or reinterpreted &mdash; only added, in ways an old parser safely ignores." }
+  ]},
+  { t: "The URL shape", items: [
+    { n:19, lead:"The URL shape is fixed as follows.", body:"", pre:"/signin  /signup  /onboarding      pre-auth · no tenant · root\n/pair                              pre-auth · device seeking an owner\n/o/{orgId}/v/{venueId}#/menu       post-auth · tenant in path, app route in hash\n/display/{venueId}/{screenId}      post-claim · device" },
+    { n:20, lead:"The pre-auth/post-auth line is visible in the URL.", body:"Which side of the line a request sits on is determinable by inspection &mdash; by a person or by the Router &mdash; with no lookup and no session resolution. This is the property that makes rule 5 operable rather than merely true." },
+    { n:21, lead:"Application navigation stays in the hash.", body:"Back office has no router library: all in-app navigation is hash-based and the pathname is unused for it. The hash is never sent to the server, so the pathname is Keystone&rsquo;s and the hash is the application&rsquo;s, and the two cannot collide." }
+  ]},
+  { t: "Assignment", items: [
+    { n:22, lead:"Every venue belongs to an organization.", body:"Single-venue operators have an organization of one; multi-venue is an organization with more than one venue. The org-less venue is retired as a supported shape, which is what makes rule 19&rsquo;s path always well-formed." },
+    { n:23, lead:"Assignment is per venue.", body:"Maintenance windows are about service hours at a physical place, and <code>Venue.Timezone</code> already models that per venue, so an organization spanning time zones cannot share one window." },
+    { n:24, lead:"Scheduling is per organization.", body:"A wave groups an organization&rsquo;s venues together: they enter a rollout as a unit and each moves at its own local window. The organization crosses over one night rather than in one instant, and never straddles versions for days." },
+    { n:25, lead:"The Router only ever keys on venue.", body:"Organizations are a reporting umbrella and a scheduler helper, not a rollout unit. <strong>No organization is ever assigned a version.</strong> The org segment exists in the URL for the application &mdash; scoping data, multi-venue functions, reporting &mdash; and is not a routing input. A session always has a current venue, so org-scoped surfaces are served by that venue&rsquo;s version." },
+    { n:26, lead:"Assignment is never derived from subscription shape.", body:"Subscriptions may sit at venue level, organization level or both, and may be merged, moved and adjusted. They are an independent axis: a billing change must never be capable of silently moving a customer to a different version." },
+    { n:27, lead:"The default version serves unattributed traffic, and &ldquo;default&rdquo; is an explicit pointer Platform Operations sets.", body:"It is not &ldquo;newest registered&rdquo;. Registration is a fact about what exists and assignment is the decision that affects customers; if registering a version handed it every sign-in, a version with zero assigned customers could lock out everybody, including customers safely on an older version. The pointer advances as a deliberate act, normally once a first wave is healthy, so unattributed traffic follows customers onto a version rather than leading them onto it." },
+    { n:28, lead:"New customers start on the default version.", body:"They have never been assigned anything, and onboarding is pre-auth, so they are created by whatever serves unattributed traffic and assigned there." }
+  ]},
+  { t: "Screens", items: [
+    { n:29, lead:"Claim moves a screen immediately, and it is not a choice.", body:"Claiming forces a navigation from <code>/pair</code> to <code>/display/{venueId}/{screenId}</code> &mdash; a different path, therefore a document load, therefore routed. The move falls out of rule 19 rather than needing a mechanism." },
+    { n:30, lead:"Reassignment moves a screen at reconnect, and the client forces the reconnect.", body:"Version-scoped groups mean a screen changes version at reconnect rather than mid-session, so a cutover does not sever an active display session. But the player periodically recovers content over HTTP, which routes to the new version while the socket is still held by the old one. So: if the version answering my HTTP differs from the version holding my connection, drop and reconnect. This is rule 17&rsquo;s signal applied to the socket as well as the bundle &mdash; one mechanism, two uses." }
+  ]},
+  { t: "Trust between components", items: [
+    { n:31, lead:"Every internal hop carries a signed token.", body:"Router to API, Webhook Receiver to API, and onward. Network isolation alone was rejected." },
+    { n:32, lead:"Tokens are asymmetric, audience-scoped and short-lived.", body:"The Router signs with a private key and each version verifies with the public key, so a compromised API version cannot forge Router tokens. The token names the version it was minted for, so one issued for v1.4 cannot be replayed against v1.5. Note that the verification key is shared across versions; only the audience claim is scoped." },
+    { n:33, lead:"A token records how the tenant was established, not only what it is.", body:"The Webhook Receiver verified a provider signature, so its venue is a verified fact; the Router resolved a caller-asserted hint. Same envelope, different provenance, and the receiving version must be able to tell which it got." },
+    { n:34, lead:"A token authenticates the hop, not the claim.", body:"It proves the request came from the Router and was not tampered with in transit. It does <strong>not</strong> convert a caller-asserted tenant into a verified one. Authorization still comes from the authority, per rule 11. This is stated explicitly because &ldquo;it is signed, so we can trust it&rdquo; is the reasoning that would otherwise erode rule 11." },
+    { n:35, lead:"A misdirected request is refused, never served.", body:"Two causes are kept apart: the Router resolved one version but the request arrived at another (stale ADS entry, pool drift), caught by comparing the Router&rsquo;s stamped version against the receiving instance&rsquo;s own <code>VENNU_COMPONENT_VERSION</code>; and a false premise, where the hint named one venue and the authority names another, caught where the authority is already loaded. Both answer <strong>421 Misdirected Request</strong> for API calls and <strong>307</strong> to the correct URL for document navigations. Serving anyway and logging is not an option: it is the mismatch the feature exists to prevent." }
+  ]},
+  { t: "Secrets across versions", items: [
+    { n:36, lead:"Version-scoped for transient, version-agnostic for durable.", body:"Anything living seconds may be bound to a version, and binding it is a security property. Anything outliving a version must not be, and not binding it is a correctness property." },
+    { n:37, lead:"Durable secrets do not use ASP.NET Data Protection.", body:"POS credentials and strong-auth factors move to explicit Key Vault envelope encryption, readable by any version by construction, and rotatable and auditable besides. Passkey challenges and POS OAuth state stay on Data Protection: both are seconds-long, so a version move at worst fails one in-flight attempt that a retry fixes. No shared key ring is required &mdash; the problem is removed rather than managed." }
+  ]},
+  { t: "Platform Operations", items: [
+    { n:38, lead:"PO is not version-routed.", body:"PO is an application plus its own API, deployed side by side. One PO runs at a time. Its API is Vennusign-scoped: release state and the board, assignment writes into VDS, operator identity and permissions, and the Vennu profile carrying maintenance windows and cost KPIs. That data is about customers but is not product data, so no version serves it." },
+    { n:39, lead:"Support access originates in PO and executes on the customer surface.", body:"PO submits and spawns the grant; the session it spawns runs through the normal, version-routed customer surface. An operator helping a v1.4 customer therefore runs v1.4 themselves &mdash; a correctness property, not tidiness, because a problem cannot be diagnosed from a console showing different code. The spawn needs no new mechanism: PO sends the operator to <code>/o/{orgId}/v/{venueId}</code> and rule 25 does the rest." }
+  ]},
+  { t: "Hosting", items: [
+    { n:40, lead:"Separate App Services, not one bundled app.", body:"A Webhook Receiver change must not be able to break routing. One process re-couples exactly what the design separates, and since immediate rollback is the only recovery path, a single bundle means rolling back all three to fix one." },
+    { n:41, lead:"One shared App Service Plan for Keystone, separate from the versioned plan.", body:"The separation from the versioned plan is the boundary that matters: concurrently running versions divide their plan&rsquo;s CPU and memory, so sharing would let starting v1.6 alongside v1.5 starve the Product Router &mdash; which sits on every request and whose latency is paid on every call. A plan each for Keystone&rsquo;s own components buys isolation whose need cannot yet be measured." },
+    { n:42, lead:"Standard tier.", body:"Deployment slots are Standard-and-up, and slot swap with instant swap-back is the stated recovery model for components that cannot roll out progressively." },
+    { n:43, lead:"Product Router graduates to its own plan later.", body:"When plan-aggregate CPU or its added p99 becomes measurable, and not before." }
+  ], note:"<strong>Deferred, deliberately:</strong> tier and plan cost. Standard is a tier change and the owner has not accepted that cost. Nothing is provisioned until that conversation happens." },
+  { t: "Delivery order", items: [
+    { n:44, lead:"Slice 1 is the TenantContext contract and its library.", body:"It lands in the existing API and front ends with no Keystone infrastructure at all, is backward-compatible by construction, is independently mergeable and harmless if wrong, and it makes VDS&rsquo;s lookup signature a fact rather than a guess." },
+    { n:45, lead:"Slice 2 is VDS + ADS.", body:"Bootstrap order requires it: nothing routes until VDS answers, and VDS cannot answer usefully until ADS knows where healthy instances are. By slice 2 its contract is known." }
+  ]},
+  { t: "Prerequisites owned outside Keystone", intro:"These are not Keystone&rsquo;s to build, and Keystone cannot ship without them.", items: [
+    { n:46, lead:"<code>VENNU_COMPONENT_VERSION</code> must be set by deployment.", body:"<code>ReleaseVersionMetadata</code> reads it with a fallback of <code>&quot;0.0.0-local&quot;</code> and nothing sets it, so every instance reports the placeholder. Rule 35&rsquo;s mis-forwarding check and the concept&rsquo;s assignment-aware background services both compare against this value. Tracked as <strong>#726</strong>." },
+    { n:47, lead:"The deployment pipeline must be able to produce a new per-version target.", body:"Deployment is fully automated for the apps that exist, but names its targets directly, so it cannot stand up a new version. This is a shape change to an automated pipeline, not the introduction of automation." },
+    { n:48, lead:"Signing in should establish an organization, not a venue, and onboarding should be its own app.", body:"Both follow from the pre-auth/post-auth line applied to the product rather than only to routing, and both belong to the back-office/authentication area rather than to an infrastructure feature. Recorded as strong recommendations, deliberately not settled here." }
+  ]}
+];
+
+// Cross-references are linked automatically so "rule 11" is always reachable.
+function linkRules(html) {
+  return html.replace(/\b(rule|decision)s?\s(\d{1,2})\b/gi, function (m, word, n) {
+    const num = parseInt(n, 10);
+    if (num < 1 || num > 48) return m;
+    return '<a href="#d' + num + '">' + m + '</a>';
+  });
+}
+
+const content = document.getElementById("content");
+const tocList = document.getElementById("tocList");
+
+SECTIONS.forEach(function (sec, i) {
+  const id = "s" + i;
+  const el = document.createElement("section");
+
+  const h = document.createElement("h2");
+  h.id = id;
+  h.textContent = sec.t;
+  el.appendChild(h);
+
+  if (sec.intro) {
+    const p = document.createElement("p");
+    p.style.cssText = "margin:0 0 .5rem;font-size:.93rem;color:var(--muted);";
+    p.innerHTML = sec.intro;
+    el.appendChild(p);
+  }
+
+  sec.items.forEach(function (r) {
+    const d = document.createElement("div");
+    d.className = "rule";
+    d.id = "d" + r.n;
+    let html = '<a class="num" href="#d' + r.n + '">' + r.n + '</a>' +
+               '<div class="lead">' + r.lead + '</div>';
+    if (r.body) { html += '<p>' + linkRules(r.body) + '</p>'; }
+    if (r.pre) { html += '<pre>' + r.pre + '</pre>'; }
+    d.innerHTML = html;
+    el.appendChild(d);
+  });
+
+  if (sec.note) {
+    const n = document.createElement("div");
+    n.className = "note";
+    n.innerHTML = sec.note;
+    el.appendChild(n);
+  }
+
+  content.appendChild(el);
+
+  const first = sec.items[0].n;
+  const last = sec.items[sec.items.length - 1].n;
+  const li = document.createElement("li");
+  li.innerHTML = '<a href="#' + id + '">' + sec.t +
+    '<span class="range">' + (first === last ? first : first + "–" + last) + '</span></a>';
+  tocList.appendChild(li);
+});
+
+const toc = document.getElementById("toc");
+const tocBtn = document.getElementById("tocBtn");
+tocBtn.addEventListener("click", function () {
+  const open = toc.hidden;
+  toc.hidden = !open;
+  tocBtn.setAttribute("aria-expanded", String(open));
+  tocBtn.textContent = open ? "Close" : "Contents";
+});
+toc.addEventListener("click", function (e) {
+  if (e.target.closest("a")) {
+    toc.hidden = true;
+    tocBtn.setAttribute("aria-expanded", "false");
+    tocBtn.textContent = "Contents";
+  }
+});
+</script>
