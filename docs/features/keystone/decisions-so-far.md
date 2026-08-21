@@ -163,11 +163,18 @@ question between "one edge/gateway hop per request" and "a resolved-once-per-ses
 endpoint the bundle reuses" in favour of same-host forwarding, for browser traffic at least.
 
 **Uniform on the wire.** The Router gets exactly one extraction rule for post-auth API
-traffic: the TenantContext header. It never pattern-matches a versioned API route, because
-route shapes belong to a version and the thin layer cannot be coupled to something that
-changes underneath it — the reason the alternative, reading `screenId` out of
-`/api/display/{screenId}/content`, was rejected. The usual objection to uniformity — that it
-forces an update to devices in the field — does not apply, because nothing is live.
+traffic. It never pattern-matches a versioned API route, because route shapes belong to a
+version and the thin layer cannot be coupled to something that changes underneath it — the
+reason the alternative, reading `screenId` out of `/api/display/{screenId}/content`, was
+rejected. The usual objection to uniformity — that it forces an update to devices in the
+field — does not apply, because nothing is live.
+
+> **Superseded in the fourth sitting, as to mechanism only.** This sitting named the
+> TenantContext *header* as that single rule. The second sitting then put the tenant in the
+> URL path for document navigations, leaving two mechanisms and contradicting the very
+> uniformity this decision exists to assert. The path won; the header is retired. The
+> principle above — one extraction rule, never coupled to a versioned route shape — is
+> unchanged.
 
 **A header cannot ride on a document navigation.** The initial load of any SPA is a plain
 browser navigation, so TenantContext covers only the `fetch`/XHR calls a bundle makes after
@@ -505,9 +512,85 @@ feature.
 
 ### Still open after the third sitting
 
-- Whether claiming a screen moves it to its venue's version immediately or at reconnect.
-- Whether the TenantContext contract is defined wire-format-first — required if the Product
-  Router is not .NET.
+- **Resolved in the fourth sitting.** Whether claiming a screen moves it to its venue's
+  version immediately or at reconnect.
+- **Resolved in the fourth sitting.** Whether the TenantContext contract is defined
+  wire-format-first.
+- Platform Operations' own routing and URL shape.
+- Where the shared data-protection key ring lives, and who owns landing it.
+- Whether Keystone decides the shared connection-membership mechanism or also builds it (#742).
+- Device auto-re-pair after cleared storage — parked by the owner as its own conversation.
+
+## Brainstorming, fourth sitting — 2026-08-20
+
+Same status: recorded so it is not lost, conferring no implementation authorization.
+
+### Screen version movement
+
+**Claim is immediate, and it is not a choice.** Claiming forces a navigation from `/pair` to
+`/display/{venueId}/{screenId}`. That is a different path, therefore a document load,
+therefore routed. The move falls out of the URL shape rather than needing a mechanism of its
+own.
+
+**Reassignment is at reconnect**, per the concept's existing decision: version-scoped SignalR
+groups mean a screen changes version at reconnect rather than mid-session, so a cutover does
+not sever an active display session.
+
+**The client forces that reconnect.** `docs/architecture/player-delivery-reliability.md`
+records that the player periodically recovers authoritative content independently of push.
+Those recoveries are HTTP, so they route to the *new* version, while the SignalR connection is
+still held by the *old* version's hub — and a TV may never drop it on its own. That leaves a
+screen pulling content from v1.5 while listening for events on v1.4, potentially for hours.
+
+The fix reuses Section 2's self-correction rather than adding a mechanism. API responses
+already carry a version identifier that the client compares against what it booted with;
+applied to the socket as well as the bundle, the rule becomes: if the version answering my
+HTTP differs from the version holding my connection, drop and reconnect. One signal, two uses.
+
+### The public contract is the URL, and the header is retired
+
+**A contradiction between the first and second sittings, resolved in favour of the path.** The
+first sitting made the TenantContext header the single extraction rule; the second put the
+tenant in the path for document navigations. Two mechanisms is exactly what "uniform on the
+wire" existed to prevent.
+
+**The path already does everything the header did.** A bundle served from
+`/o/{orgId}/v/{venueId}/` making a *relative* call to `api/back-office/menus` has it resolved
+by the browser to `/o/{orgId}/v/{venueId}/api/back-office/menus`. The tenant rides along with
+no client code at all: `venueFetch`'s `localStorage` read and conditional header are deleted
+rather than formalised, and nothing can forget to send what it does not send. Display is
+already path-shaped, a future service-to-service caller constructs its URLs explicitly, and
+POS webhooks need neither mechanism because WR resolves merchant to venue from its own
+registration table.
+
+**The API needs no route changes.** The Router consumes the tenant prefix and forwards the
+bare path, so `BackOfficeMenusController` stays at `api/back-office/menus`. The tenant travels
+onward in the signed internal token, so the API never parses a tenant out of a URL at all.
+
+### Wire-format-first — resolved, in two layers
+
+| | Contract | Trust |
+|---|---|---|
+| **Public** | the URL shape — `/o/{orgId}/v/{venueId}/…` | caller-asserted, unverified — a hint |
+| **Internal** | the signed token, Router to API | authenticates the hop, not the claim |
+
+The contract is wire-format-first, but the answer is not "define a header format": the public
+contract is a URL shape and the internal one is a token. A .NET library is a convenience for
+producing and consuming them, never the contract itself.
+
+This holds regardless of whether the Product Router turns out to be YARP or something else.
+Concurrently running API versions are built at different times from different commits, so a
+shared assembly would require every live version to carry a compatible copy — which makes the
+wire format the real contract in any case. It is the same reasoning the concept already
+applied to the Webhook Receiver's registration API: an API surface that can be versioned,
+rather than a table shape every live version must agree on.
+
+**The format is additive-only, permanently.** Keystone cannot roll out progressively, and an
+older live version cannot be retro-updated to understand a change, so nothing may ever be
+removed or reinterpreted — only added, in ways an old parser safely ignores.
+
+### Still open after the fourth sitting
+
 - Platform Operations' own routing and URL shape.
 - Where the shared data-protection key ring lives, and who owns landing it.
 - Whether Keystone decides the shared connection-membership mechanism or also builds it (#742).
