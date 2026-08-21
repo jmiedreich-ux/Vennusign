@@ -91,7 +91,7 @@ visible and cheap to overturn.
 - **System Monitor.** Decision 1 names it as later work.
 - **Provisioning automation.** Decision 47 and Q32. It must exist before M5 can stand up a second
   version, but it is not Keystone's to build.
-- **Setting `VENNU_COMPONENT_VERSION`.** Decision 46, tracked as **#726**, answered in the register
+- **Setting `VENNU_COMPONENT_VERSION`.** Decision 46, tracked as **#754**, answered in the register
   as a separate problem to fix. Decision 35's mis-forwarding check is inert until it lands, and no
   customer may be moved before it does.
 - **Correcting the concept document.** Q34 accepted, tracked as **#743**.

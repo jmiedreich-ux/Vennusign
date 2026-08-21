@@ -303,7 +303,9 @@ These are not Keystone's to build, and Keystone cannot ship without them.
 **46 · `VENNU_COMPONENT_VERSION` must be set by deployment.** `ReleaseVersionMetadata` reads it
 with a fallback of `"0.0.0-local"` and nothing sets it, so every instance reports the placeholder.
 Rule 35's mis-forwarding check and the concept's assignment-aware background services both compare
-against this value. Tracked as **#726**.
+against this value. Tracked as **#754** — its predecessor #726 closed on 2026-08-21 having set
+source commit and build id but leaving `componentVersion` at `0.0.0-local`, because no
+release-versioning scheme yet exists to source it from. That scheme is the real prerequisite.
 
 **47 · The deployment pipeline must be able to produce a new per-version target.** Deployment is
 fully automated for the apps that exist, but names its targets directly, so it cannot stand up a

@@ -521,8 +521,13 @@ theirs.
 *Recommended:* Before slice 1, as its own small change. It is independently valuable — it is also
 what makes any deploy verifiable — and it is cheap.
 
-*Answer:* Owner answer (2026-08-20): a separate problem to fix. #726 is not part of a Keystone
-slice and does not sequence against one — it is fixed on its own. Decision 46 still holds: it must
+*Answer:* Owner answer (2026-08-20): a separate problem to fix. It is not part of a Keystone
+milestone and does not sequence against one — it is fixed on its own.
+
+**Update 2026-08-21:** #726 closed having set `VENNU_SOURCE_COMMIT` and `VENNU_BUILD_ID` but
+leaving `componentVersion` at `0.0.0-local`, deliberately — there is no release-versioning
+scheme to source it from. The prerequisite is now tracked as **#754**, and it is bigger than a
+deploy change: it is the first concrete piece of release versioning. Decision 46 still holds: it must
 be in place before any customer is moved, because decision 35's check compares against the value
 it sets.
 

@@ -135,7 +135,9 @@ M2, M3, M5 and M6 each stand up an App Service, and tier and plan cost are delib
 **Parked inside Keystone:** connection-membership scope (#742), device auto-re-pair, the
 deploy-pipeline conversation (four named assumptions to test).
 
-**Prerequisites owned elsewhere:** `VENNU_COMPONENT_VERSION` must be set by deployment (#726);
+**Prerequisites owned elsewhere:** `VENNU_COMPONENT_VERSION` must be set by deployment — **#754**,
+successor to #726, which closed on 2026-08-21 having set source commit and build id but leaving
+`componentVersion` at `0.0.0-local` because no release-versioning scheme exists to source it from;
 the pipeline must be able to produce a per-version target (Q32, a prerequisite feature); durable
 secrets off Data Protection (decision 37, `Vennu.Api` area).
 
@@ -262,13 +264,37 @@ becomes one.
 
 ---
 
+## Candidate workstreams from the issue backlog
+
+Open issues that are not defects in an existing workstream but the seed of something without
+one. Each is a cluster, not a single ticket; none is approved. Listed so they are visible as
+shapes rather than scattered numbers.
+
+| Candidate | Issues | What it actually is |
+|---|---|---|
+| **Release versioning** | #754 | The manifest `productVersion`, per-component semver and `v{x.y.z}` tags the cutover concept describes. #726 closed without it, and Keystone cannot move a customer until it exists. The first concrete piece of the release model, and nobody owns it. |
+| **Legacy retirement and environment hygiene** | #744, #748, #749, #750, #751, #752 | Retiring `dbo.MenuItems` and the POS catalog wiring, deciding `LayoutTemplates`, confirming two never-written tables, stopping 17 idle App Services, and making Murphy the owner of environment drift after a test ran `DELETE FROM dbo.Venues` against whatever an environment variable pointed at. Six issues, one theme: the foundation era left things running that nothing uses. |
+| **Test harness integrity** | #688, #715, #735, #751 | Pre-existing failures outside the routine gate, parallel Playwright seeding colliding on one LocalDB, sign-in unexercisable on localhost, and a destructive test with no guard. The gate is local verification while CI is suspended, so the harness *is* the gate — and four issues say it is not trustworthy. |
+| **Authentication hardening** | #723, #727, #737 | A changed provider subject locks a customer out permanently with a 500; a disabled provider shows raw JSON; the sign-in rework shipped with no browser coverage. Authentication has an approved authority already (`docs/design/approved/authentication/`) but no workstream carrying it forward. |
+| **Display diagnostics** | #738 | A view to understand a screen without a debugger. Pairs with the customer-support diagnostic agent concept in the design queue — one is the surface, the other the reasoning behind it. |
+
+Already mapped to a workstream and not repeated here: #741, #746, #730, #753 (Screens); #729
+(Onboarding); #742, #743, #747 (Keystone); #724, #725, #732, #733 (public site); #670–#686,
+#695, #701, #702, #709 (Menus backlog).
+
+**Stale, should be closed:** #692 (Menus M3-A slice 0) and #710 (Menus Slice 6) are both
+delivered per `PROJECT_STATUS.md` and still open.
+
+---
+
 ## Cross-cutting, not a workstream
 
 - **CI** is suspended by owner decision (2026-08-09). Local verification is the gate until the
   owner restores it.
 - **Murphy**, the QA agent, runs against deployed environments on demand. Its findings are filed
   as issues (#723–#727, #746–#753).
-- **Public site** (`src/www`) is live on dev and is out of the version equation.
+- **Public site** (`src/www`) is live on dev and is out of the version equation. Open: #724,
+  #725, #732, #733.
 - **Docs** need consolidation; the owner has named this as its own project, not yet started.
 - **Knowledge**, a training corpus for agents, support and developers, was discussed and parked.
 
