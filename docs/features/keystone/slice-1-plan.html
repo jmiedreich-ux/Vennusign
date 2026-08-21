@@ -1,0 +1,978 @@
+<title>Keystone Slice 1 Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;500;600&display=swap">
+<style>
+:root{--ink:#1b1f24;--muted:#5b6470;--faint:#8c94a1;--line:#c7cdd6;--line-soft:#e2e6ec;--surface:#ffffff;--page:#f3f5f8;--accent:#b45309;--accent-ink:#8a3f07;--accent-soft:#fdf0e1;--on-accent:#ffffff;--fill:#eef2f8;--done:#2d6a4f;--done-soft:#e6f2ec;--code-bg:#f7f9fb;--shadow:0 1px 2px rgba(27,31,36,.06),0 4px 12px rgba(27,31,36,.05);--sans:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--serif:"IBM Plex Serif",Georgia,serif;--mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e8eaed;--muted:#a3acb8;--faint:#79828e;--line:#333a44;--line-soft:#262d35;--surface:#1c2127;--page:#12161a;--accent:#e08c3c;--accent-ink:#f0a55c;--accent-soft:#2e2317;--on-accent:#241a10;--fill:#232a33;--done:#74c69d;--done-soft:#1a2a22;--code-bg:#171c22;--shadow:0 1px 2px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3)}}
+:root[data-theme="dark"]{--ink:#e8eaed;--muted:#a3acb8;--faint:#79828e;--line:#333a44;--line-soft:#262d35;--surface:#1c2127;--page:#12161a;--accent:#e08c3c;--accent-ink:#f0a55c;--accent-soft:#2e2317;--on-accent:#241a10;--fill:#232a33;--done:#74c69d;--done-soft:#1a2a22;--code-bg:#171c22;--shadow:0 1px 2px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%}
+code{font-family:var(--mono);font-size:.87em;background:var(--fill);padding:1px 5px;border-radius:4px;overflow-wrap:break-word}
+a{color:var(--accent-ink)}
+a:focus-visible,input:focus-visible,.task-head:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line);padding:.75rem 1rem .6rem}
+.masthead{max-width:48rem;margin:0 auto;display:flex;align-items:baseline;gap:.75rem}
+.masthead h1{margin:0;font-size:1rem;font-weight:600;letter-spacing:-.01em;flex:1 1 auto}
+.masthead .of{font-family:var(--mono);font-size:.78rem;color:var(--faint);white-space:nowrap}
+nav{max-width:48rem;margin:.55rem auto 0;display:flex;gap:.35rem;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav a{flex:0 0 auto;font-size:.78rem;font-weight:500;padding:.3rem .6rem;border-radius:999px;border:1px solid var(--line);color:var(--muted);text-decoration:none;white-space:nowrap}
+nav a:hover{color:var(--accent-ink);border-color:var(--faint)}
+main{max-width:48rem;margin:0 auto;padding:1.25rem 1rem 5rem}
+h2{font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:2rem 0 .8rem;padding-bottom:.4rem;border-bottom:1px solid var(--line);scroll-margin-top:5.5rem}
+p{margin:.65rem 0;text-wrap:pretty}
+ul{margin:.6rem 0;padding-left:1.15rem}
+li{margin:.3rem 0;text-wrap:pretty}
+hr{border:none;border-top:1px solid var(--line-soft);margin:1.75rem 0}
+blockquote{margin:1rem 0;padding:.8rem .9rem;background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;font-size:.92rem}
+.task{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);margin:1rem 0;overflow:hidden;scroll-margin-top:5.5rem}
+.task-head{margin:0;padding:.9rem 1rem;font-family:var(--serif);font-size:1.05rem;font-weight:600;cursor:pointer;user-select:none;display:flex;align-items:center;gap:.5rem}
+.task-head::before{content:"\25BE";color:var(--faint);font-size:.8em;flex:0 0 auto}
+.task-head[aria-expanded="false"]::before{content:"\25B8"}
+.task-head[aria-expanded="false"]+.task-body{display:none}
+.task-body{padding:0 1rem 1.1rem;border-top:1px solid var(--line-soft)}
+.step{display:flex;align-items:center;gap:.6rem;margin:.9rem 0 .3rem;padding:.55rem .7rem;border-radius:8px;background:var(--fill)}
+.step label{display:flex;align-items:center;gap:.55rem;flex:1 1 auto;cursor:pointer;min-width:0}
+.step input{flex:0 0 auto;width:16px;height:16px;accent-color:var(--done)}
+.step .stitle{font-weight:600;font-size:.94rem}
+.step input:checked+.stitle{color:var(--faint);text-decoration:line-through}
+.kind{flex:0 0 auto;font-family:var(--mono);font-size:.68rem;letter-spacing:.04em;padding:.15rem .4rem;border-radius:4px;white-space:nowrap;border:1px solid var(--line);color:var(--muted)}
+.step.test .kind{border-color:var(--accent);color:var(--accent-ink)}
+.step.expect-fail .kind{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
+.step.expect-pass .kind{border-color:var(--done);color:var(--done)}
+.step.commit .kind{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.code{position:relative;margin:.6rem 0}
+.code .lang{position:absolute;top:.4rem;right:.55rem;font-family:var(--mono);font-size:.66rem;color:var(--faint);letter-spacing:.05em}
+pre{margin:0;padding:.8rem .9rem;background:var(--code-bg);border:1px solid var(--line-soft);border-radius:8px;overflow-x:auto;font-family:var(--mono);font-size:.78rem;line-height:1.65;color:var(--ink)}
+.tablewrap{overflow-x:auto;margin:.8rem 0}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th{text-align:left;font-size:.7rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);padding:.45rem .6rem;border-bottom:1px solid var(--line)}
+td{padding:.5rem .6rem;border-bottom:1px solid var(--line-soft);vertical-align:top;color:var(--muted)}
+@media (min-width:680px){body{font-size:16.5px}pre{font-size:.8rem}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<header>
+  <div class="masthead"><h1>Keystone Slice 1 Plan</h1><span class="of">5 tasks</span></div>
+  <nav><a href="#t1">Task 1</a><a href="#t2">Task 2</a><a href="#t3">Task 3</a><a href="#t4">Task 4</a><a href="#t5">Task 5</a></nav>
+</header>
+<main><blockquote><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</blockquote>
+<p><strong>Goal:</strong> Ship the TenantContext contract and its library into <code>Vennu.Api</code> so that a request can carry which tenant it is <em>about</em>, with nothing yet depending on it.</p>
+<p><strong>Architecture:</strong> A new dependency-free <code>Vennu.Tenancy</code> project owns the contract in two layers — the public one is a URL path prefix (<code>/o/{orgId}/v/{venueId}/…</code>), the internal one is an ES256-signed token minted by the Product Router. <code>Vennu.Api</code> gains a middleware that resolves whichever is present, strips the prefix so existing route templates are untouched, and exposes the result through DI. Nothing reads it yet, so the whole slice is inert and reversible.</p>
+<p><strong>Tech Stack:</strong> .NET 9, xunit 2.9.2, BCL only. <strong>No new package references.</strong> ES256 is implemented with <code>System.Security.Cryptography.ECDsa</code> and <code>System.Text.Json</code> deliberately: decision 2 requires the thin layer&#x27;s change frequency to stay low, and decision 18 makes the wire format additive-only forever, so the format is owned outright rather than inherited from a library&#x27;s serialization choices and version cadence.</p>
+<p><strong>Spec:</strong> <code>docs/design/proposed/keystone/decisions.md</code> (49 decisions). Answers that shaped this plan: <code>docs/features/keystone/open-questions.md</code>.</p>
+<h2>Governance gate — read before starting</h2>
+<p><strong>This plan must not be executed yet.</strong> The design authority is in <code>docs/design/proposed/</code>, not <code>approved/</code>. AGENTS.md requires an approved design authority before implementation, and the brainstorming skill&#x27;s gate is unmet until the owner approves the spec. Executing this plan before that approval is out of order regardless of how ready the tasks look.</p>
+<p><strong>Orchestrator-owned files are touched.</strong> Per AGENTS.md&#x27;s multi-agent safety rules, this plan modifies <code>Vennusign.sln</code>, a <code>.csproj</code>, and dependency injection in <code>Program.cs</code>. Those are orchestrator-owned; do not run two agents against this plan concurrently.</p>
+<p><strong>CI is suspended.</strong> Local verification is the gate. Every task below states the exact command and the expected result.</p>
+<h2>Global Constraints</h2>
+<ul><li><strong>Target <code>.NET 9</code>.</strong> <code>&lt;Nullable&gt;enable&lt;/Nullable&gt;</code> and <code>&lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;</code> on every project, matching <code>src/Vennu.Core.Models/Vennu.Core.Models.csproj</code>.</li><li><strong>No new package references anywhere in this slice.</strong></li><li><strong>Decision 11 — hint and authority are separate sources, always.</strong> Nothing produced by this slice may be used for an authorization decision. Reviewers should reject any use of <code>TenantContext</code> in an authorization path.</li><li><strong>Decision 14 — the API&#x27;s route templates do not change.</strong> <code>BackOfficeMenusController</code> stays at <code>api/back-office/menus</code>. The prefix is stripped before routing.</li><li><strong>Decision 18 — the wire format is additive-only, permanently.</strong> No field may ever be removed or reinterpreted; only added, in ways an old parser ignores. Unknown JSON members are ignored on read, never rejected.</li><li><strong>Decision 32 — tokens are asymmetric, audience-scoped and short-lived.</strong> ES256; audience is the version the token was minted for; TTL 60 seconds (register Q16).</li><li><strong>Decision 33 — a token records how the tenant was established</strong>, not only what it is.</li><li><strong>Backward compatibility is the acceptance bar.</strong> A request with neither prefix nor token must behave exactly as it does today.</li></ul>
+<h2>File Structure</h2>
+<div class="tablewrap"><table><thead><tr><th>File</th><th>Responsibility</th></tr></thead><tbody><tr><td><code>src/Vennu.Tenancy/Vennu.Tenancy.csproj</code></td><td>New project. No package references, no project references.</td></tr><tr><td><code>src/Vennu.Tenancy/TenantContext.cs</code></td><td>The contract type and its provenance enum.</td></tr><tr><td><code>src/Vennu.Tenancy/TenantPath.cs</code></td><td>Public contract: parse and format the URL prefix. Pure.</td></tr><tr><td><code>src/Vennu.Tenancy/TenantToken.cs</code></td><td>Internal contract: ES256 issue and verify. Pure apart from the clock.</td></tr><tr><td><code>src/Vennu.Api/Infrastructure/TenantContextAccessor.cs</code></td><td>DI surface for reading the resolved context.</td></tr><tr><td><code>src/Vennu.Api/Infrastructure/TenantContextMiddleware.cs</code></td><td>Resolve token, else prefix, else nothing. Strip the prefix.</td></tr><tr><td><code>tests/Vennu.Tenancy.Tests/</code></td><td>Unit tests for the three pure units.</td></tr><tr><td><code>tests/Vennu.Api.Tests/Infrastructure/TenantContextMiddlewareTests.cs</code></td><td>Middleware behaviour, including the untouched-request case.</td></tr></tbody></table></div>
+<p><code>Vennu.Tenancy</code> takes no project references on purpose. It is consumed by <code>Vennu.Api</code> now and by the Product Router later, and those are separate deployables — so it must not drag Vennusign domain types across that boundary.</p>
+<hr>
+<section class="task" id="t1"><h3 class="task-head" tabindex="0" role="button" aria-expanded="true">Task 1: The <code>Vennu.Tenancy</code> project and the <code>TenantContext</code> type</h3><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Create: <code>src/Vennu.Tenancy/Vennu.Tenancy.csproj</code></li><li>Create: <code>src/Vennu.Tenancy/TenantContext.cs</code></li><li>Create: <code>tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj</code></li><li>Create: <code>tests/Vennu.Tenancy.Tests/TenantContextTests.cs</code></li><li>Modify: <code>Vennusign.sln</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: nothing.</li><li>Produces: <code>Vennu.Tenancy.TenantProvenance</code> (enum: <code>Asserted</code>, <code>Verified</code>); <code>Vennu.Tenancy.TenantContext</code> (sealed record with <code>Guid VenueId</code>, <code>Guid? OrganizationId</code>, <code>TenantProvenance Provenance</code>).</li></ul>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>tests/Vennu.Tenancy.Tests/TenantContextTests.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using Vennu.Tenancy;
+
+namespace Vennu.Tenancy.Tests;
+
+public sealed class TenantContextTests
+{
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void Asserted_IsTheDefaultProvenance()
+    {
+        // Decision 11: anything the Router read from a caller is a hint until
+        // something else establishes it. Asserted must be the zero value so a
+        // context constructed carelessly is never accidentally trusted.
+        Assert.Equal(TenantProvenance.Asserted, default(TenantProvenance));
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void CarriesVenueOrganizationAndProvenance()
+    {
+        var venue = Guid.NewGuid();
+        var org = Guid.NewGuid();
+
+        var context = new TenantContext(venue, org, TenantProvenance.Verified);
+
+        Assert.Equal(venue, context.VenueId);
+        Assert.Equal(org, context.OrganizationId);
+        Assert.Equal(TenantProvenance.Verified, context.Provenance);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void OrganizationIsOptional()
+    {
+        // Decision 25: the Router only ever keys on venue. The org segment is for
+        // the application, so a context is well-formed without it.
+        var context = new TenantContext(Guid.NewGuid(), null, TenantProvenance.Asserted);
+        Assert.Null(context.OrganizationId);
+    }
+}</pre></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 2: Create the projects and register them in the solution</span></label><span class="kind">implement</span></div>
+<p>Create <code>src/Vennu.Tenancy/Vennu.Tenancy.csproj</code>:</p>
+<div class="code"><span class="lang">xml</span><pre>&lt;Project Sdk=&quot;Microsoft.NET.Sdk&quot;&gt;
+
+  &lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;net9.0&lt;/TargetFramework&gt;
+    &lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;
+    &lt;Nullable&gt;enable&lt;/Nullable&gt;
+    &lt;GenerateAssemblyInfo&gt;false&lt;/GenerateAssemblyInfo&gt;
+  &lt;/PropertyGroup&gt;
+
+&lt;/Project&gt;</pre></div>
+<p>Create <code>tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj</code>:</p>
+<div class="code"><span class="lang">xml</span><pre>&lt;Project Sdk=&quot;Microsoft.NET.Sdk&quot;&gt;
+  &lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;net9.0&lt;/TargetFramework&gt;
+    &lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;
+    &lt;Nullable&gt;enable&lt;/Nullable&gt;
+    &lt;IsPackable&gt;false&lt;/IsPackable&gt;
+  &lt;/PropertyGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;PackageReference Include=&quot;Microsoft.NET.Test.Sdk&quot; Version=&quot;17.12.0&quot; /&gt;
+    &lt;PackageReference Include=&quot;xunit&quot; Version=&quot;2.9.2&quot; /&gt;
+    &lt;PackageReference Include=&quot;xunit.runner.visualstudio&quot; Version=&quot;2.8.2&quot;&gt;
+      &lt;PrivateAssets&gt;all&lt;/PrivateAssets&gt;
+      &lt;IncludeAssets&gt;runtime; build; native; contentfiles; analyzers; buildtransitive&lt;/IncludeAssets&gt;
+    &lt;/PackageReference&gt;
+    &lt;PackageReference Include=&quot;coverlet.collector&quot; Version=&quot;6.0.2&quot;&gt;
+      &lt;PrivateAssets&gt;all&lt;/PrivateAssets&gt;
+      &lt;IncludeAssets&gt;runtime; build; native; contentfiles; analyzers; buildtransitive&lt;/IncludeAssets&gt;
+    &lt;/PackageReference&gt;
+  &lt;/ItemGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;ProjectReference Include=&quot;..\..\src\Vennu.Tenancy\Vennu.Tenancy.csproj&quot; /&gt;
+  &lt;/ItemGroup&gt;
+&lt;/Project&gt;</pre></div>
+<p>Add both to the solution:</p>
+<div class="code"><span class="lang">bash</span><pre>dotnet sln Vennusign.sln add src/Vennu.Tenancy/Vennu.Tenancy.csproj --solution-folder src
+dotnet sln Vennusign.sln add tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj --solution-folder tests</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 3: Run the test to verify it fails</span></label><span class="kind">run · expect fail</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj</code> Expected: FAIL to compile — <code>The type or namespace name &#x27;TenantContext&#x27; could not be found</code>.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 4: Write the minimal implementation</span></label><span class="kind">implement</span></div>
+<p>Create <code>src/Vennu.Tenancy/TenantContext.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>namespace Vennu.Tenancy;
+
+/// &lt;summary&gt;
+/// How the tenant on a request was established. Decision 33: the receiving version
+/// must be able to tell a verified fact from a caller&#x27;s assertion.
+/// &lt;/summary&gt;
+public enum TenantProvenance
+{
+    /// &lt;summary&gt;The caller said so and nothing checked it. The default, deliberately.&lt;/summary&gt;
+    Asserted = 0,
+
+    /// &lt;summary&gt;Established by something that verified it, such as a POS provider signature.&lt;/summary&gt;
+    Verified = 1
+}
+
+/// &lt;summary&gt;
+/// Which tenant a request is &lt;em&gt;about&lt;/em&gt; — not who is making it. Decision 10.
+/// Decision 11: this is a routing input only and must never reach an authorization decision.
+/// &lt;/summary&gt;
+public sealed record TenantContext(
+    Guid VenueId,
+    Guid? OrganizationId,
+    TenantProvenance Provenance);</pre></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 5: Run the tests to verify they pass</span></label><span class="kind">run · expect pass</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj</code> Expected: PASS, 3 of 3.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 6: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/Vennu.Tenancy tests/Vennu.Tenancy.Tests Vennusign.sln
+git commit -m &quot;feat(tenancy): add the TenantContext contract type
+
+Decision 10 names the subject rather than the caller. Provenance defaults to
+Asserted so a carelessly constructed context is never accidentally trusted.&quot;</pre></div>
+<hr>
+</div></section>
+<section class="task" id="t2"><h3 class="task-head" tabindex="0" role="button" aria-expanded="true">Task 2: <code>TenantPath</code> — the public contract</h3><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Create: <code>src/Vennu.Tenancy/TenantPath.cs</code></li><li>Create: <code>tests/Vennu.Tenancy.Tests/TenantPathTests.cs</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: <code>TenantContext</code>, <code>TenantProvenance</code> from Task 1.</li><li>Produces: <code>static bool TenantPath.TryParse(string path, out TenantContext? context, out string remainder)</code> and <code>static string TenantPath.Format(TenantContext context, string remainder)</code>.</li></ul>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>tests/Vennu.Tenancy.Tests/TenantPathTests.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using Vennu.Tenancy;
+
+namespace Vennu.Tenancy.Tests;
+
+public sealed class TenantPathTests
+{
+    private static readonly Guid Org = Guid.Parse(&quot;11111111-1111-1111-1111-111111111111&quot;);
+    private static readonly Guid Venue = Guid.Parse(&quot;22222222-2222-2222-2222-222222222222&quot;);
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void ParsesOrgAndVenueAndReturnsTheBarePath()
+    {
+        var ok = TenantPath.TryParse($&quot;/o/{Org}/v/{Venue}/api/back-office/menus&quot;, out var context, out var remainder);
+
+        Assert.True(ok);
+        Assert.Equal(Venue, context!.VenueId);
+        Assert.Equal(Org, context.OrganizationId);
+        // Decision 14: what reaches routing is the bare path, unchanged.
+        Assert.Equal(&quot;/api/back-office/menus&quot;, remainder);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void ParsedContextIsAlwaysAsserted()
+    {
+        // Decision 11: a path segment is caller-supplied. Parsing it never upgrades it.
+        TenantPath.TryParse($&quot;/o/{Org}/v/{Venue}/api/x&quot;, out var context, out _);
+        Assert.Equal(TenantProvenance.Asserted, context!.Provenance);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void AcceptsAVenueWithoutAnOrganizationSegment()
+    {
+        var ok = TenantPath.TryParse($&quot;/v/{Venue}/api/x&quot;, out var context, out var remainder);
+
+        Assert.True(ok);
+        Assert.Equal(Venue, context!.VenueId);
+        Assert.Null(context.OrganizationId);
+        Assert.Equal(&quot;/api/x&quot;, remainder);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void PrefixWithNoTrailingPathYieldsRoot()
+    {
+        var ok = TenantPath.TryParse($&quot;/o/{Org}/v/{Venue}&quot;, out _, out var remainder);
+
+        Assert.True(ok);
+        Assert.Equal(&quot;/&quot;, remainder);
+    }
+
+    [Theory]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    [InlineData(&quot;/api/back-office/menus&quot;)]          // no prefix at all — today&#x27;s traffic
+    [InlineData(&quot;/signin&quot;)]                          // pre-auth root route, decision 19
+    [InlineData(&quot;/pair&quot;)]                            // pre-auth device route, decision 19
+    [InlineData(&quot;/o/not-a-guid/v/also-not/api/x&quot;)]   // malformed identifiers
+    [InlineData(&quot;/v/not-a-guid/api/x&quot;)]
+    [InlineData(&quot;/o/11111111-1111-1111-1111-111111111111/api/x&quot;)] // org without venue
+    [InlineData(&quot;&quot;)]
+    public void LeavesAnythingWithoutAValidPrefixAlone(string path)
+    {
+        var ok = TenantPath.TryParse(path, out var context, out var remainder);
+
+        Assert.False(ok);
+        Assert.Null(context);
+        Assert.Equal(path, remainder);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void FormatIsTheInverseOfParse()
+    {
+        var original = $&quot;/o/{Org}/v/{Venue}/api/back-office/menus&quot;;
+        TenantPath.TryParse(original, out var context, out var remainder);
+
+        Assert.Equal(original, TenantPath.Format(context!, remainder));
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void FormatOmitsTheOrganizationSegmentWhenThereIsNone()
+    {
+        var context = new TenantContext(Venue, null, TenantProvenance.Asserted);
+        Assert.Equal($&quot;/v/{Venue}/api/x&quot;, TenantPath.Format(context, &quot;/api/x&quot;));
+    }
+}</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run the test to verify it fails</span></label><span class="kind">run · expect fail</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj --filter FullyQualifiedName~TenantPathTests</code> Expected: FAIL to compile — <code>The name &#x27;TenantPath&#x27; does not exist</code>.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Write the implementation</span></label><span class="kind">implement</span></div>
+<p>Create <code>src/Vennu.Tenancy/TenantPath.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>namespace Vennu.Tenancy;
+
+/// &lt;summary&gt;
+/// The public half of the contract (decision 13): the tenant travels in the URL path,
+/// so a relative call from a bundle inherits it with no client code.
+/// Decision 18: this shape is additive-only and may never be reinterpreted.
+/// &lt;/summary&gt;
+public static class TenantPath
+{
+    private const string OrgSegment = &quot;o&quot;;
+    private const string VenueSegment = &quot;v&quot;;
+
+    /// &lt;summary&gt;
+    /// Reads a tenant prefix off the front of &lt;paramref name=&quot;path&quot;/&gt;.
+    /// Returns false and leaves &lt;paramref name=&quot;remainder&quot;/&gt; as the original path when
+    /// there is no well-formed prefix — which is the normal case for pre-auth routes and
+    /// for every request that exists today.
+    /// &lt;/summary&gt;
+    public static bool TryParse(string path, out TenantContext? context, out string remainder)
+    {
+        context = null;
+        remainder = path;
+
+        if (string.IsNullOrEmpty(path) || path[0] != &#x27;/&#x27;) return false;
+
+        var parts = path.Split(&#x27;/&#x27;, StringSplitOptions.None);
+        // parts[0] is empty because the path starts with &#x27;/&#x27;.
+        var index = 1;
+        Guid? organizationId = null;
+
+        if (parts.Length &gt; index + 1 &amp;&amp; parts[index] == OrgSegment)
+        {
+            if (!Guid.TryParse(parts[index + 1], out var org)) return false;
+            organizationId = org;
+            index += 2;
+        }
+
+        if (parts.Length &lt;= index + 1 || parts[index] != VenueSegment) return false;
+        if (!Guid.TryParse(parts[index + 1], out var venue)) return false;
+        index += 2;
+
+        context = new TenantContext(venue, organizationId, TenantProvenance.Asserted);
+        var rest = string.Join(&#x27;/&#x27;, parts.Skip(index));
+        remainder = rest.Length == 0 ? &quot;/&quot; : &quot;/&quot; + rest;
+        return true;
+    }
+
+    /// &lt;summary&gt;Builds a tenant-prefixed path. The inverse of &lt;see cref=&quot;TryParse&quot;/&gt;.&lt;/summary&gt;
+    public static string Format(TenantContext context, string remainder)
+    {
+        var tail = string.IsNullOrEmpty(remainder) ? &quot;/&quot; : remainder;
+        if (tail[0] != &#x27;/&#x27;) tail = &quot;/&quot; + tail;
+        if (tail == &quot;/&quot;) tail = string.Empty;
+
+        return context.OrganizationId is { } org
+            ? $&quot;/{OrgSegment}/{org}/{VenueSegment}/{context.VenueId}{tail}&quot;
+            : $&quot;/{VenueSegment}/{context.VenueId}{tail}&quot;;
+    }
+}</pre></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run the tests to verify they pass</span></label><span class="kind">run · expect pass</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj</code> Expected: PASS, 13 of 13 (3 from Task 1, 10 here — the <code>[Theory]</code> contributes 7).</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 5: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/Vennu.Tenancy/TenantPath.cs tests/Vennu.Tenancy.Tests/TenantPathTests.cs
+git commit -m &quot;feat(tenancy): parse and format the tenant path prefix
+
+Decision 13 makes the URL the public contract. Parsing never upgrades
+provenance past Asserted, and anything without a well-formed prefix is
+returned untouched so today&#x27;s traffic is unaffected.&quot;</pre></div>
+<hr>
+</div></section>
+<section class="task" id="t3"><h3 class="task-head" tabindex="0" role="button" aria-expanded="true">Task 3: <code>TenantToken</code> — the internal contract</h3><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Create: <code>src/Vennu.Tenancy/TenantToken.cs</code></li><li>Create: <code>tests/Vennu.Tenancy.Tests/TenantTokenTests.cs</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: <code>TenantContext</code>, <code>TenantProvenance</code> from Task 1.</li><li>Produces: <code>TenantTokenIssuer(ECDsa signingKey, string keyId, TimeProvider clock)</code> with <code>string Issue(TenantContext context, string audienceVersion, TimeSpan lifetime)</code>; <code>TenantTokenVerifier(ECDsa publicKey, string audienceVersion, TimeProvider clock)</code> with <code>bool TryVerify(string token, out TenantContext? context, out string? failure)</code>.</li></ul>
+<p><code>TimeProvider</code> is taken as a constructor dependency so expiry is testable without sleeping. Use <code>TimeProvider.System</code> in production and <code>FakeTimeProvider</code>-style stubs in tests — a hand-written stub is used here to avoid a package reference.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>tests/Vennu.Tenancy.Tests/TenantTokenTests.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using System.Security.Cryptography;
+using Vennu.Tenancy;
+
+namespace Vennu.Tenancy.Tests;
+
+public sealed class TenantTokenTests
+{
+    private sealed class StubClock(DateTimeOffset now) : TimeProvider
+    {
+        public DateTimeOffset Now { get; set; } = now;
+        public override DateTimeOffset GetUtcNow() =&gt; Now;
+    }
+
+    private static readonly Guid Venue = Guid.Parse(&quot;22222222-2222-2222-2222-222222222222&quot;);
+    private static readonly Guid Org = Guid.Parse(&quot;11111111-1111-1111-1111-111111111111&quot;);
+    private const string Version = &quot;1.5.0&quot;;
+
+    private static (TenantTokenIssuer Issuer, ECDsa Key, StubClock Clock) NewIssuer()
+    {
+        var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var clock = new StubClock(new DateTimeOffset(2026, 8, 20, 12, 0, 0, TimeSpan.Zero));
+        return (new TenantTokenIssuer(key, &quot;k1&quot;, clock), key, clock);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void RoundTripsAContext()
+    {
+        var (issuer, key, clock) = NewIssuer();
+        var token = issuer.Issue(new TenantContext(Venue, Org, TenantProvenance.Verified), Version, TimeSpan.FromSeconds(60));
+
+        var verifier = new TenantTokenVerifier(key, Version, clock);
+        Assert.True(verifier.TryVerify(token, out var context, out var failure));
+
+        Assert.Null(failure);
+        Assert.Equal(Venue, context!.VenueId);
+        Assert.Equal(Org, context.OrganizationId);
+        Assert.Equal(TenantProvenance.Verified, context.Provenance);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void RejectsATokenMintedForAnotherVersion()
+    {
+        // Decision 32: audience-scoped, so a token for v1.4 cannot be replayed at v1.5.
+        var (issuer, key, clock) = NewIssuer();
+        var token = issuer.Issue(new TenantContext(Venue, Org, TenantProvenance.Asserted), &quot;1.4.0&quot;, TimeSpan.FromSeconds(60));
+
+        var verifier = new TenantTokenVerifier(key, &quot;1.5.0&quot;, clock);
+
+        Assert.False(verifier.TryVerify(token, out var context, out var failure));
+        Assert.Null(context);
+        Assert.Equal(&quot;audience&quot;, failure);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void RejectsAnExpiredToken()
+    {
+        var (issuer, key, clock) = NewIssuer();
+        var token = issuer.Issue(new TenantContext(Venue, null, TenantProvenance.Asserted), Version, TimeSpan.FromSeconds(60));
+
+        clock.Now = clock.Now.AddSeconds(61);
+        var verifier = new TenantTokenVerifier(key, Version, clock);
+
+        Assert.False(verifier.TryVerify(token, out _, out var failure));
+        Assert.Equal(&quot;expired&quot;, failure);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void RejectsATokenSignedByAnotherKey()
+    {
+        // Decision 32: asymmetric, so a compromised API version cannot forge Router tokens.
+        var (issuer, _, clock) = NewIssuer();
+        var token = issuer.Issue(new TenantContext(Venue, null, TenantProvenance.Asserted), Version, TimeSpan.FromSeconds(60));
+
+        using var stranger = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var verifier = new TenantTokenVerifier(stranger, Version, clock);
+
+        Assert.False(verifier.TryVerify(token, out _, out var failure));
+        Assert.Equal(&quot;signature&quot;, failure);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void RejectsATamperedPayload()
+    {
+        var (issuer, key, clock) = NewIssuer();
+        var token = issuer.Issue(new TenantContext(Venue, null, TenantProvenance.Asserted), Version, TimeSpan.FromSeconds(60));
+
+        var parts = token.Split(&#x27;.&#x27;);
+        var forged = new TenantContext(Guid.NewGuid(), null, TenantProvenance.Verified);
+        var tampered = issuer.Issue(forged, Version, TimeSpan.FromSeconds(60)).Split(&#x27;.&#x27;)[1];
+        var attack = $&quot;{parts[0]}.{tampered}.{parts[2]}&quot;;
+
+        var verifier = new TenantTokenVerifier(key, Version, clock);
+
+        Assert.False(verifier.TryVerify(attack, out _, out var failure));
+        Assert.Equal(&quot;signature&quot;, failure);
+    }
+
+    [Theory]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    [InlineData(&quot;&quot;)]
+    [InlineData(&quot;not-a-token&quot;)]
+    [InlineData(&quot;only.two&quot;)]
+    [InlineData(&quot;a.b.c.d&quot;)]
+    public void RejectsMalformedInput(string token)
+    {
+        var (_, key, clock) = NewIssuer();
+        var verifier = new TenantTokenVerifier(key, Version, clock);
+
+        Assert.False(verifier.TryVerify(token, out _, out var failure));
+        Assert.Equal(&quot;malformed&quot;, failure);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void IgnoresUnknownMembersRatherThanRejecting()
+    {
+        // Decision 18: additive-only, forever. A future field must not break an
+        // older live version that has never heard of it.
+        var (issuer, key, clock) = NewIssuer();
+        var token = issuer.Issue(new TenantContext(Venue, Org, TenantProvenance.Asserted), Version, TimeSpan.FromSeconds(60));
+
+        var parts = token.Split(&#x27;.&#x27;);
+        var payload = System.Text.Encoding.UTF8.GetString(TenantToken.Base64UrlDecode(parts[1]));
+        var widened = payload.Insert(payload.Length - 1, &quot;,\&quot;future\&quot;:\&quot;value\&quot;&quot;);
+        var rebuilt = TenantToken.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes(widened));
+
+        // Re-sign so only the unknown member is under test, not the signature.
+        var resigned = issuer.SignParts(parts[0], rebuilt);
+
+        var verifier = new TenantTokenVerifier(key, Version, clock);
+        Assert.True(verifier.TryVerify($&quot;{parts[0]}.{rebuilt}.{resigned}&quot;, out var context, out _));
+        Assert.Equal(Venue, context!.VenueId);
+    }
+}</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run the test to verify it fails</span></label><span class="kind">run · expect fail</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj --filter FullyQualifiedName~TenantTokenTests</code> Expected: FAIL to compile — <code>The name &#x27;TenantTokenIssuer&#x27; does not exist</code>.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Write the implementation</span></label><span class="kind">implement</span></div>
+<p>Create <code>src/Vennu.Tenancy/TenantToken.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace Vennu.Tenancy;
+
+/// &lt;summary&gt;
+/// The internal half of the contract (decisions 31–34). A compact ES256-signed
+/// envelope minted by the Product Router and verified by the receiving version.
+///
+/// Implemented on the BCL alone, deliberately: decision 2 requires this layer&#x27;s
+/// change frequency to stay low, and decision 18 makes the format additive-only
+/// forever, so it is owned outright rather than inherited from a library.
+///
+/// Decision 34: this authenticates the hop, not the claim. A verified signature
+/// proves the Router said it; it does not make the tenant true, and nothing here
+/// may be used for an authorization decision.
+/// &lt;/summary&gt;
+public static class TenantToken
+{
+    internal const string HeaderType = &quot;vennu-tenant+jwt&quot;;
+
+    public static string Base64UrlEncode(ReadOnlySpan&lt;byte&gt; bytes) =&gt;
+        Convert.ToBase64String(bytes).TrimEnd(&#x27;=&#x27;).Replace(&#x27;+&#x27;, &#x27;-&#x27;).Replace(&#x27;/&#x27;, &#x27;_&#x27;);
+
+    public static byte[] Base64UrlDecode(string value)
+    {
+        var s = value.Replace(&#x27;-&#x27;, &#x27;+&#x27;).Replace(&#x27;_&#x27;, &#x27;/&#x27;);
+        return Convert.FromBase64String(s.PadRight(s.Length + (4 - s.Length % 4) % 4, &#x27;=&#x27;));
+    }
+
+    internal sealed record Payload(
+        [property: JsonPropertyName(&quot;ven&quot;)] Guid Venue,
+        [property: JsonPropertyName(&quot;org&quot;)] Guid? Organization,
+        [property: JsonPropertyName(&quot;prv&quot;)] string Provenance,
+        [property: JsonPropertyName(&quot;aud&quot;)] string Audience,
+        [property: JsonPropertyName(&quot;iat&quot;)] long IssuedAt,
+        [property: JsonPropertyName(&quot;exp&quot;)] long ExpiresAt);
+
+    internal static readonly JsonSerializerOptions Json = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.Never
+    };
+}
+
+/// &lt;summary&gt;Mints tokens. Held only by the Product Router.&lt;/summary&gt;
+public sealed class TenantTokenIssuer(ECDsa signingKey, string keyId, TimeProvider clock)
+{
+    public string Issue(TenantContext context, string audienceVersion, TimeSpan lifetime)
+    {
+        var now = clock.GetUtcNow().ToUnixTimeSeconds();
+        var header = TenantToken.Base64UrlEncode(Encoding.UTF8.GetBytes(
+            $&quot;{{\&quot;alg\&quot;:\&quot;ES256\&quot;,\&quot;typ\&quot;:\&quot;{TenantToken.HeaderType}\&quot;,\&quot;kid\&quot;:\&quot;{keyId}\&quot;}}&quot;));
+
+        var payload = TenantToken.Base64UrlEncode(JsonSerializer.SerializeToUtf8Bytes(
+            new TenantToken.Payload(
+                context.VenueId,
+                context.OrganizationId,
+                context.Provenance == TenantProvenance.Verified ? &quot;verified&quot; : &quot;asserted&quot;,
+                audienceVersion,
+                now,
+                now + (long)lifetime.TotalSeconds),
+            TenantToken.Json));
+
+        return $&quot;{header}.{payload}.{SignParts(header, payload)}&quot;;
+    }
+
+    /// &lt;summary&gt;Signs an already-encoded header and payload. Exposed for tests that widen the payload.&lt;/summary&gt;
+    public string SignParts(string encodedHeader, string encodedPayload)
+    {
+        var signature = signingKey.SignData(
+            Encoding.ASCII.GetBytes($&quot;{encodedHeader}.{encodedPayload}&quot;),
+            HashAlgorithmName.SHA256,
+            DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
+        return TenantToken.Base64UrlEncode(signature);
+    }
+}
+
+/// &lt;summary&gt;Verifies tokens. Held by every concurrently running version.&lt;/summary&gt;
+public sealed class TenantTokenVerifier(ECDsa publicKey, string audienceVersion, TimeProvider clock)
+{
+    public bool TryVerify(string token, out TenantContext? context, out string? failure)
+    {
+        context = null;
+
+        var parts = token.Split(&#x27;.&#x27;);
+        if (parts.Length != 3 || parts.Any(string.IsNullOrEmpty))
+        {
+            failure = &quot;malformed&quot;;
+            return false;
+        }
+
+        byte[] signature;
+        TenantToken.Payload? payload;
+        try
+        {
+            signature = TenantToken.Base64UrlDecode(parts[2]);
+            payload = JsonSerializer.Deserialize&lt;TenantToken.Payload&gt;(
+                TenantToken.Base64UrlDecode(parts[1]), TenantToken.Json);
+        }
+        catch (Exception e) when (e is FormatException or JsonException)
+        {
+            failure = &quot;malformed&quot;;
+            return false;
+        }
+
+        if (payload is null)
+        {
+            failure = &quot;malformed&quot;;
+            return false;
+        }
+
+        var verified = publicKey.VerifyData(
+            Encoding.ASCII.GetBytes($&quot;{parts[0]}.{parts[1]}&quot;),
+            signature,
+            HashAlgorithmName.SHA256,
+            DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
+
+        if (!verified)
+        {
+            failure = &quot;signature&quot;;
+            return false;
+        }
+
+        if (!string.Equals(payload.Audience, audienceVersion, StringComparison.Ordinal))
+        {
+            failure = &quot;audience&quot;;
+            return false;
+        }
+
+        if (clock.GetUtcNow().ToUnixTimeSeconds() &gt;= payload.ExpiresAt)
+        {
+            failure = &quot;expired&quot;;
+            return false;
+        }
+
+        context = new TenantContext(
+            payload.Venue,
+            payload.Organization,
+            payload.Provenance == &quot;verified&quot; ? TenantProvenance.Verified : TenantProvenance.Asserted);
+        failure = null;
+        return true;
+    }
+}</pre></div>
+<p>Note the check order: signature before audience before expiry. A tampered token must report <code>signature</code> rather than leaking which other field an attacker got wrong.</p>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run the tests to verify they pass</span></label><span class="kind">run · expect pass</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj</code> Expected: PASS, 23 of 23.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 5: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/Vennu.Tenancy/TenantToken.cs tests/Vennu.Tenancy.Tests/TenantTokenTests.cs
+git commit -m &quot;feat(tenancy): ES256 tenant token, issued and verified on the BCL alone
+
+Decisions 31-34. Asymmetric so a compromised version cannot forge Router
+tokens, audience-scoped so a v1.4 token cannot be replayed at v1.5, and
+additive-only so an unknown future member is ignored rather than rejected.
+No package reference: decision 2 keeps this layer&#x27;s change frequency low.&quot;</pre></div>
+<hr>
+</div></section>
+<section class="task" id="t4"><h3 class="task-head" tabindex="0" role="button" aria-expanded="true">Task 4: Resolving the context inside <code>Vennu.Api</code></h3><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Create: <code>src/Vennu.Api/Infrastructure/TenantContextAccessor.cs</code></li><li>Create: <code>src/Vennu.Api/Infrastructure/TenantContextMiddleware.cs</code></li><li>Create: <code>tests/Vennu.Api.Tests/Infrastructure/TenantContextMiddlewareTests.cs</code></li><li>Modify: <code>src/Vennu.Api/Vennu.Api.csproj</code></li><li>Modify: <code>tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: <code>TenantContext</code>, <code>TenantPath</code>, <code>TenantTokenVerifier</code> from Tasks 1–3.</li><li>Produces: <code>ITenantContextAccessor</code> with <code>TenantContext? Current { get; }</code>; <code>TenantContextMiddleware</code>; <code>TenantContextMiddleware.HeaderName</code> (<code>&quot;X-Vennusign-Tenant-Token&quot;</code>).</li></ul>
+<p>Resolution order is token, then path, then nothing. A verified token wins because the Router strips the prefix before forwarding (decision 14), so in production both are never present; the path branch exists so the contract works before the Router does.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 1: Add the project reference to both csproj files</span></label><span class="kind">implement</span></div>
+<p>In <code>src/Vennu.Api/Vennu.Api.csproj</code>, inside the existing <code>ItemGroup</code> holding <code>ProjectReference</code> entries, add:</p>
+<div class="code"><span class="lang">xml</span><pre>    &lt;ProjectReference Include=&quot;..\Vennu.Tenancy\Vennu.Tenancy.csproj&quot; /&gt;</pre></div>
+<p>In <code>tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj</code>, inside the <code>ItemGroup</code> holding <code>ProjectReference</code> entries, add:</p>
+<div class="code"><span class="lang">xml</span><pre>    &lt;ProjectReference Include=&quot;..\..\src\Vennu.Tenancy\Vennu.Tenancy.csproj&quot; /&gt;</pre></div>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 2: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>tests/Vennu.Api.Tests/Infrastructure/TenantContextMiddlewareTests.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using System.Security.Cryptography;
+using Microsoft.AspNetCore.Http;
+using Vennu.Api.Infrastructure;
+using Vennu.Tenancy;
+
+namespace Vennu.Api.Tests.Infrastructure;
+
+public sealed class TenantContextMiddlewareTests
+{
+    private sealed class StubClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() =&gt; now;
+    }
+
+    private static readonly Guid Venue = Guid.Parse(&quot;22222222-2222-2222-2222-222222222222&quot;);
+    private static readonly Guid Org = Guid.Parse(&quot;11111111-1111-1111-1111-111111111111&quot;);
+    private static readonly StubClock Clock = new(new DateTimeOffset(2026, 8, 20, 12, 0, 0, TimeSpan.Zero));
+
+    private static async Task&lt;(HttpContext Context, string SeenPath)&gt; RunAsync(
+        HttpContext context, TenantTokenVerifier? verifier = null)
+    {
+        var seen = string.Empty;
+        var middleware = new TenantContextMiddleware(
+            ctx =&gt; { seen = ctx.Request.Path.Value ?? string.Empty; return Task.CompletedTask; },
+            verifier);
+
+        await middleware.InvokeAsync(context);
+        return (context, seen);
+    }
+
+    private static HttpContext Request(string path)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Path = path;
+        return context;
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task LeavesAnOrdinaryRequestCompletelyUntouched()
+    {
+        // The acceptance bar for this slice: today&#x27;s traffic must be unaffected.
+        var (context, seen) = await RunAsync(Request(&quot;/api/back-office/menus&quot;));
+
+        Assert.Equal(&quot;/api/back-office/menus&quot;, seen);
+        Assert.Null(new TenantContextAccessor(Accessor(context)).Current);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task StripsTheTenantPrefixSoRouteTemplatesAreUnchanged()
+    {
+        // Decision 14.
+        var (context, seen) = await RunAsync(Request($&quot;/o/{Org}/v/{Venue}/api/back-office/menus&quot;));
+
+        Assert.Equal(&quot;/api/back-office/menus&quot;, seen);
+        var resolved = new TenantContextAccessor(Accessor(context)).Current;
+        Assert.Equal(Venue, resolved!.VenueId);
+        Assert.Equal(TenantProvenance.Asserted, resolved.Provenance);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task PrefersAValidTokenOverThePath()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var issuer = new TenantTokenIssuer(key, &quot;k1&quot;, Clock);
+        var tokenVenue = Guid.Parse(&quot;33333333-3333-3333-3333-333333333333&quot;);
+        var token = issuer.Issue(new TenantContext(tokenVenue, null, TenantProvenance.Verified), &quot;1.5.0&quot;, TimeSpan.FromSeconds(60));
+
+        var request = Request($&quot;/o/{Org}/v/{Venue}/api/x&quot;);
+        request.Request.Headers[TenantContextMiddleware.HeaderName] = token;
+
+        var (context, _) = await RunAsync(request, new TenantTokenVerifier(key, &quot;1.5.0&quot;, Clock));
+
+        var resolved = new TenantContextAccessor(Accessor(context)).Current;
+        Assert.Equal(tokenVenue, resolved!.VenueId);
+        Assert.Equal(TenantProvenance.Verified, resolved.Provenance);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task AnInvalidTokenResolvesNothingAndDoesNotFallBackToThePath()
+    {
+        // A token that fails verification is an attack or a bug, never an
+        // invitation to trust the path instead.
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var stranger = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var token = new TenantTokenIssuer(stranger, &quot;k1&quot;, Clock)
+            .Issue(new TenantContext(Guid.NewGuid(), null, TenantProvenance.Verified), &quot;1.5.0&quot;, TimeSpan.FromSeconds(60));
+
+        var request = Request($&quot;/o/{Org}/v/{Venue}/api/x&quot;);
+        request.Request.Headers[TenantContextMiddleware.HeaderName] = token;
+
+        var (context, seen) = await RunAsync(request, new TenantTokenVerifier(key, &quot;1.5.0&quot;, Clock));
+
+        Assert.Null(new TenantContextAccessor(Accessor(context)).Current);
+        Assert.Equal(&quot;/api/x&quot;, seen);
+    }
+
+    private static IHttpContextAccessor Accessor(HttpContext context) =&gt;
+        new HttpContextAccessor { HttpContext = context };
+}</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 3: Run the test to verify it fails</span></label><span class="kind">run · expect fail</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj --filter FullyQualifiedName~TenantContextMiddlewareTests</code> Expected: FAIL to compile — <code>The type or namespace name &#x27;TenantContextMiddleware&#x27; could not be found</code>.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 4: Write the implementation</span></label><span class="kind">implement</span></div>
+<p>Create <code>src/Vennu.Api/Infrastructure/TenantContextAccessor.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using Vennu.Tenancy;
+
+namespace Vennu.Api.Infrastructure;
+
+/// &lt;summary&gt;
+/// Reads the tenant the current request is about, if one was established.
+/// Decision 11: this is a routing input. It must never reach an authorization decision —
+/// authorization continues to derive from the session, the screen record, or the
+/// Webhook Receiver&#x27;s registration, exactly as it does today.
+/// &lt;/summary&gt;
+public interface ITenantContextAccessor
+{
+    TenantContext? Current { get; }
+}
+
+public sealed class TenantContextAccessor(IHttpContextAccessor accessor) : ITenantContextAccessor
+{
+    public const string ItemKey = &quot;Vennusign.TenantContext&quot;;
+
+    public TenantContext? Current =&gt;
+        accessor.HttpContext?.Items.TryGetValue(ItemKey, out var value) == true
+            ? value as TenantContext
+            : null;
+}</pre></div>
+<p>Create <code>src/Vennu.Api/Infrastructure/TenantContextMiddleware.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using Vennu.Tenancy;
+
+namespace Vennu.Api.Infrastructure;
+
+/// &lt;summary&gt;
+/// Establishes the tenant a request is about, from the internal token if the Product
+/// Router minted one, otherwise from the URL prefix.
+///
+/// The path branch exists because the contract must work before the Router does
+/// (decision 44). Once the Router is in front, it consumes the prefix itself
+/// (decision 14) and only the token branch is exercised in production.
+/// &lt;/summary&gt;
+public sealed class TenantContextMiddleware(RequestDelegate next, TenantTokenVerifier? verifier)
+{
+    public const string HeaderName = &quot;X-Vennusign-Tenant-Token&quot;;
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var path = context.Request.Path.Value ?? string.Empty;
+
+        if (TenantPath.TryParse(path, out var fromPath, out var remainder))
+        {
+            context.Request.Path = remainder;
+        }
+
+        if (context.Request.Headers.TryGetValue(HeaderName, out var header) &amp;&amp;
+            header.Count &gt; 0 &amp;&amp; verifier is not null)
+        {
+            // A token that fails verification resolves nothing. It is never a reason
+            // to fall back to the caller-supplied path.
+            if (verifier.TryVerify(header[0]!, out var fromToken, out _))
+            {
+                context.Items[TenantContextAccessor.ItemKey] = fromToken;
+            }
+        }
+        else if (fromPath is not null)
+        {
+            context.Items[TenantContextAccessor.ItemKey] = fromPath;
+        }
+
+        await next(context).ConfigureAwait(false);
+    }
+}</pre></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 5: Run the tests to verify they pass</span></label><span class="kind">run · expect pass</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj --filter FullyQualifiedName~TenantContextMiddlewareTests</code> Expected: PASS, 4 of 4.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 6: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/Vennu.Api/Infrastructure/TenantContextAccessor.cs \
+        src/Vennu.Api/Infrastructure/TenantContextMiddleware.cs \
+        src/Vennu.Api/Vennu.Api.csproj \
+        tests/Vennu.Api.Tests/Infrastructure/TenantContextMiddlewareTests.cs \
+        tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj
+git commit -m &quot;feat(api): resolve TenantContext from token or path prefix
+
+Token wins where present; an invalid one resolves nothing rather than
+falling back to the caller-supplied path. The prefix is stripped so route
+templates are unchanged, per decision 14.&quot;</pre></div>
+<hr>
+</div></section>
+<section class="task" id="t5"><h3 class="task-head" tabindex="0" role="button" aria-expanded="true">Task 5: Wire it into the request pipeline</h3><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Modify: <code>src/Vennu.Api/Program.cs:310</code> (immediately after <code>app.UseMiddleware&lt;AdministrativeCompatibilityMiddleware&gt;()</code>)</li><li>Create: <code>tests/Vennu.Api.Tests/Infrastructure/TenantContextPipelineTests.cs</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: everything from Tasks 1–4.</li><li>Produces: nothing. This task makes the slice live and proves it changed nothing.</li></ul>
+<p>The middleware is registered <strong>before</strong> <code>UseAuthentication</code>, because the prefix must be stripped before routing and authentication run. <code>TenantTokenVerifier</code> is registered as <code>null</code> for now — no Router exists to mint tokens, and the public key&#x27;s home is a later slice (register Q17). The path branch is what functions in this slice.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>tests/Vennu.Api.Tests/Infrastructure/TenantContextPipelineTests.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using System.Net;
+using Microsoft.AspNetCore.Mvc.Testing;
+
+namespace Vennu.Api.Tests.Infrastructure;
+
+public sealed class TenantContextPipelineTests(WebApplicationFactory&lt;Program&gt; factory)
+    : IClassFixture&lt;WebApplicationFactory&lt;Program&gt;&gt;
+{
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task HealthVersionStillAnswersWithoutAPrefix()
+    {
+        var response = await factory.CreateClient().GetAsync(&quot;/health/version&quot;);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task HealthVersionAnswersThroughATenantPrefix()
+    {
+        // Decision 14: the prefix is consumed before routing, so an existing
+        // endpoint answers identically whether or not one is present.
+        var org = Guid.NewGuid();
+        var venue = Guid.NewGuid();
+
+        var response = await factory.CreateClient().GetAsync($&quot;/o/{org}/v/{venue}/health/version&quot;);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task AMalformedPrefixIsNotTreatedAsOne()
+    {
+        var response = await factory.CreateClient().GetAsync(&quot;/o/not-a-guid/v/also-not/health/version&quot;);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+}</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run the test to verify it fails</span></label><span class="kind">run · expect fail</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj --filter FullyQualifiedName~TenantContextPipelineTests</code> Expected: <code>HealthVersionAnswersThroughATenantPrefix</code> FAILS with <code>NotFound</code> — the prefix is not yet stripped, so nothing matches the route.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Register the services and the middleware</span></label><span class="kind">implement</span></div>
+<p>In <code>src/Vennu.Api/Program.cs</code>, alongside the other <code>builder.Services</code> registrations (near line 188, where <code>AddSignalR</code> sits), add:</p>
+<div class="code"><span class="lang">csharp</span><pre>builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton&lt;Vennu.Api.Infrastructure.ITenantContextAccessor,
+                              Vennu.Api.Infrastructure.TenantContextAccessor&gt;();</pre></div>
+<p>Then, immediately after the existing <code>app.UseMiddleware&lt;AdministrativeCompatibilityMiddleware&gt;();</code> on line 310, add:</p>
+<div class="code"><span class="lang">csharp</span><pre>// Keystone slice 1. The verifier is null until the Product Router exists to mint
+// tokens and the public key has a home (register Q17); until then the path branch
+// is what functions, and a request carrying neither is untouched.
+app.UseMiddleware&lt;TenantContextMiddleware&gt;((Vennu.Tenancy.TenantTokenVerifier?)null);</pre></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run the tests to verify they pass</span></label><span class="kind">run · expect pass</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj --filter FullyQualifiedName~TenantContextPipelineTests</code> Expected: PASS, 3 of 3.</p>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 5: Run the full affected suites</span></label><span class="kind">run · expect pass</span></div>
+<div class="code"><span class="lang">bash</span><pre>dotnet build src/Vennu.Api/Vennu.Api.csproj -c Release
+dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj
+dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj</pre></div>
+<p>Expected: Release build succeeds. <code>Vennu.Tenancy.Tests</code> 23 of 23. <code>Vennu.Api.Tests</code> passes with no regressions — record the before-and-after counts in the PR, per AGENTS.md&#x27;s evidence rule. Azure and integration-type tests remain skipped by standing owner exception; record them as skipped.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 6: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/Vennu.Api/Program.cs tests/Vennu.Api.Tests/Infrastructure/TenantContextPipelineTests.cs
+git commit -m &quot;feat(api): register TenantContext resolution in the pipeline
+
+Runs before authentication so the prefix is stripped before routing. The
+token verifier is null until a Router exists to mint tokens. A request
+carrying neither prefix nor token is untouched, which is this slice&#x27;s
+acceptance bar.&quot;</pre></div>
+<hr>
+</div></section>
+<h2>What this slice deliberately excludes</h2>
+<ul><li><strong>The front-end URL restructure.</strong> Decision 44 places it in slice 1, but register <strong>Q31 is deferred</strong>: whether the pre-auth app split lands before the restructure is unanswered, and doing them in the wrong order means doing the entry routes twice. The .NET half above is independent of that answer and ships without it.</li><li><strong>Relative API URLs in the front ends</strong> (register Q20) — same dependency.</li><li><strong>The 421 misdirected-request behaviour</strong> (decision 35). It needs an authority to compare a hint against, and no consumer reads <code>TenantContext</code> yet. It belongs with the first consumer.</li><li><strong>Key management</strong> (register Q17). No Router exists to hold a private key, so the verifier is null.</li><li><strong>VDS, ADS, the Router itself</strong> — slice 2 onward.</li></ul>
+<h2>Self-review</h2>
+<p><strong>Spec coverage.</strong> Decisions 10, 11, 13, 14, 18, 32, 33 and 34 each have a task and at least one test asserting them. Decisions 1–9, 12, 15–17, 19–31, 35–49 are out of this slice&#x27;s scope and are named above where a reader might expect them. Register answers Q15 (ES256), Q16 (60s TTL) and Q17 (key location deferred) are reflected.</p>
+<p><strong>Placeholders.</strong> None. Every code step carries the actual code; every run step carries the exact command and expected result.</p>
+<p><strong>Type consistency.</strong> <code>TenantContext(Guid, Guid?, TenantProvenance)</code> is constructed identically in Tasks 1–5. <code>TryParse(string, out TenantContext?, out string)</code> and <code>TryVerify(string, out TenantContext?, out string?)</code> keep the same shapes throughout. <code>TenantContextAccessor.ItemKey</code> is the single place the <code>HttpContext.Items</code> key is spelled.</p>
+<p><strong>Known gap, stated rather than hidden.</strong> Task 5&#x27;s <code>AMalformedPrefixIsNotTreatedAsOne</code> asserts <code>NotFound</code>, which is what an unmatched route returns today. If a future catch-all route changes that, this assertion is testing the router rather than the middleware. It is kept because it is the cheapest guard against <code>TenantPath.TryParse</code> becoming accidentally permissive.</p></main>
+<script>
+document.querySelectorAll(".task-head").forEach(function (h) {
+  function toggle() { h.setAttribute("aria-expanded", h.getAttribute("aria-expanded") === "true" ? "false" : "true"); }
+  h.addEventListener("click", toggle);
+  h.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+});
+// Step ticks persist per device so progress survives a reload during execution.
+var KEY = "keystone.plan.slice1.v1", state = {};
+try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { state = {}; }
+document.querySelectorAll(".step input").forEach(function (box, n) {
+  if (state["s" + n]) { box.checked = true; }
+  box.addEventListener("change", function () {
+    state["s" + n] = box.checked;
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  });
+});
+</script>
