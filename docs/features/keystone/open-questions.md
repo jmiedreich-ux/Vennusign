@@ -1,6 +1,6 @@
 # Keystone — Open Questions Register
 
-- **Status:** 34 questions — **29 answered, 3 deferred, 2 re-asked** (owner sitting, 2026-08-20).
+- **Status:** 34 questions — **31 answered, 3 deferred, none outstanding** (owner sitting, 2026-08-20).
   Raised from the six brainstorming sittings recorded in `decisions-so-far.md` and from the
   concept's own `Decisions required before planning` list.
 - **Owner deviations of note:** Q8 rejected the recommendation as not answering the question and
@@ -169,7 +169,10 @@ than two.
 Separately, and *not* as the answer: venues should still receive an explicit assignment at creation,
 so that not-assigned stays rare and indicates a defect rather than a normal path.
 
-*Answer:* **Re-asked 2026-08-20.** Owner: "the recommendation is not an answer" — correct. It described how to avoid the case rather than what VDS returns when it occurs. Revised recommendation above; awaiting an answer.
+*Answer:* Closed 2026-08-20 as already answered by the authority. The owner's first response
+rejected the original recommendation as not answering the question, which was correct; the second
+observed that decisions 27 and 28 already settle it. They do: a venue with no assignment resolves
+to the default version, and new venues are assigned there at creation. No separate rule is needed.
 
 <sub>decisions 27, 28</sub>
 
@@ -518,7 +521,10 @@ theirs.
 *Recommended:* Before slice 1, as its own small change. It is independently valuable — it is also
 what makes any deploy verifiable — and it is cheap.
 
-*Answer:* **Re-asked 2026-08-20.** Owner did not recognise the issue number. #726 is restated in the question context above; awaiting an answer.
+*Answer:* Owner answer (2026-08-20): a separate problem to fix. #726 is not part of a Keystone
+slice and does not sequence against one — it is fixed on its own. Decision 46 still holds: it must
+be in place before any customer is moved, because decision 35's check compares against the value
+it sets.
 
 <sub>decisions 35, 46; issue #726</sub>
 
