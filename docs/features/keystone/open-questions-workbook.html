@@ -448,11 +448,11 @@
   </div>
   <div class="meter"><span id="meter"></span></div>
   <div class="filters" id="filters">
-    <button class="chip" data-filter="all" aria-pressed="true">All 34</button>
+    <button class="chip" data-filter="all" aria-pressed="true">All</button>
     <button class="chip" data-filter="open" aria-pressed="false">Unanswered</button>
-    <button class="chip" data-filter="blocking" aria-pressed="false">Blocking 11</button>
-    <button class="chip" data-filter="important" aria-pressed="false">Important 21</button>
-    <button class="chip" data-filter="minor" aria-pressed="false">Minor 2</button>
+    <button class="chip" data-filter="blocking" aria-pressed="false">Blocking</button>
+    <button class="chip" data-filter="important" aria-pressed="false">Important</button>
+    <button class="chip" data-filter="minor" aria-pressed="false">Minor</button>
   </div>
 </header>
 
@@ -876,6 +876,17 @@ document.getElementById("copyBtn").addEventListener("click", function () {
     navigator.clipboard.writeText(text).then(done).catch(fail);
   } else { fail(); }
 });
+
+// Chip labels are computed, never hardcoded, so they cannot drift from the data.
+(function labelChips() {
+  const tally = { all: QUESTIONS.length, blocking: 0, important: 0, minor: 0 };
+  QUESTIONS.forEach(function (q) { tally[q.p] += 1; });
+  document.querySelectorAll(".chip").forEach(function (c) {
+    const f = c.dataset.filter;
+    if (f === "open") return;
+    c.textContent = c.textContent.trim() + " " + tally[f];
+  });
+})();
 
 render();
 </script>
