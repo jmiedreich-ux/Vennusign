@@ -51,12 +51,45 @@ wrong once. The four genuine conflicts are listed at the end with the resolution
 | 18 | Dispatch a **task reviewer** subagent for spec compliance and code quality. **Scope this to risk, not to task count:** a task that only adds a project file, a reference or scaffolding folds into the next substantive task's review rather than earning its own. Fold, never skip — "it looks simple" is the rationalization this procedure exists to defeat. This is *not* the merge-gate review in step 25. | sp |
 | 19 | On findings: fix rounds 1–3 resume the implementer; rounds 4–5 dispatch a fresh implementer on a more capable model. At round 5, adjudicate each open finding. Log any judgement call as `Ruling: <what> — <why> — <what it costs if wrong>` — **but not for the four things that stop you**, see conflict 2 below. | sp |
 
+### What to subagent, and what it actually buys
+
+**Subagenting is not a speed optimization.** For a single serial task it usually costs time:
+constructing the brief, the agent reading its way in, and the handoff back can exceed a five-minute
+task. Judge it on wall-clock for one task and it will lose, and that is the wrong measure.
+
+It pays in three other currencies:
+
+- **Context capacity.** Across a multi-milestone feature the coordinating session would otherwise
+  fill up and start making worse decisions. This is the largest benefit and it is invisible until
+  it bites.
+- **Independence.** `AGENTS.md` requires review "never by its author." A fresh agent that never
+  watched the code being written is the cheapest way to actually satisfy that rather than
+  approximate it.
+- **Plan audit.** An implementer that can read only what is written either succeeds or proves the
+  plan was thin. See step 13.
+
+**Parallelism is the only one that buys wall-clock**, and only where tasks are genuinely disjoint.
+
+**The deciding test.** Can the task's brief be written without saying "as we discussed"?
+
+- **Yes** → subagent it. Its inputs are expressible in writing, its output is verifiable by a
+  command, and it needs no mid-flight negotiation.
+- **No** → either write that context down properly, which makes it subagentable and improves the
+  plan, or keep it inline. The test doubles as a plan-quality check.
+
+**Never subagent:**
+
+- Anything touching orchestrator-owned files — contracts, project files, dependency injection,
+  migrations, package configuration, shared fixtures, workflows, tracker, status, handoff.
+- Decisions that belong to the owner: scope, ownership conflicts, out-of-scope calls.
+- Exploratory debugging, where the trail matters more than the result and a summarized handoff
+  loses it.
+
 **Running tasks in parallel.** Tasks whose files do not overlap may run concurrently, with
 `dispatching-parallel-agents`. The guard is already in `AGENTS.md`: no two agents modify the same
-file, and contracts, project files, dependency injection, migrations, package configuration,
-shared fixtures, workflows, tracker, status and handoff stay orchestrator-owned. Where a plan's
-tasks build on each other's interfaces, they are serial and running them in parallel only
-produces conflicts.
+file, and the orchestrator-owned list above stays with the orchestrator. Where a plan's tasks
+build on each other's interfaces they are serial, and running them in parallel only produces
+conflicts — most milestones are serial chains, and pretending otherwise costs more than it saves.
 
 ## Phase D — Before calling the milestone done
 

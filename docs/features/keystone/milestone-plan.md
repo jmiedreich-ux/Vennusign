@@ -54,6 +54,25 @@ Receiver is a separate front door, so a Router change cannot break POS ingestion
 M4 is the only milestone touching customer-facing surfaces, which is why it is the only one
 carrying a full acceptance workbook rather than a demo script.
 
+## Where parallelism actually exists
+
+Per `docs/MILESTONE_EXECUTION.md`, subagenting buys context capacity, review independence and a
+plan audit on every milestone — but wall-clock only where tasks are genuinely disjoint. For
+Keystone that is one milestone and a fraction of another.
+
+| Milestone | Shape | Parallel? |
+|---|---|---|
+| M1 | Task 1 → (2, 3) → 4 → 5 | A two-way fan. `TenantPath` and `TenantToken` both depend on `TenantContext` but not on each other. |
+| M2 | Serial chain | No. Each task builds on the previous store or endpoint. |
+| M3 | Serial chain | No. The health rules feed the poller, which feeds the resolver. |
+| M4 | Back office · onboarding · display | **Yes, genuinely.** Three surfaces that do not touch each other's files. |
+| M5 | Serial chain | No. Resolve feeds lookup feeds cache feeds forward. |
+| M6 | Serial chain | No. Registry feeds registration feeds forwarding. |
+
+M4 is the milestone to plan concurrency into. Everywhere else, dispatch tasks one at a time and
+take the context and independence benefits rather than manufacturing parallelism that produces
+merge conflicts.
+
 ## Three answers running provisionally
 
 Q31, Q32 and Q33 are deferred. Per the register's own rule a deferral runs on its recommended
