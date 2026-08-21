@@ -1,7 +1,12 @@
-# Keystone — Milestone Execution Procedure
+# Milestone Execution — Standard Operating Procedure
 
-The numbered steps an agent takes to work one Keystone milestone, reconciling AGENTS.md's
-existing discipline with the superpowers plugin being trialled on this feature.
+The numbered steps an agent takes to work one milestone, in any feature area. This is the
+ordered procedure; `AGENTS.md` remains the authoritative policy and states the rules these steps
+carry out. Where this document and `AGENTS.md` disagree, `AGENTS.md` wins and this document is
+wrong and gets fixed.
+
+It also reconciles that policy with the **superpowers** plugin, so that using the plugin does not
+quietly drop house discipline.
 
 **Source column:** `house` = AGENTS.md, and it wins. `sp` = superpowers. `both` = the two agree
 and reinforce each other.
@@ -18,11 +23,11 @@ wrong once. The four genuine conflicts are listed at the end with the resolution
 |---|---|---|
 | 1 | Read `AGENTS.md`, `ai/handoffs/current.md`, `tracker/assignments.json`, `PROJECT_STATUS.md`, this feature's records, and the linked GitHub state. Nothing else. | house |
 | 2 | Confirm the predecessor milestone is **merged and its owner workbook accepted**. One milestone runs at a time. | house |
-| 3 | Confirm the design authority is approved and landed in `docs/design/approved/keystone/`. If it is still in `proposed/`, stop — implementation is not authorized. | house |
+| 3 | Confirm the design authority is approved and landed in `docs/design/approved/<feature>/`. If it is still in `proposed/`, stop — implementation is not authorized. | house |
 | 4 | Check the tracker and open claims. **Stop on ownership conflict and re-plan** — do not rule on it and continue. | house |
 | 5 | Create the milestone issue. | house |
 | 6 | Record the claim in `tracker/assignments.json`. | house |
-| 7 | Create an isolated worktree and branch `feature/keystone-m<n>-<short-name>` from merged `master`. | both |
+| 7 | Create an isolated worktree and branch `feature/<area>-m<n>-<short-name>` from merged `master`. | both |
 
 ## Phase B — Before writing code
 
@@ -32,7 +37,7 @@ wrong once. The four genuine conflicts are listed at the end with the resolution
 | 9 | **Map the paths.** Which path led in, which leads out, and what *other* paths exist — the refusal, the conflict, the empty case, the permission denial, the second person arriving mid-way, the retry, the stale actor acting late. Name each and what validates it. A path with nothing validating it is named as unvalidated, never left implied. | house |
 | 10 | **Search for where else this behaviour lives**, before writing anything. Run a real search, and keep the command and its full output. Knowing every location up front shapes the work; discovering them at the end only catches omissions. Step 24 re-runs this against the finished change. | house |
 | 11 | **Write down the area's invariants** — the states its model says cannot exist — and arrange to assert them after every integration test in that area. | house |
-| 12 | If the milestone changes a page or screen, load `.agents/skills/impeccable/SKILL.md` and follow its routing and bounded verification rules. Applies to M4 only. | house |
+| 12 | If the milestone changes a page or screen, load `.agents/skills/impeccable/SKILL.md` and follow its routing and bounded verification rules. | house |
 
 ## Phase C — Per task, repeated
 
@@ -61,17 +66,17 @@ wrong once. The four genuine conflicts are listed at the end with the resolution
 | 28 | Evidence is **a command someone else can rerun, and its output**. "Verified working" is not evidence. Anything not actually executed is marked **UNTESTED**, which is an acceptable answer where a false "done" is not. | both |
 | 29 | Obtain **independent review — never by the author.** Full diff, acceptance criteria, architecture and security impact, tests, artifacts, secrets, debug code, unrelated changes, branch drift, documentation accuracy. | house |
 | 30 | Decisions are `APPROVE`, `REQUEST_CHANGES` or `COMMENT`. New commits invalidate prior approval. Never proceed with unresolved material comments. If GitHub blocks self-approval, record the decision, reviewed SHA, validation status and residual risks in a top-level PR comment. | house |
-| 31 | Produce the **owner acceptance workbook**, 5–10 minutes. A milestone shipping no UI gets a demo script instead — M1, M2, M3 and M6 are in that category. | house |
+| 31 | Produce the **owner acceptance workbook**, 5–10 minutes. A milestone shipping no UI gets a demo script instead. | house |
 | 31a | **The owner may waive step 31. The agent runs the checks anyway.** A waiver removes the owner's *time*, never the *verification*: work every case the workbook would have contained, against the running product, exactly as the owner would have, and report each result with its evidence. Marking a case "waived" when nobody executed it is how a milestone merges on no one having looked. | house |
 | 32 | Acceptance asserts **what the customer sees** — what a screen shows after a sequence, not that an API accepted a request. A workbook can pass every check while the product is visibly broken, and has. | house |
-| 33 | Record the outcome durably (`m<n>-acceptance-record.json`). Where step 31 was waived, record that it was waived, by whom, and the agent's own results in its place — so the record shows what was actually verified rather than implying an acceptance that never happened. | house |
+| 33 | Record the outcome durably as `docs/features/<feature>/m<n>-acceptance-record.json`. Where step 31 was waived, record that it was waived, by whom, and the agent's own results in its place — so the record shows what was actually verified rather than implying an acceptance that never happened. | house |
 
 ## Phase E — Merge
 
 | # | Step | Source |
 |---|---|---|
 | 34 | Push with `[skip ci]` while CI is suspended. When the owner restores CI, delete that note and the suspension note rather than relying on a green tick that never ran. | house |
-| 35 | Merge the single PR, delete the branch. **Merge happens on an accepted record** — or on explicit owner instruction to merge without one, which is what Menus M3 required and is never the default. | house |
+| 35 | Merge the single PR, delete the branch. **Merge happens on an accepted record** — or on explicit owner instruction to merge without one, which is what Menus M3 required, and is never the default. | house |
 
 ## Phase F — After merge
 
@@ -141,5 +146,15 @@ Any of these would be silently dropped by an agent following the plugin alone:
 
 ---
 
-*Scope: written for Keystone, which is where superpowers is being trialled. If it holds up across
-a milestone or two, it is a candidate for promotion into AGENTS.md rather than living here.*
+## Status
+
+Adopted as general standard operating procedure (owner, 2026-08-21). It applies to every feature
+area, not only the one it was written during.
+
+`AGENTS.md` is the policy and this is the procedure. A change that makes one false updates the
+other in the same commit — if a house rule changes, the step carrying it changes with it.
+
+The superpowers reconciliation is current as of plugin version 6.3.0. If the plugin is upgraded,
+re-read `subagent-driven-development`, `test-driven-development`,
+`verification-before-completion` and `finishing-a-development-branch`, and check the four
+conflicts above still describe what those skills say.

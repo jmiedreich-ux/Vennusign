@@ -8,6 +8,8 @@ Read only the files listed in `AGENTS.md`: current policy, handoff, tracker, sta
 
 ## Task-Scoped Reading
 
+- `docs/MILESTONE_EXECUTION.md`: the ordered steps for working a milestone. Read at the start
+  of any milestone, alongside `AGENTS.md`.
 - `docs/work-packages/`: only unfinished or currently relevant approved work records.
 - `docs/architecture/`: current design decisions; read only for affected domains.
 - `docs/operations/`: operational procedures; read only for affected services.
