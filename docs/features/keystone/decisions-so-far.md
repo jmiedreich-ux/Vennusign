@@ -229,24 +229,26 @@ extraction rule later is an adapter inside the library rather than a change to t
 
 ### Carried to the next session
 
-- What the API does on a hint/authority mismatch — redirect the client to the correct URL,
-  or return a status it re-resolves on.
-- What carries tenant on a document navigation: a path segment, a Keystone-owned cookie set
-  on the Router's own host, or serving unattributed and letting the booted bundle
-  self-correct. These are not exclusive.
-- Which version serves any residual unattributed traffic, and which direction of
-  expand-and-contract compatibility that leans on.
-- Whether claiming a screen moves it to its venue's version immediately or at reconnect.
-- Unit of assignment: organization or venue. Now informed by two facts — the wire carries a
-  venue today, and `Venue.OrganizationId` is nullable by deliberate design, so that existing
-  venues could be migrated rather than assigned to an invented tenant.
-- Whether the TenantContext contract is defined wire-format-first. Required if the Product
-  Router is not .NET, since Keystone components and the versioned API are separate
-  deployables.
-- Whether onboarding moves out of back office to a pre-auth surface.
-- Device auto-re-pair after cleared storage — parked by the owner as its own conversation.
-  Today's recovery is `POST /api/back-office/screens/pairing/replacement`, which the owner
-  judged poor from a user's perspective.
+*Status after the second sitting: resolved items name where they were settled.*
+
+- **Resolved (Section 2).** What the API does on a hint/authority mismatch — 421 Misdirected
+  Request for API calls, 307 to the correct URL for document navigations.
+- **Resolved (Section 3).** What carries tenant on a document navigation — the path, on both
+  Display and back office.
+- **Resolved (Section 4).** Unit of assignment — per venue, with scheduling per organization,
+  and every venue belonging to an organization.
+- **Resolved in shape (Section 3).** Whether onboarding moves out of back office to a
+  pre-auth surface — `/signin`, `/signup` and `/onboarding` are pre-auth root routes carrying
+  no tenant.
+- **Still open.** Which version serves any residual unattributed traffic, and which direction
+  of expand-and-contract compatibility that leans on.
+- **Still open.** Whether claiming a screen moves it to its venue's version immediately or at
+  reconnect.
+- **Still open.** Whether the TenantContext contract is defined wire-format-first — required
+  if the Product Router is not .NET.
+- **Still parked by the owner.** Device auto-re-pair after cleared storage. Today's recovery
+  is `POST /api/back-office/screens/pairing/replacement`, which the owner judged poor from a
+  user's perspective.
 
 ### Asked and not yet answered
 
@@ -260,3 +262,176 @@ extraction rule later is an adapter inside the library rather than a change to t
   screens. Repeated storage clears leave ghost records consuming a venue's
   `screen.device.pair` allowance, and screen rows can be created by anyone. Pre-existing;
   Keystone would inherit it, not cause it.
+
+## Brainstorming, second sitting — 2026-08-20
+
+Continues the architectural path. Sections 2 to 4 were presented and approved in turn. Same
+status as everything above: recorded so it is not lost, conferring no implementation
+authorization.
+
+### Section 2 — resolution and correction
+
+**Context is stamped at the crossing.** The two events that cross the pre-auth/post-auth line
+are also where TenantContext is established, and both are already server-controlled responses
+that need only gain a field:
+
+- A person crosses at sign-in. `CustomerOidcEvents` already appends the session cookie and
+  redirects in `TicketReceived` — the first moment the tenant is knowable.
+- A device crosses at claim. The device is already polling
+  `GET /api/screens/pairing/{code}/status`; the response that says "claimed" carries its venue
+  and where to navigate.
+
+**Self-correction is mandatory, not a fallback.** A cookie can be cleared, a path can be
+stale, and a first visit has neither, so there is no arrangement in which the Router always
+knows. The bundle boots, learns its true tenant from its first authenticated call, compares
+against the version that served it, and reloads on disagreement. The concept already asks for
+the ingredient: a version identifier returned on API responses, compared against what the
+client booted with.
+
+**Two distinct mismatches, and conflating them is the trap.**
+
+| | Cause | Detected by |
+|---|---|---|
+| Mis-forwarded | Router resolved v1.5, request arrived at v1.4 — stale ADS entry, pool drift | Router stamps the version it resolved; the API compares against its own `VENNU_COMPONENT_VERSION`. One string compare, no lookup. |
+| False premise | The hint said venue A, the authority says venue B | Where the authority is already loaded — free in `DisplayController.GetContent` |
+
+**Both answer 421 Misdirected Request** for API calls. It is the exact HTTP semantic, and it
+forces explicit re-resolution rather than inviting a client to follow a redirect blindly. A
+*document* navigation gets a 307 to the correct URL instead, since no client code is running
+yet to interpret a 421. Serving anyway and logging is not an option: it is precisely the
+mismatch the feature exists to prevent.
+
+**Internal tokens for everything.** Chosen over network isolation, as the standing rule for
+every internal hop — Router to API, Webhook Receiver to API, and onward.
+
+- **Asymmetric, not a shared secret.** The Router signs with a private key and each version
+  verifies with the public key, so a compromised API version cannot forge Router tokens. Keys
+  in Key Vault.
+- **Audience-scoped and short-lived.** The token names the version it was minted for, so one
+  issued for v1.4 cannot be replayed against v1.5, and it lives seconds, being per-request.
+- **It records how the tenant was established, not only what it is.** The Webhook Receiver's
+  assertion is stronger than the Router's — WR verified a provider signature, so its venue is
+  a verified fact, while the Router resolved a caller-asserted hint. Same envelope, different
+  provenance, and the receiving version needs to know which it got.
+
+> **An internal token authenticates the hop, not the claim.** It proves the request came from
+> the Router and was not tampered with in transit. It does not convert a caller-asserted
+> tenant into a verified one. Authorization still comes from the authority.
+
+Stated explicitly because "it is signed, so we can trust it" is the reasoning that would
+otherwise erode the hint/authority rule later.
+
+### Section 3 — the URL shape
+
+**Back office has no router library.** All in-app navigation is hash-based — `#/menu`,
+`#/menu/{id}`, `#/screens`, `#/menu/quick-update` — driven by a `hashchange` listener at
+`App.tsx:246`, with the pathname preserved and unused for in-app routing. The hash is never
+sent to the server, so the pathname is free and there is no route table to rewrite. The change
+is to serve the SPA under a tenant-prefixed path and read the tenant from `location.pathname`
+rather than `localStorage`. `main.tsx:14` already special-cases `/signup`, `/signin` and
+`/onboarding` by pathname, which are exactly the pre-auth routes.
+
+**Decided: back office takes the URL restructure, not a Keystone cookie.** Consistent with
+Display, and it survives a cleared browser.
+
+```
+/signin  /signup  /onboarding          pre-auth · no tenant · root
+/pair                                  pre-auth · device seeking an owner
+/o/{orgId}/v/{venueId}#/menu           post-auth · tenant in path, app route in hash
+/display/{venueId}/{screenId}          post-claim · device
+```
+
+**The pre-auth/post-auth line becomes visible in the URL** — determinable by inspection,
+by a human or by the Router, with no lookup and no session resolution. Org-scoped surfaces
+also gain a coherent home at `/o/{orgId}` with no venue segment, rather than sitting under an
+arbitrary venue.
+
+Platform Operations' own URL shape is not decided. PO's tenant is Vennusign itself rather than
+a customer, so it may not be version-routed by tenant at all.
+
+### Section 4 — unit of assignment
+
+**Every venue belongs to an organization.** Single-venue operators have an organization of
+one; multi-venue is simply an organization with more than one venue. This retires the org-less
+venue as a supported shape and makes `/o/{orgId}/v/{venueId}` always well-formed.
+
+**Assignment is per venue; scheduling is per organization.** Maintenance windows are
+inherently venue-local — they are about service hours at a physical place, and `Venue.Timezone`
+already models that per venue — so a group spanning time zones cannot share one window. But a
+multi-venue manager working across two versions is a bad experience, so a wave groups an
+organization's venues together: they enter a rollout as a unit and each moves at its own local
+window. The organization crosses over one night rather than in one instant, and never
+straddles for days.
+
+**The Router only ever keys on venue.** *(Owner: organizations are a reporting umbrella and a
+scheduler helper, not a rollout unit.)* The org segment exists in the URL for the application —
+scoping data, multi-venue functions, reporting — and is not a routing input. No organization is
+ever assigned a version. A session always has a current venue, so org-scoped surfaces are
+served by that venue's version. An organization with no venues yet has nothing to route to,
+which is onboarding, already a pre-auth root route.
+
+Consequently **VDS's lookup is venue-keyed**, which matches both the path and the
+`X-Vennusign-Venue-Id` header the wire already carries.
+
+**Assignment is never derived from subscription shape.** Subscriptions are expected to be
+flexible — venue-level, organization-level, or both at once, with merging, moving and
+adjustment as circumstances dictate. That framework is explicitly not being designed now. The
+only rule that matters to Keystone is that the two axes stay independent: a billing change must
+never be capable of silently moving a customer to a different version.
+
+### Product change identified, to be designed elsewhere
+
+**Signing in should establish an organization, not a venue.** The schema already says so:
+`FK_VenueMemberships_OrganizationMemberships` is a composite foreign key on
+`(OrganizationId, UserId)`, so a venue membership cannot exist without an organization
+membership — venue access is a refinement of organization access, enforced in the database. The
+role model agrees, making organization owner/admin/member the primary grants "augmented by any
+venue-specific role." Today's session disagrees with both by pinning a single `VenueIdClaim`,
+which is why `loadBackOfficeSession` has to clear its stored venue and retry on a 401.
+
+Under this model the organization is the session and the venue is navigation — which is what
+`/o/{orgId}/v/{venueId}` already expresses. One constraint follows: switching venue must be a
+document load rather than an in-app transition, or an org-version shell would host
+venue-version content, reproducing the frontend/backend mismatch one level up. The URL
+restructure supplies that document load for free.
+
+**This is not a Keystone decision.** It touches session issuance, the venue switcher,
+multi-venue features and the approved authentication design authority, so it needs its own
+decision in the back-office/authentication area. It is recorded here as a strong recommendation
+and a Keystone-adjacent finding, deliberately not settled as part of an infrastructure feature.
+
+### Confirmed: data protection keys are not shared
+
+`Program.cs:189` is a bare `AddDataProtection()` — no `PersistKeysTo*`, no
+`SetApplicationName`, no `ProtectKeysWith`. On App Service that places the key ring in per-app
+storage, so two versions running as separate App Services cannot read each other's protected
+values. The concept lists this as something to confirm early; it is now confirmed, and the
+present configuration guarantees the failure.
+
+The session itself is unaffected: `CustomerSessionCookie` stores a raw opaque token resolved
+against the database, so any version can honour it.
+
+Four values are protected, and they split by severity:
+
+| Protector | Purpose | Lifetime | Effect of a version move |
+|---|---|---|---|
+| `DataProtectionPosCredentialProtector` | POS credentials | durable at rest | **breaks permanently** |
+| `DataProtectionCustomerSecretProtector` | `Vennu.CustomerAuthentication.StrongFactors.v1` | durable at rest | **breaks permanently** |
+| `ProtectedPosOAuthStateService` | `Vennu.PosOAuthState.v1` | seconds | one in-flight link attempt fails; retry works |
+| `CustomerPasskeyService` | `Vennu.CustomerAuthentication.PasskeyChallenges.v1` | seconds | one in-flight challenge fails; retry works |
+
+A shared key ring with an explicit application name is therefore a prerequisite for moving any
+customer between versions. It is a change to `Vennu.Api` startup rather than a Keystone
+component, but it must land before the first assignment ever changes.
+
+### Still open after the second sitting
+
+- Which version serves residual unattributed traffic, and which direction of
+  expand-and-contract compatibility that leans on.
+- Whether claiming a screen moves it to its venue's version immediately or at reconnect.
+- Whether the TenantContext contract is defined wire-format-first — required if the Product
+  Router is not .NET.
+- Platform Operations' own routing and URL shape.
+- Where the shared data-protection key ring lives, and who owns landing it.
+- Whether Keystone decides the shared connection-membership mechanism or also builds it.
+- Device auto-re-pair after cleared storage — parked by the owner as its own conversation.
