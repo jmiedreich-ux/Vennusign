@@ -213,8 +213,8 @@ not route it.
 wrong where it places "the front door into the real PO assignment workflow" and the version
 chooser at `dev.vennusign.com`; Platform Operations is a separate app at
 `po.vennusign.com`. If a version chooser survives, it belongs at PO's own address, not on
-the public site. The concept doc needs this correction, and
-the dev multi-version testing problem it was solving needs somewhere else to live.
+the public site. Filed as **#743**, which also carries the consequence: the dev
+multi-version testing problem that text was solving needs somewhere else to live.
 
 ### First slice — changed
 
@@ -252,14 +252,14 @@ extraction rule later is an adapter inside the library rather than a change to t
 
 ### Asked and not yet answered
 
-- Whether Keystone decides the shared connection-membership mechanism or also builds it.
-  Azure SignalR Service is the only Keystone item that certainly costs money, and tier and
-  plan cost remain deferred.
+- **#742** — whether Keystone decides the shared connection-membership mechanism or also
+  builds it. Azure SignalR Service is the only Keystone item that certainly costs money, and
+  tier and plan cost remain deferred.
 
-### Defects found, to be filed separately
+### Defects found, filed
 
-- `POST /api/screens` (`ScreensController.cs:57`) is anonymous, and nothing reaps unclaimed
-  screens. Repeated storage clears leave ghost records consuming a venue's
+- **#741** — `POST /api/screens` (`ScreensController.cs:57`) is anonymous, and nothing reaps
+  unclaimed screens. Repeated storage clears leave ghost records consuming a venue's
   `screen.device.pair` allowance, and screen rows can be created by anyone. Pre-existing;
   Keystone would inherit it, not cause it.
 
@@ -433,5 +433,5 @@ component, but it must land before the first assignment ever changes.
   Router is not .NET.
 - Platform Operations' own routing and URL shape.
 - Where the shared data-protection key ring lives, and who owns landing it.
-- Whether Keystone decides the shared connection-membership mechanism or also builds it.
+- Whether Keystone decides the shared connection-membership mechanism or also builds it (#742).
 - Device auto-re-pair after cleared storage — parked by the owner as its own conversation.
