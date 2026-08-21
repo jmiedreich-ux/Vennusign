@@ -1,6 +1,37 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-20, for the public marketing site, customer sign-in repair, and QA mail tooling.
+Updated 2026-08-20, for Keystone brainstorming; previously the public marketing site, customer sign-in repair, and QA mail tooling.
+
+## 2026-08-20 — Keystone brainstorming: TenantContext, the pre-auth line, and the URL shape
+
+**Nothing was implemented and nothing is approved.** This session ran the superpowers `brainstorming` skill on Keystone (the progressive-cutover thin layer and discovery services), architectural path, and stopped at the design-discussion stage by owner instruction. The single artifact is an appended section in `docs/features/keystone/decisions-so-far.md` (commit `a32e6d84`, on branch `worktree-keystone-decisions`, carried by open PR #734). Keystone remains an unapproved feature with no design authority and no question register file yet.
+
+**The finding that reshaped the design.** The Product Router must choose a version before a request reaches the API, but for authenticated back-office traffic the tenant identity does not exist in the request — it is manufactured inside the API after authentication. `BackOfficeMenusController` reads its venue from `User.FindFirstValue(BackOfficeAuthenticationDefaults.VenueIdClaim)`, a claim that exists only once the opaque `__Host-Vennusign.CustomerSession` cookie has been resolved against the database. This is a VDS *contract* question, not only a Router question, because VDS's whole surface is one lookup whose input was undefined. It is partly solved already: `venueFetch` in `src/back-office/src/api.ts` sets `X-Vennusign-Venue-Id` from `localStorage` and `CustomerBackOfficeAuthenticationHandler` reads it — hand-rolled, one client, one auth path, conditional on a venue being selected, no contract behind it.
+
+**Settled this session** (all recorded in the decisions file with reasoning):
+- **TenantContext** is the name and the carrier — which tenant a request is *about*, supplied by the caller. Named for the subject, not the caller, because `SupportAccessGrants` makes "who am I" and "who is this about" diverge.
+- **Hint and authority are separate sources, always.** Routing inputs are caller-asserted and unverified and select a version and nothing else; authorization stays inside the versioned app against a durable authority. On disagreement the authority wins and the mismatch is telemetry — it is the built-in detector for assignment drift.
+- **TenantContext is a cache, never the authority.** A cleared browser costs a lookup, never the routing.
+- **The Router forwards; it never hands out per-version hostnames.** The `__Host-` prefix forbids a `Domain` attribute, so per-version hostnames would destroy the session at every cutover. This settles the concept's open "one hop per request vs. resolved-once-per-session endpoint" question toward same-host forwarding.
+- **Uniform on the wire** — one extraction rule (the header). The Router never pattern-matches a versioned API route. Safe because nothing is live, so the fleet-update objection does not apply.
+- **The pre-auth / post-auth line**, crossed at exactly two events: a person at sign-in, a device at claim.
+- **Pre-auth writes nothing** — a device gets an identity without creating a product row; the row appears at claim. Chosen over routing pre-auth calls to a designated version, and over moving those endpoints into the thin layer (which would couple Keystone to the `Screens` schema).
+- **Display carries the venue in its URL**, `/display/{venueId}/{screenId}`, as a hint.
+- **First slice changed.** Slice 1 is the TenantContext contract and library, not VDS + ADS; VDS + ADS becomes slice 2 once its contract is a fact rather than a guess.
+
+**Two scope corrections to the concept doc, not yet applied to it.** `dev.vennusign.com` serves the public marketing site and is out of the version equation. Platform Operations is a separate app at `po.vennusign.com`. The concept's Environments section is wrong on both counts — it places "the front door into the real PO assignment workflow" and the version chooser at `dev.vennusign.com`. `docs/design/progressive-customer-cutover-concept.md` still contains that text and needs editing; the dev multi-version testing problem it was solving needs somewhere else to live.
+
+**Deliberately parked, by the owner.** Device auto-re-pair after cleared storage — today's recovery is `POST /api/back-office/screens/pairing/replacement`, which the owner judged poor from a user's perspective and wants explored as its own conversation. Tier and plan cost remain deferred; provision nothing.
+
+**Asked and not answered:** whether Keystone decides the shared connection-membership mechanism or also builds it. Azure SignalR Service is the only Keystone item that certainly costs money, which is why it collides with the deferred cost conversation.
+
+**Not yet filed, and it should be.** `POST /api/screens` (`ScreensController.cs:57`) is anonymous and nothing reaps unclaimed screens, so repeated storage clears leave ghost records consuming a venue's `screen.device.pair` allowance and anyone can create screen rows. Pre-existing; Keystone inherits it rather than causing it. The owner was offered an issue and the session ended before answering.
+
+**Second sitting, same date (`907d6154`), took Sections 2 to 4.** Mismatch handling is settled — 421 Misdirected Request for API calls, 307 to the correct URL for document navigations, with two distinct mismatch causes kept apart (infrastructure mis-forwarding, caught by comparing the Router's stamped version against `VENNU_COMPONENT_VERSION`; and a false premise, caught where the authority is already loaded). Internal signed tokens are the standing rule on every hop, asymmetric and audience-scoped, carrying how the tenant was established and not only what it is — under the rule that **a token authenticates the hop, not the claim**. Back office takes a URL restructure rather than a cookie, which is cheap because back-office navigation is entirely hash-based (`App.tsx:246`) with no router library, leaving the pathname free: `/o/{orgId}/v/{venueId}#/menu` post-auth, `/signin` `/signup` `/onboarding` `/pair` pre-auth at root. That makes the pre-auth/post-auth line visible by inspection. Every venue now belongs to an organization; **assignment is per venue, scheduling is per organization**, the Router only ever keys on venue, and no organization is ever assigned a version. Assignment is never derived from subscription shape.
+
+**Two things recorded that are deliberately not Keystone's to decide.** First, signing in should establish an *organization* rather than a venue — `FK_VenueMemberships_OrganizationMemberships` is a composite key on `(OrganizationId, UserId)`, so venue access is already a database-enforced refinement of org access, and today's single `VenueIdClaim` is why `loadBackOfficeSession` must clear its stored venue and retry on a 401. That is a product change needing its own decision in the back-office/authentication area, not an infrastructure feature. Second, `Program.cs:189` is a bare `AddDataProtection()` with no `PersistKeysTo*` and no `SetApplicationName`, so two versions on separate App Services cannot read each other's protected values. POS credentials and strong-auth factors are durable at rest and would break **permanently** for a moved customer; passkey challenges and POS OAuth state are short-lived and only fail one in-flight attempt. The session itself is safe — `CustomerSessionCookie` holds a raw opaque token resolved against the database. A shared key ring is a `Vennu.Api` startup prerequisite that must land before any customer is ever moved.
+
+**Exact next action.** Resume Keystone brainstorming with the owner at "Still open after the second sitting" in `docs/features/keystone/decisions-so-far.md`. Do not start implementation: the brainstorming skill's gate is unmet, there is no design authority under `docs/design/approved/keystone/`, and the question register file still does not exist — the register was an explicit ask of this brainstorming and remains outstanding, though the "Still open" lists are its draft material.
 
 ## 2026-08-20 — End-of-session state and exact next action
 
@@ -1253,3 +1284,48 @@ being visible by accident during a container's startup window.
 logging) as infrastructure-as-code or leave it as manual Azure state; then continue
 either with the GitHub issue backlog or with formalizing the release-engineering
 concept into an approved work package.
+
+
+## Keystone — thin layer and discovery services named and scoped — 2026-08-20
+
+Separate track from Menus, and a continuation of the release-engineering thread above.
+The cutover design artboards in the Claude Design project "Vennusign screen mockups"
+were brought in line with `docs/design/progressive-customer-cutover-concept.md`, which
+had been renamed out from under them: `Cutover Architecture v2.dc.html` now uses VDS,
+Product Router, ADS and System Monitor rather than "Version Router" and "enforcement
+point", carries ADS's two-step resolution and System Monitor as a fourth unversionable
+component, and drops the enforcement-location question from its undecided list since
+that is now decided. A new `Cutover Sequences.dc.html` artboard renders the same system
+as five sequence diagrams, and `cutover/mermaid-source.md` was rewritten to match with a
+third diagram added. `docs/design/proposed/README.md` line 16 still says "Version
+Router" and was left alone.
+
+The feature that builds those components is now codenamed **Keystone**. What was settled
+about it is recorded in `docs/features/keystone/decisions-so-far.md`: separate App
+Services rather than one bundled app, one shared Standard-tier plan for Keystone rather
+than a plan each, and — the boundary that matters most — that plan kept separate from
+the versioned `Vennu.Api` plan, because concurrent versions divide their plan's CPU and
+would starve the Product Router that sits on every request. VDS + ADS is the recommended
+first slice on bootstrap-order grounds but the owner has not confirmed it.
+
+Two things are deliberately open. **Tier and plan cost** was deferred by the owner:
+Standard is a tier change from the current `rg-basic-website` arrangement and needs its
+own conversation before any plan is provisioned. And Keystone is a **new feature area**
+with no design authority — the concept doc is still explicitly unapproved, so nothing
+here authorizes implementation, and its `Decisions required before planning` list
+includes items Keystone cannot route around (unit of assignment, behaviour when VDS is
+unavailable, the connection mechanism, the forwarded-webhook trust boundary).
+
+Method note: the `superpowers` plugin (github.com/obra/superpowers, 6.3.0, MIT) was
+installed at **user scope** at the owner's request, to drive this build through its
+brainstorming -> worktree -> written plan -> subagent-driven development -> red/green TDD
+-> code review -> branch finishing workflow. It activates through a `SessionStart` hook
+matching `startup|clear|compact`, so it affects every new session in every project, not
+only Keystone work; reinstalling at project scope would narrow that. No feature record or
+design authority was pre-written, deliberately, since brainstorming is that workflow's
+first stage.
+
+**Exact next action.** In a fresh session, run the superpowers brainstorming stage on
+Keystone to produce the feature's design authority and question register, and let it
+settle the first slice; do not provision any App Service Plan until the cost
+conversation has happened.
