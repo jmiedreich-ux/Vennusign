@@ -426,8 +426,85 @@ component, but it must land before the first assignment ever changes.
 
 ### Still open after the second sitting
 
-- Which version serves residual unattributed traffic, and which direction of
-  expand-and-contract compatibility that leans on.
+- **Resolved in the third sitting.** Which version serves residual unattributed traffic, and
+  which direction of expand-and-contract compatibility that leans on.
+- Whether claiming a screen moves it to its venue's version immediately or at reconnect.
+- Whether the TenantContext contract is defined wire-format-first — required if the Product
+  Router is not .NET.
+- Platform Operations' own routing and URL shape.
+- Where the shared data-protection key ring lives, and who owns landing it.
+- Whether Keystone decides the shared connection-membership mechanism or also builds it (#742).
+- Device auto-re-pair after cleared storage — parked by the owner as its own conversation.
+
+## Brainstorming, third sitting — 2026-08-20
+
+Same status: recorded so it is not lost, conferring no implementation authorization.
+
+### Which version serves unattributed traffic
+
+**The default version serves it, and "default" is an explicit pointer Platform Operations
+sets.** The owner's decision is that the latest version serves unattributed traffic. The
+qualifier is that "latest" cannot mean "newest registered."
+
+Registration is a fact about what exists; assignment is the decision that affects customers.
+That seam is what the concept is built on. If registering v1.6 immediately handed it every
+sign-in, a version with zero assigned customers would be serving customer-facing traffic — and
+a broken one would lock out everybody, including customers sitting safely on an older version.
+The pointer therefore advances as a deliberate PO act, normally once a first wave is healthy,
+so unattributed traffic follows customers onto a version rather than leading them onto it.
+
+What follows from it:
+
+- **New customers start on the default version.** They have never been assigned anything, and
+  onboarding is pre-auth, so they are created by whatever serves unattributed traffic and
+  assigned there.
+- **Compatibility direction stops mattering**, because of the first sitting's decision that
+  pre-auth writes nothing. The single exception is sign-in creating a session, and
+  `CustomerSessionCookie` stores a raw opaque token resolved against the database, so any
+  version can honour a session the newest version issued.
+- **Sign-in hands off cleanly.** The default version authenticates and redirects to
+  `/o/{orgId}/v/{venueId}`; that request then routes to the customer's own version.
+
+### The pre-auth surface — a second product change, and the same one
+
+*Recorded, not decided. Keystone is the reason it was found, not the right owner for it.*
+
+**Onboarding should be its own app.** The split already exists in the code. `src/back-office/src/main.tsx`
+is a two-way switch at the root between two unrelated components:
+
+```jsx
+const customerEntryRoute = ["/signup", "/signin", "/onboarding"].includes(
+  window.location.pathname.replace(/\/$/, ""));
+
+{customerEntryRoute ? <CustomerOnboardingApp /> : <App />}
+```
+
+That pathname list is exactly the pre-auth set derived independently from routing needs in the
+second sitting. So this is not splitting one app in two — it is unbundling two apps that are
+already separate, and letting the deployment boundary match the architectural one.
+
+The shared surface is small. `CustomerOnboardingApp` is 304 lines against `App`'s 714, and
+imports only `config`, the api client, two onboarding-only components, and
+`customerEntryRouting.mjs` — so a small shared package or a little duplication, not a
+disentangling job. Note that `customerEntryRouting.mjs` already exports
+`authenticatedCustomerDestination`, the "where do you go once authenticated" handoff, which
+under the URL restructure becomes `/o/{orgId}/v/{venueId}`. The seam is already named in the
+code.
+
+**What Keystone gets from it:** back office can then assume it always has a tenant, because it
+is only ever entered post-auth from a tenant-bearing URL. The whole "no tenant yet" state
+leaves that app, including the `loadBackOfficeSession` clear-and-retry dance.
+
+**This is the same change as org-as-login.** Both are consequences of taking the
+pre-auth/post-auth line seriously in the *product* rather than only in the routing, so they
+should be designed as one piece of work — a pre-auth surface covering `/signup`, `/signin` and
+`/onboarding` — rather than as two unrelated recommendations. Both touch session issuance, the
+venue switcher, multi-venue features and the approved authentication design authority, and
+both belong in the back-office/authentication area rather than inside an infrastructure
+feature.
+
+### Still open after the third sitting
+
 - Whether claiming a screen moves it to its venue's version immediately or at reconnect.
 - Whether the TenantContext contract is defined wire-format-first — required if the Product
   Router is not .NET.
