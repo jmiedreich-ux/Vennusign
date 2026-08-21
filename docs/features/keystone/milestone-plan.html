@@ -1,0 +1,1898 @@
+<title>Keystone Milestone Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;500;600&display=swap">
+<style>
+:root{--ink:#1b1f24;--muted:#5b6470;--faint:#8c94a1;--line:#c7cdd6;--line-soft:#e2e6ec;--surface:#ffffff;--page:#f3f5f8;--accent:#b45309;--accent-ink:#8a3f07;--accent-soft:#fdf0e1;--on-accent:#ffffff;--fill:#eef2f8;--done:#2d6a4f;--code-bg:#f7f9fb;--shadow:0 1px 2px rgba(27,31,36,.06),0 4px 12px rgba(27,31,36,.05);--sans:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--serif:"IBM Plex Serif",Georgia,serif;--mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e8eaed;--muted:#a3acb8;--faint:#79828e;--line:#333a44;--line-soft:#262d35;--surface:#1c2127;--page:#12161a;--accent:#e08c3c;--accent-ink:#f0a55c;--accent-soft:#2e2317;--on-accent:#241a10;--fill:#232a33;--done:#74c69d;--code-bg:#171c22;--shadow:0 1px 2px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3)}}
+:root[data-theme="dark"]{--ink:#e8eaed;--muted:#a3acb8;--faint:#79828e;--line:#333a44;--line-soft:#262d35;--surface:#1c2127;--page:#12161a;--accent:#e08c3c;--accent-ink:#f0a55c;--accent-soft:#2e2317;--on-accent:#241a10;--fill:#232a33;--done:#74c69d;--code-bg:#171c22;--shadow:0 1px 2px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%}
+code{font-family:var(--mono);font-size:.87em;background:var(--fill);padding:1px 5px;border-radius:4px;overflow-wrap:break-word}
+a{color:var(--accent-ink)}
+a:focus-visible,input:focus-visible,.task-head:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line);padding:.75rem 1rem .6rem}
+.masthead{max-width:48rem;margin:0 auto;display:flex;align-items:baseline;gap:.75rem}
+.masthead h1{margin:0;font-size:1rem;font-weight:600;letter-spacing:-.01em;flex:1 1 auto}
+.masthead .of{font-family:var(--mono);font-size:.78rem;color:var(--faint);white-space:nowrap}
+nav{max-width:48rem;margin:.55rem auto 0;display:flex;gap:.35rem;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav a{flex:0 0 auto;font-size:.8rem;font-weight:500;padding:.32rem .7rem;border-radius:999px;border:1px solid var(--line);color:var(--muted);text-decoration:none;white-space:nowrap}
+nav a:hover{color:var(--accent-ink);border-color:var(--faint)}
+main{max-width:48rem;margin:0 auto;padding:1.25rem 1rem 5rem}
+.doc{margin-bottom:2.5rem}
+.doc>h2{display:flex;align-items:baseline;gap:.6rem;font-family:var(--serif);font-size:1.2rem;font-weight:600;margin:0 0 1rem;padding-bottom:.5rem;border-bottom:2px solid var(--accent);scroll-margin-top:5.5rem;text-wrap:balance}
+.mcount{margin-left:auto;font-family:var(--mono);font-size:.72rem;font-weight:400;color:var(--faint);white-space:nowrap}
+h3{font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:1.6rem 0 .7rem;padding-bottom:.35rem;border-bottom:1px solid var(--line)}
+p{margin:.6rem 0;text-wrap:pretty}
+ul{margin:.55rem 0;padding-left:1.15rem}
+li{margin:.3rem 0;text-wrap:pretty}
+hr{border:none;border-top:1px solid var(--line-soft);margin:1.5rem 0}
+blockquote{margin:.9rem 0;padding:.75rem .85rem;background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;font-size:.9rem}
+.task{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);margin:.75rem 0;overflow:hidden}
+.task-head{margin:0;padding:.8rem .9rem;font-family:var(--serif);font-size:1rem;font-weight:600;cursor:pointer;user-select:none;display:flex;align-items:center;gap:.5rem}
+.task-head::before{content:"\25B8";color:var(--faint);font-size:.8em;flex:0 0 auto}
+.task-head[aria-expanded="true"]::before{content:"\25BE"}
+.task-head[aria-expanded="false"]+.task-body{display:none}
+.task-body{padding:0 .9rem 1rem;border-top:1px solid var(--line-soft)}
+.step{display:flex;align-items:center;gap:.6rem;margin:.8rem 0 .3rem;padding:.5rem .65rem;border-radius:8px;background:var(--fill)}
+.step label{display:flex;align-items:center;gap:.5rem;flex:1 1 auto;cursor:pointer;min-width:0}
+.step input{flex:0 0 auto;width:16px;height:16px;accent-color:var(--done)}
+.step .stitle{font-weight:600;font-size:.92rem}
+.step input:checked+.stitle{color:var(--faint);text-decoration:line-through}
+.kind{flex:0 0 auto;font-family:var(--mono);font-size:.66rem;letter-spacing:.04em;padding:.14rem .38rem;border-radius:4px;white-space:nowrap;border:1px solid var(--line);color:var(--muted)}
+.step.test .kind{border-color:var(--accent);color:var(--accent-ink)}
+.step.expect-fail .kind{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
+.step.expect-pass .kind{border-color:var(--done);color:var(--done)}
+.step.commit .kind{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.code{position:relative;margin:.55rem 0}
+.code .lang{position:absolute;top:.4rem;right:.55rem;font-family:var(--mono);font-size:.66rem;color:var(--faint);letter-spacing:.05em}
+pre{margin:0;padding:.75rem .85rem;background:var(--code-bg);border:1px solid var(--line-soft);border-radius:8px;overflow-x:auto;font-family:var(--mono);font-size:.76rem;line-height:1.65;color:var(--ink)}
+.tablewrap{overflow-x:auto;margin:.75rem 0}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th{text-align:left;font-size:.68rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);padding:.45rem .6rem;border-bottom:1px solid var(--line)}
+td{padding:.5rem .6rem;border-bottom:1px solid var(--line-soft);vertical-align:top;color:var(--muted)}
+@media (min-width:680px){body{font-size:16.5px}pre{font-size:.79rem}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<header>
+  <div class="masthead"><h1>Keystone Milestone Plan</h1><span class="of">6 · 35 tasks</span></div>
+  <nav><a href="#index">Index</a><a href="#m1">M1</a><a href="#m2">M2</a><a href="#m3">M3</a><a href="#m4">M4</a><a href="#m5">M5</a><a href="#m6">M6</a></nav>
+</header>
+<main><section class="doc" id="index"><h2>Keystone — Milestone Plan</h2><p>Index of the six milestones that build Keystone end to end. Each is independently mergeable and leaves <code>master</code> releasable, per AGENTS.md&#x27;s working model.</p>
+<p><strong>Spec:</strong> <code>docs/design/proposed/keystone/decisions.md</code> (49 decisions). <strong>Register:</strong> <code>docs/features/keystone/open-questions.md</code> (31 answered, 3 deferred). <strong>Conversational record:</strong> <code>docs/features/keystone/decisions-so-far.md</code> — keeps the reasoning and the rejected alternatives. It uses &quot;slice&quot; as a historical synonym for milestone.</p>
+<h3>Governance gate</h3>
+<p><strong>No milestone executes yet.</strong> The design authority is in <code>docs/design/proposed/</code>, not <code>approved/</code>. AGENTS.md requires an approved authority before implementation, and the brainstorming skill&#x27;s gate is unmet until the owner approves the spec. Every milestone plan repeats this.</p>
+<h3>Milestone discipline</h3>
+<p>Each milestone follows the GitHub-first sequence in AGENTS.md, in this order:</p>
+<p>1. Create the milestone issue. 2. Record the claim in <code>tracker/assignments.json</code>. 3. Branch <code>feature/keystone-m&lt;n&gt;-&lt;short-name&gt;</code> from merged <code>master</code>. 4. One PR. Ship schema, API, UI and Playwright specs <strong>together</strong> where the milestone has them —    tests are written with the implementation, never after. 5. Verify locally. CI is suspended by owner decision, so local checks <em>are</em> the gate: the affected    Release builds, focused unit tests, applicable migration validation, and the Playwright UI gate. 6. Independent review, never by the author. New commits invalidate prior approval. 7. Merge, delete the branch, then synchronize <code>PROJECT_STATUS.md</code>, the tracker,    <code>ai/handoffs/current.md</code> and this feature&#x27;s records. 8. <strong>Owner acceptance workbook</strong>, 5–10 minutes, before the next milestone starts. A milestone that    ships no UI gets a demo script instead — M1, M2, M3 and M6 are in that category.</p>
+<p><strong>One milestone at a time.</strong> A successor starts only after its predecessor is merged and its owner workbook is accepted.</p>
+<h3>The milestones</h3>
+<div class="tablewrap"><table><thead><tr><th>#</th><th>Milestone</th><th>Plan</th><th>Builds</th><th>Acceptance</th></tr></thead><tbody><tr><td>1</td><td>TenantContext contract and library</td><td><code>m1-plan.md</code></td><td><code>Vennu.Tenancy</code>, API-side resolution</td><td>demo script</td></tr><tr><td>2</td><td>Version Discovery Service</td><td><code>m2-plan.md</code></td><td><code>Vennu.Vds</code> — assignments, lookup, default pointer, PO writes</td><td>demo script</td></tr><tr><td>3</td><td>Application Discovery Service</td><td><code>m3-plan.md</code></td><td><code>Vennu.Ads</code> — registry, health polling, replaces the VDS stub</td><td>demo script</td></tr><tr><td>4</td><td>The front ends adopt the tenant path</td><td><code>m4-plan.md</code></td><td>Pre-auth app split, tenant-prefixed back office, relative calls, Display route</td><td>workbook</td></tr><tr><td>5</td><td>Product Router</td><td><code>m5-plan.md</code></td><td><code>Vennu.Router</code> — resolve, cache, mint, forward, 421/307</td><td>workbook</td></tr><tr><td>6</td><td>POS Webhook Receiver</td><td><code>m6-plan.md</code></td><td><code>Vennu.WebhookReceiver</code> — verify, resolve, queue, forward</td><td>demo script</td></tr></tbody></table></div>
+<p>Ordering follows decisions 44 and 45 rather than convenience. M1 makes VDS&#x27;s lookup signature a fact rather than a guess. Nothing routes until VDS answers (M2), and VDS cannot answer usefully until ADS knows where healthy instances are (M3). M4 puts the tenant in the URL, which M5 needs in order to route on it. M6 depends on M2 and on M1&#x27;s token but deliberately not on M5 — the Webhook Receiver is a separate front door, so a Router change cannot break POS ingestion.</p>
+<p>M4 is the only milestone touching customer-facing surfaces, which is why it is the only one carrying a full acceptance workbook rather than a demo script.</p>
+<h3>Three answers running provisionally</h3>
+<p>Q31, Q32 and Q33 are deferred. Per the register&#x27;s own rule a deferral runs on its recommended default, and the affected milestone flags the consequence in its acceptance workbook so it stays visible and cheap to overturn.</p>
+<div class="tablewrap"><table><thead><tr><th>Deferred</th><th>Provisional default in force</th><th>Where it bites</th></tr></thead><tbody><tr><td>Q31</td><td>The pre-auth app split lands before the URL restructure</td><td>M4</td></tr><tr><td>Q32</td><td>Provisioning automation is a prerequisite feature alongside Keystone, not inside it</td><td>before M5</td></tr><tr><td>Q33</td><td>Keystone decides the connection-membership mechanism but does not build it</td><td>not built</td></tr></tbody></table></div>
+<h3>Not in scope</h3>
+<ul><li><strong>Connection membership.</strong> Q33&#x27;s provisional default is decide-only. Tracked as <strong>#742</strong>.</li><li><strong>System Monitor.</strong> Decision 1 names it as later work.</li><li><strong>Provisioning automation.</strong> Decision 47 and Q32. It must exist before M5 can stand up a second version, but it is not Keystone&#x27;s to build.</li><li><strong>Setting <code>VENNU_COMPONENT_VERSION</code>.</strong> Decision 46, tracked as <strong>#726</strong>, answered in the register as a separate problem to fix. Decision 35&#x27;s mis-forwarding check is inert until it lands, and no customer may be moved before it does.</li><li><strong>Correcting the concept document.</strong> Q34 accepted, tracked as <strong>#743</strong>.</li></ul>
+<h3>Cost gate</h3>
+<p>M2, M3, M5 and M6 each stand up an App Service. Decisions 41 and 42 settle the shape — one shared Standard-tier plan for Keystone, separate from the versioned plan — but tier and plan cost are deliberately deferred and <strong>nothing is provisioned until the owner accepts that cost.</strong> Those milestones can be built, tested and accepted locally; they cannot be deployed.</p></section>
+<section class="doc" id="m1"><h2>Keystone Milestone 1 — TenantContext Implementation Plan<span class="mcount">5 tasks</span></h2><blockquote><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</blockquote>
+<p><strong>Goal:</strong> Ship the TenantContext contract and its library into <code>Vennu.Api</code> so that a request can carry which tenant it is <em>about</em>, with nothing yet depending on it.</p>
+<p><strong>Architecture:</strong> A new dependency-free <code>Vennu.Tenancy</code> project owns the contract in two layers — the public one is a URL path prefix (<code>/o/{orgId}/v/{venueId}/…</code>), the internal one is an ES256-signed token minted by the Product Router. <code>Vennu.Api</code> gains a middleware that resolves whichever is present, strips the prefix so existing route templates are untouched, and exposes the result through DI. Nothing reads it yet, so the whole milestone is inert and reversible.</p>
+<p><strong>Tech Stack:</strong> .NET 9, xunit 2.9.2, BCL only. <strong>No new package references.</strong> ES256 is implemented with <code>System.Security.Cryptography.ECDsa</code> and <code>System.Text.Json</code> deliberately: decision 2 requires the thin layer&#x27;s change frequency to stay low, and decision 18 makes the wire format additive-only forever, so the format is owned outright rather than inherited from a library&#x27;s serialization choices and version cadence.</p>
+<p><strong>Spec:</strong> <code>docs/design/proposed/keystone/decisions.md</code> (49 decisions). Answers that shaped this plan: <code>docs/features/keystone/open-questions.md</code>.</p>
+<h3>Milestone discipline</h3>
+<p>This is a numbered milestone under AGENTS.md&#x27;s working model, not a loose batch of work. Before starting: create the milestone issue, record the claim in <code>tracker/assignments.json</code>, and branch as <code>feature/keystone-m1-&lt;short-name&gt;</code> from merged <code>master</code>. One PR. Verify locally (CI is suspended by owner decision — local checks <em>are</em> the gate). Obtain independent review, never by the author. Merge, then synchronize <code>PROJECT_STATUS.md</code>, the tracker, <code>ai/handoffs/current.md</code> and this feature&#x27;s records.</p>
+<p><strong>Ends with a short owner acceptance workbook</strong> (5–10 minutes) before the next milestone starts. A milestone that ships no UI gets a demo script instead. Only one milestone runs at a time.</p>
+<h3>Governance gate — read before starting</h3>
+<p><strong>This plan must not be executed yet.</strong> The design authority is in <code>docs/design/proposed/</code>, not <code>approved/</code>. AGENTS.md requires an approved design authority before implementation, and the brainstorming skill&#x27;s gate is unmet until the owner approves the spec. Executing this plan before that approval is out of order regardless of how ready the tasks look.</p>
+<p><strong>Orchestrator-owned files are touched.</strong> Per AGENTS.md&#x27;s multi-agent safety rules, this plan modifies <code>Vennusign.sln</code>, a <code>.csproj</code>, and dependency injection in <code>Program.cs</code>. Those are orchestrator-owned; do not run two agents against this plan concurrently.</p>
+<p><strong>CI is suspended.</strong> Local verification is the gate. Every task below states the exact command and the expected result.</p>
+<h3>Global Constraints</h3>
+<ul><li><strong>Target <code>.NET 9</code>.</strong> <code>&lt;Nullable&gt;enable&lt;/Nullable&gt;</code> and <code>&lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;</code> on every project, matching <code>src/Vennu.Core.Models/Vennu.Core.Models.csproj</code>.</li><li><strong>No new package references anywhere in this milestone.</strong></li><li><strong>Decision 11 — hint and authority are separate sources, always.</strong> Nothing produced by this milestone may be used for an authorization decision. Reviewers should reject any use of <code>TenantContext</code> in an authorization path.</li><li><strong>Decision 14 — the API&#x27;s route templates do not change.</strong> <code>BackOfficeMenusController</code> stays at <code>api/back-office/menus</code>. The prefix is stripped before routing.</li><li><strong>Decision 18 — the wire format is additive-only, permanently.</strong> No field may ever be removed or reinterpreted; only added, in ways an old parser ignores. Unknown JSON members are ignored on read, never rejected.</li><li><strong>Decision 32 — tokens are asymmetric, audience-scoped and short-lived.</strong> ES256; audience is the version the token was minted for; TTL 60 seconds (register Q16).</li><li><strong>Decision 33 — a token records how the tenant was established</strong>, not only what it is.</li><li><strong>Backward compatibility is the acceptance bar.</strong> A request with neither prefix nor token must behave exactly as it does today.</li></ul>
+<h3>File Structure</h3>
+<div class="tablewrap"><table><thead><tr><th>File</th><th>Responsibility</th></tr></thead><tbody><tr><td><code>src/Vennu.Tenancy/Vennu.Tenancy.csproj</code></td><td>New project. No package references, no project references.</td></tr><tr><td><code>src/Vennu.Tenancy/TenantContext.cs</code></td><td>The contract type and its provenance enum.</td></tr><tr><td><code>src/Vennu.Tenancy/TenantPath.cs</code></td><td>Public contract: parse and format the URL prefix. Pure.</td></tr><tr><td><code>src/Vennu.Tenancy/TenantToken.cs</code></td><td>Internal contract: ES256 issue and verify. Pure apart from the clock.</td></tr><tr><td><code>src/Vennu.Api/Infrastructure/TenantContextAccessor.cs</code></td><td>DI surface for reading the resolved context.</td></tr><tr><td><code>src/Vennu.Api/Infrastructure/TenantContextMiddleware.cs</code></td><td>Resolve token, else prefix, else nothing. Strip the prefix.</td></tr><tr><td><code>tests/Vennu.Tenancy.Tests/</code></td><td>Unit tests for the three pure units.</td></tr><tr><td><code>tests/Vennu.Api.Tests/Infrastructure/TenantContextMiddlewareTests.cs</code></td><td>Middleware behaviour, including the untouched-request case.</td></tr></tbody></table></div>
+<p><code>Vennu.Tenancy</code> takes no project references on purpose. It is consumed by <code>Vennu.Api</code> now and by the Product Router later, and those are separate deployables — so it must not drag Vennusign domain types across that boundary.</p>
+<hr>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 1: The <code>Vennu.Tenancy</code> project and the <code>TenantContext</code> type</h4><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Create: <code>src/Vennu.Tenancy/Vennu.Tenancy.csproj</code></li><li>Create: <code>src/Vennu.Tenancy/TenantContext.cs</code></li><li>Create: <code>tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj</code></li><li>Create: <code>tests/Vennu.Tenancy.Tests/TenantContextTests.cs</code></li><li>Modify: <code>Vennusign.sln</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: nothing.</li><li>Produces: <code>Vennu.Tenancy.TenantProvenance</code> (enum: <code>Asserted</code>, <code>Verified</code>); <code>Vennu.Tenancy.TenantContext</code> (sealed record with <code>Guid VenueId</code>, <code>Guid? OrganizationId</code>, <code>TenantProvenance Provenance</code>).</li></ul>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>tests/Vennu.Tenancy.Tests/TenantContextTests.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using Vennu.Tenancy;
+
+namespace Vennu.Tenancy.Tests;
+
+public sealed class TenantContextTests
+{
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void Asserted_IsTheDefaultProvenance()
+    {
+        // Decision 11: anything the Router read from a caller is a hint until
+        // something else establishes it. Asserted must be the zero value so a
+        // context constructed carelessly is never accidentally trusted.
+        Assert.Equal(TenantProvenance.Asserted, default(TenantProvenance));
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void CarriesVenueOrganizationAndProvenance()
+    {
+        var venue = Guid.NewGuid();
+        var org = Guid.NewGuid();
+
+        var context = new TenantContext(venue, org, TenantProvenance.Verified);
+
+        Assert.Equal(venue, context.VenueId);
+        Assert.Equal(org, context.OrganizationId);
+        Assert.Equal(TenantProvenance.Verified, context.Provenance);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void OrganizationIsOptional()
+    {
+        // Decision 25: the Router only ever keys on venue. The org segment is for
+        // the application, so a context is well-formed without it.
+        var context = new TenantContext(Guid.NewGuid(), null, TenantProvenance.Asserted);
+        Assert.Null(context.OrganizationId);
+    }
+}</pre></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 2: Create the projects and register them in the solution</span></label><span class="kind">implement</span></div>
+<p>Create <code>src/Vennu.Tenancy/Vennu.Tenancy.csproj</code>:</p>
+<div class="code"><span class="lang">xml</span><pre>&lt;Project Sdk=&quot;Microsoft.NET.Sdk&quot;&gt;
+
+  &lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;net9.0&lt;/TargetFramework&gt;
+    &lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;
+    &lt;Nullable&gt;enable&lt;/Nullable&gt;
+    &lt;GenerateAssemblyInfo&gt;false&lt;/GenerateAssemblyInfo&gt;
+  &lt;/PropertyGroup&gt;
+
+&lt;/Project&gt;</pre></div>
+<p>Create <code>tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj</code>:</p>
+<div class="code"><span class="lang">xml</span><pre>&lt;Project Sdk=&quot;Microsoft.NET.Sdk&quot;&gt;
+  &lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;net9.0&lt;/TargetFramework&gt;
+    &lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;
+    &lt;Nullable&gt;enable&lt;/Nullable&gt;
+    &lt;IsPackable&gt;false&lt;/IsPackable&gt;
+  &lt;/PropertyGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;PackageReference Include=&quot;Microsoft.NET.Test.Sdk&quot; Version=&quot;17.12.0&quot; /&gt;
+    &lt;PackageReference Include=&quot;xunit&quot; Version=&quot;2.9.2&quot; /&gt;
+    &lt;PackageReference Include=&quot;xunit.runner.visualstudio&quot; Version=&quot;2.8.2&quot;&gt;
+      &lt;PrivateAssets&gt;all&lt;/PrivateAssets&gt;
+      &lt;IncludeAssets&gt;runtime; build; native; contentfiles; analyzers; buildtransitive&lt;/IncludeAssets&gt;
+    &lt;/PackageReference&gt;
+    &lt;PackageReference Include=&quot;coverlet.collector&quot; Version=&quot;6.0.2&quot;&gt;
+      &lt;PrivateAssets&gt;all&lt;/PrivateAssets&gt;
+      &lt;IncludeAssets&gt;runtime; build; native; contentfiles; analyzers; buildtransitive&lt;/IncludeAssets&gt;
+    &lt;/PackageReference&gt;
+  &lt;/ItemGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;ProjectReference Include=&quot;..\..\src\Vennu.Tenancy\Vennu.Tenancy.csproj&quot; /&gt;
+  &lt;/ItemGroup&gt;
+&lt;/Project&gt;</pre></div>
+<p>Add both to the solution:</p>
+<div class="code"><span class="lang">bash</span><pre>dotnet sln Vennusign.sln add src/Vennu.Tenancy/Vennu.Tenancy.csproj --solution-folder src
+dotnet sln Vennusign.sln add tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj --solution-folder tests</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 3: Run the test to verify it fails</span></label><span class="kind">expect fail</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj</code> Expected: FAIL to compile — <code>The type or namespace name &#x27;TenantContext&#x27; could not be found</code>.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 4: Write the minimal implementation</span></label><span class="kind">implement</span></div>
+<p>Create <code>src/Vennu.Tenancy/TenantContext.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>namespace Vennu.Tenancy;
+
+/// &lt;summary&gt;
+/// How the tenant on a request was established. Decision 33: the receiving version
+/// must be able to tell a verified fact from a caller&#x27;s assertion.
+/// &lt;/summary&gt;
+public enum TenantProvenance
+{
+    /// &lt;summary&gt;The caller said so and nothing checked it. The default, deliberately.&lt;/summary&gt;
+    Asserted = 0,
+
+    /// &lt;summary&gt;Established by something that verified it, such as a POS provider signature.&lt;/summary&gt;
+    Verified = 1
+}
+
+/// &lt;summary&gt;
+/// Which tenant a request is &lt;em&gt;about&lt;/em&gt; — not who is making it. Decision 10.
+/// Decision 11: this is a routing input only and must never reach an authorization decision.
+/// &lt;/summary&gt;
+public sealed record TenantContext(
+    Guid VenueId,
+    Guid? OrganizationId,
+    TenantProvenance Provenance);</pre></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 5: Run the tests to verify they pass</span></label><span class="kind">expect pass</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj</code> Expected: PASS, 3 of 3.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 6: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/Vennu.Tenancy tests/Vennu.Tenancy.Tests Vennusign.sln
+git commit -m &quot;feat(tenancy): add the TenantContext contract type
+
+Decision 10 names the subject rather than the caller. Provenance defaults to
+Asserted so a carelessly constructed context is never accidentally trusted.&quot;</pre></div>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 2: <code>TenantPath</code> — the public contract</h4><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Create: <code>src/Vennu.Tenancy/TenantPath.cs</code></li><li>Create: <code>tests/Vennu.Tenancy.Tests/TenantPathTests.cs</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: <code>TenantContext</code>, <code>TenantProvenance</code> from Task 1.</li><li>Produces: <code>static bool TenantPath.TryParse(string path, out TenantContext? context, out string remainder)</code> and <code>static string TenantPath.Format(TenantContext context, string remainder)</code>.</li></ul>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>tests/Vennu.Tenancy.Tests/TenantPathTests.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using Vennu.Tenancy;
+
+namespace Vennu.Tenancy.Tests;
+
+public sealed class TenantPathTests
+{
+    private static readonly Guid Org = Guid.Parse(&quot;11111111-1111-1111-1111-111111111111&quot;);
+    private static readonly Guid Venue = Guid.Parse(&quot;22222222-2222-2222-2222-222222222222&quot;);
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void ParsesOrgAndVenueAndReturnsTheBarePath()
+    {
+        var ok = TenantPath.TryParse($&quot;/o/{Org}/v/{Venue}/api/back-office/menus&quot;, out var context, out var remainder);
+
+        Assert.True(ok);
+        Assert.Equal(Venue, context!.VenueId);
+        Assert.Equal(Org, context.OrganizationId);
+        // Decision 14: what reaches routing is the bare path, unchanged.
+        Assert.Equal(&quot;/api/back-office/menus&quot;, remainder);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void ParsedContextIsAlwaysAsserted()
+    {
+        // Decision 11: a path segment is caller-supplied. Parsing it never upgrades it.
+        TenantPath.TryParse($&quot;/o/{Org}/v/{Venue}/api/x&quot;, out var context, out _);
+        Assert.Equal(TenantProvenance.Asserted, context!.Provenance);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void AcceptsAVenueWithoutAnOrganizationSegment()
+    {
+        var ok = TenantPath.TryParse($&quot;/v/{Venue}/api/x&quot;, out var context, out var remainder);
+
+        Assert.True(ok);
+        Assert.Equal(Venue, context!.VenueId);
+        Assert.Null(context.OrganizationId);
+        Assert.Equal(&quot;/api/x&quot;, remainder);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void PrefixWithNoTrailingPathYieldsRoot()
+    {
+        var ok = TenantPath.TryParse($&quot;/o/{Org}/v/{Venue}&quot;, out _, out var remainder);
+
+        Assert.True(ok);
+        Assert.Equal(&quot;/&quot;, remainder);
+    }
+
+    [Theory]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    [InlineData(&quot;/api/back-office/menus&quot;)]          // no prefix at all — today&#x27;s traffic
+    [InlineData(&quot;/signin&quot;)]                          // pre-auth root route, decision 19
+    [InlineData(&quot;/pair&quot;)]                            // pre-auth device route, decision 19
+    [InlineData(&quot;/o/not-a-guid/v/also-not/api/x&quot;)]   // malformed identifiers
+    [InlineData(&quot;/v/not-a-guid/api/x&quot;)]
+    [InlineData(&quot;/o/11111111-1111-1111-1111-111111111111/api/x&quot;)] // org without venue
+    [InlineData(&quot;&quot;)]
+    public void LeavesAnythingWithoutAValidPrefixAlone(string path)
+    {
+        var ok = TenantPath.TryParse(path, out var context, out var remainder);
+
+        Assert.False(ok);
+        Assert.Null(context);
+        Assert.Equal(path, remainder);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void FormatIsTheInverseOfParse()
+    {
+        var original = $&quot;/o/{Org}/v/{Venue}/api/back-office/menus&quot;;
+        TenantPath.TryParse(original, out var context, out var remainder);
+
+        Assert.Equal(original, TenantPath.Format(context!, remainder));
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void FormatOmitsTheOrganizationSegmentWhenThereIsNone()
+    {
+        var context = new TenantContext(Venue, null, TenantProvenance.Asserted);
+        Assert.Equal($&quot;/v/{Venue}/api/x&quot;, TenantPath.Format(context, &quot;/api/x&quot;));
+    }
+}</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run the test to verify it fails</span></label><span class="kind">expect fail</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj --filter FullyQualifiedName~TenantPathTests</code> Expected: FAIL to compile — <code>The name &#x27;TenantPath&#x27; does not exist</code>.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Write the implementation</span></label><span class="kind">implement</span></div>
+<p>Create <code>src/Vennu.Tenancy/TenantPath.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>namespace Vennu.Tenancy;
+
+/// &lt;summary&gt;
+/// The public half of the contract (decision 13): the tenant travels in the URL path,
+/// so a relative call from a bundle inherits it with no client code.
+/// Decision 18: this shape is additive-only and may never be reinterpreted.
+/// &lt;/summary&gt;
+public static class TenantPath
+{
+    private const string OrgSegment = &quot;o&quot;;
+    private const string VenueSegment = &quot;v&quot;;
+
+    /// &lt;summary&gt;
+    /// Reads a tenant prefix off the front of &lt;paramref name=&quot;path&quot;/&gt;.
+    /// Returns false and leaves &lt;paramref name=&quot;remainder&quot;/&gt; as the original path when
+    /// there is no well-formed prefix — which is the normal case for pre-auth routes and
+    /// for every request that exists today.
+    /// &lt;/summary&gt;
+    public static bool TryParse(string path, out TenantContext? context, out string remainder)
+    {
+        context = null;
+        remainder = path;
+
+        if (string.IsNullOrEmpty(path) || path[0] != &#x27;/&#x27;) return false;
+
+        var parts = path.Split(&#x27;/&#x27;, StringSplitOptions.None);
+        // parts[0] is empty because the path starts with &#x27;/&#x27;.
+        var index = 1;
+        Guid? organizationId = null;
+
+        if (parts.Length &gt; index + 1 &amp;&amp; parts[index] == OrgSegment)
+        {
+            if (!Guid.TryParse(parts[index + 1], out var org)) return false;
+            organizationId = org;
+            index += 2;
+        }
+
+        if (parts.Length &lt;= index + 1 || parts[index] != VenueSegment) return false;
+        if (!Guid.TryParse(parts[index + 1], out var venue)) return false;
+        index += 2;
+
+        context = new TenantContext(venue, organizationId, TenantProvenance.Asserted);
+        var rest = string.Join(&#x27;/&#x27;, parts.Skip(index));
+        remainder = rest.Length == 0 ? &quot;/&quot; : &quot;/&quot; + rest;
+        return true;
+    }
+
+    /// &lt;summary&gt;Builds a tenant-prefixed path. The inverse of &lt;see cref=&quot;TryParse&quot;/&gt;.&lt;/summary&gt;
+    public static string Format(TenantContext context, string remainder)
+    {
+        var tail = string.IsNullOrEmpty(remainder) ? &quot;/&quot; : remainder;
+        if (tail[0] != &#x27;/&#x27;) tail = &quot;/&quot; + tail;
+        if (tail == &quot;/&quot;) tail = string.Empty;
+
+        return context.OrganizationId is { } org
+            ? $&quot;/{OrgSegment}/{org}/{VenueSegment}/{context.VenueId}{tail}&quot;
+            : $&quot;/{VenueSegment}/{context.VenueId}{tail}&quot;;
+    }
+}</pre></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run the tests to verify they pass</span></label><span class="kind">expect pass</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj</code> Expected: PASS, 13 of 13 (3 from Task 1, 10 here — the <code>[Theory]</code> contributes 7).</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 5: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/Vennu.Tenancy/TenantPath.cs tests/Vennu.Tenancy.Tests/TenantPathTests.cs
+git commit -m &quot;feat(tenancy): parse and format the tenant path prefix
+
+Decision 13 makes the URL the public contract. Parsing never upgrades
+provenance past Asserted, and anything without a well-formed prefix is
+returned untouched so today&#x27;s traffic is unaffected.&quot;</pre></div>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 3: <code>TenantToken</code> — the internal contract</h4><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Create: <code>src/Vennu.Tenancy/TenantToken.cs</code></li><li>Create: <code>tests/Vennu.Tenancy.Tests/TenantTokenTests.cs</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: <code>TenantContext</code>, <code>TenantProvenance</code> from Task 1.</li><li>Produces: <code>TenantTokenIssuer(ECDsa signingKey, string keyId, TimeProvider clock)</code> with <code>string Issue(TenantContext context, string audienceVersion, TimeSpan lifetime)</code>; <code>TenantTokenVerifier(ECDsa publicKey, string audienceVersion, TimeProvider clock)</code> with <code>bool TryVerify(string token, out TenantContext? context, out string? failure)</code>.</li></ul>
+<p><code>TimeProvider</code> is taken as a constructor dependency so expiry is testable without sleeping. Use <code>TimeProvider.System</code> in production and <code>FakeTimeProvider</code>-style stubs in tests — a hand-written stub is used here to avoid a package reference.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>tests/Vennu.Tenancy.Tests/TenantTokenTests.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using System.Security.Cryptography;
+using Vennu.Tenancy;
+
+namespace Vennu.Tenancy.Tests;
+
+public sealed class TenantTokenTests
+{
+    private sealed class StubClock(DateTimeOffset now) : TimeProvider
+    {
+        public DateTimeOffset Now { get; set; } = now;
+        public override DateTimeOffset GetUtcNow() =&gt; Now;
+    }
+
+    private static readonly Guid Venue = Guid.Parse(&quot;22222222-2222-2222-2222-222222222222&quot;);
+    private static readonly Guid Org = Guid.Parse(&quot;11111111-1111-1111-1111-111111111111&quot;);
+    private const string Version = &quot;1.5.0&quot;;
+
+    private static (TenantTokenIssuer Issuer, ECDsa Key, StubClock Clock) NewIssuer()
+    {
+        var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var clock = new StubClock(new DateTimeOffset(2026, 8, 20, 12, 0, 0, TimeSpan.Zero));
+        return (new TenantTokenIssuer(key, &quot;k1&quot;, clock), key, clock);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void RoundTripsAContext()
+    {
+        var (issuer, key, clock) = NewIssuer();
+        var token = issuer.Issue(new TenantContext(Venue, Org, TenantProvenance.Verified), Version, TimeSpan.FromSeconds(60));
+
+        var verifier = new TenantTokenVerifier(key, Version, clock);
+        Assert.True(verifier.TryVerify(token, out var context, out var failure));
+
+        Assert.Null(failure);
+        Assert.Equal(Venue, context!.VenueId);
+        Assert.Equal(Org, context.OrganizationId);
+        Assert.Equal(TenantProvenance.Verified, context.Provenance);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void RejectsATokenMintedForAnotherVersion()
+    {
+        // Decision 32: audience-scoped, so a token for v1.4 cannot be replayed at v1.5.
+        var (issuer, key, clock) = NewIssuer();
+        var token = issuer.Issue(new TenantContext(Venue, Org, TenantProvenance.Asserted), &quot;1.4.0&quot;, TimeSpan.FromSeconds(60));
+
+        var verifier = new TenantTokenVerifier(key, &quot;1.5.0&quot;, clock);
+
+        Assert.False(verifier.TryVerify(token, out var context, out var failure));
+        Assert.Null(context);
+        Assert.Equal(&quot;audience&quot;, failure);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void RejectsAnExpiredToken()
+    {
+        var (issuer, key, clock) = NewIssuer();
+        var token = issuer.Issue(new TenantContext(Venue, null, TenantProvenance.Asserted), Version, TimeSpan.FromSeconds(60));
+
+        clock.Now = clock.Now.AddSeconds(61);
+        var verifier = new TenantTokenVerifier(key, Version, clock);
+
+        Assert.False(verifier.TryVerify(token, out _, out var failure));
+        Assert.Equal(&quot;expired&quot;, failure);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void RejectsATokenSignedByAnotherKey()
+    {
+        // Decision 32: asymmetric, so a compromised API version cannot forge Router tokens.
+        var (issuer, _, clock) = NewIssuer();
+        var token = issuer.Issue(new TenantContext(Venue, null, TenantProvenance.Asserted), Version, TimeSpan.FromSeconds(60));
+
+        using var stranger = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var verifier = new TenantTokenVerifier(stranger, Version, clock);
+
+        Assert.False(verifier.TryVerify(token, out _, out var failure));
+        Assert.Equal(&quot;signature&quot;, failure);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void RejectsATamperedPayload()
+    {
+        var (issuer, key, clock) = NewIssuer();
+        var token = issuer.Issue(new TenantContext(Venue, null, TenantProvenance.Asserted), Version, TimeSpan.FromSeconds(60));
+
+        var parts = token.Split(&#x27;.&#x27;);
+        var forged = new TenantContext(Guid.NewGuid(), null, TenantProvenance.Verified);
+        var tampered = issuer.Issue(forged, Version, TimeSpan.FromSeconds(60)).Split(&#x27;.&#x27;)[1];
+        var attack = $&quot;{parts[0]}.{tampered}.{parts[2]}&quot;;
+
+        var verifier = new TenantTokenVerifier(key, Version, clock);
+
+        Assert.False(verifier.TryVerify(attack, out _, out var failure));
+        Assert.Equal(&quot;signature&quot;, failure);
+    }
+
+    [Theory]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    [InlineData(&quot;&quot;)]
+    [InlineData(&quot;not-a-token&quot;)]
+    [InlineData(&quot;only.two&quot;)]
+    [InlineData(&quot;a.b.c.d&quot;)]
+    public void RejectsMalformedInput(string token)
+    {
+        var (_, key, clock) = NewIssuer();
+        var verifier = new TenantTokenVerifier(key, Version, clock);
+
+        Assert.False(verifier.TryVerify(token, out _, out var failure));
+        Assert.Equal(&quot;malformed&quot;, failure);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void IgnoresUnknownMembersRatherThanRejecting()
+    {
+        // Decision 18: additive-only, forever. A future field must not break an
+        // older live version that has never heard of it.
+        var (issuer, key, clock) = NewIssuer();
+        var token = issuer.Issue(new TenantContext(Venue, Org, TenantProvenance.Asserted), Version, TimeSpan.FromSeconds(60));
+
+        var parts = token.Split(&#x27;.&#x27;);
+        var payload = System.Text.Encoding.UTF8.GetString(TenantToken.Base64UrlDecode(parts[1]));
+        var widened = payload.Insert(payload.Length - 1, &quot;,\&quot;future\&quot;:\&quot;value\&quot;&quot;);
+        var rebuilt = TenantToken.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes(widened));
+
+        // Re-sign so only the unknown member is under test, not the signature.
+        var resigned = issuer.SignParts(parts[0], rebuilt);
+
+        var verifier = new TenantTokenVerifier(key, Version, clock);
+        Assert.True(verifier.TryVerify($&quot;{parts[0]}.{rebuilt}.{resigned}&quot;, out var context, out _));
+        Assert.Equal(Venue, context!.VenueId);
+    }
+}</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run the test to verify it fails</span></label><span class="kind">expect fail</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj --filter FullyQualifiedName~TenantTokenTests</code> Expected: FAIL to compile — <code>The name &#x27;TenantTokenIssuer&#x27; does not exist</code>.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Write the implementation</span></label><span class="kind">implement</span></div>
+<p>Create <code>src/Vennu.Tenancy/TenantToken.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace Vennu.Tenancy;
+
+/// &lt;summary&gt;
+/// The internal half of the contract (decisions 31–34). A compact ES256-signed
+/// envelope minted by the Product Router and verified by the receiving version.
+///
+/// Implemented on the BCL alone, deliberately: decision 2 requires this layer&#x27;s
+/// change frequency to stay low, and decision 18 makes the format additive-only
+/// forever, so it is owned outright rather than inherited from a library.
+///
+/// Decision 34: this authenticates the hop, not the claim. A verified signature
+/// proves the Router said it; it does not make the tenant true, and nothing here
+/// may be used for an authorization decision.
+/// &lt;/summary&gt;
+public static class TenantToken
+{
+    internal const string HeaderType = &quot;vennu-tenant+jwt&quot;;
+
+    public static string Base64UrlEncode(ReadOnlySpan&lt;byte&gt; bytes) =&gt;
+        Convert.ToBase64String(bytes).TrimEnd(&#x27;=&#x27;).Replace(&#x27;+&#x27;, &#x27;-&#x27;).Replace(&#x27;/&#x27;, &#x27;_&#x27;);
+
+    public static byte[] Base64UrlDecode(string value)
+    {
+        var s = value.Replace(&#x27;-&#x27;, &#x27;+&#x27;).Replace(&#x27;_&#x27;, &#x27;/&#x27;);
+        return Convert.FromBase64String(s.PadRight(s.Length + (4 - s.Length % 4) % 4, &#x27;=&#x27;));
+    }
+
+    internal sealed record Payload(
+        [property: JsonPropertyName(&quot;ven&quot;)] Guid Venue,
+        [property: JsonPropertyName(&quot;org&quot;)] Guid? Organization,
+        [property: JsonPropertyName(&quot;prv&quot;)] string Provenance,
+        [property: JsonPropertyName(&quot;aud&quot;)] string Audience,
+        [property: JsonPropertyName(&quot;iat&quot;)] long IssuedAt,
+        [property: JsonPropertyName(&quot;exp&quot;)] long ExpiresAt);
+
+    internal static readonly JsonSerializerOptions Json = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.Never
+    };
+}
+
+/// &lt;summary&gt;Mints tokens. Held only by the Product Router.&lt;/summary&gt;
+public sealed class TenantTokenIssuer(ECDsa signingKey, string keyId, TimeProvider clock)
+{
+    public string Issue(TenantContext context, string audienceVersion, TimeSpan lifetime)
+    {
+        var now = clock.GetUtcNow().ToUnixTimeSeconds();
+        var header = TenantToken.Base64UrlEncode(Encoding.UTF8.GetBytes(
+            $&quot;{{\&quot;alg\&quot;:\&quot;ES256\&quot;,\&quot;typ\&quot;:\&quot;{TenantToken.HeaderType}\&quot;,\&quot;kid\&quot;:\&quot;{keyId}\&quot;}}&quot;));
+
+        var payload = TenantToken.Base64UrlEncode(JsonSerializer.SerializeToUtf8Bytes(
+            new TenantToken.Payload(
+                context.VenueId,
+                context.OrganizationId,
+                context.Provenance == TenantProvenance.Verified ? &quot;verified&quot; : &quot;asserted&quot;,
+                audienceVersion,
+                now,
+                now + (long)lifetime.TotalSeconds),
+            TenantToken.Json));
+
+        return $&quot;{header}.{payload}.{SignParts(header, payload)}&quot;;
+    }
+
+    /// &lt;summary&gt;Signs an already-encoded header and payload. Exposed for tests that widen the payload.&lt;/summary&gt;
+    public string SignParts(string encodedHeader, string encodedPayload)
+    {
+        var signature = signingKey.SignData(
+            Encoding.ASCII.GetBytes($&quot;{encodedHeader}.{encodedPayload}&quot;),
+            HashAlgorithmName.SHA256,
+            DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
+        return TenantToken.Base64UrlEncode(signature);
+    }
+}
+
+/// &lt;summary&gt;Verifies tokens. Held by every concurrently running version.&lt;/summary&gt;
+public sealed class TenantTokenVerifier(ECDsa publicKey, string audienceVersion, TimeProvider clock)
+{
+    public bool TryVerify(string token, out TenantContext? context, out string? failure)
+    {
+        context = null;
+
+        var parts = token.Split(&#x27;.&#x27;);
+        if (parts.Length != 3 || parts.Any(string.IsNullOrEmpty))
+        {
+            failure = &quot;malformed&quot;;
+            return false;
+        }
+
+        byte[] signature;
+        TenantToken.Payload? payload;
+        try
+        {
+            signature = TenantToken.Base64UrlDecode(parts[2]);
+            payload = JsonSerializer.Deserialize&lt;TenantToken.Payload&gt;(
+                TenantToken.Base64UrlDecode(parts[1]), TenantToken.Json);
+        }
+        catch (Exception e) when (e is FormatException or JsonException)
+        {
+            failure = &quot;malformed&quot;;
+            return false;
+        }
+
+        if (payload is null)
+        {
+            failure = &quot;malformed&quot;;
+            return false;
+        }
+
+        var verified = publicKey.VerifyData(
+            Encoding.ASCII.GetBytes($&quot;{parts[0]}.{parts[1]}&quot;),
+            signature,
+            HashAlgorithmName.SHA256,
+            DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
+
+        if (!verified)
+        {
+            failure = &quot;signature&quot;;
+            return false;
+        }
+
+        if (!string.Equals(payload.Audience, audienceVersion, StringComparison.Ordinal))
+        {
+            failure = &quot;audience&quot;;
+            return false;
+        }
+
+        if (clock.GetUtcNow().ToUnixTimeSeconds() &gt;= payload.ExpiresAt)
+        {
+            failure = &quot;expired&quot;;
+            return false;
+        }
+
+        context = new TenantContext(
+            payload.Venue,
+            payload.Organization,
+            payload.Provenance == &quot;verified&quot; ? TenantProvenance.Verified : TenantProvenance.Asserted);
+        failure = null;
+        return true;
+    }
+}</pre></div>
+<p>Note the check order: signature before audience before expiry. A tampered token must report <code>signature</code> rather than leaking which other field an attacker got wrong.</p>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run the tests to verify they pass</span></label><span class="kind">expect pass</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj</code> Expected: PASS, 23 of 23.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 5: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/Vennu.Tenancy/TenantToken.cs tests/Vennu.Tenancy.Tests/TenantTokenTests.cs
+git commit -m &quot;feat(tenancy): ES256 tenant token, issued and verified on the BCL alone
+
+Decisions 31-34. Asymmetric so a compromised version cannot forge Router
+tokens, audience-scoped so a v1.4 token cannot be replayed at v1.5, and
+additive-only so an unknown future member is ignored rather than rejected.
+No package reference: decision 2 keeps this layer&#x27;s change frequency low.&quot;</pre></div>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 4: Resolving the context inside <code>Vennu.Api</code></h4><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Create: <code>src/Vennu.Api/Infrastructure/TenantContextAccessor.cs</code></li><li>Create: <code>src/Vennu.Api/Infrastructure/TenantContextMiddleware.cs</code></li><li>Create: <code>tests/Vennu.Api.Tests/Infrastructure/TenantContextMiddlewareTests.cs</code></li><li>Modify: <code>src/Vennu.Api/Vennu.Api.csproj</code></li><li>Modify: <code>tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: <code>TenantContext</code>, <code>TenantPath</code>, <code>TenantTokenVerifier</code> from Tasks 1–3.</li><li>Produces: <code>ITenantContextAccessor</code> with <code>TenantContext? Current { get; }</code>; <code>TenantContextMiddleware</code>; <code>TenantContextMiddleware.HeaderName</code> (<code>&quot;X-Vennusign-Tenant-Token&quot;</code>).</li></ul>
+<p>Resolution order is token, then path, then nothing. A verified token wins because the Router strips the prefix before forwarding (decision 14), so in production both are never present; the path branch exists so the contract works before the Router does.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 1: Add the project reference to both csproj files</span></label><span class="kind">implement</span></div>
+<p>In <code>src/Vennu.Api/Vennu.Api.csproj</code>, inside the existing <code>ItemGroup</code> holding <code>ProjectReference</code> entries, add:</p>
+<div class="code"><span class="lang">xml</span><pre>    &lt;ProjectReference Include=&quot;..\Vennu.Tenancy\Vennu.Tenancy.csproj&quot; /&gt;</pre></div>
+<p>In <code>tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj</code>, inside the <code>ItemGroup</code> holding <code>ProjectReference</code> entries, add:</p>
+<div class="code"><span class="lang">xml</span><pre>    &lt;ProjectReference Include=&quot;..\..\src\Vennu.Tenancy\Vennu.Tenancy.csproj&quot; /&gt;</pre></div>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 2: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>tests/Vennu.Api.Tests/Infrastructure/TenantContextMiddlewareTests.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using System.Security.Cryptography;
+using Microsoft.AspNetCore.Http;
+using Vennu.Api.Infrastructure;
+using Vennu.Tenancy;
+
+namespace Vennu.Api.Tests.Infrastructure;
+
+public sealed class TenantContextMiddlewareTests
+{
+    private sealed class StubClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() =&gt; now;
+    }
+
+    private static readonly Guid Venue = Guid.Parse(&quot;22222222-2222-2222-2222-222222222222&quot;);
+    private static readonly Guid Org = Guid.Parse(&quot;11111111-1111-1111-1111-111111111111&quot;);
+    private static readonly StubClock Clock = new(new DateTimeOffset(2026, 8, 20, 12, 0, 0, TimeSpan.Zero));
+
+    private static async Task&lt;(HttpContext Context, string SeenPath)&gt; RunAsync(
+        HttpContext context, TenantTokenVerifier? verifier = null)
+    {
+        var seen = string.Empty;
+        var middleware = new TenantContextMiddleware(
+            ctx =&gt; { seen = ctx.Request.Path.Value ?? string.Empty; return Task.CompletedTask; },
+            verifier);
+
+        await middleware.InvokeAsync(context);
+        return (context, seen);
+    }
+
+    private static HttpContext Request(string path)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Path = path;
+        return context;
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task LeavesAnOrdinaryRequestCompletelyUntouched()
+    {
+        // The acceptance bar for this milestone: today&#x27;s traffic must be unaffected.
+        var (context, seen) = await RunAsync(Request(&quot;/api/back-office/menus&quot;));
+
+        Assert.Equal(&quot;/api/back-office/menus&quot;, seen);
+        Assert.Null(new TenantContextAccessor(Accessor(context)).Current);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task StripsTheTenantPrefixSoRouteTemplatesAreUnchanged()
+    {
+        // Decision 14.
+        var (context, seen) = await RunAsync(Request($&quot;/o/{Org}/v/{Venue}/api/back-office/menus&quot;));
+
+        Assert.Equal(&quot;/api/back-office/menus&quot;, seen);
+        var resolved = new TenantContextAccessor(Accessor(context)).Current;
+        Assert.Equal(Venue, resolved!.VenueId);
+        Assert.Equal(TenantProvenance.Asserted, resolved.Provenance);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task PrefersAValidTokenOverThePath()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var issuer = new TenantTokenIssuer(key, &quot;k1&quot;, Clock);
+        var tokenVenue = Guid.Parse(&quot;33333333-3333-3333-3333-333333333333&quot;);
+        var token = issuer.Issue(new TenantContext(tokenVenue, null, TenantProvenance.Verified), &quot;1.5.0&quot;, TimeSpan.FromSeconds(60));
+
+        var request = Request($&quot;/o/{Org}/v/{Venue}/api/x&quot;);
+        request.Request.Headers[TenantContextMiddleware.HeaderName] = token;
+
+        var (context, _) = await RunAsync(request, new TenantTokenVerifier(key, &quot;1.5.0&quot;, Clock));
+
+        var resolved = new TenantContextAccessor(Accessor(context)).Current;
+        Assert.Equal(tokenVenue, resolved!.VenueId);
+        Assert.Equal(TenantProvenance.Verified, resolved.Provenance);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task AnInvalidTokenResolvesNothingAndDoesNotFallBackToThePath()
+    {
+        // A token that fails verification is an attack or a bug, never an
+        // invitation to trust the path instead.
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var stranger = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var token = new TenantTokenIssuer(stranger, &quot;k1&quot;, Clock)
+            .Issue(new TenantContext(Guid.NewGuid(), null, TenantProvenance.Verified), &quot;1.5.0&quot;, TimeSpan.FromSeconds(60));
+
+        var request = Request($&quot;/o/{Org}/v/{Venue}/api/x&quot;);
+        request.Request.Headers[TenantContextMiddleware.HeaderName] = token;
+
+        var (context, seen) = await RunAsync(request, new TenantTokenVerifier(key, &quot;1.5.0&quot;, Clock));
+
+        Assert.Null(new TenantContextAccessor(Accessor(context)).Current);
+        Assert.Equal(&quot;/api/x&quot;, seen);
+    }
+
+    private static IHttpContextAccessor Accessor(HttpContext context) =&gt;
+        new HttpContextAccessor { HttpContext = context };
+}</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 3: Run the test to verify it fails</span></label><span class="kind">expect fail</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj --filter FullyQualifiedName~TenantContextMiddlewareTests</code> Expected: FAIL to compile — <code>The type or namespace name &#x27;TenantContextMiddleware&#x27; could not be found</code>.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 4: Write the implementation</span></label><span class="kind">implement</span></div>
+<p>Create <code>src/Vennu.Api/Infrastructure/TenantContextAccessor.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using Vennu.Tenancy;
+
+namespace Vennu.Api.Infrastructure;
+
+/// &lt;summary&gt;
+/// Reads the tenant the current request is about, if one was established.
+/// Decision 11: this is a routing input. It must never reach an authorization decision —
+/// authorization continues to derive from the session, the screen record, or the
+/// Webhook Receiver&#x27;s registration, exactly as it does today.
+/// &lt;/summary&gt;
+public interface ITenantContextAccessor
+{
+    TenantContext? Current { get; }
+}
+
+public sealed class TenantContextAccessor(IHttpContextAccessor accessor) : ITenantContextAccessor
+{
+    public const string ItemKey = &quot;Vennusign.TenantContext&quot;;
+
+    public TenantContext? Current =&gt;
+        accessor.HttpContext?.Items.TryGetValue(ItemKey, out var value) == true
+            ? value as TenantContext
+            : null;
+}</pre></div>
+<p>Create <code>src/Vennu.Api/Infrastructure/TenantContextMiddleware.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using Vennu.Tenancy;
+
+namespace Vennu.Api.Infrastructure;
+
+/// &lt;summary&gt;
+/// Establishes the tenant a request is about, from the internal token if the Product
+/// Router minted one, otherwise from the URL prefix.
+///
+/// The path branch exists because the contract must work before the Router does
+/// (decision 44). Once the Router is in front, it consumes the prefix itself
+/// (decision 14) and only the token branch is exercised in production.
+/// &lt;/summary&gt;
+public sealed class TenantContextMiddleware(RequestDelegate next, TenantTokenVerifier? verifier)
+{
+    public const string HeaderName = &quot;X-Vennusign-Tenant-Token&quot;;
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var path = context.Request.Path.Value ?? string.Empty;
+
+        if (TenantPath.TryParse(path, out var fromPath, out var remainder))
+        {
+            context.Request.Path = remainder;
+        }
+
+        if (context.Request.Headers.TryGetValue(HeaderName, out var header) &amp;&amp;
+            header.Count &gt; 0 &amp;&amp; verifier is not null)
+        {
+            // A token that fails verification resolves nothing. It is never a reason
+            // to fall back to the caller-supplied path.
+            if (verifier.TryVerify(header[0]!, out var fromToken, out _))
+            {
+                context.Items[TenantContextAccessor.ItemKey] = fromToken;
+            }
+        }
+        else if (fromPath is not null)
+        {
+            context.Items[TenantContextAccessor.ItemKey] = fromPath;
+        }
+
+        await next(context).ConfigureAwait(false);
+    }
+}</pre></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 5: Run the tests to verify they pass</span></label><span class="kind">expect pass</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj --filter FullyQualifiedName~TenantContextMiddlewareTests</code> Expected: PASS, 4 of 4.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 6: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/Vennu.Api/Infrastructure/TenantContextAccessor.cs \
+        src/Vennu.Api/Infrastructure/TenantContextMiddleware.cs \
+        src/Vennu.Api/Vennu.Api.csproj \
+        tests/Vennu.Api.Tests/Infrastructure/TenantContextMiddlewareTests.cs \
+        tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj
+git commit -m &quot;feat(api): resolve TenantContext from token or path prefix
+
+Token wins where present; an invalid one resolves nothing rather than
+falling back to the caller-supplied path. The prefix is stripped so route
+templates are unchanged, per decision 14.&quot;</pre></div>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 5: Wire it into the request pipeline</h4><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Modify: <code>src/Vennu.Api/Program.cs:310</code> (immediately after <code>app.UseMiddleware&lt;AdministrativeCompatibilityMiddleware&gt;()</code>)</li><li>Create: <code>tests/Vennu.Api.Tests/Infrastructure/TenantContextPipelineTests.cs</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: everything from Tasks 1–4.</li><li>Produces: nothing. This task makes the milestone live and proves it changed nothing.</li></ul>
+<p>The middleware is registered <strong>before</strong> <code>UseAuthentication</code>, because the prefix must be stripped before routing and authentication run. <code>TenantTokenVerifier</code> is registered as <code>null</code> for now — no Router exists to mint tokens, and the public key&#x27;s home is a later milestone (register Q17). The path branch is what functions in this milestone.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>tests/Vennu.Api.Tests/Infrastructure/TenantContextPipelineTests.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>using System.Net;
+using Microsoft.AspNetCore.Mvc.Testing;
+
+namespace Vennu.Api.Tests.Infrastructure;
+
+public sealed class TenantContextPipelineTests(WebApplicationFactory&lt;Program&gt; factory)
+    : IClassFixture&lt;WebApplicationFactory&lt;Program&gt;&gt;
+{
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task HealthVersionStillAnswersWithoutAPrefix()
+    {
+        var response = await factory.CreateClient().GetAsync(&quot;/health/version&quot;);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task HealthVersionAnswersThroughATenantPrefix()
+    {
+        // Decision 14: the prefix is consumed before routing, so an existing
+        // endpoint answers identically whether or not one is present.
+        var org = Guid.NewGuid();
+        var venue = Guid.NewGuid();
+
+        var response = await factory.CreateClient().GetAsync($&quot;/o/{org}/v/{venue}/health/version&quot;);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public async Task AMalformedPrefixIsNotTreatedAsOne()
+    {
+        var response = await factory.CreateClient().GetAsync(&quot;/o/not-a-guid/v/also-not/health/version&quot;);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+}</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run the test to verify it fails</span></label><span class="kind">expect fail</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj --filter FullyQualifiedName~TenantContextPipelineTests</code> Expected: <code>HealthVersionAnswersThroughATenantPrefix</code> FAILS with <code>NotFound</code> — the prefix is not yet stripped, so nothing matches the route.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Register the services and the middleware</span></label><span class="kind">implement</span></div>
+<p>In <code>src/Vennu.Api/Program.cs</code>, alongside the other <code>builder.Services</code> registrations (near line 188, where <code>AddSignalR</code> sits), add:</p>
+<div class="code"><span class="lang">csharp</span><pre>builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton&lt;Vennu.Api.Infrastructure.ITenantContextAccessor,
+                              Vennu.Api.Infrastructure.TenantContextAccessor&gt;();</pre></div>
+<p>Then, immediately after the existing <code>app.UseMiddleware&lt;AdministrativeCompatibilityMiddleware&gt;();</code> on line 310, add:</p>
+<div class="code"><span class="lang">csharp</span><pre>// Keystone milestone 1. The verifier is null until the Product Router exists to mint
+// tokens and the public key has a home (register Q17); until then the path branch
+// is what functions, and a request carrying neither is untouched.
+app.UseMiddleware&lt;TenantContextMiddleware&gt;((Vennu.Tenancy.TenantTokenVerifier?)null);</pre></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run the tests to verify they pass</span></label><span class="kind">expect pass</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj --filter FullyQualifiedName~TenantContextPipelineTests</code> Expected: PASS, 3 of 3.</p>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 5: Run the full affected suites</span></label><span class="kind">expect pass</span></div>
+<div class="code"><span class="lang">bash</span><pre>dotnet build src/Vennu.Api/Vennu.Api.csproj -c Release
+dotnet test tests/Vennu.Tenancy.Tests/Vennu.Tenancy.Tests.csproj
+dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj</pre></div>
+<p>Expected: Release build succeeds. <code>Vennu.Tenancy.Tests</code> 23 of 23. <code>Vennu.Api.Tests</code> passes with no regressions — record the before-and-after counts in the PR, per AGENTS.md&#x27;s evidence rule. Azure and integration-type tests remain skipped by standing owner exception; record them as skipped.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 6: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/Vennu.Api/Program.cs tests/Vennu.Api.Tests/Infrastructure/TenantContextPipelineTests.cs
+git commit -m &quot;feat(api): register TenantContext resolution in the pipeline
+
+Runs before authentication so the prefix is stripped before routing. The
+token verifier is null until a Router exists to mint tokens. A request
+carrying neither prefix nor token is untouched, which is this milestone&#x27;s
+acceptance bar.&quot;</pre></div>
+<hr>
+</div></section>
+<h3>What this milestone deliberately excludes</h3>
+<ul><li><strong>The front-end URL restructure.</strong> Decision 44 places it in milestone 1, but register <strong>Q31 is deferred</strong>: whether the pre-auth app split lands before the restructure is unanswered, and doing them in the wrong order means doing the entry routes twice. The .NET half above is independent of that answer and ships without it.</li><li><strong>Relative API URLs in the front ends</strong> (register Q20) — same dependency.</li><li><strong>The 421 misdirected-request behaviour</strong> (decision 35). It needs an authority to compare a hint against, and no consumer reads <code>TenantContext</code> yet. It belongs with the first consumer.</li><li><strong>Key management</strong> (register Q17). No Router exists to hold a private key, so the verifier is null.</li><li><strong>VDS, ADS, the Router itself</strong> — milestone 4 onward.</li></ul>
+<h3>Self-review</h3>
+<p><strong>Spec coverage.</strong> Decisions 10, 11, 13, 14, 18, 32, 33 and 34 each have a task and at least one test asserting them. Decisions 1–9, 12, 15–17, 19–31, 35–49 are out of this milestone&#x27;s scope and are named above where a reader might expect them. Register answers Q15 (ES256), Q16 (60s TTL) and Q17 (key location deferred) are reflected.</p>
+<p><strong>Placeholders.</strong> None. Every code step carries the actual code; every run step carries the exact command and expected result.</p>
+<p><strong>Type consistency.</strong> <code>TenantContext(Guid, Guid?, TenantProvenance)</code> is constructed identically in Tasks 1–5. <code>TryParse(string, out TenantContext?, out string)</code> and <code>TryVerify(string, out TenantContext?, out string?)</code> keep the same shapes throughout. <code>TenantContextAccessor.ItemKey</code> is the single place the <code>HttpContext.Items</code> key is spelled.</p>
+<p><strong>Known gap, stated rather than hidden.</strong> Task 5&#x27;s <code>AMalformedPrefixIsNotTreatedAsOne</code> asserts <code>NotFound</code>, which is what an unmatched route returns today. If a future catch-all route changes that, this assertion is testing the router rather than the middleware. It is kept because it is the cheapest guard against <code>TenantPath.TryParse</code> becoming accidentally permissive.</p></section>
+<section class="doc" id="m2"><h2>Keystone Milestone 2 — Version Discovery Service<span class="mcount">6 tasks</span></h2><blockquote><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. Steps use checkbox (<code>- [ ]</code>) syntax.</blockquote>
+<p>&gt;</p>
+<blockquote><strong>Note on style:</strong> this plan describes behaviour and names files rather than listing code, at the owner&#x27;s instruction. Each task still ends with a test that must fail first, and every verification step gives an exact command.</blockquote>
+<p><strong>Goal:</strong> Build VDS — the one lookup the Product Router and the Webhook Receiver call — so that a venue resolves to the version serving it.</p>
+<p><strong>Architecture:</strong> A new ASP.NET minimal-API service, <code>src/Vennu.Vds</code>, owning an assignment table and the default-version pointer. It answers a single read for callers and accepts writes only from Platform Operations as a service identity. Instance selection is delegated internally to ADS (milestone 3); until that exists, the delegation is behind an interface with a stub that returns the registered target directly.</p>
+<p><strong>Tech Stack:</strong> .NET 9, ASP.NET minimal API, Dapper against Azure SQL via <code>Vennu.DataAccess</code> (matching how <code>Vennu.Data</code> reaches the database), xunit.</p>
+<p><strong>Spec:</strong> decisions 1, 2, 25, 27, 28, 45. <strong>Register:</strong> Q1, Q3, Q5, Q7, Q8, Q21, Q22.</p>
+<h3>Milestone discipline</h3>
+<p>This is a numbered milestone under AGENTS.md&#x27;s working model, not a loose batch of work. Before starting: create the milestone issue, record the claim in <code>tracker/assignments.json</code>, and branch as <code>feature/keystone-m2-&lt;short-name&gt;</code> from merged <code>master</code>. One PR. Verify locally (CI is suspended by owner decision — local checks <em>are</em> the gate). Obtain independent review, never by the author. Merge, then synchronize <code>PROJECT_STATUS.md</code>, the tracker, <code>ai/handoffs/current.md</code> and this feature&#x27;s records.</p>
+<p><strong>Ends with a short owner acceptance workbook</strong> (5–10 minutes) before the next milestone starts. A milestone that ships no UI gets a demo script instead. Only one milestone runs at a time.</p>
+<h3>Governance gate</h3>
+<p>Does not execute until the design authority is approved. <strong>Nothing is provisioned</strong> — decisions 41 and 42 settle the hosting shape but tier and plan cost are deferred, so this milestone is built and tested locally and not deployed.</p>
+<h3>Global Constraints</h3>
+<ul><li><strong>Decision 2 — VDS cannot roll itself out progressively.</strong> Backward-compatible changes only, and its API is additive-only forever (decision 18).</li><li><strong>Decision 25 — VDS is keyed on venue.</strong> No organization is ever assigned a version.</li><li><strong>VDS stays off the data path.</strong> It answers lookups and accepts assignment writes. It never handles a customer request, holds a POS secret, or forwards a payload.</li><li><strong>Decision 27 — the default pointer is set by PO, never inferred.</strong> Registration must not advance it.</li><li><strong>No operator authentication in VDS.</strong> Decision 38 and the concept both place approval authority in the PO backend; VDS accepts writes from PO as a service identity.</li></ul>
+<h3>File structure</h3>
+<div class="tablewrap"><table><thead><tr><th>File</th><th>Responsibility</th></tr></thead><tbody><tr><td><code>src/Vennu.Vds/Program.cs</code></td><td>Host, DI, endpoint mapping.</td></tr><tr><td><code>src/Vennu.Vds/Assignments/AssignmentStore.cs</code></td><td>Read and write venue→version. The only place SQL for assignments lives.</td></tr><tr><td><code>src/Vennu.Vds/Assignments/DefaultVersionPointer.cs</code></td><td>Read and advance the default. Separate from assignments because it is a different fact with a different writer.</td></tr><tr><td><code>src/Vennu.Vds/Lookup/LookupEndpoint.cs</code></td><td>The caller-facing read.</td></tr><tr><td><code>src/Vennu.Vds/Lookup/IInstanceResolver.cs</code></td><td>The ADS seam. Stubbed in this milestone.</td></tr><tr><td><code>src/Vennu.Vds/Admin/AssignmentEndpoints.cs</code></td><td>PO-only writes.</td></tr><tr><td><code>src/Vennu.Vds/Scripts/</code></td><td>DbUp migrations for the two tables, numbered from the current head.</td></tr><tr><td><code>tests/Vennu.Vds.Tests/</code></td><td>Unit tests for lookup logic and endpoint behaviour.</td></tr></tbody></table></div>
+<p>Assignments and the default pointer are separate files because they are separate decisions with separate writers — folding them together is how &quot;registering a version&quot; quietly starts advancing the default, which decision 27 forbids.</p>
+<hr>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 1: The assignment table and its migration</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Vds/Scripts/</code> (new migration), <code>src/Vennu.Vds/Assignments/AssignmentStore.cs</code>, <code>tests/Vennu.Vds.Tests/AssignmentStoreTests.cs</code></p>
+<p>Two tables: one row per venue carrying its assigned version, a <code>ChangedUtc</code>, and who changed it; and a single-row table for the default pointer. Per AGENTS.md, schema changes go through ordered DbUp migrations and new migrations start after the current head — check it with <code>ls src/Vennu.Data/Scripts | tail -3</code> before numbering.</p>
+<p><strong>Tests must prove:</strong> a venue with no row reads back as not-assigned rather than as a default or an error (register Q8); writing an assignment is idempotent on the same version; and every write records who made it, because per-customer auditability is the point of assignment existing.</p>
+<ul><li>[ ] <strong>Step 1: Write the failing tests</strong> in <code>tests/Vennu.Vds.Tests/AssignmentStoreTests.cs</code>, against LocalDB per AGENTS.md — a rule enforced in SQL is asserted against a database, never an in-memory double.</li><li>[ ] <strong>Step 2: Run and confirm they fail</strong> — <code>dotnet test tests/Vennu.Vds.Tests/Vennu.Vds.Tests.csproj</code></li><li>[ ] <strong>Step 3: Write the migration and <code>AssignmentStore</code></strong></li><li>[ ] <strong>Step 4: Run and confirm they pass</strong> — same command</li><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(vds): assignment table, keyed on venue</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 2: The default-version pointer</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Vds/Assignments/DefaultVersionPointer.cs</code>, <code>tests/Vennu.Vds.Tests/DefaultVersionPointerTests.cs</code></p>
+<p>Read the current default; advance it as an explicit act carrying an actor.</p>
+<p><strong>Tests must prove:</strong> the pointer never moves as a side effect of anything else — in particular, registering a version leaves it untouched (decision 27); advancing it records who did so; and reading it when unset is an error rather than a guess, because a system with no default cannot serve unattributed traffic and should say so loudly.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(vds): explicit default-version pointer, advanced only by PO</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 3: The lookup endpoint</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Vds/Lookup/LookupEndpoint.cs</code>, <code>src/Vennu.Vds/Lookup/IInstanceResolver.cs</code>, <code>tests/Vennu.Vds.Tests/LookupEndpointTests.cs</code></p>
+<p>One read: given a venue, return the version and a resolved target (register Q5 — one round trip on a hop paid on every request). <code>IInstanceResolver</code> is the ADS seam; this milestone ships a stub returning the version&#x27;s registered target.</p>
+<p><strong>Tests must prove:</strong> an assigned venue returns its version and a target; an unassigned venue returns an explicit not-assigned result that is neither an error nor a silently substituted version (register Q8), leaving the default-version fallback to the caller so it lives in one place; and an unknown venue is indistinguishable from an unassigned one, so the endpoint cannot be used to enumerate venues.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(vds): venue lookup returning version and target</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 4: PO-only assignment writes</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Vds/Admin/AssignmentEndpoints.cs</code>, <code>tests/Vennu.Vds.Tests/AssignmentEndpointTests.cs</code></p>
+<p>Write endpoints for assigning a venue, advancing the default, and registering a version as routable with zero assigned customers. Authenticated as a service identity using the same asymmetric signed-token scheme as decision 31, verified with PO&#x27;s public key.</p>
+<p><strong>Tests must prove:</strong> an unsigned or wrongly-signed write is refused; registering a version does not assign anybody and does not move the default (decision 27, and the seam the concept says matters most); and the concurrent-version limit is enforced at registration from PO configuration rather than a constant in VDS (register Q7).</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(vds): PO-authenticated assignment and registration writes</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 5: Refuse to retire a version that is the default</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Vds/Admin/AssignmentEndpoints.cs</code>, <code>tests/Vennu.Vds.Tests/RetirementTests.cs</code></p>
+<p>Retirement asks VDS whether any customer remains assigned. Register Q22 adds a second condition.</p>
+<p><strong>Tests must prove:</strong> retirement is refused while a version is the default even when no customer is assigned to it — because unattributed traffic is not a customer assignment, so an &quot;empty&quot; version can still be serving every sign-in; and the refusal names the reason, so an operator knows to advance the pointer first.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(vds): refuse retirement while a version is the default</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 6: Host, health and milestone verification</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Vds/Program.cs</code>, <code>src/Vennu.Vds/Vennu.Vds.csproj</code>, <code>Vennusign.sln</code></p>
+<p>Wire the endpoints, expose <code>/health/version</code> using the same <code>ReleaseVersionMetadata</code> shape the API uses so ADS can poll VDS the way it polls everything else, and register both projects in the solution.</p>
+<ul><li>[ ] <strong>Step 1: Write a failing host test</strong> asserting <code>/health/version</code> answers and that the lookup endpoint is reachable through the real pipeline</li><li>[ ] <strong>Step 2: Run and confirm it fails</strong></li><li>[ ] <strong>Step 3: Implement and register in <code>Vennusign.sln</code></strong></li><li>[ ] <strong>Step 4: Run and confirm it passes</strong></li><li>[ ] <strong>Step 5: Full milestone verification</strong></li></ul>
+<div class="code"><span class="lang">bash</span><pre>dotnet build src/Vennu.Vds/Vennu.Vds.csproj -c Release
+dotnet test tests/Vennu.Vds.Tests/Vennu.Vds.Tests.csproj</pre></div>
+<p>LocalDB is the default per AGENTS.md; Azure is reached only by setting <code>VENU_TEST_AZURE_SQL_CONNECTION_STRING</code> for a single run. A suite that cannot reach its database must fail rather than report a pass having asserted nothing.</p>
+<ul><li>[ ] <strong>Step 6: Commit</strong> — <code>feat(vds): host, health endpoint, solution registration</code></li></ul>
+<hr>
+</div></section>
+<h3>Excluded</h3>
+<ul><li><strong>Behaviour when VDS itself is down</strong> — that is the caller&#x27;s problem, answered in register Q1–Q3 and built in milestones 5 and 6.</li><li><strong>Real instance resolution</strong> — the <code>IInstanceResolver</code> stub is replaced in milestone 3.</li><li><strong>Deployment</strong> — gated on the deferred cost conversation.</li></ul>
+<h3>Self-review</h3>
+<p><strong>Spec coverage.</strong> Decisions 25, 27, 28 and 45 each have a task. Decision 2&#x27;s additive-only constraint is a review rule rather than a test. Register Q5, Q7, Q8, Q21 and Q22 are each implemented and asserted.</p>
+<p><strong>Type consistency.</strong> <code>IInstanceResolver</code> is the only seam ADS replaces in milestone 3; nothing else in this milestone knows ADS exists.</p>
+<p><strong>Known risk.</strong> Task 3&#x27;s not-assigned result and Task 2&#x27;s unset-default error can both occur on the same request, and the caller must handle them differently — not-assigned means fall back to the default, unset default means the system is misconfigured. A reviewer should check the caller in milestone 5 distinguishes them.</p></section>
+<section class="doc" id="m3"><h2>Keystone Milestone 3 — Application Discovery Service<span class="mcount">5 tasks</span></h2><blockquote><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. Steps use checkbox (<code>- [ ]</code>) syntax.</blockquote>
+<p>&gt;</p>
+<blockquote><strong>Note on style:</strong> behaviour and file names rather than code listings, at the owner&#x27;s instruction. Every task still writes a failing test first and gives an exact verification command.</blockquote>
+<p><strong>Goal:</strong> Build ADS — the registry that knows where every deployed app is and which instances are healthy — and replace milestone 2&#x27;s stub so VDS resolves real targets.</p>
+<p><strong>Architecture:</strong> A new service, <code>src/Vennu.Ads</code>, holding <code>(app, version) → set of instances</code> and health-polling each one continuously. It is a registry and a health reporter; it never picks an instance for a caller and never sits on the data path. VDS calls it internally, so callers still see exactly one lookup.</p>
+<p><strong>Tech Stack:</strong> .NET 9, ASP.NET minimal API, a hosted service for polling, Dapper, xunit.</p>
+<p><strong>Spec:</strong> decisions 1, 2, 45. <strong>Register:</strong> Q6, Q9, Q10, Q11.</p>
+<h3>Milestone discipline</h3>
+<p>This is a numbered milestone under AGENTS.md&#x27;s working model, not a loose batch of work. Before starting: create the milestone issue, record the claim in <code>tracker/assignments.json</code>, and branch as <code>feature/keystone-m3-&lt;short-name&gt;</code> from merged <code>master</code>. One PR. Verify locally (CI is suspended by owner decision — local checks <em>are</em> the gate). Obtain independent review, never by the author. Merge, then synchronize <code>PROJECT_STATUS.md</code>, the tracker, <code>ai/handoffs/current.md</code> and this feature&#x27;s records.</p>
+<p><strong>Ends with a short owner acceptance workbook</strong> (5–10 minutes) before the next milestone starts. A milestone that ships no UI gets a demo script instead. Only one milestone runs at a time.</p>
+<h3>Governance gate</h3>
+<p>Does not execute until the design authority is approved. Nothing is provisioned.</p>
+<h3>Global Constraints</h3>
+<ul><li><strong>Registration is automated, never hand-entered.</strong> The deploy pipeline writes to ADS as part of health-gate-then-register. This is what solves the labour problem for frequent releases — ADS existing is not what solves it.</li><li><strong><code>(app, version)</code> maps to a <em>set</em> of instances</strong>, not one. A version may scale out, and that is deployment&#x27;s decision, not ADS&#x27;s.</li><li><strong>ADS is continuous, not deploy-time.</strong> A version can go unhealthy weeks after shipping for reasons unrelated to deployment. A one-time gate cannot see that.</li><li><strong>The Router picks the instance</strong> (register Q6), from the healthy set ADS reports. ADS does not select, and no managed load balancer is introduced — that would put a paid component into a design whose cost conversation is parked.</li></ul>
+<h3>File structure</h3>
+<div class="tablewrap"><table><thead><tr><th>File</th><th>Responsibility</th></tr></thead><tbody><tr><td><code>src/Vennu.Ads/Program.cs</code></td><td>Host, DI, endpoint mapping.</td></tr><tr><td><code>src/Vennu.Ads/Registry/InstanceRegistry.cs</code></td><td>The <code>(app, version) → instances</code> store.</td></tr><tr><td><code>src/Vennu.Ads/Registry/RegistrationEndpoints.cs</code></td><td>Pipeline-facing register and deregister.</td></tr><tr><td><code>src/Vennu.Ads/Health/HealthPoller.cs</code></td><td>The hosted service. Polls every registered instance on a cadence.</td></tr><tr><td><code>src/Vennu.Ads/Health/InstanceHealth.cs</code></td><td>Consecutive-failure state and the healthy/unhealthy transition rules.</td></tr><tr><td><code>src/Vennu.Ads/Query/HealthySetEndpoint.cs</code></td><td>What VDS calls.</td></tr><tr><td><code>src/Vennu.Vds/Lookup/AdsInstanceResolver.cs</code></td><td>Replaces milestone 2&#x27;s stub.</td></tr><tr><td><code>tests/Vennu.Ads.Tests/</code></td><td>Unit tests.</td></tr></tbody></table></div>
+<p><code>InstanceHealth</code> is separate from <code>HealthPoller</code> on purpose: the transition rules are pure and must be testable without a timer or a network.</p>
+<hr>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 1: The instance registry</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Ads/Registry/InstanceRegistry.cs</code>, migration, <code>tests/Vennu.Ads.Tests/InstanceRegistryTests.cs</code></p>
+<p>Store <code>(app, version) → set of instances</code>, each with a hostname and a registered-at timestamp.</p>
+<p><strong>Tests must prove:</strong> registering the same instance twice upserts rather than duplicating, because reconnects and pipeline retries will do exactly that; a version can hold more than one instance; and deregistering the last instance of a version leaves the version known-but-empty rather than deleting it, so the difference between &quot;never deployed&quot; and &quot;deployed and now gone&quot; survives.</p>
+<ul><li>[ ] <strong>Step 1: Write the failing tests</strong> (LocalDB, per AGENTS.md)</li><li>[ ] <strong>Step 2: Run and confirm they fail</strong></li><li>[ ] <strong>Step 3: Implement</strong></li><li>[ ] <strong>Step 4: Run and confirm they pass</strong></li><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(ads): instance registry keyed on app and version</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 2: Health transition rules</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Ads/Health/InstanceHealth.cs</code>, <code>tests/Vennu.Ads.Tests/InstanceHealthTests.cs</code></p>
+<p>Pure state machine. Register Q9 sets the thresholds: unhealthy after 3 consecutive failures, healthy again after 2 consecutive successes.</p>
+<p><strong>Tests must prove:</strong> one failure does not eject a healthy instance, so a single blip does not shrink the pool; three consecutive do; a success part-way through resets the count rather than merely pausing it; and a newly registered instance starts <em>unhealthy</em> until it passes, because assuming health on arrival is how traffic reaches an instance that never came up.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(ads): health transition rules as a pure state machine</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 3: The health poller</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Ads/Health/HealthPoller.cs</code>, <code>tests/Vennu.Ads.Tests/HealthPollerTests.cs</code></p>
+<p>A hosted service polling every registered instance every 10 seconds (register Q9), driving the Task 2 state machine. Use <code>TimeProvider</code> and an injected HTTP abstraction so the tests need neither a clock nor a network.</p>
+<p><strong>Tests must prove:</strong> every registered instance is polled each cycle; a slow or hanging instance does not delay the others, since one bad instance must not stall the whole registry; and a poll that throws is a failure rather than an unhandled crash of the hosted service.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(ads): continuous health polling independent of deploy events</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 4: Registration endpoint authentication</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Ads/Registry/RegistrationEndpoints.cs</code>, <code>tests/Vennu.Ads.Tests/RegistrationEndpointTests.cs</code></p>
+<p>Register Q10: the same asymmetric signed-token scheme as decision 31, with the deploy pipeline holding its own key identity, plus network restriction.</p>
+<p><strong>Tests must prove:</strong> an unsigned registration is refused; a registration signed by an unknown key is refused; and the refusal does not reveal whether the <code>(app, version)</code> already exists, because an openly probeable registry is a map of the fleet.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(ads): authenticate pipeline registration</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 5: Replace the VDS stub, and the all-unhealthy case</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Ads/Query/HealthySetEndpoint.cs</code>, <code>src/Vennu.Vds/Lookup/AdsInstanceResolver.cs</code>, <code>tests/Vennu.Vds.Tests/AdsInstanceResolverTests.cs</code></p>
+<p>VDS asks ADS for the healthy set of an <code>(app, version)</code> and returns it as the resolved target. Register Q11 settles what happens when the set is empty.</p>
+<p><strong>Tests must prove:</strong> a version with healthy instances resolves to them; a version whose instances are <em>all</em> unhealthy produces a distinct outcome that the caller renders as 503, <strong>not</strong> a silent reroute to another version — serving a customer a version they are not assigned to is the failure this whole feature exists to prevent, and it would happen at the moment nobody is watching for it; and ADS being unreachable is distinguishable from a version having no healthy instances, since one is an infrastructure fault and the other is a real answer.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement, deleting milestone 2&#x27;s stub</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 5: Full milestone verification</span></label><span class="kind">expect pass</span></div>
+<div class="code"><span class="lang">bash</span><pre>dotnet build src/Vennu.Ads/Vennu.Ads.csproj -c Release
+dotnet test tests/Vennu.Ads.Tests/Vennu.Ads.Tests.csproj
+dotnet test tests/Vennu.Vds.Tests/Vennu.Vds.Tests.csproj</pre></div>
+<ul><li>[ ] <strong>Step 6: Commit</strong> — <code>feat(ads): resolve healthy instances for VDS, refusing to reroute</code></li></ul>
+<hr>
+</div></section>
+<h3>Excluded</h3>
+<ul><li><strong>System Monitor.</strong> Decision 1 makes it later work. ADS reports health; acting on it — scaling, redeploying, telling VDS a version is out of headroom — is System Monitor&#x27;s job and is not built here.</li><li><strong>A managed load-balancing layer.</strong> Register Q6 chose the Router picking from the healthy set instead.</li><li><strong>Deployment and the pipeline&#x27;s registration call.</strong> Q32 puts provisioning automation outside Keystone; ADS exposes the endpoint, the pipeline calling it is that other work.</li></ul>
+<h3>Self-review</h3>
+<p><strong>Spec coverage.</strong> Decision 45&#x27;s bootstrap requirement is satisfied by Task 5 replacing the stub. Register Q6, Q9, Q10 and Q11 each have a task and an asserting test.</p>
+<p><strong>Type consistency.</strong> <code>IInstanceResolver</code> keeps the shape milestone 2 defined; only the implementation changes.</p>
+<p><strong>Known risk.</strong> Task 3&#x27;s poller and Task 1&#x27;s registry can disagree during a deploy — an instance registered a moment ago has not been polled, and Task 2 starts it unhealthy. That is deliberate, but it means a freshly registered version is briefly unroutable, and the deploy pipeline&#x27;s health gate must therefore wait for ADS to mark it healthy rather than assuming registration is enough. A reviewer should confirm that ordering is stated wherever the pipeline work lands.</p></section>
+<section class="doc" id="m4"><h2>Keystone Milestone 4 — The Front Ends Adopt the Tenant Path<span class="mcount">6 tasks</span></h2><blockquote><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</blockquote>
+<p><strong>Goal:</strong> Move the customer-facing surfaces onto the tenant-prefixed URL shape, so the tenant travels in the path and <code>venueFetch</code>&#x27;s <code>localStorage</code> header is deleted rather than formalised.</p>
+<p><strong>Architecture:</strong> Onboarding is extracted from <code>src/back-office</code> into its own app first, because <code>main.tsx</code> is already a two-way switch and splitting first means the URL restructure only ever touches the post-auth app. Back office is then served under <code>/o/{orgId}/v/{venueId}/</code>, reads its tenant from <code>location.pathname</code>, and makes every API call relative so the browser resolves the prefix in. Display gains a venue segment.</p>
+<p><strong>Tech Stack:</strong> React 19 + Vite + TypeScript, <code>node --test</code> on <code>.mjs</code> modules (matching <code>customerEntryRouting.mjs</code> and <code>pairing.mjs</code>). No new dependencies.</p>
+<p><strong>Spec:</strong> <code>docs/design/proposed/keystone/decisions.md</code> — decisions 12, 13, 17, 19, 20, 21, 29, 48.</p>
+<h3>Milestone discipline</h3>
+<p>This is a numbered milestone under AGENTS.md&#x27;s working model, not a loose batch of work. Before starting: create the milestone issue, record the claim in <code>tracker/assignments.json</code>, and branch as <code>feature/keystone-m4-&lt;short-name&gt;</code> from merged <code>master</code>. One PR. Verify locally (CI is suspended by owner decision — local checks <em>are</em> the gate). Obtain independent review, never by the author. Merge, then synchronize <code>PROJECT_STATUS.md</code>, the tracker, <code>ai/handoffs/current.md</code> and this feature&#x27;s records.</p>
+<p><strong>Ends with a short owner acceptance workbook</strong> (5–10 minutes) before the next milestone starts. A milestone that ships no UI gets a demo script instead. Only one milestone runs at a time.</p>
+<h3>Governance gate</h3>
+<p><strong>Does not execute until the design authority is approved.</strong> See <code>milestone-plan.md</code>.</p>
+<p><strong>Q31 runs provisionally.</strong> The register defers whether the pre-auth split precedes the URL restructure; its recommended default — split first — is what this plan implements. Flag it in the acceptance workbook so the consequence is visible and cheap to overturn.</p>
+<p><strong>Depends on milestone 1.</strong> The API must already strip a tenant prefix, or every relative call 404s.</p>
+<h3>Global Constraints</h3>
+<ul><li><strong>No new npm dependencies.</strong> Back office has no router library and does not gain one (decision 21).</li><li><strong>Decision 21 — application navigation stays in the hash.</strong> <code>#/menu</code>, <code>#/screens</code> and friends are untouched. The pathname is Keystone&#x27;s; the hash is the application&#x27;s.</li><li><strong>Decision 19 — the URL shape is fixed.</strong> Pre-auth at root; post-auth at <code>/o/{orgId}/v/{venueId}</code>; Display at <code>/display/{venueId}/{screenId}</code>.</li><li><strong>Decision 12 — the path is a cache, not the authority.</strong> A missing or wrong tenant costs a lookup, never access.</li><li><strong>Decision 49 — a wrong org segment never reveals the right one.</strong> Correction only after authorization.</li><li><strong><code>node --test tests/*.test.mjs</code></strong> is the test command in every front-end package.</li></ul>
+<h3>File Structure</h3>
+<div class="tablewrap"><table><thead><tr><th>File</th><th>Responsibility</th></tr></thead><tbody><tr><td><code>src/back-office/src/tenantPath.mjs</code></td><td>Read and build the tenant prefix in the browser. Pure. Mirrors <code>Vennu.Tenancy.TenantPath</code>.</td></tr><tr><td><code>src/back-office/src/tenantPath.d.mts</code></td><td>Types for the above, matching the <code>.mjs</code> + <code>.d.mts</code> convention already in use.</td></tr><tr><td><code>src/back-office/tests/tenantPath.test.mjs</code></td><td>Its tests.</td></tr><tr><td><code>src/onboarding/</code></td><td>The extracted pre-auth app: signup, signin, onboarding.</td></tr><tr><td><code>src/back-office/src/main.tsx</code></td><td>Loses the two-way switch; boots the post-auth app only.</td></tr><tr><td><code>src/back-office/src/api.ts</code></td><td>Relative URLs; <code>venueFetch</code>&#x27;s storage read deleted.</td></tr><tr><td><code>src/display/src/routing.ts</code></td><td><code>/display/{venueId}/{screenId}</code>.</td></tr></tbody></table></div>
+<hr>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 1: <code>tenantPath</code> in the browser</h4><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Create: <code>src/back-office/src/tenantPath.mjs</code></li><li>Create: <code>src/back-office/src/tenantPath.d.mts</code></li><li>Create: <code>src/back-office/tests/tenantPath.test.mjs</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: nothing.</li><li>Produces: <code>readTenantPath(pathname)</code> returning <code>{ organizationId, venueId, remainder } | null</code>; <code>buildTenantPath({ organizationId, venueId }, remainder)</code> returning a string.</li></ul>
+<p>This deliberately mirrors <code>Vennu.Tenancy.TenantPath</code> from milestone 1. Two implementations of one wire format is a real risk, so the tests below use the same cases as <code>TenantPathTests.cs</code>.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>src/back-office/tests/tenantPath.test.mjs</code>:</p>
+<div class="code"><span class="lang">javascript</span><pre>import { test } from &quot;node:test&quot;;
+import assert from &quot;node:assert/strict&quot;;
+import { readTenantPath, buildTenantPath } from &quot;../src/tenantPath.mjs&quot;;
+
+const ORG = &quot;11111111-1111-1111-1111-111111111111&quot;;
+const VENUE = &quot;22222222-2222-2222-2222-222222222222&quot;;
+
+test(&quot;reads org and venue and returns the bare path&quot;, () =&gt; {
+  const result = readTenantPath(`/o/${ORG}/v/${VENUE}/`);
+  assert.equal(result.organizationId, ORG);
+  assert.equal(result.venueId, VENUE);
+  assert.equal(result.remainder, &quot;/&quot;);
+});
+
+test(&quot;keeps a trailing application path&quot;, () =&gt; {
+  const result = readTenantPath(`/o/${ORG}/v/${VENUE}/settings`);
+  assert.equal(result.remainder, &quot;/settings&quot;);
+});
+
+test(&quot;accepts a venue with no organization segment&quot;, () =&gt; {
+  const result = readTenantPath(`/v/${VENUE}/`);
+  assert.equal(result.organizationId, null);
+  assert.equal(result.venueId, VENUE);
+});
+
+for (const path of [
+  &quot;/&quot;,
+  &quot;/signin&quot;,
+  &quot;/signup&quot;,
+  &quot;/onboarding&quot;,
+  `/o/not-a-guid/v/${VENUE}/`,
+  `/o/${ORG}/v/not-a-guid/`,
+  `/o/${ORG}/`,
+]) {
+  test(`returns null for ${path || &quot;(empty)&quot;}`, () =&gt; {
+    assert.equal(readTenantPath(path), null);
+  });
+}
+
+test(&quot;build is the inverse of read&quot;, () =&gt; {
+  const original = `/o/${ORG}/v/${VENUE}/settings`;
+  const parsed = readTenantPath(original);
+  assert.equal(buildTenantPath(parsed, parsed.remainder), original);
+});
+
+test(&quot;build omits the organization segment when there is none&quot;, () =&gt; {
+  assert.equal(
+    buildTenantPath({ organizationId: null, venueId: VENUE }, &quot;/settings&quot;),
+    `/v/${VENUE}/settings`
+  );
+});</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run the test to verify it fails</span></label><span class="kind">expect fail</span></div>
+<p>Run: <code>cd src/back-office &amp;&amp; npm test</code> Expected: FAIL — <code>Cannot find module &#x27;../src/tenantPath.mjs&#x27;</code>.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Write the implementation</span></label><span class="kind">implement</span></div>
+<p>Create <code>src/back-office/src/tenantPath.mjs</code>:</p>
+<div class="code"><span class="lang">javascript</span><pre>// The browser half of decision 13. Mirrors Vennu.Tenancy.TenantPath — the two
+// implement one wire format, and decision 18 makes that format additive-only.
+const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function readTenantPath(pathname) {
+  if (typeof pathname !== &quot;string&quot; || pathname[0] !== &quot;/&quot;) return null;
+
+  const parts = pathname.split(&quot;/&quot;);
+  let index = 1;
+  let organizationId = null;
+
+  if (parts[index] === &quot;o&quot;) {
+    if (!GUID.test(parts[index + 1] ?? &quot;&quot;)) return null;
+    organizationId = parts[index + 1];
+    index += 2;
+  }
+
+  if (parts[index] !== &quot;v&quot; || !GUID.test(parts[index + 1] ?? &quot;&quot;)) return null;
+  const venueId = parts[index + 1];
+  index += 2;
+
+  const rest = parts.milestone(index).join(&quot;/&quot;);
+  return { organizationId, venueId, remainder: rest.length === 0 ? &quot;/&quot; : &quot;/&quot; + rest };
+}
+
+export function buildTenantPath({ organizationId, venueId }, remainder) {
+  let tail = remainder &amp;&amp; remainder.length ? remainder : &quot;/&quot;;
+  if (tail[0] !== &quot;/&quot;) tail = &quot;/&quot; + tail;
+  if (tail === &quot;/&quot;) tail = &quot;&quot;;
+
+  return organizationId
+    ? `/o/${organizationId}/v/${venueId}${tail}`
+    : `/v/${venueId}${tail}`;
+}</pre></div>
+<p>Create <code>src/back-office/src/tenantPath.d.mts</code>:</p>
+<div class="code"><span class="lang">typescript</span><pre>export type TenantPathParts = {
+  organizationId: string | null;
+  venueId: string;
+  remainder: string;
+};
+
+export function readTenantPath(pathname: string): TenantPathParts | null;
+export function buildTenantPath(
+  parts: Pick&lt;TenantPathParts, &quot;organizationId&quot; | &quot;venueId&quot;&gt;,
+  remainder: string
+): string;</pre></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run the tests to verify they pass</span></label><span class="kind">expect pass</span></div>
+<p>Run: <code>cd src/back-office &amp;&amp; npm test</code> Expected: PASS, 12 of 12 in this file, with the existing suite unaffected.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 5: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/back-office/src/tenantPath.mjs src/back-office/src/tenantPath.d.mts src/back-office/tests/tenantPath.test.mjs
+git commit -m &quot;feat(back-office): read and build the tenant path prefix
+
+Mirrors Vennu.Tenancy.TenantPath against the same cases, because two
+implementations of one wire format is exactly where drift starts.&quot;</pre></div>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 2: Extract the pre-auth app</h4><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Create: <code>src/onboarding/package.json</code>, <code>vite.config.ts</code>, <code>tsconfig.json</code>, <code>index.html</code></li><li>Create: <code>src/onboarding/src/main.tsx</code></li><li>Move: <code>src/back-office/src/CustomerOnboardingApp.tsx</code> → <code>src/onboarding/src/CustomerOnboardingApp.tsx</code></li><li>Move: <code>src/back-office/src/CustomerOnboardingTimeline.tsx</code>, <code>TemplateShowcase.tsx</code>, <code>customerEntryRouting.mjs</code> (+ its <code>.d.mts</code>) alongside it</li><li>Modify: <code>src/back-office/src/main.tsx</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: nothing from earlier tasks.</li><li>Produces: a <code>src/onboarding</code> app serving <code>/signin</code>, <code>/signup</code>, <code>/onboarding</code>; a <code>src/back-office</code> <code>main.tsx</code> that boots <code>App</code> unconditionally.</li></ul>
+<p>Copy <code>src/back-office</code>&#x27;s <code>vite.config.ts</code>, <code>tsconfig.json</code> and <code>index.html</code> and adjust names — matching an existing app&#x27;s configuration exactly is the point, not inventing one.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>src/onboarding/tests/entryRoutes.test.mjs</code>:</p>
+<div class="code"><span class="lang">javascript</span><pre>import { test } from &quot;node:test&quot;;
+import assert from &quot;node:assert/strict&quot;;
+import { isCustomerEntryRoute } from &quot;../src/entryRoutes.mjs&quot;;
+
+for (const path of [&quot;/signin&quot;, &quot;/signup&quot;, &quot;/onboarding&quot;, &quot;/signin/&quot;]) {
+  test(`${path} is served by the pre-auth app`, () =&gt; {
+    assert.equal(isCustomerEntryRoute(path), true);
+  });
+}
+
+for (const path of [
+  &quot;/&quot;,
+  &quot;/o/11111111-1111-1111-1111-111111111111/v/22222222-2222-2222-2222-222222222222/&quot;,
+  &quot;/display/22222222-2222-2222-2222-222222222222/33333333-3333-3333-3333-333333333333&quot;,
+]) {
+  test(`${path} is not a pre-auth route`, () =&gt; {
+    assert.equal(isCustomerEntryRoute(path), false);
+  });
+}</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run the test to verify it fails</span></label><span class="kind">expect fail</span></div>
+<p>Run: <code>cd src/onboarding &amp;&amp; npm test</code> Expected: FAIL — the package does not exist yet.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Scaffold the app and move the pre-auth components</span></label><span class="kind">implement</span></div>
+<div class="code"><span class="lang">bash</span><pre>mkdir -p src/onboarding/src src/onboarding/tests
+cp src/back-office/vite.config.ts src/onboarding/vite.config.ts
+cp src/back-office/tsconfig.json src/onboarding/tsconfig.json
+cp src/back-office/tsconfig.app.json src/onboarding/tsconfig.app.json
+cp src/back-office/tsconfig.node.json src/onboarding/tsconfig.node.json
+cp src/back-office/index.html src/onboarding/index.html
+
+git mv src/back-office/src/CustomerOnboardingApp.tsx src/onboarding/src/CustomerOnboardingApp.tsx
+git mv src/back-office/src/CustomerOnboardingTimeline.tsx src/onboarding/src/CustomerOnboardingTimeline.tsx
+git mv src/back-office/src/TemplateShowcase.tsx src/onboarding/src/TemplateShowcase.tsx
+git mv src/back-office/src/customerEntryRouting.mjs src/onboarding/src/customerEntryRouting.mjs
+git mv src/back-office/src/customerEntryRouting.d.mts src/onboarding/src/customerEntryRouting.d.mts</pre></div>
+<p>Copy <code>config.ts</code> and <code>api.ts</code> into <code>src/onboarding/src/</code> rather than moving them — back office still needs both. Trim the copy to the calls onboarding actually makes; a shared package is not worth creating for two files.</p>
+<p>Create <code>src/onboarding/package.json</code> by copying <code>src/back-office/package.json</code> and changing <code>&quot;name&quot;</code> to <code>&quot;vennusign-onboarding&quot;</code>. Keep the scripts identical.</p>
+<p>Create <code>src/onboarding/src/entryRoutes.mjs</code>:</p>
+<div class="code"><span class="lang">javascript</span><pre>// Decision 19: the pre-auth routes live at the root and carry no tenant.
+const ENTRY_ROUTES = [&quot;/signup&quot;, &quot;/signin&quot;, &quot;/onboarding&quot;];
+
+export function isCustomerEntryRoute(pathname) {
+  if (typeof pathname !== &quot;string&quot;) return false;
+  const normalized = pathname.replace(/\/$/, &quot;&quot;);
+  return ENTRY_ROUTES.includes(normalized === &quot;&quot; ? &quot;/&quot; : normalized);
+}</pre></div>
+<p>Create <code>src/onboarding/src/main.tsx</code>:</p>
+<div class="code"><span class="lang">tsx</span><pre>import React from &quot;react&quot;;
+import ReactDOM from &quot;react-dom/client&quot;;
+import &quot;@fontsource/playfair-display/400.css&quot;;
+import &quot;@fontsource/playfair-display/600.css&quot;;
+import &quot;@fontsource/playfair-display/400-italic.css&quot;;
+import CustomerOnboardingApp from &quot;./CustomerOnboardingApp&quot;;
+import { initializeAdminTheme } from &quot;./adminTheme.mjs&quot;;
+
+initializeAdminTheme();
+
+ReactDOM.createRoot(document.getElementById(&quot;root&quot;)!).render(
+  &lt;React.StrictMode&gt;
+    &lt;CustomerOnboardingApp /&gt;
+  &lt;/React.StrictMode&gt;
+);</pre></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 4: Remove the switch from back office</span></label><span class="kind">implement</span></div>
+<p>Replace <code>src/back-office/src/main.tsx</code> entirely with:</p>
+<div class="code"><span class="lang">tsx</span><pre>import React from &quot;react&quot;;
+import ReactDOM from &quot;react-dom/client&quot;;
+import &quot;@fontsource/playfair-display/400.css&quot;;
+import &quot;@fontsource/playfair-display/600.css&quot;;
+import &quot;@fontsource/playfair-display/400-italic.css&quot;;
+import App from &quot;./App&quot;;
+import { initializeAdminTheme } from &quot;./adminTheme.mjs&quot;;
+
+// Decision 48: back office is entered only post-auth, from a tenant-bearing URL.
+// The pre-auth routes moved to src/onboarding, so there is no switch here any more.
+initializeAdminTheme();
+
+ReactDOM.createRoot(document.getElementById(&quot;root&quot;)!).render(
+  &lt;React.StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/React.StrictMode&gt;
+);</pre></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 5: Run the tests to verify they pass</span></label><span class="kind">expect pass</span></div>
+<div class="code"><span class="lang">bash</span><pre>cd src/onboarding &amp;&amp; npm install &amp;&amp; npm test &amp;&amp; npm run build
+cd ../back-office &amp;&amp; npm test &amp;&amp; npm run build</pre></div>
+<p>Expected: onboarding 7 of 7 and a clean production build; back office suite unchanged and building. If back office fails to compile on a missing <code>CustomerOnboardingApp</code> import, that import is the switch — delete it.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 6: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/onboarding src/back-office/src/main.tsx
+git commit -m &quot;refactor(front-end): extract the pre-auth app from back office
+
+main.tsx was already a two-way switch between two unrelated roots over exactly
+the pre-auth pathname set. This unbundles them so back office can assume it
+always has a tenant. Q31&#x27;s recommended default, running provisionally.&quot;</pre></div>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 3: Back office reads its tenant from the path</h4><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Modify: <code>src/back-office/src/App.tsx</code></li><li>Create: <code>src/back-office/tests/tenantBoot.test.mjs</code></li><li>Create: <code>src/back-office/src/tenantBoot.mjs</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: <code>readTenantPath</code> from Task 1.</li><li>Produces: <code>resolveTenant(pathname)</code> returning <code>{ organizationId, venueId }</code>, or throwing <code>MissingTenantError</code> when the path carries none.</li></ul>
+<p>The throw is deliberate. Under decision 48 back office is only ever entered post-auth from a tenant-bearing URL, so no tenant is a bug in whatever linked here — not a state to render around.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>src/back-office/tests/tenantBoot.test.mjs</code>:</p>
+<div class="code"><span class="lang">javascript</span><pre>import { test } from &quot;node:test&quot;;
+import assert from &quot;node:assert/strict&quot;;
+import { resolveTenant, MissingTenantError } from &quot;../src/tenantBoot.mjs&quot;;
+
+const ORG = &quot;11111111-1111-1111-1111-111111111111&quot;;
+const VENUE = &quot;22222222-2222-2222-2222-222222222222&quot;;
+
+test(&quot;resolves org and venue from the path&quot;, () =&gt; {
+  assert.deepEqual(resolveTenant(`/o/${ORG}/v/${VENUE}/`), {
+    organizationId: ORG,
+    venueId: VENUE,
+  });
+});
+
+test(&quot;resolves a venue with no organization segment&quot;, () =&gt; {
+  assert.deepEqual(resolveTenant(`/v/${VENUE}/`), {
+    organizationId: null,
+    venueId: VENUE,
+  });
+});
+
+test(&quot;throws when the path carries no tenant&quot;, () =&gt; {
+  // Decision 48: back office is entered only post-auth from a tenant-bearing URL,
+  // so this is a defect in whatever linked here, not a state to render around.
+  assert.throws(() =&gt; resolveTenant(&quot;/&quot;), MissingTenantError);
+});</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run the test to verify it fails</span></label><span class="kind">expect fail</span></div>
+<p>Run: <code>cd src/back-office &amp;&amp; npm test</code> Expected: FAIL — <code>Cannot find module &#x27;../src/tenantBoot.mjs&#x27;</code>.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Write the implementation</span></label><span class="kind">implement</span></div>
+<p>Create <code>src/back-office/src/tenantBoot.mjs</code>:</p>
+<div class="code"><span class="lang">javascript</span><pre>import { readTenantPath } from &quot;./tenantPath.mjs&quot;;
+
+export class MissingTenantError extends Error {
+  constructor(pathname) {
+    super(`Back office was opened at &quot;${pathname}&quot;, which carries no tenant.`);
+    this.name = &quot;MissingTenantError&quot;;
+  }
+}
+
+// Decision 12: the path is a cache of a fact that lives in the database. It selects
+// which venue this session is working in; it never grants access to it.
+export function resolveTenant(pathname) {
+  const parts = readTenantPath(pathname);
+  if (!parts) throw new MissingTenantError(pathname);
+  return { organizationId: parts.organizationId, venueId: parts.venueId };
+}</pre></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 4: Use it at boot</span></label><span class="kind">implement</span></div>
+<p>In <code>src/back-office/src/App.tsx</code>, near the top of the component where <code>routeHash</code> is initialised (around line 125), add:</p>
+<div class="code"><span class="lang">tsx</span><pre>import { resolveTenant } from &quot;./tenantBoot.mjs&quot;;
+
+// ...inside the component, before any data loading:
+const tenant = useMemo(() =&gt; resolveTenant(window.location.pathname), []);</pre></div>
+<p>Then replace every read of the stored venue with <code>tenant.venueId</code>. Search for the storage key to find them all:</p>
+<div class="code"><span class="lang">bash</span><pre>grep -rn &quot;vennusign.back-office.venue-id&quot; src/back-office/src</pre></div>
+<p>Every hit is either the write (delete it) or a read (replace with <code>tenant.venueId</code>).</p>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 5: Run the tests to verify they pass</span></label><span class="kind">expect pass</span></div>
+<div class="code"><span class="lang">bash</span><pre>cd src/back-office &amp;&amp; npm test &amp;&amp; npm run build</pre></div>
+<p>Expected: PASS, including the 3 new cases, with a clean production build.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 6: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/back-office/src/tenantBoot.mjs src/back-office/src/App.tsx src/back-office/tests/tenantBoot.test.mjs
+git commit -m &quot;feat(back-office): take the tenant from the path, not storage
+
+Decision 13. A path with no tenant throws rather than rendering an empty
+state, because under decision 48 that can only be a defect in the link.&quot;</pre></div>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 4: Relative API calls, and <code>venueFetch</code>&#x27;s storage read deleted</h4><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Modify: <code>src/back-office/src/api.ts:238-247</code> (<code>venueFetch</code>)</li><li>Modify: <code>src/back-office/src/config.ts</code></li><li>Create: <code>src/back-office/tests/relativeApi.test.mjs</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: nothing from earlier tasks — this is the deletion that Task 3 makes safe.</li><li>Produces: an <code>apiBaseUrl</code> that is relative in production.</li></ul>
+<p>This is the task decision 13 exists for. Once calls are relative, the browser resolves the prefix into them and the tenant is carried with no client code at all.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>src/back-office/tests/relativeApi.test.mjs</code>:</p>
+<div class="code"><span class="lang">javascript</span><pre>import { test } from &quot;node:test&quot;;
+import assert from &quot;node:assert/strict&quot;;
+import { resolveApiBaseUrl } from &quot;../src/apiBaseUrl.mjs&quot;;
+
+test(&quot;is relative when no absolute base is configured&quot;, () =&gt; {
+  // Decision 13: a relative call from /o/{org}/v/{venue}/ inherits the tenant.
+  assert.equal(resolveApiBaseUrl(undefined), &quot;&quot;);
+});
+
+test(&quot;keeps an explicit absolute base for local development&quot;, () =&gt; {
+  assert.equal(
+    resolveApiBaseUrl(&quot;https://localhost:7001&quot;),
+    &quot;https://localhost:7001&quot;
+  );
+});
+
+test(&quot;strips a trailing slash so joins do not double up&quot;, () =&gt; {
+  assert.equal(resolveApiBaseUrl(&quot;https://localhost:7001/&quot;), &quot;https://localhost:7001&quot;);
+});</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run the test to verify it fails</span></label><span class="kind">expect fail</span></div>
+<p>Run: <code>cd src/back-office &amp;&amp; npm test</code> Expected: FAIL — <code>Cannot find module &#x27;../src/apiBaseUrl.mjs&#x27;</code>.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Write the implementation</span></label><span class="kind">implement</span></div>
+<p>Create <code>src/back-office/src/apiBaseUrl.mjs</code>:</p>
+<div class="code"><span class="lang">javascript</span><pre>// Decision 13: production calls are relative so the browser resolves the tenant
+// prefix into them. An absolute base survives only for local development against
+// a separately-hosted API.
+export function resolveApiBaseUrl(configured) {
+  if (!configured) return &quot;&quot;;
+  return configured.replace(/\/+$/, &quot;&quot;);
+}</pre></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 4: Delete the storage read from <code>venueFetch</code></span></label><span class="kind">implement</span></div>
+<p>Replace <code>venueFetch</code> in <code>src/back-office/src/api.ts</code> with:</p>
+<div class="code"><span class="lang">typescript</span><pre>function venueFetch(input: RequestInfo | URL, init?: RequestInit) {
+  const headers = new Headers(init?.headers);
+  if (headers.get(&quot;X-Vennusign-Back-Office-Token&quot;) === &quot;customer-session&quot;) {
+    headers.delete(&quot;X-Vennusign-Back-Office-Token&quot;);
+  }
+  // The tenant is no longer sent: it is inherited from the bundle&#x27;s own path
+  // (decision 13), so there is nothing here that can forget to send it.
+  return fetch(input, { ...init, headers, credentials: &quot;include&quot; });
+}</pre></div>
+<p>Delete <code>venueContextStorageKey</code> and <code>clearBackOfficeVenueContext</code>, then fix the call sites the compiler flags. In <code>loadBackOfficeSession</code>, delete the 401-retry that cleared the stored venue and retried — the state it worked around no longer exists.</p>
+<p>Route <code>loadBackOfficeConfiguration</code>&#x27;s <code>apiBaseUrl</code> through <code>resolveApiBaseUrl</code>.</p>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 5: Run the tests to verify they pass</span></label><span class="kind">expect pass</span></div>
+<div class="code"><span class="lang">bash</span><pre>cd src/back-office &amp;&amp; npm test &amp;&amp; npm run build</pre></div>
+<p>Expected: PASS with a clean build. <code>grep -rn &quot;X-Vennusign-Venue-Id&quot; src/back-office/src</code> must return nothing.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 6: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/back-office/src/api.ts src/back-office/src/apiBaseUrl.mjs src/back-office/src/config.ts src/back-office/tests/relativeApi.test.mjs
+git commit -m &quot;feat(back-office): relative API calls carry the tenant
+
+Deletes venueFetch&#x27;s localStorage read and the X-Vennusign-Venue-Id header
+rather than formalising them, and with them the 401 clear-and-retry that
+existed only because a session tried to pin a venue before it knew one.&quot;</pre></div>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 5: Display carries the venue in its URL</h4><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Modify: <code>src/display/src/routing.ts</code></li><li>Modify: <code>src/display/src/App.tsx</code></li><li>Create: <code>src/display/tests/routing.test.mjs</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: nothing.</li><li>Produces: <code>DisplayRoute</code> gains <code>{ kind: &#x27;display&#x27;; venueId: string; screenId: string }</code>.</li></ul>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>src/display/tests/routing.test.mjs</code>:</p>
+<div class="code"><span class="lang">javascript</span><pre>import { test } from &quot;node:test&quot;;
+import assert from &quot;node:assert/strict&quot;;
+import { resolveDisplayRoute } from &quot;../src/routing.ts&quot;;
+
+const VENUE = &quot;22222222-2222-2222-2222-222222222222&quot;;
+const SCREEN = &quot;33333333-3333-3333-3333-333333333333&quot;;
+
+test(&quot;resolves venue and screen&quot;, () =&gt; {
+  assert.deepEqual(resolveDisplayRoute(`/display/${VENUE}/${SCREEN}`), {
+    kind: &quot;display&quot;,
+    venueId: VENUE,
+    screenId: SCREEN,
+  });
+});
+
+test(&quot;pair stays a pre-auth root route&quot;, () =&gt; {
+  // Decision 19: a device seeking an owner has no tenant to put in a URL.
+  assert.deepEqual(resolveDisplayRoute(&quot;/pair&quot;), { kind: &quot;pair&quot; });
+});
+
+test(&quot;a display path without a venue is not found&quot;, () =&gt; {
+  assert.deepEqual(resolveDisplayRoute(`/display/${SCREEN}`), { kind: &quot;not-found&quot; });
+});</pre></div>
+<p>If importing <code>.ts</code> from <code>node --test</code> is not already configured in this package, move <code>resolveDisplayRoute</code> into <code>src/display/src/routing.mjs</code> with a <code>routing.d.mts</code> beside it, matching <code>pairing.mjs</code>, and import that instead. Check first: <code>ls src/display/tests</code>.</p>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run the test to verify it fails</span></label><span class="kind">expect fail</span></div>
+<p>Run: <code>cd src/display &amp;&amp; npm test</code> Expected: FAIL — the two-segment path currently returns <code>not-found</code>.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Write the implementation</span></label><span class="kind">implement</span></div>
+<p>Replace the <code>display</code> branch of <code>src/display/src/routing.ts</code>:</p>
+<div class="code"><span class="lang">typescript</span><pre>export type DisplayRoute =
+  | { kind: &#x27;display&#x27;; venueId: string; screenId: string }
+  | { kind: &#x27;pair&#x27; }
+  | { kind: &#x27;provision&#x27; }
+  | { kind: &#x27;not-found&#x27; };
+
+export function resolveDisplayRoute(pathname: string): DisplayRoute {
+  if (/^\/pair\/?$/i.test(pathname)) {
+    return { kind: &#x27;pair&#x27; };
+  }
+
+  if (/^\/provision\/?$/i.test(pathname)) {
+    return { kind: &#x27;provision&#x27; };
+  }
+
+  // Decision 19. The venue is a routing hint under decision 11 — the screen
+  // record stays the authority for what this screen may show.
+  const match = pathname.match(/^\/display\/([^/]+)\/([^/]+)\/?$/i);
+
+  if (!match) {
+    return { kind: &#x27;not-found&#x27; };
+  }
+
+  return {
+    kind: &#x27;display&#x27;,
+    venueId: decodeURIComponent(match[1]),
+    screenId: decodeURIComponent(match[2]),
+  };
+}</pre></div>
+<p>In <code>src/display/src/App.tsx</code>, pass <code>route.venueId</code> alongside <code>route.screenId</code> into <code>DisplayPage</code>.</p>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run the tests to verify they pass</span></label><span class="kind">expect pass</span></div>
+<div class="code"><span class="lang">bash</span><pre>cd src/display &amp;&amp; npm test &amp;&amp; npm run build</pre></div>
+<p>Expected: PASS, 3 of 3 new, existing suite unaffected.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 5: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/display/src/routing.ts src/display/src/App.tsx src/display/tests/routing.test.mjs
+git commit -m &quot;feat(display): carry the venue in the display URL
+
+Decision 19. The venue is a routing hint; the screen record remains the
+authority for what the screen is allowed to show.&quot;</pre></div>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 6: Send a claimed device to its tenant URL</h4><div class="task-body">
+<p><strong>Files:</strong></p>
+<ul><li>Modify: <code>src/display/src/PairingPage.tsx</code></li><li>Modify: <code>src/Vennu.Api/Controllers/ScreensController.cs</code> (the <code>pairing/{code}/status</code> response)</li><li>Create: <code>tests/Vennu.Api.Tests/Screens/PairingStatusVenueTests.cs</code></li></ul>
+<p><strong>Interfaces:</strong></p>
+<ul><li>Consumes: Task 5&#x27;s route shape.</li><li>Produces: the pairing-status response gains <code>venueId</code>, null until claimed.</li></ul>
+<p>Decision 9: the claim response is where a device crosses the line, and it is already a server-controlled response — it only needs a field.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing test</span></label><span class="kind">write test</span></div>
+<p>Create <code>tests/Vennu.Api.Tests/Screens/PairingStatusVenueTests.cs</code>:</p>
+<div class="code"><span class="lang">csharp</span><pre>namespace Vennu.Api.Tests.Screens;
+
+public sealed class PairingStatusVenueTests
+{
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void UnclaimedStatusCarriesNoVenue()
+    {
+        // Decision 5: before a claim the device belongs to nobody, so there is
+        // genuinely no tenant to report.
+        var response = new Vennu.Api.Contracts.ScreenPairingStatusResponse
+        {
+            Claimed = false,
+            VenueId = null
+        };
+
+        Assert.Null(response.VenueId);
+    }
+
+    [Fact]
+    [Trait(&quot;Category&quot;, &quot;Unit&quot;)]
+    public void ClaimedStatusCarriesTheVenue()
+    {
+        var venue = Guid.NewGuid();
+
+        var response = new Vennu.Api.Contracts.ScreenPairingStatusResponse
+        {
+            Claimed = true,
+            VenueId = venue
+        };
+
+        Assert.Equal(venue, response.VenueId);
+    }
+}</pre></div>
+<p>Adjust the namespace and type name to the actual pairing-status contract. Find it first:</p>
+<div class="code"><span class="lang">bash</span><pre>grep -rn &quot;pairing/{code}/status&quot; -A6 src/Vennu.Api/Controllers/ScreensController.cs
+grep -rn &quot;class.*PairingStatus&quot; src/Vennu.Api/Contracts</pre></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run the test to verify it fails</span></label><span class="kind">expect fail</span></div>
+<p>Run: <code>dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj --filter FullyQualifiedName~PairingStatusVenueTests</code> Expected: FAIL to compile — the contract has no <code>VenueId</code>.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Add the field and populate it</span></label><span class="kind">implement</span></div>
+<p>Add <code>public Guid? VenueId { get; init; }</code> to the pairing-status contract, and populate it in <code>ScreensController</code> from the claimed screen&#x27;s <code>VenueId</code>. It stays null while unclaimed.</p>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 4: Navigate to the tenant URL on claim</span></label><span class="kind">implement</span></div>
+<p>In <code>src/display/src/PairingPage.tsx</code>, where the poll observes a claim, replace the existing navigation with:</p>
+<div class="code"><span class="lang">javascript</span><pre>// Decision 29: claim forces a navigation, and that navigation is what routes
+// the device to its venue&#x27;s version. There is no separate move to make.
+window.location.assign(`/display/${status.venueId}/${screenId}`);</pre></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 5: Run the tests to verify they pass</span></label><span class="kind">expect pass</span></div>
+<div class="code"><span class="lang">bash</span><pre>dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj --filter FullyQualifiedName~PairingStatusVenueTests
+cd src/display &amp;&amp; npm test &amp;&amp; npm run build</pre></div>
+<p>Expected: PASS on both.</p>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 6: Run the full milestone verification</span></label><span class="kind">expect pass</span></div>
+<div class="code"><span class="lang">bash</span><pre>dotnet build src/Vennu.Api/Vennu.Api.csproj -c Release
+dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj
+cd src/back-office &amp;&amp; npm test &amp;&amp; npm run build
+cd ../display &amp;&amp; npm test &amp;&amp; npm run build
+cd ../onboarding &amp;&amp; npm test &amp;&amp; npm run build</pre></div>
+<p>Then the Playwright gate, per AGENTS.md: <code>npx playwright test</code> from <code>tests/ui</code>. Expect failures wherever a spec hard-codes a back-office URL without a tenant prefix; those specs are part of this milestone and are updated here, not later.</p>
+<div class="step commit"><label><input type="checkbox"><span class="stitle">Step 7: Commit</span></label><span class="kind">commit</span></div>
+<div class="code"><span class="lang">bash</span><pre>git add src/display/src/PairingPage.tsx src/Vennu.Api tests/Vennu.Api.Tests/Screens/PairingStatusVenueTests.cs
+git commit -m &quot;feat(display): a claimed device navigates to its tenant URL
+
+Decision 9 stamps the tenant at the crossing, using the pairing-status
+response that already exists. Decision 29 then does the rest: the navigation
+is the version move.&quot;</pre></div>
+<hr>
+</div></section>
+<h3>What this milestone deliberately excludes</h3>
+<ul><li><strong><code>src/www</code> and <code>src/platform-operations</code>.</strong> Decisions 38 and the owner&#x27;s ruling put both outside the version equation.</li><li><strong>The 421 and 307 responses</strong> (decision 35). No consumer compares a hint against an authority yet; that arrives with the Router in milestone 5.</li><li><strong>Deployment of <code>src/onboarding</code>.</strong> A new app needs a <code>classify-changes.sh</code> output and a <code>deploy-dev.yml</code> job. That is the parked deploy-pipeline conversation, and per Q32 it is a prerequisite feature rather than Keystone&#x27;s work.</li></ul>
+<h3>Self-review</h3>
+<p><strong>Spec coverage.</strong> Decisions 12, 13, 19, 20, 21, 29 and 48 each have a task and an asserting test. Decision 9 is covered by Task 6. Decision 49 is not implemented here because it needs an authorization path to run through — it belongs with the first surface that authorizes a venue from a URL, which is milestone 5.</p>
+<p><strong>Placeholders.</strong> None. Two tasks require a <code>grep</code> before editing (Task 3&#x27;s storage-key sweep, Task 6&#x27;s contract name) because the exact call sites depend on code that may have moved; both give the command and what to do with every hit.</p>
+<p><strong>Type consistency.</strong> <code>readTenantPath</code> returns <code>{ organizationId, venueId, remainder }</code> in Tasks 1, 3 and 4. <code>resolveTenant</code> returns the same shape minus <code>remainder</code>. <code>DisplayRoute.display</code> carries <code>venueId</code> then <code>screenId</code> in both Task 5 and Task 6.</p>
+<p><strong>Known risk, stated.</strong> Task 1 creates a second implementation of the wire format, in JavaScript, alongside milestone 1&#x27;s C# one. Decision 18 makes that format additive-only forever, which limits the damage, and the two test suites use identical cases — but a single format with two parsers is where drift begins, and a reviewer should check both when either changes.</p></section>
+<section class="doc" id="m5"><h2>Keystone Milestone 5 — Product Router<span class="mcount">7 tasks</span></h2><blockquote><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. Steps use checkbox (<code>- [ ]</code>) syntax.</blockquote>
+<p>&gt;</p>
+<blockquote><strong>Note on style:</strong> behaviour and file names rather than code listings, at the owner&#x27;s instruction. Every task still writes a failing test first and gives an exact verification command.</blockquote>
+<p><strong>Goal:</strong> Build the Product Router — the component that reads the tenant off every request, resolves it to a version, mints the internal token, and forwards.</p>
+<p><strong>Architecture:</strong> A new service, <code>src/Vennu.Router</code>, built on YARP (register Q12). It consumes the tenant prefix, forwards the bare path so versioned route templates never change, and carries the tenant onward in a signed token. It caches VDS answers so a VDS outage degrades rather than fails, and it is the one component positioned to emit per-customer telemetry with a version dimension.</p>
+<p><strong>Tech Stack:</strong> .NET 9, YARP (<code>Yarp.ReverseProxy</code>), <code>Vennu.Tenancy</code> from milestone 1, xunit.</p>
+<p><strong>Spec:</strong> decisions 11, 13, 14, 15, 16, 17, 25, 27, 31–35, 43. <strong>Register:</strong> Q1, Q3, Q12, Q13, Q14, Q17, Q19, Q27, Q28.</p>
+<h3>Milestone discipline</h3>
+<p>This is a numbered milestone under AGENTS.md&#x27;s working model, not a loose batch of work. Before starting: create the milestone issue, record the claim in <code>tracker/assignments.json</code>, and branch as <code>feature/keystone-m5-&lt;short-name&gt;</code> from merged <code>master</code>. One PR. Verify locally (CI is suspended by owner decision — local checks <em>are</em> the gate). Obtain independent review, never by the author. Merge, then synchronize <code>PROJECT_STATUS.md</code>, the tracker, <code>ai/handoffs/current.md</code> and this feature&#x27;s records.</p>
+<p><strong>Ends with a short owner acceptance workbook</strong> (5–10 minutes) before the next milestone starts. A milestone that ships no UI gets a demo script instead. Only one milestone runs at a time.</p>
+<h3>Governance gate</h3>
+<p>Does not execute until the design authority is approved. <strong>Nothing is provisioned.</strong> This milestone puts a new component on every request; decision 43 makes its own plan a later graduation, and the tier-and-cost conversation is still parked.</p>
+<p><strong>Depends on milestones 1, 2 and 3.</strong> The token library, a VDS to ask, and real instances to forward to.</p>
+<h3>Global Constraints</h3>
+<ul><li><strong>Decision 2 — the Router cannot roll itself out progressively.</strong> It is the single point every request passes through: backward-compatible only, slot swap, immediate rollback.</li><li><strong>Decision 16 — never pattern-match a versioned API route.</strong> The Router reads the tenant prefix and nothing else about the path.</li><li><strong>Decision 15 — forward, never redirect to a per-version hostname.</strong> The <code>__Host-</code> cookie prefix makes that fatal to sessions.</li><li><strong>Decision 11 — the tenant is a hint.</strong> The Router never authorizes. It selects a version and nothing else.</li><li><strong>Decision 34 — the token authenticates the hop, not the claim.</strong> Signing a caller-asserted tenant does not make it true.</li><li><strong>Register Q13 — 15 ms added p95</strong>, measured from the first deployment that puts it on the path.</li></ul>
+<h3>File structure</h3>
+<div class="tablewrap"><table><thead><tr><th>File</th><th>Responsibility</th></tr></thead><tbody><tr><td><code>src/Vennu.Router/Program.cs</code></td><td>Host, YARP pipeline, DI.</td></tr><tr><td><code>src/Vennu.Router/Resolution/TenantResolver.cs</code></td><td>Prefix off the path; nothing else.</td></tr><tr><td><code>src/Vennu.Router/Resolution/VersionLookup.cs</code></td><td>Ask VDS; apply the default-version rule.</td></tr><tr><td><code>src/Vennu.Router/Resolution/AssignmentCache.cs</code></td><td>Last-known assignments and the degraded-mode rules.</td></tr><tr><td><code>src/Vennu.Router/Trust/TokenMinter.cs</code></td><td>Mint the per-hop token from Key Vault key material.</td></tr><tr><td><code>src/Vennu.Router/Telemetry/RequestTelemetry.cs</code></td><td>Per-customer, per-version emission.</td></tr><tr><td><code>tests/Vennu.Router.Tests/</code></td><td>Unit tests.</td></tr></tbody></table></div>
+<p><code>AssignmentCache</code> is its own file because register Q1 and Q3 give it real rules — not-expiring, invalidating on two distinct events, alerting from the first degraded request — and burying them inside the lookup is how they get quietly softened later.</p>
+<hr>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 1: Resolve the tenant and strip the prefix</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Router/Resolution/TenantResolver.cs</code>, <code>tests/Vennu.Router.Tests/TenantResolverTests.cs</code></p>
+<p>Use <code>Vennu.Tenancy.TenantPath</code> from milestone 1 — the same parser the API uses, not a second one.</p>
+<p><strong>Tests must prove:</strong> a prefixed path yields a tenant and a bare remainder; an unprefixed path yields no tenant and is passed through untouched, since that is every pre-auth route and every request that exists today; and a malformed prefix is treated as <em>no</em> prefix rather than as an error, so a bad link reaches a normal 404 instead of a Router-specific failure page.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(router): resolve the tenant prefix and forward the bare path</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 2: Version lookup and the default-version rule</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Router/Resolution/VersionLookup.cs</code>, <code>tests/Vennu.Router.Tests/VersionLookupTests.cs</code></p>
+<p>Ask VDS. Apply decisions 27 and 28 to whatever comes back.</p>
+<p><strong>Tests must prove:</strong> an assigned venue routes to its version; a request with <strong>no</strong> tenant routes to the default version, which is decision 27&#x27;s unattributed path and covers every sign-in; a venue VDS reports as <em>not-assigned</em> also routes to the default, keeping that fallback in exactly one place (register Q8); and VDS reporting an <strong>unset default</strong> is a distinct, loud failure rather than a guess, because a system that cannot serve unattributed traffic is misconfigured and should say so.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(router): version lookup with the default-version fallback</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 3: The assignment cache and degraded mode</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Router/Resolution/AssignmentCache.cs</code>, <code>tests/Vennu.Router.Tests/AssignmentCacheTests.cs</code></p>
+<p>Register Q1 and Q3. Serve last-known assignments when VDS is unreachable, with no time expiry, invalidating when VDS returns and when the default pointer changes.</p>
+<p><strong>Tests must prove:</strong> a cached assignment is served when VDS is unreachable, rather than the request failing; the cache does <strong>not</strong> expire on a timer, because time-based expiry converts a VDS outage into a staggered product outage — which is worse than slightly stale routing; the cache is invalidated when VDS returns and when the default advances; and a degraded-mode signal is emitted from the <em>first</em> cache-served request, not after a threshold, since the residual risk Q3 names is a partial failure where VDS is reachable by PO but not by the Router, and the alert is the only thing that surfaces it.</p>
+<p>Note for the implementer, from the register: this is safer than it first looks because PO writes assignments <em>through</em> VDS, so while VDS is unreachable no assignment can change. A cache served during an outage is exactly as correct as it was when the outage began.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(router): serve cached assignments through a VDS outage</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 4: Mint the internal token</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Router/Trust/TokenMinter.cs</code>, <code>tests/Vennu.Router.Tests/TokenMinterTests.cs</code></p>
+<p>Use <code>Vennu.Tenancy.TenantTokenIssuer</code> from milestone 1. Key material from Key Vault by managed identity (register Q17), with the vault name resolved from environment configuration rather than a constant — the owner&#x27;s note on Q17 is that it changes per environment.</p>
+<p><strong>Tests must prove:</strong> the minted token names the resolved version as its audience, so it cannot be replayed at another (decision 32); it carries provenance as <em>asserted</em>, because the Router resolved a caller-supplied hint and signing it does not make it true (decision 34); its lifetime is 60 seconds (register Q16); and a missing or unreadable key is a startup failure rather than a per-request one, so the Router never runs in a state where it silently forwards unsigned.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(router): mint the per-hop tenant token</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 5: Forward, and handle misdirection</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Router/Program.cs</code> (YARP pipeline), <code>tests/Vennu.Router.Tests/ForwardingTests.cs</code></p>
+<p>Forward to an instance the Router picks from the healthy set ADS reports (register Q6), stamping the resolved version so the receiving instance can check it (decision 35).</p>
+<p><strong>Tests must prove:</strong> the forwarded request carries the bare path and the token; the Router picks from healthy instances only and spreads across them rather than pinning to the first; a version with <strong>no</strong> healthy instances produces 503 with a retry hint and never reroutes to a different version (register Q11); and a 421 returned by a versioned instance is passed back to the client unchanged rather than being retried, because a retry against the same wrong premise loops.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(router): forward with a stamped version, refusing to reroute</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 6: Per-customer telemetry with a version dimension</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Router/Telemetry/RequestTelemetry.cs</code>, <code>tests/Vennu.Router.Tests/RequestTelemetryTests.cs</code></p>
+<p>Register Q27: the Router emits it, because it is the one component that sees every request and already knows both the tenant and the resolved version. Without it, cohort health cannot be assessed — which removes the point of waves.</p>
+<p><strong>Tests must prove:</strong> every request emits tenant, resolved version, status and latency; unattributed requests emit with no tenant rather than being dropped, since sign-in volume is real signal; the Router&#x27;s own added latency is emitted separately from the upstream&#x27;s, because register Q13&#x27;s budget is about the hop and not the request; and no customer identifier beyond the venue id reaches telemetry.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(router): emit per-customer telemetry carrying the version</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 7: The receiving side — 421 and 307</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Api/Infrastructure/MisdirectedRequestMiddleware.cs</code>, <code>tests/Vennu.Api.Tests/Infrastructure/MisdirectedRequestTests.cs</code></p>
+<p>Decision 35, and the first milestone with an authority to compare a hint against. Also where decision 49 lands, since this is the first surface that authorizes a venue arriving in a URL.</p>
+<p><strong>Tests must prove:</strong> a request whose stamped version differs from this instance&#x27;s <code>VENNU_COMPONENT_VERSION</code> gets <strong>421</strong> — noting this is inert until #726 lands, which the test should assert explicitly so the dependency is visible rather than silently passing; a request whose hint names one venue while the authority names another gets 421 and is <strong>not</strong> served on the false premise; a document navigation gets <strong>307</strong> to the correct URL instead, because no client code is running yet to interpret a 421; and — decision 49 — an unauthorized caller receives the identical refusal they would receive for a venue that does not exist, revealing neither its existence nor its owner, with URL correction happening only <em>after</em> authorization succeeds.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 5: Full milestone verification</span></label><span class="kind">expect pass</span></div>
+<div class="code"><span class="lang">bash</span><pre>dotnet build src/Vennu.Router/Vennu.Router.csproj -c Release
+dotnet test tests/Vennu.Router.Tests/Vennu.Router.Tests.csproj
+dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj</pre></div>
+<p>Then the Playwright gate from <code>tests/ui</code>, since this milestone changes what answers every request.</p>
+<ul><li>[ ] <strong>Step 6: Commit</strong> — <code>feat(api): refuse misdirected requests without disclosing the tenant</code></li></ul>
+<hr>
+</div></section>
+<h3>Excluded</h3>
+<ul><li><strong>DNS and TLS cutover</strong> (register Q14 answers the shape: DNS points at the Router, which terminates TLS). Doing it is deployment work, gated on the cost conversation.</li><li><strong>The Router&#x27;s own App Service Plan.</strong> Decision 43 makes that a later graduation, when its added p99 becomes measurable.</li><li><strong>System Monitor</strong> acting on the telemetry this milestone emits. Decision 1, later work.</li></ul>
+<h3>Self-review</h3>
+<p><strong>Spec coverage.</strong> Decisions 11, 13, 14, 15, 16, 25, 27, 31–35 and 49 each have a task. Decision 17&#x27;s self-correction is a client behaviour, delivered in milestone 4 and exercised here.</p>
+<p><strong>Type consistency.</strong> <code>TenantContext</code> and <code>TenantTokenIssuer</code> keep milestone 1&#x27;s shapes; <code>IInstanceResolver</code> keeps milestone 2&#x27;s.</p>
+<p><strong>Known risk, stated rather than hidden.</strong> Task 7&#x27;s stamped-version check compares against <code>VENNU_COMPONENT_VERSION</code>, which #726 has not yet made real. Until it lands, every instance reports <code>0.0.0-local</code> and the check compares two placeholders — it will pass while proving nothing. The test must assert the dependency explicitly so this is visible in a failing state rather than a green one, and decision 46 means no customer may be moved until #726 is done regardless.</p></section>
+<section class="doc" id="m6"><h2>Keystone Milestone 6 — POS Webhook Receiver<span class="mcount">6 tasks</span></h2><blockquote><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. Steps use checkbox (<code>- [ ]</code>) syntax.</blockquote>
+<p>&gt;</p>
+<blockquote><strong>Note on style:</strong> behaviour and file names rather than code listings, at the owner&#x27;s instruction. Every task still writes a failing test first and gives an exact verification command.</blockquote>
+<p><strong>Goal:</strong> Build the POS Webhook Receiver — a thin front door for Square, Toast and Clover that verifies a provider&#x27;s signature, resolves the merchant to a venue from its own registration, and forwards to the version that venue is assigned to.</p>
+<p><strong>Architecture:</strong> A new service, <code>src/Vennu.WebhookReceiver</code>, holding its own <code>(provider, external identifier) → venue</code> table and exposing a registration API the versioned API calls when a venue links or unlinks a provider. It never reads Vennu domain data — that coupling is exactly what the separate table exists to avoid. It asks VDS for the venue&#x27;s version and forwards with an internal token whose provenance is <strong>verified</strong>, because unlike the Router it actually checked a signature.</p>
+<p><strong>Tech Stack:</strong> .NET 9, ASP.NET minimal API, <code>Vennu.Tenancy</code> from milestone 1, a durable queue for the VDS-unavailable path, xunit.</p>
+<p><strong>Spec:</strong> decisions 1, 2, 18, 31–34. <strong>Register:</strong> Q2, Q3.</p>
+<h3>Milestone discipline</h3>
+<p>This is a numbered milestone under AGENTS.md&#x27;s working model, not a loose batch of work. Before starting: create the milestone issue, record the claim in <code>tracker/assignments.json</code>, and branch as <code>feature/keystone-m6-&lt;short-name&gt;</code> from merged <code>master</code>. One PR. Verify locally (CI is suspended by owner decision — local checks <em>are</em> the gate). Obtain independent review, never by the author. Merge, then synchronize <code>PROJECT_STATUS.md</code>, the tracker, <code>ai/handoffs/current.md</code> and this feature&#x27;s records.</p>
+<p><strong>Ends with a short owner acceptance workbook</strong> (5–10 minutes) before the next milestone starts. A milestone that ships no UI gets a demo script instead. Only one milestone runs at a time.</p>
+<h3>Governance gate</h3>
+<p>Does not execute until the design authority is approved. Nothing is provisioned.</p>
+<p><strong>Depends on milestones 1 and 2.</strong> The token library and a VDS to ask. It does <strong>not</strong> depend on milestone 5 — the Webhook Receiver is deliberately a separate front door, so a Router change cannot break POS ingestion and vice versa.</p>
+<h3>Global Constraints</h3>
+<ul><li><strong>Decision 2 — WR cannot roll itself out progressively</strong>, and it sits in front of every version, so it must stay thin enough to change rarely.</li><li><strong>WR owns its own registration mapping.</strong> It never reads Vennu domain data and no other component writes its table. The contract is an API surface that can be versioned, not a table shape every live version must agree on.</li><li><strong>Decision 33 — WR&#x27;s provenance is <code>Verified</code>.</strong> It checked a provider signature. That is a stronger assertion than the Router&#x27;s and the receiving version must be able to tell.</li><li><strong>Decision 18 — the registration API is additive-only forever.</strong></li><li><strong>Prefer full names in speech</strong> (decision 3): &quot;WR&quot; and &quot;VDS&quot; are easily confused when spoken.</li></ul>
+<h3>File structure</h3>
+<div class="tablewrap"><table><thead><tr><th>File</th><th>Responsibility</th></tr></thead><tbody><tr><td><code>src/Vennu.WebhookReceiver/Program.cs</code></td><td>Host, DI, endpoint mapping.</td></tr><tr><td><code>src/Vennu.WebhookReceiver/Verification/</code></td><td>Per-provider signature verification, one file each for Square, Toast, Clover.</td></tr><tr><td><code>src/Vennu.WebhookReceiver/Registry/MerchantRegistry.cs</code></td><td>The <code>(provider, external id) → venue</code> table.</td></tr><tr><td><code>src/Vennu.WebhookReceiver/Registry/RegistrationEndpoints.cs</code></td><td>The API the versioned API calls on link and unlink.</td></tr><tr><td><code>src/Vennu.WebhookReceiver/Forwarding/Forwarder.cs</code></td><td>VDS lookup, token minting, forward.</td></tr><tr><td><code>src/Vennu.WebhookReceiver/Forwarding/PendingQueue.cs</code></td><td>The VDS-unavailable path.</td></tr><tr><td><code>tests/Vennu.WebhookReceiver.Tests/</code></td><td>Unit tests.</td></tr></tbody></table></div>
+<p>One verification file per provider because each has its own scheme, and a shared &quot;verify&quot; with three branches is how a weakening in one quietly applies to all three.</p>
+<hr>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 1: The merchant registry</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.WebhookReceiver/Registry/MerchantRegistry.cs</code>, migration, <code>tests/Vennu.WebhookReceiver.Tests/MerchantRegistryTests.cs</code></p>
+<p><code>(provider, external identifier) → venue</code>, owned entirely by WR.</p>
+<p><strong>Tests must prove:</strong> registration upserts on <code>(provider, external identifier)</code> rather than inserting, because reconnects and retries will re-register the same pair; the same external identifier can exist under two different providers without collision; and an unknown pair resolves to nothing rather than to a default, since guessing a venue for an unrecognised merchant sends someone else&#x27;s sales data into a tenant.</p>
+<ul><li>[ ] <strong>Step 1: Write the failing tests</strong> (LocalDB, per AGENTS.md)</li><li>[ ] <strong>Step 2: Run and confirm they fail</strong></li><li>[ ] <strong>Step 3: Implement</strong></li><li>[ ] <strong>Step 4: Run and confirm they pass</strong></li><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(webhook-receiver): merchant-to-venue registry owned by WR</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 2: The registration API</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.WebhookReceiver/Registry/RegistrationEndpoints.cs</code>, <code>tests/Vennu.WebhookReceiver.Tests/RegistrationEndpointTests.cs</code></p>
+<p>The three points the concept says this endpoint must resolve: authentication, idempotency, reconciliation.</p>
+<p><strong>Tests must prove:</strong> an unauthenticated call is refused — registration assigns venue ownership of an external identifier, so an openly callable endpoint would let anyone hijack a venue&#x27;s POS events; registering the same pair twice is idempotent; a venue can re-assert its <strong>complete</strong> registration set so drift is recoverable, because a lost registration otherwise makes that venue&#x27;s webhooks disappear silently with nothing to notice it; and re-asserting a set removes registrations no longer in it, or reconciliation only ever adds and drift accumulates.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(webhook-receiver): authenticated, idempotent, reconcilable registration</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 3: Provider signature verification</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.WebhookReceiver/Verification/SquareVerifier.cs</code>, <code>ToastVerifier.cs</code>, <code>CloverVerifier.cs</code>, <code>tests/Vennu.WebhookReceiver.Tests/VerificationTests.cs</code></p>
+<p>Move the existing schemes rather than reinventing them — <code>src/Vennu.Api/Pos/</code> already holds <code>ToastPosWebhookVerifier</code>, <code>SquareWebhookOptions</code> and the verification contracts. Read those first.</p>
+<p><strong>Tests must prove:</strong> a correctly signed payload from each provider verifies; a tampered payload does not; a payload signed with the wrong provider&#x27;s secret does not, so the three cannot be crossed; and verification runs on the <strong>raw</strong> body rather than a re-serialised one, since re-serialising is the classic way a signature check silently starts passing everything.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(webhook-receiver): per-provider signature verification</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 4: Forward to the assigned version</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.WebhookReceiver/Forwarding/Forwarder.cs</code>, <code>tests/Vennu.WebhookReceiver.Tests/ForwarderTests.cs</code></p>
+<p>Verify, resolve merchant to venue, ask VDS, forward with a token.</p>
+<p><strong>Tests must prove:</strong> the forwarded request carries a token whose provenance is <strong><code>Verified</code></strong>, not <code>Asserted</code> — this is the whole reason decision 33 exists, and it is what lets the receiving version distinguish a checked fact from the Router&#x27;s caller-supplied hint; the payload is forwarded unmodified; an unverified payload is never forwarded at all; and the receiving version is not asked to re-verify the provider signature, since it has neither the secret nor the raw body by then.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(webhook-receiver): forward verified events to the assigned version</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 5: Queue when VDS is unavailable</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.WebhookReceiver/Forwarding/PendingQueue.cs</code>, <code>tests/Vennu.WebhookReceiver.Tests/PendingQueueTests.cs</code></p>
+<p>Register Q2: queue, and drain when VDS returns. WR&#x27;s failure mode differs from the Router&#x27;s — providers retry, and a dropped webhook is lost sales data rather than a visible outage — so queueing loses nothing and avoids forwarding to a stale version.</p>
+<p><strong>Tests must prove:</strong> an event arriving while VDS is unreachable is queued and the provider still gets a fast success, since a slow response invites provider-side retries and duplicates; the queue drains in order once VDS returns; a queued event is verified <strong>before</strong> queueing, not after, so the queue never holds unverified payloads; and the queue is durable across a restart, because an in-memory queue turns a VDS blip plus a deploy into silent data loss.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<ul><li>[ ] <strong>Step 5: Commit</strong> — <code>feat(webhook-receiver): queue events through a VDS outage</code></li></ul>
+<hr>
+</div></section>
+<section class="task"><h4 class="task-head" tabindex="0" role="button" aria-expanded="false">Task 6: Point the versioned API at the registration API</h4><div class="task-body">
+<p><strong>Files:</strong> <code>src/Vennu.Api/Pos/</code> (the link and unlink paths), <code>tests/Vennu.Api.Tests/Pos/WebhookRegistrationTests.cs</code></p>
+<p>When a venue links or unlinks a POS provider, the API calls WR&#x27;s registration endpoint. Find the call sites first:</p>
+<div class="code"><span class="lang">bash</span><pre>grep -rn &quot;ExternalMerchantId&quot; src/Vennu.Api --include=*.cs</pre></div>
+<p><strong>Tests must prove:</strong> linking a provider registers the pair with WR; unlinking deregisters it; and a WR call failing does <strong>not</strong> silently succeed the link — a venue that believes it is connected but whose webhooks go nowhere is worse than a link that visibly failed.</p>
+<div class="step test"><label><input type="checkbox"><span class="stitle">Step 1: Write the failing tests</span></label><span class="kind">write test</span></div>
+<div class="step expect-fail"><label><input type="checkbox"><span class="stitle">Step 2: Run and confirm they fail</span></label><span class="kind">expect fail</span></div>
+<div class="step build"><label><input type="checkbox"><span class="stitle">Step 3: Implement</span></label><span class="kind">implement</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 4: Run and confirm they pass</span></label><span class="kind">expect pass</span></div>
+<div class="step expect-pass"><label><input type="checkbox"><span class="stitle">Step 5: Full milestone verification</span></label><span class="kind">expect pass</span></div>
+<div class="code"><span class="lang">bash</span><pre>dotnet build src/Vennu.WebhookReceiver/Vennu.WebhookReceiver.csproj -c Release
+dotnet test tests/Vennu.WebhookReceiver.Tests/Vennu.WebhookReceiver.Tests.csproj
+dotnet test tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj</pre></div>
+<p>Azure and external-service tests remain skipped by standing owner exception; record them as skipped rather than passing.</p>
+<ul><li>[ ] <strong>Step 6: Commit</strong> — <code>feat(api): register POS links with the Webhook Receiver</code></li></ul>
+<hr>
+</div></section>
+<h3>Excluded</h3>
+<ul><li><strong>Retiring the API&#x27;s existing webhook endpoint.</strong> <code>PosWebhooksController</code> keeps working until WR is deployed and providers are repointed. Removing it is a later, deliberate act — and per AGENTS.md a milestone that replaces a surface retires the legacy specs it obsoletes in the same PR, so that retirement carries its own test cleanup.</li><li><strong>Repointing the providers themselves.</strong> Provider-side configuration, gated on deployment and therefore on the cost conversation.</li><li><strong>Stripe.</strong> <code>StripeWebhooksController</code> is billing, not POS, and is not version-routed by venue.</li></ul>
+<h3>Self-review</h3>
+<p><strong>Spec coverage.</strong> Decisions 31–34 have tasks; decision 33&#x27;s <code>Verified</code> provenance is the explicit subject of Task 4. Register Q2 is Task 5. Decision 18&#x27;s additive-only constraint on the registration API is a review rule rather than a test.</p>
+<p><strong>Type consistency.</strong> <code>TenantContext</code> and <code>TenantTokenIssuer</code> keep milestone 1&#x27;s shapes. WR mints with provenance <code>Verified</code> where the Router mints <code>Asserted</code> — the one deliberate difference, and the reason the field exists.</p>
+<p><strong>Known risk.</strong> Task 6 creates a runtime dependency from the versioned API to WR at link time. If WR is unavailable, linking fails — which is correct, but it means a WR outage blocks a customer action that has nothing to do with webhooks arriving. A reviewer should confirm the failure is surfaced as a retryable &quot;try again&quot; rather than a permanent error, and that a later reconciliation sweep can re-assert links made while WR was down.</p></section></main>
+<script>
+document.querySelectorAll(".task-head").forEach(function (h) {
+  function toggle() { h.setAttribute("aria-expanded", h.getAttribute("aria-expanded") === "true" ? "false" : "true"); }
+  h.addEventListener("click", toggle);
+  h.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+});
+var KEY = "keystone.milestones.v1", state = {};
+try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { state = {}; }
+document.querySelectorAll(".step input").forEach(function (box, n) {
+  if (state["s" + n]) { box.checked = true; }
+  box.addEventListener("change", function () {
+    state["s" + n] = box.checked;
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  });
+});
+</script>

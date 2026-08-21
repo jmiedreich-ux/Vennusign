@@ -1,14 +1,26 @@
-# Keystone Slice 1 — TenantContext Implementation Plan
+# Keystone Milestone 1 — TenantContext Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship the TenantContext contract and its library into `Vennu.Api` so that a request can carry which tenant it is *about*, with nothing yet depending on it.
 
-**Architecture:** A new dependency-free `Vennu.Tenancy` project owns the contract in two layers — the public one is a URL path prefix (`/o/{orgId}/v/{venueId}/…`), the internal one is an ES256-signed token minted by the Product Router. `Vennu.Api` gains a middleware that resolves whichever is present, strips the prefix so existing route templates are untouched, and exposes the result through DI. Nothing reads it yet, so the whole slice is inert and reversible.
+**Architecture:** A new dependency-free `Vennu.Tenancy` project owns the contract in two layers — the public one is a URL path prefix (`/o/{orgId}/v/{venueId}/…`), the internal one is an ES256-signed token minted by the Product Router. `Vennu.Api` gains a middleware that resolves whichever is present, strips the prefix so existing route templates are untouched, and exposes the result through DI. Nothing reads it yet, so the whole milestone is inert and reversible.
 
 **Tech Stack:** .NET 9, xunit 2.9.2, BCL only. **No new package references.** ES256 is implemented with `System.Security.Cryptography.ECDsa` and `System.Text.Json` deliberately: decision 2 requires the thin layer's change frequency to stay low, and decision 18 makes the wire format additive-only forever, so the format is owned outright rather than inherited from a library's serialization choices and version cadence.
 
 **Spec:** `docs/design/proposed/keystone/decisions.md` (49 decisions). Answers that shaped this plan: `docs/features/keystone/open-questions.md`.
+
+## Milestone discipline
+
+This is a numbered milestone under AGENTS.md's working model, not a loose batch of work.
+Before starting: create the milestone issue, record the claim in `tracker/assignments.json`,
+and branch as `feature/keystone-m1-<short-name>` from merged `master`. One PR. Verify locally
+(CI is suspended by owner decision — local checks *are* the gate). Obtain independent review,
+never by the author. Merge, then synchronize `PROJECT_STATUS.md`, the tracker,
+`ai/handoffs/current.md` and this feature's records.
+
+**Ends with a short owner acceptance workbook** (5–10 minutes) before the next milestone starts.
+A milestone that ships no UI gets a demo script instead. Only one milestone runs at a time.
 
 ## Governance gate — read before starting
 
@@ -21,8 +33,8 @@
 ## Global Constraints
 
 - **Target `.NET 9`.** `<Nullable>enable</Nullable>` and `<ImplicitUsings>enable</ImplicitUsings>` on every project, matching `src/Vennu.Core.Models/Vennu.Core.Models.csproj`.
-- **No new package references anywhere in this slice.**
-- **Decision 11 — hint and authority are separate sources, always.** Nothing produced by this slice may be used for an authorization decision. Reviewers should reject any use of `TenantContext` in an authorization path.
+- **No new package references anywhere in this milestone.**
+- **Decision 11 — hint and authority are separate sources, always.** Nothing produced by this milestone may be used for an authorization decision. Reviewers should reject any use of `TenantContext` in an authorization path.
 - **Decision 14 — the API's route templates do not change.** `BackOfficeMenusController` stays at `api/back-office/menus`. The prefix is stripped before routing.
 - **Decision 18 — the wire format is additive-only, permanently.** No field may ever be removed or reinterpreted; only added, in ways an old parser ignores. Unknown JSON members are ignored on read, never rejected.
 - **Decision 32 — tokens are asymmetric, audience-scoped and short-lived.** ES256; audience is the version the token was minted for; TTL 60 seconds (register Q16).
@@ -818,7 +830,7 @@ public sealed class TenantContextMiddlewareTests
     [Trait("Category", "Unit")]
     public async Task LeavesAnOrdinaryRequestCompletelyUntouched()
     {
-        // The acceptance bar for this slice: today's traffic must be unaffected.
+        // The acceptance bar for this milestone: today's traffic must be unaffected.
         var (context, seen) = await RunAsync(Request("/api/back-office/menus"));
 
         Assert.Equal("/api/back-office/menus", seen);
@@ -996,9 +1008,9 @@ templates are unchanged, per decision 14."
 
 **Interfaces:**
 - Consumes: everything from Tasks 1–4.
-- Produces: nothing. This task makes the slice live and proves it changed nothing.
+- Produces: nothing. This task makes the milestone live and proves it changed nothing.
 
-The middleware is registered **before** `UseAuthentication`, because the prefix must be stripped before routing and authentication run. `TenantTokenVerifier` is registered as `null` for now — no Router exists to mint tokens, and the public key's home is a later slice (register Q17). The path branch is what functions in this slice.
+The middleware is registered **before** `UseAuthentication`, because the prefix must be stripped before routing and authentication run. `TenantTokenVerifier` is registered as `null` for now — no Router exists to mint tokens, and the public key's home is a later milestone (register Q17). The path branch is what functions in this milestone.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1062,7 +1074,7 @@ builder.Services.AddSingleton<Vennu.Api.Infrastructure.ITenantContextAccessor,
 Then, immediately after the existing `app.UseMiddleware<AdministrativeCompatibilityMiddleware>();` on line 310, add:
 
 ```csharp
-// Keystone slice 1. The verifier is null until the Product Router exists to mint
+// Keystone milestone 1. The verifier is null until the Product Router exists to mint
 // tokens and the public key has a home (register Q17); until then the path branch
 // is what functions, and a request carrying neither is untouched.
 app.UseMiddleware<TenantContextMiddleware>((Vennu.Tenancy.TenantTokenVerifier?)null);
@@ -1091,23 +1103,23 @@ git commit -m "feat(api): register TenantContext resolution in the pipeline
 
 Runs before authentication so the prefix is stripped before routing. The
 token verifier is null until a Router exists to mint tokens. A request
-carrying neither prefix nor token is untouched, which is this slice's
+carrying neither prefix nor token is untouched, which is this milestone's
 acceptance bar."
 ```
 
 ---
 
-## What this slice deliberately excludes
+## What this milestone deliberately excludes
 
-- **The front-end URL restructure.** Decision 44 places it in slice 1, but register **Q31 is deferred**: whether the pre-auth app split lands before the restructure is unanswered, and doing them in the wrong order means doing the entry routes twice. The .NET half above is independent of that answer and ships without it.
+- **The front-end URL restructure.** Decision 44 places it in milestone 1, but register **Q31 is deferred**: whether the pre-auth app split lands before the restructure is unanswered, and doing them in the wrong order means doing the entry routes twice. The .NET half above is independent of that answer and ships without it.
 - **Relative API URLs in the front ends** (register Q20) — same dependency.
 - **The 421 misdirected-request behaviour** (decision 35). It needs an authority to compare a hint against, and no consumer reads `TenantContext` yet. It belongs with the first consumer.
 - **Key management** (register Q17). No Router exists to hold a private key, so the verifier is null.
-- **VDS, ADS, the Router itself** — slice 2 onward.
+- **VDS, ADS, the Router itself** — milestone 4 onward.
 
 ## Self-review
 
-**Spec coverage.** Decisions 10, 11, 13, 14, 18, 32, 33 and 34 each have a task and at least one test asserting them. Decisions 1–9, 12, 15–17, 19–31, 35–49 are out of this slice's scope and are named above where a reader might expect them. Register answers Q15 (ES256), Q16 (60s TTL) and Q17 (key location deferred) are reflected.
+**Spec coverage.** Decisions 10, 11, 13, 14, 18, 32, 33 and 34 each have a task and at least one test asserting them. Decisions 1–9, 12, 15–17, 19–31, 35–49 are out of this milestone's scope and are named above where a reader might expect them. Register answers Q15 (ES256), Q16 (60s TTL) and Q17 (key location deferred) are reflected.
 
 **Placeholders.** None. Every code step carries the actual code; every run step carries the exact command and expected result.
 

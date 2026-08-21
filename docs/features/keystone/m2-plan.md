@@ -1,4 +1,4 @@
-# Keystone Slice 3 — Version Discovery Service
+# Keystone Milestone 2 — Version Discovery Service
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. Steps use checkbox (`- [ ]`) syntax.
 >
@@ -6,15 +6,27 @@
 
 **Goal:** Build VDS — the one lookup the Product Router and the Webhook Receiver call — so that a venue resolves to the version serving it.
 
-**Architecture:** A new ASP.NET minimal-API service, `src/Vennu.Vds`, owning an assignment table and the default-version pointer. It answers a single read for callers and accepts writes only from Platform Operations as a service identity. Instance selection is delegated internally to ADS (slice 4); until that exists, the delegation is behind an interface with a stub that returns the registered target directly.
+**Architecture:** A new ASP.NET minimal-API service, `src/Vennu.Vds`, owning an assignment table and the default-version pointer. It answers a single read for callers and accepts writes only from Platform Operations as a service identity. Instance selection is delegated internally to ADS (milestone 3); until that exists, the delegation is behind an interface with a stub that returns the registered target directly.
 
 **Tech Stack:** .NET 9, ASP.NET minimal API, Dapper against Azure SQL via `Vennu.DataAccess` (matching how `Vennu.Data` reaches the database), xunit.
 
 **Spec:** decisions 1, 2, 25, 27, 28, 45. **Register:** Q1, Q3, Q5, Q7, Q8, Q21, Q22.
 
+## Milestone discipline
+
+This is a numbered milestone under AGENTS.md's working model, not a loose batch of work.
+Before starting: create the milestone issue, record the claim in `tracker/assignments.json`,
+and branch as `feature/keystone-m2-<short-name>` from merged `master`. One PR. Verify locally
+(CI is suspended by owner decision — local checks *are* the gate). Obtain independent review,
+never by the author. Merge, then synchronize `PROJECT_STATUS.md`, the tracker,
+`ai/handoffs/current.md` and this feature's records.
+
+**Ends with a short owner acceptance workbook** (5–10 minutes) before the next milestone starts.
+A milestone that ships no UI gets a demo script instead. Only one milestone runs at a time.
+
 ## Governance gate
 
-Does not execute until the design authority is approved. **Nothing is provisioned** — decisions 41 and 42 settle the hosting shape but tier and plan cost are deferred, so this slice is built and tested locally and not deployed.
+Does not execute until the design authority is approved. **Nothing is provisioned** — decisions 41 and 42 settle the hosting shape but tier and plan cost are deferred, so this milestone is built and tested locally and not deployed.
 
 ## Global Constraints
 
@@ -32,7 +44,7 @@ Does not execute until the design authority is approved. **Nothing is provisione
 | `src/Vennu.Vds/Assignments/AssignmentStore.cs` | Read and write venue→version. The only place SQL for assignments lives. |
 | `src/Vennu.Vds/Assignments/DefaultVersionPointer.cs` | Read and advance the default. Separate from assignments because it is a different fact with a different writer. |
 | `src/Vennu.Vds/Lookup/LookupEndpoint.cs` | The caller-facing read. |
-| `src/Vennu.Vds/Lookup/IInstanceResolver.cs` | The ADS seam. Stubbed in this slice. |
+| `src/Vennu.Vds/Lookup/IInstanceResolver.cs` | The ADS seam. Stubbed in this milestone. |
 | `src/Vennu.Vds/Admin/AssignmentEndpoints.cs` | PO-only writes. |
 | `src/Vennu.Vds/Scripts/` | DbUp migrations for the two tables, numbered from the current head. |
 | `tests/Vennu.Vds.Tests/` | Unit tests for lookup logic and endpoint behaviour. |
@@ -77,7 +89,7 @@ Read the current default; advance it as an explicit act carrying an actor.
 
 **Files:** `src/Vennu.Vds/Lookup/LookupEndpoint.cs`, `src/Vennu.Vds/Lookup/IInstanceResolver.cs`, `tests/Vennu.Vds.Tests/LookupEndpointTests.cs`
 
-One read: given a venue, return the version and a resolved target (register Q5 — one round trip on a hop paid on every request). `IInstanceResolver` is the ADS seam; this slice ships a stub returning the version's registered target.
+One read: given a venue, return the version and a resolved target (register Q5 — one round trip on a hop paid on every request). `IInstanceResolver` is the ADS seam; this milestone ships a stub returning the version's registered target.
 
 **Tests must prove:** an assigned venue returns its version and a target; an unassigned venue returns an explicit not-assigned result that is neither an error nor a silently substituted version (register Q8), leaving the default-version fallback to the caller so it lives in one place; and an unknown venue is indistinguishable from an unassigned one, so the endpoint cannot be used to enumerate venues.
 
@@ -121,7 +133,7 @@ Retirement asks VDS whether any customer remains assigned. Register Q22 adds a s
 
 ---
 
-### Task 6: Host, health and slice verification
+### Task 6: Host, health and milestone verification
 
 **Files:** `src/Vennu.Vds/Program.cs`, `src/Vennu.Vds/Vennu.Vds.csproj`, `Vennusign.sln`
 
@@ -131,7 +143,7 @@ Wire the endpoints, expose `/health/version` using the same `ReleaseVersionMetad
 - [ ] **Step 2: Run and confirm it fails**
 - [ ] **Step 3: Implement and register in `Vennusign.sln`**
 - [ ] **Step 4: Run and confirm it passes**
-- [ ] **Step 5: Full slice verification**
+- [ ] **Step 5: Full milestone verification**
 
 ```bash
 dotnet build src/Vennu.Vds/Vennu.Vds.csproj -c Release
@@ -146,14 +158,14 @@ LocalDB is the default per AGENTS.md; Azure is reached only by setting `VENU_TES
 
 ## Excluded
 
-- **Behaviour when VDS itself is down** — that is the caller's problem, answered in register Q1–Q3 and built in slices 5 and 6.
-- **Real instance resolution** — the `IInstanceResolver` stub is replaced in slice 4.
+- **Behaviour when VDS itself is down** — that is the caller's problem, answered in register Q1–Q3 and built in milestones 5 and 6.
+- **Real instance resolution** — the `IInstanceResolver` stub is replaced in milestone 3.
 - **Deployment** — gated on the deferred cost conversation.
 
 ## Self-review
 
 **Spec coverage.** Decisions 25, 27, 28 and 45 each have a task. Decision 2's additive-only constraint is a review rule rather than a test. Register Q5, Q7, Q8, Q21 and Q22 are each implemented and asserted.
 
-**Type consistency.** `IInstanceResolver` is the only seam ADS replaces in slice 4; nothing else in this slice knows ADS exists.
+**Type consistency.** `IInstanceResolver` is the only seam ADS replaces in milestone 3; nothing else in this milestone knows ADS exists.
 
-**Known risk.** Task 3's not-assigned result and Task 2's unset-default error can both occur on the same request, and the caller must handle them differently — not-assigned means fall back to the default, unset default means the system is misconfigured. A reviewer should check the caller in slice 5 distinguishes them.
+**Known risk.** Task 3's not-assigned result and Task 2's unset-default error can both occur on the same request, and the caller must handle them differently — not-assigned means fall back to the default, unset default means the system is misconfigured. A reviewer should check the caller in milestone 5 distinguishes them.

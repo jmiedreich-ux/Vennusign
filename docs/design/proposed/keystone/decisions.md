@@ -284,14 +284,15 @@ accepted that cost. Nothing is provisioned until that conversation happens.
 
 ## Delivery order
 
-**44 · Slice 1 is the TenantContext contract and its library.** It lands in the existing API and
+**44 · Milestone 1 is the TenantContext contract and its library.** It lands in the existing API and
 front ends with no Keystone infrastructure at all, is backward-compatible by construction, is
 independently mergeable and harmless if wrong, and it makes VDS's lookup signature a fact rather
 than a guess.
 
-**45 · Slice 2 is VDS + ADS.** Bootstrap order requires it: nothing routes until VDS answers, and
-VDS cannot answer usefully until ADS knows where healthy instances are. By slice 2 its contract
-is known.
+**45 · Milestones 2 and 3 are VDS then ADS.** Bootstrap order requires it: nothing routes until VDS
+answers, and VDS cannot answer usefully until ADS knows where healthy instances are. By then its
+contract is known. They are numbered separately because each is independently mergeable and each
+earns its own acceptance, not because the ordering changed.
 
 ---
 

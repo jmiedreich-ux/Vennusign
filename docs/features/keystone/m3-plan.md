@@ -1,16 +1,28 @@
-# Keystone Slice 4 — Application Discovery Service
+# Keystone Milestone 3 — Application Discovery Service
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. Steps use checkbox (`- [ ]`) syntax.
 >
 > **Note on style:** behaviour and file names rather than code listings, at the owner's instruction. Every task still writes a failing test first and gives an exact verification command.
 
-**Goal:** Build ADS — the registry that knows where every deployed app is and which instances are healthy — and replace slice 3's stub so VDS resolves real targets.
+**Goal:** Build ADS — the registry that knows where every deployed app is and which instances are healthy — and replace milestone 2's stub so VDS resolves real targets.
 
 **Architecture:** A new service, `src/Vennu.Ads`, holding `(app, version) → set of instances` and health-polling each one continuously. It is a registry and a health reporter; it never picks an instance for a caller and never sits on the data path. VDS calls it internally, so callers still see exactly one lookup.
 
 **Tech Stack:** .NET 9, ASP.NET minimal API, a hosted service for polling, Dapper, xunit.
 
 **Spec:** decisions 1, 2, 45. **Register:** Q6, Q9, Q10, Q11.
+
+## Milestone discipline
+
+This is a numbered milestone under AGENTS.md's working model, not a loose batch of work.
+Before starting: create the milestone issue, record the claim in `tracker/assignments.json`,
+and branch as `feature/keystone-m3-<short-name>` from merged `master`. One PR. Verify locally
+(CI is suspended by owner decision — local checks *are* the gate). Obtain independent review,
+never by the author. Merge, then synchronize `PROJECT_STATUS.md`, the tracker,
+`ai/handoffs/current.md` and this feature's records.
+
+**Ends with a short owner acceptance workbook** (5–10 minutes) before the next milestone starts.
+A milestone that ships no UI gets a demo script instead. Only one milestone runs at a time.
 
 ## Governance gate
 
@@ -33,7 +45,7 @@ Does not execute until the design authority is approved. Nothing is provisioned.
 | `src/Vennu.Ads/Health/HealthPoller.cs` | The hosted service. Polls every registered instance on a cadence. |
 | `src/Vennu.Ads/Health/InstanceHealth.cs` | Consecutive-failure state and the healthy/unhealthy transition rules. |
 | `src/Vennu.Ads/Query/HealthySetEndpoint.cs` | What VDS calls. |
-| `src/Vennu.Vds/Lookup/AdsInstanceResolver.cs` | Replaces slice 3's stub. |
+| `src/Vennu.Vds/Lookup/AdsInstanceResolver.cs` | Replaces milestone 2's stub. |
 | `tests/Vennu.Ads.Tests/` | Unit tests. |
 
 `InstanceHealth` is separate from `HealthPoller` on purpose: the transition rules are pure and must be testable without a timer or a network.
@@ -114,9 +126,9 @@ VDS asks ADS for the healthy set of an `(app, version)` and returns it as the re
 
 - [ ] **Step 1: Write the failing tests**
 - [ ] **Step 2: Run and confirm they fail**
-- [ ] **Step 3: Implement, deleting slice 3's stub**
+- [ ] **Step 3: Implement, deleting milestone 2's stub**
 - [ ] **Step 4: Run and confirm they pass**
-- [ ] **Step 5: Full slice verification**
+- [ ] **Step 5: Full milestone verification**
 
 ```bash
 dotnet build src/Vennu.Ads/Vennu.Ads.csproj -c Release
@@ -138,6 +150,6 @@ dotnet test tests/Vennu.Vds.Tests/Vennu.Vds.Tests.csproj
 
 **Spec coverage.** Decision 45's bootstrap requirement is satisfied by Task 5 replacing the stub. Register Q6, Q9, Q10 and Q11 each have a task and an asserting test.
 
-**Type consistency.** `IInstanceResolver` keeps the shape slice 3 defined; only the implementation changes.
+**Type consistency.** `IInstanceResolver` keeps the shape milestone 2 defined; only the implementation changes.
 
 **Known risk.** Task 3's poller and Task 1's registry can disagree during a deploy — an instance registered a moment ago has not been polled, and Task 2 starts it unhealthy. That is deliberate, but it means a freshly registered version is briefly unroutable, and the deploy pipeline's health gate must therefore wait for ADS to mark it healthy rather than assuming registration is enough. A reviewer should confirm that ordering is stated wherever the pipeline work lands.

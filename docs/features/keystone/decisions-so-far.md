@@ -1,7 +1,11 @@
 # Keystone — decisions so far
 
 Status: **not an approved feature.** This file records what was settled in conversation on
-2026-08-20 so it is not lost. It confers no implementation authorization. The source
+2026-08-20 so it is not lost.
+
+**Terminology note.** "Slice" below is a historical synonym for **milestone**, AGENTS.md's unit of
+delivery, and was not rewritten — the same convention the Menus register uses. The plans in
+`milestone-plan.md` and `m1-plan.md` onward use the current word. It confers no implementation authorization. The source
 concept, `docs/design/progressive-customer-cutover-concept.md`, remains explicitly
 unapproved: "No implementation should begin from this concept alone."
 

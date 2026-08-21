@@ -1,4 +1,4 @@
-# Keystone Slice 2 — The Front Ends Adopt the Tenant Path
+# Keystone Milestone 4 — The Front Ends Adopt the Tenant Path
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -10,13 +10,25 @@
 
 **Spec:** `docs/design/proposed/keystone/decisions.md` — decisions 12, 13, 17, 19, 20, 21, 29, 48.
 
+## Milestone discipline
+
+This is a numbered milestone under AGENTS.md's working model, not a loose batch of work.
+Before starting: create the milestone issue, record the claim in `tracker/assignments.json`,
+and branch as `feature/keystone-m4-<short-name>` from merged `master`. One PR. Verify locally
+(CI is suspended by owner decision — local checks *are* the gate). Obtain independent review,
+never by the author. Merge, then synchronize `PROJECT_STATUS.md`, the tracker,
+`ai/handoffs/current.md` and this feature's records.
+
+**Ends with a short owner acceptance workbook** (5–10 minutes) before the next milestone starts.
+A milestone that ships no UI gets a demo script instead. Only one milestone runs at a time.
+
 ## Governance gate
 
 **Does not execute until the design authority is approved.** See `milestone-plan.md`.
 
 **Q31 runs provisionally.** The register defers whether the pre-auth split precedes the URL restructure; its recommended default — split first — is what this plan implements. Flag it in the acceptance workbook so the consequence is visible and cheap to overturn.
 
-**Depends on slice 1.** The API must already strip a tenant prefix, or every relative call 404s.
+**Depends on milestone 1.** The API must already strip a tenant prefix, or every relative call 404s.
 
 ## Global Constraints
 
@@ -52,7 +64,7 @@
 - Consumes: nothing.
 - Produces: `readTenantPath(pathname)` returning `{ organizationId, venueId, remainder } | null`; `buildTenantPath({ organizationId, venueId }, remainder)` returning a string.
 
-This deliberately mirrors `Vennu.Tenancy.TenantPath` from slice 1. Two implementations of one wire format is a real risk, so the tests below use the same cases as `TenantPathTests.cs`.
+This deliberately mirrors `Vennu.Tenancy.TenantPath` from milestone 1. Two implementations of one wire format is a real risk, so the tests below use the same cases as `TenantPathTests.cs`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -143,7 +155,7 @@ export function readTenantPath(pathname) {
   const venueId = parts[index + 1];
   index += 2;
 
-  const rest = parts.slice(index).join("/");
+  const rest = parts.milestone(index).join("/");
   return { organizationId, venueId, remainder: rest.length === 0 ? "/" : "/" + rest };
 }
 
@@ -744,7 +756,7 @@ cd src/display && npm test && npm run build
 
 Expected: PASS on both.
 
-- [ ] **Step 6: Run the full slice verification**
+- [ ] **Step 6: Run the full milestone verification**
 
 ```bash
 dotnet build src/Vennu.Api/Vennu.Api.csproj -c Release
@@ -754,7 +766,7 @@ cd ../display && npm test && npm run build
 cd ../onboarding && npm test && npm run build
 ```
 
-Then the Playwright gate, per AGENTS.md: `npx playwright test` from `tests/ui`. Expect failures wherever a spec hard-codes a back-office URL without a tenant prefix; those specs are part of this slice and are updated here, not later.
+Then the Playwright gate, per AGENTS.md: `npx playwright test` from `tests/ui`. Expect failures wherever a spec hard-codes a back-office URL without a tenant prefix; those specs are part of this milestone and are updated here, not later.
 
 - [ ] **Step 7: Commit**
 
@@ -769,18 +781,18 @@ is the version move."
 
 ---
 
-## What this slice deliberately excludes
+## What this milestone deliberately excludes
 
 - **`src/www` and `src/platform-operations`.** Decisions 38 and the owner's ruling put both outside the version equation.
-- **The 421 and 307 responses** (decision 35). No consumer compares a hint against an authority yet; that arrives with the Router in slice 5.
+- **The 421 and 307 responses** (decision 35). No consumer compares a hint against an authority yet; that arrives with the Router in milestone 5.
 - **Deployment of `src/onboarding`.** A new app needs a `classify-changes.sh` output and a `deploy-dev.yml` job. That is the parked deploy-pipeline conversation, and per Q32 it is a prerequisite feature rather than Keystone's work.
 
 ## Self-review
 
-**Spec coverage.** Decisions 12, 13, 19, 20, 21, 29 and 48 each have a task and an asserting test. Decision 9 is covered by Task 6. Decision 49 is not implemented here because it needs an authorization path to run through — it belongs with the first surface that authorizes a venue from a URL, which is slice 5.
+**Spec coverage.** Decisions 12, 13, 19, 20, 21, 29 and 48 each have a task and an asserting test. Decision 9 is covered by Task 6. Decision 49 is not implemented here because it needs an authorization path to run through — it belongs with the first surface that authorizes a venue from a URL, which is milestone 5.
 
 **Placeholders.** None. Two tasks require a `grep` before editing (Task 3's storage-key sweep, Task 6's contract name) because the exact call sites depend on code that may have moved; both give the command and what to do with every hit.
 
 **Type consistency.** `readTenantPath` returns `{ organizationId, venueId, remainder }` in Tasks 1, 3 and 4. `resolveTenant` returns the same shape minus `remainder`. `DisplayRoute.display` carries `venueId` then `screenId` in both Task 5 and Task 6.
 
-**Known risk, stated.** Task 1 creates a second implementation of the wire format, in JavaScript, alongside slice 1's C# one. Decision 18 makes that format additive-only forever, which limits the damage, and the two test suites use identical cases — but a single format with two parsers is where drift begins, and a reviewer should check both when either changes.
+**Known risk, stated.** Task 1 creates a second implementation of the wire format, in JavaScript, alongside milestone 1's C# one. Decision 18 makes that format additive-only forever, which limits the damage, and the two test suites use identical cases — but a single format with two parsers is where drift begins, and a reviewer should check both when either changes.

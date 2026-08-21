@@ -1,4 +1,4 @@
-# Keystone Slice 6 — POS Webhook Receiver
+# Keystone Milestone 6 — POS Webhook Receiver
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. Steps use checkbox (`- [ ]`) syntax.
 >
@@ -8,15 +8,27 @@
 
 **Architecture:** A new service, `src/Vennu.WebhookReceiver`, holding its own `(provider, external identifier) → venue` table and exposing a registration API the versioned API calls when a venue links or unlinks a provider. It never reads Vennu domain data — that coupling is exactly what the separate table exists to avoid. It asks VDS for the venue's version and forwards with an internal token whose provenance is **verified**, because unlike the Router it actually checked a signature.
 
-**Tech Stack:** .NET 9, ASP.NET minimal API, `Vennu.Tenancy` from slice 1, a durable queue for the VDS-unavailable path, xunit.
+**Tech Stack:** .NET 9, ASP.NET minimal API, `Vennu.Tenancy` from milestone 1, a durable queue for the VDS-unavailable path, xunit.
 
 **Spec:** decisions 1, 2, 18, 31–34. **Register:** Q2, Q3.
+
+## Milestone discipline
+
+This is a numbered milestone under AGENTS.md's working model, not a loose batch of work.
+Before starting: create the milestone issue, record the claim in `tracker/assignments.json`,
+and branch as `feature/keystone-m6-<short-name>` from merged `master`. One PR. Verify locally
+(CI is suspended by owner decision — local checks *are* the gate). Obtain independent review,
+never by the author. Merge, then synchronize `PROJECT_STATUS.md`, the tracker,
+`ai/handoffs/current.md` and this feature's records.
+
+**Ends with a short owner acceptance workbook** (5–10 minutes) before the next milestone starts.
+A milestone that ships no UI gets a demo script instead. Only one milestone runs at a time.
 
 ## Governance gate
 
 Does not execute until the design authority is approved. Nothing is provisioned.
 
-**Depends on slices 1 and 3.** The token library and a VDS to ask. It does **not** depend on slice 5 — the Webhook Receiver is deliberately a separate front door, so a Router change cannot break POS ingestion and vice versa.
+**Depends on milestones 1 and 2.** The token library and a VDS to ask. It does **not** depend on milestone 5 — the Webhook Receiver is deliberately a separate front door, so a Router change cannot break POS ingestion and vice versa.
 
 ## Global Constraints
 
@@ -138,7 +150,7 @@ grep -rn "ExternalMerchantId" src/Vennu.Api --include=*.cs
 - [ ] **Step 2: Run and confirm they fail**
 - [ ] **Step 3: Implement**
 - [ ] **Step 4: Run and confirm they pass**
-- [ ] **Step 5: Full slice verification**
+- [ ] **Step 5: Full milestone verification**
 
 ```bash
 dotnet build src/Vennu.WebhookReceiver/Vennu.WebhookReceiver.csproj -c Release
@@ -162,6 +174,6 @@ Azure and external-service tests remain skipped by standing owner exception; rec
 
 **Spec coverage.** Decisions 31–34 have tasks; decision 33's `Verified` provenance is the explicit subject of Task 4. Register Q2 is Task 5. Decision 18's additive-only constraint on the registration API is a review rule rather than a test.
 
-**Type consistency.** `TenantContext` and `TenantTokenIssuer` keep slice 1's shapes. WR mints with provenance `Verified` where the Router mints `Asserted` — the one deliberate difference, and the reason the field exists.
+**Type consistency.** `TenantContext` and `TenantTokenIssuer` keep milestone 1's shapes. WR mints with provenance `Verified` where the Router mints `Asserted` — the one deliberate difference, and the reason the field exists.
 
 **Known risk.** Task 6 creates a runtime dependency from the versioned API to WR at link time. If WR is unavailable, linking fails — which is correct, but it means a WR outage blocks a customer action that has nothing to do with webhooks arriving. A reviewer should confirm the failure is surfaced as a retryable "try again" rather than a permanent error, and that a later reconciliation sweep can re-assert links made while WR was down.
