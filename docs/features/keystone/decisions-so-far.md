@@ -636,6 +636,103 @@ answers.
 
 ### Still open after the fifth sitting
 
-- Where the shared data-protection key ring lives, and who owns landing it.
+- **Resolved in the sixth sitting**, by removing the problem rather than managing it. Where
+  the shared data-protection key ring lives, and who owns landing it.
 - Whether Keystone decides the shared connection-membership mechanism or also builds it (#742).
 - Device auto-re-pair after cleared storage — parked by the owner as its own conversation.
+
+## Brainstorming, sixth sitting — 2026-08-20
+
+Closes the design phase. Same status: recorded so it is not lost, conferring no
+implementation authorization.
+
+### Durable secrets come off Data Protection
+
+The fourth-sitting finding was that `Program.cs:189` is a bare `AddDataProtection()`, so two
+versions on separate App Services cannot read each other's protected values. The obvious fix
+was a shared key ring. **The chosen fix removes the problem instead of managing it.**
+
+ASP.NET Data Protection is not intended for durable secrets — Microsoft's own guidance is that
+it is not for indefinite persistence. Holding POS credentials and strong-auth factors in it is
+the underlying defect; a shared key ring would only work around it.
+
+| | Mechanism | Version scope |
+|---|---|---|
+| Transient — passkey challenges, POS OAuth state (seconds) | Data Protection | per-version is fine |
+| Durable — POS credentials, strong-auth factors | explicit Key Vault envelope encryption | version-agnostic by construction |
+
+Moving `DataProtectionPosCredentialProtector` and `DataProtectionCustomerSecretProtector` onto
+explicit Key Vault encryption makes them readable by any version by construction, and makes
+them rotatable and auditable, which a key ring is not. `ProtectedPosOAuthStateService` and
+`CustomerPasskeyService` stay on Data Protection: both are seconds-long, so a version move at
+worst fails one in-flight attempt that a retry fixes.
+
+**No shared key ring is required.** The prerequisite that had no owner disappears.
+
+**This mirrors the internal-token decision rather than contradicting it.** Internal tokens are
+audience-scoped so that one minted for v1.4 is invalid at v1.5 — note that the *verification
+key* is shared across versions and only the *audience claim* is scoped. The governing
+principle across both:
+
+> **Version-scoped for transient, version-agnostic for durable.** Anything that lives seconds
+> may be bound to a version, and binding it is a security property. Anything that outlives a
+> version must not be, and not binding it is a correctness property.
+
+### Correction: the deployment process is not manual
+
+An earlier claim in these records — that App Services are "created and configured by hand" —
+overstated the case and is withdrawn. *(Owner: no human does any work in the deployment
+process; nothing is manual.)*
+
+What is actually verified: `deploy-dev.yml` makes no `az` calls, nothing in the repository
+provisions anything, and the workflow deploys to five hardcoded targets named directly in the
+`app-name:` fields. Deployment of the apps that exist is fully automated and no human touches
+it. The earlier claim slid from "one-time infrastructure setup happened by hand historically"
+to "the deployment process is manual," and only the first is supported.
+
+**The Keystone-relevant gap, restated precisely:** the automation is shaped for a fixed set of
+apps, not a growing set of versions. Running v1.4 alongside v1.5 needs a deploy whose target is
+computed from the version rather than named in the workflow, and something to bring that target
+into existence the first time. That is a shape change to an automated pipeline, not the
+introduction of automation.
+
+### `#726` is a Keystone prerequisite, not a QA annoyance
+
+`ReleaseVersionMetadata.cs:14` reads `VENNU_COMPONENT_VERSION` from the environment with a
+fallback of `"0.0.0-local"`, served at `/health/version` (`Program.cs:317`). The mechanism
+exists; nothing sets the variable, so every deployed instance reports `0.0.0-local`.
+
+Two Keystone decisions depend on that value being real:
+
+- **Mis-forwarding detection** (second sitting) compares the Router's stamped version against
+  the API's own `VENNU_COMPONENT_VERSION`. Against a placeholder, it cannot work.
+- **Assignment-aware background services** (concept) need the same value to know which venues
+  belong to their version.
+
+`#726` therefore blocks Keystone rather than merely obscuring deploy verification, and is a
+plausible first candidate for the deploy pipeline work below.
+
+### Deploy pipeline enhancements — parked, near-term
+
+*(Owner: worth doing as its own conversation in the immediate future, not folded into
+Keystone.)* Four assumptions in these records were reasoned from rather than verified, and that
+conversation should test them:
+
+- That per-version App Services are the deployment shape at all, rather than slots or
+  containers.
+- That the deploy target is computed from the version.
+- That something creates that target the first time.
+- That the concept's "health-gate-then-register" pipeline step is the right home for ADS
+  registration.
+
+### Design phase complete
+
+Every design item raised across the six sittings is now settled or deliberately parked. Two
+items remain parked by owner decision and neither blocks: connection-membership scope (#742)
+and device auto-re-pair.
+
+**The spec is deliberately not written.** *(Owner: do not write it until told to go.)* The next
+step, on that instruction, is the design authority under `docs/design/approved/keystone/` and
+the question register at `docs/features/keystone/open-questions.md`, followed by the
+`writing-plans` skill. The brainstorming skill's hard gate stands: no implementation before the
+written spec is approved.
