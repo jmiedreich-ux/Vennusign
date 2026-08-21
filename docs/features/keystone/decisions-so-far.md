@@ -591,7 +591,51 @@ removed or reinterpreted — only added, in ways an old parser safely ignores.
 
 ### Still open after the fourth sitting
 
-- Platform Operations' own routing and URL shape.
+- **Resolved in the fifth sitting.** Platform Operations' own routing and URL shape.
+- Where the shared data-protection key ring lives, and who owns landing it.
+- Whether Keystone decides the shared connection-membership mechanism or also builds it (#742).
+- Device auto-re-pair after cleared storage — parked by the owner as its own conversation.
+
+## Brainstorming, fifth sitting — 2026-08-20
+
+Same status: recorded so it is not lost, conferring no implementation authorization.
+
+### Platform Operations
+
+**PO is not version-routed.** *(Owner.)* PO is an application plus its own API, deployed side
+by side at `po.vennusign.com`. One PO runs at a time, conventionally deployed, with no
+per-operator assignment. PO's API is Vennusign-scoped: release state and the board, assignment
+writes into VDS, operator identity and permissions, and the Vennu profile carrying maintenance
+windows and cost KPIs. That data is *about* customers but is not product data, so no version
+serves it.
+
+**The 18 controllers under `src/Vennu.Api/Controllers/PlatformOperations/` are product API
+surface wearing a PO label.** Most are venue-scoped — happy hour, emergency broadcasts, date
+range promotions, meal periods, menus, screens, themes, playlists, tap list. *(Owner: they are
+an artefact of the current codebase, not a design input, and do not belong in PO. Out of
+Keystone scope; belongs to a product work package.)* Filed as **#747** so it is not lost.
+
+**Support access originates in PO and executes on the customer surface.** *(Owner: it is a PO
+function that submits and spawns the process.)* PO writes the grant — `SupportAccessGrants` is
+already in the baseline, keyed on `(SupportUserId, OrganizationId, VenueId)` with `StartsUtc`,
+`ExpiresUtc` and `RevokedUtc`, audited by `SupportAccessAuditEntries`. The session it spawns
+then runs through the normal customer surface, which is version-routed like any other traffic.
+
+Two consequences:
+
+- **An operator helping a v1.4 customer runs v1.4 themselves.** A problem cannot be diagnosed
+  from a console showing different code, so version-routing support work is a correctness
+  property rather than architectural tidiness.
+- **The spawn needs no new mechanism.** PO sends the operator to `/o/{orgId}/v/{venueId}` and
+  the Router resolves it exactly as it would for the customer — another crossing, already
+  handled by the URL shape.
+
+This is also why the first sitting named the carrier TenantContext rather than WhoAmI: a
+support user acting on a customer's venue makes "who am I" and "who is this about" different
+answers.
+
+### Still open after the fifth sitting
+
 - Where the shared data-protection key ring lives, and who owns landing it.
 - Whether Keystone decides the shared connection-membership mechanism or also builds it (#742).
 - Device auto-re-pair after cleared storage — parked by the owner as its own conversation.
