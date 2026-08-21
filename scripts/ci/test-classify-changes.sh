@@ -122,4 +122,19 @@ run_scenario ciscripts scripts/ci/classify-changes.sh
 assert_output ciscripts full true
 assert_output ciscripts dotnet_api true
 
-echo "Change classification scenarios passed."
+
+# The classifier is only ever as good as the paths it is handed. deploy-dev.yml
+# used to hand it `git diff HEAD^ HEAD`, which is the last commit of a push
+# rather than the push - so a three-commit push ending in a documentation commit
+# deployed nothing and reported success (observed on c4f40200).
+workflow="$script_dir/../../.github/workflows/deploy-dev.yml"
+if grep -qE 'git diff --name-only +HEAD\^ +HEAD' "$workflow"; then
+  echo "deploy-dev.yml classifies only the last commit of a push; it must diff the whole push range" >&2
+  exit 1
+fi
+if ! grep -q 'github.event.before' "$workflow"; then
+  echo "deploy-dev.yml must classify the range this push moved master across" >&2
+  exit 1
+fi
+
+echo "Change classification scenarios passed, and deploy-dev.yml classifies the whole push."

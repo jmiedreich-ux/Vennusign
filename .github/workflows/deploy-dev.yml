@@ -44,8 +44,29 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Collect changed paths since previous commit
-        run: git diff --name-only HEAD^ HEAD > changed-paths.txt || git ls-files > changed-paths.txt
+      - name: Collect changed paths for every commit in this push
+        run: |
+          # A push carries as many commits as were merged, not one. Diffing
+          # HEAD^..HEAD classified only the last of them and silently ignored
+          # the rest, so a push whose final commit happened to be documentation
+          # deployed nothing at all - even though an earlier commit in the same
+          # push changed an application. Observed on c4f40200: three commits,
+          # the last one a report, every deploy job skipped, and the run went
+          # green having shipped nothing.
+          #
+          # github.event.before is the tip this push moved master from, so the
+          # range covers exactly what arrived. It is absent on the first push of
+          # a branch and can point at a commit force-pushed away, so both cases
+          # fall back to classifying everything rather than classifying too little.
+          before='${{ github.event.before }}'
+          if [ -n "$before" ] && [ "$before" != "0000000000000000000000000000000000000000" ] \
+             && git cat-file -e "$before^{commit}" 2>/dev/null; then
+            git diff --name-only "$before" '${{ github.sha }}' > changed-paths.txt
+          else
+            echo "No usable previous tip; classifying the whole tree."
+            git ls-files > changed-paths.txt
+          fi
+          cat changed-paths.txt
       - name: Classify changed apps
         id: classify
         run: bash scripts/ci/classify-changes.sh changed-paths.txt
