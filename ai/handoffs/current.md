@@ -2,6 +2,29 @@
 
 Updated 2026-08-21, for deploy verification, build stamping, the database audit, and test credential hygiene.
 
+## 2026-08-21 — The signed-in onboarding spec ran against dev, and passes
+
+**Done, and it is the item that had been the exact next action for two sessions.** `specs/customer-onboarding.spec.ts` run signed in against dev: **3 passed (24.5s)**, including the two cases that had never been executed anywhere.
+
+```
+VENNU_QA_EMAIL / VENNU_QA_PASSWORD  from kv-vennusign-dev
+VENNU_BACK_OFFICE_URL=https://dev.back-office.vennusign.com
+VENNU_API_URL=https://dev.api.vennusign.com
+node node_modules/@playwright/test/cli.js test specs/customer-onboarding.spec.ts --project=desktop
+```
+
+This proves the two things it was supposed to: **the durable go-live fix (#728) holds** — the display is reported Offline and onboarding stays complete, with `GoLiveAchievedUtc` unchanged — and **the headless onboarding path works**, pairing through `src/display`'s own shipped `pairing.mjs` rather than a copy.
+
+**The QA account had never onboarded on dev, so the first run did the real thing** — Entra sign-in, the onboarding forms, pair, go live. Subsequent runs short-circuit through `ensureOnboarded` and take 24s instead of two minutes.
+
+**The first run failed, and it was not a defect — read this before someone chases it.** `pairDisplay` clicks "refresh device status" then waits 30 seconds for "you're live". From the database: screen created `04:56:35`, first heartbeat and go-live both `04:57:07`. **32 seconds** — two past a hard-coded window, on B1. If the onboarding flow survives redevelopment, that wait should scale with the environment rather than be a constant.
+
+**Checked, because it mattered:** the earlier cleanup did **not** cause it. The one pre-existing `CustomerOnboardingStates` row belongs to a different user, both its venue and its first screen are present, and the QA account simply never had one. Worth noting that my safety check did not cover `FirstScreenId` pointing at a traced screen — it happened to be fine, but that check belongs in `clean-dev-test-data.sql` if it is used again.
+
+**Running it costs dev a little drift**, as expected: 100 -> 102 screens and 121 -> 122 venues across two runs. That is #746 and #752 territory, not a surprise.
+
+**How to run it at all, since nothing recorded this:** Playwright needs Windows Node (`/mnt/c/Program Files/nodejs/node.exe`), invoked as `node node_modules/@playwright/test/cli.js` rather than through `npx.cmd`, and environment variables reach it only via `WSLENV`. `globalSetup` prunes with `sqlcmd -S '(localdb)\MSSQLLocalDB'`, hard-coded, so it cannot touch a deployed environment — verified before pointing anything at dev.
+
 ## 2026-08-21 — The dev database is clean, and Murphy owns keeping it that way
 
 **The test residue is gone (#745, closed).** The trace was still intact and its keys still resolved, so this was a named delete rather than a pattern match: 26 of 26 traced venues, 30 of 33 traced screens and 12 of 12 traced pairing codes were still present and were removed by id.
