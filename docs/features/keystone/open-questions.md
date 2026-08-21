@@ -1,9 +1,14 @@
 # Keystone — Open Questions Register
 
-- **Status:** 34 open (2026-08-20). None answered yet. Raised from the six brainstorming sittings
-  recorded in `decisions-so-far.md` and from the concept's own `Decisions required before planning`
-  list.
-- **Authority context:** `docs/design/proposed/keystone/decisions.md` (48 decisions). Nothing here
+- **Status:** 34 questions — **29 answered, 3 deferred, 2 re-asked** (owner sitting, 2026-08-20).
+  Raised from the six brainstorming sittings recorded in `decisions-so-far.md` and from the
+  concept's own `Decisions required before planning` list.
+- **Owner deviations of note:** Q8 rejected the recommendation as not answering the question and
+  is re-asked with a revised one. Q19 **overrides** its recommendation on information-disclosure
+  grounds and becomes decision 49. Q3, Q7, Q13 and Q17 accept with refinements worth reading.
+  Q30 is re-asked because the issue number was unfamiliar. Q31–Q33 are deferred and run
+  provisionally on their recommended defaults.
+- **Authority context:** `docs/design/proposed/keystone/decisions.md` (49 decisions). Nothing here
   re-asks those. Where a question touches a decision, the decision number is cited.
 - **Note on the four originally-named items.** Unit of assignment is settled (decisions 22–25).
   The trust boundary for forwarded webhook requests is settled (decisions 31–34). The shared
@@ -45,7 +50,7 @@ emit a loud degraded-mode signal. Rationale: assignments change rarely and delib
 assignment is almost always still correct, whereas an unavailable Router is certainly an outage.
 A rollback in progress during a VDS outage is the bad case, and it is rare and detectable.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 11, 12, 17; concept "Decisions required before planning"</sub>
 
@@ -60,7 +65,7 @@ sales data rather than a visible outage. The concept names queue-or-cache withou
 point of view (a fast 200 then asynchronous processing is the normal shape), so queueing loses
 nothing and avoids forwarding to a stale version.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>concept "POS Webhook Receiver"; decision 33</sub>
 
@@ -75,7 +80,9 @@ stated, or the cache silently becomes the source of truth.
 alert from the first cache-served request. Time-based expiry converts a VDS outage into a
 staggered product outage, which is worse than serving slightly stale routing.
 
-*Answer:*
+*Answer:* Accepted with a refinement (2026-08-20): no expiration, with invalidation when a new version becomes the default as well as when VDS returns.
+
+The refinement is safer than it looks, for a reason worth recording: **PO writes assignments through VDS**, so while VDS is unreachable no assignment and no default-pointer change can occur. A cache served during an outage is therefore exactly as correct as it was when the outage began, rather than merely probably-correct. The residual risk is a *partial* failure — VDS reachable by PO but not by the Router — where changes can land that the Router does not see. That case is why the degraded-mode alert fires from the first cache-served request.
 
 <sub>Q1; decision 12</sub>
 
@@ -90,7 +97,7 @@ processing all of them."
 *Recommended:* Process no venues, and alert. Unlike request routing, background work deferred by
 minutes is recoverable, whereas two versions both processing every venue is not.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>concept "Background services"</sub>
 
@@ -109,7 +116,7 @@ resolves the instance itself.
 *Recommended:* Version and a resolved target. One round trip on a hop that is paid on every
 request, and it keeps ADS entirely invisible to callers as the concept intends.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>concept "Application Discovery Service (ADS)"; decision 45</sub>
 
@@ -126,7 +133,7 @@ managed load balancer is a cost decision adjacent to the deferred tier conversat
 a load-balancing layer appears. It avoids introducing a paid component into a design whose cost
 conversation is deliberately parked, and the Router is already on every request.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>concept "Multiple instances per (app, version)"; decisions 40–43</sub>
 
@@ -141,7 +148,7 @@ long a wave may straddle.
 cut refusing to register a fourth until one retires. Matches the informal "2–3" already noted for
 release branches.
 
-*Answer:*
+*Answer:* Owner answer (2026-08-20): configured in Platform Operations rather than fixed in the design. No number is set here. PO already owns registration, so PO holds the limit and enforces it at the point a version is registered.
 
 <sub>concept "Framing"; "Decisions required before planning"</sub>
 
@@ -153,11 +160,16 @@ A brand-new venue created during onboarding has never been assigned. Decision 28
 customers start on the default version, but that could be an explicit assignment written at
 creation or a fallback computed at lookup.
 
-*Recommended:* An explicit assignment written when the venue is created. A computed fallback means
-no record exists of why a customer is where they are, which breaks the per-customer auditability
-the concept requires.
+*Recommended (revised 2026-08-20, after the owner rejected the first attempt as not answering the
+question):* VDS returns an explicit **not-assigned** result — a distinct outcome, neither an error
+nor a silently substituted version. The Router then treats a not-assigned venue as unattributed
+traffic and applies decision 27, so the default-version fallback lives in exactly one place rather
+than two.
 
-*Answer:*
+Separately, and *not* as the answer: venues should still receive an explicit assignment at creation,
+so that not-assigned stays rare and indicates a defect rather than a normal path.
+
+*Answer:* **Re-asked 2026-08-20.** Owner: "the recommendation is not an answer" — correct. It described how to avoid the case rather than what VDS returns when it occurs. Revised recommendation above; awaiting an answer.
 
 <sub>decisions 27, 28</sub>
 
@@ -173,7 +185,7 @@ the concept requires.
 2 consecutive successes. Fast enough that a crashed instance leaves the pool in well under a
 minute, slow enough not to be a load source itself.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>concept "Why this needs to be a separate, continuously-running concern"</sub>
 
@@ -187,7 +199,7 @@ would let anyone insert a routing target, which is a traffic-hijacking primitive
 *Recommended:* The same asymmetric signed-token scheme as decisions 31–33, with the pipeline
 holding its own key identity, plus network restriction. One mechanism rather than two.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 31–33; concept "Registration is automated, not manual"</sub>
 
@@ -202,7 +214,7 @@ version. Silently serving a customer a different version than they are assigned 
 this whole feature exists to prevent, and it would do so at the exact moment nobody is watching
 the right thing. Rerouting is an operator decision through PO, not an automatic one.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 11, 25, 35</sub>
 
@@ -220,7 +232,7 @@ It is the first gateway hop Vennusign has had and sits on every request.
 per-request routing, and the team and repository are .NET 9. Note decision 18 holds regardless:
 the wire contract, not a shared assembly, is what binds Keystone to concurrently-running versions.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 14, 18; AGENTS.md "Target .NET 9"</sub>
 
@@ -234,7 +246,7 @@ presumes a number to measure against.
 *Recommended:* 15 ms added p95 as the budget, measured from the first slice that puts it on the
 request path, with breach as a capacity signal rather than a failure.
 
-*Answer:*
+*Answer:* Accepted with a requirement (2026-08-20): the budget stands, and the Router latency KPI must be surfaced front and centre rather than merely collected. It belongs on the version detail view an operator actually works from, alongside the cohort-health signals of Q27, not buried in a dashboard nobody opens.
 
 <sub>decisions 41, 43</sub>
 
@@ -248,7 +260,7 @@ the customer-facing name.
 *Recommended:* DNS points at the Router, which terminates TLS and forwards over the internal
 network. Any other arrangement reintroduces a per-version hostname, which decision 15 forbids.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 15, 40</sub>
 
@@ -264,7 +276,7 @@ network. Any other arrangement reintroduces a per-version hostname, which decisi
 rotation period so a rotation never requires simultaneous redeployment of every live version —
 which decision 2 makes impossible anyway.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 31, 32</sub>
 
@@ -275,7 +287,7 @@ which decision 2 makes impossible anyway.
 *Recommended:* 60 seconds. Long enough to absorb clock skew between App Services, short enough
 that a captured token is useless before it can be replayed meaningfully.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decision 32</sub>
 
@@ -286,7 +298,7 @@ that a captured token is useless before it can be replayed meaningfully.
 *Recommended:* Key Vault, reached by managed identity, never an app setting. `kv-vennusign-dev`
 already exists and already holds the project's credentials.
 
-*Answer:*
+*Answer:* Accepted with a note (2026-08-20): the Key Vault name is environment-specific, so it is configuration and never a constant. `kv-vennusign-dev` is the dev vault only; stage and production resolve their own. The managed-identity mechanism is unchanged.
 
 <sub>decisions 31, 37</sub>
 
@@ -306,7 +318,7 @@ longer.
 venue", and it expresses the hierarchy honestly. The cost is URL length; the benefit is that
 `/o/{orgId}` is a real place.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 19, 25</sub>
 
@@ -321,7 +333,9 @@ forgeable.
 The application then corrects the URL to the venue's real organization, so a stale link
 self-heals rather than erroring.
 
-*Answer:*
+*Answer:* Owner answer (2026-08-20), **overriding the recommendation.** The recommendation was wrong: silently correcting the URL to the venue's real organization discloses that organization to anyone who guesses a venue id.
+
+Correct behaviour: the Router still ignores the org segment and routes on venue (decision 25 is unchanged), but what happens next runs through the ordinary security-role and authentication path. **The response must never hint that the venue might belong to another organization.** URL correction is permitted only after authorization succeeds — a caller entitled to the venue may have the link tidied. An unauthorized caller receives the identical refusal they would get for a venue that does not exist, revealing neither its existence nor its owner. Recorded as decision 49.
 
 <sub>decisions 11, 19, 25</sub>
 
@@ -336,7 +350,7 @@ relative. Today `loadBackOfficeConfiguration` supplies an absolute `apiBaseUrl`.
 separately-hosted API. If anything genuinely cannot be relative, it must carry the tenant
 explicitly rather than silently routing to the default version.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 13, 14</sub>
 
@@ -354,7 +368,7 @@ every sign-in.
 *Recommended:* PO operators with release authority, gated behind the same approval as advancing a
 wave, and never automatic on registration.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decision 27</sub>
 
@@ -368,7 +382,7 @@ assignment, so a version could be "empty" and still serving every sign-in.
 *Recommended:* Retirement is refused while a version is the default. The pointer must be advanced
 first, which makes the ordering explicit rather than implicit.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 27, 28; concept "Release lifecycle"</sub>
 
@@ -386,7 +400,7 @@ but never fixes the shape.
 *Recommended:* A recurring daily local-time range per venue, with an optional per-venue override
 for a specific date. Anything richer is schedule modelling that no evidence yet demands.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 23, 24; concept "Source of schedule and selection data"</sub>
 
@@ -401,7 +415,7 @@ single moment.
 of live traffic since moving. No venue advances on an observation period that did not include its
 own window.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decision 24; concept "Automation"</sub>
 
@@ -414,7 +428,7 @@ Named in the concept's required list.
 *Recommended:* Newest rollout wins, and the older one records the venue as superseded rather than
 skipped, so the audit trail explains why it never moved.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>concept "Decisions required before planning"</sub>
 
@@ -429,7 +443,7 @@ safe and immediate as moving forward — but the mechanism is not.
 two differences: it ignores windows when the customer is already broken (per the concept's
 corrective-release rule), and it halts the wave that produced it.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 23, 24; concept "Withdrawing a release"</sub>
 
@@ -448,7 +462,7 @@ waves — so this is not an add-on, it is what makes progressive delivery mean a
 already knows both the tenant and the resolved version. That also makes it available before any
 versioned application changes.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 11, 44; concept "Open questions carried forward"</sub>
 
@@ -462,7 +476,7 @@ something watches it.
 *Recommended:* The same telemetry pipeline as Q27, with an alert threshold rather than per-event
 alerting, since a low background rate is expected from stale bookmarks.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 11, 35</sub>
 
@@ -481,7 +495,7 @@ factors are currently encrypted with a per-app key ring.
 nothing is live, so existing dev values are disposable and can be re-entered. If that turns out to
 be false for any environment, the answer changes to a dual-read migration.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>decisions 36, 37</sub>
 
@@ -493,13 +507,18 @@ be false for any environment, the answer changes to a dual-read migration.
 
 **Does #726 land before slice 1, or with it?**
 
-Decision 46 makes it a prerequisite. Decision 35's mis-forwarding check cannot work against
-`"0.0.0-local"`.
+**What #726 is:** an issue filed on 2026-08-19/20 recording that deploys never set version
+environment variables, so `/health/version` always reports the local placeholder and no deploy can
+be verified as actually live. `ReleaseVersionMetadata.cs:14` reads `VENNU_COMPONENT_VERSION` with a
+fallback of `"0.0.0-local"`; nothing sets it. Decision 46 makes it a Keystone prerequisite because
+decision 35's mis-forwarding check compares the Router's stamped version against exactly that
+value, and the concept's assignment-aware background services need it to know which venues are
+theirs.
 
 *Recommended:* Before slice 1, as its own small change. It is independently valuable — it is also
 what makes any deploy verifiable — and it is cheap.
 
-*Answer:*
+*Answer:* **Re-asked 2026-08-20.** Owner did not recognise the issue number. #726 is restated in the question context above; awaiting an answer.
 
 <sub>decisions 35, 46; issue #726</sub>
 
@@ -513,7 +532,7 @@ office under a tenant prefix. Doing them in the wrong order means doing the entr
 *Recommended:* The split first. `main.tsx`'s two-way switch is already the seam, and splitting
 first means the URL restructure only ever touches the post-auth app.
 
-*Answer:*
+*Answer:* Deferred (2026-08-20). Runs on the recommended default provisionally if a slice cannot wait, flagged in that slice's acceptance workbook.
 
 <sub>decisions 19, 21, 48</sub>
 
@@ -527,7 +546,7 @@ Decision 47 states the gap without assigning it.
 process outside VDS, and Keystone routing between versions is a separable concern from standing
 those versions up. It cannot be nobody's, though.
 
-*Answer:*
+*Answer:* Deferred (2026-08-20). Runs on the recommended default provisionally if a slice cannot wait, flagged in that slice's acceptance workbook.
 
 <sub>decisions 45, 47; concept "What the Version Discovery Service is, and is not"</sub>
 
@@ -540,7 +559,7 @@ Parked as **#742**. Restated here so the register is complete.
 *Recommended:* Decide only. Azure SignalR Service is the one Keystone item that certainly costs
 money, and tier and plan cost are deliberately deferred.
 
-*Answer:*
+*Answer:* Deferred (2026-08-20). Runs on the recommended default provisionally if a slice cannot wait, flagged in that slice's acceptance workbook.
 
 <sub>issue #742; decisions 1, 41</sub>
 
@@ -554,6 +573,6 @@ misidentifies PO. The correction is known; the owner of the edit is not.
 *Recommended:* Yes, as part of landing the design authority — the concept is Keystone's source
 document and leaving a known-false statement in it sends the next reader wrong.
 
-*Answer:*
+*Answer:* Accepted recommended (2026-08-20).
 
 <sub>issue #743; decisions 38, 39</sub>

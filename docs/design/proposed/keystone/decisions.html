@@ -274,7 +274,7 @@
 <header>
   <div class="masthead">
     <h1>Keystone Decisions</h1>
-    <span class="of">48 rules</span>
+    <span class="of">49 rules</span>
     <button class="toc-btn" id="tocBtn" type="button" aria-expanded="false">Contents</button>
   </div>
 </header>
@@ -323,7 +323,8 @@ const SECTIONS = [
   { t: "The URL shape", items: [
     { n:19, lead:"The URL shape is fixed as follows.", body:"", pre:"/signin  /signup  /onboarding      pre-auth · no tenant · root\n/pair                              pre-auth · device seeking an owner\n/o/{orgId}/v/{venueId}#/menu       post-auth · tenant in path, app route in hash\n/display/{venueId}/{screenId}      post-claim · device" },
     { n:20, lead:"The pre-auth/post-auth line is visible in the URL.", body:"Which side of the line a request sits on is determinable by inspection &mdash; by a person or by the Router &mdash; with no lookup and no session resolution. This is the property that makes rule 5 operable rather than merely true." },
-    { n:21, lead:"Application navigation stays in the hash.", body:"Back office has no router library: all in-app navigation is hash-based and the pathname is unused for it. The hash is never sent to the server, so the pathname is Keystone&rsquo;s and the hash is the application&rsquo;s, and the two cannot collide." }
+    { n:21, lead:"Application navigation stays in the hash.", body:"Back office has no router library: all in-app navigation is hash-based and the pathname is unused for it. The hash is never sent to the server, so the pathname is Keystone&rsquo;s and the hash is the application&rsquo;s, and the two cannot collide." },
+    { n:49, lead:"A wrong org segment never reveals the right one.", body:"<em>(Owner, 2026-08-20, overriding the register&rsquo;s own recommendation at Q19.)</em> The Router ignores the org segment and routes on venue, per rule 25 &mdash; but what the application does next runs through the ordinary security-role and authentication path, and <strong>the response must never hint that the venue might belong to another organization.</strong> URL correction is permitted only <em>after</em> authorization succeeds: a caller entitled to the venue may have a stale link tidied. An unauthorized caller receives the identical refusal they would receive for a venue that does not exist, disclosing neither its existence nor its owner." }
   ]},
   { t: "Assignment", items: [
     { n:22, lead:"Every venue belongs to an organization.", body:"Single-venue operators have an organization of one; multi-venue is an organization with more than one venue. The org-less venue is retired as a supported shape, which is what makes rule 19&rsquo;s path always well-formed." },
@@ -374,9 +375,23 @@ const SECTIONS = [
 function linkRules(html) {
   return html.replace(/\b(rule|decision)s?\s(\d{1,2})\b/gi, function (m, word, n) {
     const num = parseInt(n, 10);
-    if (num < 1 || num > 48) return m;
+    if (num < 1 || num > 49) return m;
     return '<a href="#d' + num + '">' + m + '</a>';
   });
+}
+
+// Section labels describe actual runs: [19,20,21,49] reads "19–21, 49".
+function ruleRuns(nums) {
+  const sorted = nums.slice().sort(function (a, b) { return a - b; });
+  const runs = [];
+  let start = sorted[0], prev = sorted[0];
+  for (let i = 1; i <= sorted.length; i++) {
+    const n = sorted[i];
+    if (n === prev + 1) { prev = n; continue; }
+    runs.push(start === prev ? String(start) : start + "\u2013" + prev);
+    start = n; prev = n;
+  }
+  return runs.join(", ");
 }
 
 const content = document.getElementById("content");
@@ -419,11 +434,9 @@ SECTIONS.forEach(function (sec, i) {
 
   content.appendChild(el);
 
-  const first = sec.items[0].n;
-  const last = sec.items[sec.items.length - 1].n;
   const li = document.createElement("li");
   li.innerHTML = '<a href="#' + id + '">' + sec.t +
-    '<span class="range">' + (first === last ? first : first + "–" + last) + '</span></a>';
+    '<span class="range">' + ruleRuns(sec.items.map(function (r) { return r.n; })) + '</span></a>';
   tocList.appendChild(li);
 });
 

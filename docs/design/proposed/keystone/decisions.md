@@ -131,6 +131,15 @@ in-app navigation is hash-based and the pathname is unused for it. The hash is n
 server, so the pathname is Keystone's and the hash is the application's, and the two cannot
 collide.
 
+**49 · A wrong org segment never reveals the right one.** *(Owner, 2026-08-20, overriding the
+register's own recommendation at Q19.)* The Router ignores the org segment and routes on venue,
+per rule 25 — but what the application does next runs through the ordinary security-role and
+authentication path, and **the response must never hint that the venue might belong to another
+organization.** URL correction is permitted only *after* authorization succeeds: a caller
+entitled to the venue may have a stale link tidied. An unauthorized caller receives the
+identical refusal they would receive for a venue that does not exist, disclosing neither its
+existence nor its owner.
+
 ---
 
 ## Assignment
