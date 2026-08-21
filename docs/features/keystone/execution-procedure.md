@@ -62,8 +62,9 @@ wrong once. The four genuine conflicts are listed at the end with the resolution
 | 29 | Obtain **independent review — never by the author.** Full diff, acceptance criteria, architecture and security impact, tests, artifacts, secrets, debug code, unrelated changes, branch drift, documentation accuracy. | house |
 | 30 | Decisions are `APPROVE`, `REQUEST_CHANGES` or `COMMENT`. New commits invalidate prior approval. Never proceed with unresolved material comments. If GitHub blocks self-approval, record the decision, reviewed SHA, validation status and residual risks in a top-level PR comment. | house |
 | 31 | Produce the **owner acceptance workbook**, 5–10 minutes. A milestone shipping no UI gets a demo script instead — M1, M2, M3 and M6 are in that category. | house |
+| 31a | **The owner may waive step 31. The agent runs the checks anyway.** A waiver removes the owner's *time*, never the *verification*: work every case the workbook would have contained, against the running product, exactly as the owner would have, and report each result with its evidence. Marking a case "waived" when nobody executed it is how a milestone merges on no one having looked. | house |
 | 32 | Acceptance asserts **what the customer sees** — what a screen shows after a sequence, not that an API accepted a request. A workbook can pass every check while the product is visibly broken, and has. | house |
-| 33 | Record the outcome durably (`m<n>-acceptance-record.json`). | house |
+| 33 | Record the outcome durably (`m<n>-acceptance-record.json`). Where step 31 was waived, record that it was waived, by whom, and the agent's own results in its place — so the record shows what was actually verified rather than implying an acceptance that never happened. | house |
 
 ## Phase E — Merge
 
