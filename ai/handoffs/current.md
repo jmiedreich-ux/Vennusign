@@ -2,6 +2,25 @@
 
 Updated 2026-08-21, for deploy verification, build stamping, the database audit, and test credential hygiene.
 
+## 2026-08-21 — The dev database is clean, and Murphy owns keeping it that way
+
+**The test residue is gone (#745, closed).** The trace was still intact and its keys still resolved, so this was a named delete rather than a pattern match: 26 of 26 traced venues, 30 of 33 traced screens and 12 of 12 traced pairing codes were still present and were removed by id.
+
+```
+Venues        147 -> 121
+Screens       130 -> 100
+PairingCodes   31 ->  19
+TestRecordTrace          dropped, last, once the rows it mapped were gone
+```
+
+Unchanged, as expected: Menus 127, Items 70, Placements 46, MenuScreenAssignments 49. API, display and back office all answer normally afterwards.
+
+**It was safe because it was checked first, not because the names looked like tests.** Zero menus, items, assignments, onboarding states or subscriptions on traced venues; zero traced screens on a non-traced venue; zero untraced screens on a traced venue. A closed island. 21 traced screens had no venue at all.
+
+`scripts/maintenance/clean-dev-test-data.sql` is kept: it rolls back unless `@Commit = 1`, deletes only rows the trace can name, and **refuses outright** if anything real has attached itself since. A snapshot of all 153 removed rows is at `C:\temp\vennusign-backups\dev-test-data-removed-2026-08-21.tsv`.
+
+**Owner decision: Murphy owns environment data hygiene from here (#752).** Cleanup was never the hard part — noticing was, and nothing was watching for three weeks. Murphy should report drift in deployed environments (objects no customer journey created, and tables present in a database that no migration creates — which is how `TestRecordTrace` was found), name what produced it, and report before removing. Two things gate it: Murphy has no database access today, so whether it reads the environment database or infers drift through the API is the first design question; and #746 should be fixed first or every run will report the same growing screen count.
+
 ## 2026-08-21 — Test credentials, a destructive test, and what is actually running on the plan
 
 **A test was running `DELETE FROM dbo.Venues` against whatever an environment variable pointed at (#751, fixed in `ae206191`).** `AzureSqlPhase02IntegrationTests` deleted every pairing code, screen and venue from whatever `VENU_TEST_AZURE_SQL_CONNECTION_STRING` named, with no guard — `DatabaseFixture` has `EnsureDevDatabase`, this had nothing. On this machine that variable named the dev product database. **The only thing between that test and 147 venues and 128 screens was a stale password.** It was invisible because it returned silently when the variable was unset, so on a cleaned-up machine it looked like a passing test that ran nothing. It now creates its own database, uses it, drops it — and runs for the first time.
