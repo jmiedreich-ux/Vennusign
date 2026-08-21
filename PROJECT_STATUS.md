@@ -1,5 +1,13 @@
 # Vennusign Project Status
 
+> **Where everything is, on one page: `ROADMAP.md`.** This file carries the narrative of recent
+> work; the roadmap carries the shape of all of it — every workstream, its milestones, its
+> position and its gate. Read the roadmap first when orienting; read this for the detail.
+>
+> **Terminology (owner, 2026-08-21):** the era formerly called "Phases 1–13" is now
+> **Foundational Work, Milestones 1–13**. The era since 2026-08-07 is **the Great Reset**. The
+> phase vocabulary below is retained as history and was not rewritten.
+
 ## Current State
 
 - **Working model: features and milestones** (adopted 2026-08-07 from the Track 1 retrospective; see `AGENTS.md`). The phase/track/WP model is retired; its records are history.

@@ -7,9 +7,10 @@ Before changing the repository, read only:
 1. `AGENTS.md`
 2. `ai/handoffs/current.md`
 3. `tracker/assignments.json`
-4. `PROJECT_STATUS.md`
-5. The active feature's records under `docs/features/<feature>/`, when a feature is active
-6. Linked issue, branch, PR, comments, and exact-head CI results where CI has run
+4. `ROADMAP.md` — where every workstream is, on one page
+5. `PROJECT_STATUS.md`
+6. The active feature's records under `docs/features/<feature>/`, when a feature is active
+7. Linked issue, branch, PR, comments, and exact-head CI results where CI has run
 
 Read `AI_DEVELOPMENT_GUIDE.md`, component README files, architecture, or operations documents only when the task touches that area. Content under `docs/archive/`, `ai/handoffs/archive/`, and `track0/` is research-only: do not load it routinely. Repository and GitHub state override chat history and archived material.
 
@@ -100,7 +101,7 @@ These govern every task, not only milestone work.
 ## Documentation Control
 
 - Treat Markdown as a maintained interface, not a work log. Update an existing authoritative document before creating a new `.md` file.
-- The controlled living records are `AGENTS.md`, `PROJECT_STATUS.md`, `ai/handoffs/current.md`, the tracker, the active feature's records under `docs/features/<feature>/`, and affected durable architecture/operations documents.
+- The controlled living records are `AGENTS.md`, `ROADMAP.md`, `PROJECT_STATUS.md`, `ai/handoffs/current.md`, the tracker, the active feature's records under `docs/features/<feature>/`, and affected durable architecture/operations documents.
 - Batch living-record updates at milestone completion. Do not edit tracker, status, or handoff after every local commit.
 - A change that makes a controlled record **false** updates that record in the same commit. A record that is behind is tolerable; one that states something untrue sends the next session down the wrong path.
 - A new Markdown file requires a durable audience and purpose not served by an existing file. Do not create per-experiment, per-prompt, or evidence-only Markdown; completion evidence belongs in the milestone PR and issue.
@@ -156,7 +157,7 @@ Adopted 2026-08-09 from the Menus Milestone 1 retrospective, after five consecut
 
 ## Completion and Handoff
 
-At milestone completion, synchronize: the milestone issue, `PROJECT_STATUS.md`, `tracker/assignments.json`, `ai/handoffs/current.md`, the feature's records under `docs/features/<feature>/`, and affected architecture, API, database, operational, or CI documentation. The handoff names one exact next action.
+At milestone completion, synchronize: the milestone issue, `ROADMAP.md`, `PROJECT_STATUS.md`, `tracker/assignments.json`, `ai/handoffs/current.md`, the feature's records under `docs/features/<feature>/`, and affected architecture, API, database, operational, or CI documentation. The handoff names one exact next action.
 
 ## Code and Repository Quality
 
