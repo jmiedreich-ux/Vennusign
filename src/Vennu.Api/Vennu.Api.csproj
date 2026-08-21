@@ -13,6 +13,7 @@
     <PackageReference Include="Fido2" Version="4.0.1" />
     <PackageReference Include="Fido2.AspNet" Version="4.0.1" />
     <PackageReference Include="Stripe.net" Version="52.1.0" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.54.0" />
   </ItemGroup>
 
   <ItemGroup>
