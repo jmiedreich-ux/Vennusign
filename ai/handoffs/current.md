@@ -1,6 +1,37 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-20, for the public marketing site, customer sign-in repair, and QA mail tooling.
+Updated 2026-08-21, for deploy verification, build stamping, and the database audit.
+
+## 2026-08-21 — A green deploy now has to prove the new build is running
+
+**#740, #726, #739 and #736 are closed, and the pipeline change is deployed and verified on dev.** All five apps report the commit they were deployed from; the first run through the new check confirmed every one on the first attempt with no restart escalation.
+
+```
+dev.api.vennusign.com/health/version    sourceCommit 1eb4cfdd  databaseSchemaVersion 073_customer_onboarding_go_live_achieved
+dev.back-office / display / www / po    sourceCommit 1eb4cfdd  buildId 32431079660
+```
+
+**How the check works, and why a matching commit is proof.** `deploy-api` writes `VENNU_SOURCE_COMMIT`/`VENNU_BUILD_ID` as app settings *after* the package upload. Writing an app setting is itself what forces the recycle — OneDeploy only requests one — so a matching commit means a recycle happened after the package landed. The order is load-bearing the other way too: writing the setting first would restart the old build carrying the new commit id, and the check would go green over stale code. Each static build stamps `dist/version.json`; `pm2 serve --spa` serves a real file when one exists, so no host config changed.
+
+**A second defect of the same shape was found while shipping it.** `deploy-dev.yml` classified changed paths with `git diff HEAD^ HEAD` — the last commit of a push, not the push. The first push of this work carried three commits ending in a documentation commit, so every deploy job was skipped and the run went green having shipped **nothing** (`c4f40200`). Fixed in `1eb4cfdd`, guarded in `scripts/ci/test-classify-changes.sh`. Same lesson as #740: the pipeline reported success for work it had not done. **Assume nothing about a green run that you have not read the job list of.**
+
+**Not proven yet, and named rather than claimed:** the plan was on B3 for this deploy, which is the condition where #740 does *not* reproduce. The check has not been exercised against a genuinely stale deploy in the wild.
+
+**`databaseSchemaVersion` is no longer an environment variable.** It is read from DbUp's journal — the one field on `/health/version` that is not the build talking about itself. And to answer the question directly: **DbUp was never at fault.** It throws rather than continuing, and runs before the host is built, so an API answering requests on an un-migrated database is not a reachable state. Migration 073 was missing because the process serving requests had been started from the previous package and 073 was not in its assembly. Same root cause as #740, not a second defect.
+
+**The database audit found almost nothing to remove, which is the finding.** `docs/reports/database-schema-audit-2026-08-20.md`. 79 tables in dev: 34 hold rows, 45 are empty, and **all 45 empty ones are referenced by product code** — there is no orphaned table. Every table the scripts create exists, and every table that exists is created by a script, except `dbo.TestRecordTrace`. Scripts: `001_baseline` already consolidated `002`–`058`, and `059`–`073` are all still required. **Nothing was dropped and nothing was deleted.**
+
+Three tables needed a decision instead: `dbo.MenuItems` is empty and superseded but `MenuRepository` still reads *and writes* it in five places for the POS catalog sync (#744); `dbo.LayoutTemplates` is seeded and referenced by nothing, and looks like pre-seeding for the backlogged Board View (#709); `dbo.AuthorityRoles` has no direct references but is an FK parent of a live table and stays.
+
+**Local integration tests are not broken — the environment is lying.** A full run is 115 failed / 8 passed, every failure `Login failed for user 'sqladmin'`. `VENU_TEST_AZURE_SQL_CONNECTION_STRING` is gone from `HKCU\Environment` and the machine key, as the last session recorded — but it is **still in the environment of any Windows process launched from the running WSL instance**, which captured it at WSL start. Forcing the run onto LocalDB gives **123/123**. `wsl --shutdown` clears it. This is also why 26 venues, 30 screens and 12 pairing codes created by test runs are sitting in the dev product database (#745).
+
+**Executed evidence.** `Vennu.Api.Tests` Category=Unit 461/461 · `Vennu.Data.IntegrationTests` 123/123 on LocalDB · `Vennu.DataAccess.Tests` 229 passed / 3 failed, the same three that fail on clean master (#688) · `scripts/ci/test-classify-changes.sh` and `scripts/ci/test-verify-deployed-build.sh` both pass, the latter against a real HTTP server rather than a stubbed curl. Both wiring guards were observed red by removing what they guard. **UNTESTED:** the two signed-in Playwright cases against dev, still.
+
+**Machine note.** The WSL sandbox has no .NET SDK, no Node, and no SQL client. Windows `dotnet.exe` at `/mnt/c/Program Files/dotnet/dotnet.exe` works from WSL and is how every test above was run; environment variables reach it only via `WSLENV`.
+
+**Environment.** Scaled to B3 for the deploy and back to B1 after, as instructed. **The scale-down wedged all four SPAs** — 503, then no response at all — while the API stayed up. Restarting the four apps brought them back; Platform Operations took three attempts. This is the 28-apps-on-one-core problem the hosting sheet costs out, and it now has a reproducible trigger: scaling the plan restarts everything at once and B1 cannot absorb it.
+
+**Exact next action.** Nothing is claimed and no milestone is approved. Unchanged from yesterday and now the oldest item on the list: run `specs/customer-onboarding.spec.ts` signed in against dev. After that, #737 (a changed provider subject locks a customer out permanently) is the defect that costs the most per occurrence, then #744, which is a decision rather than a fix.
 
 ## 2026-08-20 — End-of-session state and exact next action
 

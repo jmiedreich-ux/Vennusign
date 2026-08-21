@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-20T08:30:00Z",
+  "updatedUtc": "2026-08-21T00:45:00Z",
   "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
@@ -26,6 +26,17 @@
     "releasedBy": "scope completed locally"
   },
   "lastCompletedAssignment": {
+    "assignment": "Deploy verification and build stamping, plus the database script and table audit",
+    "issue": 740,
+    "pr": null,
+    "branch": "fix/740-deploy-verification (merged to master)",
+    "completedUtc": "2026-08-21T00:45:00Z",
+    "mergeSha": "1eb4cfdd",
+    "acceptedProductSha": null,
+    "acceptance": "No workbook and no independent review; merged and deployed at the owner's direct instruction during a live session.",
+    "notes": "Closed #740, #726, #739 and #736. A green deploy now has to prove the new build is running: the API is stamped with its commit after upload, each static build writes dist/version.json, and every deploy job polls until the app reports that commit, restarts once, then fails. Also fixed deploy-dev.yml classifying only the last commit of a push, which shipped nothing on c4f40200 and reported success. Deployed and verified: 5/5 apps serving 1eb4cfdd, no restart escalation. Opened #744 (retire dbo.MenuItems, still wired to the POS sync), #745 (test-created rows in the dev database), #746 (every /pair visit registers a new screen). Audit: docs/reports/database-schema-audit-2026-08-20.md - no table or script was removed, and the report says why."
+  },
+  "previousCompletedAssignment": {
     "assignment": "Onboarding M1 plus the defects blocking the first end-to-end journey",
     "issue": 728,
     "pr": null,
@@ -36,7 +47,7 @@
     "acceptance": "No workbook and no independent review; merged and deployed at the owner's direct instruction during a live testing session.",
     "notes": "Sign in, onboard, pair, build a menu, publish and display now work end to end on dev for the first time. Deployed: durable go-live (073), registered subdomains, one-approval sequential deploys, per-app build config, the shared loader, and the display board projection. Untested: the two signed-in Playwright cases against dev. See ai/handoffs/current.md."
   },
-  "previousCompletedAssignment": {
+  "priorCompletedAssignment": {
     "assignment": "Menus 6-A1 \u2014 paste, parse, and resumable review",
     "issue": 714,
     "pr": 716,
@@ -46,16 +57,5 @@
     "acceptedProductSha": "547aea7",
     "acceptance": "Owner accepted all 7 workbook checks at 2026-08-14T03:43:13.198Z; independent exact-head review approved.",
     "notes": "PR #716 merged and issue #714 closed. 6-A2 create-new-menu confirmation is the exact next milestone; 6-A3 replacement remains excluded."
-  },
-  "priorCompletedAssignment": {
-    "assignment": "Menus Slice 6 \u2014 86 board and blank menu creation",
-    "issue": 710,
-    "pr": 711,
-    "branch": "feature/menus-s6-86-board",
-    "completedUtc": "2026-08-13T21:40:33Z",
-    "mergeSha": "34296844d67327077017cf71968f7391df0da8b6",
-    "acceptedProductSha": "99a3eab8f0261adc25b0944b69f9ad9a8c76eb25",
-    "acceptance": "Owner instructed merge after the bounded regression closeout; another review and owner workbook were explicitly skipped.",
-    "notes": "Slice 6-A paste import design is approved and delivery is split into 6-A1 paste/parse/review, 6-A2 create, and 6-A3 replace."
   }
 }
