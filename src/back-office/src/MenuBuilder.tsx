@@ -112,17 +112,7 @@ type SaveState = "clean" | "saving" | "failed";
  * an edit you made is still an edit, whatever the network or the session did
  * afterwards, and the surface never claims otherwise.
  */
-type PendingWrite = {
-  action: () => Promise<void>;
-  undo?: UndoStep;
-  describe: string;
-  onSuccess?: () => void;
-  /**
-   * The caller already drew this change, so there is nothing to wait for and
-   * nothing to re-read. See `run`'s note on client-first writes.
-   */
-  drawn?: boolean;
-};
+type PendingWrite = { action: () => Promise<void>; undo?: UndoStep; describe: string; onSuccess?: () => void };
 
 /**
  * The board at its logical width, scaled to whatever the canvas is.
@@ -635,11 +625,7 @@ export default function MenuBuilder({
       writes.current = mine.catch(() => undefined);
       try {
         await mine;
-        // A write the caller already drew is a change this component authored in
-        // full - a permutation of a list it holds. Re-reading would cost four round
-        // trips to be told what we just said. Refusals and hard failures below still
-        // re-read or retry, so the optimistic frame never becomes the last word.
-        if (!entry.drawn) await refresh();
+        await refresh();
         held.current = null;
         retryRound.current = 0;
         setSignBackIn(null);
@@ -692,22 +678,11 @@ export default function MenuBuilder({
     deliverRef.current = deliver;
   }, [deliver]);
 
-  /**
-   * Client first, server last.
-   *
-   * `drawn` says the caller has already put the change on screen, because it could
-   * compute the result itself. Reordering is the plain case: the new order IS the
-   * request body, so waiting for the PUT and then re-reading the board asked the
-   * server to confirm a list this component authored - two sequential round trips,
-   * measured at 3,981 ms for one section drag on B1, to render a permutation
-   * already in hand. Writes still go one at a time and in order; that guarantee is
-   * about the order saves land in, not about when we are allowed to paint.
-   */
   const run = useCallback(
-    (action: () => Promise<void>, undoStep?: UndoStep, onSuccess?: () => void, drawn = false) => {
+    (action: () => Promise<void>, undoStep?: UndoStep, onSuccess?: () => void) => {
       window.clearTimeout(retryTimer.current);
       retryRound.current = 0;
-      return deliver({ action, undo: undoStep, describe: undoStep?.describe ?? "Your last change", onSuccess, drawn });
+      return deliver({ action, undo: undoStep, describe: undoStep?.describe ?? "Your last change", onSuccess });
     },
     [deliver]
   );
@@ -767,18 +742,7 @@ export default function MenuBuilder({
     const to = ordered.indexOf(targetPageId);
     if (from < 0 || to < 0) return;
     ordered.splice(to, 0, ordered.splice(from, 1)[0]);
-    const before = pages.map(page => page.pageId);
-    drawPageOrder(ordered);
-    await run(
-      () => reorderMenuPages(configuration, credential(), menuId, ordered),
-      {
-        describe: "Move page",
-        undo: () => { drawPageOrder(before); return reorderMenuPages(configuration, credential(), menuId, before); },
-        redo: () => { drawPageOrder(ordered); return reorderMenuPages(configuration, credential(), menuId, ordered); }
-      },
-      undefined,
-      true
-    );
+    await run(() => reorderMenuPages(configuration, credential(), menuId, ordered));
   };
 
   const removePage = async (pageId: string, destinationPageId?: string, deleteSections = false) => {
@@ -841,74 +805,17 @@ export default function MenuBuilder({
     if (created) setPlace(current => ({ ...current, sectionId: created!.sectionId, selectedItemId: null }));
   };
 
-  /**
-   * Draw a reorder now, from the order this component just computed.
-   *
-   * Rendering is driven by sortOrder, so applying the new ranks locally is the whole
-   * change - there is nothing the server can add to a permutation we authored. If it
-   * refuses, deliver() re-reads and the truth replaces this; if the call fails, the
-   * write is held and retried, so the frame stays right rather than flickering back.
-   */
-  const drawSectionOrder = (ids: string[]) =>
-    setData(current => {
-      if (!current?.board) return current;
-      const rank = new Map(ids.map((id, index) => [id, index]));
-      return {
-        ...current,
-        board: {
-          ...current.board,
-          sections: current.board.sections.map(section =>
-            rank.has(section.sectionId) ? { ...section, sortOrder: rank.get(section.sectionId)! } : section)
-        }
-      };
-    });
-
-  const drawItemOrder = (sectionId: string, ids: string[]) =>
-    setData(current => {
-      if (!current?.board) return current;
-      const rank = new Map(ids.map((id, index) => [id, index]));
-      return {
-        ...current,
-        board: {
-          ...current.board,
-          sections: current.board.sections.map(section =>
-            section.sectionId !== sectionId ? section : {
-              ...section,
-              items: (section.items ?? []).map(item =>
-                rank.has(item.itemId) ? { ...item, sortOrder: rank.get(item.itemId)! } : item)
-            })
-        }
-      };
-    });
-
-  const drawPageOrder = (ids: string[]) =>
-    setData(current => {
-      if (!current?.board) return current;
-      const rank = new Map(ids.map((id, index) => [id, index]));
-      return {
-        ...current,
-        board: {
-          ...current.board,
-          pages: (current.board.pages ?? []).map(page =>
-            rank.has(page.pageId) ? { ...page, sortOrder: rank.get(page.pageId)! } : page)
-        }
-      };
-    });
-
   const moveSection = async (from: number, to: number) => {
     const ids = sectionsOf(board).filter(section => !activePageId || section.pageId === activePageId).map(section => section.sectionId);
     const next = reorder(ids, from, to);
     if (next.join() === ids.join()) return;
-    drawSectionOrder(next);
     await run(
       () => reorderMenuSections(configuration, credential(), menuId, next),
       {
         describe: "Move section",
-        undo: () => { drawSectionOrder(ids); return reorderMenuSections(configuration, credential(), menuId, ids); },
-        redo: () => { drawSectionOrder(next); return reorderMenuSections(configuration, credential(), menuId, next); }
-      },
-      undefined,
-      true
+        undo: () => reorderMenuSections(configuration, credential(), menuId, ids),
+        redo: () => reorderMenuSections(configuration, credential(), menuId, next)
+      }
     );
   };
 
@@ -1120,12 +1027,11 @@ export default function MenuBuilder({
     }
     if (destinationAfter.join() === ids.join()) return;
 
-    drawItemOrder(drag.sectionId, destinationAfter);
     void run(() => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, destinationAfter), {
       describe: "Reorder items",
-      undo: () => { drawItemOrder(drag.sectionId, ids); return reorderMenuItems(configuration, credential(), menuId, drag.sectionId, ids); },
-      redo: () => { drawItemOrder(drag.sectionId, destinationAfter); return reorderMenuItems(configuration, credential(), menuId, drag.sectionId, destinationAfter); }
-    }, undefined, true);
+      undo: () => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, ids),
+      redo: () => reorderMenuItems(configuration, credential(), menuId, drag.sectionId, destinationAfter)
+    });
   }
 
   const finishItemDrag = (event: React.PointerEvent<HTMLDivElement>) => {
