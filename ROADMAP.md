@@ -254,7 +254,7 @@ becomes one.
 
 | Item | Where | State |
 |---|---|---|
-| **Atlas** — the always-current site | nowhere yet; owner green-lit brainstorming 2026-08-21 | A site **built from** the repo and GitHub on every merge — never hand-maintained — rendering the roadmap, each workstream's authority, register, plans and records, the procedure, handoff and status, with open issues per workstream label pulled at build time. The three artifacts from the Keystone work are its prototype. Carries a codename because it is the first queue item with a brainstorm underway; it gets a workstream row when it has an authority. |
+| **Atlas** — the always-current site | `docs/design/proposed/atlas/decisions.md` (38, **proposed**) | A site **built from** the repo and GitHub on every merge — never hand-maintained — rendering the roadmap, each workstream's authority, register, plans and records, the procedure, handoff and status, with open issues per workstream label pulled at build time. The three artifacts from the Keystone work are its prototype. Design authority written 2026-08-22 and awaiting approval; the implementation plan is next. Gets a workstream row when the authority is approved. |
 | Product surface feature inventory | `docs/design/proposed/product-surface-feature-inventory.md` | 18 domains, 133 capabilities; a design reference, not a roadmap |
 | Back Office home | named in Onboarding's notes as where the first-run checklist belongs | not designed |
 | Customer support diagnostic agent | `docs/design/customer-support-diagnostic-agent-concept.md` | exploratory concept |
