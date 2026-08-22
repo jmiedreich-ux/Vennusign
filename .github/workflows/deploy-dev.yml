@@ -77,7 +77,7 @@ jobs:
   # minutes apart. This job is the only thing that names it; everything else waits
   # on this. The Azure credentials are repository secrets, so the deploy jobs do not
   # need the environment to read them.
-  gate:
+  approval:
     if: >-
       needs.classify.outputs.dotnet_api == 'true' ||
       needs.classify.outputs.back_office == 'true' ||
@@ -92,7 +92,7 @@ jobs:
 
   deploy-api:
     if: needs.classify.outputs.dotnet_api == 'true'
-    needs: [classify, gate]
+    needs: [classify, approval]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -137,7 +137,7 @@ jobs:
 
   deploy-back-office:
     if: ${{ !failure() && !cancelled() && needs.classify.outputs.back_office == 'true' }}
-    needs: [classify, gate, deploy-api]
+    needs: [classify, approval, deploy-api]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -184,7 +184,7 @@ jobs:
 
   deploy-display:
     if: ${{ !failure() && !cancelled() && needs.classify.outputs.display == 'true' }}
-    needs: [classify, gate, deploy-back-office]
+    needs: [classify, approval, deploy-back-office]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -231,7 +231,7 @@ jobs:
 
   deploy-www:
     if: ${{ !failure() && !cancelled() && needs.classify.outputs.www == 'true' }}
-    needs: [classify, gate, deploy-display]
+    needs: [classify, approval, deploy-display]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -278,7 +278,7 @@ jobs:
 
   deploy-po:
     if: ${{ !failure() && !cancelled() && needs.classify.outputs.platform_operations == 'true' }}
-    needs: [classify, gate, deploy-www]
+    needs: [classify, approval, deploy-www]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
