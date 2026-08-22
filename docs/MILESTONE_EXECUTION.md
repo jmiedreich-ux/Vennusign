@@ -38,6 +38,7 @@ wrong once. The four genuine conflicts are listed at the end with the resolution
 | 10 | **Search for where else this behaviour lives**, before writing anything. Run a real search, and keep the command and its full output. Knowing every location up front shapes the work; discovering them at the end only catches omissions. Step 20 re-runs this against the finished change. | house |
 | 11 | **Write down the area's invariants** — the states its model says cannot exist — and arrange to assert them after every integration test in that area. | house |
 | 12 | If the milestone changes a page or screen, load `.agents/skills/impeccable/SKILL.md` and follow its routing and bounded verification rules. | house |
+| 12a | **Write the cross-cutting conventions into the plan's Global Constraints, before the first task is dispatched.** Signatures are already covered — the plan's Interfaces block names what each task consumes and produces, which is why tasks rarely get a function shape wrong. What goes unguarded is everything that is not a signature: how a failure message is phrased, whether it names an absolute or a repository-relative path, exit codes, vocabulary, log style. Each task is reviewed against its own brief, so a convention stated nowhere is violated by nobody and drifts anyway. State it once here and it becomes every task reviewer's attention lens. | house |
 
 ## Phase C — Per task, repeated
 
@@ -46,6 +47,7 @@ wrong once. The four genuine conflicts are listed at the end with the resolution
 | 13 | Dispatch a **fresh implementer subagent** for the task, inheriting none of the coordinating session's context. This is not only context hygiene: an implementer that can read only what is written either succeeds or exposes a thin plan, where one carrying the design conversation would coast on remembered intent and never surface the gap. | sp |
 | 14 | **Run the test cycle.** One motion, four beats: write the failing test; **run it and watch it fail**; write the minimal implementation; run it and watch it pass. No production code without a failing test — code written before its test is deleted, not adapted. Watching it fail is the cheapest, highest-value moment in this procedure: if you did not see it fail, you do not know it tests the right thing. | both |
 | 15 | Two constraints govern *what* you write at step 14, not what happens after it. **Test the rule where it is enforced** — a refusal enforced in SQL is asserted against a database; an in-memory double stores state and may be told to fail, but never decides, and a double that re-implements a rule proves the copy, which drifts. And for a **bug fix**, the cycle gains a beat: revert the fix, run, observe the failure, restore. A regression test not verified to fail with its fix reverted has not closed the finding. | house |
+| 15a | **Where a step 12a convention is mechanical, the task that establishes it also writes the test that enforces it** — one assertion in the first task guards every task after it, at no recurring cost. "Every failure message names a repository-relative path" is a test, not a hope. This is what makes a convention hold across a milestone nobody is reading end to end: Atlas M1's rule that no generated page may carry a project name was asserted in the task that built the theme and enforced automatically from then on, while its path-spelling convention was written down nowhere and diverged between two modules by the next task. | house |
 | 16 | **Implementer self-reviews before handing off.** Re-read the task's own requirements against what was written; check the test asserts the behaviour rather than the implementation; look for anything the plan asked for and did not get. A finding caught here costs a minute in context that already exists; the same finding at step 18 costs a reviewer dispatch, a findings package and a resume. | sp |
 | 17 | Commit the task. Code commits are frequent; **living records are not touched yet** — see step 32. | both |
 | 18 | Dispatch a **task reviewer** subagent for spec compliance and code quality. **Scope this to risk, not to task count:** a task that only adds a project file, a reference or scaffolding folds into the next substantive task's review rather than earning its own. Fold, never skip — "it looks simple" is the rationalization this procedure exists to defeat. This is *not* the merge-gate review in step 25. | sp |
@@ -100,6 +102,7 @@ conflicts — most milestones are serial chains, and pretending otherwise costs 
 | 22 | Run the house gate, not a generic suite: affected **Release** builds, focused unit tests, static checks, applicable non-integration migration validation, and the **Playwright UI gate**. | house |
 | 23 | Record skipped tests. Azure SQL and integration-type tests are skipped by standing owner exception — say so rather than reporting a pass. | house |
 | 24 | Evidence is **a command someone else can rerun, and its output**. "Verified working" is not evidence. Anything not actually executed is marked **UNTESTED**, which is an acceptable answer where a false "done" is not. | both |
+| 24a | **Dispatch a whole-branch review with fresh eyes, over the entire diff at once.** Every task was reviewed in isolation against its own brief, so nothing has yet looked at the milestone as one thing. This step asks what that structure cannot: has logic been duplicated and then diverged; is an interface used differently by two consumers; did error styles, path spellings or vocabulary drift between modules; is there dead code, or a test file duplicating another's coverage; has a module grown past what it should hold. Close with the plain question — if a competent engineer inherited this branch tomorrow with no context, what trips them up first. Give the reviewer every finding parked during execution and make it rule ship-or-fix on each; a finding deferred task by task has had no other moment to be judged as a whole. This is not step 25 and does not replace it: this one hunts drift, step 25 gates the merge. | both |
 | 25 | Obtain **independent review — never by the author.** Full diff, acceptance criteria, architecture and security impact, tests, artifacts, secrets, debug code, unrelated changes, branch drift, documentation accuracy. | house |
 | 26 | Decisions are `APPROVE`, `REQUEST_CHANGES` or `COMMENT`. New commits invalidate prior approval. Never proceed with unresolved material comments. If GitHub blocks self-approval, record the decision, reviewed SHA, validation status and residual risks in a top-level PR comment. | house |
 | 27 | Produce the **owner acceptance workbook**, 5–10 minutes. A milestone shipping no UI gets a demo script instead. | house |
@@ -186,6 +189,15 @@ Any of these would be silently dropped by an agent following the plugin alone:
 
 Adopted as general standard operating procedure (owner, 2026-08-21). It applies to every feature
 area, not only the one it was written during.
+
+Steps 12a, 15a and 24a were added on 2026-08-22, after Atlas M1 showed the gap they close. Eight
+tasks were each implemented and reviewed against their own brief, and none was wrong against it —
+yet two modules still ended up reporting failure paths in different styles, because the convention
+existed in no brief at all. The three steps attack that at each of the points it can be caught:
+state the convention before the first dispatch, enforce it by test where it is mechanical, and look
+at the whole branch once with fresh eyes before merge. The last of the three is the only one that
+catches a *semantic* drift, where two modules both look correct and mean different things — no
+mechanical check finds that, which is why the step exists even though it is the least automatable.
 
 `AGENTS.md` is the policy and this is the procedure. A change that makes one false updates the
 other in the same commit — if a house rule changes, the step carrying it changes with it.
