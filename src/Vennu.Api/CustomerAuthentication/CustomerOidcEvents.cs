@@ -78,12 +78,22 @@ public sealed class CustomerOidcEvents(
             return;
         }
 
-        var user = await accountService.ResolveExternalIdentityAsync(new ExternalIdentityProfile(
-            provider,
-            subject,
-            email,
-            true,
-            context.Principal?.FindFirstValue("name") ?? email), context.HttpContext.RequestAborted).ConfigureAwait(false);
+        CustomerUser user;
+        try
+        {
+            user = await accountService.ResolveExternalIdentityAsync(new ExternalIdentityProfile(
+                provider,
+                subject,
+                email,
+                true,
+                context.Principal?.FindFirstValue("name") ?? email), context.HttpContext.RequestAborted).ConfigureAwait(false);
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            logger.LogWarning(exception, "Customer sign-in was refused while resolving {Provider} identity.", provider);
+            context.Fail(exception.Message);
+            return;
+        }
         var method = provider switch
         {
             ExternalIdentityProvider.Google => CustomerAuthenticationMethod.Google,
