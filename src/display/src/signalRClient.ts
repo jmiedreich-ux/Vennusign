@@ -2,6 +2,8 @@ import {
   HubConnectionBuilder,
   LogLevel
 } from '@microsoft/signalr';
+// @ts-expect-error - plain .mjs helper, kept testable by the display's node --test suite.
+import { displayRetryPolicy } from './displayReconnect.mjs';
 import { startDisplayConnection } from './displayConnection.mjs';
 import {
   displayRealtimeEvents,
@@ -23,6 +25,7 @@ function buildHubUrl(apiBaseUrl: string) {
   return `${apiBaseUrl.replace(/\/$/, '')}/hubs/vennusign`;
 }
 
+
 export async function connectDisplayRealtime(
   apiBaseUrl: string,
   screenId: string,
@@ -30,7 +33,7 @@ export async function connectDisplayRealtime(
 ): Promise<DisplayRealtimeConnection> {
   const connection = new HubConnectionBuilder()
     .withUrl(buildHubUrl(apiBaseUrl))
-    .withAutomaticReconnect()
+    .withAutomaticReconnect(displayRetryPolicy)
     .configureLogging(LogLevel.Warning)
     .build();
 
