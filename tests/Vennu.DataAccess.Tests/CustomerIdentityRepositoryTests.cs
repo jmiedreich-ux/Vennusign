@@ -52,18 +52,35 @@ public sealed class CustomerIdentityRepositoryTests
     }
 
     [Fact]
-    public async Task LinkExternalIdentityAsync_TrimsSubjectAndPropagatesCancellation()
+    public async Task UpsertExternalIdentityAsync_TrimsSubjectUsesAtomicLocksAndPropagatesCancellation()
     {
-        var data = new FakeSqlDataAccess();
+        string? sql = null;
+        object? parameters = null;
+        var data = new FakeSqlDataAccess
+        {
+            ExecuteSqlQueryHandler = (capturedSql, capturedParameters) =>
+            {
+                sql = capturedSql;
+                parameters = capturedParameters;
+                return [];
+            }
+        };
         var repository = new CustomerIdentityRepository(data, new FixedTimeProvider(UtcNow));
         using var source = new CancellationTokenSource();
 
-        var identity = await repository.LinkExternalIdentityAsync(new ExternalIdentity
+        var identity = new ExternalIdentity
         {
             UserId = Guid.NewGuid(), Provider = ExternalIdentityProvider.Google, ProviderSubject = " google-subject "
-        }, source.Token);
+        };
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            repository.UpsertExternalIdentityAsync(identity, false, source.Token));
 
         Assert.Equal("google-subject", identity.ProviderSubject);
+        Assert.Contains("BEGIN TRANSACTION", sql, StringComparison.Ordinal);
+        Assert.Contains("WITH (UPDLOCK, HOLDLOCK)", sql, StringComparison.Ordinal);
+        Assert.Contains("COMMIT TRANSACTION", sql, StringComparison.Ordinal);
+        Assert.False(Property<bool>(parameters!, "AllowSubjectChange"));
+        Assert.Equal("google-subject", Property<string>(parameters!, "ProviderSubject"));
         Assert.Equal(source.Token, data.LastCancellationToken);
     }
 
