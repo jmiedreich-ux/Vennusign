@@ -1,6 +1,6 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-20, for Keystone brainstorming; previously the public marketing site, customer sign-in repair, and QA mail tooling.
+Updated 2026-08-22, for the Atlas design and plan; previously Keystone brainstorming, the roadmap and the execution procedure.
 
 ## 2026-08-20 — Keystone brainstorming: TenantContext, the pre-auth line, and the URL shape
 
@@ -38,6 +38,24 @@ Updated 2026-08-20, for Keystone brainstorming; previously the public marketing 
 **Two corrections to earlier records, both applied.** The deployment process is **not** manual — it is fully automated for the apps that exist; the real gap is that `deploy-dev.yml` names five fixed `app-name:` targets and so cannot produce a new per-version one. And **#726 is a Keystone prerequisite, not a QA annoyance**: `ReleaseVersionMetadata.cs:14` falls back to `"0.0.0-local"` and nothing sets `VENNU_COMPONENT_VERSION`, so both the mis-forwarding check and assignment-aware background services would compare a real version against a placeholder.
 
 **Filed this session:** #741 (anonymous `POST /api/screens`, no reaping), #742 (connection-membership scope), #743 (concept doc's `dev.vennusign.com`/PO error), #747 (PlatformOperations controllers are product API wearing a PO label — owner-approved out of Keystone scope).
+
+## 2026-08-22 — Atlas designed and planned; awaiting approval
+
+**Atlas has a design authority and a Milestone 1 plan, both proposed.** `docs/design/proposed/atlas/decisions.md` (47 decisions, `fa0a39db`) and `docs/features/atlas/m1-plan.md` (8 tasks, 41 steps). Nothing executes until the owner moves the authority to `docs/design/approved/atlas/`.
+
+**What Atlas is.** An always-current internal site **built from** the repository and GitHub on every merge, so it cannot be behind `master`. It is never the record — where Atlas and a file disagree, the file is right and Atlas is broken. The governing rule is *no artifact without a generator*: every hand-maintained twin in this repository has already drifted, including the Keystone question workbook, which still shows 34 questions unanswered against a register holding 31 answers.
+
+**The structural decision that changed the shape.** Atlas is a **generator, not a site living in one project**, because a second project may use it later. Its own repository, versioned, consumed as a composite GitHub Action (`uses: <owner>/atlas@v1`); each project provides a fixed convention — `atlas.config.json`, `ROADMAP.md`, `docs/features/<workstream>/workstream.json` — and gets its own site with no cross-repository reads and per-project access control. That split delivery into three milestones: **M1 the generator**, **M2 Vennusign adopting it**, **M3 write-back**. Only M1 is planned.
+
+**Settled along the way.** Azure Static Web Apps Free at `atlas.vennusign.com`, a deliberate exception to one-App-Service-per-app, kept off the B1 plan that #748 documents; Eleventy with markdown-it so the 609 frontmatter-less Markdown files render as GitHub renders them and the 32 standalone `.html` documents copy through byte-identical; position moving out of prose into per-workstream manifests so `ROADMAP.md`'s tables become generated; historical milestone ids never renamed, with the manifest carrying `id` and `label` separately, because 21 Menus files are durable acceptance evidence cited in merged PRs; and three purpose-built surfaces rather than one responsive layout — a desktop depth chart, a milestone grid, and a mobile view sorted by what needs the owner.
+
+**Three prerequisites owned outside Atlas.** The repository is **public**, so gating the rendered site protects nothing — the owner will make it private. There are **zero release tags**, which `@v1` requires and which is the same gap #754 names for the product. And **Murphy cannot reach Atlas**: Static Web Apps role invitations are for people, with no non-interactive credential path, so the QA agent that tests every other deployed surface cannot smoke-test this one.
+
+**Design work.** Four visual directions were built and compared; Sky UI won, with Segoe UI typography. Artifacts: palettes `a76e9b6f`, page mockups `d457f7cc`, the Azure comparison `9a9bd68d`, the desktop depth chart `eac73e5f`, the mobile view `7955ffaf`. A four-direction identity board reached three of four builds before a session limit; its fragments are cached in `subagents/workflows/wf_d4362f22-d54/` and were never assembled into the Design project.
+
+**Also this session.** `docs/operations/DEPLOYMENT_GROWTH_PLAYBOOK.md` landed on this branch overnight (`b8dfc696`) and is now the home for Keystone's deferred tier-and-cost conversation; its §9 states App Service package deployments as current policy, which Atlas's Static Web Apps choice is a recorded exception to. Twenty-five remote branches exist, ten already merged and never deleted, which AGENTS.md's "delete completed branches after merge" says should be cleaned up.
+
+**Exact next action.** The owner approves the Atlas authority, or does not. On approval, execute `docs/features/atlas/m1-plan.md` — the owner has been offered subagent-driven or inline execution and has not chosen. Keystone is unchanged and still gated on its own approval.
 
 ## 2026-08-21 — ROADMAP, the execution SOP, and the Atlas brainstorm
 
