@@ -10,7 +10,7 @@
 
 **Tech Stack:** Node 22, Eleventy, markdown-it, `node:test` (matching the repository's existing front-end convention — no vitest, no jest). No framework runtime.
 
-**Spec:** `docs/design/proposed/atlas/decisions.md` (47 decisions).
+**Spec:** `docs/design/approved/atlas/decisions.md` (47 decisions, approved 2026-08-22).
 
 ## Milestone discipline
 
@@ -25,8 +25,8 @@ repository:
 
 ## Governance gate
 
-**Does not execute until the design authority is approved.** It sits in
-`docs/design/proposed/atlas/`, and AGENTS.md requires an approved authority before implementation.
+**Met.** The design authority was approved by the owner on 2026-08-22 and is at
+`docs/design/approved/atlas/decisions.md`. This plan is cleared to execute.
 
 **Repository visibility.** Decision 46 records that Vennusign is public and the owner will make it
 private. The `atlas` repository holds no project content (decision 40), so it may be public or

@@ -41,7 +41,7 @@ Updated 2026-08-22, for the Atlas design and plan; previously Keystone brainstor
 
 ## 2026-08-22 — Atlas designed and planned; awaiting approval
 
-**Atlas has a design authority and a Milestone 1 plan, both proposed.** `docs/design/proposed/atlas/decisions.md` (47 decisions, `fa0a39db`) and `docs/features/atlas/m1-plan.md` (8 tasks, 41 steps). Nothing executes until the owner moves the authority to `docs/design/approved/atlas/`.
+**Atlas has a design authority and a Milestone 1 plan, both proposed.** `docs/design/approved/atlas/decisions.md` (47 decisions, approved 2026-08-22) and `docs/features/atlas/m1-plan.md` (8 tasks, 41 steps). The authority was approved on 2026-08-22, so M1 is cleared to execute.
 
 **What Atlas is.** An always-current internal site **built from** the repository and GitHub on every merge, so it cannot be behind `master`. It is never the record — where Atlas and a file disagree, the file is right and Atlas is broken. The governing rule is *no artifact without a generator*: every hand-maintained twin in this repository has already drifted, including the Keystone question workbook, which still shows 34 questions unanswered against a register holding 31 answers.
 

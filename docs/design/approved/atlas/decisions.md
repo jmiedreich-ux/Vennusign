@@ -1,8 +1,9 @@
 # Atlas — decisions on record
 
-Status: **proposed, not approved.** Settled with the owner on 2026-08-21/22. Moving this bundle to
-`docs/design/approved/atlas/` is the owner's act and has not happened. Until it does, this document
-governs nothing.
+Status: **approved by the owner, 2026-08-22.** Settled across the brainstorming sittings of
+2026-08-21/22 and landed here from `docs/design/proposed/`. This document now governs Atlas
+implementation: per `AGENTS.md`, where any other document disagrees with an approved authority, the
+authority wins.
 
 Atlas is the always-current internal site for the Vennusign project. Decisions are numbered and
 written as rules. Where any other document disagrees with this one, this one wins. Open questions
