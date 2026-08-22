@@ -184,9 +184,53 @@ from that file. Atlas never keeps state of its own.
 
 ---
 
-## Prerequisite owned outside Atlas
+## Repository structure
 
-**38 · Repository visibility is unresolved, and it decides what decision 7 is worth.** The repository
-is public, so every record Atlas would render — tenant identifiers, application registration ids, Key
-Vault names, unfiled security findings — is already world-readable. Gating the rendered site protects
-nothing until that is settled. This is the owner's decision and is not Atlas's to make.
+**38 · Atlas is a generator, not a site that lives in one project.** A second project may use it, so
+Atlas embedded in Vennusign would be a fork waiting to happen. It is a tool that any project
+repository runs against itself.
+
+**39 · The generator is its own repository, versioned, consumed as a composite GitHub Action.** One
+line in a project's workflow: `uses: jmiedreich-ux/atlas@v1`. It holds the build, the layouts, the
+theme and the manifest schema, and no project content whatsoever.
+
+**40 · A project repository provides a fixed convention and nothing else.** `atlas.config.json` at the
+root, `ROADMAP.md`, `docs/features/<workstream>/workstream.json`, the feature records beside it, and
+the authorities under `docs/design/`. A project that follows the convention needs no code — only the
+config and a workflow.
+
+**41 · One site per project, never one site across projects.** Vennusign builds its own to
+`atlas.vennusign.com`; a second project builds its own to its own host. No cross-repository reads, no
+credentials to hold, and access control stays per project — one project's records must not be visible
+to another's readers.
+
+**42 · Documentation stays co-located with the project it describes.** Across repositories, "a change
+that makes a record false updates it in the same commit" stops being enforceable. `docs/` needs
+reorganising, not relocating.
+
+**43 · Atlas builds from `master` and does not force a branch model.** The trunk-plus-`release/X.Y`
+question belongs to release versioning (#754). Atlas works under either.
+
+**44 · Atlas needs no standing agent.** Building it is CI, validating it is decision 32, and
+developing it is ordinary milestone work under `docs/MILESTONE_EXECUTION.md`. A records steward that
+maintains the manifests at milestone completion is a plausible future agent, but it is about the
+process rather than Atlas, and it earns its place only with evidence that manifest upkeep actually
+drifts.
+
+---
+
+## Prerequisites owned outside Atlas
+
+**45 · Repository visibility.** The repository is public, so every record Atlas would render — tenant
+identifiers, application registration ids, Key Vault names, unfiled security findings — is already
+world-readable, and gating the rendered site protects nothing until that changes. *(Owner, 2026-08-22:
+the repository will be made private.)*
+
+**46 · The generator needs release tags to be consumable as `@v1`, and no tag exists.** This
+repository has zero tags. It is the same gap #754 names for the product, and Atlas is the first thing
+that actually requires it.
+
+**47 · Murphy cannot reach Atlas.** Static Web Apps role invitations are for people; there is no
+non-interactive credential path, so the QA agent that tests every other deployed surface cannot smoke-
+test this one. Either Atlas is exempt from Murphy, or the write-back work in decisions 34–37 supplies
+a service identity. Not a Milestone 1 blocker; recorded so it is not discovered late.
