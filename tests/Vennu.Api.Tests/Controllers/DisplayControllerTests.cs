@@ -1,4 +1,6 @@
+using System.Globalization;
 using Vennu.Api.Contracts.Display;
+using Vennu.Api.Services;
 using Vennu.Api.Controllers;
 using Vennu.Api.Tests.TestDoubles;
 using Vennu.Core.Models;
@@ -10,6 +12,48 @@ namespace Vennu.Api.Tests.Controllers;
 [Trait("Category", "Unit")]
 public class DisplayControllerTests
 {
+    /// <summary>
+    /// A content repository whose latest published snapshot IS the seeded menu.
+    /// The display serves the published snapshot, never the builder's live tables
+    /// (menus decisions 1, 2 and 38), so a case that wants content on a screen has
+    /// to publish it first - exactly as a venue would.
+    /// </summary>
+    private static FakeContentRepository Published(Guid venueId, Guid menuId, FakeMenuRepository menus)
+    {
+        var snapshot = new MenuSnapshot
+        {
+            Sections = menus.Sections.Select(section => new SnapshotSection
+            {
+                SectionId = section.Id,
+                PageId = section.PageId,
+                Name = section.Name,
+                SortOrder = section.SortOrder,
+                Items = menus.Items
+                    .Where(item => item.MenuSectionId == section.Id)
+                    .Select(item => new SnapshotItem
+                    {
+                        ItemId = item.Id,
+                        Name = item.Name,
+                        Description = item.Description,
+                        Price = item.Price.ToString(CultureInfo.InvariantCulture),
+                        SortOrder = item.SortOrder
+                    }).ToList()
+            }).ToList()
+        };
+
+        var content = new FakeContentRepository();
+        content.PublishEvents.Add(new MenuPublishEvent
+        {
+            Id = Guid.NewGuid(),
+            VenueId = venueId,
+            MenuId = menuId,
+            Version = 1,
+            PublishedUtc = DateTime.UtcNow,
+            Snapshot = MenuSnapshot.Serialize(snapshot)
+        });
+        return content;
+    }
+
     [Fact]
     public async Task GetContent_IncludesAuthoritativeHappyHourState()
     {
@@ -83,7 +127,8 @@ public class DisplayControllerTests
                 Name = $"Item {index}", SortOrder = index
             }).ToArray()
         };
-        var sut = new DisplayController(screenRepository, new FakeVenueRepository(), menuRepository);
+        var sut = new DisplayController(screenRepository, new FakeVenueRepository(), menuRepository,
+            contentRepository: Published(venueId, menuId, menuRepository));
 
         var result = await sut.GetContent(screen.Id, CancellationToken.None);
 
@@ -128,7 +173,8 @@ public class DisplayControllerTests
                 })
                 .ToArray()
         };
-        var sut = new DisplayController(screenRepository, new FakeVenueRepository(), menuRepository);
+        var sut = new DisplayController(screenRepository, new FakeVenueRepository(), menuRepository,
+            contentRepository: Published(venueId, menuId, menuRepository));
 
         var result = await sut.GetContent(secondScreen.Id, CancellationToken.None);
 
@@ -315,7 +361,8 @@ public class DisplayControllerTests
                 }
             ]
         };
-        var sut = new DisplayController(screenRepository, venueRepository, menuRepository);
+        var sut = new DisplayController(screenRepository, venueRepository, menuRepository,
+            contentRepository: Published(venueId, menuId, menuRepository));
 
         var result = await sut.GetContent(screenId, CancellationToken.None);
 
