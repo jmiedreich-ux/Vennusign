@@ -28,6 +28,14 @@ const apiBaseUrl = process.env.VENNU_API_URL ?? "https://dev.api.vennusign.com";
 const credentials = qaCredentials();
 
 test.describe("the customer builds a menu and a screen shows it", () => {
+  // Serial, and it matters. Every case here signs in as the one QA customer and
+  // publishes to its one paired screen, so concurrent workers fight over the screen
+  // assignment and over Entra sign-in itself - a parallel run failed all of these
+  // with "the customer entry page at /signin never finished loading" while the same
+  // cases passed one at a time. Playwright's own "consider running tests from slow
+  // files in parallel" hint is wrong for this file.
+  test.describe.configure({ mode: "serial", timeout: 300_000 });
+
   test.skip(!credentials, `No QA customer credentials. Looked in ${qaCredentialSources()}.`);
   test.beforeEach(({}, testInfo) =>
     test.skip(testInfo.project.name === "mobile", "Menus mobile interactions are out of scope (Q158)."));
