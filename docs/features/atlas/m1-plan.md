@@ -281,8 +281,7 @@ because that is the generator's actual public interface.
 - [ ] **Step 4: Tag `v1.0.0` and move the `v1` major tag to it**
 
 Per decision 46, these tags live in the **`atlas` repository**, not in any project that consumes it.
-A project needs no tags to use Atlas. Vennusign's own missing `v{productVersion}` tags are #754's
-problem and are unrelated to this step.
+A project needs no tags to use Atlas.
 
 - [ ] **Step 5: Commit and tag** — `feat(action): publish the generator as a composite action`
 

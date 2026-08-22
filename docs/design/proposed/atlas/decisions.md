@@ -229,12 +229,8 @@ the repository will be made private.)*
 **46 · The generator's release tags live in the generator's repository, not in any project's.**
 `uses: <owner>/atlas@v1` resolves against the `atlas` repository: a `v1.0.0` tag on each release plus
 a `v1` major tag moved forward to the newest compatible release, which is the GitHub Action
-convention. Task 8 of Milestone 1 creates the first of them.
-
-This is **not** coupled to Vennusign's own tag situation. Vennusign has zero tags and needs
-`v{productVersion}` tags for the release model, but that is #754's problem and release versioning's
-to solve — Atlas neither needs nor produces them, and a project consuming Atlas needs no tags at
-all.
+convention. Task 8 of Milestone 1 creates the first of them. A project consuming Atlas needs no tags
+of its own.
 
 **47 · Murphy cannot reach Atlas.** Static Web Apps role invitations are for people; there is no
 non-interactive credential path, so the QA agent that tests every other deployed surface cannot smoke-
