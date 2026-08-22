@@ -37,6 +37,18 @@ jobs:
           output-dir: .atlas-out
           github-token: ${{ github.token }}
 
+      # Atlas decision 7: nothing on this site is anonymous. The generator emits no
+      # staticwebapp.config.json of its own, so the gate is added here, beside the deploy that
+      # needs it. Without this file every route is public — which is what the site shipped as
+      # for its first hour, and is why this step exists rather than being assumed.
+      - name: Gate every route behind an invited role
+        shell: bash
+        run: |
+          test -f .atlas/staticwebapp.config.json
+          cp .atlas/staticwebapp.config.json .atlas-out/staticwebapp.config.json
+          echo "--- gate copied into the artifact ---"
+          cat .atlas-out/staticwebapp.config.json
+
       - name: Publish to atlas.vennusign.com
         uses: Azure/static-web-apps-deploy@v1
         with:
