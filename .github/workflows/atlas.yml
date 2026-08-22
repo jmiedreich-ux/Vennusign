@@ -37,10 +37,12 @@ jobs:
           output-dir: .atlas-out
           github-token: ${{ github.token }}
 
-      # Atlas decision 7: nothing on this site is anonymous. The generator emits no
-      # staticwebapp.config.json of its own, so the gate is added here, beside the deploy that
-      # needs it. Without this file every route is public — which is what the site shipped as
-      # for its first hour, and is why this step exists rather than being assumed.
+      # Atlas decision 7: nothing on this site is anonymous. Since Atlas v1.1.0 the generator
+      # emits a staticwebapp.config.json of its own, so a project that configures nothing gets a
+      # gated site rather than a public one. This step overwrites it, and must stay: the generator's
+      # default signs in with Microsoft per decision 7, while this deployment uses GitHub — the one
+      # identity that could be verified for the owner when the site was gated. Delete this step and
+      # sign-in silently redirects to a provider this app is not configured for.
       - name: Gate every route behind an invited role
         shell: bash
         run: |
