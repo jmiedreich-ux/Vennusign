@@ -1,6 +1,16 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-21, for deploy verification, build stamping, the database audit, and test credential hygiene.
+Updated 2026-08-21, for issue #737 external-identity recovery.
+
+## 2026-08-21 — Issue #737 is implemented on an unmerged branch
+
+`fix/737-entra-subject-rotation` replaces the external-identity check-then-insert with one locked transaction keyed by `(UserId, Provider)`. A repeated callback is a no-op; simultaneous callbacks converge; Vennusign/Entra may update a changed subject for the same verified customer email; Google and Apple deliberately refuse the same change; and a subject already owned by another user is refused. Successful rotations preserve `CreatedUtc` and update `UpdatedUtc`, which records when the link changed. `CustomerOidcEvents` turns these refusals into a handled authentication failure rather than letting them escape as a 500.
+
+Focused unit coverage asserts the provider-policy boundary and SQL locking shape. New LocalDB integration coverage exercises simultaneous and repeated callbacks, Google/Apple refusal, and attempted cross-user subject takeover against the real unique constraints.
+
+**Validation:** `git diff --check` passes. **UNTESTED:** builds and .NET tests because this workspace has no `dotnet` or Windows-mounted SDK. Do not claim the test suites green until they run in an environment with the .NET 9 SDK. CI remains suspended by owner decision.
+
+**Exact next action:** run the focused Release tests for `CustomerAccountServiceTests`, `CustomerIdentityRepositoryTests`, and `CustomerIdentityUpsertTests`; then independently review the exact head. Do not merge before both are complete.
 
 ## 2026-08-21 — The signed-in onboarding spec ran against dev, and passes
 

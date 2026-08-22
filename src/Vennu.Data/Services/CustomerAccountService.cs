@@ -47,12 +47,12 @@ public sealed class CustomerAccountService(
             user = existing;
         }
 
-        await identityRepository.LinkExternalIdentityAsync(new ExternalIdentity
+        _ = await identityRepository.UpsertExternalIdentityAsync(new ExternalIdentity
         {
             UserId = user.Id,
             Provider = profile.Provider,
             ProviderSubject = profile.Subject
-        }, cancellationToken).ConfigureAwait(false);
+        }, profile.Provider == ExternalIdentityProvider.Vennusign, cancellationToken).ConfigureAwait(false);
         return user;
     }
 

@@ -76,7 +76,7 @@ public sealed class CustomerEmailLoginServiceTests
         public Task<CustomerUser> CreateUserAsync(CustomerUser value, CancellationToken cancellationToken = default) => Task.FromResult(value);
         public Task<CustomerUser?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default) => Task.FromResult(user);
         public Task<CustomerUser?> GetUserByEmailAsync(string email, CancellationToken cancellationToken = default) => Task.FromResult(user);
-        public Task<ExternalIdentity> LinkExternalIdentityAsync(ExternalIdentity identity, CancellationToken cancellationToken = default) => Task.FromResult(identity);
+        public Task<ExternalIdentityLinkResult> UpsertExternalIdentityAsync(ExternalIdentity identity, bool allowSubjectChange, CancellationToken cancellationToken = default) => Task.FromResult(new ExternalIdentityLinkResult(identity, false));
         public Task<ExternalIdentity?> GetExternalIdentityAsync(ExternalIdentityProvider provider, string providerSubject, CancellationToken cancellationToken = default) => Task.FromResult<ExternalIdentity?>(null);
     }
 

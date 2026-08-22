@@ -18,6 +18,68 @@ public sealed class CustomerIdentityRepository(ISqlDataAccess dataAccess, TimePr
         WHERE Provider = @Provider AND ProviderSubject = @ProviderSubject;
         """;
 
+    private const string UpsertExternalIdentitySql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        DECLARE @ExistingId UNIQUEIDENTIFIER;
+        DECLARE @ExistingSubject NVARCHAR(255);
+        DECLARE @CreatedUtc DATETIME2(7);
+
+        SELECT @ExistingId = Id, @ExistingSubject = ProviderSubject, @CreatedUtc = CreatedUtc
+        FROM dbo.ExternalIdentities WITH (UPDLOCK, HOLDLOCK)
+        WHERE UserId = @UserId AND Provider = @Provider;
+
+        IF @ExistingId IS NOT NULL
+        BEGIN
+            IF @ExistingSubject = @ProviderSubject
+            BEGIN
+                SELECT @ExistingId Id, @UserId UserId, @Provider Provider,
+                       @ExistingSubject ProviderSubject, @CreatedUtc CreatedUtc,
+                       UpdatedUtc, CAST(0 AS BIT) SubjectChanged, CAST(0 AS BIT) Conflict
+                FROM dbo.ExternalIdentities WHERE Id = @ExistingId;
+            END
+            ELSE IF @AllowSubjectChange = 1
+                 AND NOT EXISTS (
+                     SELECT 1 FROM dbo.ExternalIdentities WITH (UPDLOCK, HOLDLOCK)
+                     WHERE Provider = @Provider AND ProviderSubject = @ProviderSubject AND Id <> @ExistingId)
+            BEGIN
+                UPDATE dbo.ExternalIdentities
+                SET ProviderSubject = @ProviderSubject, UpdatedUtc = @UpdatedUtc
+                OUTPUT inserted.Id, inserted.UserId, inserted.Provider, inserted.ProviderSubject,
+                       inserted.CreatedUtc, inserted.UpdatedUtc,
+                       CAST(1 AS BIT) SubjectChanged, CAST(0 AS BIT) Conflict
+                WHERE Id = @ExistingId;
+            END
+            ELSE
+            BEGIN
+                SELECT @ExistingId Id, @UserId UserId, @Provider Provider,
+                       @ExistingSubject ProviderSubject, @CreatedUtc CreatedUtc,
+                       UpdatedUtc, CAST(0 AS BIT) SubjectChanged, CAST(1 AS BIT) Conflict
+                FROM dbo.ExternalIdentities WHERE Id = @ExistingId;
+            END
+        END
+        ELSE IF EXISTS (
+            SELECT 1 FROM dbo.ExternalIdentities WITH (UPDLOCK, HOLDLOCK)
+            WHERE Provider = @Provider AND ProviderSubject = @ProviderSubject)
+        BEGIN
+            SELECT Id, UserId, Provider, ProviderSubject, CreatedUtc, UpdatedUtc,
+                   CAST(0 AS BIT) SubjectChanged, CAST(1 AS BIT) Conflict
+            FROM dbo.ExternalIdentities
+            WHERE Provider = @Provider AND ProviderSubject = @ProviderSubject;
+        END
+        ELSE
+        BEGIN
+            INSERT dbo.ExternalIdentities (Id, UserId, Provider, ProviderSubject, CreatedUtc, UpdatedUtc)
+            OUTPUT inserted.Id, inserted.UserId, inserted.Provider, inserted.ProviderSubject,
+                   inserted.CreatedUtc, inserted.UpdatedUtc,
+                   CAST(0 AS BIT) SubjectChanged, CAST(0 AS BIT) Conflict
+            VALUES (@Id, @UserId, @Provider, @ProviderSubject, @CreatedUtcInput, @UpdatedUtc);
+        END
+
+        COMMIT TRANSACTION;
+        """;
+
     public async Task<CustomerUser> CreateUserAsync(
         CustomerUser user,
         CancellationToken cancellationToken = default)
@@ -55,8 +117,9 @@ public sealed class CustomerIdentityRepository(ISqlDataAccess dataAccess, TimePr
             new { NormalizedEmail = NormalizeRequired(email, 320, nameof(email)).ToUpperInvariant() },
             cancellationToken).ConfigureAwait(false)).SingleOrDefault();
 
-    public async Task<ExternalIdentity> LinkExternalIdentityAsync(
+    public async Task<ExternalIdentityLinkResult> UpsertExternalIdentityAsync(
         ExternalIdentity identity,
+        bool allowSubjectChange,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(identity);
@@ -68,10 +131,33 @@ public sealed class CustomerIdentityRepository(ISqlDataAccess dataAccess, TimePr
         identity.CreatedUtc = identity.CreatedUtc == default ? utcNow : identity.CreatedUtc;
         identity.UpdatedUtc = utcNow;
 
-        if (await dataAccess.InsertAsync(identity, cancellationToken).ConfigureAwait(false) <= 0)
-            throw new InvalidOperationException("The external identity could not be persisted.");
+        var row = (await dataAccess.ExecuteSqlQueryAsync<ExternalIdentityMutationRow, object>(
+            UpsertExternalIdentitySql,
+            new
+            {
+                identity.Id,
+                identity.UserId,
+                Provider = (int)identity.Provider,
+                identity.ProviderSubject,
+                AllowSubjectChange = allowSubjectChange,
+                CreatedUtcInput = identity.CreatedUtc,
+                UpdatedUtc = identity.UpdatedUtc
+            },
+            cancellationToken).ConfigureAwait(false)).SingleOrDefault()
+            ?? throw new InvalidOperationException("The external identity could not be persisted.");
 
-        return identity;
+        if (row.Conflict)
+            throw new UnauthorizedAccessException("This email is already linked to a different identity for this provider.");
+
+        return new ExternalIdentityLinkResult(new ExternalIdentity
+        {
+            Id = row.Id,
+            UserId = row.UserId,
+            Provider = row.Provider,
+            ProviderSubject = row.ProviderSubject,
+            CreatedUtc = row.CreatedUtc,
+            UpdatedUtc = row.UpdatedUtc
+        }, row.SubjectChanged);
     }
 
     public async Task<ExternalIdentity?> GetExternalIdentityAsync(
@@ -100,5 +186,17 @@ public sealed class CustomerIdentityRepository(ISqlDataAccess dataAccess, TimePr
         if (normalized.Length > maxLength)
             throw new ArgumentException($"The value cannot exceed {maxLength} characters.", parameterName);
         return normalized;
+    }
+
+    private sealed class ExternalIdentityMutationRow
+    {
+        public Guid Id { get; init; }
+        public Guid UserId { get; init; }
+        public ExternalIdentityProvider Provider { get; init; }
+        public string ProviderSubject { get; init; } = string.Empty;
+        public DateTime CreatedUtc { get; init; }
+        public DateTime UpdatedUtc { get; init; }
+        public bool SubjectChanged { get; init; }
+        public bool Conflict { get; init; }
     }
 }
