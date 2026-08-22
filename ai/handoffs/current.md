@@ -1338,3 +1338,11 @@ being visible by accident during a container's startup window.
 logging) as infrastructure-as-code or leave it as manual Azure state; then continue
 either with the GitHub issue backlog or with formalizing the release-engineering
 concept into an approved work package.
+
+## 2026-08-22 — The local AI development box plan is documented
+
+The approved planning record is `docs/operations/local-ai-development-box.md`. It preserves the single-R9700 hardware configuration, monitor and power requirements, Madison Heights Micro Center build extras, assembly and Ubuntu/ROCm sequence, measured GMKtec pilot, model/concurrency estimates, Tailscale access, dispatcher contract, machine-by-machine agent responsibilities, security boundaries, and the burn-in gate for unattended travel.
+
+No product code, infrastructure, credentials, or live environment changed. The branch is documentation-only and uses `[skip ci]` while CI remains suspended. Prices and store inventory are a 2026-08-22 snapshot and must be rechecked before purchase.
+
+**Exact next action:** owner reviews the draft documentation and purchase extras list; after acceptance, merge the documentation PR, then purchase and assemble the single-R9700 box.
