@@ -64,6 +64,35 @@ public sealed class CustomerAccountServiceTests
             new ExternalIdentityProfile(ExternalIdentityProvider.Apple, "subject", "user@example.com", true, "User")));
     }
 
+    [Fact]
+    public async Task ResolveExternalIdentityAsync_AllowsVennusignSubjectChangeForVerifiedExistingEmail()
+    {
+        var repository = new IdentityRepositoryFake { ExistingUser = ActiveUser() };
+        var service = new CustomerAccountService(repository, new FixedTimeProvider(UtcNow));
+
+        var user = await service.ResolveExternalIdentityAsync(new ExternalIdentityProfile(
+            ExternalIdentityProvider.Vennusign, "replacement-subject", "user@example.com", true, "User"));
+
+        Assert.Same(repository.ExistingUser, user);
+        Assert.True(repository.AllowSubjectChange);
+        Assert.Equal("replacement-subject", repository.LinkedIdentity!.ProviderSubject);
+    }
+
+    [Theory]
+    [InlineData(ExternalIdentityProvider.Google)]
+    [InlineData(ExternalIdentityProvider.Apple)]
+    public async Task ResolveExternalIdentityAsync_PreservesThirdPartySubjectChangeBoundary(
+        ExternalIdentityProvider provider)
+    {
+        var repository = new IdentityRepositoryFake { ExistingUser = ActiveUser() };
+        var service = new CustomerAccountService(repository, new FixedTimeProvider(UtcNow));
+
+        _ = await service.ResolveExternalIdentityAsync(new ExternalIdentityProfile(
+            provider, "replacement-subject", "user@example.com", true, "User"));
+
+        Assert.False(repository.AllowSubjectChange);
+    }
+
     private static CustomerUser ActiveUser() => new()
     {
         Id = Guid.NewGuid(), Email = "user@example.com", DisplayName = "User",
@@ -75,6 +104,7 @@ public sealed class CustomerAccountServiceTests
         public ExternalIdentity? LinkedLookup { get; set; }
         public CustomerUser? ExistingUser { get; set; }
         public ExternalIdentity? LinkedIdentity { get; private set; }
+        public bool? AllowSubjectChange { get; private set; }
 
         public Task<CustomerUser> CreateUserAsync(CustomerUser user, CancellationToken cancellationToken = default)
         {
@@ -84,10 +114,14 @@ public sealed class CustomerAccountServiceTests
         }
         public Task<CustomerUser?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default) => Task.FromResult(ExistingUser);
         public Task<CustomerUser?> GetUserByEmailAsync(string email, CancellationToken cancellationToken = default) => Task.FromResult(ExistingUser);
-        public Task<ExternalIdentity> LinkExternalIdentityAsync(ExternalIdentity identity, CancellationToken cancellationToken = default)
+        public Task<ExternalIdentityLinkResult> UpsertExternalIdentityAsync(
+            ExternalIdentity identity,
+            bool allowSubjectChange,
+            CancellationToken cancellationToken = default)
         {
             LinkedIdentity = identity;
-            return Task.FromResult(identity);
+            AllowSubjectChange = allowSubjectChange;
+            return Task.FromResult(new ExternalIdentityLinkResult(identity, false));
         }
         public Task<ExternalIdentity?> GetExternalIdentityAsync(ExternalIdentityProvider provider, string providerSubject, CancellationToken cancellationToken = default) => Task.FromResult(LinkedLookup);
     }
