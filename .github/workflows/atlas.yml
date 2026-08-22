@@ -31,6 +31,7 @@ jobs:
       # Atlas is a separate repository consumed as a versioned Action (decisions 39, 46).
       # The version tags live in the Atlas repository; nothing here is tagged for it.
       - name: Build the site
+        id: atlas
         uses: jmiedreich-ux/Atlas@v1
         with:
           project-path: ${{ github.workspace }}
@@ -47,7 +48,25 @@ jobs:
         shell: bash
         run: |
           test -f .atlas/staticwebapp.config.json
-          cp .atlas/staticwebapp.config.json .atlas-out/staticwebapp.config.json
+          test -f .atlas-out/staticwebapp.config.json
+          # Atlas emits a config carrying the /api/* rule and the Functions runtime; this project
+          # overrides only the login provider, because this app signs in with GitHub while the
+          # generator's default is Microsoft. Merging keeps both rather than discarding one.
+          node -e '
+            const fs = require("fs");
+            const emitted = JSON.parse(fs.readFileSync(".atlas-out/staticwebapp.config.json", "utf8"));
+            const ours = JSON.parse(fs.readFileSync(".atlas/staticwebapp.config.json", "utf8"));
+            const api = (emitted.routes || []).filter(r => r.route.startsWith("/api"));
+            const rest = (ours.routes || []);
+            const merged = {
+              ...emitted, ...ours,
+              routes: [...rest.filter(r => r.route.startsWith("/.auth")),
+                       ...api,
+                       ...rest.filter(r => !r.route.startsWith("/.auth"))],
+            };
+            if (emitted.platform) merged.platform = emitted.platform;
+            fs.writeFileSync(".atlas-out/staticwebapp.config.json", JSON.stringify(merged, null, 2) + "\n");
+          '
           echo "--- gate copied into the artifact ---"
           cat .atlas-out/staticwebapp.config.json
 
@@ -57,5 +76,6 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.ATLAS_SWA_DEPLOYMENT_TOKEN }}
           action: upload
           app_location: .atlas-out
+          api_location: ${{ steps.atlas.outputs.api-path }}
           skip_app_build: true
           skip_api_build: true
