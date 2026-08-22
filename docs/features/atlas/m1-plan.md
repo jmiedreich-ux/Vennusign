@@ -14,13 +14,15 @@
 
 ## Milestone discipline
 
-Per `docs/MILESTONE_EXECUTION.md`. Note two deviations forced by this milestone creating a new
-repository:
+Per `docs/MILESTONE_EXECUTION.md`. Note the deviations forced by this milestone creating a new repository:
 
 - Steps 1–7 run against the **new** `atlas` repository, not Vennusign. The milestone issue and the
   tracker claim still live in Vennusign, because that is where the authority and the roadmap are.
-- Step 26's house gate does not apply — there is no `Vennu.Api`, no LocalDB and no Playwright suite
-  here. The gate for this milestone is `npm test` plus a build of the fixture project.
+- **Step 22's** house gate does not apply — there is no `Vennu.Api`, no LocalDB and no Playwright
+  suite here. The gate for this milestone is `npm test` plus a build of the fixture project.
+- **Step 30's `[skip ci]`** does not apply. That convention exists because Vennusign's CI is
+  suspended; the `atlas` repository has its own CI from task 8 and it must run.
+- **Step 2** has nothing to confirm: Atlas M1 is the first milestone of a new workstream.
 - Acceptance is a **demo script**, not a workbook: this milestone ships no customer-facing UI.
 
 ## Governance gate
