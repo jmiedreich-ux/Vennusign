@@ -1,0 +1,514 @@
+<title>Quiet Signals for a Stale Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --ground: #F7F4EF;
+    --raised: #FFFFFF;
+    --edge: #E2DCD2;
+    --ink: #1B1815;
+    --ink-soft: #5C554C;
+    --ink-faint: #8B8378;
+    --amber: #B4741B;
+    --clay: #A8543A;
+    --moss: #4F6B45;
+
+    --board-bg: #100E0C;
+    --board-bg-2: #1C1509;
+    --board-ink: #F3EFE9;
+    --board-soft: #9A938A;
+    --board-amber: #F6A23B;
+    --board-card: #232120;
+    --board-card-2: #2C2A28;
+
+    --shell: 68rem;
+    --step--1: clamp(.78rem, .76rem + .1vw, .84rem);
+    --step-0: clamp(.98rem, .95rem + .15vw, 1.06rem);
+    --step-1: clamp(1.2rem, 1.1rem + .4vw, 1.4rem);
+    --step-2: clamp(1.6rem, 1.4rem + .9vw, 2.1rem);
+    --step-3: clamp(2.2rem, 1.8rem + 2vw, 3.4rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14120F;
+      --raised: #1D1A16;
+      --edge: #2F2A24;
+      --ink: #F2EEE7;
+      --ink-soft: #B3AA9E;
+      --ink-faint: #857D72;
+      --amber: #E7A34C;
+      --clay: #D08363;
+      --moss: #8FAE81;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #14120F;
+    --raised: #1D1A16;
+    --edge: #2F2A24;
+    --ink: #F2EEE7;
+    --ink-soft: #B3AA9E;
+    --ink-faint: #857D72;
+    --amber: #E7A34C;
+    --clay: #D08363;
+    --moss: #8FAE81;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--step-0);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .shell { max-width: var(--shell); margin: 0 auto; padding: 0 1.5rem; }
+
+  h1, h2, h3 { font-family: Archivo, ui-sans-serif, system-ui, sans-serif; text-wrap: balance; margin: 0; }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  header.masthead { padding: clamp(3rem, 8vw, 5.5rem) 0 2.5rem; }
+  header.masthead h1 { font-size: var(--step-3); font-weight: 800; letter-spacing: -.02em; line-height: 1.02; margin: .6rem 0 0; }
+  header.masthead p.lede {
+    max-width: 34em; margin: 1.2rem 0 0; font-size: var(--step-1);
+    color: var(--ink-soft); line-height: 1.5;
+  }
+
+  .rule { height: 1px; background: var(--edge); border: 0; margin: 0; }
+
+  .problem {
+    display: grid; gap: 1.25rem; padding: 2rem 0 2.5rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 46rem) { .problem { grid-template-columns: 1.1fr 1fr; gap: 2.5rem; } }
+  .problem p { margin: 0 0 .9rem; color: var(--ink-soft); }
+  .problem p:last-child { margin-bottom: 0; }
+  .problem strong { color: var(--ink); font-weight: 600; }
+
+  .decided {
+    background: var(--raised); border: 1px solid var(--edge);
+    border-radius: 2px; padding: 1.25rem 1.4rem;
+    display: flex; flex-direction: column; gap: .9rem;
+  }
+  .decided .eyebrow { color: var(--amber); }
+  .decided blockquote {
+    margin: 0; padding-left: .9rem; border-left: 2px solid var(--amber);
+    font-size: var(--step--1); color: var(--ink-soft); font-style: italic;
+  }
+
+  /* ---------- the mock board ---------- */
+  .board {
+    background: linear-gradient(105deg, var(--board-bg) 55%, var(--board-bg-2) 100%);
+    color: var(--board-ink);
+    padding: 1.1rem 1.2rem 0;
+    position: relative;
+    overflow: hidden;
+    font-family: Archivo, ui-sans-serif, system-ui, sans-serif;
+    container-type: inline-size;
+  }
+  .board-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+  .venue {
+    font-size: .8rem; font-weight: 600; letter-spacing: .16em;
+    color: var(--board-amber); text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: .45rem;
+  }
+  .daypart { font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+  .course { font-size: 1.05rem; font-weight: 700; color: var(--board-amber); margin: .9rem 0 .6rem; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; }
+  .card { background: var(--board-card); border-radius: 4px; overflow: hidden; }
+  .card .thumb { aspect-ratio: 16 / 11; background: linear-gradient(160deg, var(--board-card-2), var(--board-card)); }
+  .card .meta { padding: .5rem .6rem .7rem; }
+  .card .row { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; }
+  .card .name { font-size: .8rem; font-weight: 700; }
+  .card .price { font-size: .8rem; font-weight: 700; color: var(--board-amber); font-variant-numeric: tabular-nums; }
+  .card .desc { font-family: "Public Sans", sans-serif; font-size: .68rem; color: var(--board-soft); margin-top: .15rem; }
+  @container (max-width: 30rem) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .card:nth-child(3) { display: none; }
+  }
+
+  /* the banner as it ships today */
+  .banner-now {
+    position: absolute; top: .55rem; left: .55rem; z-index: 3;
+    background: #000; color: #fff; border: 1px solid #3A3A3A;
+    border-radius: 6px; padding: .4rem .7rem;
+    font-family: "Public Sans", sans-serif; font-size: .68rem; font-weight: 600;
+    display: inline-flex; align-items: center; gap: .45rem;
+    box-shadow: 0 4px 14px rgba(0,0,0,.5);
+  }
+  .banner-now .dot { width: .5rem; height: .5rem; border-radius: 50%; background: #F08A7A; }
+
+  /* option treatments */
+  .accent-dot { width: .42rem; height: .42rem; border-radius: 50%; background: var(--board-amber); }
+  .accent-dot.dim { background: #6B6259; }
+  .accent-dot.breathe { animation: breathe 3.6s ease-in-out infinite; }
+  @keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .accent-dot.breathe { animation: none; opacity: .55; } }
+
+  .asof {
+    font-family: "IBM Plex Mono", monospace; font-size: .6rem;
+    color: #6F675E; letter-spacing: .04em; margin-top: .3rem;
+  }
+
+  .hairline {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 2px; z-index: 3;
+    background: linear-gradient(90deg, transparent, #6B5A3E 40%, #6B5A3E 60%, transparent);
+  }
+
+  .staff-strip {
+    position: absolute; inset: auto 0 0 0; z-index: 4;
+    background: rgba(8,8,8,.94); border-top: 1px solid #34302B;
+    padding: .45rem .7rem; display: flex; gap: 1.1rem; align-items: center;
+    font-family: "IBM Plex Mono", monospace; font-size: .62rem; color: #CFC7BC;
+  }
+  .staff-strip b { color: #F6A23B; font-weight: 500; }
+  .staff-hint {
+    position: absolute; right: .55rem; bottom: .55rem; z-index: 3;
+    width: 1.4rem; height: 1.4rem; border-radius: 3px;
+    border: 1px dashed #4A443D; color: #4A443D;
+    display: grid; place-items: center; font-size: .6rem;
+    font-family: "IBM Plex Mono", monospace;
+  }
+
+  .guest-line {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+    background: linear-gradient(0deg, rgba(10,9,8,.97), rgba(10,9,8,0));
+    padding: 1.4rem .9rem .55rem;
+    font-family: "Public Sans", sans-serif; font-size: .72rem;
+    color: #D8D0C5; text-align: center;
+  }
+
+  .sold-out {
+    position: absolute; inset: 0; background: rgba(10,9,8,.62);
+    display: grid; place-items: center;
+    font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: #E4DACD;
+  }
+
+  /* ---------- specimen layout ---------- */
+  .options { display: flex; flex-direction: column; gap: 3.5rem; padding: 3rem 0; }
+  .option { display: grid; gap: 1.25rem; }
+  @media (min-width: 52rem) {
+    .option { grid-template-columns: 1.15fr .85fr; gap: 2rem; align-items: start; }
+  }
+  .option-figure { border: 1px solid var(--edge); border-radius: 3px; overflow: hidden; background: #100E0C; }
+  .option-body h3 { font-size: var(--step-2); font-weight: 700; letter-spacing: -.015em; line-height: 1.1; }
+  .option-body p { color: var(--ink-soft); margin: .8rem 0 0; }
+  .option-index {
+    font-family: "IBM Plex Mono", monospace; font-size: var(--step--1);
+    color: var(--amber); letter-spacing: .1em;
+  }
+  .verdict {
+    margin-top: 1rem; padding-top: .9rem; border-top: 1px solid var(--edge);
+    font-size: var(--step--1); display: flex; gap: .55rem; align-items: baseline;
+  }
+  .verdict .tag {
+    font-family: "IBM Plex Mono", monospace; letter-spacing: .08em;
+    text-transform: uppercase; font-size: .68rem; white-space: nowrap;
+  }
+  .tag.keep { color: var(--moss); }
+  .tag.maybe { color: var(--amber); }
+  .tag.no { color: var(--clay); }
+  .verdict span:last-child { color: var(--ink-soft); }
+
+  /* ---------- ladder ---------- */
+  .ladder { padding: 2.5rem 0 1rem; }
+  .ladder h2 { font-size: var(--step-2); font-weight: 700; letter-spacing: -.015em; margin-bottom: .6rem; }
+  .ladder > p { color: var(--ink-soft); max-width: 46em; margin: 0 0 1.6rem; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--edge); border-radius: 2px; }
+  table { border-collapse: collapse; width: 100%; min-width: 40rem; font-size: var(--step--1); }
+  th, td { text-align: left; padding: .7rem .85rem; border-bottom: 1px solid var(--edge); vertical-align: top; }
+  th {
+    font-family: "IBM Plex Mono", monospace; font-weight: 500; font-size: .68rem;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint);
+    background: var(--raised);
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td:first-child { font-family: "IBM Plex Mono", monospace; color: var(--ink); white-space: nowrap; }
+  td strong { font-weight: 600; }
+
+  footer { padding: 3rem 0 4rem; color: var(--ink-faint); font-size: var(--step--1); }
+  footer p { margin: 0 0 .5rem; max-width: 44em; }
+</style>
+
+<div class="shell">
+  <header class="masthead">
+    <div class="eyebrow">Display · guest surface</div>
+    <h1>Quiet signals for a stale board</h1>
+    <p class="lede">Six ways to tell staff the screen has stopped listening, without telling a room full of guests that something is broken.</p>
+  </header>
+</div>
+
+<hr class="rule">
+
+<div class="shell">
+  <section class="problem">
+    <div>
+      <p><strong>What ships today</strong> puts a black box in the top-left corner of the wall that reads <em>“Live updates unavailable — current content remains on screen.”</em> It appears in three of the four connection states — <code>connecting</code>, <code>reconnecting</code> and <code>degraded</code> — so a guest sees it during an ordinary reconnect as well as a real outage.</p>
+      <p>The message is accurate and it is aimed at the wrong person. A guest reading a menu cannot act on it, cannot fix it, and now knows only that the bar’s systems are unwell. Meanwhile the thing they actually care about — whether these prices are real — is unaddressed.</p>
+      <p>The distinction the product already draws is <em>audience</em>, not honesty. Both stay honest; they use different words.</p>
+    </div>
+    <aside class="decided">
+      <div class="eyebrow">Already decided</div>
+      <blockquote>Blocked is not the same as absent. Permission, disconnection, limits and offline targets are real states and must say exactly what they are.<br><span style="font-style:normal">— decision 5</span></blockquote>
+      <blockquote>Guest copy is <strong style="font-style:normal">Sold out</strong>; staff copy is <strong style="font-style:normal">86</strong>.<br><span style="font-style:normal">— owner amendment, 2026-08-13</span></blockquote>
+      <p style="margin:0;font-size:var(--step--1);color:var(--ink-soft)">The second is the precedent. One fact, two vocabularies, chosen by who is looking at it.</p>
+    </aside>
+  </section>
+</div>
+
+<hr class="rule">
+
+<div class="shell">
+  <div class="options">
+
+    <!-- 0 — as it ships -->
+    <article class="option">
+      <div class="option-figure">
+        <div class="board">
+          <div class="banner-now"><span class="dot"></span>Live updates unavailable — current content remains on screen</div>
+          <div class="board-top">
+            <div class="venue"><span class="accent-dot"></span>My Bar</div>
+            <div class="daypart">Weekday</div>
+          </div>
+          <div class="course">Lunch</div>
+          <div class="cards">
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Tuna Fish</span><span class="price">$5.00</span></div><div class="desc">Onion, Lettuce and Pickles</div></div></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Ham Sandwich</span><span class="price">$5.50</span></div><div class="desc">On Wheat Bread</div></div></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Chicken Sandwich</span><span class="price">$6.00</span></div><div class="desc">Lettuce and Bacon</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="option-index">As it ships</div>
+        <h3>The system talks to the room</h3>
+        <p>The banner wins the top-left corner — the first place a reader’s eye lands in a left-to-right layout — and holds it for the entire outage. It is also the only element on the board with a border and a shadow, so it reads as more urgent than the menu it is sitting on.</p>
+        <div class="verdict"><span class="tag no">Replace</span><span>Right fact, wrong audience, wrong prominence.</span></div>
+      </div>
+    </article>
+
+    <!-- 1 -->
+    <article class="option">
+      <div class="option-figure">
+        <div class="board">
+          <div class="board-top">
+            <div class="venue"><span class="accent-dot"></span>My Bar</div>
+            <div class="daypart">Weekday</div>
+          </div>
+          <div class="course">Lunch</div>
+          <div class="cards">
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Tuna Fish</span><span class="price">$5.00</span></div><div class="desc">Onion, Lettuce and Pickles</div></div></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Ham Sandwich</span><span class="price">$5.50</span></div><div class="desc">On Wheat Bread</div></div></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Chicken Sandwich</span><span class="price">$6.00</span></div><div class="desc">Lettuce and Bacon</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="option-index">01</div>
+        <h3>Say nothing at all</h3>
+        <p>A brief reconnect changes nothing a guest can perceive: the prices on the wall are still the prices. The board stays silent and the truth goes where someone can act on it — the Screens page, which already reports Online and Offline per screen.</p>
+        <p>This is the whole fix for <code>connecting</code> and <code>reconnecting</code>. Those states are the network doing its job, not a fault.</p>
+        <div class="verdict"><span class="tag keep">Adopt</span><span>Default for every short interruption.</span></div>
+      </div>
+    </article>
+
+    <!-- 2 -->
+    <article class="option">
+      <div class="option-figure">
+        <div class="board">
+          <div class="board-top">
+            <div class="venue"><span class="accent-dot dim breathe"></span>My Bar</div>
+            <div class="daypart">Weekday</div>
+          </div>
+          <div class="course">Lunch</div>
+          <div class="cards">
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Tuna Fish</span><span class="price">$5.00</span></div><div class="desc">Onion, Lettuce and Pickles</div></div></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Ham Sandwich</span><span class="price">$5.50</span></div><div class="desc">On Wheat Bread</div></div></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Chicken Sandwich</span><span class="price">$6.00</span></div><div class="desc">Lettuce and Bacon</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="option-index">02</div>
+        <h3>The mark beside the venue name</h3>
+        <p>The dot before <em>My Bar</em> is part of the board’s furniture in every state. When the screen stops listening it desaturates and breathes slowly. Staff who have been told what it means read it across the room; a guest reads a design detail, because that is all it is.</p>
+        <p>It carries no words, so it cannot be misread, and it costs no layout — the mark is already there.</p>
+        <div class="verdict"><span class="tag keep">Adopt</span><span>The everyday signal, once an outage outlasts a reconnect.</span></div>
+      </div>
+    </article>
+
+    <!-- 3 -->
+    <article class="option">
+      <div class="option-figure">
+        <div class="board">
+          <div class="board-top">
+            <div class="venue">
+              <span class="accent-dot dim"></span>My Bar
+            </div>
+            <div class="daypart">Weekday</div>
+          </div>
+          <div class="asof">menu as of 7:42 pm</div>
+          <div class="course">Lunch</div>
+          <div class="cards">
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Tuna Fish</span><span class="price">$5.00</span></div><div class="desc">Onion, Lettuce and Pickles</div></div></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Ham Sandwich</span><span class="price">$5.50</span></div><div class="desc">On Wheat Bread</div></div></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Chicken Sandwich</span><span class="price">$6.00</span></div><div class="desc">Lettuce and Bacon</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="option-index">03</div>
+        <h3>A time, not a status</h3>
+        <p>“Menu as of 7:42 pm” states a fact about the content instead of a fault in the plumbing. A guest who reads it learns something mildly useful and nothing alarming; a member of staff who knows the board normally says nothing learns the screen has been cut off since 7:42.</p>
+        <p>It only earns its place once the gap is long enough to matter — printed on a board that is thirty seconds behind, it invites a question nobody needed to ask.</p>
+        <div class="verdict"><span class="tag maybe">Adopt late</span><span>Appears only past the point staleness is material.</span></div>
+      </div>
+    </article>
+
+    <!-- 4 -->
+    <article class="option">
+      <div class="option-figure">
+        <div class="board">
+          <div class="board-top">
+            <div class="venue"><span class="accent-dot dim"></span>My Bar</div>
+            <div class="daypart">Weekday</div>
+          </div>
+          <div class="course">Lunch</div>
+          <div class="cards">
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Tuna Fish</span><span class="price">$5.00</span></div><div class="desc">Onion, Lettuce and Pickles</div></div></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Ham Sandwich</span><span class="price">$5.50</span></div><div class="desc">On Wheat Bread</div></div></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Chicken Sandwich</span><span class="price">$6.00</span></div><div class="desc">Lettuce and Bacon</div></div></div>
+          </div>
+          <div class="staff-strip">
+            <span><b>offline</b> 14m</span>
+            <span>last content <b>19:42</b></span>
+            <span>rev <b>a41f</b></span>
+            <span>screen <b>ccec346d</b></span>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="option-index">04</div>
+        <h3>Diagnostics on demand</h3>
+        <p>Everything an engineer wants — how long, last content, revision, screen id — held behind a deliberate gesture: a long press in a corner, a key on the paired remote, or <code>?staff=1</code>. It shows for fifteen seconds and leaves.</p>
+        <p>This is strictly better than a permanent banner even for the person it was written for, because a banner can only afford six words and this can afford everything.</p>
+        <div class="verdict"><span class="tag keep">Adopt</span><span>Replaces the banner as the staff-facing truth on the wall.</span></div>
+      </div>
+    </article>
+
+    <!-- 5 -->
+    <article class="option">
+      <div class="option-figure">
+        <div class="board">
+          <div class="board-top">
+            <div class="venue"><span class="accent-dot dim"></span>My Bar</div>
+            <div class="daypart">Weekday</div>
+          </div>
+          <div class="course">Lunch</div>
+          <div class="cards">
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Tuna Fish</span><span class="price">$5.00</span></div><div class="desc">Onion, Lettuce and Pickles</div></div></div>
+            <div class="card" style="position:relative"><div class="thumb"><div class="sold-out">Sold out</div></div><div class="meta"><div class="row"><span class="name">Ham Sandwich</span><span class="price">$5.50</span></div><div class="desc">On Wheat Bread</div></div></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Chicken Sandwich</span><span class="price">$6.00</span></div><div class="desc">Lettuce and Bacon</div></div></div>
+          </div>
+          <div class="hairline"></div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="option-index">05</div>
+        <h3>Withhold the claims you can’t stand behind</h3>
+        <p>A stale board’s real danger is not that it looks stale — it is that <em>Sold out</em> may have been lifted an hour ago, or a happy-hour price may have expired. Rather than announce a fault, stop making the claims that depend on being current, and let the durable ones stand.</p>
+        <p>The hairline along the bottom edge is the only visible trace: a colour a guest never decodes and staff learn in a shift.</p>
+        <div class="verdict"><span class="tag maybe">Design further</span><span>Strongest idea here, and the one with real product consequences.</span></div>
+      </div>
+    </article>
+
+    <!-- 6 -->
+    <article class="option">
+      <div class="option-figure">
+        <div class="board">
+          <div class="board-top">
+            <div class="venue"><span class="accent-dot dim"></span>My Bar</div>
+            <div class="daypart">Weekday</div>
+          </div>
+          <div class="course">Lunch</div>
+          <div class="cards">
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Tuna Fish</span><span class="price">$5.00</span></div><div class="desc">Onion, Lettuce and Pickles</div></div></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Ham Sandwich</span><span class="price">$5.50</span></div><div class="desc">On Wheat Bread</div></div></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><div class="row"><span class="name">Chicken Sandwich</span><span class="price">$6.00</span></div><div class="desc">Lettuce and Bacon</div></div></div>
+          </div>
+          <div class="guest-line">Please ask us about today’s specials</div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="option-index">06</div>
+        <h3>Guest words, and only at the end</h3>
+        <p>Past the point where the board may genuinely mislead — an hour, a shift — silence stops being kind. But the honest sentence is about what the guest should do, not about a socket that will not open.</p>
+        <p>It is hospitality copy, so it belongs to the venue: a line they can write themselves, the way they choose the fallback card in decision 14.</p>
+        <div class="verdict"><span class="tag maybe">Adopt last</span><span>The only guest-visible words, and the venue writes them.</span></div>
+      </div>
+    </article>
+
+  </div>
+</div>
+
+<hr class="rule">
+
+<div class="shell">
+  <section class="ladder">
+    <h2>Disclosure follows risk, not connection state</h2>
+    <p>The current banner escalates on the wrong axis — it fires the moment a socket drops, and says the same thing at four seconds as at four hours. What actually changes over time is the chance the board is <em>wrong</em>, and that is what a guest has any stake in.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">Elapsed</th><th scope="col">What it means</th><th scope="col">Guest sees</th><th scope="col">Staff sees</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>0 – 60s</td>
+            <td>A reconnect. Content is still correct.</td>
+            <td><strong>Nothing.</strong></td>
+            <td>Nothing on the wall; Screens page still reads Online.</td>
+          </tr>
+          <tr>
+            <td>1 – 15 min</td>
+            <td>A real drop. Content almost certainly still correct.</td>
+            <td><strong>Nothing.</strong></td>
+            <td>The venue mark dims and breathes. Screens page flips to Offline.</td>
+          </tr>
+          <tr>
+            <td>15 – 60 min</td>
+            <td>An 86 or a price change could have been missed.</td>
+            <td>Volatile claims withdrawn — no sold-out marks, no happy-hour pricing.</td>
+            <td>Dimmed mark, bottom hairline, full detail on demand.</td>
+          </tr>
+          <tr>
+            <td>60 min +</td>
+            <td>The board may be actively misleading.</td>
+            <td><strong>“Please ask us about today’s specials”</strong> — the venue’s own line.</td>
+            <td>All of the above, plus the timestamp printed.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<div class="shell">
+  <footer>
+    <p>Mockups only — nothing here is implemented. The banner lives in <code>src/display/src/displayPresentation.mjs</code>, in <code>getConnectionPresentation</code>, which currently returns <code>visible: true</code> for <code>connecting</code>, <code>reconnecting</code> and <code>degraded</code>.</p>
+    <p>Board content is taken from the QA venue on dev so the specimens match the real screen.</p>
+  </footer>
+</div>
