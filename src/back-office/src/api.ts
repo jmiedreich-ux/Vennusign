@@ -235,6 +235,34 @@ export function clearBackOfficeVenueContext() {
   localStorage.removeItem(venueContextStorageKey);
 }
 
+/**
+ * A request that never comes back is worse than one that fails.
+ *
+ * Without this a hung request never settles, so its caller's `finally` never runs:
+ * the builder kept `busy` true and `saveState` at "saving" and refused every
+ * control, with no error shown and nothing queued to retry. Seen on dev with the
+ * B1 plan at 97% CPU - a section drag, then ten minutes of dead surface. A timeout
+ * turns that into an ordinary failure, which the write queue already knows how to
+ * hold and retry with backoff, so nothing is lost by being impatient here.
+ *
+ * Long enough that a cold worker still answers, short enough that a person is not
+ * staring at a frozen page waiting to find out.
+ */
+const REQUEST_TIMEOUT_MS = 45_000;
+
+function withTimeout(signal: AbortSignal | null | undefined): AbortSignal {
+  const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+  if (!signal) return timeout;
+  // AbortSignal.any is not everywhere yet, and a caller's own signal must still win.
+  const controller = new AbortController();
+  const abort = (reason?: unknown) => controller.abort(reason);
+  if (signal.aborted) abort((signal as AbortSignal).reason);
+  else signal.addEventListener("abort", () => abort(signal.reason), { once: true });
+  if (timeout.aborted) abort(timeout.reason);
+  else timeout.addEventListener("abort", () => abort(timeout.reason), { once: true });
+  return controller.signal;
+}
+
 function venueFetch(input: RequestInfo | URL, init?: RequestInit) {
   const headers = new Headers(init?.headers);
   if (headers.get("X-Vennusign-Back-Office-Token") === "customer-session") {
@@ -244,7 +272,7 @@ function venueFetch(input: RequestInfo | URL, init?: RequestInit) {
       headers.set("X-Vennusign-Venue-Id", selectedVenueId);
     }
   }
-  return fetch(input, { ...init, headers, credentials: "include" });
+  return fetch(input, { ...init, headers, credentials: "include", signal: withTimeout(init?.signal) });
 }
 
 async function requestBackOfficeSession(
