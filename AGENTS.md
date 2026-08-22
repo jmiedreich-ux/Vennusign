@@ -96,6 +96,8 @@ These govern every task, not only milestone work.
 - `src/Vennu.Data/Scripts/001_baseline.sql` is the collapsed history of the first fifty-nine migrations and is never edited. New migrations start at 059.
 - Deleting a migration does not un-apply it: DbUp decides by journal name, so removing one changes only what a *fresh* database gets. Anything already released is removed by a **new** migration, so existing and new databases converge.
 - Inspect existing contracts before adding routes, columns, events, payloads, or abstractions.
+- **Client first, server last.** A change the client can already compute is drawn immediately and the write goes behind the frame. Never make someone wait on a round trip to see what they just did, and never re-download state you just authored. Reordering is the plain case: the new order *is* the request body, so awaiting the write and then re-reading spends two sequential round trips — measured at 3,981 ms for one section drag on B1, with the re-read alone costing four parallel GETs — to render a permutation already in hand. Keep writes ordered and one at a time; that guarantee is about the order saves land in, not about when you are allowed to paint.
+- **What the server is still last word on.** Reconcile on the response, not before painting: server-assigned ids, recomputed counts and capacities, refusals, and facts about the world rather than intent — availability, entitlement, money, and what is published. A refusal re-reads, because a refusal means the server's state is not what the screen assumed. An optimistic frame that turns out wrong is corrected by the response; a frozen surface is wrong for as long as the network takes.
 
 ## Documentation Control
 
