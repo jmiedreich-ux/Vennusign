@@ -39,6 +39,7 @@ wrong once. The four genuine conflicts are listed at the end with the resolution
 | 11 | **Write down the area's invariants** — the states its model says cannot exist — and arrange to assert them after every integration test in that area. | house |
 | 12 | If the milestone changes a page or screen, load `.agents/skills/impeccable/SKILL.md` and follow its routing and bounded verification rules. | house |
 | 12a | **Write the cross-cutting conventions into the plan's Global Constraints, before the first task is dispatched.** Signatures are already covered — the plan's Interfaces block names what each task consumes and produces, which is why tasks rarely get a function shape wrong. What goes unguarded is everything that is not a signature: how a failure message is phrased, whether it names an absolute or a repository-relative path, exit codes, vocabulary, log style. Each task is reviewed against its own brief, so a convention stated nowhere is violated by nobody and drifts anyway. State it once here and it becomes every task reviewer's attention lens. | house |
+| 12b | **Where a constraint refers to something that already exists, cite its path — never a description of it.** A plan that says "use the product's locked palette" hands the implementer a phrase; a plan that says `src/back-office/src/sky-ui-tokens.css` hands it the authority. Atlas M1 shipped an invented palette through six clean reviews for exactly this reason: the decision named a real file, the plan restated it in prose, and every reviewer checked the work against a brief that also named no file. The rule covers palettes, schemas, contracts, vocabularies, message formats and API shapes — anything the repository already holds. | house |
 
 ## Phase C — Per task, repeated
 
@@ -190,7 +191,7 @@ Any of these would be silently dropped by an agent following the plugin alone:
 Adopted as general standard operating procedure (owner, 2026-08-21). It applies to every feature
 area, not only the one it was written during.
 
-Steps 12a, 15a and 24a were added on 2026-08-22, after Atlas M1 showed the gap they close. Eight
+Steps 12a, 12b, 15a and 24a were added on 2026-08-22, after Atlas M1 showed the gap they close. Eight
 tasks were each implemented and reviewed against their own brief, and none was wrong against it —
 yet two modules still ended up reporting failure paths in different styles, because the convention
 existed in no brief at all. The three steps attack that at each of the points it can be caught:
