@@ -207,9 +207,25 @@ public sealed class ContentService(
             // that silence became a measured 60s wait for the player's recovery poll
             // (DISPLAY_CONTENT_RECOVERY_INTERVAL_MS) after every publish.
             //
-            // Venue-scoped and with no screenId, which is what the player's own
-            // requiresContentReload() treats as "reload your content".
+            // Told to each screen this publish actually changed, not to the venue.
+            // A venue-scoped notify reaches no display at all: src/display's
+            // displayConnection.mjs joins only `screen:{id}` via JoinScreen, while
+            // NotifyVenueContentUpdatedAsync broadcasts to `venue:{id}`. Every content
+            // notify in this file is venue-scoped, so no player has ever received one -
+            // which is why the wall has always come from the 60s recovery poll, and why
+            // announcing the publish venue-wide changed nothing when measured.
+            //
+            // The payload deliberately carries no screenId: the player's own
+            // requiresContentReload() reads a payload WITH one as "this payload IS your
+            // new content" and would swap this stub in for the board.
             await NotifyAsync(venueId, "published", menuId, cancellationToken).ConfigureAwait(false);
+            foreach (var target in deliveries)
+            {
+                await notifier.NotifyScreenContentUpdatedAsync(
+                    target.ScreenId,
+                    new { change = "published", menuId },
+                    cancellationToken).ConfigureAwait(false);
+            }
 
             return new PublishResult(
                 outcome.Event,
