@@ -641,11 +641,17 @@ export default function MenuBuilder({
       writes.current = mine.catch(() => undefined);
       try {
         await mine;
-        // A write the caller already drew is a change this component authored in
-        // full - a permutation of a list it holds. Re-reading would cost four round
-        // trips to be told what we just said. Refusals and hard failures below still
-        // re-read or retry, so the optimistic frame never becomes the last word.
-        if (!entry.drawn) await refresh();
+        // Every write reconciles, drawn or not. Skipping this for drawn writes was
+        // wrong in a way the drawn frame hides: draftCount is computed server-side,
+        // so without the re-read the builder still believed "Everything is on your
+        // screens" after a reorder it had just drawn - and the Publish button, which
+        // only renders when draftCount > 0, never appeared. The change was on screen
+        // and on the server and could not be published.
+        //
+        // The lag fix never needed this to go: it comes from drawing BEFORE the
+        // write, so by the time this runs the frame is already up and nobody is
+        // waiting on it.
+        await refresh();
         held.current = null;
         retryRound.current = 0;
         setSignBackIn(null);
