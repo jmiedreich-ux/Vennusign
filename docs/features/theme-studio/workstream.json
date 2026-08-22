@@ -1,0 +1,19 @@
+{
+  "codename": "Theme Studio",
+  "what": "The theme editor: how a venue chooses and shapes the look of what its screens show, without touching the menu content underneath",
+  "stage": "designing",
+  "position": "Hi-fi in Design — TS1 to TS5, a theme editor, identity and rail options, a 28-state storyboard and a PSA review. Nothing in this repository yet.",
+  "gate": "A design authority under docs/design/approved/theme-studio/, then a question register, then a milestone plan. None exist yet.",
+  "label": "workstream:theme-studio",
+  "design": [
+    {
+      "name": "TS1 to TS5 hi-fi screens",
+      "where": "design-project"
+    },
+    {
+      "name": "28-state storyboard",
+      "where": "design-project"
+    }
+  ],
+  "milestones": []
+}

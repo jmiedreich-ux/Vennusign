@@ -1,0 +1,47 @@
+name: Atlas
+
+# Decision 30: the site rebuilds on every push to the default branch and on a six-hourly
+# schedule, so it reflects both the records (which change on merge) and the open issues
+# (which change without any commit here at all).
+on:
+  push:
+    branches: [master]
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+# Least privilege. `contents` reads the records; `issues` reads each workstream's backlog.
+# Without `issues` the fetch 403s and Atlas degrades to empty buckets — the site would then
+# claim every workstream has no open work, which is worse than saying nothing.
+permissions:
+  contents: read
+  issues: read
+
+concurrency:
+  group: atlas-site
+  cancel-in-progress: true
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Vennusign
+        uses: actions/checkout@v4
+
+      # Atlas is a separate repository consumed as a versioned Action (decisions 39, 46).
+      # The version tags live in the Atlas repository; nothing here is tagged for it.
+      - name: Build the site
+        uses: jmiedreich-ux/Atlas@v1
+        with:
+          project-path: ${{ github.workspace }}
+          output-dir: .atlas-out
+          github-token: ${{ github.token }}
+
+      - name: Publish to atlas.vennusign.com
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.ATLAS_SWA_DEPLOYMENT_TOKEN }}
+          action: upload
+          app_location: .atlas-out
+          skip_app_build: true
+          skip_api_build: true

@@ -1,0 +1,19 @@
+{
+  "codename": "Onboarding",
+  "what": "Getting a new venue from signup to a live menu on a screen — which Keystone decision 48 makes its own application rather than a mode of the back office",
+  "stage": "designing",
+  "position": "Nine hi-fi frames in Design, not approved. Keystone decision 48 makes it its own app.",
+  "gate": "Owner approval of the nine frames, and the Free-tier go-live consequence resolved.",
+  "label": "workstream:onboarding",
+  "design": [
+    {
+      "name": "Nine onboarding frames",
+      "where": "design-project"
+    },
+    {
+      "name": "Flow to live menu (wireframe)",
+      "where": "docs/design/proposed/vennusign-onboarding-flow-to-live-menu.png"
+    }
+  ],
+  "milestones": []
+}

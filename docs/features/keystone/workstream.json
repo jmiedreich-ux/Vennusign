@@ -1,0 +1,81 @@
+{
+  "codename": "Keystone",
+  "what": "The progressive-cutover thin layer and its discovery services — TenantContext, Version Discovery, Application Discovery, the Product Router and the POS Webhook Receiver — so a customer can be moved to a new version without moving everyone",
+  "stage": "planned",
+  "position": "Designed, not approved. 49 decisions proposed, 34 questions answered, six milestones planned.",
+  "gate": "Owner approval of the design authority, which is still in docs/design/proposed/keystone/ and must move to approved/ before M1 starts. Tier and plan cost are deferred: provision nothing.",
+  "label": "workstream:keystone",
+  "design": [
+    { "name": "Keystone decisions (proposed, 49)", "where": "docs/design/proposed/keystone/decisions.md" },
+    { "name": "Question register (34 questions)", "where": "docs/features/keystone/open-questions.md" },
+    { "name": "Decisions so far", "where": "docs/features/keystone/decisions-so-far.md" }
+  ],
+  "milestones": [
+    {
+      "id": "M1",
+      "label": "M1",
+      "depth": 1,
+      "title": "Vennu.Tenancy — TenantContext, path and token, API resolution",
+      "status": "gated",
+      "plan": "m1-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "demo-script", "record": null }
+    },
+    {
+      "id": "M2",
+      "label": "M2",
+      "depth": 2,
+      "title": "Version Discovery Service",
+      "status": "gated",
+      "plan": "m2-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "demo-script", "record": null }
+    },
+    {
+      "id": "M3",
+      "label": "M3",
+      "depth": 3,
+      "title": "Application Discovery Service",
+      "status": "gated",
+      "plan": "m3-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "demo-script", "record": null }
+    },
+    {
+      "id": "M4",
+      "label": "M4",
+      "depth": 4,
+      "title": "The front ends adopt the tenant path; pre-auth app split",
+      "status": "gated",
+      "plan": "m4-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": null }
+    },
+    {
+      "id": "M5",
+      "label": "M5",
+      "depth": 5,
+      "title": "Product Router",
+      "status": "gated",
+      "plan": "m5-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": null }
+    },
+    {
+      "id": "M6",
+      "label": "M6",
+      "depth": 6,
+      "title": "POS Webhook Receiver",
+      "status": "gated",
+      "plan": "m6-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "demo-script", "record": null }
+    }
+  ]
+}
