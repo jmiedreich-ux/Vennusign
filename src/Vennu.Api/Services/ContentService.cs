@@ -197,6 +197,20 @@ public sealed class ContentService(
             }
 
             var deliveries = await library.GetPublishTargetsAsync(outcome.Event.Id, cancellationToken).ConfigureAwait(false);
+
+            // Publish has to announce itself, or the screens it just changed are the
+            // last to hear about it. Every individual edit notifies, but this - the
+            // one moment a wall is actually supposed to change - did not, and nothing
+            // noticed while the display was reading the builder's live tables: the
+            // edit notify arrived, the player reloaded, and the unpublished edit was
+            // already there. Once the display started serving the published snapshot
+            // that silence became a measured 60s wait for the player's recovery poll
+            // (DISPLAY_CONTENT_RECOVERY_INTERVAL_MS) after every publish.
+            //
+            // Venue-scoped and with no screenId, which is what the player's own
+            // requiresContentReload() treats as "reload your content".
+            await NotifyAsync(venueId, "published", menuId, cancellationToken).ConfigureAwait(false);
+
             return new PublishResult(
                 outcome.Event,
                 outcome.Event.ChangeCount,
