@@ -1,6 +1,51 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-21, for deploy verification, build stamping, the database audit, and test credential hygiene.
+Updated 2026-08-22, for the display publish gate, realtime delivery, builder responsiveness, and the observability proposal.
+
+## 2026-08-22 — Publish became a real gate, and the realtime path turned out never to have worked
+
+**The reported defect was real and is fixed.** `DisplayController.GetContent` composed the board from `dbo.Placements` joined to `dbo.Items`, and `dbo.MenuSections`, with **no publish predicate anywhere in the read path**. Every keystroke was live the moment it was typed; publish wrote a snapshot and delivery targets that nothing served from. That is menus decision 1 inverted and decision 38 contradicted. Reproduced on dev before changing anything - an item created and never published came back from `/api/display/{id}/content` alongside the published one - then fixed to read `GetLatestPublishedSnapshotAsync` ordered by the snapshot's own `SortOrder` (#757, `1ef9d4de`).
+
+**The second claim did not reproduce.** "Reordering sections does not update the display after publish" was tested three ways - API serves the new order after publish; a live player picks up a publish unprompted; and the exact combination, live screen plus reorder plus publish. All passed. What was really happening is below.
+
+**Making publish the only thing that changes a screen exposed two long-standing defects.** Both had been invisible because `DISPLAY_CONTENT_RECOVERY_INTERVAL_MS` (60s) was quietly doing all the work:
+
+- **Nothing announced a publish at all.** Every individual builder edit calls `NotifyAsync`; publish did not. Fixed (#760) - and the fix measured as a complete no-op, which led to the real cause.
+- **A venue-scoped notify reaches no display.** `displayConnection.mjs` joins only `screen:{id}`; every notify in `ContentService` broadcasts to `venue:{id}`. **No player has ever received one.** Publish now notifies each target screen directly (#763, `e578e4da`), and publish-to-wall fell from 63,686 ms to 12,757 ms. The rest of that audit is #769.
+- **A display gave up reconnecting after 42 seconds, permanently.** `withAutomaticReconnect()` with no argument is four attempts and then it stops. Any deploy or restart killed a screen's realtime connection until a human reloaded it. Fixed with an unbounded policy (#771) and **verified against a live screen through a 158-second outage** - it held "reconnecting" past the old 42s cliff and recovered on its own.
+
+**Builder responsiveness.** Dragging a section took **3,981 ms** because it awaited the write and then `refresh()` - which is four parallel GETs - before rendering a permutation the client had already computed. Now drawn first: **61 ms**. Two failed attempts got there: the first skipped `refresh()` entirely, which broke `draftCount` so the Publish button never appeared after a reorder (shipped and reverted, #762); the second kept the draw and restored the reconcile (#767). `venueFetch` also gained a 45s timeout - it was a bare `fetch` with no abort signal, so a hung request left `busy` true and `saveState` at "saving" forever, which is what a saturated B1 did to the builder for ten minutes.
+
+**Owner rule recorded in `AGENTS.md`:** *client first, server last*, with its boundary - the server is still last word on ids, counts, refusals, and facts about the world rather than intent: availability, entitlement, money, and what is published.
+
+### Database
+
+**No schema change and no migration.** `databaseSchemaVersion` is still `073_customer_onboarding_go_live_achieved`, before and after.
+
+**What changed is what the display reads.** It no longer reads `dbo.Placements`/`dbo.Items`/`dbo.MenuSections` for board content; it reads the latest published snapshot through `GetLatestPublishedSnapshotAsync` and orders from the snapshot's own `sortOrder`. Two joins stay live on purpose: `ItemAvailability`, because decision 3 says 86 never waits for a publish, and the live item row for `ImageUrl`, which the snapshot does not carry. An item published and since deleted in the builder therefore stays on the wall - deliberate, and the behaviour most worth a human sanity check.
+
+`BoardItemsSql` and `SectionsForPageSql` are now unused by the display path. They were not deleted; other callers should be checked before removing them.
+
+**Test data written to dev, and not cleaned up.** Roughly 25 menus on the QA venue with their sections, items, placements and screen assignments, named `QA journey *`, `QA publish-gate *`, `QA reorder *`, `QA timing *`, `QA live-refresh *`. This is #752 territory and the owner decision there is **report before removing**, so it is reported rather than deleted. #746 should be fixed first or every future run adds more.
+
+### Infrastructure
+
+Plan `appsrv-basic-web` moved **B1 -> B3** (4 vCPU / 7 GB, $51.10/mo), after passing through B1x3 and P0v3. Memory had been pinned at 84-86% and unmoved by restarting five apps, and CPU hit 97-100% during Playwright runs, causing several false test failures. Prod and stage app services remain **stopped** from this morning; `dev-theme-studio` and `dev-board-engine` stopped as unused. `dev-po` deliberately left running - `deploy-dev.yml:320` verifies it by fetching `version.json`, so stopping it plants a landmine for the next platform-operations deploy.
+
+**Honest caveat:** the B1->B3 decision was taken on a 97% CPU reading without establishing the failing runs were CPU-bound. That is the normal situation today, and it is the argument in the observability proposal.
+
+### Filed, not started
+
+- **#774** observability, correlation and performance telemetry - feature, with `docs/design/proposed/observability-and-performance-telemetry.md` merged as *not approved*. Central position: measure the user-perceived span, not the HTTP request. The reorder measured 3,981 ms while the `PUT` behind it returned 204 in under a second. Cheapest first win needs no new infrastructure - `AppliedUtc - PublishedUtc` is publish-to-wall latency per screen, from receipts the product already discards.
+- **#775** adding an item double-submits. Enter and the create button are **different code paths**: Enter searches the library and dedupes by canonical name, the button calls `place_` directly and skips it. Neither is guarded, and Enter's library search happens before `busy` is raised, so it looks dead. Writes duplicates into the venue's shared item library. Found by the owner in minutes; investigated, not fixed.
+- **#776** Murphy should run after a deploy. Five deploys today, Murphy invoked zero times - hand-written specs were substituted for an exploratory pass, which is exactly how #775 survived.
+- **#769** the venue-scoped notify audit. Not a blanket `JoinVenue`: most of those notifications describe unpublished edits that by decisions 1 and 38 must **not** reach a screen.
+- **#770** a deployed display never picks up a new build. Gates every future display fix - #771 only reaches a wall someone reloads.
+- **#765** stale-signal design proposal, merged *not approved*. Treatment 05 needs an owner decision. Outage testing added two findings: there are **two** guest-visible offline messages, not one, and the player is more resilient than the banner implies - a `localStorage` cache survived a full reload with the API stopped.
+
+### Next action
+
+**#775 first** - it corrupts the shared item library, and the owner has seen it. Then decide #765's treatment 05, then #769's audit.
 
 ## 2026-08-21 — The signed-in onboarding spec ran against dev, and passes
 
