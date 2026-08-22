@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using Vennu.Api.Contracts.Display;
 using Vennu.Api.Services;
@@ -170,35 +171,80 @@ public class DisplayController : ControllerBase
             return Ok(response);
         }
 
+        // Decision 1: nothing reaches a screen without a deliberate act, and decision
+        // 2 puts every edit - price, copy, structure, layout - in one queue that ships
+        // on publish. So the board is composed from the last published snapshot and
+        // never from the builder's live tables. Reading Placements/MenuSections here
+        // made every keystroke live the moment it was typed and left publish as
+        // bookkeeping, which is decision 1 exactly inverted.
+        var publishedSnapshot = contentRepository is null
+            ? null
+            : MenuSnapshot.Parse(await contentRepository
+                .GetLatestPublishedSnapshotAsync(venueId, menu.Id, cancellationToken)
+                .ConfigureAwait(false));
+
+        // Decision 14: until something has been published, a screen shows the venue's
+        // chosen fallback. Never the draft, which is the whole point, and never the
+        // live tables as a "better than blank" consolation.
+        if (publishedSnapshot is null)
+        {
+            return Ok(response);
+        }
+
         // An assigned screen shows that page. An unassigned one keeps the older
         // behaviour rather than going blank.
-        var sections = assignment?.PageId is Guid assignedPage
-            ? await menuRepository.GetSectionsForPageAsync(venueId, assignedPage, cancellationToken)
-            : await menuRepository.GetSectionsAsync(venueId, menu.Id, cancellationToken);
+        var publishedSections = (publishedSnapshot.Sections ?? [])
+            .Where(section => assignment?.PageId is not Guid assignedPage || section.PageId == assignedPage)
+            .OrderBy(section => section.SortOrder)
+            .ThenBy(section => section.SectionId)
+            .ToArray();
+
         var displaySections = new List<DisplayMenuSectionResponse>();
-        foreach (var section in sections)
+        foreach (var section in publishedSections)
         {
-            // Items come from Placements joined to Items. dbo.MenuItems, which this
-            // used to read, is not written by the builder and is empty, so every
-            // menu built in the product produced an empty board.
-            var items = await menuRepository.GetActiveBoardItemsAsync(venueId, section.Id, cancellationToken);
+            // The snapshot is the authority for what is on the board, in what order,
+            // and with what name, copy and price. The live row is read only for what
+            // a snapshot does not carry (the image) and for availability, which by
+            // decision 3 is a fact about tonight and never waits for a publish.
+            var live = (await menuRepository.GetActiveBoardItemsAsync(venueId, section.SectionId, cancellationToken))
+                .GroupBy(item => item.Id)
+                .ToDictionary(group => group.Key, group => group.First());
+
             displaySections.Add(new DisplayMenuSectionResponse
             {
-                Id = section.Id,
-                Name = section.Name,
-                Items = items.Select(item => new DisplayMenuItemResponse
-                {
-                    Id = item.Id,
-                    Name = item.Name,
-                    Description = item.Description,
-                    Price = item.Price,
-                    HappyHourPrice = item.HappyHourPrice,
-                    IsAvailable = item.IsAvailable,
-                    QuantityAvailable = item.QuantityAvailable,
-                    IsPopular = item.IsPopular,
-                    Tags = ParseTags(item.Tags),
-                    ImageUrl = item.ImageUrl
-                }).ToArray()
+                Id = section.SectionId,
+                Name = section.Name ?? string.Empty,
+                Items = (section.Items ?? [])
+                    .OrderBy(item => item.SortOrder)
+                    .ThenBy(item => item.ItemId)
+                    .Select(item =>
+                    {
+                        live.TryGetValue(item.ItemId, out var current);
+                        return new DisplayMenuItemResponse
+                        {
+                            Id = item.ItemId,
+                            Name = item.Name ?? string.Empty,
+                            Description = item.Description,
+                            // A snapshot keeps the price exactly as it was typed. The
+                            // display contract carries a decimal, so a market price or
+                            // a dash lands as 0 - the same conversion BoardItemsSql did
+                            // with TRY_CONVERT. See the note on this in issue #739.
+                            Price = decimal.TryParse(
+                                item.Price,
+                                NumberStyles.Number,
+                                CultureInfo.InvariantCulture,
+                                out var price) ? price : 0m,
+                            HappyHourPrice = current?.HappyHourPrice,
+                            // An item published and since deleted from the builder is
+                            // still on the wall, so a missing live row means available
+                            // rather than hidden.
+                            IsAvailable = current?.IsAvailable ?? true,
+                            QuantityAvailable = current?.QuantityAvailable,
+                            IsPopular = current?.IsPopular ?? false,
+                            Tags = ParseTags(current?.Tags),
+                            ImageUrl = current?.ImageUrl
+                        };
+                    }).ToArray()
             });
         }
 
