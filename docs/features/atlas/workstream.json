@@ -1,0 +1,24 @@
+{
+  "codename": "Atlas",
+  "what": "The always-current internal site: a reusable generator, in its own repository and consumed as a versioned Action, that turns this repository's own records and GitHub issues into a milestone depth chart, a phone triage view, and the records themselves",
+  "stage": "shipping",
+  "position": "M1 built and reviewed in the Atlas repository; M2 adopting it here is in progress",
+  "gate": "M2 needs a workstream manifest per workstream, and Menus still has no per-milestone plan files. M3 (write-back) is not planned.",
+  "label": "workstream:atlas",
+  "design": [
+    { "name": "Atlas decisions (approved, 47)", "where": "docs/design/approved/atlas/decisions.md" }
+  ],
+  "milestones": [
+    {
+      "id": "M1",
+      "label": "M1",
+      "depth": 1,
+      "title": "The generator, the convention, and the versioned Action",
+      "status": "done",
+      "plan": "m1-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "demo-script", "record": null }
+    }
+  ]
+}

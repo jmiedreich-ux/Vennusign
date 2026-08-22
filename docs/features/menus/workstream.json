@@ -1,0 +1,127 @@
+{
+  "codename": "Menus",
+  "what": "The menu product: item library, draft/publish spine, the builder, the render engine, and the import paths that get a venue's existing menu into it without retyping",
+  "stage": "shipping",
+  "position": "Nine milestones accepted through M6.3; M5 parked",
+  "gate": "M5 (Board view + Play) is parked at #709. The 7+ work — spreadsheet, photo and POS import, item-library UI, multi-venue, Schedules-owned time pricing, fallback-card authoring — is named but not planned.",
+  "label": "workstream:menus",
+  "design": [
+    { "name": "Menus decisions", "where": "docs/design/approved/menus/decisions.md" },
+    { "name": "Menus build decisions", "where": "docs/design/approved/menus/build-decisions.md" },
+    { "name": "Menu Builder v2", "where": "docs/design/approved/menus/menu-builder-v2/" },
+    { "name": "Paste import", "where": "docs/design/approved/menus/paste-import/" },
+    { "name": "M3-A refinement", "where": "docs/design/approved/menus/m3-a/" }
+  ],
+  "milestones": [
+    {
+      "id": "1",
+      "label": "M1",
+      "depth": 1,
+      "title": "Item library, draft/publish spine, assignment",
+      "status": "done",
+      "plan": "milestone-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "demo-script", "record": "docs/features/menus/m1-demo-workbook.html" }
+    },
+    {
+      "id": "2",
+      "label": "M2",
+      "depth": 2,
+      "title": "App shell, render engine, Menus home",
+      "status": "done",
+      "plan": "milestone-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m2-acceptance-workbook.html" }
+    },
+    {
+      "id": "3",
+      "label": "M3",
+      "depth": 3,
+      "title": "Builder, adding items",
+      "status": "done",
+      "plan": "milestone-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m3-acceptance-workbook.html" }
+    },
+    {
+      "id": "3-A",
+      "label": "M3.1",
+      "depth": 4,
+      "title": "Builder refinement — pages, search, Signal V rail",
+      "status": "done",
+      "plan": "milestone-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m3-a-s3a-acceptance-workbook.html" }
+    },
+    {
+      "id": "4",
+      "label": "M4",
+      "depth": 5,
+      "title": "Content and delivery foundations",
+      "status": "done",
+      "plan": "milestone-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m4-acceptance-workbook.html" }
+    },
+    {
+      "id": "5",
+      "label": "M5",
+      "depth": 6,
+      "title": "Board view + Play",
+      "status": "parked",
+      "plan": "milestone-plan.md",
+      "issue": 709,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": null }
+    },
+    {
+      "id": "6",
+      "label": "M6",
+      "depth": 7,
+      "title": "Quick Update (86 board) + blank creation",
+      "status": "done",
+      "plan": "milestone-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m6-acceptance-workbook.html" }
+    },
+    {
+      "id": "6-A1",
+      "label": "M6.1",
+      "depth": 8,
+      "title": "Paste, parse, review",
+      "status": "done",
+      "plan": "milestone-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m6a2-acceptance-workbook.html" }
+    },
+    {
+      "id": "6-A2",
+      "label": "M6.2",
+      "depth": 9,
+      "title": "Create from import",
+      "status": "done",
+      "plan": "milestone-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m6a2-acceptance-workbook.html" }
+    },
+    {
+      "id": "6-A3",
+      "label": "M6.3",
+      "depth": 10,
+      "title": "Replace from import",
+      "status": "done",
+      "plan": "milestone-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m6a3-acceptance-workbook.html" }
+    }
+  ]
+}
