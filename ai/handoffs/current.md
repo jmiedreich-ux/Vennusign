@@ -2,6 +2,32 @@
 
 Updated 2026-08-22, for the display publish gate, realtime delivery, builder responsiveness, and the observability proposal.
 
+## 2026-08-23 — A display diagnostics view, and two defects it would have caught on sight (#738, #790, #791)
+
+**Built `GET /api/display/{screenId}/diagnostics` and `/display/{screenId}/diag`, web-visible facts only, per #738's scope narrowed to what the web can actually see** (device model is unreachable from a browser and only available on Tizen/webOS/Android through their own launchers, which is a separate, larger piece of work - not attempted here). The owner's issue said "for a future milestone, not now" on 2026-08-20; restarted today at the owner's direction with a live failure in hand.
+
+**The server half is anonymous like every other player endpoint** - identifiers, states and timestamps only, no menu content, no PII. Screen identity, staleness against `HeartbeatMonitor`'s own configured threshold (not a hard-coded guess), delivery state (authoritative vs applied revision, failure code), the last receipt's player/shell version, and whether this screen is some journey's first display with its go-live timestamp. Required adding `ICustomerOnboardingRepository.GetByFirstScreenIdAsync` - the WHERE clause already existed inline in the go-live latch; this just exposes it as a read.
+
+**The player half is a standalone probe page, not the live player** - it never heartbeats and never posts a content receipt, so opening it from a laptop cannot mark a screen Online or write a phantom delivery record (the same trap `DisplayPage.tsx`'s `preview=observer` guard exists for). It shows geometry (viewport, screen size, DPR) beside the server's configured size, board fit (rendered height vs viewport - neither is measured anywhere else in the product), which theme fields the active layout's own CSS actually consumes versus what is served, the content cached on this device, and a recent-events timeline.
+
+**The player now records what it always knew and always threw away.** `startDisplayHeartbeat` gained an `onResult` callback - heartbeat failures were previously swallowed in a bare `catch {}` with nothing to show for it. `displayReceipts.mjs` gained `describeReceiptSkipReason` - a skipped receipt (no revision, no screen key) returned `null` exactly like a swallowed network failure, so the two were indistinguishable from the caller. Both, plus content-fetch source and connection-state transitions, are written to a per-device, per-screen rolling record in `localStorage` (`displayDiagnostics.mjs`) - deliberately per-device, since a laptop reading another device's cache key would show its own empty history as if it were the wall's.
+
+**Two defects found scoping this, filed separately and not fixed here:**
+- **#790** - the live QA screen's `photo_grid` board is 274px taller than a true 1920x1080 viewport with three of six items entirely off-screen, no scroll, no indicator. Fits only at ~4K, which reads as coincidence rather than design.
+- **#791** - that same screen serves `contentRevision: null`, so it has never posted a content receipt. Very likely the cause of #749 (`ScreenContentDeliveries` never written).
+
+**Verified the diagnostics page actually would have caught #790 on sight**, not just in principle: seeded a local cache with the live screen's real content and reloaded `/diag` - the board-fit panel read "155px taller than the viewport - content below the fold" and "Theme fields consumed: 3 of 10" for `photo_grid`, both correct, with a visible mismatched thumbnail. Screenshot taken; CORS blocked the server-half fetch from `localhost` as expected (`dev.display.vennusign.com` is allowlisted in `Cors:AllowedOrigins`, `localhost` is not and should not be) and the panel degraded to a message rather than breaking the page.
+
+**Environment note:** `src/display`'s production build (`vite build`) was broken on this machine - `Cannot find module @rollup/rollup-linux-x64-gnu`, npm's known optional-dependency bug. Fixed with a plain `npm install`; the resulting `package-lock.json` diff was cosmetic (`libc` metadata only) and was reverted rather than committed, since it was not part of this change. Anyone hitting the same error on a fresh clone should just run `npm install` in `src/display`.
+
+Evidence: `dotnet build` clean; `Vennu.Api.Tests` Category=Unit 464/464 (461 baseline + 3 new); `src/display` `npm test` 171/171; `tsc -b` clean; `vite build` succeeds. **UNTESTED:** the deployed `/diag` page against a real allowlisted origin (only verified locally with a seeded cache, per above) and the on-screen gesture the original issue also asked for - this ships the URL only, not a discovery gesture from the running player.
+
+PR opened on `feature/738-display-diagnostics`, not yet merged - awaiting independent review per the merge gate.
+
+### Next action
+
+Independent review of the #738 PR, then #790 and #791 (the defects it found), then back to #775 (item double-submit) which was the exact next action before this was picked up.
+
 ## 2026-08-22 — The toolchain is written down, and two false claims in this handoff are corrected
 
 **`AI_DEVELOPMENT_GUIDE.md` now has a *Local Toolchain* section**, verified by running every command in it rather than by recall. It records Linux Node and how to invoke Node tooling, Playwright and its real Chromium binary, Windows `dotnet.exe`, `SQLCMD.EXE` and what it can reach, and the short list of what is genuinely absent. Nothing recorded this before, which is how the two corrections below came to be believed.

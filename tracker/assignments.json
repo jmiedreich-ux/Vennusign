@@ -1,16 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-23T02:50:00Z",
-  "activeAssignments": [
-    {
-      "assignment": "Display diagnostics view (#738) plus board-overflow (#790) and null-revision (#791) defects found while scoping it",
-      "issue": 738,
-      "branch": "feature/738-display-diagnostics",
-      "claimedUtc": "2026-08-23T02:50:00Z",
-      "owner": "Claude (session)",
-      "notes": "Web-visible facts only: identity, build/API-origin, geometry vs configured size, board-fit/overflow, layout/theme field coverage, content, liveness. Player /diag reads its own device state; GET /api/display/{id}/diagnostics gives the server half, identifiers/states/timestamps only, no content."
-    }
-  ],
+  "updatedUtc": "2026-08-23T03:40:00Z",
+  "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
@@ -35,15 +26,15 @@
     "releasedBy": "scope completed locally"
   },
   "lastCompletedAssignment": {
-    "assignment": "Deploy verification and build stamping, plus the database script and table audit",
-    "issue": 740,
+    "assignment": "Display diagnostics view (#738), plus board-overflow (#790) and null-revision (#791) defects found while scoping it",
+    "issue": 738,
     "pr": null,
-    "branch": "fix/740-deploy-verification (merged to master)",
-    "completedUtc": "2026-08-21T00:45:00Z",
-    "mergeSha": "1eb4cfdd",
+    "branch": "feature/738-display-diagnostics",
+    "completedUtc": "2026-08-23T03:40:00Z",
+    "mergeSha": null,
     "acceptedProductSha": null,
-    "acceptance": "No workbook and no independent review; merged and deployed at the owner's direct instruction during a live session.",
-    "notes": "Closed #740, #726, #739 and #736. A green deploy now has to prove the new build is running: the API is stamped with its commit after upload, each static build writes dist/version.json, and every deploy job polls until the app reports that commit, restarts once, then fails. Also fixed deploy-dev.yml classifying only the last commit of a push, which shipped nothing on c4f40200 and reported success. Deployed and verified: 5/5 apps serving 1eb4cfdd, no restart escalation. Opened #744 (retire dbo.MenuItems, still wired to the POS sync), #745 (test-created rows in the dev database), #746 (every /pair visit registers a new screen). Audit: docs/reports/database-schema-audit-2026-08-20.md - no table or script was removed, and the report says why."
+    "acceptance": "Not yet merged. PR opened for independent review.",
+    "notes": "GET /api/display/{id}/diagnostics (server half, identifiers/states/timestamps only) plus /display/{id}/diag (device probe, never heartbeats or posts receipts). Player now records heartbeat outcome, connection transitions, content-fetch source and receipt skip reason to a per-device rolling record. Verified against the live QA screen with seeded cache: board-fit and theme-coverage panels correctly surfaced #790's 155px overflow and 3-of-10 theme field consumption on sight. #790 and #791 filed and NOT fixed in this PR."
   },
   "previousCompletedAssignment": {
     "assignment": "Onboarding M1 plus the defects blocking the first end-to-end journey",
