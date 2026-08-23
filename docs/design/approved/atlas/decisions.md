@@ -5,6 +5,12 @@ Status: **approved by the owner, 2026-08-22.** Settled across the brainstorming 
 implementation: per `AGENTS.md`, where any other document disagrees with an approved authority, the
 authority wins.
 
+**Amended 2026-08-22 with decisions 48–57**, approved by the owner across three areas of future
+work: the second pass on the feature planning page (Milestone 4), the register becoming data
+(Milestone 5), and tasks becoming GitHub issues (Milestone 6). Where an amendment contradicts an
+earlier decision, the amendment says so in its own text rather than leaving two decisions quietly
+disagreeing.
+
 Atlas is the always-current internal site for the Vennusign project. Decisions are numbered and
 written as rules. Where any other document disagrees with this one, this one wins. Open questions
 live in `docs/features/atlas/open-questions.md` and are never resolved silently.
@@ -237,3 +243,106 @@ of its own.
 non-interactive credential path, so the QA agent that tests every other deployed surface cannot smoke-
 test this one. Either Atlas is exempt from Murphy, or the write-back work in decisions 34–37 supplies
 a service identity. Not a Milestone 1 blocker; recorded so it is not discovered late.
+
+---
+
+## The feature planning page, second pass — Milestone 4
+
+**48 · The two arrows are one object, overlaid — not two arrows end to end.** The faint arrow runs
+the whole recorded length of a feature; the solid arrow is drawn **over** it, from the top, as far as
+the work has actually reached. They are one object seen twice, which is the honest reading of the
+earlier note that you cannot have the first arrow without the second. **This corrects what Milestone
+2.1 shipped**, which tiles them — the solid arrow stops and the faint one starts below it — and it
+corrects that milestone's own record, which describes the tiled behaviour as though it were right.
+Keystone is the reference case: a faint arrow the full six milestones, with the solid one over the
+stages on top of it.
+
+**49 · Per-device state may hide a feature, but never silently.** Ordering and hiding both live in
+`localStorage` and both stay device-local. A hidden feature must be **recoverable without knowing it
+is hidden**: the page always says, persistently, that features are hidden and how many, and restoring
+one does not require remembering which. A page that silently omits a workstream is worse than one
+that shows too many, because the first is wrong and looks right. The same rule governs any future
+per-device state that can remove something from view.
+
+**50 · Triage is a modal on the feature planning page, not a page of its own.** Clicking a feature's
+header opens a modal carrying what the standalone Triage page carried — what needs you, the position,
+the gate — and the standalone page goes. **This narrows decision 22 rather than overturning it.**
+Decision 22 says three purpose-built surfaces and not one responsive layout, on the grounds that
+planning at a desk and glancing on a phone are different activities; the modal serves the desk, and
+the phone keeps a surface of its own. Whether the phone should instead be served by the same modal is
+raised in #780 and is **not settled here**; the phone view stays until it is, because keeping it is
+the reversible choice.
+
+---
+
+## The register as data — Milestone 5
+
+**51 · A question register is structured data, and its readable document is generated from it.** Per
+question: an id, the question, why it was asked, its options, which one is recommended, which one was
+chosen, and whether the chosen one was **offered or written in**. An answer is *choose one of these,
+or supply one that should have been there*, and the written-in choices matter most, because they are
+the ones the question failed to anticipate — so the flag that records them is signal, not
+bookkeeping. This is decision 3 applied to the register rather than an exception to it: Keystone's
+hand-built `open-questions-workbook.html` was the right shape built the wrong way, and it drifted from
+its register within a day. That drift is what produced decision 3 in the first place. The consequence
+is that `POST /api/answer` writes the record and not the document, since after this the document is
+build output and a write into it would be overwritten by the next build.
+
+**52 · The register index is built from the files it indexes.** Registers need finding once there are
+many, and the index is ordered by **what is waiting** rather than by name. It is assembled from the
+presence of the register files themselves, so adding one makes it appear and deleting one makes it
+vanish, with no list edited anywhere. An index assembled from a hand-maintained list would be a second
+truth about which registers exist — the failure decision 1 exists to prevent, in miniature.
+
+---
+
+## Tasks, assignment and observation — Milestone 6
+
+**53 · Tasks are GitHub issues, not manifest data.** Atlas is *a simplified easy view over GitHub*, so
+a milestone's tasks and sub-tasks are the issues Atlas already fetches, rendered — not a new shape in
+`workstream.json`. **This supersedes #780's item 3**, which asked for a task list in each milestone
+and assumed it needed a manifest shape and a record behind it. An issue *is* a record; copying issues
+into a manifest would create the hand-maintained twin decision 1 exists to prevent. The division:
+milestones, gates and position live in records; tasks and sub-tasks live in GitHub; **questions and
+their options live in records, because GitHub cannot express a recommendation.** That last clause is
+why decision 51 goes the other way, and it is a statement about what each system can hold rather than
+a preference.
+
+**54 · People are GitHub assignees; models are an `agent:<name>` label.** Human assignment already
+works and nothing is gained by inventing a parallel notion. A local model cannot hold a GitHub
+account, so it is a label namespace instead of a fictional user. **An issue carrying two `agent:`
+labels fails the build by name**, as every other closed vocabulary does under decision 32. This is
+deliberately unlike `workstream:*`, where two labels are legitimate and the fetch handles them on
+purpose: two workstreams on one issue means the work touches both, which is true and useful, while
+two agents on one task means nobody knows who is doing it — an unanswered question in the costume of
+an answer.
+
+**55 · A sub-task states what it is given, what it must produce, and what must be true afterwards.**
+A task written for Claude can say *"resolve the tenant from the path"* and rely on the reader working
+it out from the authority, the code and three prior conversations; a local model has none of that.
+Once decision 54 lets a task be assigned to a model, how it is written stops being style and becomes
+whether it can be done at all. The `agent:` label and this shape are two halves of one thing:
+assigning work to a model you have not written a task for is assigning it to fail.
+
+**56 · A planner may observe and ask. It may never decide.** A scheduled watcher over `state.json`
+that *notices* things — a milestone open far longer than its siblings, a gate that has not moved, an
+authority sitting in `docs/design/proposed/` blocking milestones, records that contradict
+`ROADMAP.md` — writes **questions into a register**, which is what write-back exists to answer. It
+never writes a plan, a status or a manifest. If it writes plans rather than observations, the site
+stops being generated from records and starts being generated from a model's opinion, which is
+decision 1 inverted. **Deferred, not scheduled:** the owner triggers work verbally today and that is
+his deliberate answer, so decision 44's *Atlas needs no standing agent* stands unchanged for now.
+This decision records the constraint in advance, so that if the planner is ever built it is built
+inside it.
+
+**57 · Decision 35's exclusions no longer stand on their stated grounds.** Decision 35 scopes
+write-back to register answers and acceptance results and justifies it by handing creating issues,
+approving milestones and triggering work to Platform Operations. **Platform Operations does not do
+those things** — it deals with the release process and nothing before it — so the justification is
+withdrawn (#784), and with it the sentence *two consoles that both act is how they diverge*, which
+described a division of labour that does not exist. The two-endpoint limit is not thereby widened:
+some of those exclusions may well survive on grounds that are actually true, and a write path into a
+manifest is a genuinely bigger surface than a write path into a prose record. What is settled is that
+the old reason is void and the scope must be re-decided on correct ones. Until it is, two things wait
+on it: the refresh button that rebuilds the site (#780), and anything that would author an issue
+rather than render one.
