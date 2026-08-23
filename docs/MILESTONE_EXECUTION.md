@@ -23,6 +23,7 @@ wrong once. The four genuine conflicts are listed at the end with the resolution
 |---|---|---|
 | 1 | Read `AGENTS.md`, `ai/handoffs/current.md`, `tracker/assignments.json`, `PROJECT_STATUS.md`, this feature's records, and the linked GitHub state. Nothing else. | house |
 | 2 | Confirm the predecessor milestone is **merged and its owner workbook accepted**. One milestone runs at a time. | house |
+| 2a | **Before writing anything into `docs/design/proposed/`:** confirm the workstream directory it names either already exists under `docs/features/` or is a deliberate new one (not a typo of an existing slug); read `docs/design/proposed/README.md` in full for anything already proposed that overlaps; and add an entry to that README in the same commit, following its existing per-item shape exactly (Files, Status, Intended use, Approval rule) — a proposal with no README entry is not discoverable by the very process (Atlas's M7 scaffold, a future reviewer) that will look for it there. | house |
 | 3 | Confirm the design authority is approved and landed in `docs/design/approved/<feature>/`. If it is still in `proposed/`, stop — implementation is not authorized. | house |
 | 4 | Check the tracker and open claims. **Stop on ownership conflict and re-plan** — do not rule on it and continue. | house |
 | 5 | Create the milestone issue. | house |
@@ -210,6 +211,11 @@ three files — whose actual tree deleted an entire milestone. It went unnoticed
 nothing checked the commit against what was intended, and it was found only when an unrelated
 review read the diff instead of the message. 7a removes the judgment call that let it happen a
 second time; 7b is the one-command check that would have caught it in seconds rather than hours.
+
+Step 2a was added on 2026-08-23, closing the gap Atlas's M7 milestone found: step 3 already gated
+*implementation* on a design being approved, but nothing gated *proposing* one in the first place
+— a file could land under `docs/design/proposed/` naming a workstream directory that didn't
+exist, or duplicating something already proposed, with no check and no README entry recording it.
 
 `AGENTS.md` is the policy and this is the procedure. A change that makes one false updates the
 other in the same commit — if a house rule changes, the step carrying it changes with it.
