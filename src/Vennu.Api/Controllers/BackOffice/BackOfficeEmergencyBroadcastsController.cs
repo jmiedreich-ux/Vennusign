@@ -5,6 +5,7 @@ using Vennu.Api.Contracts.PlatformOperations;
 using Vennu.Api.Contracts.Display;
 using Vennu.Api.Notifications;
 using Vennu.Core.Models;
+using Vennu.Data.Repositories;
 using Vennu.Data.Services;
 
 namespace Vennu.Api.Controllers.BackOffice;
@@ -18,6 +19,7 @@ namespace Vennu.Api.Controllers.BackOffice;
 public sealed class BackOfficeEmergencyBroadcastsController(
     IEmergencyBroadcastService service,
     IScreenUpdateNotifier notifier,
+    IScreenRepository screenRepository,
     TimeProvider timeProvider) : ControllerBase
 {
     [HttpGet]
@@ -59,12 +61,38 @@ public sealed class BackOfficeEmergencyBroadcastsController(
         catch (ArgumentException exception) { return ValidationProblem(exception.Message); }
     }
 
-    private Task NotifyAsync(
+    private async Task NotifyAsync(
         EmergencyBroadcast broadcast, DisplayEmergencyBroadcastResponse? active, CancellationToken cancellationToken)
     {
         var payload = new { change = "emergency-broadcast", emergencyBroadcast = active };
-        return broadcast.ScreenId.HasValue
-            ? notifier.NotifyScreenContentUpdatedAsync(broadcast.ScreenId.Value, payload, cancellationToken)
-            : notifier.NotifyVenueContentUpdatedAsync(broadcast.VenueId, payload, cancellationToken);
+        if (broadcast.ScreenId.HasValue)
+        {
+            await notifier.NotifyScreenContentUpdatedAsync(broadcast.ScreenId.Value, payload, cancellationToken)
+                .ConfigureAwait(false);
+            return;
+        }
+
+        // #811: "All venue screens" (ScreenId null) is the pre-selected default in
+        // EmergencyBroadcastAdministration.tsx, not an edge case - so this is the
+        // common path for an emergency broadcast, and it carries an immediate fact
+        // a display should act on right away. NotifyVenueContentUpdatedAsync alone
+        // reaches no display: displayConnection.mjs joins only `screen:{id}`, and
+        // nothing in the codebase ever calls the hub's JoinVenue (see #769's audit
+        // in ContentService.cs). Without this loop the broadcast only reached a
+        // screen via the 60s content-poll recovery - the same masking mechanism
+        // that hid #769 until #763 measured it. Same fix shape as #763's publish
+        // fan-out: notify every one of the venue's screens directly.
+        //
+        // The venue-wide call is kept alongside the per-screen loop, not replaced
+        // by it - same reasoning as PublishAsync's in ContentService.cs.
+        await notifier.NotifyVenueContentUpdatedAsync(broadcast.VenueId, payload, cancellationToken)
+            .ConfigureAwait(false);
+        var screens = await screenRepository.GetByVenueIdAsync(broadcast.VenueId, cancellationToken)
+            .ConfigureAwait(false);
+        foreach (var screen in screens)
+        {
+            await notifier.NotifyScreenContentUpdatedAsync(screen.Id, payload, cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 }
