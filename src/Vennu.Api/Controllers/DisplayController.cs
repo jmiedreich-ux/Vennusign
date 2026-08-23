@@ -1,5 +1,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Vennu.Api.BackgroundServices;
 using Vennu.Api.Contracts.Display;
 using Vennu.Api.Services;
 using Vennu.Core.Models;
@@ -25,6 +27,7 @@ public class DisplayController : ControllerBase
     private readonly IScreenContentDeliveryService? deliveryService;
     private readonly ICustomerOnboardingRepository? customerOnboarding;
     private readonly IContentRepository? contentRepository;
+    private readonly TimeSpan heartbeatStaleThreshold;
 
     public DisplayController(
         IScreenRepository screenRepository,
@@ -39,9 +42,10 @@ public class DisplayController : ControllerBase
         ITapListRepository? tapListRepository = null,
         IScreenContentDeliveryService? deliveryService = null,
         ICustomerOnboardingRepository? customerOnboarding = null,
-        IContentRepository? contentRepository = null) =>
-        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.emergencyBroadcastService, this.promotionService, this.tapListRepository, this.timeProvider, this.deliveryService, this.customerOnboarding, this.contentRepository) =
-        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, emergencyBroadcastService, promotionService, tapListRepository, timeProvider ?? TimeProvider.System, deliveryService, customerOnboarding, contentRepository);
+        IContentRepository? contentRepository = null,
+        IOptions<HeartbeatMonitorOptions>? heartbeatMonitorOptions = null) =>
+        (this.screenRepository, this.venueRepository, this.menuRepository, this.themeRepository, this.happyHourService, this.playlistService, this.emergencyBroadcastService, this.promotionService, this.tapListRepository, this.timeProvider, this.deliveryService, this.customerOnboarding, this.contentRepository, this.heartbeatStaleThreshold) =
+        (screenRepository, venueRepository, menuRepository, themeRepository, happyHourService, playlistService, emergencyBroadcastService, promotionService, tapListRepository, timeProvider ?? TimeProvider.System, deliveryService, customerOnboarding, contentRepository, heartbeatMonitorOptions?.Value.StaleThreshold ?? TimeSpan.FromSeconds(90));
 
     [HttpGet("{screenId:guid}/content")]
     [ProducesResponseType<DisplayContentResponse>(StatusCodes.Status200OK)]
@@ -392,5 +396,57 @@ public class DisplayController : ControllerBase
                 : Ok(new ScreenContentReceiptResponse(delivery.AuthoritativeRevision, delivery.AppliedRevision, delivery.State, delivery.AppliedUtc));
         }
         catch (ArgumentException exception) { return ValidationProblem(exception.Message); }
+    }
+
+    // Anonymous like the other player endpoints - the point is diagnosing a screen from
+    // whatever a person has in hand at the venue, with no sign-in. Identifiers, states and
+    // timestamps only: no menu content, no customer PII, no organisation detail.
+    [HttpGet("{screenId:guid}/diagnostics")]
+    [ProducesResponseType<DisplayDiagnosticsResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<DisplayDiagnosticsResponse>> GetDiagnostics(Guid screenId, CancellationToken cancellationToken)
+    {
+        var screen = await screenRepository.GetByIdAsync(screenId, cancellationToken);
+
+        if (screen is null)
+        {
+            return NotFound(new ProblemDetails { Title = "Screen not found.", Detail = $"Screen '{screenId}' was not found.", Status = StatusCodes.Status404NotFound });
+        }
+
+        var nowUtc = timeProvider.GetUtcNow().UtcDateTime;
+        var secondsSinceLastSeen = screen.LastSeen is { } lastSeen ? (nowUtc - lastSeen).TotalSeconds : (double?)null;
+
+        var delivery = deliveryService is null ? null : await deliveryService.GetLatestAsync(screenId, cancellationToken);
+        var onboarding = customerOnboarding is null ? null : await customerOnboarding.GetByFirstScreenIdAsync(screenId, cancellationToken);
+
+        return Ok(new DisplayDiagnosticsResponse
+        {
+            ScreenId = screen.Id,
+            VenueId = screen.VenueId,
+            ScreenKey = screen.ScreenKey,
+            ScreenName = screen.Name,
+            IsAssignedToVenue = screen.VenueId is not null,
+            Status = screen.Status,
+            LastSeenUtc = screen.LastSeen,
+            SecondsSinceLastSeen = secondsSinceLastSeen,
+            IsStale = secondsSinceLastSeen is null || secondsSinceLastSeen > heartbeatStaleThreshold.TotalSeconds,
+            Platform = screen.Platform,
+            AppVersion = screen.AppVersion,
+            DesiredAppVersion = screen.DesiredAppVersion,
+            ConfiguredWidthPixels = screen.WidthPixels,
+            ConfiguredHeightPixels = screen.HeightPixels,
+            AuthoritativeRevision = delivery?.AuthoritativeRevision,
+            AppliedRevision = delivery?.AppliedRevision,
+            DeliveryState = delivery?.State,
+            DeliveryRequestedUtc = delivery?.RequestedUtc,
+            DeliveryReceivedUtc = delivery?.ReceivedUtc,
+            DeliveryAppliedUtc = delivery?.AppliedUtc,
+            DeliveryFailureCode = delivery?.FailureCode,
+            DeliveryFailureDetail = delivery?.FailureDetail,
+            LastReceiptPlayerVersion = delivery?.PlayerVersion,
+            LastReceiptShellVersion = delivery?.ShellVersion,
+            IsOnboardingFirstScreen = onboarding is not null,
+            OnboardingGoLiveAchievedUtc = onboarding?.GoLiveAchievedUtc
+        });
     }
 }

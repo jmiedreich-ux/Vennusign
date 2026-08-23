@@ -76,6 +76,23 @@ public sealed class CustomerOnboardingRepository(ISqlDataAccess dataAccess) : IC
         return values.Single();
     }
 
+    private const string SelectByFirstScreenSql = """
+        SELECT UserId, OrganizationId, SelectedTierId, VenueId, FirstScreenId, GoLiveAchievedUtc, CreatedUtc, UpdatedUtc
+        FROM dbo.CustomerOnboardingStates
+        WHERE FirstScreenId = @ScreenId;
+        """;
+
+    public async Task<CustomerOnboardingState?> GetByFirstScreenIdAsync(
+        Guid screenId,
+        CancellationToken cancellationToken = default)
+    {
+        if (screenId == Guid.Empty) throw new ArgumentException("Screen ID is required.", nameof(screenId));
+        return (await dataAccess.ExecuteSqlQueryAsync<CustomerOnboardingState, object>(
+            SelectByFirstScreenSql,
+            new { ScreenId = screenId },
+            cancellationToken).ConfigureAwait(false)).SingleOrDefault();
+    }
+
     public async Task<CustomerOnboardingState?> LatchGoLiveByFirstScreenAsync(
         Guid screenId,
         DateTime achievedUtc,

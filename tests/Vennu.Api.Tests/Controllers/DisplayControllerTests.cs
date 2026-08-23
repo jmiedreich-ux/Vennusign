@@ -470,6 +470,8 @@ public class DisplayControllerTests
             throw new NotSupportedException();
         public Task<CustomerOnboardingState> SaveAsync(CustomerOnboardingState state, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
+        public Task<CustomerOnboardingState?> GetByFirstScreenIdAsync(Guid screenId, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
         public Task<CustomerOnboardingState?> LatchGoLiveByFirstScreenAsync(Guid screenId, DateTime achievedUtc, CancellationToken cancellationToken = default)
         {
             Calls.Add((screenId, achievedUtc));
@@ -506,6 +508,101 @@ public class DisplayControllerTests
 
     private static DisplayController CreateController(IScreenRepository screenRepository) =>
         new(screenRepository, new FakeVenueRepository(), new FakeMenuRepository());
+
+    [Fact]
+    public async Task GetDiagnostics_ReturnsNotFound_WhenScreenDoesNotExist()
+    {
+        var sut = CreateController(new FakeScreenRepository());
+
+        var result = await sut.GetDiagnostics(Guid.NewGuid(), CancellationToken.None);
+
+        Assert.IsType<NotFoundObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetDiagnostics_ReportsIdentityStalenessAndDeliveryState_WithoutContent()
+    {
+        var now = new DateTimeOffset(2026, 8, 23, 12, 0, 0, TimeSpan.Zero);
+        var venueId = Guid.NewGuid();
+        var screen = new Screen
+        {
+            Id = Guid.NewGuid(),
+            VenueId = venueId,
+            ScreenKey = "ABC123XYZ",
+            Name = "Bar Screen",
+            Status = "Online",
+            LastSeen = now.UtcDateTime.AddSeconds(-120),
+            Platform = "tizen",
+            AppVersion = "2.4.0",
+            WidthPixels = 1920,
+            HeightPixels = 1080
+        };
+        var screens = new FakeScreenRepository { GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(screen) };
+        var delivery = new DeliveryFake(new(screen.Id, venueId, 7, null, "Requested", now.UtcDateTime.AddSeconds(-10))
+        {
+            PlayerVersion = "1.7.0",
+            ShellVersion = "2.1.0"
+        });
+        var sut = new DisplayController(
+            screens, new FakeVenueRepository(), new FakeMenuRepository(),
+            timeProvider: new FixedTimeProvider(now),
+            deliveryService: delivery);
+
+        var result = await sut.GetDiagnostics(screen.Id, CancellationToken.None);
+
+        var response = Assert.IsType<DisplayDiagnosticsResponse>(Assert.IsType<OkObjectResult>(result.Result).Value);
+        Assert.Equal(screen.Id, response.ScreenId);
+        Assert.Equal(venueId, response.VenueId);
+        Assert.True(response.IsAssignedToVenue);
+        Assert.Equal(120, response.SecondsSinceLastSeen);
+        // 120 seconds since the last heartbeat is past the 90-second default threshold, so this
+        // screen is stale even though its own Status column still reads "Online" -- the same gap
+        // that made a screen the API called Offline look fine to the player it was up against.
+        Assert.True(response.IsStale);
+        Assert.Equal(7, response.AuthoritativeRevision);
+        Assert.Null(response.AppliedRevision);
+        Assert.Equal("Requested", response.DeliveryState);
+        Assert.Equal("1.7.0", response.LastReceiptPlayerVersion);
+        Assert.False(response.IsOnboardingFirstScreen);
+
+        var json = System.Text.Json.JsonSerializer.Serialize(response);
+        Assert.DoesNotContain("Weekday", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("theme", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("section", json, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task GetDiagnostics_ReportsOnboardingFirstScreen_WhenAJourneyNamesIt()
+    {
+        var screen = new Screen { Id = Guid.NewGuid(), VenueId = Guid.NewGuid(), Status = "Online" };
+        var screens = new FakeScreenRepository { GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(screen) };
+        var achievedUtc = new DateTime(2026, 8, 20, 4, 57, 7, DateTimeKind.Utc);
+        var onboarding = new OnboardingLookupFake(new CustomerOnboardingState { UserId = Guid.NewGuid(), FirstScreenId = screen.Id, GoLiveAchievedUtc = achievedUtc });
+        var sut = new DisplayController(screens, new FakeVenueRepository(), new FakeMenuRepository(), customerOnboarding: onboarding);
+
+        var result = await sut.GetDiagnostics(screen.Id, CancellationToken.None);
+
+        var response = Assert.IsType<DisplayDiagnosticsResponse>(Assert.IsType<OkObjectResult>(result.Result).Value);
+        Assert.True(response.IsOnboardingFirstScreen);
+        Assert.Equal(achievedUtc, response.OnboardingGoLiveAchievedUtc);
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
+
+    private sealed class OnboardingLookupFake(CustomerOnboardingState state) : ICustomerOnboardingRepository
+    {
+        public Task<CustomerOnboardingState?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+        public Task<CustomerOnboardingState> SaveAsync(CustomerOnboardingState state, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+        public Task<CustomerOnboardingState?> LatchGoLiveByFirstScreenAsync(Guid screenId, DateTime achievedUtc, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+        public Task<CustomerOnboardingState?> GetByFirstScreenIdAsync(Guid screenId, CancellationToken cancellationToken = default) =>
+            Task.FromResult(state.FirstScreenId == screenId ? state : null);
+    }
 
     private sealed class ThemeRepository(VenueTheme theme) : IVenueThemeRepository
     {

@@ -261,6 +261,8 @@ public sealed class CustomerOnboardingServiceTests
             State.GoLiveAchievedUtc ??= achievedUtc;
             return Task.FromResult<CustomerOnboardingState?>(State);
         }
+        public Task<CustomerOnboardingState?> GetByFirstScreenIdAsync(Guid screenId, CancellationToken cancellationToken = default) =>
+            Task.FromResult(State?.FirstScreenId == screenId ? State : null);
     }
 
     private sealed class TierFake(params SubscriptionTier[] values) : ISubscriptionTierRepository
