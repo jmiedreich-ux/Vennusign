@@ -1,7 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-23T05:00:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-23T05:10:00Z",
+  "activeAssignments": [
+    {
+      "assignment": "Board-fit width compensation (#794) - #790's uniform scale wastes horizontal space",
+      "issue": 794,
+      "branch": "fix/794-board-fit-width",
+      "claimedUtc": "2026-08-23T05:10:00Z",
+      "owner": "Claude (session)",
+      "notes": "Solve for a container width where a uniform scale fits both axes exactly - two natural-width samples fit an exact linear model (rem/vw-based spacing is width-independent; only aspect-ratio-locked card media scales with width), no iterative loop. Found by the owner testing the deployed #790 fix live."
+    }
+  ],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
