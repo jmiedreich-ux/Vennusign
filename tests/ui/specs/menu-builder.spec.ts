@@ -494,6 +494,39 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("add-item-result").filter({ hasText: name })).toBeVisible();
   });
 
+  // #798: the list's implicit grid rows had no align-content, so a short list
+  // stretched every row across whatever leftover height the panel's minmax(0, 1fr)
+  // track happened to have - large, uneven gaps rather than a tight list.
+  test("the page history panel's rows sit tight against each other, not stretched apart (#798)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "history-spacing" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    const list = page.locator(".builder__page-history-list");
+    await expect(list).toBeVisible();
+    // Pins the actual fix, so a later refactor away from this CSS mechanism
+    // doesn't leave a now-inert property still reading back as "correct".
+    await expect(list).toHaveCSS("align-content", "start");
+
+    // Pins the visual outcome too: the bug stretched each ROW's own height to
+    // fill the panel's leftover space, with adjacent rows still touching (the
+    // gap between them stayed ~0 - measured directly against this real
+    // component before this fix) - so it's row height, not inter-row gap, that
+    // actually distinguishes broken from fixed here.
+    await page.getByTestId("add-section").click();
+    await page.getByTestId("new-section-name").fill("Sides");
+    await page.getByTestId("new-section-name").press("Enter");
+    const rows = page.getByTestId("page-history-entry");
+    await expect(rows.first()).toBeVisible();
+    await expect.poll(() => rows.count(), { timeout: 10_000 }).toBeGreaterThanOrEqual(2);
+    const first = (await rows.nth(0).boundingBox())!;
+    const second = (await rows.nth(1).boundingBox())!;
+    // Broken measured 105-126px on this same real component; fixed measures
+    // roughly 60-70px for a short, non-wrapping entry like this one - 95px
+    // leaves comfortable margin on both sides without being a razor's edge.
+    expect(first.height).toBeLessThan(95);
+    expect(second.height).toBeLessThan(95);
+  });
+
   test("deleting a populated section can move every item to a sibling", async ({ page }) => {
     const data = await seed({ role: "owner", label: "section-move", sectionCount: 2, itemsPerSection: 1 });
     await openMenuBuilderAs(page, "owner", data.menuId);
