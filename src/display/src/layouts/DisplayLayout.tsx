@@ -1,6 +1,7 @@
-import type { ComponentType, CSSProperties, ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from 'react';
 import type { DisplayContent } from '../displayContent.mjs';
 import { createLayoutRegistry } from '../layoutRegistry.mjs';
+import { computeFitScale } from '../boardFitScale.mjs';
 import ClassicDinerLayout from './ClassicDinerLayout';
 import DailySpecialHeroLayout from './DailySpecialHeroLayout';
 import NeonChalkboardLayout from './NeonChalkboardLayout';
@@ -44,7 +45,39 @@ type DisplayFrameProps = {
   usedFallback: boolean;
 };
 
+// Every layout sets `min-height: 100vh` on its own root and nothing else - a floor, not a
+// ceiling - so a board taller than the viewport just grows past it with no scroll and no
+// indicator (#790: three of six items on a real venue's board were entirely off-screen). This
+// measures the actual rendered height against the actual viewport, above every layout rather
+// than inside any one of them, and shrinks the whole board uniformly until it fits. It only ever
+// shrinks - a board that already fits keeps its natural size - and never below a legibility
+// floor, past which some overflow is accepted rather than illegible text.
+function useBoardFitScale() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') return;
+
+    const recompute = () => setScale(computeFitScale(container.scrollHeight, window.innerHeight));
+    recompute();
+
+    const observer = new ResizeObserver(recompute);
+    observer.observe(container);
+    window.addEventListener('resize', recompute);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', recompute);
+    };
+  }, []);
+
+  return { containerRef, scale };
+}
+
 export function DisplayFrame({ children, content, layoutKey, requestedLayoutKey, usedFallback }: DisplayFrameProps) {
+  const { containerRef, scale } = useBoardFitScale();
   const theme = content.theme ?? {
     backgroundColor: '#111315',
     accentColor: '#FFB74D',
@@ -88,7 +121,13 @@ export function DisplayFrame({ children, content, layoutKey, requestedLayoutKey,
     >
       <HappyHourBanner content={content} />
       <PromotionBanner content={content} />
-      {children}
+      <div
+        ref={containerRef}
+        data-board-fit-scale={scale}
+        style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}
+      >
+        {children}
+      </div>
     </main>
   );
 }
