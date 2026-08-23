@@ -950,9 +950,18 @@ public sealed class ContentService(
     /// own today. Kept rather than deleted, on the working assumption that a
     /// future back-office feature (e.g. two editors on the same menu seeing each
     /// other's changes live) is the intended eventual consumer of `venue:{id}` -
-    /// but that consumer, if and when it's built, must stay back-office-only. A
-    /// display joining `venue:{id}` for ANY reason is the bug this audit exists to
-    /// prevent.
+    /// but that consumer, if and when it's built, must stay back-office-only for
+    /// THESE draft-state events specifically.
+    ///
+    /// This scopes only the 12 calls audited here (draft/working-state content
+    /// edits), not every use of `NotifyVenueContentUpdatedAsync` in the codebase -
+    /// there are others outside ContentService, and at least one
+    /// (BackOfficeEmergencyBroadcastsController's venue-wide broadcast path, #811)
+    /// carries an IMMEDIATE fact a display should receive and currently does not,
+    /// for the same "nothing joins venue:{id}" reason. That one needs the #763
+    /// per-screen fix, not this file's "leave it venue-only" conclusion - #769's
+    /// audit was scoped to ContentService, and #811 is filed separately rather
+    /// than folded in here.
     /// </summary>
     private Task NotifyAsync(Guid venueId, string change, Guid? menuId, CancellationToken cancellationToken) =>
         notifier.NotifyVenueContentUpdatedAsync(venueId, new { change, menuId }, cancellationToken);
