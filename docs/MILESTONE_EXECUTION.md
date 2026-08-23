@@ -28,6 +28,8 @@ wrong once. The four genuine conflicts are listed at the end with the resolution
 | 5 | Create the milestone issue. | house |
 | 6 | Record the claim in `tracker/assignments.json`. | house |
 | 7 | Create an isolated worktree and branch `feature/<area>-m<n>-<short-name>` from merged `master`. | both |
+| 7a | **Any two pieces of git work that can be in flight at overlapping times get separate worktrees — no exception for "this one is small."** A controller's own one-file fix, run in the same directory as an active subagent's multi-hour task, is the collision this step exists to prevent; judging a task "too small to bother isolating" is the failure, not a reasonable shortcut. Atlas M2.1 and M3 collided this way once, self-corrected mid-run, and left a report saying so — the report was read and the lesson was not applied, and the same collision then deleted an entire shipped milestone (M3's write-back, ~4,400 lines) from a commit that was never told to touch it. If a task cannot say for certain that no other process holds the same working directory, it gets its own worktree before it gets a single command. | house |
+| 7b | **After every commit made outside a reviewed task loop — a controller's own fix, a docs edit, anything not going through steps 13–19 — run `git show --stat` on it and compare the file list and line counts against what was intended, before doing anything else.** This is the one check that would have caught 7a's incident in seconds: a commit meant to touch three files with small comment edits instead showed 37 files and −4,407 lines, and nobody looked. `git commit` succeeding is not evidence the tree it produced is the tree that was intended — it is only evidence the command ran. | house |
 
 ## Phase B — Before writing code
 
@@ -199,6 +201,15 @@ state the convention before the first dispatch, enforce it by test where it is m
 at the whole branch once with fresh eyes before merge. The last of the three is the only one that
 catches a *semantic* drift, where two modules both look correct and mean different things — no
 mechanical check finds that, which is why the step exists even though it is the least automatable.
+
+Steps 7a and 7b were added on 2026-08-23, after the collision they name actually destroyed shipped
+work rather than merely blurring a convention. Atlas M2.1 and M3 had already collided once in one
+shared working directory and self-corrected mid-run; the report documenting it was read and its
+lesson was not carried forward, and the same collision then produced a commit — meant to touch
+three files — whose actual tree deleted an entire milestone. It went unnoticed for hours because
+nothing checked the commit against what was intended, and it was found only when an unrelated
+review read the diff instead of the message. 7a removes the judgment call that let it happen a
+second time; 7b is the one-command check that would have caught it in seconds rather than hours.
 
 `AGENTS.md` is the policy and this is the procedure. A change that makes one false updates the
 other in the same commit — if a house rule changes, the step carrying it changes with it.
