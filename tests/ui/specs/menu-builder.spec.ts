@@ -477,7 +477,7 @@ test.describe("the builder", () => {
     const sectionRow = page.getByTestId("rail-section").filter({ hasText: "Afters" }).locator("..");
     await sectionRow.getByTestId("delete-section").click();
     const dialog = page.getByTestId("delete-section-dialog");
-    await dialog.getByLabel("Delete section and return its items to the library").check();
+    await dialog.getByLabel("Delete this section, returning its items").check();
     // Deleting a section asks first now — the irreversible act gets the guard the
     // reversible one always had.
     await page.getByTestId("confirm-delete-section").click();
@@ -535,7 +535,7 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("canvas")).toContainText(removedItemName);
     await page.getByTestId("rail-section").nth(1).locator("..").getByTestId("delete-section").click();
     const dialog = page.getByTestId("delete-section-dialog");
-    await expect(dialog.getByLabel("Move items to")).toBeChecked();
+    await expect(dialog.getByLabel("Delete this section, moving its items to")).toBeChecked();
     await dialog.getByTestId("confirm-delete-section").click();
     await expect(page.getByTestId("builder-notice")).toContainText("1 item was moved");
     await expect(page.getByTestId("rail-section")).toHaveCount(1);
@@ -950,7 +950,7 @@ test.describe("the builder", () => {
     const firstSection = page.getByTestId("rail-section").first().locator("..");
     await firstSection.getByTestId("rail-section").click();
     await firstSection.getByTestId("delete-section").click();
-    await page.getByLabel("Delete section and return its items to the library").check();
+    await page.getByLabel("Delete this section, returning its items").check();
     await page.getByTestId("confirm-delete-section").click();
     await expect(page.getByTestId("builder-notice")).toContainText("back to your library");
     await expect(page.getByTestId("rail-section").filter({ hasText: "Next section" })).toHaveAttribute(

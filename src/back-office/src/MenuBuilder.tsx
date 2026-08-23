@@ -2986,18 +2986,27 @@ export default function MenuBuilder({
                 ? "This section is empty."
                 : `${confirmDelete.items} ${confirmDelete.items === 1 ? "item" : "items"} ${confirmDelete.mode === "move" ? "will move" : "will return to the library"}. Library items are kept.`}
             </p>
+            {/*
+              This section is deleted either way (#797) - the earlier copy said so
+              only on the "delete" radio, which read as if the "move" radio might
+              be a non-destructive alternative to it rather than the same act with
+              a different destination for the items. Both labels now open with
+              "Delete this section" so the choice reads as being about the items
+              only - and the select stays the trailing element of its own label,
+              same as before, rather than trailing text wrapping under it.
+            */}
             {confirmDelete.items > 0 ? <fieldset className="builder__delete-page-choice">
               <legend>What should happen to its items?</legend>
               {sectionsOf(board).filter(section => section.pageId === activePageId && section.sectionId !== confirmDelete.sectionId).length > 0 ? <label>
                 <input type="radio" name="delete-section-mode" checked={confirmDelete.mode === "move"} onChange={() => setConfirmDelete(current => current ? { ...current, mode: "move" } : current)} />
-                Move items to
+                Delete this section, moving its items to
                 <select value={confirmDelete.destinationSectionId} onChange={event => setConfirmDelete(current => current ? { ...current, destinationSectionId: event.currentTarget.value } : current)}>
                   {sectionsOf(board).filter(section => section.pageId === activePageId && section.sectionId !== confirmDelete.sectionId).map(section => <option key={section.sectionId} value={section.sectionId}>{section.name}</option>)}
                 </select>
               </label> : null}
               <label>
                 <input type="radio" name="delete-section-mode" checked={confirmDelete.mode === "delete"} onChange={() => setConfirmDelete(current => current ? { ...current, mode: "delete" } : current)} />
-                Delete section and return its items to the library
+                Delete this section, returning its items to the library
               </label>
             </fieldset> : null}
             <p className="builder__dialog-note">This can&apos;t be undone.</p>
