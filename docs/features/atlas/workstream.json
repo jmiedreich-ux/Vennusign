@@ -2,8 +2,8 @@
   "codename": "Atlas",
   "what": "The always-current internal site: a reusable generator, in its own repository and consumed as a versioned Action, that turns this repository's own records and GitHub issues into a milestone depth chart, a phone triage view, and the records themselves",
   "stage": "shipping",
-  "position": "M1 built and reviewed in the Atlas repository; M2 adopting it here is in progress",
-  "gate": "M2 needs a workstream manifest per workstream, and Menus still has no per-milestone plan files. M3 (write-back) is not planned.",
+  "position": "Four milestones done, through Atlas v1.2.0. M1 built the generator; M2 adopted it here and put atlas.vennusign.com live behind an invited role; M2.1 rebuilt the feature planning page as drawn paths and made it reorderable; M3 shipped write-back as two managed Functions.",
+  "gate": "Write-back is deployed but inert: the owner has to create and install the GitHub App, supply its credentials as Static Web App settings, and grant himself the `author` role. There is no UI to post from yet. #780 stays open with two defects found on first render — arrowheads overlapping the date text, and the phone view naming a next milestone that does not exist.",
   "label": "workstream:atlas",
   "design": [
     { "name": "Atlas decisions (approved, 47)", "where": "docs/design/approved/atlas/decisions.md" }
@@ -18,6 +18,47 @@
       "plan": "m1-plan.md",
       "issue": null,
       "pr": null,
+      "started": "2026-08-22",
+      "completed": "2026-08-22",
+      "acceptance": { "kind": "demo-script", "record": null }
+    },
+    {
+      "id": "M2",
+      "label": "M2",
+      "depth": 2,
+      "title": "Vennusign adopts the generator — config, manifests, workflow, hosting and the gate",
+      "status": "done",
+      "plan": "m2-plan.md",
+      "issue": null,
+      "pr": 778,
+      "started": "2026-08-22",
+      "completed": "2026-08-22",
+      "acceptance": { "kind": "demo-script", "record": null }
+    },
+    {
+      "id": "M2.1",
+      "label": "M2.1",
+      "depth": 3,
+      "title": "The feature planning page rebuilt as drawn paths, and reorderable",
+      "status": "done",
+      "plan": "m2-1-plan.md",
+      "issue": 780,
+      "pr": 781,
+      "started": "2026-08-22",
+      "completed": "2026-08-22",
+      "acceptance": { "kind": "demo-script", "record": null }
+    },
+    {
+      "id": "M3",
+      "label": "M3",
+      "depth": 4,
+      "title": "Write-back — two managed Functions, and an answer becomes a commit",
+      "status": "done",
+      "plan": "m3-plan.md",
+      "issue": null,
+      "pr": 783,
+      "started": "2026-08-22",
+      "completed": "2026-08-22",
       "acceptance": { "kind": "demo-script", "record": null }
     }
   ]
