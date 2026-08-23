@@ -318,6 +318,67 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("board-item")).toHaveCount(before);
   });
 
+  // #775: Enter searched the library and deduped by canonical name; the create button
+  // called place_ directly and skipped that entirely. The two entry points did materially
+  // different things, and nothing guarded a second submit while the first was still in
+  // flight - together this wrote duplicate items into the shared library.
+  test("Enter alone creates exactly one item (#775)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "add-enter" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("open-add-item").click();
+    const name = `Enter Item ${data.itemId.slice(0, 6)}`;
+    await page.getByTestId("add-item-input").fill(name);
+    await page.getByTestId("add-item-input").press("Enter");
+
+    await expect(page.getByTestId("item-name")).toHaveValue(name);
+    await expect(page.getByTestId("board-item").filter({ hasText: name })).toHaveCount(1);
+  });
+
+  test("the create button dedupes by name too - it used to skip straight to place_ and write a second library item (#775)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "add-button-dedupe" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("open-add-item").click();
+    const name = `Button Dedupe ${data.itemId.slice(0, 6)}`;
+    await page.getByTestId("add-item-input").fill(name);
+    await page.getByTestId("add-item-create").click();
+    await expect(page.getByTestId("item-name")).toHaveValue(name);
+
+    const before = await page.getByTestId("board-item").count();
+
+    // The SAME exact name again, submitted through the CREATE BUTTON specifically - not a
+    // search-result click. Before the fix this bypassed submitAdd's dedupe entirely.
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("add-item-input").fill(name);
+    await page.getByTestId("add-item-create").click();
+
+    await expect(page.getByTestId("builder-notice")).toContainText("already on this board");
+    await expect(page.getByTestId("board-item")).toHaveCount(before);
+  });
+
+  test("submitting Enter and the create button in immediate succession produces exactly one item, not two (#775)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "add-race" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("open-add-item").click();
+    const name = `Race Item ${data.itemId.slice(0, 6)}`;
+    await page.getByTestId("add-item-input").fill(name);
+
+    // force: true bypasses Playwright's own actionability check (which would refuse to
+    // click a disabled button) - the point is proving OUR guard blocks the second submit,
+    // not incidentally relying on Playwright refusing to click it.
+    await Promise.all([
+      page.getByTestId("add-item-input").press("Enter"),
+      page.getByTestId("add-item-create").click({ force: true })
+    ]);
+
+    await expect(page.getByTestId("item-name")).toHaveValue(name);
+    await page.getByTestId("open-add-item").click();
+    await page.getByTestId("add-item-input").fill(name);
+    await expect(page.getByTestId("add-item-result").filter({ hasText: name })).toHaveCount(1);
+  });
+
   test("a section can be added, renamed, and deleted — and its items come back", async ({ page }) => {
     const data = await seed({ role: "owner", label: "sections" });
     await openMenuBuilderAs(page, "owner", data.menuId);

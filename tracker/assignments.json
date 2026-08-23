@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-23T05:10:00Z",
+  "updatedUtc": "2026-08-23T05:50:00Z",
   "activeAssignments": [
     {
-      "assignment": "Board-fit width compensation (#794) - #790's uniform scale wastes horizontal space",
-      "issue": 794,
-      "branch": "fix/794-board-fit-width",
-      "claimedUtc": "2026-08-23T05:10:00Z",
+      "assignment": "Add-item double-submit (#775) - one guarded code path for Enter, the create button, and library-result clicks",
+      "issue": 775,
+      "branch": "fix/775-add-item-double-submit",
+      "claimedUtc": "2026-08-23T05:50:00Z",
       "owner": "Claude (session)",
-      "notes": "Solve for a container width where a uniform scale fits both axes exactly - two natural-width samples fit an exact linear model (rem/vw-based spacing is width-independent; only aspect-ratio-locked card media scales with width), no iterative loop. Found by the owner testing the deployed #790 fix live."
+      "notes": "Enter and the create button called different functions (submitAdd's dedupe vs place_ directly), and nothing guarded a second submit or made the library-search wait visible. Unifying to one guarded path per the issue's own Expected Outcome section."
     }
   ],
   "desktopSessionLock": null,
