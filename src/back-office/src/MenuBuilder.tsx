@@ -1435,6 +1435,21 @@ export default function MenuBuilder({
   const [hits, setHits] = useState<LibraryItem[]>([]);
   const canonicalItemName = (value: string) => value.toLocaleLowerCase().replaceAll("&", "and").replace(/[^a-z0-9]/g, "");
 
+  // #775: Enter and the create button used to call different functions - submitAdd's dedupe
+  // search, or place_ directly - so which control was used changed the result, and neither was
+  // guarded against a second submit. addSubmitting is set from the first moment of a submit,
+  // before the library search even starts, and covers every entry point below (Enter, the create
+  // button, and clicking a search result) through one guarded function, so the button can never
+  // bypass the dedupe search and a second submit while the first is in flight is a no-op rather
+  // than a duplicate.
+  const [addSubmitting, setAddSubmitting] = useState(false);
+
+  const runAddAction = (action: () => Promise<void>) => {
+    if (addSubmitting) return;
+    setAddSubmitting(true);
+    void action().finally(() => setAddSubmitting(false));
+  };
+
   const submitAdd = async (sectionId: string) => {
     const name = addQuery.trim();
     if (!name) return;
@@ -2372,10 +2387,12 @@ export default function MenuBuilder({
                     aria-expanded={hits.length > 0}
                     aria-controls={hits.length > 0 ? `add-item-results-${place.sectionId}` : undefined}
                     aria-activedescendant={hits[0] ? `add-item-option-${hits[0].itemId}` : undefined}
+                    aria-busy={addSubmitting}
+                    disabled={addSubmitting}
                     onChange={event => setAddQuery(event.target.value)}
                     onKeyDown={event => {
                       if (event.key === "Enter" && addQuery.trim()) {
-                        void submitAdd(place.sectionId!);
+                        runAddAction(() => submitAdd(place.sectionId!));
                       }
                       if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
                     }}
@@ -2386,12 +2403,14 @@ export default function MenuBuilder({
                     aria-label="Item price"
                     data-testid="add-item-price"
                     maxLength={12}
+                    disabled={addSubmitting}
                     onChange={event => setAddPrice(event.target.value)}
                     onKeyDown={event => {
-                      if (event.key === "Enter" && addQuery.trim()) void submitAdd(place.sectionId!);
+                      if (event.key === "Enter" && addQuery.trim()) runAddAction(() => submitAdd(place.sectionId!));
                       if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
                     }}
                   />
+                  {addSubmitting ? <span className="builder__add-status" role="status" aria-live="polite">Adding…</span> : null}
                   {hits.length > 0 ? <div id={`add-item-results-${place.sectionId}`} role="listbox" className="builder__add-results" data-testid="add-item-results">
                     {hits.map(hit => {
                       const here = hit.boards.some(entry => entry.menuId === menuId);
@@ -2405,7 +2424,8 @@ export default function MenuBuilder({
                             data-item-id={hit.itemId}
                             aria-selected={hit === hits[0]}
                             className={hit === hits[0] ? "is-selected" : undefined}
-                            onClick={() => void place_(place.sectionId!, { itemId: hit.itemId })}
+                            disabled={addSubmitting}
+                            onClick={() => runAddAction(() => place_(place.sectionId!, { itemId: hit.itemId }))}
                           >
                             <span className="builder__add-name">{hit.name}</span>
                             <span className="builder__add-where">
@@ -2429,9 +2449,14 @@ export default function MenuBuilder({
                       type="button"
                       className="builder__add-create"
                       data-testid="add-item-create"
-                      onClick={() => void place_(place.sectionId!, { name: addQuery.trim(), price: addPrice })}
+                      disabled={addSubmitting}
+                      // #775: this used to call place_ directly, skipping submitAdd's dedupe
+                      // search entirely - the button and Enter did materially different things,
+                      // which is how a name that already existed in the library became a second
+                      // library item instead of being reused. Both now go through submitAdd.
+                      onClick={() => runAddAction(() => submitAdd(place.sectionId!))}
                     >
-                      Create “{addQuery.trim()}” as a new item
+                      {addSubmitting ? "Adding…" : <>Create “{addQuery.trim()}” as a new item</>}
                     </button>
                   ) : null}
                   {/* The bulk path lives on the add row, not on the rail's + (Q95). */}

@@ -1130,6 +1130,22 @@
   font-weight: 500;
 }
 
+.builder__add-row button:disabled,
+.builder__add-row input:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* #775: the moment the library search behind Enter/create starts, something has to
+   change on screen - this is that something, for the span between "submitted" and
+   "the write landed" that used to look identical to "nothing happened". */
+.builder__add-status {
+  grid-column: 1 / -1;
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 /* ---- inspector ----------------------------------------------------------- */
 
 .builder__inspector {
