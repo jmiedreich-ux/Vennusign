@@ -88,3 +88,24 @@ export function computeBoardFit(natural, probe, viewportWidth, viewportHeight, m
 
   return { scale: computeFitScale(natural.height, viewportHeight, minScale), width: null };
 }
+
+// Turns a BoardFit into the inline style that actually applies it - kept here, next to the
+// decision logic, rather than inline in JSX, because the two transform-origins are NOT
+// interchangeable and picking the wrong one for a given `width` is exactly what #802 was: a
+// board shrunk by the height-only fallback (width: null, scale < 1) rendered left-justified
+// instead of centered, because 'top left' was applied unconditionally in both branches.
+//
+// width !== null (the #794 width-fill path): the container is widened to `width` px BEFORE the
+// transform, and computeBoardFit's math assumes the scaled box's top-left corner lands at the
+// viewport's top-left - 'top center' here would misalign it.
+//
+// width === null: the container keeps its natural (viewport) width, so scaling from 'top left'
+// shrinks it toward the left edge, leaving the freed space entirely on the right - only invisible
+// when scale is exactly 1 (the identity transform). Once scale can be < 1 here too (the #790
+// height-only fallback), 'top center' is required to keep the board visually centered.
+export function boardFitContainerStyle({ scale, width }) {
+  if (width === null) {
+    return { transform: `scale(${scale})`, transformOrigin: 'top center' };
+  }
+  return { width: `${width}px`, transform: `scale(${scale})`, transformOrigin: 'top left' };
+}
