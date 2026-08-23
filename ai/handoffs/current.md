@@ -2,6 +2,14 @@
 
 Updated 2026-08-22, for the display publish gate, realtime delivery, builder responsiveness, and the observability proposal.
 
+## 2026-08-22 — The toolchain is written down, and two false claims in this handoff are corrected
+
+**`AI_DEVELOPMENT_GUIDE.md` now has a *Local Toolchain* section**, verified by running every command in it rather than by recall. It records Linux Node and how to invoke Node tooling, Playwright and its real Chromium binary, Windows `dotnet.exe`, `SQLCMD.EXE` and what it can reach, and the short list of what is genuinely absent. Nothing recorded this before, which is how the two corrections below came to be believed.
+
+**Two statements in this handoff were untrue and are fixed in place.** The 2026-08-20 machine note said the sandbox has no .NET SDK, no Node and no SQL client — only the .NET SDK part is true. The #752 entry said "Murphy has no database access today" and listed it as one of two gates; `SQLCMD.EXE` plus the `sql-dev-*` credentials in `kv-vennusign-dev` reach dev SQL, so that gate is a design choice, not a missing capability.
+
+**The rule this follows:** a record that is behind is tolerable, one that states something untrue sends the next session down the wrong path. Both claims had already done that.
+
 ## 2026-08-22 — Publish became a real gate, and the realtime path turned out never to have worked
 
 **The reported defect was real and is fixed.** `DisplayController.GetContent` composed the board from `dbo.Placements` joined to `dbo.Items`, and `dbo.MenuSections`, with **no publish predicate anywhere in the read path**. Every keystroke was live the moment it was typed; publish wrote a snapshot and delivery targets that nothing served from. That is menus decision 1 inverted and decision 38 contradicted. Reproduced on dev before changing anything - an item created and never published came back from `/api/display/{id}/content` alongside the published one - then fixed to read `GetLatestPublishedSnapshotAsync` ordered by the snapshot's own `SortOrder` (#757, `1ef9d4de`).
@@ -87,7 +95,7 @@ Unchanged, as expected: Menus 127, Items 70, Placements 46, MenuScreenAssignment
 
 `scripts/maintenance/clean-dev-test-data.sql` is kept: it rolls back unless `@Commit = 1`, deletes only rows the trace can name, and **refuses outright** if anything real has attached itself since. A snapshot of all 153 removed rows is at `C:\temp\vennusign-backups\dev-test-data-removed-2026-08-21.tsv`.
 
-**Owner decision: Murphy owns environment data hygiene from here (#752).** Cleanup was never the hard part — noticing was, and nothing was watching for three weeks. Murphy should report drift in deployed environments (objects no customer journey created, and tables present in a database that no migration creates — which is how `TestRecordTrace` was found), name what produced it, and report before removing. Two things gate it: Murphy has no database access today, so whether it reads the environment database or infers drift through the API is the first design question; and #746 should be fixed first or every run will report the same growing screen count.
+**Owner decision: Murphy owns environment data hygiene from here (#752).** Cleanup was never the hard part — noticing was, and nothing was watching for three weeks. Murphy should report drift in deployed environments (objects no customer journey created, and tables present in a database that no migration creates — which is how `TestRecordTrace` was found), name what produced it, and report before removing. Two things gate it: whether it reads the environment database or infers drift through the API is the first design question — **note that the original "Murphy has no database access today" was false**, `SQLCMD.EXE` reaches dev SQL with the `sql-dev-*` credentials in `kv-vennusign-dev`, so this is a design choice and not a missing capability; and #746 should be fixed first or every run will report the same growing screen count.
 
 ## 2026-08-21 — Test credentials, a destructive test, and what is actually running on the plan
 
@@ -126,7 +134,7 @@ Three tables needed a decision instead: `dbo.MenuItems` is empty and superseded 
 
 **Executed evidence.** `Vennu.Api.Tests` Category=Unit 461/461 · `Vennu.Data.IntegrationTests` 123/123 on LocalDB · `Vennu.DataAccess.Tests` 229 passed / 3 failed, the same three that fail on clean master (#688) · `scripts/ci/test-classify-changes.sh` and `scripts/ci/test-verify-deployed-build.sh` both pass, the latter against a real HTTP server rather than a stubbed curl. Both wiring guards were observed red by removing what they guard. **UNTESTED:** the two signed-in Playwright cases against dev, still.
 
-**Machine note.** The WSL sandbox has no .NET SDK, no Node, and no SQL client. Windows `dotnet.exe` at `/mnt/c/Program Files/dotnet/dotnet.exe` works from WSL and is how every test above was run; environment variables reach it only via `WSLENV`.
+**Machine note.** Windows `dotnet.exe` at `/mnt/c/Program Files/dotnet/dotnet.exe` is how every test above was run; environment variables reach a Windows process only via `WSLENV`. **Corrected 2026-08-22:** the rest of this note said the WSL sandbox has no .NET SDK, no Node and no SQL client. Only the first is true. Linux Node v22.23.2 and Playwright 1.62.1 with a real Chromium are installed, and `SQLCMD.EXE` reaches LocalDB and dev SQL. The full inventory is in `AI_DEVELOPMENT_GUIDE.md` under *Local Toolchain*.
 
 **Environment.** Scaled to B3 for the deploy and back to B1 after, as instructed. **The scale-down wedged all four SPAs** — 503, then no response at all — while the API stayed up. Restarting the four apps brought them back; Platform Operations took three attempts. This is the 28-apps-on-one-core problem the hosting sheet costs out, and it now has a reproducible trigger: scaling the plan restarts everything at once and B1 cannot absorb it.
 
