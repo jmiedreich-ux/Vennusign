@@ -740,10 +740,25 @@ export default function MenuBuilder({
    * about the order saves land in, not about when we are allowed to paint.
    */
   const run = useCallback(
-    (action: () => Promise<void>, undoStep?: UndoStep, onSuccess?: () => void, drawn = false) => {
+    (
+      action: () => Promise<void>,
+      undoStep?: UndoStep,
+      onSuccess?: () => void,
+      drawn = false,
+      // TEMP (#800): lets a call site that has no undo step still label its own
+      // [perf:deliver] entry, instead of every such action collapsing into the
+      // generic "Your last change". Delete alongside the rest of #800.
+      describeOverride?: string
+    ) => {
       window.clearTimeout(retryTimer.current);
       retryRound.current = 0;
-      return deliver({ action, undo: undoStep, describe: undoStep?.describe ?? "Your last change", onSuccess, drawn });
+      return deliver({
+        action,
+        undo: undoStep,
+        describe: describeOverride ?? undoStep?.describe ?? "Your last change",
+        onSuccess,
+        drawn
+      });
     },
     [deliver]
   );
@@ -773,7 +788,7 @@ export default function MenuBuilder({
     setNewPageName("");
     if (!name) return;
     let created: { pageId: string } | undefined;
-    await run(async () => { created = await addMenuPage(configuration, credential(), menuId, name); });
+    await run(async () => { created = await addMenuPage(configuration, credential(), menuId, name); }, undefined, undefined, false, "Add page");
     if (created) setActivePageId(created.pageId);
   };
 
@@ -784,13 +799,13 @@ export default function MenuBuilder({
     const name = edit.name.trim();
     const current = pages.find(page => page.pageId === edit.pageId)?.name;
     if (!name || name === current) return;
-    await run(() => renameMenuPage(configuration, credential(), menuId, edit.pageId, name));
+    await run(() => renameMenuPage(configuration, credential(), menuId, edit.pageId, name), undefined, undefined, false, "Rename page");
   };
 
   const duplicatePage = async (pageId: string) => {
     setPageMenuId(null);
     let created: { pageId: string } | undefined;
-    await run(async () => { created = await duplicateMenuPage(configuration, credential(), menuId, pageId); });
+    await run(async () => { created = await duplicateMenuPage(configuration, credential(), menuId, pageId); }, undefined, undefined, false, "Duplicate page");
     if (created) setActivePageId(created.pageId);
   };
 
@@ -822,7 +837,9 @@ export default function MenuBuilder({
     await run(
       () => deleteMenuPage(configuration, credential(), menuId, pageId, destinationPageId || undefined, deleteSections),
       undefined,
-      () => setConfirmPageDelete(null)
+      () => setConfirmPageDelete(null),
+      false,
+      "Delete page"
     );
   };
 
@@ -840,7 +857,7 @@ export default function MenuBuilder({
       setAssignmentOpen(false);
       setAssignmentDraft({});
       setAssignmentAddingScreenId(null);
-    });
+    }, false, "Save screen assignments");
   };
 
   // ---- the section rail ----------------------------------------------------
@@ -1402,7 +1419,7 @@ export default function MenuBuilder({
     await run(async () => {
       const result = await setItemAvailability(configuration, credential(), selected.item.itemId, !isAvailable);
       setNotice(availabilityImpactNotice(selected.item.name ?? "Item", result.isAvailable, result.screenIds, screens));
-    });
+    }, undefined, undefined, false, isAvailable ? "Mark 86" : "Mark available");
   };
 
   const removeFromBoard = async () => {
@@ -1632,9 +1649,21 @@ export default function MenuBuilder({
     if (!step) return;
     undoStack.current = undoStack.current.slice(0, -1);
     setBusy(true);
+    // TEMP (#800): undo/redo call step.undo()/step.redo() directly, bypassing
+    // deliver()'s [perf:deliver] timing entirely - so without this they were
+    // invisible to the same investigation the rest of #800 exists for.
+    const perfStart = performance.now();
     try {
       await step.undo();
+      const perfAfterAction = performance.now();
       await refresh();
+      const perfAfterRefresh = performance.now();
+      console.info("[perf:undo]", {
+        describe: step.describe,
+        actionMs: Math.round(perfAfterAction - perfStart),
+        refreshMs: Math.round(perfAfterRefresh - perfAfterAction),
+        totalMs: Math.round(perfAfterRefresh - perfStart)
+      });
       redoStack.current = [...redoStack.current, step];
       setNotice(`Undid: ${step.describe}.`);
     } catch (failure) {
@@ -1660,9 +1689,18 @@ export default function MenuBuilder({
     if (!step) return;
     redoStack.current = redoStack.current.slice(0, -1);
     setBusy(true);
+    const perfStart = performance.now();
     try {
       await step.redo();
+      const perfAfterAction = performance.now();
       await refresh();
+      const perfAfterRefresh = performance.now();
+      console.info("[perf:redo]", {
+        describe: step.describe,
+        actionMs: Math.round(perfAfterAction - perfStart),
+        refreshMs: Math.round(perfAfterRefresh - perfAfterAction),
+        totalMs: Math.round(perfAfterRefresh - perfStart)
+      });
       undoStack.current = [...undoStack.current, step];
       setNotice(`Redid: ${step.describe}.`);
     } catch (failure) {
@@ -1761,7 +1799,7 @@ export default function MenuBuilder({
             } now belong to another menu and were left alone.`
           : "Published. Your screens are showing it."
       );
-    });
+    }, undefined, undefined, false, "Publish");
   };
 
   // The one path both Publish buttons go through: if this draft would ship an
@@ -1783,7 +1821,7 @@ export default function MenuBuilder({
       redoStack.current = [];
       setHistoryDepth({ undo: 0, redo: 0 });
       setNotice(`${result.discarded} change${result.discarded === 1 ? "" : "s"} discarded.`);
-    });
+    }, undefined, undefined, false, "Discard draft");
   };
 
   // ---- render --------------------------------------------------------------
@@ -3227,7 +3265,7 @@ export default function MenuBuilder({
                                 } you had waiting were replaced.`
                               : "Back to that version. Publish when you want your screens to follow."
                           );
-                        })
+                        }, undefined, undefined, false, "Go back to version")
                       }
                     >
                       Go back to this
