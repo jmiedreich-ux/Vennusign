@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-23T03:40:00Z",
+  "updatedUtc": "2026-08-23T05:00:00Z",
   "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
@@ -28,15 +28,26 @@
   "lastCompletedAssignment": {
     "assignment": "Display diagnostics view (#738), plus board-overflow (#790) and null-revision (#791) defects found while scoping it",
     "issue": 738,
-    "pr": null,
-    "branch": "feature/738-display-diagnostics",
-    "completedUtc": "2026-08-23T03:40:00Z",
+    "pr": 792,
+    "branch": "feature/738-display-diagnostics (merged to master)",
+    "completedUtc": "2026-08-23T05:00:00Z",
     "mergeSha": null,
     "acceptedProductSha": null,
-    "acceptance": "Not yet merged. PR opened for independent review.",
-    "notes": "GET /api/display/{id}/diagnostics (server half, identifiers/states/timestamps only) plus /display/{id}/diag (device probe, never heartbeats or posts receipts). Player now records heartbeat outcome, connection transitions, content-fetch source and receipt skip reason to a per-device rolling record. Verified against the live QA screen with seeded cache: board-fit and theme-coverage panels correctly surfaced #790's 155px overflow and 3-of-10 theme field consumption on sight. #790 and #791 filed and NOT fixed in this PR."
+    "acceptance": "Independent review (isolated worktree agent) returned HOLD on one real bug (unhandled JSON-parse rejection) plus two minor gaps; all fixed in 042d067a, not re-reviewed after the fix. Merged and deployed at the owner's direct instruction.",
+    "notes": "GET /api/display/{id}/diagnostics (server half, identifiers/states/timestamps only) plus /display/{id}/diag (device probe, never heartbeats or posts receipts). Player now records heartbeat outcome, connection transitions, content-fetch source and receipt skip reason to a per-device rolling record. #790 and #791 filed and NOT fixed in this PR; #790 fixed separately in PR #793."
   },
   "previousCompletedAssignment": {
+    "assignment": "Board-fit safety net for #790, generic above all display layouts",
+    "issue": 790,
+    "pr": 793,
+    "branch": "fix/790-board-fit-safety (merged to master)",
+    "completedUtc": "2026-08-23T04:50:00Z",
+    "mergeSha": "5a2d53dd",
+    "acceptedProductSha": null,
+    "acceptance": "Independent review (isolated worktree agent) returned MERGE, clean. One non-blocking suggestion (ResizeObserver-absent TV WebViews got zero protection) fixed anyway in 4109b8ea and re-verified live. Merged and deployed at the owner's direct instruction.",
+    "notes": "DisplayFrame measures rendered board height vs actual viewport and scales the whole board down to fit (never up, floor 0.4), instead of a per-layout CSS fix - deliberately, since Theme Studio is still design-stage with nothing built. Verified against the live QA screen's real content: scale 1080/1354=0.7976, all 6 items now visible where 3 were previously off-screen."
+  },
+  "priorCompletedAssignment": {
     "assignment": "Onboarding M1 plus the defects blocking the first end-to-end journey",
     "issue": 728,
     "pr": null,
@@ -46,16 +57,5 @@
     "acceptedProductSha": null,
     "acceptance": "No workbook and no independent review; merged and deployed at the owner's direct instruction during a live testing session.",
     "notes": "Sign in, onboard, pair, build a menu, publish and display now work end to end on dev for the first time. Deployed: durable go-live (073), registered subdomains, one-approval sequential deploys, per-app build config, the shared loader, and the display board projection. Untested: the two signed-in Playwright cases against dev. See ai/handoffs/current.md."
-  },
-  "priorCompletedAssignment": {
-    "assignment": "Menus 6-A1 \u2014 paste, parse, and resumable review",
-    "issue": 714,
-    "pr": 716,
-    "branch": "feature/menus-m6a1-paste-review",
-    "completedUtc": "2026-08-14T03:45:49Z",
-    "mergeSha": "ac4cc984015909f40f6bd280633ad8532fdb4e41",
-    "acceptedProductSha": "547aea7",
-    "acceptance": "Owner accepted all 7 workbook checks at 2026-08-14T03:43:13.198Z; independent exact-head review approved.",
-    "notes": "PR #716 merged and issue #714 closed. 6-A2 create-new-menu confirmation is the exact next milestone; 6-A3 replacement remains excluded."
   }
 }
