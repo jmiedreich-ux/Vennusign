@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildDisplayReceiptUrl, reportContentReceipt } from '../src/displayReceipts.mjs';
+import { buildDisplayReceiptUrl, reportContentReceipt, describeReceiptSkipReason } from '../src/displayReceipts.mjs';
 
 test('reports the exact authoritative revision and player compatibility metadata', async () => {
   let request;
@@ -19,4 +19,11 @@ test('does not send a receipt for an unversioned cached snapshot', async () => {
   const result = await reportContentReceipt('', 'screen', { screenKey: 'ABC123XYZ' }, 'Applied', {}, async () => { calls++; });
   assert.equal(result, null);
   assert.equal(calls, 0);
+});
+
+test('names why a receipt is skipped, so a null result is not indistinguishable from a swallowed failure', () => {
+  assert.equal(describeReceiptSkipReason({ screenKey: 'ABC123XYZ', contentRevision: null }), 'no-content-revision');
+  assert.equal(describeReceiptSkipReason({ screenKey: 'ABC123XYZ', contentRevision: 0 }), 'no-content-revision');
+  assert.equal(describeReceiptSkipReason({ screenKey: '', contentRevision: 7 }), 'no-screen-key');
+  assert.equal(describeReceiptSkipReason({ screenKey: 'ABC123XYZ', contentRevision: 7 }), null);
 });

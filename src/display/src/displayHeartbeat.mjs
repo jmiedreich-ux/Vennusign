@@ -49,8 +49,12 @@ export function startDisplayHeartbeat(
         abortController.signal,
         { platform: options.platform, appVersion: options.appVersion }
       );
-    } catch {
-      // Temporary heartbeat failures must not crash or duplicate the display loop.
+      options.onResult?.({ ok: true });
+    } catch (error) {
+      // Temporary heartbeat failures must not crash or duplicate the display loop - but the
+      // failure is worth recording, not just swallowing, or it takes an hour of log-correlating
+      // to notice a screen has stopped reporting itself at all.
+      options.onResult?.({ ok: false, message: error instanceof Error ? error.message : 'Heartbeat failed.' });
     } finally {
       inFlight = false;
     }

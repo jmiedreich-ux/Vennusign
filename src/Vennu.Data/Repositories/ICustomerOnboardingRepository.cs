@@ -13,6 +13,14 @@ public interface ICustomerOnboardingRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Returns the onboarding journey that names <paramref name="screenId"/> as its first
+    /// display, or null when no journey does.
+    /// </summary>
+    Task<CustomerOnboardingState?> GetByFirstScreenIdAsync(
+        Guid screenId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Records that the journey whose first display is <paramref name="screenId"/> has reached
     /// go-live, if it has not already. Idempotent: a journey that already carries an achievement
     /// keeps its original timestamp, so the value is the first Online report rather than the last.

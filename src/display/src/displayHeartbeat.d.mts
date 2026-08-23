@@ -7,6 +7,7 @@ export type DisplayHeartbeatOptions = {
   setIntervalImpl?: typeof setInterval;
   clearIntervalImpl?: typeof clearInterval;
   intervalMs?: number;
+  onResult?: (result: { ok: boolean; message?: string }) => void;
 };
 
 export type DisplayHeartbeat = {

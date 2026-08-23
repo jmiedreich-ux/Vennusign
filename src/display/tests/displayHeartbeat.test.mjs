@@ -120,3 +120,33 @@ test('teardown clears the timer and prevents future sends', async () => {
   assert.equal(clearedTimer, 99);
   assert.equal(sends, 1);
 });
+
+test('reports a successful heartbeat through onResult', async () => {
+  const results = [];
+  const heartbeat = startDisplayHeartbeat('', 'screen-1', {
+    fetchImpl: async () => new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    setIntervalImpl: () => 1,
+    clearIntervalImpl: () => {},
+    onResult: (result) => results.push(result)
+  });
+  await settleHeartbeat();
+  heartbeat.stop();
+
+  assert.deepEqual(results, [{ ok: true }]);
+});
+
+test('reports a failed heartbeat through onResult instead of only swallowing it', async () => {
+  const results = [];
+  const heartbeat = startDisplayHeartbeat('', 'screen-1', {
+    fetchImpl: async () => { throw new Error('network down'); },
+    setIntervalImpl: () => 1,
+    clearIntervalImpl: () => {},
+    onResult: (result) => results.push(result)
+  });
+  await settleHeartbeat();
+  heartbeat.stop();
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0].ok, false);
+  assert.match(results[0].message, /network down/);
+});

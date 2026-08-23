@@ -9,7 +9,8 @@ import {
   loadDisplayContentResilient
 } from './displayCache.mjs';
 import { startDisplayHeartbeat } from './displayHeartbeat.mjs';
-import { reportContentReceipt } from './displayReceipts.mjs';
+import { reportContentReceipt, describeReceiptSkipReason } from './displayReceipts.mjs';
+import { recordDisplayDiagnosticEvent } from './displayDiagnostics.mjs';
 import { applyRealtimeEvent, requiresContentReload } from './displayRealtime.mjs';
 import {
   connectDisplayRealtime,
@@ -73,6 +74,7 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
     let disposed = false;
     let liveServicesStarted = false;
     let recoveringFromCache = false;
+    const trackDiagnostics = !previewTheme && !observerOnly;
 
     setState({ kind: 'loading' });
     setConnectionState('connecting');
@@ -83,12 +85,19 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
       }
 
       liveServicesStarted = true;
-      heartbeat = startDisplayHeartbeat(displayConfig.apiBaseUrl, screenId, { platform, appVersion });
+      heartbeat = startDisplayHeartbeat(displayConfig.apiBaseUrl, screenId, {
+        platform,
+        appVersion,
+        onResult: (result) => {
+          if (trackDiagnostics) recordDisplayDiagnosticEvent(screenId, 'heartbeat', result);
+        }
+      });
       realtimeConnection = await connectDisplayRealtime(
         displayConfig.apiBaseUrl,
         screenId,
         {
           onConnectionStateChanged: (nextConnectionState) => {
+            if (trackDiagnostics) recordDisplayDiagnosticEvent(screenId, 'connection', { state: nextConnectionState });
             if (!disposed) {
               setConnectionState(nextConnectionState);
             }
@@ -134,12 +143,26 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
 
       const { content, source, cachedAt } = result;
       const themedContent = previewTheme ? { ...content, theme: previewTheme } : content;
-      if (!previewTheme && source === 'network' && content.contentRevision) {
-        const metadata = { playerVersion: displayConfig.playerVersion, shellVersion: appVersion, platform, recovered: recoveringFromCache };
-        await reportContentReceipt(displayConfig.apiBaseUrl, screenId, content, 'Received', metadata).catch(() => undefined);
-        window.requestAnimationFrame(() => {
-          void reportContentReceipt(displayConfig.apiBaseUrl, screenId, content, 'Applied', metadata).catch(() => undefined);
-        });
+
+      if (trackDiagnostics) {
+        recordDisplayDiagnosticEvent(screenId, 'content-fetch', { source, revision: content.contentRevision ?? null });
+      }
+
+      if (!previewTheme && source === 'network') {
+        const skipReason = describeReceiptSkipReason(content);
+        if (skipReason) {
+          if (trackDiagnostics) recordDisplayDiagnosticEvent(screenId, 'receipt', { posted: false, reason: skipReason });
+        } else {
+          const metadata = { playerVersion: displayConfig.playerVersion, shellVersion: appVersion, platform, recovered: recoveringFromCache };
+          await reportContentReceipt(displayConfig.apiBaseUrl, screenId, content, 'Received', metadata)
+            .then(() => { if (trackDiagnostics) recordDisplayDiagnosticEvent(screenId, 'receipt', { posted: true, state: 'Received' }); })
+            .catch(() => { if (trackDiagnostics) recordDisplayDiagnosticEvent(screenId, 'receipt', { posted: false, reason: 'request-failed' }); });
+          window.requestAnimationFrame(() => {
+            void reportContentReceipt(displayConfig.apiBaseUrl, screenId, content, 'Applied', metadata)
+              .then(() => { if (trackDiagnostics) recordDisplayDiagnosticEvent(screenId, 'receipt', { posted: true, state: 'Applied' }); })
+              .catch(() => { if (trackDiagnostics) recordDisplayDiagnosticEvent(screenId, 'receipt', { posted: false, reason: 'request-failed' }); });
+          });
+        }
       }
       setState({ kind: 'ready', content: themedContent, source, cachedAt });
 
