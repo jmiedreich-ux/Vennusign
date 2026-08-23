@@ -1,7 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-23T09:00:00Z",
+  "updatedUtc": "2026-08-23T09:30:00Z",
   "activeAssignments": [
+    {
+      "assignment": "Venue-wide emergency broadcasts never delivered in realtime - fan out per-screen like #763's publish fix",
+      "issue": 811,
+      "pr": 816,
+      "branch": "fix/811-venue-broadcast-realtime-fanout",
+      "claimedUtc": "2026-08-23T09:30:00Z",
+      "owner": "Claude (session)",
+      "notes": "BackOfficeEmergencyBroadcastsController.NotifyAsync only called NotifyVenueContentUpdatedAsync for a venue-wide broadcast (ScreenId null) - the default target in EmergencyBroadcastAdministration.tsx, and the same dead venue:{id} SignalR group #769/#763 already proved nothing joins. Added a per-screen fan-out loop via IScreenRepository.GetByVenueIdAsync, kept the venue-wide call alongside it. 3 new unit tests, dotnet build clean, 467/467. Awaiting independent review/merge; live verification against a real multi-screen venue still UNTESTED."
+    },
     {
       "assignment": "Park #744 as a proposed design/decision doc, not scheduled work",
       "issue": 744,
