@@ -16,3 +16,5 @@ export function computeBoardFit(
   viewportHeight: number,
   minScale?: number
 ): BoardFit;
+export type BoardFitContainerStyle = { transform: string; transformOrigin: string; width?: string };
+export function boardFitContainerStyle(fit: BoardFit): BoardFitContainerStyle;

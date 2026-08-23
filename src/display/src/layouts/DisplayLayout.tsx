@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from 'react';
 import type { DisplayContent } from '../displayContent.mjs';
 import { createLayoutRegistry } from '../layoutRegistry.mjs';
-import { computeBoardFit, type BoardFit } from '../boardFitScale.mjs';
+import { computeBoardFit, boardFitContainerStyle, type BoardFit } from '../boardFitScale.mjs';
 import ClassicDinerLayout from './ClassicDinerLayout';
 import DailySpecialHeroLayout from './DailySpecialHeroLayout';
 import NeonChalkboardLayout from './NeonChalkboardLayout';
@@ -195,16 +195,9 @@ export function DisplayFrame({ children, content, layoutKey, requestedLayoutKey,
         ref={containerRef}
         data-board-fit-scale={scale}
         data-board-fit-width={width ?? undefined}
-        // transform-origin is 'top left', not 'top center', in both branches: once width can be
-        // widened before scaling (#794), the math in computeBoardFit assumes the scaled box's
-        // top-left corner lands at the viewport's top-left - a center origin would leave it
-        // misaligned whenever width is overridden. Left makes no visual difference when width is
-        // null (scale 1 is the identity transform), so one origin covers both cases.
-        style={
-          width === null
-            ? { transform: `scale(${scale})`, transformOrigin: 'top left' }
-            : { width: `${width}px`, transform: `scale(${scale})`, transformOrigin: 'top left' }
-        }
+        // boardFitContainerStyle picks the transform-origin that matches this fit - see its own
+        // comment for why 'top left' and 'top center' are NOT interchangeable here (#802).
+        style={boardFitContainerStyle({ scale, width })}
       >
         {children}
       </div>

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { computeFitScale, boardFitMinScale, solveFitWidth, clampScale, computeBoardFit } from '../src/boardFitScale.mjs';
+import { computeFitScale, boardFitMinScale, solveFitWidth, clampScale, computeBoardFit, boardFitContainerStyle } from '../src/boardFitScale.mjs';
 
 test('never scales up a board that already fits', () => {
   assert.equal(computeFitScale(900, 1080), 1);
@@ -155,4 +155,39 @@ test('computeBoardFit is fail-safe on invalid input, matching computeFitScale ra
   const fit = computeBoardFit({ width: NaN, height: NaN }, { width: 2880, height: 1800 }, 1920, 1080);
   assert.equal(fit.scale, 1);
   assert.equal(fit.width, null);
+});
+
+// #802: a real venue's board (natural=1920x2911, probe=2880x3465 - the exact multi-row case that
+// makes solveFitWidth return null, tested above) fell back to {scale: <1, width: null} exactly as
+// designed, but the JSX applied 'top left' to it anyway - shrinking the board toward the left
+// edge instead of the center, so all the freed horizontal space appeared as a gap on the right.
+test('boardFitContainerStyle centers a height-only shrink (width: null, scale < 1) rather than left-justifying it (#802)', () => {
+  const fit = computeBoardFit({ width: 1920, height: 2911 }, { width: 2880, height: 3465 }, 1920, 1080);
+  assert.ok(fit.width === null && fit.scale < 1, 'precondition: this must be the height-only fallback');
+
+  const style = boardFitContainerStyle(fit);
+  assert.equal(style.transformOrigin, 'top center');
+  assert.equal(style.width, undefined, 'must not pin a width when the fit did not solve for one');
+  assert.equal(style.transform, `scale(${fit.scale})`);
+});
+
+test('boardFitContainerStyle uses top-left for a width-filled board, matching the math in computeBoardFit (#794)', () => {
+  const k = 0.4167;
+  const w0 = 1920, h0 = 1354;
+  const fixed = h0 - k * w0;
+  const w1 = w0 * 1.5;
+  const h1 = fixed + k * w1;
+  const fit = computeBoardFit({ width: w0, height: h0 }, { width: w1, height: h1 }, 1920, 1080);
+  assert.notEqual(fit.width, null, 'precondition: this must be the width-filled path');
+
+  const style = boardFitContainerStyle(fit);
+  assert.equal(style.transformOrigin, 'top left');
+  assert.equal(style.width, `${fit.width}px`);
+});
+
+test('boardFitContainerStyle uses top-center for an already-fitting board (scale 1 is the identity transform either way)', () => {
+  const style = boardFitContainerStyle({ scale: 1, width: null });
+  assert.equal(style.transformOrigin, 'top center');
+  assert.equal(style.transform, 'scale(1)');
+  assert.equal(style.width, undefined);
 });
