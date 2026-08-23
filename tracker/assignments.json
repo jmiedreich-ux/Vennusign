@@ -1,7 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-21T00:45:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-23T02:50:00Z",
+  "activeAssignments": [
+    {
+      "assignment": "Display diagnostics view (#738) plus board-overflow (#790) and null-revision (#791) defects found while scoping it",
+      "issue": 738,
+      "branch": "feature/738-display-diagnostics",
+      "claimedUtc": "2026-08-23T02:50:00Z",
+      "owner": "Claude (session)",
+      "notes": "Web-visible facts only: identity, build/API-origin, geometry vs configured size, board-fit/overflow, layout/theme field coverage, content, liveness. Player /diag reads its own device state; GET /api/display/{id}/diagnostics gives the server half, identifiers/states/timestamps only, no content."
+    }
+  ],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
