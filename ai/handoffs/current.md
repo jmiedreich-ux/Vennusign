@@ -2,6 +2,24 @@
 
 Updated 2026-08-22, for the display publish gate, realtime delivery, builder responsiveness, and the observability proposal.
 
+## 2026-08-23 — #790 fixed generically, above the layout components rather than inside one of them
+
+**Owner context that shaped the approach:** the current nine layout components (`photo_grid`, `neon_chalkboard`, etc.) are expected to be superseded by Theme Studio's JSON display-definition, which the display would then render dynamically. Checked before writing anything: Theme Studio is `stage: "designing"` with no design authority, no question register, no milestone plan, and "nothing in this repository yet" (`docs/features/theme-studio/workstream.json`); `dev-theme-studio`'s App Service exists with no application deployed. That is pre-planning, not imminent - so a fix confined to `PhotoGridLayout.tsx`/`photoGrid.css` specifically risked being real but throwaway work, while the underlying screens keep running the current renderer for an unknown span in the meantime.
+
+**Fixed at the `DisplayFrame` wrapper instead - one place above all nine layouts, not inside any one of them.** Every layout sets `min-height: 100vh` on its own root with no ceiling, which is the actual defect shape, not something specific to `photo_grid`. `DisplayFrame` now measures the rendered board's height against the real viewport after layout, and applies a uniform `transform: scale()` to shrink it to fit - never scaling up, never below a 0.4 legibility floor past which some overflow is accepted rather than illegible text. `computeFitScale` is a pure function in `boardFitScale.mjs`, unit tested. This survives a Theme Studio renderer swap: whatever eventually draws the board still has to fit inside a real screen's viewport, and this wrapper doesn't care what produced the content underneath it.
+
+**Verified against the live QA screen's real content**, not just the unit tests: seeded a local cache with the exact board from #790 and loaded `/display/{screenId}` in a real browser at 1920x1080. Scale computed as `1080 / 1354 = 0.7976`, and all six items - three of which were previously entirely off-screen with no scroll and no indicator - are now visible and legible (screenshot taken). A short board (one section, one item) verified separately to render at scale `1`, untouched.
+
+**One known interaction with PR #792 (display diagnostics, #738), not addressed, noted in both PR descriptions.** #792's `/diag` page renders `DisplayLayout` inline at a simulated device size for its debug thumbnail rather than the page's actual viewport. This fix measures against `window.innerHeight`, correct for every real player - which is what #790 is actually about - but will slightly double-scale that thumbnail's cosmetic sizing once both branches merge. Not a data-correctness issue: the diagnostics board-fit panel measures `scrollHeight`, which CSS transforms do not affect, so the numbers it reports stay right regardless. Whoever reconciles the two branches should thread an explicit viewport-height override through if the thumbnail's exact pixel sizing ever matters.
+
+PR opened on `fix/790-board-fit-safety` (#793), independent of #792 - branched from `master`, not from the diagnostics branch, so it does not depend on unreviewed work. Not yet merged.
+
+Evidence: `tsc -b` clean; `npm test` 144/144 (140 baseline + 4 new); live-content verification above.
+
+### Next action
+
+Independent review of PR #792 and PR #793 (unrelated to each other, can review in either order or in parallel), then #791 (the same live screen's null `contentRevision`, roots #749), then back to #775 (item add double-submit), which remains the most owner-visible defect on the board.
+
 ## 2026-08-22 — The toolchain is written down, and two false claims in this handoff are corrected
 
 **`AI_DEVELOPMENT_GUIDE.md` now has a *Local Toolchain* section**, verified by running every command in it rather than by recall. It records Linux Node and how to invoke Node tooling, Playwright and its real Chromium binary, Windows `dotnet.exe`, `SQLCMD.EXE` and what it can reach, and the short list of what is genuinely absent. Nothing recorded this before, which is how the two corrections below came to be believed.

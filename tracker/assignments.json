@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-21T00:45:00Z",
+  "updatedUtc": "2026-08-23T04:10:00Z",
   "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
@@ -26,15 +26,15 @@
     "releasedBy": "scope completed locally"
   },
   "lastCompletedAssignment": {
-    "assignment": "Deploy verification and build stamping, plus the database script and table audit",
-    "issue": 740,
-    "pr": null,
-    "branch": "fix/740-deploy-verification (merged to master)",
-    "completedUtc": "2026-08-21T00:45:00Z",
-    "mergeSha": "1eb4cfdd",
+    "assignment": "Board-fit safety net for #790, generic above all display layouts",
+    "issue": 790,
+    "pr": 793,
+    "branch": "fix/790-board-fit-safety",
+    "completedUtc": "2026-08-23T04:10:00Z",
+    "mergeSha": null,
     "acceptedProductSha": null,
-    "acceptance": "No workbook and no independent review; merged and deployed at the owner's direct instruction during a live session.",
-    "notes": "Closed #740, #726, #739 and #736. A green deploy now has to prove the new build is running: the API is stamped with its commit after upload, each static build writes dist/version.json, and every deploy job polls until the app reports that commit, restarts once, then fails. Also fixed deploy-dev.yml classifying only the last commit of a push, which shipped nothing on c4f40200 and reported success. Deployed and verified: 5/5 apps serving 1eb4cfdd, no restart escalation. Opened #744 (retire dbo.MenuItems, still wired to the POS sync), #745 (test-created rows in the dev database), #746 (every /pair visit registers a new screen). Audit: docs/reports/database-schema-audit-2026-08-20.md - no table or script was removed, and the report says why."
+    "acceptance": "Not yet merged. PR opened for independent review.",
+    "notes": "DisplayFrame measures rendered board height vs actual viewport and scales the whole board down to fit (never up, floor 0.4), instead of a per-layout CSS fix - deliberately, since Theme Studio (docs/features/theme-studio/workstream.json) is still design-stage with nothing built and would make a photo_grid-specific fix wasted work. Verified against the live QA screen's real content: scale 1080/1354=0.7976, all 6 items now visible where 3 were previously off-screen. Known cosmetic interaction with PR #792's diagnostics thumbnail, noted in both PR descriptions."
   },
   "previousCompletedAssignment": {
     "assignment": "Onboarding M1 plus the defects blocking the first end-to-end journey",
