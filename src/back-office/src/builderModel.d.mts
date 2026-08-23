@@ -60,6 +60,11 @@ export function unavailableNote(
   now?: Date
 ): string | null;
 export function isMissingPrice(item: { price?: string | null } | null | undefined): boolean;
+export type MissingPriceItem = { itemId: string; name: string };
+export function changedItemsMissingPrice(
+  board: BoardResponse | null | undefined,
+  changes: readonly { targetKind: string; targetId: string | null; field: string; afterValue?: string | null }[] | null | undefined
+): MissingPriceItem[];
 export function availabilityLine(
   availability: MenuAvailability | null | undefined,
   timezone: string | null | undefined,

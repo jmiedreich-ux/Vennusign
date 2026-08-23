@@ -379,6 +379,77 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("add-item-result").filter({ hasText: name })).toHaveCount(1);
   });
 
+  // Q113 still stands - a missing price never blocks Publish - but an owner
+  // reported an item shipping with no price and only finding out from a live
+  // "$0.00" board. Publish must name it and ask first.
+  test("publishing a newly created item with no price asks first, and naming it", async ({ page }) => {
+    const data = await seed({ role: "owner", includeScreen: true, label: "publish-no-price" });
+    await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
+      headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
+    });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("open-add-item").click();
+    const name = `No Price ${data.itemId.slice(0, 6)}`;
+    await page.getByTestId("add-item-input").fill(name);
+    await page.getByTestId("add-item-create").click();
+    await expect(page.getByTestId("missing-price-flag")).toBeVisible();
+
+    await page.getByTestId("publish").click();
+    const dialog = page.getByTestId("publish-missing-price-dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText(name);
+
+    // "Go back" does not publish - the draft is exactly as it was. This menu was
+    // never published, so the copy is "Nothing on your screens yet" rather than a
+    // change count (Q181) - the Publish button staying present is what proves the
+    // draft is still there.
+    await dialog.getByRole("button", { name: "Go back" }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByTestId("draft-count")).not.toContainText("Everything is on your screens");
+    await expect(page.getByTestId("publish")).toBeVisible();
+
+    // "Publish anyway" is a real escape hatch - Q113 is not silently reversed.
+    await page.getByTestId("publish").click();
+    await expect(page.getByTestId("publish-missing-price-dialog")).toBeVisible();
+    await page.getByTestId("confirm-publish-missing-price").click();
+    await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
+  });
+
+  test("Review first also asks before publishing a price-less item", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "publish-no-price-review" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("open-add-item").click();
+    const name = `Review No Price ${data.itemId.slice(0, 6)}`;
+    await page.getByTestId("add-item-input").fill(name);
+    await page.getByTestId("add-item-create").click();
+
+    await page.getByTestId("review-first").click();
+    await page.getByTestId("publish-from-review").click();
+
+    await expect(page.getByTestId("publish-missing-price-dialog")).toBeVisible();
+    await expect(page.getByTestId("publish-missing-price-dialog")).toContainText(name);
+  });
+
+  test("publishing a change that does not touch a price-less item ships straight through, no extra dialog", async ({ page }) => {
+    const data = await seed({ role: "owner", includeScreen: true, label: "publish-has-price" });
+    await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
+      headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
+    });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    await page.getByTestId("item-price").fill("13.5");
+    await page.getByTestId("item-price").blur();
+
+    await page.getByTestId("publish").click();
+    await expect(page.getByTestId("publish-missing-price-dialog")).toHaveCount(0);
+    await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
+  });
+
   test("a section can be added, renamed, and deleted — and its items come back", async ({ page }) => {
     const data = await seed({ role: "owner", label: "sections" });
     await openMenuBuilderAs(page, "owner", data.menuId);
