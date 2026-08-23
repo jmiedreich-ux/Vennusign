@@ -404,6 +404,12 @@ export default function MenuBuilder({
   const canAssignScreens = hasMenuCapability("screen-assignment", capabilityOverrides);
   const canViewCapacity = hasMenuCapability("capacity", capabilityOverrides);
   const canViewHistory = hasMenuCapability("history", capabilityOverrides);
+  // "restore" is its own capability (decision 6: independently switchable),
+  // distinct from "history": viewing what changed and reverting to a past
+  // draft state are different acts. #799: this was defined in
+  // menuCapabilities.ts but never actually checked - "go back to..." was
+  // reachable regardless of capabilityOverrides.
+  const canRestore = hasMenuCapability("restore", capabilityOverrides);
   /*
    * The credential every write reads, at the moment it is sent.
    *
@@ -433,6 +439,7 @@ export default function MenuBuilder({
   const [seeAllOpen, setSeeAllOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [viewAllOpen, setViewAllOpen] = useState(false);
   const [history, setHistory] = useState<MenuHistoryEntry[]>();
   const [pageHistory, setPageHistory] = useState<MenuHistoryEntry[]>();
   const [pageHistoryError, setPageHistoryError] = useState(false);
@@ -472,6 +479,7 @@ export default function MenuBuilder({
   const seeAllRef = useDialogFocus(seeAllOpen);
   const reviewRef = useDialogFocus(reviewOpen);
   const historyRef = useDialogFocus(historyOpen);
+  const viewAllRef = useDialogFocus(viewAllOpen);
   const pageDeleteRef = useDialogFocus(Boolean(confirmPageDelete));
   const fitRef = useDialogFocus(fitOpen);
   const itemRemoveRef = useDialogFocus(confirmItemRemove);
@@ -1805,6 +1813,7 @@ export default function MenuBuilder({
     seeAllOpen ||
     reviewOpen ||
     historyOpen ||
+    viewAllOpen ||
     findOpen ||
     assignmentOpen ||
     fitOpen ||
@@ -2220,7 +2229,7 @@ export default function MenuBuilder({
           {canViewHistory ? <section className="builder__page-history" aria-labelledby="page-history-title" data-testid="page-history">
             <header className="builder__page-history-header">
               <h3 id="page-history-title">History · {activePage?.name ?? "Page"}</h3>
-              <button type="button" className="builder__link" data-testid="menu-history-link" onClick={() => { setHistoryOpen(true); if (!history) loadMenuHistory(configuration, credential(), menuId).then(setHistory).catch(() => setHistory([])); }}>View all</button>
+              <button type="button" className="builder__link" data-testid="menu-history-link" onClick={() => { setViewAllOpen(true); if (!history) loadMenuHistory(configuration, credential(), menuId).then(setHistory).catch(() => setHistory([])); }}>View all</button>
             </header>
             {pageHistoryError ? <div className="builder__page-history-state" role="alert"><span>History couldn&apos;t load.</span><button type="button" className="builder__link" onClick={() => activePageId && void refreshPageHistory(activePageId)}>Try again</button></div>
               : pageHistory === undefined ? <p className="builder__page-history-state" role="status">Loading history…</p>
@@ -2795,7 +2804,7 @@ export default function MenuBuilder({
             ) : (
               publishedLine(data, venueTimezone)
             )}
-            {data.publishedVersion !== null ? (
+            {data.publishedVersion !== null && canRestore ? (
               <>
                 {" · "}
                 <button
@@ -3133,6 +3142,53 @@ export default function MenuBuilder({
             </div>
           </div>
         </div>
+      ) : null}
+
+      {/*
+        #799: "View all" and "go back to..." used to share this one dialog,
+        which filters to published checkpoints only - so a never-published
+        menu's "View all" showed "Nothing to go back to yet" instead of its
+        real history. "View all" is a passive changelog (every change, same
+        entries the page-scoped sidebar panel shows but for the whole menu);
+        "go back to..." is an active restore picker (published checkpoints
+        only, since a mid-draft state isn't something you can go back to).
+        Same underlying `history` fetch (already correctly whole-menu), two
+        different views over it.
+      */}
+      {viewAllOpen ? (
+        <>
+          <div className="builder__scrim" onClick={() => setViewAllOpen(false)} />
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="view-all-title" data-testid="view-all-dialog" ref={viewAllRef}>
+            <h2 id="view-all-title">History · {board?.name ?? "this menu"}</h2>
+            <p>Every change to this menu, across every page.</p>
+            {history === undefined ? (
+              <p className="builder__page-history-state" role="status">Loading history…</p>
+            ) : history.length === 0 ? (
+              <p className="builder__page-history-state">Nothing here yet.</p>
+            ) : (
+              <ol className="builder__page-history-list" data-testid="view-all-list">
+                {history.map((entry, index) => (
+                  <li key={`${entry.occurredUtc}:${entry.kind}:${entry.detail}:${index}`} data-testid="view-all-entry">
+                    <i aria-hidden="true" />
+                    <span>
+                      <strong>{entry.detail ?? entry.kind.replaceAll("_", " ")}</strong>
+                      <small>
+                        {entry.pageName ? `${entry.pageName} · ` : ""}
+                        {entry.author ? `${entry.author} · ` : ""}
+                        {venueTime(entry.occurredUtc, venueTimezone)}
+                      </small>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+            <div className="builder__dialog-actions">
+              <button type="button" className="action-secondary" onClick={() => setViewAllOpen(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </>
       ) : null}
 
       {historyOpen ? (
