@@ -196,6 +196,35 @@ export function isMissingPrice(item) {
 }
 
 /**
+ * Items THIS draft would publish with no price - Q113 still stands (a quiet
+ * canvas flag, never a block), but an owner should be told, by name, before
+ * publishing sends a price-less item to a live screen - not left to notice a
+ * "$0.00" board afterward. Only items this draft actually touches (edited, or
+ * newly placed on a page) are named - editing one item should not surface
+ * every price-less item some earlier draft already published on purpose.
+ */
+export function changedItemsMissingPrice(board, changes) {
+  const itemIds = new Set();
+  for (const change of changes ?? []) {
+    if (change?.targetKind === "item" && change?.targetId) {
+      itemIds.add(change.targetId);
+    }
+    if (change?.targetKind === "placement" && change?.targetId && change?.field === "placed" && change?.afterValue === "true") {
+      itemIds.add(change.targetId);
+    }
+  }
+
+  const missing = [];
+  for (const itemId of itemIds) {
+    const item = findItem(board, itemId)?.item;
+    if (item && isMissingPrice(item)) {
+      missing.push({ itemId, name: item.name });
+    }
+  }
+  return missing;
+}
+
+/**
  * What the availability panel says about an item that is off right now (Q104).
  * The time is the venue's, and the sentence names the consequence rather than the
  * state: "off" is a setting, "hidden on all screens right now" is what a guest sees.

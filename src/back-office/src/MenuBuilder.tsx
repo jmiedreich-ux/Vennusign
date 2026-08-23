@@ -53,6 +53,7 @@ import {
   canvasBoard,
   changeSentence,
   changeValues,
+  changedItemsMissingPrice,
   draftPhrase,
   findItem,
   findOnBoard,
@@ -462,8 +463,10 @@ export default function MenuBuilder({
   const [draggedSectionId, setDraggedSectionId] = useState<string | null>(null);
   const [confirmPageDelete, setConfirmPageDelete] = useState<{ pageId: string; name: string; destinationPageId: string; sectionCount: number; mode: "move" | "delete" } | null>(null);
   const [confirmItemRemove, setConfirmItemRemove] = useState(false);
+  const [confirmPublishMissingPrice, setConfirmPublishMissingPrice] = useState(false);
 
   const discardRef = useDialogFocus(confirmDiscard);
+  const publishMissingPriceRef = useDialogFocus(confirmPublishMissingPrice);
   const deleteRef = useDialogFocus(Boolean(confirmDelete));
   const themeRef = useDialogFocus(themePickerOpen);
   const seeAllRef = useDialogFocus(seeAllOpen);
@@ -1722,6 +1725,14 @@ export default function MenuBuilder({
 
   const blocked = publishBlockedReason({ draftCount: data?.draftCount ?? 0, saveState });
 
+  // Q113 still stands - a missing price never blocks Publish - but the owner
+  // should be told, by name, before it ships rather than left to notice a
+  // "$0.00" board afterward. Only items THIS draft touches are named.
+  const missingPriceItems = useMemo(
+    () => (board ? changedItemsMissingPrice(board, data?.changes) : []),
+    [board, data?.changes]
+  );
+
   const viewingScreens = useMemo(
     () => screens.filter(screen => (data?.screenIds ?? []).includes(screen.screenId)),
     [data?.screenIds, screens]
@@ -1743,6 +1754,17 @@ export default function MenuBuilder({
           : "Published. Your screens are showing it."
       );
     });
+  };
+
+  // The one path both Publish buttons go through: if this draft would ship an
+  // item with no price, name it and ask once, rather than publishing straight
+  // through and leaving it for someone to notice on a live screen afterward.
+  const requestPublish = () => {
+    if (missingPriceItems.length > 0) {
+      setConfirmPublishMissingPrice(true);
+      return;
+    }
+    void publish();
   };
 
   const discard = async () => {
@@ -1776,6 +1798,7 @@ export default function MenuBuilder({
    */
   const behindScrim =
     confirmDiscard ||
+    confirmPublishMissingPrice ||
     confirmItemRemove ||
     Boolean(confirmDelete) ||
     themePickerOpen ||
@@ -2852,7 +2875,7 @@ export default function MenuBuilder({
               className="builder__publish-button"
               data-testid="publish"
               disabled={busy || Boolean(blocked)}
-              onClick={() => void publish()}
+              onClick={requestPublish}
             >
               {publishLabel(data.draftCount)}
             </button>
@@ -2898,6 +2921,48 @@ export default function MenuBuilder({
               </button>
               <button type="button" className="builder__quiet-danger" data-testid="confirm-discard" onClick={() => void discard()}>
                 Discard
+              </button>
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {confirmPublishMissingPrice ? (
+        <>
+          <div className="builder__scrim" onClick={() => setConfirmPublishMissingPrice(false)} />
+          <div
+            className="builder__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="publish-missing-price-title"
+            data-testid="publish-missing-price-dialog"
+            ref={publishMissingPriceRef}
+          >
+            <h2 id="publish-missing-price-title">
+              {missingPriceItems.length === 1 ? "1 item has no price" : `${missingPriceItems.length} items have no price`}
+            </h2>
+            <p>It will show on your screens with no price unless you go back and set one.</p>
+            <ul className="builder__screen-list" data-testid="publish-missing-price-list">
+              {missingPriceItems.map(item => (
+                <li key={item.itemId}>
+                  <strong>{item.name}</strong>
+                </li>
+              ))}
+            </ul>
+            <div className="builder__dialog-actions">
+              <button type="button" className="action-secondary" onClick={() => setConfirmPublishMissingPrice(false)}>
+                Go back
+              </button>
+              <button
+                type="button"
+                className="builder__publish-button"
+                data-testid="confirm-publish-missing-price"
+                onClick={() => {
+                  setConfirmPublishMissingPrice(false);
+                  void publish();
+                }}
+              >
+                Publish anyway
               </button>
             </div>
           </div>
@@ -3037,7 +3102,7 @@ export default function MenuBuilder({
                   disabled={busy}
                   onClick={() => {
                     setReviewOpen(false);
-                    void publish();
+                    requestPublish();
                   }}
                 >
                   {publishLabel(data.draftCount)}
