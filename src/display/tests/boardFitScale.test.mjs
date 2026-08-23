@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { computeFitScale, boardFitMinScale, solveFitWidth, clampScale } from '../src/boardFitScale.mjs';
+import { computeFitScale, boardFitMinScale, solveFitWidth, clampScale, computeBoardFit } from '../src/boardFitScale.mjs';
 
 test('never scales up a board that already fits', () => {
   assert.equal(computeFitScale(900, 1080), 1);
@@ -48,6 +48,7 @@ test('solveFitWidth recovers the exact container width for a linear height-vs-wi
 
   const viewportWidth = 1920, viewportHeight = 1080;
   const solvedWidth = solveFitWidth({ width: w0, height: h0 }, { width: w1, height: h1 }, viewportWidth, viewportHeight);
+  assert.notEqual(solvedWidth, null);
   const scale = clampScale(viewportWidth / solvedWidth);
 
   // Rendering the board at solvedWidth and then scaling it down uniformly must land on EXACTLY
@@ -59,13 +60,11 @@ test('solveFitWidth recovers the exact container width for a linear height-vs-wi
   assert.ok(scale < 1080 / 1354, 'filling the width requires shrinking further than the height-only fix did');
 });
 
-test('solveFitWidth falls back to the viewport width on invalid input, or echoes back an invalid viewport width unchanged', () => {
-  assert.equal(solveFitWidth({ width: 1920, height: 1354 }, { width: 1920, height: 1354 }, 1920, 1080), 1920);
-  assert.equal(solveFitWidth({ width: NaN, height: 1354 }, { width: 2880, height: 1800 }, 1920, 1080), 1920);
-  assert.equal(solveFitWidth(undefined, { width: 2880, height: 1800 }, 1920, 1080), 1920);
-  // An invalid (zero) viewport width has no meaningful fallback to invent - the function
-  // declines to solve rather than fabricating a plausible-looking width.
-  assert.equal(solveFitWidth({ width: 1920, height: 1354 }, { width: 2880, height: 1800 }, 0, 1080), 0);
+test('solveFitWidth returns null (not a fabricated width) on invalid input', () => {
+  assert.equal(solveFitWidth({ width: 1920, height: 1354 }, { width: 1920, height: 1354 }, 1920, 1080), null);
+  assert.equal(solveFitWidth({ width: NaN, height: 1354 }, { width: 2880, height: 1800 }, 1920, 1080), null);
+  assert.equal(solveFitWidth(undefined, { width: 2880, height: 1800 }, 1920, 1080), null);
+  assert.equal(solveFitWidth({ width: 1920, height: 1354 }, { width: 2880, height: 1800 }, 0, 1080), null);
 });
 
 test('solveFitWidth still finds a width when height does not depend on width at all (a flat line)', () => {
@@ -78,11 +77,82 @@ test('solveFitWidth still finds a width when height does not depend on width at 
   assert.ok(Math.abs(width - (1354 * 1920) / 1080) < 0.01);
 });
 
-test('solveFitWidth falls back to the viewport width when the line is parallel to the target ratio - genuinely no finite solution', () => {
+test('solveFitWidth returns null when the line is parallel to the target ratio - genuinely no finite solution', () => {
   // slope exactly equals viewportHeight/viewportWidth: every width renders at the same aspect
   // ratio as the target, so scale is already 1 at every width and there is no distinguished
   // width to solve for - not a bug, a real degenerate case.
   const targetRatio = 1080 / 1920;
   const width = solveFitWidth({ width: 1920, height: 1920 * targetRatio }, { width: 2880, height: 2880 * targetRatio }, 1920, 1080);
-  assert.equal(width, 1920);
+  assert.equal(width, null);
+});
+
+// The regression an independent review of #796 found live: a board with enough rows has height
+// growing FASTER with width than the target ratio does (slope > targetRatio) - widening it makes
+// the aspect ratio worse, not better, so no positive width ever solves it. This is an ORDINARY
+// case (any board with more than ~2 rows of aspect-ratio-locked cards), not a contrived one.
+test('solveFitWidth returns null when height grows faster with width than the target ratio (a real multi-row board)', () => {
+  // Reproduces the live-reproduced case: naturalWidth=1920, naturalHeight=2911, probe
+  // width=2880, height=3465 - a 12-item, 4-row photo_grid board.
+  const width = solveFitWidth({ width: 1920, height: 2911 }, { width: 2880, height: 3465 }, 1920, 1080);
+  assert.equal(width, null, 'a negative or nonsensical "solved" width must not be returned as if it were real');
+});
+
+test('computeBoardFit leaves an already-fitting board untouched', () => {
+  const fit = computeBoardFit({ width: 1920, height: 900 }, { width: 2880, height: 1200 }, 1920, 1080);
+  assert.deepEqual(fit, { scale: 1, width: null });
+});
+
+test('computeBoardFit fills the width when a clean solution exists', () => {
+  const k = 0.4167;
+  const w0 = 1920, h0 = 1354;
+  const fixed = h0 - k * w0;
+  const w1 = w0 * 1.5;
+  const h1 = fixed + k * w1;
+
+  const fit = computeBoardFit({ width: w0, height: h0 }, { width: w1, height: h1 }, 1920, 1080);
+  assert.notEqual(fit.width, null);
+  assert.ok(fit.scale > 0 && fit.scale <= 1);
+  const renderedWidth = fit.width * fit.scale;
+  const renderedHeight = (fixed + k * fit.width) * fit.scale;
+  assert.ok(Math.abs(renderedWidth - 1920) < 0.01);
+  assert.ok(Math.abs(renderedHeight - 1080) < 0.01);
+});
+
+// This is the exact bug the independent review caught: falling back to {scale: 1, width:
+// viewportWidth} whenever solveFitWidth can't find a usable answer reintroduces #790's original
+// defect (a board can be 2-3x the viewport's height and render completely unshrunk). The correct
+// fallback is the height-only #790 behavior - letterboxed, but with nothing lost off the bottom.
+test('computeBoardFit falls back to height-only shrink (never scale=1) when no width-filling solution exists', () => {
+  const natural = { width: 1920, height: 2911 };
+  const probe = { width: 2880, height: 3465 };
+  const fit = computeBoardFit(natural, probe, 1920, 1080);
+
+  assert.equal(fit.width, null, 'no width override - the fallback is the natural width, letterboxed');
+  assert.ok(fit.scale < 1, `scale must shrink to fit - got ${fit.scale}, the un-fixed bug returned exactly 1`);
+  // The raw ratio here (1080/2911 ≈ 0.371) is itself below the legibility floor, so the correct
+  // fallback is computeFitScale's own floor-clamped answer, not the raw unclamped ratio.
+  assert.equal(fit.scale, computeFitScale(natural.height, 1080), 'must match computeFitScale exactly - same fallback the original #790 fix used');
+});
+
+test('computeBoardFit falls back to height-only shrink when a width-filling solution exists but its scale would need clamping', () => {
+  // A very tall board with a shallow width-dependence: solveFitWidth finds a mathematically
+  // valid width, but the scale it implies falls below the legibility floor. Applying that
+  // (unclamped) width at a (clamped) scale would overflow horizontally - a different but
+  // equally real defect - so this must fall back rather than apply a mismatched pair.
+  const k = 0.05;
+  const w0 = 1920, h0 = 5000;
+  const fixed = h0 - k * w0;
+  const w1 = w0 * 1.5;
+  const h1 = fixed + k * w1;
+
+  const fit = computeBoardFit({ width: w0, height: h0 }, { width: w1, height: h1 }, 1920, 1080);
+
+  assert.equal(fit.width, null);
+  assert.equal(fit.scale, boardFitMinScale);
+});
+
+test('computeBoardFit is fail-safe on invalid input, matching computeFitScale rather than fabricating a fit', () => {
+  const fit = computeBoardFit({ width: NaN, height: NaN }, { width: 2880, height: 1800 }, 1920, 1080);
+  assert.equal(fit.scale, 1);
+  assert.equal(fit.width, null);
 });

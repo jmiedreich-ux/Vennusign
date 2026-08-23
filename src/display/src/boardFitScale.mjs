@@ -34,6 +34,12 @@ export function computeFitScale(contentHeight, viewportHeight, minScale = boardF
 // and two samples at two different widths pin that line down exactly - this is a closed-form
 // solve, not an iterative approximation, and it terminates in one step.
 //
+// Returns null - not a fallback width - when no positive width solves the aspect ratio: a caller
+// that silently treated a failed solve as "width already correct" reintroduced the exact #790
+// bug this feature exists to prevent (a board with enough rows has height growing FASTER with
+// width than the target ratio does, which makes the closed-form width negative - a real,
+// ordinary case, not a contrived one - and "no shrink at all" is the wrong response to it).
+//
 // sampleA/sampleB: { width, height } measured at two different container widths.
 export function solveFitWidth(sampleA, sampleB, viewportWidth, viewportHeight) {
   const { width: w0, height: h0 } = sampleA ?? {};
@@ -41,7 +47,7 @@ export function solveFitWidth(sampleA, sampleB, viewportWidth, viewportHeight) {
 
   const inputs = [w0, h0, w1, h1, viewportWidth, viewportHeight];
   if (!inputs.every((value) => Number.isFinite(value)) || w0 <= 0 || w1 <= 0 || viewportWidth <= 0 || viewportHeight <= 0 || w0 === w1) {
-    return viewportWidth;
+    return null;
   }
 
   const slope = (h1 - h0) / (w1 - w0);
@@ -49,12 +55,36 @@ export function solveFitWidth(sampleA, sampleB, viewportWidth, viewportHeight) {
   const denominator = targetRatio - slope;
 
   // The line is (at or past) parallel to the target ratio - no finite width makes this board's
-  // aspect ratio match the viewport's. Falls back to the natural (unmodified) width; the caller's
-  // height-only scale still applies on top of that, so nothing is lost, just not width-filled.
+  // aspect ratio match the viewport's.
   if (Math.abs(denominator) < 1e-6) {
-    return viewportWidth;
+    return null;
   }
 
   const solvedWidth = (h0 - slope * w0) / denominator;
-  return Number.isFinite(solvedWidth) && solvedWidth > 0 ? solvedWidth : viewportWidth;
+  return Number.isFinite(solvedWidth) && solvedWidth > 0 ? solvedWidth : null;
+}
+
+// Decides the actual {scale, width} to apply, given two width/height samples and the real
+// viewport - the single place that turns solveFitWidth's math into a rendering decision, so the
+// fallback logic itself is unit-tested rather than only the closed-form solve underneath it.
+//
+// A width-filling solution is used only when it is both real (solveFitWidth found one) and
+// usable without a mismatch: applying a scale the legibility floor had to clamp, while width
+// stays at the unclamped solved value, renders wider than the viewport - a different but equally
+// real overflow. Either way out falls back to computeFitScale's original #790 behavior: shrink to
+// fit the height alone, keep the natural width. Letterboxed-but-correct beats filled-but-broken.
+export function computeBoardFit(natural, probe, viewportWidth, viewportHeight, minScale = boardFitMinScale) {
+  if (!Number.isFinite(natural?.height) || !Number.isFinite(viewportHeight) || natural.height <= viewportHeight) {
+    return { scale: 1, width: null };
+  }
+
+  const solvedWidth = solveFitWidth(natural, probe, viewportWidth, viewportHeight);
+  if (solvedWidth !== null) {
+    const rawScale = viewportWidth / solvedWidth;
+    if (Number.isFinite(rawScale) && rawScale > 0 && rawScale <= 1 && rawScale >= minScale) {
+      return { scale: rawScale, width: solvedWidth };
+    }
+  }
+
+  return { scale: computeFitScale(natural.height, viewportHeight, minScale), width: null };
 }

@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from 'react';
 import type { DisplayContent } from '../displayContent.mjs';
 import { createLayoutRegistry } from '../layoutRegistry.mjs';
-import { clampScale, solveFitWidth } from '../boardFitScale.mjs';
+import { computeBoardFit, type BoardFit } from '../boardFitScale.mjs';
 import ClassicDinerLayout from './ClassicDinerLayout';
 import DailySpecialHeroLayout from './DailySpecialHeroLayout';
 import NeonChalkboardLayout from './NeonChalkboardLayout';
@@ -44,8 +44,6 @@ type DisplayFrameProps = {
   requestedLayoutKey: string;
   usedFallback: boolean;
 };
-
-type BoardFit = { scale: number; width: number | null };
 
 const naturalFit: BoardFit = { scale: 1, width: null };
 
@@ -103,18 +101,19 @@ function useBoardFitScale() {
       } else {
         // One probe at a wider width pins the exact linear relationship between container width
         // and rendered height (see boardFitScale.mjs) - a closed-form solve, not an iterative
-        // approximation, so this never needs more than one extra measurement.
+        // approximation, so this never needs more than one extra measurement. computeBoardFit
+        // decides whether that solve is actually usable (a positive width, and a scale that
+        // doesn't need clamping) or whether to fall back to the height-only #790 behavior.
         const probeWidth = naturalWidth * 1.5;
         container.style.width = `${probeWidth}px`;
         const probeHeight = container.scrollHeight;
 
-        const solvedWidth = solveFitWidth(
+        next = computeBoardFit(
           { width: naturalWidth, height: naturalHeight },
           { width: probeWidth, height: probeHeight },
           viewportWidth,
           viewportHeight
         );
-        next = { scale: clampScale(viewportWidth / solvedWidth), width: solvedWidth };
       }
 
       // Measuring is destructive - it has to clear and probe container.style.width to read
@@ -196,6 +195,11 @@ export function DisplayFrame({ children, content, layoutKey, requestedLayoutKey,
         ref={containerRef}
         data-board-fit-scale={scale}
         data-board-fit-width={width ?? undefined}
+        // transform-origin is 'top left', not 'top center', in both branches: once width can be
+        // widened before scaling (#794), the math in computeBoardFit assumes the scaled box's
+        // top-left corner lands at the viewport's top-left - a center origin would leave it
+        // misaligned whenever width is overridden. Left makes no visual difference when width is
+        // null (scale 1 is the identity transform), so one origin covers both cases.
         style={
           width === null
             ? { transform: `scale(${scale})`, transformOrigin: 'top left' }

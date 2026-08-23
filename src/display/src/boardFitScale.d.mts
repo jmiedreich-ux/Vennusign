@@ -7,4 +7,12 @@ export function solveFitWidth(
   sampleB: BoardFitSample,
   viewportWidth: number,
   viewportHeight: number
-): number;
+): number | null;
+export type BoardFit = { scale: number; width: number | null };
+export function computeBoardFit(
+  natural: BoardFitSample,
+  probe: BoardFitSample,
+  viewportWidth: number,
+  viewportHeight: number,
+  minScale?: number
+): BoardFit;
