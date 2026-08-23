@@ -20,7 +20,6 @@ export type ServerDiagnostics = {
   deliveryReceivedUtc: string | null;
   deliveryAppliedUtc: string | null;
   deliveryFailureCode: string | null;
-  deliveryFailureDetail: string | null;
   lastReceiptPlayerVersion: string | null;
   lastReceiptShellVersion: string | null;
   isOnboardingFirstScreen: boolean;

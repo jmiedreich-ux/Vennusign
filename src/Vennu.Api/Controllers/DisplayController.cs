@@ -442,7 +442,6 @@ public class DisplayController : ControllerBase
             DeliveryReceivedUtc = delivery?.ReceivedUtc,
             DeliveryAppliedUtc = delivery?.AppliedUtc,
             DeliveryFailureCode = delivery?.FailureCode,
-            DeliveryFailureDetail = delivery?.FailureDetail,
             LastReceiptPlayerVersion = delivery?.PlayerVersion,
             LastReceiptShellVersion = delivery?.ShellVersion,
             IsOnboardingFirstScreen = onboarding is not null,

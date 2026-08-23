@@ -49,8 +49,6 @@ public class DisplayDiagnosticsResponse
 
     public string? DeliveryFailureCode { get; set; }
 
-    public string? DeliveryFailureDetail { get; set; }
-
     public string? LastReceiptPlayerVersion { get; set; }
 
     public string? LastReceiptShellVersion { get; set; }

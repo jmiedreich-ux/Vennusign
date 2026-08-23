@@ -36,3 +36,12 @@ test('reports a non-2xx, non-404 response as an error result', async () => {
   const result = await loadServerDiagnostics('https://api.example.com', 's1', fetchImpl);
   assert.equal(result.kind, 'error');
 });
+
+test('reports a 200 response with a non-JSON body as an error result, not a thrown rejection', async () => {
+  const fetchImpl = async () => new Response('<!doctype html><title>Not Found</title>', {
+    status: 200,
+    headers: { 'Content-Type': 'text/html' }
+  });
+  const result = await loadServerDiagnostics('https://api.example.com', 's1', fetchImpl);
+  assert.equal(result.kind, 'error');
+});

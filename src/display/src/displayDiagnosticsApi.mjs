@@ -21,5 +21,12 @@ export async function loadServerDiagnostics(apiBaseUrl, screenId, fetchImpl = fe
     return { kind: 'error', message: `The diagnostics service returned ${response.status}.` };
   }
 
-  return { kind: 'ok', diagnostics: await response.json() };
+  // A 2xx response is not proof of a JSON body - a misconfigured proxy or a wrong apiBaseUrl
+  // answering 200 with an HTML error page is exactly the class of bug this endpoint exists to
+  // diagnose (#731), so it has to degrade to an error result here too, not throw past the caller.
+  try {
+    return { kind: 'ok', diagnostics: await response.json() };
+  } catch {
+    return { kind: 'error', message: 'The diagnostics service returned a response that was not valid JSON.' };
+  }
 }

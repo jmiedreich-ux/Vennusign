@@ -33,9 +33,13 @@ export default function DiagnosticsPage({ screenId, platform, appVersion }: Diag
     let disposed = false;
 
     const refresh = () => {
-      void loadServerDiagnostics(displayConfig.apiBaseUrl, screenId).then((result) => {
-        if (!disposed) setServer(result);
-      });
+      void loadServerDiagnostics(displayConfig.apiBaseUrl, screenId)
+        .then((result) => {
+          if (!disposed) setServer(result);
+        })
+        .catch(() => {
+          if (!disposed) setServer({ kind: 'error', message: 'The diagnostics service could not be reached.' });
+        });
     };
 
     refresh();
@@ -143,6 +147,22 @@ export default function DiagnosticsPage({ screenId, platform, appVersion }: Diag
               <dt>Configured size</dt><dd>{server.diagnostics.configuredWidthPixels}×{server.diagnostics.configuredHeightPixels}</dd>
               <dt>Authoritative / applied revision</dt><dd>{server.diagnostics.authoritativeRevision ?? 'none'} / {server.diagnostics.appliedRevision ?? 'none'}</dd>
               <dt>Delivery state</dt><dd>{server.diagnostics.deliveryState ?? 'none'}</dd>
+              <dt>Delivery requested / received / applied</dt>
+              <dd>{formatDate(server.diagnostics.deliveryRequestedUtc)} / {formatDate(server.diagnostics.deliveryReceivedUtc)} / {formatDate(server.diagnostics.deliveryAppliedUtc)}</dd>
+              {server.diagnostics.deliveryFailureCode && (
+                <>
+                  <dt>Delivery failure</dt>
+                  <dd className="flag-warn">{server.diagnostics.deliveryFailureCode}</dd>
+                </>
+              )}
+              <dt>Last receipt player / shell version</dt>
+              <dd>{server.diagnostics.lastReceiptPlayerVersion ?? 'unknown'} / {server.diagnostics.lastReceiptShellVersion ?? 'unknown'}</dd>
+              {server.diagnostics.desiredAppVersion && (
+                <>
+                  <dt>Desired version</dt>
+                  <dd className={server.diagnostics.desiredAppVersion !== server.diagnostics.appVersion ? 'flag-warn' : 'flag-ok'}>{server.diagnostics.desiredAppVersion}</dd>
+                </>
+              )}
               <dt>Onboarding first screen</dt><dd>{server.diagnostics.isOnboardingFirstScreen ? `Yes, go-live ${formatDate(server.diagnostics.onboardingGoLiveAchievedUtc)}` : 'No'}</dd>
             </dl>
           )}
