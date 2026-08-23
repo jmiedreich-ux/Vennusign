@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from 'react';
 import type { DisplayContent } from '../displayContent.mjs';
 import { createLayoutRegistry } from '../layoutRegistry.mjs';
-import { computeFitScale } from '../boardFitScale.mjs';
+import { clampScale, solveFitWidth } from '../boardFitScale.mjs';
 import ClassicDinerLayout from './ClassicDinerLayout';
 import DailySpecialHeroLayout from './DailySpecialHeroLayout';
 import NeonChalkboardLayout from './NeonChalkboardLayout';
@@ -45,6 +45,10 @@ type DisplayFrameProps = {
   usedFallback: boolean;
 };
 
+type BoardFit = { scale: number; width: number | null };
+
+const naturalFit: BoardFit = { scale: 1, width: null };
+
 // Every layout sets `min-height: 100vh` on its own root and nothing else - a floor, not a
 // ceiling - so a board taller than the viewport just grows past it with no scroll and no
 // indicator (#790: three of six items on a real venue's board were entirely off-screen). This
@@ -52,15 +56,76 @@ type DisplayFrameProps = {
 // than inside any one of them, and shrinks the whole board uniformly until it fits. It only ever
 // shrinks - a board that already fits keeps its natural size - and never below a legibility
 // floor, past which some overflow is accepted rather than illegible text.
+//
+// A uniform scale that only corrects for height also shrinks width by the same factor, wasting
+// real width the board never overflowed (#794 - confirmed on real hardware immediately after
+// #790 shipped). So when the board doesn't already fit, this also widens the measured container
+// before scaling it down, by exactly the amount solveFitWidth computes, so the scaled result
+// fills the viewport's width exactly rather than leaving it letterboxed.
 function useBoardFitScale() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
+  const [fit, setFit] = useState<BoardFit>(naturalFit);
+  const appliedRef = useRef<BoardFit>(naturalFit);
 
   useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const recompute = () => setScale(computeFitScale(container.scrollHeight, window.innerHeight));
+    const applyFit = (next: BoardFit) => {
+      const previous = appliedRef.current;
+      const widthChanged = Math.abs((next.width ?? -1) - (previous.width ?? -1)) > 0.5;
+      const scaleChanged = Math.abs(next.scale - previous.scale) > 0.0005;
+      if (!widthChanged && !scaleChanged) {
+        // Same result as last time - skip the state update (and the DOM write it causes), or a
+        // ResizeObserver observing the very element this resizes would loop reacting to its own
+        // no-op mutation.
+        return;
+      }
+      appliedRef.current = next;
+      setFit(next);
+    };
+
+    const recompute = () => {
+      // Release any width this same effect applied on a prior pass first - otherwise this would
+      // measure at a width already pinned by that pass, not the board's true natural width.
+      container.style.width = '';
+      // offsetWidth, not getBoundingClientRect().width - the rect includes this element's own
+      // CSS transform, so on every cycle after the first it would read back whatever scale the
+      // previous cycle applied instead of the box's true untransformed width, and never converge.
+      const naturalWidth = container.offsetWidth;
+      const naturalHeight = container.scrollHeight;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      let next: BoardFit;
+      if (naturalWidth <= 0 || naturalHeight <= viewportHeight) {
+        next = naturalFit;
+      } else {
+        // One probe at a wider width pins the exact linear relationship between container width
+        // and rendered height (see boardFitScale.mjs) - a closed-form solve, not an iterative
+        // approximation, so this never needs more than one extra measurement.
+        const probeWidth = naturalWidth * 1.5;
+        container.style.width = `${probeWidth}px`;
+        const probeHeight = container.scrollHeight;
+
+        const solvedWidth = solveFitWidth(
+          { width: naturalWidth, height: naturalHeight },
+          { width: probeWidth, height: probeHeight },
+          viewportWidth,
+          viewportHeight
+        );
+        next = { scale: clampScale(viewportWidth / solvedWidth), width: solvedWidth };
+      }
+
+      // Measuring is destructive - it has to clear and probe container.style.width to read
+      // natural values - and applyFit below may legitimately skip its React state update when
+      // the result matches what's already applied (the ResizeObserver convergence guard). So the
+      // DOM has to be put back in the correct state here, unconditionally, rather than relying on
+      // a re-render that might not happen to undo what measuring just did.
+      container.style.width = next.width === null ? '' : `${next.width}px`;
+      applyFit(next);
+    };
+
     recompute();
 
     // Older TV WebViews (some Tizen/webOS builds) can lack ResizeObserver entirely. The one-shot
@@ -79,11 +144,11 @@ function useBoardFitScale() {
     };
   }, []);
 
-  return { containerRef, scale };
+  return { containerRef, scale: fit.scale, width: fit.width };
 }
 
 export function DisplayFrame({ children, content, layoutKey, requestedLayoutKey, usedFallback }: DisplayFrameProps) {
-  const { containerRef, scale } = useBoardFitScale();
+  const { containerRef, scale, width } = useBoardFitScale();
   const theme = content.theme ?? {
     backgroundColor: '#111315',
     accentColor: '#FFB74D',
@@ -130,7 +195,12 @@ export function DisplayFrame({ children, content, layoutKey, requestedLayoutKey,
       <div
         ref={containerRef}
         data-board-fit-scale={scale}
-        style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}
+        data-board-fit-width={width ?? undefined}
+        style={
+          width === null
+            ? { transform: `scale(${scale})`, transformOrigin: 'top left' }
+            : { width: `${width}px`, transform: `scale(${scale})`, transformOrigin: 'top left' }
+        }
       >
         {children}
       </div>
