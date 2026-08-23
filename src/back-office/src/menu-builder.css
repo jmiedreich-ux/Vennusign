@@ -571,6 +571,14 @@
 
 .builder__page-history-list {
   display: grid;
+  /*
+   * A grid's implicit auto rows stretch to fill leftover block-axis space when
+   * align-content is left at its default - the panel's own height comes from a
+   * minmax(0, 1fr) parent track (#798), so a short list stretched every row
+   * across whatever height was available instead of sitting tight against the
+   * next one.
+   */
+  align-content: start;
   gap: var(--sky-space-2);
   min-height: 0;
   margin: 0;
