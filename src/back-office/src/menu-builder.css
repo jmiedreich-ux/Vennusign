@@ -609,6 +609,19 @@
 .builder__page-history-list small { margin-top: calc(var(--sky-space-1) / 2); color: var(--sky-text-secondary); font-size: var(--sky-font-size-xxs); line-height: 1.35; }
 .builder__page-history-state { margin: 0; color: var(--sky-text-secondary); font-size: var(--sky-font-size-sm); line-height: 1.45; }
 .builder__page-history-state button { margin-left: var(--sky-space-1); }
+
+/*
+ * .builder__page-history-list's own height comes from a minmax(0, 1fr) grid
+ * parent track in the sidebar panel it was built for (#798) - overflow-y: auto
+ * has nothing to overflow against without that. The "View all" dialog (#799)
+ * reuses this class inside .builder__dialog, a plain auto-height modal with no
+ * such track, so a menu with real history (every entry kind now, unfiltered)
+ * grew the whole dialog to fit every row instead of scrolling - unbounded, past
+ * the viewport. Cap it here rather than in .builder__dialog generally, since
+ * every other dialog already sizes its own scrollable list individually
+ * (.builder__screen-list, .builder__fit-results).
+ */
+.builder__dialog .builder__page-history-list { max-height: min(50vh, 420px); }
 .builder__rail-list li {
   position: relative;
   display: grid;
