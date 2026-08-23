@@ -4,8 +4,17 @@ name: Atlas
 # schedule, so it reflects both the records (which change on merge) and the open issues
 # (which change without any commit here at all).
 on:
+  # Only the records change what this site says, so only they are worth a rebuild. A commit that
+  # touches no record leaves the site correct, and the six-hourly run below still catches issues,
+  # which change without any commit here at all.
   push:
     branches: [master]
+    paths:
+      - 'docs/**'
+      - 'ROADMAP.md'
+      - 'atlas.config.json'
+      - '.atlas/**'
+      - '.github/workflows/atlas.yml'
   schedule:
     - cron: "0 */6 * * *"
   workflow_dispatch:
