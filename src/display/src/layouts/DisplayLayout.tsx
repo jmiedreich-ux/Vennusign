@@ -58,10 +58,16 @@ function useBoardFitScale() {
 
   useLayoutEffect(() => {
     const container = containerRef.current;
-    if (!container || typeof ResizeObserver === 'undefined') return;
+    if (!container) return;
 
     const recompute = () => setScale(computeFitScale(container.scrollHeight, window.innerHeight));
     recompute();
+
+    // Older TV WebViews (some Tizen/webOS builds) can lack ResizeObserver entirely. The one-shot
+    // recompute() above still fits the board as first rendered on those engines - it just cannot
+    // react to a later resize or a font finishing its own load, which is strictly better than the
+    // pre-fix behavior of never fitting at all.
+    if (typeof ResizeObserver === 'undefined') return;
 
     const observer = new ResizeObserver(recompute);
     observer.observe(container);
