@@ -627,6 +627,10 @@ export default function MenuBuilder({
       if (!entry.drawn) setBusy(true);
       setSaveState("saving");
       setError(undefined);
+      // TEMP (#800): console timing on this shared pipeline, ahead of the real
+      // observability project (#774). Delete once that ships, or once add-item is
+      // confirmed fixed and this stops earning its keep.
+      const perfStart = performance.now();
       /*
        * Writes go one at a time, in the order they were made.
        *
@@ -641,6 +645,7 @@ export default function MenuBuilder({
       writes.current = mine.catch(() => undefined);
       try {
         await mine;
+        const perfAfterAction = performance.now();
         // Every write reconciles, drawn or not. Skipping this for drawn writes was
         // wrong in a way the drawn frame hides: draftCount is computed server-side,
         // so without the re-read the builder still believed "Everything is on your
@@ -652,6 +657,14 @@ export default function MenuBuilder({
         // write, so by the time this runs the frame is already up and nobody is
         // waiting on it.
         await refresh();
+        const perfAfterRefresh = performance.now();
+        console.info("[perf:deliver]", {
+          describe: entry.describe,
+          drawn: entry.drawn ?? false,
+          actionMs: Math.round(perfAfterAction - perfStart),
+          refreshMs: Math.round(perfAfterRefresh - perfAfterAction),
+          totalMs: Math.round(perfAfterRefresh - perfStart)
+        });
         held.current = null;
         retryRound.current = 0;
         setSignBackIn(null);
