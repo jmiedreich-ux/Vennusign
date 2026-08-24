@@ -580,6 +580,18 @@ internal sealed class FakeContentRepository : IContentRepository
             "Deleting a section releases its placements in the same transaction. "
             + "Assert it in Vennu.Data.IntegrationTests against a real database.");
 
+    public Task<SectionPageMoveOutcome> MoveSectionToPageAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid destinationPageId,
+        string? author = null,
+        DateTime? now = null,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException(
+            "Moving a section relies on FK_Placements_SectionOnPage's ON UPDATE CASCADE. "
+            + "Assert it in Vennu.Data.IntegrationTests against a real database.");
+
     public Task<ReorderOutcome> ReorderSectionsGuardedAsync(
         Guid venueId,
         Guid menuId,

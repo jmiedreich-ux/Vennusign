@@ -85,9 +85,11 @@ public interface IContentRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes a section, atomically moving its placements to a sibling or releasing
-    /// them back to the library. Outcomes: <c>deleted</c>, <c>section_missing</c>,
-    /// <c>destination_missing</c>, <c>destination_conflict</c>.
+    /// Deletes a section, atomically moving its placements to a sibling — on any
+    /// page of the same menu, not only the section's own page — or releasing them
+    /// back to the library. Outcomes: <c>deleted</c>, <c>section_missing</c>,
+    /// <c>destination_missing</c>, <c>destination_conflict</c> (an item being moved
+    /// already sits somewhere else on the destination's page - #797).
     /// </summary>
     Task<SectionDeleteOutcome> DeleteSectionAsync(
         Guid venueId,
@@ -95,6 +97,29 @@ public interface IContentRepository
         Guid sectionId,
         Guid? moveItemsToSectionId,
         bool deletePlacements,
+        string? author = null,
+        DateTime? now = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Relocates a section - intact, with its items and their order - to a
+    /// different page of the same menu. Deliberately separate from the same-page
+    /// guards on <see cref="MovePlacementGuardedAsync"/> and
+    /// <see cref="ReorderSectionsGuardedAsync"/>, which stay untouched (#809: no
+    /// known reason was found for those, so this adds a new guarded path rather
+    /// than relaxing one nobody has explained). Appended to the end of the
+    /// destination page's section order. Outcomes: <c>moved</c>,
+    /// <c>section_missing</c>, <c>page_missing</c>, <c>already_on_page</c> (source
+    /// and destination are the same page), <c>destination_conflict</c> (one of the
+    /// section's items already sits somewhere on the destination page - the same
+    /// per-page rule <see cref="PlaceExistingItemAsync"/> enforces for a plain
+    /// add-item, #797).
+    /// </summary>
+    Task<SectionPageMoveOutcome> MoveSectionToPageAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid destinationPageId,
         string? author = null,
         DateTime? now = null,
         CancellationToken cancellationToken = default);
@@ -544,8 +569,11 @@ public static class SectionOutcomes
 {
     public const string Created = "created";
     public const string Deleted = "deleted";
+    public const string Moved = "moved";
     public const string MenuMissing = "menu_missing";
     public const string SectionMissing = "section_missing";
+    public const string PageMissing = "page_missing";
+    public const string AlreadyOnPage = "already_on_page";
     public const string DestinationMissing = "destination_missing";
     public const string DestinationConflict = "destination_conflict";
 }
@@ -574,6 +602,13 @@ public static class PlaceExistingOutcomes
 public sealed record SectionCreateOutcome(string Outcome, int SortOrder);
 
 public sealed record SectionDeleteOutcome(string Outcome, int MovedItemCount, int ReleasedItemCount);
+
+/// <summary>
+/// ConflictItemId/ConflictSectionName are set only for <c>destination_conflict</c>:
+/// which item collided and where it already sits on the destination page, so the
+/// UI can name it rather than just refuse.
+/// </summary>
+public sealed record SectionPageMoveOutcome(string Outcome, Guid? ConflictItemId, string? ConflictSectionName);
 
 public sealed record ReorderOutcome(string Outcome, int Moved);
 

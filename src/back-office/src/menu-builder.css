@@ -712,7 +712,13 @@
   cursor: default;
 }
 
-.builder__rail-delete {
+/*
+ * #797: was a dedicated trash icon (builder__rail-delete). Rename/Move to
+ * page/Delete are now behind this one "more actions" icon, so it reads as
+ * neutral like builder__rail-rename-action rather than red/destructive - the
+ * destructive choice is still red, but one level in, inside the dialog it opens.
+ */
+.builder__rail-section-actions {
   display: grid;
   place-items: center;
   width: 26px;
@@ -721,28 +727,82 @@
   border-radius: 7px;
   padding: 5px;
   background: transparent;
-  color: #a52c2c;
+  color: var(--sky-text-secondary);
   cursor: pointer;
 }
 
-.builder__rail-delete:hover {
-  background: #fdeaea;
+.builder__rail-section-actions:hover {
+  background: var(--sky-color-surface-muted, #f1f5f9);
+  color: var(--sky-action-link-text);
 }
 
-.builder__rail-delete:disabled {
+.builder__rail-section-actions:disabled {
   opacity: 0.4;
   cursor: default;
 }
 
-.builder__rail-delete svg {
-  width: 15px;
-  height: 15px;
-  fill: none;
-  stroke: currentcolor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.builder__section-actions-dialog { width: min(320px, calc(100vw - 32px)); }
+
+.builder__section-actions-list {
+  display: grid;
+  gap: 2px;
+  margin: var(--sky-space-3) 0 0;
+  padding: 0;
+  list-style: none;
 }
+
+.builder__section-actions-list button {
+  display: flex;
+  align-items: center;
+  gap: var(--sky-space-3);
+  width: 100%;
+  border: 0;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: var(--sky-space-3);
+  background: transparent;
+  color: var(--sky-text-primary);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.builder__section-actions-list button:hover:not(:disabled) { background: var(--sky-color-surface-muted, #f1f5f9); }
+.builder__section-actions-list button:disabled { opacity: 0.4; cursor: default; }
+.builder__section-actions-list .builder__section-actions-delete { color: #a52c2c; }
+.builder__section-actions-list .builder__section-actions-delete:hover:not(:disabled) { background: #fdeaea; }
+
+/*
+ * #797's move-to-page destination list. Capped the same way #819 fixed the
+ * "View all" history list - a dialog's own height comes from nothing here, so
+ * an uncapped list would grow with however many pages the menu has instead of
+ * scrolling.
+ */
+.builder__move-section-pages {
+  display: grid;
+  gap: 2px;
+  max-height: min(50vh, 360px);
+  margin: var(--sky-space-3) 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.builder__move-section-pages li:first-child { margin-bottom: var(--sky-space-2); border-bottom: 1px solid var(--sky-color-border); padding-bottom: var(--sky-space-2); }
+
+.builder__move-section-pages label {
+  display: flex;
+  align-items: center;
+  gap: var(--sky-space-3);
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: var(--sky-space-2) var(--sky-space-3);
+  cursor: pointer;
+}
+
+.builder__move-section-pages label:hover { background: var(--sky-color-surface-muted, #f1f5f9); }
+.builder__move-section-pages label input { margin: 0; }
+.builder__move-section-pages label strong { flex: 1; font-weight: var(--sky-font-weight-semibold); }
+.builder__move-section-pages label span { color: var(--sky-text-secondary); font-size: 12px; }
 
 .builder__rail-new {
   width: 100%;

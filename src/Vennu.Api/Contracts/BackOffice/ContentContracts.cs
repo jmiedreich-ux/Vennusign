@@ -13,6 +13,7 @@ public sealed record PageOrderRequest(IReadOnlyCollection<Guid> PageIds);
 public sealed record PageDeleteRequest(Guid? MoveSectionsToPageId, bool DeleteSections = false);
 public sealed record SectionNameRequest(string Name, Guid? PageId = null);
 public sealed record SectionDeleteRequest(Guid? MoveItemsToSectionId, bool DeletePlacements = false);
+public sealed record SectionPageMoveRequest(Guid DestinationPageId);
 
 public sealed record SectionOrderRequest(IReadOnlyCollection<Guid> SectionIds);
 
@@ -251,6 +252,12 @@ public sealed record PageDeleteResponse(int MovedSectionCount, int DeletedSectio
 /// guess (Q96).
 /// </summary>
 public sealed record SectionDeleteResponse(int MovedItemCount, int ReleasedItemCount);
+
+/// <summary>
+/// #797: ConflictItemId/ConflictSectionName name what collided when a section
+/// move is refused for landing an item on the destination page twice.
+/// </summary>
+public sealed record SectionPageMoveResponse(Guid? ConflictItemId, string? ConflictSectionName);
 
 /// <summary>
 /// The outcome of placing something. <c>already_on_board</c> is not a failure: it

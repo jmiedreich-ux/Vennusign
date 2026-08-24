@@ -1198,6 +1198,27 @@ export async function deleteMenuSection(
 }
 
 /**
+ * #797: relocates a section, intact with its items, to a different page of the
+ * same menu. A conflict (an item already on the destination page, in a
+ * different section) is reported back, not thrown - the caller decides how to
+ * show it, same as `already_on_board` for a plain add-item.
+ */
+export async function moveMenuSectionToPage(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  menuId: string,
+  sectionId: string,
+  destinationPageId: string
+): Promise<{ conflictItemId: string | null; conflictSectionName: string | null }> {
+  return (
+    await contentRequest(configuration, accessToken, `/menus/${menuId}/sections/${sectionId}/page`, {
+      method: "POST",
+      body: JSON.stringify({ destinationPageId })
+    })
+  ).json();
+}
+
+/**
  * Reorder refuses whole when the list no longer matches — someone else added or
  * removed something mid-drag. It arrives here as a `MenuActionRefused` with reason
  * `order_stale`, in the server's words.
