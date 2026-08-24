@@ -3,7 +3,7 @@
   "what": "The progressive-cutover thin layer and its discovery services — TenantContext, Version Discovery, Application Discovery, the Product Router and the POS Webhook Receiver — so a customer can be moved to a new version without moving everyone",
   "stage": "planned",
   "position": "Designed, not approved. 49 decisions proposed, 34 questions answered, six milestones planned.",
-  "gate": "Owner approval of the design authority, which is still in docs/design/proposed/keystone/ and must move to approved/ before M1 starts. Tier and plan cost are deferred: provision nothing.",
+  "next": "Owner approval of the design authority, which is still in docs/design/proposed/keystone/ and must move to approved/ before M1 starts. Tier and plan cost are deferred: provision nothing.",
   "label": "workstream:keystone",
   "design": [
     {

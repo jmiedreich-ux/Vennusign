@@ -9,6 +9,7 @@ import {
   deleteMenuPage,
   duplicateMenuPage,
   deleteMenuSection,
+  moveMenuSectionToPage,
   discardMenuDraft,
   loadBuilderBoard,
   goBackToMenuVersion,
@@ -53,10 +54,10 @@ import {
   canvasBoard,
   changeSentence,
   changeValues,
+  changedItemsMissingPrice,
   draftPhrase,
   findItem,
   findOnBoard,
-  isMissingPrice,
   itemsOf,
   publishBlockedReason,
   publishLabel,
@@ -65,6 +66,7 @@ import {
   releasedPhrase,
   reorder,
   resumeState,
+  sectionOf,
   sectionsOf,
   sharedItemLine,
   unavailableNote,
@@ -286,7 +288,14 @@ function useDialogFocus(open: boolean) {
     return () => {
       node.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("keydown", onKeyDown, true);
-      returnTo?.focus?.();
+      // Removing the focused dialog resets activeElement to <body> synchronously,
+      // before this cleanup runs - so body here means nothing has claimed focus
+      // since. If something *has* (e.g. this same click opened a rename field with
+      // autoFocus), that claim wins; stealing it back would fire the new field's
+      // onBlur and undo what the click was for.
+      if (document.activeElement === document.body || document.activeElement === document.documentElement) {
+        returnTo?.focus?.();
+      }
     };
   }, [open]);
 
@@ -403,6 +412,12 @@ export default function MenuBuilder({
   const canAssignScreens = hasMenuCapability("screen-assignment", capabilityOverrides);
   const canViewCapacity = hasMenuCapability("capacity", capabilityOverrides);
   const canViewHistory = hasMenuCapability("history", capabilityOverrides);
+  // "restore" is its own capability (decision 6: independently switchable),
+  // distinct from "history": viewing what changed and reverting to a past
+  // draft state are different acts. #799: this was defined in
+  // menuCapabilities.ts but never actually checked - "go back to..." was
+  // reachable regardless of capabilityOverrides.
+  const canRestore = hasMenuCapability("restore", capabilityOverrides);
   /*
    * The credential every write reads, at the moment it is sent.
    *
@@ -432,6 +447,7 @@ export default function MenuBuilder({
   const [seeAllOpen, setSeeAllOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [viewAllOpen, setViewAllOpen] = useState(false);
   const [history, setHistory] = useState<MenuHistoryEntry[]>();
   const [pageHistory, setPageHistory] = useState<MenuHistoryEntry[]>();
   const [pageHistoryError, setPageHistoryError] = useState(false);
@@ -456,19 +472,47 @@ export default function MenuBuilder({
   const [newPageName, setNewPageName] = useState("");
   const [pageMenuId, setPageMenuId] = useState<string | null>(null);
   const pageActionsRef = useRef<HTMLSpanElement>(null);
+  const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
+  const actionsMenuRef = useRef<HTMLSpanElement>(null);
+  const actionsTriggerRef = useRef<HTMLButtonElement>(null);
+  /*
+   * A menu item's own onClick both closes this dropdown and opens another
+   * dialog in the same event, in one React commit - so by the time that
+   * dialog's own focus effect runs, the menu item that was just clicked is
+   * already gone from the DOM and the browser has nothing meaningful focused.
+   * Moving focus to the trigger first, synchronously, gives that effect a
+   * real, still-mounted element to capture and hand focus back to on close.
+   */
+  const chooseAction = (action: () => void) => {
+    actionsTriggerRef.current?.focus();
+    setActionsMenuOpen(false);
+    action();
+  };
   const [draggedPageId, setDraggedPageId] = useState<string | null>(null);
   const [editingPage, setEditingPage] = useState<{ pageId: string; name: string } | null>(null);
   const [editingRailSection, setEditingRailSection] = useState<{ sectionId: string; name: string } | null>(null);
   const [draggedSectionId, setDraggedSectionId] = useState<string | null>(null);
   const [confirmPageDelete, setConfirmPageDelete] = useState<{ pageId: string; name: string; destinationPageId: string; sectionCount: number; mode: "move" | "delete" } | null>(null);
   const [confirmItemRemove, setConfirmItemRemove] = useState(false);
+  const [confirmPublishMissingPrice, setConfirmPublishMissingPrice] = useState(false);
+  // #797: the consolidated "section actions" entry point (Rename / Move to page /
+  // Delete) - replaces the old standalone trash icon. Each option transitions to
+  // its own existing or new dialog rather than nesting sub-views in this one.
+  const [sectionActionsFor, setSectionActionsFor] = useState<{ sectionId: string; name: string } | null>(null);
+  const [movingSection, setMovingSection] = useState<{
+    sectionId: string; name: string; destinationPageId: string; creatingPage: boolean; newPageName: string
+  } | null>(null);
 
   const discardRef = useDialogFocus(confirmDiscard);
+  const publishMissingPriceRef = useDialogFocus(confirmPublishMissingPrice);
   const deleteRef = useDialogFocus(Boolean(confirmDelete));
+  const sectionActionsRef = useDialogFocus(Boolean(sectionActionsFor));
+  const movingSectionRef = useDialogFocus(Boolean(movingSection));
   const themeRef = useDialogFocus(themePickerOpen);
   const seeAllRef = useDialogFocus(seeAllOpen);
   const reviewRef = useDialogFocus(reviewOpen);
   const historyRef = useDialogFocus(historyOpen);
+  const viewAllRef = useDialogFocus(viewAllOpen);
   const pageDeleteRef = useDialogFocus(Boolean(confirmPageDelete));
   const fitRef = useDialogFocus(fitOpen);
   const itemRemoveRef = useDialogFocus(confirmItemRemove);
@@ -505,6 +549,14 @@ export default function MenuBuilder({
     document.addEventListener("pointerdown", closePageMenu);
     return () => document.removeEventListener("pointerdown", closePageMenu);
   }, [pageMenuId]);
+  useEffect(() => {
+    if (!actionsMenuOpen) return;
+    const closeActionsMenu = (event: PointerEvent) => {
+      if (!actionsMenuRef.current?.contains(event.target as Node)) setActionsMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", closeActionsMenu);
+    return () => document.removeEventListener("pointerdown", closeActionsMenu);
+  }, [actionsMenuOpen]);
   useEffect(() => {
     if (!board || !activePageId) return;
     const pageSections = sectionsOf(board).filter(section => section.pageId === activePageId);
@@ -554,7 +606,6 @@ export default function MenuBuilder({
           remembered = null;
         }
         setPlace(resumeState(next.board, remembered));
-        if (startBlank) setAddSectionId(sectionsOf(next.board)[0]?.sectionId ?? null);
       })
       .catch(() => {
         if (!cancelled) setError("This menu could not be opened. Check your connection and try again.");
@@ -627,6 +678,10 @@ export default function MenuBuilder({
       if (!entry.drawn) setBusy(true);
       setSaveState("saving");
       setError(undefined);
+      // TEMP (#800): console timing on this shared pipeline, ahead of the real
+      // observability project (#774). Delete once that ships, or once add-item is
+      // confirmed fixed and this stops earning its keep.
+      const perfStart = performance.now();
       /*
        * Writes go one at a time, in the order they were made.
        *
@@ -641,6 +696,7 @@ export default function MenuBuilder({
       writes.current = mine.catch(() => undefined);
       try {
         await mine;
+        const perfAfterAction = performance.now();
         // Every write reconciles, drawn or not. Skipping this for drawn writes was
         // wrong in a way the drawn frame hides: draftCount is computed server-side,
         // so without the re-read the builder still believed "Everything is on your
@@ -652,6 +708,14 @@ export default function MenuBuilder({
         // write, so by the time this runs the frame is already up and nobody is
         // waiting on it.
         await refresh();
+        const perfAfterRefresh = performance.now();
+        console.info("[perf:deliver]", {
+          describe: entry.describe,
+          drawn: entry.drawn ?? false,
+          actionMs: Math.round(perfAfterAction - perfStart),
+          refreshMs: Math.round(perfAfterRefresh - perfAfterAction),
+          totalMs: Math.round(perfAfterRefresh - perfStart)
+        });
         held.current = null;
         retryRound.current = 0;
         setSignBackIn(null);
@@ -716,10 +780,25 @@ export default function MenuBuilder({
    * about the order saves land in, not about when we are allowed to paint.
    */
   const run = useCallback(
-    (action: () => Promise<void>, undoStep?: UndoStep, onSuccess?: () => void, drawn = false) => {
+    (
+      action: () => Promise<void>,
+      undoStep?: UndoStep,
+      onSuccess?: () => void,
+      drawn = false,
+      // TEMP (#800): lets a call site that has no undo step still label its own
+      // [perf:deliver] entry, instead of every such action collapsing into the
+      // generic "Your last change". Delete alongside the rest of #800.
+      describeOverride?: string
+    ) => {
       window.clearTimeout(retryTimer.current);
       retryRound.current = 0;
-      return deliver({ action, undo: undoStep, describe: undoStep?.describe ?? "Your last change", onSuccess, drawn });
+      return deliver({
+        action,
+        undo: undoStep,
+        describe: describeOverride ?? undoStep?.describe ?? "Your last change",
+        onSuccess,
+        drawn
+      });
     },
     [deliver]
   );
@@ -749,7 +828,7 @@ export default function MenuBuilder({
     setNewPageName("");
     if (!name) return;
     let created: { pageId: string } | undefined;
-    await run(async () => { created = await addMenuPage(configuration, credential(), menuId, name); });
+    await run(async () => { created = await addMenuPage(configuration, credential(), menuId, name); }, undefined, undefined, false, "Add page");
     if (created) setActivePageId(created.pageId);
   };
 
@@ -760,13 +839,13 @@ export default function MenuBuilder({
     const name = edit.name.trim();
     const current = pages.find(page => page.pageId === edit.pageId)?.name;
     if (!name || name === current) return;
-    await run(() => renameMenuPage(configuration, credential(), menuId, edit.pageId, name));
+    await run(() => renameMenuPage(configuration, credential(), menuId, edit.pageId, name), undefined, undefined, false, "Rename page");
   };
 
   const duplicatePage = async (pageId: string) => {
     setPageMenuId(null);
     let created: { pageId: string } | undefined;
-    await run(async () => { created = await duplicateMenuPage(configuration, credential(), menuId, pageId); });
+    await run(async () => { created = await duplicateMenuPage(configuration, credential(), menuId, pageId); }, undefined, undefined, false, "Duplicate page");
     if (created) setActivePageId(created.pageId);
   };
 
@@ -798,7 +877,9 @@ export default function MenuBuilder({
     await run(
       () => deleteMenuPage(configuration, credential(), menuId, pageId, destinationPageId || undefined, deleteSections),
       undefined,
-      () => setConfirmPageDelete(null)
+      () => setConfirmPageDelete(null),
+      false,
+      "Delete page"
     );
   };
 
@@ -816,7 +897,7 @@ export default function MenuBuilder({
       setAssignmentOpen(false);
       setAssignmentDraft({});
       setAssignmentAddingScreenId(null);
-    });
+    }, false, "Save screen assignments");
   };
 
   // ---- the section rail ----------------------------------------------------
@@ -943,6 +1024,59 @@ export default function MenuBuilder({
     // back something that only looked the same. Saying so beats a control that
     // half works — the items are in the library and can be placed again.
     void name;
+  };
+
+  /**
+   * #797: relocates a section, intact, to a different page. Unlike delete this
+   * keeps the section's identity, so - unlike delete - it IS undoable: move it
+   * back to the page it came from.
+   *
+   * A conflict (an item already sitting somewhere on the destination page) comes
+   * back as a normal 200, not a thrown error - server behavior deliberately
+   * mirrors already_on_board for a plain add-item, since neither is really a
+   * failure, both are "here is what's already true". Re-thrown as
+   * MenuActionRefused here so it flows through deliver()'s existing refusal path:
+   * board re-reads, the message is shown, and nothing is added to the undo stack
+   * for a write that never happened.
+   */
+  const moveSectionToPage = async (sectionId: string, destinationPageId: string) => {
+    const sourcePageId = sectionOf(board, sectionId)?.pageId;
+    if (!sourcePageId) return;
+    const destinationName = pages.find(page => page.pageId === destinationPageId)?.name ?? "that page";
+    await run(
+      async () => {
+        const outcome = await moveMenuSectionToPage(configuration, credential(), menuId, sectionId, destinationPageId);
+        if (outcome.conflictItemId) {
+          const conflictName = findItem(board, outcome.conflictItemId)?.item.name ?? "An item";
+          throw new MenuActionRefused(
+            "destination_conflict",
+            `${conflictName} is already on ${destinationName}, in "${outcome.conflictSectionName}". Nothing was moved.`
+          );
+        }
+        setNotice(`Moved to ${destinationName}.`);
+        setMovingSection(null);
+        setSectionActionsFor(null);
+      },
+      {
+        describe: "Move to page",
+        undo: async () => { await moveMenuSectionToPage(configuration, credential(), menuId, sectionId, sourcePageId); },
+        redo: async () => { await moveMenuSectionToPage(configuration, credential(), menuId, sectionId, destinationPageId); }
+      }
+    );
+  };
+
+  /**
+   * "+ New page" inside the move-to-page dialog: two separate deliver()-tracked
+   * writes, each with its own undo entry (create the page, then move the section
+   * onto it) - matching how every other multi-step flow in this file composes,
+   * rather than inventing a single compound-undo step.
+   */
+  const commitMoveToNewPage = async (sectionId: string, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    let created: { pageId: string } | undefined;
+    await run(async () => { created = await addMenuPage(configuration, credential(), menuId, trimmed); }, undefined, undefined, false, "Add page");
+    if (created) await moveSectionToPage(sectionId, created.pageId);
   };
 
   // ---- the canvas ----------------------------------------------------------
@@ -1292,7 +1426,7 @@ export default function MenuBuilder({
     const found = findItem(board, edit.itemId);
     if (!found) return;
 
-    const was = { name: found.item.name ?? "", description: found.item.description, price: found.item.price };
+    const was = { name: found.item.name ?? "", description: found.item.description, price: found.item.price, isListed: found.item.isListed };
     const normalized = edit.field === "name"
       ? (edit.value.trim() === "" ? was.name : edit.value)
       : (edit.value.trim() === "" ? null : edit.value);
@@ -1314,7 +1448,7 @@ export default function MenuBuilder({
 
   // ---- the inspector -------------------------------------------------------
 
-  const [draftItem, setDraftItem] = useState<{ name: string; description: string; price: string } | null>(null);
+  const [draftItem, setDraftItem] = useState<{ name: string; description: string; price: string; isListed: boolean } | null>(null);
   const [itemBoards, setItemBoards] = useState<LibraryItem["boards"]>([]);
 
   useEffect(() => {
@@ -1326,7 +1460,8 @@ export default function MenuBuilder({
     setDraftItem({
       name: selected.item.name ?? "",
       description: selected.item.description ?? "",
-      price: selected.item.price ?? ""
+      price: selected.item.price ?? "",
+      isListed: selected.item.isListed
     });
 
     // Which other boards this item sits on, for Q5's shared-price line. Read from
@@ -1345,24 +1480,26 @@ export default function MenuBuilder({
     };
   }, [apiKey, configuration, selected]);
 
-  const saveItem = async () => {
+  const saveItem = async (overrides?: { isListed?: boolean }) => {
     if (!selected || !draftItem) return;
     const before = selected.item;
     const next = {
       // An emptied name reverts rather than saving blank (Q119).
       name: draftItem.name.trim() === "" ? (before.name ?? "") : draftItem.name,
       description: draftItem.description.trim() === "" ? null : draftItem.description,
-      price: draftItem.price.trim() === "" ? null : draftItem.price
+      price: draftItem.price.trim() === "" ? null : draftItem.price,
+      isListed: overrides?.isListed ?? draftItem.isListed
     };
     if (
       next.name === (before.name ?? "") &&
       next.description === before.description &&
-      next.price === before.price
+      next.price === before.price &&
+      next.isListed === before.isListed
     ) {
       return;
     }
 
-    const was = { name: before.name ?? "", description: before.description, price: before.price };
+    const was = { name: before.name ?? "", description: before.description, price: before.price, isListed: before.isListed };
     await run(() => updateMenuItemValues(configuration, credential(), menuId, before.itemId, next), {
       describe: "Edit item",
       undo: () => updateMenuItemValues(configuration, credential(), menuId, before.itemId, was, next),
@@ -1378,7 +1515,23 @@ export default function MenuBuilder({
     await run(async () => {
       const result = await setItemAvailability(configuration, credential(), selected.item.itemId, !isAvailable);
       setNotice(availabilityImpactNotice(selected.item.name ?? "Item", result.isAvailable, result.screenIds, screens));
-    });
+    }, undefined, undefined, false, isAvailable ? "Mark 86" : "Mark available");
+  };
+
+  // Turning Available off leaves nothing for an 86 to say - the item is already
+  // gone from every screen - so it clears one if it finds it active.
+  const toggleAvailable = async () => {
+    if (!selected || !draftItem) return;
+    const next = !draftItem.isListed;
+    const was86d = selectedAvailability?.isAvailable === false;
+    setDraftItem({ ...draftItem, isListed: next });
+    await saveItem({ isListed: next });
+    if (!next && was86d) {
+      await run(async () => {
+        const result = await setItemAvailability(configuration, credential(), selected.item.itemId, true);
+        setNotice(availabilityImpactNotice(selected.item.name ?? "Item", result.isAvailable, result.screenIds, screens));
+      }, undefined, undefined, false, "Clear 86");
+    }
   };
 
   const removeFromBoard = async () => {
@@ -1418,9 +1571,27 @@ export default function MenuBuilder({
 
   const [addQuery, setAddQuery] = useState("");
   const [addPrice, setAddPrice] = useState("");
-  const [addSectionId, setAddSectionId] = useState<string | null>(null);
+  // Selecting a section with nothing else selected IS "add mode" for that
+  // section - there is no separate step to open it, and no state of its own
+  // to fall out of sync with the section rail or the canvas.
+  const addingToSectionId = place.view === "one-section" && !place.selectedItemId ? place.sectionId : null;
   const [hits, setHits] = useState<LibraryItem[]>([]);
   const canonicalItemName = (value: string) => value.toLocaleLowerCase().replaceAll("&", "and").replace(/[^a-z0-9]/g, "");
+
+  // #775: Enter and the create button used to call different functions - submitAdd's dedupe
+  // search, or place_ directly - so which control was used changed the result, and neither was
+  // guarded against a second submit. addSubmitting is set from the first moment of a submit,
+  // before the library search even starts, and covers every entry point below (Enter, the create
+  // button, and clicking a search result) through one guarded function, so the button can never
+  // bypass the dedupe search and a second submit while the first is in flight is a no-op rather
+  // than a duplicate.
+  const [addSubmitting, setAddSubmitting] = useState(false);
+
+  const runAddAction = (action: () => Promise<void>) => {
+    if (addSubmitting) return;
+    setAddSubmitting(true);
+    void action().finally(() => setAddSubmitting(false));
+  };
 
   const submitAdd = async (sectionId: string) => {
     const name = addQuery.trim();
@@ -1435,7 +1606,7 @@ export default function MenuBuilder({
   };
 
   useEffect(() => {
-    if (!addSectionId || addQuery.trim().length === 0) {
+    if (!addingToSectionId || addQuery.trim().length === 0) {
       setHits([]);
       return;
     }
@@ -1453,7 +1624,15 @@ export default function MenuBuilder({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [addQuery, addSectionId, apiKey, configuration]);
+  }, [addQuery, addingToSectionId, apiKey, configuration]);
+
+  // A fresh box every time the target changes - switching sections (or
+  // selecting an item) never leaves another section's half-typed search
+  // sitting behind it.
+  useEffect(() => {
+    setAddQuery("");
+    setAddPrice("");
+  }, [addingToSectionId]);
 
   /*
    * The bulk drawer (Q95 opens it, Q124 governs it).
@@ -1581,9 +1760,6 @@ export default function MenuBuilder({
         });
       }
     }
-    setAddQuery("");
-    setAddPrice("");
-    setAddSectionId(null);
   };
 
   // ---- undo, redo and find -------------------------------------------------
@@ -1593,9 +1769,21 @@ export default function MenuBuilder({
     if (!step) return;
     undoStack.current = undoStack.current.slice(0, -1);
     setBusy(true);
+    // TEMP (#800): undo/redo call step.undo()/step.redo() directly, bypassing
+    // deliver()'s [perf:deliver] timing entirely - so without this they were
+    // invisible to the same investigation the rest of #800 exists for.
+    const perfStart = performance.now();
     try {
       await step.undo();
+      const perfAfterAction = performance.now();
       await refresh();
+      const perfAfterRefresh = performance.now();
+      console.info("[perf:undo]", {
+        describe: step.describe,
+        actionMs: Math.round(perfAfterAction - perfStart),
+        refreshMs: Math.round(perfAfterRefresh - perfAfterAction),
+        totalMs: Math.round(perfAfterRefresh - perfStart)
+      });
       redoStack.current = [...redoStack.current, step];
       setNotice(`Undid: ${step.describe}.`);
     } catch (failure) {
@@ -1621,9 +1809,18 @@ export default function MenuBuilder({
     if (!step) return;
     redoStack.current = redoStack.current.slice(0, -1);
     setBusy(true);
+    const perfStart = performance.now();
     try {
       await step.redo();
+      const perfAfterAction = performance.now();
       await refresh();
+      const perfAfterRefresh = performance.now();
+      console.info("[perf:redo]", {
+        describe: step.describe,
+        actionMs: Math.round(perfAfterAction - perfStart),
+        refreshMs: Math.round(perfAfterRefresh - perfAfterAction),
+        totalMs: Math.round(perfAfterRefresh - perfStart)
+      });
       undoStack.current = [...undoStack.current, step];
       setNotice(`Redid: ${step.describe}.`);
     } catch (failure) {
@@ -1663,8 +1860,10 @@ export default function MenuBuilder({
         setViewingOpen(false);
         setConfirmDiscard(false);
         setConfirmDelete(null);
+        setSectionActionsFor(null);
+        setMovingSection(null);
+        setActionsMenuOpen(false);
         setItemEdit(null);
-        setAddSectionId(null);
         return;
       }
       if ((event.key === "Delete" || event.key === "Backspace") && place.selectedItemId) {
@@ -1694,6 +1893,14 @@ export default function MenuBuilder({
 
   const blocked = publishBlockedReason({ draftCount: data?.draftCount ?? 0, saveState });
 
+  // Q113 still stands - a missing price never blocks Publish - but the owner
+  // should be told, by name, before it ships rather than left to notice a
+  // "$0.00" board afterward. Only items THIS draft touches are named.
+  const missingPriceItems = useMemo(
+    () => (board ? changedItemsMissingPrice(board, data?.changes) : []),
+    [board, data?.changes]
+  );
+
   const viewingScreens = useMemo(
     () => screens.filter(screen => (data?.screenIds ?? []).includes(screen.screenId)),
     [data?.screenIds, screens]
@@ -1714,7 +1921,18 @@ export default function MenuBuilder({
             } now belong to another menu and were left alone.`
           : "Published. Your screens are showing it."
       );
-    });
+    }, undefined, undefined, false, "Publish");
+  };
+
+  // The one path both Publish buttons go through: if this draft would ship an
+  // item with no price, name it and ask once, rather than publishing straight
+  // through and leaving it for someone to notice on a live screen afterward.
+  const requestPublish = () => {
+    if (missingPriceItems.length > 0) {
+      setConfirmPublishMissingPrice(true);
+      return;
+    }
+    void publish();
   };
 
   const discard = async () => {
@@ -1725,7 +1943,7 @@ export default function MenuBuilder({
       redoStack.current = [];
       setHistoryDepth({ undo: 0, redo: 0 });
       setNotice(`${result.discarded} change${result.discarded === 1 ? "" : "s"} discarded.`);
-    });
+    }, undefined, undefined, false, "Discard draft");
   };
 
   // ---- render --------------------------------------------------------------
@@ -1748,12 +1966,16 @@ export default function MenuBuilder({
    */
   const behindScrim =
     confirmDiscard ||
+    confirmPublishMissingPrice ||
     confirmItemRemove ||
     Boolean(confirmDelete) ||
+    Boolean(sectionActionsFor) ||
+    Boolean(movingSection) ||
     themePickerOpen ||
     seeAllOpen ||
     reviewOpen ||
     historyOpen ||
+    viewAllOpen ||
     findOpen ||
     assignmentOpen ||
     fitOpen ||
@@ -1786,9 +2008,9 @@ export default function MenuBuilder({
       }
     );
   };
-  const capacitySections = addSectionId && addQuery.trim()
-    ? sections.map(section => section.sectionId === addSectionId
-      ? { ...section, items: [...section.items, { itemId: "draft-item", name: addQuery, description: null, price: addPrice || null, sortOrder: section.items.length }] }
+  const capacitySections = addingToSectionId && addQuery.trim()
+    ? sections.map(section => section.sectionId === addingToSectionId
+      ? { ...section, items: [...section.items, { itemId: "draft-item", name: addQuery, description: null, price: addPrice || null, sortOrder: section.items.length, isListed: true }] }
       : section)
     : sections;
   const pageBoard = { ...board, sections };
@@ -2118,25 +2340,13 @@ export default function MenuBuilder({
                   </span>
                   <button
                     type="button"
-                    className="builder__rail-delete"
-                    data-testid="delete-section"
-                    aria-label={`Delete ${section.name}`}
+                    className="builder__rail-section-actions"
+                    data-testid="section-actions"
+                    aria-label={`Actions for ${section.name}`}
                     disabled={busy}
-                    onClick={() => {
-                      const destination = sections.find(candidate => candidate.sectionId !== section.sectionId)?.sectionId ?? "";
-                      const items = itemsOf(board, section.sectionId).length;
-                      setConfirmDelete({
-                        sectionId: section.sectionId,
-                        name: section.name ?? "this section",
-                        items,
-                        destinationSectionId: destination,
-                        mode: items > 0 && destination ? "move" : "delete"
-                      });
-                    }}
+                    onClick={() => setSectionActionsFor({ sectionId: section.sectionId, name: section.name ?? "this section" })}
                   >
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M4 7h16M9 7V4h6v3m-9 0 1 13h10l1-13M10 11v5m4-5v5" />
-                    </svg>
+                    <SkyIcon name="more" />
                   </button>
                 </span>
               </li>
@@ -2169,7 +2379,7 @@ export default function MenuBuilder({
           {canViewHistory ? <section className="builder__page-history" aria-labelledby="page-history-title" data-testid="page-history">
             <header className="builder__page-history-header">
               <h3 id="page-history-title">History · {activePage?.name ?? "Page"}</h3>
-              <button type="button" className="builder__link" data-testid="menu-history-link" onClick={() => { setHistoryOpen(true); if (!history) loadMenuHistory(configuration, credential(), menuId).then(setHistory).catch(() => setHistory([])); }}>View all</button>
+              <button type="button" className="builder__link" data-testid="menu-history-link" onClick={() => { setViewAllOpen(true); if (!history) loadMenuHistory(configuration, credential(), menuId).then(setHistory).catch(() => setHistory([])); }}>View all</button>
             </header>
             {pageHistoryError ? <div className="builder__page-history-state" role="alert"><span>History couldn&apos;t load.</span><button type="button" className="builder__link" onClick={() => activePageId && void refreshPageHistory(activePageId)}>Try again</button></div>
               : pageHistory === undefined ? <p className="builder__page-history-state" role="status">Loading history…</p>
@@ -2218,11 +2428,6 @@ export default function MenuBuilder({
                 <SkyIcon name="chevron" />
               </button> : null}
             </div> : null}
-            {place.selectedItemId && isMissingPrice(selected?.item) ? (
-              <p className="builder__flag" data-testid="missing-price-flag">
-                No price yet. You can still publish it.
-              </p>
-            ) : null}
           </div>
 
           {canViewCapacity && capacity && capacity.state !== "fits" ? (
@@ -2337,112 +2542,11 @@ export default function MenuBuilder({
             ) : null}
           </div>
 
-          {place.view === "one-section" && place.sectionId ? (
-            <div
-              className="builder__add-row"
-              onBlurCapture={event => {
-                if (addQuery.trim() || event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-                setAddPrice("");
-                setAddSectionId(null);
-              }}
-            >
-              {addSectionId === place.sectionId ? (
-                <>
-                  <input
-                    autoFocus
-                    value={addQuery}
-                    placeholder="Find an item, or type a new one"
-                    aria-label="Add an item"
-                    data-testid="add-item-input"
-                    role="combobox"
-                    aria-autocomplete="list"
-                    aria-expanded={hits.length > 0}
-                    aria-controls={hits.length > 0 ? `add-item-results-${place.sectionId}` : undefined}
-                    aria-activedescendant={hits[0] ? `add-item-option-${hits[0].itemId}` : undefined}
-                    onChange={event => setAddQuery(event.target.value)}
-                    onKeyDown={event => {
-                      if (event.key === "Enter" && addQuery.trim()) {
-                        void submitAdd(place.sectionId!);
-                      }
-                      if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
-                    }}
-                  />
-                  <input
-                    value={addPrice}
-                    placeholder="Price (optional)"
-                    aria-label="Item price"
-                    data-testid="add-item-price"
-                    maxLength={12}
-                    onChange={event => setAddPrice(event.target.value)}
-                    onKeyDown={event => {
-                      if (event.key === "Enter" && addQuery.trim()) void submitAdd(place.sectionId!);
-                      if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
-                    }}
-                  />
-                  {hits.length > 0 ? <div id={`add-item-results-${place.sectionId}`} role="listbox" className="builder__add-results" data-testid="add-item-results">
-                    {hits.map(hit => {
-                      const here = hit.boards.some(entry => entry.menuId === menuId);
-                      const elsewhere = hit.boards.filter(entry => entry.menuId !== menuId);
-                      return (
-                          <button key={hit.itemId}
-                            type="button"
-                            id={`add-item-option-${hit.itemId}`}
-                            role="option"
-                            data-testid="add-item-result"
-                            data-item-id={hit.itemId}
-                            aria-selected={hit === hits[0]}
-                            className={hit === hits[0] ? "is-selected" : undefined}
-                            onClick={() => void place_(place.sectionId!, { itemId: hit.itemId })}
-                          >
-                            <span className="builder__add-name">{hit.name}</span>
-                            <span className="builder__add-where">
-                              {here
-                                ? "already on this board"
-                                : elsewhere.length === 0
-                                  ? "not on a board yet"
-                                  : elsewhere.length === 1
-                                    ? `on ${elsewhere[0].menuName}`
-                                    : elsewhere.length === 2
-                                      ? `on ${elsewhere[0].menuName} and ${elsewhere[1].menuName}`
-                                      : `on ${elsewhere.length} boards`}
-                              {hit.isAvailable ? "" : " · 86'd right now"}
-                            </span>
-                          </button>
-                      );
-                    })}
-                  </div> : null}
-                  {addQuery.trim() ? (
-                    <button
-                      type="button"
-                      className="builder__add-create"
-                      data-testid="add-item-create"
-                      onClick={() => void place_(place.sectionId!, { name: addQuery.trim(), price: addPrice })}
-                    >
-                      Create “{addQuery.trim()}” as a new item
-                    </button>
-                  ) : null}
-                  {/* The bulk path lives on the add row, not on the rail's + (Q95). */}
-                  <button
-                    type="button"
-                    className="builder__link builder__add-many"
-                    data-testid="open-add-many"
-                    onClick={() => setDrawerOpen(true)}
-                  >
-                    Add many at once
-                  </button>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  className="builder__add-open"
-                  data-testid="open-add-item"
-                  onClick={() => setAddSectionId(place.sectionId)}
-                >
-                  + Add an item
-                </button>
-              )}
-            </div>
-          ) : null}
+          {/*
+            #797-followup: this used to be an inline row here, opened by a click.
+            It now lives in the item panel, always open the moment a section is
+            the active context - selecting a section IS asking to add to it.
+          */}
 
         </main>
 
@@ -2457,71 +2561,138 @@ export default function MenuBuilder({
           </div>
           <div className="builder__inspector-body">
           {!selected || !draftItem ? (
-            <p className="builder__inspector-empty" data-testid="inspector-empty">
-              Select an item on the board to edit it.
-            </p>
+            addingToSectionId ? (
+              <div className="builder__add-panel" data-testid="add-item-panel">
+                <div className="builder__inspector-head">
+                  <h2>Add item to {activeSection?.name ?? "this section"}</h2>
+                </div>
+
+                <label>
+                  <span className="builder__label">Find an item, or start typing a new one</span>
+                  <input
+                    autoFocus
+                    value={addQuery}
+                    placeholder="Search the library…"
+                    aria-label="Add an item"
+                    data-testid="add-item-input"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded={hits.length > 0}
+                    aria-controls={hits.length > 0 ? `add-item-results-${addingToSectionId}` : undefined}
+                    aria-activedescendant={hits[0] ? `add-item-option-${hits[0].itemId}` : undefined}
+                    aria-busy={addSubmitting}
+                    disabled={addSubmitting}
+                    onChange={event => setAddQuery(event.target.value)}
+                    onKeyDown={event => {
+                      if (event.key === "Enter" && addQuery.trim()) runAddAction(() => submitAdd(addingToSectionId));
+                      if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); }
+                    }}
+                  />
+                </label>
+
+                {hits.length > 0 ? (
+                  <div id={`add-item-results-${addingToSectionId}`} role="listbox" className="builder__add-results" data-testid="add-item-results">
+                    {hits.map(hit => {
+                      const here = hit.boards.some(entry => entry.menuId === menuId);
+                      const elsewhere = hit.boards.filter(entry => entry.menuId !== menuId);
+                      return (
+                        <button key={hit.itemId}
+                          type="button"
+                          id={`add-item-option-${hit.itemId}`}
+                          role="option"
+                          data-testid="add-item-result"
+                          data-item-id={hit.itemId}
+                          aria-selected={hit === hits[0]}
+                          className={hit === hits[0] ? "is-selected" : undefined}
+                          disabled={addSubmitting}
+                          onClick={() => runAddAction(() => place_(addingToSectionId, { itemId: hit.itemId }))}
+                        >
+                          <span className="builder__add-name">{hit.name}</span>
+                          <span className="builder__add-where">
+                            {here
+                              ? "already on this board"
+                              : elsewhere.length === 0
+                                ? "not on a board yet"
+                                : elsewhere.length === 1
+                                  ? `on ${elsewhere[0].menuName}`
+                                  : elsewhere.length === 2
+                                    ? `on ${elsewhere[0].menuName} and ${elsewhere[1].menuName}`
+                                    : `on ${elsewhere.length} boards`}
+                            {hit.isAvailable ? "" : " · 86'd right now"}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+
+                {addQuery.trim() ? (
+                  <>
+                    <label>
+                      <span className="builder__label">Price (optional)</span>
+                      <input
+                        value={addPrice}
+                        placeholder="9.5, MP, or leave it"
+                        aria-label="Item price"
+                        data-testid="add-item-price"
+                        maxLength={12}
+                        disabled={addSubmitting}
+                        onChange={event => setAddPrice(event.target.value)}
+                        onKeyDown={event => {
+                          if (event.key === "Enter") runAddAction(() => submitAdd(addingToSectionId));
+                          if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); }
+                        }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="builder__add-create"
+                      data-testid="add-item-create"
+                      disabled={addSubmitting}
+                      // #775: this used to call place_ directly, skipping submitAdd's dedupe
+                      // search entirely - the button and Enter did materially different things,
+                      // which is how a name that already existed in the library became a second
+                      // library item instead of being reused. Both now go through submitAdd.
+                      onClick={() => runAddAction(() => submitAdd(addingToSectionId))}
+                    >
+                      {addSubmitting ? "Adding…" : <>Create “{addQuery.trim()}” as a new item</>}
+                    </button>
+                  </>
+                ) : null}
+                {addSubmitting ? <span className="builder__add-status" role="status" aria-live="polite">Adding…</span> : null}
+
+                {/* The bulk path stays reachable from here too (Q95/Q124). */}
+                <button
+                  type="button"
+                  className="builder__link builder__add-many"
+                  data-testid="open-add-many"
+                  onClick={() => setDrawerOpen(true)}
+                >
+                  Add many at once
+                </button>
+              </div>
+            ) : (
+              <p className="builder__inspector-empty" data-testid="inspector-empty">
+                Select a section to add an item, or an item on the board to edit it.
+              </p>
+            )
           ) : (
             <>
               <div className="builder__inspector-head">
                 <h2>{selected.item.name}</h2>
                 <button
                   type="button"
+                  className="builder__inspector-close"
                   aria-label="Close"
+                  data-testid="close-item"
                   onClick={() => setPlace(current => ({ ...current, selectedItemId: null }))}
                 >
-                  ✕
+                  <SkyIcon name="close" />
                 </button>
               </div>
 
-              {isOff ? (
-                <div className="builder__availability is-off" data-testid="availability-panel" data-off="true">
-                  <div className="builder__availability-head">
-                    <strong>Off right now</strong>
-                    <button
-                      type="button"
-                      className="builder__availability-switch"
-                      role="switch"
-                      aria-checked={false}
-                      aria-label="Turn back on"
-                      data-testid="availability-switch"
-                      onClick={() => void toggleAvailability()}
-                      disabled={busy}
-                    >
-                      <span aria-hidden="true" />
-                    </button>
-                  </div>
-                  <p>
-                    {/*
-                      The trailing clause is verbatim copy in the design authority,
-                      and it carries the rule: everything else on this page waits for
-                      Publish, and this does not.
-                    */}
-                    {offNote ??
-                      `Showing on every screen this board is on. Turning this off hides it on ${
-                        targets.total === 1 ? "your screen" : `all ${targets.total} screens`
-                      } immediately — not part of your draft.`}
-                  </p>
-                </div>
-              ) : (
-                <div className="builder__availability-control">
-                  <span className="builder__label">Availability</span>
-                  <button
-                    type="button"
-                    className="builder__availability-switch"
-                    role="switch"
-                    aria-checked={true}
-                    aria-label="Turn off"
-                    data-testid="availability-switch"
-                    onClick={() => void toggleAvailability()}
-                    disabled={busy}
-                  >
-                    <span aria-hidden="true" />
-                  </button>
-                </div>
-              )}
-
               <label className={inspectorCue === "name" ? "is-cued" : undefined} data-inspector-row="name">
-                <span className="builder__label">Name</span>
+                <span className="builder__label">Item name</span>
                 <input
                   data-inspector-field="name"
                   data-testid="item-name"
@@ -2568,6 +2739,59 @@ export default function MenuBuilder({
                 </p>
               ) : null}
 
+              <div className="builder__toggle-row">
+                <div className="builder__toggle-copy">
+                  <strong>Available</strong>
+                  <p>Turn off to hide this item from guest screens — this also clears an 86.</p>
+                </div>
+                <button
+                  type="button"
+                  className="builder__availability-switch"
+                  role="switch"
+                  aria-checked={draftItem.isListed}
+                  aria-label={draftItem.isListed ? "Turn off" : "Turn on"}
+                  data-testid="available-switch"
+                  onClick={() => void toggleAvailable()}
+                  disabled={busy}
+                >
+                  <span aria-hidden="true" />
+                </button>
+              </div>
+
+              <div className="builder__toggle-row">
+                <div className="builder__toggle-copy">
+                  <strong>86 this item</strong>
+                  <p>Stays on the board, labelled Sold out for guests.</p>
+                </div>
+                <button
+                  type="button"
+                  className="builder__availability-switch"
+                  role="switch"
+                  aria-checked={isOff}
+                  aria-label={isOff ? "Turn back on" : "Turn off"}
+                  data-testid="availability-switch"
+                  onClick={() => void toggleAvailability()}
+                  disabled={busy}
+                >
+                  <span aria-hidden="true" />
+                </button>
+              </div>
+              {isOff ? (
+                <div className="builder__availability is-off" data-testid="availability-panel" data-off="true">
+                  <p>
+                    {/*
+                      The trailing clause is verbatim copy in the design authority,
+                      and it carries the rule: everything else on this page waits for
+                      Publish, and this does not.
+                    */}
+                    {offNote ??
+                      `Showing on every screen this board is on. Turning this off hides it on ${
+                        targets.total === 1 ? "your screen" : `all ${targets.total} screens`
+                      } immediately — not part of your draft.`}
+                  </p>
+                </div>
+              ) : null}
+
               <button type="button" className="builder__quiet-danger" data-testid="remove-item" onClick={() => void removeFromBoard()}>
                 Remove from this page
               </button>
@@ -2611,11 +2835,12 @@ export default function MenuBuilder({
               <h2>Add many at once</h2>
               <button
                 type="button"
+                className="builder__inspector-close"
                 aria-label="Close"
                 data-testid="close-add-many"
                 onClick={() => setDrawerOpen(false)}
               >
-                ✕
+                <SkyIcon name="close" />
               </button>
             </header>
 
@@ -2734,34 +2959,6 @@ export default function MenuBuilder({
             ) : (
               publishedLine(data, venueTimezone)
             )}
-            {data.publishedVersion !== null ? (
-              <>
-                {" · "}
-                <button
-                  type="button"
-                  className="builder__link"
-                  data-testid="go-back-to"
-                  onClick={() => {
-                    setHistoryOpen(true);
-                    if (!history) {
-                      loadMenuHistory(configuration, credential(), menuId)
-                        .then(setHistory)
-                        .catch(() => setHistory([]));
-                    }
-                  }}
-                >
-                  go back to…
-                </button>
-              </>
-            ) : null}
-            {canDiscardDraft(data) ? (
-              <>
-                {" · "}
-                <button type="button" className="builder__link" data-testid="discard-draft" onClick={() => setConfirmDiscard(true)}>
-                  discard draft
-                </button>
-              </>
-            ) : null}
           </span>
         </div>
 
@@ -2803,22 +3000,77 @@ export default function MenuBuilder({
               {blocked}
             </span>
           ) : null}
-          {data.draftCount > 0 ? (
-            <button type="button" className="builder__link" data-testid="review-first" onClick={() => setReviewOpen(true)}>
-              Review first
-            </button>
-          ) : null}
-          {data.draftCount > 0 ? (
+          <span className="builder__actions-wrap" ref={actionsMenuRef}>
             <button
               type="button"
-              className="builder__publish-button"
-              data-testid="publish"
-              disabled={busy || Boolean(blocked)}
-              onClick={() => void publish()}
+              ref={actionsTriggerRef}
+              className="builder__actions-trigger"
+              data-testid="actions-menu-trigger"
+              aria-haspopup="menu"
+              aria-expanded={actionsMenuOpen}
+              disabled={busy}
+              onClick={() => setActionsMenuOpen(open => !open)}
             >
-              {publishLabel(data.draftCount)}
+              Actions <SkyIcon name="chevron" size={14} />
             </button>
-          ) : null}
+            {actionsMenuOpen ? (
+              <div className="builder__actions-menu" data-testid="actions-menu" role="menu" aria-label="Menu actions">
+                <button
+                  type="button"
+                  role="menuitem"
+                  data-testid="action-review-publish"
+                  disabled={data.draftCount === 0 || Boolean(blocked)}
+                  onClick={() => chooseAction(() => setReviewOpen(true))}
+                >
+                  <strong>Review &amp; publish</strong>
+                  <small>
+                    {data.draftCount > 0
+                      ? `${data.draftCount} change${data.draftCount === 1 ? " goes" : "s go"} to your screens`
+                      : "Nothing to publish"}
+                  </small>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  data-testid="action-save-exit"
+                  onClick={() => chooseAction(onBack)}
+                >
+                  <strong>Save &amp; exit</strong>
+                  <small>Keeps the draft, publishes nothing</small>
+                </button>
+                {canDiscardDraft(data) ? (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="builder__actions-menu-danger"
+                    data-testid="action-discard"
+                    onClick={() => chooseAction(() => setConfirmDiscard(true))}
+                  >
+                    <strong>Discard {draftPhrase(data.draftCount).replace(" not on your screens", "")}</strong>
+                    <small>Back to what is on your screens now</small>
+                  </button>
+                ) : null}
+                {data.publishedVersion !== null && canRestore ? (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    data-testid="action-restore"
+                    onClick={() => chooseAction(() => {
+                      setHistoryOpen(true);
+                      if (!history) {
+                        loadMenuHistory(configuration, credential(), menuId)
+                          .then(setHistory)
+                          .catch(() => setHistory([]));
+                      }
+                    })}
+                  >
+                    <strong>Restore an earlier version</strong>
+                    <small>Brings it back as a new draft — it still needs publishing</small>
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </span>
         </div>
       </footer>
 
@@ -2866,6 +3118,200 @@ export default function MenuBuilder({
         </>
       ) : null}
 
+      {confirmPublishMissingPrice ? (
+        <>
+          <div className="builder__scrim" onClick={() => setConfirmPublishMissingPrice(false)} />
+          <div
+            className="builder__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="publish-missing-price-title"
+            data-testid="publish-missing-price-dialog"
+            ref={publishMissingPriceRef}
+          >
+            <h2 id="publish-missing-price-title">
+              {missingPriceItems.length === 1 ? "1 item has no price" : `${missingPriceItems.length} items have no price`}
+            </h2>
+            <p>It will show on your screens with no price unless you go back and set one.</p>
+            <ul className="builder__screen-list" data-testid="publish-missing-price-list">
+              {missingPriceItems.map(item => (
+                <li key={item.itemId}>
+                  <strong>{item.name}</strong>
+                </li>
+              ))}
+            </ul>
+            <div className="builder__dialog-actions">
+              <button type="button" className="action-secondary" onClick={() => setConfirmPublishMissingPrice(false)}>
+                Go back
+              </button>
+              <button
+                type="button"
+                className="builder__publish-button"
+                data-testid="confirm-publish-missing-price"
+                onClick={() => {
+                  setConfirmPublishMissingPrice(false);
+                  void publish();
+                }}
+              >
+                Publish anyway
+              </button>
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {sectionActionsFor ? (
+        <>
+          <div className="builder__scrim" onClick={() => setSectionActionsFor(null)} />
+          <div
+            className="builder__dialog builder__section-actions-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="section-actions-title"
+            data-testid="section-actions-dialog"
+            ref={sectionActionsRef}
+          >
+            <h2 id="section-actions-title">{sectionActionsFor.name}</h2>
+            <ul className="builder__section-actions-list">
+              <li>
+                <button
+                  type="button"
+                  data-testid="section-actions-rename"
+                  onClick={() => {
+                    setEditingRailSection({ sectionId: sectionActionsFor.sectionId, name: sectionActionsFor.name });
+                    setSectionActionsFor(null);
+                  }}
+                >
+                  <SkyIcon name="pencil" /> Rename
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  data-testid="section-actions-move-to-page"
+                  disabled={pages.filter(page => page.pageId !== sectionOf(board, sectionActionsFor.sectionId)?.pageId).length === 0}
+                  onClick={() => {
+                    const destination = pages.find(page => page.pageId !== sectionOf(board, sectionActionsFor.sectionId)?.pageId)?.pageId ?? "";
+                    setMovingSection({ sectionId: sectionActionsFor.sectionId, name: sectionActionsFor.name, destinationPageId: destination, creatingPage: false, newPageName: "" });
+                    setSectionActionsFor(null);
+                  }}
+                >
+                  <SkyIcon name="page-arrow" /> Move to page
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className="builder__section-actions-delete"
+                  data-testid="section-actions-delete"
+                  onClick={() => {
+                    const destination = sectionsOf(board).find(candidate => candidate.sectionId !== sectionActionsFor.sectionId)?.sectionId ?? "";
+                    const items = itemsOf(board, sectionActionsFor.sectionId).length;
+                    setConfirmDelete({
+                      sectionId: sectionActionsFor.sectionId,
+                      name: sectionActionsFor.name,
+                      items,
+                      destinationSectionId: destination,
+                      mode: items > 0 && destination ? "move" : "delete"
+                    });
+                    setSectionActionsFor(null);
+                  }}
+                >
+                  <SkyIcon name="remove" /> Delete
+                </button>
+              </li>
+            </ul>
+            <div className="builder__dialog-actions">
+              <button type="button" className="action-secondary" onClick={() => setSectionActionsFor(null)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {movingSection ? (
+        <>
+          <div className="builder__scrim" onClick={() => setMovingSection(null)} />
+          <div
+            className="builder__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="move-section-title"
+            data-testid="move-section-dialog"
+            ref={movingSectionRef}
+          >
+            <h2 id="move-section-title">Move {movingSection.name} to…</h2>
+            <p>The section moves with all of its items, in order.</p>
+            {movingSection.creatingPage ? (
+              <label className="builder__dialog-label">
+                New page name
+                <input
+                  type="text"
+                  autoFocus
+                  value={movingSection.newPageName}
+                  onChange={event => {
+                    const newPageName = event.currentTarget.value;
+                    setMovingSection(current => current ? { ...current, newPageName } : current);
+                  }}
+                  onKeyDown={event => {
+                    if (event.key === "Escape") setMovingSection(current => current ? { ...current, creatingPage: false, newPageName: "" } : current);
+                  }}
+                />
+              </label>
+            ) : (
+              <ul className="builder__move-section-pages" data-testid="move-section-page-list">
+                <li>
+                  <button type="button" className="builder__link" onClick={() => setMovingSection(current => current ? { ...current, creatingPage: true } : current)}>
+                    + New page
+                  </button>
+                </li>
+                {pages.filter(page => page.pageId !== sectionOf(board, movingSection.sectionId)?.pageId).map(page => {
+                  const sectionCount = sectionsOf(board).filter(section => section.pageId === page.pageId).length;
+                  return (
+                    <li key={page.pageId}>
+                      <label>
+                        <input
+                          type="radio"
+                          name="move-section-destination"
+                          checked={movingSection.destinationPageId === page.pageId}
+                          onChange={() => setMovingSection(current => current ? { ...current, destinationPageId: page.pageId } : current)}
+                        />
+                        <strong>{page.name}</strong>
+                        <span>{sectionCount} {sectionCount === 1 ? "section" : "sections"}</span>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <div className="builder__dialog-actions">
+              <button
+                type="button"
+                className="action-secondary"
+                onClick={() => movingSection.creatingPage
+                  ? setMovingSection(current => current ? { ...current, creatingPage: false, newPageName: "" } : current)
+                  : setMovingSection(null)}
+              >
+                {movingSection.creatingPage ? "Back" : "Cancel"}
+              </button>
+              <button
+                type="button"
+                className="builder__publish-button"
+                data-testid="confirm-move-section"
+                disabled={busy || (movingSection.creatingPage ? !movingSection.newPageName.trim() : !movingSection.destinationPageId)}
+                onClick={() => {
+                  if (movingSection.creatingPage) void commitMoveToNewPage(movingSection.sectionId, movingSection.newPageName);
+                  else void moveSectionToPage(movingSection.sectionId, movingSection.destinationPageId);
+                }}
+              >
+                Move section
+              </button>
+            </div>
+          </div>
+        </>
+      ) : null}
+
       {confirmDelete ? (
         <>
           <div className="builder__scrim" onClick={() => setConfirmDelete(null)} />
@@ -2883,18 +3329,37 @@ export default function MenuBuilder({
                 ? "This section is empty."
                 : `${confirmDelete.items} ${confirmDelete.items === 1 ? "item" : "items"} ${confirmDelete.mode === "move" ? "will move" : "will return to the library"}. Library items are kept.`}
             </p>
+            {/*
+              This section is deleted either way (#797) - the earlier copy said so
+              only on the "delete" radio, which read as if the "move" radio might
+              be a non-destructive alternative to it rather than the same act with
+              a different destination for the items. Both labels now open with
+              "Delete this section" so the choice reads as being about the items
+              only - and the select stays the trailing element of its own label,
+              same as before, rather than trailing text wrapping under it.
+            */}
             {confirmDelete.items > 0 ? <fieldset className="builder__delete-page-choice">
               <legend>What should happen to its items?</legend>
-              {sectionsOf(board).filter(section => section.pageId === activePageId && section.sectionId !== confirmDelete.sectionId).length > 0 ? <label>
+              {sectionsOf(board).filter(section => section.sectionId !== confirmDelete.sectionId).length > 0 ? <label>
                 <input type="radio" name="delete-section-mode" checked={confirmDelete.mode === "move"} onChange={() => setConfirmDelete(current => current ? { ...current, mode: "move" } : current)} />
-                Move items to
-                <select value={confirmDelete.destinationSectionId} onChange={event => setConfirmDelete(current => current ? { ...current, destinationSectionId: event.currentTarget.value } : current)}>
-                  {sectionsOf(board).filter(section => section.pageId === activePageId && section.sectionId !== confirmDelete.sectionId).map(section => <option key={section.sectionId} value={section.sectionId}>{section.name}</option>)}
+                Delete this section, moving its items to
+                {/* #797: every page's sections, not just the current one - grouped by
+                    page so a same-named section on a different page is never ambiguous. */}
+                <select value={confirmDelete.destinationSectionId} onChange={event => {
+                  const destinationSectionId = event.currentTarget.value;
+                  setConfirmDelete(current => current ? { ...current, destinationSectionId } : current);
+                }}>
+                  {pages.map(page => {
+                    const options = sectionsOf(board).filter(section => section.pageId === page.pageId && section.sectionId !== confirmDelete.sectionId);
+                    return options.length > 0 ? <optgroup key={page.pageId} label={page.name}>
+                      {options.map(section => <option key={section.sectionId} value={section.sectionId}>{section.name}</option>)}
+                    </optgroup> : null;
+                  })}
                 </select>
               </label> : null}
               <label>
                 <input type="radio" name="delete-section-mode" checked={confirmDelete.mode === "delete"} onChange={() => setConfirmDelete(current => current ? { ...current, mode: "delete" } : current)} />
-                Delete section and return its items to the library
+                Delete this section, returning its items to the library
               </label>
             </fieldset> : null}
             <p className="builder__dialog-note">This can&apos;t be undone.</p>
@@ -2999,7 +3464,7 @@ export default function MenuBuilder({
                   disabled={busy}
                   onClick={() => {
                     setReviewOpen(false);
-                    void publish();
+                    requestPublish();
                   }}
                 >
                   {publishLabel(data.draftCount)}
@@ -3021,6 +3486,53 @@ export default function MenuBuilder({
             </div>
           </div>
         </div>
+      ) : null}
+
+      {/*
+        #799: "View all" and "go back to..." used to share this one dialog,
+        which filters to published checkpoints only - so a never-published
+        menu's "View all" showed "Nothing to go back to yet" instead of its
+        real history. "View all" is a passive changelog (every change, same
+        entries the page-scoped sidebar panel shows but for the whole menu);
+        "go back to..." is an active restore picker (published checkpoints
+        only, since a mid-draft state isn't something you can go back to).
+        Same underlying `history` fetch (already correctly whole-menu), two
+        different views over it.
+      */}
+      {viewAllOpen ? (
+        <>
+          <div className="builder__scrim" onClick={() => setViewAllOpen(false)} />
+          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="view-all-title" data-testid="view-all-dialog" ref={viewAllRef}>
+            <h2 id="view-all-title">History · {board?.name ?? "this menu"}</h2>
+            <p>Every change to this menu, across every page.</p>
+            {history === undefined ? (
+              <p className="builder__page-history-state" role="status">Loading history…</p>
+            ) : history.length === 0 ? (
+              <p className="builder__page-history-state">Nothing here yet.</p>
+            ) : (
+              <ol className="builder__page-history-list" data-testid="view-all-list">
+                {history.map((entry, index) => (
+                  <li key={`${entry.occurredUtc}:${entry.kind}:${entry.detail}:${index}`} data-testid="view-all-entry">
+                    <i aria-hidden="true" />
+                    <span>
+                      <strong>{entry.detail ?? entry.kind.replaceAll("_", " ")}</strong>
+                      <small>
+                        {entry.pageName ? `${entry.pageName} · ` : ""}
+                        {entry.author ? `${entry.author} · ` : ""}
+                        {venueTime(entry.occurredUtc, venueTimezone)}
+                      </small>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+            <div className="builder__dialog-actions">
+              <button type="button" className="action-secondary" onClick={() => setViewAllOpen(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </>
       ) : null}
 
       {historyOpen ? (
@@ -3059,7 +3571,7 @@ export default function MenuBuilder({
                                 } you had waiting were replaced.`
                               : "Back to that version. Publish when you want your screens to follow."
                           );
-                        })
+                        }, undefined, undefined, false, "Go back to version")
                       }
                     >
                       Go back to this
@@ -3151,7 +3663,10 @@ export default function MenuBuilder({
               Destination page
               <select
                 value={confirmPageDelete.destinationPageId}
-                onChange={event => setConfirmPageDelete(current => current ? { ...current, destinationPageId: event.target.value } : null)}
+                onChange={event => {
+                  const destinationPageId = event.target.value;
+                  setConfirmPageDelete(current => current ? { ...current, destinationPageId } : null);
+                }}
                 data-testid="delete-page-destination"
               >
                 {pages.filter(page => page.pageId !== confirmPageDelete.pageId).map(page => <option key={page.pageId} value={page.pageId}>{page.name}</option>)}

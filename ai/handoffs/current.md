@@ -1,6 +1,28 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-22, for the display publish gate, realtime delivery, builder responsiveness, and the observability proposal.
+Updated 2026-08-23, catching the tracker and this file up after a batch of merges landed without either being synced, plus a round of owner triage.
+
+## 2026-08-23 — Tracker catch-up, owner triage on five open items, and a new venue-broadcast defect (#811)
+
+**Why this entry exists.** `tracker/assignments.json` still showed #775 as *claimed* (05:50) as of this session's start, but git/GitHub showed seven more merges past it: #794/#796, #802/#805, #798/#808, #806/#807, #775/#804 itself, #797/#809 (partial), and #799/#812. None of that had been synced to the tracker or this file. Per AGENTS.md - "repository and GitHub state override chat history" - the tracker is now caught up (see its `previousCompletedAssignment`); this entry does the same for the handoff, at a summary level. Exact commits are `git log master`, not restated here.
+
+**Stale-but-actually-fixed issues closed:** #775 (PR #804), #794 (PR #796), #802 (PR #805) - all had merged fixes but were still open on GitHub.
+
+**Owner triage on five items, 2026-08-23:**
+
+- **#744 (retire `dbo.MenuItems`) parked as a design doc, not scheduled.** Moved to `docs/design/proposed/retire-menuitems.md` (PR #813, doc-only) - same pattern as #774/#765: proposed doc merged, issue stays open, nothing scheduled. Owner: leave it until the time is right to discuss it.
+- **#797 real-world story changes its actual scope.** The owner, using the delete-section flow, actually wanted to create a new page and move an existing section ("Dinner") onto it - not delete-and-redistribute-items, which is what #809 partially fixed. Recorded on #797: this needs a first-class "move this section to a page" action (existing or newly-created), distinct from the delete dialog's item-transfer path, and it touches the same same-page DB guard (`DeleteSectionSql`/`MovePlacementGuardedSql`) #809 found and left alone. Not implemented - needs its own design/scope decision.
+- **#800 timing extended to cover every action, not just the write pipeline.** Owner wants per-action timing in the menu builder for investigation. PR #814: `run()` gained a `describe` override so publish/discard/add-page/duplicate-page/delete-page/save-assignments/toggle-availability/go-back-to-version stop collapsing into the generic "Your last change" bucket; `undo()`/`redo()` gained their own `[perf:undo]`/`[perf:redo]` logging - they call `step.undo()`/`step.redo()` directly and had **zero** timing before this, unlike every other write. Still console-only, temp, tied to #800/#774.
+- **#776 (Murphy auto-run after deploy) closed, not planned.** Owner: "Murphy should only run when we say so for now." Recorded in memory so this isn't re-proposed.
+- **Housekeeping:** `feat/799-restore-capability-and-view-all-scope` deleted locally (PR #812 already merged as `fd46adb6`); remote branch delete was blocked by the session's permission classifier (destructive remote op) and is left for the owner (`git push origin --delete feat/799-restore-capability-and-view-all-scope`).
+
+**#811, venue-wide emergency broadcast never delivering in realtime, found and fixed same session.** Found independently reviewing #810 (the #769 venue-notify audit doc). `BackOfficeEmergencyBroadcastsController.NotifyAsync` fell through to `NotifyVenueContentUpdatedAsync` when `ScreenId` is null - the exact same dead `venue:{id}` SignalR group #769/#763 already proved nothing joins. "All venue screens" is the **pre-selected default** in `EmergencyBroadcastAdministration.tsx`, so this is the common path, not an edge case, and more urgent than #769's original case given what an emergency broadcast is for. Was self-healing via the 60s content-poll recovery, same masking mechanism as #769.
+
+Fixed on the owner's "continue" - PR #816: the controller now also loops the venue's screens (`IScreenRepository.GetByVenueIdAsync`) and calls `NotifyScreenContentUpdatedAsync` for each, same shape as #763's publish fix. Venue-wide call kept alongside the loop, matching `ContentService.PublishAsync`'s own precedent. Payload needed no change - `applyRealtimeEvent` in `src/display` already merges an `emergency-broadcast` change directly regardless of `screenId`. 3 new focused unit tests (screen-targeted notifies only that screen and never touches the repository; venue-wide create/cancel both fan out to every screen plus the venue-wide call). `dotnet build` (Release) clean; `Vennu.Api.Tests` `Category=Unit` 467/467 (464 baseline + 3 new). **UNTESTED: live verification against a real deployed venue with multiple screens** - no authenticated dev session was set up for this pass.
+
+### Next action
+
+Independent review pending on PR #813 (docs, #744), PR #814 (#800 timing extension), and PR #816 (#811 fix - the one that actually matters functionally; review this one first). Behind those: #803 (local UI-test fixture reset broken, causing menu-cap creep across sessions) and the design decision on #797's actual scope (move-section-to-page).
 
 ## 2026-08-23 — A display diagnostics view, and two defects it would have caught on sight (#738, #790, #791)
 

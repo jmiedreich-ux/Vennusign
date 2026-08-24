@@ -1,9 +1,9 @@
 {
   "codename": "Menus",
   "what": "The menu product: item library, draft/publish spine, the builder, the render engine, and the import paths that get a venue's existing menu into it without retyping",
-  "stage": "shipping",
+  "stage": "development",
   "position": "Nine milestones accepted through M6.3; M5 parked",
-  "gate": "M5 (Board view + Play) is parked at #709. The 7+ work — spreadsheet, photo and POS import, item-library UI, multi-venue, Schedules-owned time pricing, fallback-card authoring — is named but not planned.",
+  "next": "M5 (Board view + Play) is parked at #709. The 7+ work — spreadsheet, photo and POS import, item-library UI, multi-venue, Schedules-owned time pricing, fallback-card authoring — is named but not planned.",
   "label": "workstream:menus",
   "design": [
     { "name": "Menus decisions", "where": "docs/features/menus/decisions.md" },

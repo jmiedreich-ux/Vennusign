@@ -571,6 +571,14 @@
 
 .builder__page-history-list {
   display: grid;
+  /*
+   * A grid's implicit auto rows stretch to fill leftover block-axis space when
+   * align-content is left at its default - the panel's own height comes from a
+   * minmax(0, 1fr) parent track (#798), so a short list stretched every row
+   * across whatever height was available instead of sitting tight against the
+   * next one.
+   */
+  align-content: start;
   gap: var(--sky-space-2);
   min-height: 0;
   margin: 0;
@@ -704,7 +712,13 @@
   cursor: default;
 }
 
-.builder__rail-delete {
+/*
+ * #797: was a dedicated trash icon (builder__rail-delete). Rename/Move to
+ * page/Delete are now behind this one "more actions" icon, so it reads as
+ * neutral like builder__rail-rename-action rather than red/destructive - the
+ * destructive choice is still red, but one level in, inside the dialog it opens.
+ */
+.builder__rail-section-actions {
   display: grid;
   place-items: center;
   width: 26px;
@@ -713,28 +727,82 @@
   border-radius: 7px;
   padding: 5px;
   background: transparent;
-  color: #a52c2c;
+  color: var(--sky-text-secondary);
   cursor: pointer;
 }
 
-.builder__rail-delete:hover {
-  background: #fdeaea;
+.builder__rail-section-actions:hover {
+  background: var(--sky-color-surface-muted, #f1f5f9);
+  color: var(--sky-action-link-text);
 }
 
-.builder__rail-delete:disabled {
+.builder__rail-section-actions:disabled {
   opacity: 0.4;
   cursor: default;
 }
 
-.builder__rail-delete svg {
-  width: 15px;
-  height: 15px;
-  fill: none;
-  stroke: currentcolor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.builder__section-actions-dialog { width: min(320px, calc(100vw - 32px)); }
+
+.builder__section-actions-list {
+  display: grid;
+  gap: 2px;
+  margin: var(--sky-space-3) 0 0;
+  padding: 0;
+  list-style: none;
 }
+
+.builder__section-actions-list button {
+  display: flex;
+  align-items: center;
+  gap: var(--sky-space-3);
+  width: 100%;
+  border: 0;
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: var(--sky-space-3);
+  background: transparent;
+  color: var(--sky-text-primary);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.builder__section-actions-list button:hover:not(:disabled) { background: var(--sky-color-surface-muted, #f1f5f9); }
+.builder__section-actions-list button:disabled { opacity: 0.4; cursor: default; }
+.builder__section-actions-list .builder__section-actions-delete { color: #a52c2c; }
+.builder__section-actions-list .builder__section-actions-delete:hover:not(:disabled) { background: #fdeaea; }
+
+/*
+ * #797's move-to-page destination list. Capped the same way #819 fixed the
+ * "View all" history list - a dialog's own height comes from nothing here, so
+ * an uncapped list would grow with however many pages the menu has instead of
+ * scrolling.
+ */
+.builder__move-section-pages {
+  display: grid;
+  gap: 2px;
+  max-height: min(50vh, 360px);
+  margin: var(--sky-space-3) 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.builder__move-section-pages li:first-child { margin-bottom: var(--sky-space-2); border-bottom: 1px solid var(--sky-color-border); padding-bottom: var(--sky-space-2); }
+
+.builder__move-section-pages label {
+  display: flex;
+  align-items: center;
+  gap: var(--sky-space-3);
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: var(--sky-space-2) var(--sky-space-3);
+  cursor: pointer;
+}
+
+.builder__move-section-pages label:hover { background: var(--sky-color-surface-muted, #f1f5f9); }
+.builder__move-section-pages label input { margin: 0; }
+.builder__move-section-pages label strong { flex: 1; font-weight: var(--sky-font-weight-semibold); }
+.builder__move-section-pages label span { color: var(--sky-text-secondary); font-size: 12px; }
 
 .builder__rail-new {
   width: 100%;
@@ -1020,49 +1088,22 @@
   cursor: text;
 }
 
-.builder__add-row {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(92px, 0.24fr);
-  gap: 8px;
-}
-
-.builder__add-open {
-  border: 1px dashed #cbd9e4;
-  border-radius: var(--sky-radius-sm-plus, 10px);
-  padding: 8px 14px;
-  background: #fbfdfe;
-  color: #475569;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.builder__add-row input {
-  width: 100%;
-  border: 1px solid #dbe3ec;
-  border-radius: var(--sky-radius-sm-plus, 10px);
-  padding: 9px 11px;
-  background: #fff;
-  font: inherit;
-  font-size: 13px;
+/* The add-item panel: a section is the active context, and this is what
+   filling it looks like - the search bar opens the moment you select the
+   section, with room underneath for what it finds. */
+.builder__add-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 /*
- * Absolutely positioned, because a dropdown that reflows the page is not a
- * dropdown. In flow it grew the builder from 812 to 967px at 1440x900 and pushed
- * Publish, Review first and the draft count off the bottom of the screen - at
- * exactly the moment somebody is adding items.
+ * In flow, not floating: the add panel is the panel's own content now, not an
+ * overlay racing the canvas for space, so results get room to breathe rather
+ * than a cramped dropdown - the whole point of moving this here.
  */
 .builder__add-results {
-  position: absolute;
-  top: auto;
-  bottom: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  z-index: 20;
-  max-height: 46vh;
+  max-height: 320px;
   overflow-y: auto;
   display: grid;
   gap: 2px;
@@ -1071,9 +1112,7 @@
   border: 1px solid var(--sky-color-border, #e2e8f0);
   border-radius: var(--sky-radius-md, 12px);
   background: #fff;
-  box-shadow: 0 18px 48px rgb(15 23 42 / 0.16);
   list-style: none;
-  grid-column: 1 / -1;
 }
 
 .builder__add-results button.is-selected {
@@ -1125,9 +1164,36 @@
 }
 
 .builder__add-create {
+  width: 100%;
+  border: 1px solid var(--sky-color-border, #e2e8f0);
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 9px 11px;
+  background: var(--sky-color-surface-muted, #f8fafc);
   color: var(--sky-text-primary, #0f172a);
+  font: inherit;
   font-size: 12.5px;
-  font-weight: 500;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.builder__add-create:hover {
+  background: var(--sky-color-secondary, #eaf2fb);
+}
+
+.builder__add-panel button:disabled,
+.builder__add-panel input:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* #775: the moment the library search behind Enter/create starts, something has to
+   change on screen - this is that something, for the span between "submitted" and
+   "the write landed" that used to look identical to "nothing happened". */
+.builder__add-status {
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 /* ---- inspector ----------------------------------------------------------- */
@@ -1171,13 +1237,25 @@
   letter-spacing: -0.018em;
 }
 
-.builder__inspector-head button {
+.builder__inspector-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
   border: 0;
+  border-radius: var(--sky-radius-sm, 8px);
   padding: 0;
   background: none;
   color: var(--sky-color-text-muted, #64748b);
-  font-size: 14px;
   cursor: pointer;
+}
+
+.builder__inspector-close svg { width: 15px; height: 15px; }
+
+.builder__inspector-close:hover {
+  background: var(--sky-color-surface-muted, #f1f5f9);
+  color: var(--sky-text-primary, #0f172a);
 }
 
 .builder__inspector label {
@@ -1227,24 +1305,32 @@
   box-shadow: inset 0 0 0 1.5px #8a2929;
 }
 
-.builder__availability-control {
+/* Available and 86 both read the same way: a bold label, a plain sentence
+   explaining the switch, and the switch itself vertically centered beside
+   the whole block — never a bare label floating next to a bare switch. */
+.builder__toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
 }
 
-.builder__availability-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+.builder__toggle-copy {
+  display: grid;
+  gap: 2px;
 }
 
-.builder__availability strong {
+.builder__toggle-copy strong {
   font-size: 13px;
   font-weight: 700;
-  color: #8a2929;
+  color: var(--sky-text-primary, #0f172a);
+}
+
+.builder__toggle-copy p {
+  margin: 0;
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 11.5px;
+  line-height: 1.45;
 }
 
 .builder__availability p {
@@ -1261,8 +1347,8 @@
   border: 0;
   border-radius: 999px;
   padding: 3px;
-  background: #178a52;
-  box-shadow: 0 1px 2px rgb(23 138 82 / 0.4);
+  background: var(--sky-text-primary, #0f172a);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.3);
   cursor: pointer;
 }
 
@@ -1464,7 +1550,7 @@
 
 .builder__dialog p {
   margin: 0 0 8px;
-  color: #475569;
+  color: var(--sky-text-secondary);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -1521,13 +1607,34 @@
   color: var(--sky-color-text-muted, #64748b);
 }
 
-.builder__dialog input[type="password"] {
+/*
+ * The one field style every dialog gets (decision O3, decisions.md): a real
+ * border, the app's own input radius, and the shared focus ring in place of
+ * whatever a bare <input>/<select> falls back to without either.
+ */
+.builder__dialog input[type="password"],
+.builder__dialog-label input[type="text"],
+.builder__delete-page-choice select {
   width: 100%;
   padding: 9px 10px;
-  border: 1px solid var(--sky-color-border, #cbd5e1);
-  border-radius: 8px;
+  border: 1px solid var(--sky-color-border-input, var(--sky-color-border));
+  border-radius: var(--sky-input-radius, 10px);
+  background: var(--sky-color-surface);
+  color: var(--sky-text-primary);
   font: inherit;
   font-size: 14px;
+}
+
+.builder__dialog input[type="password"]:focus-visible,
+.builder__dialog-label input[type="text"]:focus-visible,
+.builder__delete-page-choice select:focus-visible {
+  outline: var(--sky-focus-ring);
+  outline-offset: var(--sky-focus-offset);
+  border-color: var(--sky-focus-color);
+}
+
+.builder__dialog input[type="radio"] {
+  accent-color: var(--sky-color-primary);
 }
 
 .builder__dialog-problem {
@@ -1755,4 +1862,102 @@ button.builder__viewing-as strong {
   opacity: 0.5;
   box-shadow: none;
   cursor: default;
+}
+
+/*
+ * Actions consolidates what used to be scattered links (Review first, discard
+ * draft, go back to…) and the standalone Publish button into one entry point,
+ * carrying the same dark-primary weight Publish always had. It opens upward:
+ * the trigger lives in the footer, so a menu that opened downward would run
+ * off the bottom of the screen.
+ */
+.builder__actions-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.builder__actions-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: var(--sky-radius-md, 12px);
+  padding: 11px 16px;
+  background: var(--sky-text-primary, #0f172a);
+  color: #f8fafc;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgb(15 23 42 / 0.2);
+  cursor: pointer;
+}
+
+.builder__actions-trigger:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+  cursor: default;
+}
+
+.builder__actions-trigger svg {
+  transition: transform 0.16s ease-out;
+}
+
+.builder__actions-trigger[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .builder__actions-trigger svg {
+    transition: none;
+  }
+}
+
+.builder__actions-menu {
+  position: absolute;
+  z-index: 20;
+  bottom: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  gap: 2px;
+  width: 21rem;
+  border: 1px solid var(--sky-color-border, #e2e8f0);
+  border-radius: var(--sky-radius-md, 12px);
+  padding: 6px;
+  background: var(--sky-color-surface, #fff);
+  box-shadow: 0 18px 48px rgb(15 23 42 / 0.16);
+}
+
+.builder__actions-menu button {
+  display: grid;
+  gap: 2px;
+  border: 0;
+  border-radius: var(--sky-radius-sm, 8px);
+  padding: 9px 11px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.builder__actions-menu button:hover:not(:disabled) {
+  background: var(--sky-color-surface-muted, #f1f5f9);
+}
+
+.builder__actions-menu button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.builder__actions-menu button strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sky-text-primary, #0f172a);
+}
+
+.builder__actions-menu button small {
+  font-size: 11.5px;
+  color: var(--sky-color-text-muted, #64748b);
+}
+
+.builder__actions-menu-danger strong {
+  color: var(--sky-danger-text, #8a2929);
 }

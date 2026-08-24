@@ -3,7 +3,7 @@
   "what": "The display side: what a venue's screens are, how one is paired to a venue, and what a person sees when they walk up to the wrong URL",
   "stage": "designing",
   "position": "Hi-fi in Design and current — S1, S2, S3. No developer handoff, no authority, no plan.",
-  "gate": "The developer handoff, then a design authority landed in docs/features/screens/.",
+  "next": "The developer handoff, then a design authority landed in docs/features/screens/.",
   "label": "workstream:screens",
   "design": [
     {

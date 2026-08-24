@@ -342,6 +342,49 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         Assert.Empty(MenuSnapshot.Diff(published, await repository.GetWorkingSnapshotAsync(venueId, menuId)));
     }
 
+    // Available is a drafted flag like name/description/price, not an immediate
+    // one like 86: it lands in dbo.Items right away, but only reaches the draft
+    // diff (and so only ships) on the next publish - this is what makes the
+    // difference between the two mechanisms real at the database layer, not just
+    // in application code.
+    [Fact]
+    public async Task GuardedItemEdit_ChangesIsListedAndParticipatesInTheDraft()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
+        var item = new Item { VenueId = venueId, Name = fixture.UniqueValue("cider"), Price = "8" };
+        await repository.CreateItemOnMenuAsync(item, menuId, sectionId, itemsPerMenuLimit: 500);
+        await PublishCurrentAsync(repository, venueId, menuId);
+
+        var published = await repository.GetLatestPublishedSnapshotAsync(venueId, menuId);
+        var updated = await repository.UpdateItemValuesGuardedAsync(
+            venueId, item.Id, item.Name, item.Description, item.Price, expected: null, DateTime.UtcNow, isListed: false);
+        Assert.Equal("updated", updated.Outcome);
+        Assert.False(updated.IsListed);
+
+        var live = await repository.GetItemAsync(venueId, item.Id);
+        Assert.False(live!.IsListed);
+
+        var change = Assert.Single(MenuSnapshot.Diff(published, await repository.GetWorkingSnapshotAsync(venueId, menuId)));
+        Assert.Equal("isListed", change.Field);
+        Assert.Equal("true", change.BeforeValue);
+        Assert.Equal("false", change.AfterValue);
+
+        // A guard that names the wrong current value refuses, the same way a
+        // stale name/description/price expectation refuses.
+        var refused = await repository.UpdateItemValuesGuardedAsync(
+            venueId, item.Id, item.Name, item.Description, item.Price,
+            new ItemValueExpectation(item.Name, item.Description, item.Price, IsListed: true),
+            DateTime.UtcNow, isListed: true);
+        Assert.Equal("item_changed", refused.Outcome);
+        Assert.False(refused.IsListed);
+    }
+
     // ---- publish behaviour ------------------------------------------------------
 
     // Q80, enforced inside the transaction: a publish that can reach nothing and
@@ -1945,6 +1988,156 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         Assert.Equal(SectionOutcomes.DestinationMissing, outcome.Outcome);
         Assert.Contains(await repository.GetPlacementsAsync(venueId, menuId), placement => placement.MenuSectionId == source && placement.ItemId == item.Id);
         Assert.Contains(MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId))!.Sections!, section => section.SectionId == source);
+    }
+
+    /// <summary>
+    /// #797: the destination no longer has to be on the same page as the section
+    /// being deleted - this is what #809 found blocked and left for a decision.
+    /// </summary>
+    [Fact]
+    public async Task DeleteSection_CanMoveItemsToASectionOnAnotherPage()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var secondPage = Guid.NewGuid();
+        await repository.CreatePageAsync(venueId, menuId, secondPage, "Dinner", DateTime.UtcNow);
+        var source = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var destination = Guid.NewGuid();
+        await repository.CreateSectionOnMenuAsync(venueId, menuId, destination, "Dinner mains", DateTime.UtcNow, secondPage);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("cross-page-move"), Price = "9" };
+        await repository.CreateItemOnMenuAsync(item, menuId, source, itemsPerMenuLimit: 500);
+
+        var outcome = await repository.DeleteSectionAsync(venueId, menuId, source, destination, deletePlacements: false);
+
+        Assert.Equal(SectionOutcomes.Deleted, outcome.Outcome);
+        Assert.Equal(1, outcome.MovedItemCount);
+        Assert.Contains(await repository.GetPlacementsAsync(venueId, menuId), placement => placement.MenuSectionId == destination && placement.ItemId == item.Id);
+    }
+
+    /// <summary>
+    /// #797: the conflict check has to match the widened destination - once a
+    /// cross-page destination is allowed, checking only the one destination
+    /// section (the old check) would let an item land twice on the same page in
+    /// two different sections, which is exactly what already_on_board prevents
+    /// for a plain add-item.
+    /// </summary>
+    [Fact]
+    public async Task DeleteSection_RefusesWhenAnItemAlreadySitsElsewhereOnTheDestinationPage()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var secondPage = Guid.NewGuid();
+        await repository.CreatePageAsync(venueId, menuId, secondPage, "Dinner", DateTime.UtcNow);
+        var source = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var destination = Guid.NewGuid();
+        await repository.CreateSectionOnMenuAsync(venueId, menuId, destination, "Dinner mains", DateTime.UtcNow, secondPage);
+        var elsewhereOnDestinationPage = Guid.NewGuid();
+        await repository.CreateSectionOnMenuAsync(venueId, menuId, elsewhereOnDestinationPage, "Dinner sides", DateTime.UtcNow, secondPage);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("page-collision"), Price = "9" };
+        await repository.CreateItemOnMenuAsync(item, menuId, source, itemsPerMenuLimit: 500);
+        // Same item, already placed in a DIFFERENT section on the destination page -
+        // not the destination section itself, which the old (pre-#797) check would
+        // have missed.
+        await repository.PlaceExistingItemAsync(venueId, menuId, elsewhereOnDestinationPage, item.Id, itemsPerMenuLimit: 500, now: DateTime.UtcNow);
+
+        var outcome = await repository.DeleteSectionAsync(venueId, menuId, source, destination, deletePlacements: false);
+
+        Assert.Equal(SectionOutcomes.DestinationConflict, outcome.Outcome);
+        Assert.Contains(await repository.GetPlacementsAsync(venueId, menuId), placement => placement.MenuSectionId == source && placement.ItemId == item.Id);
+    }
+
+    /// <summary>#797: a section moves intact - same items, same order - to a different page, appended at the end.</summary>
+    [Fact]
+    public async Task MoveSectionToPage_RelocatesTheSectionIntactWithItsItems()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var destinationPage = Guid.NewGuid();
+        await repository.CreatePageAsync(venueId, menuId, destinationPage, "Dinner", DateTime.UtcNow);
+        await repository.CreateSectionOnMenuAsync(venueId, menuId, Guid.NewGuid(), "Already there", DateTime.UtcNow, destinationPage);
+        var section = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("travels-with-section"), Price = "9" };
+        await repository.CreateItemOnMenuAsync(item, menuId, section, itemsPerMenuLimit: 500);
+
+        var outcome = await repository.MoveSectionToPageAsync(venueId, menuId, section, destinationPage, "Jeremy");
+
+        Assert.Equal(SectionOutcomes.Moved, outcome.Outcome);
+        var snapshot = MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId))!;
+        var moved = Assert.Single(snapshot.Sections!, s => s.SectionId == section);
+        Assert.Equal(destinationPage, moved.PageId);
+        Assert.Equal(1, moved.SortOrder); // appended after the section already on that page (sort order 0)
+        Assert.Contains(await repository.GetPlacementsAsync(venueId, menuId), placement => placement.MenuSectionId == section && placement.ItemId == item.Id);
+        Assert.Equal(MenuHistoryKinds.SectionMoved,
+            (await repository.GetPageHistoryAsync(venueId, menuId, destinationPage, 20)).First().Kind);
+    }
+
+    [Fact]
+    public async Task MoveSectionToPage_RefusesTheSamePageWithoutChangingAnything()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var page = (await repository.GetPagesAsync(venueId, menuId)).Single().Id;
+        var section = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+
+        var outcome = await repository.MoveSectionToPageAsync(venueId, menuId, section, page, "Jeremy");
+
+        Assert.Equal(SectionOutcomes.AlreadyOnPage, outcome.Outcome);
+    }
+
+    [Fact]
+    public async Task MoveSectionToPage_RefusesAMissingSectionOrPage()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var page = (await repository.GetPagesAsync(venueId, menuId)).Single().Id;
+        var section = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+
+        Assert.Equal(SectionOutcomes.SectionMissing,
+            (await repository.MoveSectionToPageAsync(venueId, menuId, Guid.NewGuid(), page, "Jeremy")).Outcome);
+        Assert.Equal(SectionOutcomes.PageMissing,
+            (await repository.MoveSectionToPageAsync(venueId, menuId, section, Guid.NewGuid(), "Jeremy")).Outcome);
+    }
+
+    /// <summary>
+    /// The same per-page rule PlaceExistingItemSql enforces for a plain add-item
+    /// (#797): moving a section must not land one of its items on a page that
+    /// already has it, in a different section, refused atomically and naming what
+    /// collided rather than a silent partial move.
+    /// </summary>
+    [Fact]
+    public async Task MoveSectionToPage_RefusesWhenAnItemAlreadySitsOnTheDestinationPage()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var destinationPage = Guid.NewGuid();
+        await repository.CreatePageAsync(venueId, menuId, destinationPage, "Dinner", DateTime.UtcNow);
+        var alreadyThere = Guid.NewGuid();
+        await repository.CreateSectionOnMenuAsync(venueId, menuId, alreadyThere, "Dinner mains", DateTime.UtcNow, destinationPage);
+        var section = await SeedSectionAsync(dataAccess, venueId, menuId, sortOrder: 0);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("collides-on-move"), Price = "9" };
+        await repository.CreateItemOnMenuAsync(item, menuId, section, itemsPerMenuLimit: 500);
+        await repository.PlaceExistingItemAsync(venueId, menuId, alreadyThere, item.Id, itemsPerMenuLimit: 500, now: DateTime.UtcNow);
+
+        var outcome = await repository.MoveSectionToPageAsync(venueId, menuId, section, destinationPage, "Jeremy");
+
+        Assert.Equal(SectionOutcomes.DestinationConflict, outcome.Outcome);
+        Assert.Equal(item.Id, outcome.ConflictItemId);
+        Assert.Equal("Dinner mains", outcome.ConflictSectionName);
+        var snapshot = MenuSnapshot.Parse(await repository.GetWorkingSnapshotAsync(venueId, menuId))!;
+        var untouched = Assert.Single(snapshot.Sections!, s => s.SectionId == section);
+        Assert.NotEqual(destinationPage, untouched.PageId);
     }
 
     /// <summary>

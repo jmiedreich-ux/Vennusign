@@ -86,6 +86,59 @@ export async function openMenuBuilderAs(page: Page, role: VennuRole, menuId?: st
 }
 
 /**
+ * The add-item search opens the moment a section is the active context - there
+ * is no button to click to reveal it. This is only needed when an item's editor
+ * is already showing (closing it hands the panel back to add mode); if nothing
+ * is selected, the search box is already there.
+ */
+export async function openAddItem(page: Page) {
+  const closeItem = page.getByTestId("close-item");
+  if (await closeItem.isVisible().catch(() => false)) {
+    await closeItem.click();
+  }
+  await page.getByTestId("add-item-input").waitFor({ state: "visible" });
+}
+
+/**
+ * The bottom bar's Review first / discard draft / go back to… links and the
+ * standalone Publish button all consolidated into one Actions dropdown
+ * (#797 follow-on). These helpers open it and drive the item the old direct
+ * testid used to reach.
+ */
+export async function openActionsMenu(page: Page) {
+  await page.getByTestId("actions-menu-trigger").click();
+  await page.getByTestId("actions-menu").waitFor({ state: "visible" });
+}
+
+/** What the old direct "review-first" click used to do: open the review dialog. */
+export async function openReview(page: Page) {
+  await openActionsMenu(page);
+  await page.getByTestId("action-review-publish").click();
+}
+
+/**
+ * What the old direct "publish" click used to do: publish without lingering on
+ * the review dialog. There is no bypass-review path anymore - Review & publish
+ * is the only way in - so this drives through it in one call.
+ */
+export async function publishDraft(page: Page) {
+  await openReview(page);
+  await page.getByTestId("publish-from-review").click();
+}
+
+/** What the old direct "discard-draft" click used to do: open the discard confirm. */
+export async function openDiscardDraft(page: Page) {
+  await openActionsMenu(page);
+  await page.getByTestId("action-discard").click();
+}
+
+/** What the old direct "go-back-to" click used to do: open the history/restore dialog. */
+export async function openGoBackTo(page: Page) {
+  await openActionsMenu(page);
+  await page.getByTestId("action-restore").click();
+}
+
+/**
  * One named card on the shelf, however many menus the venue happens to have.
  *
  * The default venue accumulates menus from every spec that seeds, so the shelf

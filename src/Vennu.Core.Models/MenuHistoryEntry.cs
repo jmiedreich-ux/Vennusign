@@ -80,6 +80,9 @@ public static class MenuHistoryKinds
 
     public const string SectionDeleted = "section_deleted";
 
+    /// <summary>#797: a section relocated intact to a different page of the same menu.</summary>
+    public const string SectionMoved = "section_moved";
+
     public const string ItemAdded = "item_added";
 
     public const string ItemsReordered = "items_reordered";
@@ -90,6 +93,6 @@ public static class MenuHistoryKinds
 
     public static bool IsSupported(string? value) =>
         value is Published or DraftDiscarded or PutAway or PutBack or TakenOffScreens or Restored or Assigned or Duplicated
-            or SectionAdded or SectionRenamed or SectionsReordered or SectionDeleted
+            or SectionAdded or SectionRenamed or SectionsReordered or SectionDeleted or SectionMoved
             or ItemAdded or ItemsReordered or ItemMoved or ItemRemoved;
 }

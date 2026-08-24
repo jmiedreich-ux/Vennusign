@@ -13,7 +13,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         """;
 
     private const string ItemSql = """
-        SELECT Id, VenueId, Name, Description, Price, ImageUrl, Source, IsActive, CreatedUtc, UpdatedUtc
+        SELECT Id, VenueId, Name, Description, Price, ImageUrl, Source, IsActive, IsListed, CreatedUtc, UpdatedUtc
         FROM dbo.Items
         WHERE VenueId = @VenueId AND Id = @ItemId;
         """;
@@ -593,8 +593,9 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         """;
 
     /// <summary>
-    /// Deletes a section after atomically moving its placements to a sibling or
-    /// releasing them to the library. Every refusal happens before a write.
+    /// Deletes a section after atomically moving its placements to a sibling -
+    /// anywhere on the same menu, not only its own page (#797) - or releasing them
+    /// to the library. Every refusal happens before a write.
     /// </summary>
     private const string DeleteSectionSql = """
         SET XACT_ABORT ON;
@@ -621,17 +622,33 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             IF @PlacementCount > 0 AND @DeletePlacements = 0 AND NOT EXISTS (
                 SELECT 1 FROM dbo.MenuSections WITH (UPDLOCK, HOLDLOCK)
                 WHERE Id=@MoveItemsToSectionId AND Id<>@SectionId AND MenuId=@MenuId
-                  AND VenueId=@VenueId AND PageId=@SourcePageId)
+                  AND VenueId=@VenueId)
             BEGIN
                 ROLLBACK TRANSACTION;
                 SELECT N'destination_missing' AS Outcome, 0 AS Moved, 0 AS Released;
             END
+            -- #797: the destination can be on any page of this menu, not only the
+            -- section's own page - so the conflict check below has to match, and
+            -- checks the whole destination PAGE (every section on it), not just the
+            -- one destination section. Checking only @MoveItemsToSectionId here
+            -- would have let an item land twice on the same page in two different
+            -- sections, which is exactly what PlaceExistingItemSql's already_on_board
+            -- rule exists to prevent for a plain add-item.
             ELSE IF @PlacementCount > 0 AND @DeletePlacements = 0 AND EXISTS (
                 SELECT 1 FROM dbo.Placements sourcePlacement
                 INNER JOIN dbo.Placements destinationPlacement
-                    ON destinationPlacement.MenuSectionId=@MoveItemsToSectionId
-                   AND destinationPlacement.ItemId=sourcePlacement.ItemId
+                    ON destinationPlacement.ItemId=sourcePlacement.ItemId
                    AND destinationPlacement.VenueId=@VenueId
+                   -- The item's own about-to-move placement is never a collision with
+                   -- itself - without this, a same-page move (the common case) always
+                   -- "conflicted" with its own row, since the source section usually
+                   -- sits on the same page as the destination. A real integration
+                   -- test caught this (DeleteSection_MovesEveryPlacementToASiblingAtomically).
+                   AND destinationPlacement.MenuSectionId<>@SectionId
+                INNER JOIN dbo.MenuSections destinationSection
+                    ON destinationSection.Id=destinationPlacement.MenuSectionId
+                   AND destinationSection.VenueId=@VenueId
+                   AND destinationSection.PageId=(SELECT PageId FROM dbo.MenuSections WHERE Id=@MoveItemsToSectionId AND VenueId=@VenueId)
                 WHERE sourcePlacement.MenuSectionId=@SectionId AND sourcePlacement.VenueId=@VenueId)
             BEGIN
                 ROLLBACK TRANSACTION;
@@ -642,8 +659,15 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 IF @PlacementCount > 0 AND @DeletePlacements = 0
                 BEGIN
                     DECLARE @Offset INT = ISNULL((SELECT MAX(SortOrder)+1 FROM dbo.Placements WHERE MenuSectionId=@MoveItemsToSectionId AND VenueId=@VenueId),0);
+                    -- #797: FK_Placements_SectionOnPage is (MenuSectionId, PageId, MenuId,
+                    -- VenueId) -> MenuSections, ON UPDATE CASCADE. That cascade only fires
+                    -- when MenuSections.PageId itself changes; a direct UPDATE on
+                    -- Placements has to supply a PageId that already matches the
+                    -- destination section's real page, or the FK refuses it outright -
+                    -- which is exactly how this was caught (a real database, not a mock).
+                    DECLARE @DestinationPageId UNIQUEIDENTIFIER = (SELECT PageId FROM dbo.MenuSections WHERE Id=@MoveItemsToSectionId AND VenueId=@VenueId);
                     UPDATE dbo.Placements
-                    SET MenuSectionId=@MoveItemsToSectionId, SortOrder=@Offset+SortOrder, UpdatedUtc=SYSUTCDATETIME()
+                    SET MenuSectionId=@MoveItemsToSectionId, PageId=@DestinationPageId, SortOrder=@Offset+SortOrder, UpdatedUtc=SYSUTCDATETIME()
                     WHERE MenuSectionId=@SectionId AND VenueId=@VenueId;
                 END
                 ELSE
@@ -661,6 +685,87 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 SELECT N'deleted' AS Outcome,
                        CASE WHEN @DeletePlacements=0 THEN @PlacementCount ELSE 0 END AS Moved,
                        CASE WHEN @DeletePlacements=1 THEN @PlacementCount ELSE 0 END AS Released;
+            END
+        END
+        """;
+
+    /// <summary>
+    /// Relocates a section - intact, with every item and its order - to a
+    /// different page of the same menu (#797). Deliberately its own guarded path,
+    /// not a relaxation of MovePlacementGuardedSql/ReorderSectionsGuardedSql's
+    /// same-page rule (#809 found that rule enforced twice with no known reason,
+    /// so it stays as-is everywhere else). The conflict check mirrors
+    /// PlaceExistingItemSql's per-page already_on_board rule: an item cannot land
+    /// on a page twice, in two different sections, just because it arrived by a
+    /// section move instead of a direct add.
+    /// </summary>
+    private const string TransitionSectionToPageSql = """
+        SET XACT_ABORT ON;
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS (
+            SELECT 1 FROM dbo.MenuSections WITH (UPDLOCK, HOLDLOCK)
+            WHERE Id = @SectionId AND MenuId = @MenuId AND VenueId = @VenueId)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT N'section_missing' AS Outcome, CAST(NULL AS UNIQUEIDENTIFIER) AS ConflictItemId, CAST(NULL AS NVARCHAR(200)) AS ConflictSectionName;
+        END
+        ELSE IF NOT EXISTS (
+            SELECT 1 FROM dbo.MenuPages WITH (UPDLOCK, HOLDLOCK)
+            WHERE Id = @DestinationPageId AND MenuId = @MenuId AND VenueId = @VenueId)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT N'page_missing' AS Outcome, CAST(NULL AS UNIQUEIDENTIFIER) AS ConflictItemId, CAST(NULL AS NVARCHAR(200)) AS ConflictSectionName;
+        END
+        ELSE
+        BEGIN
+            DECLARE @SourcePageId UNIQUEIDENTIFIER = (SELECT PageId FROM dbo.MenuSections WHERE Id=@SectionId AND MenuId=@MenuId AND VenueId=@VenueId);
+
+            IF @SourcePageId = @DestinationPageId
+            BEGIN
+                ROLLBACK TRANSACTION;
+                SELECT N'already_on_page' AS Outcome, CAST(NULL AS UNIQUEIDENTIFIER) AS ConflictItemId, CAST(NULL AS NVARCHAR(200)) AS ConflictSectionName;
+            END
+            ELSE
+            BEGIN
+                DECLARE @ConflictItemId UNIQUEIDENTIFIER;
+                DECLARE @ConflictSectionName NVARCHAR(200);
+                SELECT TOP (1) @ConflictItemId = sourcePlacement.ItemId, @ConflictSectionName = destinationSection.Name
+                FROM dbo.Placements sourcePlacement
+                INNER JOIN dbo.Placements destinationPlacement
+                    ON destinationPlacement.ItemId = sourcePlacement.ItemId AND destinationPlacement.VenueId = @VenueId
+                INNER JOIN dbo.MenuSections destinationSection
+                    ON destinationSection.Id = destinationPlacement.MenuSectionId
+                   AND destinationSection.VenueId = @VenueId
+                   AND destinationSection.PageId = @DestinationPageId
+                WHERE sourcePlacement.MenuSectionId = @SectionId AND sourcePlacement.VenueId = @VenueId;
+
+                IF @ConflictItemId IS NOT NULL
+                BEGIN
+                    ROLLBACK TRANSACTION;
+                    SELECT N'destination_conflict' AS Outcome, @ConflictItemId AS ConflictItemId, @ConflictSectionName AS ConflictSectionName;
+                END
+                ELSE
+                BEGIN
+                    DECLARE @SourceName NVARCHAR(200) = (SELECT Name FROM dbo.MenuSections WHERE Id=@SectionId AND MenuId=@MenuId AND VenueId=@VenueId);
+                    DECLARE @SourcePageName NVARCHAR(200) = (SELECT Name FROM dbo.MenuPages WHERE Id=@SourcePageId AND MenuId=@MenuId AND VenueId=@VenueId);
+                    DECLARE @DestinationPageName NVARCHAR(200) = (SELECT Name FROM dbo.MenuPages WHERE Id=@DestinationPageId AND MenuId=@MenuId AND VenueId=@VenueId);
+                    DECLARE @Next INT = ISNULL((
+                        SELECT MAX(SortOrder) FROM dbo.MenuSections WITH (UPDLOCK, HOLDLOCK)
+                        WHERE PageId = @DestinationPageId AND VenueId = @VenueId), -1) + 1;
+
+                    UPDATE dbo.MenuSections
+                    SET PageId = @DestinationPageId, SortOrder = @Next, UpdatedUtc = @Now
+                    WHERE Id = @SectionId AND MenuId = @MenuId AND VenueId = @VenueId;
+
+                    INSERT dbo.MenuHistoryEntries
+                        (Id,VenueId,MenuId,PageId,PageName,Kind,Detail,Author,OccurredUtc)
+                    VALUES (NEWID(),@VenueId,@MenuId,@DestinationPageId,@DestinationPageName,N'section_moved',
+                        CONCAT(@SourceName,N' moved from ',@SourcePageName,N' to ',@DestinationPageName),@Author,@Now);
+
+                    COMMIT TRANSACTION;
+                    SELECT N'moved' AS Outcome, CAST(NULL AS UNIQUEIDENTIFIER) AS ConflictItemId, CAST(NULL AS NVARCHAR(200)) AS ConflictSectionName;
+                END
             END
         END
         """;
@@ -738,8 +843,9 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         SET XACT_ABORT ON;
         BEGIN TRANSACTION;
 
-        DECLARE @Name NVARCHAR(200), @Description NVARCHAR(1000), @Price NVARCHAR(12), @HasOverride BIT=0;
+        DECLARE @Name NVARCHAR(200), @Description NVARCHAR(1000), @Price NVARCHAR(12), @IsListed BIT, @HasOverride BIT=0;
         SELECT @Name=i.Name,@Description=i.Description,@Price=COALESCE(p.ImportedPriceOverride,i.Price),
+               @IsListed=i.IsListed,
                @HasOverride=CASE WHEN p.ImportedPriceOverride IS NULL THEN 0 ELSE 1 END
         FROM dbo.Items i WITH (UPDLOCK,HOLDLOCK)
         LEFT JOIN dbo.Placements p WITH (UPDLOCK,HOLDLOCK) ON p.ItemId=i.Id AND p.VenueId=i.VenueId AND p.MenuId=@MenuId
@@ -748,26 +854,27 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         IF @@ROWCOUNT = 0
         BEGIN
             ROLLBACK TRANSACTION;
-            SELECT N'not_found' AS Outcome, NULL AS Name, NULL AS Description, NULL AS Price;
+            SELECT N'not_found' AS Outcome, NULL AS Name, NULL AS Description, NULL AS Price, CAST(NULL AS BIT) AS IsListed;
         END
         ELSE IF @Guarded = 1
            AND (@Name COLLATE Latin1_General_100_BIN2 <> @ExpectedName COLLATE Latin1_General_100_BIN2
              OR ISNULL(@Description, N'') COLLATE Latin1_General_100_BIN2 <> ISNULL(@ExpectedDescription, N'') COLLATE Latin1_General_100_BIN2
-             OR ISNULL(@Price, N'') COLLATE Latin1_General_100_BIN2 <> ISNULL(@ExpectedPrice, N'') COLLATE Latin1_General_100_BIN2)
+             OR ISNULL(@Price, N'') COLLATE Latin1_General_100_BIN2 <> ISNULL(@ExpectedPrice, N'') COLLATE Latin1_General_100_BIN2
+             OR @IsListed <> @ExpectedIsListed)
         BEGIN
             ROLLBACK TRANSACTION;
-            SELECT N'item_changed' AS Outcome, @Name AS Name, @Description AS Description, @Price AS Price;
+            SELECT N'item_changed' AS Outcome, @Name AS Name, @Description AS Description, @Price AS Price, @IsListed AS IsListed;
         END
         ELSE
         BEGIN
             UPDATE dbo.Items SET Name=@NewName,Description=@NewDescription,
-                Price=CASE WHEN @HasOverride=1 THEN Price ELSE @NewPrice END,UpdatedUtc=@Now
+                Price=CASE WHEN @HasOverride=1 THEN Price ELSE @NewPrice END,IsListed=@NewIsListed,UpdatedUtc=@Now
             WHERE Id=@ItemId AND VenueId=@VenueId;
             IF @HasOverride=1 UPDATE dbo.Placements SET ImportedPriceOverride=@NewPrice,UpdatedUtc=@Now
                 WHERE ItemId=@ItemId AND VenueId=@VenueId AND MenuId=@MenuId;
 
             COMMIT TRANSACTION;
-            SELECT N'updated' AS Outcome, @NewName AS Name, @NewDescription AS Description, @NewPrice AS Price;
+            SELECT N'updated' AS Outcome, @NewName AS Name, @NewDescription AS Description, @NewPrice AS Price, @NewIsListed AS IsListed;
         END
         """;
 
@@ -1036,7 +1143,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
     /// </summary>
     private const string SearchItemsSql = """
         SELECT TOP (@Take) i.Id, i.VenueId, i.Name, i.Description, i.Price, i.ImageUrl,
-               i.Source, i.IsActive, i.CreatedUtc, i.UpdatedUtc
+               i.Source, i.IsActive, i.IsListed, i.CreatedUtc, i.UpdatedUtc
         FROM dbo.Items i
         WHERE i.VenueId = @VenueId
           AND (@Pattern IS NULL OR i.Name LIKE @Pattern
@@ -1103,7 +1210,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                     JSON_QUERY((
                         SELECT p.ItemId AS itemId, i.Name AS name, i.Description AS description,
                                COALESCE(p.ImportedPriceOverride,i.Price) AS price,
-                               p.ImportedPriceOverride AS importedPriceOverride, p.SortOrder AS sortOrder
+                               p.ImportedPriceOverride AS importedPriceOverride, p.SortOrder AS sortOrder,
+                               i.IsListed AS isListed
                         FROM dbo.Placements p
                         INNER JOIN dbo.Items i ON i.Id = p.ItemId AND i.VenueId = p.VenueId
                         WHERE p.MenuSectionId = s.Id AND p.VenueId = @VenueId
@@ -2151,6 +2259,31 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         return new SectionDeleteOutcome(row.Outcome, row.Moved, row.Released);
     }
 
+    public async Task<SectionPageMoveOutcome> MoveSectionToPageAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid destinationPageId,
+        string? author = null,
+        DateTime? now = null,
+        CancellationToken cancellationToken = default)
+    {
+        var row = (await dataAccess.ExecuteSqlQueryAsync<SectionPageMoveRow, object>(
+            TransitionSectionToPageSql,
+            new
+            {
+                VenueId = RequireId(venueId, nameof(venueId)),
+                MenuId = RequireId(menuId, nameof(menuId)),
+                SectionId = RequireId(sectionId, nameof(sectionId)),
+                DestinationPageId = RequireId(destinationPageId, nameof(destinationPageId)),
+                Author = author,
+                Now = now ?? DateTime.UtcNow
+            },
+            cancellationToken).ConfigureAwait(false)).Single();
+
+        return new SectionPageMoveOutcome(row.Outcome, row.ConflictItemId, row.ConflictSectionName);
+    }
+
     public async Task<ReorderOutcome> ReorderSectionsGuardedAsync(
         Guid venueId,
         Guid menuId,
@@ -2184,7 +2317,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         ItemValueExpectation? expected,
         DateTime now,
         CancellationToken cancellationToken = default,
-        Guid? menuId = null)
+        Guid? menuId = null,
+        bool isListed = true)
     {
         var row = (await dataAccess.ExecuteSqlQueryAsync<ItemUpdateRow, object>(
             UpdateItemValuesGuardedSql,
@@ -2195,16 +2329,18 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 NewName = name,
                 NewDescription = description,
                 NewPrice = price,
+                NewIsListed = isListed,
                 Guarded = expected is null ? 0 : 1,
                 ExpectedName = expected?.Name,
                 ExpectedDescription = expected?.Description,
                 ExpectedPrice = expected?.Price,
+                ExpectedIsListed = expected?.IsListed ?? true,
                 MenuId = menuId,
                 Now = now
             },
             cancellationToken).ConfigureAwait(false)).Single();
 
-        return new ItemUpdateOutcome(row.Outcome, row.Name, row.Description, row.Price);
+        return new ItemUpdateOutcome(row.Outcome, row.Name, row.Description, row.Price, row.IsListed);
     }
 
     public async Task<ReorderOutcome> ReorderPlacementsGuardedAsync(
@@ -3158,6 +3294,15 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         public int Released { get; set; }
     }
 
+    private sealed class SectionPageMoveRow
+    {
+        public string Outcome { get; set; } = string.Empty;
+
+        public Guid? ConflictItemId { get; set; }
+
+        public string? ConflictSectionName { get; set; }
+    }
+
     private sealed class ReorderRow
     {
         public string Outcome { get; set; } = string.Empty;
@@ -3174,6 +3319,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         public string? Description { get; set; }
 
         public string? Price { get; set; }
+
+        public bool? IsListed { get; set; }
     }
 
     private sealed class PlaceExistingRow

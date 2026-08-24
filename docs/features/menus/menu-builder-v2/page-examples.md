@@ -2,6 +2,8 @@
 
 These images come from the owner review session that produced V2. They include the final direction and earlier iterations that explain rejected patterns. Use the notes below to distinguish them.
 
+**2026-08-24:** `03-sections-only-left-rail.png`, `05-viewing-control.png`, and `10-screen-preview-compact.png` were replaced — the prior files were mis-captured (browser chrome, or a mid-page slice unrelated to their caption) and did not show what this document describes. They are now cropped from the `12-resting-bottom-bar-and-item-panel.png` mockup below and match their captions.
+
 ## Current direction
 
 ### Page-first workspace and item editing
@@ -73,6 +75,61 @@ This became crowded and made page placement feel like a per-row form. Creating a
 ![Earlier approved full-board builder foundation](assets/11-earlier-builder-visual-foundation.png)
 
 Use its Sky UI styling and board rendering as visual context only. Apply the V2 navigation and workflow rules from this folder.
+
+## New reference set (2026-08-24) — Finish/Publish, item panel, and history
+
+These come from a later mockup export ("Vennusign screen mockups (3)") covering four screens the original V2 set never
+documented: the bottom bar's publish menu and its states, the item panel's Available/86 split, a full history page, and
+a full Review & Publish page. **These are reference material for an in-progress design discussion, not yet a finished
+decision the way the section above is** — treat captions marked "open" as undecided.
+
+### Resting builder — bottom bar and item panel
+
+![Resting builder with theme picker, publish dropdown trigger, and item panel showing Available/Mark sold out](assets/12-resting-bottom-bar-and-item-panel.png)
+
+Establishes: the theme picker moves into the bottom bar; the item panel gets two independent toggles instead of one —
+**Available** (a drafted, published change, gated on Publish like name/price/description) and **86** (an immediate
+action with no publish step, unchanged from today's mechanism). The "Mark sold out" wording and the Basics/More details
+tab split shown here are earlier iterations — see `01-page-workspace-and-item-editor.png` for that variant. **Open:**
+what the item panel calls the second toggle, and the bottom-bar dropdown's label — the mockup says "Finish," which is
+under reconsideration.
+
+### Publish menu dropdown states
+
+![Publish dropdown open, showing Review & publish, Save & exit, Discard your N changes, and Restore an earlier version](assets/13-publish-menu-dropdown-states.png)
+
+The four actions that consolidate under one dropdown trigger, replacing the current bottom bar's separate "Review
+first" / "discard draft" / "go back to…" links. **Open:** the trigger's label (not "Finish" — undecided).
+
+### Screen assignments and rotation
+
+![Screens table showing multiple pages assigned to one screen with a rotation column](assets/14-screen-assignments-rotation.png)
+
+Rotation between multiple pages on one screen is **planned work, not in scope now** — the runtime does not rotate
+pages today. Kept for reference only.
+
+### Publishing review page
+
+![Full-page publish review: fit warnings, unnamed items, per-field change list, and a publish sidebar](assets/15-publishing-review-page.png)
+
+A dedicated routed page rather than the current "Review first" modal, with per-screen fit warnings and unnamed-item
+prompts folded into the same screen. Not yet scoped against the current modal's content.
+
+### Menu history page
+
+![Dedicated history page: timeline of publishes and immediate actions, each publish expandable to its field-level diff, with a stats sidebar](assets/16-menu-history-page.png)
+
+A dedicated routed page rather than the current "View all"/"go back to…" dialogs, with expandable per-publish diffs.
+**Confirmed cuts from this mockup:** drop "People editing" (menus are single-editor), defer the "86s this week" stat to
+a future release.
+
+### Import flow (photo, spreadsheet, review)
+
+![Import landing, spreadsheet upload, photo review, and spreadsheet review screens](assets/17-import-landing.png)
+
+See also `18-spreadsheet-upload.png`, `19-import-review-photo.png`, `20-import-review-spreadsheet.png`. A larger,
+separate feature (photo/spreadsheet menu import with a review step) that does not exist in the product yet. Referenced
+for completeness; not scoped as part of the Finish/history/item-panel work above.
 
 ## Source of truth rule
 

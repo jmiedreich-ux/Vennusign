@@ -1,4 +1,4 @@
-import { test, expect, openMenuBuilderAs, apiBaseUrl, tokens } from "../fixtures";
+import { test, expect, openAddItem, openMenuBuilderAs, openActionsMenu, publishDraft, apiBaseUrl, tokens } from "../fixtures";
 import { seed } from "../seed";
 
 test.describe("menu pages", () => {
@@ -56,7 +56,67 @@ test.describe("menu pages", () => {
     await expect(page.getByTestId("page-history")).not.toContainText("Lunch favourites");
 
     await page.getByTestId("menu-history-link").click();
-    await expect(page.getByTestId("history-dialog")).toBeVisible();
+    await expect(page.getByTestId("view-all-dialog")).toBeVisible();
+  });
+
+  // #799: "View all" used to share the "go back to..." dialog, which filters to
+  // published checkpoints only - so on a never-published menu it showed
+  // "Nothing to go back to yet" instead of the real, whole-menu changelog.
+  test("View all shows the full whole-menu changelog, not just published checkpoints (#799)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "view-all-scope", pageCount: 2, sectionCount: 1 });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    // Draft-only edits across both pages, never published.
+    await openAddItem(page);
+    await page.getByTestId("add-item-input").fill("View All New Item");
+    await page.getByTestId("add-item-create").click();
+    await page.getByTestId("page-tab").nth(1).click();
+    await page.getByTestId("add-section").click();
+    await page.getByTestId("new-section-name").fill("View All Section");
+    await page.getByTestId("new-section-name").press("Enter");
+
+    await page.getByTestId("menu-history-link").click();
+    const dialog = page.getByTestId("view-all-dialog");
+    await expect(dialog).toBeVisible();
+    // The real changelog, not the restore dialog's empty state.
+    await expect(dialog).not.toContainText("Nothing to go back to");
+    await expect(dialog).toContainText("View All New Item");
+    await expect(dialog).toContainText("View All Section");
+    // The 2 draft edits above, plus the 2 the seed itself made (item + section).
+    expect(await dialog.getByTestId("view-all-entry").count()).toBeGreaterThanOrEqual(4);
+
+    // "go back to..." is the same underlying data, a different, restore-only view.
+    await dialog.getByRole("button", { name: "Close" }).click();
+    await expect(dialog).toHaveCount(0);
+    // Never published yet, so no restore item is expected regardless of capability.
+    await openActionsMenu(page);
+    await expect(page.getByTestId("action-restore")).toHaveCount(0);
+  });
+
+  // #799: "restore" was defined in menuCapabilities.ts but never actually
+  // checked anywhere - "go back to..." was reachable regardless of
+  // capabilityOverrides. History (viewing) and restore (reverting) are
+  // independently switchable capabilities (decision 6).
+  test("restore capability removes only \"go back to...\", not the rest of history (#799)", async ({ page }) => {
+    const data = await seed({ role: "owner", includeScreen: true, label: "restore-off" });
+    await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
+      headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
+    });
+    await page.addInitScript(() => {
+      window.__VENNUSIGN_BACK_OFFICE_CONFIGURATION__ = { menuCapabilityOverrides: { restore: false } };
+    });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+    await publishDraft(page);
+    await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
+
+    await openActionsMenu(page);
+    await expect(page.getByTestId("action-restore")).toHaveCount(0);
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("page-history")).toBeVisible();
+    await expect(page.getByTestId("menu-history-link")).toBeVisible();
+    await page.getByTestId("menu-history-link").click();
+    await expect(page.getByTestId("view-all-dialog")).toBeVisible();
   });
 
   test("history capability removes only page history", async ({ page }) => {

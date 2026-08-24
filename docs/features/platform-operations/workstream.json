@@ -3,7 +3,7 @@
   "what": "The operator's own application — releases, tiers, features and schedules across every venue — confirmed by Keystone decision 38 as its own app with its own API",
   "stage": "designing",
   "position": "Ten screens exported in Design. Confirmed as its own app with its own API (Keystone decision 38).",
-  "gate": "A design authority landed in docs/features/platform-operations/, and Keystone M2, because everything Platform Operations writes goes through Version Discovery.",
+  "next": "A design authority landed in docs/features/platform-operations/, and Keystone M2, because everything Platform Operations writes goes through Version Discovery.",
   "label": "workstream:platform-operations",
   "design": [
     {

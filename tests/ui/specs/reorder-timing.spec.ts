@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { openAddItem, openReview, publishDraft } from "../fixtures";
 // @ts-expect-error - plain .mjs helpers, shared with non-Playwright QA tooling.
 import { qaCredentials, qaCredentialSources, signInAsCustomer } from "../lib/customerAccount.mjs";
 // @ts-expect-error - see above.
@@ -29,12 +30,6 @@ import { loadSnapshot } from "../lib/customerOnboarding.mjs";
 const apiBaseUrl = process.env.VENNU_API_URL ?? "https://dev.api.vennusign.com";
 const displayBaseUrl = process.env.VENNU_DISPLAY_URL ?? "https://dev.display.vennusign.com";
 const credentials = qaCredentials();
-
-const openAddItem = async (page: any) => {
-  const opener = page.getByTestId("open-add-item");
-  if (await opener.isVisible().catch(() => false)) await opener.click();
-  await expect(page.getByTestId("add-item-input")).toBeVisible({ timeout: 30_000 });
-};
 
 const addItem = async (page: any, name: string, price: string) => {
   await openAddItem(page);
@@ -112,7 +107,7 @@ test.describe("reorder timing", () => {
     await page.getByTestId("rail-section").filter({ hasText: beta }).click();
     await addItem(page, `Beta Item ${stamp}`, "2.00");
 
-    await page.getByTestId("publish").click();
+    await publishDraft(page);
     await expect(page.getByTestId("publish-bar")).toBeVisible({ timeout: 60_000 });
 
     const player = await context.newPage();
@@ -130,9 +125,13 @@ test.describe("reorder timing", () => {
     await expect(rows.first()).toContainText(beta, { timeout: 60_000 });
     const reorderUiMs = Date.now() - dropAt;
 
+    // Open the review dialog first, outside the measured window - the timing
+    // here is about the publish call itself, not about how long the Actions
+    // dropdown and review dialog take to open.
+    await openReview(page);
     serverMs.publishCall = [];
     const publishAt = Date.now();
-    await page.getByTestId("publish").click();
+    await page.getByTestId("publish-from-review").click();
     await expect(page.getByTestId("publish-bar")).toBeVisible({ timeout: 60_000 });
 
     // When the live player has actually redrawn it.

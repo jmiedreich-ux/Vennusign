@@ -1,4 +1,18 @@
-import { test, expect, findShelfCard, openAs, openMenuBuilderAs, apiBaseUrl, tokens } from "../fixtures";
+import {
+  test,
+  expect,
+  findShelfCard,
+  openAs,
+  openAddItem,
+  openMenuBuilderAs,
+  openActionsMenu,
+  openReview,
+  publishDraft,
+  openDiscardDraft,
+  openGoBackTo,
+  apiBaseUrl,
+  tokens
+} from "../fixtures";
 import { backdateAvailability, seed } from "../seed";
 
 /**
@@ -297,7 +311,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", label: "add" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     const name = `Spec Item ${data.itemId.slice(0, 6)}`;
     await page.getByTestId("add-item-input").fill(name);
     await page.getByTestId("add-item-create").click();
@@ -310,12 +324,146 @@ test.describe("the builder", () => {
 
     // Now offer the SAME item again. It must not place a second copy.
     const before = await page.getByTestId("board-item").count();
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").fill(name);
     await page.getByTestId("add-item-result").filter({ hasText: name }).first().click();
 
     await expect(page.getByTestId("builder-notice")).toContainText("already on this board");
     await expect(page.getByTestId("board-item")).toHaveCount(before);
+  });
+
+  // #775: Enter searched the library and deduped by canonical name; the create button
+  // called place_ directly and skipped that entirely. The two entry points did materially
+  // different things, and nothing guarded a second submit while the first was still in
+  // flight - together this wrote duplicate items into the shared library.
+  test("Enter alone creates exactly one item (#775)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "add-enter" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await openAddItem(page);
+    const name = `Enter Item ${data.itemId.slice(0, 6)}`;
+    await page.getByTestId("add-item-input").fill(name);
+    await page.getByTestId("add-item-input").press("Enter");
+
+    await expect(page.getByTestId("item-name")).toHaveValue(name);
+    await expect(page.getByTestId("board-item").filter({ hasText: name })).toHaveCount(1);
+  });
+
+  test("the create button dedupes by name too - it used to skip straight to place_ and write a second library item (#775)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "add-button-dedupe" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await openAddItem(page);
+    const name = `Button Dedupe ${data.itemId.slice(0, 6)}`;
+    await page.getByTestId("add-item-input").fill(name);
+    await page.getByTestId("add-item-create").click();
+    await expect(page.getByTestId("item-name")).toHaveValue(name);
+
+    const before = await page.getByTestId("board-item").count();
+
+    // The SAME exact name again, submitted through the CREATE BUTTON specifically - not a
+    // search-result click. Before the fix this bypassed submitAdd's dedupe entirely.
+    await openAddItem(page);
+    await page.getByTestId("add-item-input").fill(name);
+    await page.getByTestId("add-item-create").click();
+
+    await expect(page.getByTestId("builder-notice")).toContainText("already on this board");
+    await expect(page.getByTestId("board-item")).toHaveCount(before);
+  });
+
+  test("submitting Enter and the create button in immediate succession produces exactly one item, not two (#775)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "add-race" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await openAddItem(page);
+    const name = `Race Item ${data.itemId.slice(0, 6)}`;
+    await page.getByTestId("add-item-input").fill(name);
+
+    // force: true bypasses Playwright's own actionability check (which would refuse to
+    // click a disabled button) - the point is proving OUR guard blocks the second submit,
+    // not incidentally relying on Playwright refusing to click it.
+    await Promise.all([
+      page.getByTestId("add-item-input").press("Enter"),
+      page.getByTestId("add-item-create").click({ force: true })
+    ]);
+
+    await expect(page.getByTestId("item-name")).toHaveValue(name);
+    await openAddItem(page);
+    await page.getByTestId("add-item-input").fill(name);
+    await expect(page.getByTestId("add-item-result").filter({ hasText: name })).toHaveCount(1);
+  });
+
+  // Q113 still stands - a missing price never blocks Publish - but an owner
+  // reported an item shipping with no price and only finding out from a live
+  // "$0.00" board. Publish must name it and ask first.
+  test("publishing a newly created item with no price asks first, and naming it", async ({ page }) => {
+    const data = await seed({ role: "owner", includeScreen: true, label: "publish-no-price" });
+    await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
+      headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
+    });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await openAddItem(page);
+    const name = `No Price ${data.itemId.slice(0, 6)}`;
+    await page.getByTestId("add-item-input").fill(name);
+    await page.getByTestId("add-item-create").click();
+    await expect(page.getByTestId("missing-price-flag")).toBeVisible();
+
+    await openReview(page);
+    await page.getByTestId("publish-from-review").click();
+    const dialog = page.getByTestId("publish-missing-price-dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText(name);
+
+    // "Go back" does not publish - the draft is exactly as it was. This menu was
+    // never published, so the copy is "Nothing on your screens yet" rather than a
+    // change count (Q181) - Actions staying present is what proves the draft is
+    // still there and reachable again.
+    await dialog.getByRole("button", { name: "Go back" }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByTestId("draft-count")).not.toContainText("Everything is on your screens");
+    await expect(page.getByTestId("actions-menu-trigger")).toBeVisible();
+
+    // "Publish anyway" is a real escape hatch - Q113 is not silently reversed.
+    await openReview(page);
+    await page.getByTestId("publish-from-review").click();
+    await expect(page.getByTestId("publish-missing-price-dialog")).toBeVisible();
+    await page.getByTestId("confirm-publish-missing-price").click();
+    await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
+  });
+
+  test("Review first also asks before publishing a price-less item", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "publish-no-price-review" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await openAddItem(page);
+    const name = `Review No Price ${data.itemId.slice(0, 6)}`;
+    await page.getByTestId("add-item-input").fill(name);
+    await page.getByTestId("add-item-create").click();
+
+    await openReview(page);
+    await page.getByTestId("publish-from-review").click();
+
+    await expect(page.getByTestId("publish-missing-price-dialog")).toBeVisible();
+    await expect(page.getByTestId("publish-missing-price-dialog")).toContainText(name);
+  });
+
+  test("publishing a change that does not touch a price-less item ships straight through, no extra dialog", async ({ page }) => {
+    const data = await seed({ role: "owner", includeScreen: true, label: "publish-has-price" });
+    await page.request.put(`${apiBaseUrl}/api/back-office/content/screens/${data.screenId}/menu`, {
+      headers: { "X-Vennusign-Back-Office-Token": tokens.owner, "Content-Type": "application/json" },
+      data: { menuId: data.menuId, pageId: data.pages![0].pageId }
+    });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    await page.getByTestId("item-price").fill("13.5");
+    await page.getByTestId("item-price").blur();
+
+    await publishDraft(page);
+    await expect(page.getByTestId("publish-missing-price-dialog")).toHaveCount(0);
+    await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
   });
 
   test("a section can be added, renamed, and deleted — and its items come back", async ({ page }) => {
@@ -329,7 +477,7 @@ test.describe("the builder", () => {
 
     // Put an item on it so the section has a canvas heading to rename over. An
     // empty section correctly shows only the add affordance (Q96).
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     const name = `Released ${data.itemId.slice(0, 6)}`;
     await page.getByTestId("add-item-input").fill(name);
     await page.getByTestId("add-item-create").click();
@@ -343,9 +491,10 @@ test.describe("the builder", () => {
     // Delete the section: Q96's "nothing is lost" is what the message has to say,
     // and it has to be true.
     const sectionRow = page.getByTestId("rail-section").filter({ hasText: "Afters" }).locator("..");
-    await sectionRow.getByTestId("delete-section").click();
+    await sectionRow.getByTestId("section-actions").click();
+    await page.getByTestId("section-actions-delete").click();
     const dialog = page.getByTestId("delete-section-dialog");
-    await dialog.getByLabel("Delete section and return its items to the library").check();
+    await dialog.getByLabel("Delete this section, returning its items").check();
     // Deleting a section asks first now — the irreversible act gets the guard the
     // reversible one always had.
     await page.getByTestId("confirm-delete-section").click();
@@ -357,9 +506,42 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("canvas")).toContainText(data.itemName);
 
     // Still in the library: findable from the add row on another section.
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").fill(name);
     await expect(page.getByTestId("add-item-result").filter({ hasText: name })).toBeVisible();
+  });
+
+  // #798: the list's implicit grid rows had no align-content, so a short list
+  // stretched every row across whatever leftover height the panel's minmax(0, 1fr)
+  // track happened to have - large, uneven gaps rather than a tight list.
+  test("the page history panel's rows sit tight against each other, not stretched apart (#798)", async ({ page }) => {
+    const data = await seed({ role: "owner", label: "history-spacing" });
+    await openMenuBuilderAs(page, "owner", data.menuId);
+
+    const list = page.locator(".builder__page-history-list");
+    await expect(list).toBeVisible();
+    // Pins the actual fix, so a later refactor away from this CSS mechanism
+    // doesn't leave a now-inert property still reading back as "correct".
+    await expect(list).toHaveCSS("align-content", "start");
+
+    // Pins the visual outcome too: the bug stretched each ROW's own height to
+    // fill the panel's leftover space, with adjacent rows still touching (the
+    // gap between them stayed ~0 - measured directly against this real
+    // component before this fix) - so it's row height, not inter-row gap, that
+    // actually distinguishes broken from fixed here.
+    await page.getByTestId("add-section").click();
+    await page.getByTestId("new-section-name").fill("Sides");
+    await page.getByTestId("new-section-name").press("Enter");
+    const rows = page.getByTestId("page-history-entry");
+    await expect(rows.first()).toBeVisible();
+    await expect.poll(() => rows.count(), { timeout: 10_000 }).toBeGreaterThanOrEqual(2);
+    const first = (await rows.nth(0).boundingBox())!;
+    const second = (await rows.nth(1).boundingBox())!;
+    // Broken measured 105-126px on this same real component; fixed measures
+    // roughly 60-70px for a short, non-wrapping entry like this one - 95px
+    // leaves comfortable margin on both sides without being a razor's edge.
+    expect(first.height).toBeLessThan(95);
+    expect(second.height).toBeLessThan(95);
   });
 
   test("deleting a populated section can move every item to a sibling", async ({ page }) => {
@@ -368,9 +550,10 @@ test.describe("the builder", () => {
     await page.getByTestId("rail-section").nth(1).click();
     const removedItemName = data.items[1].name;
     await expect(page.getByTestId("canvas")).toContainText(removedItemName);
-    await page.getByTestId("rail-section").nth(1).locator("..").getByTestId("delete-section").click();
+    await page.getByTestId("rail-section").nth(1).locator("..").getByTestId("section-actions").click();
+    await page.getByTestId("section-actions-delete").click();
     const dialog = page.getByTestId("delete-section-dialog");
-    await expect(dialog.getByLabel("Move items to")).toBeChecked();
+    await expect(dialog.getByLabel("Delete this section, moving its items to")).toBeChecked();
     await dialog.getByTestId("confirm-delete-section").click();
     await expect(page.getByTestId("builder-notice")).toContainText("1 item was moved");
     await expect(page.getByTestId("rail-section")).toHaveCount(1);
@@ -437,7 +620,7 @@ test.describe("the builder", () => {
 
     // Published first, so the shelf card has a real board to draw — and so the
     // check that follows is about availability rather than about an empty card.
-    await page.getByTestId("publish").click();
+    await publishDraft(page);
     await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
 
     await page.getByTestId("back-to-menus").click();
@@ -502,16 +685,22 @@ test.describe("the builder", () => {
     // A menu on a screen but never published says exactly that, rather than
     // counting differences against a board that does not exist.
     await expect(page.getByTestId("draft-count")).toContainText("Nothing on your screens yet");
-    // The button counts CHANGES in both bar forms — "Publish to N screens" was a
-    // slip in the wireframe (Q161).
-    await expect(page.getByTestId("publish")).toContainText(/Publish \d+ changes?/);
-    await expect(page.getByTestId("publish")).not.toContainText("screens");
+    // Counts CHANGES, not screens — "Publish to N screens" was a slip in the
+    // wireframe (Q161). The word "screens" is fine here as the destination, as
+    // long as the number in front of it is the change count, not a screen count.
+    await openActionsMenu(page);
+    await expect(page.getByTestId("action-review-publish")).toContainText(/\d+ changes? goes? to your screens/);
 
-    await page.getByTestId("publish").click();
+    await page.getByTestId("action-review-publish").click();
+    await page.getByTestId("publish-from-review").click();
 
-    // Clean state is the home of screen status: no Publish button, chips remain (Q111).
+    // Clean state is the home of screen status: Review & publish goes inert
+    // rather than disappearing, since Actions still has Save & exit to offer.
     await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
-    await expect(page.getByTestId("publish")).toHaveCount(0);
+    await openActionsMenu(page);
+    await expect(page.getByTestId("action-review-publish")).toBeDisabled();
+    await expect(page.getByTestId("action-review-publish")).toContainText("Nothing to publish");
+    await page.keyboard.press("Escape");
     await expect(page.getByTestId("publish-bar")).toContainText("Published");
   });
 
@@ -520,10 +709,11 @@ test.describe("the builder", () => {
     await openMenuBuilderAs(page, "owner", data.menuId);
 
     // Discard returns the menu to what its screens are showing. With nothing
-    // published there is nowhere to go back to, so the link is absent rather than
+    // published there is nowhere to go back to, so the item is absent rather than
     // present and inert (decision 5).
     await expect(page.getByTestId("draft-count")).toContainText("Nothing on your screens yet");
-    await expect(page.getByTestId("discard-draft")).toHaveCount(0);
+    await openActionsMenu(page);
+    await expect(page.getByTestId("action-discard")).toHaveCount(0);
   });
 
   test("discarding the draft names the stakes and cannot be done by accident (Q110)", async ({ page }) => {
@@ -533,7 +723,7 @@ test.describe("the builder", () => {
       data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
-    await page.getByTestId("publish").click();
+    await publishDraft(page);
     await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
 
     await page.getByTestId("board-item").first().locator(".board-item-name").click();
@@ -541,7 +731,7 @@ test.describe("the builder", () => {
     await page.getByTestId("item-description").blur();
     await expect(page.getByTestId("draft-count")).toContainText("not on your screens");
 
-    await page.getByTestId("discard-draft").click();
+    await openDiscardDraft(page);
     const dialog = page.getByTestId("discard-dialog");
     await expect(dialog).toContainText("can't be undone");
 
@@ -550,7 +740,7 @@ test.describe("the builder", () => {
     await expect(dialog).toHaveCount(0);
     await expect(page.getByTestId("draft-count")).toContainText("not on your screens");
 
-    await page.getByTestId("discard-draft").click();
+    await openDiscardDraft(page);
     await page.getByTestId("confirm-discard").click();
     await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
   });
@@ -645,14 +835,14 @@ test.describe("the builder", () => {
 
     // Published first, so the queue below is ONE change rather than the whole
     // menu measured against nothing.
-    await page.getByTestId("publish").click();
+    await publishDraft(page);
     await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
 
     await page.getByTestId("board-item").first().locator(".board-item-name").click();
     await page.getByTestId("item-price").fill("13.5");
     await page.getByTestId("item-price").blur();
 
-    await page.getByTestId("review-first").click();
+    await openReview(page);
     await expect(page.getByTestId("review-dialog")).toBeVisible();
     // Named, not identified: a guid in a review list tells nobody anything.
     await expect(page.getByTestId("review-list")).toContainText(data.itemName);
@@ -669,21 +859,22 @@ test.describe("the builder", () => {
     await openMenuBuilderAs(page, "owner", data.menuId);
 
     // Two published versions, so there is something to go back TO.
-    await page.getByTestId("publish").click();
+    await publishDraft(page);
     await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
     await page.getByTestId("board-item").first().locator(".board-item-name").click();
     await page.getByTestId("item-price").fill("21");
     await page.getByTestId("item-price").blur();
-    await page.getByTestId("publish").click();
+    await publishDraft(page);
     await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
 
-    await page.getByTestId("go-back-to").click();
+    await openGoBackTo(page);
     await expect(page.getByTestId("history-dialog")).toContainText("never publishes on its own");
     await page.getByTestId("go-back-to-version").last().click();
 
     // A draft against the current screens — the screens have not moved.
     await expect(page.getByTestId("draft-count")).toContainText("not on your screens");
-    await expect(page.getByTestId("publish")).toBeVisible();
+    await openActionsMenu(page);
+    await expect(page.getByTestId("action-review-publish")).toBeEnabled();
   });
 
   test("a dialog takes focus, keeps it, and gives it back (impeccable critique)", async ({ page }) => {
@@ -693,7 +884,7 @@ test.describe("the builder", () => {
     await page.getByTestId("board-item").first().locator(".board-item-name").click();
     await page.getByTestId("item-price").fill("15");
     await page.getByTestId("item-price").blur();
-    await page.getByTestId("review-first").click();
+    await openReview(page);
 
     // Focus lands inside, on the heading — a screen reader hears what this dialog
     // is before it hears the first thing it can do.
@@ -701,8 +892,8 @@ test.describe("the builder", () => {
     await expect(dialog).toBeVisible();
     expect(await dialog.evaluate(node => node.contains(document.activeElement))).toBe(true);
 
-    // Tab cannot escape to the Publish button behind the scrim. That was the most
-    // likely accidental keyboard action on the whole surface.
+    // Tab cannot escape to Actions behind the scrim. That was the most likely
+    // accidental keyboard action on the whole surface.
     for (let press = 0; press < 8; press += 1) await page.keyboard.press("Tab");
     expect(await dialog.evaluate(node => node.contains(document.activeElement))).toBe(true);
 
@@ -712,23 +903,26 @@ test.describe("the builder", () => {
     await page.keyboard.press("Escape");
     await expect(dialog).toHaveCount(0);
     await expect(page.getByTestId("publish-bar")).not.toHaveAttribute("inert", "");
-    await expect(page.getByTestId("review-first")).toBeFocused();
+    // Not the menu item that opened it - that closed with the dropdown - but
+    // the trigger still standing where it was, so focus never goes missing.
+    await expect(page.getByTestId("actions-menu-trigger")).toBeFocused();
   });
 
-  test("opening the add row does not push Publish off the screen", async ({ page }) => {
+  test("opening the add panel does not push Actions off the screen", async ({ page }) => {
     const data = await seed({ role: "owner", label: "layout" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
     await page.getByTestId("board-item").first().locator(".board-item-name").click();
     await page.getByTestId("item-price").fill("16");
     await page.getByTestId("item-price").blur();
-    await expect(page.getByTestId("publish")).toBeInViewport();
+    await expect(page.getByTestId("actions-menu-trigger")).toBeInViewport();
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").fill("a");
-    // The dropdown overlays; it does not reflow the page out from under the
-    // primary action at exactly the moment somebody is adding items.
-    await expect(page.getByTestId("publish")).toBeInViewport();
+    // Search results grow inside the item panel's own scroll region; they do
+    // not reflow the page out from under the footer at exactly the moment
+    // somebody is adding items.
+    await expect(page.getByTestId("actions-menu-trigger")).toBeInViewport();
     await expect(page.getByTestId("draft-count")).toBeInViewport();
   });
 
@@ -766,7 +960,8 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", label: "delconfirm" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await page.getByTestId("delete-section").click();
+    await page.getByTestId("section-actions").click();
+    await page.getByTestId("section-actions-delete").click();
     const dialog = page.getByTestId("delete-section-dialog");
     await expect(dialog).toContainText("return to the library");
     await expect(dialog).toContainText("can't be undone");
@@ -784,15 +979,16 @@ test.describe("the builder", () => {
     await page.getByTestId("new-section-name").press("Enter");
     const firstSection = page.getByTestId("rail-section").first().locator("..");
     await firstSection.getByTestId("rail-section").click();
-    await firstSection.getByTestId("delete-section").click();
-    await page.getByLabel("Delete section and return its items to the library").check();
+    await firstSection.getByTestId("section-actions").click();
+    await page.getByTestId("section-actions-delete").click();
+    await page.getByLabel("Delete this section, returning its items").check();
     await page.getByTestId("confirm-delete-section").click();
     await expect(page.getByTestId("builder-notice")).toContainText("back to your library");
     await expect(page.getByTestId("rail-section").filter({ hasText: "Next section" })).toHaveAttribute(
       "aria-current",
       "true"
     );
-    await expect(page.getByTestId("open-add-item")).toBeVisible();
+    await expect(page.getByTestId("add-item-input")).toBeVisible();
   });
 
   test("Review first shows the values, and leads into the publish", async ({ page }) => {
@@ -802,14 +998,14 @@ test.describe("the builder", () => {
       data: { menuId: data.menuId, pageId: data.pages![0].pageId }
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
-    await page.getByTestId("publish").click();
+    await publishDraft(page);
     await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
 
     await page.getByTestId("board-item").first().locator(".board-item-name").click();
     await page.getByTestId("item-price").fill("14.00");
     await page.getByTestId("item-price").blur();
 
-    await page.getByTestId("review-first").click();
+    await openReview(page);
     // The values, not the word "changed".
     await expect(page.getByTestId("review-list")).toContainText("14.00");
     await expect(page.getByTestId("review-list")).toContainText("→");
@@ -842,14 +1038,18 @@ test.describe("the builder", () => {
     expect(measured.height).toBeGreaterThan(9);
   });
 
-  test("none of the four banned words appear anywhere in the builder (criterion 5)", async ({ page }) => {
+  test("none of the three banned words appear anywhere in the builder (criterion 5)", async ({ page }) => {
+    // "restore" left the banned list at decision A8: with restore-from-history
+    // deferred and the Actions menu action producing an ordinary draft that
+    // still needs publishing, the word is accurate again - "Restore an earlier
+    // version" is correct, approved copy, not a leak of banned vocabulary.
     const data = await seed({ role: "owner", label: "words" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
     await page.getByTestId("board-item").first().locator(".board-item-name").click();
     const visible = (await page.getByTestId("menu-builder").innerText()).toLowerCase();
 
-    for (const word of ["unpublish", "supersede", "restore", "archive"]) {
+    for (const word of ["unpublish", "supersede", "archive"]) {
       expect(visible, `"${word}" is on the builder`).not.toContain(word);
     }
   });
@@ -864,7 +1064,7 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     const data = await seed({ role: "owner", label: "slice3-add", screenState: "has-not-taken-this-yet", itemsPerSection: 18 });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     const name = page.getByTestId("add-item-input");
     const price = page.getByTestId("add-item-price");
     await expect(name).toBeFocused();
@@ -879,7 +1079,7 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
 
     await page.reload();
     await expect(page.getByTestId("canvas")).toContainText("Draft capacity item");
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").fill("Old Fashioned");
     await expect(page.getByTestId("add-item-input")).toHaveAttribute("role", "combobox");
     await expect(page.getByTestId("add-item-input")).toHaveAttribute("aria-expanded", "true");
@@ -895,20 +1095,22 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     await page.getByTestId("add-item-price").press("Enter");
     await expect(page.getByText("Used the existing Old-Fashioned. Its shared price was not changed.")).toBeVisible();
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").fill("Old");
     await expect(page.getByTestId("add-item-result").filter({ hasText: "Old-Fashioned" })).toBeVisible();
     await page.getByTestId("add-item-input").fill("Old missing");
     await expect(page.getByTestId("add-item-result")).toHaveCount(0);
     await page.getByTestId("add-item-input").fill("Old");
     await expect(page.getByTestId("add-item-result").filter({ hasText: "Old-Fashioned" })).toBeVisible();
+    // Escape clears the search rather than closing anything - there is nothing
+    // to close, since this panel is the section's ambient state, not an overlay.
     await page.getByTestId("add-item-input").press("Escape");
-    await page.getByTestId("open-add-item").click();
+    await expect(page.getByTestId("add-item-input")).toHaveValue("");
     await page.getByTestId("add-item-input").fill("Old");
     await expect(page.getByTestId("add-item-result").filter({ hasText: "Old-Fashioned" })).toBeVisible();
     await page.getByTestId("add-item-input").press("Escape");
+    await expect(page.getByTestId("add-item-input")).toHaveValue("");
 
-    await page.getByTestId("open-add-item").click();
     await page.getByTestId("add-item-input").fill("Burger");
     await page.getByTestId("add-item-price").fill("9");
     await page.getByTestId("add-item-price").press("Enter");
@@ -922,9 +1124,9 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     expect(tooLong.status()).toBe(400);
     expect(await tooLong.text()).toContain("12 characters or fewer");
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").press("Escape");
-    await expect(page.getByTestId("add-item-input")).toHaveCount(0);
+    await expect(page.getByTestId("add-item-input")).toHaveValue("");
     await page.reload();
     await expect(page.getByTestId("canvas")).not.toContainText("Unnamed item");
   });
@@ -1086,14 +1288,14 @@ test.describe("what the independent review found", () => {
     await page.getByTestId("item-description").fill("retried into place");
     await page.getByTestId("item-description").blur();
 
-    // Amber, and Publish shut while the queue is unconfirmed.
+    // Amber, and Actions shut while the queue is unconfirmed.
     await expect(page.getByTestId("save-failed")).toBeVisible();
 
     // Nobody touches anything. The retry happens by itself.
     await expect.poll(() => attempts, { timeout: 20_000 }).toBeGreaterThan(1);
     await expect(page.getByTestId("save-failed")).toHaveCount(0);
     await expect(page.getByTestId("canvas")).toContainText("retried into place");
-    await expect(page.getByTestId("publish")).toBeEnabled();
+    await expect(page.getByTestId("actions-menu-trigger")).toBeEnabled();
   });
 
   test("an expired sign-in holds the change and sends it after signing back in (Q199)", async ({ page }) => {
@@ -1254,7 +1456,6 @@ test.describe("what the independent review found", () => {
     }
 
     await openMenuBuilderAs(page, "owner", data.menuId);
-    await page.getByTestId("open-add-item").click();
     await page.getByTestId("open-add-many").click();
     await expect(page.getByTestId("add-many-drawer")).toBeVisible();
 

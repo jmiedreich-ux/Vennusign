@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { openAddItem, publishDraft } from "../fixtures";
 // @ts-expect-error - plain .mjs helpers, shared with non-Playwright QA tooling.
 import { qaCredentials, qaCredentialSources, signInAsCustomer } from "../lib/customerAccount.mjs";
 // @ts-expect-error - see above.
@@ -43,12 +44,6 @@ const servedToScreen = async (page: any, screenId: string) => {
   };
 };
 
-const openAddItem = async (page: any) => {
-  const opener = page.getByTestId("open-add-item");
-  if (await opener.isVisible().catch(() => false)) await opener.click();
-  await expect(page.getByTestId("add-item-input")).toBeVisible({ timeout: 30_000 });
-};
-
 const addItem = async (page: any, name: string, price: string) => {
   await openAddItem(page);
   await page.getByTestId("add-item-input").fill(name);
@@ -58,7 +53,7 @@ const addItem = async (page: any, name: string, price: string) => {
 };
 
 const publish = async (page: any) => {
-  await page.getByTestId("publish").click();
+  await publishDraft(page);
   await expect(page.getByTestId("publish-bar")).toBeVisible({ timeout: 60_000 });
 };
 

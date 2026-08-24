@@ -11,6 +11,7 @@ import {
   canDiscardDraft,
   canvasBoard,
   changeSentence,
+  changedItemsMissingPrice,
   draftPhrase,
   findItem,
   findOnBoard,
@@ -209,6 +210,53 @@ test("a missing price is a flag, and an empty string counts as missing", () => {
   assert.equal(isMissingPrice({ price: "   " }), true);
   assert.equal(isMissingPrice({ price: "MP" }), false);
   assert.equal(isMissingPrice({ price: "0" }), false, "zero is a price somebody typed");
+});
+
+// Q113 still stands - missing price never blocks Publish - but an owner should
+// be told, by name, before it ships. Only items THIS draft touches, never every
+// price-less item some earlier draft already published on purpose.
+test("changedItemsMissingPrice names an edited item that has no price", () => {
+  const changes = [{ targetKind: "item", targetId: "i4", field: "description", beforeValue: null, afterValue: "New" }];
+  assert.deepEqual(changedItemsMissingPrice(board, changes), [{ itemId: "i4", name: "Steak Frites" }]);
+});
+
+test("changedItemsMissingPrice says nothing about an edited item that does have a price", () => {
+  const changes = [{ targetKind: "item", targetId: "i1", field: "description", beforeValue: null, afterValue: "New" }];
+  assert.deepEqual(changedItemsMissingPrice(board, changes), []);
+});
+
+test("changedItemsMissingPrice includes a price-less item newly placed on a page", () => {
+  const changes = [{ targetKind: "placement", targetId: "i4", field: "placed", beforeValue: "false", afterValue: "true" }];
+  assert.deepEqual(changedItemsMissingPrice(board, changes), [{ itemId: "i4", name: "Steak Frites" }]);
+});
+
+test("changedItemsMissingPrice ignores a price-less item taken OFF a page - it is leaving, not shipping", () => {
+  const changes = [{ targetKind: "placement", targetId: "i4", field: "placed", beforeValue: "true", afterValue: "false" }];
+  assert.deepEqual(changedItemsMissingPrice(board, changes), []);
+});
+
+test("changedItemsMissingPrice ignores changes to other kinds of thing (a section, the menu, screens)", () => {
+  const changes = [
+    { targetKind: "section", targetId: "s1", field: "name", beforeValue: "Starters", afterValue: "Small Plates" },
+    { targetKind: "menu", targetId: null, field: "dwellSeconds", beforeValue: "8", afterValue: "10" },
+    { targetKind: "screens", targetId: null, field: "assignedScreens", beforeValue: null, afterValue: null }
+  ];
+  assert.deepEqual(changedItemsMissingPrice(board, changes), []);
+});
+
+test("changedItemsMissingPrice deduplicates an item touched by more than one change", () => {
+  const changes = [
+    { targetKind: "item", targetId: "i4", field: "name", beforeValue: "Steak", afterValue: "Steak Frites" },
+    { targetKind: "item", targetId: "i4", field: "description", beforeValue: null, afterValue: "New" }
+  ];
+  assert.deepEqual(changedItemsMissingPrice(board, changes), [{ itemId: "i4", name: "Steak Frites" }]);
+});
+
+test("changedItemsMissingPrice is fail-safe on a removed item, an empty draft, or a malformed board", () => {
+  assert.deepEqual(changedItemsMissingPrice(board, [{ targetKind: "item", targetId: "gone", field: "name", beforeValue: "X", afterValue: null }]), []);
+  assert.deepEqual(changedItemsMissingPrice(board, []), []);
+  assert.deepEqual(changedItemsMissingPrice(board, null), []);
+  assert.deepEqual(changedItemsMissingPrice(null, [{ targetKind: "item", targetId: "i4", field: "name", beforeValue: "X", afterValue: "Y" }]), []);
 });
 
 test("the availability line names the consequence, not the setting (Q104)", () => {

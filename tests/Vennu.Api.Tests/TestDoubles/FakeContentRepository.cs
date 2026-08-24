@@ -109,12 +109,13 @@ internal sealed class FakeContentRepository : IContentRepository
         ItemValueExpectation? expected,
         DateTime now,
         CancellationToken cancellationToken = default,
-        Guid? menuId = null)
+        Guid? menuId = null,
+        bool isListed = true)
     {
         var item = Items.SingleOrDefault(candidate => candidate.VenueId == venueId && candidate.Id == itemId);
         if (item is null)
         {
-            return Task.FromResult(new ItemUpdateOutcome("not_found", null, null, null));
+            return Task.FromResult(new ItemUpdateOutcome("not_found", null, null, null, null));
         }
 
         static bool Same(string? left, string? right) => (left ?? string.Empty) == (right ?? string.Empty);
@@ -122,16 +123,18 @@ internal sealed class FakeContentRepository : IContentRepository
         if (expected is not null
             && (item.Name != expected.Name
                 || !Same(item.Description, expected.Description)
-                || !Same(item.Price, expected.Price)))
+                || !Same(item.Price, expected.Price)
+                || item.IsListed != expected.IsListed))
         {
-            return Task.FromResult(new ItemUpdateOutcome("item_changed", item.Name, item.Description, item.Price));
+            return Task.FromResult(new ItemUpdateOutcome("item_changed", item.Name, item.Description, item.Price, item.IsListed));
         }
 
         item.Name = name;
         item.Description = description;
         item.Price = price;
+        item.IsListed = isListed;
         item.UpdatedUtc = now;
-        return Task.FromResult(new ItemUpdateOutcome("updated", name, description, price));
+        return Task.FromResult(new ItemUpdateOutcome("updated", name, description, price, isListed));
     }
 
     public Task<IReadOnlyCollection<Item>> GetItemsAsync(Guid venueId, CancellationToken cancellationToken = default) =>
@@ -578,6 +581,18 @@ internal sealed class FakeContentRepository : IContentRepository
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException(
             "Deleting a section releases its placements in the same transaction. "
+            + "Assert it in Vennu.Data.IntegrationTests against a real database.");
+
+    public Task<SectionPageMoveOutcome> MoveSectionToPageAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid destinationPageId,
+        string? author = null,
+        DateTime? now = null,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException(
+            "Moving a section relies on FK_Placements_SectionOnPage's ON UPDATE CASCADE. "
             + "Assert it in Vennu.Data.IntegrationTests against a real database.");
 
     public Task<ReorderOutcome> ReorderSectionsGuardedAsync(

@@ -218,6 +218,11 @@ public sealed class ContentService(
             // The payload deliberately carries no screenId: the player's own
             // requiresContentReload() reads a payload WITH one as "this payload IS your
             // new content" and would swap this stub in for the board.
+            //
+            // The venue-wide call below is kept alongside the per-screen loop, not
+            // replaced by it - see NotifyAsync's doc comment (#769's audit) for why
+            // every OTHER call through it stays venue-only rather than gaining the
+            // same per-screen treatment this one got.
             await NotifyAsync(venueId, "published", menuId, cancellationToken).ConfigureAwait(false);
             foreach (var target in deliveries)
             {
@@ -620,6 +625,28 @@ public sealed class ContentService(
         return outcome;
     }
 
+    /// <summary>#797: relocates a section, intact, to a different page of the same menu.</summary>
+    public async Task<SectionPageMoveOutcome> MoveSectionToPageAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid destinationPageId,
+        string? author = null,
+        CancellationToken cancellationToken = default)
+    {
+        var outcome = await library
+            .MoveSectionToPageAsync(venueId, menuId, sectionId, destinationPageId,
+                author, timeProvider.GetUtcNow().UtcDateTime, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (outcome.Outcome == SectionOutcomes.Moved)
+        {
+            await NotifyAsync(venueId, "section-moved", menuId, cancellationToken).ConfigureAwait(false);
+        }
+
+        return outcome;
+    }
+
     public async Task<ReorderOutcome> ReorderSectionsAsync(
         Guid venueId,
         Guid menuId,
@@ -790,6 +817,7 @@ public sealed class ContentService(
         string name,
         string? description,
         string? price,
+        bool isListed = true,
         ItemValueExpectation? expected = null,
         CancellationToken cancellationToken = default,
         Guid? menuId = null)
@@ -805,6 +833,7 @@ public sealed class ContentService(
         item.Name = NormalizeItemName(name, fallback: item.Name);
         item.Description = Trim(description, 1000);
         item.Price = Trim(price, Item.PriceMaxLength);
+        item.IsListed = isListed;
         item.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
 
         /*
@@ -818,7 +847,8 @@ public sealed class ContentService(
             : new ItemValueExpectation(
                 NormalizeItemName(expected.Name, fallback: expected.Name),
                 Trim(expected.Description, 1000),
-                Trim(expected.Price, Item.PriceMaxLength));
+                Trim(expected.Price, Item.PriceMaxLength),
+                expected.IsListed);
 
         var outcome = await library
             .UpdateItemValuesGuardedAsync(
@@ -830,7 +860,8 @@ public sealed class ContentService(
                 guard,
                 item.UpdatedUtc,
                 cancellationToken,
-                menuId)
+                menuId,
+                item.IsListed)
             .ConfigureAwait(false);
 
         if (outcome.Outcome != "updated")
@@ -846,7 +877,8 @@ public sealed class ContentService(
                         VenueId = venueId,
                         Name = outcome.Name ?? string.Empty,
                         Description = outcome.Description,
-                        Price = outcome.Price
+                        Price = outcome.Price,
+                        IsListed = outcome.IsListed ?? true
                     }
                     : null);
         }
@@ -926,6 +958,38 @@ public sealed class ContentService(
         return string.IsNullOrEmpty(trimmed) ? null : trimmed[..Math.Min(trimmed.Length, max)];
     }
 
+    /// <summary>
+    /// Announces a WORKING-STATE change - section add/rename/delete, section or
+    /// item reorder, item move/add/place/remove, item value edits - to
+    /// `venue:{venueId}`. This is every call site except "published" (which also
+    /// notifies each affected screen directly; see the comment there).
+    ///
+    /// #769's audit: none of these should ever reach a display, by decisions 1 and
+    /// 2 - nothing but Publish moves what a screen shows, and every edit here IS
+    /// draft state, still waiting in its menu's queue. Re-scoping any of these to
+    /// `screen:{id}` the way #763 did for "published" would be a regression, not a
+    /// fix: it would show a screen a section that was renamed, reordered, or
+    /// deleted in the builder and never published.
+    ///
+    /// In practice these calls are currently no-ops for every listener, not only
+    /// the display: `JoinVenue` exists on the hub (VennuHub.cs), but nothing in
+    /// the codebase calls it - the back office has no realtime connection of its
+    /// own today. Kept rather than deleted, on the working assumption that a
+    /// future back-office feature (e.g. two editors on the same menu seeing each
+    /// other's changes live) is the intended eventual consumer of `venue:{id}` -
+    /// but that consumer, if and when it's built, must stay back-office-only for
+    /// THESE draft-state events specifically.
+    ///
+    /// This scopes only the 12 calls audited here (draft/working-state content
+    /// edits), not every use of `NotifyVenueContentUpdatedAsync` in the codebase -
+    /// there are others outside ContentService, and at least one
+    /// (BackOfficeEmergencyBroadcastsController's venue-wide broadcast path, #811)
+    /// carries an IMMEDIATE fact a display should receive and currently does not,
+    /// for the same "nothing joins venue:{id}" reason. That one needs the #763
+    /// per-screen fix, not this file's "leave it venue-only" conclusion - #769's
+    /// audit was scoped to ContentService, and #811 is filed separately rather
+    /// than folded in here.
+    /// </summary>
     private Task NotifyAsync(Guid venueId, string change, Guid? menuId, CancellationToken cancellationToken) =>
         notifier.NotifyVenueContentUpdatedAsync(venueId, new { change, menuId }, cancellationToken);
 
