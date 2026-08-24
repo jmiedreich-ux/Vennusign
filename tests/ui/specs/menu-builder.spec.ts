@@ -1,4 +1,4 @@
-import { test, expect, findShelfCard, openAs, openMenuBuilderAs, apiBaseUrl, tokens } from "../fixtures";
+import { test, expect, findShelfCard, openAs, openAddItem, openMenuBuilderAs, apiBaseUrl, tokens } from "../fixtures";
 import { backdateAvailability, seed } from "../seed";
 
 /**
@@ -297,7 +297,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", label: "add" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     const name = `Spec Item ${data.itemId.slice(0, 6)}`;
     await page.getByTestId("add-item-input").fill(name);
     await page.getByTestId("add-item-create").click();
@@ -310,7 +310,7 @@ test.describe("the builder", () => {
 
     // Now offer the SAME item again. It must not place a second copy.
     const before = await page.getByTestId("board-item").count();
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").fill(name);
     await page.getByTestId("add-item-result").filter({ hasText: name }).first().click();
 
@@ -326,7 +326,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", label: "add-enter" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     const name = `Enter Item ${data.itemId.slice(0, 6)}`;
     await page.getByTestId("add-item-input").fill(name);
     await page.getByTestId("add-item-input").press("Enter");
@@ -339,7 +339,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", label: "add-button-dedupe" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     const name = `Button Dedupe ${data.itemId.slice(0, 6)}`;
     await page.getByTestId("add-item-input").fill(name);
     await page.getByTestId("add-item-create").click();
@@ -349,7 +349,7 @@ test.describe("the builder", () => {
 
     // The SAME exact name again, submitted through the CREATE BUTTON specifically - not a
     // search-result click. Before the fix this bypassed submitAdd's dedupe entirely.
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").fill(name);
     await page.getByTestId("add-item-create").click();
 
@@ -361,7 +361,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", label: "add-race" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     const name = `Race Item ${data.itemId.slice(0, 6)}`;
     await page.getByTestId("add-item-input").fill(name);
 
@@ -374,7 +374,7 @@ test.describe("the builder", () => {
     ]);
 
     await expect(page.getByTestId("item-name")).toHaveValue(name);
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").fill(name);
     await expect(page.getByTestId("add-item-result").filter({ hasText: name })).toHaveCount(1);
   });
@@ -390,7 +390,7 @@ test.describe("the builder", () => {
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     const name = `No Price ${data.itemId.slice(0, 6)}`;
     await page.getByTestId("add-item-input").fill(name);
     await page.getByTestId("add-item-create").click();
@@ -421,7 +421,7 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", label: "publish-no-price-review" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     const name = `Review No Price ${data.itemId.slice(0, 6)}`;
     await page.getByTestId("add-item-input").fill(name);
     await page.getByTestId("add-item-create").click();
@@ -461,7 +461,7 @@ test.describe("the builder", () => {
 
     // Put an item on it so the section has a canvas heading to rename over. An
     // empty section correctly shows only the add affordance (Q96).
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     const name = `Released ${data.itemId.slice(0, 6)}`;
     await page.getByTestId("add-item-input").fill(name);
     await page.getByTestId("add-item-create").click();
@@ -490,7 +490,7 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("canvas")).toContainText(data.itemName);
 
     // Still in the library: findable from the add row on another section.
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").fill(name);
     await expect(page.getByTestId("add-item-result").filter({ hasText: name })).toBeVisible();
   });
@@ -891,7 +891,7 @@ test.describe("the builder", () => {
     await page.getByTestId("item-price").blur();
     await expect(page.getByTestId("publish")).toBeInViewport();
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").fill("a");
     // The dropdown overlays; it does not reflow the page out from under the
     // primary action at exactly the moment somebody is adding items.
@@ -961,7 +961,7 @@ test.describe("the builder", () => {
       "aria-current",
       "true"
     );
-    await expect(page.getByTestId("open-add-item")).toBeVisible();
+    await expect(page.getByTestId("add-item-input")).toBeVisible();
   });
 
   test("Review first shows the values, and leads into the publish", async ({ page }) => {
@@ -1033,7 +1033,7 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     const data = await seed({ role: "owner", label: "slice3-add", screenState: "has-not-taken-this-yet", itemsPerSection: 18 });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     const name = page.getByTestId("add-item-input");
     const price = page.getByTestId("add-item-price");
     await expect(name).toBeFocused();
@@ -1048,7 +1048,7 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
 
     await page.reload();
     await expect(page.getByTestId("canvas")).toContainText("Draft capacity item");
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").fill("Old Fashioned");
     await expect(page.getByTestId("add-item-input")).toHaveAttribute("role", "combobox");
     await expect(page.getByTestId("add-item-input")).toHaveAttribute("aria-expanded", "true");
@@ -1064,20 +1064,22 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     await page.getByTestId("add-item-price").press("Enter");
     await expect(page.getByText("Used the existing Old-Fashioned. Its shared price was not changed.")).toBeVisible();
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").fill("Old");
     await expect(page.getByTestId("add-item-result").filter({ hasText: "Old-Fashioned" })).toBeVisible();
     await page.getByTestId("add-item-input").fill("Old missing");
     await expect(page.getByTestId("add-item-result")).toHaveCount(0);
     await page.getByTestId("add-item-input").fill("Old");
     await expect(page.getByTestId("add-item-result").filter({ hasText: "Old-Fashioned" })).toBeVisible();
+    // Escape clears the search rather than closing anything - there is nothing
+    // to close, since this panel is the section's ambient state, not an overlay.
     await page.getByTestId("add-item-input").press("Escape");
-    await page.getByTestId("open-add-item").click();
+    await expect(page.getByTestId("add-item-input")).toHaveValue("");
     await page.getByTestId("add-item-input").fill("Old");
     await expect(page.getByTestId("add-item-result").filter({ hasText: "Old-Fashioned" })).toBeVisible();
     await page.getByTestId("add-item-input").press("Escape");
+    await expect(page.getByTestId("add-item-input")).toHaveValue("");
 
-    await page.getByTestId("open-add-item").click();
     await page.getByTestId("add-item-input").fill("Burger");
     await page.getByTestId("add-item-price").fill("9");
     await page.getByTestId("add-item-price").press("Enter");
@@ -1091,9 +1093,9 @@ test.describe("M3-A Slice 3 page-scoped items", () => {
     expect(tooLong.status()).toBe(400);
     expect(await tooLong.text()).toContain("12 characters or fewer");
 
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").press("Escape");
-    await expect(page.getByTestId("add-item-input")).toHaveCount(0);
+    await expect(page.getByTestId("add-item-input")).toHaveValue("");
     await page.reload();
     await expect(page.getByTestId("canvas")).not.toContainText("Unnamed item");
   });
@@ -1423,7 +1425,6 @@ test.describe("what the independent review found", () => {
     }
 
     await openMenuBuilderAs(page, "owner", data.menuId);
-    await page.getByTestId("open-add-item").click();
     await page.getByTestId("open-add-many").click();
     await expect(page.getByTestId("add-many-drawer")).toBeVisible();
 

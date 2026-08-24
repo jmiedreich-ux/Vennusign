@@ -86,6 +86,20 @@ export async function openMenuBuilderAs(page: Page, role: VennuRole, menuId?: st
 }
 
 /**
+ * The add-item search opens the moment a section is the active context - there
+ * is no button to click to reveal it. This is only needed when an item's editor
+ * is already showing (closing it hands the panel back to add mode); if nothing
+ * is selected, the search box is already there.
+ */
+export async function openAddItem(page: Page) {
+  const closeItem = page.getByTestId("close-item");
+  if (await closeItem.isVisible().catch(() => false)) {
+    await closeItem.click();
+  }
+  await page.getByTestId("add-item-input").waitFor({ state: "visible" });
+}
+
+/**
  * One named card on the shelf, however many menus the venue happens to have.
  *
  * The default venue accumulates menus from every spec that seeds, so the shelf

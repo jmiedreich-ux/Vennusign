@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { openAddItem } from "../fixtures";
 // @ts-expect-error - plain .mjs helpers, shared with non-Playwright QA tooling.
 import { qaCredentials, qaCredentialSources, signInAsCustomer } from "../lib/customerAccount.mjs";
 // @ts-expect-error - see above.
@@ -41,12 +42,6 @@ const servedToScreen = async (page: any, screenId: string) => {
     itemNames: sections.flatMap((section: any) =>
       (section.items ?? section.Items ?? []).map((item: any) => item.name ?? item.Name))
   };
-};
-
-const openAddItem = async (page: any) => {
-  const opener = page.getByTestId("open-add-item");
-  if (await opener.isVisible().catch(() => false)) await opener.click();
-  await expect(page.getByTestId("add-item-input")).toBeVisible({ timeout: 30_000 });
 };
 
 const addItem = async (page: any, name: string, price: string) => {

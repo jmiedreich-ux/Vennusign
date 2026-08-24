@@ -576,7 +576,6 @@ export default function MenuBuilder({
           remembered = null;
         }
         setPlace(resumeState(next.board, remembered));
-        if (startBlank) setAddSectionId(sectionsOf(next.board)[0]?.sectionId ?? null);
       })
       .catch(() => {
         if (!cancelled) setError("This menu could not be opened. Check your connection and try again.");
@@ -1489,6 +1488,22 @@ export default function MenuBuilder({
     }, undefined, undefined, false, isAvailable ? "Mark 86" : "Mark available");
   };
 
+  // Turning Available off leaves nothing for an 86 to say - the item is already
+  // gone from every screen - so it clears one if it finds it active.
+  const toggleAvailable = async () => {
+    if (!selected || !draftItem) return;
+    const next = !draftItem.isListed;
+    const was86d = selectedAvailability?.isAvailable === false;
+    setDraftItem({ ...draftItem, isListed: next });
+    await saveItem({ isListed: next });
+    if (!next && was86d) {
+      await run(async () => {
+        const result = await setItemAvailability(configuration, credential(), selected.item.itemId, true);
+        setNotice(availabilityImpactNotice(selected.item.name ?? "Item", result.isAvailable, result.screenIds, screens));
+      }, undefined, undefined, false, "Clear 86");
+    }
+  };
+
   const removeFromBoard = async () => {
     if (!selected) return;
     if (!confirmItemRemove) {
@@ -1526,7 +1541,10 @@ export default function MenuBuilder({
 
   const [addQuery, setAddQuery] = useState("");
   const [addPrice, setAddPrice] = useState("");
-  const [addSectionId, setAddSectionId] = useState<string | null>(null);
+  // Selecting a section with nothing else selected IS "add mode" for that
+  // section - there is no separate step to open it, and no state of its own
+  // to fall out of sync with the section rail or the canvas.
+  const addingToSectionId = place.view === "one-section" && !place.selectedItemId ? place.sectionId : null;
   const [hits, setHits] = useState<LibraryItem[]>([]);
   const canonicalItemName = (value: string) => value.toLocaleLowerCase().replaceAll("&", "and").replace(/[^a-z0-9]/g, "");
 
@@ -1558,7 +1576,7 @@ export default function MenuBuilder({
   };
 
   useEffect(() => {
-    if (!addSectionId || addQuery.trim().length === 0) {
+    if (!addingToSectionId || addQuery.trim().length === 0) {
       setHits([]);
       return;
     }
@@ -1576,7 +1594,15 @@ export default function MenuBuilder({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [addQuery, addSectionId, apiKey, configuration]);
+  }, [addQuery, addingToSectionId, apiKey, configuration]);
+
+  // A fresh box every time the target changes - switching sections (or
+  // selecting an item) never leaves another section's half-typed search
+  // sitting behind it.
+  useEffect(() => {
+    setAddQuery("");
+    setAddPrice("");
+  }, [addingToSectionId]);
 
   /*
    * The bulk drawer (Q95 opens it, Q124 governs it).
@@ -1704,9 +1730,6 @@ export default function MenuBuilder({
         });
       }
     }
-    setAddQuery("");
-    setAddPrice("");
-    setAddSectionId(null);
   };
 
   // ---- undo, redo and find -------------------------------------------------
@@ -1810,7 +1833,6 @@ export default function MenuBuilder({
         setSectionActionsFor(null);
         setMovingSection(null);
         setItemEdit(null);
-        setAddSectionId(null);
         return;
       }
       if ((event.key === "Delete" || event.key === "Backspace") && place.selectedItemId) {
@@ -1955,8 +1977,8 @@ export default function MenuBuilder({
       }
     );
   };
-  const capacitySections = addSectionId && addQuery.trim()
-    ? sections.map(section => section.sectionId === addSectionId
+  const capacitySections = addingToSectionId && addQuery.trim()
+    ? sections.map(section => section.sectionId === addingToSectionId
       ? { ...section, items: [...section.items, { itemId: "draft-item", name: addQuery, description: null, price: addPrice || null, sortOrder: section.items.length, isListed: true }] }
       : section)
     : sections;
@@ -2494,122 +2516,11 @@ export default function MenuBuilder({
             ) : null}
           </div>
 
-          {place.view === "one-section" && place.sectionId ? (
-            <div
-              className="builder__add-row"
-              onBlurCapture={event => {
-                if (addQuery.trim() || event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-                setAddPrice("");
-                setAddSectionId(null);
-              }}
-            >
-              {addSectionId === place.sectionId ? (
-                <>
-                  <input
-                    autoFocus
-                    value={addQuery}
-                    placeholder="Find an item, or type a new one"
-                    aria-label="Add an item"
-                    data-testid="add-item-input"
-                    role="combobox"
-                    aria-autocomplete="list"
-                    aria-expanded={hits.length > 0}
-                    aria-controls={hits.length > 0 ? `add-item-results-${place.sectionId}` : undefined}
-                    aria-activedescendant={hits[0] ? `add-item-option-${hits[0].itemId}` : undefined}
-                    aria-busy={addSubmitting}
-                    disabled={addSubmitting}
-                    onChange={event => setAddQuery(event.target.value)}
-                    onKeyDown={event => {
-                      if (event.key === "Enter" && addQuery.trim()) {
-                        runAddAction(() => submitAdd(place.sectionId!));
-                      }
-                      if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
-                    }}
-                  />
-                  <input
-                    value={addPrice}
-                    placeholder="Price (optional)"
-                    aria-label="Item price"
-                    data-testid="add-item-price"
-                    maxLength={12}
-                    disabled={addSubmitting}
-                    onChange={event => setAddPrice(event.target.value)}
-                    onKeyDown={event => {
-                      if (event.key === "Enter" && addQuery.trim()) runAddAction(() => submitAdd(place.sectionId!));
-                      if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); setAddSectionId(null); }
-                    }}
-                  />
-                  {addSubmitting ? <span className="builder__add-status" role="status" aria-live="polite">Adding…</span> : null}
-                  {hits.length > 0 ? <div id={`add-item-results-${place.sectionId}`} role="listbox" className="builder__add-results" data-testid="add-item-results">
-                    {hits.map(hit => {
-                      const here = hit.boards.some(entry => entry.menuId === menuId);
-                      const elsewhere = hit.boards.filter(entry => entry.menuId !== menuId);
-                      return (
-                          <button key={hit.itemId}
-                            type="button"
-                            id={`add-item-option-${hit.itemId}`}
-                            role="option"
-                            data-testid="add-item-result"
-                            data-item-id={hit.itemId}
-                            aria-selected={hit === hits[0]}
-                            className={hit === hits[0] ? "is-selected" : undefined}
-                            disabled={addSubmitting}
-                            onClick={() => runAddAction(() => place_(place.sectionId!, { itemId: hit.itemId }))}
-                          >
-                            <span className="builder__add-name">{hit.name}</span>
-                            <span className="builder__add-where">
-                              {here
-                                ? "already on this board"
-                                : elsewhere.length === 0
-                                  ? "not on a board yet"
-                                  : elsewhere.length === 1
-                                    ? `on ${elsewhere[0].menuName}`
-                                    : elsewhere.length === 2
-                                      ? `on ${elsewhere[0].menuName} and ${elsewhere[1].menuName}`
-                                      : `on ${elsewhere.length} boards`}
-                              {hit.isAvailable ? "" : " · 86'd right now"}
-                            </span>
-                          </button>
-                      );
-                    })}
-                  </div> : null}
-                  {addQuery.trim() ? (
-                    <button
-                      type="button"
-                      className="builder__add-create"
-                      data-testid="add-item-create"
-                      disabled={addSubmitting}
-                      // #775: this used to call place_ directly, skipping submitAdd's dedupe
-                      // search entirely - the button and Enter did materially different things,
-                      // which is how a name that already existed in the library became a second
-                      // library item instead of being reused. Both now go through submitAdd.
-                      onClick={() => runAddAction(() => submitAdd(place.sectionId!))}
-                    >
-                      {addSubmitting ? "Adding…" : <>Create “{addQuery.trim()}” as a new item</>}
-                    </button>
-                  ) : null}
-                  {/* The bulk path lives on the add row, not on the rail's + (Q95). */}
-                  <button
-                    type="button"
-                    className="builder__link builder__add-many"
-                    data-testid="open-add-many"
-                    onClick={() => setDrawerOpen(true)}
-                  >
-                    Add many at once
-                  </button>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  className="builder__add-open"
-                  data-testid="open-add-item"
-                  onClick={() => setAddSectionId(place.sectionId)}
-                >
-                  + Add an item
-                </button>
-              )}
-            </div>
-          ) : null}
+          {/*
+            #797-followup: this used to be an inline row here, opened by a click.
+            It now lives in the item panel, always open the moment a section is
+            the active context - selecting a section IS asking to add to it.
+          */}
 
         </main>
 
@@ -2624,94 +2535,138 @@ export default function MenuBuilder({
           </div>
           <div className="builder__inspector-body">
           {!selected || !draftItem ? (
-            <p className="builder__inspector-empty" data-testid="inspector-empty">
-              Select an item on the board to edit it.
-            </p>
+            addingToSectionId ? (
+              <div className="builder__add-panel" data-testid="add-item-panel">
+                <div className="builder__inspector-head">
+                  <h2>Add item to {activeSection?.name ?? "this section"}</h2>
+                </div>
+
+                <label>
+                  <span className="builder__label">Find an item, or start typing a new one</span>
+                  <input
+                    autoFocus
+                    value={addQuery}
+                    placeholder="Search the library…"
+                    aria-label="Add an item"
+                    data-testid="add-item-input"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded={hits.length > 0}
+                    aria-controls={hits.length > 0 ? `add-item-results-${addingToSectionId}` : undefined}
+                    aria-activedescendant={hits[0] ? `add-item-option-${hits[0].itemId}` : undefined}
+                    aria-busy={addSubmitting}
+                    disabled={addSubmitting}
+                    onChange={event => setAddQuery(event.target.value)}
+                    onKeyDown={event => {
+                      if (event.key === "Enter" && addQuery.trim()) runAddAction(() => submitAdd(addingToSectionId));
+                      if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); }
+                    }}
+                  />
+                </label>
+
+                {hits.length > 0 ? (
+                  <div id={`add-item-results-${addingToSectionId}`} role="listbox" className="builder__add-results" data-testid="add-item-results">
+                    {hits.map(hit => {
+                      const here = hit.boards.some(entry => entry.menuId === menuId);
+                      const elsewhere = hit.boards.filter(entry => entry.menuId !== menuId);
+                      return (
+                        <button key={hit.itemId}
+                          type="button"
+                          id={`add-item-option-${hit.itemId}`}
+                          role="option"
+                          data-testid="add-item-result"
+                          data-item-id={hit.itemId}
+                          aria-selected={hit === hits[0]}
+                          className={hit === hits[0] ? "is-selected" : undefined}
+                          disabled={addSubmitting}
+                          onClick={() => runAddAction(() => place_(addingToSectionId, { itemId: hit.itemId }))}
+                        >
+                          <span className="builder__add-name">{hit.name}</span>
+                          <span className="builder__add-where">
+                            {here
+                              ? "already on this board"
+                              : elsewhere.length === 0
+                                ? "not on a board yet"
+                                : elsewhere.length === 1
+                                  ? `on ${elsewhere[0].menuName}`
+                                  : elsewhere.length === 2
+                                    ? `on ${elsewhere[0].menuName} and ${elsewhere[1].menuName}`
+                                    : `on ${elsewhere.length} boards`}
+                            {hit.isAvailable ? "" : " · 86'd right now"}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+
+                {addQuery.trim() ? (
+                  <>
+                    <label>
+                      <span className="builder__label">Price (optional)</span>
+                      <input
+                        value={addPrice}
+                        placeholder="9.5, MP, or leave it"
+                        aria-label="Item price"
+                        data-testid="add-item-price"
+                        maxLength={12}
+                        disabled={addSubmitting}
+                        onChange={event => setAddPrice(event.target.value)}
+                        onKeyDown={event => {
+                          if (event.key === "Enter") runAddAction(() => submitAdd(addingToSectionId));
+                          if (event.key === "Escape") { setAddQuery(""); setAddPrice(""); }
+                        }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="builder__add-create"
+                      data-testid="add-item-create"
+                      disabled={addSubmitting}
+                      // #775: this used to call place_ directly, skipping submitAdd's dedupe
+                      // search entirely - the button and Enter did materially different things,
+                      // which is how a name that already existed in the library became a second
+                      // library item instead of being reused. Both now go through submitAdd.
+                      onClick={() => runAddAction(() => submitAdd(addingToSectionId))}
+                    >
+                      {addSubmitting ? "Adding…" : <>Create “{addQuery.trim()}” as a new item</>}
+                    </button>
+                  </>
+                ) : null}
+                {addSubmitting ? <span className="builder__add-status" role="status" aria-live="polite">Adding…</span> : null}
+
+                {/* The bulk path stays reachable from here too (Q95/Q124). */}
+                <button
+                  type="button"
+                  className="builder__link builder__add-many"
+                  data-testid="open-add-many"
+                  onClick={() => setDrawerOpen(true)}
+                >
+                  Add many at once
+                </button>
+              </div>
+            ) : (
+              <p className="builder__inspector-empty" data-testid="inspector-empty">
+                Select a section to add an item, or an item on the board to edit it.
+              </p>
+            )
           ) : (
             <>
               <div className="builder__inspector-head">
                 <h2>{selected.item.name}</h2>
                 <button
                   type="button"
+                  className="builder__inspector-close"
                   aria-label="Close"
+                  data-testid="close-item"
                   onClick={() => setPlace(current => ({ ...current, selectedItemId: null }))}
                 >
-                  ✕
+                  <SkyIcon name="close" />
                 </button>
               </div>
-
-              <div className="builder__available-control">
-                <span className="builder__label">Available</span>
-                <button
-                  type="button"
-                  className="builder__availability-switch"
-                  role="switch"
-                  aria-checked={draftItem.isListed}
-                  aria-label={draftItem.isListed ? "Turn off" : "Turn on"}
-                  data-testid="available-switch"
-                  onClick={() => {
-                    const next = !draftItem.isListed;
-                    setDraftItem({ ...draftItem, isListed: next });
-                    void saveItem({ isListed: next });
-                  }}
-                  disabled={busy}
-                >
-                  <span aria-hidden="true" />
-                </button>
-              </div>
-              <p className="builder__available-note" data-testid="available-note">
-                Turn off to hide this item from guest screens — takes effect on your next publish, unlike 86 below, which is immediate.
-              </p>
-
-              {isOff ? (
-                <div className="builder__availability is-off" data-testid="availability-panel" data-off="true">
-                  <div className="builder__availability-head">
-                    <strong>Off right now</strong>
-                    <button
-                      type="button"
-                      className="builder__availability-switch"
-                      role="switch"
-                      aria-checked={false}
-                      aria-label="Turn back on"
-                      data-testid="availability-switch"
-                      onClick={() => void toggleAvailability()}
-                      disabled={busy}
-                    >
-                      <span aria-hidden="true" />
-                    </button>
-                  </div>
-                  <p>
-                    {/*
-                      The trailing clause is verbatim copy in the design authority,
-                      and it carries the rule: everything else on this page waits for
-                      Publish, and this does not.
-                    */}
-                    {offNote ??
-                      `Showing on every screen this board is on. Turning this off hides it on ${
-                        targets.total === 1 ? "your screen" : `all ${targets.total} screens`
-                      } immediately — not part of your draft.`}
-                  </p>
-                </div>
-              ) : (
-                <div className="builder__availability-control">
-                  <span className="builder__label">86 this item</span>
-                  <button
-                    type="button"
-                    className="builder__availability-switch"
-                    role="switch"
-                    aria-checked={true}
-                    aria-label="Turn off"
-                    data-testid="availability-switch"
-                    onClick={() => void toggleAvailability()}
-                    disabled={busy}
-                  >
-                    <span aria-hidden="true" />
-                  </button>
-                </div>
-              )}
 
               <label className={inspectorCue === "name" ? "is-cued" : undefined} data-inspector-row="name">
-                <span className="builder__label">Name</span>
+                <span className="builder__label">Item name</span>
                 <input
                   data-inspector-field="name"
                   data-testid="item-name"
@@ -2758,6 +2713,59 @@ export default function MenuBuilder({
                 </p>
               ) : null}
 
+              <div className="builder__toggle-row">
+                <div className="builder__toggle-copy">
+                  <strong>Available</strong>
+                  <p>Turn off to hide this item from guest screens — this also clears an 86.</p>
+                </div>
+                <button
+                  type="button"
+                  className="builder__availability-switch"
+                  role="switch"
+                  aria-checked={draftItem.isListed}
+                  aria-label={draftItem.isListed ? "Turn off" : "Turn on"}
+                  data-testid="available-switch"
+                  onClick={() => void toggleAvailable()}
+                  disabled={busy}
+                >
+                  <span aria-hidden="true" />
+                </button>
+              </div>
+
+              <div className="builder__toggle-row">
+                <div className="builder__toggle-copy">
+                  <strong>86 this item</strong>
+                  <p>Stays on the board, labelled Sold out for guests.</p>
+                </div>
+                <button
+                  type="button"
+                  className="builder__availability-switch"
+                  role="switch"
+                  aria-checked={isOff}
+                  aria-label={isOff ? "Turn back on" : "Turn off"}
+                  data-testid="availability-switch"
+                  onClick={() => void toggleAvailability()}
+                  disabled={busy}
+                >
+                  <span aria-hidden="true" />
+                </button>
+              </div>
+              {isOff ? (
+                <div className="builder__availability is-off" data-testid="availability-panel" data-off="true">
+                  <p>
+                    {/*
+                      The trailing clause is verbatim copy in the design authority,
+                      and it carries the rule: everything else on this page waits for
+                      Publish, and this does not.
+                    */}
+                    {offNote ??
+                      `Showing on every screen this board is on. Turning this off hides it on ${
+                        targets.total === 1 ? "your screen" : `all ${targets.total} screens`
+                      } immediately — not part of your draft.`}
+                  </p>
+                </div>
+              ) : null}
+
               <button type="button" className="builder__quiet-danger" data-testid="remove-item" onClick={() => void removeFromBoard()}>
                 Remove from this page
               </button>
@@ -2801,11 +2809,12 @@ export default function MenuBuilder({
               <h2>Add many at once</h2>
               <button
                 type="button"
+                className="builder__inspector-close"
                 aria-label="Close"
                 data-testid="close-add-many"
                 onClick={() => setDrawerOpen(false)}
               >
-                ✕
+                <SkyIcon name="close" />
               </button>
             </header>
 
