@@ -444,7 +444,6 @@ export default function MenuBuilder({
   const [findQuery, setFindQuery] = useState("");
   const [themePickerOpen, setThemePickerOpen] = useState(false);
   const [themes, setThemes] = useState<Array<{ key: string; name: string }>>();
-  const [seeAllOpen, setSeeAllOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [viewAllOpen, setViewAllOpen] = useState(false);
@@ -511,7 +510,6 @@ export default function MenuBuilder({
   const deleteRef = useDialogFocus(Boolean(confirmDelete));
   const movingSectionRef = useDialogFocus(Boolean(movingSection));
   const themeRef = useDialogFocus(themePickerOpen);
-  const seeAllRef = useDialogFocus(seeAllOpen);
   const reviewRef = useDialogFocus(reviewOpen);
   const historyRef = useDialogFocus(historyOpen);
   const viewAllRef = useDialogFocus(viewAllOpen);
@@ -1864,7 +1862,6 @@ export default function MenuBuilder({
       if (event.key === "Escape") {
         setFindOpen(false);
         setThemePickerOpen(false);
-        setSeeAllOpen(false);
         setReviewOpen(false);
         setHistoryOpen(false);
         setViewingOpen(false);
@@ -1981,7 +1978,6 @@ export default function MenuBuilder({
     Boolean(confirmDelete) ||
     Boolean(movingSection) ||
     themePickerOpen ||
-    seeAllOpen ||
     reviewOpen ||
     historyOpen ||
     viewAllOpen ||
@@ -2868,23 +2864,6 @@ export default function MenuBuilder({
               <button type="button" className="builder__quiet-danger" data-testid="remove-item" onClick={() => void removeFromBoard()}>
                 Remove from this page
               </button>
-
-              <p className="builder__theme-footer">
-                <button
-                  type="button"
-                  data-testid="open-theme-picker"
-                  onClick={() => {
-                    setThemePickerOpen(true);
-                    if (!themes) {
-                      loadMenuThemes(configuration, credential())
-                        .then(setThemes)
-                        .catch(() => setThemes([]));
-                    }
-                  }}
-                >
-                  {board.theme ? `Theme: ${board.theme}` : "No theme on this menu"}
-                </button>
-              </p>
             </>
           )}
           </div>
@@ -3035,44 +3014,34 @@ export default function MenuBuilder({
           </span>
         </div>
 
-        <div className="builder__publish-screens" data-testid="publish-screens" data-mode={targets.mode}>
-          {targets.mode === "chips" ? (
-            targets.chips.map(screen => (
-              <span
-                key={screen.screenId}
-                className={`builder__chip builder__chip--${screen.state}`}
-                data-testid="screen-chip"
-              >
-                <strong>{screen.screenName}</strong>
-                <small>{screen.state === "ready" ? "showing this menu" : "another menu now"}</small>
-              </span>
-            ))
-          ) : (
-            <>
-              <span className="builder__chip" data-testid="screen-count">
-                <strong>{targets.countPhrase}</strong>
-                <small>
-                  <button type="button" className="builder__link" data-testid="see-all-screens" onClick={() => setSeeAllOpen(true)}>
-                    See all →
-                  </button>
-                </small>
-              </span>
-              {targets.exceptions.map(screen => (
-                <span key={screen.screenId} className="builder__chip builder__chip--taken" data-testid="screen-exception">
-                  <strong>{screen.screenName}</strong>
-                  <small>another menu now</small>
-                </span>
-              ))}
-            </>
-          )}
-        </div>
-
         <div className="builder__publish-right">
           {blocked ? (
             <span className="builder__blocked" data-testid="publish-blocked">
               {blocked}
             </span>
           ) : null}
+          {/*
+            #834: this used to live inside the item editor, so it was only
+            reachable while an item happened to be selected. It's a menu-level
+            setting, not an item one - it belongs in the footer, always on.
+          */}
+          <button
+            type="button"
+            className="builder__theme-footer-trigger"
+            data-testid="open-theme-picker"
+            onClick={() => {
+              setThemePickerOpen(true);
+              if (!themes) {
+                loadMenuThemes(configuration, credential())
+                  .then(setThemes)
+                  .catch(() => setThemes([]));
+              }
+            }}
+          >
+            <span className="builder__theme-footer-label">Theme</span>
+            <span>{board.theme ?? "None"}</span>
+            <SkyIcon name="chevron" size={14} />
+          </button>
           <span className="builder__actions-wrap" ref={actionsMenuRef}>
             <button
               type="button"
@@ -3404,30 +3373,6 @@ export default function MenuBuilder({
             )}
             <div className="builder__dialog-actions">
               <button type="button" className="action-secondary" onClick={() => setThemePickerOpen(false)}>
-                Close
-              </button>
-            </div>
-          </div>
-        </>
-      ) : null}
-
-      {seeAllOpen ? (
-        <>
-          <div className="builder__scrim" onClick={() => setSeeAllOpen(false)} />
-          <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="screens-title" data-testid="see-all-dialog" ref={seeAllRef}>
-            <h2 id="screens-title">Screens showing this menu</h2>
-            <ul className="builder__screen-list">
-              {screens
-                .filter(screen => (data.screenIds ?? []).includes(screen.screenId))
-                .map(screen => (
-                  <li key={screen.screenId}>
-                    <strong>{screen.screenName}</strong>
-                    <span>{screen.menuId === menuId ? "showing this menu" : "another menu now"}</span>
-                  </li>
-                ))}
-            </ul>
-            <div className="builder__dialog-actions">
-              <button type="button" className="action-secondary" onClick={() => setSeeAllOpen(false)}>
                 Close
               </button>
             </div>

@@ -141,7 +141,7 @@ export function venueTime(utc, timezone) {
 export function publishedLine({ lastPublishedUtc, lastPublishedBy }, timezone) {
   const when = venueTime(lastPublishedUtc, timezone);
   if (!when) return "Not published yet";
-  return lastPublishedBy ? `Published ${when} by ${lastPublishedBy}` : `Published ${when}`;
+  return lastPublishedBy ? `Last published ${when} by ${lastPublishedBy}` : `Last published ${when}`;
 }
 
 /**

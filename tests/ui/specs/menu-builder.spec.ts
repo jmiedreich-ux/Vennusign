@@ -762,7 +762,8 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", label: "theme" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await page.getByTestId("board-item").first().locator(".board-item-name").click();
+    // #834: reachable from the footer regardless of selection - no item needs
+    // to be picked first any more.
     await page.getByTestId("open-theme-picker").click();
 
     await expect(page.getByTestId("theme-empty")).toBeVisible();
