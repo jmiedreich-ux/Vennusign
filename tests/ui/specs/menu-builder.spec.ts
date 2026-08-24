@@ -475,7 +475,8 @@ test.describe("the builder", () => {
     // Delete the section: Q96's "nothing is lost" is what the message has to say,
     // and it has to be true.
     const sectionRow = page.getByTestId("rail-section").filter({ hasText: "Afters" }).locator("..");
-    await sectionRow.getByTestId("delete-section").click();
+    await sectionRow.getByTestId("section-actions").click();
+    await page.getByTestId("section-actions-delete").click();
     const dialog = page.getByTestId("delete-section-dialog");
     await dialog.getByLabel("Delete this section, returning its items").check();
     // Deleting a section asks first now — the irreversible act gets the guard the
@@ -533,7 +534,8 @@ test.describe("the builder", () => {
     await page.getByTestId("rail-section").nth(1).click();
     const removedItemName = data.items[1].name;
     await expect(page.getByTestId("canvas")).toContainText(removedItemName);
-    await page.getByTestId("rail-section").nth(1).locator("..").getByTestId("delete-section").click();
+    await page.getByTestId("rail-section").nth(1).locator("..").getByTestId("section-actions").click();
+    await page.getByTestId("section-actions-delete").click();
     const dialog = page.getByTestId("delete-section-dialog");
     await expect(dialog.getByLabel("Delete this section, moving its items to")).toBeChecked();
     await dialog.getByTestId("confirm-delete-section").click();
@@ -931,7 +933,8 @@ test.describe("the builder", () => {
     const data = await seed({ role: "owner", label: "delconfirm" });
     await openMenuBuilderAs(page, "owner", data.menuId);
 
-    await page.getByTestId("delete-section").click();
+    await page.getByTestId("section-actions").click();
+    await page.getByTestId("section-actions-delete").click();
     const dialog = page.getByTestId("delete-section-dialog");
     await expect(dialog).toContainText("return to the library");
     await expect(dialog).toContainText("can't be undone");
@@ -949,7 +952,8 @@ test.describe("the builder", () => {
     await page.getByTestId("new-section-name").press("Enter");
     const firstSection = page.getByTestId("rail-section").first().locator("..");
     await firstSection.getByTestId("rail-section").click();
-    await firstSection.getByTestId("delete-section").click();
+    await firstSection.getByTestId("section-actions").click();
+    await page.getByTestId("section-actions-delete").click();
     await page.getByLabel("Delete this section, returning its items").check();
     await page.getByTestId("confirm-delete-section").click();
     await expect(page.getByTestId("builder-notice")).toContainText("back to your library");

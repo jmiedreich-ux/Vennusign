@@ -9,6 +9,7 @@ import {
   deleteMenuPage,
   duplicateMenuPage,
   deleteMenuSection,
+  moveMenuSectionToPage,
   discardMenuDraft,
   loadBuilderBoard,
   goBackToMenuVersion,
@@ -66,6 +67,7 @@ import {
   releasedPhrase,
   reorder,
   resumeState,
+  sectionOf,
   sectionsOf,
   sharedItemLine,
   unavailableNote,
@@ -471,10 +473,19 @@ export default function MenuBuilder({
   const [confirmPageDelete, setConfirmPageDelete] = useState<{ pageId: string; name: string; destinationPageId: string; sectionCount: number; mode: "move" | "delete" } | null>(null);
   const [confirmItemRemove, setConfirmItemRemove] = useState(false);
   const [confirmPublishMissingPrice, setConfirmPublishMissingPrice] = useState(false);
+  // #797: the consolidated "section actions" entry point (Rename / Move to page /
+  // Delete) - replaces the old standalone trash icon. Each option transitions to
+  // its own existing or new dialog rather than nesting sub-views in this one.
+  const [sectionActionsFor, setSectionActionsFor] = useState<{ sectionId: string; name: string } | null>(null);
+  const [movingSection, setMovingSection] = useState<{
+    sectionId: string; name: string; destinationPageId: string; creatingPage: boolean; newPageName: string
+  } | null>(null);
 
   const discardRef = useDialogFocus(confirmDiscard);
   const publishMissingPriceRef = useDialogFocus(confirmPublishMissingPrice);
   const deleteRef = useDialogFocus(Boolean(confirmDelete));
+  const sectionActionsRef = useDialogFocus(Boolean(sectionActionsFor));
+  const movingSectionRef = useDialogFocus(Boolean(movingSection));
   const themeRef = useDialogFocus(themePickerOpen);
   const seeAllRef = useDialogFocus(seeAllOpen);
   const reviewRef = useDialogFocus(reviewOpen);
@@ -984,6 +995,59 @@ export default function MenuBuilder({
     // back something that only looked the same. Saying so beats a control that
     // half works — the items are in the library and can be placed again.
     void name;
+  };
+
+  /**
+   * #797: relocates a section, intact, to a different page. Unlike delete this
+   * keeps the section's identity, so - unlike delete - it IS undoable: move it
+   * back to the page it came from.
+   *
+   * A conflict (an item already sitting somewhere on the destination page) comes
+   * back as a normal 200, not a thrown error - server behavior deliberately
+   * mirrors already_on_board for a plain add-item, since neither is really a
+   * failure, both are "here is what's already true". Re-thrown as
+   * MenuActionRefused here so it flows through deliver()'s existing refusal path:
+   * board re-reads, the message is shown, and nothing is added to the undo stack
+   * for a write that never happened.
+   */
+  const moveSectionToPage = async (sectionId: string, destinationPageId: string) => {
+    const sourcePageId = sectionOf(board, sectionId)?.pageId;
+    if (!sourcePageId) return;
+    const destinationName = pages.find(page => page.pageId === destinationPageId)?.name ?? "that page";
+    await run(
+      async () => {
+        const outcome = await moveMenuSectionToPage(configuration, credential(), menuId, sectionId, destinationPageId);
+        if (outcome.conflictItemId) {
+          const conflictName = findItem(board, outcome.conflictItemId)?.item.name ?? "An item";
+          throw new MenuActionRefused(
+            "destination_conflict",
+            `${conflictName} is already on ${destinationName}, in "${outcome.conflictSectionName}". Nothing was moved.`
+          );
+        }
+        setNotice(`Moved to ${destinationName}.`);
+        setMovingSection(null);
+        setSectionActionsFor(null);
+      },
+      {
+        describe: "Move to page",
+        undo: async () => { await moveMenuSectionToPage(configuration, credential(), menuId, sectionId, sourcePageId); },
+        redo: async () => { await moveMenuSectionToPage(configuration, credential(), menuId, sectionId, destinationPageId); }
+      }
+    );
+  };
+
+  /**
+   * "+ New page" inside the move-to-page dialog: two separate deliver()-tracked
+   * writes, each with its own undo entry (create the page, then move the section
+   * onto it) - matching how every other multi-step flow in this file composes,
+   * rather than inventing a single compound-undo step.
+   */
+  const commitMoveToNewPage = async (sectionId: string, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    let created: { pageId: string } | undefined;
+    await run(async () => { created = await addMenuPage(configuration, credential(), menuId, trimmed); }, undefined, undefined, false, "Add page");
+    if (created) await moveSectionToPage(sectionId, created.pageId);
   };
 
   // ---- the canvas ----------------------------------------------------------
@@ -1740,6 +1804,8 @@ export default function MenuBuilder({
         setViewingOpen(false);
         setConfirmDiscard(false);
         setConfirmDelete(null);
+        setSectionActionsFor(null);
+        setMovingSection(null);
         setItemEdit(null);
         setAddSectionId(null);
         return;
@@ -1847,6 +1913,8 @@ export default function MenuBuilder({
     confirmPublishMissingPrice ||
     confirmItemRemove ||
     Boolean(confirmDelete) ||
+    Boolean(sectionActionsFor) ||
+    Boolean(movingSection) ||
     themePickerOpen ||
     seeAllOpen ||
     reviewOpen ||
@@ -2216,25 +2284,13 @@ export default function MenuBuilder({
                   </span>
                   <button
                     type="button"
-                    className="builder__rail-delete"
-                    data-testid="delete-section"
-                    aria-label={`Delete ${section.name}`}
+                    className="builder__rail-section-actions"
+                    data-testid="section-actions"
+                    aria-label={`Actions for ${section.name}`}
                     disabled={busy}
-                    onClick={() => {
-                      const destination = sections.find(candidate => candidate.sectionId !== section.sectionId)?.sectionId ?? "";
-                      const items = itemsOf(board, section.sectionId).length;
-                      setConfirmDelete({
-                        sectionId: section.sectionId,
-                        name: section.name ?? "this section",
-                        items,
-                        destinationSectionId: destination,
-                        mode: items > 0 && destination ? "move" : "delete"
-                      });
-                    }}
+                    onClick={() => setSectionActionsFor({ sectionId: section.sectionId, name: section.name ?? "this section" })}
                   >
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M4 7h16M9 7V4h6v3m-9 0 1 13h10l1-13M10 11v5m4-5v5" />
-                    </svg>
+                    <SkyIcon name="more" />
                   </button>
                 </span>
               </li>
@@ -3016,6 +3072,155 @@ export default function MenuBuilder({
         </>
       ) : null}
 
+      {sectionActionsFor ? (
+        <>
+          <div className="builder__scrim" onClick={() => setSectionActionsFor(null)} />
+          <div
+            className="builder__dialog builder__section-actions-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="section-actions-title"
+            data-testid="section-actions-dialog"
+            ref={sectionActionsRef}
+          >
+            <h2 id="section-actions-title">{sectionActionsFor.name}</h2>
+            <ul className="builder__section-actions-list">
+              <li>
+                <button
+                  type="button"
+                  data-testid="section-actions-rename"
+                  onClick={() => {
+                    setEditingRailSection({ sectionId: sectionActionsFor.sectionId, name: sectionActionsFor.name });
+                    setSectionActionsFor(null);
+                  }}
+                >
+                  <SkyIcon name="pencil" /> Rename
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  data-testid="section-actions-move-to-page"
+                  disabled={pages.filter(page => page.pageId !== sectionOf(board, sectionActionsFor.sectionId)?.pageId).length === 0}
+                  onClick={() => {
+                    const destination = pages.find(page => page.pageId !== sectionOf(board, sectionActionsFor.sectionId)?.pageId)?.pageId ?? "";
+                    setMovingSection({ sectionId: sectionActionsFor.sectionId, name: sectionActionsFor.name, destinationPageId: destination, creatingPage: false, newPageName: "" });
+                    setSectionActionsFor(null);
+                  }}
+                >
+                  <SkyIcon name="page-arrow" /> Move to page
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className="builder__section-actions-delete"
+                  data-testid="section-actions-delete"
+                  onClick={() => {
+                    const destination = sectionsOf(board).find(candidate => candidate.sectionId !== sectionActionsFor.sectionId)?.sectionId ?? "";
+                    const items = itemsOf(board, sectionActionsFor.sectionId).length;
+                    setConfirmDelete({
+                      sectionId: sectionActionsFor.sectionId,
+                      name: sectionActionsFor.name,
+                      items,
+                      destinationSectionId: destination,
+                      mode: items > 0 && destination ? "move" : "delete"
+                    });
+                    setSectionActionsFor(null);
+                  }}
+                >
+                  <SkyIcon name="remove" /> Delete
+                </button>
+              </li>
+            </ul>
+            <div className="builder__dialog-actions">
+              <button type="button" className="action-secondary" onClick={() => setSectionActionsFor(null)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {movingSection ? (
+        <>
+          <div className="builder__scrim" onClick={() => setMovingSection(null)} />
+          <div
+            className="builder__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="move-section-title"
+            data-testid="move-section-dialog"
+            ref={movingSectionRef}
+          >
+            <h2 id="move-section-title">Move {movingSection.name} to…</h2>
+            <p>The section moves with all of its items, in order.</p>
+            {movingSection.creatingPage ? (
+              <label className="builder__dialog-label">
+                New page name
+                <input
+                  type="text"
+                  autoFocus
+                  value={movingSection.newPageName}
+                  onChange={event => setMovingSection(current => current ? { ...current, newPageName: event.currentTarget.value } : current)}
+                  onKeyDown={event => {
+                    if (event.key === "Escape") setMovingSection(current => current ? { ...current, creatingPage: false, newPageName: "" } : current);
+                  }}
+                />
+              </label>
+            ) : (
+              <ul className="builder__move-section-pages" data-testid="move-section-page-list">
+                <li>
+                  <button type="button" className="builder__link" onClick={() => setMovingSection(current => current ? { ...current, creatingPage: true } : current)}>
+                    + New page
+                  </button>
+                </li>
+                {pages.filter(page => page.pageId !== sectionOf(board, movingSection.sectionId)?.pageId).map(page => {
+                  const sectionCount = sectionsOf(board).filter(section => section.pageId === page.pageId).length;
+                  return (
+                    <li key={page.pageId}>
+                      <label>
+                        <input
+                          type="radio"
+                          name="move-section-destination"
+                          checked={movingSection.destinationPageId === page.pageId}
+                          onChange={() => setMovingSection(current => current ? { ...current, destinationPageId: page.pageId } : current)}
+                        />
+                        <strong>{page.name}</strong>
+                        <span>{sectionCount} {sectionCount === 1 ? "section" : "sections"}</span>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <div className="builder__dialog-actions">
+              <button
+                type="button"
+                className="action-secondary"
+                onClick={() => movingSection.creatingPage
+                  ? setMovingSection(current => current ? { ...current, creatingPage: false, newPageName: "" } : current)
+                  : setMovingSection(null)}
+              >
+                {movingSection.creatingPage ? "Back" : "Cancel"}
+              </button>
+              <button
+                type="button"
+                className="builder__publish-button"
+                data-testid="confirm-move-section"
+                disabled={busy || (movingSection.creatingPage ? !movingSection.newPageName.trim() : !movingSection.destinationPageId)}
+                onClick={() => {
+                  if (movingSection.creatingPage) void commitMoveToNewPage(movingSection.sectionId, movingSection.newPageName);
+                  else void moveSectionToPage(movingSection.sectionId, movingSection.destinationPageId);
+                }}
+              >
+                Move section
+              </button>
+            </div>
+          </div>
+        </>
+      ) : null}
+
       {confirmDelete ? (
         <>
           <div className="builder__scrim" onClick={() => setConfirmDelete(null)} />
@@ -3044,11 +3249,18 @@ export default function MenuBuilder({
             */}
             {confirmDelete.items > 0 ? <fieldset className="builder__delete-page-choice">
               <legend>What should happen to its items?</legend>
-              {sectionsOf(board).filter(section => section.pageId === activePageId && section.sectionId !== confirmDelete.sectionId).length > 0 ? <label>
+              {sectionsOf(board).filter(section => section.sectionId !== confirmDelete.sectionId).length > 0 ? <label>
                 <input type="radio" name="delete-section-mode" checked={confirmDelete.mode === "move"} onChange={() => setConfirmDelete(current => current ? { ...current, mode: "move" } : current)} />
                 Delete this section, moving its items to
+                {/* #797: every page's sections, not just the current one - grouped by
+                    page so a same-named section on a different page is never ambiguous. */}
                 <select value={confirmDelete.destinationSectionId} onChange={event => setConfirmDelete(current => current ? { ...current, destinationSectionId: event.currentTarget.value } : current)}>
-                  {sectionsOf(board).filter(section => section.pageId === activePageId && section.sectionId !== confirmDelete.sectionId).map(section => <option key={section.sectionId} value={section.sectionId}>{section.name}</option>)}
+                  {pages.map(page => {
+                    const options = sectionsOf(board).filter(section => section.pageId === page.pageId && section.sectionId !== confirmDelete.sectionId);
+                    return options.length > 0 ? <optgroup key={page.pageId} label={page.name}>
+                      {options.map(section => <option key={section.sectionId} value={section.sectionId}>{section.name}</option>)}
+                    </optgroup> : null;
+                  })}
                 </select>
               </label> : null}
               <label>

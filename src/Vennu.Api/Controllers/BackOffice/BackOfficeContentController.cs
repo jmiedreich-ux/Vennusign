@@ -753,6 +753,34 @@ public sealed class BackOfficeContentController(
     }
 
     /// <summary>
+    /// #797: relocates a section - intact, with its items and their order - to a
+    /// different page of this menu. Deliberately separate from
+    /// MovePlacementGuardedAsync/ReorderSectionsGuardedAsync's same-page rule (#809).
+    /// </summary>
+    [HttpPost("menus/{menuId:guid}/sections/{sectionId:guid}/page")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<SectionPageMoveResponse>> MoveSectionToPage(
+        Guid menuId,
+        Guid sectionId,
+        [FromBody] SectionPageMoveRequest request,
+        CancellationToken cancellationToken)
+    {
+        var outcome = await content
+            .MoveSectionToPageAsync(VenueId, menuId, sectionId, request.DestinationPageId, Author, cancellationToken)
+            .ConfigureAwait(false);
+
+        return outcome.Outcome switch
+        {
+            SectionOutcomes.Moved => Ok(new SectionPageMoveResponse(null, null)),
+            SectionOutcomes.SectionMissing => NotFound(new { message = "That section is not on this menu." }),
+            SectionOutcomes.PageMissing => NotFound(new { message = "That page is not on this menu." }),
+            SectionOutcomes.AlreadyOnPage => Conflict(new { message = "That section is already on this page." }),
+            SectionOutcomes.DestinationConflict => Ok(new SectionPageMoveResponse(outcome.ConflictItemId, outcome.ConflictSectionName)),
+            _ => Conflict(new { message = "The section could not be moved. Nothing was changed." })
+        };
+    }
+
+    /// <summary>
     /// Reordering refuses rather than half-applies when the list no longer matches
     /// the menu — someone else added or removed something in between, and applying
     /// it to the part that still matches would leave the rest at stale orders.

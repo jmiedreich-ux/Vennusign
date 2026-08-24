@@ -625,6 +625,28 @@ public sealed class ContentService(
         return outcome;
     }
 
+    /// <summary>#797: relocates a section, intact, to a different page of the same menu.</summary>
+    public async Task<SectionPageMoveOutcome> MoveSectionToPageAsync(
+        Guid venueId,
+        Guid menuId,
+        Guid sectionId,
+        Guid destinationPageId,
+        string? author = null,
+        CancellationToken cancellationToken = default)
+    {
+        var outcome = await library
+            .MoveSectionToPageAsync(venueId, menuId, sectionId, destinationPageId,
+                author, timeProvider.GetUtcNow().UtcDateTime, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (outcome.Outcome == SectionOutcomes.Moved)
+        {
+            await NotifyAsync(venueId, "section-moved", menuId, cancellationToken).ConfigureAwait(false);
+        }
+
+        return outcome;
+    }
+
     public async Task<ReorderOutcome> ReorderSectionsAsync(
         Guid venueId,
         Guid menuId,
