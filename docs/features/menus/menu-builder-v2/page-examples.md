@@ -90,16 +90,16 @@ decision the way the section above is** — treat captions marked "open" as unde
 Establishes: the theme picker moves into the bottom bar; the item panel gets two independent toggles instead of one —
 **Available** (a drafted, published change, gated on Publish like name/price/description) and **86** (an immediate
 action with no publish step, unchanged from today's mechanism). The "Mark sold out" wording and the Basics/More details
-tab split shown here are earlier iterations — see `01-page-workspace-and-item-editor.png` for that variant. **Open:**
-what the item panel calls the second toggle, and the bottom-bar dropdown's label — the mockup says "Finish," which is
-under reconsideration.
+tab split shown here are earlier iterations — see `01-page-workspace-and-item-editor.png` for that variant. **Resolved 2026-08-24:** the second toggle is labeled **"86 this item"** (not "Mark sold out"), and the bottom-bar
+dropdown trigger is **"Actions"** (not "Finish" — see decision O2 in `../decisions.md`, "Owner overrides — 24 August
+2026": "Finish" reads as completing the menu itself, not as opening a menu of actions on it). Both shipped.
 
 ### Publish menu dropdown states
 
 ![Publish dropdown open, showing Review & publish, Save & exit, Discard your N changes, and Restore an earlier version](assets/13-publish-menu-dropdown-states.png)
 
 The four actions that consolidate under one dropdown trigger, replacing the current bottom bar's separate "Review
-first" / "discard draft" / "go back to…" links. **Open:** the trigger's label (not "Finish" — undecided).
+first" / "discard draft" / "go back to…" links. **Resolved:** trigger label is "Actions" (decision O2). Shipped.
 
 ### Screen assignments and rotation
 
