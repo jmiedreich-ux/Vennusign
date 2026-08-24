@@ -54,21 +54,14 @@ Design authority for both, in order of specificity:
 
 #### Review & Publish (mock 08 / asset 15)
 
-Full routed page, replacing the current small modal (`reviewOpen` dialog in `MenuBuilder.tsx`). Per
-`page-examples.md`: **"not yet scoped against the current modal's content"** — before building, reconcile what the
-current modal already covers against what the mock adds:
-- Fit-overflow section with the acknowledgment checkbox and "Fix the fit" route (A14) — the app already has
-  `fitOpen`/`Check fit` elsewhere; reuse rather than re-derive.
-- Unnamed-item section with "Name it" / "Drop it" (A11).
-- The per-field change list (see above) grouped by page, using `MenuSnapshot.Diff`.
-- "Already live, and staying that way" — 86'd items, unaffected by publish.
-- "Where it goes" sidebar — per-screen breakdown (page assigned, refresh cadence, online/offline/stale). Screen
-  state and cadence data already exist for the bottom bar's screen chips; this is a new arrangement of existing
-  data, not new data.
-- "Publish now" / "Publish later…" — the mock's "Publish later" hands off to Schedules. **Schedules integration is
-  out of scope** per `milestone-plan.md`'s scope guardrails ("Out of scope entirely: … scheduling"). Build "Publish
-  now" only; either omit "Publish later" or leave it visibly absent per decision 4 (a capability outside scope is
-  absent, not disabled) until Schedules exists.
+**Design write-up done, status `blocked` (M7.1) — see [`review-publish-page-design.md`](review-publish-page-design.md).**
+Replaces the current small modal (`reviewOpen` dialog in `MenuBuilder.tsx`) with an internal `place.view` state
+(this app has no client-side router — see the write-up for why that rules out a literal "routed page"). Two real
+scope decisions are filed as issues and need owner review before implementation starts: **#852** (structural
+approach) and **#853** (whether the missing-price gate — this app's real equivalent of the mock's "unnamed item"
+section, since a name is required to create an item at all — moves inline into the page per A11, replacing today's
+separate post-click popup). "Publish later…" confirmed out of scope — `milestone-plan.md`'s guardrails exclude
+scheduling entirely and there's nothing to hand off to yet.
 
 #### Full history screen (mock 09 / asset 16)
 
@@ -94,6 +87,6 @@ on-screens-since, published-all-time count.
 
 ## Suggested next step
 
-Scope the Review & Publish page first (it's the smaller of the two full-page pieces, and History's detail view
-depends on its summary format per A15) as its own brainstorming/design pass before implementation — this is
-architectural work (new routed page, new data flowing through the stack), not a same-session polish fix.
+Review & Publish (M7.1) is scoped and paused for owner review — see issues **#852** and **#853**. Once those are
+answered, implementation can start. The full history screen hasn't been scoped yet and depends on Review &
+Publish's summary-format decision (A15) landing first.

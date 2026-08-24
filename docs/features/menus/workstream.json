@@ -133,6 +133,17 @@
       "issue": 842,
       "pr": null,
       "acceptance": { "kind": "workbook", "record": null }
+    },
+    {
+      "id": "7-A1",
+      "label": "M7.1",
+      "depth": 12,
+      "title": "Review & Publish page — design write-up, paused for owner review",
+      "status": "blocked",
+      "plan": "menu-builder-v2/review-publish-page-design.md",
+      "issue": 852,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": null }
     }
   ]
 }
