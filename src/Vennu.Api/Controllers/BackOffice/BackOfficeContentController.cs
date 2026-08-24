@@ -152,7 +152,8 @@ public sealed class BackOfficeContentController(
                         item.Name,
                         item.Description,
                         item.Price,
-                        item.SortOrder))]))]);
+                        item.SortOrder,
+                        item.IsListed))]))]);
 
     // ----- Pages --------------------------------------------------------------------
 
@@ -997,7 +998,7 @@ public sealed class BackOfficeContentController(
          */
         var expected = request.ExpectedName is null
             ? null
-            : new ItemValueExpectation(request.ExpectedName, request.ExpectedDescription, request.ExpectedPrice);
+            : new ItemValueExpectation(request.ExpectedName, request.ExpectedDescription, request.ExpectedPrice, request.ExpectedIsListed);
 
         var result = await content
             .UpdateItemValuesAsync(
@@ -1006,6 +1007,7 @@ public sealed class BackOfficeContentController(
                 request.Name,
                 request.Description,
                 request.Price,
+                request.IsListed,
                 expected,
                 cancellationToken,
                 menuId)
@@ -1028,7 +1030,8 @@ public sealed class BackOfficeContentController(
                 result.Item.Name,
                 result.Item.Description,
                 result.Item.Price,
-                0));
+                0,
+                result.Item.IsListed));
     }
 
     /// <summary>

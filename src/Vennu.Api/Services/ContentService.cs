@@ -817,6 +817,7 @@ public sealed class ContentService(
         string name,
         string? description,
         string? price,
+        bool isListed = true,
         ItemValueExpectation? expected = null,
         CancellationToken cancellationToken = default,
         Guid? menuId = null)
@@ -832,6 +833,7 @@ public sealed class ContentService(
         item.Name = NormalizeItemName(name, fallback: item.Name);
         item.Description = Trim(description, 1000);
         item.Price = Trim(price, Item.PriceMaxLength);
+        item.IsListed = isListed;
         item.UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime;
 
         /*
@@ -845,7 +847,8 @@ public sealed class ContentService(
             : new ItemValueExpectation(
                 NormalizeItemName(expected.Name, fallback: expected.Name),
                 Trim(expected.Description, 1000),
-                Trim(expected.Price, Item.PriceMaxLength));
+                Trim(expected.Price, Item.PriceMaxLength),
+                expected.IsListed);
 
         var outcome = await library
             .UpdateItemValuesGuardedAsync(
@@ -857,7 +860,8 @@ public sealed class ContentService(
                 guard,
                 item.UpdatedUtc,
                 cancellationToken,
-                menuId)
+                menuId,
+                item.IsListed)
             .ConfigureAwait(false);
 
         if (outcome.Outcome != "updated")
@@ -873,7 +877,8 @@ public sealed class ContentService(
                         VenueId = venueId,
                         Name = outcome.Name ?? string.Empty,
                         Description = outcome.Description,
-                        Price = outcome.Price
+                        Price = outcome.Price,
+                        IsListed = outcome.IsListed ?? true
                     }
                     : null);
         }

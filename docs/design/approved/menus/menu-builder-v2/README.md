@@ -7,6 +7,14 @@ the page/section breadcrumb and collapsible-panel behavior recorded in
 `workflow-handoff.md` §13. This refinement supersedes the earlier selected-page
 chip row without changing canvas rendering.
 
+2026-08-24: three mis-captured screenshots in `assets/` (`03`, `05`, `10`) were
+replaced with correct crops — see `page-examples.md`'s note at the top. A new
+reference set (`assets/12`–`20`) was also filed, covering the publish-menu
+dropdown, the item panel's Available/86 split, the history page, and the
+publishing-review page — this set is an **in-progress design discussion, not
+yet approved** the way the rest of this folder is; see `page-examples.md`
+§"New reference set" for what's confirmed vs. still open.
+
 Live prototype: <https://vennue-menu-builder-m3.jmiedreich.chatgpt.site>
 
 This folder is the current implementation handoff for the Menu Builder. It supplements the approved Menus bundle one directory above and **supersedes older M2 guidance only where this V2 package explicitly differs**.

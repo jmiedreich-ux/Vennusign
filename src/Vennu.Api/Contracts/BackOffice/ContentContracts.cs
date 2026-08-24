@@ -51,9 +51,11 @@ public sealed record ItemValuesRequest(
     string Name,
     string? Description,
     string? Price,
+    bool IsListed = true,
     string? ExpectedName = null,
     string? ExpectedDescription = null,
-    string? ExpectedPrice = null);
+    string? ExpectedPrice = null,
+    bool ExpectedIsListed = true);
 
 // Responses ------------------------------------------------------------------
 
@@ -205,7 +207,8 @@ public sealed record BoardItemResponse(
     string? Name,
     string? Description,
     string? Price,
-    int SortOrder);
+    int SortOrder,
+    bool IsListed = true);
 
 /// <summary>
 /// The board a menu's screens are showing, with the publish that put it there — read

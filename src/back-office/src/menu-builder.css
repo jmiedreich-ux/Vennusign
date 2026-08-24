@@ -1311,11 +1311,21 @@
   box-shadow: inset 0 0 0 1.5px #8a2929;
 }
 
-.builder__availability-control {
+.builder__availability-control,
+.builder__available-control {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+/* Available is the drafted, publish-gated toggle — plain, not the alarmed red
+   86 treatment below it, since turning it off does nothing until you publish. */
+.builder__available-note {
+  margin: -6px 0 0;
+  color: var(--sky-color-text-muted, #64748b);
+  font-size: 11.5px;
+  line-height: 1.45;
 }
 
 .builder__availability-head {

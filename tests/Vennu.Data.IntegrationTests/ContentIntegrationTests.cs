@@ -342,6 +342,49 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         Assert.Empty(MenuSnapshot.Diff(published, await repository.GetWorkingSnapshotAsync(venueId, menuId)));
     }
 
+    // Available is a drafted flag like name/description/price, not an immediate
+    // one like 86: it lands in dbo.Items right away, but only reaches the draft
+    // diff (and so only ships) on the next publish - this is what makes the
+    // difference between the two mechanisms real at the database layer, not just
+    // in application code.
+    [Fact]
+    public async Task GuardedItemEdit_ChangesIsListedAndParticipatesInTheDraft()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var screenId = await SeedScreenAsync(dataAccess, venueId);
+        await repository.AssignScreenAsync(await WithFirstPageAsync(repository, new MenuScreenAssignment { VenueId = venueId, ScreenId = screenId, MenuId = menuId }));
+        var item = new Item { VenueId = venueId, Name = fixture.UniqueValue("cider"), Price = "8" };
+        await repository.CreateItemOnMenuAsync(item, menuId, sectionId, itemsPerMenuLimit: 500);
+        await PublishCurrentAsync(repository, venueId, menuId);
+
+        var published = await repository.GetLatestPublishedSnapshotAsync(venueId, menuId);
+        var updated = await repository.UpdateItemValuesGuardedAsync(
+            venueId, item.Id, item.Name, item.Description, item.Price, expected: null, DateTime.UtcNow, isListed: false);
+        Assert.Equal("updated", updated.Outcome);
+        Assert.False(updated.IsListed);
+
+        var live = await repository.GetItemAsync(venueId, item.Id);
+        Assert.False(live!.IsListed);
+
+        var change = Assert.Single(MenuSnapshot.Diff(published, await repository.GetWorkingSnapshotAsync(venueId, menuId)));
+        Assert.Equal("isListed", change.Field);
+        Assert.Equal("true", change.BeforeValue);
+        Assert.Equal("false", change.AfterValue);
+
+        // A guard that names the wrong current value refuses, the same way a
+        // stale name/description/price expectation refuses.
+        var refused = await repository.UpdateItemValuesGuardedAsync(
+            venueId, item.Id, item.Name, item.Description, item.Price,
+            new ItemValueExpectation(item.Name, item.Description, item.Price, IsListed: true),
+            DateTime.UtcNow, isListed: true);
+        Assert.Equal("item_changed", refused.Outcome);
+        Assert.False(refused.IsListed);
+    }
+
     // ---- publish behaviour ------------------------------------------------------
 
     // Q80, enforced inside the transaction: a publish that can reach nothing and

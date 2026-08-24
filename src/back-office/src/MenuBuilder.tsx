@@ -1397,7 +1397,7 @@ export default function MenuBuilder({
     const found = findItem(board, edit.itemId);
     if (!found) return;
 
-    const was = { name: found.item.name ?? "", description: found.item.description, price: found.item.price };
+    const was = { name: found.item.name ?? "", description: found.item.description, price: found.item.price, isListed: found.item.isListed };
     const normalized = edit.field === "name"
       ? (edit.value.trim() === "" ? was.name : edit.value)
       : (edit.value.trim() === "" ? null : edit.value);
@@ -1419,7 +1419,7 @@ export default function MenuBuilder({
 
   // ---- the inspector -------------------------------------------------------
 
-  const [draftItem, setDraftItem] = useState<{ name: string; description: string; price: string } | null>(null);
+  const [draftItem, setDraftItem] = useState<{ name: string; description: string; price: string; isListed: boolean } | null>(null);
   const [itemBoards, setItemBoards] = useState<LibraryItem["boards"]>([]);
 
   useEffect(() => {
@@ -1431,7 +1431,8 @@ export default function MenuBuilder({
     setDraftItem({
       name: selected.item.name ?? "",
       description: selected.item.description ?? "",
-      price: selected.item.price ?? ""
+      price: selected.item.price ?? "",
+      isListed: selected.item.isListed
     });
 
     // Which other boards this item sits on, for Q5's shared-price line. Read from
@@ -1450,24 +1451,26 @@ export default function MenuBuilder({
     };
   }, [apiKey, configuration, selected]);
 
-  const saveItem = async () => {
+  const saveItem = async (overrides?: { isListed?: boolean }) => {
     if (!selected || !draftItem) return;
     const before = selected.item;
     const next = {
       // An emptied name reverts rather than saving blank (Q119).
       name: draftItem.name.trim() === "" ? (before.name ?? "") : draftItem.name,
       description: draftItem.description.trim() === "" ? null : draftItem.description,
-      price: draftItem.price.trim() === "" ? null : draftItem.price
+      price: draftItem.price.trim() === "" ? null : draftItem.price,
+      isListed: overrides?.isListed ?? draftItem.isListed
     };
     if (
       next.name === (before.name ?? "") &&
       next.description === before.description &&
-      next.price === before.price
+      next.price === before.price &&
+      next.isListed === before.isListed
     ) {
       return;
     }
 
-    const was = { name: before.name ?? "", description: before.description, price: before.price };
+    const was = { name: before.name ?? "", description: before.description, price: before.price, isListed: before.isListed };
     await run(() => updateMenuItemValues(configuration, credential(), menuId, before.itemId, next), {
       describe: "Edit item",
       undo: () => updateMenuItemValues(configuration, credential(), menuId, before.itemId, was, next),
@@ -1954,7 +1957,7 @@ export default function MenuBuilder({
   };
   const capacitySections = addSectionId && addQuery.trim()
     ? sections.map(section => section.sectionId === addSectionId
-      ? { ...section, items: [...section.items, { itemId: "draft-item", name: addQuery, description: null, price: addPrice || null, sortOrder: section.items.length }] }
+      ? { ...section, items: [...section.items, { itemId: "draft-item", name: addQuery, description: null, price: addPrice || null, sortOrder: section.items.length, isListed: true }] }
       : section)
     : sections;
   const pageBoard = { ...board, sections };
@@ -2637,6 +2640,29 @@ export default function MenuBuilder({
                 </button>
               </div>
 
+              <div className="builder__available-control">
+                <span className="builder__label">Available</span>
+                <button
+                  type="button"
+                  className="builder__availability-switch"
+                  role="switch"
+                  aria-checked={draftItem.isListed}
+                  aria-label={draftItem.isListed ? "Turn off" : "Turn on"}
+                  data-testid="available-switch"
+                  onClick={() => {
+                    const next = !draftItem.isListed;
+                    setDraftItem({ ...draftItem, isListed: next });
+                    void saveItem({ isListed: next });
+                  }}
+                  disabled={busy}
+                >
+                  <span aria-hidden="true" />
+                </button>
+              </div>
+              <p className="builder__available-note" data-testid="available-note">
+                Turn off to hide this item from guest screens — takes effect on your next publish, unlike 86 below, which is immediate.
+              </p>
+
               {isOff ? (
                 <div className="builder__availability is-off" data-testid="availability-panel" data-off="true">
                   <div className="builder__availability-head">
@@ -2668,7 +2694,7 @@ export default function MenuBuilder({
                 </div>
               ) : (
                 <div className="builder__availability-control">
-                  <span className="builder__label">Availability</span>
+                  <span className="builder__label">86 this item</span>
                   <button
                     type="button"
                     className="builder__availability-switch"
