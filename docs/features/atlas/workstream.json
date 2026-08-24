@@ -1,7 +1,7 @@
 {
   "codename": "Atlas",
   "what": "The always-current internal site: a reusable generator, in its own repository and consumed as a versioned Action, that turns this repository's own records and GitHub issues into a milestone depth chart, a phone triage view, and the records themselves",
-  "stage": "shipping",
+  "stage": "development",
   "position": "Four milestones done, through Atlas v1.2.0. M1 built the generator; M2 adopted it here and put atlas.vennusign.com live behind an invited role; M2.1 rebuilt the feature planning page as drawn paths and made it reorderable; M3 shipped write-back as two managed Functions. Three more are planned and recorded: M4 is next — the second pass on the feature planning page — and M5 (the register becomes data) and M6 (tasks are GitHub issues) are planned but not scheduled.",
   "gate": "Write-back is deployed but inert: the owner has to create and install the GitHub App, supply its credentials as Static Web App settings, and grant himself the `author` role. There is no UI to post from yet. #780 stays open with the corrections the owner made after seeing the page rendered and the two defects only looking revealed. M6 cannot start until the `workstream:*` label namespace exists in GitHub, and the refresh button and any issue authoring wait on #784 re-deciding write-back scope on correct grounds (decision 57).",
   "label": "workstream:atlas",
