@@ -842,7 +842,9 @@
 .builder__rail-rename-action:hover { color: var(--sky-action-link-text); }
 .builder__rail-rename { margin: 0 var(--sky-space-2); }
 
-.builder__rail-add-row { display: block !important; padding: var(--sky-space-1) var(--sky-space-3) var(--sky-space-3); border-bottom: 1px solid var(--sky-color-border); }
+/* #834: no border-bottom here - .builder__page-history's own border-top is
+   the real divider right below, and stacking both read as a doubled line. */
+.builder__rail-add-row { display: block !important; padding: var(--sky-space-1) var(--sky-space-3) var(--sky-space-3); }
 .builder__rail-add { border: 0; padding: var(--sky-space-2) 0; background: transparent; color: var(--sky-action-link-text); font: inherit; font-size: var(--sky-font-size-sm); font-weight: var(--sky-font-weight-semibold); cursor: pointer; }
 .builder__rail-add:hover { text-decoration: underline; text-underline-offset: 3px; }
 .builder__rail-new:focus-visible {
@@ -1289,7 +1291,7 @@
 }
 
 .builder__inspector-add-item:hover { background: var(--sky-control-hover-background); }
-.builder__inspector-add-item:focus-visible { outline: var(--sky-focus-ring); outline-offset: var(--sky-focus-offset); }
+.builder__inspector-add-item:focus-visible { outline: none; border-color: var(--sky-focus-color); }
 
 .builder__inspector label {
   margin: 0 calc(var(--sky-space-2) * -1);
@@ -1328,14 +1330,13 @@
 }
 
 /*
- * #834: declared explicitly rather than left to the global zero-specificity
- * fallback - the browser's own outline doesn't follow this field's rounded
- * corners, which is what read as a "big circle" around the search field.
+ * #834: a ring (even a refined one) still read as a "circle" around the
+ * field. Quiet instead - just the border darkens, same as the menu-name and
+ * page-name inputs already do elsewhere in this file, no outline at all.
  */
 .builder__inspector input:focus-visible,
 .builder__inspector textarea:focus-visible {
-  outline: var(--sky-focus-ring);
-  outline-offset: var(--sky-focus-offset);
+  outline: none;
   border-color: var(--sky-focus-color);
 }
 
@@ -1462,7 +1463,7 @@
 }
 
 .builder__theme-footer-trigger:hover { background: var(--sky-control-hover-background); }
-.builder__theme-footer-trigger:focus-visible { outline: var(--sky-focus-ring); outline-offset: var(--sky-focus-offset); }
+.builder__theme-footer-trigger:focus-visible { outline: none; border-color: var(--sky-focus-color); }
 
 .builder__theme-footer-label {
   color: var(--sky-text-muted);
@@ -1534,7 +1535,7 @@ button.builder__add-many {
 }
 
 button.builder__add-many:hover { background: var(--sky-control-hover-background); }
-button.builder__add-many:focus-visible { outline: var(--sky-focus-ring); outline-offset: var(--sky-focus-offset); }
+button.builder__add-many:focus-visible { outline: none; border-color: var(--sky-focus-color); }
 
 .builder__publish-right {
   display: flex;
@@ -1661,8 +1662,7 @@ button.builder__add-many:focus-visible { outline: var(--sky-focus-ring); outline
 .builder__dialog input[type="password"]:focus-visible,
 .builder__dialog-label input[type="text"]:focus-visible,
 .builder__delete-page-choice select:focus-visible {
-  outline: var(--sky-focus-ring);
-  outline-offset: var(--sky-focus-offset);
+  outline: none;
   border-color: var(--sky-focus-color);
 }
 
