@@ -1,79 +1,71 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
-  <title id="title">Vennusign multi-output Box Player architecture</title>
-  <desc id="desc">Vennusign Cloud connects once to a Player Supervisor inside one Box Player. The Box Player contains a Player Host, Supervisor, Local Content Store and one isolated Display Runtime for each physical output.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 740" role="img" aria-labelledby="title desc">
+  <title id="title">The Box is one player. The displays are isolated.</title>
+  <desc id="desc">A two-part sequence diagram. First, Vennusign Cloud sends a desired revision to the Player Supervisor, which commits it locally and tells an isolated display runtime to show it. Second, the Player Supervisor is restarted by Player Host while the display runtime continues presenting its committed content.</desc>
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#334155"/></marker>
+    <marker id="inkArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#334155"/></marker>
     <marker id="orangeArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#b45309"/></marker>
     <marker id="greenArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#087f5b"/></marker>
   </defs>
-  <rect width="1200" height="760" fill="#f3f5f8"/>
-  <text x="48" y="52" font-family="system-ui,Segoe UI,sans-serif" font-size="25" font-weight="700" fill="#1b1f24">One cloud-facing Supervisor; one isolated Display Runtime per physical port</text>
-  <text x="48" y="81" font-family="system-ui,Segoe UI,sans-serif" font-size="15" fill="#5b6470">Control travels through the box. Verified content stays local after it is committed.</text>
+  <rect width="1200" height="740" fill="#f5f7fa"/>
+  <g font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif">
+    <text x="64" y="58" font-size="30" font-weight="700" letter-spacing="-0.7" fill="#18212f">The Box is one player. The displays are isolated.</text>
+    <text x="64" y="88" font-size="16" fill="#586575">One cloud connection manages the box. Each physical output gets its own protected display process.</text>
 
-  <rect x="48" y="160" width="205" height="94" rx="13" fill="#eaf0f8" stroke="#aeb8c7" stroke-width="1.5"/>
-  <text x="150" y="199" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="17" font-weight="700" fill="#1b1f24">Vennusign Cloud</text>
-  <text x="150" y="224" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="12.5" fill="#5b6470">desired state · content delivery</text>
+    <rect x="64" y="126" width="1072" height="314" rx="18" fill="#ffffff" stroke="#d4dbe5" stroke-width="1.5"/>
+    <rect x="64" y="126" width="8" height="314" rx="4" fill="#b45309"/>
+    <text x="96" y="165" font-size="12" font-weight="700" letter-spacing="1.3" fill="#8a5418">1 · NORMAL CONTENT UPDATE</text>
+    <text x="96" y="191" font-size="17" font-weight="650" fill="#18212f">The Supervisor stages everything before it tells a display to change.</text>
 
-  <rect x="305" y="118" width="844" height="538" rx="20" fill="#ffffff" stroke="#aeb8c7" stroke-width="2"/>
-  <text x="336" y="154" font-family="system-ui,Segoe UI,sans-serif" font-size="13" font-weight="700" letter-spacing="1.2" fill="#5b6470">ONE BOX PLAYER — INTERACTIVE WINDOWS KIOSK SESSION</text>
+    <g stroke="#d5dce5" stroke-width="1">
+      <line x1="152" y1="248" x2="152" y2="391" stroke-dasharray="4 5"/>
+      <line x1="415" y1="248" x2="415" y2="391" stroke-dasharray="4 5"/>
+      <line x1="685" y1="248" x2="685" y2="391" stroke-dasharray="4 5"/>
+      <line x1="959" y1="248" x2="959" y2="391" stroke-dasharray="4 5"/>
+    </g>
+    <g>
+      <rect x="82" y="215" width="140" height="49" rx="10" fill="#edf2f8" stroke="#cbd5e1"/>
+      <text x="152" y="245" text-anchor="middle" font-size="14" font-weight="700" fill="#273449">Vennusign Cloud</text>
+      <rect x="327" y="215" width="176" height="49" rx="10" fill="#fff8ed" stroke="#e7c485"/>
+      <text x="415" y="245" text-anchor="middle" font-size="14" font-weight="700" fill="#7c4a0c">Player Supervisor</text>
+      <rect x="597" y="215" width="176" height="49" rx="10" fill="#ecf8f2" stroke="#a5d8c2"/>
+      <text x="685" y="245" text-anchor="middle" font-size="14" font-weight="700" fill="#176a4d">Committed local content</text>
+      <rect x="870" y="215" width="178" height="49" rx="10" fill="#f5f7fa" stroke="#cbd5e1"/>
+      <text x="959" y="239" text-anchor="middle" font-size="14" font-weight="700" fill="#273449">Display Runtime</text>
+      <text x="959" y="255" text-anchor="middle" font-size="10.5" fill="#687587">HDMI-1 / assigned Screen</text>
+    </g>
 
-  <rect x="340" y="182" width="205" height="104" rx="12" fill="#ffffff" stroke="#c7cdd6" stroke-width="1.5"/>
-  <text x="442" y="220" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="16" font-weight="700" fill="#1b1f24">Player Host</text>
-  <text x="442" y="244" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="12.5" fill="#5b6470">lifecycle owner</text>
-  <text x="442" y="263" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="12.5" fill="#5b6470">Gateway · handovers</text>
+    <path d="M152 293 H405" fill="none" stroke="#334155" stroke-width="2.1" marker-end="url(#inkArrow)"/>
+    <text x="279" y="283" text-anchor="middle" font-size="12.5" fill="#334155">① desired revision</text>
+    <path d="M425 329 H675" fill="none" stroke="#087f5b" stroke-width="2.1" marker-end="url(#greenArrow)"/>
+    <text x="550" y="319" text-anchor="middle" font-size="12.5" fill="#087f5b">② download · verify · atomically commit</text>
+    <path d="M695 365 H949" fill="none" stroke="#087f5b" stroke-width="2.1" marker-end="url(#greenArrow)"/>
+    <text x="822" y="355" text-anchor="middle" font-size="12.5" fill="#087f5b">③ Runtime reads the complete local revision</text>
+    <path d="M425 400 L949 400" fill="none" stroke="#b45309" stroke-width="1.8" stroke-dasharray="5 5" marker-end="url(#orangeArrow)"/>
+    <text x="687" y="420" text-anchor="middle" font-size="11.5" fill="#9a5a0a">local control only: “revision ready” · applied · render health</text>
+    <rect x="1068" y="280" width="44" height="24" rx="12" fill="#eff3f7"/><text x="1090" y="296" text-anchor="middle" font-size="10.5" font-weight="700" fill="#586575">+ N</text>
+    <text x="1088" y="323" text-anchor="middle" font-size="11" fill="#687587">same isolated lane</text>
+    <text x="1088" y="339" text-anchor="middle" font-size="11" fill="#687587">per physical port</text>
 
-  <rect x="596" y="182" width="222" height="104" rx="12" fill="#eaf0f8" stroke="#c7cdd6" stroke-width="1.5"/>
-  <text x="707" y="220" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="16" font-weight="700" fill="#1b1f24">Player Supervisor</text>
-  <text x="707" y="244" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="12.5" fill="#5b6470">only cloud credential</text>
-  <text x="707" y="263" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="12.5" fill="#5b6470">inventory · health · reconcile</text>
+    <rect x="64" y="471" width="1072" height="205" rx="18" fill="#ffffff" stroke="#d4dbe5" stroke-width="1.5"/>
+    <rect x="64" y="471" width="8" height="205" rx="4" fill="#087f5b"/>
+    <text x="96" y="510" font-size="12" font-weight="700" letter-spacing="1.3" fill="#176a4d">2 · SUPERVISOR RESTART</text>
+    <text x="96" y="536" font-size="17" font-weight="650" fill="#18212f">Control restarts. The screen keeps showing its already-applied content.</text>
 
-  <rect x="869" y="182" width="244" height="104" rx="12" fill="#e8f6ef" stroke="#c7cdd6" stroke-width="1.5"/>
-  <text x="991" y="220" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="16" font-weight="700" fill="#1b1f24">Local Content Store</text>
-  <text x="991" y="244" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="12.5" fill="#5b6470">SQLite + immutable files</text>
-  <text x="991" y="263" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="12.5" fill="#087f5b">only complete verified revisions</text>
+    <rect x="98" y="569" width="159" height="54" rx="10" fill="#f5f7fa" stroke="#cbd5e1"/>
+    <text x="177" y="593" text-anchor="middle" font-size="14" font-weight="700" fill="#273449">Player Host</text>
+    <text x="177" y="610" text-anchor="middle" font-size="11" fill="#687587">lifecycle owner</text>
+    <rect x="365" y="569" width="181" height="54" rx="10" fill="#fff8ed" stroke="#e7c485"/>
+    <text x="455" y="593" text-anchor="middle" font-size="14" font-weight="700" fill="#7c4a0c">new Supervisor</text>
+    <text x="455" y="610" text-anchor="middle" font-size="11" fill="#9a5a0a">reopens store · reattaches</text>
+    <rect x="771" y="563" width="257" height="66" rx="11" fill="#ecf8f2" stroke="#a5d8c2"/>
+    <text x="899" y="591" text-anchor="middle" font-size="14" font-weight="700" fill="#176a4d">Display Runtime stays visible</text>
+    <text x="899" y="611" text-anchor="middle" font-size="12" fill="#176a4d">continues presenting its pinned revision</text>
+    <path d="M257 596 H355" fill="none" stroke="#b45309" stroke-width="2.2" marker-end="url(#orangeArrow)"/>
+    <text x="306" y="584" text-anchor="middle" font-size="11.5" fill="#9a5a0a">restart</text>
+    <path d="M546 596 H760" fill="none" stroke="#b45309" stroke-width="1.9" stroke-dasharray="5 5" marker-end="url(#orangeArrow)"/>
+    <text x="653" y="584" text-anchor="middle" font-size="11.5" fill="#9a5a0a">reattach control — no blank requested</text>
 
-  <path d="M253 198 H588" fill="none" stroke="#b45309" stroke-width="2.3" marker-end="url(#orangeArrow)"/>
-  <path d="M588 232 H253" fill="none" stroke="#b45309" stroke-width="2.3" marker-end="url(#orangeArrow)"/>
-  <text x="420" y="187" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="11.5" fill="#b45309">one authenticated cloud connection / SignalR doorbell</text>
-  <path d="M545 234 H588" fill="none" stroke="#b45309" stroke-width="2.3" marker-end="url(#orangeArrow)"/>
-  <text x="566" y="252" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="10.5" fill="#b45309">starts / replaces</text>
-  <path d="M818 234 H861" fill="none" stroke="#087f5b" stroke-width="2.3" marker-end="url(#greenArrow)"/>
-  <text x="840" y="220" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="10.5" fill="#087f5b">sole writer</text>
-
-  <text x="340" y="340" font-family="system-ui,Segoe UI,sans-serif" font-size="13" font-weight="700" letter-spacing="1.2" fill="#5b6470">ISOLATED DISPLAY RUNTIMES — NO CLOUD CREDENTIAL</text>
-  <path d="M442 286 V357" fill="none" stroke="#087f5b" stroke-width="2.3" marker-end="url(#greenArrow)"/>
-  <text x="455" y="322" font-family="system-ui,Segoe UI,sans-serif" font-size="11.5" fill="#087f5b">read-only Local Content Gateway</text>
-
-  <path d="M707 286 L469 371" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#orangeArrow)"/>
-  <path d="M707 286 L727 371" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#orangeArrow)"/>
-  <path d="M707 286 L984 371" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#orangeArrow)"/>
-  <text x="730" y="326" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="11" fill="#b45309">authenticated local control: revision ready · render progress · drain</text>
-
-  <g font-family="system-ui,Segoe UI,sans-serif">
-    <rect x="340" y="380" width="220" height="173" rx="12" fill="#ffffff" stroke="#c7cdd6" stroke-width="1.5"/>
-    <text x="450" y="419" text-anchor="middle" font-size="16" font-weight="700" fill="#1b1f24">Display Runtime</text>
-    <text x="450" y="445" text-anchor="middle" font-size="13" fill="#5b6470">Port: HDMI-1</text>
-    <text x="450" y="467" text-anchor="middle" font-size="13" fill="#5b6470">Screen: Lobby Left</text>
-    <text x="450" y="510" text-anchor="middle" font-size="11.5" fill="#087f5b">pinned committed revision</text>
-    <path d="M450 553 V602" fill="none" stroke="#334155" stroke-width="2.2" marker-end="url(#arrow)"/>
-    <rect x="350" y="616" width="200" height="37" rx="8" fill="#ffffff" stroke="#c7cdd6"/><text x="450" y="640" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1b1f24">physical HDMI-1 chain</text>
-
-    <rect x="617" y="380" width="220" height="173" rx="12" fill="#ffffff" stroke="#c7cdd6" stroke-width="1.5"/>
-    <text x="727" y="419" text-anchor="middle" font-size="16" font-weight="700" fill="#1b1f24">Display Runtime</text>
-    <text x="727" y="445" text-anchor="middle" font-size="13" fill="#5b6470">Port: HDMI-2</text>
-    <text x="727" y="467" text-anchor="middle" font-size="13" fill="#5b6470">Screen: Lobby Right</text>
-    <text x="727" y="510" text-anchor="middle" font-size="11.5" fill="#087f5b">own process / fault domain</text>
-    <path d="M727 553 V602" fill="none" stroke="#334155" stroke-width="2.2" marker-end="url(#arrow)"/>
-    <rect x="627" y="616" width="200" height="37" rx="8" fill="#ffffff" stroke="#c7cdd6"/><text x="727" y="640" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1b1f24">physical HDMI-2 chain</text>
-
-    <rect x="894" y="380" width="220" height="173" rx="12" fill="#ffffff" stroke="#c7cdd6" stroke-width="1.5"/>
-    <text x="1004" y="419" text-anchor="middle" font-size="16" font-weight="700" fill="#1b1f24">Display Runtime</text>
-    <text x="1004" y="445" text-anchor="middle" font-size="13" fill="#5b6470">Port: HDMI-3</text>
-    <text x="1004" y="467" text-anchor="middle" font-size="13" fill="#5b6470">unassigned / future</text>
-    <text x="1004" y="510" text-anchor="middle" font-size="11.5" fill="#5b6470">not started until assigned</text>
-    <path d="M1004 553 V602" fill="none" stroke="#334155" stroke-width="2.2" marker-end="url(#arrow)"/>
-    <rect x="904" y="616" width="200" height="37" rx="8" fill="#ffffff" stroke="#c7cdd6"/><text x="1004" y="640" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1b1f24">physical HDMI-3 chain</text>
+    <circle cx="96" cy="707" r="5" fill="#b45309"/><text x="109" y="711" font-size="11.5" fill="#687587">orange = control / lifecycle</text>
+    <circle cx="290" cy="707" r="5" fill="#087f5b"/><text x="303" y="711" font-size="11.5" fill="#687587">green = verified local content / continuity</text>
   </g>
-  <rect x="48" y="691" width="1102" height="42" rx="9" fill="#ffffff" stroke="#c7cdd6"/>
-  <text x="68" y="717" font-family="system-ui,Segoe UI,sans-serif" font-size="12.5" fill="#5b6470">Port identity is connector-scoped. EDID corroborates the panel; a mismatch is flagged for review and never silently remaps content.</text>
 </svg>
