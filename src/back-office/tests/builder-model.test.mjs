@@ -164,7 +164,7 @@ test("a menu nobody has published says so rather than showing an empty slot", ()
   assert.equal(publishedLine({ lastPublishedUtc: null, lastPublishedBy: null }, "UTC"), "Not published yet");
   assert.equal(
     publishedLine({ lastPublishedUtc: "2026-08-10T16:12:00Z", lastPublishedBy: "Dana" }, "UTC"),
-    "Published Mon 4:12pm by Dana"
+    "Last published Mon 4:12pm by Dana"
   );
 });
 
