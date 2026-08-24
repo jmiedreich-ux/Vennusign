@@ -27,12 +27,17 @@
   height: 100dvh;
   min-height: 0;
   /*
-   * #834/#842: this flat color was painting over the app-wide
-   * --sky-page-gradient (already used on body/.shell > main and every other
-   * page) at full opacity, since the builder is a full-viewport child - so
-   * the subtle blue tint the mock shows never reached this screen.
+   * #834/#842: this flat color was painting over the app-wide page background
+   * at full opacity, since the builder is a full-viewport child - so the
+   * mock's corner blob never reached this screen. Only the margins around
+   * the toolbar/columns/footer show it (they each carry their own opaque
+   * surface), so it's anchored tight to the corner and less gradual than
+   * --sky-page-gradient - the same technique menu-paste-import.css already
+   * uses for its own corner glow, just close enough in to actually show.
    */
-  background: var(--sky-page-gradient);
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--sky-color-primary) 35%, transparent), transparent 40%),
+    var(--sky-color-surface-muted, #f4f7fa);
 }
 
 .builder--loading {
@@ -955,6 +960,22 @@
 }
 
 .builder__capacity > svg { color: var(--sky-color-warning); }
+
+/* #842: was action-secondary (a bordered white button) - the mock shows this
+   as plain link text, no border or fill. */
+.builder__capacity-link {
+  flex: 0 0 auto;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--sky-action-link-text);
+  font: inherit;
+  font-weight: var(--sky-font-weight-semibold);
+  cursor: pointer;
+}
+
+.builder__capacity-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.builder__capacity-link:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
 
 /* The stage scales the logical board down to the canvas; its own box is the
    scaled height, so the card grows with the content rather than cropping it. */

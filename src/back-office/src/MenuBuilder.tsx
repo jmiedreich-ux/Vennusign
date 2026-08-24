@@ -2498,7 +2498,7 @@ export default function MenuBuilder({
               <span><strong>{capacity.state === "overflow" ? "This page is over capacity" : "This page is nearly full"}</strong><small>{capacity.state === "overflow"
                 ? `${capacity.dropped.join(", ")} will be dropped on the tightest screen.`
                 : `${capacity.count} of ${capacity.limit} item spaces are used on the tightest screen.`}</small></span>
-              <button type="button" className="action-secondary" data-testid="check-fit" onClick={() => setFitOpen(true)}>Check fit</button>
+              <button type="button" className="builder__capacity-link" data-testid="check-fit" onClick={() => setFitOpen(true)}>Check fit</button>
             </div>
           ) : null}
 
