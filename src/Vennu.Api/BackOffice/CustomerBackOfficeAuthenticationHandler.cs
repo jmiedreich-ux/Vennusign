@@ -45,8 +45,19 @@ public sealed class CustomerBackOfficeAuthenticationHandler : AuthenticationHand
         var customer = await sessions.AuthenticateAsync(token, Context.RequestAborted).ConfigureAwait(false);
         if (customer is null) return AuthenticateResult.Fail("The customer session is invalid or expired.");
 
-        var state = await onboarding.GetByUserIdAsync(customer.User.Id, Context.RequestAborted).ConfigureAwait(false);
-        var venueId = ResolveVenueId(state);
+        // Every authenticated request pays this chain, and the builder client sends
+        // an explicit venue header on essentially every call once a venue is
+        // selected (api.ts's venueFetch). ResolveVenueIdFromHeaders needs no DB
+        // access at all, so skip onboarding.GetByUserIdAsync's round trip entirely
+        // whenever it can already answer - it only falls back to the account's
+        // onboarded venue when there is genuinely no (or a conflicting) header to
+        // read, exactly like ResolveVenueId used to before headers and state were
+        // split apart here.
+        var (headerVenueId, headerConflict) = ResolveVenueIdFromHeaders();
+        Guid? venueId = headerConflict
+            ? null
+            : headerVenueId ??
+              (await onboarding.GetByUserIdAsync(customer.User.Id, Context.RequestAborted).ConfigureAwait(false))?.VenueId;
         var authorized = venueId is Guid requestedVenueId
             ? await ResolveAuthorizedVenueAsync(requestedVenueId, customer.User.Id).ConfigureAwait(false)
             : null;
@@ -91,16 +102,22 @@ public sealed class CustomerBackOfficeAuthenticationHandler : AuthenticationHand
         }
     };
 
-    private Guid? ResolveVenueId(Vennu.Core.Models.CustomerOnboardingState? state)
+    /// <summary>
+    /// The header-only half of what used to be ResolveVenueId(state) - split out so
+    /// the caller can tell "no usable header" (needs the onboarding fallback) apart
+    /// from "conflicting headers" (never falls back, same as before) without
+    /// awaiting onboarding.GetByUserIdAsync just to find out which one applies.
+    /// </summary>
+    private (Guid? VenueId, bool Conflict) ResolveVenueIdFromHeaders()
     {
         var canonicalPresent = Request.Headers.TryGetValue(BackOfficeAuthenticationDefaults.VenueSelectionHeaderName, out var canonicalValues);
         var legacyPresent = Request.Headers.TryGetValue(BackOfficeAuthenticationDefaults.LegacyVenueSelectionHeaderName, out var legacyValues);
         if (canonicalPresent && legacyPresent && !string.Equals(canonicalValues.ToString(), legacyValues.ToString(), StringComparison.OrdinalIgnoreCase))
-            return null;
+            return (null, true);
         var values = canonicalPresent ? canonicalValues : legacyValues;
         if ((canonicalPresent || legacyPresent) && Guid.TryParse(values.ToString(), out var selected) && selected != Guid.Empty)
-            return selected;
-        return state?.VenueId;
+            return (selected, false);
+        return (null, false);
     }
 
     private bool HasExplicitVenueSelection() =>
@@ -113,10 +130,15 @@ public sealed class CustomerBackOfficeAuthenticationHandler : AuthenticationHand
     {
         var venue = await venues.GetByIdAsync(venueId, Context.RequestAborted).ConfigureAwait(false);
         if (venue?.OrganizationId is not Guid organizationId) return null;
-        var organizationMembership = await memberships.GetOrganizationMembershipAsync(
-            organizationId, userId, Context.RequestAborted).ConfigureAwait(false);
-        var venueMembership = await memberships.GetVenueMembershipAsync(
-            organizationId, venue.Id, userId, Context.RequestAborted).ConfigureAwait(false);
+        // Independent of each other - both only need organizationId/venue.Id/userId,
+        // already in hand - so there is no reason to pay two round trips in series.
+        var organizationMembershipTask = memberships.GetOrganizationMembershipAsync(
+            organizationId, userId, Context.RequestAborted);
+        var venueMembershipTask = memberships.GetVenueMembershipAsync(
+            organizationId, venue.Id, userId, Context.RequestAborted);
+        await Task.WhenAll(organizationMembershipTask, venueMembershipTask).ConfigureAwait(false);
+        var organizationMembership = organizationMembershipTask.Result;
+        var venueMembership = venueMembershipTask.Result;
         var organizationRole = organizationMembership?.RevokedUtc is null ? organizationMembership?.Role : null;
         var venueRole = venueMembership?.RevokedUtc is null ? venueMembership?.Role : null;
         return membershipCapabilities.HasCapability(organizationRole, venueRole, MembershipCapability.ManageVenueContent)
