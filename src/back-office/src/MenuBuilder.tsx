@@ -498,7 +498,10 @@ export default function MenuBuilder({
   // #797: the consolidated "section actions" entry point (Rename / Move to page /
   // Delete) - replaces the old standalone trash icon. Each option transitions to
   // its own existing or new dialog rather than nesting sub-views in this one.
+  // O3/#834: an anchored dropdown, not a modal - picking one of three links needs
+  // neither interruption nor protected focus.
   const [sectionActionsFor, setSectionActionsFor] = useState<{ sectionId: string; name: string } | null>(null);
+  const sectionActionsMenuRef = useRef<HTMLLIElement>(null);
   const [movingSection, setMovingSection] = useState<{
     sectionId: string; name: string; destinationPageId: string; creatingPage: boolean; newPageName: string
   } | null>(null);
@@ -506,7 +509,6 @@ export default function MenuBuilder({
   const discardRef = useDialogFocus(confirmDiscard);
   const publishMissingPriceRef = useDialogFocus(confirmPublishMissingPrice);
   const deleteRef = useDialogFocus(Boolean(confirmDelete));
-  const sectionActionsRef = useDialogFocus(Boolean(sectionActionsFor));
   const movingSectionRef = useDialogFocus(Boolean(movingSection));
   const themeRef = useDialogFocus(themePickerOpen);
   const seeAllRef = useDialogFocus(seeAllOpen);
@@ -557,6 +559,14 @@ export default function MenuBuilder({
     document.addEventListener("pointerdown", closeActionsMenu);
     return () => document.removeEventListener("pointerdown", closeActionsMenu);
   }, [actionsMenuOpen]);
+  useEffect(() => {
+    if (!sectionActionsFor) return;
+    const closeSectionActions = (event: PointerEvent) => {
+      if (!sectionActionsMenuRef.current?.contains(event.target as Node)) setSectionActionsFor(null);
+    };
+    document.addEventListener("pointerdown", closeSectionActions);
+    return () => document.removeEventListener("pointerdown", closeSectionActions);
+  }, [sectionActionsFor]);
   useEffect(() => {
     if (!board || !activePageId) return;
     const pageSections = sectionsOf(board).filter(section => section.pageId === activePageId);
@@ -1969,7 +1979,6 @@ export default function MenuBuilder({
     confirmPublishMissingPrice ||
     confirmItemRemove ||
     Boolean(confirmDelete) ||
-    Boolean(sectionActionsFor) ||
     Boolean(movingSection) ||
     themePickerOpen ||
     seeAllOpen ||
@@ -2290,7 +2299,7 @@ export default function MenuBuilder({
 
           <ul className="builder__rail-list">
             {sections.map((section, index) => (
-              <li key={section.sectionId} data-testid="section-row" data-section-id={section.sectionId} data-selected={place.view === "one-section" && place.sectionId === section.sectionId} draggable={!editingRailSection && !busy} onDragStart={() => setDraggedSectionId(section.sectionId)} onDragEnd={() => setDraggedSectionId(null)} onDragOver={event => event.preventDefault()} onDrop={() => { const from = sections.findIndex(candidate => candidate.sectionId === draggedSectionId); if (from >= 0) void moveSection(from, index); setDraggedSectionId(null); }}>
+              <li key={section.sectionId} data-testid="section-row" data-section-id={section.sectionId} data-selected={place.view === "one-section" && place.sectionId === section.sectionId} draggable={!editingRailSection && !busy} onDragStart={() => setDraggedSectionId(section.sectionId)} onDragEnd={() => setDraggedSectionId(null)} onDragOver={event => event.preventDefault()} onDrop={() => { const from = sections.findIndex(candidate => candidate.sectionId === draggedSectionId); if (from >= 0) void moveSection(from, index); setDraggedSectionId(null); }} ref={sectionActionsFor?.sectionId === section.sectionId ? sectionActionsMenuRef : undefined}>
                 {editingRailSection?.sectionId === section.sectionId ? <input
                   autoFocus
                   className="builder__rail-new builder__rail-rename"
@@ -2343,12 +2352,63 @@ export default function MenuBuilder({
                     className="builder__rail-section-actions"
                     data-testid="section-actions"
                     aria-label={`Actions for ${section.name}`}
+                    aria-haspopup="menu"
+                    aria-expanded={sectionActionsFor?.sectionId === section.sectionId}
                     disabled={busy}
-                    onClick={() => setSectionActionsFor({ sectionId: section.sectionId, name: section.name ?? "this section" })}
+                    onClick={() => setSectionActionsFor(current => current?.sectionId === section.sectionId ? null : { sectionId: section.sectionId, name: section.name ?? "this section" })}
                   >
                     <SkyIcon name="more" />
                   </button>
                 </span>
+                {sectionActionsFor?.sectionId === section.sectionId ? (
+                  <div className="builder__rail-section-menu" data-testid="section-actions-dialog" role="menu" aria-label={`${sectionActionsFor.name} actions`}>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      data-testid="section-actions-rename"
+                      onClick={() => {
+                        setEditingRailSection({ sectionId: sectionActionsFor.sectionId, name: sectionActionsFor.name });
+                        setSectionActionsFor(null);
+                      }}
+                    >
+                      <SkyIcon name="pencil" /> Rename
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      data-testid="section-actions-move-to-page"
+                      disabled={pages.filter(page => page.pageId !== sectionOf(board, sectionActionsFor.sectionId)?.pageId).length === 0}
+                      onClick={() => {
+                        const destination = pages.find(page => page.pageId !== sectionOf(board, sectionActionsFor.sectionId)?.pageId)?.pageId ?? "";
+                        setMovingSection({ sectionId: sectionActionsFor.sectionId, name: sectionActionsFor.name, destinationPageId: destination, creatingPage: false, newPageName: "" });
+                        setSectionActionsFor(null);
+                      }}
+                    >
+                      <SkyIcon name="page-arrow" /> Move to page
+                    </button>
+                    <hr />
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="builder__page-menu-danger"
+                      data-testid="section-actions-delete"
+                      onClick={() => {
+                        const destination = sectionsOf(board).find(candidate => candidate.sectionId !== sectionActionsFor.sectionId)?.sectionId ?? "";
+                        const items = itemsOf(board, sectionActionsFor.sectionId).length;
+                        setConfirmDelete({
+                          sectionId: sectionActionsFor.sectionId,
+                          name: sectionActionsFor.name,
+                          items,
+                          destinationSectionId: destination,
+                          mode: items > 0 && destination ? "move" : "delete"
+                        });
+                        setSectionActionsFor(null);
+                      }}
+                    >
+                      <SkyIcon name="remove" /> Delete
+                    </button>
+                  </div>
+                ) : null}
               </li>
             ))}
             {!addingSection ? <li className="builder__rail-add-row"><button type="button" className="builder__rail-add" onClick={() => setAddingSection(true)} data-testid="add-section">+ Add section</button></li> : null}
@@ -3154,76 +3214,6 @@ export default function MenuBuilder({
                 }}
               >
                 Publish anyway
-              </button>
-            </div>
-          </div>
-        </>
-      ) : null}
-
-      {sectionActionsFor ? (
-        <>
-          <div className="builder__scrim" onClick={() => setSectionActionsFor(null)} />
-          <div
-            className="builder__dialog builder__section-actions-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="section-actions-title"
-            data-testid="section-actions-dialog"
-            ref={sectionActionsRef}
-          >
-            <h2 id="section-actions-title">{sectionActionsFor.name}</h2>
-            <ul className="builder__section-actions-list">
-              <li>
-                <button
-                  type="button"
-                  data-testid="section-actions-rename"
-                  onClick={() => {
-                    setEditingRailSection({ sectionId: sectionActionsFor.sectionId, name: sectionActionsFor.name });
-                    setSectionActionsFor(null);
-                  }}
-                >
-                  <SkyIcon name="pencil" /> Rename
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  data-testid="section-actions-move-to-page"
-                  disabled={pages.filter(page => page.pageId !== sectionOf(board, sectionActionsFor.sectionId)?.pageId).length === 0}
-                  onClick={() => {
-                    const destination = pages.find(page => page.pageId !== sectionOf(board, sectionActionsFor.sectionId)?.pageId)?.pageId ?? "";
-                    setMovingSection({ sectionId: sectionActionsFor.sectionId, name: sectionActionsFor.name, destinationPageId: destination, creatingPage: false, newPageName: "" });
-                    setSectionActionsFor(null);
-                  }}
-                >
-                  <SkyIcon name="page-arrow" /> Move to page
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  className="builder__section-actions-delete"
-                  data-testid="section-actions-delete"
-                  onClick={() => {
-                    const destination = sectionsOf(board).find(candidate => candidate.sectionId !== sectionActionsFor.sectionId)?.sectionId ?? "";
-                    const items = itemsOf(board, sectionActionsFor.sectionId).length;
-                    setConfirmDelete({
-                      sectionId: sectionActionsFor.sectionId,
-                      name: sectionActionsFor.name,
-                      items,
-                      destinationSectionId: destination,
-                      mode: items > 0 && destination ? "move" : "delete"
-                    });
-                    setSectionActionsFor(null);
-                  }}
-                >
-                  <SkyIcon name="remove" /> Delete
-                </button>
-              </li>
-            </ul>
-            <div className="builder__dialog-actions">
-              <button type="button" className="action-secondary" onClick={() => setSectionActionsFor(null)}>
-                Close
               </button>
             </div>
           </div>

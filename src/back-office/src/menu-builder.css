@@ -741,23 +741,32 @@
   cursor: default;
 }
 
-.builder__section-actions-dialog { width: min(320px, calc(100vw - 32px)); }
-
-.builder__section-actions-list {
+/*
+ * O3/#834: Section actions (Rename / Move to page / Delete) as an anchored
+ * dropdown off the rail's "more" button, not a centered modal - the same
+ * treatment as .builder__page-menu, just anchored to its own trigger.
+ */
+.builder__rail-section-menu {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + var(--sky-space-1));
+  right: var(--sky-space-2);
   display: grid;
-  gap: 2px;
-  margin: var(--sky-space-3) 0 0;
-  padding: 0;
-  list-style: none;
+  min-width: 12rem;
+  border: 1px solid var(--sky-color-border);
+  border-radius: var(--sky-radius-md);
+  padding: var(--sky-space-1);
+  background: var(--sky-color-surface);
+  box-shadow: var(--sky-panel-shadow);
 }
 
-.builder__section-actions-list button {
+.builder__rail-section-menu button {
   display: flex;
   align-items: center;
   gap: var(--sky-space-3);
   width: 100%;
   border: 0;
-  border-radius: var(--sky-radius-sm-plus, 10px);
+  border-radius: var(--sky-radius-sm);
   padding: var(--sky-space-3);
   background: transparent;
   color: var(--sky-text-primary);
@@ -767,10 +776,12 @@
   cursor: pointer;
 }
 
-.builder__section-actions-list button:hover:not(:disabled) { background: var(--sky-color-surface-muted, #f1f5f9); }
-.builder__section-actions-list button:disabled { opacity: 0.4; cursor: default; }
-.builder__section-actions-list .builder__section-actions-delete { color: #a52c2c; }
-.builder__section-actions-list .builder__section-actions-delete:hover:not(:disabled) { background: #fdeaea; }
+.builder__rail-section-menu button:hover:not(:disabled) { background: var(--sky-control-hover-background); }
+.builder__rail-section-menu button:focus-visible { outline: 2px solid var(--sky-color-primary); outline-offset: -2px; }
+.builder__rail-section-menu button:disabled { opacity: 0.4; cursor: default; }
+.builder__rail-section-menu hr { margin: var(--sky-space-1) 0; border: 0; border-top: 1px solid var(--sky-color-border); }
+.builder__rail-section-menu .builder__page-menu-danger { color: var(--sky-danger-text); }
+.builder__rail-section-menu .builder__page-menu-danger:hover:not(:disabled) { background: var(--sky-color-off-surface); }
 
 /*
  * #797's move-to-page destination list. Capped the same way #819 fixed the
