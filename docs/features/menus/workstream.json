@@ -152,7 +152,7 @@
       "title": "Full history screen (mock 09/16)",
       "status": "blocked",
       "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
-      "issue": 842,
+      "issue": 855,
       "pr": null,
       "acceptance": { "kind": "workbook", "record": null }
     },
