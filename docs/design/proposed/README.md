@@ -32,3 +32,10 @@ These files preserve visual concepts that are under owner review.
 - Key positions: measure the action rather than the request (a reorder measured 3,981 ms while the API call behind it returned 204 in under a second); percentiles rather than averages; OpenTelemetry as wire format with W3C trace context everywhere, full SDK only where it is cheap; identifiers and outcomes in logs, never customer content.
 - Not blocked on: acting-as-venue-admin. `docs/architecture/administrative-identity.md` already settles Platform Operations as a separate application identity, so tiers 1 and 2 need no new permission surface.
 - Approval rule: repository presence does not constitute design approval. Implementation RWPs may reference this as approved only after explicit owner confirmation.
+
+## Camera-based physical commissioning
+
+- File: `camera-based-physical-commissioning.md`
+- Status: **Proposed — not yet approved**
+- Intended use: a separate commissioning aid for Box Players. An installer walks a venue and uses one or more photo/live-camera scans to associate the marker shown on each physical TV with its durable Player Output port key and the meaningful Screen/location name. This assists human setup; it does not replace durable port identity or silently remap content.
+- Approval rule: repository presence does not constitute implementation planning or approval.
