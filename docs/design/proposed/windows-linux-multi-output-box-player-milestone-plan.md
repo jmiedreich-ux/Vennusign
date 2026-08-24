@@ -2,7 +2,7 @@
 
 - **Status:** Planned. The architecture is agreed; this is **not implementation approval**.
 - **Authority:** `docs/design/proposed/windows-linux-multi-output-box-player.md`. Before M1 begins, the owner promotes the settled design into `docs/design/approved/box-player/`; its `decisions.md` becomes the conflict-winning authority under `AGENTS.md`.
-- **Visual companion:** `docs/design/proposed/windows-linux-multi-output-box-player-flow.svg`. It is deliberately an inspectable HTML/SVG diagram in the Keystone style: labeled arrows, exact responsibilities, and a plain-language caption.
+- **Visual companions:** `docs/design/proposed/windows-linux-multi-output-box-player-flow.svg` gives the system overview; `docs/design/proposed/windows-linux-multi-output-box-player-interaction-flows.md` gives the request/response flows. They use the Keystone-style labeled arrows and plain-language guardrails.
 - **Delivery model:** one milestone at a time, one GitHub issue and one independently reviewed PR per milestone. A milestone leaves `master` releasable. CI is currently suspended, so recorded local verification is the gate. Every normal milestone includes schema → API → Back Office UI → Playwright coverage; M1 is the approved schema-only compatibility exception and ends in a repeatable demo script.
 
 ## Scope boundary

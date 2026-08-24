@@ -4,7 +4,8 @@
 
 This document records the decisions made for a Windows/Linux box that drives multiple physical display outputs. It is a durable design reference for future feature planning, backend work, and player implementation. It does not authorize code changes.
 
-- **Visual companion:** [control, content, and physical outputs](windows-linux-multi-output-box-player-flow.svg)
+- **Architecture overview:** [control, content, and physical outputs](windows-linux-multi-output-box-player-flow.svg)
+- **Request/response flow set:** [claim and output setup, content reconciliation, health/recovery, and updates](windows-linux-multi-output-box-player-interaction-flows.md)
 - **Proposed implementation plan:** [task-level Windows-first milestones](windows-linux-multi-output-box-player-milestone-plan.md)
 
 ## Purpose
