@@ -101,6 +101,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 **Expected owned area:** `src/Vennu.Api/Controllers/ScreensController.cs`, `src/Vennu.Api/Controllers/BackOffice/BackOfficePairingController.cs`, `src/Vennu.Api/Services/ScreenManagementService.cs`, `src/Vennu.Data/Services/ScreenReplacementService.cs`, their focused tests, and `scripts/run-box-player-m1-demo.ps1`.
 
 - [ ] Make every new Screen-first pairing/create path create its implicit Player and output in the same transaction. If a pre-registration path cannot be transactional, stop and escalate rather than leaving an orphan rule implicit.
+- [ ] Make the existing pairing-code claim all-or-nothing: claim code, Screen venue assignment, implicit Player/Output creation or reconciliation, and implicit Player venue synchronization commit together. If any part fails, the code remains unclaimed and no partial relationship is left behind.
 - [ ] Make current Screen replacement a physical-device reassignment transaction: keep the target logical Screen and its content/history/configuration; move the incoming implicit output to it; retain the outgoing implicit output as unassigned/retired history; do not create a second Screen or require re-pairing.
 - [ ] Keep existing Screen endpoints and response shapes compatible; client apps must not send Player ids.
 - [ ] Prove retries do not create duplicate implicit Players/outputs.
