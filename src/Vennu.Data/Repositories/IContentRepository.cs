@@ -144,6 +144,11 @@ public interface IContentRepository
     /// blind overwrite: it restores a value from before somebody else's edit and
     /// erases work nobody was told about. With the expectation supplied, Undo means
     /// "put back what I changed, provided what I changed is still what is there."
+    ///
+    /// <paramref name="isListed"/> is the drafted "Available" flag: it lands on
+    /// <c>dbo.Items</c> immediately, same as name/description/price, and reaches
+    /// guest screens only on the next publish. It is unrelated to 86
+    /// (<see cref="ItemAvailability"/>), which is immediate and never drafted.
     /// </summary>
     Task<ItemUpdateOutcome> UpdateItemValuesGuardedAsync(
         Guid venueId,
@@ -154,7 +159,8 @@ public interface IContentRepository
         ItemValueExpectation? expected,
         DateTime now,
         CancellationToken cancellationToken = default,
-        Guid? menuId = null);
+        Guid? menuId = null,
+        bool isListed = true);
 
     /// <inheritdoc cref="ReorderSectionsGuardedAsync"/>
     Task<ReorderOutcome> ReorderPlacementsGuardedAsync(
@@ -617,13 +623,13 @@ public sealed record ReorderOutcome(string Outcome, int Moved);
 /// that writes, because comparing them in a read beforehand proves nothing about
 /// the moment of the write.
 /// </summary>
-public sealed record ItemValueExpectation(string Name, string? Description, string? Price);
+public sealed record ItemValueExpectation(string Name, string? Description, string? Price, bool IsListed = true);
 
 /// <summary>
 /// The result of a guarded edit, carrying the values now in place when it refused
 /// — so the surface can say what it found rather than only that it gave up.
 /// </summary>
-public sealed record ItemUpdateOutcome(string Outcome, string? Name, string? Description, string? Price);
+public sealed record ItemUpdateOutcome(string Outcome, string? Name, string? Description, string? Price, bool? IsListed = null);
 
 /// <summary>
 /// ExistingSectionId is set only for <c>already_on_board</c>: it is where the item

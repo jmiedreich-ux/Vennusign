@@ -24,7 +24,8 @@ public sealed class MenuSnapshotDiffTests
         string? theme = null,
         bool placed = true,
         bool onScreen = true,
-        int itemOrder = 0)
+        int itemOrder = 0,
+        bool isListed = true)
     {
         var snapshot = new MenuSnapshot
         {
@@ -42,7 +43,7 @@ public sealed class MenuSnapshotDiffTests
                     Name = sectionName,
                     SortOrder = 0,
                     Items = placed
-                        ? [new SnapshotItem { ItemId = ItemId, Name = "Berry Fizz", Price = price, SortOrder = itemOrder }]
+                        ? [new SnapshotItem { ItemId = ItemId, Name = "Berry Fizz", Price = price, SortOrder = itemOrder, IsListed = isListed }]
                         : []
                 }
             ]
@@ -203,6 +204,21 @@ public sealed class MenuSnapshotDiffTests
         Assert.Equal("price", change.Field);
         Assert.Equal("12", change.BeforeValue);
         Assert.Equal("13", change.AfterValue);
+    }
+
+    // Available is a drafted change like name/description/price: turning it off
+    // is one change that waits for Publish, unlike 86 (ItemAvailability), which
+    // never appears in a snapshot because it is never drafted.
+    [Fact]
+    public void TurningAnItemUnavailable_IsAChange()
+    {
+        var change = Assert.Single(MenuSnapshot.Diff(Snapshot(isListed: true), Snapshot(isListed: false)));
+
+        Assert.Equal(DraftTargetKinds.Item, change.TargetKind);
+        Assert.Equal(ItemId, change.TargetId);
+        Assert.Equal("isListed", change.Field);
+        Assert.Equal("true", change.BeforeValue);
+        Assert.Equal("false", change.AfterValue);
     }
 
     // ...and the placements themselves are still counted separately, because

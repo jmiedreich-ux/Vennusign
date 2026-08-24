@@ -34,6 +34,13 @@ public sealed class Item
 
     public bool IsActive { get; set; } = true;
 
+    /// <summary>
+    /// A drafted, publish-gated flag: turned off, this item stops shipping to guest
+    /// screens on the next publish. Distinct from <see cref="ItemAvailability"/>
+    /// ("86"), which commits instantly and never waits for a publish.
+    /// </summary>
+    public bool IsListed { get; set; } = true;
+
     public DateTime CreatedUtc { get; set; }
 
     public DateTime UpdatedUtc { get; set; }

@@ -147,6 +147,7 @@ public sealed class MenuSnapshot
             // Prices are compared as typed, so "9.5" and "9.50" are genuinely
             // different values rather than the same number (Q115/Q190).
             Compare(changes, DraftTargetKinds.Item, itemId, "price", previous.Price, item.Price);
+            Compare(changes, DraftTargetKinds.Item, itemId, "isListed", Bool(previous.IsListed), Bool(item.IsListed));
         }
     }
 
@@ -217,6 +218,8 @@ public sealed class MenuSnapshot
     private static string Number(int? value) =>
         (value ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture);
 
+    private static string Bool(bool value) => value ? "true" : "false";
+
     private static void Compare(
         List<SnapshotChange> changes,
         string targetKind,
@@ -286,6 +289,13 @@ public sealed class SnapshotItem
 
     [JsonPropertyName("sortOrder")]
     public int SortOrder { get; set; }
+
+    /// <summary>
+    /// The drafted "Available" flag — distinct from 86, which never appears in a
+    /// snapshot because it is never drafted (see <c>ItemAvailability</c>).
+    /// </summary>
+    [JsonPropertyName("isListed")]
+    public bool IsListed { get; set; } = true;
 }
 
 public sealed record SnapshotChange(string TargetKind, Guid? TargetId, string Field, string? BeforeValue, string? AfterValue);

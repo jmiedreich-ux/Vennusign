@@ -833,6 +833,7 @@ export type BoardResponse = {
       description: string | null;
       price: string | null;
       sortOrder: number;
+      isListed: boolean;
     }>;
   }>;
 };
@@ -1324,8 +1325,8 @@ export async function updateMenuItemValues(
   accessToken: string,
   menuId: string,
   itemId: string,
-  values: { name: string; description: string | null; price: string | null },
-  expected?: { name: string; description: string | null; price: string | null }
+  values: { name: string; description: string | null; price: string | null; isListed: boolean },
+  expected?: { name: string; description: string | null; price: string | null; isListed: boolean }
 ): Promise<void> {
   await contentRequest(configuration, accessToken, `/items/${itemId}?menuId=${encodeURIComponent(menuId)}`, {
     method: "PUT",
@@ -1335,7 +1336,8 @@ export async function updateMenuItemValues(
             ...values,
             expectedName: expected.name,
             expectedDescription: expected.description,
-            expectedPrice: expected.price
+            expectedPrice: expected.price,
+            expectedIsListed: expected.isListed
           }
         : values
     )
