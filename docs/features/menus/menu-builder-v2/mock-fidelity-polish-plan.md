@@ -63,9 +63,9 @@ section, since a name is required to create an item at all — moves inline into
 separate post-click popup). "Publish later…" confirmed out of scope — `milestone-plan.md`'s guardrails exclude
 scheduling entirely and there's nothing to hand off to yet.
 
-#### Full history screen (mock 09 / asset 16)
+#### Full history screen (mock 09 / asset 16) — tracked as M7.2, status `blocked`
 
-Full routed page, replacing the "View all" modal (`viewAllOpen`) and the "go back to…" picker. Per
+Blocked on M7.1: replaces the "View all" modal (`viewAllOpen`) and the "go back to…" picker. Per
 `page-examples.md`, **confirmed cuts from the mock**: drop the "People editing" stat (menus are single-editor in this
 product — the stat doesn't apply), defer "86s this week" to a future release. What remains in the "THIS MENU" sidebar:
 on-screens-since, published-all-time count.
@@ -82,11 +82,11 @@ on-screens-since, published-all-time count.
 
 - Dialog "real design pass" items are done (#849) — Move/Delete/Remove all got selected-state highlighting and the
   Remove-item bug fixes above.
-- Background tint/corner blob — see Cleanup list above; reopened, needs live-site Playwright investigation before
-  another attempt.
+- **Background tint/corner blob — tracked as M7.3, status `next`.** See Cleanup list above; reopened, needs a
+  Playwright check against the actual live dev URL before attempting another fix.
 
 ## Suggested next step
 
-Review & Publish (M7.1) is scoped and paused for owner review — see issues **#852** and **#853**. Once those are
-answered, implementation can start. The full history screen hasn't been scoped yet and depends on Review &
-Publish's summary-format decision (A15) landing first.
+Review & Publish (M7.1) is scoped and paused for owner review — see issues **#852** and **#853**. M7.2 (full history
+screen) is blocked on that landing first (A15's shared summary format). M7.3 (background tint) is unblocked and
+actionable now, independent of the other two.

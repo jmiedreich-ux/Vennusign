@@ -144,6 +144,28 @@
       "issue": 852,
       "pr": null,
       "acceptance": { "kind": "workbook", "record": null }
+    },
+    {
+      "id": "7-A2",
+      "label": "M7.2",
+      "depth": 13,
+      "title": "Full history screen (mock 09/16)",
+      "status": "blocked",
+      "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
+      "issue": 842,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": null }
+    },
+    {
+      "id": "7-A3",
+      "label": "M7.3",
+      "depth": 14,
+      "title": "Background tint/corner blob — live-site investigation",
+      "status": "next",
+      "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
+      "issue": 842,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": null }
     }
   ]
 }
