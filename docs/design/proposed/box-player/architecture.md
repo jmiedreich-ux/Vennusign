@@ -4,9 +4,9 @@
 
 This document records the decisions made for a Windows/Linux box that drives multiple physical display outputs. It is a durable design reference for future feature planning, backend work, and player implementation. It does not authorize code changes.
 
-- **Architecture overview:** [control, content, and physical outputs](windows-linux-multi-output-box-player-flow.svg)
-- **Request/response flow set:** [claim and output setup, content reconciliation, health/recovery, and updates](windows-linux-multi-output-box-player-interaction-flows.md)
-- **Proposed implementation plan:** [task-level Windows-first milestones](windows-linux-multi-output-box-player-milestone-plan.md)
+- **Architecture overview:** [control, content, and physical outputs](overview.svg)
+- **Request/response flow set:** [claim/setup, replacement, reconciliation, health/recovery, and updates](interaction-flows.md)
+- **Proposed implementation plan:** [task-level Windows-first milestones](milestone-plan.md)
 
 ## Purpose
 
@@ -66,6 +66,8 @@ PlayerOutput.ScreenId is optional and unique. A Screen may exist before it is as
 WallPosition remains a content/layout concept on Screen. It is never a physical port number.
 
 TV and direct-URL pairing remain Screen-first in the product UI. On pairing, Vennusign quietly creates an **implicit Player** with a single implicit primary output assigned to that Screen. Real Box Players and their outputs are first-class operational objects in Back Office.
+
+For current Screen replacement, the **logical Screen is preserved**. The replacement device's implicit primary output is assigned to that existing Screen; the removed device's former implicit output is retained as unassigned/retired history. Content, configuration, and Screen history stay with the logical Screen—replacement never creates a second logical destination.
 
 ### A physical port is the identity
 
@@ -245,7 +247,8 @@ The first database change is additive and data-preserving:
 4. Preserve Screen IDs, existing pairing URLs/codes, menus, video-wall configuration, delivery receipts, statuses, pre-registration, and archive/history records.
 5. Keep existing Screen-based player endpoints working during the compatibility release; new code resolves the implicit Player/Output behind them.
 6. Make new TV/direct-URL pairing create Screen, implicit Player, and implicit Output transactionally.
-7. Remove or relocate duplicated device fields from Screen only in a later, separately planned cleanup migration.
+7. Make the existing Screen replacement flow a single physical-device reassignment transaction: preserve the target logical Screen, assign the incoming device's implicit primary output to it, and leave the outgoing output unassigned/retired historically. Do not copy configuration into a new logical Screen or make the customer re-pair.
+8. Remove or relocate duplicated device fields from Screen only in a later, separately planned cleanup migration.
 
 No existing display should have to re-pair.
 

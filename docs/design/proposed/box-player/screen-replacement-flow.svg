@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="860" viewBox="0 0 1400 860" role="img" aria-labelledby="title desc">
+  <title id="title">Screen replacement request and response</title>
+  <desc id="desc">A safe replacement keeps the existing logical Screen. The new device's implicit output is assigned to it and the old output becomes retired history.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6 Z" fill="#15243a"/></marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6 Z" fill="#19805b"/></marker>
+    <marker id="arrowGray" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6 Z" fill="#6b7788"/></marker>
+    <style>
+      .bg{fill:#f6f8fb}.title{font:700 28px Inter,Arial,sans-serif;fill:#15243a}.sub{font:400 15px Inter,Arial,sans-serif;fill:#516176}.lane{fill:#fff;stroke:#d9e1ea;stroke-width:1.5}.head{fill:#15243a}.headtext{font:700 16px Inter,Arial,sans-serif;fill:#fff}.line{stroke:#cbd5e1;stroke-width:2;stroke-dasharray:6 7}.req{stroke:#15243a;stroke-width:2.5;marker-end:url(#arrow)}.rsp{stroke:#6b7788;stroke-width:2;stroke-dasharray:7 6;marker-end:url(#arrowGray)}.ok{stroke:#19805b;stroke-width:2.5;marker-end:url(#arrowGreen)}.n{fill:#15243a}.nt{font:700 13px Inter,Arial,sans-serif;fill:#fff}.label{font:600 14px Inter,Arial,sans-serif;fill:#15243a}.small{font:400 13px Inter,Arial,sans-serif;fill:#516176}.guard{fill:#fff4d6;stroke:#e7b648;stroke-width:1.5}.guardtitle{font:700 15px Inter,Arial,sans-serif;fill:#6d4800}.guardtext{font:400 14px Inter,Arial,sans-serif;fill:#6d4800}
+    </style>
+  </defs>
+  <rect class="bg" width="1400" height="860"/>
+  <text class="title" x="58" y="54">Replace a current Screen’s physical device</text>
+  <text class="sub" x="58" y="80">Request/response flow · Screen identity, assignments, and history stay truthful</text>
+
+  <rect class="lane" x="50" y="118" width="230" height="590" rx="12"/><rect class="head" x="50" y="118" width="230" height="48" rx="12"/><rect class="head" x="50" y="152" width="230" height="14"/><text class="headtext" x="165" y="149" text-anchor="middle">Venue administrator</text>
+  <rect class="lane" x="310" y="118" width="230" height="590" rx="12"/><rect class="head" x="310" y="118" width="230" height="48" rx="12"/><rect class="head" x="310" y="152" width="230" height="14"/><text class="headtext" x="425" y="149" text-anchor="middle">Back Office</text>
+  <rect class="lane" x="570" y="118" width="230" height="590" rx="12"/><rect class="head" x="570" y="118" width="230" height="48" rx="12"/><rect class="head" x="570" y="152" width="230" height="14"/><text class="headtext" x="685" y="149" text-anchor="middle">Screen service</text>
+  <rect class="lane" x="830" y="118" width="230" height="590" rx="12"/><rect class="head" x="830" y="118" width="230" height="48" rx="12"/><rect class="head" x="830" y="152" width="230" height="14"/><text class="headtext" x="945" y="149" text-anchor="middle">New device</text>
+  <rect class="lane" x="1090" y="118" width="260" height="590" rx="12"/><rect class="head" x="1090" y="118" width="260" height="48" rx="12"/><rect class="head" x="1090" y="152" width="260" height="14"/><text class="headtext" x="1220" y="149" text-anchor="middle">Player / Output records</text>
+  <line class="line" x1="165" y1="166" x2="165" y2="708"/><line class="line" x1="425" y1="166" x2="425" y2="708"/><line class="line" x1="685" y1="166" x2="685" y2="708"/><line class="line" x1="945" y1="166" x2="945" y2="708"/><line class="line" x1="1220" y1="166" x2="1220" y2="708"/>
+
+  <circle class="n" cx="165" cy="238" r="14"/><text class="nt" x="165" y="243" text-anchor="middle">1</text><line class="req" x1="181" y1="238" x2="411" y2="238"/><text class="label" x="296" y="223" text-anchor="middle">Choose “Replace” for Lobby Menu</text><text class="small" x="296" y="244" text-anchor="middle">Target is the existing logical Screen</text>
+  <circle class="n" cx="425" cy="320" r="14"/><text class="nt" x="425" y="325" text-anchor="middle">2</text><line class="req" x1="441" y1="320" x2="931" y2="320"/><text class="label" x="686" y="304" text-anchor="middle">Pair the incoming physical device</text><text class="small" x="686" y="326" text-anchor="middle">Normal current Screen-first pairing</text>
+  <line class="rsp" x1="929" y1="376" x2="700" y2="376"/><text class="label" x="815" y="361" text-anchor="middle">New implicit Player + primary Output</text><text class="small" x="815" y="382" text-anchor="middle">created, then pairing response</text>
+  <circle class="n" cx="685" cy="458" r="14"/><text class="nt" x="685" y="463" text-anchor="middle">3</text><line class="req" x1="701" y1="458" x2="1206" y2="458"/><text class="label" x="953" y="443" text-anchor="middle">Commit replacement transaction</text><text class="small" x="953" y="465" text-anchor="middle">preserve Screen; reassign incoming Output</text>
+  <line class="ok" x1="1206" y1="540" x2="701" y2="540"/><text class="label" x="953" y="525" text-anchor="middle">Committed result</text><text class="small" x="953" y="547" text-anchor="middle">target Screen unchanged · old Output unassigned/retired</text>
+  <circle class="n" cx="685" cy="622" r="14"/><text class="nt" x="685" y="627" text-anchor="middle">4</text><line class="rsp" x1="669" y1="622" x2="441" y2="622"/><text class="label" x="555" y="607" text-anchor="middle">Return same Screen identity</text><text class="small" x="555" y="628" text-anchor="middle">content, configuration, and history retained</text>
+
+  <rect class="guard" x="50" y="748" width="1300" height="78" rx="12"/><text class="guardtitle" x="76" y="778">Guardrail</text><text class="guardtext" x="76" y="805">If the incoming device cannot be paired or the transaction cannot commit, nothing changes: the existing Screen and its prior Output assignment remain intact. A replacement never silently creates a second logical Screen.</text>
+</svg>

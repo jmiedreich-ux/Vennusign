@@ -15,10 +15,11 @@ A diagram is incomplete if it shows a request without its response, or a happy p
 
 | Flow | What it proves |
 |---|---|
-| [Claim a Box Player once](windows-linux-multi-output-box-player-flow-claim.svg) | One code claims one box for one venue; outputs are set up after claim; claim failure changes nothing. |
-| [Reconcile a desired content change](windows-linux-multi-output-box-player-flow-reconcile.svg) | Cloud wakes one Supervisor; it pulls the whole snapshot, verifies local files, and tells the isolated Runtime about a ready revision. |
-| [Report health and recover safely](windows-linux-multi-output-box-player-flow-health.svg) | Render evidence—not a heartbeat alone—drives bounded recovery and truthful cloud status. |
-| [Coordinate a signed component update](windows-linux-multi-output-box-player-flow-update.svg) | Cloud names a target; Host replaces Supervisor; Supervisor updates Runtimes serially with rollback. |
+| [Claim a Box Player once](claim-flow.svg) | One code claims one box for one venue; outputs are set up after claim; claim failure changes nothing. |
+| [Replace a current Screen's physical device](screen-replacement-flow.svg) | Existing logical Screen stays intact; the incoming implicit output takes over and the outgoing output becomes historical. |
+| [Reconcile a desired content change](reconcile-flow.svg) | Cloud wakes one Supervisor; it pulls the whole snapshot, verifies local files, and tells the isolated Runtime about a ready revision. |
+| [Report health and recover safely](health-flow.svg) | Render evidence—not a heartbeat alone—drives bounded recovery and truthful cloud status. |
+| [Coordinate a signed component update](update-flow.svg) | Cloud names a target; Host replaces Supervisor; Supervisor updates Runtimes serially with rollback. |
 
 ## Reading convention
 
@@ -34,7 +35,7 @@ Before a milestone that changes one of these contracts closes, add or revise the
 
 Future flows currently anticipated but not designed:
 
-- coordinated Screen move (prepare destination before stopping source);
+- coordinated Box Player Screen move (prepare destination before stopping source);
 - panel-fingerprint acceptance;
 - optional audited support capture;
 - Linux compositor and local IPC behavior.
