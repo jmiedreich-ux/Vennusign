@@ -1550,7 +1550,7 @@
 
 .builder__dialog p {
   margin: 0 0 8px;
-  color: #475569;
+  color: var(--sky-text-secondary);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -1607,13 +1607,34 @@
   color: var(--sky-color-text-muted, #64748b);
 }
 
-.builder__dialog input[type="password"] {
+/*
+ * The one field style every dialog gets (decision O3, decisions.md): a real
+ * border, the app's own input radius, and the shared focus ring in place of
+ * whatever a bare <input>/<select> falls back to without either.
+ */
+.builder__dialog input[type="password"],
+.builder__dialog-label input[type="text"],
+.builder__delete-page-choice select {
   width: 100%;
   padding: 9px 10px;
-  border: 1px solid var(--sky-color-border, #cbd5e1);
-  border-radius: 8px;
+  border: 1px solid var(--sky-color-border-input, var(--sky-color-border));
+  border-radius: var(--sky-input-radius, 10px);
+  background: var(--sky-color-surface);
+  color: var(--sky-text-primary);
   font: inherit;
   font-size: 14px;
+}
+
+.builder__dialog input[type="password"]:focus-visible,
+.builder__dialog-label input[type="text"]:focus-visible,
+.builder__delete-page-choice select:focus-visible {
+  outline: var(--sky-focus-ring);
+  outline-offset: var(--sky-focus-offset);
+  border-color: var(--sky-focus-color);
+}
+
+.builder__dialog input[type="radio"] {
+  accent-color: var(--sky-color-primary);
 }
 
 .builder__dialog-problem {

@@ -220,6 +220,22 @@ you can do at any point, not steps toward a done state. A7's content and
 consolidation stand: same four actions, same one control, same reasoning. Only the
 label changes.
 
+**O3 · One field style for every dialog, using the app's own existing tokens.**
+Several dialogs (Move section to a new page, Delete section's destination picker,
+Delete page's destination picker) had a bare `<input>`/`<select>` with no border,
+radius, or focus treatment of its own — falling back to the raw browser default,
+which read as an unstyled, "thick blue" ring dropped into an otherwise designed
+surface. The fix is not a new visual language: `sky-ui-tokens.css` already defines
+`--sky-focus-ring` / `--sky-focus-color` / `--sky-input-radius` /
+`--sky-color-border-input`, used elsewhere in the app (`destructive-review-dialog`,
+`menus-home__search`); the dialogs here simply hadn't adopted them. The standing
+rule going forward: any text `<input>` or `<select>` inside `.builder__dialog`
+gets a real 1px border in `--sky-color-border-input`, `--sky-input-radius`
+corners, and `--sky-focus-ring` on focus, declared once and inherited by class —
+not reinvented per dialog. Radio inputs take `accent-color: var(--sky-color-primary)`
+rather than the browser default. This does not redesign any one dialog's layout
+or copy; those remain their own listed pieces of work.
+
 ## Parked
 
 **Replacing the fallback card.** The generated logo-and-name card is the whole of it for now. Uploading or authoring an alternative is a later piece.
