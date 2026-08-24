@@ -59,8 +59,9 @@ This era is still open.
 
 Design work lives in the Claude Design project **Vennusign screen mockups** (referred to below as
 *Design*). Its hub page `Vennusign Back Office.dc.html` links every area. Approved material is
-mirrored into the repository under `docs/design/approved/`; anything only in Design is by
-definition not approved.
+mirrored into the repository under `docs/features/<feature>/` (amended 2026-08-24 — approved design
+used to land in a separate `docs/design/approved/` tree; it now lands alongside the feature's own
+tracking); anything only in Design is by definition not approved.
 
 | Codename | What it is | Position | Gate |
 |---|---|---|---|
@@ -79,8 +80,8 @@ release. The first version is Mosaic.
 
 ## Menus
 
-**Records:** `docs/features/menus/` · authority `docs/design/approved/menus/` (36 decisions +
-paste-import 37–43) · register 209 questions, one open (Q209, provisional).
+**Records and design authority:** `docs/features/menus/` (36 decisions + paste-import 37–43) ·
+register 209 questions, one open (Q209, provisional).
 
 | Milestone | Scope | Status |
 |---|---|---|
@@ -177,7 +178,7 @@ Building more display before that is settled means rebuilding it after.
 brand kit versus presets; group-level themes.
 
 **Gate.** The storyboard is in UI review against five named questions. It needs a design
-authority under `docs/design/approved/theme-studio/`, then a question register, then a milestone
+authority landed in `docs/features/theme-studio/`, then a question register, then a milestone
 plan. None exist yet.
 
 ---
@@ -197,7 +198,7 @@ screens, every `/pair` visit registers a new one) and #753 (a screen with no ven
 to every PO listing). Keystone decision 8 — pre-auth writes nothing — also lands here: the
 screen row appears at claim, not at `/pair`.
 
-**Gate.** The developer handoff, then a design authority under `docs/design/approved/screens/`.
+**Gate.** The developer handoff, then a design authority landed in `docs/features/screens/`.
 
 ---
 
@@ -242,7 +243,7 @@ version-routed customer surface (decision 39); and the venue-scoped controllers 
 goes through VDS, which is Keystone M2. PO's read-only surfaces can be designed and built ahead of
 that; its release-orchestration backend cannot.
 
-**Gate.** A design authority under `docs/design/approved/platform-operations/`, and Keystone M2
+**Gate.** A design authority landed in `docs/features/platform-operations/`, and Keystone M2
 for the write paths.
 
 ---
@@ -254,7 +255,7 @@ becomes one.
 
 | Item | Where | State |
 |---|---|---|
-| **Atlas** — the always-current site | `docs/design/approved/atlas/decisions.md` (57, **approved 2026-08-22**, amended the same day with 48–57) · `docs/features/atlas/m1-plan.md` | A site **built from** the repo and GitHub on every merge — never hand-maintained — rendering the roadmap, each workstream's authority, register, plans and records, the procedure, handoff and status, with open issues per workstream label pulled at build time. The three artifacts from the Keystone work are its prototype. Authority approved 2026-08-22. Seven milestones recorded: M1 the generator (its own repository, a versioned Action), M2 Vennusign adopting it, M2.1 the feature planning page rebuilt as drawn paths, M3 write-back — all done — then M4 the page's second pass (next), M5 the register as data, M6 tasks as GitHub issues. |
+| **Atlas** — the always-current site | `docs/features/atlas/decisions.md` (57, **approved 2026-08-22**, amended the same day with 48–57) · `docs/features/atlas/m1-plan.md` | A site **built from** the repo and GitHub on every merge — never hand-maintained — rendering the roadmap, each workstream's authority, register, plans and records, the procedure, handoff and status, with open issues per workstream label pulled at build time. The three artifacts from the Keystone work are its prototype. Authority approved 2026-08-22. Seven milestones recorded: M1 the generator (its own repository, a versioned Action), M2 Vennusign adopting it, M2.1 the feature planning page rebuilt as drawn paths, M3 write-back — all done — then M4 the page's second pass (next), M5 the register as data, M6 tasks as GitHub issues. |
 | Product surface feature inventory | `docs/design/proposed/product-surface-feature-inventory.md` | 18 domains, 133 capabilities; a design reference, not a roadmap |
 | Back Office home | named in Onboarding's notes as where the first-run checklist belongs | not designed |
 | Customer support diagnostic agent | `docs/design/customer-support-diagnostic-agent-concept.md` | exploratory concept |
@@ -276,7 +277,7 @@ shapes rather than scattered numbers.
 | **Release versioning** | #754 | The manifest `productVersion`, per-component semver and `v{x.y.z}` tags the cutover concept describes. #726 closed without it, and Keystone cannot move a customer until it exists. The first concrete piece of the release model, and nobody owns it. |
 | **Legacy retirement and environment hygiene** | #744, #748, #749, #750, #751, #752 | Retiring `dbo.MenuItems` and the POS catalog wiring, deciding `LayoutTemplates`, confirming two never-written tables, stopping 17 idle App Services, and making Murphy the owner of environment drift after a test ran `DELETE FROM dbo.Venues` against whatever an environment variable pointed at. Six issues, one theme: the foundation era left things running that nothing uses. |
 | **Test harness integrity** | #688, #715, #735, #751 | Pre-existing failures outside the routine gate, parallel Playwright seeding colliding on one LocalDB, sign-in unexercisable on localhost, and a destructive test with no guard. The gate is local verification while CI is suspended, so the harness *is* the gate — and four issues say it is not trustworthy. |
-| **Authentication hardening** | #723, #727, #737 | A changed provider subject locks a customer out permanently with a 500; a disabled provider shows raw JSON; the sign-in rework shipped with no browser coverage. Authentication has an approved authority already (`docs/design/approved/authentication/`) but no workstream carrying it forward. |
+| **Authentication hardening** | #723, #727, #737 | A changed provider subject locks a customer out permanently with a 500; a disabled provider shows raw JSON; the sign-in rework shipped with no browser coverage. Authentication has an approved authority (`docs/features/authentication/`) and, as of 2026-08-24, a scaffolded workstream carrying it forward (`docs/features/authentication/workstream.json`) — placeholder content, not yet planned. |
 | **Display diagnostics** | #738 | A view to understand a screen without a debugger. Pairs with the customer-support diagnostic agent concept in the design queue — one is the surface, the other the reasoning behind it. |
 
 Already mapped to a workstream and not repeated here: #741, #746, #730, #753 (Screens); #729

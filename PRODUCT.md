@@ -62,8 +62,9 @@ The voice is direct, evidence-based, operational, and honest. It distinguishes p
 
 ## Evidence on Hand
 
-- Approved product and feature design authority lives under `docs/design/approved/`.
-- Controlled feature plans and owner decisions live under `docs/features/`.
+- Approved product and feature design authority, controlled feature plans, and owner decisions
+  all live under `docs/features/<feature>/` — one directory per feature (amended 2026-08-24;
+  approved design used to live in a separate `docs/design/approved/` tree).
 - Delivery states, access decisions, allowances, availability, and shared rendering have executable implementations and tests in the repository.
 - Do not fabricate customer names, testimonials, performance benchmarks, prices, deployment claims, or device compatibility evidence.
 
