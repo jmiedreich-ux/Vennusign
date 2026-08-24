@@ -1,6 +1,7 @@
 {
   "project": "Vennusign",
   "repo": "jmiedreich-ux/Vennusign",
+  "workflow": "atlas.yml",
   "workstreams": [
     "menus",
     "theme-studio",

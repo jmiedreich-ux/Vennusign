@@ -391,3 +391,14 @@ match. Real content moved for every workstream that had a separate authority at 
 (the decisions log this very file is), `menus` (57 files), and `authentication` (4 files) —
 scaffolded as a tracked feature in the same move, having had an approved authority but no workstream
 ever carrying it forward.
+
+**61 · `POST /api/refresh` triggers the project's own rebuild workflow, and commits nothing.**
+Decision 57 named this, alongside `approve`, as waiting on write-back's scope being re-decided;
+decisions 58–60 did that re-decision, so this is settled deliberately here rather than inferred.
+Unlike every write-back endpoint before it, this one is not a commit at all — it reads
+`atlas.config.json`'s `"workflow"` field (a filename, not a secret, so it lives beside everything
+else a project already names about itself rather than in a new application setting) and asks
+GitHub to dispatch that workflow, through the same installation token every write endpoint already
+holds. No new credential, no new trust boundary, no state: decision 37 stays completely intact —
+the repository is still the only source of truth, this only stops a reader waiting on CI to notice
+a change already landed.
