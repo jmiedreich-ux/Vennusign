@@ -822,6 +822,12 @@
 }
 
 .builder__move-section-pages label:hover { background: var(--sky-color-surface-muted, #f1f5f9); }
+/* #842: a real design pass - the chosen destination now reads as chosen,
+   not just as whichever dot happens to be filled in. */
+.builder__move-section-pages label:has(input:checked) {
+  background: var(--sky-color-secondary);
+  box-shadow: inset 0 0 0 1.5px var(--sky-color-primary);
+}
 .builder__move-section-pages label input { margin: 0; }
 .builder__move-section-pages label strong { flex: 1; font-weight: var(--sky-font-weight-semibold); }
 .builder__move-section-pages label span { color: var(--sky-text-secondary); font-size: 12px; }
@@ -1659,7 +1665,23 @@ button.builder__add-many:focus-visible { outline: none; border-color: var(--sky-
 }
 
 .builder__delete-page-choice legend { margin-bottom: var(--sky-space-2); font-weight: 700; }
-.builder__delete-page-choice label { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: var(--sky-space-2); font-size: 13px; }
+/* #842: matches .builder__move-section-pages' choice-row treatment - padded,
+   rounded, hoverable, and the chosen option reads as chosen. */
+.builder__delete-page-choice label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--sky-space-2);
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: var(--sky-space-2) var(--sky-space-3);
+  font-size: 13px;
+  cursor: pointer;
+}
+.builder__delete-page-choice label:hover { background: var(--sky-color-surface-muted, #f1f5f9); }
+.builder__delete-page-choice label:has(input:checked) {
+  background: var(--sky-color-secondary);
+  box-shadow: inset 0 0 0 1.5px var(--sky-color-primary);
+}
 .builder__delete-page-choice input { margin: 0; }
 .builder__delete-page-choice select { grid-column: 1 / -1; width: 100%; }
 

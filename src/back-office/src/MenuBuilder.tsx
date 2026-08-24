@@ -1871,6 +1871,7 @@ export default function MenuBuilder({
         setMovingSection(null);
         setActionsMenuOpen(false);
         setItemEdit(null);
+        setConfirmItemRemove(false);
         return;
       }
       if ((event.key === "Delete" || event.key === "Backspace") && place.selectedItemId) {
@@ -3434,16 +3435,17 @@ export default function MenuBuilder({
       ) : null}
 
       {confirmItemRemove && selected ? (
-        <div className="builder__scrim" role="presentation">
+        <>
+          <div className="builder__scrim" onClick={() => setConfirmItemRemove(false)} />
           <div className="builder__dialog" role="dialog" aria-modal="true" aria-labelledby="remove-item-title" data-testid="remove-item-dialog" ref={itemRemoveRef}>
             <h2 id="remove-item-title">Remove {selected.item.name} from {pages.find(page => page.pageId === activePageId)?.name ?? "this page"}?</h2>
             <p>It stays in your item library, and on any other page using it.</p>
             <div className="builder__dialog-actions">
-              <button type="button" className="secondary" onClick={() => setConfirmItemRemove(false)}>Cancel</button>
+              <button type="button" className="action-secondary" onClick={() => setConfirmItemRemove(false)}>Cancel</button>
               <button type="button" className="action-danger" onClick={() => void removeFromBoard()}>Remove from this page</button>
             </div>
           </div>
-        </div>
+        </>
       ) : null}
 
       {/*
