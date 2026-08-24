@@ -11,6 +11,11 @@ work: the second pass on the feature planning page (Milestone 4), the register b
 earlier decision, the amendment says so in its own text rather than leaving two decisions quietly
 disagreeing.
 
+**Amended 2026-08-24 with decisions 58–60** (Milestone 9): decision 35 retired on decision 57's
+own grounds, the `approve` capability it names shipped, and the split between an approved design
+authority and a feature's own tracking (decision 40's `docs/design/` reference) retired in favour
+of one directory per feature.
+
 Atlas is the always-current internal site for the Vennusign project. Decisions are numbered and
 written as rules. Where any other document disagrees with this one, this one wins. Open questions
 live in `docs/features/atlas/open-questions.md` and are never resolved silently.
@@ -204,7 +209,9 @@ theme and the manifest schema, and no project content whatsoever.
 **40 · A project repository provides a fixed convention and nothing else.** `atlas.config.json` at the
 root, `ROADMAP.md`, `docs/features/<workstream>/workstream.json`, the feature records beside it, and
 the authorities under `docs/design/`. A project that follows the convention needs no code — only the
-config and a workflow.
+config and a workflow. **Amended by decision 60:** a design authority once approved lands under
+`docs/features/<workstream>/` too, not a separate `docs/design/approved/` tree — only `proposed/`
+work stays under `docs/design/`.
 
 **41 · One site per project, never one site across projects.** Vennusign builds its own to
 `atlas.vennusign.com`; a second project builds its own to its own host. No cross-repository reads, no
@@ -346,3 +353,41 @@ manifest is a genuinely bigger surface than a write path into a prose record. Wh
 the old reason is void and the scope must be re-decided on correct ones. Until it is, two things wait
 on it: the refresh button that rebuilds the site (#780), and anything that would author an issue
 rather than render one.
+
+## Write-back re-decided, and one directory per feature — Milestone 9
+
+**58 · Decision 35 is retired.** Its justification — that approving milestones and editing
+manifests belong to a separate operations console — was withdrawn by decision 57 (Platform
+Operations does not do those things). Decision 57 did not itself widen write-back's scope; this
+decision does not either. What it removes is the CLOSED-COUNT posture: a future write-back
+capability is its own decision, on its own stated grounds, the same way decision 59 is — not
+something that needs a fixed "exactly N" test updated by amendment every time. `api/lib/handlers.mjs`'s
+"exactly three handlers" test is retired to a named-list test for the same reason: a closed, named
+list still catches a stray export nobody decided on; a fixed count does not do more than that.
+
+**59 · `POST /api/approve` moves a proposed design into its feature's own directory and scaffolds
+its first milestone, in one commit.** Decided on its own grounds, per decision 57's instruction to
+re-decide rather than infer: a human has already reviewed the design (decision 35's own "repository
+presence does not constitute design approval" still holds — nothing here approves a design that has
+not been looked at; it acts on a decision a person already made) and wants it to become a tracked
+feature. A genuinely bigger write surface than the three before it — it creates or extends a
+manifest rather than editing a record a manifest names — built on its own atomic-commit mechanism
+(`createTreeClient`, the Git Data API) rather than the single-record one, because that surface is
+bigger. Recognizes a proposal in either shape a project actually uses: a slug directory
+(`docs/design/proposed/<slug>/`), or — the ordinary case for a real proposal, one `.md` file with
+maybe a sibling image or wireframe — a loose-file group under `docs/design/proposed/` sharing a
+filename stem. An existing manifest is never a refusal: a feature the generator already tracks (this
+project seeded seven of them directly, before `approve` ever existed) can still have a design
+genuinely un-landed, and `approve` moves it in without disturbing what is already on record. Does
+not reopen the rest of what decision 35 excluded: creating an arbitrary GitHub issue, setting a
+milestone's `status` directly, or any other manifest EDIT is still undecided and still not built.
+
+**60 · An approved design authority and a feature's own tracking share one directory.** The split
+this project used — `docs/design/approved/<feature>/` for the authority, `docs/features/<feature>/`
+for everything else — was confusing enough in practice that the owner asked for it retired: "we need
+to be organized and have a clean process." `docs/design/proposed/` is unaffected; only where an
+ALREADY-approved design lands changed. `AGENTS.md`'s design-before-implementation gate amended to
+match. Real content moved for every workstream that had a separate authority at the time: `atlas`
+(the decisions log this very file is), `menus` (57 files), and `authentication` (4 files) —
+scaffolded as a tracked feature in the same move, having had an approved authority but no workstream
+ever carrying it forward.
