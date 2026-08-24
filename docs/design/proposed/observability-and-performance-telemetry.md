@@ -111,6 +111,16 @@ Full-fidelity tracing of everything is expensive, and the instrumentation itself
 
 The third is worth dwelling on. On 2026-08-22 the plan was scaled from B1 to B3 partly on a 97% CPU reading, but it was never established that the failing test runs were CPU-bound. That decision was taken without the data that would have justified it — which is the normal situation today, not an unusual one.
 
+## A cheaper interim step: kept in the browser, pulled on demand, no database
+
+Owner idea, 2026-08-23, prompted by #800's temp `[perf:deliver]` console instrumentation actually catching the add-item slowness live. The question behind it: since the display already holds a per-device SignalR connection, could the same console data just be pulled over that connection on demand, instead of building the full pipeline above first?
+
+**Not quite as posed, but close.** The back office — where #800's logging actually lives — has no socket connection at all today (`VennuHub.JoinVenue` exists, unused, "kept for a possible future back-office-only consumer" per its own comment). The display does have one, and already keeps a rolling per-device record in `localStorage` (`displayDiagnostics.mjs`) — but that record is deliberately read back only by that same device's own `/diag` page, never sent anywhere. Nothing today lets a developer ask a *live, currently-connected* client "send me what you're holding."
+
+**The idea that survives:** a client-kept event ring buffer (what `displayDiagnostics.mjs` already does) plus an on-demand pull over whatever socket that client already holds, with **no SQL storage and no ingestion pipeline** — the opposite end of the spectrum from full OTel above. Cheap, no new infrastructure, but narrower: point-in-time inspection of one live session, not percentiles across venues, not retained history, not usable once the client disconnects or reloads.
+
+Where this could fit relative to the order below: a proof-of-concept for step 2 (correlation ids, structured records, a sink) rather than a replacement for it — it answers "what is this one screen/session doing right now" cheaply, but doesn't accumulate the history percentiles or regression-across-deploys comparisons need. Whether it's worth building as its own small step, or just as validation before committing to the fuller pipeline, is an open call for whoever picks this up.
+
 ## Suggested order
 
 1. **Surface what already exists** — publish and delivery trail as a Platform Operations view, plus `AppliedUtc − PublishedUtc` as a metric. No new infrastructure.
