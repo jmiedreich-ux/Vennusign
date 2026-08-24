@@ -14,6 +14,12 @@ Read only the files listed in `AGENTS.md`: current policy, handoff, tracker, sta
 - component README files under `src/`: read only when changing that component.
 - `AI_DEVELOPMENT_GUIDE.md`: concise architecture and implementation guidance.
 
+## Proposed Design
+
+Proposed design records are design inputs, not implementation authority. A feature begins only after its owner promotes the settled record into `docs/design/approved/<feature>/`.
+
+- **Windows/Linux multi-output Box Player** — [architecture](design/proposed/windows-linux-multi-output-box-player.md), [visual system flow](design/proposed/windows-linux-multi-output-box-player-flow.svg), and [task-level Windows-first milestone plan](design/proposed/windows-linux-multi-output-box-player-milestone-plan.md). The plan is deliberately kept with the proposed design until approval; it does not create an active feature workstream.
+
 ## Creation and Updates
 
 Update existing living documents before creating new Markdown. Desktop Collaborative sessions batch documentation at publish checkpoints and do not create files per local branch, issue, experiment, test run, or intermediate handoff. New package, architecture, decision, or operations documents require a durable purpose that no current document can serve. Archive snapshots are reserved for major milestones, durable audit history, or explicit owner request.

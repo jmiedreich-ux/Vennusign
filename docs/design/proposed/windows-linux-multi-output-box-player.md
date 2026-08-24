@@ -2,7 +2,10 @@
 
 **Status: Proposed — agreed architecture to date; not implementation approval.**
 
-This document records the decisions made for a Windows/Linux box that drives multiple physical display outputs. It is a durable design reference for future feature planning, backend work, and player implementation. It does not schedule a milestone or authorize code changes.
+This document records the decisions made for a Windows/Linux box that drives multiple physical display outputs. It is a durable design reference for future feature planning, backend work, and player implementation. It does not authorize code changes.
+
+- **Visual companion:** [control, content, and physical outputs](windows-linux-multi-output-box-player-flow.svg)
+- **Proposed implementation plan:** [task-level Windows-first milestones](windows-linux-multi-output-box-player-milestone-plan.md)
 
 ## Purpose
 
