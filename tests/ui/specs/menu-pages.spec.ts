@@ -1,4 +1,4 @@
-import { test, expect, openMenuBuilderAs, apiBaseUrl, tokens } from "../fixtures";
+import { test, expect, openAddItem, openMenuBuilderAs, apiBaseUrl, tokens } from "../fixtures";
 import { seed } from "../seed";
 
 test.describe("menu pages", () => {
@@ -67,7 +67,7 @@ test.describe("menu pages", () => {
     await openMenuBuilderAs(page, "owner", data.menuId);
 
     // Draft-only edits across both pages, never published.
-    await page.getByTestId("open-add-item").click();
+    await openAddItem(page);
     await page.getByTestId("add-item-input").fill("View All New Item");
     await page.getByTestId("add-item-create").click();
     await page.getByTestId("page-tab").nth(1).click();

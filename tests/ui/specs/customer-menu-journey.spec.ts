@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { openAddItem } from "../fixtures";
 // @ts-expect-error - plain .mjs helpers, shared with non-Playwright QA tooling.
 import { qaCredentials, qaCredentialSources, signInAsCustomer } from "../lib/customerAccount.mjs";
 // @ts-expect-error - see above.
@@ -82,11 +83,11 @@ test.describe("the customer builds a menu and a screen shows it", () => {
 
     await test.step("put two items on it", async () => {
       for (const item of [first, second]) {
-        // Creating an item closes the add form and opens that item's edit panel, so
-        // the form has to be reopened for each one. The first run of this spec only
-        // ever reached item one, which is why the loop assumed it stayed open.
-        const opener = page.getByTestId("open-add-item");
-        if (await opener.isVisible().catch(() => false)) await opener.click();
+        // Creating an item selects it, which replaces the add panel with that
+        // item's editor - so the add panel has to be reopened for each one. The
+        // first run of this spec only ever reached item one, which is why the
+        // loop assumed it stayed open.
+        await openAddItem(page);
         await expect(page.getByTestId("add-item-input")).toBeVisible({ timeout: 30_000 });
 
         await page.getByTestId("add-item-input").fill(item.name);

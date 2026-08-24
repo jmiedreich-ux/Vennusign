@@ -1088,49 +1088,22 @@
   cursor: text;
 }
 
-.builder__add-row {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(92px, 0.24fr);
-  gap: 8px;
-}
-
-.builder__add-open {
-  border: 1px dashed #cbd9e4;
-  border-radius: var(--sky-radius-sm-plus, 10px);
-  padding: 8px 14px;
-  background: #fbfdfe;
-  color: #475569;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.builder__add-row input {
-  width: 100%;
-  border: 1px solid #dbe3ec;
-  border-radius: var(--sky-radius-sm-plus, 10px);
-  padding: 9px 11px;
-  background: #fff;
-  font: inherit;
-  font-size: 13px;
+/* The add-item panel: a section is the active context, and this is what
+   filling it looks like - the search bar opens the moment you select the
+   section, with room underneath for what it finds. */
+.builder__add-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 /*
- * Absolutely positioned, because a dropdown that reflows the page is not a
- * dropdown. In flow it grew the builder from 812 to 967px at 1440x900 and pushed
- * Publish, Review first and the draft count off the bottom of the screen - at
- * exactly the moment somebody is adding items.
+ * In flow, not floating: the add panel is the panel's own content now, not an
+ * overlay racing the canvas for space, so results get room to breathe rather
+ * than a cramped dropdown - the whole point of moving this here.
  */
 .builder__add-results {
-  position: absolute;
-  top: auto;
-  bottom: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  z-index: 20;
-  max-height: 46vh;
+  max-height: 320px;
   overflow-y: auto;
   display: grid;
   gap: 2px;
@@ -1139,9 +1112,7 @@
   border: 1px solid var(--sky-color-border, #e2e8f0);
   border-radius: var(--sky-radius-md, 12px);
   background: #fff;
-  box-shadow: 0 18px 48px rgb(15 23 42 / 0.16);
   list-style: none;
-  grid-column: 1 / -1;
 }
 
 .builder__add-results button.is-selected {
@@ -1193,13 +1164,25 @@
 }
 
 .builder__add-create {
+  width: 100%;
+  border: 1px solid var(--sky-color-border, #e2e8f0);
+  border-radius: var(--sky-radius-sm-plus, 10px);
+  padding: 9px 11px;
+  background: var(--sky-color-surface-muted, #f8fafc);
   color: var(--sky-text-primary, #0f172a);
+  font: inherit;
   font-size: 12.5px;
-  font-weight: 500;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
 }
 
-.builder__add-row button:disabled,
-.builder__add-row input:disabled {
+.builder__add-create:hover {
+  background: var(--sky-color-secondary, #eaf2fb);
+}
+
+.builder__add-panel button:disabled,
+.builder__add-panel input:disabled {
   opacity: 0.5;
   cursor: default;
 }
@@ -1208,7 +1191,6 @@
    change on screen - this is that something, for the span between "submitted" and
    "the write landed" that used to look identical to "nothing happened". */
 .builder__add-status {
-  grid-column: 1 / -1;
   color: var(--sky-color-text-muted, #64748b);
   font-size: 12px;
   font-weight: 600;
@@ -1255,13 +1237,25 @@
   letter-spacing: -0.018em;
 }
 
-.builder__inspector-head button {
+.builder__inspector-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
   border: 0;
+  border-radius: var(--sky-radius-sm, 8px);
   padding: 0;
   background: none;
   color: var(--sky-color-text-muted, #64748b);
-  font-size: 14px;
   cursor: pointer;
+}
+
+.builder__inspector-close svg { width: 15px; height: 15px; }
+
+.builder__inspector-close:hover {
+  background: var(--sky-color-surface-muted, #f1f5f9);
+  color: var(--sky-text-primary, #0f172a);
 }
 
 .builder__inspector label {
@@ -1311,34 +1305,32 @@
   box-shadow: inset 0 0 0 1.5px #8a2929;
 }
 
-.builder__availability-control,
-.builder__available-control {
+/* Available and 86 both read the same way: a bold label, a plain sentence
+   explaining the switch, and the switch itself vertically centered beside
+   the whole block — never a bare label floating next to a bare switch. */
+.builder__toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
 }
 
-/* Available is the drafted, publish-gated toggle — plain, not the alarmed red
-   86 treatment below it, since turning it off does nothing until you publish. */
-.builder__available-note {
-  margin: -6px 0 0;
+.builder__toggle-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.builder__toggle-copy strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sky-text-primary, #0f172a);
+}
+
+.builder__toggle-copy p {
+  margin: 0;
   color: var(--sky-color-text-muted, #64748b);
   font-size: 11.5px;
   line-height: 1.45;
-}
-
-.builder__availability-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.builder__availability strong {
-  font-size: 13px;
-  font-weight: 700;
-  color: #8a2929;
 }
 
 .builder__availability p {
@@ -1355,8 +1347,8 @@
   border: 0;
   border-radius: 999px;
   padding: 3px;
-  background: #178a52;
-  box-shadow: 0 1px 2px rgb(23 138 82 / 0.4);
+  background: var(--sky-text-primary, #0f172a);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.3);
   cursor: pointer;
 }
 
