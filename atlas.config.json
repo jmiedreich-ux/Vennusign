@@ -8,6 +8,7 @@
     "screens",
     "onboarding",
     "platform-operations",
-    "atlas"
+    "atlas",
+    "authentication"
   ]
 }

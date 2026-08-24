@@ -6,11 +6,11 @@
   "gate": "M5 (Board view + Play) is parked at #709. The 7+ work — spreadsheet, photo and POS import, item-library UI, multi-venue, Schedules-owned time pricing, fallback-card authoring — is named but not planned.",
   "label": "workstream:menus",
   "design": [
-    { "name": "Menus decisions", "where": "docs/design/approved/menus/decisions.md" },
-    { "name": "Menus build decisions", "where": "docs/design/approved/menus/build-decisions.md" },
-    { "name": "Menu Builder v2", "where": "docs/design/approved/menus/menu-builder-v2/" },
-    { "name": "Paste import", "where": "docs/design/approved/menus/paste-import/" },
-    { "name": "M3-A refinement", "where": "docs/design/approved/menus/m3-a/" }
+    { "name": "Menus decisions", "where": "docs/features/menus/decisions.md" },
+    { "name": "Menus build decisions", "where": "docs/features/menus/build-decisions.md" },
+    { "name": "Menu Builder v2", "where": "docs/features/menus/menu-builder-v2/" },
+    { "name": "Paste import", "where": "docs/features/menus/paste-import/" },
+    { "name": "M3-A refinement", "where": "docs/features/menus/m3-a/" }
   ],
   "milestones": [
     {

@@ -24,7 +24,8 @@ wrong once. The four genuine conflicts are listed at the end with the resolution
 | 1 | Read `AGENTS.md`, `ai/handoffs/current.md`, `tracker/assignments.json`, `PROJECT_STATUS.md`, this feature's records, and the linked GitHub state. Nothing else. | house |
 | 2 | Confirm the predecessor milestone is **merged and its owner workbook accepted**. One milestone runs at a time. | house |
 | 2a | **Before writing anything into `docs/design/proposed/`:** confirm the workstream directory it names either already exists under `docs/features/` or is a deliberate new one (not a typo of an existing slug); read `docs/design/proposed/README.md` in full for anything already proposed that overlaps; and add an entry to that README in the same commit, following its existing per-item shape exactly (Files, Status, Intended use, Approval rule) — a proposal with no README entry is not discoverable by the very process (Atlas's M7 scaffold, a future reviewer) that will look for it there. | house |
-| 3 | Confirm the design authority is approved and landed in `docs/design/approved/<feature>/`. If it is still in `proposed/`, stop — implementation is not authorized. | house |
+| 2b | **A fresh top-level milestone number does not leapfrog an already-planned, unstarted one without a stated reason.** If a feature already has a milestone on record with a written plan and no work started, new work does not get the next unclaimed top-level number instead — it becomes a sub-milestone of the current active thread (`M<n>.1`, decision 18's own form, the way M2.1 and M4.1 both were), and the reason for going out of the planned order is written down where the leapfrogged milestone's own record lives, not left implicit. Atlas's own M7 and M8 shipped as fresh top-level numbers while its already-planned M5 and M6 sat untouched, with no stated reason recorded anywhere until the owner caught it from the live site — the ids were not renumbered after the fact (decision 17: durable once shipped), but the rule now governs anything after them. | house |
+| 3 | Confirm the design authority is approved and landed in `docs/features/<feature>/` (AGENTS.md, amended 2026-08-24 — approved design used to land in a separate `docs/design/approved/<feature>/` tree; it now lands alongside the feature's own tracking). If it is still in `proposed/`, stop — implementation is not authorized. | house |
 | 4 | Check the tracker and open claims. **Stop on ownership conflict and re-plan** — do not rule on it and continue. | house |
 | 5 | Create the milestone issue. | house |
 | 6 | Record the claim in `tracker/assignments.json`. | house |
@@ -216,6 +217,13 @@ Step 2a was added on 2026-08-23, closing the gap Atlas's M7 milestone found: ste
 *implementation* on a design being approved, but nothing gated *proposing* one in the first place
 — a file could land under `docs/design/proposed/` naming a workstream directory that didn't
 exist, or duplicating something already proposed, with no check and no README entry recording it.
+
+Step 2b was added on 2026-08-24, closing a gap Atlas's own M7/M8 milestones demonstrated rather
+than found: both shipped as fresh top-level numbers while M5 and M6, already fully planned, sat
+untouched — no stated reason, no record of the decision, discovered only when the owner looked at
+the live site's own milestone spine and asked why the timeline read as though work was skipping
+around. Milestone ids are durable once shipped (decision 17), so nothing was renumbered; the step
+exists so the next instance of this either doesn't happen or happens on purpose, written down.
 
 `AGENTS.md` is the policy and this is the procedure. A change that makes one false updates the
 other in the same commit — if a house rule changes, the step carrying it changes with it.

@@ -1,0 +1,30 @@
+{
+  "codename": "Authentication",
+  "what": "<< M7 scaffold: replace this — what is Authentication, in one sentence — see docs/features/authentication/ >>",
+  "stage": "designing",
+  "position": "<< M7 scaffold: replace this — where this stands right now >>",
+  "next": "<< M7 scaffold: replace this — what is actually blocking work from starting, in one sentence >>",
+  "label": "workstream:authentication",
+  "design": [
+    {
+      "name": "authentication/approved design",
+      "where": "docs/features/authentication/"
+    }
+  ],
+  "milestones": [
+    {
+      "id": "M1",
+      "label": "M1",
+      "depth": 1,
+      "title": "<< M7 scaffold: replace this — M1's real title — see docs/features/authentication/ >>",
+      "status": "unplanned",
+      "plan": "m1-plan.md",
+      "issue": null,
+      "pr": null,
+      "acceptance": {
+        "kind": "demo-script",
+        "record": null
+      }
+    }
+  ]
+}
