@@ -2750,6 +2750,19 @@ export default function MenuBuilder({
                   <SkyIcon name="close" />
                 </button>
               </div>
+              {/*
+                #834: reaching "add item" used to mean closing whatever you were
+                editing first. This stays reachable the whole time you're in the
+                panel, not just when nothing is selected.
+              */}
+              <button
+                type="button"
+                className="builder__inspector-add-item"
+                data-testid="add-item-while-editing"
+                onClick={() => setPlace(current => ({ ...current, view: "one-section", sectionId: selected.sectionId, selectedItemId: null }))}
+              >
+                + Add item to {sectionOf(board, selected.sectionId)?.name ?? "this section"}
+              </button>
 
               <label className={inspectorCue === "name" ? "is-cued" : undefined} data-inspector-row="name">
                 <span className="builder__label">Item name</span>

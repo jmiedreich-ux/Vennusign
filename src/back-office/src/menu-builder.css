@@ -1269,6 +1269,28 @@
   color: var(--sky-text-primary, #0f172a);
 }
 
+/* #834: reachable the whole time you're in the panel, not just when nothing
+   is selected - so it sits right under the head, before any field. */
+.builder__inspector-add-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sky-space-1);
+  width: fit-content;
+  margin: var(--sky-space-2) 0 var(--sky-space-1);
+  border: 1px solid var(--sky-color-primary);
+  border-radius: var(--sky-radius-sm-plus);
+  padding: var(--sky-space-1) var(--sky-space-3);
+  background: var(--sky-color-surface);
+  color: var(--sky-action-link-text);
+  font: inherit;
+  font-size: var(--sky-font-size-sm);
+  font-weight: var(--sky-font-weight-semibold);
+  cursor: pointer;
+}
+
+.builder__inspector-add-item:hover { background: var(--sky-control-hover-background); }
+.builder__inspector-add-item:focus-visible { outline: var(--sky-focus-ring); outline-offset: var(--sky-focus-offset); }
+
 .builder__inspector label {
   margin: 0 calc(var(--sky-space-2) * -1);
   border-radius: var(--sky-radius-sm);
@@ -1303,6 +1325,18 @@
   font-size: 13px;
   line-height: 1.45;
   resize: vertical;
+}
+
+/*
+ * #834: declared explicitly rather than left to the global zero-specificity
+ * fallback - the browser's own outline doesn't follow this field's rounded
+ * corners, which is what read as a "big circle" around the search field.
+ */
+.builder__inspector input:focus-visible,
+.builder__inspector textarea:focus-visible {
+  outline: var(--sky-focus-ring);
+  outline-offset: var(--sky-focus-offset);
+  border-color: var(--sky-focus-color);
 }
 
 /* Availability is plain in its normal state. Only 86 is exceptional enough to
@@ -1477,6 +1511,23 @@
   text-underline-offset: 3px;
   cursor: pointer;
 }
+
+/* #834: was a bare underlined link at the bottom of the panel - a dashed
+   pill matches the app's own "add more" affordance (.builder__assignment-add)
+   instead of reading like a footnote. */
+button.builder__add-many {
+  align-self: flex-start;
+  border: 1px dashed var(--sky-color-primary);
+  border-radius: var(--sky-radius-pill);
+  padding: var(--sky-space-2) var(--sky-space-4);
+  color: var(--sky-action-link-text);
+  font-size: 12.5px;
+  font-weight: var(--sky-font-weight-semibold);
+  text-decoration: none;
+}
+
+button.builder__add-many:hover { background: var(--sky-control-hover-background); }
+button.builder__add-many:focus-visible { outline: var(--sky-focus-ring); outline-offset: var(--sky-focus-offset); }
 
 /* The bar grows and wraps rather than summarising exceptions behind a count (Q167). */
 .builder__publish-screens {
