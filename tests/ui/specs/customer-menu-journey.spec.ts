@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { openAddItem } from "../fixtures";
+import { openAddItem, publishDraft } from "../fixtures";
 // @ts-expect-error - plain .mjs helpers, shared with non-Playwright QA tooling.
 import { qaCredentials, qaCredentialSources, signInAsCustomer } from "../lib/customerAccount.mjs";
 // @ts-expect-error - see above.
@@ -126,7 +126,7 @@ test.describe("the customer builds a menu and a screen shows it", () => {
     });
 
     await test.step("publish it", async () => {
-      await page.getByTestId("publish").click();
+      await publishDraft(page);
       // The publish bar reports the outcome; a failure here is a failure to publish,
       // not a slow render, so it is worth waiting properly for.
       await expect(page.getByTestId("publish-bar")).toBeVisible({ timeout: 30_000 });

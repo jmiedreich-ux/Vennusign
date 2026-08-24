@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { openAddItem } from "../fixtures";
+import { openAddItem, publishDraft } from "../fixtures";
 // @ts-expect-error - plain .mjs helpers, shared with non-Playwright QA tooling.
 import { qaCredentials, qaCredentialSources, signInAsCustomer } from "../lib/customerAccount.mjs";
 // @ts-expect-error - see above.
@@ -53,7 +53,7 @@ const addItem = async (page: any, name: string, price: string) => {
 };
 
 const publish = async (page: any) => {
-  await page.getByTestId("publish").click();
+  await publishDraft(page);
   await expect(page.getByTestId("publish-bar")).toBeVisible({ timeout: 60_000 });
 };
 
