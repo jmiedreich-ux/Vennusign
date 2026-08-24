@@ -599,13 +599,32 @@
 }
 
 .builder__page-history-list li {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: var(--sky-space-2);
   align-items: start;
 }
 
+/*
+ * #842: a line connecting the timeline circles. The dot sits .3rem + .25rem
+ * (half its own size) from this row's top - fixed regardless of how many
+ * lines the entry's own text wraps to - so the line only ever needs to
+ * reach exactly one row-height-plus-gap down to land on the next dot's
+ * center, however tall either entry's text turns out to be.
+ */
+.builder__page-history-list li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: .55rem;
+  left: .25rem;
+  width: 1px;
+  height: calc(100% + var(--sky-space-2));
+  background: var(--sky-color-border);
+}
+
 .builder__page-history-list i {
+  position: relative;
   width: .5rem;
   height: .5rem;
   margin-top: .3rem;
