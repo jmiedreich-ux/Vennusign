@@ -3348,7 +3348,17 @@ export default function MenuBuilder({
                   void deleteSection(target.sectionId, target.name, target.items > 0 && target.mode === "move" ? target.destinationSectionId : undefined, target.items === 0 || target.mode === "delete");
                 }}
               >
-                Delete section
+                {/*
+                  #834: the button used to just say "Delete section" no matter
+                  which radio was picked, so it never confirmed what was about
+                  to happen to the items - which read as the click having done
+                  nothing, even on a successful delete.
+                */}
+                {confirmDelete.items === 0
+                  ? "Delete section"
+                  : confirmDelete.mode === "move"
+                    ? "Delete and move items"
+                    : "Delete and keep items"}
               </button>
             </div>
           </div>
