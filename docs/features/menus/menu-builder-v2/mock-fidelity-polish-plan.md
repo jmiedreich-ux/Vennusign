@@ -82,8 +82,11 @@ on-screens-since, published-all-time count.
 
 - Dialog "real design pass" items are done (#849) — Move/Delete/Remove all got selected-state highlighting and the
   Remove-item bug fixes above.
-- **Background tint/corner blob — tracked as M7.3, status `next`.** See Cleanup list above; reopened, needs a
-  Playwright check against the actual live dev URL before attempting another fix.
+- **Background tint/corner blob — tracked as M7.3, status `next`, issue #854.** See Cleanup list above; reopened,
+  needs a Playwright check against the actual live dev URL before attempting another fix. Given its own dedicated
+  issue (not #842) so Atlas's expanded-milestone view shows a checklist specific to this work, matching the pattern
+  M7.1 already uses with #852 — Atlas parses each milestone's task list from its linked issue's body, and M7 itself
+  needed to stop pointing at the same content.
 
 ## Suggested next step
 

@@ -128,7 +128,7 @@
       "label": "M7",
       "depth": 11,
       "title": "Mock-fidelity polish round (dialogs, item panel, bottom bar, Review & Publish page, history page)",
-      "status": "next",
+      "status": "blocked",
       "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
       "issue": 842,
       "pr": null,
@@ -163,7 +163,7 @@
       "title": "Background tint/corner blob — live-site investigation",
       "status": "next",
       "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
-      "issue": 842,
+      "issue": 854,
       "pr": null,
       "acceptance": { "kind": "workbook", "record": null }
     }
