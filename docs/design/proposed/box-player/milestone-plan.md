@@ -1,9 +1,28 @@
 # Box Player — Milestone Plan
 
 - **Status:** Planned. The architecture is agreed; this is **not implementation approval**.
-- **Authority:** `docs/design/proposed/windows-linux-multi-output-box-player.md`. Before M1 begins, the owner promotes the settled design into `docs/design/approved/box-player/`; its `decisions.md` becomes the conflict-winning authority under `AGENTS.md`.
-- **Visual companions:** `docs/design/proposed/windows-linux-multi-output-box-player-flow.svg` gives the system overview; `docs/design/proposed/windows-linux-multi-output-box-player-interaction-flows.md` gives the request/response flows. They use the Keystone-style labeled arrows and plain-language guardrails.
+- **Authority:** `docs/design/proposed/box-player/architecture.md`. Before M1 begins, the owner promotes the settled design into `docs/features/box-player/`; its `decisions.md` becomes the conflict-winning authority under `AGENTS.md`.
+- **Visual companions:** `docs/design/proposed/box-player/overview.svg` gives the system overview; `docs/design/proposed/box-player/interaction-flows.md` gives the request/response flows. They use the Keystone-style labeled arrows and plain-language guardrails.
 - **Delivery model:** one milestone at a time, one GitHub issue and one independently reviewed PR per milestone. A milestone leaves `master` releasable. CI is currently suspended, so recorded local verification is the gate. Every normal milestone includes schema → API → Back Office UI → Playwright coverage; M1 is the approved schema-only compatibility exception and ends in a repeatable demo script.
+
+## Task execution contract
+
+This plan contains **23 stable task groups**. The checkbox bullets beneath each task are its required subtasks—not optional suggestions.
+
+- **Allocation:** a local agent receives one task ID only (for example, `M3-T2`), its named files, its exclusions, and the immediately preceding accepted task output. It does not broaden scope or create extra cross-process/cloud contracts.
+- **Integration:** the milestone remains one GitHub issue, one feature branch, and one independently reviewed PR. The orchestrator owns migrations, contracts, dependency injection, project/solution wiring, and integration of shared files.
+- **Ready to start:** every task must name its accepted predecessor, confirm no file-ownership conflict, and read the architecture plus the matching interaction diagram before editing.
+- **Done:** every checkbox is complete; named tests/demo evidence are recorded; new invariants are asserted where enforced; excluded physical checks are explicitly marked **UNTESTED**; the task handoff names changed paths, exact commands/results, and residual risks.
+- **Sequence:** tasks within a milestone run in listed order unless the orchestrator explicitly proves they are isolated. The next milestone does not start until the prior milestone merges and its owner acceptance artifact is complete.
+
+| Milestone | Task IDs |
+|---|---|
+| M1 | `M1-T1`–`M1-T3` |
+| M2 | `M2-T1`–`M2-T4` |
+| M3 | `M3-T1`–`M3-T4` |
+| M4 | `M4-T1`–`M4-T4` |
+| M5 | `M5-T1`–`M5-T4` |
+| M6 | `M6-T1`–`M6-T4` |
 
 ## Scope boundary
 
@@ -75,7 +94,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 **Acceptance:** schema/demo script, not a new Back Office UI.  
 **Excluded:** box claim, box credential, new Player routes, output discovery, OS code, statuses/events/actions, and Screen-field cleanup.
 
-### Task 1 — Add the additive schema and backfill
+### M1-T1 — Add the additive schema and backfill
 
 **Orchestrator-owned files:** `src/Vennu.Data/Scripts/074_player_foundation.sql`, model/repository registration, migration fixture ownership.
 
@@ -86,7 +105,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Add LocalDB migration/invariant tests proving every historical Screen now has exactly one assigned implicit output; every Screen id and existing Screen relationship remains unchanged; and a Screen cannot appear on two outputs.
 - [ ] Run the migration tests red/green and record the exact migration version.
 
-### Task 2 — Add persistence seams and model invariants
+### M1-T2 — Add persistence seams and model invariants
 
 **Expected owned area:** `src/Vennu.Core.Models/`, `src/Vennu.Data/Models/`, `src/Vennu.Data/Repositories/`, and focused `tests/Vennu.Data.IntegrationTests/` files.  
 **Non-goal:** do not move existing Screen device fields or change existing request contracts.
@@ -96,7 +115,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Add area invariants after every Player integration test: unique output port within a Player; at most one output per Screen; no output references a missing Player/Screen; implicit records stay assigned as a pair.
 - [ ] Search all Screen create/pair/replacement paths and list every one in the PR.
 
-### Task 3 — Preserve present-day Screen behavior and prove it
+### M1-T3 — Preserve present-day Screen behavior and prove it
 
 **Expected owned area:** `src/Vennu.Api/Controllers/ScreensController.cs`, `src/Vennu.Api/Controllers/BackOffice/BackOfficePairingController.cs`, `src/Vennu.Api/Services/ScreenManagementService.cs`, `src/Vennu.Data/Services/ScreenReplacementService.cs`, their focused tests, and `scripts/run-box-player-m1-demo.ps1`.
 
@@ -120,7 +139,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 **Acceptance:** 5–10 minute Back Office workbook using a simulated box.  
 **Excluded:** real Windows enumeration, Display Runtime, local cache, live hardware health, and remote arbitrary command execution.
 
-### Task 1 — Claim and credential persistence
+### M2-T1 — Claim and credential persistence
 
 **Orchestrator-owned files:** next ordered DbUp migration (expected `075_player_claim_and_setup.sql`), Player claim/credential model/repository interfaces, DI.
 
@@ -130,7 +149,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Add unclaim/transfer behavior: revoke active credentials immediately, clear current venue, retain history, require a new physical claim. Do not move Screens automatically.
 - [ ] Assert persistence invariants and LocalDB tests for all write paths.
 
-### Task 2 — Registration, desired state, and setup API contracts
+### M2-T2 — Registration, desired state, and setup API contracts
 
 **Expected owned area:** `src/Vennu.Api/Contracts/Players/` (new), Player registration/controller/service files (new), `src/Vennu.Api/Hubs/VennuHub.cs` only if a narrowly defined Player doorbell is required, and focused API tests.
 
@@ -141,7 +160,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Keep `ScreenPairingCode` behavior for TV/direct URL. Do not repurpose or break it.
 - [ ] Write focused tests for unauthenticated, unauthorized venue, expired code, repeated registration, duplicate output, Screen already assigned, and stale desired-state version.
 
-### Task 3 — Back Office setup and operational starting point
+### M2-T3 — Back Office setup and operational starting point
 
 **Expected owned area:** `src/back-office/` Player feature files (new, placed according to its current feature conventions), focused API client files, `tests/ui/specs/` Player setup spec, and any narrow test seed extension.
 
@@ -152,7 +171,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Do not show `WallPosition` as a port mapping control.
 - [ ] Add Playwright coverage for claim, attach, create, leave unassigned, duplicate assignment refusal, refresh/resume, and venue access refusal.
 
-### Task 4 — Simulated-box acceptance fixture
+### M2-T4 — Simulated-box acceptance fixture
 
 **Expected owned area:** `src/Vennu.TestApi/` or the established test seam, focused tests, and `docs/features/box-player/m2-acceptance-workbook.md`.
 
@@ -171,7 +190,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 **Acceptance:** lab demo script plus observed manual run.  
 **Excluded:** multi-output, customer deployment, Linux, broad hardware certification, automatic update, arbitrary remote shell, and claim UX changes.
 
-### Task 1 — Create bounded local projects and lifecycle ownership
+### M3-T1 — Create bounded local projects and lifecycle ownership
 
 **Orchestrator-owned files:** new project definitions/solution wiring/packaging configuration.  
 **Expected project boundary:** `src/Vennu.Player.Host/`, `src/Vennu.Player.Supervisor/`, `src/Vennu.DisplayRuntime/` (names are confirmed by the orchestrator when M3 opens).
@@ -182,7 +201,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Define process identity, logs, bounded restart policy, and explicit ownership; do not add cloud authority to Host or Runtime.
 - [ ] Add process-lifecycle unit tests with fakes for crash, normal stop, and Host restart.
 
-### Task 2 — Local content store and read-only gateway
+### M3-T2 — Local content store and read-only gateway
 
 **Expected owned area:** Supervisor local-store/gateway files and their unit tests.
 
@@ -192,7 +211,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Give Runtime a pinned local revision reference; it must not fetch an uncommitted asset or require a running Supervisor once applied.
 - [ ] Test interrupted download, bad hash, interrupted promotion, cold boot from a complete cache, and Gateway read rejection outside committed roots.
 
-### Task 3 — Authenticated local control and one Display Runtime
+### M3-T3 — Authenticated local control and one Display Runtime
 
 **Expected owned area:** named-pipe protocol files, Runtime host/renderer integration, and focused tests.
 
@@ -202,7 +221,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Refuse a message for another output, an unknown revision, or an unauthenticated caller.
 - [ ] Reuse the current display renderer through the local gateway where practical; do not give it a cloud SignalR connection.
 
-### Task 4 — One-output lab proof
+### M3-T4 — One-output lab proof
 
 **Expected owned area:** lab demo script/runbook and focused automated tests.
 
@@ -222,7 +241,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 **Acceptance:** Back Office workbook plus hardware acceptance record.  
 **Excluded:** Linux, screen moves, panel auto-acceptance, arbitrary desktop placement on unsupported compositor, and media claims beyond recorded certified workloads.
 
-### Task 1 — Windows topology provider and port identity
+### M4-T1 — Windows topology provider and port identity
 
 **Expected owned area:** Windows-specific topology provider inside the Player Supervisor, narrow fake topology provider, unit/integration tests.
 
@@ -232,7 +251,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Capture EDID only as observed corroboration; report mismatch against expected panel instead of remapping or changing assignment.
 - [ ] Test reordered enumeration, duplicate/blank EDID, disappeared known port, and newly seen unknown port.
 
-### Task 2 — Inventory reconciliation, panel history, and identify action
+### M4-T2 — Inventory reconciliation, panel history, and identify action
 
 **Orchestrator-owned files:** next migration (expected `076_player_output_observation.sql`), stable observation/history models, DI.
 
@@ -243,7 +262,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Require explicit Back Office acceptance before replacing the expected panel fingerprint.
 - [ ] Test idempotent action retry, expired action, wrong-output result, and acceptance audit.
 
-### Task 3 — Per-output Runtime orchestration
+### M4-T3 — Per-output Runtime orchestration
 
 **Expected owned area:** Host/Supervisor/Runtime output orchestration and local-process tests.
 
@@ -253,7 +272,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Add global admission control for process start/pre-roll so the box cannot initiate work beyond its configured GPU/media budget.
 - [ ] Test one Runtime crash/restart does not intentionally terminate others.
 
-### Task 4 — Back Office inventory and six-output acceptance
+### M4-T4 — Back Office inventory and six-output acceptance
 
 **Expected owned area:** Player details/output UI, Playwright using the simulated topology seam, hardware workbook/record.
 
@@ -272,7 +291,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 **Acceptance:** owner workbook driven by deterministic fault injection and a bounded hardware check.  
 **Excluded:** generic remote terminal, automatic screenshots/video, coordinated Screen moves, and mass update deployment.
 
-### Task 1 — Durable cloud status, events, actions, and desired state
+### M5-T1 — Durable cloud status, events, actions, and desired state
 
 **Orchestrator-owned files:** next ordered DbUp migration (expected `077_player_operations.sql`), persistence/DI/contract ownership.
 
@@ -281,7 +300,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Add versioned whole-box desired-state snapshots. SignalR only says “reconcile”; duplicate/missed doorbells must be harmless.
 - [ ] Test status upsert idempotency, action expiry, action exactly-once effect under retry, snapshot version staleness, and event noise suppression.
 
-### Task 2 — Multi-signal health and bounded recovery
+### M5-T2 — Multi-signal health and bounded recovery
 
 **Expected owned area:** Supervisor health/recovery state machine and tests.
 
@@ -291,7 +310,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Recover with verified cached content; stop after the bounded policy and report Needs Attention unless no viable content is known.
 - [ ] Test each transition and the no-restart-on-one-late-heartbeat rule.
 
-### Task 3 — Truthful Back Office operations view
+### M5-T3 — Truthful Back Office operations view
 
 **Expected owned area:** Player operational UI/API read model/Playwright.
 
@@ -300,7 +319,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Allow only approved action requests, with requester/result history; no free-text remote command.
 - [ ] Add empty/loading/refusal/retry/long-output-label coverage and Playwright paths for each severity.
 
-### Task 4 — Fault-injection proof
+### M5-T4 — Fault-injection proof
 
 - [ ] Network loss: current verified content stays visible and the state is Attention, not Emergency.
 - [ ] Supervisor exit/restart: pinned Runtime content continues and Supervisor reattaches.
@@ -318,7 +337,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 **Acceptance:** owner workbook plus crash/power-loss simulation.  
 **Excluded:** speculative fleet-wide pre-download, new rollout-group product, unsigned developer bypass in production, and Linux update implementation.
 
-### Task 1 — Release target and signed artifact contract
+### M6-T1 — Release target and signed artifact contract
 
 **Orchestrator-owned files:** contract/schema/DI/artifact validation ownership.
 
@@ -328,7 +347,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Reject unknown signer, bad hash, stale target, downgrade outside explicit policy, and incompatible Runtime protocol.
 - [ ] Test every refusal before any process is stopped.
 
-### Task 2 — Supervisor update plan and quiescence
+### M6-T2 — Supervisor update plan and quiescence
 
 **Expected owned area:** Supervisor update planner/store/recovery tests.
 
@@ -338,7 +357,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] If power loss/interruption occurs, boot the last proven healthy version; do not resume an unknown activation automatically.
 - [ ] Test retry, cancellation, crash before/after persistence, and old-working-version fallback.
 
-### Task 3 — Host-led Supervisor and serial Runtime replacement
+### M6-T3 — Host-led Supervisor and serial Runtime replacement
 
 **Expected owned area:** Host updater/bootstrap, Supervisor candidate activation, Runtime side-by-side handover tests.
 
@@ -348,7 +367,7 @@ After each milestone: independent review, merge, owner demo/workbook, then synch
 - [ ] Update Host through the small signed updater/bootstrap path only when its target differs and after its stricter checks.
 - [ ] Test each failure point, including one Runtime candidate failing while other outputs remain untouched.
 
-### Task 4 — Operations experience and final acceptance
+### M6-T4 — Operations experience and final acceptance
 
 **Expected owned area:** Back Office update status/action UI, Player action API read/write, Playwright, acceptance workbook.
 
