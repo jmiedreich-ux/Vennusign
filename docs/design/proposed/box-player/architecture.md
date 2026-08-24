@@ -282,10 +282,14 @@ These are intentionally separate from raw connectivity:
 - Back Office visual design and detailed role/permission matrix.
 - Detailed IPC schemas, fault thresholds, and test plan.
 
-## Next design work
+## Design completion map
 
-1. Specify the exact DbUp schema, constraints, and data migration script.
-2. Define claim/setup, desired-state, status, inventory, and durable-action API contracts.
-3. Design Back Office box/output setup and operational views.
-4. Choose Windows/Linux launch, compositor, and packaging implementation details.
-5. Define local IPC contracts and failure/test matrix.
+The decisions required to plan implementation are settled and already mapped to the task register:
+
+1. **DbUp model and safe migration** — additive Player/PlayerOutput foundation, legacy backfill, atomic pairing claim, and physical-device replacement are recorded in [M1](milestone-plan.md#M1).
+2. **Cloud and local contracts** — one box-level claim, desired-state snapshots, durable actions, credentials, inventory, status, and updates are defined in the relevant [M2](milestone-plan.md#M2), [M5](milestone-plan.md#M5), and [M6](milestone-plan.md#M6) tasks.
+3. **Back Office operation** — box claim/setup, declared outputs, inventory, severity, and update operations are covered by [M2](milestone-plan.md#M2), [M4](milestone-plan.md#M4), [M5](milestone-plan.md#M5), and [M6](milestone-plan.md#M6).
+4. **Windows-first runtime and platform boundary** — interactive kiosk-session launch, local store/gateway, one Display Runtime per output, Windows port identity, and six-output acceptance are covered by [M3](milestone-plan.md#M3) and [M4](milestone-plan.md#M4). Linux implementation remains deliberately later.
+5. **IPC, failure, and continuity rules** — authenticated local IPC, warm/drain swap, multi-signal health, bounded recovery, and exact evidence/acceptance are covered by [M3](milestone-plan.md#M3), [M5](milestone-plan.md#M5), and the request/response [interaction flows](interaction-flows.md).
+
+The exact code artifacts for those settled decisions—SQL migration text, request DTOs, process APIs, and test fixtures—are implementation deliverables inside their numbered tasks, not a reason to reopen the architecture.
