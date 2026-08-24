@@ -58,7 +58,6 @@ import {
   draftPhrase,
   findItem,
   findOnBoard,
-  isMissingPrice,
   itemsOf,
   publishBlockedReason,
   publishLabel,
@@ -289,7 +288,14 @@ function useDialogFocus(open: boolean) {
     return () => {
       node.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("keydown", onKeyDown, true);
-      returnTo?.focus?.();
+      // Removing the focused dialog resets activeElement to <body> synchronously,
+      // before this cleanup runs - so body here means nothing has claimed focus
+      // since. If something *has* (e.g. this same click opened a rename field with
+      // autoFocus), that claim wins; stealing it back would fire the new field's
+      // onBlur and undo what the click was for.
+      if (document.activeElement === document.body || document.activeElement === document.documentElement) {
+        returnTo?.focus?.();
+      }
     };
   }, [open]);
 
@@ -2422,11 +2428,6 @@ export default function MenuBuilder({
                 <SkyIcon name="chevron" />
               </button> : null}
             </div> : null}
-            {place.selectedItemId && isMissingPrice(selected?.item) ? (
-              <p className="builder__flag" data-testid="missing-price-flag">
-                No price yet. You can still publish it.
-              </p>
-            ) : null}
           </div>
 
           {canViewCapacity && capacity && capacity.state !== "fits" ? (
@@ -3249,7 +3250,10 @@ export default function MenuBuilder({
                   type="text"
                   autoFocus
                   value={movingSection.newPageName}
-                  onChange={event => setMovingSection(current => current ? { ...current, newPageName: event.currentTarget.value } : current)}
+                  onChange={event => {
+                    const newPageName = event.currentTarget.value;
+                    setMovingSection(current => current ? { ...current, newPageName } : current);
+                  }}
                   onKeyDown={event => {
                     if (event.key === "Escape") setMovingSection(current => current ? { ...current, creatingPage: false, newPageName: "" } : current);
                   }}
@@ -3341,7 +3345,10 @@ export default function MenuBuilder({
                 Delete this section, moving its items to
                 {/* #797: every page's sections, not just the current one - grouped by
                     page so a same-named section on a different page is never ambiguous. */}
-                <select value={confirmDelete.destinationSectionId} onChange={event => setConfirmDelete(current => current ? { ...current, destinationSectionId: event.currentTarget.value } : current)}>
+                <select value={confirmDelete.destinationSectionId} onChange={event => {
+                  const destinationSectionId = event.currentTarget.value;
+                  setConfirmDelete(current => current ? { ...current, destinationSectionId } : current);
+                }}>
                   {pages.map(page => {
                     const options = sectionsOf(board).filter(section => section.pageId === page.pageId && section.sectionId !== confirmDelete.sectionId);
                     return options.length > 0 ? <optgroup key={page.pageId} label={page.name}>
@@ -3656,7 +3663,10 @@ export default function MenuBuilder({
               Destination page
               <select
                 value={confirmPageDelete.destinationPageId}
-                onChange={event => setConfirmPageDelete(current => current ? { ...current, destinationPageId: event.target.value } : null)}
+                onChange={event => {
+                  const destinationPageId = event.target.value;
+                  setConfirmPageDelete(current => current ? { ...current, destinationPageId } : null);
+                }}
                 data-testid="delete-page-destination"
               >
                 {pages.filter(page => page.pageId !== confirmPageDelete.pageId).map(page => <option key={page.pageId} value={page.pageId}>{page.name}</option>)}
