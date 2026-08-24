@@ -1,4 +1,4 @@
-import { test, expect, openAddItem, openMenuBuilderAs, apiBaseUrl, tokens } from "../fixtures";
+import { test, expect, openAddItem, openMenuBuilderAs, openActionsMenu, publishDraft, apiBaseUrl, tokens } from "../fixtures";
 import { seed } from "../seed";
 
 test.describe("menu pages", () => {
@@ -88,8 +88,9 @@ test.describe("menu pages", () => {
     // "go back to..." is the same underlying data, a different, restore-only view.
     await dialog.getByRole("button", { name: "Close" }).click();
     await expect(dialog).toHaveCount(0);
-    // Never published yet, so no restore link is expected regardless of capability.
-    await expect(page.getByTestId("go-back-to")).toHaveCount(0);
+    // Never published yet, so no restore item is expected regardless of capability.
+    await openActionsMenu(page);
+    await expect(page.getByTestId("action-restore")).toHaveCount(0);
   });
 
   // #799: "restore" was defined in menuCapabilities.ts but never actually
@@ -106,10 +107,12 @@ test.describe("menu pages", () => {
       window.__VENNUSIGN_BACK_OFFICE_CONFIGURATION__ = { menuCapabilityOverrides: { restore: false } };
     });
     await openMenuBuilderAs(page, "owner", data.menuId);
-    await page.getByTestId("publish").click();
+    await publishDraft(page);
     await expect(page.getByTestId("draft-count")).toContainText("Everything is on your screens");
 
-    await expect(page.getByTestId("go-back-to")).toHaveCount(0);
+    await openActionsMenu(page);
+    await expect(page.getByTestId("action-restore")).toHaveCount(0);
+    await page.keyboard.press("Escape");
     await expect(page.getByTestId("page-history")).toBeVisible();
     await expect(page.getByTestId("menu-history-link")).toBeVisible();
     await page.getByTestId("menu-history-link").click();

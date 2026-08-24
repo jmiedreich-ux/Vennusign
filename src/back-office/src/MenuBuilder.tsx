@@ -466,6 +466,22 @@ export default function MenuBuilder({
   const [newPageName, setNewPageName] = useState("");
   const [pageMenuId, setPageMenuId] = useState<string | null>(null);
   const pageActionsRef = useRef<HTMLSpanElement>(null);
+  const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
+  const actionsMenuRef = useRef<HTMLSpanElement>(null);
+  const actionsTriggerRef = useRef<HTMLButtonElement>(null);
+  /*
+   * A menu item's own onClick both closes this dropdown and opens another
+   * dialog in the same event, in one React commit - so by the time that
+   * dialog's own focus effect runs, the menu item that was just clicked is
+   * already gone from the DOM and the browser has nothing meaningful focused.
+   * Moving focus to the trigger first, synchronously, gives that effect a
+   * real, still-mounted element to capture and hand focus back to on close.
+   */
+  const chooseAction = (action: () => void) => {
+    actionsTriggerRef.current?.focus();
+    setActionsMenuOpen(false);
+    action();
+  };
   const [draggedPageId, setDraggedPageId] = useState<string | null>(null);
   const [editingPage, setEditingPage] = useState<{ pageId: string; name: string } | null>(null);
   const [editingRailSection, setEditingRailSection] = useState<{ sectionId: string; name: string } | null>(null);
@@ -527,6 +543,14 @@ export default function MenuBuilder({
     document.addEventListener("pointerdown", closePageMenu);
     return () => document.removeEventListener("pointerdown", closePageMenu);
   }, [pageMenuId]);
+  useEffect(() => {
+    if (!actionsMenuOpen) return;
+    const closeActionsMenu = (event: PointerEvent) => {
+      if (!actionsMenuRef.current?.contains(event.target as Node)) setActionsMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", closeActionsMenu);
+    return () => document.removeEventListener("pointerdown", closeActionsMenu);
+  }, [actionsMenuOpen]);
   useEffect(() => {
     if (!board || !activePageId) return;
     const pageSections = sectionsOf(board).filter(section => section.pageId === activePageId);
@@ -1832,6 +1856,7 @@ export default function MenuBuilder({
         setConfirmDelete(null);
         setSectionActionsFor(null);
         setMovingSection(null);
+        setActionsMenuOpen(false);
         setItemEdit(null);
         return;
       }
@@ -2933,34 +2958,6 @@ export default function MenuBuilder({
             ) : (
               publishedLine(data, venueTimezone)
             )}
-            {data.publishedVersion !== null && canRestore ? (
-              <>
-                {" · "}
-                <button
-                  type="button"
-                  className="builder__link"
-                  data-testid="go-back-to"
-                  onClick={() => {
-                    setHistoryOpen(true);
-                    if (!history) {
-                      loadMenuHistory(configuration, credential(), menuId)
-                        .then(setHistory)
-                        .catch(() => setHistory([]));
-                    }
-                  }}
-                >
-                  go back to…
-                </button>
-              </>
-            ) : null}
-            {canDiscardDraft(data) ? (
-              <>
-                {" · "}
-                <button type="button" className="builder__link" data-testid="discard-draft" onClick={() => setConfirmDiscard(true)}>
-                  discard draft
-                </button>
-              </>
-            ) : null}
           </span>
         </div>
 
@@ -3002,22 +2999,77 @@ export default function MenuBuilder({
               {blocked}
             </span>
           ) : null}
-          {data.draftCount > 0 ? (
-            <button type="button" className="builder__link" data-testid="review-first" onClick={() => setReviewOpen(true)}>
-              Review first
-            </button>
-          ) : null}
-          {data.draftCount > 0 ? (
+          <span className="builder__actions-wrap" ref={actionsMenuRef}>
             <button
               type="button"
-              className="builder__publish-button"
-              data-testid="publish"
-              disabled={busy || Boolean(blocked)}
-              onClick={requestPublish}
+              ref={actionsTriggerRef}
+              className="builder__actions-trigger"
+              data-testid="actions-menu-trigger"
+              aria-haspopup="menu"
+              aria-expanded={actionsMenuOpen}
+              disabled={busy}
+              onClick={() => setActionsMenuOpen(open => !open)}
             >
-              {publishLabel(data.draftCount)}
+              Actions <SkyIcon name="chevron" size={14} />
             </button>
-          ) : null}
+            {actionsMenuOpen ? (
+              <div className="builder__actions-menu" data-testid="actions-menu" role="menu" aria-label="Menu actions">
+                <button
+                  type="button"
+                  role="menuitem"
+                  data-testid="action-review-publish"
+                  disabled={data.draftCount === 0 || Boolean(blocked)}
+                  onClick={() => chooseAction(() => setReviewOpen(true))}
+                >
+                  <strong>Review &amp; publish</strong>
+                  <small>
+                    {data.draftCount > 0
+                      ? `${data.draftCount} change${data.draftCount === 1 ? " goes" : "s go"} to your screens`
+                      : "Nothing to publish"}
+                  </small>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  data-testid="action-save-exit"
+                  onClick={() => chooseAction(onBack)}
+                >
+                  <strong>Save &amp; exit</strong>
+                  <small>Keeps the draft, publishes nothing</small>
+                </button>
+                {canDiscardDraft(data) ? (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="builder__actions-menu-danger"
+                    data-testid="action-discard"
+                    onClick={() => chooseAction(() => setConfirmDiscard(true))}
+                  >
+                    <strong>Discard {draftPhrase(data.draftCount).replace(" not on your screens", "")}</strong>
+                    <small>Back to what is on your screens now</small>
+                  </button>
+                ) : null}
+                {data.publishedVersion !== null && canRestore ? (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    data-testid="action-restore"
+                    onClick={() => chooseAction(() => {
+                      setHistoryOpen(true);
+                      if (!history) {
+                        loadMenuHistory(configuration, credential(), menuId)
+                          .then(setHistory)
+                          .catch(() => setHistory([]));
+                      }
+                    })}
+                  >
+                    <strong>Restore an earlier version</strong>
+                    <small>Brings it back as a new draft — it still needs publishing</small>
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </span>
         </div>
       </footer>
 

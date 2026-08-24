@@ -211,6 +211,15 @@ remain aligned while the canvas scrolls, preserve prices exactly as typed, save 
 the same product endpoint as the inspector, and allow Escape to cancel without
 changing the saved value. The owner approved this interaction after live testing.
 
+## Owner overrides — 24 August 2026
+
+**O2 · The consolidated footer menu is "Actions," not "Finish."** Corrects A7's
+control name. "Finish" reads as completing the menu itself, not as opening a menu
+of actions on it — Review & publish, Save & exit, Discard and Restore are things
+you can do at any point, not steps toward a done state. A7's content and
+consolidation stand: same four actions, same one control, same reasoning. Only the
+label changes.
+
 ## Parked
 
 **Replacing the fallback card.** The generated logo-and-name card is the whole of it for now. Uploading or authoring an alternative is a later piece.
