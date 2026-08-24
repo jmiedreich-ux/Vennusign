@@ -26,7 +26,13 @@
    */
   height: 100dvh;
   min-height: 0;
-  background: var(--sky-color-surface-muted, #f4f7fa);
+  /*
+   * #834/#842: this flat color was painting over the app-wide
+   * --sky-page-gradient (already used on body/.shell > main and every other
+   * page) at full opacity, since the builder is a full-viewport child - so
+   * the subtle blue tint the mock shows never reached this screen.
+   */
+  background: var(--sky-page-gradient);
 }
 
 .builder--loading {
