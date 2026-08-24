@@ -6,7 +6,7 @@
   "next": "Write-back covers three things as of M8: a register answer, an acceptance result, a deployment-transition record. Nothing blocks M5. M6 needs a decision: reconcile with what M4.1 shipped, or supersede it.",
   "label": "workstream:atlas",
   "design": [
-    { "name": "Atlas decisions (approved, 57)", "where": "docs/design/approved/atlas/decisions.md" }
+    { "name": "Atlas decisions (approved, 57)", "where": "docs/features/atlas/decisions.md" }
   ],
   "milestones": [
     {
