@@ -86,11 +86,47 @@ Already partly shared; mostly needs consolidating.
 13. **Loading skeleton** — 13 uses, component exists.
 14. **Banner / callout** — the capacity warning, sign-back-in prompt, save-failed line. Currently one-off each.
 
+### A fourth family, deliberately out of scope
+
+`EntitlementLockChip`, `LockedNavigationItem`, `LockedSectionPreview`, `SidebarUpgradeNudge`, `TierBadge`,
+`UpgradeModal`, `UpgradeSheet` — seven components for showing locked capability and prompting an upgrade.
+
+At first read these look like they contradict decision 4 ("locked by plan means invisible — no ghost fields, no
+reasons, no state"), and `ThemeBuilder.tsx` does render Pro controls greyed rather than absent. They do not.
+**Build-decision 9 already settled it:** Menus follows decision 4 strictly, out-of-plan is absent; the app's
+existing upgrade and marketing surfaces are untouched, and upgrade discovery is reworked as its own later piece.
+
+Recorded here because the boundary is easy to mistake for drift, and because these seven are a coherent family that
+will want its own treatment whenever that rework happens — not folded into this component set now.
+
 ## Deliberately excluded
 
 Screen-specific compositions that only appear once and should stay where they are: the menu board renderer, the nav
 rail, the publish bar, menu cards, the 86 board's three-column layout, import review tables. These are *screens*,
 not components. Making them "reusable" would be inventing a requirement that does not exist.
+
+## What the design project adds
+
+Read after the counts above, on the owner's steer that *"that's where the wish starts from."*
+
+**There is already a named canonical reference.** The project README calls
+`menus/M1 Hi-Fi v2 - Menus home.dc.html` *"the visual reference every other area matches."* Nothing in this
+inventory was checked against it — the counts came from code alone. It should govern what the components look like
+once appearance is on the table.
+
+**Theme Studio is designed but unbuilt, which makes it the ideal proof.** Five storyboards (TS1–TS5), a theme
+editor, identity and rail explorations, a 28-state storyboard and a PSA review — all in the design project, and
+`docs/features/theme-studio/` holds only a `workstream.json` with zero milestones. A second consumer with a
+different skin and *no legacy code to migrate* is the cleanest possible test that skinning works, and the least
+risky place to try it.
+
+**One live contradiction, already answered.** `themes/notes.md` flags that the current theme builder shows disabled
+Pro controls against decision 4. Build-decision 9 already resolved the boundary (see above), so this is not
+outstanding — but the note itself is stale and says "nothing designed yet" when TS1–TS5 exist.
+
+**Still unread.** The identity explorations (`Identity D`, `E`, `E2`) and rail options (`Rail option A`, `B`) look
+like the actual source of visual direction for a second skin, and the Screens area has its own hi-fi. None have
+been compared against code. That is the natural next read, and it is what T9 asks for.
 
 ## What this means for the overhaul
 
