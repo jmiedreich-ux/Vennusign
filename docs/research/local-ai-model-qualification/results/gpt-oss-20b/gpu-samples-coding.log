@@ -1,0 +1,680 @@
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:30,608015866-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:31,116510757-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:31,626048038-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:32,134147907-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:32,641584734-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:33,150194189-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:33,660209809-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:34,172748929-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:34,682189934-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:35,192026477-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:35,718220250-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:36,229329454-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:36,739589752-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:37,249657507-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:37,759021351-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:38,267167089-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:38,778146458-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:39,285693840-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:39,794963680-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:40,304138591-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:40,811775663-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:41,319236639-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:41,826875714-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:42,336523486-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:42,846622126-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:43,354774484-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:43,863002047-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:44,371829034-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:44,879385605-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:45,388612838-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:45,898914819-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:46,406646016-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:46,915002292-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:47,428325089-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:47,936345518-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:48,446087519-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:48,953722287-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:49,462977305-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:49,971139981-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:50,479441788-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:50,987726446-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:51,496113950-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:52,004587164-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:52,513520039-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:53,021232986-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:53,528788670-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:54,036426909-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:54,543880652-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:55,051960412-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:55,560271769-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:56,068267704-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:36:56,577513857-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:57,085402886-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:57,594221120-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:58,101739566-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:58,610142003-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:59,119245862-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:36:59,626762939-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:00,134644210-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:00,642276586-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:01,150563041-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:01,658078629-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:02,166311885-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:02,673972807-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:03,181608243-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:03,690006537-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:04,197212131-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:04,705140267-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:05,213966118-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:05,722035511-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:06,231329141-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:06,739115150-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:07,248156233-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:07,755606580-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:08,263185423-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:08,771016407-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:09,278592653-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:09,786628669-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:10,294771154-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:10,802416127-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:11,310700591-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:11,819585912-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:12,327205771-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:12,836028692-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:13,344000406-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:13,852204886-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:14,361377647-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:14,869198446-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:15,378983781-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:15,886893670-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:16,394442348-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:16,902107922-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:17,410058867-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:17,918216152-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:18,425622340-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:18,934825224-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:19,443507197-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:19,951509748-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:20,460424586-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:20,968465081-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:21,475891016-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:21,983172779-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:22,491180922-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:22,999240862-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:23,507760112-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:24,015509977-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:24,524241062-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:25,033722482-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:25,541993264-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:26,050059164-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:26,557804622-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:27,067223038-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:27,575646499-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:28,084426736-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:28,593473760-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:29,101339539-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:29,609711935-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:30,118786686-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:30,626439310-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:31,133456888-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:31,641216021-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:32,148710874-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:32,657183696-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:33,166335676-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:33,675470049-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:34,184656598-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:34,693732168-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:35,201709805-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:35,709787419-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:36,217844067-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:36,725472647-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:37,233287665-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:37,740819881-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:38,249401746-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:38,757540983-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:39,265428033-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:39,773392331-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:40,281229072-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:40,790541837-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:41,304000403-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:41,811764627-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:42,319737959-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:42,827554843-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:43,335161384-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:43,843959730-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:44,352500707-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:44,860308278-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:45,367918283-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:45,876929646-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:46,385544778-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:46,894197993-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:47,401743186-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:47,909230354-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:48,416677791-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:48,925242888-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:49,433675143-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:49,941534811-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:50,449067722-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:50,957512430-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:51,465726441-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:51,974508894-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:52,482293556-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:52,990605693-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:53,499832818-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:54,007828804-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:54,515666139-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:55,024260231-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:55,532749259-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:56,041510883-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:56,549189348-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:57,057865287-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:57,565672409-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:58,073925972-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:37:58,582653513-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:59,090762071-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:37:59,598660102-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:00,107207382-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:00,614727738-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:01,123517107-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:01,631925813-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:02,139148253-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:02,646354733-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:03,153876999-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:03,661381277-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:04,191514442-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:04,699461637-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:05,208194703-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:05,716882686-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:06,224461163-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:06,733083555-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:07,241778084-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:07,749469057-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:08,256697792-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:08,765123410-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:09,272958125-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:09,780466251-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:10,289078883-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:10,797336311-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:11,306171586-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:11,813953447-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:12,321747731-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:12,829874267-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:13,337573376-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:13,846112763-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:14,353581108-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:14,861963145-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:15,370210539-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:15,878260461-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:16,386970329-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:16,895785665-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:17,404748250-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:17,912778355-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:18,420387983-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:18,929723206-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:19,440467243-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:19,948193445-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:20,457554919-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:20,966101263-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:21,474058826-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:21,981513212-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:22,491093983-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:22,998852610-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:23,507227864-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:24,015753358-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:24,525162681-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:25,033490639-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:25,542557508-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:26,050398437-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:26,558485064-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:27,066533927-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:27,574446640-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:28,083287816-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:28,591255379-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:29,099693631-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:29,607402334-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:30,115830857-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:30,646866554-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:31,155903303-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:31,663735780-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:38:32,171717849-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:32,679666127-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:33,187857913-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:33,696148372-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:34,203897539-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:34,711673855-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:35,220750614-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:35,728426552-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:38:36,236158906-04:00
+NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+gpt-oss:20b    17052f91a42e    13 GB    100% GPU     65536      Stopping...    

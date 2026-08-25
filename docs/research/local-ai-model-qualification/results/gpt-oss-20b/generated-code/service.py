@@ -1,0 +1,55 @@
+from decimal import Decimal, ROUND_HALF_UP
+
+from .models import Hold, HoldRequest, InsufficientInventory, InvalidHoldRequest, UnknownShow, IdempotencyConflict
+from .repository import InMemoryVenueRepository
+
+
+class VenueHoldService:
+    def __init__(self, repository: InMemoryVenueRepository):
+        self._repository = repository
+
+    def create_hold(self, request: HoldRequest) -> Hold:
+        # Validate quantity bounds
+        if request.quantity < 1:
+            raise InvalidHoldRequest("quantity must be positive")
+        if request.unit_price <= 0:
+            raise InvalidHoldRequest("unit price must be positive")
+
+        # Idempotency check
+        existing = self._repository.get_hold(request.request_id)
+        if existing is not None:
+            if (
+                existing.show_id == request.show_id
+                and existing.quantity == request.quantity
+                and existing.unit_price == request.unit_price
+                and existing.is_member == request.is_member
+            ):
+                return existing
+            else:
+                raise IdempotencyConflict("request id used for different hold")
+
+        # Check show existence and inventory
+        try:
+            available = self._repository.available_seats(request.show_id)
+        except KeyError:
+            raise UnknownShow("requested show does not exist")
+        if available < request.quantity:
+            raise InsufficientInventory("not enough seats")
+
+        # Calculate total with rounding
+        total = (request.unit_price * request.quantity).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        if request.is_member:
+            discount = (total * Decimal("0.10")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            total = (total - discount).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        hold = Hold(
+            request.request_id,
+            request.show_id,
+            request.quantity,
+            request.unit_price,
+            request.is_member,
+            total,
+        )
+        self._repository.decrement(request.show_id, request.quantity)
+        self._repository.save_hold(hold)
+        return hold
