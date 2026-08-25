@@ -10,8 +10,7 @@
     },
     {
       "area": "3 ROUND_HALF_UP cent rounding",
-      "passed": false,
-      "detail": "AssertionError: "
+      "passed": true
     },
     {
       "area": "4 quantity below 1 rejected",
@@ -28,8 +27,7 @@
     },
     {
       "area": "7 unknown show leaves inventory unchanged",
-      "passed": false,
-      "detail": "KeyError: 'missing'"
+      "passed": true
     },
     {
       "area": "8 insufficient inventory leaves inventory unchanged",
@@ -41,18 +39,15 @@
     },
     {
       "area": "10 identical idempotent replay returns same hold",
-      "passed": false,
-      "detail": "AssertionError: "
+      "passed": true
     },
     {
       "area": "11 conflicting request-ID reuse rejected",
-      "passed": false,
-      "detail": "AssertionError: expected IdempotencyConflict"
+      "passed": true
     },
     {
       "area": "12 eight concurrent identical calls create one hold and one decrement",
-      "passed": false,
-      "detail": "AssertionError: "
+      "passed": true
     },
     {
       "area": "13 concurrent distinct calls cannot oversell",
@@ -63,6 +58,6 @@
       "passed": true
     }
   ],
-  "passed": 8,
+  "passed": 13,
   "total": 14
 }
