@@ -1,0 +1,149 @@
+2026-08-25T00:10:41-04:00
+timezone=/usr/share/zoneinfo/America/New_York
+
+--- os ---
+PRETTY_NAME="Ubuntu 24.04.4 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.4 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+
+--- kernel ---
+Linux aibox 7.0.0-30-generic #30~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Fri Aug  7 13:27:52 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+
+--- cpu ---
+Architecture:                            x86_64
+CPU op-mode(s):                          32-bit, 64-bit
+Address sizes:                           48 bits physical, 48 bits virtual
+Byte Order:                              Little Endian
+CPU(s):                                  16
+On-line CPU(s) list:                     0-15
+Vendor ID:                               AuthenticAMD
+Model name:                              AMD Ryzen 7 9700X 8-Core Processor
+CPU family:                              26
+Model:                                   68
+Thread(s) per core:                      2
+Core(s) per socket:                      8
+Socket(s):                               1
+Stepping:                                0
+Frequency boost:                         enabled
+CPU(s) scaling MHz:                      70%
+CPU max MHz:                             5582.3008
+CPU min MHz:                             605.3100
+BogoMIPS:                                7586.45
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good amd_lbr_v2 nopl xtopology nonstop_tsc cpuid extd_apicid aperfmperf rapl pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpuid_fault cpb cat_l3 cdp_l3 hw_pstate ssbd mba perfmon_v2 ibrs ibpb stibp ibrs_enhanced vmmcall fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid cqm rdt_a avx512f avx512dq adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local user_shstk avx_vnni avx512_bf16 clzero irperf xsaveerptr rdpru wbnoinvd cppc arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold v_vmsave_vmload vgif v_spec_ctrl vnmi avx512vbmi umip pku ospke avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid bus_lock_detect movdiri movdir64b overflow_recov succor smca fsrm avx512_vp2intersect flush_l1d amd_lbr_pmc_freeze
+Virtualization:                          AMD-V
+L1d cache:                               384 KiB (8 instances)
+L1i cache:                               256 KiB (8 instances)
+L2 cache:                                8 MiB (8 instances)
+L3 cache:                                32 MiB (1 instance)
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0-15
+Vulnerability Gather data sampling:      Not affected
+Vulnerability Ghostwrite:                Not affected
+Vulnerability Indirect target selection: Not affected
+Vulnerability Itlb multihit:             Not affected
+Vulnerability L1tf:                      Not affected
+Vulnerability Mds:                       Not affected
+Vulnerability Meltdown:                  Not affected
+Vulnerability Mmio stale data:           Not affected
+Vulnerability Old microcode:             Not affected
+Vulnerability Reg file data sampling:    Not affected
+Vulnerability Retbleed:                  Not affected
+Vulnerability Spec rstack overflow:      Mitigation; IBPB on VMEXIT only
+Vulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+Vulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; STIBP always-on; PBRSB-eIBRS Not affected; BHI Not affected
+Vulnerability Srbds:                     Not affected
+Vulnerability Tsa:                       Not affected
+Vulnerability Tsx async abort:           Not affected
+Vulnerability Vmscape:                   Mitigation; IBPB on VMEXIT
+
+--- memory ---
+               total        used        free      shared  buff/cache   available
+Mem:            30Gi       3.9Gi       504Mi        81Mi        26Gi        26Gi
+Swap:          8.0Gi          0B       8.0Gi
+
+--- gpu ---
+03:00.0 VGA compatible controller [0300]: Advanced Micro Devices, Inc. [AMD/ATI] Device [1002:7551] (rev c0)
+12:00.0 VGA compatible controller [0300]: Advanced Micro Devices, Inc. [AMD/ATI] Device [1002:13c0] (rev c5)
+
+--- rocm ---
+/bin/bash: line 11: rocminfo: command not found
+
+--- ollama ---
+Warning: could not connect to a running Ollama instance
+Warning: client version is 0.32.15
+
+--- opencode ---
+1.18.21
+
+--- python ---
+
+--- git ---
+git version 2.43.0
+
+--- disk ---
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p2  1.9T   51G  1.7T   3% /
+
+--- context/config candidates ---
+/home/jeremy/.config/opencode/opencode.json:4:    "ollama": {
+/home/jeremy/.config/opencode/opencode.json:6:      "name": "Ollama (local)",
+/home/jeremy/.local/share/opencode/log/opencode.log:13:timestamp=2026-08-25T02:48:29.496Z level=INFO run=2ed838e9 message=stream providerID=ollama modelID=qwen3.5:9b-q4_K_M session.id=ses_fc92e46d6ffe5mVdy8j2a9DLqd small=true agent=title mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:14:timestamp=2026-08-25T02:48:29.500Z level=INFO run=2ed838e9 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3.5:9b-q4_K_M
+/home/jeremy/.local/share/opencode/log/opencode.log:24:timestamp=2026-08-25T02:48:29.775Z level=INFO run=2ed838e9 message=stream providerID=ollama modelID=qwen3.5:9b-q4_K_M session.id=ses_fc92e46d6ffe5mVdy8j2a9DLqd small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:25:timestamp=2026-08-25T02:48:29.776Z level=INFO run=2ed838e9 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3.5:9b-q4_K_M
+/home/jeremy/.local/share/opencode/log/opencode.log:42:timestamp=2026-08-25T02:49:35.062Z level=INFO run=12be3d10 message=stream providerID=ollama modelID=qwen3.5:9b-q4_K_M session.id=ses_fc92d4697ffe4Cz8buuHlDgo5z small=true agent=title mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:43:timestamp=2026-08-25T02:49:35.065Z level=INFO run=12be3d10 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3.5:9b-q4_K_M
+/home/jeremy/.local/share/opencode/log/opencode.log:53:timestamp=2026-08-25T02:49:35.314Z level=INFO run=12be3d10 message=stream providerID=ollama modelID=qwen3.5:9b-q4_K_M session.id=ses_fc92d4697ffe4Cz8buuHlDgo5z small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:54:timestamp=2026-08-25T02:49:35.315Z level=INFO run=12be3d10 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3.5:9b-q4_K_M
+/home/jeremy/.local/share/opencode/log/opencode.log:61:timestamp=2026-08-25T02:49:42.749Z level=INFO run=12be3d10 message=stream providerID=ollama modelID=qwen3.5:9b-q4_K_M session.id=ses_fc92d4697ffe4Cz8buuHlDgo5z small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:62:timestamp=2026-08-25T02:49:42.750Z level=INFO run=12be3d10 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3.5:9b-q4_K_M
+/home/jeremy/.local/share/opencode/log/opencode.log:68:timestamp=2026-08-25T02:49:43.623Z level=INFO run=12be3d10 message=stream providerID=ollama modelID=qwen3.5:9b-q4_K_M session.id=ses_fc92d4697ffe4Cz8buuHlDgo5z small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:69:timestamp=2026-08-25T02:49:43.623Z level=INFO run=12be3d10 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3.5:9b-q4_K_M
+/home/jeremy/.local/share/opencode/log/opencode.log:77:timestamp=2026-08-25T02:49:44.911Z level=INFO run=12be3d10 message=stream providerID=ollama modelID=qwen3.5:9b-q4_K_M session.id=ses_fc92d4697ffe4Cz8buuHlDgo5z small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:78:timestamp=2026-08-25T02:49:44.911Z level=INFO run=12be3d10 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3.5:9b-q4_K_M
+/home/jeremy/.local/share/opencode/log/opencode.log:85:timestamp=2026-08-25T02:49:45.873Z level=INFO run=12be3d10 message=stream providerID=ollama modelID=qwen3.5:9b-q4_K_M session.id=ses_fc92d4697ffe4Cz8buuHlDgo5z small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:86:timestamp=2026-08-25T02:49:45.874Z level=INFO run=12be3d10 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3.5:9b-q4_K_M
+/home/jeremy/.local/share/opencode/log/opencode.log:94:timestamp=2026-08-25T02:49:49.118Z level=INFO run=12be3d10 message=stream providerID=ollama modelID=qwen3.5:9b-q4_K_M session.id=ses_fc92d4697ffe4Cz8buuHlDgo5z small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:95:timestamp=2026-08-25T02:49:49.118Z level=INFO run=12be3d10 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3.5:9b-q4_K_M
+/home/jeremy/.local/share/opencode/log/opencode.log:108:timestamp=2026-08-25T03:38:12.714Z level=INFO run=c65eb1d4 message=stream providerID=ollama modelID=qwen3-coder:30b session.id=ses_fc900c185ffePstSkYtyu8y3hw small=true agent=title mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:109:timestamp=2026-08-25T03:38:12.718Z level=INFO run=c65eb1d4 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3-coder:30b
+/home/jeremy/.local/share/opencode/log/opencode.log:119:timestamp=2026-08-25T03:38:13.045Z level=INFO run=c65eb1d4 message=stream providerID=ollama modelID=qwen3-coder:30b session.id=ses_fc900c185ffePstSkYtyu8y3hw small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:120:timestamp=2026-08-25T03:38:13.045Z level=INFO run=c65eb1d4 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3-coder:30b
+/home/jeremy/.local/share/opencode/log/opencode.log:127:timestamp=2026-08-25T03:38:18.781Z level=INFO run=c65eb1d4 message=stream providerID=ollama modelID=qwen3-coder:30b session.id=ses_fc900c185ffePstSkYtyu8y3hw small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:128:timestamp=2026-08-25T03:38:18.787Z level=INFO run=c65eb1d4 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3-coder:30b
+/home/jeremy/.local/share/opencode/log/opencode.log:135:timestamp=2026-08-25T03:38:19.727Z level=INFO run=c65eb1d4 message=stream providerID=ollama modelID=qwen3-coder:30b session.id=ses_fc900c185ffePstSkYtyu8y3hw small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:136:timestamp=2026-08-25T03:38:19.728Z level=INFO run=c65eb1d4 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3-coder:30b
+/home/jeremy/.local/share/opencode/log/opencode.log:142:timestamp=2026-08-25T03:38:20.653Z level=INFO run=c65eb1d4 message=stream providerID=ollama modelID=qwen3-coder:30b session.id=ses_fc900c185ffePstSkYtyu8y3hw small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:143:timestamp=2026-08-25T03:38:20.653Z level=INFO run=c65eb1d4 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3-coder:30b
+/home/jeremy/.local/share/opencode/log/opencode.log:150:timestamp=2026-08-25T03:38:21.560Z level=INFO run=c65eb1d4 message=stream providerID=ollama modelID=qwen3-coder:30b session.id=ses_fc900c185ffePstSkYtyu8y3hw small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:151:timestamp=2026-08-25T03:38:21.561Z level=INFO run=c65eb1d4 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3-coder:30b
+/home/jeremy/.local/share/opencode/log/opencode.log:159:timestamp=2026-08-25T03:38:25.763Z level=INFO run=c65eb1d4 message=stream providerID=ollama modelID=qwen3-coder:30b session.id=ses_fc900c185ffePstSkYtyu8y3hw small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:160:timestamp=2026-08-25T03:38:25.764Z level=INFO run=c65eb1d4 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3-coder:30b
+/home/jeremy/.local/share/opencode/log/opencode.log:167:timestamp=2026-08-25T03:38:26.786Z level=INFO run=c65eb1d4 message=stream providerID=ollama modelID=qwen3-coder:30b session.id=ses_fc900c185ffePstSkYtyu8y3hw small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:168:timestamp=2026-08-25T03:38:26.787Z level=INFO run=c65eb1d4 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3-coder:30b
+/home/jeremy/.local/share/opencode/log/opencode.log:174:timestamp=2026-08-25T03:38:28.818Z level=INFO run=c65eb1d4 message=stream providerID=ollama modelID=qwen3-coder:30b session.id=ses_fc900c185ffePstSkYtyu8y3hw small=false agent=build mode=primary
+/home/jeremy/.local/share/opencode/log/opencode.log:175:timestamp=2026-08-25T03:38:28.819Z level=INFO run=c65eb1d4 message="llm runtime selected" llm.runtime=ai-sdk llm.provider=ollama llm.model=qwen3-coder:30b
+
+--- corrected qualification runtime ---
+2026-08-25T00:14:42-04:00
+Python 3.13.14
+NAME                 ID              SIZE      MODIFIED
+qwen3-coder:30b      06c1097efce0    18 GB     38 minutes ago
+qwen3.5:9b-q4_K_M    6488c96fa5fa    6.6 GB    2 hours ago
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL
+OLLAMA_MODELS=/home/jeremy/aibox-setup/ollama-models
+OLLAMA_CONTEXT_LENGTH=65536
+OLLAMA_KEEP_ALIVE=0
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p2  1.9T   54G  1.7T   3% /

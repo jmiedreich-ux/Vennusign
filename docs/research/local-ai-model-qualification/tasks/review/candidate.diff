@@ -1,0 +1,43 @@
+diff --git a/src/Accounts/ExternalCallbackService.cs b/src/Accounts/ExternalCallbackService.cs
+index 83a1b6a..e3d52bb 100644
+--- a/src/Accounts/ExternalCallbackService.cs
++++ b/src/Accounts/ExternalCallbackService.cs
+@@ -18,12 +18,33 @@ public sealed class ExternalCallbackService
+     public async Task<Account> CompleteAsync(ProviderIdentity identity, CancellationToken cancellationToken)
+     {
+         try
+         {
++            _logger.LogInformation("Callback provider={Provider} token={Token}", identity.Provider, identity.AccessToken);
+             var account = await _accounts.FindByProviderAsync(identity.Provider, identity.Subject, cancellationToken);
+             if (account is not null) return account;
+
++            if (!string.IsNullOrWhiteSpace(identity.Email))
++            {
++                account = await _accounts.FindByEmailAsync(identity.Email, cancellationToken);
++                if (account is not null)
++                {
++                    account.ProviderSubject = identity.Subject;
++                    await _accounts.UpdateAsync(account, cancellationToken);
++                    await _accounts.InsertProviderBindingAsync(account.Id, identity.Provider, identity.Subject, cancellationToken);
++                    return account;
++                }
++            }
++
+             account = new Account
+             {
+                 Id = Guid.NewGuid(),
+                 Provider = identity.Provider,
+                 ProviderSubject = identity.Subject,
+                 Email = identity.Email ?? ""
+             };
++            await _accounts.UpdateAsync(account, cancellationToken);
++            await _accounts.InsertProviderBindingAsync(account.Id, identity.Provider, identity.Subject, cancellationToken);
+             return account;
+         }
++        catch (Exception exception)
++        {
++            _logger.LogWarning(exception, "External callback could not be completed");
++            return new Account { Provider = identity.Provider, ProviderSubject = identity.Subject };
++        }
+     }
+ }
