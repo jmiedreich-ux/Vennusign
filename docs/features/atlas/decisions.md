@@ -402,3 +402,16 @@ GitHub to dispatch that workflow, through the same installation token every writ
 holds. No new credential, no new trust boundary, no state: decision 37 stays completely intact —
 the repository is still the only source of truth, this only stops a reader waiting on CI to notice
 a change already landed.
+
+**62 · A task carries a real id when its issue writes one; per-task decisions, when they exist,
+live in a record — not the issue body.** A task line may lead with an id before a middle dot
+(`T3 · …`), the same id shape decision 51's register questions use, mirrored rather than shared
+code since `api/` and `src/` serve different concerns. Optional and backward-compatible: a task
+with no id tag parses exactly as it always has. This decision settles nothing about what a task id
+is *for* yet — no approve, deny, defer, comment or follow mechanism exists, and none is inferred
+from this. What is settled, in advance of designing that: when it is built, its state lands in a
+separate structured record per workstream (mirroring decision 51's own `register.json`), written
+through the Contents API the GitHub App already holds — not an edit to the issue body via GitHub's
+Issues API, which would need a new `issues:write` permission on top of the `Actions: write` gap
+decision 61 already cost real friction to grant. A task id existing is not itself write-back; it
+is what a future write-back would need to already be true.
