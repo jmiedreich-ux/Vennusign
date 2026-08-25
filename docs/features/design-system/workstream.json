@@ -6,9 +6,18 @@
   "next": "Owner rules on the six conflicts in component-reconciliation.md (focus ring, button variants, availability switch, segmented control, checkbox, pill toggle). Build starts after.",
   "label": "workstream:design-system",
   "design": [
-    { "name": "Component reconciliation diff", "where": "docs/features/design-system/component-reconciliation.md" },
-    { "name": "Component sheet (source spec)", "where": "docs/features/menus/README.md" },
-    { "name": "Token contract", "where": "src/back-office/src/sky-ui-tokens.css" }
+    {
+      "name": "Component reconciliation diff",
+      "where": "docs/features/design-system/component-reconciliation.md"
+    },
+    {
+      "name": "Component sheet (source spec)",
+      "where": "docs/features/menus/README.md"
+    },
+    {
+      "name": "Token contract",
+      "where": "src/back-office/src/sky-ui-tokens.css"
+    }
   ],
   "milestones": [
     {
@@ -20,7 +29,10 @@
       "plan": "component-reconciliation.md",
       "issue": 856,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": null }
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
     },
     {
       "id": "2",
@@ -29,9 +41,12 @@
       "title": "One token source; fix the 45 undefined-token usages",
       "status": "blocked",
       "plan": "component-reconciliation.md",
-      "issue": 856,
+      "issue": 857,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": null }
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
     },
     {
       "id": "3",
@@ -40,9 +55,12 @@
       "title": "Build the agreed components",
       "status": "blocked",
       "plan": "component-reconciliation.md",
-      "issue": 856,
+      "issue": 858,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": null }
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
     },
     {
       "id": "4",
@@ -51,9 +69,12 @@
       "title": "#/design gallery route in the back-office",
       "status": "blocked",
       "plan": "component-reconciliation.md",
-      "issue": 856,
+      "issue": 859,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": null }
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
     }
   ]
 }
