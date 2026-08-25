@@ -105,28 +105,42 @@ Screen-specific compositions that only appear once and should stay where they ar
 rail, the publish bar, menu cards, the 86 board's three-column layout, import review tables. These are *screens*,
 not components. Making them "reusable" would be inventing a requirement that does not exist.
 
-## What the design project adds
+## What the design project adds — as claims, not answers
 
 Read after the counts above, on the owner's steer that *"that's where the wish starts from."*
 
-**There is already a named canonical reference.** The project README calls
-`menus/M1 Hi-Fi v2 - Menus home.dc.html` *"the visual reference every other area matches."* Nothing in this
-inventory was checked against it — the counts came from code alone. It should govern what the components look like
-once appearance is on the table.
+**Read every line below as "the design project says," never as "this is true."** Owner, 2026-08-25: *"we can't
+trust what's in there because changes have happened after — it's three ways."* The design project, the written
+spec, and the code each move independently, and any one of them can be the stale one. Four ways this has already
+bitten, all real:
 
-**Theme Studio is designed but unbuilt, which makes it the ideal proof.** Five storyboards (TS1–TS5), a theme
-editor, identity and rail explorations, a 28-state storyboard and a PSA review — all in the design project, and
-`docs/features/theme-studio/` holds only a `workstream.json` with zero milestones. A second consumer with a
-different skin and *no legacy code to migrate* is the cleanest possible test that skinning works, and the least
-risky place to try it.
+| Direction | Example |
+|---|---|
+| Code newer than design | The focus ring — design says 3px sky blue, code changed it to 2px dark teal for a contrast fix that sky blue genuinely fails |
+| Design newer than code | The identity explorations, which may describe thinking that never reached the app |
+| Both stale, superseded by a decision | The Review mock's "unnamed item" section — A11 later made a name required, so it describes something now impossible |
+| Reads like drift, actually settled | The entitlement components vs decision 4, resolved by build-decision 9 |
 
-**One live contradiction, already answered.** `themes/notes.md` flags that the current theme builder shows disabled
-Pro controls against decision 4. Build-decision 9 already resolved the boundary (see above), so this is not
-outstanding — but the note itself is stale and says "nothing designed yet" when TS1–TS5 exist.
+So the items below are leads to verify, not conclusions.
 
-**Still unread.** The identity explorations (`Identity D`, `E`, `E2`) and rail options (`Rail option A`, `B`) look
-like the actual source of visual direction for a second skin, and the Screens area has its own hi-fi. None have
-been compared against code. That is the natural next read, and it is what T9 asks for.
+**The project README claims a canonical reference.** It calls `menus/M1 Hi-Fi v2 - Menus home.dc.html` *"the visual
+reference every other area matches."* That is a statement in a README of unknown date — not a verified fact about
+what ships today. Worth checking against code before treating it as governing anything (T10).
+
+**Theme Studio is designed in the project and unbuilt in the repo.** Five storyboards (TS1–TS5), a theme editor,
+identity and rail explorations, a 28-state storyboard and a PSA review exist there; `docs/features/theme-studio/`
+holds only a `workstream.json` with zero milestones. *If* those storyboards are still current, a second consumer
+with no legacy code is an attractive place to prove skinning — but nothing has confirmed they are current, and
+"designed a while ago, never built" is exactly the condition under which later decisions supersede a design without
+anyone updating it (T12).
+
+**A stale note, proving the point.** `themes/notes.md` says "Nothing designed yet" while TS1–TS5 sit in the same
+folder. The same file flags the theme builder's disabled Pro controls as contradicting decision 4 — which
+build-decision 9 had already settled. One short file, two things out of date. This is the strongest available
+evidence for not trusting any single source.
+
+**Unread.** The identity explorations (`Identity D`, `E`, `E2`), rail options (`Rail option A`, `B`), and the
+Screens hi-fi. None compared against code (T11).
 
 ## What this means for the overhaul
 

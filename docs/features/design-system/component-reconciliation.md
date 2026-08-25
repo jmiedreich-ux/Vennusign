@@ -15,6 +15,21 @@ none of them is automatically right.
 | **Code** | What actually ships today | `src/back-office/src/*.css`, `styles.css`, `menu-builder.css` |
 | **Recent** | Owner feedback from the 2026-08-24 live-testing round | This session; several items already shipped |
 
+**The standing rule: no source is authoritative on its own.** Owner, 2026-08-25: *"we can't trust what's in there
+because changes have happened after — it's three ways."* Each source moves independently and any one can be the
+stale one. Four ways this has already bitten:
+
+| Direction | Example |
+|---|---|
+| Code newer than design | The focus ring (row 1) — sky blue genuinely fails contrast, so the code's change was right |
+| Design newer than code | Identity explorations that may never have reached the app |
+| Both stale, superseded by a later decision | The Review mock's "unnamed item" section, which A11 made impossible |
+| Reads like drift, actually settled | Entitlement components vs decision 4, resolved by build-decision 9 |
+
+Practical consequence: **a design file is evidence, never a verdict.** A claim inside one — including "this is the
+canonical reference" — carries the date it was written and nothing more. Verify against code and against decisions
+made since, before treating it as governing anything.
+
 **How to read a row.** Every conflict is tagged:
 - 🟡 **documented reason** — code diverged deliberately, with a recorded rationale. Likely keep, but you should see it.
 - 🔴 **undocumented drift** — code differs and nobody wrote down why. Most likely a real defect.
