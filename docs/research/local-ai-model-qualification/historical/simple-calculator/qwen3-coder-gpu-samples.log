@@ -1,0 +1,103 @@
+2026-08-24T23:38:11,898414797-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-24T23:38:12,407529794-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-24T23:38:12,915693437-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-24T23:38:13,423407208-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-24T23:38:13,930981173-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-24T23:38:14,438673843-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-24T23:38:14,948026611-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-24T23:38:15,455834163-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-24T23:38:15,964590850-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:16,473192634-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:16,980393616-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:17,487784213-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:17,995829744-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:18,503153722-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:19,011799832-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:19,520433628-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:20,028585313-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:20,536448189-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:21,044881026-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:21,553142450-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:22,061605075-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:22,569217343-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:23,077231091-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:23,584880260-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:24,093613475-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:24,601522384-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:25,111849126-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:25,620405714-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:26,129555573-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:26,637660938-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:27,146190986-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:27,654098908-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:28,162455653-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:28,670480589-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:29,179440427-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:29,688718933-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    
+2026-08-24T23:38:30,197090194-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL              
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      4 minutes from now    

@@ -1,0 +1,7 @@
+c11f2ceb88cc528aa4e0f8aea48cba65034c1e1e295a362ea807cbcf807a428e  ./TASK.md
+01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b  ./tests/__init__.py
+4c80374363ec511fdcfe891421f69c5e5db1f1fbf87fbfcb82f4cb35a4f3916a  ./tests/test_public.py
+c1d0c66393958afeac3ffe4c1033c0201ac067ef0f5f1f843aaf401cfe879225  ./venue_hold/__init__.py
+1be2acfb991189b7f5c8e7fba14ae1c7764ec85218f7e7e845cd6578bc71259a  ./venue_hold/models.py
+cc90fd009cfb19201c1c928972bd44f7a054e0a9c604d151c1705c20489a4d77  ./venue_hold/repository.py
+c0b12281d4551a67fceb819f5daac8f7c77f40d96014d0ebe32c819173c74034  ./venue_hold/service.py

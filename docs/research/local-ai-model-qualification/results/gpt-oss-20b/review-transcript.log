@@ -1,0 +1,23 @@
+[0m
+> build · gpt-oss:20b
+[0m
+[0m$ [0mgit status -s
+(no output)
+[0m
+Git status shows clean. Need to inspect candidate patch. The user says "candidate patch". Likely a patch file in repo. Search for *.patch.
+[0m✱ [0mGlob "*.patch"[90m 0 matches[0m
+Search for changes in commits; but user didn't specify. Let's ask what patch they refer to. But task: review candidate patch without editing. We need to identify issues. Maybe the patch is the last commit? Let's run git log to see recent commits.
+[0m
+[0m$ [0mgit log -n 3 --oneline
+e178f44 Create immutable identity review qualification fixture
+[0m
+[0m✗ [0mGlob "" failed[90m in *.md[0m
+[91m[1mError: [0mThe glob tool was called with invalid arguments: SchemaError(Missing key
+  at ["pattern"]).
+Please rewrite the input so it satisfies the expected schema.
+There is only one commit; seems a test fixture. But no patch file. Possibly the user refers to a pull request. Let's fetch PR diff. Search for "REVIEW.md" creation.
+We need to provide correct glob call.
+[0m✱ [0mGlob "*.md"[90m 1 match[0m
+So only *REVIEW_TASK.md*, not a patch. The request likely references the "candidate patch" from the challenge; maybe a patch is included in the repo. Since none found, we can't review. We need to ask clarifying. However the instructions: "Review the candidate patch without editing it. Identify correctness, security, identity-boundary, concurrency, idempotency, privacy and testing problems. Rank findings by severity. Cite the relevant patch behavior. Explain a minimally invasive remediation. Provide a focused regression-test plan. Write the final response to REVIEW.md."
+
+Thus the correct answer would be to produce a file REVIEW.md with the analysis, ranking, remediation, test plan. But we can't see patch. So maybe the patch content is in the request originally. Maybe user truncated. We can't comply. We should ask for patch details.I can’t find any patch in this repository to review. Could you provide the patch (as a diff or file) so I can analyze it for correctness, security, identity‑boundary, concurrency, idempotency, privacy, and testing issues? Once I have the patch, I’ll generate the findings, ranking, remediation steps, regression‑test plan, and write them to **REVIEW.md**.

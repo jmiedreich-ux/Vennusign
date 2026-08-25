@@ -1,0 +1,14 @@
+Implementation differs from the original completed solution.
+diff --git a/calculator.py b/calculator.py
+index 31d6cc6..4e13eb1 100644
+--- a/calculator.py
++++ b/calculator.py
+@@ -1,5 +1,5 @@
+ ﻿def calculate_discount(price: float, percent: float) -> float:
+     """Return the price after applying a percentage discount."""
+     if percent < 0 or percent > 100:
+-        raise ValueError("Percentage must be between 0 and 100")
+-    return price * (1 - percent / 100)
++        raise ValueError("Percent must be between 0 and 100")
++    return price - (price * percent / 100)
+VERIFY_EXIT=1

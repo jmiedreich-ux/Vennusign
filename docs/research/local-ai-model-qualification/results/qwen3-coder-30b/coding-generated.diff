@@ -1,0 +1,58 @@
+diff --git a/venue_hold/service.py b/venue_hold/service.py
+index 298111a..75e6906 100644
+--- a/venue_hold/service.py
++++ b/venue_hold/service.py
+@@ -1,6 +1,6 @@
+-from decimal import Decimal
++from decimal import Decimal, ROUND_HALF_UP
+ 
+-from .models import Hold, HoldRequest, InsufficientInventory, InvalidHoldRequest
++from .models import Hold, HoldRequest, InsufficientInventory, InvalidHoldRequest, UnknownShow, IdempotencyConflict
+ from .repository import InMemoryVenueRepository
+ 
+ 
+@@ -9,15 +9,41 @@ class VenueHoldService:
+         self._repository = repository
+ 
+     def create_hold(self, request: HoldRequest) -> Hold:
+-        if request.quantity < 1:
+-            raise InvalidHoldRequest("quantity must be positive")
++        # Validate quantity (1-10 as per task requirement)
++        if request.quantity < 1 or request.quantity > 10:
++            raise InvalidHoldRequest("quantity must be between 1 and 10")
+         if request.unit_price <= 0:
+             raise InvalidHoldRequest("unit price must be positive")
+-        if self._repository.available_seats(request.show_id) < request.quantity:
++        
++        # Check if show exists
++        try:
++            available_seats = self._repository.available_seats(request.show_id)
++        except KeyError:
++            raise UnknownShow("unknown show")
++        
++        # Check for sufficient inventory
++        if available_seats < request.quantity:
+             raise InsufficientInventory("not enough seats")
++            
++        # Check for idempotency
++        existing_hold = self._repository.get_hold(request.request_id)
++        if existing_hold is not None:
++            # If the request ID was used before, check that nothing has changed
++            if (existing_hold.show_id != request.show_id or 
++                existing_hold.quantity != request.quantity or 
++                existing_hold.unit_price != request.unit_price or 
++                existing_hold.is_member != request.is_member):
++                raise IdempotencyConflict("request id already used with different parameters")
++            # Return the existing hold
++            return existing_hold
++            
++        # Calculate total with member discount
+         total = request.unit_price * request.quantity
+         if request.is_member:
+             total -= total * Decimal("0.10")
++        # Round to 2 decimal places with ROUND_HALF_UP
++        total = total.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
++        
+         hold = Hold(request.request_id, request.show_id, request.quantity, request.unit_price, request.is_member, total)
+         self._repository.decrement(request.show_id, request.quantity)
+         self._repository.save_hold(hold)

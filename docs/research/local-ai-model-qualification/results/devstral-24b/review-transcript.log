@@ -1,0 +1,21 @@
+[0m
+> build · devstral:24b
+[0m
+I'm here to help, but unfortunately, I don't have the capability to directly review or access the candidate patch you mentioned. However, I can certainly guide you through the process of reviewing it for correctness, security, identity-boundary, concurrency, idempotency, privacy, and testing problems.
+
+Here's a general approach to help you rank findings by severity and provide a focused regression-test plan:
+
+1. **Correctness**: Ensure the patch solves the intended problem without introducing new issues.
+2. **Security**: Check for vulnerabilities, improper handling of sensitive data, or insecure coding practices.
+3. **Identity-boundary**: Verify that the patch respects and correctly implements access controls and identity boundaries.
+4. **Concurrency**: Review the code for proper handling of concurrent operations to prevent race conditions.
+5. **Idempotency**: Ensure that operations can be repeated without causing adverse side effects.
+6. **Privacy**: Make sure the patch doesn't expose or mishandle personal data.
+7. **Testing**: Evaluate the presence and quality of tests for the new features or bug fixes.
+
+For a minimally invasive remediation, identify the most critical issues and address them with the smallest changes necessary to fix the problem.
+
+To create a focused regression-test plan:
+- Identify critical areas affected by the patch and create tests to ensure they still work correctly.
+- Include edge cases and scenarios where failures might occur.
+- Verify that the overall system remains stable after the patch is applied.

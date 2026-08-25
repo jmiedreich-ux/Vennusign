@@ -1,0 +1,14 @@
+[0m
+> build · qwen3.5:9b-q4_K_M
+[0m
+[0m$ [0mfind /home/jeremy/Development/local-ai-qualification-runs/qwen3.5-9b-review-official -name "*.diff" -o -name "*.patch" -o -type f -name "candidate*" 2>/dev/null | head -20
+/home/jeremy/Development/local-ai-qualification-runs/qwen3.5-9b-review-official/candidate.diff
+[0m
+[0m→ [0mRead candidate.diff
+[0m
+[0m$ [0mls -la /home/jeremy/Development/local-ai-qualification-runs/qwen3.5-9b-review-official/REVIEW.md 2>/dev/null || echo "REVIEW.md does not exist"
+REVIEW.md does not exist
+[0m
+[0m← [0mWrite REVIEW.md
+Wrote file successfully.
+[0m

@@ -1,0 +1,94 @@
+diff --git a/venue_hold/repository.py b/venue_hold/repository.py
+index c876d8f..7f32056 100644
+--- a/venue_hold/repository.py
++++ b/venue_hold/repository.py
+@@ -1,3 +1,4 @@
++import threading
+ from .models import Hold
+ 
+ 
+@@ -7,9 +8,10 @@ class InMemoryVenueRepository:
+     def __init__(self, inventory: dict[str, int]):
+         self._inventory = dict(inventory)
+         self._holds: dict[str, Hold] = {}
++        self._lock = threading.Lock()
+ 
+     def available_seats(self, show_id: str) -> int:
+-        return self._inventory[show_id]
++        return self._inventory.get(show_id, 0)
+ 
+     def get_hold(self, request_id: str) -> Hold | None:
+         return self._holds.get(request_id)
+@@ -18,4 +20,10 @@ class InMemoryVenueRepository:
+         self._holds[hold.request_id] = hold
+ 
+     def decrement(self, show_id: str, quantity: int) -> None:
+-        self._inventory[show_id] -= quantity
++        with self._lock:
++            self._inventory[show_id] -= quantity
++
++    def decrement_and_save_hold(self, show_id: str, quantity: int, hold: Hold) -> None:
++        with self._lock:
++            self._inventory[show_id] -= quantity
++            self._holds[hold.request_id] = hold
+diff --git a/venue_hold/service.py b/venue_hold/service.py
+index 298111a..e91cf8a 100644
+--- a/venue_hold/service.py
++++ b/venue_hold/service.py
+@@ -1,24 +1,45 @@
+-from decimal import Decimal
++from decimal import ROUND_HALF_UP, Decimal
+ 
+-from .models import Hold, HoldRequest, InsufficientInventory, InvalidHoldRequest
++import threading
++
++from .models import (
++    Hold, HoldRequest, IdempotencyConflict, InsufficientInventory, UnknownShow, InvalidHoldRequest
++)
+ from .repository import InMemoryVenueRepository
+ 
+ 
+ class VenueHoldService:
+     def __init__(self, repository: InMemoryVenueRepository):
+         self._repository = repository
++        self._lock = threading.Lock()
+ 
+     def create_hold(self, request: HoldRequest) -> Hold:
+         if request.quantity < 1:
+             raise InvalidHoldRequest("quantity must be positive")
+         if request.unit_price <= 0:
+             raise InvalidHoldRequest("unit price must be positive")
+-        if self._repository.available_seats(request.show_id) < request.quantity:
+-            raise InsufficientInventory("not enough seats")
+-        total = request.unit_price * request.quantity
+-        if request.is_member:
+-            total -= total * Decimal("0.10")
+-        hold = Hold(request.request_id, request.show_id, request.quantity, request.unit_price, request.is_member, total)
+-        self._repository.decrement(request.show_id, request.quantity)
+-        self._repository.save_hold(hold)
+-        return hold
++
++        with self._lock:
++            existing_hold = self._repository.get_hold(request.request_id)
++            if existing_hold is not None:
++                if existing_hold.show_id != request.show_id or \
++                   existing_hold.quantity != request.quantity or \
++                   existing_hold.unit_price != request.unit_price or \
++                   existing_hold.is_member != request.is_member:
++                    raise IdempotencyConflict("request id already used for different hold")
++                return existing_hold
++
++            if request.show_id not in self._repository._inventory:
++                raise UnknownShow("show does not exist")
++
++            available = self._repository.available_seats(request.show_id)
++            if available < request.quantity:
++                raise InsufficientInventory("not enough seats")
++
++            total = (request.unit_price * request.quantity) * (Decimal("0.90") if request.is_member else Decimal("1"))
++            hold = Hold(
++                request.request_id, request.show_id, request.quantity, request.unit_price, 
++                request.is_member, total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
++            )
++            self._repository.decrement_and_save_hold(request.show_id, request.quantity, hold)
++            return hold

@@ -1,0 +1,25 @@
+[0m
+> build · qwen3.5:9b-q4_K_M
+[0m
+[0m✗ [0mRead TASK.md failed
+[91m[1mError: [0mFile not found: /home/jeremy/Development/Vennusign-local-ai-qualification/TASK.md
+[0m✱ [0mGlob "**/TASK*"[90m 1 match[0m
+[0m→ [0mRead docs/research/local-ai-model-qualification/tasks/coding/venue-hold-service/TASK.md
+[0m✱ [0mGlob "**/models.py"[90m 1 match[0m
+[0m✱ [0mGlob "**/repository.py"[90m 1 match[0m
+[0m✱ [0mGlob "**/service.py"[90m 1 match[0m
+[0m→ [0mRead docs/research/local-ai-model-qualification/tasks/coding/venue-hold-service/venue_hold/models.py
+[0m→ [0mRead docs/research/local-ai-model-qualification/tasks/coding/venue-hold-service/venue_hold/repository.py
+[0m→ [0mRead docs/research/local-ai-model-qualification/tasks/coding/venue-hold-service/venue_hold/service.py
+[0m✱ [0mGlob "**/venue_hold/**/test*.py"[90m 0 matches[0m
+[0m
+[0m$ [0mfind /home/jeremy/Development/Vennusign-local-ai-qualification/docs/research/local-ai-model-qualification/tasks/coding/venue-hold-service -type f -name "*.py" | head -30
+/home/jeremy/Development/Vennusign-local-ai-qualification/docs/research/local-ai-model-qualification/tasks/coding/venue-hold-service/venue_hold/repository.py
+/home/jeremy/Development/Vennusign-local-ai-qualification/docs/research/local-ai-model-qualification/tasks/coding/venue-hold-service/venue_hold/models.py
+/home/jeremy/Development/Vennusign-local-ai-qualification/docs/research/local-ai-model-qualification/tasks/coding/venue-hold-service/venue_hold/service.py
+/home/jeremy/Development/Vennusign-local-ai-qualification/docs/research/local-ai-model-qualification/tasks/coding/venue-hold-service/venue_hold/__init__.py
+/home/jeremy/Development/Vennusign-local-ai-qualification/docs/research/local-ai-model-qualification/tasks/coding/venue-hold-service/tests/test_public.py
+[0m
+[0m✗ [0mInvalid Tool
+The arguments provided to the tool are invalid: Model tried to call unavailable tool 'todo_write'. Available tools: bash, edit, glob, grep, invalid, read, skill, task, todowrite, webfetch, write.
+[0m

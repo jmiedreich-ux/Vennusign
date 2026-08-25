@@ -1,0 +1,9 @@
+test_creates_non_member_hold (tests.test_public.VenueHoldPublicTests.test_creates_non_member_hold) ... ok
+test_insufficient_inventory_is_rejected (tests.test_public.VenueHoldPublicTests.test_insufficient_inventory_is_rejected) ... ok
+test_invalid_quantity_is_rejected (tests.test_public.VenueHoldPublicTests.test_invalid_quantity_is_rejected) ... ok
+test_member_receives_discount (tests.test_public.VenueHoldPublicTests.test_member_receives_discount) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.000s
+
+OK

@@ -1,0 +1,7 @@
+{
+  "model": "qwen3.5:9b-q4_K_M",
+  "digest": "6488c96fa5fa",
+  "coding": {"official_attempts": 1, "infrastructure_retries": 1, "duration_ns": 150010362503, "hidden_passed": 13, "hidden_total": 14, "public_tests_passed": true, "scope_clean": true, "manual_assistance": false, "score": 95},
+  "review": {"official_attempts": 1, "duration_ns": 130106011552, "seeded_findings_awarded": ["sensitive-token logging", "broad exception", "check-then-write race", "non-atomic account/binding writes"], "score": 48},
+  "eligibility": {"fast_worker": true, "primary_developer": true, "planner_reviewer": false}
+}

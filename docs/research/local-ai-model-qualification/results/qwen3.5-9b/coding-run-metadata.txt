@@ -1,0 +1,6 @@
+start=2026-08-25T00:18:25,154901028-04:00
+finish=2026-08-25T00:20:55,166308081-04:00
+duration_ns=150010362503
+exit_code=0
+fixture_commit=9cffcdc6830e2590b3d78fba6aea80433a62fca6
+command=opencode run --dir /home/jeremy/Development/local-ai-qualification-runs/qwen3.5-9b-coding-official --auto --agent build --model ollama/qwen3.5:9b-q4_K_M <fixed coding prompt>

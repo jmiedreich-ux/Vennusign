@@ -1,0 +1,839 @@
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:18:25,154901038-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:18:25,663579331-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:18:26,171348422-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:18:26,680678286-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:18:27,188201991-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:18:27,696588480-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:18:28,204373163-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:28,712706220-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:29,222360114-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:29,729699251-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:30,238687999-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:30,747409990-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:31,255894329-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:31,763200003-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:32,270427961-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:32,779990825-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:33,289254731-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:33,796554426-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:34,304229477-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:34,811407552-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:35,325751414-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:35,834708357-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:36,343595088-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:36,851571325-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:37,360600458-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:37,869306606-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:38,377114715-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:38,884994370-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:39,392362382-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:39,900738334-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:40,413904438-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:40,924042116-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:41,432178423-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:41,939443822-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:42,446835632-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:42,955549610-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:43,463477633-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:43,971253035-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:44,479215675-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:44,986729781-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:45,494443478-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:46,001822717-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:46,510402124-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:47,018986490-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:47,527692979-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:48,035625284-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:48,542968479-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:49,050972522-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:49,558248449-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:50,066375718-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:50,574294541-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:51,082078487-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:51,589498340-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:52,096967087-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:52,605367038-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:53,112837339-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:53,620383206-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:54,129200182-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:54,637406146-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:55,145360501-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:55,654511235-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:56,162685279-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:56,670887587-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:57,179321147-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:57,688613703-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:58,196143252-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:58,703938177-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:59,211471033-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:18:59,719152143-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:00,226790361-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:00,736043174-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:01,244604962-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:01,753965552-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:02,261797882-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:02,769231192-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:03,276764864-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:03,784690463-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:04,292590644-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:04,800692681-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:05,308339721-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:05,816739665-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:06,324148021-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:06,834044326-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:07,341725504-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:07,849172104-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:08,357288071-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:08,865466376-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:09,374136919-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:09,882197361-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:10,391338272-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:10,899180279-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:11,406595223-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:11,914370283-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:12,422931121-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:12,930577998-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:13,438968893-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:13,948699340-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:14,456200431-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:14,965851497-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:15,473803979-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:15,982028991-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:16,489557306-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:16,996888706-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:17,504768012-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:18,012551273-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:18,520248773-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:19,028880922-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:19,536399122-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:20,044268730-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:20,552142297-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:21,061031278-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:21,569203294-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:22,077576263-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:22,585171091-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:23,093940907-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:23,602336122-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:24,110054687-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:24,618908404-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:25,127240899-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:25,637406816-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:26,145538640-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:26,655058188-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:27,164243529-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:27,672280484-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:28,180251784-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:28,691301597-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:29,202275877-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:29,710030095-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:30,217537374-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:30,724845223-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:31,232739340-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:31,740347282-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:32,248126109-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:32,757503792-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:33,265522197-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:33,774412343-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:34,281911420-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:34,789873359-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:35,298704152-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:35,806085507-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:36,313882533-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:36,823602983-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:37,332526986-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:37,841342654-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:38,349710850-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:38,859185263-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:39,366946925-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:39,875851534-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:40,383603879-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:40,893645564-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:41,401986451-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:41,909344216-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:42,418224501-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:42,926925535-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:43,435561836-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:43,945143689-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:44,453783929-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:44,961606822-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:45,469427312-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:45,977130258-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:46,484759214-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:46,992413388-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:47,499775617-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:48,008077806-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:48,516641504-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:49,025992973-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:49,533453380-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:50,040917295-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:50,551101221-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:51,059147996-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:51,566779782-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:52,076413651-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:52,586012214-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:53,093819645-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:53,601659300-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:54,108943085-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:54,616375554-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:55,125677334-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:55,635521988-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:56,143378275-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:56,651882157-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:57,159855308-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:57,681825306-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:58,190097858-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:58,699464765-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:19:59,209703242-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:19:59,717664363-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:00,226154992-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:00,733367338-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:01,241363427-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:01,749378682-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:02,256955102-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:02,765779199-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:03,273979709-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:03,783046900-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:04,291953455-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:04,799625750-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:05,308053675-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:05,815960167-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:06,324374176-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:06,832672195-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:07,341941815-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:07,849910708-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:08,357964162-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:08,865773402-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:09,374511711-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:09,882053623-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:10,389379243-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:10,897234211-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:11,406738321-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:11,914556941-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:12,423321734-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:12,931398106-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:13,439659531-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:13,948372957-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:14,456757938-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:14,964345822-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:15,471808798-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:15,981447588-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:16,489967208-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:16,997583888-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:17,505944846-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:18,013668070-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:18,521388188-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:19,029747034-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:19,537783566-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:20,045868420-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:20,554408933-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:21,063114530-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:21,571057065-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:22,080376503-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:22,588051699-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:23,095869828-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:23,604124417-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:24,113488580-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:24,620862364-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:25,128715732-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:25,636358660-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:26,144390899-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:26,653927755-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:27,161454322-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:27,669582005-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:28,177961598-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:28,685710280-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:29,193964816-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:29,702702762-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:30,210873509-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:30,721409331-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:31,229537538-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:31,738710214-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:32,246207079-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:32,754059432-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:33,262114731-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:33,771264075-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:34,278776912-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:34,786624447-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:35,294327177-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:35,802021592-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:36,311071298-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:36,818973168-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:37,327736871-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:37,835092141-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:38,346288407-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:38,856326247-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:39,380777438-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:39,889679085-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:40,398840808-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:40,906670154-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:41,414486866-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:41,922030298-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:42,429820921-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:42,939045135-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:43,446612023-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:43,953910461-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:44,463058200-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:44,970611604-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:45,480604364-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:45,989298110-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:46,497919459-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:47,005768307-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:47,515303888-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:48,025105636-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:48,533031883-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:49,042189425-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:20:49,550967514-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:50,060383970-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:50,568565715-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:51,075972946-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:51,583295836-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:52,091326995-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:52,600089508-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:53,107470861-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:53,615542338-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:54,123145294-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:54,631384151-04:00
+NAME                 ID              SIZE      PROCESSOR    CONTEXT    UNTIL       
+qwen3.5:9b-q4_K_M    6488c96fa5fa    8.0 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:20:55,140007120-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
