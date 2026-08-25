@@ -5,6 +5,26 @@
 This is a count, not a design. Purpose: turn "247 buttons and no idea where to start" into a bounded list you can
 actually hold in your head and reason about.
 
+## The tasks, answered
+
+Each task on this milestone asks you to confirm something. Here is what each one is actually asking, in one line —
+the detail is in the sections below.
+
+| Task | What it is asking |
+|---|---|
+| **T1** — only 4 kinds of button? | The app has 247 buttons written under 11 different names, but they are really only: **main action** (15 uses), **ordinary action** (32), **delete-type action** (11), and **plain text link** (8). Is 4 the right number? |
+| **T2** — fix the 97 first? | **97 of the 247 have no styling at all** and render as plain browser buttons — 40% of the app. Nothing to un-drift; they were simply never dressed. Highest-visibility, lowest-risk place to start. |
+| **T3** — build on the 9? | Nine shared components already exist and are genuinely reused: the confirm-before-deleting dialog (11 screens), loading spinner (6), toasts (5), placeholder-while-loading (4), the icon set (4), empty states (4), plus three plan/tier chips. Build on these rather than beside them. |
+| **T4** — carry the behaviour? | Real working logic is already written but not packaged: keyboard focus handling shared by 13 dialogs, 18 Escape-to-close handlers, 12 click-outside-to-close handlers, 99 label-and-field pairings. A library built from appearance alone would discard all of it. |
+| **T5** — the list of 14 | 5 plain controls (button, text field, dropdown, checkbox, radio group), 4 that already carry behaviour (dialog, toggle, dropdown menu, search), 5 display-only (status chip, empty state, toast, loading placeholder, banner). |
+| **T6** — what was left out | The menu board, nav rail, publish bar, menu cards, the 86 board layout, import tables. Each appears once. They are screens, not components; making them "reusable" would invent a requirement that does not exist. |
+| **T8** — skin per app or per context? | Per app, the choice lives in a wrapper and components never know about it. Per context, every component has to know where it is rendering. This changes how every component is written. |
+| **T9** — count Theme Studio | This inventory covered back-office screens only. Theme Studio is a confirmed second consumer and was never counted, so the 14 may be incomplete. |
+| **T10** — is the "canonical reference" current? | The design project's README calls one file "the visual reference every other area matches." That claim carries no date and has never been checked against what ships. |
+| **T11** — which explorations survived? | The project holds identity and rail explorations never compared against code. Reading them is easy; knowing which later decisions overtook is the real work. |
+| **T12** — prove skinning on Theme Studio? | Tempting because it is fully designed and completely unbuilt, so there is no old code to migrate. The catch: designs drawn a while ago and never built are exactly where later decisions supersede things silently. Depends on T11. |
+| **T13** — the stale notes | One file in the design project says "nothing designed yet" while five finished storyboards sit beside it, and flags a contradiction settled long ago. |
+
 ## The finding that matters
 
 **The 247 buttons are not 247 things. They are about four things, repeated.**
