@@ -1456,3 +1456,13 @@ being visible by accident during a container's startup window.
 logging) as infrastructure-as-code or leave it as manual Azure state; then continue
 either with the GitHub issue backlog or with formalizing the release-engineering
 concept into an approved work package.
+
+## 2026-08-25 — Local-model qualification complete
+
+The finite local-model qualification is complete and pushed on branch `research/local-ai-model-qualification-2026-08-25`. Final commit at handoff: `0e3ee0ddd1fcf79b89465d8040121d9df681618c` (this handoff update will follow it). The durable evidence, immutable fixtures, transcripts, GPU samples, scoring, historical calculator baseline, final report, and JSON summary live under `docs/research/local-ai-model-qualification/`; no Git bundle was created.
+
+Eight official runs completed: qwen3.5 (coding 95/review 48), qwen3-coder (90/0), gpt-oss (95/0), and devstral (60/0). Under the fixed qualification rules, `gpt-oss:20b` is both **fast worker** and **primary developer**; no local model qualified as **planner/reviewer**, so Maestro retains that role in the cloud. `docs/design/proposed/maestro-dev-lead-agent-framework.md` now links the finite qualification and requires routing only within measured thresholds.
+
+Two important limits are recorded in the final report: the visible coding fixture has a quantity-20 public-test case that contradicts the stated maximum quantity of 10, and three models failed to locate `candidate.diff` in the review fixture. Results were preserved rather than repaired or rerun. qwen3.5 also has one preserved pre-official harness failure, followed by the permitted infrastructure retry.
+
+**Exact next action.** Treat the qualification as closed. For any future routing change, read the final report and evidence first; do not add unplanned tests or alter these results. Any new qualification phase requires an owner-approved separate plan and branch.
