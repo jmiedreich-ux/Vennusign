@@ -1,0 +1,59 @@
+{
+  "codename": "Design system",
+  "what": "The shared UI layer above sky-ui-tokens.css: real Button/TextField/Dialog components, one token source across all four consuming apps, and a live #/design gallery route that cannot drift from what ships",
+  "stage": "designing",
+  "position": "Reconciliation diff written and awaiting owner ruling on six contested components. Nothing built yet.",
+  "next": "Owner rules on the six conflicts in component-reconciliation.md (focus ring, button variants, availability switch, segmented control, checkbox, pill toggle). Build starts after.",
+  "label": "workstream:design-system",
+  "design": [
+    { "name": "Component reconciliation diff", "where": "docs/features/design-system/component-reconciliation.md" },
+    { "name": "Component sheet (source spec)", "where": "docs/features/menus/README.md" },
+    { "name": "Token contract", "where": "src/back-office/src/sky-ui-tokens.css" }
+  ],
+  "milestones": [
+    {
+      "id": "1",
+      "label": "M1",
+      "depth": 1,
+      "title": "Reconcile components against design, spec and live code",
+      "status": "next",
+      "plan": "component-reconciliation.md",
+      "issue": 856,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": null }
+    },
+    {
+      "id": "2",
+      "label": "M2",
+      "depth": 2,
+      "title": "One token source; fix the 45 undefined-token usages",
+      "status": "blocked",
+      "plan": "component-reconciliation.md",
+      "issue": 856,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": null }
+    },
+    {
+      "id": "3",
+      "label": "M3",
+      "depth": 3,
+      "title": "Build the agreed components",
+      "status": "blocked",
+      "plan": "component-reconciliation.md",
+      "issue": 856,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": null }
+    },
+    {
+      "id": "4",
+      "label": "M4",
+      "depth": 4,
+      "title": "#/design gallery route in the back-office",
+      "status": "blocked",
+      "plan": "component-reconciliation.md",
+      "issue": 856,
+      "pr": null,
+      "acceptance": { "kind": "workbook", "record": null }
+    }
+  ]
+}

@@ -10,6 +10,7 @@
     "onboarding",
     "platform-operations",
     "atlas",
-    "authentication"
+    "authentication",
+    "design-system"
   ]
 }
