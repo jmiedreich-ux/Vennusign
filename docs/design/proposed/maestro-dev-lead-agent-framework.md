@@ -51,6 +51,10 @@ A role describes the area's conventions, invariants, allowable files, and where 
 
 This routing is configuration, not a hard-coded property of a role. It can be tuned later from real results.
 
+## Controlled local-model qualification
+
+The finite local-model qualification at `docs/research/local-ai-model-qualification/` evaluates four local models under fixed fixtures and configuration. Maestro routes only bounded work to models that meet the measured role thresholds in that report; cloud models remain responsible for work outside those thresholds. The qualification report maintains the full evidence and final routing table.
+
 ## Verification target
 
 The expected gate remains the existing process: Release build, focused tests, integration/model-invariant tests, Playwright, QA, and owner demo/acceptance.

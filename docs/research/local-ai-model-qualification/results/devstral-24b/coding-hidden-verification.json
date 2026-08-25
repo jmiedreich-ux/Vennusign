@@ -1,0 +1,68 @@
+{
+  "checks": [
+    {
+      "area": "1 correct non-member subtotal",
+      "passed": true
+    },
+    {
+      "area": "2 correct 10% member discount",
+      "passed": true
+    },
+    {
+      "area": "3 ROUND_HALF_UP cent rounding",
+      "passed": false,
+      "detail": "AssertionError: "
+    },
+    {
+      "area": "4 quantity below 1 rejected",
+      "passed": true
+    },
+    {
+      "area": "5 quantity above 10 rejected",
+      "passed": false,
+      "detail": "AssertionError: expected InvalidHoldRequest"
+    },
+    {
+      "area": "6 zero or negative unit price rejected",
+      "passed": true
+    },
+    {
+      "area": "7 unknown show leaves inventory unchanged",
+      "passed": false,
+      "detail": "KeyError: 'missing'"
+    },
+    {
+      "area": "8 insufficient inventory leaves inventory unchanged",
+      "passed": true
+    },
+    {
+      "area": "9 successful reservation decrements exactly once",
+      "passed": true
+    },
+    {
+      "area": "10 identical idempotent replay returns same hold",
+      "passed": false,
+      "detail": "AssertionError: "
+    },
+    {
+      "area": "11 conflicting request-ID reuse rejected",
+      "passed": false,
+      "detail": "AssertionError: expected IdempotencyConflict"
+    },
+    {
+      "area": "12 eight concurrent identical calls create one hold and one decrement",
+      "passed": false,
+      "detail": "AssertionError: "
+    },
+    {
+      "area": "13 concurrent distinct calls cannot oversell",
+      "passed": true
+    },
+    {
+      "area": "14 tests, task files and unrelated files were not modified",
+      "passed": true
+    }
+  ],
+  "passed": 8,
+  "total": 14
+}

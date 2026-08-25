@@ -1,0 +1,12 @@
+{
+  "status": "complete",
+  "official_runs": 8,
+  "models": {
+    "qwen3.5:9b-q4_K_M": {"coding_score": 95, "coding_duration_ns": 150010362503, "review_score": 48, "review_duration_ns": 130106011552, "fast_worker_eligible": true, "primary_developer_eligible": true, "planner_reviewer_eligible": false},
+    "qwen3-coder:30b": {"coding_score": 90, "coding_duration_ns": 300780826839, "review_score": 0, "review_duration_ns": 10318510315, "fast_worker_eligible": true, "primary_developer_eligible": true, "planner_reviewer_eligible": false},
+    "gpt-oss:20b": {"coding_score": 95, "coding_duration_ns": 125855142960, "review_score": 0, "review_duration_ns": 32639246968, "fast_worker_eligible": true, "primary_developer_eligible": true, "planner_reviewer_eligible": false},
+    "devstral:24b": {"coding_score": 60, "coding_duration_ns": 12983576079, "review_score": 0, "review_duration_ns": 18204368715, "fast_worker_eligible": false, "primary_developer_eligible": false, "planner_reviewer_eligible": false}
+  },
+  "selected_roles": {"fast_worker": "gpt-oss:20b", "primary_developer": "gpt-oss:20b", "planner_reviewer": "cloud model"},
+  "limitations": ["Public coding test contradicts the fixed quantity rule.", "Review fixture discovery affected three model runs."]
+}

@@ -1,0 +1,36 @@
+[0m
+> build · qwen3.5:9b-q4_K_M
+[0m
+[0m→ [0mRead TASK.md
+[0m✱ [0mGlob "**/calculator.py"[90m 1 match[0m
+[0m→ [0mRead calculator.py
+[0m✱ [0mGlob "**/*test*.py"[90m 1 match[0m
+[0m→ [0mRead test_calculator.py
+[0m
+[0m← [0mEdit calculator.py
+Index: /home/jeremy/Development/LocalAgentTest-task-001-linux-run/calculator.py
+===================================================================
+--- /home/jeremy/Development/LocalAgentTest-task-001-linux-run/calculator.py
++++ /home/jeremy/Development/LocalAgentTest-task-001-linux-run/calculator.py
+@@ -1,3 +1,5 @@
+ def calculate_discount(price: float, percent: float) -> float:
+     """Return the price after applying a percentage discount."""
+-    return price - percent
++    if percent < 0 or percent > 100:
++        raise ValueError("Percent must be between 0 and 100")
++    return price - (price * percent / 100)
+
+[0m
+[0m$ [0mcd /home/jeremy/Development/LocalAgentTest-task-001-linux-run && python -m unittest -v
+test_decimal_result (test_calculator.CalculateDiscountTests.test_decimal_result) ... ok
+test_rejects_negative_percent (test_calculator.CalculateDiscountTests.test_rejects_negative_percent) ... ok
+test_rejects_percent_over_one_hundred (test_calculator.CalculateDiscountTests.test_rejects_percent_over_one_hundred) ... ok
+test_ten_percent_discount (test_calculator.CalculateDiscountTests.test_ten_percent_discount) ... ok
+test_zero_percent (test_calculator.CalculateDiscountTests.test_zero_percent) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.000s
+
+OK
+[0m
+TASK-001 implemented successfully. All 5 tests pass.
