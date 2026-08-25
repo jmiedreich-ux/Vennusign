@@ -104,6 +104,20 @@ appearance from a swappable skin, then a UI overhaul is a second skin over compo
 rewrite. Screens cross over when their skin is ready. That is what makes "old and new coexisting" practical rather
 than a maintenance burden, and it is why building the component layer comes before deciding what the new look is.
 
+**Owner, 2026-08-25 — skinnable is a requirement, not an option.** *"Theme studio will definitely have a different
+skin than back office, but will probably use a lot of the same controls."* Two consumers with deliberately different
+looks sharing one control set is the case skinning exists for, so this stops being a design choice and becomes a
+constraint on every component's API.
+
+Two consequences, both open (T8, T9 on the milestone issue):
+
+- **Is a skin chosen per app, or per context?** Per app, the choice lives in a wrapper and components never know
+  about it. Per context, a component has to know where it is rendering. This changes every component's shape, so it
+  wants answering before the first one is written.
+- **This inventory covered the back-office only.** Theme Studio is now a confirmed second consumer and has not been
+  counted. Its shared controls may differ from the fourteen here, and the design project holds storyboards for it
+  (TS1–TS5) plus identity explorations that have never been compared against code.
+
 ## Suggested first step
 
 **Group 1's Button, applied to the 97 undressed buttons.** It is the highest-visibility change available (40% of the

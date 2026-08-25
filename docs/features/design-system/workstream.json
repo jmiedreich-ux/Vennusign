@@ -2,8 +2,8 @@
   "codename": "Design system",
   "what": "The shared UI layer: real components carrying their own behaviour and a swappable skin, one source for style values, and a live gallery page - the foundation for a staged UI overhaul where old and new coexist",
   "stage": "designing",
-  "position": "Inventory done: 14 components, four button roles behind eleven names, 97 buttons with no styling at all. Awaiting owner review before the appearance decisions.",
-  "next": "Owner reviews the component inventory (#861). The six appearance decisions in M1 become answerable once there is a bounded list to decide against.",
+  "position": "Inventory done: 14 components, four button roles behind eleven names, 97 buttons with no styling at all. Skinnable confirmed as a requirement - Theme Studio needs a different skin over shared controls.",
+  "next": "Owner reviews the inventory (#861). Two new questions opened by the Theme Studio constraint: is a skin per app or per context, and what does Theme Studio actually share?",
   "label": "workstream:design-system",
   "design": [
     {
