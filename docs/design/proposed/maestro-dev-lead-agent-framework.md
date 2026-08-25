@@ -55,6 +55,108 @@ This routing is configuration, not a hard-coded property of a role. It can be tu
 
 The finite local-model qualification at `docs/research/local-ai-model-qualification/` evaluates four local models under fixed fixtures and configuration. Maestro routes only bounded work to models that meet the measured role thresholds in that report; cloud models remain responsible for work outside those thresholds. The qualification report maintains the full evidence and final routing table.
 
+## Cloud-to-local task dispatch plan
+
+The recommended control plane is GitHub. Cloud Maestro creates and reviews bounded assignments; the Linux AI box makes outbound GitHub requests to claim and execute them. Normal dispatch does not require an inbound endpoint, Remote Desktop, SSH, or Tailscale. Tailscale remains an owner maintenance path only.
+
+### Decision authority
+
+- The owner approves milestones, acceptance, merge, and deployment.
+- Cloud Maestro owns interpretation, decomposition, architecture, risk classification, acceptance criteria, model-routing class, and final review.
+- Local models implement bounded repository work but do not approve their own work, change architecture, merge, deploy, or contact the owner directly for product decisions.
+- Ambiguous, security-sensitive, production, identity, database-strategy, cross-application, or credential-bearing work remains cloud-only unless Cloud Maestro first reduces it to an explicitly approved implementation packet.
+
+### Measured routing configuration
+
+Cloud assignments name an execution class rather than a hard-coded model so the model mapping can change without changing the protocol.
+
+| Execution class | Current route | Intended work |
+| --- | --- | --- |
+| `fast` | `gpt-oss:20b` | Mechanical edits, documentation, scaffolding, focused tests, and straightforward fixes |
+| `developer` | `qwen3-coder:30b` | Multi-file implementation, difficult defects, concurrency, idempotency, and substantial bounded feature slices |
+| `fallback` | `qwen3.5:9b-q4_K_M` | Lightweight work when the normal fast model is unavailable or unnecessary |
+| `cloud-only` | Cloud model | Planning, architecture, security/identity judgment, unresolved ambiguity, final review, and owner-facing decisions |
+
+`devstral:24b` is not routed. Qualification showed Qwen Coder passing all 14 hidden coding checks, GPT-OSS providing the fastest high-scoring coding run, and no local model establishing sufficient final-review evidence. Only one local inference job runs at a time until capacity evidence supports concurrency.
+
+### Assignment eligibility
+
+A local packet must be repository-contained, reversible through Git, limited to named paths, based on settled requirements, verifiable with explicit commands, and free of production credentials and customer data. Cloud Maestro may delegate implementation of a high-risk design only after retaining the design decision and expressing the remaining work as a bounded packet.
+
+### GitHub job contract
+
+Each assignment is a GitHub Issue created from a fixed template and pinned to an exact base commit. The issue contains:
+
+- Job ID, repository, base branch, base commit, execution class, risk, and priority.
+- Goal, business context, requirements, explicit non-goals, and known risks.
+- Allowed and forbidden paths.
+- Exact acceptance commands and expected evidence.
+- Time budget, maximum revision cycles, network and production-access policy, and merge authorization.
+- Cloud-review expectations and Definition of Done.
+
+The local worker snapshots and hashes the assignment before execution. Recommended labels are `maestro:ready`, `maestro:claimed`, `maestro:running`, `maestro:testing`, `maestro:review`, `maestro:revision`, `maestro:blocked`, `maestro:complete`, and `maestro:cancelled`, plus routing and risk labels.
+
+Normal state flow:
+
+`READY -> CLAIMED -> RUNNING -> TESTING -> REVIEW -> COMPLETE`
+
+Failure paths return to `BLOCKED`, `REVISION`, `CLOUD-ONLY`, or owner escalation without silently widening scope.
+
+### Local worker behavior
+
+A small `maestro-worker` service on the AI box starts automatically after reboot and polls GitHub approximately every 20–30 seconds. It processes one job at a time:
+
+1. Atomically claim one ready issue and record the worker identity and lease.
+2. Verify the pinned base commit and create a clean isolated worktree.
+3. Map the execution class to the configured Ollama model.
+4. Launch OpenCode with the immutable assignment and repository instructions.
+5. Enforce time, path, network, and resource limits while recording model, timing, process, and GPU evidence.
+6. Run the exact acceptance commands without weakening or rewriting tests.
+7. Push a predictable branch such as `local-agent/<job-id>/<slug>`.
+8. Open a draft PR linked to the issue and move the issue to cloud review.
+9. Wait for `APPROVE`, `REQUEST_LOCAL_REVISION`, `TAKE_OVER_IN_CLOUD`, or `RETURN_TO_OWNER`.
+
+The worker never commits to `master`, force-pushes, merges, deploys, guesses through merge conflicts, reuses a dirty worktree, or includes unrelated changes.
+
+### Evidence and repository records
+
+Product changes stay on the task branch. Durable execution evidence is written to an append-only `maestro-runs` branch under `runs/<job-id>/`, including the assignment snapshot and hash, model tag and digest, base and result commits, timing, exit status, tests, changed files, generated diff, GPU samples, retry and revision counts, and final disposition. PR and issue comments link to that record. Logs are secret-scanned before push.
+
+### Cloud review and loop limits
+
+Cloud review verifies requirements, authorized scope, test integrity, architecture, security and identity boundaries, error handling, concurrency/idempotency where relevant, migrations, and repository conventions. The local worker receives at most one cloud-requested revision cycle. A second failure moves the work to the cloud or owner; it does not create an endless local repair loop.
+
+### Failure handling
+
+- Infrastructure failures are preserved and may receive a bounded clean retry.
+- Failed tests or misunderstood requirements are model outcomes, not infrastructure retries.
+- `fast` work may use the qualified fallback model when the normal model cannot load; `developer` work does not silently downgrade.
+- Timeouts stop safely, preserve evidence, and block the job.
+- Stale bases or conflicts return to Cloud Maestro for replanning.
+- An offline worker leaves ready work queued; Cloud Maestro may wait, execute it in cloud, or reassign it.
+- Ambiguity returns to the cloud instead of being guessed locally.
+
+### Security boundary
+
+The service runs as a dedicated non-root user with a fine-grained GitHub credential restricted to approved repositories, issues, branches, pull requests, and run records. It has no production Azure credentials, customer data, automatic deployment permission, repository-administration permission, or `sudo`. No inbound internet port is required. A dedicated GitHub App should replace a personal token when the control loop is proven.
+
+### Operational health
+
+The worker publishes a small heartbeat containing worker ID, idle/busy state, current job ID, Ollama/GPU health, and last-seen time without publishing private prompt contents. Local SQLite state supports leases and crash recovery.
+
+### Implementation sequence
+
+1. **Run-once proof** — Process one prepared GitHub job end to end: claim, route, worktree, model execution, tests, branch, draft PR, and evidence.
+2. **Automatic worker** — Add polling, leases, local state, crash recovery, time limits, heartbeat, and `systemd` startup.
+3. **Cloud integration** — Standardize assignment, risk, review, revision, and escalation prompts.
+4. **Hardening** — Add GitHub App authentication, stronger sandbox/resource limits, secret detection, stale-job recovery, and multiple-repository support.
+
+GitHub Issues and PRs are the initial operating interface; a separate dashboard is not required.
+
+### Operational Definition of Done
+
+The first operational version is complete when a cloud agent can publish a bounded GitHub assignment; the AI box receives it without manual prompt or file transfer; the correct model executes in an isolated branch; evidence and tests are retained; a draft PR is created; cloud review can request at most one revision; nothing merges or deploys without authorization; and the worker recovers after reboot.
+
 ## Verification target
 
 The expected gate remains the existing process: Release build, focused tests, integration/model-invariant tests, Playwright, QA, and owner demo/acceptance.
