@@ -1,0 +1,1638 @@
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:31,145380868-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:31,654458558-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:32,162620654-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:32,671340493-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:33,178984212-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:33,689996980-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:34,209918457-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:34,722948236-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:35,237267062-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:35,750951820-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:36,272881183-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:36,789969044-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:37,314072858-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:37,854579738-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:38,390231972-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:38,929742856-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:39,447382279-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:39,960694940-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:40,471398993-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:40,979509185-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:41,487688799-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:41,996431006-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:42,506212342-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:43,014943828-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:43,523438925-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:44,033076579-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:44,541813887-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:45,051876190-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:45,561947490-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:46,070212580-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:46,579282593-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:47,088095817-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:47,597813535-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:48,108332560-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:48,619131768-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:49,127692403-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:49,635714662-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:24:50,144514853-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:24:50,653287663-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:24:51,160993711-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:24:51,668727160-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:24:52,177574893-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:24:52,685260974-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:53,192911557-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:53,700846221-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:54,209271441-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:54,717497670-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:24:55,226111640-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:24:55,734630698-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:24:56,242626380-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:24:56,750146126-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:24:57,257826167-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:24:57,765054298-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:58,272334328-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:58,780203751-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:24:59,290437647-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:24:59,798134522-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:00,306801986-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:00,816814742-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:01,324513200-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:01,832086741-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:02,339477303-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:02,847211530-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:03,354937713-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:03,863413333-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:04,371025478-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:04,879081560-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:05,386775552-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:05,895085437-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:06,403168962-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:06,911310226-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:07,419380586-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:07,927445816-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:08,434919170-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:08,942912013-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:09,450136082-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:09,958627805-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:10,467640462-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:10,975971249-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:11,484520253-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:11,991872367-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:12,499486641-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:13,007690547-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:13,515099500-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:14,022671755-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:14,530262114-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:15,037932776-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:15,546869330-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:16,059667430-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:16,568117848-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:17,075753896-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:17,583837626-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:18,092475572-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:18,602009105-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:19,111081048-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:19,618836133-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:20,126144969-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:20,633603510-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:21,141818872-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:21,650885157-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:22,158240842-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:22,665781711-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:23,173421868-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:23,680828341-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:24,188764233-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:24,697709738-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:25,204994140-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:25,712776320-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:26,220800611-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:26,728402568-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:27,236555014-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:27,744608852-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:28,252774985-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:28,760328871-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:29,267749895-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:29,775131604-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:30,283950050-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:30,791564102-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:31,299546406-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:31,808880425-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:32,316231387-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:32,823911686-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:33,331936281-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:33,839630367-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:34,347704357-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:34,855493224-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:35,363053997-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:35,870676237-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:36,378196874-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:36,885574638-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:37,393615176-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:37,902565657-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:38,410537465-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:38,919294908-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:39,426740674-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:39,934694478-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:40,442296291-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:40,950732294-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:41,458843327-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:41,966122988-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:42,473718170-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:42,982974155-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:43,491938415-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:44,000306219-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:44,507874120-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:45,015464092-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:45,523793985-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:46,031908257-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:46,540599118-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:47,048313719-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:47,556465393-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:48,064304622-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:48,571766132-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:49,080743790-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:49,588718058-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:50,096487064-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:50,604544520-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:51,113029831-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:51,622449823-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:52,130674458-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:52,638942446-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:53,148388297-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:25:53,656488758-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:54,163718078-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:54,672047504-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:55,179517032-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:55,688073791-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:56,195997786-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:56,704493429-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:57,212254374-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:57,720254844-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:58,228238844-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:58,736760017-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:59,245433901-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:25:59,753274638-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:00,261187994-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:00,769775495-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:01,279068249-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:01,786960775-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:02,295730824-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:02,803353738-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:03,312361610-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:03,820272363-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:04,328493196-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:04,837603644-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:05,345222131-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:05,853103128-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:06,363150692-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:06,871028683-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:07,379026192-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:07,887779702-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:08,395968286-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:08,904584725-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:09,412307963-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:09,920659027-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:10,428552810-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:10,936786681-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:11,444807066-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:11,952071010-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:12,461171313-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:12,968931022-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:13,476454481-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:13,983993089-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:14,492557862-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:15,000247589-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:15,507898872-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:16,016575499-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:16,524258844-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:17,032900745-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:17,541488353-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:18,049519611-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:18,559765198-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:19,066986464-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:19,574989399-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:20,083310270-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:20,591582198-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:21,099679343-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:21,607702808-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:22,114990502-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:22,622223963-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:23,130202302-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:23,639249749-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:24,147121336-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:24,656238335-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:25,164695668-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:25,672335184-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:26,182135706-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:26,690706937-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:27,198302359-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:27,705744940-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:28,213154869-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:28,720977945-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:29,229362622-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:29,737686944-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:30,245301063-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:30,752908269-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:31,267612134-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:31,775277732-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:32,283129504-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:32,791316947-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:33,300220974-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:33,808997218-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:34,317339997-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:34,824854248-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:35,332723555-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:35,842485929-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:36,350012383-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:36,857717318-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:37,366747528-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:37,874651192-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:38,381819635-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:38,889834751-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:39,399540509-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:39,909815912-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:40,417906723-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:40,926071996-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:41,435114010-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:41,942902687-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:42,451474445-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:42,961480596-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:43,468999089-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:43,976243168-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:44,484440825-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:44,992636037-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:45,500284789-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:46,008116919-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:46,521866603-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:47,029701580-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:47,539454411-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:48,046841334-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:48,555365184-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:49,063297527-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:49,572097243-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:50,081450022-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:50,590779938-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:51,099622205-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:51,608081153-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:52,115810751-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:52,624435936-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:53,132132221-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:53,640128287-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:54,150617042-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:26:54,658586138-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:55,166505339-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:55,674585766-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:56,181982372-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:56,690644358-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:57,198364260-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:57,705850857-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:58,213367061-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:58,721078257-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:59,229190507-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:26:59,736558329-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:00,245227951-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:00,754093927-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:01,261977282-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:01,769823155-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:02,278878754-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:02,787164255-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:03,294779781-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:03,802353567-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:04,310690296-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:04,819362495-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:05,326909701-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:05,835775259-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:06,343750841-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:06,851159744-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:07,358693505-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:07,868080898-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:08,375780085-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:08,885067076-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:09,393230568-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:09,900922752-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:10,413152820-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:10,921233785-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:11,429138103-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:11,936715169-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:12,445720736-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:12,955104874-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:13,463579350-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:13,970971864-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:14,478961297-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:14,987805898-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:15,495319323-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:16,002539340-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:16,510445384-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:17,019796161-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:17,528010873-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:18,036243550-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:18,545547517-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:19,053242911-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:19,561977575-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:20,070394563-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:20,579250558-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:21,087895772-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:21,595559596-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:22,104071837-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:22,612046003-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:23,120583061-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:23,628106389-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:24,136871993-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:24,645614143-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:25,154008561-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:25,663194286-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:26,171473665-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:26,679528576-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:27,188201646-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:27,696017683-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:28,203917780-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:28,710890300-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:29,219089547-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:29,728102184-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:30,235617229-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:30,744252377-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:31,251851222-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:31,760043967-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:32,268503462-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:32,776774076-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:33,285044892-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:33,792671199-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:34,300467801-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:34,808360808-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:35,315733503-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:35,824118727-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:36,354282849-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:36,862549839-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:37,371736180-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:37,880048185-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:38,387383240-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:38,895165867-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:39,404153490-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:39,911677625-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:40,419788178-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:40,927437762-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:41,435294071-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:41,943671302-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:42,452112205-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:42,959740229-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:43,468922104-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:43,976494563-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:44,483847794-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:44,993539480-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:45,503384579-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:46,011052972-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:46,519114222-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:47,026927822-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:47,535548830-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:48,042941157-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:48,551493634-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:49,060414824-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:49,567860784-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:50,078478546-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:50,587104034-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:51,095924532-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:51,603497744-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:52,131403250-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:52,639542111-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:53,149026305-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:27:53,657497480-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:54,166286660-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:54,673780874-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:55,182401924-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:55,689707259-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:56,197534247-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:56,705841129-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:57,213697113-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:57,722423655-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:58,230490181-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:58,738366454-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:59,246092200-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:27:59,754888346-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:00,262871643-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:00,771462318-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:01,279750657-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:01,787375712-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:02,295115096-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:02,803210708-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:03,312221794-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:03,820578645-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:04,328227547-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:04,835602076-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:05,343213266-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:05,851348345-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:06,360055403-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:06,868339676-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:07,376710384-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:07,884901260-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:08,392576483-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:08,901530072-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:09,410451791-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:09,917782619-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:10,426286291-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:10,934970868-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:11,442898353-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:11,950284957-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:12,458327081-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:12,966821277-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:13,474684129-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:13,982543024-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:14,493503118-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:15,002224216-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:15,510320193-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:16,018884252-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:16,526488503-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:17,034311201-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:17,543222252-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:18,051133218-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:18,560007158-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:19,069865084-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:19,577270196-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:20,085052658-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:20,593272924-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:21,102387703-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:21,609770404-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:22,117589136-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:22,625823549-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:23,133629867-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:23,641940466-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:24,151190185-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:24,659119929-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:25,170894287-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:25,679449362-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:26,189673608-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:26,698119626-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:27,207291046-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:27,715448946-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:28,224012638-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:28,733526742-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:29,244014551-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:29,752648618-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:30,262537917-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:30,770931817-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:31,279005397-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:31,786979228-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:32,295052948-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:32,808941236-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:33,316832870-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:33,826443469-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:34,335286737-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:34,843041701-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:35,350736491-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:35,859302030-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:36,366829862-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:36,875305510-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:37,384173446-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:37,892198175-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:38,401024672-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:38,910473524-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:39,425561079-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:39,932940089-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:40,440415232-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:40,948260020-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:41,457210704-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:41,965195489-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:42,472903406-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:42,981809135-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:43,489430909-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:43,997710596-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:44,506407518-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:45,015195754-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:45,522918861-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:46,031998122-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:46,540245759-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:47,047738788-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:47,556093639-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:48,063598271-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:48,572136171-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:49,080173719-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:49,587760919-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:50,096036600-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:50,604215858-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:51,112465640-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:51,621741498-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:52,131320012-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:52,639787970-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:53,147645796-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:53,656126890-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:54,163944320-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:54,673094669-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:55,180567202-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:55,688666108-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:56,197585057-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:28:56,706016998-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:57,214063144-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:57,721431690-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:58,229078286-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:58,739126918-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:59,246718198-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:28:59,754736502-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:00,262780445-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:00,770786617-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:01,278391313-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:01,785960352-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:02,294506803-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:02,801882514-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:03,309717751-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:03,817127306-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:04,325504656-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:04,835309295-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:05,342737417-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:05,851045915-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:06,360232588-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:06,868368428-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:29:07,376456717-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:29:07,884367589-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:29:08,392086556-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:08,900739252-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:09,409554387-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:09,917562976-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:10,425594949-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:10,933615601-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:11,441107547-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:11,950338154-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:12,458287641-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:12,967254887-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:13,475070530-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:13,982705087-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:14,490679883-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:14,998465869-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:15,506268127-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:16,015458659-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:16,523970289-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:17,032211352-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:17,540129221-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:18,047835746-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:18,556302291-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:19,063846688-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:19,573453174-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:20,081146465-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:29:20,589530823-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:29:21,098562203-04:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+2026-08-25T00:29:21,606716814-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:22,114834544-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:22,622989887-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:23,131053114-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:23,640194605-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:24,148324339-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:24,658236829-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:25,166177714-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:25,674132635-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:26,182555569-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:26,690763112-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:27,199818871-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:27,708738761-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:28,217308194-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:28,725128349-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:29,235892484-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:29,743463605-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:30,252192442-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:30,761428706-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:31,269352460-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
+2026-08-25T00:29:31,777611272-04:00
+NAME               ID              SIZE     PROCESSOR    CONTEXT    UNTIL       
+qwen3-coder:30b    06c1097efce0    25 GB    100% GPU     65536      Stopping...    
