@@ -1,6 +1,66 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-23, catching the tracker and this file up after a batch of merges landed without either being synced, plus a round of owner triage.
+Updated 2026-08-25, after a menu-builder polish round (ten PRs shipped) and a design-system audit that reframed the mock-to-code gap as a structural problem rather than a discipline one.
+
+## 2026-08-24/25 — Menu-builder polish round shipped, then a design-system audit that found the real problem
+
+**Ten PRs merged and deployed to dev** (#836–#840, #844, #846–#850), all under the #834/#842 mock-fidelity
+feedback round against the approved mocks. Two app-crashing bugs, a documented dialog-field standard (decision O3),
+section actions converted from modal to anchored dropdown, item-panel polish, bottom-bar rework, and a connecting
+line through the history timeline. Every merge went through CI with only the known pre-existing `UntrustedRoot`
+SSL failure on the Playwright job — verified identical on `master` each time.
+
+**Real defects found while doing it, worth noting because they were all silent:**
+
+- Two blank-screen crashes from the same React pattern: reading `event.currentTarget.value` *inside* a deferred
+  state updater, where React has already nulled it. Three instances existed; only two were reported.
+- The capacity banner referenced `--sky-color-warning-border` and `--sky-color-warning-soft`, **neither of which is
+  defined anywhere**. It had been rendering with no background and a default dark border for an unknown period.
+- The Remove-item dialog's Cancel button used class `.secondary`, which exists in no stylesheet, and that dialog
+  alone ignored both Escape and click-outside.
+- "Rename" in the section-actions menu did nothing: `useDialogFocus`'s cleanup unconditionally returned focus to
+  the trigger, stealing it from the rename field that the same click had just opened.
+
+**Then the design-system work, which is where the session actually went.** The owner's framing:
+*"there is always some sort of disconnect between the mock which has all the agreed items to what actually gets
+developed"* — and, on where to start, *"I honestly don't know."*
+
+Audited it rather than guessed. **416 controls in the back-office. 247 buttons, 114 with no styling at all.** Seven
+different looks for the main action, thirteen for the ordinary action, six for destructive — including one where
+`.danger` renders identically to Cancel and to Save. Every `select`, checkbox, radio, number, time and colour input
+in the product is unstyled; only dialogs are consistently styled.
+
+The cause is structural, not a discipline failure: **a mock is a picture, and a picture cannot be reused.** Someone
+reads it and writes an approximation, once per button, 247 times. The gap closes when the component becomes the
+shared object between design and code rather than a picture and a re-implementation of one.
+
+**Two owner corrections shaped how this is recorded, and both are now memories:**
+
+- *"We can't trust what's in there because changes have happened after — it's three ways."* The design project, the
+  written spec and the code each move independently and any one can be stale. Proven by the focus ring: design says
+  3px sky blue, code changed it to 2px dark teal for a contrast fix sky blue genuinely fails, and this week's
+  feedback removed it entirely on dialog fields. A design file is evidence, never a verdict.
+- *"I don't see the actions button on this list."* It was in the generated audit and missing from the rendered
+  picture, because the variants had been hand-picked — making the picture a summary again, the exact failure the
+  work exists to stop.
+
+**Everything is generated now, not written down.** `scripts/design-audit/collect.mjs` parses the source with the
+TypeScript compiler; `render.mjs` draws every variant using the app's own stylesheets. This mattered: successive
+regex passes counted inputs as 9, 13, then 39 against a true 111, and every wrong number looked plausible. Parsed
+counts match ground truth exactly.
+
+**Tracking.** Two workstreams now carry this, both live in Atlas: **Menus M7** (the polish round, with M7.1 Review
+& Publish paused for owner review, M7.2 full history screen blocked on it, M7.3 the background tint needing
+live-site investigation), and a new **Design system** workstream (M0 inventory awaiting owner rulings, then token
+consolidation, components, and a `#/design` gallery route). Issues #852–#859, #861.
+
+### Next action
+
+**Nothing is blocked on code — it is blocked on owner rulings.** Design system M0 (#861) has twelve open questions
+(T1–T13; T7 answered: components must be skinnable, because Theme Studio needs a different look over the same
+controls). The rendered picture and full audit are on that milestone's page in Atlas. Menus M7.3 (#854, background
+tint not visible on the live site despite shipping twice and verifying locally) is the one unblocked, actionable
+item — and needs Playwright run against the real dev URL, not the local dev server, before another CSS attempt.
 
 ## 2026-08-23 — Tracker catch-up, owner triage on five open items, and a new venue-broadcast defect (#811)
 
