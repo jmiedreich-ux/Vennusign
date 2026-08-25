@@ -1,11 +1,15 @@
 {
   "codename": "Design system",
-  "what": "The shared UI layer above sky-ui-tokens.css: real Button/TextField/Dialog components, one token source across all four consuming apps, and a live #/design gallery route that cannot drift from what ships",
+  "what": "The shared UI layer: real components carrying their own behaviour and a swappable skin, one source for style values, and a live gallery page - the foundation for a staged UI overhaul where old and new coexist",
   "stage": "designing",
-  "position": "Reconciliation diff written and awaiting owner ruling on six contested components. Nothing built yet.",
-  "next": "Owner rules on the six conflicts in component-reconciliation.md (focus ring, button variants, availability switch, segmented control, checkbox, pill toggle). Build starts after.",
+  "position": "Inventory done: 14 components, four button roles behind eleven names, 97 buttons with no styling at all. Awaiting owner review before the appearance decisions.",
+  "next": "Owner reviews the component inventory (#861). The six appearance decisions in M1 become answerable once there is a bounded list to decide against.",
   "label": "workstream:design-system",
   "design": [
+    {
+      "name": "Component inventory",
+      "where": "docs/features/design-system/component-inventory.md"
+    },
     {
       "name": "Component reconciliation diff",
       "where": "docs/features/design-system/component-reconciliation.md"
@@ -21,11 +25,25 @@
   ],
   "milestones": [
     {
+      "id": "0",
+      "label": "M0",
+      "depth": 1,
+      "title": "Component inventory",
+      "status": "next",
+      "plan": "component-inventory.md",
+      "issue": 861,
+      "pr": null,
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
+    },
+    {
       "id": "1",
       "label": "M1",
-      "depth": 1,
+      "depth": 2,
       "title": "Reconcile components against design, spec and live code",
-      "status": "next",
+      "status": "blocked",
       "plan": "component-reconciliation.md",
       "issue": 856,
       "pr": null,
@@ -37,7 +55,7 @@
     {
       "id": "2",
       "label": "M2",
-      "depth": 2,
+      "depth": 3,
       "title": "One token source; fix the 45 undefined-token usages",
       "status": "blocked",
       "plan": "component-reconciliation.md",
@@ -51,7 +69,7 @@
     {
       "id": "3",
       "label": "M3",
-      "depth": 3,
+      "depth": 4,
       "title": "Build the agreed components",
       "status": "blocked",
       "plan": "component-reconciliation.md",
@@ -65,7 +83,7 @@
     {
       "id": "4",
       "label": "M4",
-      "depth": 4,
+      "depth": 5,
       "title": "#/design gallery route in the back-office",
       "status": "blocked",
       "plan": "component-reconciliation.md",
