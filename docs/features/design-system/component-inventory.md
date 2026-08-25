@@ -176,3 +176,16 @@ skin-swapping approach on something low-risk before anything harder depends on i
 
 Not proposed yet — this document is the inventory you asked for, so there is something concrete to react to instead
 of a blank page.
+
+## Note for whoever works on Atlas next
+
+Two small things found while putting this milestone's tasks into Atlas. Neither blocks anything; both were worked
+around. Recorded here because the Atlas session that would have received them has since ended.
+
+- **Task text renders as plain text, so a markdown link shows raw.** The owner asked that each task link to the
+  doc section explaining it, which makes this immediately visible — a full URL sits in the middle of the task line.
+  Worked around by writing `` `path#anchor` `` instead, which reads acceptably in Atlas and stays clickable in
+  GitHub. Rendering markdown links in task text would be a genuine improvement.
+- **`depth` rejects `0`.** Hit while adding an M0 ahead of an existing M1–M4, wanting depth to mirror the milestone
+  number. Worked around by renumbering 1..n. Arguably depth is ladder position and should not care what the
+  milestone is labelled, so `0` may be worth allowing.

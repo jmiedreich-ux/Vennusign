@@ -41,7 +41,9 @@ re-deriving.
 
 ---
 
-## 1. Focus ring — 🟡 documented reason ⚠️ three-way conflict
+## 1. Focus ring
+
+🟡 documented reason · ⚠️ three-way conflict
 
 The single most consequential row: it affects every interactive control in every app.
 
@@ -64,7 +66,9 @@ only inside dialogs/inspector? Buttons and links still use the 2px ring today. A
 
 ---
 
-## 2. Button variants — 🔴 undocumented drift (naming collision)
+## 2. Button variants
+
+🔴 undocumented drift · naming collision
 
 The spec is explicit: *"These are the entire vocabulary of the Menu area — if you find yourself inventing a fourth
 button style, something is wrong."* Four variants were specified. The code has **four parallel vocabularies**, and
@@ -89,7 +93,9 @@ Additional undeclared vocabularies in live code: `import-primary`/`import-second
 
 ---
 
-## 3. Text field — ✅ no conflict
+## 3. Text field
+
+✅ no conflict
 
 | Source | Value |
 |---|---|
@@ -103,7 +109,9 @@ hex. Same result today; worth collapsing to one definition when components land.
 
 ---
 
-## 4. Availability switch (the 86 control) — 🟡 documented reason
+## 4. Availability switch
+
+🟡 documented reason · the 86 control
 
 | Source | Value |
 |---|---|
@@ -123,7 +131,9 @@ an ordinary drafted change like name or price.
 
 ---
 
-## 5. Segmented control — ⚫ never built
+## 5. Segmented control
+
+⚫ never built
 
 Spec: track `#f1f5f9`, 3px padding, 10px radius; selected segment `#fff`, 8px radius, `0 1px 2px rgb(15 23 42 / .1)`,
 12px/600; unselected transparent `#64748b` 12px/500. Specified for *"Quick update / Build and the icon-button pairs
@@ -137,7 +147,9 @@ component set? (V2's builder navigation changed substantially after this spec wa
 
 ---
 
-## 6. Checkbox — ⚫ never built
+## 6. Checkbox
+
+⚫ never built
 
 Spec: 18×18px, 1.5px `#cbd5e1` border, 5px radius; label 13px `#334155`, 10px gap.
 
@@ -150,7 +162,9 @@ checkbox. This is a dependency, not just tidiness.
 
 ---
 
-## 7. Pill toggle — ⚠️ needs review
+## 7. Pill toggle
+
+⚠️ needs review
 
 Spec: *"View: One section / Whole board"* — selected `#0f172a` fill + `#f8fafc` text, 999px, 5px/13px, 12px/600;
 unselected `#fff` + `#475569`, 1px `#e2e8f0` border.
@@ -165,7 +179,9 @@ described?
 
 ---
 
-## 8. Undefined tokens — 🔴 undocumented drift (live defects)
+## 8. Undefined tokens
+
+🔴 undocumented drift · live defects
 
 Not a design conflict — straightforwardly broken. **45 usages of CSS custom properties that are never defined
 anywhere.** 15 have no fallback, so the property is dropped and the element renders unstyled.
@@ -195,7 +211,9 @@ CI's reach).
 
 ---
 
-## 9. Token source duplication — 🔴 structural
+## 9. Token source duplication
+
+🔴 structural
 
 `sky-ui-tokens.css` exists as **two hand-maintained copies plus two relative-path importers**:
 
