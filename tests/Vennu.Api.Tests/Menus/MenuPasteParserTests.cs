@@ -110,4 +110,62 @@ public sealed class MenuPasteParserTests
 
         Assert.NotEqual(Assert.Single(first.Questions).Fingerprint, Assert.Single(second.Questions).Fingerprint);
     }
+
+    /// <summary>
+    /// The separator between a name and its price is one-or-more whitespace, and a tab counts.
+    ///
+    /// It used to demand two spaces or a dot leader, which rejected the most ordinary line a menu
+    /// has and every tab-separated line — so pasting a real menu, or anything out of a
+    /// spreadsheet, produced zero items and a question on every line. Every existing test in this
+    /// file wrote "Burger  12" with two spaces, so the suite passed while encoding the defect.
+    /// </summary>
+    [Theory]
+    [InlineData("Garlic Bread 6.50", "Garlic Bread", "6.50")]
+    [InlineData("Garlic Bread\t6.50", "Garlic Bread", "6.50")]
+    [InlineData("Soup of the Day 7.00", "Soup of the Day", "7.00")]
+    [InlineData("Ribeye 32", "Ribeye", "32")]
+    [InlineData("Ribeye $32.00", "Ribeye", "$32.00")]
+    [InlineData("Soup MP", "Soup", "MP")]
+    [InlineData("Garlic Bread  6.50", "Garlic Bread", "6.50")]
+    [InlineData("Garlic Bread .... 6.50", "Garlic Bread", "6.50")]
+    public void Parse_ReadsAnItemWhateverSeparatesTheNameFromThePrice(string line, string name, string price)
+    {
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), line, 1, []);
+
+        var parsed = Assert.Single(result.Lines);
+        Assert.Equal("item", parsed.Disposition);
+        Assert.Equal(name, parsed.ParsedName);
+        Assert.Equal(price, parsed.ParsedPrice);
+        Assert.Equal(1, result.ItemCount);
+    }
+
+    [Fact]
+    public void Parse_ReadsAnOrdinaryPastedMenu()
+    {
+        const string menu = "STARTERS\nGarlic Bread 6.50\nSoup of the Day 7.00\n\nMAINS\nRibeye 32.00\nSalmon 26.50";
+
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), menu, 1, []);
+
+        Assert.Equal(4, result.ItemCount);
+        Assert.Equal(2, result.Lines.Count(line => line.Disposition == "section"));
+        Assert.DoesNotContain(result.Lines, line => line.Disposition == "unresolved");
+        Assert.DoesNotContain(result.Questions, question => question.Kind == "unreadable");
+    }
+
+    /// <summary>
+    /// The cost of accepting a single space, recorded rather than hidden: a capitals-only heading
+    /// ending in a bare number now reads as an item. "BLT 12" and "SPECIALS 2" are the same shape,
+    /// and this parser already answers "item" for that shape — see
+    /// <see cref="Parse_PricedUppercaseLineIsAnItemNotAHeading"/>. Review can promote any line to
+    /// a section, so it is recoverable rather than lost.
+    /// </summary>
+    [Theory]
+    [InlineData("GARLIC BREAD 6.50")]
+    [InlineData("SPECIALS 2")]
+    public void Parse_ReadsACapitalsLineEndingInAPriceAsAnItem(string line)
+    {
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), line, 1, []);
+
+        Assert.Equal("item", Assert.Single(result.Lines).Disposition);
+    }
 }

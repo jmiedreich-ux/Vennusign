@@ -12,7 +12,25 @@ public sealed record ParsedMenuPaste(
 
 public sealed class MenuPasteParser
 {
-    private static readonly Regex PriceAtEnd = new(@"^(?<name>.+?)(?:\s{2,}|\s+[.·•-]{2,}\s*)(?<price>\$?\d+(?:\.\d{1,2})?|MP)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    /// <summary>
+    /// An item line: a name, whitespace, then a price at the end.
+    ///
+    /// The separator is <c>\s+</c> — one space is enough, and a tab counts. It previously demanded
+    /// two or more spaces or a dot leader, which silently rejected the most ordinary line a menu
+    /// has ("Garlic Bread 6.50") and every tab-separated line, so a paste out of a spreadsheet —
+    /// a route the product advertises — imported as zero items. That contradicted the design
+    /// authority's own promise for this screen: "no syntax to learn".
+    ///
+    /// The number format is unchanged. Whole numbers, a currency symbol and MP already parsed;
+    /// they only ever failed for want of a second space.
+    ///
+    /// One consequence, accepted deliberately: a capitals-only heading ending in a bare number
+    /// ("SPECIALS 2") now reads as an item priced at 2. That is the same trade this parser already
+    /// made — a priced uppercase line is an item, asserted by
+    /// <c>Parse_PricedUppercaseLineIsAnItemNotAHeading</c> — and "BLT 12" cannot be told from
+    /// "SPECIALS 2" by shape alone. Review can promote any line to a section, so it is recoverable.
+    /// </summary>
+    private static readonly Regex PriceAtEnd = new(@"^(?<name>.+?)(?:\s+[.·•-]{2,}\s*|\s+)(?<price>\$?\d+(?:\.\d{1,2})?|MP)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex Spaces = new(@"\s+", RegexOptions.Compiled);
 
     public ParsedMenuPaste Parse(Guid sessionId, Guid venueId, string rawPaste, long revision, IReadOnlyCollection<Item> library,

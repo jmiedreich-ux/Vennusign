@@ -2,15 +2,30 @@
   "codename": "Menus",
   "what": "The menu product: item library, draft/publish spine, the builder, the render engine, and the import paths that get a venue's existing menu into it without retyping",
   "stage": "development",
-  "position": "Nine milestones accepted through M6.3; M5 parked. A mock-fidelity polish round (M7) is in progress against a later reference set (page-examples.md assets 12-16).",
-  "next": "M7's two full-page pieces (Review & Publish, history) need scoping - see menu-builder-v2/mock-fidelity-polish-plan.md. M5 parked at #709. 7+ import/library/multi-venue/scheduling work named but not planned.",
+  "position": "Ten milestones accepted through M6.4; M5 parked. The M7 mock-fidelity round is paused: its two full-page pieces await owner scoping, and its remaining visual polish is parked pending the separate Foundry component system.",
+  "next": "M6.4 needs one live paste after deploy to close T6. M7's two full-page pieces (Review & Publish, history) need scoping. M5 parked at #709; M7.3 parked as UI polish that Foundry will settle.",
   "label": "workstream:menus",
   "design": [
-    { "name": "Menus decisions", "where": "docs/features/menus/decisions.md" },
-    { "name": "Menus build decisions", "where": "docs/features/menus/build-decisions.md" },
-    { "name": "Menu Builder v2", "where": "docs/features/menus/menu-builder-v2/" },
-    { "name": "Paste import", "where": "docs/features/menus/paste-import/" },
-    { "name": "M3-A refinement", "where": "docs/features/menus/m3-a/" }
+    {
+      "name": "Menus decisions",
+      "where": "docs/features/menus/decisions.md"
+    },
+    {
+      "name": "Menus build decisions",
+      "where": "docs/features/menus/build-decisions.md"
+    },
+    {
+      "name": "Menu Builder v2",
+      "where": "docs/features/menus/menu-builder-v2/"
+    },
+    {
+      "name": "Paste import",
+      "where": "docs/features/menus/paste-import/"
+    },
+    {
+      "name": "M3-A refinement",
+      "where": "docs/features/menus/m3-a/"
+    }
   ],
   "milestones": [
     {
@@ -22,7 +37,10 @@
       "plan": "milestone-plan.md",
       "issue": null,
       "pr": null,
-      "acceptance": { "kind": "demo-script", "record": "docs/features/menus/m1-demo-workbook.html" }
+      "acceptance": {
+        "kind": "demo-script",
+        "record": "docs/features/menus/m1-demo-workbook.html"
+      }
     },
     {
       "id": "2",
@@ -33,7 +51,10 @@
       "plan": "milestone-plan.md",
       "issue": null,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m2-acceptance-workbook.html" }
+      "acceptance": {
+        "kind": "workbook",
+        "record": "docs/features/menus/m2-acceptance-workbook.html"
+      }
     },
     {
       "id": "3",
@@ -44,7 +65,10 @@
       "plan": "milestone-plan.md",
       "issue": null,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m3-acceptance-workbook.html" }
+      "acceptance": {
+        "kind": "workbook",
+        "record": "docs/features/menus/m3-acceptance-workbook.html"
+      }
     },
     {
       "id": "3-A",
@@ -55,7 +79,10 @@
       "plan": "milestone-plan.md",
       "issue": null,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m3-a-s3a-acceptance-workbook.html" }
+      "acceptance": {
+        "kind": "workbook",
+        "record": "docs/features/menus/m3-a-s3a-acceptance-workbook.html"
+      }
     },
     {
       "id": "4",
@@ -66,7 +93,10 @@
       "plan": "milestone-plan.md",
       "issue": null,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m4-acceptance-workbook.html" }
+      "acceptance": {
+        "kind": "workbook",
+        "record": "docs/features/menus/m4-acceptance-workbook.html"
+      }
     },
     {
       "id": "5",
@@ -77,7 +107,10 @@
       "plan": "milestone-plan.md",
       "issue": 709,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": null }
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
     },
     {
       "id": "6",
@@ -88,7 +121,10 @@
       "plan": "milestone-plan.md",
       "issue": null,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m6-acceptance-workbook.html" }
+      "acceptance": {
+        "kind": "workbook",
+        "record": "docs/features/menus/m6-acceptance-workbook.html"
+      }
     },
     {
       "id": "6-A1",
@@ -99,7 +135,10 @@
       "plan": "milestone-plan.md",
       "issue": null,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m6a2-acceptance-workbook.html" }
+      "acceptance": {
+        "kind": "workbook",
+        "record": "docs/features/menus/m6a2-acceptance-workbook.html"
+      }
     },
     {
       "id": "6-A2",
@@ -110,7 +149,10 @@
       "plan": "milestone-plan.md",
       "issue": null,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m6a2-acceptance-workbook.html" }
+      "acceptance": {
+        "kind": "workbook",
+        "record": "docs/features/menus/m6a2-acceptance-workbook.html"
+      }
     },
     {
       "id": "6-A3",
@@ -121,51 +163,80 @@
       "plan": "milestone-plan.md",
       "issue": null,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": "docs/features/menus/m6a3-acceptance-workbook.html" }
+      "acceptance": {
+        "kind": "workbook",
+        "record": "docs/features/menus/m6a3-acceptance-workbook.html"
+      }
+    },
+    {
+      "id": "6-A4",
+      "label": "M6.4",
+      "depth": 11,
+      "title": "The parser reads an ordinary menu",
+      "status": "done",
+      "plan": "milestone-plan.md",
+      "issue": 864,
+      "pr": 862,
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
     },
     {
       "id": "7",
       "label": "M7",
-      "depth": 11,
+      "depth": 12,
       "title": "Mock-fidelity polish round (dialogs, item panel, bottom bar, Review & Publish page, history page)",
       "status": "blocked",
       "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
       "issue": 842,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": null }
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
     },
     {
       "id": "7-A1",
       "label": "M7.1",
-      "depth": 12,
+      "depth": 13,
       "title": "Review & Publish page — design write-up, paused for owner review",
       "status": "blocked",
       "plan": "menu-builder-v2/review-publish-page-design.md",
       "issue": 852,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": null }
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
     },
     {
       "id": "7-A2",
       "label": "M7.2",
-      "depth": 13,
+      "depth": 14,
       "title": "Full history screen (mock 09/16)",
       "status": "blocked",
       "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
       "issue": 855,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": null }
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
     },
     {
       "id": "7-A3",
       "label": "M7.3",
-      "depth": 14,
+      "depth": 15,
       "title": "Background tint/corner blob — live-site investigation",
-      "status": "next",
+      "status": "parked",
       "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
       "issue": 854,
       "pr": null,
-      "acceptance": { "kind": "workbook", "record": null }
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
     }
   ]
 }
