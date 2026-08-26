@@ -1,6 +1,83 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-25, after the paste-import parser was found to read zero items from an ordinary menu, and the repo's merge-marker CI check was found to be failing on every branch.
+Updated 2026-08-26, after two milestones were planned: the shipped paste import has no entry point anywhere in the product, and no menu can be deleted.
+
+## 2026-08-26 — Two milestones planned: the import has no door, and no menu can be deleted
+
+Planning only. **No product code changed.** Two GitHub issues, two plan sections, three register questions,
+and the tracker, status and workstream records brought in line.
+
+### M6.5 — the import has a door (#867)
+
+M6.1 through M6.4 built the paste import end to end, and M6.4 closed against deployed dev. **Nothing in the
+product navigates to it.** `#/menu/import` renders `MenuPasteImport` at `src/back-office/src/App.tsx:624`, and
+the only code that ever sets that hash is the redirect *inside* the flow at `App.tsx:631`. A customer reaches
+four shipped milestones of work by typing a URL.
+
+All three entry affordances the design specifies exist, and all three call `setNamingMenu(true)` — a dialog
+headed **"Start a blank menu"**:
+
+| Design | Code | Today |
+| --- | --- | --- |
+| Empty shelf: three route cards + "or start from a blank board" (`docs/features/menus/README.md:158`) | `MenusHome.tsx:261` | one **Add a menu** button → blank-name dialog |
+| Add-a-menu tile, "Photo, paste, spreadsheet / or start blank" (`README.md:118`) | `MenusHome.tsx:357` | copy reads "Paste it in, or start blank" → blank-name dialog |
+| Header / at-scale **Add a menu** (`README.md:150`, Q166) | `MenusHome.tsx:292` | blank-name dialog |
+
+`MenusHome.tsx:41` and `:72` both say the import routes "arrive in milestone 6". 6-A shipped without them and
+the interim was never replaced. This is the shape worth remembering: **four milestones can pass their own
+acceptance while the feature stays unreachable**, because every workbook started from inside the flow.
+
+Two design calls made in the plan and worth knowing before implementing:
+
+- **Photo, spreadsheet and POS leave no trace.** Not greyed-out "coming soon" cards. `README.md:178` already
+  settles this for POS — *"when it is not, there is no trace of it — decision 4."* The route set is data, so
+  the others append later without a redesign.
+- **The name is no longer asked at the door.** The import already proposes a name from the paste and confirms
+  it at the destination step (`MenuPasteImport.tsx:117`), so today's dialog would ask twice. The blank route
+  keeps its name field, because there the name is all there is.
+
+Front-end only. No schema, API or parser change; the backend is verified on dev at `339690fc`.
+
+### M8 — delete a menu (#868)
+
+There is no way to destroy a menu. **Put away** is the terminal state — which is exactly what Q79 asked, and
+the owner declined on 2026-08-07: *"ADD DELETE this build. 'Delete forever' in the ⋯ only for menus on zero
+screens; hard confirmation naming the destroyed menu and history; shared library items survive."*
+
+Nothing was built. Six items in the card ⋯ menu (`MenusHome.tsx:569`–`:609`), no `HttpDelete` on
+`BackOfficeMenusController`, no `DeleteMenuAsync` anywhere in `src/Vennu.Data` or `src/Vennu.Core.Models`.
+
+**The data shape is the hard part.** `dbo.Menus` is referenced by ten foreign keys across four migration files;
+only two carry `ON DELETE CASCADE`. A naive delete fails on a constraint, and cascading everywhere would let an
+import session silently delete published history. So: an ordered, explicit delete in one transaction,
+migration 076 — the shape `deleteMenuPage`/`deleteMenuSection` already established.
+
+**It is blocked, deliberately, on three answers** now in the register:
+
+- **Q210 · BLOCKING** — on a menu that is on a screen, is *Delete forever* absent (decision 4) or refusing with
+  a named reason (decision 5)? Recommended absent: **Take off the screens** is two lines below in the same menu.
+- **Q211 · important** — does the confirmation demand typing the menu's name? Recommended no: the paste-import
+  second pass already settled the neighbouring case as "no typed-confirmation ritual".
+- **Q212 · BLOCKING** — does delete destroy `MenuHistoryEntries` and `MenuPublishEvents`, or detach them?
+  Recommended destroy: "forever" that leaves attributable rows behind is not forever.
+
+### Why M8 took a top-level number ahead of M7 (SOP step 2b)
+
+Recorded where the leapfrogged milestone's own record lives — `menu-builder-v2/mock-fidelity-polish-plan.md`.
+M7 is blocked/parked by owner ruling behind Foundry and owner scoping, nothing there waits on a developer, and
+M8 shares no files with it. Filing a schema→API→UI vertical as `M7.4` inside a round scoped to "make the
+builder match the mocks" is the misfiling that step exists to make visible.
+
+### Validated
+
+Real local Atlas build against this working tree: **448 pages, no schema errors.** Both new milestone pages
+render with working contents anchors. The build refused the first `workstream.json` edit — `position` was 291
+characters against a 240 cap — which is the schema doing its job.
+
+### One exact next action
+
+Answer **Q210, Q211 and Q212** (`docs/features/menus/open-questions.md`), or start **M6.5 (#867)**, which is
+unblocked and needs nothing from the owner.
 
 ## 2026-08-25 — Paste import parsed nothing, and CI had been red for everyone
 

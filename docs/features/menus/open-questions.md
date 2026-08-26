@@ -2576,6 +2576,38 @@ Raised by the owner at M2 acceptance (case 3-1, screenshot in `m2-acceptance-rec
 
 <sub>`menus-home.css` `.menu-card__menu { position: absolute; top: 10px; right: 10px; }`; README.md Components — top-right glass chip branching on board lightness; Q98 (no venue-name strip)</sub>
 
+## Delete a menu (M8: Q79's owner override, built)
+
+### Q210 · BLOCKING
+
+**On a menu that is currently on one or more screens, is "Delete forever" absent from the ⋯ menu, or present and refusing with a named reason?**
+
+Q79's owner answer scopes the action to "menus on zero screens" but does not say which of the two shapes that takes, and Menus has a settled decision pointing each way. Decision 4 says a capability you cannot use is absent — no ghost fields, no reasons, no state. Decision 5 says blocked is *not* the same as absent, and that permission, disconnection, limits and offline targets are real states that must say exactly what they are. A menu on a screen is neither a plan limit nor a permission refusal; it is a precondition the operator can clear themselves, from the same menu, with an action already sitting in it.
+
+*Recommended:* Absent. **Take off the screens** is two lines below in the same ⋯ menu and is the named route to eligibility, so a refusal would explain a thing whose fix is already on screen. Decision 5's vocabulary is for states the operator cannot resolve from where they stand; this is not one.
+
+<sub>`MenusHome.tsx:569`–`:609` (six items, no delete); decisions 4 and 5; Q79 owner answer 2026-08-07</sub>
+
+### Q211 · important
+
+**Does the hard confirmation require the operator to type the menu's name, or is naming the consequences enough?**
+
+Q79's answer says "hard confirmation naming the destroyed menu and history" — it specifies what the dialog must *say*, not what it must *demand*. The paste-import second pass settled the neighbouring case explicitly: replacement shows "a targeted acknowledgment… **No typed-confirmation ritual**". Deleting a menu is more destructive than replacing one, which is the argument for typing; but a ritual that operators learn to perform without reading is not a safeguard, and the eligibility rule in Q210 already means nothing on a screen can be destroyed.
+
+*Recommended:* No typing. Name the menu, name what is destroyed, name what survives, and give the destructive button the `#8a2929` danger colour already carried by **Take off the screens**. If the owner wants a stronger gate, typing the name is a one-line addition later; removing a ritual after operators have learned it is not.
+
+<sub>`Menu Import Process/change-summary.md` §3 "No typed-confirmation ritual"; `README.md:180` M1b danger colour `#8a2929`</sub>
+
+### Q212 · BLOCKING
+
+**Does deleting a menu destroy its `MenuHistoryEntries` and `MenuPublishEvents`, or detach and keep them?**
+
+Q79's rationale for *not* having delete was that "destroying attributable history deserves its own designed moment later" — the owner then asked for delete, which supplies the moment, but did not say the history goes with it. Decision 8 makes history durable and attributable; decision 42 makes retention a matter of tier configuration. Keeping the rows means an operator who deleted a menu forever can still be shown publish events for it; destroying them means a tier's retention promise has an exception nobody has written down.
+
+*Recommended:* Destroy them, inside the same transaction, and say so in the confirmation. "Delete forever" that leaves attributable rows behind is not forever, and a history entry pointing at a menu that no longer exists is the model in a state it should not be in — which becomes a new invariant either way.
+
+<sub>`src/Vennu.Data/Scripts/001_baseline.sql:2526` `MenuPublishEvents`, `:2570` `MenuHistoryEntries` — neither FK carries `ON DELETE CASCADE`; decisions 8 and 42; Q79 rationale</sub>
+
 ---
 
-**Totals:** 209 questions — 41 blocking, 123 important, 45 minor. One open: **Q209** (deferred at M2 acceptance, running on its provisional default).
+**Totals:** 212 questions — 43 blocking, 124 important, 45 minor. Four open: **Q209** (deferred at M2 acceptance, running on its provisional default) and **Q210–Q212**, which block Milestone 8.
