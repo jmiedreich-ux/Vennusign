@@ -1,6 +1,73 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-25, after a menu-builder polish round (ten PRs shipped) and a design-system audit that reframed the mock-to-code gap as a structural problem rather than a discipline one.
+Updated 2026-08-25, after the paste-import parser was found to read zero items from an ordinary menu, and the repo's merge-marker CI check was found to be failing on every branch.
+
+## 2026-08-25 — Paste import parsed nothing, and CI had been red for everyone
+
+**Two defects, both silent, both shipped fixed and deployed to dev.**
+
+### The parser could not read a menu written the ordinary way (#864, PR #862, milestone M6.4)
+
+The owner asked to wire up menu import and test it. It turned out to be **already fully wired** — client `api.ts` →
+`BackOfficeMenuImportsController` (`api/back-office/menu-imports`) → `MenuImportService` → `IMenuImportRepository`,
+DI registered at `src/Vennu.Data/Extensions/ServiceCollectionExtensions.cs:25`, migrations 068–071 in place. The
+wiring was never the fault.
+
+Pasting a real menu returned `201` with the **sections found correctly and `itemCount: 0`**. Every item line came
+back `unresolved` / `item_format_not_recognized`.
+
+`MenuPasteParser.PriceAtEnd` required **two or more spaces**, or a dot leader, between an item's name and its price.
+So `Garlic Bread 6.50` parsed as nothing, and so did every **tab**-separated line — which is exactly what a
+spreadsheet paste produces, a route the product advertises. `docs/features/menus/README.md` promises "no syntax to
+learn"; the screen had a syntax, it was undocumented, and it was two spaces.
+
+**Why the suite did not catch it, which is the part worth remembering:** every existing parser test wrote its
+fixture as `"Burger  12"` — two spaces. The tests passed while encoding the defect as the expectation. Tests written
+from the same assumption as the code confirm the assumption rather than the requirement.
+
+Separator widened to `(?:\s+[.·•-]{2,}\s*|\s+)`. The **number format was not touched** — whole numbers, a leading
+currency symbol and `MP` already parsed and only ever failed for want of a second space. 12 tests added, including
+one whole realistic menu; 490/490 unit tests pass.
+
+**One trade-off accepted deliberately:** a capitals-only heading ending in a bare number (`SPECIALS 2`) now reads as
+an item priced 2. A guard against it was written and then **removed**, because it broke
+`Parse_PricedUppercaseLineIsAnItemNotAHeading` — an existing, deliberate assertion that `BLT  12` is an item.
+`SPECIALS 2` cannot be told from `BLT 12` by shape alone. Review can promote any line to a section, so it is
+recoverable. Recorded as its own test so the next reader meets it as a decision, not a surprise.
+
+### The merge-marker CI check had been failing on every branch since 2026-08-25 (PR #863)
+
+PR #862 could not merge because `docs-validation` was red. It was not the PR. The job greps the **whole repo** for
+`<<<<<<<`, `=======` or `>>>>>>>` at line start, and six terminal transcripts added under
+`docs/research/local-ai-model-qualification/` contain plain ASCII rules (`======================`). Every branch cut
+from master since then inherited a red CI job, including branches touching no documentation at all.
+
+Fixed by searching only for `<<<<<<<` and `>>>>>>>`. A conflict git leaves behind **always** writes all three
+markers, so the bare `=======` arm was never load-bearing — it only supplied false positives. No exclusion list to
+maintain, no detection lost. Verified both directions: the repo is clean under the new pattern, and a file
+containing a real conflict block is still caught.
+
+### Tracker
+
+**M6.4** added to `docs/features/menus/workstream.json` with issue #864 and a full write-up in `milestone-plan.md` —
+the four line shapes that failed, why the suite passed anyway, the trade-off, and a task table that *answers* each
+task rather than restating its title. **M7.3 corrected from `next` to `parked`**: the ruling putting it aside had
+already been made (UI polish the separate Foundry component system will settle), but the tracker still advertised it
+as the next action. Validated with a real local Atlas build — 446 pages, no schema errors, M6.4's page renders its
+plan section with working contents anchors.
+
+### Next action
+
+**T6 on #864 is the one open item: re-verify the paste against a running API.** The local dev stack could not be
+restarted during the fix (`start-ui-test-env.ps1 -Stop` reported PID 22416 could not be terminated; ports
+5175/5177/5199 held by orphaned processes — port 5199 is a Vite dev server from 2026-08-23, not the API). It is
+deployed to dev now, so the check should be done there: paste a menu using single spaces and tabs and confirm real
+item counts. Everything else on Menus is unchanged — M7.1/M7.2 blocked on owner scoping, M7.3 and the whole
+design-system workstream parked pending Foundry.
+
+**Also unaddressed and pre-existing:** the Playwright "UI regression" CI job fails with 190
+`AuthenticationException: ...UntrustedRoot` errors and zero assertion failures. Identical on master, verified again
+this session. It is an infrastructure/certificate problem, not a test problem, and nobody has picked it up.
 
 ## 2026-08-24/25 — Menu-builder polish round shipped, then a design-system audit that found the real problem
 
