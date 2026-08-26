@@ -2666,6 +2666,27 @@ One row is the smallest honest answer and it makes the shelf something you expan
 
 <sub>`MenusHome.tsx:142` `slice(0, Math.max(onScreens.length, 6))`; `menusShelf.mjs:18` `shelfScaleThreshold = 7`; Q163, Q165, Q166</sub>
 
+
+### Q216 · BLOCKING
+
+**Can one pasted line become several items — by widening the source-line key, or by redefining what a line number means?**
+
+Three lines on the owner's real menu hold five or six items each:
+
+```
+Sides: Steamed Jasmine Rice $2.00, Brown Rice $3.00, Sticky Rice $2.00, Peanut Sauce $2.00, …
+Beverages: Thai Ice Tea $4.00, Coconut Juice $4.00, Soda $2.00, Spring Water $2.00, …
+Desserts: Fried Banana $5.00, Mango Sticky Rice $6.00, Fried Ice Cream $6.00, Ice Cream $4.00 …
+```
+
+`dbo.MenuImportSourceLines` is keyed `(SessionId, LineNumber)` (`068_menu_import_sessions.sql:44`), so a pasted line can become at most one item. It is the last thing standing between the parser and the whole menu — roughly fifteen items and three of the five remaining questions — and no parser rule reaches it.
+
+*Recommended:* **Widen the key.** A migration adds `LineSubIndex` to the primary key, one line yields as many items as it holds, and `LineNumber` keeps meaning what it says — which the review screen's *Jump to line 18* and every "never silently drop a line" claim depend on. The cost is real: the repository's insert, its `FOR JSON` read, the `MenuImportQuestionLines` join, and the create/replace transaction all key on `LineNumber` today, and create and replace are shipped, owner-accepted milestones.
+
+The alternative is cheaper and worse: leave the schema alone and let `LineNumber` become a row ordinal. No migration, but a line number no longer points at a line of the pasted text, and the traceability that Q81's invariant rests on quietly stops being true.
+
+<sub>`src/Vennu.Data/Scripts/068_menu_import_sessions.sql:44`; `MenuImportRepository` `#Rows`; Q81 (a pasted line is never silently dropped)</sub>
+
 ---
 
-**Totals:** 215 questions — 44 blocking, 125 important, 46 minor. Four open: **Q209** (deferred at M2 acceptance, running on its provisional default), **Q213**, which blocks Milestone 8, and **Q214–Q215**, raised 2026-08-26 against a proposed Milestone 6.6. Q210–Q212 were answered by the owner 2026-08-26.
+**Totals:** 216 questions — 45 blocking, 125 important, 46 minor. Five open: **Q216** (one line, several items — blocks the last fifteen items of a real menu), **Q209** (deferred at M2 acceptance, running on its provisional default), **Q213**, which blocks Milestone 8, and **Q214–Q215**, raised 2026-08-26 against a proposed Milestone 6.6. Q210–Q212 were answered by the owner 2026-08-26.

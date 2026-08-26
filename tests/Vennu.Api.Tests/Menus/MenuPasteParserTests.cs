@@ -230,7 +230,7 @@ public sealed class MenuPasteParserTests
     }
 
     [Fact]
-    public void Parse_ReadsADishUnderAPriceSetAsAnItemWithNoPrice()
+    public void Parse_ReadsADishUnderAPriceSetAsAnItemCarryingThatPrice()
     {
         // "Chicken $11.95, Beef $12.95, Shrimp $13.95" prices everything below it, per protein.
         // Vennusign has no variant model, so the dishes come through unpriced - which A11 allows -
@@ -239,12 +239,12 @@ public sealed class MenuPasteParserTests
 
         var padThai = Assert.Single(result.Lines, line => line.ParsedName == "Pad Thai");
         Assert.Equal("item", padThai.Disposition);
-        Assert.Null(padThai.ParsedPrice);
-        Assert.Equal("Rice Noodles sauteed w. egg, peanuts, bean sprouts & scallions", padThai.ParsedDescription);
+        Assert.Equal("$11.95", padThai.ParsedPrice);
+        Assert.Contains("Rice Noodles sauteed", padThai.ParsedDescription!, StringComparison.Ordinal);
+        Assert.Contains("Chicken $11.95, Beef $12.95, Shrimp $13.95", padThai.ParsedDescription!, StringComparison.Ordinal);
 
         var priceSet = Assert.Single(result.Lines, line => line.RawText.Trim().StartsWith("Chicken $11.95", StringComparison.Ordinal));
-        Assert.Equal("unresolved", priceSet.Disposition);
-        Assert.Equal("price_set_needs_choosing", priceSet.ParserReason);
+        Assert.Equal("description", priceSet.Disposition);
     }
 
     [Fact]
@@ -282,10 +282,11 @@ public sealed class MenuPasteParserTests
         // wrong, not the menu being messy.
         var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), RealPrintedMenu, 1, []);
 
-        var unresolved = result.Lines.Where(line => line.Disposition == "unresolved").ToArray();
-        Assert.Single(unresolved);
-        Assert.Equal("price_set_needs_choosing", unresolved[0].ParserReason);
+        // The price set no longer asks anything: it prices the dishes under it and travels in
+        // their descriptions, so this excerpt now parses with no questions at all.
+        Assert.Empty(result.Lines.Where(line => line.Disposition == "unresolved"));
         Assert.Equal(7, result.ItemCount);
+        Assert.Equal("$11.95", result.Lines.First(line => line.ParsedName == "Pad Thai").ParsedPrice);
     }
 
     [Fact]
