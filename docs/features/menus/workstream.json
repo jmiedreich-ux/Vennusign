@@ -2,8 +2,8 @@
   "codename": "Menus",
   "what": "The menu product: item library, draft/publish spine, the builder, the render engine, and the import paths that get a venue's existing menu into it without retyping",
   "stage": "development",
-  "position": "Ten milestones accepted through M6.4; M5 parked. The M7 mock-fidelity round is paused: its two full-page pieces await owner scoping, and its remaining visual polish is parked pending the separate Foundry component system.",
-  "next": "M6.4 needs one live paste after deploy to close T6. M7's two full-page pieces (Review & Publish, history) need scoping. M5 parked at #709; M7.3 parked as UI polish that Foundry will settle.",
+  "position": "Eleven milestones accepted through M6.4; M5 parked. M6.5 next: the paste import is complete and verified on dev, but nothing navigates to it. M7 paused behind Foundry. M8 (delete a menu) planned, blocked on three owner answers.",
+  "next": "M6.5 (#867): give the Menus home a real door into the paste import — all three Add-a-menu affordances open the blank-name dialog instead. Then M8 (#868), once Q210-Q212 are answered.",
   "label": "workstream:menus",
   "design": [
     {
@@ -183,9 +183,23 @@
       }
     },
     {
+      "id": "6-A5",
+      "label": "M6.5",
+      "depth": 12,
+      "title": "The import has a door — Menus home reaches the paste flow",
+      "status": "next",
+      "plan": "milestone-plan.md",
+      "issue": 867,
+      "pr": null,
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
+    },
+    {
       "id": "7",
       "label": "M7",
-      "depth": 12,
+      "depth": 13,
       "title": "Mock-fidelity polish round (dialogs, item panel, bottom bar, Review & Publish page, history page)",
       "status": "blocked",
       "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
@@ -199,7 +213,7 @@
     {
       "id": "7-A1",
       "label": "M7.1",
-      "depth": 13,
+      "depth": 14,
       "title": "Review & Publish page — design write-up, paused for owner review",
       "status": "blocked",
       "plan": "menu-builder-v2/review-publish-page-design.md",
@@ -213,7 +227,7 @@
     {
       "id": "7-A2",
       "label": "M7.2",
-      "depth": 14,
+      "depth": 15,
       "title": "Full history screen (mock 09/16)",
       "status": "blocked",
       "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
@@ -227,11 +241,25 @@
     {
       "id": "7-A3",
       "label": "M7.3",
-      "depth": 15,
+      "depth": 16,
       "title": "Background tint/corner blob — live-site investigation",
       "status": "parked",
       "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
       "issue": 854,
+      "pr": null,
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
+    },
+    {
+      "id": "8",
+      "label": "M8",
+      "depth": 17,
+      "title": "Delete a menu",
+      "status": "blocked",
+      "plan": "milestone-plan.md",
+      "issue": 868,
       "pr": null,
       "acceptance": {
         "kind": "workbook",

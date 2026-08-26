@@ -5,6 +5,24 @@ the "New reference set" mockups (`page-examples.md`, assets 12–16). Two GitHub
 **#834** (bugs, design-system standard, item panel, bottom bar — closed out) and **#842** (dialog design passes, the
 two full-page pieces, background/capacity polish — in progress).
 
+## Why M8 was numbered ahead of this round (SOP step 2b)
+
+Recorded here, where the leapfrogged milestone's own record lives, per `docs/MILESTONE_EXECUTION.md` step 2b.
+
+**Milestone 8 — Delete a menu** (issue #868) took a fresh top-level number on 2026-08-26 while M7, M7.1 and M7.2
+were still `blocked` and M7.3 `parked`. The stated reason:
+
+- This round is **visual polish**, and the ruling of 2026-08-25 parked its remainder behind the separate Foundry
+  component system. Its two full-page pieces (Review & Publish, full history) are `blocked` on owner scoping, not on
+  anyone's availability. Nothing here is waiting on a developer.
+- M8 is **behaviour, not fidelity** — a customer action the owner approved on 2026-08-07 (Q79) that was never built.
+  It shares no files with this round: `BackOfficeMenusController`, a new migration, `MenusHome.tsx`'s card menu.
+- Sub-milestoning it under M7 (`M7.4`) would have filed a schema→API→UI vertical inside a round whose scope is
+  "make the builder match the mocks", which is the kind of misfiling this SOP step exists to make visible.
+
+M7's own ids are unchanged (decision 17: durable once shipped). M8 is `blocked` on Q210–Q212 regardless, so nothing
+about this ordering starts work sooner.
+
 ## Shipped
 
 | # | What | PR |

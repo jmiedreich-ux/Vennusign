@@ -1,10 +1,35 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-26T00:44:38Z",
+  "updatedUtc": "2026-08-26T02:10:00Z",
   "activeAssignments": [],
   "desktopSessionLock": null,
-  "nextAvailableWorkPackage": null,
-  "approvedSequentialQueue": [],
+  "nextAvailableWorkPackage": {
+    "assignment": "M6.5 — the import has a door: the Menus home never reaches the shipped paste flow",
+    "issue": 867,
+    "workstream": "menus",
+    "branch": "feature/menus-m6a5-import-door",
+    "status": "planned, unclaimed",
+    "blockedBy": null,
+    "notes": "Front-end only. All three Add-a-menu affordances (MenusHome.tsx:261, :292, :357) open the blank-name dialog; nothing sets #/menu/import. Import backend complete and verified on deployed dev at 339690fc."
+  },
+  "approvedSequentialQueue": [
+    {
+      "order": 1,
+      "assignment": "M6.5 — the import has a door",
+      "issue": 867,
+      "branch": "feature/menus-m6a5-import-door",
+      "status": "planned, unclaimed",
+      "blockedBy": null
+    },
+    {
+      "order": 2,
+      "assignment": "M8 — delete a menu (Q79 owner override, 2026-08-07, never built)",
+      "issue": 868,
+      "branch": "feature/menus-m8-delete-a-menu",
+      "status": "planned, blocked",
+      "blockedBy": "Q210, Q211 and Q212 in docs/features/menus/open-questions.md need owner answers before any code"
+    }
+  ],
   "rules": {
     "oneOrchestratorPerWorkPackage": true,
     "parallelAgentsRequireDeclaredFileOwnership": true,

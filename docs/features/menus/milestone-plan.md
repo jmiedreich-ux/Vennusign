@@ -200,7 +200,142 @@ This is the same trade the parser already made, not a new one: `Parse_PricedUppe
 
 **Status:** 490/490 unit tests pass. PR #862.
 
+#### Milestone 6-A5 — the import has a door
+
+**Why this exists.** 6-A1 through 6-A4 built the paste import end to end and it is verified against deployed dev. **Nothing in the product navigates to it.** The route `#/menu/import` renders `MenuPasteImport` (`src/back-office/src/App.tsx:624`), but the only code that ever sets that hash is the redirect *inside* the flow itself (`App.tsx:631`). The only way a customer reaches four shipped milestones of work is to type a URL.
+
+All three entry affordances the design specifies exist in `MenusHome.tsx`, and all three call `setNamingMenu(true)` — a dialog headed **"Start a blank menu"**:
+
+| Design authority | Code | What it does today |
+| --- | --- | --- |
+| Empty shelf: three route cards + *"or start from a blank board"* — `README.md:158` | `MenusHome.tsx:261` | one **Add a menu** button → blank-name dialog |
+| Add-a-menu tile, sub-copy *"Photo, paste, spreadsheet / or start blank"* — `README.md:118` | `MenusHome.tsx:357` | sub-copy reads "Paste it in, or start blank" → blank-name dialog |
+| Header / at-scale **Add a menu** button — `README.md:150`, Q166 | `MenusHome.tsx:292` | blank-name dialog |
+
+The comments in `MenusHome.tsx:41` and `:72` say the import routes "arrive in milestone 6". 6-A shipped without them; the interim was never replaced.
+
+**Design authority.** Decision 17 (*getting a menu in is permanent — import lives on the Menus home forever, not in a wizard*), decision 30 (*import ends where it begins — all routes converge*), decision 4 as applied by `README.md:178` to POS (*a route that is not available leaves no trace*), `README.md:118/150/158/162`, Q166.
+
+##### The behaviour, stated whole
+
+A venue operator with a menu on paper wants it in Vennusign. They open **Menus**, choose to add one, choose **paste**, and land in the flow 6-A1 already built. Immediately before: the shelf, empty or populated. Immediately after: `#/menu/import`, which is unchanged by this milestone. The same "add a menu" behaviour lives in exactly three places, all in `MenusHome.tsx`; all three are in scope.
+
+##### What ships, and what deliberately does not
+
+Only **paste** and **blank** exist. Photo, spreadsheet and POS do not. `README.md:178` already settles how to treat a route that is not available — *"when it is not, there is no trace of it — decision 4."* So there are **no greyed-out "coming soon" cards**. The route set is data, not a hardcoded row of three, so photo/spreadsheet/POS append later without a redesign.
+
+Paste inherits the lead treatment (2px `#87ceeb`, `#f2fbff`) that `README.md:158` gave photo. Photo was the lead because it is the easiest thing a restaurant already has; paste is now the only route that actually gets a menu in.
+
+Blank stays an underlined text link below the cards, per `README.md:158` — not a peer card. Promoting it to a peer is how it became the only route.
+
+##### The naming order changes
+
+Today **Add a menu** demands a menu name before anything else. For the paste route that is backwards twice: the operator names a menu before it has content, and the import flow *already* proposes a name from the paste (`proposedMenuName`) and confirms it at the destination step (`MenuPasteImport.tsx:117`). They would be asked twice.
+
+Naming stays where the import already puts it. The **blank** route keeps its name field, because there the name is the only thing that exists.
+
+##### The tasks
+
+| Task | What it means |
+| --- | --- |
+| T1 · One route chooser | A single component rendering routes from a list. Opened by all three affordances. Paste leads; blank is the underlined link. Cited authority for tokens: `src/back-office/src/sky-ui-tokens.css`. |
+| T2 · The empty shelf uses it full-page | Decision 17 — onboarding is the empty state of this screen, not a wizard. No dialog, nothing to dismiss, nothing to fall out of. Same route list, same copy source as T1, so the two cannot drift. |
+| T3 · Wire all three affordances | `MenusHome.tsx:261`, `:292`, `:357` stop calling `setNamingMenu(true)` directly and open the chooser. The blank-name dialog becomes a destination *inside* it. |
+| T4 · Paste route goes straight to the flow | Sets `#/menu/import`. No name asked at the door. |
+| T5 · Absent routes leave no trace | The list is data; unavailable routes are not rendered at all. Two cards centred must read as deliberate, not as a three-slot grid with a hole. |
+| T6 · Playwright specs | Each of the three affordances reaches the paste screen; blank still creates a menu and opens the builder; empty shelf; the 900px floor; cancel and Escape; double-click; and the at-scale (≥7 menus) variant, which is a different affordance and a different code path. |
+| T7 · Correct the records | `README.md:118`'s tile sub-copy and `README.md:162`'s route list currently describe routes that do not ship. Amend to state what ships, with the unbuilt routes named under *After this build*. |
+| T8 · Screenshot A/B against master | All three entry points, both themes, 900px and 1920px. Per the standing bar for this area — a layout claim made from reasoning alone is not evidence. |
+
+##### Paths, and what validates each
+
+| Path | Validated by |
+| --- | --- |
+| Empty shelf → paste → import | T6 spec |
+| Populated shelf tile → paste → import | T6 spec |
+| Header button (≥7 menus) → paste → import | T6 spec |
+| Any affordance → blank → named → builder | T6 spec (existing `menus-shelf.spec.ts` behaviour must survive) |
+| Chooser cancelled / Escape | T6 spec |
+| Double-click on a route | T6 spec |
+| Below 900px | T6 spec — the import route already refuses below 900 with a return path; the chooser must not offer a door into a screen that will refuse. **Open: does the chooser hide paste below 900, or let the import screen state the refusal?** Recommended: let the import screen refuse, because it already does it well and hiding the route silently is the ghost-UI failure decision 4 exists to prevent. |
+| Menus tier-gated off (decision 19) | **Unvalidated** — the Menu nav item does not render at all, so no affordance exists. Named here rather than left implied. |
+
+**Scope.** Front-end only. No schema, no API, no parser change — the import backend is complete and verified on deployed dev at `339690fc`. `#/menu/import` remains a working deep link; import sessions stay resumable and shareable by URL.
+
+
 **Shared display/accessibility scope:** the supported-width floor is 900px; below it, preserve the session and offer a resumable wider-window handoff rather than compressing the workflow. Keyboard-specific interaction design/testing is excluded; semantic controls, accessible names/relationships, visible focus, and screen-reader-compatible status/error announcements remain required.
+
+### Milestone 8 — Delete a menu
+
+**Why this is numbered 8 and not 7.1 (SOP step 2b).** M7's three pieces are `blocked`/`parked` by owner ruling — the mock-fidelity polish round is visual work the separate Foundry component system will settle, and its two full-page pieces await owner scoping. This milestone is behaviour, not polish, it shares no files with M7, and it unblocks a customer action that has been owner-approved and unbuilt since 2026-08-07. The reason is recorded here and cross-referenced from `menu-builder-v2/mock-fidelity-polish-plan.md`.
+
+**Design authority.** Q79 in `open-questions.md:965`, answered by the owner on 2026-08-07 and overriding the recommendation:
+
+> ADD DELETE this build. Spec confirmed 2026-08-07: "Delete forever" in the ⋯ only for menus on zero screens; hard confirmation naming the destroyed menu and history; shared library items survive.
+
+Also governing: decision 4 (*locked by plan means invisible*), decision 5 (*blocked is not the same as absent*), decision 8 (*history is durable and attributable*), decision 42 (*retention is configuration and tier policy*), amendment A12 (*Delete is not used on the builder screen, because nothing there destroys an item* — this milestone is the one place in Menus where something is destroyed, which is why it earns the word).
+
+##### What is missing
+
+Nothing. Not the UI, not the API, not the repository method.
+
+- The card ⋯ menu ships six items — `MenusHome.tsx:569`–`:609`: **Open · Quick update · — · Go back to… · Duplicate · Put away · — · Take off the screens**. There is no seventh.
+- `BackOfficeMenusController` (`src/Vennu.Api/Controllers/BackOffice/BackOfficeMenusController.cs`) has `HttpGet`, `HttpPost`, `HttpPut("{menuId:guid}")` and the quick-availability `HttpPut`. There is no `HttpDelete`.
+- There is no `DeleteMenuAsync` anywhere in `src/Vennu.Data` or `src/Vennu.Core.Models`.
+
+**Put away** is currently the terminal state, which is exactly what Q79 asked about and the owner declined. A venue accumulates menus forever with no way to destroy one.
+
+##### The behaviour, stated whole
+
+An operator has a menu they will never use again — a duplicate made by mistake, a test menu, a seasonal menu whose history no longer matters. They take it off the screens (an existing action), then destroy it. Immediately before: the menu is on zero screens, on the shelf or in **Not in use**. Immediately after: it is gone from both, and the items it used still exist in the library and on every other menu that placed them.
+
+The same "destroy a thing" behaviour lives elsewhere in Menus at a smaller scope — `deleteMenuPage` and `deleteMenuSection` (`src/back-office/src/api.ts:1132`, `:1185`), each of which takes a destination for the orphaned children rather than cascading blindly. **That is the established shape and this milestone follows it**, not a bare cascade.
+
+##### The data problem
+
+`dbo.Menus` is referenced by ten foreign keys across four migration files. Only two carry `ON DELETE CASCADE` (`001_baseline.sql`, `062_menu_pages.sql`); the rest — `MenuScreenAssignments`, `MenuPublishEvents`, `MenuPublishTargets`, `MenuHistoryEntries`, and the three import tables in `069`/`070` — do not. A naive `DELETE FROM dbo.Menus` fails on a constraint, and adding cascades everywhere would let an import session silently delete published history.
+
+The delete is therefore **ordered and explicit**, in one transaction, in a new migration starting at **076**.
+
+##### Three decisions this plan does not get to make
+
+Raised as Q210–Q212 in `open-questions.md` with a recommendation each. **None is settled; the milestone does not start until they are.**
+
+- **Q210 — On a menu that is on ≥1 screen, is *Delete forever* absent, or present and refusing with a named reason?** Decision 4 says absent; decision 5 says a blocked state must say what it is. Recommended: **absent**, because *Take off the screens* is already in the same menu and is the named route to eligibility — a refusal here would explain a thing the operator can already see the fix for.
+- **Q211 — Does the hard confirmation require typing the menu's name?** The paste-import second pass settled *"a targeted acknowledgment… no typed-confirmation ritual"* for replacement. Recommended: **no typing**; name the menu, name what is destroyed, name what survives, and make the destructive button carry the danger colour `#8a2929` already used by *Take off the screens*.
+- **Q212 — Does delete destroy `MenuHistoryEntries` and `MenuPublishEvents`, or detach them?** Q79's own rationale — *"destroying attributable history deserves its own designed moment"* — is why the owner asked for a designed moment, but it does not say the history dies with it. Decision 8 says history is durable and attributable; decision 42 makes retention tier policy. Recommended: **destroy them with the menu**, because "Delete forever" that leaves attributable rows behind is not forever, and the confirmation says so out loud.
+
+##### The tasks
+
+| Task | What it means |
+| --- | --- |
+| T1 · Settle Q210–Q212 | Owner answers recorded in `open-questions.md` before any code. |
+| T2 · Migration 076 | Ordered delete in one transaction. Names what it discards, per AGENTS.md. Decides nothing Q212 has not answered. |
+| T3 · `DeleteMenuAsync` on the repository | Refuses when the menu has any row in `MenuScreenAssignments`. Refuses on a stale revision. Idempotent — a second delete of the same id is a success, not a 500. |
+| T4 · Model invariants | Added to `tests/Vennu.Data.IntegrationTests/Fixtures/ModelInvariants.cs`: no `MenuSections`, `MenuItems`, `MenuPages`, `MenuScreenAssignments`, `MenuPublishEvents`, `MenuPublishTargets`, `MenuHistoryEntries` or import rows referencing an absent menu; and no `Items` row destroyed by a menu delete. Per AGENTS.md, every write path that could violate these is listed and covered. |
+| T5 · `HttpDelete("{menuId:guid}")` | On `BackOfficeMenusController`. `409` with a named reason when the menu is on a screen. Entitlement and role checked. Asserted against a database, not a double — the refusal is enforced in SQL. |
+| T6 · The seventh menu item | **Delete forever** in the card ⋯ menu, below the last divider with *Take off the screens*, danger-coloured. Visibility per Q210. Verbatim copy, added to `README.md`'s verbatim list. |
+| T7 · The confirmation | Names the menu, states that its history goes with it, states that shared library items survive and stay on every other menu using them. Per Q211. |
+| T8 · Playwright specs | Zero screens (deletes); on screens (per Q210); a put-away menu; double-click and repeat submission; refresh mid-dialog; cancel; permission denied; a second operator deleting the same menu first; and the shelf and **Not in use** strip both updating. |
+| T9 · Screenshot A/B against master | Card menu, confirmation, and the shelf after. Both themes, 900px and 1920px. |
+
+##### Paths, and what validates each
+
+| Path | Validated by |
+| --- | --- |
+| Menu on zero screens → delete → shelf updates | T8 spec |
+| Menu on ≥1 screen | T8 spec, shape decided by Q210 |
+| Put-away menu → delete → **Not in use** strip updates | T8 spec |
+| Confirmation cancelled / Escape | T8 spec |
+| Double submit | T3 idempotency + T8 spec |
+| Second operator deleted it first | T5 refusal + T8 spec |
+| Permission denied / tier changed after creation | T5 + T8 spec |
+| Menu with published history | T2/T4, shape decided by Q212 |
+| Menu that is a group menu (multi-venue) | **Unvalidated.** Decision 34 says a venue cannot import over a head-office menu; whether it may delete one is not on record and multi-venue is not built. Named here rather than left implied; belongs to the multi-venue build. |
+| Last menu deleted → shelf becomes empty | T8 spec — this lands the operator on the empty state that **6-A5** rebuilds. The two milestones meet here; 6-A5 ships first. |
+
+**Scope.** Schema → API → UI → specs, the full vertical. `Duplicate`, `Put away` and `Take off the screens` are untouched.
+
 
 ## After this build (not planned, just named)
 Spreadsheet import; photo import (needs OCR provider + cost decision); POS import route; item library UI; multi-venue build; upgrade/marketing rework; Schedules-owned time pricing (returns happy-hour display); fallback-card authoring; plus the register's backlog issues #670–#683.
