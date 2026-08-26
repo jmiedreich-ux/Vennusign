@@ -28,6 +28,7 @@ wrong once. The four genuine conflicts are listed at the end with the resolution
 | 3 | Confirm the design authority is approved and landed in `docs/features/<feature>/` (AGENTS.md, amended 2026-08-24 — approved design used to land in a separate `docs/design/approved/<feature>/` tree; it now lands alongside the feature's own tracking). If it is still in `proposed/`, stop — implementation is not authorized. | house |
 | 4 | Check the tracker and open claims. **Stop on ownership conflict and re-plan** — do not rule on it and continue. | house |
 | 5 | Create the milestone issue. | house |
+| 5a | **Write the issue's task checklist to Atlas's strict grammar, not free prose.** Each line is GitHub task-list syntax (`- [ ] text`) plus an optional leading id (`T3 · …`, plain text, not bold) and an optional trailing owner tag (`— Ada`, letters/digits/spaces/parens/`/` only). **Never use a dash as a sentence connector inside the task's own text — use a period, colon, or semicolon instead.** A trailing dash is always read as a candidate owner tag; a short clause with no punctuation in it can pass the parser's content check by accident and get misread as one anyway. This corrupted 4 of 9 real tasks in Menus M8 (issue #868, fixed in Atlas #36) before the rule existed. Full grammar: `jmiedreich-ux/Atlas`'s README, "Writing a milestone's task checklist". | house |
 | 6 | Record the claim in `tracker/assignments.json`. | house |
 | 7 | Create an isolated worktree and branch `feature/<area>-m<n>-<short-name>` from merged `master`. | both |
 | 7a | **Any two pieces of git work that can be in flight at overlapping times get separate worktrees — no exception for "this one is small."** A controller's own one-file fix, run in the same directory as an active subagent's multi-hour task, is the collision this step exists to prevent; judging a task "too small to bother isolating" is the failure, not a reasonable shortcut. Atlas M2.1 and M3 collided this way once, self-corrected mid-run, and left a report saying so — the report was read and the lesson was not applied, and the same collision then deleted an entire shipped milestone (M3's write-back, ~4,400 lines) from a commit that was never told to touch it. If a task cannot say for certain that no other process holds the same working directory, it gets its own worktree before it gets a single command. | house |
@@ -224,6 +225,16 @@ untouched — no stated reason, no record of the decision, discovered only when 
 the live site's own milestone spine and asked why the timeline read as though work was skipping
 around. Milestone ids are durable once shipped (decision 17), so nothing was renumbered; the step
 exists so the next instance of this either doesn't happen or happens on purpose, written down.
+
+Step 5a was added on 2026-08-25, after a real milestone issue (Menus M8, #868) shipped with 4 of 9
+tasks corrupted: a task id written as GitHub-bold (`**T1** ·`) never parsed, and an ordinary
+sentence's own dash ("Migration 076 — ordered delete, one transaction...") was misread as a
+trailing owner tag, truncating the task's real text. Atlas's parser (`src/tasks.mjs`) was fixed to
+handle the bold case and to reject an owner-tag capture that doesn't look like a name — but a
+parser can only make the ambiguous case *usually* resolve correctly, not *always*; a short
+dash-connected clause with no punctuation in it can still pass the content check by accident. The
+step exists so the ambiguity is avoided at the source, by whoever writes the issue, rather than
+depended on a heuristic to resolve correctly every time.
 
 `AGENTS.md` is the policy and this is the procedure. A change that makes one false updates the
 other in the same commit — if a house rule changes, the step carrying it changes with it.
