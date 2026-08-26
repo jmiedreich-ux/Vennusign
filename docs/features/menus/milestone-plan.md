@@ -146,6 +146,60 @@ The schema everything else stands on. No visible UI change yet beyond keeping th
 - Completion uses the same **Not live yet**, **Review draft in builder**, and **Done for now** contract as 6-A2. Screens remain unchanged until later Publish.
 - Acceptance workbook: replacement happy path, wrong/stale target, unpublished delta, conflict/lock loss, permission/tier change, snapshot retention/restore, active 86 and assignment preservation, cross-menu price isolation, retry/idempotency and truthful completion. Replacement portion of criterion 13.
 
+#### Milestone 6-A4 — the parser reads an ordinary menu
+
+**Why this exists.** 6-A1 through 6-A3 are complete and the import route is wired end to end — client → `BackOfficeMenuImportsController` → `MenuImportService` → repository, migrations 068–071. Pasting a real menu into it on 2026-08-25 returned `201` with the sections found correctly and **zero items**. Every item line came back `unresolved` / `item_format_not_recognized`.
+
+##### What was wrong
+
+`MenuPasteParser.PriceAtEnd` demanded **two or more spaces**, or a dot leader, between an item's name and its price:
+
+```
+^(?<name>.+?)(?:\s{2,}|\s+[.·•-]{2,}\s*)(?<price>\$?\d+(?:\.\d{1,2})?|MP)$
+```
+
+So these all failed to parse, and each is an ordinary way to write a menu line:
+
+| Pasted line | Read as | Why |
+| --- | --- | --- |
+| `Garlic Bread 6.50` | nothing | one space between name and price |
+| `Garlic Bread→6.50` (tab) | nothing | a tab is one whitespace character, not two spaces |
+| `Garlic Bread 7` | nothing | one space |
+| `Burger  12` | item | two spaces — the only shape that worked |
+
+A tab is what a spreadsheet paste produces, and a single space is what a person types. The screen's own promise in `docs/features/menus/README.md` is **"no syntax to learn"**; the parser had a syntax, it was undocumented, and it was two spaces.
+
+**Why the test suite did not catch it.** Every existing parser test wrote its fixture as `"Burger  12"` — two spaces. The suite passed while encoding the defect as the expectation. This is the failure worth remembering: tests written from the same assumption as the code confirm the assumption rather than the requirement.
+
+##### The change
+
+The separator becomes "one or more whitespace, with an optional dot leader":
+
+```
+^(?<name>.+?)(?:\s+[.·•-]{2,}\s*|\s+)(?<price>\$?\d+(?:\.\d{1,2})?|MP)$
+```
+
+The **number format is untouched**. Whole numbers, a leading currency symbol and `MP` already parsed correctly; they only ever failed for want of a second space.
+
+##### The trade-off, accepted deliberately
+
+A capitals-only heading that ends in a bare number — `SPECIALS 2` — now reads as an item priced at 2.
+
+This is the same trade the parser already made, not a new one: `Parse_PricedUppercaseLineIsAnItemNotAHeading` asserts that `BLT  12` is an item, and `SPECIALS 2` cannot be told from `BLT 12` by shape alone. A guard against it was written and then removed, because it broke that existing, deliberate assertion. Review can promote any line to a section, so the case is recoverable by the person doing the import. The trade is recorded as its own test so the next reader meets it as a decision rather than a surprise.
+
+##### The tasks, answered
+
+| Task | What it means |
+| --- | --- |
+| T1 · Confirm the import route is wired | Done before any code changed. Client `api.ts` → `BackOfficeMenuImportsController` (`api/back-office/menu-imports`) → `MenuImportService` → `IMenuImportRepository`, registered at `src/Vennu.Data/Extensions/ServiceCollectionExtensions.cs:25`. Nothing was missing; the wiring was never the fault. |
+| T2 · Widen the separator | One regex in `src/Vennu.Api/Menus/MenuPasteParser.cs`, with the reasoning kept next to it as a doc comment so it is not re-narrowed by someone tidying up. |
+| T3 · Test the shapes a real menu uses | `Parse_ReadsAnItemWhateverSeparatesTheNameFromThePrice` — eight cases: single space, tab, whole number, currency symbol, `MP`, two spaces, and dot leaders. |
+| T4 · Test a whole pasted menu | `Parse_ReadsAnOrdinaryPastedMenu` — asserts 4 items across 2 sections with no review questions raised. This is the test that would have failed before the fix; none of the old ones did. |
+| T5 · Record the trade-off | `Parse_ReadsACapitalsLineEndingInAPriceAsAnItem` — states the `SPECIALS 2` behaviour as intended, with the reason. |
+| T6 · Re-verify against the running API | **Not done in the fix PR.** The local dev stack could not be restarted: `start-ui-test-env.ps1 -Stop` reported PID 22416 could not be terminated and ports 5175/5177/5199 stayed held by orphaned processes. Disclosed in the PR rather than glossed. Needs a live paste after deploy. |
+
+**Status:** 490/490 unit tests pass. PR #862.
+
 **Shared display/accessibility scope:** the supported-width floor is 900px; below it, preserve the session and offer a resumable wider-window handoff rather than compressing the workflow. Keyboard-specific interaction design/testing is excluded; semantic controls, accessible names/relationships, visible focus, and screen-reader-compatible status/error announcements remain required.
 
 ## After this build (not planned, just named)
