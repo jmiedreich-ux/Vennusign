@@ -263,6 +263,46 @@ Naming stays where the import already puts it. The **blank** route keeps its nam
 **Scope.** Front-end only. No schema, no API, no parser change — the import backend is complete and verified on deployed dev at `339690fc`. `#/menu/import` remains a working deep link; import sessions stay resumable and shareable by URL.
 
 
+#### Milestone 6-A6 — the shelf is a page about menus
+
+**Why this exists.** Raised by the owner on 2026-08-26, reviewing M6.5 and M8: *"this screen is about showing menus, not screens… we need somewhere to locate the recently deleted, remove the put on shelf pills."*
+
+Three things about the Menus home are decided here, and they are one change because they are all the same row of the page.
+
+- **The "Not in use" strip is furniture.** A labelled row of pill chips, each with its own *put back* button (`MenusHome.tsx:378`–`:400`, `README.md:156`), pinned below the grid on a page whose subject is menus.
+- **It contradicts the shelf at scale.** At seven menus or more the same set is already a filter chip, `not-in-use` (`menusShelf.mjs:63`). Below seven it is a strip. The product answers "where are my put-away menus" two different ways depending on how many menus a venue owns.
+- **M8's recycle bin needs a home**, and it is the same kind of thing: a menu that is not on the shelf but is not gone.
+
+##### What it ships
+
+`shelfFilters` at every size, the pill strip removed, and **Recently deleted** added as a peer chip when M8 lands. The shelf becomes one grid plus one row of filters at any scale — the cutover at seven stays, but it changes only *how many cards are drawn*, never *where a thing lives*.
+
+Two consequences that are not optional:
+
+- **Put back must reappear on the card.** The strip is the only affordance for it today; removing the strip without moving the action deletes a customer capability.
+- **The compact count is settled here too** (Q215) — twelve rather than six, so a venue at scale is not expanding the shelf on every visit.
+
+##### Blocked on
+
+**Q214** and **Q215**. Both have recommendations in the register; neither is settled. The *Recently deleted* chip additionally waits on **Q213** and M8 — it is added when there is something to put in it, not drawn empty.
+
+##### Why it is not folded into M6.5
+
+Same file, different subject. M6.5's subject is the import's missing entry point; this is the shelf's information architecture. AGENTS.md says keep changes bounded and do not begin future-milestone work, and an A/B screenshot pass that changes two unrelated things at once cannot attribute a regression to either.
+
+##### The tasks
+
+| Task | What it means |
+| --- | --- |
+| T1 · Settle Q214 and Q215 | Owner answers recorded before any code. |
+| T2 · Filters at every size | `shelfFilters` rendered below seven menus as well as above; no chip appears for a state no menu is in. |
+| T3 · Retire the strip | `MenusHome.tsx:378`–`:400` and its `menus-home__idle` styles; `README.md:156` amended in the same commit. |
+| T4 · Put back moves to the card | Inside the `not-in-use` filtered view. The capability does not disappear with its strip. |
+| T5 · Compact count | Per Q215. `MenusHome.tsx:142`. |
+| T6 · Playwright specs | Below and above the cutover; each filter with zero, one and many matches; put back from the filtered view; the existing `not-in-use-chip` and `put-back` specs retired or rewritten in the same PR. |
+| T7 · Screenshot A/B against master | Both themes, 900px and 1920px, at 3 menus and at 13. |
+
+
 **Shared display/accessibility scope:** the supported-width floor is 900px; below it, preserve the session and offer a resumable wider-window handoff rather than compressing the workflow. Keyboard-specific interaction design/testing is excluded; semantic controls, accessible names/relationships, visible focus, and screen-reader-compatible status/error announcements remain required.
 
 ### Milestone 8 — Delete a menu

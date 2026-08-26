@@ -2637,6 +2637,35 @@ The real fork is **whether the bin has a surface**. A bin the operator can open 
 
 <sub>Q79 owner answer 2026-08-07; decision 42 (retention is configuration and tier policy); `MenuImportRepository.DeleteExpiredAsync`; `src/Vennu.Api/BackgroundServices/`</sub>
 
+
+## The shelf as a page about menus (raised 2026-08-26, alongside M6.5 and M8)
+
+### Q214 · important
+
+**Do the shelf's filter chips show at every size, replacing the "Not in use" pill strip, with "Recently deleted" as a peer chip?**
+
+Raised by the owner on 2026-08-26: *"this screen is about showing menus, not screens… we need somewhere to locate the recently deleted, remove the put on shelf pills."*
+
+Two problems land on the same answer. M8's recycle bin (Q213) needs a home on this screen, and the **Not in use** strip — a labelled row of pill chips with a *put back* button on each (`MenusHome.tsx:378`-`:400`, `README.md:156`) — is shelf furniture on a page that should be showing menus. It also only exists below the scale cutover: at seven menus or more the same set is already reachable as the `not-in-use` filter chip (`menusShelf.mjs:63`), so the product currently has two different answers to "where are my put-away menus" depending on how many menus you own.
+
+*Recommended:* Show `shelfFilters` at every size, drop the pill strip, and add **Recently deleted** as a peer chip when M8 ships. The shelf becomes one grid plus one row of filters at any scale - no second component, no cutover in *where things are*, only in how many are drawn. Put-away and deleted menus are each one click away instead of pinned to the bottom of the page. Note that this removes the only current affordance for **put back**, which must reappear on the card itself inside the filtered view.
+
+*Scope note:* This is not M6.5. M6.5's subject is the import's missing entry point; this is a different change to the same file, and AGENTS.md says keep changes bounded. **Recommended as M6.6**, shipping after M6.5, with the *Recently deleted* chip added when M8 lands rather than drawn empty in the meantime.
+
+<sub>`MenusHome.tsx:378`-`:400` Not-in-use strip and `put-back`; `menusShelf.mjs:60`-`:64` `shelfFilters`; `README.md:156`; Q163, Q166, Q213</sub>
+
+### Q215 · minor
+
+**At scale, how many menus does the compact shelf draw before "N more"?**
+
+Today the cutover is seven total menus (`shelfScaleThreshold`, Q163), and above it the compact 6-across grid draws six - one row - plus every menu currently on a screen, then collapses the rest behind an inline *N more* that stays open for the session (`MenusHome.tsx:142`, Q165).
+
+One row is the smallest honest answer and it makes the shelf something you expand on nearly every visit. The governing rule for this screen is *summarize the normal, name the exception* - but menus are the subject of this page, not the exception, and a venue at scale is the venue most likely to be looking for one.
+
+*Recommended:* Twelve - two full rows. It keeps the compact grid's shape, still collapses a thirteen-menu shelf, and stops the common case being "expand, then look".
+
+<sub>`MenusHome.tsx:142` `slice(0, Math.max(onScreens.length, 6))`; `menusShelf.mjs:18` `shelfScaleThreshold = 7`; Q163, Q165, Q166</sub>
+
 ---
 
-**Totals:** 213 questions — 44 blocking, 124 important, 45 minor. Two open: **Q209** (deferred at M2 acceptance, running on its provisional default) and **Q213**, which blocks Milestone 8. Q210–Q212 were answered by the owner 2026-08-26.
+**Totals:** 215 questions — 44 blocking, 125 important, 46 minor. Four open: **Q209** (deferred at M2 acceptance, running on its provisional default), **Q213**, which blocks Milestone 8, and **Q214–Q215**, raised 2026-08-26 against a proposed Milestone 6.6. Q210–Q212 were answered by the owner 2026-08-26.
