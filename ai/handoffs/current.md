@@ -1,6 +1,66 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-26, after two milestones were planned: the shipped paste import has no entry point anywhere in the product, and no menu can be deleted.
+Updated 2026-08-26, after M6.5 shipped the paste import a door on the Menus home and removed the name-your-menu prompt.
+
+## 2026-08-26 — M6.5 shipped: the paste import has a door, and no menu is named before it exists
+
+**Merged as `d9ac7248` (#874, closes #867) and deployed to dev** — `dev.back-office.vennusign.com/version.json`
+reports that commit. Back-office only; api, display, www and platform-operations all classified false and skipped.
+
+### What was wrong
+
+M6.1–M6.4 built the paste import end to end and M6.4 closed against deployed dev. **Nothing in the product
+navigated to it.** `#/menu/import` rendered `MenuPasteImport` (`App.tsx:624`), and the only code that ever set
+that hash was the redirect *inside* the flow (`App.tsx:631`). All three "Add a menu" affordances — empty shelf,
+dashed tile, header button at scale — called `setNamingMenu(true)`, a dialog headed "Start a blank menu".
+
+**Four milestones passed their own acceptance workbooks while the feature was unreachable, because every
+workbook started from inside the flow.** That is the lesson worth carrying: a workbook that begins at step 2
+cannot discover that step 1 does not exist. The M6.5 spec asserts each of the three affordances *separately*
+rather than through one helper, for the same reason.
+
+### What shipped
+
+`MenuAddRoutes.tsx` — one component, two placements: full-page on an empty shelf (decision 17, nothing to
+dismiss) and inside a dialog behind the tile and the header button. One route list, one copy source.
+
+**Only built routes are drawn.** `README.md`'s M1a already settled this for POS — "when it is not, there is no
+trace of it — decision 4" — so no disabled cards and no "coming soon". The grid is `auto-fit`, so one card
+centres instead of leaving two holes in a row of three. Owner, 2026-08-26: *"just include on the new menu
+button, about pasting, we can add the others when they get built."*
+
+### Two owner decisions
+
+- **No menu is named before it exists.** The prompt is gone. Blank creates the menu and the builder names it
+  inline. `dbo.Menus.Name` is `NOT NULL` with `CK_Menus_Name_NotBlank`, so a nameless menu is impossible and an
+  empty one could otherwise reach a guest-facing board — the menu carries `unnamedMenuName` and the crumb draws
+  it muted with `data-unnamed`, reading as *not named yet*. **Deliberately not auto-focused**: a blank menu
+  already puts the caret in the add-item row, and two things competing for focus on first paint is worse than
+  one thing to click. Flagged to the owner as a judgement call, not settled by them.
+- **The import keeps its own name confirmation** — it proposes a name from the paste and confirms it at the
+  destination step, which is a suggestion once there is content rather than a demand before there is any.
+
+### Verified, and not
+
+Back-office suite **219/219** (two rewritten, two added); Release build clean; `tsc --noEmit` clean; the
+component screenshotted at 1440 light, 1440 dark, 900px and as the dialog, with no horizontal overflow at any.
+
+**UNTESTED: the Playwright suite has not run.** Local env is the one M6.4's T6 could not restart, and the CI
+gate is red for an unrelated reason — see below. Five legacy specs were rewritten blind against the retired
+prompt; they parse and list, but have not executed.
+
+**Independent review was waived by the owner** for this PR, as it was for M3-A Slice 3-A. Not a standing
+exception.
+
+### Still open
+
+- **#866, the CI cert fix, is not merged and should not be.** The "Trust the ASP.NET Core development
+  certificate" step **hung for 30 minutes** and the job was killed by timeout — it never reached the tests. On
+  `windows-latest`, `dotnet dev-certs https --trust` raises a certificate-install confirmation dialog and
+  nothing answers it on a headless runner. The fix is to export the certificate and import it with PowerShell
+  into the store directly (the runner is already elevated), never calling `--trust` interactively.
+- **M6.5 needs a Playwright run and the owner acceptance workbook** before it can be called complete.
+- **Q213 blocks M8 (#868)**; **Q214–Q215 block M6.6 (#871)**.
 
 ## 2026-08-26 — Two milestones planned: the import has no door, and no menu can be deleted
 
