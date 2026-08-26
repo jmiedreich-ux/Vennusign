@@ -257,3 +257,50 @@
   font-size: var(--sky-font-size-xs-plus, 12px);
   line-height: 1.45;
 }
+
+/*
+ * The ways a menu gets in (M6.5).
+ *
+ * One list of routes, two placements: full-page on an empty shelf, and inside
+ * the Add-a-menu dialog once there are menus. The card grid is `auto-fit` with a
+ * max width rather than a fixed column count, so one route centres and reads as
+ * deliberate instead of leaving two holes in a three-slot row — which is what
+ * decision 4's "no trace of it" has to look like when only paste is built.
+ */
+.add-routes { display: grid; justify-items: center; gap: 10px; text-align: center; }
+.add-routes__title { margin: 0; font-size: var(--sky-font-size-3xl); font-weight: var(--sky-font-weight-semibold); }
+.add-routes__lead { margin: 0; color: var(--sky-color-text-secondary); font-size: var(--sky-font-size-sm); }
+
+.add-routes--page { max-width: 860px; margin: 0 auto; padding-top: 12vh; }
+.add-routes--dialog .add-routes__title { font-size: var(--sky-font-size-xl); }
+
+.add-routes__cards {
+  display: grid; gap: 14px; width: 100%; margin-top: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 280px));
+  justify-content: center;
+}
+.add-routes__card {
+  display: grid; justify-items: center; gap: 8px;
+  border: 1.5px solid var(--sky-color-border-dashed); border-radius: var(--sky-radius-lg-minus);
+  padding: 20px 18px; background: var(--sky-card-background);
+  color: var(--sky-text-primary); font: inherit; text-align: center; cursor: pointer;
+}
+.add-routes__card:hover:not(:disabled) { border-color: var(--sky-color-primary); }
+.add-routes__card:disabled { cursor: default; opacity: .6; }
+.add-routes__card strong { font-size: var(--sky-font-size-sm-plus); font-weight: var(--sky-font-weight-semibold); }
+.add-routes__card small { color: var(--sky-color-text-muted); font-size: var(--sky-font-size-xxs); line-height: 1.5; }
+
+/* The route that leads. Photo carried this in the design; paste inherits it as
+   the only route that actually gets a menu in (README.md M1 empty state). */
+.add-routes__card--leads { border: 2px solid var(--sky-color-primary); background: var(--sky-color-accent-wash); }
+
+.add-routes__mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: var(--sky-radius-md-minus); background: var(--sky-color-primary); color: var(--sky-color-ink); }
+
+.add-routes__blank {
+  border: 0; padding: 6px 2px; background: transparent;
+  color: var(--sky-color-text-secondary); font: inherit; font-size: var(--sky-font-size-sm);
+  text-decoration: underline; cursor: pointer;
+}
+.add-routes__blank:disabled { cursor: default; opacity: .6; }
+.add-routes__error { margin: 0; color: var(--sky-negative-text); font-size: var(--sky-font-size-sm); }
+.add-routes__actions { margin-top: 6px; }

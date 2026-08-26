@@ -37,16 +37,20 @@ test.describe("the 86 board", () => {
     await expect(page.getByTestId("quick-update-board")).toHaveCount(0);
   });
 
-  test("blank menu creation stays a separate Menus-home path", async ({ page }) => {
+  test("blank menu creation stays a route on the Menus-home chooser", async ({ page }) => {
     await openAs(page, "owner", "menu");
     await page.getByTestId("add-a-menu").click();
-    const dialog = page.getByTestId("name-menu-dialog");
-    await expect(dialog).toContainText("Start a blank menu");
+    // M6.5: the chooser, not a name prompt. Blank is a link under the routes.
+    const chooser = page.getByTestId("add-menu-dialog");
+    await expect(chooser).toContainText("Let's get your menu in.");
+    await expect(chooser.getByTestId("add-route-paste")).toBeVisible();
     await expect(page.getByTestId("quick-update-board")).toHaveCount(0);
-    await page.getByTestId("new-menu-name").fill(`Blank ${Date.now()}`);
-    await dialog.getByRole("button", { name: "Start blank" }).click();
+    await chooser.getByTestId("add-route-blank").click();
     await expect(page.getByTestId("menu-builder")).toBeVisible();
     await expect(page.getByTestId("canvas")).toContainText("Section 1");
+    // The add-item row keeps first focus: naming is available on the crumb, and
+    // is deliberately not allowed to compete for the caret on first paint.
     await expect(page.getByTestId("add-item-input")).toBeFocused();
+    await expect(page.getByTestId("builder-menu-name")).toHaveAttribute("data-unnamed", "true");
   });
 });

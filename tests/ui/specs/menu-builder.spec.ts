@@ -945,16 +945,16 @@ test.describe("the builder", () => {
     });
 
     await page.getByTestId("add-a-menu").first().click();
-    await page.getByTestId("new-menu-name").fill("One too many");
-    await page.getByTestId("create-menu").click();
+    await page.getByTestId("add-route-blank").click();
 
     // Said where the person is looking, in the words the server chose, with the
-    // dialog still open and the typed name still in it.
-    const refusal = page.getByTestId("create-menu-error");
+    // chooser still open so the other route is still one click away. There is no
+    // typed name to preserve any more (M6.5) - what must survive is the chooser.
+    const refusal = page.getByTestId("add-route-error");
     await expect(refusal).toContainText("set up for 50");
     await expect(refusal).toContainText("Put one away first");
-    await expect(page.getByTestId("name-menu-dialog")).toBeVisible();
-    await expect(page.getByTestId("new-menu-name")).toHaveValue("One too many");
+    await expect(page.getByTestId("add-menu-dialog")).toBeVisible();
+    await expect(page.getByTestId("add-route-paste")).toBeVisible();
   });
 
   test("deleting a section asks first, and names what comes back", async ({ page }) => {
