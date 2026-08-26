@@ -1,6 +1,73 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-26, after M6.7 took a real printed menu from 91 review questions to 15.
+Updated 2026-08-26, after M6.8 measured the parser against a correct reading of a real menu instead of against the previous parser.
+
+## 2026-08-26 — M6.8: the benchmark was wrong, so the result was wrong
+
+**Merged as `28c6909f` (#882, closes #881) and deployed to dev.** Verified by posting the owner's real menu at
+the deployed API: **46 items, 0 unpriced, 11 sections, 5 questions.**
+
+### The mistake worth carrying
+
+M6.7 was reported as a success on **"91 questions became 15"**. The owner rejected it and asked whether that
+was reasoning I would accept. It was not.
+
+91 → 15 is a ratio between two wrong answers. What M6.7 actually produced, unlooked-at until the owner pushed
+back: **17 of 47 items with no price** — a third of the menu, unusable on a screen — the **restaurant's own
+name imported as a dish priced $11.95**, its tagline as a section, `(Served w. Steamed Jasmine Rice)` asked
+**ten times**, and ~15 items missing, excused in the release notes with `(SessionId, LineNumber)` — an
+internal key handed to the owner as though it were a product limit.
+
+**The correct benchmark existed the whole time and was not used.** Earlier the same session this agent read
+the menu and listed the appetizers correctly, with descriptions, in one shot. That reading was the right thing
+to measure against. Instead the comparison was against the previous parser, which made a broken result look
+like a triumph and hid every defect above.
+
+Two habits this should change. **Measure against correct, never against the previous attempt** — an
+improvement ratio says nothing about whether the output is usable. And **look at the rows**, not the counts: 47
+items reads like success until you list them and find seventeen with no price and one called Mana-Thai Cuisine.
+
+`RealPrintedMenuTests` now asserts the owner's entire paste against a correct reading, in numbers countable by
+eye off the printed page.
+
+### What changed
+
+| | M6.7 | M6.8 |
+| --- | --- | --- |
+| Items | 47 | **46** |
+| With no price | **17** | **0** |
+| Sections | 15, four junk | **11**, all real |
+| Questions | 15 | **5** |
+
+- **A price set prices the dishes under it.** The dish takes the first price and carries the whole set in its
+  description. `MenuItems.Price` is one `DECIMAL(19,4)`; three prices cannot all be the price. No question —
+  the set is stated on the dish.
+- **A repeated note is never a repeated question.** Decision 33's rule, applied to notes.
+- **Two Title Case lines in a row** are neither heading nor dish — a heading is followed by something priced,
+  a dish under a price set by its description.
+- **A price is a price wherever its parenthetical sits**; a sentence addressed to the reader is a notice; a
+  price set ends at a blank line.
+
+### The one thing left is a decision, not a rule — Q216
+
+Three lines hold five or six items each (Sides, Beverages, Desserts — about fifteen items and three of the
+five remaining questions). `MenuImportSourceLines` is keyed `(SessionId, LineNumber)`, so **one pasted line
+becomes at most one item.** No parser rule reaches it.
+
+- **Widen the key** — a migration adds `LineSubIndex`; line numbers keep meaning what they say, which *Jump to
+  line 18* and Q81's never-drop-a-line invariant both rest on. Touches the repository's insert, its `FOR JSON`
+  read, the question-line join, and the shipped create/replace transaction.
+- **Redefine the number** — `LineNumber` becomes a row ordinal. No migration, and traceability back to the
+  pasted text quietly stops being true.
+
+Recommended: widen the key. **Owner decision, not started.**
+
+The other two remaining questions are the restaurant's name and its tagline. Those are arguably right to ask
+about: they are not menu content, and guessing is what put them in the menu in the first place.
+
+### One exact next action
+
+Answer **Q216**. Everything else on this import is done and on dev.
 
 ## 2026-08-26 — M6.7: a real printed menu asked 91 questions, and now asks 15
 
