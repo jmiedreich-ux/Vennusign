@@ -184,7 +184,9 @@ public sealed class MenuImportService(
 
     private static string Status(IReadOnlyCollection<MenuImportReviewQuestion> questions) => questions.Any(q => q.Required) ? MenuImportStatuses.Reviewing : MenuImportStatuses.Resolved;
     private static int CountLines(string value) => value.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n').Split('\n').Length;
-    private static bool IsNaturalHeading(string value) { var trimmed = value.Trim(); return trimmed.Any(char.IsLetter) && trimmed.Where(char.IsLetter).All(char.IsUpper) && trimmed.Length <= Item.NameMaxLength; }
+    // One definition, in the parser. This used to be a byte-identical copy, and it was about
+    // to disagree with the original: M6.7 made Title Case headings natural too.
+    private static bool IsNaturalHeading(string value) => MenuPasteParser.IsNaturalHeading(value);
 }
 
 public sealed class MenuImportValidationException(string message) : Exception(message);

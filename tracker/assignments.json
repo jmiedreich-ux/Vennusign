@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-26T04:20:00Z",
+  "updatedUtc": "2026-08-26T05:00:00Z",
   "activeAssignments": [
     {
-      "assignment": "M6.5 - the import has a door: the Menus home reaches the paste flow",
-      "issue": 867,
+      "assignment": "M6.7 - the parser reads a real printed menu (91 questions from one paste)",
+      "issue": 877,
       "workstream": "menus",
-      "branch": "feature/menus-m6a5-import-door",
+      "branch": "feature/menus-m6a7-parser-reads-a-real-menu",
       "owner": "Claude Opus 5, back-office dev lead",
-      "claimedUtc": "2026-08-26T04:20:00Z",
-      "files": "src/back-office/src/{MenuAddRoutes.tsx,MenusHome.tsx,App.tsx,MenuBuilder.tsx,menusShelf.mjs,menusShelf.d.mts,menus-home.css,menu-builder.css}, src/back-office/tests/menus-shelf.test.mjs, tests/ui/{fixtures.ts,specs/*}",
-      "status": "implemented; needs a Playwright run and the owner workbook"
+      "claimedUtc": "2026-08-26T05:00:00Z",
+      "files": "src/Vennu.Api/Menus/{MenuPasteParser.cs,MenuImportService.cs}, src/Vennu.Data/Scripts/076_menu_import_description_lines.sql, tests/Vennu.Api.Tests/Menus/MenuPasteParserTests.cs",
+      "status": "implemented; owner re-tests against dev 2026-08-27"
     }
   ],
   "desktopSessionLock": null,

@@ -303,6 +303,62 @@ Same file, different subject. M6.5's subject is the import's missing entry point
 | T7 · Screenshot A/B against master | Both themes, 900px and 1920px, at 3 menus and at 13. |
 
 
+#### Milestone 6-A7 — the parser reads a real printed menu
+
+**Why this exists.** M6.4 fixed the two-space separator and was verified — with a menu the agent wrote itself. On 2026-08-26 the owner pasted a real four-page restaurant menu out of its own PDF. The review screen said **"91 items need you"**.
+
+Measured against the deployed dev parser at `339690fc`, the first half of that menu (69 lines) produced:
+
+| | Before |
+| --- | --- |
+| Items | 19 — **three of them nonsense** |
+| Sections | **0** |
+| Unresolved | 48, every one `item_format_not_recognized` |
+| Descriptions | all lost |
+
+Decision 18 says *confirm only what we were unsure of*. Ninety-one questions is not a messy menu; it is the parser being unsure of almost everything, which turns the review screen — meant to be the exception list — into the whole menu, one line at a time. Nobody answers that. They retype the menu instead.
+
+##### The four defects
+
+| # | What | Why it happened |
+| --- | --- | --- |
+| 1 | **No sections at all.** `Appetizers`, `Salads`, `Soups`, `Noodles`, `Rice` all came back unresolved | A heading had to be ALL CAPS. Printed menus use Title Case. |
+| 2 | **Every description lost** — 30-odd lines, unresolved | Q81 settled on 2026-08-07 that an unpriced line under an item is its description. It was never implemented. |
+| 3 | **Price sets became items.** `Chicken $11.95, Beef $12.95, Shrimp $13.95` parsed as an item **named** "Chicken $11.95, Beef $12.95, Shrimp" priced **$13.95** | `PriceAtEnd` matched it, taking everything up to the last price as the name. |
+| 4 | **The dishes under those headers vanished** — Pad Thai, Pad Se-Ew, Thai Fried Rice and six more | No price on their own line, so nothing matched. |
+
+##### The change
+
+The parser stops being a single pass. It now reads every line's **shape** first — blank, priced, comma-priced, caps heading, Title Case, prose, parenthesised note — and then walks the document deciding what each line **is**, with the shape of its neighbours available. A line's meaning depends on context: "Pad Thai" is a dish under a price set and a heading anywhere else, and a parser that never looks at line n+1 cannot tell those apart.
+
+The rules, in the order they fire:
+
+- **Title Case is a heading; sentence case is a description.** `Noodle Soups` against `Steamed healthy soybeans`. This one distinction does almost all the work, and it needs no length threshold and no comma counting. Words under three letters are skipped — `&`, `w.`, `of` — because title case does not capitalise them.
+- **A heading needs something to hold.** A Title Case line with nothing after it stays a question rather than becoming an empty section: a stray line off the bottom of a PDF (a restaurant name, a tagline) looks exactly like a heading.
+- **Prose under an item is that item's description**, joined across wrapped physical lines, attached to the item *and* recorded on its own line with a new `description` disposition — Q81's "never silently drop a line" holds.
+- **A comma-separated run of priced fragments is never an item.** Followed by an unpriced dish name it is a **price set** (`price_set_needs_choosing`); otherwise it is several items on one line (`multiple_items_on_one_line`). Both raise exactly one question. A plausible-looking row of nonsense is worse than a question, because nothing about it asks to be checked.
+- **A dish under a price set is an item with no price** — which A11 already allows. It deliberately does **not** take the first price: silently claiming Pad Thai is $11.95 when there are three prices puts a wrong number on a guest-facing board.
+- **A parenthesised line is a note, never a dish**, and the look-ahead skips it — `(Served w. Steamed Jasmine Rice)` sits between a price set and the dishes it prices.
+
+##### One rule deleted rather than duplicated
+
+`MenuImportService` carried a byte-identical private copy of the parser's heading test, used to work out which sections were the operator's doing. It was about to disagree with the original, because Title Case headings are natural now and the copy did not know it. `MenuPasteParser.IsNaturalHeading` is public and called from both places.
+
+##### Schema
+
+Migration **076** adds `description` to `CK_MenuImportSourceLines_Disposition`. It discards nothing and changes no existing value's meaning. Menu creation and replacement filter on `Disposition=N'item'` and `N'section'`, so a description row is invisible to both by construction, while `ParsedDescription` — a column that already existed and was never populated — now reaches the built menu.
+
+##### Not fixed, and named
+
+**Several items on one line stay one question.** `Sides: Jasmine Rice $2.00, Brown Rice $3.00, Peanut Sauce $2.00` is three items, and splitting it is not possible here: a source line is one row, keyed `(SessionId, LineNumber)`. That is a schema change and its own milestone. Three such lines in the owner's menu, worth roughly fifteen items.
+
+**The price set raises a generic "what should this line become?" question.** The review screen has no question kind for *choose which price applies*, so it borrows the unreadable one. The parser reason is honest (`price_set_needs_choosing`); the UI is not yet. A follow-up, not a blocker.
+
+##### The fixture is the owner's own menu
+
+Every parser test before this one was written from the same assumptions as the parser. That is exactly why the suite stayed green while the two-space defect shipped in M6.4, and why it stayed green again while a printed menu could not be read at all. `RealPrintedMenu` in `MenuPasteParserTests` is the real thing, pasted from the real PDF, and the assertions are counts a person can check by eye.
+
+
 **Shared display/accessibility scope:** the supported-width floor is 900px; below it, preserve the session and offer a resumable wider-window handoff rather than compressing the workflow. Keyboard-specific interaction design/testing is excluded; semantic controls, accessible names/relationships, visible focus, and screen-reader-compatible status/error announcements remain required.
 
 ### Milestone 8 — Delete a menu
