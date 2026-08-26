@@ -32,6 +32,8 @@ public sealed class MenuPasteParser
     /// </summary>
     private static readonly Regex PriceAtEnd = new(@"^(?<name>.+?)(?:\s+[.·•-]{2,}\s*|\s+)(?<price>\$?\d+(?:\.\d{1,2})?|MP)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex TrailingParenthetical = new(@"\s*\*?\([^()]*\)\s*$", RegexOptions.Compiled);
+    private static readonly Regex PriceToken = new(@"(?<![\w.])\$?\d+\.\d{2}(?![\w.])|\$\d+", RegexOptions.Compiled);
+    private static readonly Regex LabelledNote = new(@"^[^:]{1,40}:\s*\S", RegexOptions.Compiled);
     private const int DescriptionMaxLength = 1000;
     private static readonly Regex Spaces = new(@"\s+", RegexOptions.Compiled);
 
@@ -322,6 +324,21 @@ public sealed class MenuPasteParser
     private static bool IsTitleCase(string value)
     {
         if (value.Length > Item.NameMaxLength) return false;
+
+        /*
+         * Three things wear Title Case and are not headings. Found by pasting a whole real menu at
+         * the deployed parser rather than by reasoning about it - each one had produced a section.
+         *
+         *   "Tea $2.00 *(Green, Jasmine, Black & Red)"    a priced item whose price is not last
+         *   "Choice of Sauce: Garlic Sauce, Ginger Sauce" a labelled note about the dish above
+         *   "& Red Curry Pineapple"                       the wrapped tail of the line before it
+         *
+         * A heading names a group. It never carries a price, never labels itself with a colon, and
+         * never begins mid-sentence.
+         */
+        if (PriceToken.IsMatch(value)) return false;
+        if (LabelledNote.IsMatch(value)) return false;
+        if (value[0] is '&' or '+' or '/') return false;
         var significant = 0;
         foreach (var word in value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
         {

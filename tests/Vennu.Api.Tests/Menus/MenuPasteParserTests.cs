@@ -321,4 +321,18 @@ public sealed class MenuPasteParserTests
         Assert.DoesNotContain(result.Lines, line => line.ParsedName?.StartsWith('(') == true);
         Assert.Contains(result.Lines, line => line.ParsedName == "Red Curry" && line.Disposition == "item");
     }
+
+    [Theory]
+    [InlineData("Tea $2.00 *(Green, Jasmine, Black & Red)")]
+    [InlineData("Choice of Sauce: Garlic Sauce, Ginger Sauce, Green Curry")]
+    [InlineData("& Red Curry Pineapple")]
+    public void Parse_ATitleCaseLineThatIsNotAHeadingDoesNotBecomeASection(string line)
+    {
+        // All three produced a section on the first real-menu run against dev. A heading names a
+        // group: it never carries a price, never labels itself with a colon, and never begins
+        // mid-sentence. Found by pasting a whole real menu, not by reasoning about one.
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), $"Fish\nGrilled Fillet Fish $16.95\n{line}", 1, []);
+
+        Assert.DoesNotContain(result.Lines, candidate => candidate.Disposition == "section" && candidate.ParsedName == line);
+    }
 }
