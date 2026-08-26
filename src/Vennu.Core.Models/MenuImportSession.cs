@@ -33,6 +33,8 @@ public sealed record MenuImportSourceLine(
     Guid SessionId,
     Guid VenueId,
     int LineNumber,
+    /// <summary>Orders the items found within one pasted line (Q216). Zero for a line holding one thing.</summary>
+    int LineSubIndex,
     string RawText,
     string Disposition,
     string? ParsedName,

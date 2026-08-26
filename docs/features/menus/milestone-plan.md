@@ -403,6 +403,33 @@ Each is five or six real items on one physical line. `MenuImportSourceLines` is 
 
 Owner decision. Recorded as **Q216**.
 
+#### Milestone 6-A9 — one pasted line, several items (Q216)
+
+**The answer, measured before it was chosen.** Both options were built against the owner's real menu rather than argued about, and they produce an identical result: **60 items, 0 unpriced, 14 sections, 2 questions** — the whole menu, Sides and Beverages and Desserts included. Everything that separated them was cost and consequence.
+
+| | Widen the key | Row ordinal |
+| --- | --- | --- |
+| The menu | identical | identical |
+| "Line 128" still means line 128 | **yes** | **no** — drifts after the first multi-item line |
+| Production code | 3 files, 36 lines + migration 077 | 1 file, 22 lines |
+| Test call sites | 6 | 0 |
+| Verified against a real database | **12/12 integration tests** | n/a |
+| API suite | **547/548** | 542/548 |
+
+##### What only running it found
+
+The first migration **failed and took 82 tests with it** — `MenuImportQuestionLines` carries a foreign key into the exact key being replaced, so the API could not start. That would have shipped on reasoning alone. It is dropped and rebuilt inside the same migration, and the question-line key gains its own sub-index: a question is raised about a *line*, never about one item inside a line, so it points at sub-index 0.
+
+The row-ordinal alternative's cost is quieter than it sounds. On this menu the multi-item lines sit at the foot of the page, so the drift is small. Put a `Sides:` line near the top and every line number after it is wrong — including the "Line 18" the review screen prints beside each question, and the traceability Q81's never-drop-a-line invariant rests on.
+
+##### What ships
+
+`LineSubIndex` joins the source-line key. `LineNumber` keeps meaning a line of the pasted text. A labelled list becomes its label as a section and each fragment as an item, all sharing the line number they were pasted on.
+
+##### Where the import stands
+
+From 91 questions on the first real menu to **2**, and both of those are right to ask: the restaurant's own name and its tagline, off the top of a page. They are not menu content, and guessing at them is what put them in the menu the first time.
+
 **Shared display/accessibility scope:** the supported-width floor is 900px; below it, preserve the session and offer a resumable wider-window handoff rather than compressing the workflow. Keyboard-specific interaction design/testing is excluded; semantic controls, accessible names/relationships, visible focus, and screen-reader-compatible status/error announcements remain required.
 
 ### Milestone 8 — Delete a menu

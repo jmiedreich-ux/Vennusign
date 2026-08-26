@@ -90,8 +90,8 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         var id = Guid.NewGuid();
         var lines = new[]
         {
-            new MenuImportSourceLine(id, venueId, 1, "DINNER", "section", "DINNER", null, null, null, 1),
-            new MenuImportSourceLine(id, venueId, 2, "Burger  14", "item", "Burger", null, "14", null, 1)
+            new MenuImportSourceLine(id, venueId, 1, 0, "DINNER", "section", "DINNER", null, null, null, 1),
+            new MenuImportSourceLine(id, venueId, 2, 0, "Burger  14", "item", "Burger", null, "14", null, 1)
         };
         var created = await repository.CreateAsync(new(new(id, venueId, "DINNER\nBurger  14", 1,
             MenuImportStatuses.Resolved, 2, 1, now.AddHours(1), now, now, null, []), lines, []));
@@ -119,7 +119,7 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         await new ContentRepository(dataAccess).CreateItemAsync(libraryItem);
         var repository = new MenuImportRepository(dataAccess);
         var now = DateTime.UtcNow; var id = Guid.NewGuid(); var fingerprint = new string('c', 64);
-        var line = new MenuImportSourceLine(id, venueId, 1, "Burger  14", "item", "Burger", null, "14", null, 1);
+        var line = new MenuImportSourceLine(id, venueId, 1, 0, "Burger  14", "item", "Burger", null, "14", null, 1);
         var candidate = new MenuImportCandidate(libraryItem.Id, "Burger", "12", "exact_normalized", true);
         var question = new MenuImportReviewQuestion(id, venueId, "line-1-identity", fingerprint, "identity", 0, true, 1, [1], [candidate], null);
         var started = await repository.CreateAsync(new(new(id, venueId, line.RawText, 1, MenuImportStatuses.Reviewing, 1, 1, now.AddHours(1), now, now, null, []), [line], [question]));
@@ -143,7 +143,7 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
     public async Task Concurrent_confirmations_create_exactly_one_menu()
     {
         var (repository, venueId) = await CreateRepositoryAndVenue(); var now = DateTime.UtcNow; var id = Guid.NewGuid();
-        var line = new MenuImportSourceLine(id, venueId, 1, "Burger  14", "item", "Burger", null, "14", null, 1);
+        var line = new MenuImportSourceLine(id, venueId, 1, 0, "Burger  14", "item", "Burger", null, "14", null, 1);
         var started = await repository.CreateAsync(new(new(id, venueId, line.RawText, 1, MenuImportStatuses.Resolved, 1, 1, now.AddHours(1), now, now, null, []), [line], []));
         var named = await repository.SetCreateDestinationAsync(venueId, id, started.Session.Revision, fixture.UniqueValue("concurrent-import"), now, "owner");
 
@@ -163,7 +163,7 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         var content = new ContentRepository(fixture.CreateDataAccess());
         var existingName = fixture.UniqueValue("existing-menu");
         Assert.True((await content.CreateMenuWithinCeilingAsync(new Menu { Id=Guid.NewGuid(), VenueId=venueId, Name=existingName, CreatedUtc=now }, 50)).Created);
-        var id=Guid.NewGuid(); var line=new MenuImportSourceLine(id,venueId,1,"Soup  9","item","Soup",null,"9",null,1);
+        var id=Guid.NewGuid(); var line=new MenuImportSourceLine(id,venueId,1, 0,"Soup  9","item","Soup",null,"9",null,1);
         var started=await repository.CreateAsync(new(new(id,venueId,line.RawText,1,MenuImportStatuses.Resolved,1,1,now.AddHours(1),now,now,null,[]),[line],[]));
         var named=await repository.SetCreateDestinationAsync(venueId,id,started.Session.Revision,existingName,now,"owner");
 
@@ -191,7 +191,7 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
 
         var repository = new MenuImportRepository(dataAccess);
         var id = Guid.NewGuid();
-        var line = new MenuImportSourceLine(id, venueId, 1, "Soup  9", "item", "Soup", null, "9", null, 1);
+        var line = new MenuImportSourceLine(id, venueId, 1, 0, "Soup  9", "item", "Soup", null, "9", null, 1);
         var started = await repository.CreateAsync(new(new(id, venueId, line.RawText, 1, MenuImportStatuses.Resolved,
             1, 1, now.AddHours(1), now, now, null, []), [line], []));
         var named = await repository.SetCreateDestinationAsync(venueId, id, started.Session.Revision,
@@ -220,7 +220,7 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         var (repository, venueId) = await CreateRepositoryAndVenue();
         var now = DateTime.UtcNow;
         var id = Guid.NewGuid();
-        var line = new MenuImportSourceLine(id, venueId, 1, "Soup  9", "item", "Soup", null, "9", null, 1);
+        var line = new MenuImportSourceLine(id, venueId, 1, 0, "Soup  9", "item", "Soup", null, "9", null, 1);
         var started = await repository.CreateAsync(new(new(id, venueId, line.RawText, 1, MenuImportStatuses.Resolved,
             1, 1, now.AddHours(1), now, now, null, []), [line], []));
         var named = await repository.SetCreateDestinationAsync(venueId, id, started.Session.Revision,
@@ -249,7 +249,7 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         DECLARE @EventId uniqueidentifier=NEWID();INSERT dbo.MenuPublishEvents(Id,VenueId,MenuId,Version,ChangeCount,Snapshot,PublishedUtc,Author)VALUES(@EventId,@VenueId,@MenuId,1,0,@Snapshot,@Now,N'publisher');
         INSERT dbo.MenuHistoryEntries(Id,VenueId,MenuId,Kind,PublishEventId,Detail,Author,OccurredUtc)VALUES(NEWID(),@VenueId,@MenuId,N'published',@EventId,N'Published version 1.',N'publisher',@Now);SELECT 1 Value;
         """,new{MenuId=menuId,VenueId=venueId,PageId=pageId,SectionId=sectionId,OldItemId=oldItemId,Now=now});
-        var repository=new MenuImportRepository(data);var sessionId=Guid.NewGuid();var line=new MenuImportSourceLine(sessionId,venueId,1,"New item  12","item","New item",null,"12",null,1);var started=await repository.CreateAsync(new(new(sessionId,venueId,line.RawText,1,MenuImportStatuses.Resolved,1,1,now.AddHours(1),now,now,null,[]),[line],[]));
+        var repository=new MenuImportRepository(data);var sessionId=Guid.NewGuid();var line=new MenuImportSourceLine(sessionId,venueId,1, 0,"New item  12","item","New item",null,"12",null,1);var started=await repository.CreateAsync(new(new(sessionId,venueId,line.RawText,1,MenuImportStatuses.Resolved,1,1,now.AddHours(1),now,now,null,[]),[line],[]));
         var selected=await repository.SetReplaceDestinationAsync(venueId,sessionId,started.Session.Revision,menuId,now.AddSeconds(1),"owner");
         var content=new ContentRepository(data);Assert.True(await content.RenameSectionAsync(venueId,menuId,sectionId,"Someone else's section",now.AddSeconds(2),"other-owner"));
         var stale=await repository.ConfirmReplaceAsync(venueId,sessionId,selected.Aggregate!.Session.Revision,Guid.NewGuid(),["organization_administrator"],now.AddSeconds(3),"owner");Assert.Equal("target_conflict",stale.Result);Assert.Equal("Old item",Assert.Single(await new ContentRepository(data).GetPlacedItemsForVenueAsync(venueId)).Name);Assert.Null(stale.Aggregate!.Session.CompletedSnapshotId);
@@ -278,7 +278,7 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         var now = DateTime.UtcNow;
         var id = Guid.NewGuid();
         var fingerprint = new string('b', 64);
-        var line = new MenuImportSourceLine(id, venueId, 1, "creme brulee  13", "item", "creme brulee", null, "13", null, 1);
+        var line = new MenuImportSourceLine(id, venueId, 1, 0, "creme brulee  13", "item", "creme brulee", null, "13", null, 1);
         var candidate = new MenuImportCandidate(item.Id, item.Name, item.Price, "exact_normalized", true);
         var question = new MenuImportReviewQuestion(id, venueId, "line-1-identity", fingerprint, "identity", 0, true, 1, [1], [candidate], null);
         var created = await repository.CreateAsync(new(new(id, venueId, line.RawText, 1, MenuImportStatuses.Reviewing, 1, 1, now.AddHours(1), now, now, null, []), [line], [question]));
@@ -309,7 +309,7 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         var id = Guid.NewGuid();
         var raw = "a deliberately very long source line " + new string('x', 2500);
         var fingerprint = new string('a', 64);
-        var line = new MenuImportSourceLine(id, venueId, 1, raw, "unresolved", null, null, null, "item_format_not_recognized", 1);
+        var line = new MenuImportSourceLine(id, venueId, 1, 0, raw, "unresolved", null, null, null, "item_format_not_recognized", 1);
         var question = new MenuImportReviewQuestion(id, venueId, "line-1-unreadable", fingerprint, "unreadable", 0, true, 1, [1], [], null);
         return new(new MenuImportSession(id, venueId, raw, 1, MenuImportStatuses.Reviewing, 1, 0, expiresUtc, now, now, null, []), [line], [question]);
     }

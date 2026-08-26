@@ -2685,8 +2685,14 @@ Desserts: Fried Banana $5.00, Mango Sticky Rice $6.00, Fried Ice Cream $6.00, Ic
 
 The alternative is cheaper and worse: leave the schema alone and let `LineNumber` become a row ordinal. No migration, but a line number no longer points at a line of the pasted text, and the traceability that Q81's invariant rests on quietly stops being true.
 
-<sub>`src/Vennu.Data/Scripts/068_menu_import_sessions.sql:44`; `MenuImportRepository` `#Rows`; Q81 (a pasted line is never silently dropped)</sub>
+*Answer:* Owner (2026-08-26): **widen the key.** Both options were built and measured against the owner's real menu before the decision, and they produce an identical result - 60 items, 0 unpriced, 14 sections, 2 questions. The difference is entirely what a line number means afterwards, and what it cost to find out.
+
+Building it surfaced what reasoning had missed: `MenuImportQuestionLines` carries a foreign key into the exact key being replaced, so the first migration failed and took 82 tests with it - the API could not start. Dropped and rebuilt in the same migration. The repository's create and replace SQL then passed **12/12** against a real database, which is the evidence that mattered, since that SQL belongs to two shipped, owner-accepted milestones.
+
+The row-ordinal alternative was 22 lines in one file and no migration, and its cost is quieter than it sounds: on this menu the multi-item lines sit at the foot of the page, so the drift is small. Put a `Sides:` line near the top and every line number after it is wrong - including the "Line 18" the review screen prints beside each question.
+
+<sub>`src/Vennu.Data/Scripts/068_menu_import_sessions.sql:44`; `077_menu_import_line_sub_index.sql`; `MenuImportRepository` `#Rows`; Q81 (a pasted line is never silently dropped)</sub>
 
 ---
 
-**Totals:** 216 questions — 45 blocking, 125 important, 46 minor. Five open: **Q216** (one line, several items — blocks the last fifteen items of a real menu), **Q209** (deferred at M2 acceptance, running on its provisional default), **Q213**, which blocks Milestone 8, and **Q214–Q215**, raised 2026-08-26 against a proposed Milestone 6.6. Q210–Q212 were answered by the owner 2026-08-26.
+**Totals:** 216 questions — 45 blocking, 125 important, 46 minor. Four open: **Q209** (deferred at M2 acceptance, running on its provisional default), **Q213**, which blocks Milestone 8, and **Q214–Q215**, raised 2026-08-26 against a proposed Milestone 6.6. Q210–Q212 were answered by the owner 2026-08-26.

@@ -74,6 +74,7 @@ public sealed class MenuPasteParser
         for (var index = 0; index < physicalLines.Length; index++)
         {
             var number = index + 1;
+            var subIndex = 0;
             var raw = physicalLines[index];
             var trimmed = raw.Trim();
             var shape = shapes[index];
@@ -151,8 +152,25 @@ public sealed class MenuPasteParser
                     }
 
                     inPriceSet = false;
-                    questions.Add(Question("unreadable", trimmed, []));
-                    lines.Add(Line("unresolved", reason: "multiple_items_on_one_line"));
+                    var fragments = SplitOutsideParentheses(trimmed);
+                    if (LabelledNote.IsMatch(fragments[0]))
+                    {
+                        var colon = fragments[0].IndexOf(':', StringComparison.Ordinal);
+                        lines.Add(Line("section", fragments[0][..colon].Trim()));
+                        fragments[0] = fragments[0][(colon + 1)..].Trim();
+                        subIndex++;
+                    }
+                    foreach (var fragment in fragments)
+                    {
+                        var bare = StripTrailingParenthetical(fragment);
+                        var fragmentMatch = PriceAtEnd.Match(bare);
+                        if (!fragmentMatch.Success) continue;
+                        EmitItem(fragmentMatch.Groups["name"].Value.Trim(), fragmentMatch.Groups["price"].Value);
+                        if (!string.Equals(bare, fragment, StringComparison.Ordinal))
+                            lines[openItem] = lines[openItem] with { ParsedDescription = fragment[bare.Length..].Trim() };
+                        subIndex++;
+                    }
+                    openItem = -1;
                     continue;
                 }
 
@@ -322,7 +340,7 @@ public sealed class MenuPasteParser
             }
 
             MenuImportSourceLine Line(string disposition, string? parsedName = null, string? parsedPrice = null, string? reason = null, string? parsedDescription = null) =>
-                new(sessionId, venueId, number, raw, disposition, parsedName, parsedDescription, parsedPrice, reason, revision);
+                new(sessionId, venueId, number, subIndex, raw, disposition, parsedName, parsedDescription, parsedPrice, reason, revision);
         }
 
         return new ParsedMenuPaste(lines, questions, itemCount);

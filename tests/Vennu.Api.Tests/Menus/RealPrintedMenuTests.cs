@@ -28,7 +28,7 @@ public sealed class RealPrintedMenuTests
         Assert.Equal(
             ["Appetizers", "Salads", "Soups", "Noodle Soups", "Noodles", "Rice",
              "Traditional Thai Curry", "Basic Exotic Dishes", "Mana\u2019s Special Thai Dishes".Replace("\u2019", "'"),
-             "Fish", "Vegetarian"],
+             "Fish", "Vegetarian", "Sides", "Beverages", "Desserts"],
             Parsed().Lines.Where(line => line.Disposition == "section").Select(line => line.ParsedName));
     }
 
@@ -39,7 +39,7 @@ public sealed class RealPrintedMenuTests
         // "we left it blank rather than guess" is not a safer answer - it is an unusable one.
         var items = Parsed().Lines.Where(line => line.Disposition == "item").ToArray();
 
-        Assert.Equal(46, items.Length);
+        Assert.Equal(60, items.Length);
         Assert.DoesNotContain(items, item => string.IsNullOrEmpty(item.ParsedPrice));
     }
 
@@ -94,18 +94,38 @@ public sealed class RealPrintedMenuTests
         // Five questions on a 132-line menu, and each one is named. Three are the same unsolved
         // thing: a source line is one row keyed (SessionId, LineNumber), so a line holding five
         // items can only be one of them. That is a schema decision, not a parser rule.
+        // Two, on a 133-line menu, and both are right to ask: the restaurant's own name and its
+        // tagline, off the top of a page. They are not menu content, and guessing at them is what
+        // put them in the menu the first time.
         var unresolved = Parsed().Lines.Where(line => line.Disposition == "unresolved").ToArray();
 
-        Assert.Equal(5, unresolved.Length);
-        Assert.Equal(3, unresolved.Count(line => line.ParserReason == "multiple_items_on_one_line"));
-        Assert.Equal(2, unresolved.Count(line => line.ParserReason == "item_format_not_recognized"));
+        Assert.Equal(2, unresolved.Length);
+        Assert.DoesNotContain(unresolved, line => line.ParserReason == "multiple_items_on_one_line");
+        Assert.Equal(["Mana-Thai Cuisine", "All Natural Authentic Thai Cuisine"], unresolved.Select(line => line.RawText.Trim()));
     }
 
     [Fact]
     public void NoLineIsEverDropped()
     {
+        // Q81's invariant, stated for a world where one line can hold several items: every line of
+        // the paste is still accounted for, and its number still points at it.
         var result = Parsed();
+        var physical = Menu.Replace("\r\n", "\n").Split('\n').Length;
 
-        Assert.Equal(Menu.Replace("\r\n", "\n").Split('\n').Length, result.Lines.Count);
+        Assert.Equal(physical, result.Lines.Select(line => line.LineNumber).Distinct().Count());
+        Assert.Equal(Enumerable.Range(1, physical), result.Lines.Select(line => line.LineNumber).Distinct().Order());
+    }
+
+    [Fact]
+    public void OnePastedLineCanHoldSeveralItems()
+    {
+        // "Sides: Steamed Jasmine Rice $2.00, Brown Rice $3.00, ..." is five items and a heading on
+        // one physical line. They share that line's number and are ordered within it, so "line 128"
+        // still means line 128 of what was pasted.
+        var sides = Parsed().Lines.Where(line => line.ParsedName is "Steamed Jasmine Rice" or "Brown Rice" or "Peanut Sauce").ToArray();
+
+        Assert.Equal(3, sides.Length);
+        Assert.Single(sides.Select(line => line.LineNumber).Distinct());
+        Assert.Equal(sides.Select(line => line.LineSubIndex).Order(), sides.Select(line => line.LineSubIndex));
     }
 }
