@@ -91,6 +91,29 @@ jobs:
           }
         shell: pwsh
 
+      # Without this the whole suite fails before a single assertion runs. The local
+      # environment is served over HTTPS on localhost, and Vennu.TestApi's seeding
+      # HttpClient calls the product API at https://localhost:7138 — a .NET-to-.NET
+      # call, which validates the certificate chain. The ASP.NET Core development
+      # certificate is self-signed, so on a fresh runner that chain ends in an
+      # untrusted root: every seed returns 500 with
+      # `AuthenticationException: ... UntrustedRoot`, and every test dies in fixture
+      # setup. Playwright itself was never the problem; playwright.config.ts already
+      # sets ignoreHTTPSErrors, which covers the browser but not HttpClient.
+      #
+      # A developer machine has this step already: Visual Studio trusts the
+      # certificate on first run. CI is the only place nothing ever did.
+      - name: Trust the ASP.NET Core development certificate
+        shell: pwsh
+        run: |
+          dotnet dev-certs https --clean
+          dotnet dev-certs https --trust
+          # --check exits non-zero when no trusted, valid certificate is present, so
+          # this fails the job here with a clear cause rather than 95 SSL stack traces
+          # forty minutes later.
+          dotnet dev-certs https --check --trust
+          if ($LASTEXITCODE -ne 0) { throw 'The ASP.NET Core development certificate is still not trusted.' }
+
       - name: Start LocalDB and create the VennuSign database
         shell: pwsh
         run: |
