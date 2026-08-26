@@ -56,18 +56,34 @@ already been made (UI polish the separate Foundry component system will settle),
 as the next action. Validated with a real local Atlas build — 446 pages, no schema errors, M6.4's page renders its
 plan section with working contents anchors.
 
+### Verified on deployed dev, not just in unit tests
+
+The local dev stack could not be restarted during the fix (`start-ui-test-env.ps1 -Stop` reported PID 22416 could
+not be terminated; ports 5175/5177/5199 held by orphaned processes — 5199 turned out to be a Vite dev server from
+2026-08-23, not the API). So T6 was done against **deployed dev** instead, which is the stronger check anyway.
+
+`dev.api.vennusign.com/health/version` reports `sourceCommit: 339690fc` — the fix's own merge commit. Signed in
+through the real Entra flow as the QA account and posted the exact repro to
+`POST /api/back-office/menu-imports`: **`itemCount: 4`**, sections `[STARTERS, MAINS]`, items
+`Garlic Bread|6.50`, `Wings|12`, `Burger|14`, `Steak Frites|28.00`, **zero unresolved lines**. Tab-separated,
+`MP`, and the `SPECIALS 2` trade-off all behave as documented. The back-office review screen reads "Build a new
+unpublished menu from **all 4 imported items**" — screenshot in `output/murphy-2026-08-25/`.
+
+**A regression spec now guards it:** `tests/ui/specs/menu-paste-import-parser.spec.ts`, run against a *deployed*
+environment like `customer-menu-journey.spec.ts` rather than localhost, so it exercises the real parser. It skips
+cleanly when QA credentials are absent. 2/2 passing against dev. This is the direct answer to how the bug survived:
+the unit suite tested the parser through fixtures that shared the code's own assumption, and nothing tested a menu
+a person would actually paste.
+
 ### Next action
 
-**T6 on #864 is the one open item: re-verify the paste against a running API.** The local dev stack could not be
-restarted during the fix (`start-ui-test-env.ps1 -Stop` reported PID 22416 could not be terminated; ports
-5175/5177/5199 held by orphaned processes — port 5199 is a Vite dev server from 2026-08-23, not the API). It is
-deployed to dev now, so the check should be done there: paste a menu using single spaces and tabs and confirm real
-item counts. Everything else on Menus is unchanged — M7.1/M7.2 blocked on owner scoping, M7.3 and the whole
-design-system workstream parked pending Foundry.
+**Nothing on Menus is blocked on code.** M7.1 (#852/#853) and M7.2 (#855) are blocked on owner scoping; M7.3 (#854)
+and the entire design-system workstream (#856–#861) are parked pending Foundry. #864 can be closed.
 
-**Also unaddressed and pre-existing:** the Playwright "UI regression" CI job fails with 190
+**Unaddressed and pre-existing:** the Playwright "UI regression" CI job fails with 190
 `AuthenticationException: ...UntrustedRoot` errors and zero assertion failures. Identical on master, verified again
-this session. It is an infrastructure/certificate problem, not a test problem, and nobody has picked it up.
+this session. It is an infrastructure/certificate problem, not a test problem, and nobody has picked it up — which
+means the gate has been reporting red for so long that a real failure inside it would not be noticed.
 
 ## 2026-08-24/25 — Menu-builder polish round shipped, then a design-system audit that found the real problem
 
