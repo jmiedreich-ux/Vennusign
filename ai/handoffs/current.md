@@ -1,6 +1,95 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-26, after M6.5 shipped the paste import a door on the Menus home and removed the name-your-menu prompt.
+Updated 2026-08-26, after M6.7 took a real printed menu from 91 review questions to 15.
+
+## 2026-08-26 — M6.7: a real printed menu asked 91 questions, and now asks 15
+
+**Merged as `ad4ce3ed` (#878, closes #877) with a follow-up at `6a9b9c18` (#879), both deployed to dev.**
+`/health/version` reports `6a9b9c18` and `databaseSchemaVersion: 076_menu_import_description_lines`.
+
+### What happened
+
+M6.4 fixed the two-space separator and was verified — with a menu the agent wrote itself. The owner then
+pasted a real four-page restaurant menu out of its own PDF. The review screen said **"91 items need you"**.
+
+**This is the same failure shape as M6.4, one level up.** M6.4's lesson was that tests written from the code's
+own assumptions confirm the assumptions. M6.4's *fix* was then verified with a fixture written from the fixed
+code's assumptions. The suite was green, the deployed check passed, and a real menu was still unreadable. The
+only thing that found it was a real menu.
+
+### Measured, not estimated
+
+Both numbers come from POSTing the owner's actual paste at the deployed dev API.
+
+| | Before (`339690fc`) | After (`6a9b9c18`) |
+| --- | --- | --- |
+| Items | 19, three of them nonsense | **47** |
+| Sections | **0** | **11**, all real |
+| Descriptions | all lost | **55** |
+| Questions | **91** | **15** |
+
+### The four defects
+
+- **No sections.** A heading had to be ALL CAPS. Printed menus use Title Case.
+- **Every description lost.** Q81 settled this on 2026-08-07; it was never implemented.
+- **Price sets became items.** `Chicken $11.95, Beef $12.95, Shrimp $13.95` parsed as an item *named*
+  "Chicken $11.95, Beef $12.95, Shrimp" priced $13.95 — `PriceAtEnd` matched it and took everything up to the
+  last price as the name.
+- **The dishes under those headers vanished**, having no price of their own.
+
+### The change, in one sentence
+
+The parser reads every line's **shape** first, then walks the document deciding what each line **is** with its
+neighbours available — because "Pad Thai" is a dish under a price set and a heading anywhere else, and a
+single pass never looks at line n+1.
+
+**Title Case against sentence case does almost all the work.** "Noodle Soups" versus "Steamed healthy
+soybeans". No length threshold, no comma counting.
+
+Deliberate calls worth knowing before touching this:
+
+- A dish under a price set is an item with **no price** (A11 allows it). It does *not* take the first price —
+  silently claiming Pad Thai is $11.95 when there are three prices puts a wrong number on a guest-facing board.
+- A Title Case line with **nothing after it** stays a question. A stray line off the bottom of a PDF — a
+  restaurant name, a tagline — looks exactly like a heading.
+- A heading never carries a price, never labels itself with a colon, and never begins mid-sentence. All three
+  exclusions came from the real-menu run (#879), not from reasoning: `Tea $2.00 *(Green, Jasmine, Black &
+  Red)`, `Choice of Sauce: …`, and `& Red Curry Pineapple` had each produced a section.
+- `MenuImportService`'s byte-identical private copy of the heading rule is **deleted**, not updated. It was
+  about to disagree with the original.
+
+### Schema
+
+Migration **076** adds `description` to `CK_MenuImportSourceLines_Disposition`. Discards nothing. Create and
+replace filter on `Disposition=N'item'`/`N'section'`, so description rows are invisible to both by
+construction — while `ParsedDescription`, a column that existed since 068 and was never populated, now reaches
+the built menu.
+
+### Named and not fixed
+
+- **Several items on one line stays one question** (`multiple_items_on_one_line`). A source line is one row
+  keyed `(SessionId, LineNumber)`; splitting is a schema change and its own milestone. Three such lines in the
+  owner's menu, worth roughly fifteen items.
+- **The price set borrows the generic "what should this line become?" question.** The review screen has no
+  kind for *choose which price applies*. The parser reason (`price_set_needs_choosing`) is honest; the UI is
+  not yet.
+
+### Also this session
+
+**M6.5 (`d9ac7248`, #874)** gave the paste import a door: every "Add a menu" affordance opened a blank-name
+prompt and nothing in the product reached the import, which had shipped and been verified for four milestones.
+The name prompt is gone entirely — the builder names a blank menu inline.
+
+**#876 filed:** `PairingFlow_CanBeDrivenThroughHttpApi` asserts the default layout and gets `photo_grid`.
+**Pre-existing** — verified failing identically on a clean `origin/master` worktree. 538/539 otherwise pass.
+
+**#866 must not be merged.** Its cert-trust step hangs for 30 minutes on a headless Windows runner instead of
+trusting anything.
+
+### One exact next action
+
+The owner re-pastes the real menu at `dev.back-office.vennusign.com` on 2026-08-27 and reports what the review
+screen says. Expect ~15 questions, 47 items, 11 sections.
 
 ## 2026-08-26 — M6.5 shipped: the paste import has a door, and no menu is named before it exists
 
