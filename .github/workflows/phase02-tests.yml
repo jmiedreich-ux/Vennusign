@@ -73,7 +73,12 @@ jobs:
           jq empty tracker/assignments.json
           bash scripts/ci/test-classify-changes.sh
           bash scripts/ci/test-verify-deployed-build.sh
-          if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)'; then
+          # Only <<<<<<< and >>>>>>> are searched for. A conflict git leaves behind always
+          # writes all three markers, so dropping the bare ======= arm costs no detection at
+          # all -- while that arm matched every ASCII rule in a captured terminal log. Six
+          # research transcripts under docs/research/ did exactly that and turned this job
+          # red on master and on every branch cut from it.
+          if git grep -n -E '^(<<<<<<<|>>>>>>>)'; then
             echo "Unresolved merge marker found."
             exit 1
           fi
