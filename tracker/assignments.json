@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-26T05:00:00Z",
+  "updatedUtc": "2026-08-26T06:00:00Z",
   "activeAssignments": [
     {
-      "assignment": "M6.7 - the parser reads a real printed menu (91 questions from one paste)",
-      "issue": 877,
+      "assignment": "M6.8 - the parser matches the menu (correct reading as the benchmark, not the old parser)",
+      "issue": 881,
       "workstream": "menus",
-      "branch": "feature/menus-m6a7-parser-reads-a-real-menu",
+      "branch": "feature/menus-m6a8-parser-matches-the-menu",
       "owner": "Claude Opus 5, back-office dev lead",
-      "claimedUtc": "2026-08-26T05:00:00Z",
-      "files": "src/Vennu.Api/Menus/{MenuPasteParser.cs,MenuImportService.cs}, src/Vennu.Data/Scripts/076_menu_import_description_lines.sql, tests/Vennu.Api.Tests/Menus/MenuPasteParserTests.cs",
-      "status": "implemented; owner re-tests against dev 2026-08-27"
+      "claimedUtc": "2026-08-26T06:00:00Z",
+      "files": "src/Vennu.Api/Menus/MenuPasteParser.cs, tests/Vennu.Api.Tests/Menus/{RealPrintedMenuTests.cs,MenuPasteParserTests.cs,real-printed-menu.txt}",
+      "status": "implemented; blocked on Q216 for the last 15 items"
     }
   ],
   "desktopSessionLock": null,

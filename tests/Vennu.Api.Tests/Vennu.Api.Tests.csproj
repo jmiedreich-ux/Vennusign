@@ -26,4 +26,8 @@
     <ProjectReference Include="..\..\src\Vennu.Data\Vennu.Data.csproj" />
     <ProjectReference Include="..\..\src\Vennu.DataAccess\Vennu.DataAccess.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Menus\real-printed-menu.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

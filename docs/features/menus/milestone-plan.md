@@ -359,6 +359,50 @@ Migration **076** adds `description` to `CK_MenuImportSourceLines_Disposition`. 
 Every parser test before this one was written from the same assumptions as the parser. That is exactly why the suite stayed green while the two-space defect shipped in M6.4, and why it stayed green again while a printed menu could not be read at all. `RealPrintedMenu` in `MenuPasteParserTests` is the real thing, pasted from the real PDF, and the assertions are counts a person can check by eye.
 
 
+#### Milestone 6-A8 — the parser matches the menu
+
+**Why this exists.** M6.7 was reported as a success on "91 questions became 15". That is a ratio between two wrong answers. Looking at what it actually produced:
+
+- **17 of 47 items had no price** — Pad Thai, all four fried rices, all three curries, Tom Yum. A third of the menu, unusable on a screen. It had been justified as the safe choice; it was a hole with a rationale.
+- **The restaurant's own name was a dish**, priced $11.95, and its tagline was a section.
+- **`(Served w. Steamed Jasmine Rice)` asked ten times** — the owner counted them. One note, ten identical questions.
+- **~15 items were missing**, excused in the release notes with `(SessionId, LineNumber)` — an internal key handed over as though it were a product limit.
+
+The benchmark was available the whole time and was not used: the correct reading of the menu, produced by reading it. `RealPrintedMenuTests` now asserts against that, over the owner's entire paste, in numbers a person can check by eye off the printed page.
+
+##### What changed
+
+| | M6.7 | M6.8 |
+| --- | --- | --- |
+| Items | 47 | **46** |
+| Items with no price | **17** | **0** |
+| Sections | 15, four of them junk | **11**, all real |
+| Questions | 15 | **5** |
+
+- **A price set prices the dishes under it.** The dish takes the first price and carries the whole set in its description — `$11.95` with "Chicken $11.95, Beef $12.95, Shrimp $13.95" printed underneath, which is what the paper menu says. `MenuItems.Price` is one `DECIMAL(19,4)`, so three prices cannot all be the price. The set raises no question: it is stated on the dish.
+- **A repeated note is never a repeated question.** Decision 33's rule for near-misses — one fact is one question, never thirty — applied to notes. `(Served w. …)` is kept as a note on the section it sits in and asked about not once.
+- **Two Title Case lines in a row are neither a heading nor a dish.** That is what the restaurant's name and tagline are, straddling a page break inside a price set. They stay questions rather than being guessed at.
+- **A price is a price wherever its parenthetical sits.** `Tea $2.00 *(Green, Jasmine, Black & Red)` is an item priced $2.00 whose parenthetical becomes its description.
+- **A sentence addressed to the reader is a notice, not a menu line.** The allergy notice at the foot of the page.
+- **A price set ends at a blank line.**
+
+##### The one thing left, and it is a decision, not a rule
+
+Three lines, worth roughly fifteen items:
+
+```
+Sides: Steamed Jasmine Rice $2.00, Brown Rice $3.00, Sticky Rice $2.00, …
+Beverages: Thai Ice Tea $4.00, Coconut Juice $4.00, Soda $2.00, …
+Desserts: Fried Banana $5.00, Mango Sticky Rice $6.00, Fried Ice Cream $6.00, …
+```
+
+Each is five or six real items on one physical line. `MenuImportSourceLines` is keyed `(SessionId, LineNumber)`, so **one pasted line can become at most one item.** No parser rule fixes that. The fork:
+
+- **Widen the key** — migration adds `LineSubIndex`, one line yields many items, "jump to line 18" keeps meaning what it says. Touches the repository's insert/select, the question-line joins, and the create/replace SQL — all shipped and accepted milestones.
+- **Redefine the number** — `LineNumber` becomes a row ordinal rather than a position in the paste. No migration, but line-number traceability back to the pasted text is gone, and the review screen's "Line 18" stops being true.
+
+Owner decision. Recorded as **Q216**.
+
 **Shared display/accessibility scope:** the supported-width floor is 900px; below it, preserve the session and offer a resumable wider-window handoff rather than compressing the workflow. Keyboard-specific interaction design/testing is excluded; semantic controls, accessible names/relationships, visible focus, and screen-reader-compatible status/error announcements remain required.
 
 ### Milestone 8 — Delete a menu

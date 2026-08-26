@@ -68,6 +68,8 @@ public sealed class MenuPasteParser
         // this survives until something that is not prose ends the run.
         var openItem = -1;
         var inPriceSet = false;
+        var priceSetPrice = string.Empty;
+        var priceSetNote = string.Empty;
 
         for (var index = 0; index < physicalLines.Length; index++)
         {
@@ -80,6 +82,10 @@ public sealed class MenuPasteParser
             {
                 lines.Add(Line("blank"));
                 openItem = -1;
+                // A blank ends a price set. Without this, "Mana-Thai Cuisine" and "All Natural
+                // Authentic Thai Cuisine" - the restaurant's name and tagline, sitting under a
+                // blank at the foot of the page - were imported as dishes.
+                inPriceSet = false;
                 continue;
             }
 
@@ -120,10 +126,33 @@ public sealed class MenuPasteParser
                      * its own milestone.
                      */
                     var isPriceSet = NextMeaningful(shapes, index) == Shape.TitleCase;
-                    inPriceSet = isPriceSet;
                     openItem = -1;
+                    if (isPriceSet)
+                    {
+                        /*
+                         * The set prices everything below it. Leaving those dishes blank - which is
+                         * what the first cut did - left a third of a real menu with no price at
+                         * all, which is not a menu anybody can put on a screen.
+                         *
+                         * The dish takes the FIRST price and carries the whole set in its
+                         * description, because Vennusign stores one DECIMAL(19,4) per item and
+                         * cannot hold three. "$11.95" with "Chicken $11.95, Beef $12.95, Shrimp
+                         * $13.95" printed underneath is what the paper menu says. Three separate
+                         * items would be truer still and needs one source line to yield several,
+                         * which the (SessionId, LineNumber) key does not allow.
+                         *
+                         * No question: the set is stated on the dish, so there is nothing to ask.
+                         */
+                        priceSetPrice = PriceAtEnd.Match(SplitOutsideParentheses(trimmed)[0]).Groups["price"].Value;
+                        priceSetNote = trimmed;
+                        inPriceSet = true;
+                        lines.Add(Line("description", parsedDescription: trimmed));
+                        continue;
+                    }
+
+                    inPriceSet = false;
                     questions.Add(Question("unreadable", trimmed, []));
-                    lines.Add(Line("unresolved", reason: isPriceSet ? "price_set_needs_choosing" : "multiple_items_on_one_line"));
+                    lines.Add(Line("unresolved", reason: "multiple_items_on_one_line"));
                     continue;
                 }
 
@@ -140,6 +169,26 @@ public sealed class MenuPasteParser
                      * above it, so it is an item with no price - which A11 already allows.
                      */
                     var next = NextMeaningful(shapes, index);
+
+                    /*
+                     * Two Title Case lines in a row are not a heading and its first dish, and not
+                     * two headings either. On this menu they were the restaurant's name and its
+                     * tagline, straddling a page break - "Mana-Thai Cuisine" was imported as a dish
+                     * priced $11.95, and "All Natural Authentic Thai Cuisine" became a section.
+                     *
+                     * A heading is followed by something priced. A dish under a price set is
+                     * followed by its description. Neither is followed by another bare Title Case
+                     * line, so this stays a question rather than being guessed at.
+                     */
+                    if (next == Shape.TitleCase)
+                    {
+                        questions.Add(Question("unreadable", trimmed, []));
+                        lines.Add(Line("unresolved", reason: "item_format_not_recognized"));
+                        openItem = -1;
+                        inPriceSet = false;
+                        continue;
+                    }
+
                     if (next is Shape.Priced or Shape.CommaPriced)
                     {
                         lines.Add(Line("section", trimmed));
@@ -150,7 +199,8 @@ public sealed class MenuPasteParser
 
                     if (inPriceSet)
                     {
-                        EmitItem(trimmed, null);
+                        EmitItem(trimmed, priceSetPrice);
+                        lines[openItem] = lines[openItem] with { ParsedDescription = priceSetNote };
                         continue;
                     }
 
@@ -173,8 +223,23 @@ public sealed class MenuPasteParser
                     continue;
                 }
 
-                case Shape.Prose:
                 case Shape.Note:
+                    /*
+                     * "(Served w. Steamed Jasmine Rice)" appears under five different headings on
+                     * one menu and produced a question every time - ten identical questions asking
+                     * what a note is. Decision 33's rule for near-misses is the same rule here:
+                     * one fact is one question, never thirty. This one is not even a question. It
+                     * is a note about the section it sits in, kept and never imported.
+                     */
+                    if (openItem >= 0)
+                    {
+                        var noted = lines[openItem];
+                        lines[openItem] = noted with { ParsedDescription = string.IsNullOrEmpty(noted.ParsedDescription) ? trimmed : $"{noted.ParsedDescription} {trimmed}" };
+                    }
+                    lines.Add(Line("description", parsedDescription: trimmed));
+                    continue;
+
+                case Shape.Prose:
                 {
                     /*
                      * Q81: an unpriced, non-heading line under an item is that item's description.
@@ -185,7 +250,15 @@ public sealed class MenuPasteParser
                     if (openItem >= 0)
                     {
                         var owner = lines[openItem];
-                        var joined = string.IsNullOrEmpty(owner.ParsedDescription) ? trimmed : $"{owner.ParsedDescription} {trimmed}";
+                        /*
+                         * A dish under a price set is emitted carrying the set, and its own
+                         * description arrives on the next line. The dish's words come first and the
+                         * price set follows, because that is the order they are read in - the set
+                         * is a footnote about the dish, not its opening sentence.
+                         */
+                        var joined = string.IsNullOrEmpty(owner.ParsedDescription) ? trimmed
+                            : owner.ParsedDescription == priceSetNote ? $"{trimmed} \u00b7 {priceSetNote}"
+                            : $"{owner.ParsedDescription} {trimmed}";
                         lines[openItem] = owner with { ParsedDescription = Truncate(joined, DescriptionMaxLength) };
                         lines.Add(Line("description", parsedDescription: trimmed));
                         continue;
@@ -198,10 +271,13 @@ public sealed class MenuPasteParser
             }
 
             // Shape.Priced - a name and a price on one line, the shape that always worked.
-            var match = PriceAtEnd.Match(trimmed);
+            var stripped = StripTrailingParenthetical(trimmed);
+            var match = PriceAtEnd.Match(stripped);
             var pricedName = match.Groups["name"].Value.Trim().TrimEnd('.', '-', '·', '•').Trim();
             inPriceSet = false;
             EmitItem(pricedName, match.Groups["price"].Value);
+            if (!string.Equals(stripped, trimmed, StringComparison.Ordinal))
+                lines[openItem] = lines[openItem] with { ParsedDescription = trimmed[stripped.Length..].Trim() };
             continue;
 
             void EmitItem(string name, string? price)
@@ -278,7 +354,14 @@ public sealed class MenuPasteParser
         // Tested before Priced: a price set matches PriceAtEnd too, taking everything up to the
         // last price as one very long name.
         if (IsCommaSeparatedPrices(trimmed)) return Shape.CommaPriced;
-        if (PriceAtEnd.IsMatch(trimmed)) return Shape.Priced;
+
+        // "Tea $2.00 *(Green, Jasmine, Black & Red)" is a priced item whose price is not the last
+        // thing on the line. The parenthetical is what it comes in, and becomes its description.
+        if (PriceAtEnd.IsMatch(StripTrailingParenthetical(trimmed))) return Shape.Priced;
+        // "If you have any Food Allergies, Please speak to our staff & let us know!" - a sentence
+        // addressed to the reader, at the foot of the page. It carries no price and asks nothing
+        // of the operator, so it is kept as a note rather than raised as a question.
+        if (trimmed[^1] is '!' or '?' && !PriceToken.IsMatch(trimmed)) return Shape.Note;
         if (IsCapsHeading(trimmed)) return Shape.CapsHeading;
         if (IsTitleCase(trimmed)) return Shape.TitleCase;
         return Shape.Prose;
