@@ -115,7 +115,9 @@ Branch on board lightness. A light-glass chip on a cream board is invisible — 
 **Pending-changes bar.** When a menu has unpublished changes, the board renders **shorter** (`aspect-ratio: 16/7.75`) and an amber strip occupies the reserved space at the bottom of the same rounded container: `#c9871a` fill, `#0f172a` text, 7px/14px padding, 11.5px/700, "3 changes not published" left, "Review →" right. The bar never overlays board content — decision from review.
 
 ### Add-a-menu tile
-Same grid cell, `aspect-ratio: 16/9`, 1.5px dashed `#cbd9e4`, 14px radius, `#fbfdfe`. Centered: 36px sky rounded square with `+`, then 13.5px/600 "Add a menu", then 11px/1.5 `#64748b` "Photo, paste, spreadsheet / or start blank". Always the last cell.
+Same grid cell, `aspect-ratio: 16/9`, 1.5px dashed `#cbd9e4`, 14px radius, `#fbfdfe`. Centered: 36px sky rounded square with `+`, then 13.5px/600 "Add a menu", then 11px/1.5 `#64748b` "Paste it in, or start blank". Always the last cell.
+
+*Amended 2026-08-26 (M6.5).* The sub-copy read "Photo, paste, spreadsheet / or start blank". Photo and spreadsheet are not built, and `README.md`'s own M1a rule for POS is that an unavailable route leaves **no trace** — decision 4. The tile names the routes that exist and gains the others as they land. Owner decision: *"just include on the new menu button, about pasting, we can add the others when they get built."*
 
 ### Nav rail
 76px wide, `#0f172a`. Logo 34px sky rounded square. Items 56px wide, icon 15px over a 9px/500 label, 12px radius, 5px gap. Active: `#87ceeb` fill, `#0f172a` text, label 600. Inactive: `#94a3b8`. A `border-top: 1px solid #1e293b` divider near the bottom, then Settings, then a 32px avatar.
@@ -155,7 +157,9 @@ Below, a "Not in use" strip: 11px/600 uppercase label, then pill chips (999px ra
 
 **The headline is decision 12 doing real work.** It is a sentence naming what is current and what is not — never a green all-clear, never a status table. One screen → a sentence. Many screens → "18 current · 2 offline". It scales by summarising the normal and naming the exception.
 
-**Empty state (zero menus):** the grid is replaced entirely. Centered, max-width 860px: "Let's get your menu in." at 34px/600, sub-line, then three route cards in a row (Photo highlighted with 2px `#87ceeb` and `#f2fbff`), then "or start from a blank board" as an underlined link. **Onboarding is the empty state of this screen, not a wizard** — decision 17. There is nothing to fall out of and nothing to re-enter.
+**Empty state (zero menus):** the grid is replaced entirely. Centered, max-width 860px: "Let's get your menu in." at 34px/600, sub-line, then the route cards in a row (the leading route highlighted with 2px `#87ceeb` and `#f2fbff`), then "or start from a blank board" as an underlined link. **Onboarding is the empty state of this screen, not a wizard** — decision 17. There is nothing to fall out of and nothing to re-enter.
+
+*Amended 2026-08-26 (M6.5).* This said "three route cards" and gave Photo the highlight. The routes are a **list**, not a fixed row of three: only built routes are drawn, and the grid is `auto-fit` so one card centres rather than leaving two holes. **Paste leads**, because photo is not built and paste is the only route that gets a menu in. The same list is drawn inside a dialog behind the tile and the header button — one component, `MenuAddRoutes.tsx`, two placements, so the two cannot drift.
 
 **POS variant:** when the POS add-on is attached, a fourth route appears and leads. When it is not, there is no trace of it — decision 4.
 
@@ -176,6 +180,13 @@ Below, a "Not in use" strip: 11px/600 uppercase label, then pill chips (999px ra
 - Confirmation is atomic and idempotent. Completion says **Not live yet** and offers **Review draft in builder** or **Done for now**.
 
 **Importing into an existing menu replaces it** — decision 32. Not a merge. The board keeps its layout and theme; anything 86'd stays 86'd.
+
+*Amended 2026-08-26 (M6.5).* Until M6.5 **none of this was reachable**. `#/menu/import` rendered the paste flow, but the only code that set that hash was the redirect inside the flow itself — every "Add a menu" affordance opened a "Start a blank menu" name prompt. M6.1–M6.4 shipped and passed acceptance with the feature unreachable, because every workbook started from inside the flow.
+
+Two further owner decisions of 2026-08-26 land here:
+
+- **No menu is named before it exists.** The "name your menu" prompt is removed entirely. The blank route creates the menu under a placeholder name and the **builder** names it inline, on the crumb. `dbo.Menus.Name` is `NOT NULL` with `CK_Menus_Name_NotBlank`, so a genuinely nameless menu cannot exist; the crumb draws the placeholder muted so it reads as *not named yet*.
+- **The import keeps its own name confirmation.** Its destination step proposes a name from the paste and confirms it — a suggestion once there is content, not a demand before there is any.
 
 ### M1b — The named actions
 **Lo-fi.** The card ⋯ menu and the dialogs behind it.
@@ -353,6 +364,7 @@ Wording **is** the design in several places. Do not paraphrase, shorten, or "imp
 - "Draft — includes your 3 unpublished changes"
 - "Measured from what this screen reported: 55″ at 1920×1080, last seen 2m ago."
 - "Let's get your menu in." / "Pick whatever's easiest. You can fix anything later."
+- "or start from a blank board" — the blank route is a link under the cards, never a card beside them
 - (Group) "Behind 9 days", "running · 2 local changes", "set by head office"
 
 Numbers in these strings are illustrative and should come from data. The sentence shapes should not change.

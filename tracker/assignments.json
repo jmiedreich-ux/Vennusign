@@ -1,7 +1,18 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-26T03:50:00Z",
-  "activeAssignments": [],
+  "updatedUtc": "2026-08-26T04:20:00Z",
+  "activeAssignments": [
+    {
+      "assignment": "M6.5 - the import has a door: the Menus home reaches the paste flow",
+      "issue": 867,
+      "workstream": "menus",
+      "branch": "feature/menus-m6a5-import-door",
+      "owner": "Claude Opus 5, back-office dev lead",
+      "claimedUtc": "2026-08-26T04:20:00Z",
+      "files": "src/back-office/src/{MenuAddRoutes.tsx,MenusHome.tsx,App.tsx,MenuBuilder.tsx,menusShelf.mjs,menusShelf.d.mts,menus-home.css,menu-builder.css}, src/back-office/tests/menus-shelf.test.mjs, tests/ui/{fixtures.ts,specs/*}",
+      "status": "implemented; needs a Playwright run and the owner workbook"
+    }
+  ],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": {
     "assignment": "M6.5 — the import has a door: the Menus home never reaches the shipped paste flow",
@@ -15,14 +26,6 @@
   "approvedSequentialQueue": [
     {
       "order": 1,
-      "assignment": "M6.5 — the import has a door",
-      "issue": 867,
-      "branch": "feature/menus-m6a5-import-door",
-      "status": "planned, unclaimed",
-      "blockedBy": null
-    },
-    {
-      "order": 2,
       "assignment": "M6.6 - the shelf is a page about menus: retire the Not-in-use strip, filters at every size",
       "issue": 871,
       "branch": "feature/menus-m6a6-shelf-filters",
@@ -30,7 +33,7 @@
       "blockedBy": "Q214 and Q215 in docs/features/menus/open-questions.md; the Recently deleted chip also waits on Q213 and #868"
     },
     {
-      "order": 3,
+      "order": 2,
       "assignment": "M8 — delete a menu (Q79 owner override, 2026-08-07, never built)",
       "issue": 868,
       "branch": "feature/menus-m8-delete-a-menu",

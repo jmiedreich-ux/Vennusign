@@ -2,6 +2,8 @@ import type { BoardResponse, ShelfMenu } from "./api";
 
 export const shelfScaleThreshold: number;
 
+export const unnamedMenuName: string;
+
 export function isShelfAtScale(menus: readonly ShelfMenu[] | null | undefined): boolean;
 
 export function menusInUse(menus: readonly ShelfMenu[] | null | undefined): ShelfMenu[];

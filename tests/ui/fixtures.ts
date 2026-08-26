@@ -174,3 +174,32 @@ export const test = base.extend<{ asOwner: Page }>({
 });
 
 export { expect };
+
+/**
+ * Create a blank menu and give it a name (M6.5).
+ *
+ * The name prompt is gone. "Add a menu" opens a route chooser, the blank route
+ * creates the menu immediately, and the builder opens with the placeholder name
+ * in its crumb, selected, so the first keystroke replaces it. What used to be
+ * "click Add a menu, type a name, click Start blank" is now "click Add a menu,
+ * click start-from-blank, type over what is already there".
+ *
+ * Every spec that just needs a menu to exist calls this rather than repeating
+ * the sequence, so the next change to the front door edits one place.
+ */
+export async function createBlankMenu(page: Page, name: string) {
+  await page.getByTestId("add-a-menu").first().click();
+  await page.getByTestId("add-route-blank").click();
+  const nameInput = page.getByTestId("menu-name-input");
+  await nameInput.waitFor({ state: "visible" });
+  await nameInput.fill(name);
+  await nameInput.press("Enter");
+  await expect(page.getByTestId("builder-menu-name")).toHaveText(name);
+}
+
+/** Open the Add-a-menu chooser and take the paste route into the import. */
+export async function startPasteImport(page: Page) {
+  await page.getByTestId("add-a-menu").first().click();
+  await page.getByTestId("add-route-paste").click();
+  await page.getByLabel("Menu text").waitFor({ state: "visible" });
+}

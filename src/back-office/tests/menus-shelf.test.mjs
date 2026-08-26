@@ -280,24 +280,71 @@ test("take off the screens always shows what replaces it first (criterion 6)", a
   );
 });
 
-test("the empty shelf can actually open the name-a-menu dialog", async () => {
-  // The regression: the dialog was rendered only in the populated-shelf return,
-  // while the empty shelf returned early. Clicking the one button a brand-new
-  // customer is offered set the state, re-rendered the same empty state, and
-  // showed nothing - no dialog, no error, no console output.
+/**
+ * Source with its comments removed.
+ *
+ * These assertions are about what the file *renders*, and a doc comment that
+ * explains why something was removed contains the very string the assertion
+ * forbids. Strip comments and the assertion means what it says.
+ */
+function withoutComments(source) {
+  return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+}
+
+test("the empty shelf draws the routes itself, and one chooser serves both shelves", async () => {
+  // Two regressions guarded here, one historical and one current.
+  //
+  // The old one: the name dialog was rendered only in the populated-shelf return
+  // while the empty shelf returned early, so the one button a brand-new customer
+  // is offered set state, re-rendered the same empty state, and showed nothing.
+  //
+  // The current one (M6.5): every affordance on this page used to open a blank-menu
+  // name prompt, and nothing here ever reached the paste import - which had shipped
+  // and been verified for four milestones. The empty shelf now draws the routes at
+  // page size with no dialog to dismiss (decision 17), and the tile and header
+  // button open the same list inside one.
   const source = await readFile(new URL("../src/MenusHome.tsx", import.meta.url), "utf8");
 
   const emptyBranch = source.slice(
     source.indexOf("menus.length === 0"),
     source.indexOf("menus-home__header"));
-  assert.match(emptyBranch, /data-testid="add-a-menu"/,
-    "the empty shelf still offers Add a menu");
-  assert.match(emptyBranch, /\{nameMenuDialog\}/,
-    "the empty shelf must render the dialog its only button opens");
+  assert.match(emptyBranch, /<MenuAddRoutes/,
+    "the empty shelf draws the routes itself");
+  assert.match(emptyBranch, /variant="page"/,
+    "and at page size - onboarding is this screen's empty state, not a wizard");
+  assert.doesNotMatch(emptyBranch, /addMenuDialog/,
+    "with nothing to dismiss: there is nothing to fall out of and nothing to re-enter");
 
-  // And it is one shared dialog, not two copies that can drift apart.
-  assert.equal((source.match(/const nameMenuDialog =/g) ?? []).length, 1);
-  assert.equal((source.match(/\{nameMenuDialog\}/g) ?? []).length, 2);
-  assert.equal((source.match(/data-testid="name-menu-dialog"/g) ?? []).length, 1);
+  // One chooser, rendered once, opened by the tile and the header button alike.
+  assert.equal((source.match(/const addMenuDialog =/g) ?? []).length, 1);
+  assert.equal((source.match(/\{addMenuDialog\}/g) ?? []).length, 1);
+  assert.equal((source.match(/data-testid="add-menu-dialog"/g) ?? []).length, 1);
+  assert.equal((source.match(/setAddingMenu\(true\)/g) ?? []).length, 2,
+    "the tile and the header button, and nothing else, open the chooser");
+
+  // The prompt the owner removed on 2026-08-26 does not come back.
+  assert.doesNotMatch(withoutComments(source), /Start a blank menu/,
+    "no menu is named before it exists - the builder names it inline");
+  assert.doesNotMatch(withoutComments(source), /data-testid="new-menu-name"/);
+});
+
+test("only routes that exist are drawn", async () => {
+  // README.md's M1a settles this for POS: "when it is not, there is no trace of
+  // it - decision 4". Photo and spreadsheet are not built, so they are not drawn,
+  // and no card is disabled or labelled coming soon in their place.
+  const source = await readFile(new URL("../src/MenuAddRoutes.tsx", import.meta.url), "utf8");
+  const routes = source.slice(source.indexOf("menuAddRoutes"), source.indexOf("type Props"));
+
+  assert.match(routes, /key: "paste"/, "paste is built, and is drawn");
+  for (const absent of ["photo", "spreadsheet", "pos"]) {
+    assert.doesNotMatch(routes, new RegExp(`key: "${absent}"`),
+      `${absent} is not built, so it leaves no trace`);
+  }
+  const rendered = withoutComments(source);
+  assert.doesNotMatch(rendered, /coming soon/i);
+  assert.doesNotMatch(rendered, /disabled: true/);
+
+  // Exactly one route leads. Two highlighted cards is no highlight at all.
+  assert.equal((routes.match(/leads: true/g) ?? []).length, 1);
 });
 

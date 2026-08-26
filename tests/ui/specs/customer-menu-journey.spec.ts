@@ -71,13 +71,18 @@ test.describe("the customer builds a menu and a screen shows it", () => {
     await page.locator('[data-testid="nav-item"]').first().waitFor({ state: "attached" });
 
     await test.step("create the menu", async () => {
+      // M6.5: no name prompt. Add a menu opens the route chooser, blank creates
+      // it immediately, and the builder's crumb is where it gets its name.
       await page.getByTestId("add-a-menu").first().click();
-      await page.getByTestId("new-menu-name").fill(menuName);
-      await page.getByTestId("create-menu").click();
+      await page.getByTestId("add-route-blank").click();
       // Generous, because a cold B1 worker is slow and "stuck" must not be
       // reported when the truth is "took 40 seconds".
       await expect(page.getByTestId("menu-builder"), `API failures so far:\n${apiFailures.join("\n") || "(none)"}`)
         .toBeVisible({ timeout: 60_000 });
+      // The crumb opens as an edit field on a blank menu, so this is where the
+      // name is given rather than confirmed.
+      await page.getByTestId("menu-name-input").fill(menuName);
+      await page.getByTestId("menu-name-input").press("Enter");
       await expect(page.getByTestId("builder-menu-name")).toContainText(menuName);
     });
 

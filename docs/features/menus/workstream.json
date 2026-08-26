@@ -2,8 +2,8 @@
   "codename": "Menus",
   "what": "The menu product: item library, draft/publish spine, the builder, the render engine, and the import paths that get a venue's existing menu into it without retyping",
   "stage": "development",
-  "position": "Eleven milestones accepted through M6.4; M5 parked. M6.5 next: the paste import works but nothing navigates to it. M6.6 and M8 planned, blocked on owner answers. M7 paused behind Foundry.",
-  "next": "M6.5 (#867): give the Menus home a real door into the paste import. Then Q213-Q215, which block M8 (#868) and M6.6 (#871).",
+  "position": "Eleven milestones accepted through M6.4; M5 parked. M6.5 is in flight - the front door into the paste import. M6.6 and M8 planned, blocked on owner answers. M7 paused behind Foundry.",
+  "next": "Finish M6.5 (#867): the chooser is built and specs are written; it needs a suite run and the owner workbook. Then Q213-Q215, which block M8 (#868) and M6.6 (#871).",
   "label": "workstream:menus",
   "design": [
     {

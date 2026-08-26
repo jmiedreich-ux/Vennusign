@@ -41,6 +41,7 @@ import {
   type MenuPageAssignment,
   type MenuScreenShowing
 } from "./api";
+import { unnamedMenuName } from "./menusShelf.mjs";
 import type { BackOfficeConfiguration } from "./config";
 import SkyIcon from "./SkyIcon";
 import TransientFeedback from "./TransientFeedback";
@@ -1994,7 +1995,7 @@ export default function MenuBuilder({
   const activePageItemCount = sections.reduce((count, section) => count + itemsOf(board, section.sectionId).length, 0);
   const activePageAssignmentCount = assignments.filter(assignment => assignment.pageId === activePageId).length;
   const activePageScreenNames = assignments.filter(assignment => assignment.pageId === activePageId).map(assignment => screens.find(screen => screen.screenId === assignment.screenId)?.screenName).filter((name): name is string => Boolean(name));
-  const currentMenuName = board.name ?? "Untitled menu";
+  const currentMenuName = board.name ?? unnamedMenuName;
   const beginMenuRename = () => {
     setMenuNameDraft(currentMenuName);
     setEditingMenuName(true);
@@ -2119,6 +2120,9 @@ export default function MenuBuilder({
             data-testid="menu-name-input"
             aria-label="Menu name"
             autoFocus
+            /* Selected on focus so a blank menu's placeholder is replaced by the
+               first keystroke rather than typed around. */
+            onFocus={event => event.currentTarget.select()}
             maxLength={200}
             value={menuNameDraft}
             onChange={event => setMenuNameDraft(event.target.value)}
@@ -2131,7 +2135,22 @@ export default function MenuBuilder({
               }
             }}
           /> : <>
-            <span className="builder__crumb-current" data-testid="builder-menu-name">{currentMenuName}</span>
+            {/*
+              A blank menu arrives carrying `unnamedMenuName` (M6.5): the "name your
+              menu" prompt was removed on 2026-08-26 and naming happens here instead.
+              It is drawn muted so it reads as *not named yet* rather than as a menu
+              somebody decided to call Untitled - the crumb is already editable and
+              the pencil beside it is the affordance.
+
+              Deliberately not auto-opened into its edit field: a blank menu already
+              puts the caret in the add-item row, and two things competing for focus
+              on first paint is worse than one thing the operator has to click.
+            */}
+            <span
+              className={`builder__crumb-current${currentMenuName === unnamedMenuName ? " builder__crumb-current--unnamed" : ""}`}
+              data-testid="builder-menu-name"
+              data-unnamed={currentMenuName === unnamedMenuName}
+            >{currentMenuName}</span>
             <button type="button" className="builder__menu-name-edit" data-testid="edit-menu-name" aria-label={`Edit ${currentMenuName} menu name`} onClick={beginMenuRename}>
               <SkyIcon name="pencil" />
             </button>

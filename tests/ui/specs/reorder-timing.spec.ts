@@ -74,10 +74,12 @@ test.describe("reorder timing", () => {
     // thing being timed rather than the whole first-publish cost.
     await page.goto("/#/menu");
     await page.locator('[data-testid="nav-item"]').first().waitFor({ state: "attached" });
+    // M6.5: no name prompt - the builder's crumb names it.
     await page.getByTestId("add-a-menu").first().click();
-    await page.getByTestId("new-menu-name").fill(`QA timing ${stamp}`);
-    await page.getByTestId("create-menu").click();
+    await page.getByTestId("add-route-blank").click();
     await expect(page.getByTestId("menu-builder")).toBeVisible({ timeout: 60_000 });
+    await page.getByTestId("menu-name-input").fill(`QA timing ${stamp}`);
+    await page.getByTestId("menu-name-input").press("Enter");
 
     await page.getByTestId("assignment-pill").click();
     const assignments = page.getByTestId("screen-assignments");

@@ -86,6 +86,12 @@
   font-weight: var(--sky-font-weight-semibold, 600);
 }
 
+/* A menu nobody has named yet (M6.5). Muted so the crumb reads as "not named"
+   rather than as a menu somebody chose to call Untitled. The name is real in the
+   database - dbo.Menus.Name is NOT NULL and rejects blank - so this is the only
+   honest way to say "unnamed" without letting an empty name reach a board. */
+.builder__crumb-current--unnamed { color: var(--sky-color-text-muted); font-style: italic; }
+
 .builder__menu-name-edit { display: inline-grid; place-items: center; border: 0; padding: var(--sky-space-1); background: transparent; color: var(--sky-text-secondary); cursor: pointer; }
 .builder__menu-name-edit:hover { color: var(--sky-action-link-text); }
 .builder__menu-name-edit:focus-visible { outline: 2px solid var(--sky-color-primary); outline-offset: 2px; }

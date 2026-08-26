@@ -31,6 +31,7 @@ import {
 import "../../board-engine/board-engine.css";
 import "./menus-home.css";
 import VennusignLoader from "./VennusignLoader";
+import MenuAddRoutes from "./MenuAddRoutes";
 
 type Props = {
   configuration: BackOfficeConfiguration;
@@ -38,8 +39,12 @@ type Props = {
   venueName: string;
   /** Opens the existing editor. Interim wiring until milestone 3 (Q100). */
   onOpenMenu: (menuId: string) => void;
-  /** Names a new menu and hands back its id. The import routes arrive in milestone 6 (Q100). */
-  onAddMenu: (name: string) => Promise<void>;
+  /**
+   * Creates a blank menu and opens the builder on it. No longer takes a name:
+   * M6.5 removed the "name your menu" prompt entirely, and the builder names it
+   * inline instead (owner, 2026-08-26).
+   */
+  onAddMenu: (name?: string) => Promise<void>;
   /** A name carried over from onboarding's starter choice, if there was one. */
   starterMenuName?: string;
   /** Screens, filtered to the ones needing attention (Q170). */
@@ -67,16 +72,20 @@ export default function MenusHome({
   canQuickUpdate
 }: Props) {
   /**
-   * Naming a new menu.
+   * Adding a menu (M6.5).
    *
-   * Interim by design (Q100): milestone 6 replaces this with the import routes —
-   * paste, start blank, and the shared confirm step that hosts the Name field.
-   * Until then Add-a-menu still has to reach a real menu, so it asks the one
-   * question the create endpoint needs and opens the builder on the result.
+   * Every affordance on this page — the empty shelf, the dashed tile, the header
+   * button at scale — opens the same route chooser. Before M6.5 all three opened
+   * a "Start a blank menu" name prompt instead, and nothing on this screen ever
+   * reached the paste import, which had been shipped and verified for four
+   * milestones. The prompt is gone: the blank route creates the menu and the
+   * builder names it inline (owner, 2026-08-26).
+   *
+   * A starter name carried over from onboarding still opens the chooser rather
+   * than creating anything on mount — arriving on a page must not mutate.
    */
-  const [namingMenu, setNamingMenu] = useState(Boolean(starterMenuName));
-  const [newMenuName, setNewMenuName] = useState(starterMenuName ?? "");
-  const [namingError, setNamingError] = useState<string | null>(null);
+  const [addingMenu, setAddingMenu] = useState(Boolean(starterMenuName));
+  const [addError, setAddError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [menus, setMenus] = useState<ShelfMenu[] | null>(null);
   const [unavailable, setUnavailable] = useState<string[]>([]);
@@ -165,103 +174,81 @@ export default function MenusHome({
     );
   }
 
-  // The naming dialog belongs to both returns below. It used to live only in the
-  // populated-shelf branch, so on the empty shelf - where every new customer starts,
-  // and the only button is "Add a menu" - the click set the state and rendered the
-  // same empty state again. No dialog, no error, nothing at all.
-  const nameMenuDialog = <>
-    {namingMenu ? (
-      <>
-        <div className="menu-card__scrim" onClick={() => setNamingMenu(false)} data-testid="name-menu-scrim" />
-        <form
-          className="menu-card__dialog"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="name-menu-title"
-          data-testid="name-menu-dialog"
-          onSubmit={async event => {
-            event.preventDefault();
-            const name = newMenuName.trim();
-            if (!name) return;
-            setCreating(true);
-            setNamingError(null);
-            try {
-              await onAddMenu(name);
-              setNamingMenu(false);
-              setNewMenuName("");
-            } catch (failure) {
-              /*
-               * A refusal is shown where the person is looking, in the server's
-               * own words, with the dialog still open and the name they typed
-               * still in it. This used to fail silently: the ceiling refusal
-               * carried good copy and the screen swallowed all of it.
-               */
-              setNamingError(
-                failure instanceof BackOfficeApiError || failure instanceof MenuActionRefused
-                  ? failure.message
-                  : "Vennusign could not create that menu. Nothing changed."
-              );
-            } finally {
-              setCreating(false);
-            }
-          }}
-        >
-          <h2 id="name-menu-title">Start a blank menu</h2>
-          <p>You can change what is on it once it opens. Nothing reaches a screen until you publish.</p>
-          <label>
-            <span>Menu name</span>
-            <input
-              autoFocus
-              required
-              maxLength={200}
-              value={newMenuName}
-              data-testid="new-menu-name"
-              onChange={event => setNewMenuName(event.target.value)}
-              onKeyDown={event => {
-                if (event.key === "Escape") {
-                  setNamingMenu(false);
-                  setNewMenuName("");
-                }
-              }}
-            />
-          </label>
-          {namingError ? (
-            <p className="menu-card__dialog-refusal" role="alert" data-testid="create-menu-error">
-              {namingError}
-            </p>
-          ) : null}
-          <div className="menu-card__dialog-actions">
-            <button
-              type="button"
-              className="action-secondary"
-              onClick={() => {
-                setNamingMenu(false);
-                setNewMenuName("");
-                setNamingError(null);
-              }}
-            >
-              Cancel
-            </button>
-            <button type="submit" className="action-primary" data-testid="create-menu" disabled={creating}>
-              {creating ? "Creating…" : "Start blank"}
-            </button>
-          </div>
-        </form>
-      </>
-    ) : null}
-  </>;
+  const startBlank = async () => {
+    setCreating(true);
+    setAddError(null);
+    try {
+      await onAddMenu(starterMenuName);
+      setAddingMenu(false);
+    } catch (failure) {
+      /*
+       * A refusal is shown where the person is looking, in the server's own
+       * words, with the chooser still open. This used to fail silently: the
+       * ceiling refusal carried good copy and the screen swallowed all of it.
+       */
+      setAddError(
+        failure instanceof BackOfficeApiError || failure instanceof MenuActionRefused
+          ? failure.message
+          : "Vennusign could not create that menu. Nothing changed."
+      );
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const chooseRoute = (routeKey: string) => {
+    if (routeKey !== "paste") return;
+    // The import owns everything from here, including the menu's name, which it
+    // proposes from the paste and confirms at its destination step.
+    window.location.hash = "#/menu/import";
+  };
+
+  const closeChooser = () => {
+    setAddingMenu(false);
+    setAddError(null);
+  };
+
+  // The chooser belongs to both returns below. Its predecessor lived only in the
+  // populated-shelf branch, so on the empty shelf - where every new customer
+  // starts, and the only button is "Add a menu" - the click set the state and
+  // rendered the same empty state again. No dialog, no error, nothing at all.
+  const addMenuDialog = addingMenu ? (
+    <>
+      <div className="menu-card__scrim" onClick={closeChooser} data-testid="add-menu-scrim" />
+      <div
+        className="menu-card__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-routes-title"
+        data-testid="add-menu-dialog"
+        onKeyDown={event => { if (event.key === "Escape") closeChooser(); }}
+      >
+        <MenuAddRoutes
+          variant="dialog"
+          onChoose={chooseRoute}
+          onStartBlank={() => void startBlank()}
+          onCancel={closeChooser}
+          busy={creating}
+          error={addError}
+        />
+      </div>
+    </>
+  ) : null;
 
   // Onboarding is the empty state of this screen, not a wizard (decision 17):
   // there is nothing to fall out of and nothing to re-enter.
   if (menus.length === 0) {
+    // Full-page, no dialog: there is nothing to dismiss and nothing behind it.
+    // The same routes the tile and the header button open, drawn at page size.
     return (
       <section className="menus-home menus-home--empty" data-testid="menus-home">
-        <h1>Let's get your menu in.</h1>
-        <p>Pick whatever's easiest. You can fix anything later.</p>
-        <button type="button" className="action-primary" onClick={() => setNamingMenu(true)} data-testid="add-a-menu">
-          Add a menu
-        </button>
-        {nameMenuDialog}
+        <MenuAddRoutes
+          variant="page"
+          onChoose={chooseRoute}
+          onStartBlank={() => void startBlank()}
+          busy={creating}
+          error={addError}
+        />
       </section>
     );
   }
@@ -289,7 +276,7 @@ export default function MenusHome({
             </button>
           ) : null}
           {atScale ? (
-            <button type="button" className="action-primary" onClick={() => setNamingMenu(true)} data-testid="add-a-menu">
+            <button type="button" className="action-primary" onClick={() => setAddingMenu(true)} data-testid="add-a-menu">
               Add a menu
             </button>
           ) : null}
@@ -354,7 +341,7 @@ export default function MenusHome({
         {/* The dashed tile stays at six or fewer; past the cutover "Add a menu"
             is a plain button beside search instead (Q166). */}
         {!atScale ? (
-          <button type="button" className="menus-home__add-tile" onClick={() => setNamingMenu(true)} data-testid="add-a-menu">
+          <button type="button" className="menus-home__add-tile" onClick={() => setAddingMenu(true)} data-testid="add-a-menu">
             <span className="menus-home__add-mark" aria-hidden><Plus size={18} /></span>
             <strong>Add a menu</strong>
             <small>Paste it in, or start blank</small>
@@ -404,7 +391,7 @@ export default function MenusHome({
         </section>
       ) : null}
 
-      {nameMenuDialog}
+      {addMenuDialog}
     </section>
   );
 }

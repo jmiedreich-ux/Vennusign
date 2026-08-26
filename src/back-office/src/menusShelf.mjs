@@ -15,6 +15,17 @@
  * still appear in the strip, and search still finds them. At six or fewer the
  * shelf is exactly the M1 design - it grows and scrolls, nothing collapses.
  */
+/**
+ * The name a menu is created with when nobody has typed one (M6.5).
+ *
+ * `dbo.Menus.Name` is NOT NULL and carries CK_Menus_Name_NotBlank, so a genuinely
+ * nameless menu cannot exist - and an empty name would otherwise be free to reach
+ * a guest-facing board. The owner's decision on 2026-08-26 was to remove the "name
+ * your menu" prompt and name it in the builder instead; this is what stands in
+ * until they do, drawn into the builder's name field with the caret already in it.
+ */
+export const unnamedMenuName = "Untitled menu";
+
 export const shelfScaleThreshold = 7;
 
 export function isShelfAtScale(menus) {

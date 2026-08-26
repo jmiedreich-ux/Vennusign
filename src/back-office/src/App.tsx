@@ -32,6 +32,7 @@ import {
   backOfficeNavigationGroups,
   type BackOfficeRoute
 } from "./navigation.mjs";
+import { unnamedMenuName } from "./menusShelf.mjs";
 import NavRail from "./NavRail";
 import MenuBuilder from "./MenuBuilder";
 import MenusHome from "./MenusHome";
@@ -142,12 +143,20 @@ export default function App() {
   const [menuContext, setMenuContext] = useState<{ timezone: string }>();
 
   /**
-   * Naming a new menu still goes through the create endpoint that already exists
-   * (Q100); milestone 6 replaces it with the import routes. It opens the builder
-   * on what it made, because a menu you cannot see is not a menu you created.
+   * Creating a blank menu (M6.5).
+   *
+   * Nobody is asked for a name any more. The owner removed that prompt on
+   * 2026-08-26: naming a menu before it has anything on it is the wrong order,
+   * and for the paste route the import already proposes a name and confirms it.
+   * The menu is created under `unnamedMenuName` and the builder opens with that
+   * in the name field, selected, so the first keystroke replaces it.
+   *
+   * `?start=blank` is what tells the builder this is a menu nobody has named.
+   * It opens the builder on what it made, because a menu you cannot see is not
+   * a menu you created.
    */
-  const onAddMenu = async (name: string) => {
-    const created = await createMenu(configuration, accessToken, name);
+  const onAddMenu = async (name?: string) => {
+    const created = await createMenu(configuration, accessToken, name?.trim() || unnamedMenuName);
     window.location.hash = `#/menu/${created.id}?start=blank`;
   };
   const [navigationOpen, setNavigationOpen] = useState(false);
