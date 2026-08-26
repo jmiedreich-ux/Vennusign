@@ -168,4 +168,157 @@ public sealed class MenuPasteParserTests
 
         Assert.Equal("item", Assert.Single(result.Lines).Disposition);
     }
+
+    /*
+     * M6.7 - the parser reads a real printed menu.
+     *
+     * The fixture below is the first two pages of a real four-page restaurant menu, pasted by the
+     * owner out of the restaurant's own PDF. Against the M6.4 parser it produced 19 items, three of
+     * them nonsense, ZERO sections, and 48 unresolved lines - the full menu produced 91 questions
+     * on the review screen. That is not a menu anybody would sit and answer.
+     *
+     * It is used deliberately instead of another hand-written fixture. Every parser test before
+     * this one was written from the same assumptions as the parser, which is exactly why the suite
+     * stayed green while the two-space defect shipped (M6.4) and why it stayed green again while
+     * a printed menu could not be read at all.
+     */
+    private const string RealPrintedMenu = """
+        Appetizers
+        Chicken Satay $7.00
+        Chicken marinated in a curry sauce barbecued & served on bamboo
+        skewers to be dipped in a flavorful peanut & cucumber sauce
+        Edamame $4.00
+        Steamed healthy soybeans
+        Steamed Vegetable Dumpling $7.00
+        Salads
+        Thai Salad $6.50
+        Garden fresh greens, cucumbers, tomatoes, bean sprouts,
+        dried bean curd w. a light peanut dressing
+
+        Soups
+        Tofu Soup $4.95
+        Assorted vegetables in a clear soup w. tofu
+        Noodles
+        Chicken $11.95, Beef $12.95, Shrimp $13.95
+        Pad Thai
+        Rice Noodles sauteed w. egg, peanuts, bean sprouts & scallions
+        Pad Se-Ew
+        Flat noodles sauteed w. egg & broccoli
+        """;
+
+    [Fact]
+    public void Parse_ReadsTheSectionsOfARealPrintedMenu()
+    {
+        // Headings on a printed menu are Title Case, not capitals. Requiring capitals meant a
+        // normally-typed menu produced no structure at all.
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), RealPrintedMenu, 1, []);
+
+        Assert.Equal(["Appetizers", "Salads", "Soups", "Noodles"],
+            result.Lines.Where(line => line.Disposition == "section").Select(line => line.ParsedName));
+    }
+
+    [Fact]
+    public void Parse_ReadsAnUnpricedLineUnderAnItemAsThatItemsDescription()
+    {
+        // Q81, settled 2026-08-07 and never implemented. Descriptions wrap across physical lines
+        // on a real menu, so both halves have to land on the same item.
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), RealPrintedMenu, 1, []);
+
+        var satay = Assert.Single(result.Lines, line => line.ParsedName == "Chicken Satay");
+        Assert.Equal("Chicken marinated in a curry sauce barbecued & served on bamboo skewers to be dipped in a flavorful peanut & cucumber sauce", satay.ParsedDescription);
+        Assert.Equal("Steamed healthy soybeans", Assert.Single(result.Lines, line => line.ParsedName == "Edamame").ParsedDescription);
+    }
+
+    [Fact]
+    public void Parse_ReadsADishUnderAPriceSetAsAnItemWithNoPrice()
+    {
+        // "Chicken $11.95, Beef $12.95, Shrimp $13.95" prices everything below it, per protein.
+        // Vennusign has no variant model, so the dishes come through unpriced - which A11 allows -
+        // and the price set raises exactly one question rather than becoming a fake item.
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), RealPrintedMenu, 1, []);
+
+        var padThai = Assert.Single(result.Lines, line => line.ParsedName == "Pad Thai");
+        Assert.Equal("item", padThai.Disposition);
+        Assert.Null(padThai.ParsedPrice);
+        Assert.Equal("Rice Noodles sauteed w. egg, peanuts, bean sprouts & scallions", padThai.ParsedDescription);
+
+        var priceSet = Assert.Single(result.Lines, line => line.RawText.Trim().StartsWith("Chicken $11.95", StringComparison.Ordinal));
+        Assert.Equal("unresolved", priceSet.Disposition);
+        Assert.Equal("price_set_needs_choosing", priceSet.ParserReason);
+    }
+
+    [Fact]
+    public void Parse_APriceSetNeverBecomesAnItemNamedAfterItsOwnPrices()
+    {
+        // The exact defect: this line used to parse as an item named
+        // "Chicken $11.95, Beef $12.95, Shrimp" priced $13.95. A plausible-looking row of nonsense
+        // is worse than a question, because nothing about it asks to be checked.
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), RealPrintedMenu, 1, []);
+
+        Assert.DoesNotContain(result.Lines, line => line.ParsedName?.Contains('$', StringComparison.Ordinal) == true);
+    }
+
+    [Fact]
+    public void Parse_SeveralItemsOnOneLineAreOneQuestion_NotOneWrongItem()
+    {
+        // Same shape as a price set, different meaning - told apart by what follows it. A source
+        // line is one row keyed (SessionId, LineNumber), so splitting it into several items is a
+        // schema change and its own milestone; until then it is one honest question.
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(),
+            "Sides: Jasmine Rice $2.00, Brown Rice $3.00, Peanut Sauce $2.00", 1, []);
+
+        var line = Assert.Single(result.Lines);
+        Assert.Equal("unresolved", line.Disposition);
+        Assert.Equal("multiple_items_on_one_line", line.ParserReason);
+        Assert.Equal(0, result.ItemCount);
+    }
+
+    [Fact]
+    public void Parse_ARealPrintedMenuAsksAlmostNothing()
+    {
+        // The number that matters. This fixture produced 21 unresolved lines against the M6.4
+        // parser; a whole four-page menu produced 91 questions. Decision 18 says confirm only what
+        // we were unsure of - a review screen that asks about every line is the parser being
+        // wrong, not the menu being messy.
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), RealPrintedMenu, 1, []);
+
+        var unresolved = result.Lines.Where(line => line.Disposition == "unresolved").ToArray();
+        Assert.Single(unresolved);
+        Assert.Equal("price_set_needs_choosing", unresolved[0].ParserReason);
+        Assert.Equal(7, result.ItemCount);
+    }
+
+    [Fact]
+    public void Parse_StillRetainsEveryPhysicalLine()
+    {
+        // The invariant Q81 called out: a pasted line is never silently dropped. Descriptions gain
+        // a disposition of their own rather than disappearing into the item above them.
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), RealPrintedMenu, 1, []);
+
+        Assert.Equal(RealPrintedMenu.Split('\n').Length, result.Lines.Count);
+        Assert.All(result.Lines, line => Assert.Contains(line.Disposition,
+            new[] { "blank", "section", "item", "unresolved", "fallback", "description" }));
+    }
+
+    [Fact]
+    public void Parse_ACapitalsHeadingStillWins()
+    {
+        // M6.4's behaviour is unchanged for menus that were already readable.
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), "STARTERS\nGarlic Bread 6.50\nWings 12", 1, []);
+
+        Assert.Equal(["section", "item", "item"], result.Lines.Select(line => line.Disposition));
+        Assert.Equal(2, result.ItemCount);
+    }
+
+    [Fact]
+    public void Parse_AParenthesisedNoteIsNeverADish()
+    {
+        // "(Served w. Steamed Jasmine Rice)" is Title Case by shape and would otherwise be read as
+        // a dish sitting under a price set.
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(),
+            "Curry\nChicken $12.95, Beef $13.95\n(Served w. Steamed Jasmine Rice)\nRed Curry\nSauteed w. coconut milk", 1, []);
+
+        Assert.DoesNotContain(result.Lines, line => line.ParsedName?.StartsWith('(') == true);
+        Assert.Contains(result.Lines, line => line.ParsedName == "Red Curry" && line.Disposition == "item");
+    }
 }
