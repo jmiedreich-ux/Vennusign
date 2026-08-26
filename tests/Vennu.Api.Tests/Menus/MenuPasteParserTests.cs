@@ -259,18 +259,20 @@ public sealed class MenuPasteParserTests
     }
 
     [Fact]
-    public void Parse_SeveralItemsOnOneLineAreOneQuestion_NotOneWrongItem()
+    public void Parse_SeveralItemsOnOneLineBecomeSeveralItems()
     {
-        // Same shape as a price set, different meaning - told apart by what follows it. A source
-        // line is one row keyed (SessionId, LineNumber), so splitting it into several items is a
-        // schema change and its own milestone; until then it is one honest question.
+        // Same shape as a price set, different meaning - told apart by what follows it. Splitting
+        // one line into several items is what Q216's LineSubIndex made possible.
         var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(),
             "Sides: Jasmine Rice $2.00, Brown Rice $3.00, Peanut Sauce $2.00", 1, []);
 
-        var line = Assert.Single(result.Lines);
-        Assert.Equal("unresolved", line.Disposition);
-        Assert.Equal("multiple_items_on_one_line", line.ParserReason);
-        Assert.Equal(0, result.ItemCount);
+        // The label becomes the section and each fragment becomes an item, all sharing the one
+        // line number they were pasted on (Q216).
+        Assert.Equal(3, result.ItemCount);
+        Assert.Equal("Sides", Assert.Single(result.Lines, line => line.Disposition == "section").ParsedName);
+        Assert.Equal(["Jasmine Rice", "Brown Rice", "Peanut Sauce"],
+            result.Lines.Where(line => line.Disposition == "item").Select(line => line.ParsedName));
+        Assert.Single(result.Lines.Select(line => line.LineNumber).Distinct());
     }
 
     [Fact]
