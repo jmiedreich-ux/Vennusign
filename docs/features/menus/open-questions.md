@@ -2586,6 +2586,10 @@ Q79's owner answer scopes the action to "menus on zero screens" but does not say
 
 *Recommended:* Absent. **Take off the screens** is two lines below in the same ⋯ menu and is the named route to eligibility, so a refusal would explain a thing whose fix is already on screen. Decision 5's vocabulary is for states the operator cannot resolve from where they stand; this is not one.
 
+*Answer:* Owner (2026-08-26): **not deletable while on a screen, and not deletable while put away either.** Delete is available only for a menu that is on the shelf and on zero screens. Put away was designed as parking — "put this menu away until next Christmas" — not as a staging area for deletion, so it does not become one.
+
+The *absent vs refusing* half resolves to **absent**, and for put-away menus it is absent by construction: a Not-in-use chip has no ⋯ menu at all, only *open* and *put back* (`MenusHome.tsx:380`–`:392`). Making the on-screen case refuse while the put-away case silently has no control would be two answers to one question.
+
 <sub>`MenusHome.tsx:569`–`:609` (six items, no delete); decisions 4 and 5; Q79 owner answer 2026-08-07</sub>
 
 ### Q211 · important
@@ -2595,6 +2599,8 @@ Q79's owner answer scopes the action to "menus on zero screens" but does not say
 Q79's answer says "hard confirmation naming the destroyed menu and history" — it specifies what the dialog must *say*, not what it must *demand*. The paste-import second pass settled the neighbouring case explicitly: replacement shows "a targeted acknowledgment… **No typed-confirmation ritual**". Deleting a menu is more destructive than replacing one, which is the argument for typing; but a ritual that operators learn to perform without reading is not a safeguard, and the eligibility rule in Q210 already means nothing on a screen can be destroyed.
 
 *Recommended:* No typing. Name the menu, name what is destroyed, name what survives, and give the destructive button the `#8a2929` danger colour already carried by **Take off the screens**. If the owner wants a stronger gate, typing the name is a one-line addition later; removing a ritual after operators have learned it is not.
+
+*Answer:* Owner (2026-08-26): **no typing.** Accepted as recommended — the confirmation names the menu, what is destroyed and what survives, and the destructive button carries `#8a2929`.
 
 <sub>`Menu Import Process/change-summary.md` §3 "No typed-confirmation ritual"; `README.md:180` M1b danger colour `#8a2929`</sub>
 
@@ -2606,8 +2612,31 @@ Q79's rationale for *not* having delete was that "destroying attributable histor
 
 *Recommended:* Destroy them, inside the same transaction, and say so in the confirmation. "Delete forever" that leaves attributable rows behind is not forever, and a history entry pointing at a menu that no longer exists is the model in a state it should not be in — which becomes a new invariant either way.
 
+*Answer:* Owner (2026-08-26): **yes, destroyed** — accepted as recommended, with the moment moved by Q213. Under the recycle bin the rows are not destroyed at *delete*; they are destroyed at *purge*. Same answer, later instant. If Q213 lands on no bin, they go at delete.
+
 <sub>`src/Vennu.Data/Scripts/001_baseline.sql:2526` `MenuPublishEvents`, `:2570` `MenuHistoryEntries` — neither FK carries `ON DELETE CASCADE`; decisions 8 and 42; Q79 rationale</sub>
+
+
+### Q213 · BLOCKING
+
+**Does a deleted menu go to a recycle bin purged after 30 days, and if so can the operator open it?**
+
+Raised by the owner on 2026-08-26, alongside Q210: *"I wonder if we should move deleted menus into a recycle bin, where in 30 days we run a purge."*
+
+It changes three things that Q79 settled differently, which is why it blocks rather than refines:
+
+- **"Delete forever" becomes untrue.** With thirty days and a way back, the honest copy is *Delete* plus a sentence saying how long they have. Q79's wording assumed the destruction was immediate.
+- **Q212 moves, it does not flip.** History entries and publish events still die with the menu; they die at purge instead of at delete.
+- **Something has to actually run the purge.** Nothing in the product sweeps on a schedule today. The nearest precedent, import-session expiry, is swept opportunistically inside a request (`src/Vennu.Api/Menus/MenuImportService.cs:40`, batch of 100) rather than by a timer. Five `BackgroundService` implementations already exist under `src/Vennu.Api/BackgroundServices/`, so the pattern is established, but it is new work either way.
+
+The real fork is **whether the bin has a surface**. A bin the operator can open needs a screen, a restore action, and an answer to where a restored menu lands — the shelf, or Not in use. A bin they cannot open is deferred deletion: cheaper, honest, but the thirty days then exist only for support, and the confirmation cannot promise a way back.
+
+*Recommended:* Yes to the bin, visible, thirty days, restore returns the menu to the shelf, and call it **Recently deleted** rather than *recycle bin* — the vocabulary here is plain operator language (*Put away*, *Take off the screens*, *Go back to…*), and the Windows word is the odd one out. An invisible bin does not remove the risk that made this question worth asking, it only hides it. Cost, stated plainly: it turns M8 from a migration, an endpoint and a menu item into that plus a screen, a restore path and a sweeper — worth splitting M8 (delete, bin, purge) from M8.1 (the bin's own surface) if that is too much for one milestone.
+
+*Note on storage:* the owner raised storage optimization as the motivation. Worth confirming before treating the bin as a storage measure — a menu's own rows are small, and the bulk of Menus' storage is `MenuImportReplacementSnapshots`, which decision 42 says to preserve in full for every replacement. If bytes are the driver, that is where they are, and it is a different piece of work.
+
+<sub>Q79 owner answer 2026-08-07; decision 42 (retention is configuration and tier policy); `MenuImportRepository.DeleteExpiredAsync`; `src/Vennu.Api/BackgroundServices/`</sub>
 
 ---
 
-**Totals:** 212 questions — 43 blocking, 124 important, 45 minor. Four open: **Q209** (deferred at M2 acceptance, running on its provisional default) and **Q210–Q212**, which block Milestone 8.
+**Totals:** 213 questions — 44 blocking, 124 important, 45 minor. Two open: **Q209** (deferred at M2 acceptance, running on its provisional default) and **Q213**, which blocks Milestone 8. Q210–Q212 were answered by the owner 2026-08-26.

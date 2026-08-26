@@ -297,19 +297,23 @@ The same "destroy a thing" behaviour lives elsewhere in Menus at a smaller scope
 
 The delete is therefore **ordered and explicit**, in one transaction, in a new migration starting at **076**.
 
-##### Three decisions this plan does not get to make
+##### The three decisions, answered — and the one they raised
 
-Raised as Q210–Q212 in `open-questions.md` with a recommendation each. **None is settled; the milestone does not start until they are.**
+Q210, Q211 and Q212 were answered by the owner on 2026-08-26. A fourth, **Q213**, came out of that
+conversation and now blocks the milestone in their place.
 
-- **Q210 — On a menu that is on ≥1 screen, is *Delete forever* absent, or present and refusing with a named reason?** Decision 4 says absent; decision 5 says a blocked state must say what it is. Recommended: **absent**, because *Take off the screens* is already in the same menu and is the named route to eligibility — a refusal here would explain a thing the operator can already see the fix for.
-- **Q211 — Does the hard confirmation require typing the menu's name?** The paste-import second pass settled *"a targeted acknowledgment… no typed-confirmation ritual"* for replacement. Recommended: **no typing**; name the menu, name what is destroyed, name what survives, and make the destructive button carry the danger colour `#8a2929` already used by *Take off the screens*.
-- **Q212 — Does delete destroy `MenuHistoryEntries` and `MenuPublishEvents`, or detach them?** Q79's own rationale — *"destroying attributable history deserves its own designed moment"* — is why the owner asked for a designed moment, but it does not say the history dies with it. Decision 8 says history is durable and attributable; decision 42 makes retention tier policy. Recommended: **destroy them with the menu**, because "Delete forever" that leaves attributable rows behind is not forever, and the confirmation says so out loud.
+- **Q210 — eligibility.** A menu is deletable only when it is **on the shelf and on zero screens**. Not while it is on a screen, and **not while it is put away** — put away is parking ("put this menu away until next Christmas"), not a staging area for deletion. The *absent vs refusing* half resolves to **absent**: a Not-in-use chip has no ⋯ menu at all (`MenusHome.tsx:380`–`:392`), so refusing in the on-screen case while silently offering nothing in the put-away case would be two answers to one question.
+- **Q211 — no typed confirmation.** The dialog names the menu, what is destroyed and what survives; the destructive button carries `#8a2929`.
+- **Q212 — history dies with the menu.** `MenuHistoryEntries` and `MenuPublishEvents` are destroyed, not detached. Q213 moves *when*, not *whether*.
+- **Q213 · BLOCKING — a recycle bin, purged after 30 days?** The owner's proposal. It makes "Delete forever" untrue as copy, moves Q212's destruction from delete to purge, and requires something that actually sweeps — nothing in the product does today, and the nearest precedent (import-session expiry, `MenuImportService.cs:40`) is swept opportunistically inside a request rather than by a timer. The real fork is whether the bin has a **surface**: a bin the operator can open needs a screen, a restore action, and a decision about where a restored menu lands. Recommended in the register: yes, visible, thirty days, restore to the shelf, named **Recently deleted** rather than *recycle bin* — and split M8.1 off for the bin's own surface if that is too much for one milestone.
+
+**Storage, named honestly.** The owner raised storage optimization as the motivation for the bin. A menu's own rows are small; the bulk of this feature's storage is `MenuImportReplacementSnapshots`, which decision 42 says to preserve in full for every replacement. If bytes are the driver, that is where they are, and it is a different piece of work than this one.
 
 ##### The tasks
 
 | Task | What it means |
 | --- | --- |
-| T1 · Settle Q210–Q212 | Owner answers recorded in `open-questions.md` before any code. |
+| T1 · Settle Q213 | Q210–Q212 are answered and recorded. Q213 — the recycle bin, and whether it has a surface — decides T2, T3 and T7 and must land before any code. |
 | T2 · Migration 076 | Ordered delete in one transaction. Names what it discards, per AGENTS.md. Decides nothing Q212 has not answered. |
 | T3 · `DeleteMenuAsync` on the repository | Refuses when the menu has any row in `MenuScreenAssignments`. Refuses on a stale revision. Idempotent — a second delete of the same id is a success, not a 500. |
 | T4 · Model invariants | Added to `tests/Vennu.Data.IntegrationTests/Fixtures/ModelInvariants.cs`: no `MenuSections`, `MenuItems`, `MenuPages`, `MenuScreenAssignments`, `MenuPublishEvents`, `MenuPublishTargets`, `MenuHistoryEntries` or import rows referencing an absent menu; and no `Items` row destroyed by a menu delete. Per AGENTS.md, every write path that could violate these is listed and covered. |
