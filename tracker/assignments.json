@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-26T03:05:00Z",
+  "updatedUtc": "2026-08-26T03:50:00Z",
   "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": {
@@ -23,6 +23,14 @@
     },
     {
       "order": 2,
+      "assignment": "M6.6 - the shelf is a page about menus: retire the Not-in-use strip, filters at every size",
+      "issue": 871,
+      "branch": "feature/menus-m6a6-shelf-filters",
+      "status": "planned, blocked",
+      "blockedBy": "Q214 and Q215 in docs/features/menus/open-questions.md; the Recently deleted chip also waits on Q213 and #868"
+    },
+    {
+      "order": 3,
       "assignment": "M8 — delete a menu (Q79 owner override, 2026-08-07, never built)",
       "issue": 868,
       "branch": "feature/menus-m8-delete-a-menu",
