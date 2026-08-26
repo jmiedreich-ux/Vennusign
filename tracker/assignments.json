@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-26T02:10:00Z",
+  "updatedUtc": "2026-08-26T03:05:00Z",
   "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": {
@@ -27,7 +27,7 @@
       "issue": 868,
       "branch": "feature/menus-m8-delete-a-menu",
       "status": "planned, blocked",
-      "blockedBy": "Q210, Q211 and Q212 in docs/features/menus/open-questions.md need owner answers before any code"
+      "blockedBy": "Q213 in docs/features/menus/open-questions.md — the recycle bin, and whether it has a surface. Q210-Q212 answered by the owner 2026-08-26."
     }
   ],
   "rules": {
