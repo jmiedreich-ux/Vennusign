@@ -1,35 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-23T09:30:00Z",
-  "activeAssignments": [
-    {
-      "assignment": "Venue-wide emergency broadcasts never delivered in realtime - fan out per-screen like #763's publish fix",
-      "issue": 811,
-      "pr": 816,
-      "branch": "fix/811-venue-broadcast-realtime-fanout",
-      "claimedUtc": "2026-08-23T09:30:00Z",
-      "owner": "Claude (session)",
-      "notes": "BackOfficeEmergencyBroadcastsController.NotifyAsync only called NotifyVenueContentUpdatedAsync for a venue-wide broadcast (ScreenId null) - the default target in EmergencyBroadcastAdministration.tsx, and the same dead venue:{id} SignalR group #769/#763 already proved nothing joins. Added a per-screen fan-out loop via IScreenRepository.GetByVenueIdAsync, kept the venue-wide call alongside it. 3 new unit tests, dotnet build clean, 467/467. Awaiting independent review/merge; live verification against a real multi-screen venue still UNTESTED."
-    },
-    {
-      "assignment": "Park #744 as a proposed design/decision doc, not scheduled work",
-      "issue": 744,
-      "pr": 813,
-      "branch": "docs/744-retire-menuitems-proposal",
-      "claimedUtc": "2026-08-23T09:00:00Z",
-      "owner": "Claude (session)",
-      "notes": "docs(design): docs/design/proposed/retire-menuitems.md. Doc-only, no code. Awaiting independent review/merge."
-    },
-    {
-      "assignment": "Extend #800's temp write-pipeline timing to cover every menu-builder action, including undo/redo which had none",
-      "issue": 800,
-      "pr": 814,
-      "branch": "chore/800-full-action-timing",
-      "claimedUtc": "2026-08-23T09:00:00Z",
-      "owner": "Claude (session)",
-      "notes": "Owner asked for timing on each action for investigation. run() gained a describe override so publish/discard/add-page/etc. stop collapsing into 'Your last change'; undo()/redo() gained matching [perf:undo]/[perf:redo] logging (previously zero timing - they bypass deliver()). tsc clean, 218/218. Awaiting independent review/merge."
-    }
-  ],
+  "updatedUtc": "2026-08-26T00:44:38Z",
+  "activeAssignments": [],
   "desktopSessionLock": null,
   "nextAvailableWorkPackage": null,
   "approvedSequentialQueue": [],
@@ -54,36 +26,36 @@
     "releasedBy": "scope completed locally"
   },
   "lastCompletedAssignment": {
-    "assignment": "\"View all\" scope fix plus wiring the restore capability (#799)",
-    "issue": 799,
-    "pr": 812,
-    "branch": "feat/799-restore-capability-and-view-all-scope (merged to master, local+remote branch cleanup pending on origin)",
-    "completedUtc": "2026-08-23T08:08:00Z",
-    "mergeSha": "fd46adb6",
+    "assignment": "Paste import read zero items from an ordinary menu (M6.4), plus the repo-wide CI merge-marker false positive",
+    "issue": 864,
+    "pr": 862,
+    "branch": "fix/paste-parser-separator (merged, local+remote deleted)",
+    "completedUtc": "2026-08-26T00:30:00Z",
+    "mergeSha": "339690fc",
     "acceptedProductSha": null,
-    "acceptance": "Partial fix, explicitly scoped by the author: the scope bug and restore-capability wiring are done; the retention-depth messaging half is left as an open design question, not guessed at. Issue #799 stays open on purpose.",
-    "notes": "Split the shared 'View all'/'Go back to...' dialog into two: 'View all' is now a passive unfiltered whole-menu changelog, 'Go back to...' stays the published-only restore picker. Wired hasMenuCapability('restore', ...), previously defined but never checked anywhere."
+    "acceptance": "Merged and deployed to dev under the owner's standing merge/deploy permission for this project. 490/490 unit tests pass. VERIFIED ON DEPLOYED DEV, not only in unit tests: dev.api.vennusign.com reports sourceCommit 339690fc, and the exact repro posted to POST /api/back-office/menu-imports returns itemCount 4 with zero unresolved lines; the back-office review screen reads 'Build a new unpublished menu from all 4 imported items'. All CI green except the known pre-existing Playwright UntrustedRoot job (190 SSL errors, zero assertion failures, identical on master).",
+    "notes": "MenuPasteParser.PriceAtEnd demanded two or more spaces or a dot leader between an item name and its price, so 'Garlic Bread 6.50' and every tab-separated (spreadsheet) line parsed as nothing - itemCount 0 with sections found correctly. The import route itself was already fully wired; the wiring was never the fault. Every existing parser test used the two-space form, so the suite passed while encoding the defect. Separator widened to \\s+ with optional dot leader; number format untouched. Accepted trade-off, recorded as its own test: a capitals line ending in a bare number ('SPECIALS 2') now reads as an item - a guard was written and removed because it broke the existing deliberate assertion that 'BLT  12' is an item. T6 CLOSED against deployed dev after the local stack could not be restarted (PID 22416 unkillable; port 5199 turned out to be a Vite dev server, not the API). A regression spec now guards it: tests/ui/specs/menu-paste-import-parser.spec.ts runs against a deployed environment like customer-menu-journey.spec.ts rather than localhost, covers single-space/tab/MP/SPECIALS-2, skips cleanly without QA credentials, 2/2 passing. Separately, PR #863 fixed docs-validation, which had been red on master and every branch since six research transcripts containing ASCII rules ('======') tripped its whole-repo merge-marker grep; it now searches only <<<<<<< and >>>>>>>, which loses no detection because a real conflict always writes all three."
   },
   "previousCompletedAssignment": {
-    "assignment": "Batch of defect fixes between the #738 diagnostics work and #799, git/GitHub-authoritative (tracker had gone stale across this span)",
-    "issue": null,
+    "assignment": "Design-system audit, and the decision to park it behind the separate Foundry repository",
+    "issue": 861,
     "pr": null,
     "branch": "multiple, see git log master",
-    "completedUtc": "2026-08-23T08:00:00Z",
-    "mergeSha": null,
+    "completedUtc": "2026-08-25T12:00:00Z",
+    "mergeSha": "e006c4ea",
     "acceptedProductSha": null,
-    "acceptance": "Each merged individually at the owner's direct instruction, no separate workbook.",
-    "notes": "#794/#796 (board-fit width-fill, closed-form solve), #802/#805 (board-fit centering regression from #796), #798/#808 (page history panel row spacing), #806/#807 (price-less publish confirmation), #775/#804 (add-item double-submit, one guarded path), #797/#809 (delete-section dialog wording, partial - cross-page section move investigated and found blocked by a deliberate same-page DB guard, left open), #769 venue-notify audit documented not re-scoped (#810). Full detail per-item in ai/handoffs/current.md; exact commits in `git log master`."
+    "acceptance": "No workbook. The audit is generated evidence, not a written summary, and stands on its own.",
+    "notes": "Owner named the recurring problem: the disconnect between an agreed mock and what gets built. Audited rather than guessed - 416 controls in the back-office, 247 buttons, 114 with no styling class at all, seven looks for the main action, thirteen for the ordinary one, and every select/checkbox/radio/number/time/colour input unstyled. Cause is structural: a mock is a picture and a picture cannot be reused. scripts/design-audit/collect.mjs parses source with the TypeScript compiler and render.mjs draws every variant from the app's own stylesheets - the variant list comes from the collector, never a hand-picked array. Milestones #856-#861 are PARKED, not cancelled: the owner introduced jmiedreich-ux/Foundry as a separate isolated project for the component system and asked that the two not be mixed. Measurements deliberately retained for when Foundry integrates back in."
   },
   "priorCompletedAssignment": {
-    "assignment": "Display diagnostics view (#738), plus board-overflow (#790) and null-revision (#791) defects found while scoping it",
-    "issue": 738,
-    "pr": 792,
-    "branch": "feature/738-display-diagnostics (merged to master)",
-    "completedUtc": "2026-08-23T05:00:00Z",
+    "assignment": "Menu-builder mock-fidelity polish round (#834/#842), ten PRs",
+    "issue": 842,
+    "pr": null,
+    "branch": "multiple, see git log master",
+    "completedUtc": "2026-08-25T06:00:00Z",
     "mergeSha": null,
     "acceptedProductSha": null,
-    "acceptance": "Independent review (isolated worktree agent) returned HOLD on one real bug (unhandled JSON-parse rejection) plus two minor gaps; all fixed in 042d067a, not re-reviewed after the fix. Merged and deployed at the owner's direct instruction.",
-    "notes": "GET /api/display/{id}/diagnostics (server half, identifiers/states/timestamps only) plus /display/{id}/diag (device probe, never heartbeats or posts receipts). Player now records heartbeat outcome, connection transitions, content-fetch source and receipt skip reason to a per-device rolling record. #790 and #791 filed and NOT fixed in this PR; #790 fixed separately in PR #793 (superseded by #796/#805 above)."
+    "acceptance": "Owner-driven feedback round delivered as screenshots; each item verified with a Playwright screenshot before being reported done, at the owner's standing instruction not to report visual work from reasoning alone.",
+    "notes": "PRs #836-#840, #844, #846-#850. Found four silent defects: three instances of a React closure bug that crashed the whole tree to a white screen (reading event.currentTarget.value inside a deferred setState updater, where React has already nulled it - only two were ever reported by a human); the capacity banner referencing --sky-color-warning-border and --sky-color-warning-soft, neither defined anywhere; a Cancel button using class .secondary, which exists in no stylesheet; and the Remove-item dialog alone ignoring both Escape and click-outside. 'Rename does nothing' traced to useDialogFocus's cleanup unconditionally returning focus and stealing it from the field the same click had just opened. Decisions O2 and O3 added to docs/features/menus/decisions.md. M7.1 (Review & Publish, #852/#853) and M7.2 (full history screen, #855) remain blocked on owner scoping; M7.3 (#854) parked as UI polish Foundry will settle."
   }
 }
