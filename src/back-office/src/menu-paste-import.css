@@ -154,3 +154,14 @@
 .destination-choice--create { display: grid; gap: 8px; text-align: left; }
 .destination-choice--create label { margin-top: 4px; font-size: var(--sky-font-size-xxs); color: var(--sky-color-text-muted); }
 .destination-choice--create button[type="submit"] { justify-self: start; margin-top: 6px; }
+
+/*
+ * What tells two identical-looking candidates apart (A21). Quieter than the match line above it:
+ * it is there to break a tie, not to be read on every row.
+ */
+.question-row__provenance {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  opacity: 0.72;
+}

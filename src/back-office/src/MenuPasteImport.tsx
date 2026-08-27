@@ -18,6 +18,7 @@ import {
   type ShelfMenu
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
+import { candidateProvenance } from "./menuImportCandidates.mjs";
 import "./menu-paste-import.css";
 import VennusignLoader from "./VennusignLoader";
 
@@ -363,7 +364,8 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     <section className="inventory-panel"><button aria-expanded={inventoryOpen} onClick={() => setInventoryOpen(value => !value)}>{inventoryOpen ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />} Review all {session.session.lineCount} pasted lines</button>
       {inventoryOpen && <ol>{session.lines.map(line => <li key={line.lineNumber}><span>{line.lineNumber}</span><code>{line.rawText || "(blank line)"}</code><em>{line.disposition}</em>{line.disposition === "section" && !isNaturalHeading(line.rawText) && <button disabled={busy} onClick={() => void mutate(current => setMenuImportLineSection(configuration, accessToken, current, line.lineNumber, false))}><RotateCcw aria-hidden="true" /> Undo section</button>}</li>)}</ol>}
     </section>
-    <p className="import-status" aria-live="polite">{busy ? "Saving your answer…" : `${asking} answers remaining.`}</p>
+    {/* Q181's rule, applied here too: the natural singular. This read "1 answers remaining." */}
+    <p className="import-status" aria-live="polite">{busy ? "Saving your answer…" : `${asking} ${asking === 1 ? "answer" : "answers"} remaining.`}</p>
   </main>;
 }
 
@@ -415,12 +417,22 @@ function QuestionCard({ session, question, busy, onAnswer, onPromote }: { sessio
         <small>Already in your library?</small>
       </div>
       <div className="question-row__choices" role="group" aria-label={`Is ${line?.parsedName} already in your library?`}>
-        {question.candidates.map(candidate => (
-          <button type="button" disabled={busy} key={candidate.itemId} onClick={() => onAnswer("same_item", candidate.itemId)}>
-            <strong>{candidate.displayName}</strong>
-            <small>{candidate.isSafe ? "Safe name match" : "Possible match"} · {candidate.displayPrice ?? "No price"}</small>
-          </button>
-        ))}
+        {question.candidates.map(candidate => {
+          /*
+           * A21. Two library rows with the same name and the same price used to render as the same
+           * button twice, and the operator had to guess. This is what tells them apart, and it is
+           * drawn only where there IS more than one - a lone candidate has nothing to be
+           * distinguished from.
+           */
+          const provenance = candidateProvenance(candidate, question.candidates.length);
+          return (
+            <button type="button" disabled={busy} key={candidate.itemId} onClick={() => onAnswer("same_item", candidate.itemId)}>
+              <strong>{candidate.displayName}</strong>
+              <small>{candidate.isSafe ? "Safe name match" : "Possible match"} · {candidate.displayPrice ?? "No price"}</small>
+              {provenance ? <small className="question-row__provenance" data-testid="candidate-provenance">{provenance}</small> : null}
+            </button>
+          );
+        })}
         <button type="button" disabled={busy} onClick={() => onAnswer("new_item")} data-testid="answer-new-item">
           <strong>Add as a new item</strong><small>It isn't one you already have</small>
         </button>

@@ -74,12 +74,22 @@ public sealed record MenuImportReviewQuestion(
     IReadOnlyCollection<MenuImportCandidate> Candidates,
     MenuImportAnswer? Answer);
 
+/// <summary>
+/// One library item offered as the answer to "is this the dish you already have?".
+///
+/// <paramref name="OnMenus"/> and <paramref name="ItemCreatedUtc"/> exist for A21: a library can
+/// hold the same dish twice at the same price, and two candidates that render identically are a
+/// question nobody can answer. They are filled only where there is more than one candidate -
+/// a single candidate has nothing to be distinguished from.
+/// </summary>
 public sealed record MenuImportCandidate(
     Guid ItemId,
     string DisplayName,
     string? DisplayPrice,
     string MatchRule,
-    bool IsSafe);
+    bool IsSafe,
+    IReadOnlyCollection<string>? OnMenus = null,
+    DateTime? ItemCreatedUtc = null);
 
 public sealed record MenuImportAnswer(
     string Fingerprint,
