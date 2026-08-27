@@ -16,6 +16,18 @@ name: deploy-dev
 on:
   push:
     branches: [master]
+  # Master can be left undeployed with no way to put it right, and it happened on
+  # 2026-08-27. Three merges landed in quick succession; the first one's deploy sat
+  # waiting for the dev approval, the next two were cancelled while queued behind it
+  # (only one run may wait per concurrency group), and the fourth push was
+  # documentation, so classify correctly found no application changed and shipped
+  # nothing. Every run was green. The API on dev was two merges behind, and the only
+  # way to move it was to push another commit touching those paths.
+  #
+  # A manual run classifies the whole tree rather than a diff, because the thing it
+  # exists to recover from is precisely a diff that no longer describes what is
+  # undeployed.
+  workflow_dispatch:
 
 concurrency:
   group: deploy-dev
@@ -59,6 +71,12 @@ jobs:
           # a branch and can point at a commit force-pushed away, so both cases
           # fall back to classifying everything rather than classifying too little.
           before='${{ github.event.before }}'
+          if [ '${{ github.event_name }}' = 'workflow_dispatch' ]; then
+            echo "Run started by hand; classifying the whole tree so every app is deployed."
+            git ls-files > changed-paths.txt
+            cat changed-paths.txt
+            exit 0
+          fi
           if [ -n "$before" ] && [ "$before" != "0000000000000000000000000000000000000000" ] \
              && git cat-file -e "$before^{commit}" 2>/dev/null; then
             git diff --name-only "$before" '${{ github.sha }}' > changed-paths.txt
