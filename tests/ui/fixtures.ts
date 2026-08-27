@@ -173,6 +173,21 @@ export const test = base.extend<{ asOwner: Page }>({
   }
 });
 
+/*
+ * Put away whatever this test seeded.
+ *
+ * Every spec imports `test` from here, so this reaches all of them without touching a single call
+ * site — which matters, because there are 98 of them.
+ *
+ * It hangs off afterEach rather than a fixture so that a spec calling seed() several times, or
+ * calling it outside a fixture's lifetime, is still covered. The import is deferred to keep this
+ * module free of a cycle: seed.ts imports tokens from here.
+ */
+test.afterEach(async () => {
+  const { cleanupSeeded } = await import("./seed");
+  await cleanupSeeded();
+});
+
 export { expect };
 
 /**

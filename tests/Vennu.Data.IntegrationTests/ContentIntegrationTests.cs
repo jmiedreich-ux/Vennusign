@@ -628,6 +628,88 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         Assert.NotEqual(onShelf, alsoOnShelf);
     }
 
+    /*
+     * The automation venue's headroom.
+     *
+     * A UI run makes 98 seed calls, each creating a menu in one shared venue, against a ceiling of
+     * 50. The suite filled the venue and failed the rest of itself with "That would be 51 menus" -
+     * 138 of them in a single run. It had presumably always been true; nothing ever got past the
+     * certificate failure to find out.
+     */
+    [Fact]
+    public async Task ResetAutomationVenue_GivesThatVenueRoomForAWholeRun_AndNoOtherVenue()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var automation = await SeedVenueAsync(dataAccess);
+        var ordinary = await SeedVenueAsync(dataAccess);
+
+        var before = await repository.GetCeilingsAsync(ordinary);
+
+        await repository.ResetAutomationVenueAsync(automation);
+
+        var raised = await repository.GetCeilingsAsync(automation);
+        Assert.True(raised[MenuCeilings.MenusPerVenue] > 98,
+            "a run makes 98 seeds, so anything at or below that fails the suite it exists to run");
+
+        // Venue-scoped, and it must stay that way: this is a test-environment convenience, and a
+        // real venue silently getting 400 menus would be a product change nobody decided on.
+        Assert.Equal(
+            before.GetValueOrDefault(MenuCeilings.MenusPerVenue),
+            (await repository.GetCeilingsAsync(ordinary)).GetValueOrDefault(MenuCeilings.MenusPerVenue));
+    }
+
+    // Reset runs before every scale seed, so it happens many times per run and must not pile up
+    // rows or start disagreeing with itself.
+    [Fact]
+    public async Task ResetAutomationVenue_IsIdempotent()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+
+        await repository.ResetAutomationVenueAsync(venueId);
+        var first = (await repository.GetCeilingsAsync(venueId))[MenuCeilings.MenusPerVenue];
+        await repository.ResetAutomationVenueAsync(venueId);
+        await repository.ResetAutomationVenueAsync(venueId);
+
+        Assert.Equal(first, (await repository.GetCeilingsAsync(venueId))[MenuCeilings.MenusPerVenue]);
+        Assert.Equal(1, await CountAllowancesAsync(dataAccess, venueId));
+    }
+
+    // CapabilityAllowances.OrganizationId is NOT NULL and several helpers make a bare venue. A
+    // reset that threw on those would take four existing tests down with it - which is exactly what
+    // the first version of this did.
+    [Fact]
+    public async Task ResetAutomationVenue_OnAVenueWithNoOrganization_StillResets()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueWithoutOrganizationAsync(dataAccess);
+
+        await repository.ResetAutomationVenueAsync(venueId);
+
+        Assert.Equal(0, await CountAllowancesAsync(dataAccess, venueId));
+    }
+
+    private async Task<Guid> SeedVenueWithoutOrganizationAsync(SqlDataAccess dataAccess)
+    {
+        var venueId = Guid.NewGuid();
+        await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            INSERT dbo.Venues (Id, Name, Timezone, Type, PrimaryLanguage, CreatedUtc, UpdatedUtc)
+            VALUES (@VenueId, @Name, N'UTC', N'Restaurant', N'en', SYSUTCDATETIME(), SYSUTCDATETIME());
+            SELECT 1 AS Value;
+            """,
+            new { VenueId = venueId, Name = fixture.UniqueValue("orphan-venue") });
+        return venueId;
+    }
+
+    private static async Task<int> CountAllowancesAsync(SqlDataAccess dataAccess, Guid venueId) =>
+        (int)(await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            "SELECT COUNT(*) AS Value FROM dbo.CapabilityAllowances WHERE VenueId=@VenueId AND CapabilityId='content.menu.count';",
+            new { VenueId = venueId })).Single().Value;
+
     // ---- publish behaviour ------------------------------------------------------
 
     // Q80, enforced inside the transaction: a publish that can reach nothing and

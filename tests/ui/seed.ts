@@ -63,7 +63,55 @@ export async function seed(
     if (!response.ok()) {
       throw new Error(`Seed failed (${response.status()}): ${await response.text()}`);
     }
-    return (await response.json()) as SeedResult;
+    const result = (await response.json()) as SeedResult;
+    created.push({ menuId: result.menuId, role: options.role ?? "owner" });
+    return result;
+  } finally {
+    await context.dispose();
+  }
+}
+
+/*
+ * What this worker has made and not yet put away.
+ *
+ * A run makes 98 seed calls, every one creating a menu in the same shared venue, and nothing ever
+ * removed them. The venue filled and the rest of the suite failed itself with "That would be 51
+ * menus" - 138 of those in one run. The venue's ceiling is now raised, which stops that being
+ * fatal; this stops it accumulating in the first place.
+ *
+ * A plain module-level array is safe because Playwright runs one test at a time inside a worker,
+ * and each worker is its own process. A registry shared across parallel tests would be a race;
+ * this is neither shared nor parallel.
+ */
+const created: Array<{ menuId: string; role: VennuRole }> = [];
+
+/** Hands over everything seeded since the last call, and forgets it. */
+export function takeSeeded(): Array<{ menuId: string; role: VennuRole }> {
+  return created.splice(0, created.length);
+}
+
+/**
+ * Puts away the menus a finished test made.
+ *
+ * Never throws. This runs after the test has already reached its verdict, and a cleanup that turns
+ * a passing test red tells nobody anything about the product.
+ */
+export async function cleanupSeeded(): Promise<void> {
+  const mine = takeSeeded();
+  if (mine.length === 0) return;
+
+  const context = await playwrightRequest.newContext({ ignoreHTTPSErrors: true });
+  try {
+    // Grouped by role because put-away goes through the real back-office route, with the token of
+    // whoever owns that venue.
+    for (const role of new Set(mine.map(entry => entry.role))) {
+      await context.post(`${testApiBaseUrl}/api/test/cleanup`, {
+        headers: { "X-Vennusign-Test-Api-Key": testApiKey() },
+        data: { accessToken: tokens[role], menuIds: mine.filter(entry => entry.role === role).map(entry => entry.menuId) }
+      });
+    }
+  } catch {
+    // Deliberately silent. See above.
   } finally {
     await context.dispose();
   }

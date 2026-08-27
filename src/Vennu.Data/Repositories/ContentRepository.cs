@@ -3198,6 +3198,36 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 DELETE FROM dbo.MenuPages WHERE VenueId = @VenueId;
                 DELETE FROM dbo.Menus WHERE VenueId = @VenueId;
                 DELETE FROM dbo.Screens WHERE VenueId = @VenueId;
+
+                /*
+                 * Headroom for a whole UI run, on this venue only.
+                 *
+                 * A run makes 98 seed calls and every one creates a menu in the shared automation
+                 * venue. The default ceiling is 50, so the suite filled the venue and then failed
+                 * the rest of itself with "That would be 51 menus" - 138 of them in one run. It had
+                 * presumably always been true; nothing ever got past the SSL failure to find out.
+                 *
+                 * A venue-scoped allowance outranks the organization's (see CeilingsSql), so this
+                 * reaches nowhere else. It is written by the reset, which is already the automation
+                 * boundary and already requires the automation key.
+                 *
+                 * The number is deliberately far above 98. Landing near the edge would make a green
+                 * suite depend on nobody adding a dozen specs.
+                 */
+                -- A venue without an organization gets nothing: CapabilityAllowances.OrganizationId
+                -- is NOT NULL, and several test helpers make bare venues. With no source row the
+                -- MERGE matches nothing and inserts nothing, which is the right answer - such a
+                -- venue keeps the default ceiling and no reset fails because of a convenience.
+                MERGE dbo.CapabilityAllowances AS target
+                USING (SELECT v.OrganizationId, @VenueId AS VenueId FROM dbo.Venues v
+                       WHERE v.Id = @VenueId AND v.OrganizationId IS NOT NULL) AS source
+                    ON target.VenueId = source.VenueId AND target.CapabilityId = 'content.menu.count'
+                WHEN MATCHED THEN UPDATE SET LimitValue = 400, StartsUtc = DATEADD(day, -1, SYSUTCDATETIME()), EndsUtc = NULL
+                WHEN NOT MATCHED THEN
+                    INSERT (Id, OrganizationId, VenueId, CapabilityId, LimitValue, StartsUtc, EndsUtc)
+                    VALUES (NEWID(), source.OrganizationId, source.VenueId, 'content.menu.count',
+                            400, DATEADD(day, -1, SYSUTCDATETIME()), NULL);
+
                 COMMIT TRANSACTION;
             END TRY
             BEGIN CATCH
