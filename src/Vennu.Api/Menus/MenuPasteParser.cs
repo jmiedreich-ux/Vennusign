@@ -357,7 +357,7 @@ public sealed class MenuPasteParser
                     $"{candidate.ItemId}|{candidate.DisplayName}|{candidate.DisplayPrice}|{candidate.MatchRule}|{candidate.IsSafe}"));
                 var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
                     $"{number}\n{kind}\n{value}\n{candidateShape}\n{dependencyStamp}"))).ToLowerInvariant();
-                return new MenuImportReviewQuestion(sessionId, venueId, $"line-{number}-{kind}", fingerprint, kind, questions.Count, required, revision, [number], candidatesForQuestion,
+                return new MenuImportReviewQuestion(sessionId, venueId, $"line-{number}-{subIndex}-{kind}", fingerprint, kind, questions.Count, required, revision, [number], candidatesForQuestion,
                     answer is null ? null : answer with { Fingerprint = fingerprint });
             }
 
