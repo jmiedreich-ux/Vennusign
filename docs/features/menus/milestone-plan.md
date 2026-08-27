@@ -536,7 +536,13 @@ The edit is now addressed by **section**, which is a unique address for an item 
 
 ##### The three pieces
 
-**1 · Always set the placement price, including new items.** — **BLOCKED on #913, and this is the interesting part of the milestone.**
+**1 · Always set the placement price, including new items.** — **WITHDRAWN. The owner chose a different answer.**
+
+#913 put three options to the owner. This piece was option 2 — every placement priced at birth, the library demoted to a template — and it was **not** chosen. Option 3 was: *it asks.* Recorded as **A20** and shipped in PR #920.
+
+That makes this piece not merely unnecessary but wrong. Pre-filling every placement severs the link between the library and the menus already carrying a dish, which is exactly what the owner declined to do. The ten failing tests were the product telling us so.
+
+The reasoning below is kept because it is the argument the owner ruled against, and a decision is only legible next to the thing it rejected.
 
 It was written: three lines of SQL filling `ImportedPriceOverride` at every placement insert. It breaks **ten integration tests**, none of them about import, all of them about the product's existing contract — the builder read, the draft diff, both publish guards, discard, and the shelf's draft counts. They all say the same thing: *today, editing a dish's price in the library changes it on every menu the dish is on, and that shows up as a draft change waiting to be published.* Fill every placement and that stops, silently.
 
