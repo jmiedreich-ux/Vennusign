@@ -48,6 +48,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
   useEffect(()=>{if(session?.session.status!=="resolved"||session.session.completedMenuId)return;let active=true;loadShelf(configuration,accessToken).then(value=>{if(active)setMenus(value.filter(menu=>!menu.isPutAway));}).catch(()=>{if(active)setError("Menus could not be loaded. Your review is still saved.");});return()=>{active=false;};},[configuration,accessToken,session?.session.status,session?.session.completedMenuId]);
 
   const unresolved = useMemo(() => session?.questions.filter(question => !question.answer) ?? [], [session]);
+  const [suggestionDismissed, setSuggestionDismissed] = useState(false);
   const safeCount = unresolved.filter(question => question.candidates.length === 1 && question.candidates[0].isSafe).length;
   const nearMisses = unresolved.filter(question => question.kind === "identity" && question.candidates.length > 0 && question.candidates.every(candidate => !candidate.isSafe));
   const standaloneQuestions = unresolved.filter(question => !nearMisses.includes(question));
@@ -91,6 +92,37 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
 
   if (loading) return <main className="paste-import import-loading" aria-live="polite"><div className="import-spinner" /> Resuming your import…</main>;
   if (!session) return <main className="paste-import import-unavailable"><button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button><h1>We couldn’t resume this import</h1>{error && <p role="alert">{error}</p>}</main>;
+
+  /*
+   * The suggestion, applied in one act (M6.11).
+   *
+   * A18 permits nothing to be pre-answered unless a rule can name why, and the residue pass names
+   * a reason rather than a rule - so it arrives as a proposal and this is the operator saying yes.
+   * The lines it identified are answered `leave_out`, because the restaurant's name is not a dish
+   * and not a heading; the name and description travel to the destination step, where the operator
+   * confirms them again before anything is created.
+   */
+  const suggestedName = !suggestionDismissed && session?.session.suggestedMenuName && unresolved.length > 0
+    ? session.session.suggestedMenuName : null;
+
+  const applySuggestion = async () => {
+    if (!session) return;
+    setBusy(true);
+    setError(null);
+    try {
+      let current = session;
+      for (const question of session.questions.filter(candidate => !candidate.answer)) {
+        const line = session.lines.find(candidate => candidate.lineNumber === question.lineNumbers[0]);
+        if (!line?.suggestedVerdict) continue;
+        current = await answerMenuImport(configuration, accessToken, current, question, "leave_out");
+      }
+      setSession(current);
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "That suggestion could not be applied. Nothing changed.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   if (session.session.completedMenuId) return <main className="paste-import import-destination" data-testid="menu-import-complete" aria-labelledby="import-complete-title">
     <button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button>
@@ -137,6 +169,19 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     </div>
     {error && <p className="import-error review-error" role="alert">{error}</p>}
     {safeCount > 0 && <section className="safe-match-banner" data-testid="safe-match-banner"><Sparkles aria-hidden="true" /><div><strong>{safeCount} {safeCount === 1 ? "safe match" : "safe matches"}</strong><p>Same name after differences in capitals, punctuation, or spacing.</p></div><button disabled={busy} onClick={() => void mutate(current => acceptSafeMenuImportMatches(configuration, accessToken, current))}>Accept {safeCount} safe {safeCount === 1 ? "match" : "matches"}</button></section>}
+    {suggestedName && <section className="suggestion-banner" data-testid="import-suggestion">
+      <div>
+        <p className="import-kicker">Two lines we could not place</p>
+        <h2>Is this menu called “{suggestedName}”?</h2>
+        {session.session.suggestedMenuDescription && <p>We read “{session.session.suggestedMenuDescription}” as how you describe it.</p>}
+        <p className="suggestion-banner__note">Nothing is filled in until you say so. Both lines are left off the menu itself.</p>
+      </div>
+      <div className="suggestion-banner__actions">
+        <button type="button" className="import-secondary" disabled={busy} data-testid="suggestion-dismiss" onClick={() => setSuggestionDismissed(true)}>No, I'll answer them</button>
+        <button type="button" className="import-primary" disabled={busy} data-testid="suggestion-accept" onClick={() => void applySuggestion()}>Yes, use these</button>
+      </div>
+    </section>}
+
     <section className="question-stack" aria-label="Items needing review">
       {nearMisses.length > 0 && <article className="grouped-question" data-testid="near-match-group"><p className="import-kicker">One grouped question</p><h2>Check these possible matches</h2><p>{nearMisses.length} pasted {nearMisses.length === 1 ? "item has" : "items have"} a similar library name. Nothing is selected for you.</p><div className="grouped-question-rows">{nearMisses.map(question => <QuestionCard key={question.questionKey} session={session} question={question} busy={busy}
         onAnswer={(choice, itemId) => void mutate(current => answerMenuImport(configuration, accessToken, current, question, choice, itemId))}
@@ -170,11 +215,14 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
 function QuestionCard({ session, question, busy, onAnswer, onPromote }: { session: MenuImportSession; question: MenuImportQuestion; busy: boolean; onAnswer: (choice: string, itemId?: string) => void; onPromote: () => void }) {
   const line = session.lines.find(candidate => candidate.lineNumber === question.lineNumbers[0]);
 
+  const suggestion = line?.suggestedVerdict ? describeSuggestion(line.suggestedVerdict) : null;
+
   if (question.kind === "unreadable") return (
-    <div className="question-row" data-testid="question-row">
+    <div className="question-row" data-testid="question-row" data-suggested={line?.suggestedVerdict ?? undefined}>
       <div className="question-row__line">
         <span className="question-row__number">Line {line?.lineNumber}</span>
         <q>{line?.rawText.trim()}</q>
+        {suggestion ? <small className="question-row__suggestion" data-testid="row-suggestion" title={line?.suggestedReason ?? undefined}>{suggestion}</small> : null}
       </div>
       <div className="question-row__choices" role="group" aria-label={`What should line ${line?.lineNumber} become?`}>
         <button type="button" disabled={busy} onClick={onPromote} data-testid="answer-section">
@@ -217,3 +265,18 @@ function QuestionCard({ session, question, busy, onAnswer, onPromote }: { sessio
 
 function formatExpiry(value: string) { return new Intl.DateTimeFormat(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" }).format(new Date(value)); }
 function isNaturalHeading(value: string) { const letters = [...value.trim()].filter(character => /\p{L}/u.test(character)); return letters.length > 0 && letters.every(character => character === character.toUpperCase()); }
+
+/**
+ * What a verdict is called on the row it is about.
+ *
+ * Phrased as a reading rather than a ruling - "we read this as…" - because that is what it is: a
+ * proposal the operator is checking, not a decision already taken (A18). The model's own reason
+ * rides along as the row's title attribute for anyone who wants to know why.
+ */
+function describeSuggestion(verdict: string) {
+  if (verdict === "menu_name") return "We read this as the menu's name";
+  if (verdict === "menu_description") return "We read this as how you describe the menu";
+  if (verdict === "section_heading") return "We read this as a section heading";
+  if (verdict === "dish") return "We read this as a dish";
+  return "We'd leave this one out";
+}

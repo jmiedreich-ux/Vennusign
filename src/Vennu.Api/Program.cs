@@ -244,6 +244,20 @@ builder.Services.AddOptions<Vennu.Api.Menus.MenuBuilderOptions>()
 builder.Services.AddScoped<Vennu.Api.Menus.MenuBuilderConfigurationResolver>();
 builder.Services.AddScoped<Vennu.Api.Menus.MenuImportService>();
 builder.Services.AddSingleton<Vennu.Api.Menus.MenuPasteParser>();
+
+/*
+ * The residue pass (M6.11). Off unless a key is configured, so an environment without one behaves
+ * exactly as it did before this shipped - which is what makes it safe to leave registered
+ * everywhere and enabled only where it is wanted.
+ */
+builder.Services.Configure<Vennu.Api.Menus.MenuSuggestionOptions>(
+    builder.Configuration.GetSection(Vennu.Api.Menus.MenuSuggestionOptions.Section));
+builder.Services.AddHttpClient<Vennu.Api.Menus.MenuResidueSuggestionService>((provider, client) =>
+{
+    var settings = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Vennu.Api.Menus.MenuSuggestionOptions>>().Value;
+    client.BaseAddress = new Uri(settings.BaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds + 5);
+});
 builder.Services.AddOptions<Vennu.Api.TestAutomation.TestAutomationOptions>()
     .Bind(builder.Configuration.GetSection(Vennu.Api.TestAutomation.TestAutomationOptions.SectionName));
 builder.Services.AddSingleton<Vennu.Api.TestAutomation.TestAutomationAuthorization>();

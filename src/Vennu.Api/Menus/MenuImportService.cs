@@ -9,6 +9,7 @@ public sealed class MenuImportService(
     IContentRepository content,
     MenuBuilderConfigurationResolver configuration,
     MenuPasteParser parser,
+    MenuResidueSuggestionService suggestions,
     TimeProvider clock)
 {
     private const int DefaultLineLimit = 2000;
@@ -35,10 +36,19 @@ public sealed class MenuImportService(
         if (parsed.ItemCount > itemLimit)
             throw new MenuImportValidationException($"That paste contains {parsed.ItemCount:N0} items, over this venue's {itemLimit:N0}-item limit. Split it into two imports.");
         var retention = ceilings.GetValueOrDefault(MenuCeilings.ImportSessionRetentionMinutes, DefaultRetentionMinutes);
+        /*
+         * The rules have finished. Whatever they could not place is offered to the residue pass,
+         * which suggests and never answers (A18) - so the session below is the same session either
+         * way, carrying a suggestion the operator may apply or ignore. It fails quietly: a
+         * convenience on a handful of lines may not be able to break a paste that otherwise works.
+         */
+        var suggestion = await suggestions.SuggestAsync(parsed, cancellationToken).ConfigureAwait(false);
+        var lines = Suggested(parsed.Lines, suggestion);
         var session = new MenuImportSession(id, venueId, rawPaste, 1, Status(parsed.Questions), lineCount, parsed.ItemCount,
-            now.AddMinutes(retention), now, now, actor, []);
+            now.AddMinutes(retention), now, now, actor, [],
+            SuggestedMenuName: suggestion?.MenuName, SuggestedMenuDescription: suggestion?.MenuDescription);
         _ = await imports.DeleteExpiredAsync(now, 100, cancellationToken).ConfigureAwait(false);
-        return await imports.CreateAsync(new(session, parsed.Lines, parsed.Questions), cancellationToken).ConfigureAwait(false);
+        return await imports.CreateAsync(new(session, lines, parsed.Questions), cancellationToken).ConfigureAwait(false);
     }
 
     public Task<MenuImportAggregate?> GetAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken) =>
@@ -181,6 +191,16 @@ public sealed class MenuImportService(
             ceilings.GetValueOrDefault(MenuCeilings.ImportLines, DefaultLineLimit),
             ceilings.GetValueOrDefault(MenuCeilings.ItemsPerMenu, MenuCeilings.Defaults[MenuCeilings.ItemsPerMenu]),
             ceilings.GetValueOrDefault(MenuCeilings.ImportSessionRetentionMinutes, DefaultRetentionMinutes));
+
+    /// <summary>Puts each verdict on the line it is about, so the screen can show it where the question is.</summary>
+    private static IReadOnlyCollection<MenuImportSourceLine> Suggested(IReadOnlyCollection<MenuImportSourceLine> lines, MenuResidueSuggestion? suggestion)
+    {
+        if (suggestion is null || suggestion.Lines.Count == 0) return lines;
+        var byLine = suggestion.Lines.GroupBy(line => line.LineNumber).ToDictionary(group => group.Key, group => group.First());
+        return lines.Select(line => byLine.TryGetValue(line.LineNumber, out var verdict) && line.Disposition == "unresolved"
+            ? line with { SuggestedVerdict = verdict.Verdict, SuggestedReason = verdict.Reason }
+            : line).ToArray();
+    }
 
     private static string Status(IReadOnlyCollection<MenuImportReviewQuestion> questions) => questions.Any(q => q.Required) ? MenuImportStatuses.Reviewing : MenuImportStatuses.Resolved;
     private static int CountLines(string value) => value.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n').Split('\n').Length;

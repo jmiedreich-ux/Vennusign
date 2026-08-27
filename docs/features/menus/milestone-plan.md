@@ -462,6 +462,46 @@ Three faults, one screen.
 
 When the review had nothing left to ask, the screen said *"This saved review can now be used to create or replace a menu **when those destination steps open**."* They opened in M6.2 and M6.3. It now says what to do next.
 
+#### Milestone 6-A11 — what the rules cannot place, suggested rather than asked
+
+**Why this exists.** After M6.8 and M6.9 a real four-page menu leaves exactly two lines the deterministic parser cannot classify: the restaurant's own name and its tagline, straddling a page break. No rule reaches them, because a heading and a restaurant's name are the same shape. Opus 5 read both correctly on the first attempt, said why, and cost **$0.009**.
+
+**Tested before it was built into anything.** The call was made by hand against the real residue and its answer checked, rather than designed on the assumption it would work:
+
+```json
+{ "menuName": "Mana-Thai Cuisine",
+  "menuDescription": "All Natural Authentic Thai Cuisine",
+  "lines": [
+    { "lineNumber": 68, "verdict": "menu_name", "confidence": "high",
+      "why": "Restaurant's own name appearing as a header/branding break between sections, not a dish." },
+    { "lineNumber": 72, "verdict": "menu_description", "confidence": "high",
+      "why": "Strapline describing the cuisine style, directly following the restaurant name header." }]}
+```
+
+##### Why this is allowed, when the same model on the main path was not
+
+Earlier in the same feature an AI parser was argued **against**, and that argument stands: on 91 unresolved lines it would have papered over a broken parser, and A18 would have reduced it to 91 suggestions instead of 91 questions. What changed is not the opinion but the situation. Two lines out of 133, after the rules have gone as far as rules go, is the *residue* — and a fallback on the residue was named as legitimate at the time and then not built.
+
+**A18 is satisfied, not bypassed.** It forbids pre-answering unless a rule can name why, and a model names a reason rather than a rule. So the verdict is stored beside the question and applied only when the operator says so. The screen's job changes from *decide two things* to *check one thing*, and one click clears both.
+
+##### What it may and may not do
+
+- **It sees the residue and the two lines either side of it, and nothing more.** Those neighbours are the judgement — whether a line is a heading depends entirely on what follows it. The first test written for this asserted that no settled line is ever sent and **failed, correctly**; the service's comment was the thing that was wrong, and it was corrected rather than the test relaxed.
+- **A verdict about a line nobody asked about is discarded on the way back in.** The schema constrains the reply's shape; it cannot constrain its line numbers. The guarantee is enforced at the boundary, not requested in the prompt.
+- **More than twelve unplaced lines and it does not run at all.** Thirteen lines the rules could not read is a parser defect, and asking a model to paper over it is exactly how the 91-question import would have been declared solved.
+- **It fails quietly.** No key, no network, a refusal, a timeout, a malformed body: the import is the import it would have been without it. A convenience on two lines may not break a paste that otherwise works. Seven tests cover those paths.
+- **Off unless a key is configured**, so every environment without one behaves exactly as before.
+
+##### The model, and why
+
+**Opus 5, low effort, structured output.** The entire purpose of this call is the judgement a rule cannot make, so the tier that makes judgements well is the one to use; the volume — roughly 1,500 tokens in, 300 out — makes the cost argument moot at under a cent an import. Effort is low because it is a short classification, not because the answer matters less. Fable 5 was considered and rejected: thinking cannot be disabled on it, its turns run long by design, and an operator is watching this screen between pressing *Read menu* and the review opening.
+
+##### On the screen
+
+Each suggestion appears **on the row it is about** — *"We read this as the menu's name"*, with the model's own reason as the row's title — rather than in a banner detached from the thing it describes. Above them, one action applies both: *"Is this menu called Mana-Thai Cuisine?"* with **Yes, use these** and **No, I'll answer them** at equal weight, because a proposal you cannot easily decline is a decision somebody else made.
+
+Accepting answers those lines `leave_out` — a restaurant's name is not a dish and not a heading — and carries the name and description to the destination step, where the operator confirms them again before anything is created.
+
 **Shared display/accessibility scope:** the supported-width floor is 900px; below it, preserve the session and offer a resumable wider-window handoff rather than compressing the workflow. Keyboard-specific interaction design/testing is excluded; semantic controls, accessible names/relationships, visible focus, and screen-reader-compatible status/error announcements remain required.
 
 ### Milestone 8 — Delete a menu
