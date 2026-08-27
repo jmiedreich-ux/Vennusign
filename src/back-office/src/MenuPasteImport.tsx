@@ -70,6 +70,32 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
   const nearMisses = unresolved.filter(question => question.kind === "identity" && question.candidates.length > 0 && question.candidates.every(candidate => !candidate.isSafe));
   const standaloneQuestions = unresolved.filter(question => !nearMisses.includes(question));
 
+  /*
+   * A suggestion replaces its questions; it does not sit above them (owner, 2026-08-27).
+   *
+   * The banner asked "is this menu called Mana-Thai Cuisine?" and then the same two lines asked
+   * again underneath, one row each. Two askings of one question, and the rows offered answers -
+   * section, dish, leave out - that the banner had already made unnecessary. The owner's steer:
+   * the rows belong behind "No, I'll answer them", not beside it.
+   *
+   * Declining is a real answer too, not just a way to see the rows. It means we do not know what
+   * this menu is called - so the name is dropped rather than quietly kept, and naming happens in
+   * the builder where an unnamed menu already knows what to do with itself (M6.5).
+   */
+  const suggestedLines = new Set(session?.lines.filter(line => line.suggestedVerdict).map(line => line.lineNumber) ?? []);
+  const coveredBySuggestion = (question: MenuImportQuestion) =>
+    !suggestionDismissed && suggestedName !== null && question.lineNumbers.every(line => suggestedLines.has(line));
+
+  /*
+   * What the screen is actually asking, which is not the same as how many questions exist.
+   *
+   * The banner stands in for every question it covers, so it counts as one thing to check rather
+   * than as nothing. Counting the underlying questions instead said "2 items need you" above a
+   * page showing none of them.
+   */
+  const asking = unresolved.filter(question => !coveredBySuggestion(question)).length
+    + (unresolved.some(coveredBySuggestion) ? 1 : 0);
+
   useEffect(() => { latest.current = session ?? null; }, [session]);
 
   const mutate = useCallback(async (run: (current: MenuImportSession) => Promise<MenuImportSession>) => {
@@ -289,9 +315,9 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
   return <main className="paste-import import-review" data-testid="menu-import-review" aria-labelledby="review-title">
     <div className="import-review-header">
       <button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button>
-      <div><p className="import-kicker">Import a menu · Review</p><h1 id="review-title">{unresolved.length ? `${unresolved.length} ${unresolved.length === 1 ? "item needs" : "items need"} you` : "Your review is complete"}</h1>
+      <div><p className="import-kicker">Import a menu · Review</p><h1 id="review-title">{asking ? `${asking} ${asking === 1 ? "item needs" : "items need"} you` : "Your review is complete"}</h1>
       <p>{unresolved.length ? "Answer only the uncertain lines. Everything else stays available below for inspection." : "Every pasted line has a destination. No menu has been changed."}</p></div>
-      <div className="import-summary" aria-label="Import summary"><strong>{session.session.itemCount}</strong><span>items read</span><strong>{unresolved.length}</strong><span>answers left</span><small>Saved until {formatExpiry(session.session.expiresUtc)}</small></div>
+      <div className="import-summary" aria-label="Import summary"><strong>{session.session.itemCount}</strong><span>items read</span><strong>{asking}</strong><span>answers left</span><small>Saved until {formatExpiry(session.session.expiresUtc)}</small></div>
     </div>
     {error && <p className="import-error review-error" role="alert">{error}</p>}
     {safeCount > 0 && <section className="safe-match-banner" data-testid="safe-match-banner"><Sparkles aria-hidden="true" /><div><strong>{safeCount} {safeCount === 1 ? "safe match" : "safe matches"}</strong><p>Same name after differences in capitals, punctuation, or spacing.</p></div><button disabled={busy} onClick={() => void mutate(current => acceptSafeMenuImportMatches(configuration, accessToken, current))}>Accept {safeCount} safe {safeCount === 1 ? "match" : "matches"}</button></section>}
@@ -307,7 +333,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
             <VennusignLoader variant="inline" message="Taking these off the menu and keeping the name." />
           </div>
         : <div className="suggestion-banner__actions">
-            <button type="button" className="import-secondary" disabled={busy} data-testid="suggestion-dismiss" onClick={() => setSuggestionDismissed(true)}>No, I'll answer them</button>
+            <button type="button" className="import-secondary" disabled={busy} data-testid="suggestion-dismiss" onClick={() => { setSuggestionDismissed(true); if (session.session.suggestedMenuName && menuName === session.session.suggestedMenuName) setMenuName("New menu"); }}>No, I'll answer them</button>
             <button type="button" className="import-primary" disabled={busy} data-testid="suggestion-accept" onClick={() => void applySuggestion()}>Yes, use these</button>
           </div>}
     </section>}
@@ -316,7 +342,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
       {nearMisses.length > 0 && <article className="grouped-question" data-testid="near-match-group"><p className="import-kicker">One grouped question</p><h2>Check these possible matches</h2><p>{nearMisses.length} pasted {nearMisses.length === 1 ? "item has" : "items have"} a similar library name. Nothing is selected for you.</p><div className="grouped-question-rows">{nearMisses.map(question => <QuestionCard key={question.questionKey} session={session} question={question} busy={busy}
         onAnswer={(choice, itemId) => void mutate(current => answerMenuImport(configuration, accessToken, current, question, choice, itemId))}
         onPromote={() => void 0} />)}</div></article>}
-      {standaloneQuestions.map(question => <QuestionCard key={question.questionKey} session={session} question={question} busy={busy}
+      {standaloneQuestions.filter(question => !coveredBySuggestion(question)).map(question => <QuestionCard key={question.questionKey} session={session} question={question} busy={busy}
         onAnswer={(choice, itemId) => void mutate(current => answerMenuImport(configuration, accessToken, current, question, choice, itemId))}
         onPromote={() => void mutate(current => setMenuImportLineSection(configuration, accessToken, current, question.lineNumbers[0], true))} />)}
       {!unresolved.length && <div className="review-complete" data-testid="import-review-complete"><span><Check aria-hidden="true" /></span><div><h2>Nothing left to answer</h2><p>Choose where these items go next. Nothing reaches a screen until you publish.</p></div></div>}
@@ -324,7 +350,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     <section className="inventory-panel"><button aria-expanded={inventoryOpen} onClick={() => setInventoryOpen(value => !value)}>{inventoryOpen ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />} Review all {session.session.lineCount} pasted lines</button>
       {inventoryOpen && <ol>{session.lines.map(line => <li key={line.lineNumber}><span>{line.lineNumber}</span><code>{line.rawText || "(blank line)"}</code><em>{line.disposition}</em>{line.disposition === "section" && !isNaturalHeading(line.rawText) && <button disabled={busy} onClick={() => void mutate(current => setMenuImportLineSection(configuration, accessToken, current, line.lineNumber, false))}><RotateCcw aria-hidden="true" /> Undo section</button>}</li>)}</ol>}
     </section>
-    <p className="import-status" aria-live="polite">{busy ? "Saving your answer…" : `${unresolved.length} answers remaining.`}</p>
+    <p className="import-status" aria-live="polite">{busy ? "Saving your answer…" : `${asking} answers remaining.`}</p>
   </main>;
 }
 
