@@ -86,7 +86,15 @@ public sealed class MenuResidueSuggestionService(
             .Append(sections.Length == 0 ? "(none)" : string.Join(", ", sections)).Append(".\n\n")
             .Append("It could not classify these lines. Each is shown with the lines around it.\n");
 
-        var byNumber = parsed.Lines.ToDictionary(line => line.LineNumber, line => line);
+        /*
+         * Grouped, not keyed. A line number stopped being unique in M6.9, when one pasted line
+         * gained the ability to hold several items - "Sides: Jasmine Rice $2.00, Brown Rice $3.00"
+         * is five rows sharing line 128. Keying a dictionary on it threw, the catch below swallowed
+         * it as designed, and the suggestion silently never arrived on any menu with a line like
+         * that. Failing quietly is right for a network call and wrong for a defect in this file;
+         * the test that now covers it is the part that makes the difference.
+         */
+        var byNumber = parsed.Lines.GroupBy(line => line.LineNumber).ToDictionary(group => group.Key, group => group.First());
         foreach (var line in residue)
         {
             context.Append("\nLine ").Append(line.LineNumber).Append(":\n");
