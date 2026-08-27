@@ -191,7 +191,14 @@ $env:TestAutomation__Scopes__1 = 'venue.reset'
 $env:TestAutomation__Scopes__2 = 'history.write_at'
 $env:TestAutomation__AvailabilityVenueIds__0 = (& $guid '73000000-0000-0000-0000-000000000001')
 $env:TestAutomation__AvailabilityVenueIds__1 = (& $guid '73000000-0000-0000-0000-000000000002')
+$env:TestAutomation__Scopes__3 = 'venue.headroom'
+# Reset WIPES a venue, so it stays allowed only on the scale venue, which one test owns at a time.
+# Headroom destroys nothing and is needed on the SHARED venue - the one all 98 seeds fill, and the
+# only one that ever ran out. Giving headroom the reset scope would have handed every seed the
+# power to wipe a venue other tests were using.
 $env:TestAutomation__ResetVenueIds__0 = (& $guid '73000000-0000-0000-0000-000000000002')
+$env:TestAutomation__HeadroomVenueIds__0 = (& $guid '73000000-0000-0000-0000-000000000001')
+$env:TestAutomation__HeadroomVenueIds__1 = (& $guid '73000000-0000-0000-0000-000000000002')
 $env:TestAutomation__HistoryVenueIds__0 = (& $guid '73000000-0000-0000-0000-000000000001')
 $env:TestAutomation__HistoryVenueIds__1 = (& $guid '73000000-0000-0000-0000-000000000002')
 

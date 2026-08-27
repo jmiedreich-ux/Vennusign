@@ -62,7 +62,7 @@ public sealed class TestAutomationController(
     public async Task<IActionResult> GiveHeadroom(ResetVenueRequest request, CancellationToken cancellationToken)
     {
         var session = ResolveSession(request.AccessToken);
-        if (session is null || !authorization.Allows(Request, "venue.reset", session.VenueId)) return NotFound();
+        if (session is null || !authorization.Allows(Request, "venue.headroom", session.VenueId)) return NotFound();
         await content.GiveAutomationVenueHeadroomAsync(session.VenueId, cancellationToken).ConfigureAwait(false);
         return NoContent();
     }

@@ -15,11 +15,29 @@ public sealed class SeedService(ProductApiClient product)
     {
         lock (HeadroomGiven)
         {
-            if (!HeadroomGiven.Add(venueId)) return;
+            if (HeadroomGiven.Contains(venueId)) return;
         }
+
+        /*
+         * Recorded only on SUCCESS, and deliberately not swallowed.
+         *
+         * The first version marked the venue done BEFORE the call and ignored what came back.
+         * The call was refused - the venue was not on the allowlist - so one seed failed with a
+         * 404 and every later seed saw the venue already "done" and skipped straight to the
+         * ceiling. One 404 in the log, 143 confusing 400s after it, and two CI runs spent
+         * finding out.
+         *
+         * Failing loudly on the first seed is worth more than a suite that limps to the
+         * fiftieth.
+         */
 
         await product.SendAutomationAsync("/api/test-automation/venues/headroom", new { accessToken = token }, cancellationToken)
             .ConfigureAwait(false);
+
+        lock (HeadroomGiven)
+        {
+            HeadroomGiven.Add(venueId);
+        }
     }
 
     public async Task<SeedResponse> SeedAsync(SeedRequest request, CancellationToken cancellationToken)

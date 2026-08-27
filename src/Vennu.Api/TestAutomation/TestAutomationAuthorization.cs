@@ -14,6 +14,7 @@ public sealed class TestAutomationAuthorization(IOptions<TestAutomationOptions> 
         {
             "availability.backdate" => configured.AvailabilityVenueIds,
             "venue.reset" => configured.ResetVenueIds,
+            "venue.headroom" => configured.HeadroomVenueIds,
             "history.write_at" => configured.HistoryVenueIds,
             _ => []
         };
