@@ -2,8 +2,8 @@
   "codename": "Menus",
   "what": "The menu product: item library, draft/publish spine, the builder, the render engine, and the import paths that get a venue's existing menu into it without retyping",
   "stage": "development",
-  "position": "The paste import reads a real printed menu whole. M6.11 offers the two lines no rule can place to Opus 5 as a suggestion the operator applies - A18 satisfied, not bypassed. M6.6 and M8 await owner answers.",
-  "next": "M6.11 (#888) needs an ANTHROPIC key on dev and the owner workbook. Then Q213-Q215, which block M8 (#868) and M6.6 (#871).",
+  "position": "The paste import reads a real printed menu whole, and M6.11's suggestion for the two lines no rule can place is live on dev. M6.12 now moves price from the item to the placement, per A19.",
+  "next": "M6.12 (#910): section-key the builder's price write, then fill every placement, then backfill. #907 (identical library duplicates) blocks the owner's own testing. Q213-Q215 still block M8 (#868) and M6.6 (#871).",
   "label": "workstream:menus",
   "design": [
     {
@@ -187,10 +187,10 @@
       "label": "M6.5",
       "depth": 12,
       "title": "The import has a door — Menus home reaches the paste flow",
-      "status": "next",
+      "status": "done",
       "plan": "milestone-plan.md",
       "issue": 867,
-      "pr": null,
+      "pr": 874,
       "acceptance": {
         "kind": "workbook",
         "record": null
@@ -271,9 +271,23 @@
       "label": "M6.11",
       "depth": 18,
       "title": "What the rules cannot place, suggested rather than asked",
-      "status": "next",
+      "status": "done",
       "plan": "milestone-plan.md",
       "issue": 888,
+      "pr": 889,
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
+    },
+    {
+      "id": "6-A12",
+      "label": "M6.12",
+      "depth": 19,
+      "title": "A price belongs to the menu it is printed on",
+      "status": "next",
+      "plan": "milestone-plan.md",
+      "issue": 910,
       "pr": null,
       "acceptance": {
         "kind": "workbook",
