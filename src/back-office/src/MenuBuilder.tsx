@@ -1448,10 +1448,13 @@ export default function MenuBuilder({
      * edit and the keystroke somebody else may have changed the same item, and an
      * unconditional inverse would erase them without either of you being told.
      */
-    await run(() => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, now), {
+    // The section travels with the edit: price belongs to the placement (A19), and
+    // a menu carrying this dish twice cannot be told which one from the item alone.
+    const where = found.sectionId;
+    await run(() => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, now, undefined, where), {
       describe: `Change ${edit.field}`,
-      undo: () => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, was, now),
-      redo: () => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, now, was)
+      undo: () => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, was, now, where),
+      redo: () => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, now, was, where)
     });
   };
 
@@ -1509,10 +1512,11 @@ export default function MenuBuilder({
     }
 
     const was = { name: before.name ?? "", description: before.description, price: before.price, isListed: before.isListed };
-    await run(() => updateMenuItemValues(configuration, credential(), menuId, before.itemId, next), {
+    const where = selected?.sectionId;
+    await run(() => updateMenuItemValues(configuration, credential(), menuId, before.itemId, next, undefined, where), {
       describe: "Edit item",
-      undo: () => updateMenuItemValues(configuration, credential(), menuId, before.itemId, was, next),
-      redo: () => updateMenuItemValues(configuration, credential(), menuId, before.itemId, next, was)
+      undo: () => updateMenuItemValues(configuration, credential(), menuId, before.itemId, was, next, where),
+      redo: () => updateMenuItemValues(configuration, credential(), menuId, before.itemId, next, was, where)
     });
   };
 

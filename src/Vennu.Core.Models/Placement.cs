@@ -20,6 +20,16 @@ public sealed class Placement
 
     public int SortOrder { get; set; }
 
+    /// <summary>
+    /// What this dish costs on this menu (A19). Named for the import that first
+    /// needed it; it is now the price of the placement, and <c>Items.Price</c> is
+    /// the default a dish carries when it is placed somewhere new. Null means the
+    /// placement predates A19 and still reads through to that default.
+    ///
+    /// Stored exactly as it was typed (Q115/Q190) - no parsing, no currency.
+    /// </summary>
+    public string? ImportedPriceOverride { get; set; }
+
     public DateTime CreatedUtc { get; set; }
 
     public DateTime UpdatedUtc { get; set; }

@@ -969,8 +969,14 @@ public sealed class BackOfficeContentController(
     }
 
     /// <summary>
-    /// Edits an item in the open menu. Imported price overrides stay menu-scoped;
-    /// ordinary library prices remain shared. Screens still wait for publish.
+    /// Edits an item in the open menu. Name and description are shared; price
+    /// belongs to the placement it was edited from (A19). Screens still wait for
+    /// publish.
+    ///
+    /// <c>sectionId</c> is what makes the edit unambiguous - a dish may sit in two
+    /// sections of one menu at two prices. It is optional only so that an edit
+    /// belonging to no menu still works; a menu edit that omits it is refused
+    /// rather than applied to whichever placement came back first.
     /// </summary>
     [HttpPut("items/{itemId:guid}")]
     [RequireCapability("content.item.update")]
@@ -978,6 +984,7 @@ public sealed class BackOfficeContentController(
         Guid itemId,
         ItemValuesRequest request,
         [FromQuery] Guid? menuId,
+        [FromQuery] Guid? sectionId,
         CancellationToken cancellationToken)
     {
         if (request is null)
@@ -1010,8 +1017,19 @@ public sealed class BackOfficeContentController(
                 request.IsListed,
                 expected,
                 cancellationToken,
-                menuId)
+                menuId,
+                sectionId)
             .ConfigureAwait(false);
+
+        if (result.Outcome == "placement_ambiguous")
+        {
+            return Conflict(new
+            {
+                reason = "placement_ambiguous",
+                message = $"“{result.Item?.Name}” is on this menu more than once, and this edit did not say which one. "
+                    + "Nothing changed — open it from the section you meant."
+            });
+        }
 
         if (result.Outcome == "item_changed")
         {

@@ -25,14 +25,14 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         """;
 
     private const string PlacementsSql = """
-        SELECT Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc
+        SELECT Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc, ImportedPriceOverride
         FROM dbo.Placements
         WHERE VenueId = @VenueId AND MenuId = @MenuId
         ORDER BY MenuSectionId, SortOrder, Id;
         """;
 
     private const string PlacementsForItemSql = """
-        SELECT Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc
+        SELECT Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc, ImportedPriceOverride
         FROM dbo.Placements
         WHERE VenueId = @VenueId AND ItemId = @ItemId
         ORDER BY MenuId, SortOrder, Id;
@@ -838,23 +838,53 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
     /// NULL and empty are the same absence here. The API normalises an empty
     /// description or price to NULL on the way in, so a caller echoing back what it
     /// was handed must not be refused over which of the two it sent.
+    ///
+    /// The edit is addressed to a placement, not to a menu (A19). Keying it by menu
+    /// was wrong twice over: a dish sitting in two sections of one menu matched
+    /// twice, so the guard compared the caller's expectation against whichever row
+    /// the engine happened to return, and the write then set both sections to the
+    /// same price. That is exactly the menu A19 was raised to support - the same
+    /// dish in two sections, priced per protein.
+    ///
+    /// A menu edit with no section named is refused rather than guessed when more
+    /// than one placement answers to it. This should never reach the database - the
+    /// builder names the section - and if it does, an honest refusal is worth more
+    /// than a coin toss over which price the operator meant.
     /// </summary>
     private const string UpdateItemValuesGuardedSql = """
         SET XACT_ABORT ON;
         BEGIN TRANSACTION;
 
-        DECLARE @Name NVARCHAR(200), @Description NVARCHAR(1000), @Price NVARCHAR(12), @IsListed BIT, @HasOverride BIT=0;
-        SELECT @Name=i.Name,@Description=i.Description,@Price=COALESCE(p.ImportedPriceOverride,i.Price),
-               @IsListed=i.IsListed,
-               @HasOverride=CASE WHEN p.ImportedPriceOverride IS NULL THEN 0 ELSE 1 END
+        DECLARE @Name NVARCHAR(200), @Description NVARCHAR(1000), @Price NVARCHAR(12), @IsListed BIT,
+                @PlacementId UNIQUEIDENTIFIER = NULL, @Matches INT = 0;
+
+        SELECT @Name=i.Name,@Description=i.Description,@Price=i.Price,@IsListed=i.IsListed
         FROM dbo.Items i WITH (UPDLOCK,HOLDLOCK)
-        LEFT JOIN dbo.Placements p WITH (UPDLOCK,HOLDLOCK) ON p.ItemId=i.Id AND p.VenueId=i.VenueId AND p.MenuId=@MenuId
         WHERE i.Id=@ItemId AND i.VenueId=@VenueId;
 
-        IF @@ROWCOUNT = 0
+        IF @@ROWCOUNT > 0 AND @MenuId IS NOT NULL
+        BEGIN
+            SELECT @Matches=COUNT(*)
+            FROM dbo.Placements WITH (UPDLOCK,HOLDLOCK)
+            WHERE ItemId=@ItemId AND VenueId=@VenueId AND MenuId=@MenuId
+              AND (@SectionId IS NULL OR MenuSectionId=@SectionId);
+
+            SELECT TOP 1 @PlacementId=Id, @Price=COALESCE(ImportedPriceOverride,@Price)
+            FROM dbo.Placements WITH (UPDLOCK,HOLDLOCK)
+            WHERE ItemId=@ItemId AND VenueId=@VenueId AND MenuId=@MenuId
+              AND (@SectionId IS NULL OR MenuSectionId=@SectionId)
+            ORDER BY MenuSectionId;
+        END
+
+        IF @Name IS NULL
         BEGIN
             ROLLBACK TRANSACTION;
             SELECT N'not_found' AS Outcome, NULL AS Name, NULL AS Description, NULL AS Price, CAST(NULL AS BIT) AS IsListed;
+        END
+        ELSE IF @Matches > 1
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT N'placement_ambiguous' AS Outcome, @Name AS Name, @Description AS Description, @Price AS Price, @IsListed AS IsListed;
         END
         ELSE IF @Guarded = 1
            AND (@Name COLLATE Latin1_General_100_BIN2 <> @ExpectedName COLLATE Latin1_General_100_BIN2
@@ -867,11 +897,16 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         END
         ELSE
         BEGIN
+            -- Name, description and listing are facts about the dish and stay on the
+            -- item. Price is a fact about the menu it is printed on (A19), so an edit
+            -- made from a menu writes that placement and leaves the library default
+            -- where it was. This overturns Q112, which was reasoned from the since
+            -- withdrawn Q5. An edit made outside any menu still writes the library.
             UPDATE dbo.Items SET Name=@NewName,Description=@NewDescription,
-                Price=CASE WHEN @HasOverride=1 THEN Price ELSE @NewPrice END,IsListed=@NewIsListed,UpdatedUtc=@Now
+                Price=CASE WHEN @PlacementId IS NULL THEN @NewPrice ELSE Price END,IsListed=@NewIsListed,UpdatedUtc=@Now
             WHERE Id=@ItemId AND VenueId=@VenueId;
-            IF @HasOverride=1 UPDATE dbo.Placements SET ImportedPriceOverride=@NewPrice,UpdatedUtc=@Now
-                WHERE ItemId=@ItemId AND VenueId=@VenueId AND MenuId=@MenuId;
+            IF @PlacementId IS NOT NULL UPDATE dbo.Placements SET ImportedPriceOverride=@NewPrice,UpdatedUtc=@Now
+                WHERE Id=@PlacementId;
 
             COMMIT TRANSACTION;
             SELECT N'updated' AS Outcome, @NewName AS Name, @NewDescription AS Description, @NewPrice AS Price, @NewIsListed AS IsListed;
@@ -2323,7 +2358,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         DateTime now,
         CancellationToken cancellationToken = default,
         Guid? menuId = null,
-        bool isListed = true)
+        bool isListed = true,
+        Guid? sectionId = null)
     {
         var row = (await dataAccess.ExecuteSqlQueryAsync<ItemUpdateRow, object>(
             UpdateItemValuesGuardedSql,
@@ -2341,6 +2377,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 ExpectedPrice = expected?.Price,
                 ExpectedIsListed = expected?.IsListed ?? true,
                 MenuId = menuId,
+                SectionId = sectionId,
                 Now = now
             },
             cancellationToken).ConfigureAwait(false)).Single();

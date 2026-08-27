@@ -526,7 +526,13 @@ What is missing is that the column is only *sometimes* filled, and one writer ad
 LEFT JOIN dbo.Placements p ON p.ItemId=i.Id AND p.VenueId=i.VenueId AND p.MenuId=@MenuId
 ```
 
-A dish placed in two sections of the same menu matches twice. `@Price` then takes whichever row the engine happened to return, the guard compares the operator's expectation against a price that may belong to the other section, and the `UPDATE` — which is also keyed by menu — writes **both** placements to the same value. The exact case A19 was raised to support is the case that silently corrupts.
+**Corrected while building.** The first version of this plan said "a dish in two sections of one menu", and that is not reachable — `UQ_Placements_MenuItem` would have forbidden it. Migration **062** replaced that constraint with `UQ_Placements_PageItem (PageId, ItemId)`: once per **page**. So a dish may sit on two *pages* of one menu, and a four-page printed menu that repeats a dish is exactly that shape.
+
+With two placements on one menu, the join matches both. `@Price` takes whichever row the engine returned, the guard compares the operator's expectation against a price that may belong to the other page, and the `UPDATE` — also keyed by menu — writes **both** placements to the same value. A price change on the lunch page silently rewrites dinner.
+
+Demonstrated before it was fixed: `GuardedItemEdit_PricesOnePlacementWithoutTouchingTheOtherPage` fails against the old write with `Assert.Null() Failure: Value is not null` — the lunch placement holding a price only dinner was given.
+
+The edit is now addressed by **section**, which is a unique address for an item because a section belongs to exactly one page.
 
 ##### The three pieces
 

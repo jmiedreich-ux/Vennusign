@@ -807,9 +807,14 @@ public sealed class ContentService(
     }
 
     /// <summary>
-    /// Edits an item's values. Name and description remain shared. A placement
-    /// carrying an import price override changes that menu's price only (decision
-    /// 43); otherwise the library price still reaches every placement (Q5).
+    /// Edits an item's values. Name, description and listing are facts about the
+    /// dish and stay shared. Price is a fact about the menu it is printed on
+    /// (A19), so an edit made from a menu writes that placement and leaves the
+    /// library default alone - which overturns Q112, reasoned as it was from the
+    /// since withdrawn Q5. An edit belonging to no menu still writes the library.
+    ///
+    /// The section is part of the address, not a nicety: one dish may sit in two
+    /// sections of one menu at two prices.
     /// </summary>
     public async Task<ItemEditResult> UpdateItemValuesAsync(
         Guid venueId,
@@ -820,7 +825,8 @@ public sealed class ContentService(
         bool isListed = true,
         ItemValueExpectation? expected = null,
         CancellationToken cancellationToken = default,
-        Guid? menuId = null)
+        Guid? menuId = null,
+        Guid? sectionId = null)
     {
         var item = await library.GetItemAsync(venueId, itemId, cancellationToken).ConfigureAwait(false);
         if (item is null)
@@ -861,16 +867,19 @@ public sealed class ContentService(
                 item.UpdatedUtc,
                 cancellationToken,
                 menuId,
-                item.IsListed)
+                item.IsListed,
+                sectionId)
             .ConfigureAwait(false);
 
         if (outcome.Outcome != "updated")
         {
             // The values now in place travel with the refusal, so the surface can
-            // say what it found rather than only that it declined.
+            // say what it found rather than only that it declined. That holds for
+            // an ambiguous placement too: without the item, the surface can only
+            // say "not found", which is not what happened.
             return new ItemEditResult(
                 outcome.Outcome,
-                outcome.Outcome == "item_changed"
+                outcome.Outcome is "item_changed" or "placement_ambiguous"
                     ? new Item
                     {
                         Id = itemId,

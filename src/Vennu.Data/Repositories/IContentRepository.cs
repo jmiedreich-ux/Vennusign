@@ -160,7 +160,8 @@ public interface IContentRepository
         DateTime now,
         CancellationToken cancellationToken = default,
         Guid? menuId = null,
-        bool isListed = true);
+        bool isListed = true,
+        Guid? sectionId = null);
 
     /// <inheritdoc cref="ReorderSectionsGuardedAsync"/>
     Task<ReorderOutcome> ReorderPlacementsGuardedAsync(
