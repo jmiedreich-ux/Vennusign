@@ -12,6 +12,14 @@ builder.Services.AddHttpClient<ProductApiClient>((services, client) =>
 {
     var options = services.GetRequiredService<Microsoft.Extensions.Options.IOptions<TestApiOptions>>().Value;
     client.BaseAddress = new Uri(options.ProductApiBaseUrl);
+})
+.ConfigurePrimaryHttpMessageHandler(services =>
+{
+    var options = services.GetRequiredService<Microsoft.Extensions.Options.IOptions<TestApiOptions>>().Value;
+    // Not "accept anything": the callback refuses everything that is not loopback even when the
+    // setting is on, so a base URL pointed at a real host by mistake still validates its chain the
+    // ordinary way. The handler lives in LoopbackCertificateTrust so its own tests use this one.
+    return LoopbackCertificateTrust.CreateHandler(options.AllowUntrustedLoopbackCertificate);
 });
 builder.Services.AddScoped<SeedService>();
 
