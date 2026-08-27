@@ -156,7 +156,9 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
         LinesJson = JsonSerializer.Serialize(aggregate.Lines),
         QuestionsJson = JsonSerializer.Serialize(aggregate.Questions.Select(q => new QuestionPayload(q.QuestionKey, q.Fingerprint, q.Kind, q.DisplayOrder, q.Required, q.ParseRevision))),
         QuestionLinesJson = JsonSerializer.Serialize(aggregate.Questions.SelectMany(q => q.LineNumbers.Select(line => new QuestionLinePayload(q.QuestionKey, line)))),
-        CandidatesJson = JsonSerializer.Serialize(aggregate.Questions.SelectMany(q => q.Candidates.Select(c => new CandidatePayload(q.QuestionKey, c.ItemId, c.DisplayName, c.DisplayPrice, c.MatchRule, c.IsSafe))))
+        CandidatesJson = JsonSerializer.Serialize(aggregate.Questions.SelectMany(q => q.Candidates.Select(c => new CandidatePayload(q.QuestionKey, c.ItemId, c.DisplayName, c.DisplayPrice, c.MatchRule, c.IsSafe)))),
+        AnswersJson = JsonSerializer.Serialize(aggregate.Questions.Where(q => q.Answer is not null)
+            .Select(q => new AnswerPayload(q.QuestionKey, q.Fingerprint, q.Answer!.Choice, q.Answer.SelectedItemId, q.ParseRevision)))
     };
 
     private static MenuImportAggregate Hydrate(AggregateRow row)
@@ -204,6 +206,8 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
     private sealed record QuestionPayload(string QuestionKey, string Fingerprint, string Kind, int DisplayOrder, bool Required, long ParseRevision);
     private sealed record QuestionLinePayload(string QuestionKey, int LineNumber);
+
+    private sealed record AnswerPayload(string QuestionKey, string Fingerprint, string Choice, Guid? SelectedItemId, long ParseRevision);
     private sealed record CandidatePayload(string QuestionKey, Guid ItemId, string DisplayName, string? DisplayPrice, string MatchRule, bool IsSafe);
     private sealed record QuestionRead(string QuestionKey, string Fingerprint, string Kind, int DisplayOrder, bool Required, long ParseRevision,
         IReadOnlyCollection<int>? LineNumbers, IReadOnlyCollection<MenuImportCandidate>? Candidates, MenuImportAnswer? Answer);
@@ -263,6 +267,13 @@ SELECT @SessionId, @VenueId, QuestionKey, LineNumber, 0 FROM OPENJSON(@QuestionL
 INSERT dbo.MenuImportCandidates (SessionId, VenueId, QuestionKey, ItemId, DisplayName, DisplayPrice, MatchRule, IsSafe)
 SELECT @SessionId, @VenueId, QuestionKey, ItemId, DisplayName, DisplayPrice, MatchRule, IsSafe
 FROM OPENJSON(@CandidatesJson) WITH (QuestionKey nvarchar(80), ItemId uniqueidentifier, DisplayName nvarchar(200), DisplayPrice nvarchar(12), MatchRule nvarchar(32), IsSafe bit);
+-- Answers the parser was able to give itself. A18 forbids pre-answering unless a rule can name
+-- why; these carry `exact_normalized` as their match rule and are only ever written where the name
+-- matched after case, spacing and punctuation AND the price is the same. The question is still
+-- recorded, so the operator can find it under "Review all N pasted lines" and change it.
+INSERT dbo.MenuImportAnswers (SessionId, VenueId, QuestionKey, Fingerprint, Choice, SelectedItemId, ParseRevision, AnsweredUtc, AnsweredBy)
+SELECT @SessionId, @VenueId, QuestionKey, Fingerprint, Choice, SelectedItemId, ParseRevision, @UpdatedUtc, NULL
+FROM OPENJSON(@AnswersJson) WITH (QuestionKey nvarchar(80), Fingerprint char(64), Choice nvarchar(24), SelectedItemId uniqueidentifier, ParseRevision bigint);
 """;
 
     private static readonly string CreateSql = """

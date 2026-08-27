@@ -338,4 +338,66 @@ public sealed class MenuPasteParserTests
 
         Assert.DoesNotContain(result.Lines, candidate => candidate.Disposition == "section" && candidate.ParsedName == line);
     }
+
+    private static Item Library(string name, string? price) =>
+        new() { Id = Guid.NewGuid(), VenueId = Guid.NewGuid(), Name = name, Price = price, IsActive = true };
+
+    [Fact]
+    public void Parse_ADishYouAlreadyHaveAtThePriceYouChargeIsNotAQuestion()
+    {
+        /*
+         * Re-importing a menu asked about every line on it - forty-four "safe matches" and
+         * forty-eight answers to import a menu the venue had imported an hour earlier. Accepting
+         * them in bulk was one click, but it was a wall in front of an operation with nothing to
+         * decide in it. The owner's report: "I am not seeing much of a change, because I have to
+         * import the same menu again."
+         */
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), "STARTERS\nGarlic Bread 6.50", 1,
+            [Library("Garlic Bread", "6.50")]);
+
+        var question = Assert.Single(result.Questions);
+        Assert.NotNull(question.Answer);
+        Assert.Equal(MenuImportChoices.SameItem, question.Answer!.Choice);
+        Assert.False(question.Required);
+        Assert.Equal(question.Fingerprint, question.Answer.Fingerprint);
+    }
+
+    [Fact]
+    public void Parse_ADifferentPriceIsTheOneThingWorthStoppingFor()
+    {
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), "STARTERS\nGarlic Bread 7.50", 1,
+            [Library("Garlic Bread", "6.50")]);
+
+        var question = Assert.Single(result.Questions);
+        Assert.Null(question.Answer);
+        Assert.True(question.Required);
+    }
+
+    [Theory]
+    [InlineData("7", "7.00")]
+    [InlineData("$7.00", "7")]
+    [InlineData(" 7.00 ", "$7.00")]
+    [InlineData("MP", "MP")]
+    public void Parse_OnePriceWrittenTwoWaysIsOnePrice(string library, string pasted)
+    {
+        // Prices are stored exactly as typed (Q115/Q190), so the same amount arrives in several
+        // shapes. None of them is worth stopping an operator for.
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), $"STARTERS\nGarlic Bread {pasted}", 1,
+            [Library("Garlic Bread", library)]);
+
+        Assert.NotNull(Assert.Single(result.Questions).Answer);
+    }
+
+    [Fact]
+    public void Parse_TwoLibraryItemsOfTheSameNameStillAsk()
+    {
+        // A18: where two are equally close a candidate must be chosen. Nothing here can name a rule
+        // that picks one, so nothing is pre-answered.
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(), "STARTERS\nGarlic Bread 6.50", 1,
+            [Library("Garlic Bread", "6.50"), Library("Garlic  bread", "6.50")]);
+
+        var question = Assert.Single(result.Questions);
+        Assert.Null(question.Answer);
+        Assert.True(question.Required);
+    }
 }

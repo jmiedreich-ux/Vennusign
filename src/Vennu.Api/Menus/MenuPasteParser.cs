@@ -304,9 +304,29 @@ public sealed class MenuPasteParser
                 lookup.TryGetValue(NormalizeIdentity(name), out var candidates);
                 if (candidates is { Length: 1 })
                 {
+                    /*
+                     * A dish you already have, at the price you already charge, is not a question.
+                     *
+                     * Re-importing a menu used to ask about every line on it - forty-four "safe
+                     * matches" and forty-eight answers to import a menu the venue had imported an
+                     * hour earlier. Accepting them in bulk was one click, but it was still a wall
+                     * in front of an operation with nothing to decide in it.
+                     *
+                     * A18 forbids pre-answering unless a rule can name why. This one can: the name
+                     * matched after case, spacing and punctuation, AND the price is the same, and
+                     * the answer carries `exact_normalized` as its match rule. The question is
+                     * still recorded and still listed under "Review all N pasted lines", so it can
+                     * be found and changed - it simply arrives answered.
+                     *
+                     * A price that differs is the one thing worth stopping for, and still does.
+                     */
                     var candidate = candidates[0];
-                    questions.Add(Question("identity", name,
-                    [new MenuImportCandidate(candidate.Id, candidate.Name, candidate.Price, "exact_normalized", true)]));
+                    var settled = SamePrice(candidate.Price, price);
+                    var question = Question("identity", name,
+                        [new MenuImportCandidate(candidate.Id, candidate.Name, candidate.Price, "exact_normalized", true)],
+                        settled ? new MenuImportAnswer(string.Empty, MenuImportChoices.SameItem, candidate.Id, revision, default, null) : null,
+                        required: !settled);
+                    questions.Add(question);
                 }
                 else if (candidates is { Length: > 1 })
                 {
@@ -330,13 +350,15 @@ public sealed class MenuPasteParser
                 lines.Add(Line("item", name, price));
             }
 
-            MenuImportReviewQuestion Question(string kind, string value, IReadOnlyCollection<MenuImportCandidate> candidatesForQuestion)
+            MenuImportReviewQuestion Question(string kind, string value, IReadOnlyCollection<MenuImportCandidate> candidatesForQuestion,
+                MenuImportAnswer? answer = null, bool required = true)
             {
                 var candidateShape = string.Join('\n', candidatesForQuestion.Select(candidate =>
                     $"{candidate.ItemId}|{candidate.DisplayName}|{candidate.DisplayPrice}|{candidate.MatchRule}|{candidate.IsSafe}"));
                 var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
                     $"{number}\n{kind}\n{value}\n{candidateShape}\n{dependencyStamp}"))).ToLowerInvariant();
-                return new MenuImportReviewQuestion(sessionId, venueId, $"line-{number}-{kind}", fingerprint, kind, questions.Count, true, revision, [number], candidatesForQuestion, null);
+                return new MenuImportReviewQuestion(sessionId, venueId, $"line-{number}-{kind}", fingerprint, kind, questions.Count, required, revision, [number], candidatesForQuestion,
+                    answer is null ? null : answer with { Fingerprint = fingerprint });
             }
 
             MenuImportSourceLine Line(string disposition, string? parsedName = null, string? parsedPrice = null, string? reason = null, string? parsedDescription = null) =>
@@ -479,6 +501,30 @@ public sealed class MenuPasteParser
     {
         var trimmed = value.Trim();
         return IsCapsHeading(trimmed) || IsTitleCase(trimmed);
+    }
+
+    /// <summary>
+    /// Two prices a person would call the same.
+    ///
+    /// Prices are stored exactly as typed (Q115/Q190), so "7", "7.00" and "$7.00" are one price
+    /// written three ways and none of them is worth stopping an operator for. A currency symbol,
+    /// surrounding space and trailing zeros are the only differences forgiven; anything else - MP
+    /// against a number, 7.00 against 7.50 - is a real difference and raises its question.
+    /// </summary>
+    private static bool SamePrice(string? library, string? pasted)
+    {
+        var left = Money(library);
+        var right = Money(pasted);
+        return left is not null && right is not null && left == right;
+    }
+
+    private static string? Money(string? value)
+    {
+        var trimmed = value?.Trim().TrimStart('$', '\u00a3', '\u20ac').Trim();
+        if (string.IsNullOrEmpty(trimmed)) return null;
+        return decimal.TryParse(trimmed, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var amount)
+            ? amount.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)
+            : trimmed.ToUpperInvariant();
     }
 
     private static bool IsCapsHeading(string value) =>
