@@ -111,7 +111,8 @@ internal sealed class FakeContentRepository : IContentRepository
         CancellationToken cancellationToken = default,
         Guid? menuId = null,
         bool isListed = true,
-        Guid? sectionId = null)
+        Guid? sectionId = null,
+        bool priceEverywhere = false)
     {
         var item = Items.SingleOrDefault(candidate => candidate.VenueId == venueId && candidate.Id == itemId);
         if (item is null)
@@ -157,12 +158,22 @@ internal sealed class FakeContentRepository : IContentRepository
         item.UpdatedUtc = now;
 
         // Price follows the placement when the edit was made from one (A19); the
-        // library default is only written when the edit belongs to no menu.
-        if (placement is null)
+        // library default is only written when the edit belongs to no menu, or when
+        // the operator answered "on all of them" (A20).
+        if (placement is null || priceEverywhere)
         {
             item.Price = price;
         }
-        else
+
+        if (priceEverywhere)
+        {
+            foreach (var every in Placements.Where(candidate => candidate.VenueId == venueId && candidate.ItemId == itemId))
+            {
+                every.ImportedPriceOverride = price;
+                every.UpdatedUtc = now;
+            }
+        }
+        else if (placement is not null)
         {
             placement.ImportedPriceOverride = price;
             placement.UpdatedUtc = now;

@@ -39,7 +39,8 @@ import {
   type MenuAvailability,
   type MenuHistoryEntry,
   type MenuPageAssignment,
-  type MenuScreenShowing
+  type MenuScreenShowing,
+  type PriceScope
 } from "./api";
 import { unnamedMenuName } from "./menusShelf.mjs";
 import type { BackOfficeConfiguration } from "./config";
@@ -68,6 +69,7 @@ import {
   reorder,
   resumeState,
   sectionOf,
+  priceScopeQuestion,
   sectionsOf,
   sharedItemLine,
   unavailableNote,
@@ -1451,10 +1453,18 @@ export default function MenuBuilder({
     // The section travels with the edit: price belongs to the placement (A19), and
     // a menu carrying this dish twice cannot be told which one from the item alone.
     const where = found.sectionId;
-    await run(() => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, now, undefined, where), {
+
+    // A20: only a PRICE can mean two things. A name or a description is a fact about the dish and
+    // has always travelled to every menu, which is not what changed.
+    const scope = edit.field === "price" ? await askPriceScope(edit.itemId, was.name) : "placement";
+    if (scope === null) return;
+
+    // The inverses carry the same scope. An undo of "on all 3" that put the price back on one menu
+    // would leave the other two holding a value nobody chose.
+    await run(() => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, now, undefined, where, scope), {
       describe: `Change ${edit.field}`,
-      undo: () => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, was, now, where),
-      redo: () => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, now, was, where)
+      undo: () => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, was, now, where, scope),
+      redo: () => updateMenuItemValues(configuration, credential(), menuId, edit.itemId, now, was, where, scope)
     });
   };
 
@@ -1462,6 +1472,39 @@ export default function MenuBuilder({
 
   const [draftItem, setDraftItem] = useState<{ name: string; description: string; price: string; isListed: boolean } | null>(null);
   const [itemBoards, setItemBoards] = useState<LibraryItem["boards"]>([]);
+
+  /*
+   * A20 — a price change that could mean two things asks which.
+   *
+   * The boards are read at the moment of the edit rather than taken from `itemBoards`, which
+   * belongs to whatever is selected in the inspector and is not necessarily the row being typed
+   * into. A question asked about the wrong dish is worse than no question.
+   *
+   * The dialog resolves a promise so the caller reads like the decision it is: await the answer,
+   * then save. `null` is the operator backing out, and nothing is written at all.
+   */
+  const [priceAsk, setPriceAsk] = useState<
+    { question: NonNullable<ReturnType<typeof priceScopeQuestion>>; answer: (scope: PriceScope | null) => void } | null
+  >(null);
+
+  const askPriceScope = async (itemId: string, itemName: string): Promise<PriceScope | null> => {
+    let boards: LibraryItem["boards"] = [];
+    try {
+      const hits = await searchLibraryItems(configuration, credential(), itemName, 20);
+      boards = hits.find(hit => hit.itemId === itemId)?.boards ?? [];
+    } catch {
+      // The lookup failed, so we cannot know whether this is ambiguous. Save the narrow way: it
+      // changes one menu, which is recoverable, rather than every menu, which is not.
+      return "placement";
+    }
+
+    const question = priceScopeQuestion(itemName, boards, menuId);
+    if (!question) return "placement";
+
+    return new Promise<PriceScope | null>(resolve => {
+      setPriceAsk({ question, answer: scope => { setPriceAsk(null); resolve(scope); } });
+    });
+  };
 
   useEffect(() => {
     if (!selected) {
@@ -1513,10 +1556,22 @@ export default function MenuBuilder({
 
     const was = { name: before.name ?? "", description: before.description, price: before.price, isListed: before.isListed };
     const where = selected?.sectionId;
-    await run(() => updateMenuItemValues(configuration, credential(), menuId, before.itemId, next, undefined, where), {
+    const scope = next.price !== was.price ? await askPriceScope(before.itemId, was.name) : "placement";
+    if (scope === null) {
+      /*
+       * Backing out has to put the field back too, not just skip the write. Leaving the typed
+       * price on screen means the panel shows a price the menu does not have — and the next
+       * edit of ANY field sees a changed price and asks all over again. Found by driving it:
+       * cancel, then rename, and the price question came back about a price nobody kept.
+       */
+      setDraftItem(current => current ? { ...current, price: before.price ?? "" } : current);
+      return;
+    }
+
+    await run(() => updateMenuItemValues(configuration, credential(), menuId, before.itemId, next, undefined, where, scope), {
       describe: "Edit item",
-      undo: () => updateMenuItemValues(configuration, credential(), menuId, before.itemId, was, next, where),
-      redo: () => updateMenuItemValues(configuration, credential(), menuId, before.itemId, next, was, where)
+      undo: () => updateMenuItemValues(configuration, credential(), menuId, before.itemId, was, next, where, scope),
+      redo: () => updateMenuItemValues(configuration, credential(), menuId, before.itemId, next, was, where, scope)
     });
   };
 
@@ -2823,8 +2878,9 @@ export default function MenuBuilder({
               </label>
 
               {/*
-                Q5's design follow-up, resolved as a statement rather than a step:
-                one item is one shared price, and saying so quietly beats asking.
+                What travels and what does not (A19/A20). Name and description are
+                facts about the dish and reach every menu; a price belongs to the
+                menu it is printed on, so changing one asks which menus were meant.
               */}
               {sharedItemLine(itemBoards, menuId) ? (
                 <p className="builder__shared" data-testid="shared-item-line">
@@ -3163,6 +3219,46 @@ export default function MenuBuilder({
           onSignedIn={resumeAfterSignIn}
           onDismiss={() => setSignInDeferred(true)}
         />
+      ) : null}
+
+      {/*
+        * A20 — the price question. Both answers name what will happen rather than agreeing or
+        * disagreeing: "Yes" and "No" here would not tell anybody which menus are about to change.
+        * Neither is styled as the safe one, because neither is a mistake — the operator knows
+        * which they meant, and the product does not.
+        *
+        * Backing out writes nothing at all. Escape and the scrim are the same as Cancel.
+        */}
+      {priceAsk ? (
+        <>
+          <div className="builder__scrim" onClick={() => priceAsk.answer(null)} />
+          <div
+            className="builder__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="price-scope-title"
+            data-testid="price-scope-dialog"
+            onKeyDown={event => { if (event.key === "Escape") priceAsk.answer(null); }}
+          >
+            <h2 id="price-scope-title">{priceAsk.question.title}</h2>
+            <p>Where should the new price apply?</p>
+            <div className="builder__price-scope">
+              <button type="button" onClick={() => priceAsk.answer("placement")} data-testid="price-scope-here">
+                <strong>{priceAsk.question.hereLabel}</strong>
+                <small>{priceAsk.question.hereDetail}</small>
+              </button>
+              <button type="button" onClick={() => priceAsk.answer("everywhere")} data-testid="price-scope-everywhere">
+                <strong>{priceAsk.question.everywhereLabel}</strong>
+                <small>{priceAsk.question.everywhereDetail}</small>
+              </button>
+            </div>
+            <div className="builder__dialog-actions">
+              <button type="button" className="action-secondary" onClick={() => priceAsk.answer(null)} data-testid="price-scope-cancel">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </>
       ) : null}
 
       {confirmDiscard ? (

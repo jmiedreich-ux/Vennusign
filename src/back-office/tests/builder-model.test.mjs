@@ -176,7 +176,13 @@ test("where an item lives uses Q123's locked vocabulary", () => {
   assert.equal(boardsPhrase([boards("a"), boards("b"), boards("c")], "menu-1"), "3 boards");
 });
 
-test("the shared-item line states the fact and asks nothing (Q5's follow-up)", () => {
+/*
+ * These two used to assert "they will show this when you publish them" — Q5's answer, that one
+ * item carries one shared price everywhere. Q5 was withdrawn (A19) and the price stopped
+ * travelling, which turned that sentence into a promise the product does not keep. The line now
+ * separates what still travels from what asks.
+ */
+test("the shared-item line says what travels and what asks (A19/A20)", () => {
   const line = sharedItemLine(
     [
       { menuId: "menu-1", menuName: "Summer Menu" },
@@ -184,14 +190,15 @@ test("the shared-item line states the fact and asks nothing (Q5's follow-up)", (
     ],
     "menu-1"
   );
-  assert.equal(line, "Also on Late Night — it will show this when you publish it.");
+  assert.equal(line, "Also on Late Night — name and description reach it; a price change asks first.");
 
   // No item on any other board means no line at all: silence is correct here.
   assert.equal(sharedItemLine([{ menuId: "menu-1", menuName: "Summer Menu" }], "menu-1"), null);
 
-  // It is a statement, not a question. A confirmation on every price edit is what
-  // the design follow-up was told to avoid.
+  // Still a statement. The QUESTION is asked at the moment of a price edit (A20), not printed
+  // permanently under the field where it would be one more thing to read on every visit.
   assert.ok(!line.includes("?"));
+  assert.ok(!line.includes("will show this"), "the withdrawn promise does not come back");
 });
 
 test("the shared-item line agrees with itself about how many boards", () => {
@@ -202,7 +209,7 @@ test("the shared-item line agrees with itself about how many boards", () => {
     ],
     "menu-1"
   );
-  assert.equal(line, "Also on Late Night and Brunch — they will show this when you publish them.");
+  assert.equal(line, "Also on Late Night and Brunch — name and description reach them; a price change asks first.");
 });
 
 test("a missing price is a flag, and an empty string counts as missing", () => {

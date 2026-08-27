@@ -448,6 +448,67 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         Assert.Equal("11.95", (await repository.GetItemAsync(venueId, item.Id))!.Price);
     }
 
+    /*
+     * A20 - "on all of them", the answer to the question a price change now asks.
+     *
+     * It writes the library default AND every placement, so the answer is true straight away
+     * rather than only on the menus that happen to carry no price of their own. Writing only
+     * Items.Price would have left every menu that had ever been priced unchanged - which is the
+     * shape of the bug, not the fix.
+     */
+    [Fact]
+    public async Task GuardedItemEdit_Everywhere_WritesTheLibraryAndEveryPlacement()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var lunchMenu = await SeedMenuAsync(dataAccess, venueId);
+        var lunchSection = await SeedSectionAsync(dataAccess, venueId, lunchMenu);
+        var dinnerMenu = await SeedMenuAsync(dataAccess, venueId);
+        var dinnerSection = await SeedSectionAsync(dataAccess, venueId, dinnerMenu);
+
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("pad-thai"), Price = "11.95" };
+        await repository.CreateItemOnMenuAsync(item, lunchMenu, lunchSection, itemsPerMenuLimit: 500);
+        await repository.PlaceExistingItemAsync(venueId, dinnerMenu, dinnerSection, item.Id, 500, DateTime.UtcNow);
+
+        // Dinner is priced on its own first, so the test proves the sweep reaches a placement that
+        // already carries a price of its own - not merely the ones still reading the default.
+        await repository.UpdateItemValuesGuardedAsync(venueId, item.Id, item.Name, item.Description, "13.95",
+            expected: null, DateTime.UtcNow, menuId: dinnerMenu, sectionId: dinnerSection);
+
+        var everywhere = await repository.UpdateItemValuesGuardedAsync(venueId, item.Id, item.Name, item.Description, "10.00",
+            expected: null, DateTime.UtcNow, menuId: lunchMenu, sectionId: lunchSection, priceEverywhere: true);
+
+        Assert.Equal("updated", everywhere.Outcome);
+        Assert.Equal("10.00", (await repository.GetItemAsync(venueId, item.Id))!.Price);
+        Assert.Equal("10.00", (await PlacementPricesAsync(dataAccess, venueId, lunchMenu))[lunchSection]);
+        Assert.Equal("10.00", (await PlacementPricesAsync(dataAccess, venueId, dinnerMenu))[dinnerSection]);
+    }
+
+    // And the default answer is unchanged: "here only" is what a caller that says nothing means.
+    [Fact]
+    public async Task GuardedItemEdit_WithoutTheEverywhereAnswer_StillTouchesOneMenu()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var lunchMenu = await SeedMenuAsync(dataAccess, venueId);
+        var lunchSection = await SeedSectionAsync(dataAccess, venueId, lunchMenu);
+        var dinnerMenu = await SeedMenuAsync(dataAccess, venueId);
+        var dinnerSection = await SeedSectionAsync(dataAccess, venueId, dinnerMenu);
+
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("laap"), Price = "11.95" };
+        await repository.CreateItemOnMenuAsync(item, lunchMenu, lunchSection, itemsPerMenuLimit: 500);
+        await repository.PlaceExistingItemAsync(venueId, dinnerMenu, dinnerSection, item.Id, 500, DateTime.UtcNow);
+
+        await repository.UpdateItemValuesGuardedAsync(venueId, item.Id, item.Name, item.Description, "9.00",
+            expected: null, DateTime.UtcNow, menuId: lunchMenu, sectionId: lunchSection);
+
+        Assert.Equal("9.00", (await PlacementPricesAsync(dataAccess, venueId, lunchMenu))[lunchSection]);
+        Assert.Null((await PlacementPricesAsync(dataAccess, venueId, dinnerMenu))[dinnerSection]);
+        Assert.Equal("11.95", (await repository.GetItemAsync(venueId, item.Id))!.Price);
+    }
+
     // A menu edit that does not say which placement it means is refused, not applied
     // to whichever row came back first. The builder always names the section; this is
     // the backstop for anything that does not.

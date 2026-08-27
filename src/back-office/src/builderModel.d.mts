@@ -102,3 +102,18 @@ export function changeValues(change: {
 }): string;
 export function releasedPhrase(count: number): string;
 export const bannedWords: string[];
+
+export type PriceScopeQuestion = {
+  total: number;
+  title: string;
+  hereLabel: string;
+  hereDetail: string;
+  everywhereLabel: string;
+  everywhereDetail: string;
+};
+
+export function priceScopeQuestion(
+  itemName: string | null | undefined,
+  boards: readonly { menuId: string; menuName?: string }[] | null | undefined,
+  currentMenuId: string
+): PriceScopeQuestion | null;

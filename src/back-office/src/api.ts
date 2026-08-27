@@ -1345,7 +1345,13 @@ export async function transitionMenuItemPlacement(
  * placement (A19), and one dish may sit in two sections of one menu at two prices;
  * without the section the server cannot tell which one this edit is about, and
  * refuses rather than picking.
+ *
+ * `priceScope` is A20 — the operator's answer when a price change could have meant one menu or
+ * all of them. "everywhere" is only ever sent because they said so; omitting it means this
+ * placement, so a caller that never asks cannot accidentally change every menu.
  */
+export type PriceScope = "placement" | "everywhere";
+
 export async function updateMenuItemValues(
   configuration: BackOfficeConfiguration,
   accessToken: string,
@@ -1353,10 +1359,12 @@ export async function updateMenuItemValues(
   itemId: string,
   values: { name: string; description: string | null; price: string | null; isListed: boolean },
   expected?: { name: string; description: string | null; price: string | null; isListed: boolean },
-  sectionId?: string
+  sectionId?: string,
+  priceScope: PriceScope = "placement"
 ): Promise<void> {
   const where = `menuId=${encodeURIComponent(menuId)}`
-    + (sectionId ? `&sectionId=${encodeURIComponent(sectionId)}` : "");
+    + (sectionId ? `&sectionId=${encodeURIComponent(sectionId)}` : "")
+    + (priceScope === "everywhere" ? "&priceScope=everywhere" : "");
   await contentRequest(configuration, accessToken, `/items/${itemId}?${where}`, {
     method: "PUT",
     body: JSON.stringify(

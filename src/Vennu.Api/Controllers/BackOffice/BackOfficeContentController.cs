@@ -1000,6 +1000,7 @@ public sealed class BackOfficeContentController(
         ItemValuesRequest request,
         [FromQuery] Guid? menuId,
         [FromQuery] Guid? sectionId,
+        [FromQuery] string? priceScope,
         CancellationToken cancellationToken)
     {
         if (request is null)
@@ -1033,7 +1034,11 @@ public sealed class BackOfficeContentController(
                 expected,
                 cancellationToken,
                 menuId,
-                sectionId)
+                sectionId,
+                // A20. "everywhere" is only ever what the operator answered; anything
+                // else, including nothing, means this placement. A caller that does not
+                // ask cannot accidentally change every menu.
+                priceEverywhere: string.Equals(priceScope, "everywhere", StringComparison.Ordinal))
             .ConfigureAwait(false);
 
         if (result.Outcome == "placement_ambiguous")
