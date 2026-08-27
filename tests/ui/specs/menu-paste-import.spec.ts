@@ -27,8 +27,7 @@ test.describe("paste import review", () => {
     await expect(page.getByRole("heading", { name: "1 item needs you" })).toBeVisible();
     await page.getByTestId("answer-dish").click();
     await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
-    await page.getByRole("button", { name: "Create a new menu" }).click();
-    await expect(page.getByRole("heading", { name: "Create this menu?" })).toBeVisible();
+    // Choosing is confirming now - the name sits on the choice itself, no second screen.
     const savedName = `Imported ${seeded.menuName}`;
     const menuName = page.getByLabel("Menu name");
     await menuName.fill(savedName);
@@ -48,7 +47,6 @@ test.describe("paste import review", () => {
     ]);
 
     await page.reload();
-    await expect(page.getByRole("heading", { name: "Create this menu?" })).toBeVisible();
     await expect(page.getByLabel("Menu name")).toHaveValue(savedName);
     await page.getByRole("button", { name: "Create menu" }).click();
     await expect(page.getByTestId("menu-import-complete")).toBeVisible();
@@ -197,8 +195,6 @@ test.describe("paste import review", () => {
 
     await page.getByTestId("suggestion-accept").click();
     await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
-    await page.getByRole("button", { name: "Create a new menu" }).click();
-
     // The whole point of the feature. `suggestedMenuName` and `proposedMenuName` are unrelated
     // server-side, and accepting used to set neither - so the name the banner had just offered went
     // nowhere and this field still read "New menu".
