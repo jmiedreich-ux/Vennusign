@@ -260,6 +260,13 @@ public interface IContentRepository
 
     Task<int> CountItemsOnMenuAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Menus counting against this venue's ceiling: not put away. A put-away menu is deliberately
+    /// free - putting one away is how a venue at its limit makes room, so counting it would leave
+    /// no way out (see the create/duplicate/put-back paths, which all count the same way).
+    /// </summary>
+    Task<int> CountActiveMenusAsync(Guid venueId, CancellationToken cancellationToken = default);
+
     Task<Guid> CreatePlacementAsync(Placement placement, CancellationToken cancellationToken = default);
 
     Task<bool> RemovePlacementAsync(Guid venueId, Guid placementId, CancellationToken cancellationToken = default);

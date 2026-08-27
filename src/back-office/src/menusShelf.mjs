@@ -263,3 +263,41 @@ export function expiryPhrase(expiresUtc, now = new Date()) {
   if (days >= 1 && days < 7) return `${at.toLocaleDateString(undefined, { weekday: "long" })} ${time}`;
   return `${at.toLocaleDateString(undefined, { month: "short", day: "numeric" })} ${time}`;
 }
+
+/**
+ * What to say about the menu ceiling, and when to say nothing (#908).
+ *
+ * A venue at its limit used to find out four screens in: choose "New menu", choose paste, paste a
+ * whole menu, answer the review questions, and be refused at the confirm step. The limit is
+ * knowable when the shelf loads.
+ *
+ * Decision 12 - summarize the normal, name the exception. A venue with room to spare is told
+ * nothing; a venue on its last menu, or out of them, is told plainly. Decision 12's other half is
+ * why the sentence names the way out rather than only the wall.
+ *
+ * A missing limit is not a limit of zero. No ceiling configured means nothing is said at all.
+ */
+export function menuAllowanceNotice(allowance) {
+  const limit = allowance?.limit;
+  if (limit === null || limit === undefined) return null;
+
+  const used = Number(allowance.used ?? 0);
+  const left = limit - used;
+
+  if (left <= 0) {
+    return {
+      tone: "full",
+      text: `You are using all ${limit} of your menus. Put one away to make room, or ask us to raise the limit.`
+    };
+  }
+  if (left === 1) {
+    return { tone: "nearly", text: `One menu left of your ${limit}.` };
+  }
+  return null;
+}
+
+/** Whether a new menu can be created at all right now. */
+export function isAtMenuLimit(allowance) {
+  const limit = allowance?.limit;
+  return limit !== null && limit !== undefined && Number(allowance.used ?? 0) >= limit;
+}

@@ -961,6 +961,27 @@ export async function loadShelf(
   return (await contentRequest(configuration, accessToken, "/menus")).json();
 }
 
+/** How many menus this venue is using, against how many it may have (#908). */
+export type MenuAllowance = { used: number; limit: number | null };
+
+/**
+ * Fails soft to "no ceiling known", because saying nothing is the honest fallback: a shelf that
+ * refused to draw, or one that warned about a limit it could not read, are both worse than one
+ * that stays quiet and lets the server refuse later as it always did.
+ */
+export async function loadMenuAllowance(
+  configuration: BackOfficeConfiguration,
+  accessToken: string
+): Promise<MenuAllowance | null> {
+  try {
+    const response = await contentRequest(configuration, accessToken, "/menus/allowance");
+    if (!response.ok) return null;
+    return (await response.json()) as MenuAllowance;
+  } catch {
+    return null;
+  }
+}
+
 /** What is 86'd right now. Availability lives outside the published board. */
 export async function loadMenuAvailability(
   configuration: BackOfficeConfiguration,

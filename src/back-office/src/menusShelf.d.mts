@@ -60,3 +60,11 @@ export function importInProgressPhrase(
 ): string | null;
 
 export function expiryPhrase(expiresUtc: string, now?: Date): string | null;
+
+export type MenuAllowance = { used: number; limit: number | null };
+
+export function menuAllowanceNotice(
+  allowance: MenuAllowance | null | undefined
+): { tone: "full" | "nearly"; text: string } | null;
+
+export function isAtMenuLimit(allowance: MenuAllowance | null | undefined): boolean;

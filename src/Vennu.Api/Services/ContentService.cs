@@ -1018,6 +1018,23 @@ public sealed class ContentService(
     /// Refuses with a plain sentence rather than failing quietly when a ceiling
     /// is reached. Returns null when there is room.
     /// </summary>
+    /// <summary>
+    /// How many menus this venue is using and how many it may have (#908).
+    ///
+    /// A venue at its limit used to find out four screens in: choose "New menu", choose paste,
+    /// paste a whole menu, answer the review, and be refused at the confirm step. The limit is
+    /// knowable the moment the shelf loads, and withholding it until the last step spends the
+    /// operator's work to tell them something already known (decisions 5 and 10).
+    /// </summary>
+    public async Task<(int Used, int? Limit)> GetMenuAllowanceAsync(
+        Guid venueId,
+        CancellationToken cancellationToken = default)
+    {
+        var ceilings = await library.GetResolvedCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false);
+        var used = await library.CountActiveMenusAsync(venueId, cancellationToken).ConfigureAwait(false);
+        return (used, ceilings.TryGetValue(MenuCeilings.MenusPerVenue, out var limit) ? limit : null);
+    }
+
     public async Task<string?> DescribeCeilingRefusalAsync(
         Guid venueId,
         string capabilityId,
