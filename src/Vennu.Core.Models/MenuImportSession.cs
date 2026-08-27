@@ -102,7 +102,36 @@ public sealed record MenuImportAnswer(
 public sealed record MenuImportAggregate(
     MenuImportSession Session,
     IReadOnlyCollection<MenuImportSourceLine> Lines,
-    IReadOnlyCollection<MenuImportReviewQuestion> Questions);
+    IReadOnlyCollection<MenuImportReviewQuestion> Questions,
+    /// <summary>
+    /// What replacing the chosen menu would actually do, when one has been chosen (M6.13).
+    ///
+    /// Computed on every read and never stored. The counts beside it on the screen describe the
+    /// TARGET menu and are safe to store because the target has a lease -
+    /// <c>TargetWorkingFingerprint</c>, checked at confirm. This depends on the SESSION's lines
+    /// and answers, and the session has no lease: answering a question, promoting a line, or
+    /// merely reading the session can re-parse and rebuild every answer. A stored copy would not
+    /// be a stable explanation, it would be a stable wrong one.
+    /// </summary>
+    MenuImportReplacePreview? ReplacePreview = null);
+
+/// <summary>
+/// The replacement, described before it happens. Counts summarize; the named lists are the
+/// exception worth reading (decision 12).
+/// </summary>
+public sealed record MenuImportReplacePreview(
+    int ArrivingCount,
+    int LeavingCount,
+    int RepricedCount,
+    IReadOnlyCollection<string> Arriving,
+    IReadOnlyCollection<string> Leaving,
+    IReadOnlyCollection<MenuImportPriceMove> Repriced);
+
+/// <summary>
+/// One dish whose price moves, with both numbers - the operator's question is "by how much", not
+/// "how many". Stored and shown exactly as typed (Q115/Q190); null is a dish with no price.
+/// </summary>
+public sealed record MenuImportPriceMove(string Name, string? From, string? To);
 
 public static class MenuImportStatuses
 {

@@ -165,3 +165,58 @@
   font-size: 11px;
   opacity: 0.72;
 }
+
+/*
+ * What the replacement does (M6.13). Sits above the target's own draft counts, because "what this
+ * will do" is the decision and "what this discards" is the consequence.
+ */
+.replacement-diff {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--sky-border-subtle, #e2e8f0);
+  border-radius: 8px;
+  background: var(--sky-surface-sunken, #f8fafc);
+}
+
+.replacement-diff__summary {
+  margin: 0 0 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.replacement-diff__prices {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.replacement-diff__prices li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.replacement-diff__prices small {
+  font-variant-numeric: tabular-nums;
+  color: var(--sky-text-muted, #64748b);
+}
+
+.replacement-diff__more,
+.replacement-diff__names {
+  font-size: 12px;
+  color: var(--sky-text-muted, #64748b);
+  margin: 0;
+}
+
+.replacement-diff__names strong {
+  color: var(--sky-text, #0f172a);
+}
+
+.replacement-diff__same {
+  margin: 12px 0;
+  font-size: 13px;
+  color: var(--sky-text-muted, #64748b);
+}

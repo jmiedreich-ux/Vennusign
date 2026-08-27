@@ -47,3 +47,37 @@ export function madePhrase(createdUtc) {
   if (Number.isNaN(at.getTime())) return null;
   return `Added ${at.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
 }
+
+/**
+ * The one-line summary of what a replacement does (M6.13).
+ *
+ * Decision 12 — summarize the normal, name the exception. The counts are the summary; the named
+ * lists beside them are the exception worth reading.
+ *
+ * Null when nothing changes at all. Re-importing a menu nobody has edited is a real thing to do,
+ * and "0 arrive · 0 go · 0 change price" is a worse way of saying "nothing" than saying nothing.
+ */
+export function replaceSummary(preview) {
+  if (!preview) return null;
+
+  const parts = [];
+  if (preview.arrivingCount > 0) parts.push(`${preview.arrivingCount} ${preview.arrivingCount === 1 ? "dish arrives" : "dishes arrive"}`);
+  if (preview.leavingCount > 0) parts.push(`${preview.leavingCount} ${preview.leavingCount === 1 ? "goes" : "go"}`);
+  if (preview.repricedCount > 0) parts.push(`${preview.repricedCount} ${preview.repricedCount === 1 ? "changes price" : "change price"}`);
+
+  return parts.length ? parts.join(" · ") : null;
+}
+
+/** "and 4 more", or nothing when the list is whole. */
+export function andMore(shown, total) {
+  const rest = Number(total ?? 0) - (shown?.length ?? 0);
+  return rest > 0 ? `and ${rest} more` : null;
+}
+
+/** A price as it moves. Both numbers, exactly as stored (Q115/Q190); "no price" reads as words. */
+export function priceMovePhrase(move) {
+  if (!move) return null;
+  const from = move.from ?? "no price";
+  const to = move.to ?? "no price";
+  return `${from} → ${to}`;
+}

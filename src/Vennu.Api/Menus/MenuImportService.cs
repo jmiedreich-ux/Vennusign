@@ -145,7 +145,10 @@ public sealed class MenuImportService(
         var current=await RefreshDependenciesAsync(venueId,sessionId,cancellationToken).ConfigureAwait(false);
         if(current is null)return new(MenuImportMutationOutcome.NotFound,null,null);
         if(!current.Session.Revision.SequenceEqual(revision))return new(MenuImportMutationOutcome.Conflict,current,null);
-        return await imports.SetReplaceDestinationAsync(venueId,sessionId,revision,menuId,clock.GetUtcNow().UtcDateTime,actor,cancellationToken).ConfigureAwait(false);
+        // Choosing the target IS the moment the confirm screen first draws, so the preview has to
+        // travel with this answer rather than waiting for a read that may never happen.
+        var chosen=await imports.SetReplaceDestinationAsync(venueId,sessionId,revision,menuId,clock.GetUtcNow().UtcDateTime,actor,cancellationToken).ConfigureAwait(false);
+        return chosen with { Aggregate=await WithReplacePreviewAsync(chosen.Aggregate,venueId,cancellationToken).ConfigureAwait(false) };
     }
 
     public async Task<MenuImportCreateOutcome> ConfirmReplaceAsync(Guid venueId,Guid sessionId,byte[] revision,Guid actorUserId,
@@ -157,8 +160,12 @@ public sealed class MenuImportService(
         var outcome=await imports.ConfirmReplaceAsync(venueId,sessionId,revision,actorUserId,systemRoleKeys,clock.GetUtcNow().UtcDateTime,actor,cancellationToken).ConfigureAwait(false);
         if(outcome.Result=="target_conflict"&&outcome.Aggregate?.Session.TargetMenuId is Guid targetMenuId)
         {
+            // The target moved under the operator, so the facts are recomputed before they are shown
+            // again - including the preview, which is the whole point of a conflict: what you were
+            // about to do is not what would have happened.
             var refreshed=await imports.SetReplaceDestinationAsync(venueId,sessionId,outcome.Aggregate.Session.Revision,targetMenuId,clock.GetUtcNow().UtcDateTime,actor,cancellationToken).ConfigureAwait(false);
-            if(refreshed.Result==MenuImportMutationOutcome.Updated)return outcome with { Aggregate=refreshed.Aggregate };
+            if(refreshed.Result==MenuImportMutationOutcome.Updated)
+                return outcome with { Aggregate=await WithReplacePreviewAsync(refreshed.Aggregate,venueId,cancellationToken).ConfigureAwait(false) };
         }
         return outcome;
     }
@@ -167,7 +174,43 @@ public sealed class MenuImportService(
         IReadOnlyCollection<string> systemRoleKeys,string? actor,CancellationToken cancellationToken)=>
         imports.RestoreReplacementAsync(venueId,snapshotId,actorUserId,systemRoleKeys,clock.GetUtcNow().UtcDateTime,actor,cancellationToken);
 
+    /// <summary>
+    /// Attaches what replacing the chosen menu would do (M6.13).
+    ///
+    /// Computed on every read and never stored. The counts stored beside it describe the TARGET
+    /// menu, which is safe because the target has a lease - TargetWorkingFingerprint, checked at
+    /// confirm. This depends on the SESSION's lines and answers, which have no lease: answering a
+    /// question, promoting a line, or merely reading the session can re-parse and rebuild every
+    /// answer. Storing it would not buy a stable explanation, it would buy a stable wrong one -
+    /// and on a conflict the screen re-renders exactly that, so the operator reads one thing and
+    /// presses a button that does another.
+    ///
+    /// Nothing is previewed for a completed session: the replacement already happened, and a
+    /// preview of it would describe a decision nobody is making any more.
+    /// </summary>
+    private async Task<MenuImportAggregate?> WithReplacePreviewAsync(
+        MenuImportAggregate? aggregate, Guid venueId, CancellationToken cancellationToken)
+    {
+        if (aggregate is null
+            || aggregate.Session.CompletedMenuId is not null
+            || aggregate.Session.Destination != MenuImportDestinations.Replace
+            || aggregate.Session.TargetMenuId is null)
+        {
+            return aggregate;
+        }
+
+        var placements = await content.GetPlacementsAsync(venueId, aggregate.Session.TargetMenuId.Value, cancellationToken).ConfigureAwait(false);
+        var library = await content.GetItemsAsync(venueId, cancellationToken).ConfigureAwait(false);
+        return aggregate with { ReplacePreview = MenuImportReplacePreviewBuilder.Build(aggregate, placements, library) };
+    }
+
     private async Task<MenuImportAggregate?> RefreshDependenciesAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken)
+    {
+        var refreshed = await RefreshedAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        return await WithReplacePreviewAsync(refreshed, venueId, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<MenuImportAggregate?> RefreshedAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken)
     {
         var now = clock.GetUtcNow().UtcDateTime;
         var current = await imports.GetAsync(venueId, sessionId, now, cancellationToken).ConfigureAwait(false);
