@@ -205,4 +205,29 @@ test.describe("paste import review", () => {
     await expect(page.getByLabel("Menu name")).toHaveValue(suggested);
     await expect(page.getByLabel("Menu name")).not.toHaveValue("New menu");
   });
+
+  test("confirming a name you just typed does not conflict with yourself", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
+    const seeded = await seed({ label: "self-conflict" });
+    await openAs(page, "owner", "/menu/import");
+
+    await page.getByLabel("Menu text").fill(`${seeded.itemName.replaceAll(" ", "   ")}  ${seeded.itemPrice}`);
+    await page.getByRole("button", { name: "Read menu" }).click();
+    await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
+    await page.getByRole("button", { name: "Create a new menu" }).click();
+
+    /*
+     * The name field saves on blur, which bumps the session revision. Submitting with the keyboard
+     * blurs the field first, and the submit handler used to carry the revision as it stood before
+     * that - so confirming a name you had just typed came back "This import changed in another
+     * window" with only one window open. Keyboard, deliberately: the mouse path suppresses the
+     * blur and hides it.
+     */
+    const name = page.getByLabel("Menu name");
+    await name.fill(`Self conflict ${Date.now()}`);
+    await name.press("Enter");
+
+    await expect(page.getByText("changed in another window")).toHaveCount(0);
+    await expect(page.getByTestId("menu-import-complete")).toBeVisible({ timeout: 30_000 });
+  });
 });
