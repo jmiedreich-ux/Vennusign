@@ -213,6 +213,21 @@ $env:ASPNETCORE_URLS = $testApiOrigin
 $env:TestApi__ApiKey = $testApiKey
 $env:TestApi__ProductApiBaseUrl = $apiOrigin
 $env:TestApi__ProductAutomationKey = $testApiKey
+# The one place this is switched on, and it is switched on HERE rather than trusted on the machine.
+#
+# The Test API calls the product API at https://localhost:7138 with an HttpClient, which validates
+# the certificate chain. The ASP.NET Core development certificate is self-signed, so anywhere that
+# has never trusted it every seed returned 500 (UntrustedRoot) and the entire UI suite died in
+# fixture setup - on every branch, for months, with nobody able to tell a real regression from the
+# noise.
+#
+# `dotnet dev-certs https --trust` is the obvious answer and it hangs a headless runner: adding to
+# the Windows Root store raises a confirmation dialog. It also makes a green suite a property of
+# how a machine was once set up rather than of the code.
+#
+# The setting is refused for anything that is not loopback, so this cannot become "accept any
+# certificate". See src/Vennu.TestApi/LoopbackCertificateTrust.cs.
+$env:TestApi__AllowUntrustedLoopbackCertificate = 'true'
 Write-Host 'Starting Test API...'
 $null = Start-EnvProcess -Name 'test-api' -FilePath 'dotnet' -ArgumentList @('run', '--no-launch-profile', '--project', '.\src\Vennu.TestApi\Vennu.TestApi.csproj') -WorkingDirectory $repoRoot
 
