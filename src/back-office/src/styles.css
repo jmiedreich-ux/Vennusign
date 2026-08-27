@@ -424,7 +424,11 @@ body, .shell > main, .customer-entry { background: var(--sky-page-gradient); }
 
 /* Vennusign loader - a screen waking up. See VennusignLoader.tsx for why two variants. */
 .vennu-loader { display: grid; justify-items: center; gap: 18px; }
-.vennu-loader--modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgb(244 249 253 / .92); backdrop-filter: blur(2px); }
+/* The page stays visible behind it (owner, 2026-08-27). At .92 this cleared the screen, so a wait
+   over a page you were in the middle of using looked like the page had gone. The two other modal
+   uses - opening a venue, first-run warm-up - have nothing rendered behind them, so nothing there
+   changes; the blur keeps it unmistakably a wait rather than a page you can still click. */
+.vennu-loader--modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgb(244 249 253 / .66); backdrop-filter: blur(3px); }
 .vennu-loader--modal .vennu-loader__card { display: grid; justify-items: center; gap: 20px; padding: 38px 46px; border-radius: 22px; background: var(--sky-card-background); box-shadow: 0 26px 70px rgb(15 23 42 / .16); }
 .vennu-loader--inline { padding: 26px; }
 .vennu-loader__art { display: grid; justify-items: center; }

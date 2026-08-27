@@ -79,20 +79,14 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
   </main>;
 
   /*
-   * Reading is a wait worth drawing (M6.12).
+   * Reading is a wait worth drawing, drawn OVER the page rather than instead of it (M6.12).
    *
-   * It used to be the word "Reading…" on a disabled button, which was honest while parsing took
-   * milliseconds. On a real four-page menu it now takes about ten seconds - the parse, and then the
-   * pass over whatever the rules could not place - and ten silent seconds behind an unchanged
-   * screen reads as a button that did nothing. That is what the owner reported.
-   *
-   * Modal, because the whole page is waiting and there is nothing else to look at, which is the
-   * rule VennusignLoader's own documentation sets.
+   * The first cut returned the loader in place of the paste card, which cleared the screen: the
+   * text you had just pasted vanished, and what you got back was a blank page with an animation on
+   * it. The owner's note was exactly that - the background does not need clearing. The loader's
+   * modal variant is already `position: fixed; inset: 0`, so it only ever needed to be a sibling of
+   * the page, not a replacement for it.
    */
-  if (busy && !sessionId) return <main className="paste-import import-loading" data-testid="menu-import-reading">
-    <VennusignLoader variant="modal" message="Reading your menu — finding its sections, items and prices." />
-  </main>;
-
   if (!sessionId) return <main className="paste-import paste-start" data-testid="menu-import-start" aria-labelledby="paste-title">
     <button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button>
     <section className="paste-start-card">
@@ -110,6 +104,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
         finally { setBusy(false); }
       }}>{busy ? "Reading…" : "Read menu"}</button></div>
     </section>
+    {busy && <VennusignLoader variant="modal" message="Reading your menu — finding its sections, items and prices." />}
   </main>;
 
   if (loading) return <main className="paste-import import-loading">
@@ -134,6 +129,16 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     setApplying(true);
     setBusy(true);
     setError(null);
+    /*
+     * Held open for a beat.
+     *
+     * The animation was already here and already correct; two answers over a fast connection
+     * finished before it could be seen, so the click still read as doing nothing - which is what
+     * the owner reported the second time. This waits for the work AND for long enough to have
+     * shown that there was work. It never shortens the wait and never invents one: if the answers
+     * take two seconds, this adds nothing at all.
+     */
+    const seen = new Promise(resolve => setTimeout(resolve, 700));
     try {
       let current = session;
       for (const question of session.questions.filter(candidate => !candidate.answer)) {
@@ -141,8 +146,10 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
         if (!line?.suggestedVerdict) continue;
         current = await answerMenuImport(configuration, accessToken, current, question, "leave_out");
       }
+      await seen;
       setSession(current);
     } catch (failure) {
+      await seen;
       setError(failure instanceof Error ? failure.message : "That suggestion could not be applied. Nothing changed.");
     } finally {
       setBusy(false);
