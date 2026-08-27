@@ -44,11 +44,12 @@ public sealed class MenuImportService(
          */
         var suggestion = await suggestions.SuggestAsync(parsed, cancellationToken).ConfigureAwait(false);
         var lines = Suggested(parsed.Lines, suggestion);
+        var questions = await DistinguishedAsync(venueId, parsed.Questions, cancellationToken).ConfigureAwait(false);
         var session = new MenuImportSession(id, venueId, rawPaste, 1, Status(parsed.Questions), lineCount, parsed.ItemCount,
             now.AddMinutes(retention), now, now, actor, [],
             SuggestedMenuName: suggestion?.MenuName, SuggestedMenuDescription: suggestion?.MenuDescription);
         _ = await imports.DeleteExpiredAsync(now, 100, cancellationToken).ConfigureAwait(false);
-        return await imports.CreateAsync(new(session, lines, parsed.Questions), cancellationToken).ConfigureAwait(false);
+        return await imports.CreateAsync(new(session, lines, questions), cancellationToken).ConfigureAwait(false);
     }
 
     public Task<MenuImportAggregate?> GetAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken) =>
@@ -108,7 +109,10 @@ public sealed class MenuImportService(
                 await content.GetCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false)));
         var now = clock.GetUtcNow().UtcDateTime;
         var nextSession = current.Session with { ParseRevision = nextRevision, Status = Status(parsed.Questions), LineCount = parsed.Lines.Count, ItemCount = parsed.ItemCount, UpdatedUtc = now, UpdatedBy = actor, Revision = [] };
-        return await imports.ReplaceParseAsync(new(nextSession, CarriedForward(current.Lines, parsed.Lines), parsed.Questions), revision, cancellationToken).ConfigureAwait(false);
+        return await imports.ReplaceParseAsync(
+            new(nextSession, CarriedForward(current.Lines, parsed.Lines),
+                await DistinguishedAsync(venueId, parsed.Questions, cancellationToken).ConfigureAwait(false)),
+            revision, cancellationToken).ConfigureAwait(false);
     }
 
     public Task<int> DeleteExpiredAsync(int batchSize, CancellationToken cancellationToken) =>
@@ -190,7 +194,10 @@ public sealed class MenuImportService(
             UpdatedUtc = now,
             Revision = []
         };
-        var replaced = await imports.ReplaceParseAsync(new(next, CarriedForward(current.Lines, parsed.Lines), parsed.Questions), current.Session.Revision, cancellationToken).ConfigureAwait(false);
+        var replaced = await imports.ReplaceParseAsync(
+            new(next, CarriedForward(current.Lines, parsed.Lines),
+                await DistinguishedAsync(venueId, parsed.Questions, cancellationToken).ConfigureAwait(false)),
+            current.Session.Revision, cancellationToken).ConfigureAwait(false);
         return replaced.Aggregate;
     }
 
@@ -237,6 +244,53 @@ public sealed class MenuImportService(
             && string.Equals(line.RawText.Trim(), was.RawText.Trim(), StringComparison.Ordinal)
                 ? line with { SuggestedVerdict = was.SuggestedVerdict, SuggestedReason = was.SuggestedReason }
                 : line).ToArray();
+    }
+
+    /// <summary>
+    /// A21 - where a question offers more than one candidate, says what tells them apart.
+    ///
+    /// A venue library can hold the same dish twice at the same price, split by an older import.
+    /// Both rendered as "Use the one you already have - Pad Thai $12.95", identically, and an
+    /// operator cannot answer that; they can only guess. The owner ruled against merging them
+    /// silently on 2026-08-27: the screen names which menus each one is on and when it was made.
+    ///
+    /// Only ambiguous questions are enriched, and the read happens only if there are any. A
+    /// question with one candidate has nothing to be distinguished from, and every import paying
+    /// for a query whose answer no screen draws is work for its own sake.
+    /// </summary>
+    private async Task<IReadOnlyCollection<MenuImportReviewQuestion>> DistinguishedAsync(
+        Guid venueId,
+        IReadOnlyCollection<MenuImportReviewQuestion> questions,
+        CancellationToken cancellationToken)
+    {
+        var ambiguous = questions.Where(question => question.Candidates.Count > 1).ToArray();
+        if (ambiguous.Length == 0) return questions;
+
+        var itemIds = ambiguous.SelectMany(question => question.Candidates.Select(candidate => candidate.ItemId)).Distinct().ToArray();
+        var boards = await content.GetItemBoardsAsync(venueId, itemIds, cancellationToken).ConfigureAwait(false);
+        var items = await content.GetItemsAsync(venueId, cancellationToken).ConfigureAwait(false);
+
+        var menusByItem = boards
+            .GroupBy(board => board.ItemId)
+            .ToDictionary(group => group.Key, group => group.Select(board => board.MenuName).Distinct().OrderBy(name => name, StringComparer.CurrentCultureIgnoreCase).ToArray());
+        var createdByItem = items.ToDictionary(item => item.Id, item => item.CreatedUtc);
+
+        return questions
+            .Select(question => question.Candidates.Count > 1
+                ? question with
+                {
+                    Candidates = question.Candidates
+                        .Select(candidate => candidate with
+                        {
+                            // An empty list is not the same as "we did not look": the dish is on no
+                            // menu, which is itself the thing that tells it from the one that is.
+                            OnMenus = menusByItem.TryGetValue(candidate.ItemId, out var names) ? names : [],
+                            ItemCreatedUtc = createdByItem.TryGetValue(candidate.ItemId, out var created) ? created : null
+                        })
+                        .ToArray()
+                }
+                : question)
+            .ToArray();
     }
 
     /// <summary>Puts each verdict on the line it is about, so the screen can show it where the question is.</summary>

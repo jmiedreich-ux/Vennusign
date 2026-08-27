@@ -1461,7 +1461,15 @@ export async function loadMenuContext(
   return (await contentRequest(configuration, accessToken, "/context")).json();
 }
 
-export type MenuImportCandidate = { itemId: string; displayName: string; displayPrice: string | null; matchRule: string; isSafe: boolean };
+/**
+ * `onMenus` and `itemCreatedUtc` are A21: what tells two identical-looking candidates apart. Present
+ * only where a question offers more than one, so `undefined` means "nobody looked", while an empty
+ * array means "on no menu" — which is itself the distinguishing fact.
+ */
+export type MenuImportCandidate = {
+  itemId: string; displayName: string; displayPrice: string | null; matchRule: string; isSafe: boolean;
+  onMenus?: string[] | null; itemCreatedUtc?: string | null;
+};
 export type MenuImportAnswer = { fingerprint: string; choice: string; selectedItemId: string | null; parseRevision: number; answeredUtc: string; answeredBy: string | null };
 export type MenuImportQuestion = {
   questionKey: string; fingerprint: string; kind: "identity" | "unreadable"; displayOrder: number; required: boolean;

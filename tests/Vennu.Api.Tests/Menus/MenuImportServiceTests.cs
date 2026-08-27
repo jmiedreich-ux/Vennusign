@@ -240,6 +240,53 @@ public sealed class MenuImportServiceTests
     }
 
     /*
+     * A21 - the owner's own library holds the same dish twice at the same price, split by an older
+     * import, and the review offered both as the same button twice.
+     */
+
+    [Fact]
+    public async Task Two_identical_candidates_are_told_apart_by_their_menus()
+    {
+        var (service, _, content) = CreateService();
+        var lunch = Guid.NewGuid();
+        var dinner = Guid.NewGuid();
+        content.MenuNames[lunch] = "Lunch";
+        content.MenuNames[dinner] = "Dinner";
+
+        // Two library rows a person cannot tell apart: same name, same price.
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
+        content.Items.Add(new Item { Id = first, VenueId = VenueId, Name = "Pad Thai", Price = "12.95", CreatedUtc = Now.UtcDateTime.AddDays(-30) });
+        content.Items.Add(new Item { Id = second, VenueId = VenueId, Name = "Pad Thai", Price = "12.95", CreatedUtc = Now.UtcDateTime.AddDays(-2) });
+        content.Placements.Add(new Placement { Id = Guid.NewGuid(), VenueId = VenueId, MenuId = lunch, MenuSectionId = Guid.NewGuid(), ItemId = first });
+        content.Placements.Add(new Placement { Id = Guid.NewGuid(), VenueId = VenueId, MenuId = dinner, MenuSectionId = Guid.NewGuid(), ItemId = first });
+
+        var result = await service.StartAsync(VenueId, "MAINS\nPad Thai  12.95", "owner@example.com", default);
+
+        var question = Assert.Single(result.Questions, candidate => candidate.Candidates.Count > 1);
+        Assert.Equal(["Dinner", "Lunch"], question.Candidates.Single(candidate => candidate.ItemId == first).OnMenus);
+
+        // The one on nothing reports an EMPTY list, not a missing one. That distinction is the
+        // whole fix: "on no menu" is what tells it from the one on two.
+        Assert.Empty(question.Candidates.Single(candidate => candidate.ItemId == second).OnMenus!);
+        Assert.All(question.Candidates, candidate => Assert.NotNull(candidate.ItemCreatedUtc));
+    }
+
+    [Fact]
+    public async Task One_candidate_is_not_looked_up_at_all()
+    {
+        // There is nothing to distinguish it from, so the read is not paid for. `null` rather than
+        // an empty list is the honest report: nobody looked.
+        var (service, _, content) = CreateService();
+        content.Items.Add(new Item { Id = Guid.NewGuid(), VenueId = VenueId, Name = "Som Tum", Price = "9.00", CreatedUtc = Now.UtcDateTime });
+
+        var result = await service.StartAsync(VenueId, "MAINS\nSom Tum  10.00", "owner@example.com", default);
+
+        var question = Assert.Single(result.Questions, candidate => candidate.Candidates.Count == 1);
+        Assert.Null(Assert.Single(question.Candidates).OnMenus);
+    }
+
+    /*
      * #904: a session was saved for 24 hours and reachable only through browser history, because
      * nothing could list one. These cover the two things the list must not get wrong.
      */

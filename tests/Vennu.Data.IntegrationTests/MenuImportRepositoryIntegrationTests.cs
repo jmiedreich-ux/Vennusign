@@ -296,6 +296,49 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
     }
 
     /*
+     * A21 at the database. The distinguishing detail is only worth anything if it survives the
+     * round trip - the session is re-read from these tables on every visit, so a column that is
+     * written and not read back leaves the operator staring at two identical buttons again.
+     */
+    [Fact]
+    public async Task Candidate_provenance_survives_the_round_trip()
+    {
+        var (repository, venueId) = await CreateRepositoryAndVenue();
+        var id = Guid.NewGuid();
+        var now = DateTime.UtcNow;
+        var fingerprint = new string('c', 64);
+        var madeLongAgo = new DateTime(2026, 7, 3, 9, 30, 0, DateTimeKind.Utc);
+        // Candidates carry a foreign key to Items, so these have to be real library rows.
+        var content = new ContentRepository(fixture.CreateDataAccess());
+        var onTwo = await content.CreateItemAsync(new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("pad-thai-a"), Price = "12.95" });
+        var onNone = await content.CreateItemAsync(new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("pad-thai-b"), Price = "12.95" });
+
+        var question = new MenuImportReviewQuestion(id, venueId, "line-1-identity", fingerprint, "identity", 0, true, 1, [1],
+        [
+            new MenuImportCandidate(onTwo, "Pad Thai", "12.95", "exact_normalized", false, ["Dinner", "Lunch"], madeLongAgo),
+            new MenuImportCandidate(onNone, "Pad Thai", "12.95", "exact_normalized", false, [], now)
+        ], null);
+        var line = new MenuImportSourceLine(id, venueId, 1, 0, "Pad Thai  12.95", "unresolved", null, null, null, "ambiguous_library_match", 1);
+        await repository.CreateAsync(new(
+            new MenuImportSession(id, venueId, "Pad Thai  12.95", 1, MenuImportStatuses.Reviewing, 1, 0, now.AddHours(1), now, now, null, []),
+            [line], [question]));
+
+        var read = await repository.GetAsync(venueId, id, DateTime.UtcNow);
+
+        var candidates = Assert.Single(read!.Questions).Candidates.ToArray();
+        var two = candidates.Single(candidate => candidate.ItemId == onTwo);
+        var none = candidates.Single(candidate => candidate.ItemId == onNone);
+
+        Assert.Equal(["Dinner", "Lunch"], two.OnMenus);
+        Assert.Equal(madeLongAgo, two.ItemCreatedUtc);
+
+        // Empty and null must not collapse into each other on the way through JSON. "On no menu"
+        // is a fact about this dish; null would mean nobody looked, and the screen says nothing.
+        Assert.NotNull(none.OnMenus);
+        Assert.Empty(none.OnMenus!);
+    }
+
+    /*
      * #904 - listing the imports somebody started and did not finish.
      *
      * These are the three things the query can get wrong, and none of them is visible from the

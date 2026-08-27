@@ -171,7 +171,9 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
         LinesJson = JsonSerializer.Serialize(aggregate.Lines),
         QuestionsJson = JsonSerializer.Serialize(aggregate.Questions.Select(q => new QuestionPayload(q.QuestionKey, q.Fingerprint, q.Kind, q.DisplayOrder, q.Required, q.ParseRevision))),
         QuestionLinesJson = JsonSerializer.Serialize(aggregate.Questions.SelectMany(q => q.LineNumbers.Select(line => new QuestionLinePayload(q.QuestionKey, line)))),
-        CandidatesJson = JsonSerializer.Serialize(aggregate.Questions.SelectMany(q => q.Candidates.Select(c => new CandidatePayload(q.QuestionKey, c.ItemId, c.DisplayName, c.DisplayPrice, c.MatchRule, c.IsSafe)))),
+        CandidatesJson = JsonSerializer.Serialize(aggregate.Questions.SelectMany(q => q.Candidates.Select(c => new CandidatePayload(
+            q.QuestionKey, c.ItemId, c.DisplayName, c.DisplayPrice, c.MatchRule, c.IsSafe,
+            c.OnMenus is null ? null : JsonSerializer.Serialize(c.OnMenus), c.ItemCreatedUtc)))),
         AnswersJson = JsonSerializer.Serialize(aggregate.Questions.Where(q => q.Answer is not null)
             .Select(q => new AnswerPayload(q.QuestionKey, q.Fingerprint, q.Answer!.Choice, q.Answer.SelectedItemId, q.ParseRevision)))
     };
@@ -223,7 +225,8 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
     private sealed record QuestionLinePayload(string QuestionKey, int LineNumber);
 
     private sealed record AnswerPayload(string QuestionKey, string Fingerprint, string Choice, Guid? SelectedItemId, long ParseRevision);
-    private sealed record CandidatePayload(string QuestionKey, Guid ItemId, string DisplayName, string? DisplayPrice, string MatchRule, bool IsSafe);
+    private sealed record CandidatePayload(string QuestionKey, Guid ItemId, string DisplayName, string? DisplayPrice, string MatchRule, bool IsSafe,
+        string? OnMenusJson, DateTime? ItemCreatedUtc);
     private sealed record QuestionRead(string QuestionKey, string Fingerprint, string Kind, int DisplayOrder, bool Required, long ParseRevision,
         IReadOnlyCollection<int>? LineNumbers, IReadOnlyCollection<MenuImportCandidate>? Candidates, MenuImportAnswer? Answer);
     private sealed record ResultRow(string Result);
@@ -279,9 +282,12 @@ SELECT @SessionId, @VenueId, QuestionKey, Fingerprint, Kind, DisplayOrder, Requi
 FROM OPENJSON(@QuestionsJson) WITH (QuestionKey nvarchar(80), Fingerprint char(64), Kind nvarchar(32), DisplayOrder int, Required bit, ParseRevision bigint);
 INSERT dbo.MenuImportQuestionLines (SessionId, VenueId, QuestionKey, LineNumber, LineSubIndex)
 SELECT @SessionId, @VenueId, QuestionKey, LineNumber, 0 FROM OPENJSON(@QuestionLinesJson) WITH (QuestionKey nvarchar(80), LineNumber int);
-INSERT dbo.MenuImportCandidates (SessionId, VenueId, QuestionKey, ItemId, DisplayName, DisplayPrice, MatchRule, IsSafe)
-SELECT @SessionId, @VenueId, QuestionKey, ItemId, DisplayName, DisplayPrice, MatchRule, IsSafe
-FROM OPENJSON(@CandidatesJson) WITH (QuestionKey nvarchar(80), ItemId uniqueidentifier, DisplayName nvarchar(200), DisplayPrice nvarchar(12), MatchRule nvarchar(32), IsSafe bit);
+-- OnMenusJson and ItemCreatedUtc are A21: where a question offers more than one candidate, they
+-- are what tells two identical-looking rows apart. Null on a single candidate, which has nothing
+-- to be distinguished from.
+INSERT dbo.MenuImportCandidates (SessionId, VenueId, QuestionKey, ItemId, DisplayName, DisplayPrice, MatchRule, IsSafe, OnMenusJson, ItemCreatedUtc)
+SELECT @SessionId, @VenueId, QuestionKey, ItemId, DisplayName, DisplayPrice, MatchRule, IsSafe, OnMenusJson, ItemCreatedUtc
+FROM OPENJSON(@CandidatesJson) WITH (QuestionKey nvarchar(80), ItemId uniqueidentifier, DisplayName nvarchar(200), DisplayPrice nvarchar(12), MatchRule nvarchar(32), IsSafe bit, OnMenusJson nvarchar(1000), ItemCreatedUtc datetime2(7));
 -- Answers the parser was able to give itself. A18 forbids pre-answering unless a rule can name
 -- why; these carry `exact_normalized` as their match rule and are only ever written where the name
 -- matched after case, spacing and punctuation AND the price is the same. The question is still
@@ -305,7 +311,7 @@ SELECT s.Id, s.VenueId, s.RawPaste, s.ParseRevision, s.Status, s.LineCount, s.It
  (SELECT l.SessionId, l.VenueId, l.LineNumber, l.LineSubIndex, l.RawText, l.Disposition, l.ParsedName, l.ParsedDescription, l.ParsedPrice, l.ParserReason, l.ParseRevision, l.SuggestedVerdict, l.SuggestedReason FROM dbo.MenuImportSourceLines l WHERE l.SessionId=s.Id ORDER BY l.LineNumber, l.LineSubIndex FOR JSON PATH) LinesJson,
  (SELECT q.QuestionKey, q.Fingerprint, q.Kind, q.DisplayOrder, q.Required, q.ParseRevision,
    JSON_QUERY(COALESCE((SELECT N'['+STRING_AGG(CONVERT(nvarchar(max), ql.LineNumber),N',') WITHIN GROUP (ORDER BY ql.LineNumber)+N']' FROM dbo.MenuImportQuestionLines ql WHERE ql.SessionId=q.SessionId AND ql.QuestionKey=q.QuestionKey),N'[]')) LineNumbers,
-   JSON_QUERY((SELECT c.ItemId, c.DisplayName, c.DisplayPrice, c.MatchRule, c.IsSafe FROM dbo.MenuImportCandidates c WHERE c.SessionId=q.SessionId AND c.QuestionKey=q.QuestionKey ORDER BY c.DisplayName, c.ItemId FOR JSON PATH)) Candidates,
+   JSON_QUERY((SELECT c.ItemId, c.DisplayName, c.DisplayPrice, c.MatchRule, c.IsSafe, JSON_QUERY(c.OnMenusJson) OnMenus, c.ItemCreatedUtc FROM dbo.MenuImportCandidates c WHERE c.SessionId=q.SessionId AND c.QuestionKey=q.QuestionKey ORDER BY c.DisplayName, c.ItemId FOR JSON PATH)) Candidates,
    JSON_QUERY((SELECT a.Fingerprint, a.Choice, a.SelectedItemId, a.ParseRevision, a.AnsweredUtc, a.AnsweredBy FROM dbo.MenuImportAnswers a WHERE a.SessionId=q.SessionId AND a.QuestionKey=q.QuestionKey FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)) Answer
   FROM dbo.MenuImportReviewQuestions q WHERE q.SessionId=s.Id ORDER BY q.DisplayOrder, q.QuestionKey FOR JSON PATH) QuestionsJson
 FROM dbo.MenuImportSessions s WHERE s.Id=@SessionId AND s.VenueId=@VenueId AND s.ExpiresUtc>@Now;
