@@ -220,19 +220,46 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     </section>
   </main>;
 
+  /*
+   * Choosing is confirming (owner, 2026-08-27).
+   *
+   * "Create a new menu" used to lead to a second screen asking the same thing again with a name
+   * field on it - you had already said what you wanted and were asked to say it once more. The
+   * name, the counts and the button that does it now sit on the choice itself.
+   *
+   * Replace keeps its own screen: that one states what it is about to overwrite and what stays
+   * live, which is a confirmation. This one was a formality.
+   *
+   * Rendered in both arms of the ternary below, because a resumed session arrives with its
+   * destination already chosen and has to land on something it can finish from.
+   */
+  const createMenuForm = <form className="destination-choice destination-choice--create" data-testid="create-menu-form" onSubmit={event => { event.preventDefault(); void (async () => {
+    setBusy(true); setError(null);
+    try {
+      const chosen = await setMenuImportCreateDestination(configuration, accessToken, latest.current ?? session!, menuName);
+      const created = await confirmMenuImportCreate(configuration, accessToken, chosen);
+      setSession(created.import);
+    } catch (failure) {
+      if (failure instanceof MenuImportApiError && failure.current) setSession(failure.current);
+      setError(failure instanceof Error ? failure.message : "This menu could not be created. Nothing changed.");
+    } finally { setBusy(false); }
+  })(); }}>
+    <strong>Create a new menu</strong>
+    <span>Build a new unpublished menu from all {session?.session.itemCount} imported items.</span>
+    <label htmlFor="import-menu-name">Menu name</label>
+    <input id="import-menu-name" required maxLength={200} value={menuName} data-testid="create-menu-name" onChange={event => setMenuName(event.target.value)} />
+    <div className="confirm-facts"><div><strong>{session?.session.itemCount}</strong><span>items will be added</span></div><div><strong>0</strong><span>screens change now</span></div></div>
+    <p className="not-live">Not live yet — publishing remains a separate action.</p>
+    <button type="submit" className="import-primary" data-testid="create-menu" disabled={busy || !menuName.trim()}>{busy ? "Creating…" : "Create menu"}</button>
+  </form>;
+
   if (session.session.status === "resolved") return <main className="paste-import import-destination" data-testid="menu-import-create" aria-labelledby="destination-title">
     <button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button>
     <section className="destination-card"><h1 id="destination-title">{session.session.destination==="create"?"Create this menu?":session.session.destination==="replace"?`Replace ${session.session.targetMenuName}?`:"Where should these items go?"}</h1>
       {!session.session.destination ? <><p>Your review is saved. Creating is the first step that changes menu working content.</p>{error && <p className="import-error" role="alert">{error}</p>}
-        <button className="destination-choice" disabled={busy} onClick={() => void mutate(current => setMenuImportCreateDestination(configuration, accessToken, current, menuName))}><strong>Create a new menu</strong><span>Build a new unpublished menu from all {session.session.itemCount} imported items.</span></button>
+        {createMenuForm}
         <div className="replace-options"><h2>Replace an existing menu</h2><p>The pasted menu becomes its new unpublished draft. What guests see stays live until you publish.</p>{menus.length?<div className="target-list">{menus.map(menu=><button type="button" key={menu.menuId} disabled={busy} onClick={()=>void mutate(current=>setMenuImportReplaceDestination(configuration,accessToken,current,menu.menuId))}><span><strong>{menu.name}</strong><small>{menu.publishedVersion===null?"Never published":`${menu.draftCount} unpublished ${menu.draftCount===1?"change":"changes"}`}</small></span><ChevronRight aria-hidden="true"/></button>)}</div>:<p className="future-destination">No active menus are available to replace.</p>}</div></> : session.session.destination==="create"?
-      <form onSubmit={event => { event.preventDefault(); void (async () => { setBusy(true); setError(null); try { let current = latest.current ?? session; if (menuName.trim() !== current.session.proposedMenuName) current = await setMenuImportCreateDestination(configuration, accessToken, current, menuName); const created = await confirmMenuImportCreate(configuration, accessToken, current); setSession(created.import); } catch (failure) { if (failure instanceof MenuImportApiError && failure.current) setSession(failure.current); setError(failure instanceof Error ? failure.message : "This menu could not be created. Nothing changed."); } finally { setBusy(false); } })(); }}>
-        <p>Confirm the name, item count, and publishing state. Everything is created together or nothing changes.</p>
-        <label htmlFor="import-menu-name">Menu name</label><input id="import-menu-name" required maxLength={200} value={menuName} onChange={event => setMenuName(event.target.value)} onBlur={() => { if (menuName.trim() && menuName.trim() !== session.session.proposedMenuName) void mutate(current => setMenuImportCreateDestination(configuration, accessToken, current, menuName)); }} />
-        <div className="confirm-facts"><div><strong>{session.session.itemCount}</strong><span>items will be added</span></div><div><strong>0</strong><span>screens change now</span></div></div>
-        <p className="not-live">Not live yet — publishing remains a separate action.</p>{error && <p className="import-error" role="alert">{error}</p>}
-        <div className="destination-actions"><button type="button" className="import-secondary" disabled={busy} onClick={onBack}>Back</button><button type="submit" className="import-primary" disabled={busy || !menuName.trim()} onMouseDown={event => event.preventDefault()}>{busy ? "Creating…" : "Create menu"}</button></div>
-      </form>:<form onSubmit={event=>{event.preventDefault();void(async()=>{setBusy(true);setError(null);try{const replaced=await confirmMenuImportReplace(configuration,accessToken,latest.current??session);setSession(replaced.import);}catch(failure){if(failure instanceof MenuImportApiError&&failure.current)setSession(failure.current);setError(failure instanceof Error?failure.message:"This menu could not be replaced. Nothing changed.");}finally{setBusy(false);}})();}}>
+      createMenuForm:<form onSubmit={event=>{event.preventDefault();void(async()=>{setBusy(true);setError(null);try{const replaced=await confirmMenuImportReplace(configuration,accessToken,latest.current??session);setSession(replaced.import);}catch(failure){if(failure instanceof MenuImportApiError&&failure.current)setSession(failure.current);setError(failure instanceof Error?failure.message:"This menu could not be replaced. Nothing changed.");}finally{setBusy(false);}})();}}>
         <p>Confirm the target and consequences. Replacement happens together or nothing changes.</p>
         <div className="replacement-target"><strong>{session.session.targetMenuName}</strong><span>{session.session.targetHadPublishedVersion?"The published version stays on screens.":"This menu has never been published."}</span></div>
         <div className="confirm-facts replacement-facts"><div><strong>{session.session.itemCount}</strong><span>items in the new draft</span></div><div><strong>{(session.session.targetAddedCount??0)+(session.session.targetRemovedCount??0)+(session.session.targetChangedCount??0)}</strong><span>{`${(session.session.targetAddedCount??0)+(session.session.targetRemovedCount??0)+(session.session.targetChangedCount??0)===1?"unpublished change":"unpublished changes"} already present`}</span><small>{`${session.session.targetAddedCount??0} ${(session.session.targetAddedCount??0)===1?"item added":"items added"} · ${session.session.targetRemovedCount??0} removed · ${session.session.targetChangedCount??0} changed`}</small></div><div><strong>0</strong><span>screens change now</span></div></div>
