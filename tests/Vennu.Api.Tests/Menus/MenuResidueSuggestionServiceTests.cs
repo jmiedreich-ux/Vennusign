@@ -135,6 +135,34 @@ public sealed class MenuResidueSuggestionServiceTests
         Assert.Contains("json_schema", handler.LastBody, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task AMenuWhoseLineHoldsSeveralItemsStillGetsASuggestion()
+    {
+        /*
+         * The regression. M6.9 let one pasted line hold several items, so a line number stopped
+         * being unique - and this service still keyed a dictionary on it. It threw, the catch
+         * swallowed it exactly as designed, and no menu containing a line like "Sides: ..." ever
+         * received a suggestion. Nothing failed. Nothing was logged where anyone was looking.
+         *
+         * Found by probing the deployed environment with a real menu rather than by trusting a
+         * suite whose fixtures had no such line in them.
+         */
+        var handler = new RecordingHandler(Reply("""{"menuName":"Mana-Thai Cuisine","menuDescription":null,"lines":[]}"""));
+        // The Sides line must come last. Followed by a Title Case line the parser reads it as a
+        // price set for the dishes below it, not as several items - correct behaviour that would
+        // have made this fixture prove nothing. The guard below is why that was noticed.
+        var paste = "Appetizers\nGarlic Bread $6.50\nMana-Thai Cuisine\nAll Natural Authentic Thai Cuisine\nSalads\nThai Salad $6.50\nSides: Jasmine Rice $2.00, Brown Rice $3.00, Peanut Sauce $2.00";
+        var parsed = Parse(paste);
+
+        Assert.True(parsed.Lines.GroupBy(line => line.LineNumber).Any(group => group.Count() > 1),
+            "the fixture must contain a line holding several items, or it does not test the defect");
+
+        var suggestion = await Service(handler).SuggestAsync(parsed, default);
+
+        Assert.Equal("Mana-Thai Cuisine", suggestion?.MenuName);
+        Assert.Equal(1, handler.Calls);
+    }
+
     private static string Reply(string json) =>
         System.Text.Json.JsonSerializer.Serialize(new { content = new[] { new { type = "text", text = json } } });
 
