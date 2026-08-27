@@ -269,4 +269,29 @@ test.describe("paste import review", () => {
     await expect(covered).toHaveCount(1);
     await expect(banner).toHaveCount(0);
   });
+
+  test("the review screen renders at all", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
+    await seed({ label: "renders-at-all" });
+
+    /*
+     * The dullest test here and the one that would have caught the worst defect.
+     *
+     * A `const` was declared below a closure that read it, so every render threw
+     * "Cannot access 'suggestedName' before initialization" and the screen went blank after Read
+     * menu. The build passed. tsc passed. 219 unit tests passed. Nothing opened the page.
+     *
+     * So: paste, read, and assert something is on the screen and nothing threw.
+     */
+    const crashes: string[] = [];
+    page.on("pageerror", error => crashes.push(error.message));
+
+    await openAs(page, "owner", "/menu/import");
+    await page.getByLabel("Menu text").fill("STARTERS\nGarlic Bread  6.50\nA line nobody can read");
+    await page.getByRole("button", { name: "Read menu" }).click();
+
+    await expect(page.getByTestId("menu-import-review")).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByRole("heading", { name: /needs? you|Nothing left to answer/ })).toBeVisible();
+    expect(crashes, `the page threw: ${crashes.join(" | ")}`).toEqual([]);
+  });
 });

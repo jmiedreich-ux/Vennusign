@@ -82,6 +82,21 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
    * this menu is called - so the name is dropped rather than quietly kept, and naming happens in
    * the builder where an unnamed menu already knows what to do with itself (M6.5).
    */
+  /*
+   * Declared before anything that reads it.
+   *
+   * This used to sit a hundred lines further down, next to the banner it feeds, while `asking`
+   * above called `coveredBySuggestion`, which reads it - so every render threw
+   * "Cannot access 'suggestedName' before initialization" and the screen went blank after Read
+   * menu. The compiler does not see it: the read is inside a closure, so nothing is used before
+   * its declaration until the closure is called, and the call is two lines away.
+   *
+   * It shipped because the build passed and I never loaded the page. A build that compiles is not
+   * a screen that renders, and this file's own history is the argument for opening it.
+   */
+  const suggestedName = !suggestionDismissed && session?.session.suggestedMenuName && unresolved.length > 0
+    ? session.session.suggestedMenuName : null;
+
   const suggestedLines = new Set(session?.lines.filter(line => line.suggestedVerdict).map(line => line.lineNumber) ?? []);
   const coveredBySuggestion = (question: MenuImportQuestion) =>
     !suggestionDismissed && suggestedName !== null && question.lineNumbers.every(line => suggestedLines.has(line));
@@ -189,8 +204,6 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
    * and not a heading; the name and description travel to the destination step, where the operator
    * confirms them again before anything is created.
    */
-  const suggestedName = !suggestionDismissed && session?.session.suggestedMenuName && unresolved.length > 0
-    ? session.session.suggestedMenuName : null;
 
   const applySuggestion = async () => {
     if (!session) return;
