@@ -245,4 +245,28 @@ test.describe("paste import review", () => {
     await expect(page.getByTestId("import-retry")).toBeVisible();
     await expect(page.getByRole("button", { name: "Back to menus" })).toBeVisible();
   });
+
+  test("a suggestion replaces its questions rather than sitting above them", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
+    await seed({ label: "suggestion-replaces" });
+    await openAs(page, "owner", "/menu/import");
+
+    await page.getByLabel("Menu text").fill("Ossobuco  24\nA line nobody can read");
+    await page.getByRole("button", { name: "Read menu" }).click();
+    await expect(page.getByTestId("menu-import-review")).toBeVisible();
+
+    const banner = page.getByTestId("import-suggestion");
+    if (await banner.count() === 0) test.skip(true, "No suggestion offered - the residue pass needs a key on this environment.");
+
+    // The banner asked, and the same line asked again underneath. Two askings of one question,
+    // with the row offering answers the banner had already made unnecessary.
+    const covered = page.getByTestId("question-row").filter({ hasText: "A line nobody can read" });
+    await expect(covered).toHaveCount(0);
+
+    // Declining is a real answer: it reveals the rows AND drops the name, because we no longer
+    // claim to know it. Naming then happens in the builder.
+    await page.getByTestId("suggestion-dismiss").click();
+    await expect(covered).toHaveCount(1);
+    await expect(banner).toHaveCount(0);
+  });
 });
