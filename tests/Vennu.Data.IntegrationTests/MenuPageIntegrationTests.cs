@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Vennu.Core.Models;
 using Vennu.Data.IntegrationTests.Fixtures;
 using Vennu.Data.Repositories;
@@ -161,7 +162,25 @@ public sealed class MenuPageIntegrationTests(DatabaseFixture fixture)
             Assert.Equal("reordered", reordered.Outcome);
             Assert.Equal([second.Id, first.Id], (await repository.GetPagesAsync(venueId, menuId)).Select(page => page.Id));
 
+            /*
+             * A placement price survives being duplicated.
+             *
+             * Duplicating a *menu* has always carried ImportedPriceOverride; duplicating a *page*
+             * silently dropped it, so every copied item reverted to the library price and the
+             * pricing somebody had typed by hand quietly undid itself. Nothing failed and nothing
+             * was logged. Found by a plan review reading the two inserts side by side.
+             */
+            await data.ExecuteSqlQueryAsync<Row, object>(
+                "UPDATE dbo.Placements SET ImportedPriceOverride=N'19.50' WHERE VenueId=@VenueId AND PageId=@PageId AND ItemId=@ItemId; SELECT 1 Value;",
+                new { VenueId = venueId, PageId = first.Id, ItemId = sharedItem.Id });
+
             var copy = Assert.IsType<MenuPage>(await repository.DuplicatePageAsync(venueId, menuId, first.Id, Guid.NewGuid(), now));
+
+            // The snapshot is raw JSON and its price field is already the coalesced placement
+            // price, so both the original and the copy must carry the typed one - not one each.
+            var duplicated = await repository.GetWorkingSnapshotAsync(venueId, menuId);
+            Assert.NotNull(duplicated);
+            Assert.Equal(2, Regex.Matches(duplicated!, "\"price\":\"19.50\"").Count);
             Assert.Equal("Page 1 copy", copy.Name);
             Assert.Empty((await repository.GetAssignmentsAsync(venueId)).Where(assignment => assignment.PageId == copy.Id));
             var copiedPlacements = (await repository.GetPlacementsAsync(venueId, menuId)).Where(placement => placement.ItemId == sharedItem.Id).ToArray();
