@@ -430,6 +430,38 @@ The row-ordinal alternative's cost is quieter than it sounds. On this menu the m
 
 From 91 questions on the first real menu to **2**, and both of those are right to ask: the restaurant's own name and its tagline, off the top of a page. They are not menu content, and guessing at them is what put them in the menu the first time.
 
+#### Milestone 6-A10 — the review screen speaks plainly
+
+**Why this exists.** Owner feedback on the first real review screen, 2026-08-26: *"each question takes too much space… clarify exactly what Keep in Imported items does… the actions themselves should tell the story."*
+
+Three faults, one screen.
+
+- **Five blocks per decision.** A line number, a heading, the pasted line in a blockquote, a sentence of explanation, then the buttons — roughly 280px to make one small choice. Two questions read as roomy; fifteen was a page of scrolling.
+- **The actions named mechanisms.** *"Keep in Imported items"* tells a first-time operator nothing about what it does, that it creates an item, or where that item goes. It broke **decision 10** — *"never a bare action: it states what replaces it, in the same click"* — on a screen that is nothing but actions.
+- **There was no way out.** The design always specified three answers for an unreadable line — *"An item / A section / Leave it out"* (M1a, S6A-Q07) — and only two were built. The only way past a line the parser could not read was to import it and delete it afterwards.
+
+##### What ships
+
+**One decision, one row.** `question-row` at **110px**, measured, against roughly 280px before — three questions where one used to sit. The pasted text stays where the eye already is and the choices sit beside it, wrapping under it below the container width rather than shrinking, because a choice you cannot read is not a choice.
+
+**Choices that name outcomes:**
+
+| | |
+| --- | --- |
+| **A section heading** | Everything under it goes in this group |
+| **A dish** | Goes in an Imported items group to sort later |
+| **Leave it out** | Not imported. Your pasted text still has it |
+
+*Imported items* survives as the place a dish lands, which is plumbing nobody needs told — but the copy says so anyway, because it is where the thing actually goes and decision 10 asks the action to say. The first draft of this copy said *"You'll add its price in the builder"*, which was true and incomplete; checking the create SQL showed a `fallback` answer is always placed in *Imported items* regardless of the headings above it, so the copy says that instead.
+
+**`leave_out`** joins the answer vocabulary. Nothing is destroyed: menu creation pulls unresolved lines only where the answer is `fallback`, so a line answered `leave_out` is never placed while its text stays on the session — which is what Q81's *never silently drop a line* asks for.
+
+**`Menus.Description`** lands in the data model — back-office only by owner decision, and deliberately not on a guest board. Nothing fills it until **M6.11**, which is where the read path and the builder field ship with it rather than as plumbing nobody can see.
+
+##### One stale promise removed
+
+When the review had nothing left to ask, the screen said *"This saved review can now be used to create or replace a menu **when those destination steps open**."* They opened in M6.2 and M6.3. It now says what to do next.
+
 **Shared display/accessibility scope:** the supported-width floor is 900px; below it, preserve the session and offer a resumable wider-window handoff rather than compressing the workflow. Keyboard-specific interaction design/testing is excluded; semantic controls, accessible names/relationships, visible focus, and screen-reader-compatible status/error announcements remain required.
 
 ### Milestone 8 — Delete a menu

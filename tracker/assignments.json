@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedUtc": "2026-08-26T07:00:00Z",
+  "updatedUtc": "2026-08-26T08:00:00Z",
   "activeAssignments": [
     {
-      "assignment": "M6.9 - one pasted line, several items (Q216 answered: widen the key)",
-      "issue": 884,
+      "assignment": "M6.10 - the review screen speaks plainly (dense rows, honest actions, leave_out)",
+      "issue": 886,
       "workstream": "menus",
-      "branch": "feature/menus-m6a9-one-line-several-items",
+      "branch": "feature/menus-m6a10-review-screen-speaks-plainly",
       "owner": "Claude Opus 5, back-office dev lead",
-      "claimedUtc": "2026-08-26T07:00:00Z",
-      "files": "src/Vennu.Api/Menus/MenuPasteParser.cs, src/Vennu.Core.Models/MenuImportSession.cs, src/Vennu.Data/{Repositories/MenuImportRepository.cs,Scripts/077_menu_import_line_sub_index.sql}, tests/Vennu.Api.Tests/Menus/*, tests/Vennu.Data.IntegrationTests/MenuImportRepositoryIntegrationTests.cs",
-      "status": "implemented; needs the owner acceptance workbook"
+      "claimedUtc": "2026-08-26T08:00:00Z",
+      "files": "src/back-office/src/{MenuPasteImport.tsx,menu-paste-import.css}, src/Vennu.Core.Models/MenuImportSession.cs, src/Vennu.Data/{Repositories/MenuImportRepository.cs,Scripts/078_menu_description_and_leave_out.sql}, tests/ui/specs/menu-paste-import.spec.ts",
+      "status": "implemented; M6.11 fills and shows the description"
     }
   ],
   "desktopSessionLock": null,

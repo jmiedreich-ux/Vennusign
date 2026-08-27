@@ -25,7 +25,7 @@ test.describe("paste import review", () => {
     await expect(page.getByTestId("safe-match-banner")).toContainText("1 safe match");
     await page.getByRole("button", { name: "Accept 1 safe match" }).click();
     await expect(page.getByRole("heading", { name: "1 item needs you" })).toBeVisible();
-    await page.getByRole("button", { name: "Keep in Imported items" }).click();
+    await page.getByTestId("answer-dish").click();
     await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
     await page.getByRole("button", { name: "Create a new menu" }).click();
     await expect(page.getByRole("heading", { name: "Create this menu?" })).toBeVisible();
@@ -101,5 +101,43 @@ test.describe("paste import review", () => {
     await expect(group.getByRole("button", { name: new RegExp(seeded.itemName, "i") })).toHaveCount(30);
     await expect(page.getByTestId("safe-match-banner")).toHaveCount(0);
     await expect(page.getByText("Nothing is selected for you.")).toBeVisible();
+  });
+
+  test("an unreadable line can be left out, and the choices name outcomes not mechanisms", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
+    await seed({ label: "leave-out" });
+    await openAs(page, "owner", "/menu/import");
+
+    await page.getByLabel("Menu text").fill("Ossobuco  24\nA line nobody can read");
+    await page.getByRole("button", { name: "Read menu" }).click();
+    await expect(page.getByTestId("menu-import-review")).toBeVisible();
+
+    // Decision 10 - never a bare action; it states what replaces it, in the same click. The
+    // mechanism-named choice this replaced ("Keep in Imported items") told a first-time operator
+    // nothing about what it does or where the thing goes.
+    const row = page.getByTestId("question-row").filter({ hasText: "A line nobody can read" });
+    await expect(row.getByTestId("answer-section")).toContainText("A section heading");
+    await expect(row.getByTestId("answer-dish")).toContainText("Goes in an Imported items group");
+    await expect(page.getByText("Keep in Imported items")).toHaveCount(0);
+
+    // The third answer the design always specified, and the only one never built.
+    await row.getByTestId("answer-leave-out").click();
+    await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
+  });
+
+  test("one decision is one row, so a screen holds several", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
+    await seed({ label: "row-density" });
+    await openAs(page, "owner", "/menu/import");
+
+    await page.getByLabel("Menu text").fill("Ossobuco  24\nfirst unreadable line\nsecond unreadable line\nthird unreadable line");
+    await page.getByRole("button", { name: "Read menu" }).click();
+
+    const rows = page.getByTestId("question-row");
+    await expect(rows).toHaveCount(3);
+    // The card this replaced ran to roughly 280px for one decision. Three of those did not share a
+    // screen; three rows must.
+    const heights = await rows.evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().height));
+    expect(Math.max(...heights), `row heights: ${heights.join(", ")}`).toBeLessThan(180);
   });
 });

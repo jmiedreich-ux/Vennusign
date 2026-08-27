@@ -100,4 +100,15 @@ public static class MenuImportChoices
     public const string NewItem = "new_item";
     public const string Section = "section";
     public const string Fallback = "fallback";
+
+    /// <summary>
+    /// The third answer the design always specified for an unreadable line, and the only one that
+    /// was never built: "An item / A section / Leave it out" (M1a, S6A-Q07). Without it the only
+    /// way past a line the parser could not read was to import it and delete it afterwards.
+    ///
+    /// Nothing is destroyed. Menu creation pulls unresolved lines only where the answer is
+    /// <see cref="Fallback"/>, so a line answered here is never placed while its text stays on the
+    /// session - which is what Q81's "never silently drop a line" asks for.
+    /// </summary>
+    public const string LeaveOut = "leave_out";
 }

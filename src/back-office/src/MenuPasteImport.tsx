@@ -144,7 +144,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
       {standaloneQuestions.map(question => <QuestionCard key={question.questionKey} session={session} question={question} busy={busy}
         onAnswer={(choice, itemId) => void mutate(current => answerMenuImport(configuration, accessToken, current, question, choice, itemId))}
         onPromote={() => void mutate(current => setMenuImportLineSection(configuration, accessToken, current, question.lineNumbers[0], true))} />)}
-      {!unresolved.length && <div className="review-complete" data-testid="import-review-complete"><span><Check aria-hidden="true" /></span><div><h2>Ready for the next step</h2><p>This saved review can now be used to create or replace a menu when those destination steps open.</p></div></div>}
+      {!unresolved.length && <div className="review-complete" data-testid="import-review-complete"><span><Check aria-hidden="true" /></span><div><h2>Nothing left to answer</h2><p>Choose where these items go next. Nothing reaches a screen until you publish.</p></div></div>}
     </section>
     <section className="inventory-panel"><button aria-expanded={inventoryOpen} onClick={() => setInventoryOpen(value => !value)}>{inventoryOpen ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />} Review all {session.session.lineCount} pasted lines</button>
       {inventoryOpen && <ol>{session.lines.map(line => <li key={line.lineNumber}><span>{line.lineNumber}</span><code>{line.rawText || "(blank line)"}</code><em>{line.disposition}</em>{line.disposition === "section" && !isNaturalHeading(line.rawText) && <button disabled={busy} onClick={() => void mutate(current => setMenuImportLineSection(configuration, accessToken, current, line.lineNumber, false))}><RotateCcw aria-hidden="true" /> Undo section</button>}</li>)}</ol>}
@@ -153,10 +153,66 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
   </main>;
 }
 
+/**
+ * One decision, one row.
+ *
+ * This was five stacked blocks per question - a line number, a heading, the raw line in a
+ * blockquote, a sentence of explanation, then the buttons. At two questions it read as roomy; at
+ * fifteen it was a page of scrolling to make fifteen small decisions. The row puts the pasted text
+ * where the eye already is and the choices beside it, so ten fit in the space one used to take.
+ *
+ * The choices name **outcomes**, which is decision 10's rule - "never a bare action: it states what
+ * replaces it, in the same click" - applied to a screen that had been ignoring it. "Keep in
+ * Imported items" named a mechanism a first-time operator has never heard of, and did not say that
+ * it creates an item, or where that item goes. It is gone. "Imported items" survives as the place a
+ * dish lands when no heading sits above it, which is plumbing nobody needs told.
+ */
 function QuestionCard({ session, question, busy, onAnswer, onPromote }: { session: MenuImportSession; question: MenuImportQuestion; busy: boolean; onAnswer: (choice: string, itemId?: string) => void; onPromote: () => void }) {
   const line = session.lines.find(candidate => candidate.lineNumber === question.lineNumbers[0]);
-  if (question.kind === "unreadable") return <div className="question-card"><div className="question-number">Line {line?.lineNumber}</div><h2>What should this line become?</h2><blockquote>{line?.rawText}</blockquote><p>We couldn’t confidently read this as an item or heading.</p><div className="question-actions"><button disabled={busy} onClick={onPromote}>Make it a section</button><button disabled={busy} onClick={() => onAnswer("fallback")}>Keep in Imported items</button></div></div>;
-  return <div className="question-card"><div className="question-number">Line {line?.lineNumber}</div><h2>Is “{line?.parsedName}” already in your library?</h2><blockquote>{line?.rawText}</blockquote><div className="candidate-list">{question.candidates.map(candidate => <button disabled={busy} key={candidate.itemId} onClick={() => onAnswer("same_item", candidate.itemId)}><span><strong>{candidate.displayName}</strong><small>{candidate.isSafe ? "Safe name match" : "Possible match"}</small></span><em>{candidate.displayPrice ?? "No price"}</em></button>)}</div><button className="new-item-choice" disabled={busy} onClick={() => onAnswer("new_item")}>No, add as a new item</button></div>;
+
+  if (question.kind === "unreadable") return (
+    <div className="question-row" data-testid="question-row">
+      <div className="question-row__line">
+        <span className="question-row__number">Line {line?.lineNumber}</span>
+        <q>{line?.rawText.trim()}</q>
+      </div>
+      <div className="question-row__choices" role="group" aria-label={`What should line ${line?.lineNumber} become?`}>
+        <button type="button" disabled={busy} onClick={onPromote} data-testid="answer-section">
+          <strong>A section heading</strong><small>Everything under it goes in this group</small>
+        </button>
+        <button type="button" disabled={busy} onClick={() => onAnswer("fallback")} data-testid="answer-dish">
+          <strong>A dish</strong><small>Goes in an Imported items group to sort later</small>
+        </button>
+        <button type="button" className="question-row__leave" disabled={busy} onClick={() => onAnswer("leave_out")} data-testid="answer-leave-out">
+          <strong>Leave it out</strong><small>Not imported. Your pasted text still has it</small>
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="question-row" data-testid="question-row">
+      <div className="question-row__line">
+        <span className="question-row__number">Line {line?.lineNumber}</span>
+        <q>{line?.rawText.trim()}</q>
+        <small>Already in your library?</small>
+      </div>
+      <div className="question-row__choices" role="group" aria-label={`Is ${line?.parsedName} already in your library?`}>
+        {question.candidates.map(candidate => (
+          <button type="button" disabled={busy} key={candidate.itemId} onClick={() => onAnswer("same_item", candidate.itemId)}>
+            <strong>{candidate.displayName}</strong>
+            <small>{candidate.isSafe ? "Safe name match" : "Possible match"} · {candidate.displayPrice ?? "No price"}</small>
+          </button>
+        ))}
+        <button type="button" disabled={busy} onClick={() => onAnswer("new_item")} data-testid="answer-new-item">
+          <strong>Add as a new item</strong><small>It isn't one you already have</small>
+        </button>
+        <button type="button" className="question-row__leave" disabled={busy} onClick={() => onAnswer("leave_out")} data-testid="answer-leave-out">
+          <strong>Leave it out</strong><small>Not imported. Your pasted text still has it</small>
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function formatExpiry(value: string) { return new Intl.DateTimeFormat(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" }).format(new Date(value)); }

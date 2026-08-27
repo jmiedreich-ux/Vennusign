@@ -183,7 +183,7 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
     private static Guid RequireId(Guid value, string name) => value == Guid.Empty ? throw new ArgumentException("A non-empty id is required.", name) : value;
     private static byte[] RequireRevision(byte[] value) => value is { Length: 8 } ? value : throw new ArgumentException("An 8-byte revision is required.", nameof(value));
     private static string RequireText(string value, string name) => string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("A value is required.", name) : value;
-    private static string RequireChoice(string value) => value is MenuImportChoices.SameItem or MenuImportChoices.NewItem or MenuImportChoices.Section or MenuImportChoices.Fallback ? value : throw new ArgumentOutOfRangeException(nameof(value));
+    private static string RequireChoice(string value) => value is MenuImportChoices.SameItem or MenuImportChoices.NewItem or MenuImportChoices.Section or MenuImportChoices.Fallback or MenuImportChoices.LeaveOut ? value : throw new ArgumentOutOfRangeException(nameof(value));
     private static string RequireAnswerShape(string choice, Guid? selectedItemId)
     {
         RequireChoice(choice);
