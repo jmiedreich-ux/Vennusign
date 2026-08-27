@@ -140,4 +140,25 @@ test.describe("paste import review", () => {
     const heights = await rows.evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().height));
     expect(Math.max(...heights), `row heights: ${heights.join(", ")}`).toBeLessThan(180);
   });
+
+  test("reading a menu shows the product doing it, not a disabled button", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
+    await seed({ label: "reading-state" });
+    await openAs(page, "owner", "/menu/import");
+
+    // Ten silent seconds behind an unchanged screen reads as a button that did nothing, which is
+    // what the owner reported. Held here so the wait can never quietly become invisible again.
+    await page.route("**/api/back-office/menu-imports", async route => {
+      if (route.request().method() !== "POST") return route.fallback();
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      await route.fallback();
+    });
+
+    await page.getByLabel("Menu text").fill("Ossobuco  24");
+    await page.getByRole("button", { name: "Read menu" }).click();
+
+    await expect(page.getByTestId("menu-import-reading")).toBeVisible();
+    await expect(page.getByText("Reading your menu")).toBeVisible();
+    await expect(page.getByTestId("menu-import-review")).toBeVisible({ timeout: 30_000 });
+  });
 });
