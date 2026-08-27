@@ -2020,8 +2020,13 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             INSERT @Sections SELECT Id, NEWID() FROM dbo.MenuSections WHERE PageId=@SourcePageId AND VenueId=@VenueId;
             INSERT dbo.MenuSections (Id,VenueId,MenuId,PageId,Name,SortOrder,CreatedUtc,UpdatedUtc)
               SELECT x.NewId,@VenueId,@MenuId,@NewPageId,s.Name,s.SortOrder,@Now,@Now FROM dbo.MenuSections s JOIN @Sections x ON x.OldId=s.Id;
-            INSERT dbo.Placements (Id,VenueId,MenuId,MenuSectionId,PageId,ItemId,SortOrder,CreatedUtc,UpdatedUtc)
-              SELECT NEWID(),@VenueId,@MenuId,x.NewId,@NewPageId,p.ItemId,p.SortOrder,@Now,@Now FROM dbo.Placements p JOIN @Sections x ON x.OldId=p.MenuSectionId;
+            -- ImportedPriceOverride travels with the copy. Without it every duplicated item
+            -- silently reverted to the library price, so duplicating a page you had priced by hand
+            -- quietly undid the pricing. Duplicating a *menu* has always carried it (see the insert
+            -- in DuplicateMenuSql); only the page path forgot, and it has been forgetting since
+            -- pages arrived. Found by a plan review reading the inserts side by side.
+            INSERT dbo.Placements (Id,VenueId,MenuId,MenuSectionId,PageId,ItemId,SortOrder,CreatedUtc,UpdatedUtc,ImportedPriceOverride)
+              SELECT NEWID(),@VenueId,@MenuId,x.NewId,@NewPageId,p.ItemId,p.SortOrder,@Now,@Now,p.ImportedPriceOverride FROM dbo.Placements p JOIN @Sections x ON x.OldId=p.MenuSectionId;
             COMMIT;
             SELECT Id,VenueId,MenuId,Name,SortOrder,CreatedUtc,UpdatedUtc FROM dbo.MenuPages WHERE Id=@NewPageId;
             """, new { VenueId = venueId, MenuId = menuId, SourcePageId = sourcePageId, NewPageId = newPageId, Now = now }, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
