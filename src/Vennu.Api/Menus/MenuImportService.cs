@@ -91,7 +91,7 @@ public sealed class MenuImportService(
                 await content.GetCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false)));
         var now = clock.GetUtcNow().UtcDateTime;
         var nextSession = current.Session with { ParseRevision = nextRevision, Status = Status(parsed.Questions), LineCount = parsed.Lines.Count, ItemCount = parsed.ItemCount, UpdatedUtc = now, UpdatedBy = actor, Revision = [] };
-        return await imports.ReplaceParseAsync(new(nextSession, parsed.Lines, parsed.Questions), revision, cancellationToken).ConfigureAwait(false);
+        return await imports.ReplaceParseAsync(new(nextSession, CarriedForward(current.Lines, parsed.Lines), parsed.Questions), revision, cancellationToken).ConfigureAwait(false);
     }
 
     public Task<int> DeleteExpiredAsync(int batchSize, CancellationToken cancellationToken) =>
@@ -173,7 +173,7 @@ public sealed class MenuImportService(
             UpdatedUtc = now,
             Revision = []
         };
-        var replaced = await imports.ReplaceParseAsync(new(next, parsed.Lines, parsed.Questions), current.Session.Revision, cancellationToken).ConfigureAwait(false);
+        var replaced = await imports.ReplaceParseAsync(new(next, CarriedForward(current.Lines, parsed.Lines), parsed.Questions), current.Session.Revision, cancellationToken).ConfigureAwait(false);
         return replaced.Aggregate;
     }
 
@@ -191,6 +191,36 @@ public sealed class MenuImportService(
             ceilings.GetValueOrDefault(MenuCeilings.ImportLines, DefaultLineLimit),
             ceilings.GetValueOrDefault(MenuCeilings.ItemsPerMenu, MenuCeilings.Defaults[MenuCeilings.ItemsPerMenu]),
             ceilings.GetValueOrDefault(MenuCeilings.ImportSessionRetentionMinutes, DefaultRetentionMinutes));
+
+    /*
+     * A re-parse must not forget what the residue pass said.
+     *
+     * Every refresh writes the parser's own output straight back, and the parser knows nothing
+     * about suggestions - so the first time anything changed underneath a session, the per-line
+     * verdicts were wiped while the session-level name survived. The banner still offered to fill
+     * the name in, the click found no verdict on any line, answered nothing, and the screen flashed
+     * and sat there. Reported as "Yes, use these does nothing", and it did nothing.
+     *
+     * The raw paste has not changed, so a verdict about line 68 is still about line 68. It is
+     * carried onto the new line only where that line is still unresolved and still says the same
+     * thing; anything the re-parse has since placed or altered drops its verdict, because a
+     * suggestion about a line that no longer exists in that form is not a suggestion, it is a
+     * stale claim.
+     */
+    private static IReadOnlyCollection<MenuImportSourceLine> CarriedForward(
+        IReadOnlyCollection<MenuImportSourceLine> previous, IReadOnlyCollection<MenuImportSourceLine> parsed)
+    {
+        var kept = previous.Where(line => line.SuggestedVerdict is not null)
+            .GroupBy(line => line.LineNumber)
+            .ToDictionary(group => group.Key, group => group.First());
+        if (kept.Count == 0) return parsed;
+
+        return parsed.Select(line => kept.TryGetValue(line.LineNumber, out var was)
+            && line.Disposition == "unresolved"
+            && string.Equals(line.RawText.Trim(), was.RawText.Trim(), StringComparison.Ordinal)
+                ? line with { SuggestedVerdict = was.SuggestedVerdict, SuggestedReason = was.SuggestedReason }
+                : line).ToArray();
+    }
 
     /// <summary>Puts each verdict on the line it is about, so the screen can show it where the question is.</summary>
     private static IReadOnlyCollection<MenuImportSourceLine> Suggested(IReadOnlyCollection<MenuImportSourceLine> lines, MenuResidueSuggestion? suggestion)
