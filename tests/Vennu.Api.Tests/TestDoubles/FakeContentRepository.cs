@@ -110,7 +110,8 @@ internal sealed class FakeContentRepository : IContentRepository
         DateTime now,
         CancellationToken cancellationToken = default,
         Guid? menuId = null,
-        bool isListed = true)
+        bool isListed = true,
+        Guid? sectionId = null)
     {
         var item = Items.SingleOrDefault(candidate => candidate.VenueId == venueId && candidate.Id == itemId);
         if (item is null)
@@ -118,22 +119,55 @@ internal sealed class FakeContentRepository : IContentRepository
             return Task.FromResult(new ItemUpdateOutcome("not_found", null, null, null, null));
         }
 
+        // The placement this edit is about, resolved the same way the SQL resolves
+        // it (A19). More than one answering to the same menu is the two-sections
+        // case, and it is refused rather than guessed.
+        var matching = menuId is null
+            ? []
+            : Placements
+                .Where(candidate => candidate.VenueId == venueId
+                    && candidate.ItemId == itemId
+                    && candidate.MenuId == menuId
+                    && (sectionId is null || candidate.MenuSectionId == sectionId))
+                .OrderBy(candidate => candidate.MenuSectionId)
+                .ToArray();
+        if (matching.Length > 1)
+        {
+            return Task.FromResult(new ItemUpdateOutcome(
+                "placement_ambiguous", item.Name, item.Description, item.Price, item.IsListed));
+        }
+
+        var placement = matching.FirstOrDefault();
+        var effectivePrice = placement?.ImportedPriceOverride ?? item.Price;
+
         static bool Same(string? left, string? right) => (left ?? string.Empty) == (right ?? string.Empty);
 
         if (expected is not null
             && (item.Name != expected.Name
                 || !Same(item.Description, expected.Description)
-                || !Same(item.Price, expected.Price)
+                || !Same(effectivePrice, expected.Price)
                 || item.IsListed != expected.IsListed))
         {
-            return Task.FromResult(new ItemUpdateOutcome("item_changed", item.Name, item.Description, item.Price, item.IsListed));
+            return Task.FromResult(new ItemUpdateOutcome("item_changed", item.Name, item.Description, effectivePrice, item.IsListed));
         }
 
         item.Name = name;
         item.Description = description;
-        item.Price = price;
         item.IsListed = isListed;
         item.UpdatedUtc = now;
+
+        // Price follows the placement when the edit was made from one (A19); the
+        // library default is only written when the edit belongs to no menu.
+        if (placement is null)
+        {
+            item.Price = price;
+        }
+        else
+        {
+            placement.ImportedPriceOverride = price;
+            placement.UpdatedUtc = now;
+        }
+
         return Task.FromResult(new ItemUpdateOutcome("updated", name, description, price, isListed));
     }
 

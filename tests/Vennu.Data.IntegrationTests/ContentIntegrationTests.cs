@@ -385,6 +385,154 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         Assert.False(refused.IsListed);
     }
 
+    /*
+     * A19 at the database, and the defect that hid behind Q112.
+     *
+     * UQ_Placements_PageItem is "once per PAGE" (migration 062 replaced 061's
+     * once-per-menu with it). So one dish may sit on two pages of one menu - and a
+     * four-page printed menu that repeats a dish, or prices it per protein, is
+     * exactly that.
+     *
+     * The guarded edit used to find its placement by MenuId. With two placements on
+     * one menu it matched both: the guard compared the caller's expectation against
+     * whichever row came back first, and the UPDATE - also keyed by menu - wrote the
+     * same price to both. A price change on the lunch page silently rewrote dinner.
+     *
+     * The edit is now addressed by section, which is unique per item because a
+     * section belongs to exactly one page.
+     */
+    [Fact]
+    public async Task GuardedItemEdit_PricesOnePlacementWithoutTouchingTheOtherPage()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var lunchSection = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var dinnerPage = Guid.NewGuid();
+        await repository.CreatePageAsync(venueId, menuId, dinnerPage, "Dinner", DateTime.UtcNow);
+        var dinnerSection = Guid.NewGuid();
+        await repository.CreateSectionOnMenuAsync(venueId, menuId, dinnerSection, "Dinner mains", DateTime.UtcNow, dinnerPage);
+
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("pad-thai"), Price = "11.95" };
+        await repository.CreateItemOnMenuAsync(item, menuId, lunchSection, itemsPerMenuLimit: 500);
+        Assert.Equal(
+            PlaceExistingOutcomes.Placed,
+            (await repository.PlaceExistingItemAsync(venueId, menuId, dinnerSection, item.Id, 500, DateTime.UtcNow)).Outcome);
+
+        // The same dish costs more at dinner. Only the dinner placement is addressed.
+        var priced = await repository.UpdateItemValuesGuardedAsync(
+            venueId, item.Id, item.Name, item.Description, "13.95", expected: null, DateTime.UtcNow,
+            menuId: menuId, sectionId: dinnerSection);
+        Assert.Equal("updated", priced.Outcome);
+
+        var prices = await PlacementPricesAsync(dataAccess, venueId, menuId);
+        Assert.Equal("13.95", prices[dinnerSection]);
+        Assert.Null(prices[lunchSection]);
+
+        // Lunch still reads the library default; dinner reads its own price.
+        var library = await repository.GetItemAsync(venueId, item.Id);
+        Assert.Equal("11.95", library!.Price);
+
+        // And the reverse: pricing lunch leaves dinner where it was.
+        Assert.Equal("updated", (await repository.UpdateItemValuesGuardedAsync(
+            venueId, item.Id, item.Name, item.Description, "10.95", expected: null, DateTime.UtcNow,
+            menuId: menuId, sectionId: lunchSection)).Outcome);
+
+        prices = await PlacementPricesAsync(dataAccess, venueId, menuId);
+        Assert.Equal("10.95", prices[lunchSection]);
+        Assert.Equal("13.95", prices[dinnerSection]);
+
+        // The library default is untouched by either. It is what a dish costs when
+        // it is placed somewhere new, not something a menu may rewrite (A19).
+        Assert.Equal("11.95", (await repository.GetItemAsync(venueId, item.Id))!.Price);
+    }
+
+    // A menu edit that does not say which placement it means is refused, not applied
+    // to whichever row came back first. The builder always names the section; this is
+    // the backstop for anything that does not.
+    [Fact]
+    public async Task GuardedItemEdit_RefusesAMenuEditThatCannotNameItsPlacement()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var lunchSection = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var dinnerPage = Guid.NewGuid();
+        await repository.CreatePageAsync(venueId, menuId, dinnerPage, "Dinner", DateTime.UtcNow);
+        var dinnerSection = Guid.NewGuid();
+        await repository.CreateSectionOnMenuAsync(venueId, menuId, dinnerSection, "Dinner mains", DateTime.UtcNow, dinnerPage);
+
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("laap"), Price = "9.00" };
+        await repository.CreateItemOnMenuAsync(item, menuId, lunchSection, itemsPerMenuLimit: 500);
+        await repository.PlaceExistingItemAsync(venueId, menuId, dinnerSection, item.Id, 500, DateTime.UtcNow);
+
+        var refused = await repository.UpdateItemValuesGuardedAsync(
+            venueId, item.Id, item.Name, item.Description, "99.00", expected: null, DateTime.UtcNow, menuId: menuId);
+
+        Assert.Equal("placement_ambiguous", refused.Outcome);
+
+        // Nothing moved - not the placements, and not the library.
+        var prices = await PlacementPricesAsync(dataAccess, venueId, menuId);
+        Assert.All(prices.Values, Assert.Null);
+        Assert.Equal("9.00", (await repository.GetItemAsync(venueId, item.Id))!.Price);
+    }
+
+    // One placement is still addressable without naming a section: with nothing to
+    // be ambiguous about, a menu edit means the one placement on that menu.
+    [Fact]
+    public async Task GuardedItemEdit_WithOnePlacement_StillPricesItFromTheMenuAlone()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("som-tum"), Price = "8.50" };
+        await repository.CreateItemOnMenuAsync(item, menuId, sectionId, itemsPerMenuLimit: 500);
+
+        Assert.Equal("updated", (await repository.UpdateItemValuesGuardedAsync(
+            venueId, item.Id, item.Name, item.Description, "9.50", expected: null, DateTime.UtcNow, menuId: menuId)).Outcome);
+
+        Assert.Equal("9.50", (await PlacementPricesAsync(dataAccess, venueId, menuId))[sectionId]);
+        Assert.Equal("8.50", (await repository.GetItemAsync(venueId, item.Id))!.Price);
+    }
+
+    // An edit that belongs to no menu is a library edit and still writes the library
+    // default - the item panel outside the builder, and every caller that predates
+    // pages. A19 demotes Items.Price; it does not retire it.
+    [Fact]
+    public async Task GuardedItemEdit_WithNoMenu_StillWritesTheLibraryDefault()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var menuId = await SeedMenuAsync(dataAccess, venueId);
+        var sectionId = await SeedSectionAsync(dataAccess, venueId, menuId);
+        var item = new Item { Id = Guid.NewGuid(), VenueId = venueId, Name = fixture.UniqueValue("sticky-rice"), Price = "3.00" };
+        await repository.CreateItemOnMenuAsync(item, menuId, sectionId, itemsPerMenuLimit: 500);
+
+        Assert.Equal("updated", (await repository.UpdateItemValuesGuardedAsync(
+            venueId, item.Id, item.Name, item.Description, "4.00", expected: null, DateTime.UtcNow)).Outcome);
+
+        Assert.Equal("4.00", (await repository.GetItemAsync(venueId, item.Id))!.Price);
+        Assert.Null((await PlacementPricesAsync(dataAccess, venueId, menuId))[sectionId]);
+    }
+
+    private static async Task<Dictionary<Guid, string?>> PlacementPricesAsync(
+        SqlDataAccess dataAccess, Guid venueId, Guid menuId) =>
+        (await dataAccess.ExecuteSqlQueryAsync<PlacementPriceRow, object>(
+            "SELECT MenuSectionId, ImportedPriceOverride AS Price FROM dbo.Placements WHERE VenueId=@VenueId AND MenuId=@MenuId;",
+            new { VenueId = venueId, MenuId = menuId }))
+        .ToDictionary(row => row.MenuSectionId, row => row.Price);
+
+    private sealed class PlacementPriceRow
+    {
+        public Guid MenuSectionId { get; set; }
+        public string? Price { get; set; }
+    }
+
     // ---- publish behaviour ------------------------------------------------------
 
     // Q80, enforced inside the transaction: a publish that can reach nothing and

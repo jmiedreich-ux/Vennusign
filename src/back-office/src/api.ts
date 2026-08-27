@@ -1319,6 +1319,11 @@ export async function transitionMenuItemPlacement(
  * Undo sends it, a plain edit does not. Undoing means "put back what I changed" —
  * and if what you changed is no longer what is there, somebody else has edited it
  * since, and putting your old value back would erase their work without a word.
+ *
+ * `sectionId` addresses the placement rather than the menu. Price belongs to the
+ * placement (A19), and one dish may sit in two sections of one menu at two prices;
+ * without the section the server cannot tell which one this edit is about, and
+ * refuses rather than picking.
  */
 export async function updateMenuItemValues(
   configuration: BackOfficeConfiguration,
@@ -1326,9 +1331,12 @@ export async function updateMenuItemValues(
   menuId: string,
   itemId: string,
   values: { name: string; description: string | null; price: string | null; isListed: boolean },
-  expected?: { name: string; description: string | null; price: string | null; isListed: boolean }
+  expected?: { name: string; description: string | null; price: string | null; isListed: boolean },
+  sectionId?: string
 ): Promise<void> {
-  await contentRequest(configuration, accessToken, `/items/${itemId}?menuId=${encodeURIComponent(menuId)}`, {
+  const where = `menuId=${encodeURIComponent(menuId)}`
+    + (sectionId ? `&sectionId=${encodeURIComponent(sectionId)}` : "");
+  await contentRequest(configuration, accessToken, `/items/${itemId}?${where}`, {
     method: "PUT",
     body: JSON.stringify(
       expected
