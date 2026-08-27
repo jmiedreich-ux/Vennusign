@@ -487,6 +487,12 @@ IF @Result=N'updated' BEGIN
  DELETE FROM dbo.MenuImportAnswers WHERE SessionId=@SessionId; DELETE FROM dbo.MenuImportCandidates WHERE SessionId=@SessionId; DELETE FROM dbo.MenuImportQuestionLines WHERE SessionId=@SessionId; DELETE FROM dbo.MenuImportReviewQuestions WHERE SessionId=@SessionId; DELETE FROM dbo.MenuImportSourceLines WHERE SessionId=@SessionId;
  UPDATE dbo.MenuImportSessions SET RawPaste=@RawPaste,ParseRevision=@ParseRevision,Status=@Status,LineCount=@LineCount,ItemCount=@ItemCount,ExpiresUtc=@ExpiresUtc,UpdatedUtc=@UpdatedUtc,UpdatedBy=@UpdatedBy WHERE Id=@SessionId;
 """ + InsertDerivedSql + """
+ -- An operator's own answer outranks one the parser gave itself, so whatever the derived insert
+ -- above pre-answered is cleared for exactly the questions being restored. Both land on
+ -- PK (SessionId, QuestionKey) otherwise, and a re-parse IS a resume - so it surfaced as
+ -- "We couldn't resume this import", error 500.
+ DELETE a FROM dbo.MenuImportAnswers a
+  WHERE a.SessionId=@SessionId AND EXISTS(SELECT 1 FROM #Answers old JOIN dbo.MenuImportReviewQuestions q ON q.SessionId=old.SessionId AND q.Fingerprint=old.Fingerprint WHERE q.QuestionKey=a.QuestionKey);
  INSERT dbo.MenuImportAnswers(SessionId,VenueId,QuestionKey,Fingerprint,Choice,SelectedItemId,ParseRevision,AnsweredUtc,AnsweredBy)
  SELECT old.SessionId,old.VenueId,q.QuestionKey,q.Fingerprint,old.Choice,old.SelectedItemId,q.ParseRevision,old.AnsweredUtc,old.AnsweredBy FROM #Answers old JOIN dbo.MenuImportReviewQuestions q ON q.SessionId=old.SessionId AND q.Fingerprint=old.Fingerprint
  WHERE old.SelectedItemId IS NULL OR EXISTS(SELECT 1 FROM dbo.MenuImportCandidates c WHERE c.SessionId=q.SessionId AND c.QuestionKey=q.QuestionKey AND c.ItemId=old.SelectedItemId);

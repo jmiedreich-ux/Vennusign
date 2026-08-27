@@ -338,4 +338,34 @@ public sealed class MenuPasteParserTests
 
         Assert.DoesNotContain(result.Lines, candidate => candidate.Disposition == "section" && candidate.ParsedName == line);
     }
+
+    [Fact]
+    public void Parse_EveryQuestionOnOneLineHasItsOwnKey()
+    {
+        /*
+         * The 500 the owner hit on resume, reduced.
+         *
+         * M6.9 let one pasted line hold several items, and the question key was still
+         * "line-{number}-{kind}" - so a Sides line's five items produced five questions all called
+         * line-128-identity. Latent while only an operator wrote answers, one key at a time. The
+         * moment the parser started answering questions itself, five answers arrived for one key,
+         * PK_MenuImportAnswers threw inside the re-parse, and a re-parse is a resume.
+         *
+         * Reduced to the parser because that is where the key is minted, and asserting uniqueness
+         * here is cheaper and clearer than reproducing a primary-key violation through SQL.
+         */
+        var library = new[]
+        {
+            new Item { Id = Guid.NewGuid(), VenueId = Guid.NewGuid(), Name = "Jasmine Rice", Price = "2.00", IsActive = true },
+            new Item { Id = Guid.NewGuid(), VenueId = Guid.NewGuid(), Name = "Brown Rice", Price = "3.00", IsActive = true },
+            new Item { Id = Guid.NewGuid(), VenueId = Guid.NewGuid(), Name = "Peanut Sauce", Price = "2.00", IsActive = true }
+        };
+
+        var result = parser.Parse(Guid.NewGuid(), Guid.NewGuid(),
+            "Appetizers\nGarlic Bread 6.50\nSides: Jasmine Rice 2.00, Brown Rice 3.00, Peanut Sauce 2.00", 1, library);
+
+        Assert.True(result.Lines.GroupBy(line => line.LineNumber).Any(group => group.Count() > 1),
+            "the fixture must contain a line holding several items, or it does not test the defect");
+        Assert.Equal(result.Questions.Count, result.Questions.Select(question => question.QuestionKey).Distinct().Count());
+    }
 }

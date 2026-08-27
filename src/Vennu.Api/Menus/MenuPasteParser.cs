@@ -336,7 +336,7 @@ public sealed class MenuPasteParser
                     $"{candidate.ItemId}|{candidate.DisplayName}|{candidate.DisplayPrice}|{candidate.MatchRule}|{candidate.IsSafe}"));
                 var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
                     $"{number}\n{kind}\n{value}\n{candidateShape}\n{dependencyStamp}"))).ToLowerInvariant();
-                return new MenuImportReviewQuestion(sessionId, venueId, $"line-{number}-{kind}", fingerprint, kind, questions.Count, true, revision, [number], candidatesForQuestion, null);
+                return new MenuImportReviewQuestion(sessionId, venueId, $"line-{number}-{subIndex}-{kind}", fingerprint, kind, questions.Count, true, revision, [number], candidatesForQuestion, null);
             }
 
             MenuImportSourceLine Line(string disposition, string? parsedName = null, string? parsedPrice = null, string? reason = null, string? parsedDescription = null) =>
