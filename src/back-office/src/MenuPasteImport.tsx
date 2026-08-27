@@ -19,6 +19,7 @@ import {
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
 import "./menu-paste-import.css";
+import VennusignLoader from "./VennusignLoader";
 
 type Props = { configuration: BackOfficeConfiguration; accessToken: string; sessionId: string | null; onBack: () => void; onStarted: (id: string) => void; onOpenMenu: (id: string) => void };
 
@@ -49,6 +50,12 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
 
   const unresolved = useMemo(() => session?.questions.filter(question => !question.answer) ?? [], [session]);
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
+  /*
+   * Two answers go over the wire one after the other, so the click is a wait, not an instant. It
+   * disabled the buttons and said nothing, which is indistinguishable from a button that does not
+   * work - and was reported as exactly that.
+   */
+  const [applying, setApplying] = useState(false);
   const safeCount = unresolved.filter(question => question.candidates.length === 1 && question.candidates[0].isSafe).length;
   const nearMisses = unresolved.filter(question => question.kind === "identity" && question.candidates.length > 0 && question.candidates.every(candidate => !candidate.isSafe));
   const standaloneQuestions = unresolved.filter(question => !nearMisses.includes(question));
@@ -71,6 +78,21 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     <button className="import-secondary" onClick={onBack}>Back to menus</button>
   </main>;
 
+  /*
+   * Reading is a wait worth drawing (M6.12).
+   *
+   * It used to be the word "Reading…" on a disabled button, which was honest while parsing took
+   * milliseconds. On a real four-page menu it now takes about ten seconds - the parse, and then the
+   * pass over whatever the rules could not place - and ten silent seconds behind an unchanged
+   * screen reads as a button that did nothing. That is what the owner reported.
+   *
+   * Modal, because the whole page is waiting and there is nothing else to look at, which is the
+   * rule VennusignLoader's own documentation sets.
+   */
+  if (busy && !sessionId) return <main className="paste-import import-loading" data-testid="menu-import-reading">
+    <VennusignLoader variant="modal" message="Reading your menu — finding its sections, items and prices." />
+  </main>;
+
   if (!sessionId) return <main className="paste-import paste-start" data-testid="menu-import-start" aria-labelledby="paste-title">
     <button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button>
     <section className="paste-start-card">
@@ -90,7 +112,9 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     </section>
   </main>;
 
-  if (loading) return <main className="paste-import import-loading" aria-live="polite"><div className="import-spinner" /> Resuming your import…</main>;
+  if (loading) return <main className="paste-import import-loading">
+    <VennusignLoader variant="modal" message="Picking your import back up where you left it." />
+  </main>;
   if (!session) return <main className="paste-import import-unavailable"><button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button><h1>We couldn’t resume this import</h1>{error && <p role="alert">{error}</p>}</main>;
 
   /*
@@ -107,6 +131,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
 
   const applySuggestion = async () => {
     if (!session) return;
+    setApplying(true);
     setBusy(true);
     setError(null);
     try {
@@ -121,6 +146,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
       setError(failure instanceof Error ? failure.message : "That suggestion could not be applied. Nothing changed.");
     } finally {
       setBusy(false);
+      setApplying(false);
     }
   };
 
@@ -176,10 +202,14 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
         {session.session.suggestedMenuDescription && <p>We read “{session.session.suggestedMenuDescription}” as how you describe it.</p>}
         <p className="suggestion-banner__note">Nothing is filled in until you say so. Both lines are left off the menu itself.</p>
       </div>
-      <div className="suggestion-banner__actions">
-        <button type="button" className="import-secondary" disabled={busy} data-testid="suggestion-dismiss" onClick={() => setSuggestionDismissed(true)}>No, I'll answer them</button>
-        <button type="button" className="import-primary" disabled={busy} data-testid="suggestion-accept" onClick={() => void applySuggestion()}>Yes, use these</button>
-      </div>
+      {applying
+        ? <div className="suggestion-banner__actions" data-testid="suggestion-applying">
+            <VennusignLoader variant="inline" message="Taking these off the menu and keeping the name." />
+          </div>
+        : <div className="suggestion-banner__actions">
+            <button type="button" className="import-secondary" disabled={busy} data-testid="suggestion-dismiss" onClick={() => setSuggestionDismissed(true)}>No, I'll answer them</button>
+            <button type="button" className="import-primary" disabled={busy} data-testid="suggestion-accept" onClick={() => void applySuggestion()}>Yes, use these</button>
+          </div>}
     </section>}
 
     <section className="question-stack" aria-label="Items needing review">
