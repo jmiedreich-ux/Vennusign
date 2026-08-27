@@ -219,3 +219,47 @@ export function boardCounts(board, unavailableItemIds) {
     items: visible.reduce((total, items) => total + items.length, 0)
   };
 }
+
+/**
+ * What to say about an import somebody started and did not finish (#904).
+ *
+ * The session already survived a closed tab; what it never had was a sentence on the shelf and a
+ * way back. "Saved until Friday 6:47 AM" stated a fact and withheld the action, which decision 5
+ * exists to forbid.
+ *
+ * The phrase names what is left to do rather than what has been done, because that is the thing
+ * that decides whether to go back in. A review with nothing outstanding is not finished either -
+ * it is waiting at its destination step - and says so instead of claiming to be done.
+ */
+export function importInProgressPhrase(open, now = new Date()) {
+  if (!open) return null;
+
+  const remaining = Number(open.answersRemaining ?? 0);
+  const items = Number(open.itemCount ?? 0);
+  const what = remaining > 0
+    ? (remaining === 1 ? "1 answer left" : `${remaining} answers left`)
+    : "ready to finish";
+  const size = items === 1 ? "1 item" : `${items} items`;
+
+  const until = expiryPhrase(open.expiresUtc, now);
+  return until ? `${size}, ${what} · saved until ${until}` : `${size}, ${what}`;
+}
+
+/**
+ * "6:47 AM" for today, "Friday" for later this week, a date beyond that.
+ *
+ * A bare weekday is a lie about anything more than a week out, and a bare time is a lie about
+ * anything that is not today - both of which the old screen printed regardless.
+ */
+export function expiryPhrase(expiresUtc, now = new Date()) {
+  const at = new Date(expiresUtc);
+  if (Number.isNaN(at.getTime())) return null;
+
+  const time = at.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const sameDay = at.toDateString() === now.toDateString();
+  if (sameDay) return time;
+
+  const days = Math.round((at.getTime() - now.getTime()) / 86_400_000);
+  if (days >= 1 && days < 7) return `${at.toLocaleDateString(undefined, { weekday: "long" })} ${time}`;
+  return `${at.toLocaleDateString(undefined, { month: "short", day: "numeric" })} ${time}`;
+}

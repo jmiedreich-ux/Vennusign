@@ -239,6 +239,36 @@ public sealed class MenuImportServiceTests
         public MenuSuggestionOptions Value { get; } = value;
     }
 
+    /*
+     * #904: a session was saved for 24 hours and reachable only through browser history, because
+     * nothing could list one. These cover the two things the list must not get wrong.
+     */
+
+    [Fact]
+    public async Task ListOpen_sweeps_expired_sessions_before_reading()
+    {
+        // Otherwise the list is the one place guaranteed to report an import that has already
+        // expired: it is read every time the shelf loads, and a session is started far less often.
+        var (service, repository, _) = CreateService();
+        repository.Open = [new MenuImportSummary(Guid.NewGuid(), 12, 40, 3, Now.UtcDateTime, Now.UtcDateTime, Now.UtcDateTime.AddHours(24))];
+
+        var open = await service.ListOpenAsync(VenueId, default);
+
+        Assert.Equal(Now.UtcDateTime, repository.SweptAt);
+        Assert.Equal(3, Assert.Single(open).AnswersRemaining);
+    }
+
+    [Fact]
+    public async Task Discard_names_the_session_it_was_asked_to_throw_away()
+    {
+        var (service, repository, _) = CreateService();
+        await service.StartAsync(VenueId, "DINNER\nBurger  12", "owner@example.com", default);
+        var sessionId = repository.Created!.Session.Id;
+
+        Assert.True(await service.DiscardAsync(VenueId, sessionId, default));
+        Assert.Equal(sessionId, repository.Discarded);
+    }
+
     private sealed class ImportRepositoryFake : IMenuImportRepository
     {
         public MenuImportAggregate? Created { get; private set; }
@@ -271,7 +301,18 @@ public sealed class MenuImportServiceTests
         public Task<MenuImportReplaceDestinationOutcome> SetReplaceDestinationAsync(Guid venueId,Guid sessionId,byte[] expectedRevision,Guid menuId,DateTime nowUtc,string? actor,CancellationToken cancellationToken=default)=>throw new NotImplementedException();
         public Task<MenuImportCreateOutcome> ConfirmReplaceAsync(Guid venueId,Guid sessionId,byte[] expectedRevision,Guid actorUserId,IReadOnlyCollection<string> systemRoleKeys,DateTime nowUtc,string? actor,CancellationToken cancellationToken=default)=>throw new NotImplementedException();
         public Task<MenuImportRestoreOutcome> RestoreReplacementAsync(Guid venueId,Guid snapshotId,Guid actorUserId,IReadOnlyCollection<string> systemRoleKeys,DateTime nowUtc,string? actor,CancellationToken cancellationToken=default)=>throw new NotImplementedException();
-        public Task<int> DeleteExpiredAsync(DateTime nowUtc, int batchSize, CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task<int> DeleteExpiredAsync(DateTime nowUtc, int batchSize, CancellationToken cancellationToken = default)
+        {
+            SweptAt = nowUtc; return Task.FromResult(0);
+        }
+        public DateTime? SweptAt { get; private set; }
+        public IReadOnlyCollection<MenuImportSummary> Open { get; set; } = [];
+        public Task<IReadOnlyCollection<MenuImportSummary>> ListOpenAsync(Guid venueId, DateTime nowUtc, CancellationToken cancellationToken = default) => Task.FromResult(Open);
+        public Guid? Discarded { get; private set; }
+        public Task<bool> DiscardAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken = default)
+        {
+            Discarded = sessionId; return Task.FromResult(Current is not null);
+        }
     }
 
     private sealed class FixedClock : TimeProvider { public override DateTimeOffset GetUtcNow() => Now; }

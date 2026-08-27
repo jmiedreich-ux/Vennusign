@@ -304,3 +304,53 @@
 .add-routes__blank:disabled { cursor: default; opacity: .6; }
 .add-routes__error { margin: 0; color: var(--sky-negative-text); font-size: var(--sky-font-size-sm); }
 .add-routes__actions { margin-top: 6px; }
+
+/*
+ * The way back into an unfinished import (#904).
+ *
+ * It sits above the shelf rather than inside it because it is not a menu — it is a piece of work
+ * in progress, and putting it on the grid would make it look like something that is on a screen.
+ */
+.menus-home__resume {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+
+.menus-home__resume-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border: 1px solid var(--sky-border-subtle, #e2e8f0);
+  border-left: 3px solid var(--sky-accent, #2563eb);
+  border-radius: 10px;
+  background: var(--sky-surface-raised, #ffffff);
+}
+
+.menus-home__resume-row > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.menus-home__resume-row strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--sky-text, #0f172a);
+}
+
+.menus-home__resume-row span {
+  font-size: 13px;
+  color: var(--sky-text-muted, #64748b);
+}
+
+.menus-home__resume-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
