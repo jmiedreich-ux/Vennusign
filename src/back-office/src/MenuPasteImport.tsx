@@ -141,10 +141,24 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     const seen = new Promise(resolve => setTimeout(resolve, 700));
     try {
       let current = session;
+      let answered = 0;
       for (const question of session.questions.filter(candidate => !candidate.answer)) {
         const line = session.lines.find(candidate => candidate.lineNumber === question.lineNumbers[0]);
         if (!line?.suggestedVerdict) continue;
         current = await answerMenuImport(configuration, accessToken, current, question, "leave_out");
+        answered++;
+      }
+      /*
+       * Answering nothing is a fault, not a no-op.
+       *
+       * The first version returned quietly when no line carried a verdict, which is exactly what
+       * happened once a re-parse wiped them: the button flashed and the questions stayed. Silence
+       * made a server-side bug look like a dead control. If there is nothing to apply, say so and
+       * leave the questions where the operator can answer them.
+       */
+      if (answered === 0) {
+        setSuggestionDismissed(true);
+        throw new Error("That suggestion is no longer current — this import has been re-read since. Answer the lines below instead.");
       }
       await seen;
       setSession(current);
