@@ -157,14 +157,44 @@ public sealed class MenuImportServiceTests
         Assert.True(repository.ConfirmCalled);
     }
 
-    private static (MenuImportService Service, ImportRepositoryFake Repository, FakeContentRepository Content) CreateService()
+    private static (MenuImportService Service, ImportRepositoryFake Repository, FakeContentRepository Content) CreateService(bool suggesting = false)
     {
         var repository = new ImportRepositoryFake();
         var content = new FakeContentRepository();
         content.Ceilings[MenuCeilings.ImportLines] = 2000;
         var options = new StaticOptions(new MenuBuilderOptions { ImportFileSizeLimitBytes = 1_000_000, PublishRetrySilenceThreshold = TimeSpan.FromSeconds(5), HistoryRetentionDepth = 50 });
-        var service = new MenuImportService(repository, content, new MenuBuilderConfigurationResolver(content, options), new MenuPasteParser(), DisabledSuggestions(), new FixedClock());
+        var service = new MenuImportService(repository, content, new MenuBuilderConfigurationResolver(content, options), new MenuPasteParser(), suggesting ? StubSuggestions() : DisabledSuggestions(), new FixedClock());
         return (service, repository, content);
+    }
+
+
+    [Fact]
+    public async Task ARefreshDoesNotForgetWhatTheResiduePassSaid()
+    {
+        /*
+         * The regression the owner hit twice.
+         *
+         * Every refresh writes the parser's own output straight back, and the parser knows nothing
+         * about suggestions - so the first time anything changed underneath a session, the per-line
+         * verdicts were wiped while the session-level name survived. The banner still offered to
+         * fill the name in, the click found no verdict on any line, answered nothing, and the
+         * screen flashed and sat there. "Yes, use these does nothing", and it did nothing.
+         */
+        var (service, repository, content) = CreateService(suggesting: true);
+        var started = await service.StartAsync(VenueId, "Appetizers\nGarlic Bread $6.50\nMana-Thai Cuisine\nAll Natural Authentic Thai Cuisine\nSalads\nThai Salad $6.50", null, default);
+
+        var suggested = started.Lines.Where(line => line.SuggestedVerdict is not null).Select(line => line.LineNumber).ToArray();
+        Assert.NotEmpty(suggested);
+
+        // Something moves under the session - a library item appears - so the next read re-parses.
+        content.Items.Add(new Item { Id = Guid.NewGuid(), VenueId = VenueId, Name = "Garlic Bread", Price = "6.50", IsActive = true });
+        var refreshed = await service.GetAsync(VenueId, started.Session.Id, default);
+
+        Assert.NotNull(refreshed);
+        Assert.True(refreshed!.Session.ParseRevision > started.Session.ParseRevision, "the fixture must actually force a re-parse");
+        Assert.Equal(suggested, refreshed.Lines.Where(line => line.SuggestedVerdict is not null).Select(line => line.LineNumber));
+        Assert.Equal(started.Session.SuggestedMenuName, refreshed.Session.SuggestedMenuName);
+        _ = repository;
     }
 
     /// <summary>
@@ -174,6 +204,31 @@ public sealed class MenuImportServiceTests
     /// and a suggestion is applied only when an operator says so. The pass's own behaviour has its
     /// own tests.
     /// </summary>
+    /// <summary>A pass that always answers, so a test can be about what happens to its answer.</summary>
+    private static MenuResidueSuggestionService StubSuggestions()
+    {
+        var body = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            content = new[] { new { type = "text", text = """
+                {"menuName":"Mana-Thai Cuisine","menuDescription":"All Natural Authentic Thai Cuisine",
+                 "lines":[{"lineNumber":3,"verdict":"menu_name","confidence":"high","why":"the restaurant"},
+                          {"lineNumber":4,"verdict":"menu_description","confidence":"high","why":"its tagline"}]}
+                """ } }
+        });
+        return new(new HttpClient(new StubHandler(body)) { BaseAddress = new Uri("https://localhost/") },
+            new StaticSuggestionOptions(new MenuSuggestionOptions { ApiKey = "test-key" }),
+            NullLogger<MenuResidueSuggestionService>.Instance);
+    }
+
+    private sealed class StubHandler(string body) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json")
+            });
+    }
+
     private static MenuResidueSuggestionService DisabledSuggestions() =>
         new(new HttpClient { BaseAddress = new Uri("https://localhost/") },
             new StaticSuggestionOptions(new MenuSuggestionOptions { ApiKey = null }),
