@@ -252,6 +252,36 @@ That is a workaround for a model answering the wrong question.
 Decision 3 is untouched: **86 stays item-level and venue-wide.** Availability is a fact about
 tonight; price is a fact about a menu. Nothing here changes what an 86 does or reaches.
 
+**A20 · A price change that could mean two things asks which.** Owner ruling, 2026-08-27, settling
+the question A19 left open: when a dish already sits on several menus, does changing its price
+change one menu or all of them?
+
+Neither, on its own. **It asks.** *"Pad Thai is on 3 menus. Change the price here only, or on all
+3?"* Answering for the operator was rejected in both directions — silently changing every menu is
+the behaviour A19 withdrew, and silently changing one leaves the other menus wrong with nothing
+said.
+
+Three things follow, and they are the whole of it:
+
+- **The question is asked only when there is something to be unsure about.** One placement is not
+  ambiguous. Asking anyway is the noise A18 and decision 18 rule out — confirm only what we were
+  unsure of.
+- **"Here only"** writes that placement and nothing else, which is what the builder already does.
+- **"On all of them"** writes the library default *and* every placement of that dish, so the answer
+  is true straight away rather than only for the menus that happen to carry no price of their own.
+
+A19 is unchanged: a price still belongs to the placement. A20 decides who may change several
+placements at once, not where a price lives. **Q112 stays overturned.**
+
+**A21 · Two candidates that look the same are two candidates.** Owner ruling, 2026-08-27. A venue
+library can hold the same dish twice at the same price — an older import split it — and the review
+screen offered both as *"Use the one you already have — Pad Thai $12.95"*, twice, identically.
+
+Merging them silently was rejected. The screen names what makes them different — which menus each
+is on, and when it was made — and the operator chooses on that basis. A duplicate the venue can
+see is a duplicate the venue can deal with; one the product quietly resolves is one nobody ever
+finds out about.
+
 ## Parked
 
 **Replacing the fallback card.** The generated logo-and-name card is the whole of it for now. Uploading or authoring an alternative is a later piece.
