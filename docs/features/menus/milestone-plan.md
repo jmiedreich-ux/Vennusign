@@ -504,6 +504,58 @@ Accepting answers those lines `leave_out` — a restaurant's name is not a dish 
 
 **Shared display/accessibility scope:** the supported-width floor is 900px; below it, preserve the session and offer a resumable wider-window handoff rather than compressing the workflow. Keyboard-specific interaction design/testing is excluded; semantic controls, accessible names/relationships, visible focus, and screen-reader-compatible status/error announcements remain required.
 
+#### Milestone 6-A12 — a price belongs to the menu it is printed on
+
+**Why this exists.** Amendment **A19**, ruled by the owner on 2026-08-27, withdraws Q5. A dish may cost different amounts on different menus. `Items.Price` survives but is demoted: it is the default a dish carries when it is placed somewhere new, and it is never a fact one menu can change underneath another.
+
+The evidence was a real menu. It carries the same dish in two sections, and it prices whole sections per protein — *Chicken $11.95, Beef $12.95, Shrimp $13.95*. The model could not hold that at all, so the import took the first price and printed the rest into the description. That is a workaround for a data model answering the wrong question.
+
+**Decision 3 is untouched.** 86 stays item-level and venue-wide. Availability is a fact about tonight; price is a fact about a menu.
+
+##### What is already true, and why this is smaller than it looks
+
+`Placements.ImportedPriceOverride` exists (migration 069) and **every read path already coalesces it over `Items.Price`** — the board read, the builder read, duplicate-page, create-from-import and replace-from-import all do. `UQ_Placements_SectionItem UNIQUE (MenuSectionId, ItemId)` has been in the baseline since the beginning, so the storage can already express a per-section price.
+
+What is missing is that the column is only *sometimes* filled, and one writer addresses the wrong row.
+
+##### The defect this milestone actually fixes
+
+`UpdateItemValuesGuardedSql` joins the placement by **menu**, not by section:
+
+```sql
+LEFT JOIN dbo.Placements p ON p.ItemId=i.Id AND p.VenueId=i.VenueId AND p.MenuId=@MenuId
+```
+
+A dish placed in two sections of the same menu matches twice. `@Price` then takes whichever row the engine happened to return, the guard compares the operator's expectation against a price that may belong to the other section, and the `UPDATE` — which is also keyed by menu — writes **both** placements to the same value. The exact case A19 was raised to support is the case that silently corrupts.
+
+##### The three pieces
+
+**1 · Always set the placement price, including new items.** Today a placement gets an override only when an import saw a price that differed from the library's. Every other placement stores `NULL` and leans on `Items.Price` — so editing that dish's price in the library, from any other menu, changes this menu without warning. Under A19 every placement carries its own price, set from the library default at the moment it is placed. `COALESCE` stays as the read for rows created before this lands; it stops being the mechanism.
+
+**2 · The builder edits the placement price, not the library price.** Key the read, the guard and the write by `(MenuSectionId, ItemId)`. Name, description and listing stay on the item — they are facts about the dish. Price moves to the placement, unconditionally, and the `CASE WHEN @HasOverride` branch goes away with it.
+
+**This overturns Q112**, which settled that a builder price edit writes through to the library when no override exists. Q112 was reasoned from Q5. With Q5 withdrawn its premise is gone, and it is recorded as overturned rather than quietly contradicted.
+
+**3 · Replace confirm names what changed, not just counts.** Replacing a menu from an import can now change a price on this menu without touching the library, which makes *"12 items updated"* an unreadable summary of an unreviewable change. The confirm step names the dishes whose price moves and shows both numbers — decision 12: summarize the normal, name the exception.
+
+##### Order, and why it is not the obvious one
+
+**Readers and writers ship before the migration, not after.** A backfill that fills every `ImportedPriceOverride` while a writer still edits `Items.Price` through a menu produces exactly the divergence this milestone exists to prevent, and the window is however long the deploy takes. So:
+
+1. Fix the section-keyed read/guard/write (piece 2) — correct against today's data, no migration needed.
+2. Set the override on every new placement (piece 1) — correct against today's data.
+3. *Then* backfill existing placements, once nothing can write the library price through a menu any more.
+4. The confirm copy (piece 3) last, because it describes behaviour the first three establish.
+
+Steps 1 and 2 are separately shippable and separately verifiable. Step 3 is a migration whose invariant — *no placement has a NULL override* — can only be asserted once it holds.
+
+##### What must not regress
+
+- **Q115 / Q190 — prices are stored exactly as typed.** `NVARCHAR(12)`, no parsing, no currency inference. A backfill copies the string; it does not normalise it.
+- **86 still reaches every menu** (decision 3). Nothing here touches `Items.IsListed`.
+- **Duplicate page, create-from-import and replace-from-import already carry the override.** Regression tests exist for the duplicate path (task #9); the other two need the same.
+- **The library price is still the default**, so an item placed on a new menu shows the price the operator expects without being asked again.
+
 ### Milestone 8 — Delete a menu
 
 **Why this is numbered 8 and not 7.1 (SOP step 2b).** M7's three pieces are `blocked`/`parked` by owner ruling — the mock-fidelity polish round is visual work the separate Foundry component system will settle, and its two full-page pieces await owner scoping. This milestone is behaviour, not polish, it shares no files with M7, and it unblocks a customer action that has been owner-approved and unbuilt since 2026-08-07. The reason is recorded here and cross-referenced from `menu-builder-v2/mock-fidelity-polish-plan.md`.
