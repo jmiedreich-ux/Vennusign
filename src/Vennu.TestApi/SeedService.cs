@@ -2,6 +2,44 @@ namespace Vennu.TestApi;
 
 public sealed class SeedService(ProductApiClient product)
 {
+    /*
+     * Venues already given room for a run, so 98 seeds do not make 98 identical calls.
+     *
+     * Static because the Test API is one process for the whole suite. A miss is harmless - the
+     * endpoint behind it is an idempotent MERGE - so this is a courtesy, not a correctness
+     * mechanism.
+     */
+    private static readonly HashSet<Guid> HeadroomGiven = [];
+
+    private async Task EnsureHeadroomAsync(Guid venueId, string token, CancellationToken cancellationToken)
+    {
+        lock (HeadroomGiven)
+        {
+            if (HeadroomGiven.Contains(venueId)) return;
+        }
+
+        /*
+         * Recorded only on SUCCESS, and deliberately not swallowed.
+         *
+         * The first version marked the venue done BEFORE the call and ignored what came back.
+         * The call was refused - the venue was not on the allowlist - so one seed failed with a
+         * 404 and every later seed saw the venue already "done" and skipped straight to the
+         * ceiling. One 404 in the log, 143 confusing 400s after it, and two CI runs spent
+         * finding out.
+         *
+         * Failing loudly on the first seed is worth more than a suite that limps to the
+         * fiftieth.
+         */
+
+        await product.SendAutomationAsync("/api/test-automation/venues/headroom", new { accessToken = token }, cancellationToken)
+            .ConfigureAwait(false);
+
+        lock (HeadroomGiven)
+        {
+            HeadroomGiven.Add(venueId);
+        }
+    }
+
     public async Task<SeedResponse> SeedAsync(SeedRequest request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.AccessToken))
@@ -10,6 +48,16 @@ public sealed class SeedService(ProductApiClient product)
         var token = request.AccessToken;
         var session = await product.SendAsync<SessionResponse>(
             HttpMethod.Get, "/api/back-office/session", token, null, cancellationToken).ConfigureAwait(false);
+
+        /*
+         * Room for a whole run, before the first seed rather than after the fiftieth.
+         *
+         * The ordinary seed cannot reset - it runs against a venue other tests are using in
+         * parallel - so the ceiling has to be raised without wiping anything. Raising it inside
+         * the reset alone was the first attempt and did nothing: only the scale seed resets, and
+         * it does so on a different venue.
+         */
+        await EnsureHeadroomAsync(session.VenueId, token, cancellationToken).ConfigureAwait(false);
 
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var label = string.IsNullOrWhiteSpace(request.Label) ? "seed" : request.Label.Trim();

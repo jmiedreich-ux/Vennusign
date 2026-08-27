@@ -23,6 +23,11 @@ public static class ScreenSeedStates
 public sealed record BackdateAvailabilityRequest(string? AccessToken, Guid ItemId, int MinutesAgo);
 public sealed record WriteHistoryAtRequest(string? AccessToken, Guid MenuId, string Kind, string? Detail, DateTime OccurredUtc);
 public sealed record ScaleSeedRequest(string? AccessToken, int Menus = 13, int Screens = 20);
+
+/// <summary>The menus a finished test created, to be put away so the shared venue stops filling up.</summary>
+public sealed record CleanupRequest(string? AccessToken, IReadOnlyCollection<Guid>? MenuIds);
+
+public sealed record CleanupResponse(int PutAway);
 public sealed record ScaleSeedMenu(Guid MenuId, string Name, string State, IReadOnlyCollection<Guid> ScreenIds);
 public sealed record ScaleSeedResponse(Guid VenueId, IReadOnlyCollection<ScaleSeedMenu> SeededMenus, IReadOnlyCollection<Guid> ScreenIds);
 

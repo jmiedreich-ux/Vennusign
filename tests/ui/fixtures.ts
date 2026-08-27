@@ -166,11 +166,31 @@ export async function findShelfCard(page: Page, menuName: string) {
   return card;
 }
 
-export const test = base.extend<{ asOwner: Page }>({
+export const test = base.extend<{ asOwner: Page; putSeededMenusAway: void }>({
   asOwner: async ({ page }, use) => {
     await signIn(page, "owner");
     await use(page);
-  }
+  },
+
+  /*
+   * Put away whatever this test seeded.
+   *
+   * An AUTO FIXTURE, not a hook, and that distinction is the whole fix. The first attempt called
+   * `test.afterEach` at this module's top level — which looks like it covers every spec, because
+   * every spec imports `test` from here. It does not. Playwright registers a hook into the suite of
+   * the file being loaded at the time, and this module is loaded ONCE per worker and cached, so the
+   * hook attached to whichever spec happened to import it first and to no other. Cleanup ran for
+   * one file out of twenty-three, the shared venue filled anyway, and 143 seeds were refused.
+   *
+   * An auto fixture runs for every test that uses this `test` object, which is all of them.
+   *
+   * The import is deferred to avoid a cycle: seed.ts imports tokens from here.
+   */
+  putSeededMenusAway: [async ({ }, use) => {
+    await use();
+    const { cleanupSeeded } = await import("./seed");
+    await cleanupSeeded();
+  }, { auto: true }]
 });
 
 export { expect };
