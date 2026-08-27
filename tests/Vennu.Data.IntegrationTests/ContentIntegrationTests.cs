@@ -533,6 +533,40 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         public string? Price { get; set; }
     }
 
+    /*
+     * #908 - the count behind the shelf's limit warning.
+     *
+     * "Active" means NOT PUT AWAY, which is the whole reason this is a server-side count rather
+     * than the number of cards the shelf drew. Putting a menu away is how a venue at its limit
+     * makes room; counting put-away menus would leave no way out, and counting cards would have
+     * done exactly that.
+     */
+    [Fact]
+    public async Task CountActiveMenus_LeavesOutPutAwayMenusAndOtherVenues()
+    {
+        var dataAccess = fixture.CreateDataAccess();
+        var repository = new ContentRepository(dataAccess);
+        var venueId = await SeedVenueAsync(dataAccess);
+        var otherVenueId = await SeedVenueAsync(dataAccess);
+
+        var onShelf = await SeedMenuAsync(dataAccess, venueId);
+        var alsoOnShelf = await SeedMenuAsync(dataAccess, venueId);
+        var putAway = await SeedMenuAsync(dataAccess, venueId);
+        await SeedMenuAsync(dataAccess, otherVenueId);
+
+        Assert.Equal(3, await repository.CountActiveMenusAsync(venueId));
+
+        await repository.SetPutAwayAsync(venueId, putAway, true, 500, "Jeremy", "Put away", DateTime.UtcNow);
+        Assert.Equal(2, await repository.CountActiveMenusAsync(venueId));
+
+        // Back on the shelf and it counts again - the way out has to actually work both ways.
+        await repository.SetPutAwayAsync(venueId, putAway, false, 500, "Jeremy", "Put back", DateTime.UtcNow);
+        Assert.Equal(3, await repository.CountActiveMenusAsync(venueId));
+
+        Assert.Equal(1, await repository.CountActiveMenusAsync(otherVenueId));
+        Assert.NotEqual(onShelf, alsoOnShelf);
+    }
+
     // ---- publish behaviour ------------------------------------------------------
 
     // Q80, enforced inside the transaction: a publish that can reach nothing and

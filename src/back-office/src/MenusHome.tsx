@@ -12,7 +12,9 @@ import {
   setMenuPutAway,
   takeMenuOffScreens,
   loadOpenMenuImports,
+  loadMenuAllowance,
   discardMenuImport,
+  type MenuAllowance,
   type MenuHistoryEntry,
   type OpenMenuImport,
   type ShelfMenu
@@ -26,7 +28,9 @@ import {
   filterShelf,
   hasChangesWaiting,
   importInProgressPhrase,
+  isAtMenuLimit,
   isShelfAtScale,
+  menuAllowanceNotice,
   menusInUse,
   menusNotInUse,
   shelfHeadline,
@@ -110,21 +114,30 @@ export default function MenusHome({
    */
   const [openImports, setOpenImports] = useState<OpenMenuImport[]>([]);
 
+  /*
+   * The menu ceiling (#908). A venue at its limit used to find out four screens in — choose a new
+   * menu, choose paste, paste the whole thing, answer the review, refused at confirm. It is
+   * knowable the moment this page loads.
+   */
+  const [allowance, setAllowance] = useState<MenuAllowance | null>(null);
+
   const refresh = useCallback(async () => {
     try {
       // Three calls for the page, flat at any menu count: the shelf, what is
       // 86'd, and nothing else. Availability is deliberately not embedded in the
       // shelf read — it is instant and venue-wide, so it is its own fact.
-      const [shelf, availability, imports] = await Promise.all([
+      const [shelf, availability, imports, allowed] = await Promise.all([
         loadShelf(configuration, accessToken),
         loadMenuAvailability(configuration, accessToken),
-        // Fails soft and returns [] - a shelf that will not draw because an optional line about an
-        // optional import could not be fetched is worse than no line at all.
-        loadOpenMenuImports(configuration, accessToken)
+        // Both of these fail soft. A shelf that will not draw because an optional line could not
+        // be fetched is worse than the shelf without the line.
+        loadOpenMenuImports(configuration, accessToken),
+        loadMenuAllowance(configuration, accessToken)
       ]);
       setMenus(shelf);
       setUnavailable(availability.filter((item) => !item.isAvailable).map((item) => item.itemId));
       setOpenImports(imports);
+      setAllowance(allowed);
       setError(null);
     } catch {
       setError("Vennusign could not load your menus.");
@@ -284,6 +297,31 @@ export default function MenusHome({
     </section>
   ) : null;
 
+  /*
+   * The ceiling, said where the decision is made (#908).
+   *
+   * Decision 12 - a venue with room to spare is told nothing; one on its last menu, or out of
+   * them, is told plainly, and the sentence names the way out rather than only the wall.
+   * Decision 10 - "Add a menu" does not stay a live button that cannot succeed.
+   */
+  const allowanceNotice = menuAllowanceNotice(allowance);
+  const atLimit = isAtMenuLimit(allowance);
+
+  const allowanceLine = allowanceNotice ? (
+    <p
+      className={`menus-home__allowance menus-home__allowance--${allowanceNotice.tone}`}
+      role="status"
+      data-testid="menu-allowance"
+    >
+      {allowanceNotice.text}
+    </p>
+  ) : null;
+
+  const openChooser = () => {
+    if (atLimit) return;
+    setAddingMenu(true);
+  };
+
   // The chooser belongs to both returns below. Its predecessor lived only in the
   // populated-shelf branch, so on the empty shelf - where every new customer
   // starts, and the only button is "Add a menu" - the click set the state and
@@ -318,6 +356,7 @@ export default function MenusHome({
     // The same routes the tile and the header button open, drawn at page size.
     return (
       <section className="menus-home menus-home--empty" data-testid="menus-home">
+        {allowanceLine}
         {resumeImports}
         <MenuAddRoutes
           variant="page"
@@ -353,7 +392,14 @@ export default function MenusHome({
             </button>
           ) : null}
           {atScale ? (
-            <button type="button" className="action-primary" onClick={() => setAddingMenu(true)} data-testid="add-a-menu">
+            <button
+              type="button"
+              className="action-primary"
+              onClick={openChooser}
+              disabled={atLimit}
+              title={atLimit ? allowanceNotice?.text : undefined}
+              data-testid="add-a-menu"
+            >
               Add a menu
             </button>
           ) : null}
@@ -364,6 +410,7 @@ export default function MenusHome({
         <p className="state" role="status" data-testid="shelf-notice">{notice}</p>
       ) : null}
 
+      {allowanceLine}
       {resumeImports}
 
       {atScale ? (
@@ -420,7 +467,14 @@ export default function MenusHome({
         {/* The dashed tile stays at six or fewer; past the cutover "Add a menu"
             is a plain button beside search instead (Q166). */}
         {!atScale ? (
-          <button type="button" className="menus-home__add-tile" onClick={() => setAddingMenu(true)} data-testid="add-a-menu">
+          <button
+            type="button"
+            className="menus-home__add-tile"
+            onClick={openChooser}
+            disabled={atLimit}
+            title={atLimit ? allowanceNotice?.text : undefined}
+            data-testid="add-a-menu"
+          >
             <span className="menus-home__add-mark" aria-hidden><Plus size={18} /></span>
             <strong>Add a menu</strong>
             <small>Paste it in, or start blank</small>

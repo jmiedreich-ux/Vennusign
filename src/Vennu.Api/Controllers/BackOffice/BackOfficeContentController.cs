@@ -80,6 +80,21 @@ public sealed class BackOfficeContentController(
     }
 
     /// <summary>
+    /// How many menus this venue may have, and how many it is using (#908).
+    ///
+    /// The count is the server's, not the client's. The shelf could count the cards it drew, but
+    /// "how many menus exist" and "how many menus you can see" are not guaranteed to be the same
+    /// question, and a limit warning computed from the wrong one is worse than none.
+    /// </summary>
+    [HttpGet("menus/allowance")]
+    [RequireCapability("content.item.update")]
+    public async Task<ActionResult<MenuAllowanceResponse>> GetMenuAllowance(CancellationToken cancellationToken)
+    {
+        var allowance = await content.GetMenuAllowanceAsync(VenueId, cancellationToken).ConfigureAwait(false);
+        return Ok(new MenuAllowanceResponse(allowance.Used, allowance.Limit));
+    }
+
+    /// <summary>
     /// The board one menu's screens are showing, for a single card refreshed after an
     /// act. 404 when the menu has never been published: the shelf already knows which
     /// cards those are and does not ask.

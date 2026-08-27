@@ -354,3 +354,33 @@
   gap: 8px;
   flex-shrink: 0;
 }
+
+/*
+ * The menu ceiling, said before the work rather than after it (#908).
+ *
+ * Drawn only when it matters — a venue with room to spare sees nothing here.
+ */
+.menus-home__allowance {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.menus-home__allowance--nearly {
+  color: var(--sky-text-muted, #64748b);
+  background: var(--sky-surface-sunken, #f8fafc);
+  border: 1px solid var(--sky-border-subtle, #e2e8f0);
+}
+
+.menus-home__allowance--full {
+  color: var(--sky-warning-text, #854d0e);
+  background: var(--sky-warning-surface, #fefce8);
+  border: 1px solid var(--sky-warning-border, #fde68a);
+}
+
+.menus-home__add-tile:disabled,
+.menus-home__actions .action-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

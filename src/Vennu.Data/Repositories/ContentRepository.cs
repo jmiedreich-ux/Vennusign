@@ -2597,6 +2597,12 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             new { VenueId = RequireId(venueId, nameof(venueId)) },
             cancellationToken).ConfigureAwait(false)).ToArray();
 
+    public async Task<int> CountActiveMenusAsync(Guid venueId, CancellationToken cancellationToken = default) =>
+        (int)(await dataAccess.ExecuteSqlQueryAsync<CountResult, object>(
+            "SELECT COUNT(*) AS Value FROM dbo.Menus WHERE VenueId = @VenueId AND IsPutAway = 0;",
+            new { VenueId = RequireId(venueId, nameof(venueId)) },
+            cancellationToken).ConfigureAwait(false)).Single().Value;
+
     public async Task<int> CountItemsOnMenuAsync(Guid venueId, Guid menuId, CancellationToken cancellationToken = default)
     {
         var result = (await dataAccess.ExecuteSqlQueryAsync<CountResult, object>(

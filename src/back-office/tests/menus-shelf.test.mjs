@@ -319,8 +319,19 @@ test("the empty shelf draws the routes itself, and one chooser serves both shelv
   assert.equal((source.match(/const addMenuDialog =/g) ?? []).length, 1);
   assert.equal((source.match(/\{addMenuDialog\}/g) ?? []).length, 1);
   assert.equal((source.match(/data-testid="add-menu-dialog"/g) ?? []).length, 1);
-  assert.equal((source.match(/setAddingMenu\(true\)/g) ?? []).length, 2,
+  /*
+   * Both affordances go through ONE opener, which is also the menu-limit gate (#908). Before that
+   * they each called setAddingMenu(true) directly, and this counted two.
+   *
+   * The invariant is unchanged and the assertion is now stronger: exactly two affordances open the
+   * chooser, and because there is exactly one way to open it, neither can skip the limit check.
+   * A third affordance wired straight to setAddingMenu would fail the last line here.
+   */
+  assert.equal((source.match(/const openChooser = \(\) => \{/g) ?? []).length, 1);
+  assert.equal((source.match(/onClick=\{openChooser\}/g) ?? []).length, 2,
     "the tile and the header button, and nothing else, open the chooser");
+  assert.equal((source.match(/setAddingMenu\(true\)/g) ?? []).length, 1,
+    "and they reach it only through the opener, so neither can skip the limit check");
 
   // The prompt the owner removed on 2026-08-26 does not come back.
   assert.doesNotMatch(withoutComments(source), /Start a blank menu/,

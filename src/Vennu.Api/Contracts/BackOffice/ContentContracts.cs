@@ -181,6 +181,14 @@ public sealed record ShelfMenuResponse(
     BoardResponse? Board);
 
 /// <summary>
+/// How many menus this venue is using, against how many it may have (#908).
+///
+/// A null Limit means no ceiling is configured, which is not the same as a ceiling of zero and
+/// must not be drawn as "0 of 0". Nothing is said at all in that case.
+/// </summary>
+public sealed record MenuAllowanceResponse(int Used, int? Limit);
+
+/// <summary>
 /// A board as the render engine consumes it. Prices are strings because they are
 /// stored exactly as typed — "9.5" never becomes "9.50", and "MP" is a price
 /// (Q115/Q190). Theme is the menu theme attached to it, or null: no theme attached
