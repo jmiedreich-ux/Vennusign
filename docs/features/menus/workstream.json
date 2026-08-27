@@ -2,8 +2,8 @@
   "codename": "Menus",
   "what": "The menu product: item library, draft/publish spine, the builder, the render engine, and the import paths that get a venue's existing menu into it without retyping",
   "stage": "development",
-  "position": "A20 and A21 shipped. A price change that could mean two things asks which; two library candidates that look the same now say which menus they are on. M6.12's price work is settled and deployed.",
-  "next": "M6.12's remaining piece: the replace confirm still names counts rather than the dishes whose price moved. Q213-Q215 still block M8 (#868) and M6.6 (#871). #914 is a red E2E test on master.",
+  "position": "The replace confirm now names the dishes a replacement adds, drops and re-prices, with both numbers. Until M6.13 the only change it mentioned was the target's own draft, which the replacement discards.",
+  "next": "M6.13 needs an owner workbook. Q213-Q215 still block M8 (#868) and M6.6 (#871). #914 is a red E2E test on master, and #909 rotates the Anthropic key.",
   "label": "workstream:menus",
   "design": [
     {
@@ -289,6 +289,20 @@
       "plan": "milestone-plan.md",
       "issue": 910,
       "pr": 920,
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
+    },
+    {
+      "id": "6-A13",
+      "label": "M6.13",
+      "depth": 20,
+      "title": "The replace confirm names what changes, not just counts",
+      "status": "done",
+      "plan": "milestone-plan.md",
+      "issue": 922,
+      "pr": null,
       "acceptance": {
         "kind": "workbook",
         "record": null

@@ -574,6 +574,115 @@ Steps 1 and 2 are separately shippable and separately verifiable. Step 3 is a mi
 - **Duplicate page, create-from-import and replace-from-import already carry the override.** Regression tests exist for the duplicate path (task #9); the other two need the same.
 - **The library price is still the default**, so an item placed on a new menu shows the price the operator expects without being asked again.
 
+#### Milestone 6-A13 — the replace confirm names what changes, not just counts
+
+##### v1 was reviewed and largely rejected. What survived, and what did not.
+
+**v1 said:** compute the diff when the operator picks a target, store it on the session in a new
+`NVARCHAR(4000)` column, quoting the file's own comment — *"Counts are stored with the selected
+target so refresh resumes the same explanation."*
+
+**That argument is backwards for this payload.** The existing counts describe the TARGET MENU, and
+the target side has a lease: `TargetWorkingFingerprint`, checked by `ConfirmReplaceSql` as
+`target_conflict`. This diff also depends on the SESSION side — the lines and answers — and the
+session side has no lease at all:
+
+- `AnswerSql` and `AcceptSafeSql` check revision and expiry only. Neither looks at `Destination`,
+  and neither clears the stored target facts.
+- `SetSectionOverrideAsync` runs `ReplaceParseAsync`, which deletes and rebuilds every line,
+  question and answer, and leaves `Destination` and every `Target*` column untouched.
+- Worst: `MenuImportService.GetAsync` **is** `RefreshDependenciesAsync`. Every read re-parses
+  against the venue's current library and silently calls `ReplaceParseAsync` when dependencies
+  moved. A coworker renaming a library item rebuilds the session's answers while the operator is
+  sitting on the confirm screen.
+
+So storing it does not buy a stable explanation. It buys a stable **wrong** one, and the recovery
+path makes it worse: on `Conflict` the client does `setSession(failure.current)` and re-renders the
+same stale payload, so the operator reads one thing, presses Replace, and gets another.
+
+**So: computed on read, never stored.** That deletes most of v1 — no migration, no column, no
+`SetCreateDestinationSql` nulling, no `CK_MenuImportSessions_Target` interaction, no 4,000-character
+cap that the reviewer showed overflows at 12 names per bucket and fails as an aborted transaction
+rather than a truncation.
+
+**Also dropped: building `#Rows` inside `SetReplaceDestinationSql`.** The two existing copies are
+genuinely identical, so sharing them is a no-op — but *adding a third use at target-selection time*
+is not. It would import the confirm's failure modes into picking a menu: a `fallback` answer on a
+line longer than 200 characters overflows `Name nvarchar(200)`, and under `SET XACT_ABORT ON` that
+aborts the transaction. Today that is a clean 409 at confirm; there it would be an unhandled
+exception with no error path, and the operator could not select any menu to replace.
+
+##### The one thing v1 got right, and it is the point
+
+The screen's three facts today are: items in the new draft, **unpublished changes already present**
+(added · removed · changed), and screens changing now.
+
+The middle one is working-vs-published on the target — what the replacement will **discard**. It is
+correct and correctly labelled. But nothing on the screen says what the replacement itself **does**.
+The operator is about to overwrite a menu and is never shown one dish that arrives, goes, or moves
+price. That is the decision being made.
+
+##### What it will say
+
+Decision 12 — summarize the normal, name the exception.
+
+> 4 dishes arrive · 2 go · 6 change price
+>
+> Pad Thai  12.95 → 13.95
+> Green Curry  11.95 → 12.95
+> … and 4 more
+
+Counts summarize; names are the exception worth reading; prices show **both numbers**, because the
+question is "by how much", not "how many".
+
+##### The price rule, corrected
+
+v1 said "compare the pasted price against the menu's current effective price". Wrong in both
+directions, because `ConfirmReplaceSql` writes `IIF(Existing=1,Price,NULL)` and `Price` is
+`ParsedPrice`, which is **NULL for a dish pasted without one**:
+
+- Library `12.95`, no override, pasted with no price → naive diff says `12.95 → (blank)`. Reality:
+  NULL → NULL, effective stays `12.95`. **A move that does not happen.**
+- Library `12.95`, override `13.95` from an earlier import, pasted with no price → naive diff says
+  `13.95 → (blank)`. Reality: the override is erased and the price **drops to 12.95**. A real
+  change, reported with the wrong destination.
+
+The comparison is therefore:
+
+    COALESCE(currentOverride, libraryPrice)  →  COALESCE(pastedPrice, libraryPrice)
+
+##### Where it is computed
+
+A pure function over data already in hand, so it can be tested without a database:
+
+- the aggregate's lines and answers, resolved the same way `ConfirmReplaceSql` resolves them —
+  disposition `item`, plus `unresolved` answered `fallback`; an answer carrying `SelectedItemId`
+  makes the row *existing*
+- the target menu's placements, which now carry `ImportedPriceOverride`
+- the venue's library items, for the fallback price
+
+**Matched by ItemId, never by name.** A line answered "new item" gets a fresh id and reads as
+*arriving* even where the name matches something already on the menu — that is honest, because the
+operator said it was a different dish.
+
+Answers apply at `LineSubIndex = 0` only, matching the SQL's `ql.LineNumber=l.LineNumber AND
+l.LineSubIndex=0`.
+
+##### Order
+
+1. The pure function plus its unit tests, including the two NULL-price cases above.
+2. Attach it to the aggregate on read, only when the destination is replace.
+3. Draw it. The "unpublished changes already present" block **stays** and keeps its own label — it
+   answers a different question, and removing it trades one silence for another.
+
+##### What must not regress
+
+- **Q115/Q190** — prices shown exactly as stored. No formatting, no currency.
+- Nothing changes in `ConfirmReplaceSql`. This describes the replacement; it does not alter it.
+- `already_completed` — a finished session must not render a preview of a replacement that has
+  already happened.
+- Backing out with "Choose another menu" clears it, since that reset is local state only.
+
 ### Milestone 8 — Delete a menu
 
 **Why this is numbered 8 and not 7.1 (SOP step 2b).** M7's three pieces are `blocked`/`parked` by owner ruling — the mock-fidelity polish round is visual work the separate Foundry component system will settle, and its two full-page pieces await owner scoping. This milestone is behaviour, not polish, it shares no files with M7, and it unblocks a customer action that has been owner-approved and unbuilt since 2026-08-07. The reason is recorded here and cross-referenced from `menu-builder-v2/mock-fidelity-polish-plan.md`.

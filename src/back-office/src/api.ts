@@ -1494,6 +1494,23 @@ export type MenuImportSession = {
   session: { id: string; rawPaste: string; parseRevision: number; status: "reviewing" | "resolved"; lineCount: number; itemCount: number; expiresUtc: string; revision: string; destination: "create" | "replace" | null; proposedMenuName: string | null; completedMenuId: string | null; completedUtc: string | null; targetMenuId: string | null; targetUpdatedUtc: string | null; completedSnapshotId: string | null; targetMenuName: string | null; targetHadPublishedVersion: boolean | null; targetWorkingItemCount: number | null; targetPublishedItemCount: number | null; targetAddedCount: number | null; targetRemovedCount: number | null; targetChangedCount: number | null; completedSnapshotRestoredUtc:string|null; proposedMenuDescription: string | null; suggestedMenuName: string | null; suggestedMenuDescription: string | null };
   lines: MenuImportLine[];
   questions: MenuImportQuestion[];
+  /**
+   * What replacing the chosen menu would do (M6.13). Present only once a replace target is chosen,
+   * and never on a completed session — the replacement already happened, and previewing it would
+   * describe a decision nobody is making any more.
+   */
+  replacePreview?: MenuImportReplacePreview | null;
+};
+
+export type MenuImportPriceMove = { name: string; from: string | null; to: string | null };
+
+export type MenuImportReplacePreview = {
+  arrivingCount: number;
+  leavingCount: number;
+  repricedCount: number;
+  arriving: string[];
+  leaving: string[];
+  repriced: MenuImportPriceMove[];
 };
 
 export class MenuImportApiError extends Error {
@@ -1514,6 +1531,7 @@ function normalizeMenuImport(value: MenuImportSession): MenuImportSession {
   return {
     ...value,
     session: { ...value.session, destination: value.session.destination ?? null, proposedMenuName: value.session.proposedMenuName ?? null, completedMenuId: value.session.completedMenuId ?? null, completedUtc: value.session.completedUtc ?? null, targetMenuId:value.session.targetMenuId??null,targetUpdatedUtc:value.session.targetUpdatedUtc??null,completedSnapshotId:value.session.completedSnapshotId??null,targetMenuName:value.session.targetMenuName??null,targetHadPublishedVersion:value.session.targetHadPublishedVersion??null,targetWorkingItemCount:value.session.targetWorkingItemCount??null,targetPublishedItemCount:value.session.targetPublishedItemCount??null,targetAddedCount:value.session.targetAddedCount??null,targetRemovedCount:value.session.targetRemovedCount??null,targetChangedCount:value.session.targetChangedCount??null,completedSnapshotRestoredUtc:value.session.completedSnapshotRestoredUtc??null,proposedMenuDescription:value.session.proposedMenuDescription??null,suggestedMenuName:value.session.suggestedMenuName??null,suggestedMenuDescription:value.session.suggestedMenuDescription??null },
+    replacePreview: value.replacePreview ?? null,
     lines: (value.lines ?? []).map((line: MenuImportLine) => ({ ...line, suggestedVerdict: line.suggestedVerdict ?? null, suggestedReason: line.suggestedReason ?? null })),
     questions: (value.questions ?? []).map(question => ({
       ...question,

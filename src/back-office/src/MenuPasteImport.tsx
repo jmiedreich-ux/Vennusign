@@ -18,7 +18,7 @@ import {
   type ShelfMenu
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
-import { candidateProvenance } from "./menuImportCandidates.mjs";
+import { andMore, candidateProvenance, priceMovePhrase, replaceSummary } from "./menuImportCandidates.mjs";
 import "./menu-paste-import.css";
 import VennusignLoader from "./VennusignLoader";
 
@@ -318,6 +318,48 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
       createMenuForm:<form onSubmit={event=>{event.preventDefault();void(async()=>{setBusy(true);setError(null);try{const replaced=await confirmMenuImportReplace(configuration,accessToken,latest.current??session);setSession(replaced.import);}catch(failure){if(failure instanceof MenuImportApiError&&failure.current)setSession(failure.current);setError(failure instanceof Error?failure.message:"This menu could not be replaced. Nothing changed.");}finally{setBusy(false);}})();}}>
         <p>Confirm the target and consequences. Replacement happens together or nothing changes.</p>
         <div className="replacement-target"><strong>{session.session.targetMenuName}</strong><span>{session.session.targetHadPublishedVersion?"The published version stays on screens.":"This menu has never been published."}</span></div>
+        {/*
+          * What the replacement actually does (M6.13).
+          *
+          * The counts below this describe the TARGET menu's own unpublished draft — what the
+          * replacement discards — and are correctly labelled as such. Until now that was the only
+          * thing on the screen about change, so an operator about to overwrite a menu was never
+          * shown one dish that arrives, goes, or moves price. That is the decision being made.
+          *
+          * Decision 12: counts summarize, names are the exception. Prices carry BOTH numbers,
+          * because the question is "by how much", not "how many".
+          */}
+        {replaceSummary(session.replacePreview) ? (
+          <section className="replacement-diff" data-testid="replacement-diff">
+            <p className="replacement-diff__summary" data-testid="replacement-summary">{replaceSummary(session.replacePreview)}</p>
+            {session.replacePreview!.repriced.length ? (
+              <ul className="replacement-diff__prices" data-testid="replacement-prices">
+                {session.replacePreview!.repriced.map(move => (
+                  <li key={move.name}><span>{move.name}</span><small>{priceMovePhrase(move)}</small></li>
+                ))}
+                {andMore(session.replacePreview!.repriced, session.replacePreview!.repricedCount)
+                  ? <li className="replacement-diff__more">{andMore(session.replacePreview!.repriced, session.replacePreview!.repricedCount)}</li>
+                  : null}
+              </ul>
+            ) : null}
+            {session.replacePreview!.arriving.length ? (
+              <p className="replacement-diff__names" data-testid="replacement-arriving">
+                <strong>Arriving</strong> {session.replacePreview!.arriving.join(", ")}
+                {andMore(session.replacePreview!.arriving, session.replacePreview!.arrivingCount) ? `, ${andMore(session.replacePreview!.arriving, session.replacePreview!.arrivingCount)}` : ""}
+              </p>
+            ) : null}
+            {session.replacePreview!.leaving.length ? (
+              <p className="replacement-diff__names" data-testid="replacement-leaving">
+                <strong>Going</strong> {session.replacePreview!.leaving.join(", ")}
+                {andMore(session.replacePreview!.leaving, session.replacePreview!.leavingCount) ? `, ${andMore(session.replacePreview!.leaving, session.replacePreview!.leavingCount)}` : ""}
+              </p>
+            ) : null}
+          </section>
+        ) : session.replacePreview ? (
+          <p className="replacement-diff__same" data-testid="replacement-unchanged">
+            Nothing on this menu changes — the paste matches what is already there.
+          </p>
+        ) : null}
         <div className="confirm-facts replacement-facts"><div><strong>{session.session.itemCount}</strong><span>items in the new draft</span></div><div><strong>{(session.session.targetAddedCount??0)+(session.session.targetRemovedCount??0)+(session.session.targetChangedCount??0)}</strong><span>{`${(session.session.targetAddedCount??0)+(session.session.targetRemovedCount??0)+(session.session.targetChangedCount??0)===1?"unpublished change":"unpublished changes"} already present`}</span><small>{`${session.session.targetAddedCount??0} ${(session.session.targetAddedCount??0)===1?"item added":"items added"} · ${session.session.targetRemovedCount??0} removed · ${session.session.targetChangedCount??0} changed`}</small></div><div><strong>0</strong><span>screens change now</span></div></div>
         <details><summary>What will be preserved</summary><p>Menu identity, theme, screen assignments, published version, and current 86 status. A restorable copy of today’s working draft is saved first.</p></details>
         <p className="not-live">Not live yet — publishing remains a separate action.</p>{error&&<p className="import-error" role="alert">{error}</p>}
