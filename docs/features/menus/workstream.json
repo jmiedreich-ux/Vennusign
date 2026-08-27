@@ -2,8 +2,8 @@
   "codename": "Menus",
   "what": "The menu product: item library, draft/publish spine, the builder, the render engine, and the import paths that get a venue's existing menu into it without retyping",
   "stage": "development",
-  "position": "The paste import reads a real printed menu whole, and M6.11's suggestion for the two lines no rule can place is live on dev. M6.12 now moves price from the item to the placement, per A19.",
-  "next": "M6.12 (#910): section-key the builder's price write, then fill every placement, then backfill. #907 (identical library duplicates) blocks the owner's own testing. Q213-Q215 still block M8 (#868) and M6.6 (#871).",
+  "position": "M6.12's first piece shipped: a price change on one page of a menu was rewriting the other, and the edit is now addressed by placement. The shelf reaches an unfinished import (#904) and names the menu limit (#908).",
+  "next": "M6.12 waits on #913 - does a library price edit still reach menus that already carry the dish? Filling every placement severs that, and breaks ten tests describing today's contract. #907 blocks the owner's own testing.",
   "label": "workstream:menus",
   "design": [
     {
@@ -288,7 +288,7 @@
       "status": "next",
       "plan": "milestone-plan.md",
       "issue": 910,
-      "pr": null,
+      "pr": 912,
       "acceptance": {
         "kind": "workbook",
         "record": null

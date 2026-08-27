@@ -536,7 +536,13 @@ The edit is now addressed by **section**, which is a unique address for an item 
 
 ##### The three pieces
 
-**1 · Always set the placement price, including new items.** Today a placement gets an override only when an import saw a price that differed from the library's. Every other placement stores `NULL` and leans on `Items.Price` — so editing that dish's price in the library, from any other menu, changes this menu without warning. Under A19 every placement carries its own price, set from the library default at the moment it is placed. `COALESCE` stays as the read for rows created before this lands; it stops being the mechanism.
+**1 · Always set the placement price, including new items.** — **BLOCKED on #913, and this is the interesting part of the milestone.**
+
+It was written: three lines of SQL filling `ImportedPriceOverride` at every placement insert. It breaks **ten integration tests**, none of them about import, all of them about the product's existing contract — the builder read, the draft diff, both publish guards, discard, and the shelf's draft counts. They all say the same thing: *today, editing a dish's price in the library changes it on every menu the dish is on, and that shows up as a draft change waiting to be published.* Fill every placement and that stops, silently.
+
+That is not a test problem. The tests are describing the product, and whether a library price edit should still reach menus that already carry the dish is the owner's call, not a consequence to discover after shipping. The change was reverted rather than merged. **#913** puts the question with the evidence.
+
+The original reasoning follows, and stands whichever way #913 goes: Today a placement gets an override only when an import saw a price that differed from the library's. Every other placement stores `NULL` and leans on `Items.Price` — so editing that dish's price in the library, from any other menu, changes this menu without warning. Under A19 every placement carries its own price, set from the library default at the moment it is placed. `COALESCE` stays as the read for rows created before this lands; it stops being the mechanism.
 
 **2 · The builder edits the placement price, not the library price.** Key the read, the guard and the write by `(MenuSectionId, ItemId)`. Name, description and listing stay on the item — they are facts about the dish. Price moves to the placement, unconditionally, and the `CASE WHEN @HasOverride` branch goes away with it.
 
