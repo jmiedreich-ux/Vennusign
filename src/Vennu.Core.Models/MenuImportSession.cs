@@ -27,7 +27,16 @@ public sealed record MenuImportSession(
     int? TargetAddedCount = null,
     int? TargetRemovedCount = null,
     int? TargetChangedCount = null,
-    DateTime? CompletedSnapshotRestoredUtc = null);
+    DateTime? CompletedSnapshotRestoredUtc = null,
+    /// <summary>Filled from an accepted suggestion, or typed. Back-office only for now (owner, 2026-08-26).</summary>
+    string? ProposedMenuDescription = null,
+    /// <summary>
+    /// What the residue pass thinks this menu is called and what it is. A suggestion, never an
+    /// answer: A18 permits nothing to be pre-answered unless a rule can name why, and a model
+    /// names a reason rather than a rule. Applied only when the operator says so.
+    /// </summary>
+    string? SuggestedMenuName = null,
+    string? SuggestedMenuDescription = null);
 
 public sealed record MenuImportSourceLine(
     Guid SessionId,
@@ -41,7 +50,16 @@ public sealed record MenuImportSourceLine(
     string? ParsedDescription,
     string? ParsedPrice,
     string? ParserReason,
-    long ParseRevision);
+    long ParseRevision,
+    /// <summary>
+    /// What the residue pass thinks this line is, and why, or null when it was never asked about.
+    ///
+    /// A suggestion sits beside the question, never in place of it: A18 permits nothing to be
+    /// pre-answered unless a rule can name why, and a model names a reason rather than a rule. The
+    /// operator applies it, or ignores it and answers as before.
+    /// </summary>
+    string? SuggestedVerdict = null,
+    string? SuggestedReason = null);
 
 public sealed record MenuImportReviewQuestion(
     Guid SessionId,
@@ -110,5 +128,15 @@ public static class MenuImportChoices
     /// <see cref="Fallback"/>, so a line answered here is never placed while its text stays on the
     /// session - which is what Q81's "never silently drop a line" asks for.
     /// </summary>
+    public const string LeaveOut = "leave_out";
+}
+
+/// <summary>What the residue pass may say about a line it was shown.</summary>
+public static class MenuImportSuggestions
+{
+    public const string MenuName = "menu_name";
+    public const string MenuDescription = "menu_description";
+    public const string SectionHeading = "section_heading";
+    public const string Dish = "dish";
     public const string LeaveOut = "leave_out";
 }

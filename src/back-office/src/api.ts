@@ -1439,11 +1439,14 @@ export type MenuImportQuestion = {
   lineNumbers: number[]; candidates: MenuImportCandidate[]; answer: MenuImportAnswer | null;
 };
 export type MenuImportLine = {
-  lineNumber: number; rawText: string; disposition: "blank" | "section" | "item" | "unresolved" | "fallback";
+  lineNumber: number; rawText: string; disposition: "blank" | "section" | "item" | "unresolved" | "fallback" | "description";
   parsedName: string | null; parsedDescription: string | null; parsedPrice: string | null; parserReason: string | null;
+  /** What the residue pass thinks this line is, and why. A suggestion beside the question, never in place of it (A18). */
+  suggestedVerdict: "menu_name" | "menu_description" | "section_heading" | "dish" | "leave_out" | null;
+  suggestedReason: string | null;
 };
 export type MenuImportSession = {
-  session: { id: string; rawPaste: string; parseRevision: number; status: "reviewing" | "resolved"; lineCount: number; itemCount: number; expiresUtc: string; revision: string; destination: "create" | "replace" | null; proposedMenuName: string | null; completedMenuId: string | null; completedUtc: string | null; targetMenuId: string | null; targetUpdatedUtc: string | null; completedSnapshotId: string | null; targetMenuName: string | null; targetHadPublishedVersion: boolean | null; targetWorkingItemCount: number | null; targetPublishedItemCount: number | null; targetAddedCount: number | null; targetRemovedCount: number | null; targetChangedCount: number | null; completedSnapshotRestoredUtc:string|null };
+  session: { id: string; rawPaste: string; parseRevision: number; status: "reviewing" | "resolved"; lineCount: number; itemCount: number; expiresUtc: string; revision: string; destination: "create" | "replace" | null; proposedMenuName: string | null; completedMenuId: string | null; completedUtc: string | null; targetMenuId: string | null; targetUpdatedUtc: string | null; completedSnapshotId: string | null; targetMenuName: string | null; targetHadPublishedVersion: boolean | null; targetWorkingItemCount: number | null; targetPublishedItemCount: number | null; targetAddedCount: number | null; targetRemovedCount: number | null; targetChangedCount: number | null; completedSnapshotRestoredUtc:string|null; proposedMenuDescription: string | null; suggestedMenuName: string | null; suggestedMenuDescription: string | null };
   lines: MenuImportLine[];
   questions: MenuImportQuestion[];
 };
@@ -1465,8 +1468,8 @@ async function menuImportRequest(configuration: BackOfficeConfiguration, accessT
 function normalizeMenuImport(value: MenuImportSession): MenuImportSession {
   return {
     ...value,
-    session: { ...value.session, destination: value.session.destination ?? null, proposedMenuName: value.session.proposedMenuName ?? null, completedMenuId: value.session.completedMenuId ?? null, completedUtc: value.session.completedUtc ?? null, targetMenuId:value.session.targetMenuId??null,targetUpdatedUtc:value.session.targetUpdatedUtc??null,completedSnapshotId:value.session.completedSnapshotId??null,targetMenuName:value.session.targetMenuName??null,targetHadPublishedVersion:value.session.targetHadPublishedVersion??null,targetWorkingItemCount:value.session.targetWorkingItemCount??null,targetPublishedItemCount:value.session.targetPublishedItemCount??null,targetAddedCount:value.session.targetAddedCount??null,targetRemovedCount:value.session.targetRemovedCount??null,targetChangedCount:value.session.targetChangedCount??null,completedSnapshotRestoredUtc:value.session.completedSnapshotRestoredUtc??null },
-    lines: value.lines ?? [],
+    session: { ...value.session, destination: value.session.destination ?? null, proposedMenuName: value.session.proposedMenuName ?? null, completedMenuId: value.session.completedMenuId ?? null, completedUtc: value.session.completedUtc ?? null, targetMenuId:value.session.targetMenuId??null,targetUpdatedUtc:value.session.targetUpdatedUtc??null,completedSnapshotId:value.session.completedSnapshotId??null,targetMenuName:value.session.targetMenuName??null,targetHadPublishedVersion:value.session.targetHadPublishedVersion??null,targetWorkingItemCount:value.session.targetWorkingItemCount??null,targetPublishedItemCount:value.session.targetPublishedItemCount??null,targetAddedCount:value.session.targetAddedCount??null,targetRemovedCount:value.session.targetRemovedCount??null,targetChangedCount:value.session.targetChangedCount??null,completedSnapshotRestoredUtc:value.session.completedSnapshotRestoredUtc??null,proposedMenuDescription:value.session.proposedMenuDescription??null,suggestedMenuName:value.session.suggestedMenuName??null,suggestedMenuDescription:value.session.suggestedMenuDescription??null },
+    lines: (value.lines ?? []).map((line: MenuImportLine) => ({ ...line, suggestedVerdict: line.suggestedVerdict ?? null, suggestedReason: line.suggestedReason ?? null })),
     questions: (value.questions ?? []).map(question => ({
       ...question,
       lineNumbers: question.lineNumbers ?? [],

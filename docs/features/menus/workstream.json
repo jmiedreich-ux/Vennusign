@@ -2,8 +2,8 @@
   "codename": "Menus",
   "what": "The menu product: item library, draft/publish spine, the builder, the render engine, and the import paths that get a venue's existing menu into it without retyping",
   "stage": "development",
-  "position": "The paste import reads a real printed menu end to end. M6.10 makes the review screen say what its actions do and adds the Leave it out answer that was designed and never built. M6.11 adds the AI pass.",
-  "next": "M6.11: an Opus 5 pass over the two lines the rules cannot place, filling the menu name and description. Then Q213-Q215, which block M8 (#868) and M6.6 (#871).",
+  "position": "The paste import reads a real printed menu whole. M6.11 offers the two lines no rule can place to Opus 5 as a suggestion the operator applies - A18 satisfied, not bypassed. M6.6 and M8 await owner answers.",
+  "next": "M6.11 (#888) needs an ANTHROPIC key on dev and the owner workbook. Then Q213-Q215, which block M8 (#868) and M6.6 (#871).",
   "label": "workstream:menus",
   "design": [
     {
@@ -257,9 +257,23 @@
       "label": "M6.10",
       "depth": 17,
       "title": "The review screen speaks plainly",
-      "status": "next",
+      "status": "done",
       "plan": "milestone-plan.md",
       "issue": 886,
+      "pr": 887,
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      }
+    },
+    {
+      "id": "6-A11",
+      "label": "M6.11",
+      "depth": 18,
+      "title": "What the rules cannot place, suggested rather than asked",
+      "status": "next",
+      "plan": "milestone-plan.md",
+      "issue": 888,
       "pr": null,
       "acceptance": {
         "kind": "workbook",
@@ -269,7 +283,7 @@
     {
       "id": "7",
       "label": "M7",
-      "depth": 18,
+      "depth": 19,
       "title": "Mock-fidelity polish round (dialogs, item panel, bottom bar, Review & Publish page, history page)",
       "status": "blocked",
       "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
@@ -283,7 +297,7 @@
     {
       "id": "7-A1",
       "label": "M7.1",
-      "depth": 19,
+      "depth": 20,
       "title": "Review & Publish page — design write-up, paused for owner review",
       "status": "blocked",
       "plan": "menu-builder-v2/review-publish-page-design.md",
@@ -297,7 +311,7 @@
     {
       "id": "7-A2",
       "label": "M7.2",
-      "depth": 20,
+      "depth": 21,
       "title": "Full history screen (mock 09/16)",
       "status": "blocked",
       "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
@@ -311,7 +325,7 @@
     {
       "id": "7-A3",
       "label": "M7.3",
-      "depth": 21,
+      "depth": 22,
       "title": "Background tint/corner blob — live-site investigation",
       "status": "parked",
       "plan": "menu-builder-v2/mock-fidelity-polish-plan.md",
@@ -325,7 +339,7 @@
     {
       "id": "8",
       "label": "M8",
-      "depth": 22,
+      "depth": 23,
       "title": "Delete a menu",
       "status": "blocked",
       "plan": "milestone-plan.md",

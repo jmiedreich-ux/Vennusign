@@ -151,6 +151,7 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
         SessionId = aggregate.Session.Id, aggregate.Session.VenueId, aggregate.Session.RawPaste, aggregate.Session.ParseRevision,
         aggregate.Session.Status, aggregate.Session.LineCount, aggregate.Session.ItemCount, aggregate.Session.ExpiresUtc,
         aggregate.Session.CreatedUtc, aggregate.Session.UpdatedUtc, aggregate.Session.UpdatedBy, ExpectedRevision = expectedRevision,
+        aggregate.Session.SuggestedMenuName, aggregate.Session.SuggestedMenuDescription,
         Now = aggregate.Session.UpdatedUtc,
         LinesJson = JsonSerializer.Serialize(aggregate.Lines),
         QuestionsJson = JsonSerializer.Serialize(aggregate.Questions.Select(q => new QuestionPayload(q.QuestionKey, q.Fingerprint, q.Kind, q.DisplayOrder, q.Required, q.ParseRevision))),
@@ -166,7 +167,8 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
             row.ItemCount, row.ExpiresUtc, row.CreatedUtc, row.UpdatedUtc, row.UpdatedBy, row.Revision,
             row.Destination, row.ProposedMenuName, row.CompletedMenuId, row.CompletedUtc,
             row.TargetMenuId,row.TargetUpdatedUtc,row.CompletedSnapshotId,row.TargetMenuName,row.TargetHadPublishedVersion,
-            row.TargetWorkingItemCount,row.TargetPublishedItemCount,row.TargetAddedCount,row.TargetRemovedCount,row.TargetChangedCount,row.CompletedSnapshotRestoredUtc);
+            row.TargetWorkingItemCount,row.TargetPublishedItemCount,row.TargetAddedCount,row.TargetRemovedCount,row.TargetChangedCount,row.CompletedSnapshotRestoredUtc,
+            row.ProposedMenuDescription, row.SuggestedMenuName, row.SuggestedMenuDescription);
         return new(session, lines, questions.Select(q => new MenuImportReviewQuestion(session.Id, session.VenueId,
             q.QuestionKey, q.Fingerprint, q.Kind, q.DisplayOrder, q.Required, q.ParseRevision, q.LineNumbers ?? [], q.Candidates ?? [], q.Answer)).ToArray());
     }
@@ -225,6 +227,12 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
         public string? UpdatedBy { get; init; }
         public string? Destination { get; init; }
         public string? ProposedMenuName { get; init; }
+
+        public string? ProposedMenuDescription { get; init; }
+
+        public string? SuggestedMenuName { get; init; }
+
+        public string? SuggestedMenuDescription { get; init; }
         public Guid? CompletedMenuId { get; init; }
         public DateTime? CompletedUtc { get; init; }
         public Guid? TargetMenuId { get; init; }
@@ -244,9 +252,9 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
     }
 
     private const string InsertDerivedSql = """
-INSERT dbo.MenuImportSourceLines (SessionId, VenueId, LineNumber, LineSubIndex, RawText, Disposition, ParsedName, ParsedDescription, ParsedPrice, ParserReason, ParseRevision)
-SELECT @SessionId, @VenueId, LineNumber, LineSubIndex, RawText, Disposition, ParsedName, ParsedDescription, ParsedPrice, ParserReason, ParseRevision
-FROM OPENJSON(@LinesJson) WITH (LineNumber int, LineSubIndex int, RawText nvarchar(max), Disposition nvarchar(24), ParsedName nvarchar(200), ParsedDescription nvarchar(1000), ParsedPrice nvarchar(12), ParserReason nvarchar(80), ParseRevision bigint);
+INSERT dbo.MenuImportSourceLines (SessionId, VenueId, LineNumber, LineSubIndex, RawText, Disposition, ParsedName, ParsedDescription, ParsedPrice, ParserReason, ParseRevision, SuggestedVerdict, SuggestedReason)
+SELECT @SessionId, @VenueId, LineNumber, LineSubIndex, RawText, Disposition, ParsedName, ParsedDescription, ParsedPrice, ParserReason, ParseRevision, SuggestedVerdict, SuggestedReason
+FROM OPENJSON(@LinesJson) WITH (LineNumber int, LineSubIndex int, RawText nvarchar(max), Disposition nvarchar(24), ParsedName nvarchar(200), ParsedDescription nvarchar(1000), ParsedPrice nvarchar(12), ParserReason nvarchar(80), ParseRevision bigint, SuggestedVerdict nvarchar(24), SuggestedReason nvarchar(300));
 INSERT dbo.MenuImportReviewQuestions (SessionId, VenueId, QuestionKey, Fingerprint, Kind, DisplayOrder, Required, ParseRevision)
 SELECT @SessionId, @VenueId, QuestionKey, Fingerprint, Kind, DisplayOrder, Required, ParseRevision
 FROM OPENJSON(@QuestionsJson) WITH (QuestionKey nvarchar(80), Fingerprint char(64), Kind nvarchar(32), DisplayOrder int, Required bit, ParseRevision bigint);
@@ -259,16 +267,16 @@ FROM OPENJSON(@CandidatesJson) WITH (QuestionKey nvarchar(80), ItemId uniqueiden
 
     private static readonly string CreateSql = """
 SET XACT_ABORT ON; BEGIN TRANSACTION;
-INSERT dbo.MenuImportSessions (Id, VenueId, RawPaste, ParseRevision, Status, LineCount, ItemCount, ExpiresUtc, CreatedUtc, UpdatedUtc, UpdatedBy)
-VALUES (@SessionId, @VenueId, @RawPaste, @ParseRevision, @Status, @LineCount, @ItemCount, @ExpiresUtc, @CreatedUtc, @UpdatedUtc, @UpdatedBy);
+INSERT dbo.MenuImportSessions (Id, VenueId, RawPaste, ParseRevision, Status, LineCount, ItemCount, ExpiresUtc, CreatedUtc, UpdatedUtc, UpdatedBy, SuggestedMenuName, SuggestedMenuDescription)
+VALUES (@SessionId, @VenueId, @RawPaste, @ParseRevision, @Status, @LineCount, @ItemCount, @ExpiresUtc, @CreatedUtc, @UpdatedUtc, @UpdatedBy, @SuggestedMenuName, @SuggestedMenuDescription);
 """ + InsertDerivedSql + "COMMIT; SELECT N'updated' Result;";
 
     private const string ReadSql = """
 SELECT s.Id, s.VenueId, s.RawPaste, s.ParseRevision, s.Status, s.LineCount, s.ItemCount, s.ExpiresUtc, s.CreatedUtc, s.UpdatedUtc, s.UpdatedBy, s.Revision,
- s.Destination, s.ProposedMenuName, s.CompletedMenuId, s.CompletedUtc,s.TargetMenuId,s.TargetUpdatedUtc,s.CompletedSnapshotId,
+ s.Destination, s.ProposedMenuName, s.ProposedMenuDescription, s.SuggestedMenuName, s.SuggestedMenuDescription, s.CompletedMenuId, s.CompletedUtc,s.TargetMenuId,s.TargetUpdatedUtc,s.CompletedSnapshotId,
  s.TargetMenuName,s.TargetHadPublishedVersion,s.TargetWorkingItemCount,s.TargetPublishedItemCount,s.TargetAddedCount,s.TargetRemovedCount,s.TargetChangedCount,
  (SELECT RestoredUtc FROM dbo.MenuImportReplacementSnapshots rs WHERE rs.Id=s.CompletedSnapshotId) CompletedSnapshotRestoredUtc,
- (SELECT l.SessionId, l.VenueId, l.LineNumber, l.LineSubIndex, l.RawText, l.Disposition, l.ParsedName, l.ParsedDescription, l.ParsedPrice, l.ParserReason, l.ParseRevision FROM dbo.MenuImportSourceLines l WHERE l.SessionId=s.Id ORDER BY l.LineNumber, l.LineSubIndex FOR JSON PATH) LinesJson,
+ (SELECT l.SessionId, l.VenueId, l.LineNumber, l.LineSubIndex, l.RawText, l.Disposition, l.ParsedName, l.ParsedDescription, l.ParsedPrice, l.ParserReason, l.ParseRevision, l.SuggestedVerdict, l.SuggestedReason FROM dbo.MenuImportSourceLines l WHERE l.SessionId=s.Id ORDER BY l.LineNumber, l.LineSubIndex FOR JSON PATH) LinesJson,
  (SELECT q.QuestionKey, q.Fingerprint, q.Kind, q.DisplayOrder, q.Required, q.ParseRevision,
    JSON_QUERY(COALESCE((SELECT N'['+STRING_AGG(CONVERT(nvarchar(max), ql.LineNumber),N',') WITHIN GROUP (ORDER BY ql.LineNumber)+N']' FROM dbo.MenuImportQuestionLines ql WHERE ql.SessionId=q.SessionId AND ql.QuestionKey=q.QuestionKey),N'[]')) LineNumbers,
    JSON_QUERY((SELECT c.ItemId, c.DisplayName, c.DisplayPrice, c.MatchRule, c.IsSafe FROM dbo.MenuImportCandidates c WHERE c.SessionId=q.SessionId AND c.QuestionKey=q.QuestionKey ORDER BY c.DisplayName, c.ItemId FOR JSON PATH)) Candidates,

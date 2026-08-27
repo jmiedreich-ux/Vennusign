@@ -110,3 +110,28 @@
    that do. Not disabled, not hidden - just not competing. */
 .question-row__leave { background: transparent; }
 .question-row__leave strong { color: var(--sky-color-text-secondary); }
+
+/*
+ * The suggestion (M6.11).
+ *
+ * Set apart from the questions rather than among them, because it is a different kind of thing:
+ * the questions are the operator's to decide, and this is a reading offered for checking. Accented
+ * rather than warned, and it never occupies the primary position by itself - "No, I'll answer
+ * them" sits beside it at equal weight, because a proposal you cannot easily decline is a decision
+ * somebody else made.
+ */
+.suggestion-banner {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 20px;
+  margin-bottom: 14px;
+  border: 2px solid var(--sky-color-primary); border-radius: var(--sky-radius-lg-minus);
+  padding: 16px 18px; background: var(--sky-color-accent-wash);
+}
+.suggestion-banner h2 { margin: 4px 0 6px; font-size: var(--sky-font-size-lg); }
+.suggestion-banner p { margin: 0; font-size: var(--sky-font-size-sm); color: var(--sky-color-text-secondary); }
+.suggestion-banner__note { margin-top: 6px !important; font-size: var(--sky-font-size-xxs) !important; }
+.suggestion-banner__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* On the row, the reading sits under the pasted text it is about - not in a banner detached from
+   the thing it describes. The model's own reason is the row's title attribute. */
+.question-row__suggestion { color: var(--sky-color-primary-ink, #0f172a); font-style: italic; }
+.question-row[data-suggested] { border-color: var(--sky-color-primary); }

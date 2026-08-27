@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Vennu.Api.Menus;
 using Vennu.Api.Tests.TestDoubles;
@@ -162,8 +163,25 @@ public sealed class MenuImportServiceTests
         var content = new FakeContentRepository();
         content.Ceilings[MenuCeilings.ImportLines] = 2000;
         var options = new StaticOptions(new MenuBuilderOptions { ImportFileSizeLimitBytes = 1_000_000, PublishRetrySilenceThreshold = TimeSpan.FromSeconds(5), HistoryRetentionDepth = 50 });
-        var service = new MenuImportService(repository, content, new MenuBuilderConfigurationResolver(content, options), new MenuPasteParser(), new FixedClock());
+        var service = new MenuImportService(repository, content, new MenuBuilderConfigurationResolver(content, options), new MenuPasteParser(), DisabledSuggestions(), new FixedClock());
         return (service, repository, content);
+    }
+
+    /// <summary>
+    /// The residue pass with no key, which is how every environment without one behaves.
+    ///
+    /// Deliberately not a stub that returns suggestions: these tests are about what the rules do,
+    /// and a suggestion is applied only when an operator says so. The pass's own behaviour has its
+    /// own tests.
+    /// </summary>
+    private static MenuResidueSuggestionService DisabledSuggestions() =>
+        new(new HttpClient { BaseAddress = new Uri("https://localhost/") },
+            new StaticSuggestionOptions(new MenuSuggestionOptions { ApiKey = null }),
+            NullLogger<MenuResidueSuggestionService>.Instance);
+
+    private sealed class StaticSuggestionOptions(MenuSuggestionOptions value) : IOptions<MenuSuggestionOptions>
+    {
+        public MenuSuggestionOptions Value { get; } = value;
     }
 
     private sealed class ImportRepositoryFake : IMenuImportRepository
