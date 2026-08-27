@@ -181,4 +181,28 @@ test.describe("paste import review", () => {
     await page.getByTestId("suggestion-accept").click();
     await expect(page.getByTestId("suggestion-applying")).toBeVisible();
   });
+
+  test("an accepted suggestion fills the menu name", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
+    await seed({ label: "suggested-name" });
+    await openAs(page, "owner", "/menu/import");
+
+    await page.getByLabel("Menu text").fill("Ossobuco  24\nA line nobody can read");
+    await page.getByRole("button", { name: "Read menu" }).click();
+    await expect(page.getByTestId("menu-import-review")).toBeVisible();
+
+    const banner = page.getByTestId("import-suggestion");
+    if (await banner.count() === 0) test.skip(true, "No suggestion offered - the residue pass needs a key on this environment.");
+    const suggested = (await banner.getByRole("heading").innerText()).replace(/^Is this menu called “|”\?$/g, "");
+
+    await page.getByTestId("suggestion-accept").click();
+    await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
+    await page.getByRole("button", { name: "Create a new menu" }).click();
+
+    // The whole point of the feature. `suggestedMenuName` and `proposedMenuName` are unrelated
+    // server-side, and accepting used to set neither - so the name the banner had just offered went
+    // nowhere and this field still read "New menu".
+    await expect(page.getByLabel("Menu name")).toHaveValue(suggested);
+    await expect(page.getByLabel("Menu name")).not.toHaveValue("New menu");
+  });
 });

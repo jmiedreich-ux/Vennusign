@@ -40,7 +40,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     let current = true;
     setLoading(true);
     loadMenuImport(configuration, accessToken, sessionId)
-      .then(value => { if (current) { setSession(value); setMenuName(value.session.proposedMenuName ?? "New menu"); setError(null); } })
+      .then(value => { if (current) { setSession(value); setMenuName(nameFor(value)); setError(null); } })
       .catch(failure => { if (current) setError(failure instanceof Error ? failure.message : "This import could not be resumed."); })
       .finally(() => { if (current) setLoading(false); });
     return () => { current = false; };
@@ -99,7 +99,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
       {error && <p className="import-error" role="alert">{error}</p>}
       <div className="paste-actions"><button className="import-secondary" onClick={onBack}>Cancel</button><button className="import-primary" disabled={busy || !paste.trim()} onClick={async () => {
         setBusy(true); setError(null);
-        try { const created = await startMenuImport(configuration, accessToken, paste); setSession(created); onStarted(created.session.id); }
+        try { const created = await startMenuImport(configuration, accessToken, paste); setSession(created); setMenuName(nameFor(created)); onStarted(created.session.id); }
         catch (failure) { setError(failure instanceof Error ? failure.message : "VennuSign could not read that paste."); }
         finally { setBusy(false); }
       }}>{busy ? "Reading…" : "Read menu"}</button></div>
@@ -161,6 +161,16 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
         throw new Error("That suggestion is no longer current — this import has been re-read since. Answer the lines below instead.");
       }
       await seen;
+      /*
+       * The point of the feature, and it was missing.
+       *
+       * `suggestedMenuName` and `proposedMenuName` are unrelated fields: the first is written when
+       * the paste is read, the second only when a destination is chosen. Accepting the suggestion
+       * answered the lines and set neither, so the name the banner had just offered went nowhere
+       * and the destination step still said "New menu". Reported by the owner as the name never
+       * surfacing anywhere, which is exactly what happened.
+       */
+      if (session.session.suggestedMenuName) setMenuName(session.session.suggestedMenuName);
       setSession(current);
     } catch (failure) {
       await seen;
@@ -312,6 +322,17 @@ function QuestionCard({ session, question, busy, onAnswer, onPromote }: { sessio
       </div>
     </div>
   );
+}
+
+/**
+ * What the menu-name field should say for a session.
+ *
+ * A name the operator has already settled wins; then the suggestion, which is what the banner
+ * offered; then the placeholder. Written once because three separate paths were each deciding it
+ * and two of them decided nothing at all.
+ */
+function nameFor(session: MenuImportSession) {
+  return session.session.proposedMenuName ?? session.session.suggestedMenuName ?? "New menu";
 }
 
 function formatExpiry(value: string) { return new Intl.DateTimeFormat(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" }).format(new Date(value)); }
