@@ -236,6 +236,22 @@ not reinvented per dialog. Radio inputs take `accent-color: var(--sky-color-prim
 rather than the browser default. This does not redesign any one dialog's layout
 or copy; those remain their own listed pieces of work.
 
+## Amendment — 27 August 2026
+
+**A19 · A price belongs to a placement, not to an item.** Q5 settled on 2026-08-07 that one item
+carries one shared price across every menu it sits on, with per-menu variation named as a future
+feature. Withdrawn by the owner on 2026-08-27: a dish may cost different amounts on different
+menus. `Items.Price` remains, demoted to the default a dish carries when it is placed somewhere
+new — never a fact one menu can change underneath another.
+
+The evidence that settled it was a real menu. It carries the same dish in two sections, and it
+prices whole sections per protein — *Chicken $11.95, Beef $12.95, Shrimp $13.95* — which the model
+could not hold at all, so the import took the first price and printed the rest in the description.
+That is a workaround for a model answering the wrong question.
+
+Decision 3 is untouched: **86 stays item-level and venue-wide.** Availability is a fact about
+tonight; price is a fact about a menu. Nothing here changes what an 86 does or reaches.
+
 ## Parked
 
 **Replacing the fallback card.** The generated logo-and-name card is the whole of it for now. Uploading or authoring an alternative is a later piece.

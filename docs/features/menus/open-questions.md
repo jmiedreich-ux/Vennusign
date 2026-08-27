@@ -76,7 +76,13 @@ The item library means one item on several menus with "shared edits", but decisi
 
 *Answer:* Owner (2026-08-07): confirmed one item = one shared price across all menus it sits on (per-menu exceptions like happy hour are future features). Mechanics provisional per recommendation: the edit joins each affected menu’s draft queue; each menu’s screens change only on its own publish. FLAG: the editing flow must feel easy — possibly a quick price-change mode — design follow-up required before slice 3 builds the inspector flow.
 
-<sub>decisions.md 2; README criteria 2/4; build-decisions 1 [decisions-doc]</sub>
+*Answer amended:* Owner (2026-08-27): **a dish may cost different amounts on different menus.** The 2026-08-07 answer - one item, one shared price, with per-menu exceptions named as future features - is withdrawn. Price becomes a property of the **placement**; `Items.Price` stays as the default a dish carries when it is placed somewhere new, never a fact a second menu can change underneath the first.
+
+What prompted it: a real four-page menu carries the same dish twice at the same price (Pad Thai, under Noodles and under Vegetarian) and prices whole sections per protein - "Chicken $11.95, Beef $12.95, Shrimp $13.95" - which is per-placement pricing the model could not hold. The import currently takes the first of the three and prints the rest in the dish's description, which is a workaround for a model that was answering the wrong question.
+
+The mechanics half-exist already and were not visible under their own name: `Placements.ImportedPriceOverride` arrived with create-from-import (069) and is coalesced over `Items.Price` on every builder read, but is written only for items the import matched. Recorded here because this reverses a settled BLOCKING answer, and because three surfaces and one Playwright test currently assert the old one.
+
+<sub>decisions.md 2; README criteria 2/4; build-decisions 1 [decisions-doc]; `MenuBuilder.tsx:2822`, `:1613`, `builderModel.mjs:171`, `tests/ui/specs/menu-builder.spec.ts:1097` all assert the withdrawn answer</sub>
 
 ### Q6 · BLOCKING
 
