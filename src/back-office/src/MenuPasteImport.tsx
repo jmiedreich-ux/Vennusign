@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Check, ChevronDown, ChevronRight, ClipboardPaste, RotateCcw, Sparkles } from "lucide-react";
 import {
   MenuImportApiError,
@@ -49,6 +49,16 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
   useEffect(()=>{if(session?.session.status!=="resolved"||session.session.completedMenuId)return;let active=true;loadShelf(configuration,accessToken).then(value=>{if(active)setMenus(value.filter(menu=>!menu.isPutAway));}).catch(()=>{if(active)setError("Menus could not be loaded. Your review is still saved.");});return()=>{active=false;};},[configuration,accessToken,session?.session.status,session?.session.completedMenuId]);
 
   const unresolved = useMemo(() => session?.questions.filter(question => !question.answer) ?? [], [session]);
+  /*
+   * The newest session, for handlers that were created earlier.
+   *
+   * Every write carries the session revision as If-Match, and a stale one comes back 409 "This
+   * import changed in another window" - which is true of a second tab and a lie about the only tab
+   * open. The name field's own blur save bumps the revision, and the submit handler beside it was
+   * closed over the session as it stood before that blur, so confirming a name you had just typed
+   * conflicted with yourself. Reported by the owner on a brand-new import with nothing else open.
+   */
+  const latest = useRef<MenuImportSession | null>(null);
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
   /*
    * Two answers go over the wire one after the other, so the click is a wait, not an instant. It
@@ -60,12 +70,28 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
   const nearMisses = unresolved.filter(question => question.kind === "identity" && question.candidates.length > 0 && question.candidates.every(candidate => !candidate.isSafe));
   const standaloneQuestions = unresolved.filter(question => !nearMisses.includes(question));
 
+  useEffect(() => { latest.current = session ?? null; }, [session]);
+
   const mutate = useCallback(async (run: (current: MenuImportSession) => Promise<MenuImportSession>) => {
-    if (!session) return;
+    const current = latest.current ?? session;
+    if (!current) return;
     setBusy(true); setError(null);
-    try { setSession(await run(session)); }
+    try { setSession(await run(current)); }
     catch (failure) {
-      if (failure instanceof MenuImportApiError && failure.current) setSession(failure.current);
+      /*
+       * A conflict that carries the current state is one we caused: the server hands back exactly
+       * what changed, and the only writer was this page. Retried once against it, silently, because
+       * telling somebody their import changed in another window when no other window exists is
+       * worse than the extra round trip. A second failure is a real conflict and is shown.
+       */
+      if (failure instanceof MenuImportApiError && failure.current) {
+        try { setSession(await run(failure.current)); return; }
+        catch (retry) {
+          if (retry instanceof MenuImportApiError && retry.current) setSession(retry.current);
+          setError(retry instanceof Error ? retry.message : "That answer could not be saved.");
+          return;
+        }
+      }
       setError(failure instanceof Error ? failure.message : "That answer could not be saved.");
     } finally { setBusy(false); }
   }, [session]);
@@ -200,13 +226,13 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
       {!session.session.destination ? <><p>Your review is saved. Creating is the first step that changes menu working content.</p>{error && <p className="import-error" role="alert">{error}</p>}
         <button className="destination-choice" disabled={busy} onClick={() => void mutate(current => setMenuImportCreateDestination(configuration, accessToken, current, menuName))}><strong>Create a new menu</strong><span>Build a new unpublished menu from all {session.session.itemCount} imported items.</span></button>
         <div className="replace-options"><h2>Replace an existing menu</h2><p>The pasted menu becomes its new unpublished draft. What guests see stays live until you publish.</p>{menus.length?<div className="target-list">{menus.map(menu=><button type="button" key={menu.menuId} disabled={busy} onClick={()=>void mutate(current=>setMenuImportReplaceDestination(configuration,accessToken,current,menu.menuId))}><span><strong>{menu.name}</strong><small>{menu.publishedVersion===null?"Never published":`${menu.draftCount} unpublished ${menu.draftCount===1?"change":"changes"}`}</small></span><ChevronRight aria-hidden="true"/></button>)}</div>:<p className="future-destination">No active menus are available to replace.</p>}</div></> : session.session.destination==="create"?
-      <form onSubmit={event => { event.preventDefault(); void (async () => { setBusy(true); setError(null); try { let current = session; if (menuName.trim() !== session.session.proposedMenuName) current = await setMenuImportCreateDestination(configuration, accessToken, session, menuName); const created = await confirmMenuImportCreate(configuration, accessToken, current); setSession(created.import); } catch (failure) { if (failure instanceof MenuImportApiError && failure.current) setSession(failure.current); setError(failure instanceof Error ? failure.message : "This menu could not be created. Nothing changed."); } finally { setBusy(false); } })(); }}>
+      <form onSubmit={event => { event.preventDefault(); void (async () => { setBusy(true); setError(null); try { let current = latest.current ?? session; if (menuName.trim() !== current.session.proposedMenuName) current = await setMenuImportCreateDestination(configuration, accessToken, current, menuName); const created = await confirmMenuImportCreate(configuration, accessToken, current); setSession(created.import); } catch (failure) { if (failure instanceof MenuImportApiError && failure.current) setSession(failure.current); setError(failure instanceof Error ? failure.message : "This menu could not be created. Nothing changed."); } finally { setBusy(false); } })(); }}>
         <p>Confirm the name, item count, and publishing state. Everything is created together or nothing changes.</p>
         <label htmlFor="import-menu-name">Menu name</label><input id="import-menu-name" required maxLength={200} value={menuName} onChange={event => setMenuName(event.target.value)} onBlur={() => { if (menuName.trim() && menuName.trim() !== session.session.proposedMenuName) void mutate(current => setMenuImportCreateDestination(configuration, accessToken, current, menuName)); }} />
         <div className="confirm-facts"><div><strong>{session.session.itemCount}</strong><span>items will be added</span></div><div><strong>0</strong><span>screens change now</span></div></div>
         <p className="not-live">Not live yet — publishing remains a separate action.</p>{error && <p className="import-error" role="alert">{error}</p>}
         <div className="destination-actions"><button type="button" className="import-secondary" disabled={busy} onClick={onBack}>Back</button><button type="submit" className="import-primary" disabled={busy || !menuName.trim()} onMouseDown={event => event.preventDefault()}>{busy ? "Creating…" : "Create menu"}</button></div>
-      </form>:<form onSubmit={event=>{event.preventDefault();void(async()=>{setBusy(true);setError(null);try{const replaced=await confirmMenuImportReplace(configuration,accessToken,session);setSession(replaced.import);}catch(failure){if(failure instanceof MenuImportApiError&&failure.current)setSession(failure.current);setError(failure instanceof Error?failure.message:"This menu could not be replaced. Nothing changed.");}finally{setBusy(false);}})();}}>
+      </form>:<form onSubmit={event=>{event.preventDefault();void(async()=>{setBusy(true);setError(null);try{const replaced=await confirmMenuImportReplace(configuration,accessToken,latest.current??session);setSession(replaced.import);}catch(failure){if(failure instanceof MenuImportApiError&&failure.current)setSession(failure.current);setError(failure instanceof Error?failure.message:"This menu could not be replaced. Nothing changed.");}finally{setBusy(false);}})();}}>
         <p>Confirm the target and consequences. Replacement happens together or nothing changes.</p>
         <div className="replacement-target"><strong>{session.session.targetMenuName}</strong><span>{session.session.targetHadPublishedVersion?"The published version stays on screens.":"This menu has never been published."}</span></div>
         <div className="confirm-facts replacement-facts"><div><strong>{session.session.itemCount}</strong><span>items in the new draft</span></div><div><strong>{(session.session.targetAddedCount??0)+(session.session.targetRemovedCount??0)+(session.session.targetChangedCount??0)}</strong><span>{`${(session.session.targetAddedCount??0)+(session.session.targetRemovedCount??0)+(session.session.targetChangedCount??0)===1?"unpublished change":"unpublished changes"} already present`}</span><small>{`${session.session.targetAddedCount??0} ${(session.session.targetAddedCount??0)===1?"item added":"items added"} · ${session.session.targetRemovedCount??0} removed · ${session.session.targetChangedCount??0} changed`}</small></div><div><strong>0</strong><span>screens change now</span></div></div>
