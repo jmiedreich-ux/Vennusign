@@ -8,6 +8,12 @@ public interface IMenuImportRepository
 
     Task<MenuImportAggregate?> GetAsync(Guid venueId, Guid sessionId, DateTime nowUtc, CancellationToken cancellationToken = default);
 
+    /// <summary>Every import this venue has started, not finished, and not yet let expire.</summary>
+    Task<IReadOnlyCollection<MenuImportSummary>> ListOpenAsync(Guid venueId, DateTime nowUtc, CancellationToken cancellationToken = default);
+
+    /// <summary>Throws away one unfinished import. Returns false if it was already gone.</summary>
+    Task<bool> DiscardAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken = default);
+
     Task<MenuImportMutationOutcome> PutAnswerAsync(
         Guid venueId,
         Guid sessionId,

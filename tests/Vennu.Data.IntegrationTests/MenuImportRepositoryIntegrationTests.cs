@@ -295,12 +295,135 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         Assert.Equal(MenuImportStatuses.Resolved, reparsed.Aggregate.Session.Status);
     }
 
+    /*
+     * #904 - listing the imports somebody started and did not finish.
+     *
+     * These are the three things the query can get wrong, and none of them is visible from the
+     * client: counting questions from a retired parse revision, offering to "resume" an import
+     * whose work is already on a menu, and letting one venue see another's.
+     */
+    [Fact]
+    public async Task ListOpen_counts_only_unanswered_questions_at_the_current_parse_revision()
+    {
+        var (repository, venueId) = await CreateRepositoryAndVenue();
+        var aggregate = Aggregate(venueId, DateTime.UtcNow.AddHours(1));
+        var created = await repository.CreateAsync(aggregate);
+
+        var before = Assert.Single(await repository.ListOpenAsync(venueId, DateTime.UtcNow));
+        Assert.Equal(aggregate.Session.Id, before.Id);
+        Assert.Equal(1, before.AnswersRemaining);
+
+        await repository.PutAnswerAsync(venueId, aggregate.Session.Id, created.Session.Revision,
+            "line-1-unreadable", new string('a', 64), MenuImportChoices.Fallback, null, DateTime.UtcNow, "owner@example.com");
+
+        Assert.Equal(0, Assert.Single(await repository.ListOpenAsync(venueId, DateTime.UtcNow)).AnswersRemaining);
+    }
+
+    [Fact]
+    public async Task ListOpen_leaves_out_expired_completed_and_other_venues_sessions()
+    {
+        var (repository, venueId) = await CreateRepositoryAndVenue();
+
+        // Expired: past its ExpiresUtc, so there is nothing to go back to.
+        await repository.CreateAsync(Aggregate(venueId, DateTime.UtcNow.AddMilliseconds(50)));
+
+        // Completed: its work is on a menu. Offering to resume it would send the operator back to
+        // a review with nothing left to do.
+        var finished = CreatableAggregate(venueId, DateTime.UtcNow.AddHours(1), "Garlic Bread  6.50");
+        var createdFinished = await repository.CreateAsync(finished);
+        await repository.PutAnswerAsync(venueId, finished.Session.Id, createdFinished.Session.Revision,
+            "line-1-unreadable", new string('b', 64), MenuImportChoices.Fallback, null, DateTime.UtcNow, "owner@example.com");
+        var ready = await repository.GetAsync(venueId, finished.Session.Id, DateTime.UtcNow);
+        await repository.SetCreateDestinationAsync(venueId, finished.Session.Id, ready!.Session.Revision,
+            fixture.UniqueValue("finished-menu"), DateTime.UtcNow, "owner@example.com");
+        ready = await repository.GetAsync(venueId, finished.Session.Id, DateTime.UtcNow);
+        await Confirm(repository, venueId, finished.Session.Id, ready!.Session.Revision, DateTime.UtcNow, "owner@example.com");
+
+        // Another venue's, which must never appear in this one's list.
+        var (_, otherVenueId) = await CreateRepositoryAndVenue();
+        await repository.CreateAsync(Aggregate(otherVenueId, DateTime.UtcNow.AddHours(1)));
+
+        var open = Aggregate(venueId, DateTime.UtcNow.AddHours(1));
+        await repository.CreateAsync(open);
+
+        await Task.Delay(120);
+        var listed = await repository.ListOpenAsync(venueId, DateTime.UtcNow);
+
+        Assert.Equal([open.Session.Id], listed.Select(row => row.Id));
+    }
+
+    [Fact]
+    public async Task Discard_removes_an_unfinished_import_and_everything_hanging_off_it()
+    {
+        var (repository, venueId) = await CreateRepositoryAndVenue();
+        var aggregate = Aggregate(venueId, DateTime.UtcNow.AddHours(1));
+        await repository.CreateAsync(aggregate);
+
+        Assert.True(await repository.DiscardAsync(venueId, aggregate.Session.Id));
+
+        Assert.Empty(await repository.ListOpenAsync(venueId, DateTime.UtcNow));
+        Assert.Null(await repository.GetAsync(venueId, aggregate.Session.Id, DateTime.UtcNow));
+
+        // Saying no twice is not an error, but it is not a success either.
+        Assert.False(await repository.DiscardAsync(venueId, aggregate.Session.Id));
+    }
+
+    [Fact]
+    public async Task Discard_refuses_a_completed_session_because_its_restore_hangs_off_it()
+    {
+        // A completed session owns the replacement snapshot an operator restores a replaced menu
+        // from. Deleting it on request would take the way back with it; the sweeper removes those
+        // once they expire, which is when the restore was going to lapse anyway.
+        var (repository, venueId) = await CreateRepositoryAndVenue();
+        var aggregate = CreatableAggregate(venueId, DateTime.UtcNow.AddHours(1), "Olives  4.00");
+        var created = await repository.CreateAsync(aggregate);
+        await repository.PutAnswerAsync(venueId, aggregate.Session.Id, created.Session.Revision,
+            "line-1-unreadable", new string('b', 64), MenuImportChoices.Fallback, null, DateTime.UtcNow, "owner@example.com");
+        var ready = await repository.GetAsync(venueId, aggregate.Session.Id, DateTime.UtcNow);
+        await repository.SetCreateDestinationAsync(venueId, aggregate.Session.Id, ready!.Session.Revision,
+            fixture.UniqueValue("kept-menu"), DateTime.UtcNow, "owner@example.com");
+        ready = await repository.GetAsync(venueId, aggregate.Session.Id, DateTime.UtcNow);
+        await Confirm(repository, venueId, aggregate.Session.Id, ready!.Session.Revision, DateTime.UtcNow, "owner@example.com");
+
+        Assert.False(await repository.DiscardAsync(venueId, aggregate.Session.Id));
+        Assert.NotNull(await repository.GetAsync(venueId, aggregate.Session.Id, DateTime.UtcNow));
+    }
+
+    [Fact]
+    public async Task Discard_will_not_reach_another_venues_import()
+    {
+        var (repository, venueId) = await CreateRepositoryAndVenue();
+        var (_, otherVenueId) = await CreateRepositoryAndVenue();
+        var theirs = Aggregate(otherVenueId, DateTime.UtcNow.AddHours(1));
+        await repository.CreateAsync(theirs);
+
+        Assert.False(await repository.DiscardAsync(venueId, theirs.Session.Id));
+        Assert.NotNull(await repository.GetAsync(otherVenueId, theirs.Session.Id, DateTime.UtcNow));
+    }
+
     private async Task<(MenuImportRepository Repository, Guid VenueId)> CreateRepositoryAndVenue()
     {
         var dataAccess = fixture.CreateDataAccess();
         var venue = new Venue { Name = fixture.UniqueValue("import-venue"), Timezone = "UTC", Type = "Restaurant", PrimaryLanguage = "en" };
         var venueId = await new VenueRepository(dataAccess).CreateAsync(venue);
         return (new MenuImportRepository(dataAccess), venueId);
+    }
+
+    /// <summary>
+    /// The same shape as <see cref="Aggregate"/> with a source line a person could have typed.
+    ///
+    /// Aggregate's line is 2,500 characters on purpose - it exists to prove a long line survives
+    /// storage. Anything that goes on to CREATE a menu from that session cannot use it: the item
+    /// it would make is named after the line, and dbo.Items.Name is 200.
+    /// </summary>
+    private static MenuImportAggregate CreatableAggregate(Guid venueId, DateTime expiresUtc, string dish)
+    {
+        var now = DateTime.UtcNow;
+        var id = Guid.NewGuid();
+        var fingerprint = new string('b', 64);
+        var line = new MenuImportSourceLine(id, venueId, 1, 0, dish, "unresolved", null, null, null, "item_format_not_recognized", 1);
+        var question = new MenuImportReviewQuestion(id, venueId, "line-1-unreadable", fingerprint, "unreadable", 0, true, 1, [1], [], null);
+        return new(new MenuImportSession(id, venueId, dish, 1, MenuImportStatuses.Reviewing, 1, 0, expiresUtc, now, now, null, []), [line], [question]);
     }
 
     private static MenuImportAggregate Aggregate(Guid venueId, DateTime expiresUtc)

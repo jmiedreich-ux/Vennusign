@@ -11,7 +11,10 @@ import {
   loadShelf,
   setMenuPutAway,
   takeMenuOffScreens,
+  loadOpenMenuImports,
+  discardMenuImport,
   type MenuHistoryEntry,
+  type OpenMenuImport,
   type ShelfMenu
 } from "./api";
 import type { BackOfficeConfiguration } from "./config";
@@ -22,6 +25,7 @@ import {
   changePhrase,
   filterShelf,
   hasChangesWaiting,
+  importInProgressPhrase,
   isShelfAtScale,
   menusInUse,
   menusNotInUse,
@@ -96,17 +100,31 @@ export default function MenusHome({
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
 
+  /*
+   * An import somebody started and did not finish (#904).
+   *
+   * The session was already saved for 24 hours and `#/menu/import/{id}` already resumed it. What
+   * did not exist was any way to reach that URL again: the shelf only ever linked to a NEW import,
+   * and nothing listed the open ones. Close the tab and the work sat in the database, paid for,
+   * until it expired.
+   */
+  const [openImports, setOpenImports] = useState<OpenMenuImport[]>([]);
+
   const refresh = useCallback(async () => {
     try {
       // Three calls for the page, flat at any menu count: the shelf, what is
       // 86'd, and nothing else. Availability is deliberately not embedded in the
       // shelf read — it is instant and venue-wide, so it is its own fact.
-      const [shelf, availability] = await Promise.all([
+      const [shelf, availability, imports] = await Promise.all([
         loadShelf(configuration, accessToken),
-        loadMenuAvailability(configuration, accessToken)
+        loadMenuAvailability(configuration, accessToken),
+        // Fails soft and returns [] - a shelf that will not draw because an optional line about an
+        // optional import could not be fetched is worse than no line at all.
+        loadOpenMenuImports(configuration, accessToken)
       ]);
       setMenus(shelf);
       setUnavailable(availability.filter((item) => !item.isAvailable).map((item) => item.itemId));
+      setOpenImports(imports);
       setError(null);
     } catch {
       setError("Vennusign could not load your menus.");
@@ -196,6 +214,23 @@ export default function MenusHome({
     }
   };
 
+  const resumeImport = (sessionId: string) => {
+    window.location.hash = `#/menu/import/${sessionId}`;
+  };
+
+  const discardImport = async (sessionId: string) => {
+    setBusy(sessionId);
+    try {
+      await discardMenuImport(configuration, accessToken, sessionId);
+      setOpenImports(current => current.filter(open => open.id !== sessionId));
+      setNotice("That unfinished import was thrown away.");
+    } catch {
+      setNotice("Vennusign could not discard that import. Nothing changed.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const chooseRoute = (routeKey: string) => {
     if (routeKey !== "paste") return;
     // The import owns everything from here, including the menu's name, which it
@@ -207,6 +242,47 @@ export default function MenusHome({
     setAddingMenu(false);
     setAddError(null);
   };
+
+  /*
+   * The way back into an unfinished import. It belongs to both returns below for the same reason
+   * the chooser does: a venue with no menus is exactly the venue most likely to have an import
+   * half-done, and the empty shelf is where they will look for it.
+   *
+   * Decision 12 - name the exception. This is drawn only when there is one, never as an empty
+   * region, and it names both routes: back in, or throw it away. Decision 10 forbids the first
+   * without the second, or the operator's only way out of the sentence is to wait 24 hours.
+   */
+  const resumeImports = openImports.length > 0 ? (
+    <section className="menus-home__resume" data-testid="open-imports">
+      {openImports.map(open => (
+        <div className="menus-home__resume-row" key={open.id}>
+          <div>
+            <strong>You have an import in progress</strong>
+            <span data-testid="open-import-detail">{importInProgressPhrase(open)}</span>
+          </div>
+          <div className="menus-home__resume-actions">
+            <button
+              type="button"
+              className="action-primary"
+              onClick={() => resumeImport(open.id)}
+              data-testid="resume-import"
+            >
+              Pick it back up
+            </button>
+            <button
+              type="button"
+              className="action-secondary"
+              disabled={busy === open.id}
+              onClick={() => void discardImport(open.id)}
+              data-testid="discard-import"
+            >
+              {busy === open.id ? "Throwing away…" : "Throw it away"}
+            </button>
+          </div>
+        </div>
+      ))}
+    </section>
+  ) : null;
 
   // The chooser belongs to both returns below. Its predecessor lived only in the
   // populated-shelf branch, so on the empty shelf - where every new customer
@@ -242,6 +318,7 @@ export default function MenusHome({
     // The same routes the tile and the header button open, drawn at page size.
     return (
       <section className="menus-home menus-home--empty" data-testid="menus-home">
+        {resumeImports}
         <MenuAddRoutes
           variant="page"
           onChoose={chooseRoute}
@@ -286,6 +363,8 @@ export default function MenusHome({
       {notice ? (
         <p className="state" role="status" data-testid="shelf-notice">{notice}</p>
       ) : null}
+
+      {resumeImports}
 
       {atScale ? (
         <div className="menus-home__scale" data-testid="shelf-scale-controls">

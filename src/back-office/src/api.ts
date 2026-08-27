@@ -1490,6 +1490,53 @@ function normalizeMenuImport(value: MenuImportSession): MenuImportSession {
 export function startMenuImport(configuration: BackOfficeConfiguration, accessToken: string, rawPaste: string) {
   return menuImportRequest(configuration, accessToken, "", { method: "POST", body: JSON.stringify({ rawPaste }) });
 }
+
+/** One unfinished import, as the shelf needs to describe it (#904). */
+export type OpenMenuImport = {
+  id: string;
+  itemCount: number;
+  lineCount: number;
+  answersRemaining: number;
+  createdUtc: string;
+  updatedUtc: string;
+  expiresUtc: string;
+};
+
+/**
+ * The venue's unfinished imports.
+ *
+ * This is a page-load read on the shelf, so it fails soft: a shelf that will not draw because an
+ * optional line about an optional import could not be fetched is worse than no line at all.
+ */
+export async function loadOpenMenuImports(
+  configuration: BackOfficeConfiguration,
+  accessToken: string
+): Promise<OpenMenuImport[]> {
+  try {
+    const response = await venueFetch(`${configuration.apiBaseUrl}/api/back-office/menu-imports`, {
+      headers: { "X-Vennusign-Back-Office-Token": accessToken }
+    });
+    if (!response.ok) return [];
+    return (await response.json()) as OpenMenuImport[];
+  } catch {
+    return [];
+  }
+}
+
+/** Throws one away. */
+export async function discardMenuImport(
+  configuration: BackOfficeConfiguration,
+  accessToken: string,
+  sessionId: string
+): Promise<void> {
+  const response = await venueFetch(`${configuration.apiBaseUrl}/api/back-office/menu-imports/${sessionId}`, {
+    method: "DELETE",
+    headers: { "X-Vennusign-Back-Office-Token": accessToken }
+  });
+  if (!response.ok && response.status !== 404) {
+    throw new MenuImportApiError(response.status, "unavailable", "That import could not be discarded. Nothing changed.");
+  }
+}
 /**
  * What to say when the server did not say anything.
  *

@@ -37,6 +37,21 @@ public sealed class MenuImportRepository(ISqlDataAccess dataAccess) : IMenuImpor
         return row is null ? null : Hydrate(row);
     }
 
+    public async Task<IReadOnlyCollection<MenuImportSummary>> ListOpenAsync(
+        Guid venueId, DateTime nowUtc, CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<SummaryRow, object>(
+            ListOpenSql, new { VenueId = RequireId(venueId, nameof(venueId)), Now = nowUtc }, cancellationToken)
+            .ConfigureAwait(false))
+        .Select(row => new MenuImportSummary(
+            row.Id, row.ItemCount, row.LineCount, row.AnswersRemaining, row.CreatedUtc, row.UpdatedUtc, row.ExpiresUtc))
+        .ToArray();
+
+    public async Task<bool> DiscardAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken = default) =>
+        (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            DiscardSql,
+            new { VenueId = RequireId(venueId, nameof(venueId)), SessionId = RequireId(sessionId, nameof(sessionId)) },
+            cancellationToken).ConfigureAwait(false)).Single().Count > 0;
+
     public Task<MenuImportMutationOutcome> PutAnswerAsync(Guid venueId, Guid sessionId, byte[] expectedRevision, string questionKey,
         string fingerprint, string choice, Guid? selectedItemId, DateTime answeredUtc, string? answeredBy,
         CancellationToken cancellationToken = default) => MutateAsync(AnswerSql, new
@@ -510,6 +525,57 @@ IF @Result=N'updated' BEGIN
  UPDATE dbo.MenuImportSessions SET Status=CASE WHEN NOT EXISTS(SELECT 1 FROM dbo.MenuImportReviewQuestions q WHERE q.SessionId=@SessionId AND q.Required=1 AND NOT EXISTS(SELECT 1 FROM dbo.MenuImportAnswers a WHERE a.SessionId=q.SessionId AND a.QuestionKey=q.QuestionKey AND a.Fingerprint=q.Fingerprint)) THEN N'resolved' ELSE N'reviewing' END WHERE Id=@SessionId;
 END COMMIT; SELECT @Result Result;
 """;
+
+    /// <summary>
+    /// The venue's unfinished imports. Completed ones are excluded: their work is on a menu, and
+    /// offering to "resume" one would send the operator back to a review with nothing left to do.
+    ///
+    /// AnswersRemaining is counted at the session's CURRENT parse revision. A re-parse retires the
+    /// old questions, and counting those would report work that no longer exists.
+    /// </summary>
+    private const string ListOpenSql = """
+SELECT s.Id, s.ItemCount, s.LineCount, s.CreatedUtc, s.UpdatedUtc, s.ExpiresUtc,
+       (SELECT COUNT(*) FROM dbo.MenuImportReviewQuestions q
+        WHERE q.SessionId=s.Id AND q.VenueId=s.VenueId AND q.Required=1 AND q.ParseRevision=s.ParseRevision
+          AND NOT EXISTS (SELECT 1 FROM dbo.MenuImportAnswers a
+              WHERE a.SessionId=q.SessionId AND a.QuestionKey=q.QuestionKey AND a.Fingerprint=q.Fingerprint)) AS AnswersRemaining
+FROM dbo.MenuImportSessions s
+WHERE s.VenueId=@VenueId AND s.ExpiresUtc>@Now AND s.CompletedMenuId IS NULL
+ORDER BY s.UpdatedUtc DESC;
+""";
+
+    /// <summary>
+    /// Throwing away an unfinished import, in the same order the expiry sweep uses.
+    ///
+    /// A completed session is deliberately out of reach here: its replacement snapshot is what an
+    /// operator restores a replaced menu from, and deleting the session would take the way back
+    /// with it. Those are the sweeper's to remove once they expire.
+    /// </summary>
+    private const string DiscardSql = """
+SET XACT_ABORT ON; BEGIN TRANSACTION;
+DECLARE @Live TABLE (Id uniqueidentifier PRIMARY KEY);
+INSERT @Live SELECT Id FROM dbo.MenuImportSessions WITH (UPDLOCK, HOLDLOCK)
+WHERE Id=@SessionId AND VenueId=@VenueId AND CompletedMenuId IS NULL;
+DELETE cl FROM dbo.MenuImportCreatedLines cl JOIN @Live s ON s.Id=cl.SessionId;
+DELETE a FROM dbo.MenuImportAnswers a JOIN @Live s ON s.Id=a.SessionId;
+DELETE c FROM dbo.MenuImportCandidates c JOIN @Live s ON s.Id=c.SessionId;
+DELETE ql FROM dbo.MenuImportQuestionLines ql JOIN @Live s ON s.Id=ql.SessionId;
+DELETE q FROM dbo.MenuImportReviewQuestions q JOIN @Live s ON s.Id=q.SessionId;
+DELETE l FROM dbo.MenuImportSourceLines l JOIN @Live s ON s.Id=l.SessionId;
+DELETE session FROM dbo.MenuImportSessions session JOIN @Live s ON s.Id=session.Id;
+DECLARE @Count int=@@ROWCOUNT; COMMIT; SELECT @Count [Count];
+""";
+
+    private sealed class SummaryRow
+    {
+        public Guid Id { get; init; }
+        public int ItemCount { get; init; }
+        public int LineCount { get; init; }
+        public int AnswersRemaining { get; init; }
+        public DateTime CreatedUtc { get; init; }
+        public DateTime UpdatedUtc { get; init; }
+        public DateTime ExpiresUtc { get; init; }
+    }
 
     private const string DeleteExpiredSql = """
 SET XACT_ABORT ON; BEGIN TRANSACTION; CREATE TABLE #Sessions(Id uniqueidentifier PRIMARY KEY);

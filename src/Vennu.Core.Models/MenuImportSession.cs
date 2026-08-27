@@ -140,3 +140,23 @@ public static class MenuImportSuggestions
     public const string Dish = "dish";
     public const string LeaveOut = "leave_out";
 }
+
+/// <summary>
+/// One unfinished import, as the Menus home needs to describe it.
+///
+/// The session already survives a closed tab - what it did not have was a way back. A screen that
+/// says "saved until Friday" and offers no route to it states a fact and withholds the action,
+/// which is what decision 5 exists to forbid.
+///
+/// <paramref name="AnswersRemaining"/> counts required questions at the session's current parse
+/// revision that nobody has answered yet. Zero means the review is done and the import is waiting
+/// at its destination step, not that there is nothing to come back to.
+/// </summary>
+public sealed record MenuImportSummary(
+    Guid Id,
+    int ItemCount,
+    int LineCount,
+    int AnswersRemaining,
+    DateTime CreatedUtc,
+    DateTime UpdatedUtc,
+    DateTime ExpiresUtc);

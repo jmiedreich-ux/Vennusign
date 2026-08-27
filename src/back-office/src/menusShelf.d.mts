@@ -43,3 +43,20 @@ export function boardCounts(
   board: BoardResponse | null | undefined,
   unavailableItemIds?: Iterable<string> | null
 ): { sections: number; items: number };
+
+export type OpenImportSummary = {
+  id: string;
+  itemCount: number;
+  lineCount: number;
+  answersRemaining: number;
+  createdUtc: string;
+  updatedUtc: string;
+  expiresUtc: string;
+};
+
+export function importInProgressPhrase(
+  open: OpenImportSummary | null | undefined,
+  now?: Date
+): string | null;
+
+export function expiryPhrase(expiresUtc: string, now?: Date): string | null;

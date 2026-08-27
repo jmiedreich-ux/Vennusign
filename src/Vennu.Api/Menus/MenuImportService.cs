@@ -54,6 +54,23 @@ public sealed class MenuImportService(
     public Task<MenuImportAggregate?> GetAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken) =>
         RefreshDependenciesAsync(venueId, sessionId, cancellationToken);
 
+    /// <summary>
+    /// The venue's unfinished imports, so a screen can offer the way back to one.
+    ///
+    /// The expiry sweep runs first. Otherwise the list is the one place guaranteed to report an
+    /// import that has already expired - it is read far more often than a session is started.
+    /// </summary>
+    public async Task<IReadOnlyCollection<MenuImportSummary>> ListOpenAsync(Guid venueId, CancellationToken cancellationToken)
+    {
+        var now = clock.GetUtcNow().UtcDateTime;
+        _ = await imports.DeleteExpiredAsync(now, 100, cancellationToken).ConfigureAwait(false);
+        return await imports.ListOpenAsync(venueId, now, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Throws away an unfinished import at the operator's word, rather than waiting out its expiry.</summary>
+    public Task<bool> DiscardAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken) =>
+        imports.DiscardAsync(venueId, sessionId, cancellationToken);
+
     public async Task<MenuImportMutationOutcome> PutAnswerAsync(Guid venueId, Guid sessionId, byte[] revision, string questionKey,
         string fingerprint, string choice, Guid? selectedItemId, string? actor, CancellationToken cancellationToken)
     {

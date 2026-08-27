@@ -34,6 +34,24 @@ public sealed class BackOfficeMenuImportsController(MenuImportService imports) :
         }
     }
 
+    /// <summary>
+    /// The venue's unfinished imports. Without this the Menus home could say nothing about one,
+    /// and a session saved for 24 hours was reachable only through browser history (#904).
+    /// </summary>
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyCollection<MenuImportSummary>>> ListOpen(CancellationToken cancellationToken) =>
+        Ok(await imports.ListOpenAsync(VenueId, cancellationToken).ConfigureAwait(false));
+
+    /// <summary>
+    /// Throws one away. An operator told "you have an import in progress" needs to be able to say
+    /// "no I do not" - otherwise the only way out is to wait 24 hours (decision 10).
+    /// </summary>
+    [HttpDelete("{sessionId:guid}")]
+    public async Task<IActionResult> Discard(Guid sessionId, CancellationToken cancellationToken) =>
+        await imports.DiscardAsync(VenueId, sessionId, cancellationToken).ConfigureAwait(false)
+            ? NoContent()
+            : NotFound(new { reason = "missing_or_expired", message = "This import is no longer available." });
+
     [HttpGet("{sessionId:guid}")]
     public async Task<ActionResult<MenuImportAggregate>> Get(Guid sessionId, CancellationToken cancellationToken)
     {
