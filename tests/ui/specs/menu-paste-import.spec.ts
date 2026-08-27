@@ -141,7 +141,7 @@ test.describe("paste import review", () => {
     expect(Math.max(...heights), `row heights: ${heights.join(", ")}`).toBeLessThan(180);
   });
 
-  test("reading a menu shows the product doing it, not a disabled button", async ({ page }, testInfo) => {
+  test("reading a menu draws the wait over the page, not instead of it", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
     await seed({ label: "reading-state" });
     await openAs(page, "owner", "/menu/import");
@@ -157,8 +157,28 @@ test.describe("paste import review", () => {
     await page.getByLabel("Menu text").fill("Ossobuco  24");
     await page.getByRole("button", { name: "Read menu" }).click();
 
-    await expect(page.getByTestId("menu-import-reading")).toBeVisible();
+    // Over the page, not instead of it: what you pasted is still there behind the animation.
     await expect(page.getByText("Reading your menu")).toBeVisible();
+    await expect(page.locator(".vennu-loader--modal")).toBeVisible();
+    await expect(page.getByLabel("Menu text")).toHaveValue("Ossobuco  24");
     await expect(page.getByTestId("menu-import-review")).toBeVisible({ timeout: 30_000 });
+  });
+
+  test("applying a suggestion is visibly doing something, even when it is quick", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
+    await seed({ label: "apply-visible" });
+    await openAs(page, "owner", "/menu/import");
+
+    await page.getByLabel("Menu text").fill("Ossobuco  24\nA line nobody can read");
+    await page.getByRole("button", { name: "Read menu" }).click();
+    await expect(page.getByTestId("menu-import-review")).toBeVisible();
+
+    const banner = page.getByTestId("import-suggestion");
+    if (await banner.count() === 0) test.skip(true, "No suggestion offered - the residue pass needs a key on this environment.");
+
+    // The animation was already correct and finished before it could be seen, which reads as a
+    // button that does nothing. It is held open long enough to have been shown.
+    await page.getByTestId("suggestion-accept").click();
+    await expect(page.getByTestId("suggestion-applying")).toBeVisible();
   });
 });
