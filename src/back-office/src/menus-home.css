@@ -306,52 +306,71 @@
 .add-routes__actions { margin-top: 6px; }
 
 /*
- * The way back into an unfinished import (#904).
+ * Unfinished imports (#904, made quiet again by #927).
  *
- * It sits above the shelf rather than inside it because it is not a menu — it is a piece of work
- * in progress, and putting it on the grid would make it look like something that is on a screen.
+ * This used to be a full-width bordered card per import. One read fine; seven pushed every menu
+ * off the page and repeated the same sentence seven times. It is now a line in the header's own
+ * voice, with the rest a click away — the count carries the weight, not the layout.
  */
-.menus-home__resume {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 0 0 20px;
+.menus-home__imports {
+  margin: 0 0 18px;
 }
 
-.menus-home__resume-row {
+.menus-home__imports-line {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  align-items: baseline;
   flex-wrap: wrap;
-  padding: 14px 18px;
-  border: 1px solid var(--sky-border-subtle, #e2e8f0);
-  border-left: 3px solid var(--sky-accent, #2563eb);
-  border-radius: 10px;
-  background: var(--sky-surface-raised, #ffffff);
-}
-
-.menus-home__resume-row > div:first-child {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.menus-home__resume-row strong {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--sky-text, #0f172a);
-}
-
-.menus-home__resume-row span {
+  gap: 4px 12px;
+  margin: 0;
   font-size: 13px;
   color: var(--sky-text-muted, #64748b);
 }
 
-.menus-home__resume-actions {
+/* A link, not a button: this is a sentence with a way out of it, not a call to action competing
+   with "Add a menu". */
+.menus-home__imports-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--sky-color-primary, #2563eb);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.menus-home__imports-link:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Expanded: as many rows as there are, each one line. Scrolls rather than grows without limit,
+   because "handle it" has to mean seventy as well as seven. */
+.menus-home__imports-all {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+  border-left: 2px solid var(--sky-border-subtle, #e2e8f0);
+  padding-left: 12px;
+}
+
+.menus-home__imports-all li {
   display: flex;
-  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--sky-text-muted, #64748b);
+}
+
+.menus-home__imports-actions {
+  display: flex;
+  gap: 12px;
   flex-shrink: 0;
 }
 

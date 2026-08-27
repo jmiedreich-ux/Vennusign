@@ -28,6 +28,7 @@ import {
   filterShelf,
   hasChangesWaiting,
   importInProgressPhrase,
+  importsInProgressLine,
   isAtMenuLimit,
   isShelfAtScale,
   menuAllowanceNotice,
@@ -120,6 +121,7 @@ export default function MenusHome({
    * knowable the moment this page loads.
    */
   const [allowance, setAllowance] = useState<MenuAllowance | null>(null);
+  const [importsOpen, setImportsOpen] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
@@ -257,47 +259,6 @@ export default function MenusHome({
   };
 
   /*
-   * The way back into an unfinished import. It belongs to both returns below for the same reason
-   * the chooser does: a venue with no menus is exactly the venue most likely to have an import
-   * half-done, and the empty shelf is where they will look for it.
-   *
-   * Decision 12 - name the exception. This is drawn only when there is one, never as an empty
-   * region, and it names both routes: back in, or throw it away. Decision 10 forbids the first
-   * without the second, or the operator's only way out of the sentence is to wait 24 hours.
-   */
-  const resumeImports = openImports.length > 0 ? (
-    <section className="menus-home__resume" data-testid="open-imports">
-      {openImports.map(open => (
-        <div className="menus-home__resume-row" key={open.id}>
-          <div>
-            <strong>You have an import in progress</strong>
-            <span data-testid="open-import-detail">{importInProgressPhrase(open)}</span>
-          </div>
-          <div className="menus-home__resume-actions">
-            <button
-              type="button"
-              className="action-primary"
-              onClick={() => resumeImport(open.id)}
-              data-testid="resume-import"
-            >
-              Pick it back up
-            </button>
-            <button
-              type="button"
-              className="action-secondary"
-              disabled={busy === open.id}
-              onClick={() => void discardImport(open.id)}
-              data-testid="discard-import"
-            >
-              {busy === open.id ? "Throwing away…" : "Throw it away"}
-            </button>
-          </div>
-        </div>
-      ))}
-    </section>
-  ) : null;
-
-  /*
    * The ceiling, said where the decision is made (#908).
    *
    * Decision 12 - a venue with room to spare is told nothing; one on its last menu, or out of
@@ -321,6 +282,69 @@ export default function MenusHome({
     if (atLimit) return;
     setAddingMenu(true);
   };
+
+  /*
+   * The way back into an unfinished import — one row, in the shelf's own voice.
+   *
+   * The first version drew a full-width card per import. With one that read fine. With seven — a
+   * week of testing produces that, because every trip to the paste screen starts a new session —
+   * it pushed every menu off the page and said the same sentence seven times. That is precisely
+   * the noise decision 12 exists to stop, and I wrote it while looking at a screen with one.
+   *
+   * So: a count summarises, and only the import you would actually return to is named. The rest
+   * are behind "Show all", because they are real and must stay reachable (decision 5) without
+   * being the first thing on the page.
+   *
+   * Decision 10 still holds — every route in has its route out beside it.
+   */
+  const importsLine = importsInProgressLine(openImports);
+
+  const resumeImports = importsLine ? (
+    <div className="menus-home__imports" data-testid="open-imports">
+      <p className="menus-home__imports-line">
+        <span data-testid="open-import-detail">{importsLine.text}</span>
+        <button type="button" className="menus-home__imports-link" onClick={() => resumeImport(importsLine.latest.id)} data-testid="resume-import">
+          Pick it back up
+        </button>
+        {importsLine.count === 1 ? (
+          <button
+            type="button"
+            className="menus-home__imports-link"
+            disabled={busy === importsLine.latest.id}
+            onClick={() => void discardImport(importsLine.latest.id)}
+            data-testid="discard-import"
+          >
+            {busy === importsLine.latest.id ? "Throwing away…" : "Throw it away"}
+          </button>
+        ) : (
+          <button type="button" className="menus-home__imports-link" onClick={() => setImportsOpen(open => !open)} data-testid="toggle-imports">
+            {importsOpen ? "Hide" : `Show all ${importsLine.count}`}
+          </button>
+        )}
+      </p>
+
+      {importsOpen ? (
+        <ul className="menus-home__imports-all" data-testid="open-imports-all">
+          {openImports.map(open => (
+            <li key={open.id}>
+              <span>{importInProgressPhrase(open)}</span>
+              <span className="menus-home__imports-actions">
+                <button type="button" className="menus-home__imports-link" onClick={() => resumeImport(open.id)}>Pick it back up</button>
+                <button
+                  type="button"
+                  className="menus-home__imports-link"
+                  disabled={busy === open.id}
+                  onClick={() => void discardImport(open.id)}
+                >
+                  {busy === open.id ? "Throwing away…" : "Throw it away"}
+                </button>
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  ) : null;
 
   // The chooser belongs to both returns below. Its predecessor lived only in the
   // populated-shelf branch, so on the empty shelf - where every new customer
