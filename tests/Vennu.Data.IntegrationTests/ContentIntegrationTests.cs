@@ -646,7 +646,10 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
 
         var before = await repository.GetCeilingsAsync(ordinary);
 
-        await repository.ResetAutomationVenueAsync(automation);
+        // Through the path the ordinary seed uses. Raising the ceiling only inside the reset was
+        // the first attempt and changed nothing: the ordinary seed never resets, so the venue every
+        // spec fills was the one venue that never got the headroom.
+        await repository.GiveAutomationVenueHeadroomAsync(automation);
 
         var raised = await repository.GetCeilingsAsync(automation);
         Assert.True(raised[MenuCeilings.MenusPerVenue] > 98,
@@ -668,9 +671,10 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var repository = new ContentRepository(dataAccess);
         var venueId = await SeedVenueAsync(dataAccess);
 
-        await repository.ResetAutomationVenueAsync(venueId);
+        // Seed calls this before every one of its 98 seeds, so repetition is the normal case.
+        await repository.GiveAutomationVenueHeadroomAsync(venueId);
         var first = (await repository.GetCeilingsAsync(venueId))[MenuCeilings.MenusPerVenue];
-        await repository.ResetAutomationVenueAsync(venueId);
+        await repository.GiveAutomationVenueHeadroomAsync(venueId);
         await repository.ResetAutomationVenueAsync(venueId);
 
         Assert.Equal(first, (await repository.GetCeilingsAsync(venueId))[MenuCeilings.MenusPerVenue]);
@@ -688,6 +692,7 @@ public class ContentIntegrationTests(DatabaseFixture fixture)
         var venueId = await SeedVenueWithoutOrganizationAsync(dataAccess);
 
         await repository.ResetAutomationVenueAsync(venueId);
+        await repository.GiveAutomationVenueHeadroomAsync(venueId);
 
         Assert.Equal(0, await CountAllowancesAsync(dataAccess, venueId));
     }

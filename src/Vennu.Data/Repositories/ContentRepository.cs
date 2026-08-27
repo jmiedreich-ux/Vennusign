@@ -3168,6 +3168,39 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         return (int)result.Value;
     }
 
+    /// <summary>
+    /// Room for a whole UI run, on one venue.
+    ///
+    /// A run makes 98 seed calls and each creates a menu in the same shared venue. The default
+    /// ceiling is 50, so the suite filled the venue around halfway and refused the rest of itself -
+    /// 143 seeds in one run. A venue-scoped allowance outranks the organization's, so this reaches
+    /// no other venue, and it is behind the automation key like everything else here.
+    ///
+    /// 400 rather than 100 on purpose: landing near the edge would make a green suite depend on
+    /// nobody adding a dozen specs.
+    /// </summary>
+    public async Task GiveAutomationVenueHeadroomAsync(Guid venueId, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            -- A venue without an organization gets nothing: CapabilityAllowances.OrganizationId
+            -- is NOT NULL, and several test helpers make bare venues. With no source row the
+            -- MERGE matches nothing and inserts nothing, which is the right answer - such a
+            -- venue keeps the default ceiling and no reset fails because of a convenience.
+            MERGE dbo.CapabilityAllowances AS target
+            USING (SELECT v.OrganizationId, @VenueId AS VenueId FROM dbo.Venues v
+                   WHERE v.Id = @VenueId AND v.OrganizationId IS NOT NULL) AS source
+                ON target.VenueId = source.VenueId AND target.CapabilityId = 'content.menu.count'
+            WHEN MATCHED THEN UPDATE SET LimitValue = 400, StartsUtc = DATEADD(day, -1, SYSUTCDATETIME()), EndsUtc = NULL
+            WHEN NOT MATCHED THEN
+                INSERT (Id, OrganizationId, VenueId, CapabilityId, LimitValue, StartsUtc, EndsUtc)
+                VALUES (NEWID(), source.OrganizationId, source.VenueId, 'content.menu.count',
+                        400, DATEADD(day, -1, SYSUTCDATETIME()), NULL);
+            SELECT 1 AS Value;
+            """;
+        _ = await dataAccess.ExecuteSqlQueryAsync<ResetRow, object>(sql, new { VenueId = venueId }, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public async Task ResetAutomationVenueAsync(Guid venueId, CancellationToken cancellationToken = default)
     {
         const string sql = """
@@ -3214,20 +3247,6 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                  * The number is deliberately far above 98. Landing near the edge would make a green
                  * suite depend on nobody adding a dozen specs.
                  */
-                -- A venue without an organization gets nothing: CapabilityAllowances.OrganizationId
-                -- is NOT NULL, and several test helpers make bare venues. With no source row the
-                -- MERGE matches nothing and inserts nothing, which is the right answer - such a
-                -- venue keeps the default ceiling and no reset fails because of a convenience.
-                MERGE dbo.CapabilityAllowances AS target
-                USING (SELECT v.OrganizationId, @VenueId AS VenueId FROM dbo.Venues v
-                       WHERE v.Id = @VenueId AND v.OrganizationId IS NOT NULL) AS source
-                    ON target.VenueId = source.VenueId AND target.CapabilityId = 'content.menu.count'
-                WHEN MATCHED THEN UPDATE SET LimitValue = 400, StartsUtc = DATEADD(day, -1, SYSUTCDATETIME()), EndsUtc = NULL
-                WHEN NOT MATCHED THEN
-                    INSERT (Id, OrganizationId, VenueId, CapabilityId, LimitValue, StartsUtc, EndsUtc)
-                    VALUES (NEWID(), source.OrganizationId, source.VenueId, 'content.menu.count',
-                            400, DATEADD(day, -1, SYSUTCDATETIME()), NULL);
-
                 COMMIT TRANSACTION;
             END TRY
             BEGIN CATCH
@@ -3238,6 +3257,9 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             """;
         _ = await dataAccess.ExecuteSqlQueryAsync<ResetRow, object>(sql, new { VenueId = venueId }, cancellationToken)
             .ConfigureAwait(false);
+
+        // A reset empties the venue, so it also restores the headroom it just deleted.
+        await GiveAutomationVenueHeadroomAsync(venueId, cancellationToken).ConfigureAwait(false);
     }
 
     // ----- Helpers ---------------------------------------------------------------------

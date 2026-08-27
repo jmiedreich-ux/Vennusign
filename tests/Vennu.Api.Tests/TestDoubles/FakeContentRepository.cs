@@ -185,6 +185,9 @@ internal sealed class FakeContentRepository : IContentRepository
     public Task<IReadOnlyCollection<Item>> GetItemsAsync(Guid venueId, CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyCollection<Item>>(Items.Where(item => item.VenueId == venueId).ToArray());
 
+    public Task GiveAutomationVenueHeadroomAsync(Guid venueId, CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
+
     public Task<int> CountActiveMenusAsync(Guid venueId, CancellationToken cancellationToken = default) =>
         Task.FromResult(Menus.Count(menu => menu.VenueId == venueId && !menu.IsPutAway));
 

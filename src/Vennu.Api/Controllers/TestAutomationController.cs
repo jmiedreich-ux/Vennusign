@@ -50,6 +50,23 @@ public sealed class TestAutomationController(
         return NoContent();
     }
 
+    /// <summary>
+    /// Gives this venue room for a whole UI run.
+    ///
+    /// Separate from the reset because the ordinary seed cannot reset - it runs 98 times against a
+    /// venue other tests are using in parallel, and wiping it would be the opposite of what those
+    /// tests need. Only the scale seed resets, and it does so on a different venue, which is why
+    /// raising the ceiling inside reset alone left the owner venue exactly as full as before.
+    /// </summary>
+    [HttpPost("venues/headroom")]
+    public async Task<IActionResult> GiveHeadroom(ResetVenueRequest request, CancellationToken cancellationToken)
+    {
+        var session = ResolveSession(request.AccessToken);
+        if (session is null || !authorization.Allows(Request, "venue.reset", session.VenueId)) return NotFound();
+        await content.GiveAutomationVenueHeadroomAsync(session.VenueId, cancellationToken).ConfigureAwait(false);
+        return NoContent();
+    }
+
     [HttpPost("history/write-at")]
     public async Task<IActionResult> WriteHistoryAt(WriteHistoryAtRequest request, CancellationToken cancellationToken)
     {

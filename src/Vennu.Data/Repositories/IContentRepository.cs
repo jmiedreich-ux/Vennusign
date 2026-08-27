@@ -503,6 +503,9 @@ public interface IContentRepository
     /// persistence; the separately deployed Test API can only request it over HTTP.
     /// </summary>
     Task ResetAutomationVenueAsync(Guid venueId, CancellationToken cancellationToken = default);
+
+    /// <summary>Room for a whole UI run on one venue, without wiping what other tests are using.</summary>
+    Task GiveAutomationVenueHeadroomAsync(Guid venueId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Whether the menu was created, and the venue's active-menu count under the lock.</summary>
