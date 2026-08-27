@@ -1461,7 +1461,7 @@ async function menuImportRequest(configuration: BackOfficeConfiguration, accessT
     headers: { "Content-Type": "application/json", "X-Vennusign-Back-Office-Token": accessToken, ...init?.headers }
   });
   const body = await response.json().catch(() => ({})) as MenuImportSession & { reason?: string; message?: string; current?: MenuImportSession };
-  if (!response.ok) throw new MenuImportApiError(response.status, body.reason ?? "unavailable", body.message ?? "This import is unavailable.", body.current ? normalizeMenuImport(body.current) : undefined);
+  if (!response.ok) throw new MenuImportApiError(response.status, body.reason ?? "unavailable", body.message ?? unnamedImportFailure(response.status), body.current ? normalizeMenuImport(body.current) : undefined);
   return normalizeMenuImport(body);
 }
 
@@ -1482,6 +1482,26 @@ function normalizeMenuImport(value: MenuImportSession): MenuImportSession {
 export function startMenuImport(configuration: BackOfficeConfiguration, accessToken: string, rawPaste: string) {
   return menuImportRequest(configuration, accessToken, "", { method: "POST", body: JSON.stringify({ rawPaste }) });
 }
+/**
+ * What to say when the server did not say anything.
+ *
+ * Every designed refusal on this route carries its own sentence - expired, allowance changed, not
+ * ready, stale revision. A response with no message is therefore not a refusal at all: it is a
+ * fault, or a request that landed while the app was restarting. "This import is unavailable" was
+ * the old answer to all of them, and it named nothing, blamed nothing and told nobody what to do -
+ * which is the thing decision 5 exists to forbid and the paste-import design states outright:
+ * refusals name a person, a number or a clock, never "something went wrong".
+ *
+ * Reported by the owner against this exact screen: "does not tell me why".
+ */
+function unnamedImportFailure(status: number) {
+  if (status === 0) return "Vennusign could not be reached. Your pasted text is still saved — check your connection and try again.";
+  if (status === 404) return "This import has expired or was already finished. Its 24 hours may have run out.";
+  if (status === 401 || status === 403) return "You are no longer signed in to this venue. Sign in again and the import will still be here.";
+  if (status >= 500) return `Vennusign could not read this import just now (error ${status}). Your pasted text is still saved — try again in a moment.`;
+  return `This import could not be opened (error ${status}).`;
+}
+
 export function loadMenuImport(configuration: BackOfficeConfiguration, accessToken: string, sessionId: string) {
   return menuImportRequest(configuration, accessToken, `/${sessionId}`);
 }

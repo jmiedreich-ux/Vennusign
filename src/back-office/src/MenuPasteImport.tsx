@@ -136,7 +136,23 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
   if (loading) return <main className="paste-import import-loading">
     <VennusignLoader variant="modal" message="Picking your import back up where you left it." />
   </main>;
-  if (!session) return <main className="paste-import import-unavailable"><button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button><h1>We couldn’t resume this import</h1>{error && <p role="alert">{error}</p>}</main>;
+  /*
+   * A dead end is still a screen somebody is standing on.
+   *
+   * This said "We couldn't resume this import / This import is unavailable" and stopped: no reason,
+   * no way forward, and a Menus link at the top that reads as decoration. The owner's words were
+   * "does not tell me why". The message now comes from the server where the server had one and
+   * names the fault where it did not, and there are two things to do rather than none.
+   */
+  if (!session) return <main className="paste-import import-unavailable" data-testid="menu-import-unavailable">
+    <button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button>
+    <h1>We couldn’t resume this import</h1>
+    {error && <p role="alert" data-testid="import-unavailable-reason">{error}</p>}
+    <div className="destination-actions">
+      <button type="button" className="import-secondary" onClick={onBack}>Back to menus</button>
+      <button type="button" className="import-primary" data-testid="import-retry" onClick={() => window.location.reload()}>Try again</button>
+    </div>
+  </main>;
 
   /*
    * The suggestion, applied in one act (M6.11).
