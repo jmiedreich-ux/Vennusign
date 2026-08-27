@@ -226,4 +226,23 @@ test.describe("paste import review", () => {
     await expect(page.getByText("changed in another window")).toHaveCount(0);
     await expect(page.getByTestId("menu-import-complete")).toBeVisible({ timeout: 30_000 });
   });
+
+  test("a resume that fails says why, and offers a way on", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
+    await openAs(page, "owner", "/menu/import");
+
+    // A bodyless failure is the case that used to say "This import is unavailable" and nothing
+    // else - no reason, no way forward. It is also the one you get when the app restarts under you.
+    await page.route("**/api/back-office/menu-imports/*", route =>
+      route.request().method() === "GET" ? route.fulfill({ status: 503, body: "" }) : route.fallback());
+
+    await page.goto("https://localhost:5175/#/menu/import/11111111-1111-1111-1111-111111111111".replace("https://localhost:5175", new URL(page.url()).origin));
+
+    const reason = page.getByTestId("import-unavailable-reason");
+    await expect(reason).toBeVisible();
+    await expect(reason).toContainText("error 503");
+    await expect(reason).toContainText("still saved");
+    await expect(page.getByTestId("import-retry")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Back to menus" })).toBeVisible();
+  });
 });
