@@ -2,8 +2,8 @@
   "codename": "Menus",
   "what": "The menu product: item library, draft/publish spine, the builder, the render engine, and the import paths that get a venue's existing menu into it without retyping",
   "stage": "development",
-  "position": "M6.12's first piece shipped: a price change on one page of a menu was rewriting the other, and the edit is now addressed by placement. The shelf reaches an unfinished import (#904) and names the menu limit (#908).",
-  "next": "M6.12 waits on #913 - does a library price edit still reach menus that already carry the dish? Filling every placement severs that, and breaks ten tests describing today's contract. #907 blocks the owner's own testing.",
+  "position": "A20 and A21 shipped. A price change that could mean two things asks which; two library candidates that look the same now say which menus they are on. M6.12's price work is settled and deployed.",
+  "next": "M6.12's remaining piece: the replace confirm still names counts rather than the dishes whose price moved. Q213-Q215 still block M8 (#868) and M6.6 (#871). #914 is a red E2E test on master.",
   "label": "workstream:menus",
   "design": [
     {
@@ -285,10 +285,10 @@
       "label": "M6.12",
       "depth": 19,
       "title": "A price belongs to the menu it is printed on",
-      "status": "next",
+      "status": "done",
       "plan": "milestone-plan.md",
       "issue": 910,
-      "pr": 912,
+      "pr": 920,
       "acceptance": {
         "kind": "workbook",
         "record": null
