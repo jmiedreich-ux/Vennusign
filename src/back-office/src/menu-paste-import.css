@@ -32,7 +32,7 @@
 .safe-match-banner p { margin: 3px 0 0; color: #557166; font-size: .88rem; }
 .safe-match-banner button { min-height: 40px; }
 .question-stack { display: grid; gap: 16px; }
-.grouped-question { padding: clamp(22px, 4vw, 34px); border: 1px solid #a9cbd8; border-radius: 20px; background: #f8fdff; }.grouped-question > .import-kicker { margin-top: 0; }.grouped-question > h2 { margin: 6px 0; }.grouped-question > p:not(.import-kicker) { margin-top: 0; color: #607687; }.grouped-question-rows { display: grid; gap: 12px; margin-top: 20px; }.grouped-question-rows .question-card { box-shadow: none; border-color: #d0e0e7; }
+.grouped-question { padding: clamp(22px, 4vw, 34px); border: 1px solid #a9cbd8; border-radius: 20px; background: #f8fdff; }.grouped-question > .import-kicker { margin-top: 0; }.grouped-question > h2 { margin: 6px 0; }.grouped-question > p:not(.import-kicker) { margin-top: 0; color: #607687; }.grouped-question-rows { display: grid; gap: 12px; margin-top: 20px; }.grouped-question-rows .question-row { box-shadow: none; border-color: #d0e0e7; }
 .question-card { padding: clamp(22px, 4vw, 34px); border: 1px solid rgba(48,79,104,.16); border-radius: 20px; background: #fff; box-shadow: 0 14px 36px rgba(37,65,89,.08); }
 .question-number { color: #087fa5; font-size: .76rem; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
 .question-card h2 { margin: 8px 0 14px; font-size: 1.35rem; }
@@ -69,3 +69,44 @@
 .replace-options{margin-top:34px;padding-top:28px;border-top:1px solid #d5e2e9}.replace-options h2{margin:0 0 6px;color:#173047;font-size:1.25rem}.replace-options>p{margin-top:0}.target-list{display:grid;gap:10px;margin-top:18px}.target-list button{display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px 18px;border:1px solid #b9ccd8;border-radius:12px;color:#173047;background:#fbfdff;text-align:left;cursor:pointer}.target-list button:hover{border-color:#2888a9;background:#effaff}.target-list span{display:grid;gap:3px}.target-list small{color:#60798b}.target-list svg{width:19px}.replacement-target{display:grid;gap:5px;margin:24px 0 16px;padding:18px;border-radius:14px;background:#edf8fc;color:#173047}.replacement-target strong{font-size:1.2rem}.replacement-target span{color:#587286}.replacement-facts{grid-template-columns:repeat(3,1fr)}.destination-card details{margin-top:22px;padding:15px 0;border-top:1px solid #d5e2e9;border-bottom:1px solid #d5e2e9;color:#526c7f}.destination-card summary{color:#173047;font-weight:800;cursor:pointer}.destination-card details p{margin-bottom:0;line-height:1.55}
 .restore-option{margin-top:24px;padding-top:20px;border-top:1px solid #d5e2e9}.restore-option>div{display:flex;justify-content:flex-end;gap:10px}.restore-option p{margin:6px 0 16px}.restore-link{padding:0;border:0;color:#096f91;background:transparent;font:inherit;font-weight:800;text-decoration:underline;cursor:pointer}.restore-result{margin-top:22px;padding:14px 16px;border-radius:12px;color:#175d45!important;background:#e9f7f0;font-weight:750}
 .replacement-facts small{display:block;margin-top:6px;color:#526c7f;font-size:.82rem;line-height:1.35}
+
+/*
+ * One decision, one row (M6.10).
+ *
+ * The card this replaces stacked five blocks for one choice - a line number, a heading, the pasted
+ * text as a blockquote, a sentence of explanation, then the buttons. Fifteen of those is a page of
+ * scrolling to make fifteen small decisions. The row keeps the pasted text where the eye already
+ * is and puts the choices beside it; the choices wrap under it below 1100px rather than shrinking,
+ * because a choice you cannot read is not a choice.
+ */
+.question-row {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
+  border: var(--sky-card-border); border-radius: var(--sky-radius-md);
+  padding: 12px 14px; background: var(--sky-card-background);
+}
+.question-row + .question-row { margin-top: 8px; }
+
+.question-row__line { flex: 1 1 260px; min-width: 0; display: grid; gap: 2px; }
+.question-row__number { font-size: var(--sky-font-size-xxs); color: var(--sky-color-text-muted); }
+.question-row__line q {
+  font-size: var(--sky-font-size-sm-plus); font-weight: var(--sky-font-weight-semibold);
+  quotes: none; overflow-wrap: anywhere;
+}
+.question-row__line small { font-size: var(--sky-font-size-xxs); color: var(--sky-color-text-muted); }
+
+.question-row__choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.question-row__choices button {
+  display: grid; gap: 1px; text-align: left;
+  border: 1px solid var(--sky-color-border-dashed); border-radius: var(--sky-radius-md-minus);
+  padding: 7px 11px; background: var(--sky-card-background);
+  color: var(--sky-text-primary); font: inherit; cursor: pointer;
+}
+.question-row__choices button:hover:not(:disabled) { border-color: var(--sky-color-primary); }
+.question-row__choices button:disabled { cursor: default; opacity: .55; }
+.question-row__choices strong { font-size: var(--sky-font-size-sm-minus); font-weight: var(--sky-font-weight-semibold); }
+.question-row__choices small { font-size: var(--sky-font-size-xxs); color: var(--sky-color-text-muted); }
+
+/* Leaving a line out is the one answer that imports nothing, so it reads quieter than the two
+   that do. Not disabled, not hidden - just not competing. */
+.question-row__leave { background: transparent; }
+.question-row__leave strong { color: var(--sky-color-text-secondary); }
