@@ -161,7 +161,8 @@ public interface IContentRepository
         CancellationToken cancellationToken = default,
         Guid? menuId = null,
         bool isListed = true,
-        Guid? sectionId = null);
+        Guid? sectionId = null,
+        bool priceEverywhere = false);
 
     /// <inheritdoc cref="ReorderSectionsGuardedAsync"/>
     Task<ReorderOutcome> ReorderPlacementsGuardedAsync(

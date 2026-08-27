@@ -902,10 +902,22 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             -- made from a menu writes that placement and leaves the library default
             -- where it was. This overturns Q112, which was reasoned from the since
             -- withdrawn Q5. An edit made outside any menu still writes the library.
+            --
+            -- @PriceEverywhere is A20. When a dish already sits on several menus the
+            -- operator is asked which they meant, and this is the answer "on all of
+            -- them": the library default AND every placement of the dish, so the answer
+            -- is true straight away rather than only on the menus that happen to carry
+            -- no price of their own. It is never inferred - a caller that does not ask
+            -- cannot accidentally mean it.
             UPDATE dbo.Items SET Name=@NewName,Description=@NewDescription,
-                Price=CASE WHEN @PlacementId IS NULL THEN @NewPrice ELSE Price END,IsListed=@NewIsListed,UpdatedUtc=@Now
+                Price=CASE WHEN @PlacementId IS NULL OR @PriceEverywhere=1 THEN @NewPrice ELSE Price END,
+                IsListed=@NewIsListed,UpdatedUtc=@Now
             WHERE Id=@ItemId AND VenueId=@VenueId;
-            IF @PlacementId IS NOT NULL UPDATE dbo.Placements SET ImportedPriceOverride=@NewPrice,UpdatedUtc=@Now
+            IF @PriceEverywhere=1
+                UPDATE dbo.Placements SET ImportedPriceOverride=@NewPrice,UpdatedUtc=@Now
+                WHERE ItemId=@ItemId AND VenueId=@VenueId;
+            ELSE IF @PlacementId IS NOT NULL
+                UPDATE dbo.Placements SET ImportedPriceOverride=@NewPrice,UpdatedUtc=@Now
                 WHERE Id=@PlacementId;
 
             COMMIT TRANSACTION;
@@ -2359,7 +2371,8 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         CancellationToken cancellationToken = default,
         Guid? menuId = null,
         bool isListed = true,
-        Guid? sectionId = null)
+        Guid? sectionId = null,
+        bool priceEverywhere = false)
     {
         var row = (await dataAccess.ExecuteSqlQueryAsync<ItemUpdateRow, object>(
             UpdateItemValuesGuardedSql,
@@ -2378,6 +2391,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 ExpectedIsListed = expected?.IsListed ?? true,
                 MenuId = menuId,
                 SectionId = sectionId,
+                PriceEverywhere = priceEverywhere,
                 Now = now
             },
             cancellationToken).ConfigureAwait(false)).Single();

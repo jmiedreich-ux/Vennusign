@@ -2077,3 +2077,43 @@ button.builder__viewing-as strong {
 .builder__actions-menu-danger strong {
   color: var(--sky-danger-text, #8a2929);
 }
+
+/*
+ * The two answers to the price question (A20). Equal weight on purpose: neither is a mistake, and
+ * styling one as the safe choice would be the product deciding what the operator meant.
+ */
+.builder__price-scope {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.builder__price-scope button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  border: 1px solid var(--sky-border, #cbd5e1);
+  border-radius: 8px;
+  background: var(--sky-surface-raised, #ffffff);
+  cursor: pointer;
+}
+
+.builder__price-scope button:hover,
+.builder__price-scope button:focus-visible {
+  border-color: var(--sky-color-primary, #2563eb);
+}
+
+.builder__price-scope strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sky-text, #0f172a);
+}
+
+.builder__price-scope small {
+  font-size: 12px;
+  color: var(--sky-text-muted, #64748b);
+}

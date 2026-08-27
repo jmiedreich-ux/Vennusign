@@ -826,7 +826,8 @@ public sealed class ContentService(
         ItemValueExpectation? expected = null,
         CancellationToken cancellationToken = default,
         Guid? menuId = null,
-        Guid? sectionId = null)
+        Guid? sectionId = null,
+        bool priceEverywhere = false)
     {
         var item = await library.GetItemAsync(venueId, itemId, cancellationToken).ConfigureAwait(false);
         if (item is null)
@@ -868,7 +869,8 @@ public sealed class ContentService(
                 cancellationToken,
                 menuId,
                 item.IsListed,
-                sectionId)
+                sectionId,
+                priceEverywhere)
             .ConfigureAwait(false);
 
         if (outcome.Outcome != "updated")

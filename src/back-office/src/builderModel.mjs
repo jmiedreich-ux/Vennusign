@@ -159,20 +159,19 @@ export function boardsPhrase(boards, currentMenuId) {
 /**
  * The line under the price when an item is on other boards too.
  *
- * Q5's design follow-up: one item is one shared price everywhere, and the flag on
- * that answer asked that editing it "feel easy". This is the resolution — a quiet,
- * permanent statement of fact rather than a confirmation step. A dialog on every
- * price edit is the opposite of easy, and a separate quick-price mode would be the
- * second editor decision 15 exists to refuse.
+ * This used to read "they will show this when you publish them", which was Q5's answer: one item,
+ * one shared price everywhere, stated quietly rather than confirmed. Q5 was withdrawn (A19) and
+ * the price no longer travels, so that sentence became a promise the product does not keep.
  *
- * It says "when you publish them" because that is true: the edit reaches each
- * board's draft immediately and each board's screens only on its own publish.
+ * What is true now: a name or a description is a fact about the dish and still reaches every menu.
+ * A price is a fact about the menu it is printed on, and changing one asks which menus the
+ * operator meant (A20). The line says exactly that and nothing more.
  */
 export function sharedItemLine(boards, currentMenuId) {
   const phrase = boardsPhrase(boards, currentMenuId);
   if (!phrase) return null;
   const plural = (boards ?? []).filter(board => board.menuId !== currentMenuId).length > 1;
-  return `Also on ${phrase} — ${plural ? "they" : "it"} will show this when you publish ${plural ? "them" : "it"}.`;
+  return `Also on ${phrase} — name and description reach ${plural ? "them" : "it"}; a price change asks first.`;
 }
 
 /**
@@ -470,3 +469,33 @@ export function releasedPhrase(count) {
  * Criterion 5 covers Menus and every surface rewritten here (Q179).
  */
 export const bannedWords = ["unpublish", "supersede", "restore", "archive"];
+
+/**
+ * The question a price change asks when it could mean two things (A20).
+ *
+ * Owner ruling, 2026-08-27. A dish already on several menus, and a new price: changing every menu
+ * is the behaviour A19 withdrew, and changing one quietly leaves the others wrong with nothing
+ * said. So neither is assumed.
+ *
+ * Returns null when there is nothing to be unsure about — one menu is not ambiguous, and asking
+ * anyway is the noise decision 18 rules out. The caller saves without a word in that case.
+ */
+export function priceScopeQuestion(itemName, boards, currentMenuId) {
+  const menus = new Set((boards ?? []).map(board => board.menuId));
+  menus.add(currentMenuId);
+  if (menus.size < 2) return null;
+
+  const elsewhere = (boards ?? []).filter(board => board.menuId !== currentMenuId);
+  const others = new Set(elsewhere.map(board => board.menuId)).size;
+
+  return {
+    total: menus.size,
+    title: `${itemName || "This item"} is on ${menus.size} menus.`,
+    // The two answers name their outcome rather than agreeing or disagreeing with a question —
+    // "Yes" and "No" here would not tell anybody what is about to happen.
+    hereLabel: "Change it here only",
+    hereDetail: others === 1 ? "The other menu keeps its price" : `The other ${others} menus keep their prices`,
+    everywhereLabel: `Change it on all ${menus.size}`,
+    everywhereDetail: "Every menu carrying this dish shows the new price"
+  };
+}
