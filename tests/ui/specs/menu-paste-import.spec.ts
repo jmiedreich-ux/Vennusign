@@ -1,6 +1,19 @@
 import { test, expect, openAs } from "../fixtures";
 import { seed } from "../seed";
 
+/*
+ * Review is a step now, not a screen the product jumps past (owner, 2026-08-28).
+ *
+ * A resolved session used to render the destination immediately, so these specs went straight
+ * there. The operator now passes THROUGH the review - which is where the line inventory and
+ * "Nothing left to answer" live - and moves on deliberately.
+ */
+async function onwardToDestination(page: import("@playwright/test").Page) {
+  const onward = page.getByTestId("go-to-destination");
+  if (await onward.count()) await onward.click();
+}
+
+
 test.describe("paste import review", () => {
   test("reviews, resumes, and creates one truthful unpublished menu", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
@@ -26,6 +39,7 @@ test.describe("paste import review", () => {
     await page.getByRole("button", { name: "Accept 1 safe match" }).click();
     await expect(page.getByRole("heading", { name: "1 item needs you" })).toBeVisible();
     await page.getByTestId("answer-dish").click();
+    await onwardToDestination(page);
     await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
     // Choosing is confirming now - the name sits on the choice itself, no second screen.
     const savedName = `Imported ${seeded.menuName}`;
@@ -73,6 +87,7 @@ test.describe("paste import review", () => {
     test.skip(testInfo.project.name!=="desktop","The replacement workflow has a separate below-900 refusal.");
     const seeded=await seed({label:"paste-replace"});await openAs(page,"owner","/menu/import");
     await page.getByLabel("Menu text").fill(`REPLACEMENT\nNew ${seeded.menuName} special  19`);await page.getByRole("button",{name:"Read menu"}).click();
+    await onwardToDestination(page);
     await expect(page.getByRole("heading",{name:"Where should these items go?"})).toBeVisible();
     await page.getByRole("button",{name:new RegExp(seeded.menuName)}).click();
     await expect(page.getByRole("heading",{name:`Replace ${seeded.menuName}?`})).toBeVisible();
@@ -120,6 +135,7 @@ test.describe("paste import review", () => {
 
     // The third answer the design always specified, and the only one never built.
     await row.getByTestId("answer-leave-out").click();
+    await onwardToDestination(page);
     await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
   });
 
@@ -194,6 +210,7 @@ test.describe("paste import review", () => {
     const suggested = (await banner.getByRole("heading").innerText()).replace(/^Is this menu called “|”\?$/g, "");
 
     await page.getByTestId("suggestion-accept").click();
+    await onwardToDestination(page);
     await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
     // The whole point of the feature. `suggestedMenuName` and `proposedMenuName` are unrelated
     // server-side, and accepting used to set neither - so the name the banner had just offered went
@@ -209,6 +226,7 @@ test.describe("paste import review", () => {
 
     await page.getByLabel("Menu text").fill(`${seeded.itemName.replaceAll(" ", "   ")}  ${seeded.itemPrice}`);
     await page.getByRole("button", { name: "Read menu" }).click();
+    await onwardToDestination(page);
     await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
     await page.getByRole("button", { name: "Create a new menu" }).click();
 

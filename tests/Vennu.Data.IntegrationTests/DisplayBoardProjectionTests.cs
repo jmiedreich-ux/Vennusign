@@ -95,8 +95,77 @@ public class DisplayBoardProjectionTests(DatabaseFixture fixture)
     private static async Task<int> ScalarAsync(ISqlDataAccess dataAccess, string sql) =>
         (await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(sql, new { })).Single().Value;
 
+    [Fact]
+    public async Task A_price_as_a_menu_prints_it_reaches_the_screen_as_a_number()
+    {
+        /*
+         * The owner published an imported menu and every price on the board read $0.00.
+         *
+         * A paste import stores the price exactly as the menu printed it - "$7.00" - because the
+         * content model keeps prices as typed (Q115/Q190, so "MP" survives). The board projection
+         * ran TRY_CONVERT over that, got NULL from the currency symbol, and ISNULL made it zero.
+         * Not the rare "market price, a dash" the old comment anticipated: every imported price on
+         * every board.
+         *
+         * The second half is A19: a price belongs to the placement and the menu it is printed on.
+         * The import writes that to Placements.ImportedPriceOverride, and this projection read
+         * straight past it, so a per-menu price never reached a screen at all.
+         */
+        var dataAccess = fixture.CreateDataAccess();
+        var venueId = Guid.NewGuid();
+        var menuId = Guid.NewGuid();
+        var pageId = Guid.NewGuid();
+        var sectionId = Guid.NewGuid();
+        var satay = Guid.NewGuid();
+        var padThai = Guid.NewGuid();
+        var market = Guid.NewGuid();
+
+        await ExecuteAsync(dataAccess, $"""
+            INSERT INTO dbo.Venues (Id, Name, Timezone, Type, PrimaryLanguage)
+            VALUES ('{venueId}', 'Mana-Thai', 'America/New_York', 'bar', 'en');
+
+            INSERT INTO dbo.Menus (Id, VenueId, Name, IsActive, CreatedUtc, UpdatedUtc)
+            VALUES ('{menuId}', '{venueId}', 'Dinner', 1, SYSUTCDATETIME(), SYSUTCDATETIME());
+
+            INSERT INTO dbo.MenuPages (Id, VenueId, MenuId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            VALUES ('{pageId}', '{venueId}', '{menuId}', 'Page 1', 0, SYSUTCDATETIME(), SYSUTCDATETIME());
+
+            INSERT INTO dbo.MenuSections (Id, VenueId, MenuId, PageId, Name, SortOrder, CreatedUtc, UpdatedUtc)
+            VALUES ('{sectionId}', '{venueId}', '{menuId}', '{pageId}', 'Appetizers', 0, SYSUTCDATETIME(), SYSUTCDATETIME());
+
+            -- Exactly what the importer writes: the symbol the menu was printed with.
+            INSERT INTO dbo.Items (Id, VenueId, Name, Description, Price, Source, IsActive, CreatedUtc, UpdatedUtc)
+            VALUES ('{satay}',    '{venueId}', 'Chicken Satay', NULL, N'$7.00',  'import', 1, SYSUTCDATETIME(), SYSUTCDATETIME()),
+                   ('{padThai}',  '{venueId}', 'Pad Thai',      NULL, N'$11.95', 'import', 1, SYSUTCDATETIME(), SYSUTCDATETIME()),
+                   ('{market}',   '{venueId}', 'Whole Fish',    NULL, N'MP',     'import', 1, SYSUTCDATETIME(), SYSUTCDATETIME());
+
+            -- Pad Thai carries a per-menu price (A19). The board must prefer it over the library default.
+            INSERT INTO dbo.Placements (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc, ImportedPriceOverride)
+            VALUES (NEWID(), '{venueId}', '{menuId}', '{sectionId}', '{pageId}', '{satay}',   0, SYSUTCDATETIME(), SYSUTCDATETIME(), NULL),
+                   (NEWID(), '{venueId}', '{menuId}', '{sectionId}', '{pageId}', '{padThai}', 1, SYSUTCDATETIME(), SYSUTCDATETIME(), N'$13.50'),
+                   (NEWID(), '{venueId}', '{menuId}', '{sectionId}', '{pageId}', '{market}',  2, SYSUTCDATETIME(), SYSUTCDATETIME(), NULL);
+            """);
+
+        IMenuRepository repository = new MenuRepository(dataAccess);
+        var items = (await repository.GetActiveBoardItemsAsync(venueId, sectionId)).ToList();
+
+        // The symbol no longer costs the guest the price.
+        Assert.Equal(7.00m, items.Single(item => item.Name == "Chicken Satay").Price);
+
+        // And the placement's own price wins over the library default.
+        Assert.Equal(13.50m, items.Single(item => item.Name == "Pad Thai").Price);
+
+        /*
+         * A genuinely non-numeric price still lands as 0. That is the pre-existing behaviour and
+         * it is still wrong on a guest screen - "MP" rendered as $0.00 is a different lie, tracked
+         * on its own. Asserted here so the day it changes, this test says so rather than the owner.
+         */
+        Assert.Equal(0m, items.Single(item => item.Name == "Whole Fish").Price);
+    }
+
     private sealed class CountRow
     {
         public int Value { get; set; }
-    }
+    
+}
 }

@@ -45,6 +45,8 @@
 .candidate-list button:hover, .question-actions button:hover, .new-item-choice:hover { border-color: #087fa5; background: #f0fbff; }
 .candidate-list span { display: grid; gap: 3px; }.candidate-list small { color: #647b8c; }.candidate-list em { font-style: normal; color: #2f566f; }
 .review-complete { display: flex; gap: 18px; align-items: center; padding: 26px; border: 1px solid #a4d9c3; border-radius: 20px; background: #f0fbf6; }
+/* The way on sits at the end of the row, so the panel reads as a step rather than a notice. */
+.review-complete > button { margin-left: auto; flex: none; }
 .review-complete > span { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; color: white; background: #247b5d; }.review-complete h2 { margin: 0 0 4px; }.review-complete p { margin: 0; color: #547064; }
 .inventory-panel { margin-top: 24px; border-top: 1px solid #ccd8df; }
 .inventory-panel > button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 18px 0; border: 0; background: transparent; color: #2d4d65; font-weight: 800; cursor: pointer; }.inventory-panel > button svg { width: 18px; }

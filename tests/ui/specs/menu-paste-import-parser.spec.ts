@@ -2,6 +2,19 @@ import { test, expect } from "@playwright/test";
 // @ts-expect-error - plain .mjs helpers, shared with non-Playwright QA tooling.
 import { qaCredentials, qaCredentialSources, signInAsCustomer } from "../lib/customerAccount.mjs";
 
+/*
+ * Review is a step now, not a screen the product jumps past (owner, 2026-08-28).
+ *
+ * A resolved session used to render the destination immediately, so these specs went straight
+ * there. The operator now passes THROUGH the review - which is where the line inventory and
+ * "Nothing left to answer" live - and moves on deliberately.
+ */
+async function onwardToDestination(page: import("@playwright/test").Page) {
+  const onward = page.getByTestId("go-to-destination");
+  if (await onward.count()) await onward.click();
+}
+
+
 /**
  * Regression for #862/#864 (M6.4): `MenuPasteParser.PriceAtEnd` used to require two
  * spaces (or a dot leader) between an item's name and its price, so an ordinary

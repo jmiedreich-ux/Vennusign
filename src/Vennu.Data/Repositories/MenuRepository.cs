@@ -39,11 +39,33 @@ public sealed class MenuRepository(ISqlDataAccess dataAccess) : IMenuRepository
                p.MenuSectionId,
                i.Name,
                i.Description,
-               -- Items.Price is NVARCHAR: the content model keeps a price exactly as
-               -- it was typed. The display contract carries a decimal, so anything
-               -- that is not a number (a market price, a dash) converts to NULL and
-               -- lands as 0 here. See the note on this in issue #739.
-               ISNULL(TRY_CONVERT(DECIMAL(10, 2), i.Price), 0) AS Price,
+               /*
+                * Items.Price is NVARCHAR: the content model keeps a price exactly as it was
+                * typed, so "12", "9.5" and "MP" all round-trip unchanged (Q115/Q190). The
+                * display contract carries a decimal, so this is where the two models meet.
+                *
+                * TWO things were wrong here, and both put a false number on a guest's screen.
+                *
+                * 1. The symbol. Every price a paste import produces carries the one the menu
+                *    was printed with - "$7.00" - and TRY_CONVERT rejects it, so ISNULL made it
+                *    zero. Not the rare "market price, a dash" the old note anticipated: EVERY
+                *    imported price on EVERY board rendered as $0.00. Stripping the currency
+                *    symbol and separators first is what the operator meant by typing it.
+                *
+                * 2. The placement was ignored. A19 says a price belongs to the placement and
+                *    the menu it is printed on, and the import writes that to
+                *    Placements.ImportedPriceOverride - which this read straight past, so the
+                *    per-menu price never reached a screen. The publish snapshot already
+                *    COALESCEs the two; the live board now agrees with it.
+                *
+                * A genuinely non-numeric price (MP, Market) still lands as 0 and still needs
+                * its own answer - showing $0.00 for market price is a different lie, tracked
+                * separately. This fixes the case that is simply arithmetic.
+                */
+               ISNULL(TRY_CONVERT(DECIMAL(10, 2),
+                   REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                       COALESCE(p.ImportedPriceOverride, i.Price),
+                       N'$', N''), N'£', N''), N'€', N''), N',', N''), NCHAR(160), N'')), 0) AS Price,
                CAST(NULL AS DECIMAL(10, 2)) AS HappyHourPrice,
                ISNULL(a.IsAvailable, CAST(1 AS BIT)) AS IsAvailable,
                CAST(NULL AS INT) AS QuantityAvailable,

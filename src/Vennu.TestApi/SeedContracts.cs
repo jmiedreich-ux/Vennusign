@@ -63,3 +63,13 @@ internal sealed record PairingCodeResponse(string Code, Guid ScreenId, DateTime 
 internal sealed record ClaimedScreenResponse(bool Linked, Guid ScreenId, Guid VenueId);
 internal sealed record SeededScreen(Guid ScreenId, string ScreenKey);
 internal sealed record HeartbeatResponse(Guid ScreenId, string Status, DateTime LastSeenUtc, string? Platform, string? AppVersion);
+
+/// <summary>
+/// Just enough of the builder board to see the sections a new menu already has.
+///
+/// The product gives every menu a default section; the seed reads them rather than adding its own
+/// in front of them. Only the fields used are declared - the response carries items and pages too,
+/// and ignoring them here keeps this contract from drifting with the builder's.
+/// </summary>
+internal sealed record BoardSectionsResponse(BoardSections Board);
+internal sealed record BoardSections(IReadOnlyCollection<SectionResponse> Sections);

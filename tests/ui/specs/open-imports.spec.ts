@@ -1,5 +1,18 @@
 import { test, expect, openAs } from "../fixtures";
 
+/*
+ * Review is a step now, not a screen the product jumps past (owner, 2026-08-28).
+ *
+ * A resolved session used to render the destination immediately, so these specs went straight
+ * there. The operator now passes THROUGH the review - which is where the line inventory and
+ * "Nothing left to answer" live - and moves on deliberately.
+ */
+async function onwardToDestination(page: import("@playwright/test").Page) {
+  const onward = page.getByTestId("go-to-destination");
+  if (await onward.count()) await onward.click();
+}
+
+
 /**
  * The way back into an unfinished import (#904).
  *
