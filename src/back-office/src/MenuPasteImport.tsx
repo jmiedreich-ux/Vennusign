@@ -41,7 +41,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     let current = true;
     setLoading(true);
     loadMenuImport(configuration, accessToken, sessionId)
-      .then(value => { if (current) { setSession(value); setMenuName(nameFor(value)); setError(null); } })
+      .then(value => { if (current) { commit(value); setMenuName(nameFor(value)); setError(null); } })
       .catch(failure => { if (current) setError(failure instanceof Error ? failure.message : "This import could not be resumed."); })
       .finally(() => { if (current) setLoading(false); });
     return () => { current = false; };
@@ -114,11 +114,23 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
 
   useEffect(() => { latest.current = session ?? null; }, [session]);
 
+  /*
+   * Every write goes through here, and the ref moves in the same breath as the state.
+   *
+   * The ref above is updated by an effect, which React runs after it commits a render - so two
+   * writes inside one handler both read the revision as it stood before the first of them. That is
+   * how "This import changed in another window" survived the last fix: `mutate` consulted the ref,
+   * but nothing kept the ref current *within* a handler. Assigning it here makes the next write in
+   * the same tick carry the revision the server just returned. The effect stays for the paths that
+   * set session from outside a write (the initial load, a conflict body).
+   */
+  const commit = useCallback((next: MenuImportSession) => { latest.current = next; setSession(next); }, []);
+
   const mutate = useCallback(async (run: (current: MenuImportSession) => Promise<MenuImportSession>) => {
     const current = latest.current ?? session;
     if (!current) return;
     setBusy(true); setError(null);
-    try { setSession(await run(current)); }
+    try { commit(await run(current)); }
     catch (failure) {
       /*
        * A conflict that carries the current state is one we caused: the server hands back exactly
@@ -127,9 +139,9 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
        * worse than the extra round trip. A second failure is a real conflict and is shown.
        */
       if (failure instanceof MenuImportApiError && failure.current) {
-        try { setSession(await run(failure.current)); return; }
+        try { commit(await run(failure.current)); return; }
         catch (retry) {
-          if (retry instanceof MenuImportApiError && retry.current) setSession(retry.current);
+          if (retry instanceof MenuImportApiError && retry.current) commit(retry.current);
           setError(retry instanceof Error ? retry.message : "That answer could not be saved.");
           return;
         }
@@ -167,7 +179,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
       {error && <p className="import-error" role="alert">{error}</p>}
       <div className="paste-actions"><button className="import-secondary" onClick={onBack}>Cancel</button><button className="import-primary" disabled={busy || !paste.trim()} onClick={async () => {
         setBusy(true); setError(null);
-        try { const created = await startMenuImport(configuration, accessToken, paste); setSession(created); setMenuName(nameFor(created)); onStarted(created.session.id); }
+        try { const created = await startMenuImport(configuration, accessToken, paste); commit(created); setMenuName(nameFor(created)); onStarted(created.session.id); }
         catch (failure) { setError(failure instanceof Error ? failure.message : "VennuSign could not read that paste."); }
         finally { setBusy(false); }
       }}>{busy ? "Reading…" : "Read menu"}</button></div>
@@ -222,10 +234,20 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
      */
     const seen = new Promise(resolve => setTimeout(resolve, 700));
     try {
-      let current = session;
+      /*
+       * Start from the newest session, not the one this closure was built with.
+       *
+       * `mutate` learned this; this handler never did, and it is the path the owner hit: typing the
+       * menu name saves on blur and bumps the revision, then "Yes, use these" sent the first answer
+       * with the revision from before that blur. One window, and a 409 saying another window
+       * changed it. There is no retry here to hide it either - the loop threads each response into
+       * the next write, so only the first one could ever be stale.
+       */
+      const start = latest.current ?? session;
+      let current = start;
       let answered = 0;
-      for (const question of session.questions.filter(candidate => !candidate.answer)) {
-        const line = session.lines.find(candidate => candidate.lineNumber === question.lineNumbers[0]);
+      for (const question of start.questions.filter(candidate => !candidate.answer)) {
+        const line = start.lines.find(candidate => candidate.lineNumber === question.lineNumbers[0]);
         if (!line?.suggestedVerdict) continue;
         current = await answerMenuImport(configuration, accessToken, current, question, "leave_out");
         answered++;
@@ -252,8 +274,8 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
        * and the destination step still said "New menu". Reported by the owner as the name never
        * surfacing anywhere, which is exactly what happened.
        */
-      if (session.session.suggestedMenuName) setMenuName(session.session.suggestedMenuName);
-      setSession(current);
+      if (start.session.suggestedMenuName) setMenuName(start.session.suggestedMenuName);
+      commit(current);
     } catch (failure) {
       await seen;
       setError(failure instanceof Error ? failure.message : "That suggestion could not be applied. Nothing changed.");
@@ -294,9 +316,9 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     try {
       const chosen = await setMenuImportCreateDestination(configuration, accessToken, latest.current ?? session!, menuName);
       const created = await confirmMenuImportCreate(configuration, accessToken, chosen);
-      setSession(created.import);
+      commit(created.import);
     } catch (failure) {
-      if (failure instanceof MenuImportApiError && failure.current) setSession(failure.current);
+      if (failure instanceof MenuImportApiError && failure.current) commit(failure.current);
       setError(failure instanceof Error ? failure.message : "This menu could not be created. Nothing changed.");
     } finally { setBusy(false); }
   })(); }}>
@@ -315,7 +337,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
       {!session.session.destination ? <><p>Your review is saved. Creating is the first step that changes menu working content.</p>{error && <p className="import-error" role="alert">{error}</p>}
         {createMenuForm}
         <div className="replace-options"><h2>Replace an existing menu</h2><p>The pasted menu becomes its new unpublished draft. What guests see stays live until you publish.</p>{menus.length?<div className="target-list">{menus.map(menu=><button type="button" key={menu.menuId} disabled={busy} onClick={()=>void mutate(current=>setMenuImportReplaceDestination(configuration,accessToken,current,menu.menuId))}><span><strong>{menu.name}</strong><small>{menu.publishedVersion===null?"Never published":`${menu.draftCount} unpublished ${menu.draftCount===1?"change":"changes"}`}</small></span><ChevronRight aria-hidden="true"/></button>)}</div>:<p className="future-destination">No active menus are available to replace.</p>}</div></> : session.session.destination==="create"?
-      createMenuForm:<form onSubmit={event=>{event.preventDefault();void(async()=>{setBusy(true);setError(null);try{const replaced=await confirmMenuImportReplace(configuration,accessToken,latest.current??session);setSession(replaced.import);}catch(failure){if(failure instanceof MenuImportApiError&&failure.current)setSession(failure.current);setError(failure instanceof Error?failure.message:"This menu could not be replaced. Nothing changed.");}finally{setBusy(false);}})();}}>
+      createMenuForm:<form onSubmit={event=>{event.preventDefault();void(async()=>{setBusy(true);setError(null);try{const replaced=await confirmMenuImportReplace(configuration,accessToken,latest.current??session);commit(replaced.import);}catch(failure){if(failure instanceof MenuImportApiError&&failure.current)commit(failure.current);setError(failure instanceof Error?failure.message:"This menu could not be replaced. Nothing changed.");}finally{setBusy(false);}})();}}>
         <p>Confirm the target and consequences. Replacement happens together or nothing changes.</p>
         <div className="replacement-target"><strong>{session.session.targetMenuName}</strong><span>{session.session.targetHadPublishedVersion?"The published version stays on screens.":"This menu has never been published."}</span></div>
         {/*
@@ -363,7 +385,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
         <div className="confirm-facts replacement-facts"><div><strong>{session.session.itemCount}</strong><span>items in the new draft</span></div><div><strong>{(session.session.targetAddedCount??0)+(session.session.targetRemovedCount??0)+(session.session.targetChangedCount??0)}</strong><span>{`${(session.session.targetAddedCount??0)+(session.session.targetRemovedCount??0)+(session.session.targetChangedCount??0)===1?"unpublished change":"unpublished changes"} already present`}</span><small>{`${session.session.targetAddedCount??0} ${(session.session.targetAddedCount??0)===1?"item added":"items added"} · ${session.session.targetRemovedCount??0} removed · ${session.session.targetChangedCount??0} changed`}</small></div><div><strong>0</strong><span>screens change now</span></div></div>
         <details><summary>What will be preserved</summary><p>Menu identity, theme, screen assignments, published version, and current 86 status. A restorable copy of today’s working draft is saved first.</p></details>
         <p className="not-live">Not live yet — publishing remains a separate action.</p>{error&&<p className="import-error" role="alert">{error}</p>}
-        <div className="destination-actions"><button type="button" className="import-secondary" disabled={busy} onClick={()=>setSession({...session,session:{...session.session,destination:null,targetMenuId:null,targetUpdatedUtc:null,targetMenuName:null}})}>Choose another menu</button><button type="submit" className="import-primary" disabled={busy}>{busy?"Replacing…":"Replace menu"}</button></div>
+        <div className="destination-actions"><button type="button" className="import-secondary" disabled={busy} onClick={()=>commit({...session,session:{...session.session,destination:null,targetMenuId:null,targetUpdatedUtc:null,targetMenuName:null}})}>Choose another menu</button><button type="submit" className="import-primary" disabled={busy}>{busy?"Replacing…":"Replace menu"}</button></div>
       </form>}
     </section>
   </main>;
