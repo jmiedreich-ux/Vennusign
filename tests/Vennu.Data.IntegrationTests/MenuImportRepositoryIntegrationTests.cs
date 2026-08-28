@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Vennu.Api.Menus;
 using Vennu.Core.Models;
 using Vennu.Data.IntegrationTests.Fixtures;
 using Vennu.Data.Repositories;
@@ -212,6 +215,129 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         Assert.Equal(MenuImportCreateOutcome.MenuLimit, refused.Result);
         Assert.Null(refused.Aggregate!.Session.CompletedMenuId);
         Assert.Single(await new MenuRepository(dataAccess).GetMenusAsync(venueId));
+    }
+
+    [Fact]
+    public async Task A_reparse_the_server_caused_is_not_reported_as_another_window()
+    {
+        /*
+         * "This import changed in another window. Review the latest answers and try again."
+         * Reported by the owner repeatedly, on dev, with one window open and nobody else there.
+         *
+         * Every write calls RefreshDependenciesAsync first. That re-reads the paste when the
+         * venue's dependencies have moved - item library, menu ceilings, resolved configuration -
+         * and a re-parse bumps the session rowversion. The next line then compared the operator's
+         * revision against the one it had just bumped and called the mismatch somebody else's
+         * edit. Creating a menu or putting one back changes the ceilings, which is exactly what
+         * the owner was doing beside an open import.
+         *
+         * Written against the real database on purpose. The unit fixture for this service hands
+         * back the same eight zero bytes from every write, so a revision that moves cannot be
+         * expressed there at all - which is why nothing caught this. A rowversion is the database's
+         * behaviour, and only the database has it.
+         */
+        var dataAccess = fixture.CreateDataAccess();
+        var venue = new Venue { Name = fixture.UniqueValue("reparse-venue"), Timezone = "UTC", Type = "Restaurant", PrimaryLanguage = "en" };
+        var venueId = await new VenueRepository(dataAccess).CreateAsync(venue);
+
+        var content = new ContentRepository(dataAccess);
+        var imports = new MenuImportRepository(dataAccess);
+        var options = new MenuBuilderOptions();
+        var service = new MenuImportService(
+            imports,
+            content,
+            new MenuBuilderConfigurationResolver(content, new StaticOptionsMonitor<MenuBuilderOptions>(options)),
+            new MenuPasteParser(),
+            new MenuResidueSuggestionService(new HttpClient(), Options.Create(new MenuSuggestionOptions()), NullLogger<MenuResidueSuggestionService>.Instance),
+            TimeProvider.System);
+
+        /*
+         * A question needs something to be unsure about. An exact name whose PRICE differs is the
+         * one case the parser deliberately stops on (the same rule the safe-match fast path uses),
+         * so this is a question by design rather than by accident of some parser heuristic.
+         */
+        await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            INSERT dbo.Items(Id,VenueId,Name,Description,Price,Source,IsActive,CreatedUtc,UpdatedUtc)
+            VALUES(NEWID(),@VenueId,N'Soup',NULL,N'12.00',N'manual',1,SYSUTCDATETIME(),SYSUTCDATETIME());
+            SELECT 1 AS Value;
+            """, new { VenueId = venueId });
+
+        var started = await service.StartAsync(venueId, "MAINS\nSoup  9.00", "owner@example.com", default);
+        var held = started.Session.Revision;
+        var question = started.Questions.First();
+
+        /*
+         * The venue moves underneath the open import.
+         *
+         * The library is one of the parse's dependencies (SameDependencies compares the questions,
+         * and a question's candidates come from the library), so a second "Soup" arriving - from
+         * another import, another operator, or the builder - is enough to make the next refresh
+         * re-read the paste. It is the same class of event as the ceiling change the owner caused
+         * by putting a menu back, and it needs no organization to set up.
+         */
+        await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            INSERT dbo.Items(Id,VenueId,Name,Description,Price,Source,IsActive,CreatedUtc,UpdatedUtc)
+            VALUES(NEWID(),@VenueId,N'Soup',NULL,N'13.00',N'manual',1,SYSUTCDATETIME(),SYSUTCDATETIME());
+            SELECT 1 AS Value;
+            """, new { VenueId = venueId });
+
+        var outcome = await service.PutAnswerAsync(venueId, started.Session.Id, held,
+            question.QuestionKey, question.Fingerprint, MenuImportChoices.LeaveOut, null, "owner@example.com", default);
+
+        Assert.NotEqual(MenuImportMutationOutcome.Conflict, outcome.Result);
+
+        // And the session really did move - otherwise this test proves nothing.
+        var after = await imports.GetAsync(venueId, started.Session.Id, DateTime.UtcNow);
+        Assert.True(after!.Session.ParseRevision > started.Session.ParseRevision,
+            "the dependency change should have re-parsed the session");
+    }
+
+    [Fact]
+    public async Task A_revision_nobody_was_ever_shown_is_still_a_conflict()
+    {
+        // The guard has to keep guarding: relaxing it must not turn a genuine stale write into a
+        // silent overwrite of somebody else's answer.
+        var (repository, venueId) = await CreateRepositoryAndVenue();
+        var content = new ContentRepository(fixture.CreateDataAccess());
+
+        var service = new MenuImportService(
+            repository,
+            content,
+            new MenuBuilderConfigurationResolver(content, new StaticOptionsMonitor<MenuBuilderOptions>(new MenuBuilderOptions())),
+            new MenuPasteParser(),
+            new MenuResidueSuggestionService(new HttpClient(), Options.Create(new MenuSuggestionOptions()), NullLogger<MenuResidueSuggestionService>.Instance),
+            TimeProvider.System);
+
+        var dataAccess = fixture.CreateDataAccess();
+        /*
+         * A question needs something to be unsure about. An exact name whose PRICE differs is the
+         * one case the parser deliberately stops on (the same rule the safe-match fast path uses),
+         * so this is a question by design rather than by accident of some parser heuristic.
+         */
+        await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            INSERT dbo.Items(Id,VenueId,Name,Description,Price,Source,IsActive,CreatedUtc,UpdatedUtc)
+            VALUES(NEWID(),@VenueId,N'Soup',NULL,N'12.00',N'manual',1,SYSUTCDATETIME(),SYSUTCDATETIME());
+            SELECT 1 AS Value;
+            """, new { VenueId = venueId });
+
+        var started = await service.StartAsync(venueId, "MAINS\nSoup  9.00", "owner@example.com", default);
+        var question = started.Questions.First();
+
+        var outcome = await service.PutAnswerAsync(venueId, started.Session.Id, BitConverter.GetBytes(9_999L),
+            question.QuestionKey, question.Fingerprint, MenuImportChoices.LeaveOut, null, "owner@example.com", default);
+
+        Assert.Equal(MenuImportMutationOutcome.Conflict, outcome.Result);
+    }
+
+    /// <summary>An IOptionsMonitor with nothing behind it but the value, for services that want one.</summary>
+    private sealed class StaticOptionsMonitor<T>(T value) : IOptionsMonitor<T>
+    {
+        public T CurrentValue => value;
+        public T Get(string? name) => value;
+        public IDisposable? OnChange(Action<T, string?> listener) => null;
     }
 
     [Fact]
