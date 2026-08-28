@@ -202,13 +202,14 @@ The display runtime receives a safe render package or manifest derived from that
 The product is built in this order:
 
 1. **Schema registry/compiler** — model definitions may initially be code/config-assisted, but validation is server-side and model versions are explicit.
-2. **Data Model Studio** — staff-only UI to construct, test, validate, release, deprecate, and migrate model versions.
-3. **Fixture and preview lab** — valid/invalid fixtures, representative sizes, state cases, and binding checks.
-4. **Theme compatibility checker** — rejects a theme whose fields, repeaters, formatters, or state responses cannot resolve against the bound model.
-5. **Migration and impact console** — shows content, themes, releases, and integrations affected by a model successor.
-6. **Controlled enterprise/partner configuration** — only if proven valuable; never arbitrary customer code.
+2. **Fixture and preview lab** — valid/invalid fixtures, representative sizes, state cases, and binding checks.
+3. **Theme compatibility checker** — rejects a theme whose fields, repeaters, formatters, or state responses cannot resolve against the bound model.
+4. **`menu.v1` vertical proof** — prove that the engine can validate, compose, release, and render the first real shared model.
+5. **Data Model Studio** — the staff-only visual tool to construct, test, validate, release, deprecate, and migrate model versions once the engine is proven.
+6. **Migration and impact console** — shows content, themes, releases, and integrations affected by a model successor.
+7. **Controlled enterprise/partner configuration** — only if proven valuable; never arbitrary customer code.
 
-The first tool must be safe enough for Vennue engineers to use. It is not a customer-facing schema designer in the initial product.
+The Data Model Studio is not a customer-facing schema designer in the initial product.
 
 ### 7.1 Planning sessions before implementation
 
@@ -226,20 +227,20 @@ once; they do **not** attempt to design every future industry before development
 Menu and cinema/showtimes provide enough contrast to prove the foundation. New industries later reuse
 the rules; they do not reopen the underlying engine by default.
 
-### 7.2 The Model Builder follows the engine
+### 7.2 The Data Model Studio follows the engine
 
-The internal Data Model Builder is a planned Vennue staff tool, not the first implementation
-milestone. Its UI must sit over a proven model engine that already supports `menu.v1`, validation,
+The **Data Model Studio** is Vennue's planned internal model-builder: a staff tool, not the
+first implementation milestone. Its UI must sit over a proven model engine that already supports `menu.v1`, validation,
 binding, release, and migration safety.
 
 Building the visual tool first would create a persuasive editor with no settled meaning behind its
 controls. The correct order is:
 
 ```
-planning decisions -> model engine -> menu.v1 proof -> internal Model Builder
+planning decisions -> model engine -> menu.v1 proof -> Data Model Studio
 ```
 
-Once the engine is proven, the builder can safely let authorized Vennue staff define fields,
+Once the engine is proven, the Data Model Studio can safely let authorized Vennue staff define fields,
 nested collections/repeaters, source modes, state sets, validation, editor behavior, and
 compatibility rules; test them against fixtures and representative screens; then release an
 immutable model version. It does not create database tables, alter live models, or accept
