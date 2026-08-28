@@ -44,8 +44,8 @@ public sealed class MenuImportService(
          */
         var suggestion = await suggestions.SuggestAsync(parsed, cancellationToken).ConfigureAwait(false);
         var lines = Suggested(parsed.Lines, suggestion);
-        var questions = await DistinguishedAsync(venueId, parsed.Questions, cancellationToken).ConfigureAwait(false);
-        var session = new MenuImportSession(id, venueId, rawPaste, 1, Status(parsed.Questions), lineCount, parsed.ItemCount,
+        var questions = await DistinguishedAsync(venueId, parsed.Questions, parsed.Lines, cancellationToken).ConfigureAwait(false);
+        var session = new MenuImportSession(id, venueId, rawPaste, 1, Status(questions), lineCount, parsed.ItemCount,
             now.AddMinutes(retention), now, now, actor, [],
             SuggestedMenuName: suggestion?.MenuName, SuggestedMenuDescription: suggestion?.MenuDescription);
         _ = await imports.DeleteExpiredAsync(now, 100, cancellationToken).ConfigureAwait(false);
@@ -108,10 +108,12 @@ public sealed class MenuImportService(
             DependencyStamp(await configuration.ResolveAsync(venueId, cancellationToken).ConfigureAwait(false),
                 await content.GetCeilingsAsync(venueId, cancellationToken).ConfigureAwait(false)));
         var now = clock.GetUtcNow().UtcDateTime;
-        var nextSession = current.Session with { ParseRevision = nextRevision, Status = Status(parsed.Questions), LineCount = parsed.Lines.Count, ItemCount = parsed.ItemCount, UpdatedUtc = now, UpdatedBy = actor, Revision = [] };
+        // Enriched first: A22 settles indistinguishable duplicates in here, so the status has to be
+        // read from what comes out, not from what went in.
+        var distinguished = await DistinguishedAsync(venueId, parsed.Questions, parsed.Lines, cancellationToken).ConfigureAwait(false);
+        var nextSession = current.Session with { ParseRevision = nextRevision, Status = Status(distinguished), LineCount = parsed.Lines.Count, ItemCount = parsed.ItemCount, UpdatedUtc = now, UpdatedBy = actor, Revision = [] };
         return await imports.ReplaceParseAsync(
-            new(nextSession, CarriedForward(current.Lines, parsed.Lines),
-                await DistinguishedAsync(venueId, parsed.Questions, cancellationToken).ConfigureAwait(false)),
+            new(nextSession, CarriedForward(current.Lines, parsed.Lines), distinguished),
             revision, cancellationToken).ConfigureAwait(false);
     }
 
@@ -228,18 +230,18 @@ public sealed class MenuImportService(
             await content.GetItemsAsync(venueId, cancellationToken).ConfigureAwait(false), overrides, DependencyStamp(resolved, ceilings));
         if (SameDependencies(current, parsed)) return current;
 
+        var refreshed = await DistinguishedAsync(venueId, parsed.Questions, parsed.Lines, cancellationToken).ConfigureAwait(false);
         var next = current.Session with
         {
             ParseRevision = current.Session.ParseRevision + 1,
-            Status = Status(parsed.Questions),
+            Status = Status(refreshed),
             LineCount = parsed.Lines.Count,
             ItemCount = parsed.ItemCount,
             UpdatedUtc = now,
             Revision = []
         };
         var replaced = await imports.ReplaceParseAsync(
-            new(next, CarriedForward(current.Lines, parsed.Lines),
-                await DistinguishedAsync(venueId, parsed.Questions, cancellationToken).ConfigureAwait(false)),
+            new(next, CarriedForward(current.Lines, parsed.Lines), refreshed),
             current.Session.Revision, cancellationToken).ConfigureAwait(false);
         return replaced.Aggregate;
     }
@@ -301,9 +303,74 @@ public sealed class MenuImportService(
     /// question with one candidate has nothing to be distinguished from, and every import paying
     /// for a query whose answer no screen draws is work for its own sake.
     /// </summary>
+    /// <summary>
+    /// A22 - an ambiguous match is not an uncertain one, and only one of them is a question.
+    ///
+    /// A21 gives each candidate a provenance line so an operator can tell duplicates apart. It
+    /// prints that line; it never checked the lines came out different. When an older import split
+    /// a dish and both halves sit on the same menus and were made the same day, the screen offers
+    /// the same sentence twice and the choice is exactly as unanswerable as it was before, with
+    /// more words on it. The owner, looking at his own review screen: "there should not even be a
+    /// question here."
+    ///
+    /// Decision 33 already permits an exact normalized name to match automatically, and decision 18
+    /// says confirm only what we were unsure of. Nobody is unsure here - the name matched exactly,
+    /// more than once. So where every candidate renders identically AND the pasted price agrees
+    /// with them, the line is answered rather than asked, bound to the oldest so that re-parsing
+    /// the same paste settles on the same item.
+    ///
+    /// This is not the silent merge A21 rejected. Both library rows survive untouched; only this
+    /// line's link is decided, and the question is still listed under "Review all N pasted lines"
+    /// where it can be found and changed. Duplicates that differ in any readable way still ask.
+    /// </summary>
+    private static MenuImportReviewQuestion Settled(
+        MenuImportReviewQuestion question,
+        IReadOnlyDictionary<int, string?> pastedPriceByLine)
+    {
+        if (question.Answer is not null || question.Kind != "identity") return question;
+
+        // Rendered fields only. Two rows differing solely by their id are two rows the operator is
+        // being asked to choose between with nothing on screen to choose by.
+        var rendered = question.Candidates
+            .Select(candidate => (
+                Name: candidate.DisplayName?.Trim(),
+                Price: NormalizedMoney(candidate.DisplayPrice),
+                Menus: string.Join('\u001f', candidate.OnMenus ?? []),
+                Made: candidate.ItemCreatedUtc?.Date))
+            .Distinct()
+            .Count();
+        if (rendered != 1) return question;
+
+        var pasted = question.LineNumbers.Count == 1 && pastedPriceByLine.TryGetValue(question.LineNumbers.First(), out var price) ? price : null;
+        var library = question.Candidates.First().DisplayPrice;
+        if (NormalizedMoney(pasted) is null || NormalizedMoney(pasted) != NormalizedMoney(library)) return question;
+
+        var oldest = question.Candidates
+            .OrderBy(candidate => candidate.ItemCreatedUtc ?? DateTime.MaxValue)
+            .ThenBy(candidate => candidate.ItemId)
+            .First();
+
+        return question with
+        {
+            Required = false,
+            Answer = new MenuImportAnswer(question.Fingerprint, MenuImportChoices.SameItem, oldest.ItemId, question.ParseRevision, default, null)
+        };
+    }
+
+    /// <summary>"12", "12.00" and "$12" are the same money; anything unparseable is null and never equal.</summary>
+    private static decimal? NormalizedMoney(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        var trimmed = new string(value.Where(character => char.IsDigit(character) || character == '.').ToArray());
+        return decimal.TryParse(trimmed, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null;
+    }
+
     private async Task<IReadOnlyCollection<MenuImportReviewQuestion>> DistinguishedAsync(
         Guid venueId,
         IReadOnlyCollection<MenuImportReviewQuestion> questions,
+        IReadOnlyCollection<MenuImportSourceLine> lines,
         CancellationToken cancellationToken)
     {
         var ambiguous = questions.Where(question => question.Candidates.Count > 1).ToArray();
@@ -318,9 +385,14 @@ public sealed class MenuImportService(
             .ToDictionary(group => group.Key, group => group.Select(board => board.MenuName).Distinct().OrderBy(name => name, StringComparer.CurrentCultureIgnoreCase).ToArray());
         var createdByItem = items.ToDictionary(item => item.Id, item => item.CreatedUtc);
 
+        var pastedPriceByLine = lines
+            .Where(line => line.ParsedPrice is not null)
+            .GroupBy(line => line.LineNumber)
+            .ToDictionary(group => group.Key, group => group.First().ParsedPrice);
+
         return questions
             .Select(question => question.Candidates.Count > 1
-                ? question with
+                ? Settled(question with
                 {
                     Candidates = question.Candidates
                         .Select(candidate => candidate with
@@ -331,7 +403,7 @@ public sealed class MenuImportService(
                             ItemCreatedUtc = createdByItem.TryGetValue(candidate.ItemId, out var created) ? created : null
                         })
                         .ToArray()
-                }
+                }, pastedPriceByLine)
                 : question)
             .ToArray();
     }

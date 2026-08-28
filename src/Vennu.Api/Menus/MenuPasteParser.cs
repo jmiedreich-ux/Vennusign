@@ -59,6 +59,8 @@ public sealed class MenuPasteParser
             .ToDictionary(group => group.Key, group => group.Select(entry => entry.Item).OrderBy(item => item.Id).ToArray(), StringComparer.Ordinal);
         var lines = new List<MenuImportSourceLine>();
         var questions = new List<MenuImportReviewQuestion>();
+        // One identity decision per distinct dish in this paste, however many lines name it.
+        var seenIdentities = new HashSet<string>(StringComparer.Ordinal);
         var itemCount = 0;
         var physicalLines = rawPaste.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n').Split('\n');
         var shapes = physicalLines.Select(line => ShapeOf(line.Trim())).ToArray();
@@ -301,7 +303,33 @@ public sealed class MenuPasteParser
             void EmitItem(string name, string? price)
             {
                 itemCount++;
-                lookup.TryGetValue(NormalizeIdentity(name), out var candidates);
+                var identity = NormalizeIdentity(name);
+
+                /*
+                 * Pad Thai is Pad Thai. Owner ruling, 2026-08-28.
+                 *
+                 * A menu names the same dish more than once - under two headings, or once bare and
+                 * once priced. Every line was decided on its own, so one paste asked the same
+                 * identity question twice and was ready to create the dish twice. That is where the
+                 * library's indistinguishable duplicates came from, and it is upstream of every
+                 * symptom: the unanswerable question (A21/A22), the second library row, and the
+                 * second placement the page cannot hold anyway.
+                 *
+                 * A repeated name is the same dish, and it is asked about once. Price is not part
+                 * of identity - the same dish costs what its placement says it costs (A19), and a
+                 * price seen on a later line does not make it a different dish.
+                 *
+                 * The line is still emitted and stays traceable (decision 41): what is suppressed
+                 * is the second QUESTION, not the second line.
+                 */
+                if (!seenIdentities.Add(identity))
+                {
+                    openItem = lines.Count;
+                    lines.Add(Line("item", name, price));
+                    return;
+                }
+
+                lookup.TryGetValue(identity, out var candidates);
                 if (candidates is { Length: 1 })
                 {
                     /*
