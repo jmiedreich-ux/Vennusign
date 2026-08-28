@@ -795,11 +795,24 @@ gap open; closing them as *the shipped work being finished* does not.
   lives here until one does; if a contract is drafted elsewhere it should take the clause and this
   plan should point at it.
 
-**One thing the ruling does not settle, named so it is not discovered late.** Folding delete into
-*Recently deleted* makes replace and delete two routes to the same outcome — one keeps the menu's
-history, the other bins it for thirty days. Nothing says which an operator should be steered toward,
-or what a replacement preview should say when the thing being replaced could instead be binned. Not
-a blocker for this milestone; Content Home meets it in T4.
+**Replace and delete are not two routes to the same outcome, and the plan should not treat them as
+one.** They end in the same *visible* result — new dishes on the screen — and in different
+identities. Replace keeps the menu: its screens, its theme, its history, its 86 state, and a
+restorable snapshot (decision 40). Delete-then-import produces a stranger wearing the same name with
+none of that. The risk is not that an operator cannot tell the outcomes apart; it is that they look
+identical and cost wildly differently.
+
+**Most of the steering already exists.** Q79 limits *Delete forever* to menus on **zero screens**, so
+an operator with a live menu cannot choose delete without first taking it dark in front of guests.
+Replace is already the only sane route for anything on a screen.
+
+**So the two stay apart, deliberately.** Replace is a content act; delete is a lifecycle act.
+Getting new content in never offers to destroy the thing it is updating: **delete is not reachable
+from the import flow**, and the replacement preview says nothing about the bin. Offering *"or bin it
+instead"* mid-import invites the destructive path at the moment the operator is least equipped to
+judge it — they are thinking about dishes, not about losing six months of history. The question an
+operator can actually answer is not *replace or delete*, it is **does this menu still exist?**
+Reprinted the dinner menu, replace. Stopped serving dinner, delete.
 
 ##### Out of scope
 
@@ -841,7 +854,7 @@ Vertical, not a screen: schema → API → UI → specs.
 | T2 · Filters everywhere | Q214. Present at every size, not revealed at a count. |
 | T3 · Twelve before compacting | Q215. `MenusHome.tsx:142`. |
 | T4 · Delete → *Recently deleted* | M8's owner-approved behaviour (Q79, 2026-08-07): "Delete forever" in the ⋯ only for menus on zero screens; hard confirmation naming what is destroyed; shared library items survive. Q213 changes *when* destruction happens, not whether. |
-| T5 · Thirty-day retention and restore | The bin needs a surface, a restore action, and a decision about where a restored menu lands — the shelf, per Q213. |
+| T5 · Thirty-day retention and restore | The bin needs a surface, a restore action, and a decision about where a restored menu lands — the shelf, per Q213. **The unanswered question is restore-after-thirty-days:** a menu is deleted only when it is on zero screens, but thirty days is long enough that those screens have moved on to something else. Does a restored menu come back assigned and contend for a screen, come back unassigned, or refuse while its old screens are occupied? Q213 settles the bin; it does not settle this. Decide it before T5 ships. |
 | T6 · The sweep | Purge after thirty days. Decide timer vs opportunistic before T5 ships; a bin that never empties is a leak with a screen on it. |
 
 **Still not in this slice, and named so it is not assumed:** the item **library** has no surface at
