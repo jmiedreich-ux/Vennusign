@@ -301,3 +301,32 @@ export function isAtMenuLimit(allowance) {
   const limit = allowance?.limit;
   return limit !== null && limit !== undefined && Number(allowance.used ?? 0) >= limit;
 }
+
+/**
+ * One line about every unfinished import, in the shelf's own voice (#927).
+ *
+ * The first version drew a full-width card per import. With one that was fine. With seven — which
+ * is what a week of testing produces, because every trip to the paste screen starts a new session —
+ * it pushed the menus off the page entirely and said the same sentence seven times.
+ *
+ * Decision 12 is the rule it broke: summarize the normal, name the exception. A count IS the
+ * summary, and only the one you would actually go back to is worth naming.
+ */
+export function importsInProgressLine(open, now = new Date()) {
+  const all = open ?? [];
+  if (all.length === 0) return null;
+
+  // The one most recently worked on. Coming back means coming back to that one, not to the oldest
+  // thing you have forgotten about.
+  const latest = [...all].sort((left, right) =>
+    new Date(right.updatedUtc ?? right.createdUtc ?? 0).getTime()
+    - new Date(left.updatedUtc ?? left.createdUtc ?? 0).getTime())[0];
+
+  return {
+    latest,
+    count: all.length,
+    text: all.length === 1
+      ? `1 import in progress · ${importInProgressPhrase(latest, now)}`
+      : `${all.length} imports in progress · latest ${importInProgressPhrase(latest, now)}`
+  };
+}

@@ -68,3 +68,8 @@ export function menuAllowanceNotice(
 ): { tone: "full" | "nearly"; text: string } | null;
 
 export function isAtMenuLimit(allowance: MenuAllowance | null | undefined): boolean;
+
+export function importsInProgressLine(
+  open: readonly OpenImportSummary[] | null | undefined,
+  now?: Date
+): { latest: OpenImportSummary; count: number; text: string } | null;
