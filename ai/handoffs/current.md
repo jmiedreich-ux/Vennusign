@@ -1902,3 +1902,28 @@ Eight official runs completed: qwen3.5 (coding 95/review 48), qwen3-coder (90/0)
 Two important limits are recorded in the final report: the visible coding fixture has a quantity-20 public-test case that contradicts the stated maximum quantity of 10, and three models failed to locate `candidate.diff` in the review fixture. Results were preserved rather than repaired or rerun. qwen3.5 also has one preserved pre-official harness failure, followed by the permitted infrastructure retry.
 
 **Exact next action.** Treat the qualification as closed. For any future routing change, read the final report and evidence first; do not add unplanned tests or alter these results. Any new qualification phase requires an owner-approved separate plan and branch.
+
+
+## 2026-08-28 — Architecture Renewal M0 planned (PR pending)
+
+Owner approved the Content Platform direction and planning issue **#939**: VennueSign will be
+re-founded as a controlled content-and-presentation platform. Menu becomes the first real shared
+model, `menu.v1`, rather than a permanent menu-only exception.
+
+The pending branch `feature/content-platform-m0-architecture-renewal` adds
+`docs/architecture/content-platform-architecture-renewal.md` and amends the Architecture Bible,
+Roadmap, and Menu decisions. It establishes Content Home, Content Builder, immutable model/theme
+versions, a typed record library for manual and imported facts, first-class operational state
+overlays, immutable Content Releases, and a modular-monolith API direction (one deployed API host).
+
+No product code, schema, API behavior, tracker claim, or implementation milestone has changed.
+The document explicitly preserves Menu behavior—placement-specific price, immediate venue-scoped
+86, imports, drafts, history, assignments, publishing and delivery truth—while directing future
+persistence/theme/rendering work through the shared foundation.
+
+**Next action:** complete independent review of PR #939, then run the five M0 planning sessions:
+current-source map; `menu.v1`; record library/provider authority; theme/release contract; and
+refactor sequencing. Finish the granular workstream reconciliation before selecting M1. The
+internal Data Model Builder comes after the model engine and `menu.v1` proof, not before them.
+Do not extend the menu-only architecture merely to resume canvas, Board View, Play, Theme Studio,
+or integration work.
