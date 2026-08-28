@@ -1924,6 +1924,6 @@ persistence/theme/rendering work through the shared foundation.
 **Next action:** complete independent review of PR #939, then run the five M0 planning sessions:
 current-source map; `menu.v1`; record library/provider authority; theme/release contract; and
 refactor sequencing. Finish the granular workstream reconciliation before selecting M1. The
-internal Data Model Builder comes after the model engine and `menu.v1` proof, not before them.
+Data Model Studio—the internal model-builder—comes after the model engine and `menu.v1` proof, not before them.
 Do not extend the menu-only architecture merely to resume canvas, Board View, Play, Theme Studio,
 or integration work.
