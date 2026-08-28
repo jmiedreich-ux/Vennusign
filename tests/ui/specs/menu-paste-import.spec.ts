@@ -27,7 +27,20 @@ test.describe("paste import review", () => {
     page.on("pageerror", error => pageErrors.push(error.message));
     await openAs(page, "owner", "/menu/import");
 
-    await page.getByLabel("Menu text").fill(`${seeded.itemName.replaceAll(" ", "   ")}  ${seeded.itemPrice}\nChef note`);
+    /*
+     * Two things this paste has to produce, and both had quietly stopped.
+     *
+     * A SAFE MATCH THAT STILL NEEDS A DECISION. The name is the seeded item's with the spaces
+     * tripled, so it matches after normalization - but at a DIFFERENT price. An exact match at the
+     * same price now arrives already answered (the parser names its rule for pre-answering, and
+     * re-importing a menu used to ask forty-four questions with nothing to decide in them), so
+     * there would be no banner to accept. A price that differs is the one thing worth stopping for.
+     *
+     * A NOTE THAT RAISES A QUESTION. "Chef note" sat after the item, and since description lines
+     * landed (076/078) a line following an item attaches as its description instead. Ahead of the
+     * item there is nothing to describe.
+     */
+    await page.getByLabel("Menu text").fill(`Chef note\n\n${seeded.itemName.replaceAll(" ", "   ")}  9.99`);
     await page.getByRole("button", { name: "Read menu" }).click();
     expect(pageErrors, "the import route must not crash after creating its resumable URL").toEqual([]);
     await expect(page.getByTestId("menu-import-review")).toBeVisible();
@@ -144,7 +157,10 @@ test.describe("paste import review", () => {
     await seed({ label: "leave-out" });
     await openAs(page, "owner", "/menu/import");
 
-    await page.getByLabel("Menu text").fill("Ossobuco  24\nA line nobody can read");
+    // The unreadable line comes first: after an item it attaches as that item's DESCRIPTION
+    // (migrations 076/078) and raises no question at all, which is the same trap that made
+    // "one decision is one row" measure an empty screen.
+    await page.getByLabel("Menu text").fill("A line nobody can read\n\nOssobuco  24");
     await page.getByRole("button", { name: "Read menu" }).click();
     await expect(page.getByTestId("menu-import-review")).toBeVisible();
 
