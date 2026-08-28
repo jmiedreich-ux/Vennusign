@@ -10,6 +10,11 @@ import { seed } from "../seed";
  */
 async function onwardToDestination(page: import("@playwright/test").Page) {
   const onward = page.getByTestId("go-to-destination");
+  const destination = page.getByTestId("menu-import-create");
+  // Wait for whichever screen the flow has reached before deciding. Checking count() straight
+  // away raced the render, found nothing, clicked nothing, and left the caller waiting for a
+  // heading that was never going to arrive.
+  await onward.or(destination).first().waitFor({ state: "visible" });
   if (await onward.count()) await onward.click();
 }
 
@@ -162,7 +167,15 @@ test.describe("paste import review", () => {
     await seed({ label: "row-density" });
     await openAs(page, "owner", "/menu/import");
 
-    await page.getByLabel("Menu text").fill("Ossobuco  24\nfirst unreadable line\nsecond unreadable line\nthird unreadable line");
+    /*
+     * The unreadable lines come FIRST, before any item.
+     *
+     * They used to follow "Ossobuco 24", and since description lines landed (migrations 076/078) a
+     * line after an item attaches as that item's description rather than raising a question - so
+     * this paste produced no questions at all and the test was measuring an empty screen. Ahead of
+     * any item there is nothing to describe, which is what makes them real questions.
+     */
+    await page.getByLabel("Menu text").fill("first unreadable line\n\nsecond unreadable line\n\nthird unreadable line\n\nOssobuco  24");
     await page.getByRole("button", { name: "Read menu" }).click();
 
     const rows = page.getByTestId("question-row");

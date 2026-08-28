@@ -11,6 +11,11 @@ import { qaCredentials, qaCredentialSources, signInAsCustomer } from "../lib/cus
  */
 async function onwardToDestination(page: import("@playwright/test").Page) {
   const onward = page.getByTestId("go-to-destination");
+  const destination = page.getByTestId("menu-import-create");
+  // Wait for whichever screen the flow has reached before deciding. Checking count() straight
+  // away raced the render, found nothing, clicked nothing, and left the caller waiting for a
+  // heading that was never going to arrive.
+  await onward.or(destination).first().waitFor({ state: "visible" });
   if (await onward.count()) await onward.click();
 }
 
