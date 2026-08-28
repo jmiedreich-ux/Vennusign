@@ -97,6 +97,22 @@ public sealed class SeedService(ProductApiClient product)
          * only create the shortfall. Sections now do the same - the first seeded section renames
          * the default rather than queueing behind it.
          */
+        /*
+         * Creating a menu already creates a section.
+         *
+         * `ContentRepository` gives every new menu a default `Section 1`. The seed used to add its
+         * own alongside it and leave the empty one at sort order 0, so the builder - which opens on
+         * the top section (Q116) - opened on nothing, and thirty-three specs failed looking for an
+         * item one section below.
+         *
+         * The first section RENAMES that default rather than queueing behind it. Deleting it was
+         * tried and is worse: the delete endpoint requires a destination for the section's items
+         * ("Choose where the section's items should go"), which an empty section does not have, and
+         * every seed then failed 400.
+         *
+         * Pages a few lines above already work this way - read what the product made, create only
+         * the shortfall.
+         */
         var existingSections = (await product.SendAsync<BoardSectionsResponse>(HttpMethod.Get,
             $"/api/back-office/content/menus/{menu.Id}/board", token, null, cancellationToken).ConfigureAwait(false))
             .Board.Sections.OrderBy(section => section.SortOrder).ToList();
@@ -119,8 +135,7 @@ public sealed class SeedService(ProductApiClient product)
             }
             else
             {
-                // The rename answers 204, so there is no body to read - the section is the one we
-                // already have, under the name we just gave it.
+                // The rename answers 204, so there is no body to read.
                 await product.SendAsync(HttpMethod.Put,
                     $"/api/back-office/content/menus/{menu.Id}/sections/{reuse.SectionId}", token, new { name = sectionName }, cancellationToken).ConfigureAwait(false);
                 section = new SectionResponse(reuse.SectionId, sectionName, reuse.SortOrder);
