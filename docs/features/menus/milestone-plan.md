@@ -774,7 +774,7 @@ same thing, and this milestone is where that is repaid rather than carried furth
 |---|---|
 | T1 · **M6.5 acceptance** | The import's door on Menus home shipped in #874 with no workbook run. Record it. |
 | T2 · **M6.7 re-test** | *The parser reads a real printed menu* was accepted against a parser that has since changed twice — A22 (#938) and the same-dish rule. The recorded result no longer describes the code. Re-run against the owner's real menu, not a fixture. |
-| T3 · **M6.11 configuration** | The residue suggestion needs a provider key the environment does not have; `menu-paste-import.spec.ts` skips its two suggestion cases with *"the residue pass needs a key on this environment"*. A feature whose tests skip by default is untested. Settle where the key lives and make the skip an exception, not the norm. |
+| T3 · **M6.11 configuration** | Read as the residue suggestion's **provider key**, and settled that way here rather than sent back: it is the only configuration gap in M6.11. `menu-paste-import.spec.ts` skips both suggestion cases with *"the residue pass needs a key on this environment"*, so the feature ships untested by default. Settle where the key lives and make the skip an exception, not the norm. |
 | T4 · **The test failures** | #928–#935 — 58 UI failures triaged on 2026-08-28, with #929 (33 tests) and #928 (9) accounting for most. #929 first: it is one fixture defect and unblocks the rest. |
 | T5 · **The display defects found on a real board** | #943 every imported price renders `$0.00`, #944 five assigned pages never rotate, #945 unused board width, #946 *"7 more items"* on a guest board. Found by the owner on a published menu; none is a menu-authoring bug, all are the import's visible outcome. |
 
@@ -791,7 +791,15 @@ gap open; closing them as *the shipped work being finished* does not.
 - **M6-A13's truthful replacement preview is part of the contract**, not a feature of one screen. A
   replacement says what changes, in words, before it happens — `MenuSnapshot.Diff` already computes
   the field-level delta, so any future import route inherits the obligation rather than reinventing
-  a count.
+  a count. *"The new import contract"* names no document that exists in this repo, so the clause
+  lives here until one does; if a contract is drafted elsewhere it should take the clause and this
+  plan should point at it.
+
+**One thing the ruling does not settle, named so it is not discovered late.** Folding delete into
+*Recently deleted* makes replace and delete two routes to the same outcome — one keeps the menu's
+history, the other bins it for thirty days. Nothing says which an operator should be steered toward,
+or what a replacement preview should say when the thing being replaced could instead be binned. Not
+a blocker for this milestone; Content Home meets it in T4.
 
 ##### Out of scope
 
