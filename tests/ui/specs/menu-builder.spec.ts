@@ -724,7 +724,9 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("action-review-publish")).toBeDisabled();
     await expect(page.getByTestId("action-review-publish")).toContainText("Nothing to publish");
     await page.keyboard.press("Escape");
-    await expect(page.getByTestId("publish-bar")).toContainText("Published");
+    // The bar's own sentence, not a bare word: `lastPublishedLine` writes "Last published {when}
+    // by {who}". The capitalised "Published" it looked for appears nowhere on the bar.
+    await expect(page.getByTestId("publish-bar")).toContainText("Last published");
   });
 
   test("a menu nobody has published offers no discard, because it would do nothing", async ({ page }) => {
@@ -846,7 +848,14 @@ test.describe("the builder", () => {
     // "hidden on all screens right now" without a time is half a sentence.
     await expect(page.getByTestId("board-item-note")).toContainText("86'd");
     await expect(page.getByTestId("board-item-note")).toContainText("hidden on all screens right now");
-    await expect(page.getByTestId("board-item-note")).toHaveText(/86'd \w{3} \d{1,2}:\d{2}[ap]m/);
+    /*
+     * Today is just the time. `availabilityTime` gives "6:40pm" for today, "yesterday 6:40pm" for
+     * yesterday, and "Fri 6:40pm" older than that - and the design authority writes the note as
+     * "86'd 6:40pm — hidden on all screens right now". The old pattern demanded a weekday before
+     * the time, which an item 86'd a second ago can never have: it was unsatisfiable by
+     * construction, not a description of anything.
+     */
+    await expect(page.getByTestId("board-item-note")).toHaveText(/86'd \d{1,2}:\d{2}[ap]m — hidden on all screens right now/);
   });
 
   test("Review first lists exactly what will ship, in words (Q111)", async ({ page }) => {
