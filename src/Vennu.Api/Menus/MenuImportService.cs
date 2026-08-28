@@ -75,9 +75,11 @@ public sealed class MenuImportService(
     public async Task<MenuImportMutationOutcome> PutAnswerAsync(Guid venueId, Guid sessionId, byte[] revision, string questionKey,
         string fingerprint, string choice, Guid? selectedItemId, string? actor, CancellationToken cancellationToken)
     {
-        var current = await RefreshDependenciesAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        var refresh = await RefreshForWriteAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        var current = refresh.Aggregate;
         if (current is null) return new(MenuImportMutationOutcome.NotFound, null);
-        if (!current.Session.Revision.SequenceEqual(revision)) return new(MenuImportMutationOutcome.Conflict, current);
+        if (!refresh.WasShownThis(revision)) return new(MenuImportMutationOutcome.Conflict, current);
+        revision = refresh.Effective(revision);
         return await imports.PutAnswerAsync(venueId, sessionId, revision, questionKey, fingerprint, choice, selectedItemId,
             clock.GetUtcNow().UtcDateTime, actor, cancellationToken).ConfigureAwait(false);
     }
@@ -85,9 +87,11 @@ public sealed class MenuImportService(
     public async Task<MenuImportMutationOutcome> AcceptSafeMatchesAsync(Guid venueId, Guid sessionId, byte[] revision, string? actor,
         CancellationToken cancellationToken)
     {
-        var current = await RefreshDependenciesAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        var refresh = await RefreshForWriteAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        var current = refresh.Aggregate;
         if (current is null) return new(MenuImportMutationOutcome.NotFound, null);
-        if (!current.Session.Revision.SequenceEqual(revision)) return new(MenuImportMutationOutcome.Conflict, current);
+        if (!refresh.WasShownThis(revision)) return new(MenuImportMutationOutcome.Conflict, current);
+        revision = refresh.Effective(revision);
         return await imports.AcceptSafeMatchesAsync(venueId, sessionId, revision,
             clock.GetUtcNow().UtcDateTime, actor, cancellationToken).ConfigureAwait(false);
     }
@@ -95,9 +99,11 @@ public sealed class MenuImportService(
     public async Task<MenuImportMutationOutcome> SetSectionOverrideAsync(Guid venueId, Guid sessionId, byte[] revision, int lineNumber,
         bool isSection, string? actor, CancellationToken cancellationToken)
     {
-        var current = await RefreshDependenciesAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        var refresh = await RefreshForWriteAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        var current = refresh.Aggregate;
         if (current is null) return new(MenuImportMutationOutcome.NotFound, null);
-        if (!current.Session.Revision.SequenceEqual(revision)) return new(MenuImportMutationOutcome.Conflict, current);
+        if (!refresh.WasShownThis(revision)) return new(MenuImportMutationOutcome.Conflict, current);
+        revision = refresh.Effective(revision);
         if (lineNumber < 1 || current.Lines.All(line => line.LineNumber != lineNumber)) return new(MenuImportMutationOutcome.Invalid, null);
         var overrides = current.Lines.Where(line => line.Disposition == "section" && !IsNaturalHeading(line.RawText))
             .Select(line => line.LineNumber).ToHashSet();
@@ -123,9 +129,11 @@ public sealed class MenuImportService(
     public async Task<MenuImportMutationOutcome> SetCreateDestinationAsync(Guid venueId, Guid sessionId, byte[] revision,
         string menuName, string? actor, CancellationToken cancellationToken)
     {
-        var current = await RefreshDependenciesAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        var refresh = await RefreshForWriteAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        var current = refresh.Aggregate;
         if (current is null) return new(MenuImportMutationOutcome.NotFound, null);
-        if (!current.Session.Revision.SequenceEqual(revision)) return new(MenuImportMutationOutcome.Conflict, current);
+        if (!refresh.WasShownThis(revision)) return new(MenuImportMutationOutcome.Conflict, current);
+        revision = refresh.Effective(revision);
         return await imports.SetCreateDestinationAsync(venueId, sessionId, revision, menuName,
             clock.GetUtcNow().UtcDateTime, actor, cancellationToken).ConfigureAwait(false);
     }
@@ -133,10 +141,12 @@ public sealed class MenuImportService(
     public async Task<MenuImportCreateOutcome> ConfirmCreateAsync(Guid venueId, Guid sessionId, byte[] revision,
         Guid actorUserId, IReadOnlyCollection<string> systemRoleKeys, string? actor, CancellationToken cancellationToken)
     {
-        var current = await RefreshDependenciesAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        var refresh = await RefreshForWriteAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        var current = refresh.Aggregate;
         if (current is null) return new(MenuImportMutationOutcome.NotFound, null, null);
-        if (current.Session.CompletedMenuId is null && !current.Session.Revision.SequenceEqual(revision))
+        if (current.Session.CompletedMenuId is null && !refresh.WasShownThis(revision))
             return new(MenuImportMutationOutcome.Conflict, current, null);
+        revision = refresh.Effective(revision);
         return await imports.ConfirmCreateAsync(venueId, sessionId, revision, actorUserId, systemRoleKeys,
             clock.GetUtcNow().UtcDateTime, actor, cancellationToken).ConfigureAwait(false);
     }
@@ -144,9 +154,10 @@ public sealed class MenuImportService(
     public async Task<MenuImportReplaceDestinationOutcome> SetReplaceDestinationAsync(Guid venueId,Guid sessionId,byte[] revision,
         Guid menuId,string? actor,CancellationToken cancellationToken)
     {
-        var current=await RefreshDependenciesAsync(venueId,sessionId,cancellationToken).ConfigureAwait(false);
+        var refresh=await RefreshForWriteAsync(venueId,sessionId,cancellationToken).ConfigureAwait(false);
+        var current=refresh.Aggregate;
         if(current is null)return new(MenuImportMutationOutcome.NotFound,null,null);
-        if(!current.Session.Revision.SequenceEqual(revision))return new(MenuImportMutationOutcome.Conflict,current,null);
+        if(!refresh.WasShownThis(revision))return new(MenuImportMutationOutcome.Conflict,current,null);revision=refresh.Effective(revision);
         // Choosing the target IS the moment the confirm screen first draws, so the preview has to
         // travel with this answer rather than waiting for a read that may never happen.
         var chosen=await imports.SetReplaceDestinationAsync(venueId,sessionId,revision,menuId,clock.GetUtcNow().UtcDateTime,actor,cancellationToken).ConfigureAwait(false);
@@ -156,9 +167,10 @@ public sealed class MenuImportService(
     public async Task<MenuImportCreateOutcome> ConfirmReplaceAsync(Guid venueId,Guid sessionId,byte[] revision,Guid actorUserId,
         IReadOnlyCollection<string> systemRoleKeys,string? actor,CancellationToken cancellationToken)
     {
-        var current=await RefreshDependenciesAsync(venueId,sessionId,cancellationToken).ConfigureAwait(false);
+        var refresh=await RefreshForWriteAsync(venueId,sessionId,cancellationToken).ConfigureAwait(false);
+        var current=refresh.Aggregate;
         if(current is null)return new(MenuImportMutationOutcome.NotFound,null,null);
-        if(current.Session.CompletedMenuId is null&&!current.Session.Revision.SequenceEqual(revision))return new(MenuImportMutationOutcome.Conflict,current,null);
+        if(current.Session.CompletedMenuId is null&&!refresh.WasShownThis(revision))return new(MenuImportMutationOutcome.Conflict,current,null);revision=refresh.Effective(revision);
         var outcome=await imports.ConfirmReplaceAsync(venueId,sessionId,revision,actorUserId,systemRoleKeys,clock.GetUtcNow().UtcDateTime,actor,cancellationToken).ConfigureAwait(false);
         if(outcome.Result=="target_conflict"&&outcome.Aggregate?.Session.TargetMenuId is Guid targetMenuId)
         {
@@ -206,18 +218,56 @@ public sealed class MenuImportService(
         return aggregate with { ReplacePreview = MenuImportReplacePreviewBuilder.Build(aggregate, placements, library) };
     }
 
-    private async Task<MenuImportAggregate?> RefreshDependenciesAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken)
+    /*
+     * A refreshed session, and the revision it carried BEFORE we refreshed it.
+     *
+     * `Shown` is null when we changed nothing. When it is set, WE moved the session - not another
+     * window, not another person - and an operator holding `Shown` is still perfectly current.
+     */
+    private sealed record Refreshed(MenuImportAggregate? Aggregate, byte[]? Shown)
     {
-        var refreshed = await RefreshedAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
-        return await WithReplacePreviewAsync(refreshed, venueId, cancellationToken).ConfigureAwait(false);
+        /*
+         * "This import changed in another window" was reported to the owner with one window open,
+         * repeatedly, and the cause was us.
+         *
+         * Every write calls RefreshDependenciesAsync first. That re-reads the paste when the
+         * venue's dependencies have moved - the item library, the menu ceilings, the resolved
+         * configuration - and a re-parse bumps the session revision. The next line then compared
+         * the operator's revision against the one we had just bumped and called the mismatch a
+         * conflict. Creating a menu or putting one back changes the ceilings, so an operator doing
+         * ordinary work beside an open import could conflict with nobody at all.
+         *
+         * An operator current with what they were last shown is not stale. Decision 39 already
+         * says a re-parse invalidates only the answers it actually affects, and the answer-level
+         * fingerprint check enforces that underneath this: a question whose meaning changed is
+         * refused there, on its own merits, with a message about that question.
+         */
+        public bool WasShownThis(byte[] revision) =>
+            Aggregate is not null
+            && (Aggregate.Session.Revision.SequenceEqual(revision) || (Shown is not null && Shown.SequenceEqual(revision)));
+
+        /// The revision to write against: ours if we moved it, otherwise the operator's own.
+        public byte[] Effective(byte[] revision) =>
+            Aggregate is not null && Shown is not null && Shown.SequenceEqual(revision)
+                ? Aggregate.Session.Revision
+                : revision;
     }
 
-    private async Task<MenuImportAggregate?> RefreshedAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken)
+    private async Task<MenuImportAggregate?> RefreshDependenciesAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken) =>
+        (await RefreshForWriteAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false)).Aggregate;
+
+    private async Task<Refreshed> RefreshForWriteAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken)
+    {
+        var (refreshed, shown) = await RefreshedAsync(venueId, sessionId, cancellationToken).ConfigureAwait(false);
+        return new(await WithReplacePreviewAsync(refreshed, venueId, cancellationToken).ConfigureAwait(false), shown);
+    }
+
+    private async Task<(MenuImportAggregate? Aggregate, byte[]? Shown)> RefreshedAsync(Guid venueId, Guid sessionId, CancellationToken cancellationToken)
     {
         var now = clock.GetUtcNow().UtcDateTime;
         var current = await imports.GetAsync(venueId, sessionId, now, cancellationToken).ConfigureAwait(false);
-        if (current is null) return null;
-        if (current.Session.CompletedMenuId is not null) return current;
+        if (current is null) return (null, null);
+        if (current.Session.CompletedMenuId is not null) return (current, null);
         var overrides = current.Lines.Where(line => line.Disposition == "section" && !IsNaturalHeading(line.RawText))
             .Select(line => line.LineNumber).ToHashSet();
         var resolved = await configuration.ResolveAsync(venueId, cancellationToken).ConfigureAwait(false);
@@ -228,7 +278,7 @@ public sealed class MenuImportService(
             throw new MenuImportValidationException("This saved import no longer fits the venue's current import limits. Paste a smaller menu to continue.");
         var parsed = parser.Parse(sessionId, venueId, current.Session.RawPaste, current.Session.ParseRevision + 1,
             await content.GetItemsAsync(venueId, cancellationToken).ConfigureAwait(false), overrides, DependencyStamp(resolved, ceilings));
-        if (SameDependencies(current, parsed)) return current;
+        if (SameDependencies(current, parsed)) return (current, null);
 
         var refreshed = await DistinguishedAsync(venueId, parsed.Questions, parsed.Lines, cancellationToken).ConfigureAwait(false);
         var next = current.Session with
@@ -243,7 +293,10 @@ public sealed class MenuImportService(
         var replaced = await imports.ReplaceParseAsync(
             new(next, CarriedForward(current.Lines, parsed.Lines), refreshed),
             current.Session.Revision, cancellationToken).ConfigureAwait(false);
-        return replaced.Aggregate;
+
+        // We moved it. Hand back what the operator was holding a moment ago, so a write carrying
+        // that revision is not mistaken for somebody else's edit.
+        return (replaced.Aggregate, current.Session.Revision);
     }
 
     private static bool SameDependencies(MenuImportAggregate current, ParsedMenuPaste parsed) =>
