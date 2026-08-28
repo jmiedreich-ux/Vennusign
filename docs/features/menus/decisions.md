@@ -282,6 +282,67 @@ is on, and when it was made — and the operator chooses on that basis. A duplic
 see is a duplicate the venue can deal with; one the product quietly resolves is one nobody ever
 finds out about.
 
+## Proposed — 27 August 2026 (awaiting owner sign-off)
+
+Nothing in this section is settled. It is written up because the owner raised it directly and the
+answer changes behaviour that A21 already shipped.
+
+**A22 (proposed) · An ambiguous match is not an uncertain one, and only one of them is a question.**
+
+The owner, looking at a real review screen: *"there should not even be a question here."* He is
+right, and the decisions already in this file say so — they were simply not applied to this case.
+
+What he was shown: two rows under **one grouped question**, each offering the same four choices,
+and the first two choices reading identically — *"Pad Thai · Possible match · $11.95 · On New menu
+· Added Aug 27"*, twice. The pasted lines were `Pad Thai` (line 52) and `Pad Thai $11.95` (line
+111). The library holds `Pad Thai` twice, at the same price, on the same menu, created the same
+day.
+
+**Why this should never have been asked.** Decision 33 says an exact name match — normalization
+limited to case, punctuation and spacing — *may match automatically*, and reserves operator
+identity decisions for anything **semantic**. Decision 18 says confirm only what we were unsure
+of. `Pad Thai` against `Pad Thai` is an exact match. Nobody was unsure of anything.
+
+**What actually happened** is a different failure wearing the same clothes. `MenuPasteParser`
+auto-answers when exactly one candidate matches and the price agrees; with more than one candidate
+it always asks, whatever the candidates are. So the screen was not reporting *uncertainty about the
+pasted line* — it was reporting *ambiguity inside the library* and asking the operator to resolve
+it. Those are not the same question, and only the first belongs on the review screen.
+
+A21 was written for the second failure and does not reach this case. It adds a provenance line —
+which menus each candidate is on, when it was made — but only *prints* that line; it never checks
+the lines came out different. When the duplicates agree on menus and date, A21 renders the same
+sentence twice and the choice is exactly as unanswerable as before, with more words on it.
+
+**Proposed, in three parts:**
+
+- **Do not ask.** Where every exact-name candidate is indistinguishable to the operator — same
+  name, same price — and the pasted price agrees, answer it the way a single candidate is
+  answered: bound to one of them deterministically (oldest by creation, then by id), recorded, and
+  listed under *Review all N pasted lines* so it can be found and changed. This is not the silent
+  merge A21 rejected: both library items survive untouched, and only the line's link is decided.
+- **When a question must still be asked, do not pretend it distinguishes.** If the pasted price
+  differs, the operator does have something to decide — but the identical candidate labels remain
+  a lie. The screen should say the candidates cannot be told apart, rather than print the same
+  provenance twice.
+- **The duplicate is the real defect, and it has nowhere to go.** Two `Pad Thai` rows exist
+  because an earlier import created the dish twice. There is no library surface in the product —
+  no route lists library items; the library is reachable only as a search box inside the builder —
+  so a duplicate a venue can see is still a duplicate it cannot do anything about. A21's reasoning
+  ("a duplicate the venue can see is a duplicate the venue can deal with") assumes a screen that
+  does not exist.
+
+**What is not proposed here.** Price stays where decision 43 put it: a pasted price change is
+menu-scoped and never silently reaches another menu, and the *which did you mean* price question
+is A20's, asked in the builder. A differing price does not earn an identity question on this
+screen either.
+
+**The open question for the owner**, and the reason this is a proposal and not a fix: deciding a
+line's link deterministically means the product picks one of two items the operator cannot tell
+apart. That is the right outcome only if duplicate library items are eventually visible and
+mergeable somewhere. If they never are, this hides the duplicate instead of dealing with it — and
+the honest alternative is to stop the import creating the second `Pad Thai` at all.
+
 ## Parked
 
 **Replacing the fallback card.** The generated logo-and-name card is the whole of it for now. Uploading or authoring an alternative is a later piece.
