@@ -273,6 +273,83 @@ public sealed class MenuImportServiceTests
     }
 
     [Fact]
+    public async Task Duplicates_that_render_identically_are_not_asked_about_at_all()
+    {
+        /*
+         * A22. The owner's own screen: two "Pad Thai · $11.95 · On New menu · Added Aug 27",
+         * offered as two buttons with nothing to choose between them. A21 wrote the provenance
+         * line but never checked it came out different. Same menus, same day, same price - so it
+         * printed the same sentence twice and the question stayed unanswerable.
+         */
+        var (service, _, content) = CreateService();
+        var menu = Guid.NewGuid();
+        content.MenuNames[menu] = "New menu";
+        var older = Guid.NewGuid();
+        var newer = Guid.NewGuid();
+        content.Items.Add(new Item { Id = older, VenueId = VenueId, Name = "Pad Thai", Price = "11.95", CreatedUtc = Now.UtcDateTime.AddHours(-3) });
+        content.Items.Add(new Item { Id = newer, VenueId = VenueId, Name = "Pad Thai", Price = "11.95", CreatedUtc = Now.UtcDateTime.AddHours(-1) });
+        content.Placements.Add(new Placement { Id = Guid.NewGuid(), VenueId = VenueId, MenuId = menu, MenuSectionId = Guid.NewGuid(), ItemId = older });
+        content.Placements.Add(new Placement { Id = Guid.NewGuid(), VenueId = VenueId, MenuId = menu, MenuSectionId = Guid.NewGuid(), ItemId = newer });
+
+        var result = await service.StartAsync(VenueId, "MAINS\nPad Thai  11.95", "owner@example.com", default);
+
+        var question = Assert.Single(result.Questions, candidate => candidate.Candidates.Count > 1);
+        Assert.NotNull(question.Answer);
+        Assert.False(question.Required);
+
+        // Bound to the OLDER of the two - the one the later import split from - so that re-reading
+        // the same paste settles on the same item rather than wandering.
+        Assert.Equal(older, question.Answer!.SelectedItemId);
+
+        // Both rows survive. This decides a link, it does not merge anything (A21 stands).
+        Assert.Equal(2, content.Items.Count(item => item.Name == "Pad Thai"));
+    }
+
+    [Fact]
+    public async Task Duplicates_that_differ_in_any_readable_way_still_ask()
+    {
+        // The A21 case, and the reason A22 is narrow: one is on two menus and the other on none,
+        // which is exactly what the provenance line exists to show. There IS something to choose
+        // by, so the operator still chooses.
+        var (service, _, content) = CreateService();
+        var lunch = Guid.NewGuid();
+        content.MenuNames[lunch] = "Lunch";
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
+        content.Items.Add(new Item { Id = first, VenueId = VenueId, Name = "Pad Thai", Price = "11.95", CreatedUtc = Now.UtcDateTime.AddDays(-30) });
+        content.Items.Add(new Item { Id = second, VenueId = VenueId, Name = "Pad Thai", Price = "11.95", CreatedUtc = Now.UtcDateTime.AddDays(-30) });
+        content.Placements.Add(new Placement { Id = Guid.NewGuid(), VenueId = VenueId, MenuId = lunch, MenuSectionId = Guid.NewGuid(), ItemId = first });
+
+        var result = await service.StartAsync(VenueId, "MAINS\nPad Thai  11.95", "owner@example.com", default);
+
+        var question = Assert.Single(result.Questions, candidate => candidate.Candidates.Count > 1);
+        Assert.Null(question.Answer);
+        Assert.True(question.Required);
+    }
+
+    [Fact]
+    public async Task Identical_duplicates_at_a_different_price_still_ask()
+    {
+        // A price that differs is the one thing worth stopping for - the same rule the single
+        // exact match already follows. Identity being undecidable does not make the price known.
+        var (service, _, content) = CreateService();
+        var menu = Guid.NewGuid();
+        content.MenuNames[menu] = "New menu";
+        var older = Guid.NewGuid();
+        var newer = Guid.NewGuid();
+        content.Items.Add(new Item { Id = older, VenueId = VenueId, Name = "Pad Thai", Price = "11.95", CreatedUtc = Now.UtcDateTime.AddHours(-3) });
+        content.Items.Add(new Item { Id = newer, VenueId = VenueId, Name = "Pad Thai", Price = "11.95", CreatedUtc = Now.UtcDateTime.AddHours(-1) });
+        content.Placements.Add(new Placement { Id = Guid.NewGuid(), VenueId = VenueId, MenuId = menu, MenuSectionId = Guid.NewGuid(), ItemId = older });
+        content.Placements.Add(new Placement { Id = Guid.NewGuid(), VenueId = VenueId, MenuId = menu, MenuSectionId = Guid.NewGuid(), ItemId = newer });
+
+        var result = await service.StartAsync(VenueId, "MAINS\nPad Thai  13.50", "owner@example.com", default);
+
+        var question = Assert.Single(result.Questions, candidate => candidate.Candidates.Count > 1);
+        Assert.Null(question.Answer);
+        Assert.True(question.Required);
+    }
+
+    [Fact]
     public async Task One_candidate_is_not_looked_up_at_all()
     {
         // There is nothing to distinguish it from, so the read is not paid for. `null` rather than

@@ -430,4 +430,46 @@ public sealed class MenuPasteParserTests
             "the fixture must contain a line holding several items, or it does not test the defect");
         Assert.Equal(result.Questions.Count, result.Questions.Select(question => question.QuestionKey).Distinct().Count());
     }
+
+    [Fact]
+    public void The_same_dish_named_twice_in_one_paste_is_asked_about_once()
+    {
+        /*
+         * The owner's real menu, and the root of the whole duplicate problem: "Pad Thai" on one
+         * line and "Pad Thai $11.95" further down. Every line used to be decided on its own, so
+         * the review screen asked the same question twice and the confirm was ready to create the
+         * dish twice - which is exactly how the library ended up holding two rows nobody could
+         * tell apart.
+         *
+         * "Pad Thai is Pad Thai, who cares about the price" - owner, 2026-08-28.
+         */
+        var parser = new MenuPasteParser();
+        var library = new[]
+        {
+            new Item { Id = Guid.NewGuid(), VenueId = Guid.Empty, Name = "Pad Thai", Price = "11.95", IsActive = true }
+        };
+
+        // Both lines carry a price: a bare name under a heading is prose to the parser, and this
+        // test is about identity, not about which shapes become items.
+        var parsed = parser.Parse(Guid.NewGuid(), Guid.Empty, "LUNCH\nPad Thai  11.95\nNOODLES\nPad Thai  13.50", 1, library);
+
+        // One identity question, not two.
+        Assert.Single(parsed.Questions, question => question.Kind == "identity");
+
+        // Both lines survive: decision 41 - every pasted line stays traceable and appears once.
+        Assert.Equal(2, parsed.Lines.Count(line => line.Disposition == "item"));
+    }
+
+    [Fact]
+    public void A_repeated_name_is_the_same_dish_even_when_the_prices_differ()
+    {
+        // Price is not identity. The dish costs what its placement says it costs (A19); a second
+        // price further down the menu does not make it a second dish.
+        var parser = new MenuPasteParser();
+
+        var parsed = parser.Parse(Guid.NewGuid(), Guid.Empty, "LUNCH\nPad Thai  11.95\nDINNER\nPad Thai  13.50", 1, []);
+
+        Assert.Empty(parsed.Questions.Where(question => question.Kind == "identity"));
+        Assert.Equal(2, parsed.Lines.Count(line => line.Disposition == "item"));
+    }
 }
