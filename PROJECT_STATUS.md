@@ -10,6 +10,8 @@
 - **Track 0** (industry and product architecture): complete and closed. Primary records under `track0/consolidation/` (research-only).
 - **Track 1** (capability model, server decisions, scoped permissions, essential-core gate): complete, merged, exact-head validated, and **closed by the owner 2026-08-07**. Execution record: `ai/handoffs/archive/` and PRs #645–#650, #654. The retrospective report is on PR #667 (open, unmerged); its process changes are already incorporated into the feature/milestone model in `AGENTS.md`.
 
+- **Done Record enforcement adopted (2026-08-28).** The Done list is not an instruction — it is a record. Every milestone or fix PR commits a filled-out Done Record at `docs/features/<feature>/done-records/<pr-number>.md`, from the template at `docs/templates/done-record.md`, describing the exact head commit under review.
+
 ## The planning reset, and what it has produced
 
 The cancellation above cleared the roadmap deliberately. The reset has since produced the features-and-milestones working model and its first feature.

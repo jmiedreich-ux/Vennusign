@@ -1902,3 +1902,9 @@ Eight official runs completed: qwen3.5 (coding 95/review 48), qwen3-coder (90/0)
 Two important limits are recorded in the final report: the visible coding fixture has a quantity-20 public-test case that contradicts the stated maximum quantity of 10, and three models failed to locate `candidate.diff` in the review fixture. Results were preserved rather than repaired or rerun. qwen3.5 also has one preserved pre-official harness failure, followed by the permitted infrastructure retry.
 
 **Exact next action.** Treat the qualification as closed. For any future routing change, read the final report and evidence first; do not add unplanned tests or alter these results. Any new qualification phase requires an owner-approved separate plan and branch.
+
+## 2026-08-28 — Done Record enforcement
+
+The owner adopted Done Record enforcement. `docs/templates/done-record.md` is the canonical template; `docs/features/menus/done-records/` is created with the first record. `AGENTS.md` now requires a complete record for every milestone or fix PR, requires paths to be recorded and attacked, requires every standing design question to be answered, and makes the Done Record the reviewer's first check.
+
+**Exact next action.** Every milestone or fix PR commits a filled-out Done Record at docs/features/<feature>/done-records/<pr-number>.md, from the template at docs/templates/done-record.md, describing the exact head commit under review.
