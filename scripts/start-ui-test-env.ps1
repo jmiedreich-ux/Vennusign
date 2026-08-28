@@ -199,6 +199,10 @@ $env:TestAutomation__Scopes__3 = 'venue.headroom'
 $env:TestAutomation__ResetVenueIds__0 = (& $guid '73000000-0000-0000-0000-000000000002')
 $env:TestAutomation__HeadroomVenueIds__0 = (& $guid '73000000-0000-0000-0000-000000000001')
 $env:TestAutomation__HeadroomVenueIds__1 = (& $guid '73000000-0000-0000-0000-000000000002')
+# The capacity role's venue seeds like any other and so needs the same headroom. Without it the
+# very first seed for that role is refused 404 by the headroom endpoint - which is not a message
+# about capacity at all, and cost a run to read as one.
+$env:TestAutomation__HeadroomVenueIds__2 = (& $guid '73000000-0000-0000-0000-000000000003')
 $env:TestAutomation__HistoryVenueIds__0 = (& $guid '73000000-0000-0000-0000-000000000001')
 $env:TestAutomation__HistoryVenueIds__1 = (& $guid '73000000-0000-0000-0000-000000000002')
 

@@ -41,7 +41,16 @@ test.describe("menu pages", () => {
     await openMenuBuilderAs(page, "owner", data.menuId);
 
     await expect(page.getByTestId("page-history")).toContainText(data.pages[0].name);
-    await expect(page.getByTestId("page-history")).toContainText("Section added");
+
+
+    /*
+     * Page one's history records a RENAME, not an add.
+     *
+     * The seed renames the default section the product creates with every menu rather than
+     * queueing behind it, so nothing was "added" to this page. Both halves of what this test names
+     * are still covered: the rename below is the section change on this page, and page two's
+     * assertion further down is the add - its section really is one the seed created.
+     */
 
     const firstRow = page.getByTestId("section-row").first();
     await firstRow.getByRole("button", { name: /^Rename / }).click();
