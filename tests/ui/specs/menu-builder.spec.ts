@@ -72,7 +72,17 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("page-summary")).toHaveAttribute("data-view", "section");
     await expect(page.getByTestId("section-scope")).toHaveText(data.sections![0].name);
     await expect(page.getByTestId("rail-section").first()).toHaveAttribute("aria-current", "true");
-    await expect(page.getByTestId("inspector-empty")).toBeVisible();
+
+    /*
+     * "Nothing selected in the inspector" (Q116, owner 2026-08-07) means no ITEM is selected -
+     * which is what this asserts. It used to look for `inspector-empty`, and that only renders
+     * when no SECTION is selected either, so the assertion contradicted the first half of the same
+     * decision. It was written before M3-A Slice 3 moved inline add into the inspector; with a
+     * section selected the panel now offers adding to it, which is the section's affordance and
+     * not an item's details.
+     */
+    await expect(page.getByTestId("item-name")).toHaveCount(0);
+    await expect(page.getByTestId("add-item-input")).toBeVisible();
   });
 
   test("the section/history and item panels collapse independently and remember the browser preference", async ({ page }) => {

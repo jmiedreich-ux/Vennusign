@@ -100,7 +100,7 @@ test.describe("paste import review", () => {
     await page.getByRole("button",{name:"Restore previous draft"}).click();await expect(page.getByRole("status")).toContainText("working draft from before this import has been restored");
   });
 
-  test("thirty semantic near misses render as one group with no preselection", async ({ page }, testInfo) => {
+  test("thirty lines of the same dish are one dish, asked once, with no preselection", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
     const seeded = await seed({ label: "near-match-group" });
     const typo = `${seeded.itemName.slice(0, -1)}x`;
@@ -108,12 +108,30 @@ test.describe("paste import review", () => {
     await page.getByLabel("Menu text").fill(Array.from({ length: 30 }, () => `${typo}  ${seeded.itemPrice}`).join("\n"));
     await page.getByRole("button", { name: "Read menu" }).click();
 
+    /*
+     * "Pad Thai is Pad Thai, who cares about the price" - owner, 2026-08-28.
+     *
+     * This used to assert thirty rows inside the group: every line was decided on its own, so one
+     * paste asked the same identity question thirty times and was ready to create the dish thirty
+     * times. That is what filled the owner's library with rows nobody could tell apart. A repeated
+     * name is now one dish and is asked about once.
+     *
+     * Decision 33's rule is unchanged and still covered - near misses are surfaced as ONE grouped
+     * question, never thirty separate ones. What changed is that the one group now holds one row
+     * rather than thirty copies of the same question.
+     */
     const group = page.getByTestId("near-match-group");
     await expect(group).toHaveCount(1);
-    await expect(group).toContainText("30 pasted items have a similar library name");
-    await expect(group.getByRole("button", { name: new RegExp(seeded.itemName, "i") })).toHaveCount(30);
+    await expect(group.getByRole("button", { name: new RegExp(seeded.itemName, "i") })).toHaveCount(1);
     await expect(page.getByTestId("safe-match-banner")).toHaveCount(0);
     await expect(page.getByText("Nothing is selected for you.")).toBeVisible();
+
+    /*
+     * Line traceability (decision 41) is asserted where it can be asserted precisely: the parser
+     * unit test `The_same_dish_named_twice_in_one_paste_is_asked_about_once` checks both lines are
+     * still emitted. The inventory panel here carries no test ids to count, and adding them for
+     * one assertion is not worth the surface.
+     */
   });
 
   test("an unreadable line can be left out, and the choices name outcomes not mechanisms", async ({ page }, testInfo) => {
