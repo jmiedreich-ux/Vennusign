@@ -711,7 +711,14 @@ public static class PutAwayOutcomes
 /// What happened to a create-and-place: <see cref="ItemPlacementOutcomes"/> names
 /// the cases, and the count is the menu's item total read under the same lock.
 /// </summary>
-public sealed record ItemPlacementOutcome(string Outcome, int ItemCountOnMenu, int SortOrder);
+/// <summary>
+/// What placing a new item did, and WHICH item it used.
+///
+/// `ItemId` is not always the id the caller proposed: a venue's library holds a dish once
+/// (migration 082), so naming one it already has places that row instead of writing a second.
+/// A caller that keeps its own id would be holding one that was never written.
+/// </summary>
+public sealed record ItemPlacementOutcome(string Outcome, int ItemCountOnMenu, int SortOrder, Guid ItemId = default);
 
 public static class ItemPlacementOutcomes
 {

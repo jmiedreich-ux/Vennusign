@@ -385,8 +385,33 @@ IF @Result=N'created' BEGIN
  FROM dbo.MenuImportSourceLines l LEFT JOIN dbo.MenuImportQuestionLines ql ON ql.SessionId=l.SessionId AND ql.LineNumber=l.LineNumber AND l.LineSubIndex=0
  LEFT JOIN dbo.MenuImportAnswers a ON a.SessionId=ql.SessionId AND a.QuestionKey=ql.QuestionKey
  WHERE l.SessionId=@SessionId AND (l.Disposition=N'item' OR (l.Disposition=N'unresolved' AND a.Choice=N'fallback'));
+ /*
+  * The library holds a dish once (migration 082), so a confirm LINKS to what is already there
+  * rather than minting a second copy - which the unique index would now refuse outright.
+  *
+  * Two steps, and both are needed:
+  *   1. A row the operator did not answer, whose name canonically matches a library item, becomes
+  *      that item. Setting Existing=1 also makes the pasted price the PLACEMENT's price below,
+  *      which is what "same item, printed here at this price" means (A19) and exactly what an
+  *      operator-answered match already does.
+  *   2. Rows left over that share a name share ONE new id, so one paste naming a dish twice
+  *      creates it once. The parser stops asking twice (#938); this stops writing twice.
+  */
+ UPDATE r SET ItemId=existing.Id, Existing=1
+ FROM #Rows r CROSS APPLY (
+   SELECT TOP 1 i.Id FROM dbo.Items i
+   WHERE i.VenueId=@VenueId AND i.IsActive=1 AND i.CanonicalName=dbo.CanonicalItemName(r.Name)
+   ORDER BY i.CreatedUtc,i.Id) existing
+ WHERE r.Existing=0 AND r.Name IS NOT NULL;
+
+ WITH shared AS (
+   SELECT LineNumber, FIRST_VALUE(ItemId) OVER (PARTITION BY dbo.CanonicalItemName(Name) ORDER BY LineNumber) AS Id
+   FROM #Rows WHERE Existing=0)
+ UPDATE r SET ItemId=shared.Id FROM #Rows r JOIN shared ON shared.LineNumber=r.LineNumber WHERE r.Existing=0;
  IF (SELECT COUNT(*) FROM #Rows)>@ItemLimit SET @Result=N'item_limit';
- ELSE IF EXISTS(SELECT 1 FROM #Rows WHERE Name IS NULL OR LEN(Name)>200) OR EXISTS(SELECT ItemId FROM #Rows GROUP BY ItemId HAVING COUNT(*)>1) SET @Result=N'invalid_content';
+ -- Two rows sharing an item is now the intended shape, not a fault: the same dish printed twice is
+ -- one library item placed twice. Name validity still refuses.
+ ELSE IF EXISTS(SELECT 1 FROM #Rows WHERE Name IS NULL OR LEN(Name)>200) SET @Result=N'invalid_content';
  ELSE BEGIN
   IF EXISTS(SELECT 1 FROM #Rows r WHERE r.Fallback=1 OR NOT EXISTS(SELECT 1 FROM #Sections s WHERE s.LineNumber<r.LineNumber)) INSERT #Sections VALUES(0,NEWID(),N'Imported items',-1);
   UPDATE r SET SectionId=CASE WHEN r.Fallback=1 THEN (SELECT SectionId FROM #Sections WHERE LineNumber=0) ELSE COALESCE((SELECT TOP 1 s.SectionId FROM #Sections s WHERE s.LineNumber<r.LineNumber ORDER BY s.LineNumber DESC),(SELECT SectionId FROM #Sections WHERE LineNumber=0)) END FROM #Rows r;
@@ -394,8 +419,20 @@ IF @Result=N'created' BEGIN
   INSERT dbo.Menus(Id,VenueId,Name,IsActive,CreatedUtc,UpdatedUtc) VALUES(@MenuId,@VenueId,@Name,1,@Now,@Now);
   INSERT dbo.MenuPages(Id,VenueId,MenuId,Name,SortOrder,CreatedUtc,UpdatedUtc) VALUES(@PageId,@VenueId,@MenuId,N'Page 1',0,@Now,@Now);
   INSERT dbo.MenuSections(Id,VenueId,MenuId,PageId,Name,SortOrder,CreatedUtc,UpdatedUtc) SELECT SectionId,@VenueId,@MenuId,@PageId,Name,ROW_NUMBER() OVER(ORDER BY SortOrder,LineNumber)-1,@Now,@Now FROM #Sections;
-  INSERT dbo.Items(Id,VenueId,Name,Description,Price,Source,IsActive,CreatedUtc,UpdatedUtc) SELECT ItemId,@VenueId,Name,Description,Price,N'import',1,@Now,@Now FROM #Rows WHERE Existing=0;
-  CREATE TABLE #Placed(LineNumber int PRIMARY KEY,PlacementId uniqueidentifier NOT NULL); INSERT #Placed SELECT LineNumber,NEWID() FROM #Rows;
+  -- One row per NEW item: rows sharing an id above are one dish, and the first line's description
+  -- and price become the library default. Each placement keeps its own price below.
+  INSERT dbo.Items(Id,VenueId,Name,Description,Price,Source,IsActive,CreatedUtc,UpdatedUtc)
+   SELECT ItemId,@VenueId,Name,Description,Price,N'import',1,@Now,@Now
+   FROM (SELECT ItemId,Name,Description,Price,ROW_NUMBER() OVER(PARTITION BY ItemId ORDER BY LineNumber) AS Pick
+         FROM #Rows WHERE Existing=0) first WHERE first.Pick=1;
+  /*
+   * One placement per item on the page, first line wins. "An item appears at most once on a page"
+   * is a model invariant (M3-A, migration 062) reaffirmed by the owner on 2026-08-28, and an
+   * import writes one page. A menu printing the same dish twice keeps the first placement.
+   */
+  CREATE TABLE #Placed(LineNumber int PRIMARY KEY,PlacementId uniqueidentifier NOT NULL);
+  INSERT #Placed SELECT LineNumber,NEWID() FROM (
+    SELECT LineNumber,ROW_NUMBER() OVER(PARTITION BY ItemId ORDER BY LineNumber) AS Pick FROM #Rows) once WHERE once.Pick=1;
   INSERT dbo.Placements(Id,VenueId,MenuId,MenuSectionId,PageId,ItemId,SortOrder,CreatedUtc,UpdatedUtc,ImportedPriceOverride)
    SELECT p.PlacementId,@VenueId,@MenuId,r.SectionId,@PageId,r.ItemId,r.SortOrder,@Now,@Now,CASE WHEN r.Existing=1 THEN r.Price END FROM #Rows r JOIN #Placed p ON p.LineNumber=r.LineNumber;
   INSERT dbo.MenuImportCreatedLines(SessionId,VenueId,LineNumber,MenuId,MenuSectionId,PlacementId) SELECT @SessionId,@VenueId,r.LineNumber,@MenuId,r.SectionId,p.PlacementId FROM #Rows r JOIN #Placed p ON p.LineNumber=r.LineNumber;
@@ -443,11 +480,15 @@ IF @Result=N'created' BEGIN SELECT TOP(1) @ItemLimit=LimitValue FROM dbo.Capabil
 IF @Result=N'created' BEGIN
  CREATE TABLE #Sections(LineNumber bigint PRIMARY KEY,SectionId uniqueidentifier,Name nvarchar(200),SortOrder int);INSERT #Sections SELECT CONVERT(bigint,LineNumber)*1000+LineSubIndex,NEWID(),ParsedName,ROW_NUMBER()OVER(ORDER BY LineNumber,LineSubIndex)-1 FROM dbo.MenuImportSourceLines WHERE SessionId=@SessionId AND Disposition=N'section';
  CREATE TABLE #Rows(LineNumber bigint PRIMARY KEY,ItemId uniqueidentifier,Existing bit,Fallback bit,Name nvarchar(200),Description nvarchar(1000),Price nvarchar(12),SectionId uniqueidentifier,SortOrder int);INSERT #Rows(LineNumber,ItemId,Existing,Fallback,Name,Description,Price) SELECT CONVERT(bigint,l.LineNumber)*1000+l.LineSubIndex,COALESCE(a.SelectedItemId,NEWID()),IIF(a.SelectedItemId IS NULL,0,1),IIF(l.Disposition=N'unresolved',1,0),IIF(l.Disposition=N'item',l.ParsedName,NULLIF(LTRIM(RTRIM(l.RawText)),N'')),l.ParsedDescription,l.ParsedPrice FROM dbo.MenuImportSourceLines l LEFT JOIN dbo.MenuImportQuestionLines ql ON ql.SessionId=l.SessionId AND ql.LineNumber=l.LineNumber AND l.LineSubIndex=0 LEFT JOIN dbo.MenuImportAnswers a ON a.SessionId=ql.SessionId AND a.QuestionKey=ql.QuestionKey WHERE l.SessionId=@SessionId AND(l.Disposition=N'item' OR(l.Disposition=N'unresolved' AND a.Choice=N'fallback'));
- IF(SELECT COUNT(*)FROM #Rows)>@ItemLimit SET @Result=N'item_limit';ELSE IF EXISTS(SELECT 1 FROM #Rows WHERE Name IS NULL OR LEN(Name)>200)OR EXISTS(SELECT ItemId FROM #Rows GROUP BY ItemId HAVING COUNT(*)>1)SET @Result=N'invalid_content';
+ /* Same rule as the create path: link to the dish the library already holds (migration 082), and
+    let rows sharing a name share one new id. See ConfirmCreateSql for the full note. */
+ UPDATE r SET ItemId=existing.Id, Existing=1 FROM #Rows r CROSS APPLY (SELECT TOP 1 i.Id FROM dbo.Items i WHERE i.VenueId=@VenueId AND i.IsActive=1 AND i.CanonicalName=dbo.CanonicalItemName(r.Name) ORDER BY i.CreatedUtc,i.Id) existing WHERE r.Existing=0 AND r.Name IS NOT NULL;
+ WITH shared AS (SELECT LineNumber, FIRST_VALUE(ItemId) OVER (PARTITION BY dbo.CanonicalItemName(Name) ORDER BY LineNumber) AS Id FROM #Rows WHERE Existing=0) UPDATE r SET ItemId=shared.Id FROM #Rows r JOIN shared ON shared.LineNumber=r.LineNumber WHERE r.Existing=0;
+ IF(SELECT COUNT(*)FROM #Rows)>@ItemLimit SET @Result=N'item_limit';ELSE IF EXISTS(SELECT 1 FROM #Rows WHERE Name IS NULL OR LEN(Name)>200)SET @Result=N'invalid_content';
  ELSE BEGIN
   IF EXISTS(SELECT 1 FROM #Rows r WHERE r.Fallback=1 OR NOT EXISTS(SELECT 1 FROM #Sections s WHERE s.LineNumber<r.LineNumber))INSERT #Sections VALUES(0,NEWID(),N'Imported items',-1);UPDATE r SET SectionId=CASE WHEN Fallback=1 THEN(SELECT SectionId FROM #Sections WHERE LineNumber=0)ELSE COALESCE((SELECT TOP 1 SectionId FROM #Sections s WHERE s.LineNumber<r.LineNumber ORDER BY LineNumber DESC),(SELECT SectionId FROM #Sections WHERE LineNumber=0))END FROM #Rows r;WITH x AS(SELECT LineNumber,ROW_NUMBER()OVER(PARTITION BY SectionId ORDER BY LineNumber)-1 n FROM #Rows)UPDATE r SET SortOrder=x.n FROM #Rows r JOIN x ON x.LineNumber=r.LineNumber;
   DELETE FROM dbo.Placements WHERE VenueId=@VenueId AND MenuId=@MenuId;DELETE FROM dbo.MenuSections WHERE VenueId=@VenueId AND MenuId=@MenuId;
-  INSERT dbo.MenuSections(Id,VenueId,MenuId,PageId,Name,SortOrder,CreatedUtc,UpdatedUtc)SELECT SectionId,@VenueId,@MenuId,@PageId,Name,ROW_NUMBER()OVER(ORDER BY SortOrder,LineNumber)-1,@Now,@Now FROM #Sections;INSERT dbo.Items(Id,VenueId,Name,Description,Price,Source,IsActive,CreatedUtc,UpdatedUtc)SELECT ItemId,@VenueId,Name,Description,Price,N'import',1,@Now,@Now FROM #Rows WHERE Existing=0;INSERT dbo.Placements(Id,VenueId,MenuId,MenuSectionId,PageId,ItemId,SortOrder,CreatedUtc,UpdatedUtc,ImportedPriceOverride)SELECT NEWID(),@VenueId,@MenuId,SectionId,@PageId,ItemId,SortOrder,@Now,@Now,IIF(Existing=1,Price,NULL) FROM #Rows;
+  INSERT dbo.MenuSections(Id,VenueId,MenuId,PageId,Name,SortOrder,CreatedUtc,UpdatedUtc)SELECT SectionId,@VenueId,@MenuId,@PageId,Name,ROW_NUMBER()OVER(ORDER BY SortOrder,LineNumber)-1,@Now,@Now FROM #Sections;INSERT dbo.Items(Id,VenueId,Name,Description,Price,Source,IsActive,CreatedUtc,UpdatedUtc)SELECT ItemId,@VenueId,Name,Description,Price,N'import',1,@Now,@Now FROM(SELECT ItemId,Name,Description,Price,ROW_NUMBER()OVER(PARTITION BY ItemId ORDER BY LineNumber)AS Pick FROM #Rows WHERE Existing=0)first WHERE first.Pick=1;INSERT dbo.Placements(Id,VenueId,MenuId,MenuSectionId,PageId,ItemId,SortOrder,CreatedUtc,UpdatedUtc,ImportedPriceOverride)SELECT NEWID(),@VenueId,@MenuId,SectionId,@PageId,ItemId,SortOrder,@Now,@Now,IIF(Existing=1,Price,NULL) FROM(SELECT SectionId,ItemId,SortOrder,Existing,Price,ROW_NUMBER()OVER(PARTITION BY ItemId ORDER BY LineNumber)AS Pick FROM #Rows)once WHERE once.Pick=1;
   UPDATE dbo.Menus SET UpdatedUtc=@Now WHERE Id=@MenuId;
   SELECT @PostSnapshot=(SELECT m.Id menuId,m.Name name,m.Theme theme,m.DwellSeconds dwellSeconds,m.LoopWarningSeconds loopWarningSeconds,JSON_QUERY((SELECT CAST(a.ScreenId AS nvarchar(36))screenId,a.PageId pageId FROM dbo.MenuScreenAssignments a WHERE a.MenuId=m.Id AND a.VenueId=@VenueId ORDER BY a.ScreenId FOR JSON PATH))screens,JSON_QUERY((SELECT p.Id pageId,p.Name name,p.SortOrder sortOrder FROM dbo.MenuPages p WHERE p.MenuId=m.Id AND p.VenueId=@VenueId ORDER BY p.SortOrder,p.Id FOR JSON PATH))pages,JSON_QUERY((SELECT s.Id sectionId,s.PageId pageId,s.Name name,s.SortOrder sortOrder,JSON_QUERY((SELECT p.ItemId itemId,i.Name name,i.Description description,COALESCE(p.ImportedPriceOverride,i.Price)price,p.ImportedPriceOverride importedPriceOverride,p.SortOrder sortOrder FROM dbo.Placements p JOIN dbo.Items i ON i.Id=p.ItemId AND i.VenueId=p.VenueId WHERE p.MenuSectionId=s.Id AND p.VenueId=@VenueId ORDER BY p.SortOrder,p.Id FOR JSON PATH))items FROM dbo.MenuSections s WHERE s.MenuId=m.Id AND s.VenueId=@VenueId ORDER BY s.SortOrder,s.Id FOR JSON PATH))sections FROM dbo.Menus m WHERE m.Id=@MenuId AND m.VenueId=@VenueId FOR JSON PATH,WITHOUT_ARRAY_WRAPPER);SET @PostFingerprint=CONVERT(char(64),HASHBYTES('SHA2_256',CONVERT(varbinary(max),@PostSnapshot)),2);
   INSERT dbo.MenuImportReplacementSnapshots(Id,VenueId,MenuId,SessionId,SnapshotJson,CreatedUtc,CreatedBy,ExpiresUtc,ExpectedMenuUpdatedUtc,ExpectedWorkingFingerprint)VALUES(@SnapshotId,@VenueId,@MenuId,@SessionId,@Snapshot,@Now,@Actor,DATEADD(day,@RetentionDays,@Now),@Now,@PostFingerprint);
