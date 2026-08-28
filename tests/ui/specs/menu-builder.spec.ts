@@ -72,7 +72,17 @@ test.describe("the builder", () => {
     await expect(page.getByTestId("page-summary")).toHaveAttribute("data-view", "section");
     await expect(page.getByTestId("section-scope")).toHaveText(data.sections![0].name);
     await expect(page.getByTestId("rail-section").first()).toHaveAttribute("aria-current", "true");
-    await expect(page.getByTestId("inspector-empty")).toBeVisible();
+
+    /*
+     * "Nothing selected in the inspector" (Q116, owner 2026-08-07) means no ITEM is selected -
+     * which is what this asserts. It used to look for `inspector-empty`, and that only renders
+     * when no SECTION is selected either, so the assertion contradicted the first half of the same
+     * decision. It was written before M3-A Slice 3 moved inline add into the inspector; with a
+     * section selected the panel now offers adding to it, which is the section's affordance and
+     * not an item's details.
+     */
+    await expect(page.getByTestId("item-name")).toHaveCount(0);
+    await expect(page.getByTestId("add-item-input")).toBeVisible();
   });
 
   test("the section/history and item panels collapse independently and remember the browser preference", async ({ page }) => {
@@ -320,7 +330,12 @@ test.describe("the builder", () => {
     // corrected at once (Q113).
     await expect(page.getByTestId("item-name")).toHaveValue(name);
     await expect(page.getByTestId("item-price")).toHaveValue("");
-    await expect(page.getByTestId("missing-price-flag")).toBeVisible();
+    /*
+     * The canvas "No price yet" flag is gone on purpose - an owner feedback-round item in #834,
+     * finished in 4b0a7387 which also removed the now-unused isMissingPrice import. The empty
+     * price field above is what says it now. Q113 is unaffected: publishing a priceless item still
+     * asks, and the test below this one is the one that proves it.
+     */
 
     // Now offer the SAME item again. It must not place a second copy.
     const before = await page.getByTestId("board-item").count();
@@ -408,7 +423,9 @@ test.describe("the builder", () => {
     const name = `No Price ${data.itemId.slice(0, 6)}`;
     await page.getByTestId("add-item-input").fill(name);
     await page.getByTestId("add-item-create").click();
-    await expect(page.getByTestId("missing-price-flag")).toBeVisible();
+    // The flag was dropped by owner feedback (#834). What matters here is the publish question
+    // below, which is Q113 itself rather than a hint about it.
+    await expect(page.getByTestId("item-price")).toHaveValue("");
 
     await openReview(page);
     await page.getByTestId("publish-from-review").click();
@@ -689,7 +706,13 @@ test.describe("the builder", () => {
     // wireframe (Q161). The word "screens" is fine here as the destination, as
     // long as the number in front of it is the change count, not a screen count.
     await openActionsMenu(page);
-    await expect(page.getByTestId("action-review-publish")).toContainText(/\d+ changes? goes? to your screens/);
+    /*
+     * "1 change goes" and "8 changes go" - the product gets the verb right (Q181's natural
+     * singular). The old pattern was /changes? goes?/, which can only match "goe" or "goes", so it
+     * passed on a single change and failed on every other number. The test was wrong about English,
+     * not the product.
+     */
+    await expect(page.getByTestId("action-review-publish")).toContainText(/\d+ changes? (go|goes) to your screens/);
 
     await page.getByTestId("action-review-publish").click();
     await page.getByTestId("publish-from-review").click();

@@ -117,3 +117,12 @@ export function priceScopeQuestion(
   boards: readonly { menuId: string; menuName?: string }[] | null | undefined,
   currentMenuId: string
 ): PriceScopeQuestion | null;
+
+/**
+ * What a screen's state actually is. Archived and never-reported are named rather than
+ * flattered into "Online" — see the note in builderModel.mjs.
+ */
+export function screenState(
+  screen: { status?: string | null; lastSeenUtc?: string | null },
+  now?: number
+): { key: "online" | "offline" | "stale" | "unpaired" | "archived"; text: string };

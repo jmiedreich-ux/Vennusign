@@ -366,6 +366,10 @@
 .builder__assignments-state--offline { color: var(--sky-warning-text); }
 .builder__assignments-state--stale { color: var(--sky-warning-text); }
 .builder__assignments-state--unpaired { color: var(--sky-text-secondary); }
+/* Archived reads like unpaired, not like a fault: nothing is wrong with it, it simply
+   cannot show anything. The dot is the same muted colour so it never passes for live. */
+.builder__assignments-state--archived { color: var(--sky-text-secondary); }
+.builder__assignments-screen--archived { background: var(--sky-color-background-base); }
 
 .builder__assignments-pages { position: relative; flex-wrap: wrap; min-width: 0; }
 .builder__assignment-chip { display: inline-flex; align-items: center; gap: var(--sky-space-1); border-radius: var(--sky-radius-pill); padding: var(--sky-space-2) var(--sky-space-3); background: var(--sky-color-secondary); color: var(--sky-text-primary); font-weight: var(--sky-font-weight-semibold); }

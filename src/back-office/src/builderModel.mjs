@@ -499,3 +499,30 @@ export function priceScopeQuestion(itemName, boards, currentMenuId) {
     everywhereDetail: "Every menu carrying this dish shows the new price"
   };
 }
+
+/*
+ * What a screen's state actually is, rather than what is left over.
+ *
+ * This used to end `return { key: "online", text: "Online" }` for anything it did not recognise,
+ * and `Archived` is not recognised. The owner was shown two identical rows both reading Online,
+ * one of which was archived and had never checked in - and offered the archived one as a place to
+ * put his menu. A green dot on a screen that can never show anything is worse than no dot.
+ *
+ * So: archived is named, a screen that has never reported is named, and an unknown status says
+ * what it is rather than being flattered into Online.
+ */
+export function screenState(screen, now = Date.now()) {
+  const raw = (screen.status || "Never paired").toLowerCase();
+  if (raw.includes("never")) return { key: "unpaired", text: "Never paired" };
+  if (raw.includes("archived")) return { key: "archived", text: "Archived · not showing anything" };
+  const lastSeen = screen.lastSeenUtc ? new Date(screen.lastSeenUtc) : null;
+  const elapsedMinutes = lastSeen && Number.isFinite(lastSeen.getTime()) ? Math.max(0, Math.floor((now - lastSeen.getTime()) / 60_000)) : null;
+  const elapsed = elapsedMinutes === null ? null : elapsedMinutes < 60 ? `${elapsedMinutes}m` : elapsedMinutes < 1_440 ? `${Math.floor(elapsedMinutes / 60)}h` : `${Math.floor(elapsedMinutes / 1_440)}d`;
+  // Paired, but nothing has ever come back from it. "Online" would be an invention.
+  if (elapsedMinutes === null) return { key: "offline", text: "Never checked in" };
+  if (raw === "online" && elapsedMinutes >= 5) return { key: "stale", text: `Stale · no reply for ${elapsed}` };
+  if (raw.includes("offline")) return { key: "offline", text: `Offline · last seen ${elapsed} ago` };
+  if (raw === "online") return { key: "online", text: "Online" };
+  // Say the unknown state rather than guessing at it.
+  return { key: "offline", text: screen.status || "Unknown" };
+}

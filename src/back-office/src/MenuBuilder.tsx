@@ -70,6 +70,7 @@ import {
   resumeState,
   sectionOf,
   priceScopeQuestion,
+  screenState,
   sectionsOf,
   sharedItemLine,
   unavailableNote,
@@ -97,16 +98,6 @@ type Props = {
   capabilityOverrides?: MenuCapabilityOverrides;
 };
 
-function screenState(screen: MenuScreenShowing, now = Date.now()) {
-  const raw = (screen.status || "Never paired").toLowerCase();
-  if (raw.includes("never")) return { key: "unpaired", text: "Never paired" };
-  const lastSeen = screen.lastSeenUtc ? new Date(screen.lastSeenUtc) : null;
-  const elapsedMinutes = lastSeen && Number.isFinite(lastSeen.getTime()) ? Math.max(0, Math.floor((now - lastSeen.getTime()) / 60_000)) : null;
-  const elapsed = elapsedMinutes === null ? null : elapsedMinutes < 60 ? `${elapsedMinutes}m` : elapsedMinutes < 1_440 ? `${Math.floor(elapsedMinutes / 60)}h` : `${Math.floor(elapsedMinutes / 1_440)}d`;
-  if (raw === "online" && elapsedMinutes !== null && elapsedMinutes >= 5) return { key: "stale", text: `Stale · no reply for ${elapsed}` };
-  if (raw.includes("offline")) return { key: "offline", text: elapsed ? `Offline · last seen ${elapsed} ago` : "Offline" };
-  return { key: "online", text: "Online" };
-}
 
 type SaveState = "clean" | "saving" | "failed";
 
@@ -2145,7 +2136,8 @@ export default function MenuBuilder({
               const visiblePageIds = new Set(visibleAssignments.map(assignment => assignment.pageId));
               for (const pageId of additions) visiblePageIds.add(pageId);
               const { key: stateKey, text: stateText } = screenState(screen);
-              const canAdd = stateKey !== "unpaired" && pages.some(page => !visiblePageIds.has(page.pageId));
+              // Archived joins unpaired: pages assigned to it would reach nothing.
+              const canAdd = stateKey !== "unpaired" && stateKey !== "archived" && pages.some(page => !visiblePageIds.has(page.pageId));
               return <div key={screen.screenId} className={`builder__assignments-screen builder__assignments-screen--${stateKey}`} role="row" data-testid="screen-row" data-screen-id={screen.screenId} data-state={stateKey}>
                 <span className="builder__assignments-screen-name" role="cell"><strong>{screen.screenName}</strong><small>{screen.location || "Location not set"}</small></span>
                 <span role="cell">{screen.widthPixels > 0 && screen.heightPixels > 0 ? `${screen.widthPixels} × ${screen.heightPixels} · ${screen.heightPixels > screen.widthPixels ? "portrait" : "landscape"}` : "Not reported yet"}</span>

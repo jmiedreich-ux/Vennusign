@@ -1,5 +1,23 @@
 import { test, expect, openAs } from "../fixtures";
 
+/*
+ * Review is a step now, not a screen the product jumps past (owner, 2026-08-28).
+ *
+ * A resolved session used to render the destination immediately, so these specs went straight
+ * there. The operator now passes THROUGH the review - which is where the line inventory and
+ * "Nothing left to answer" live - and moves on deliberately.
+ */
+async function onwardToDestination(page: import("@playwright/test").Page) {
+  const onward = page.getByTestId("go-to-destination");
+  const destination = page.getByTestId("menu-import-create");
+  // Wait for whichever screen the flow has reached before deciding. Checking count() straight
+  // away raced the render, found nothing, clicked nothing, and left the caller waiting for a
+  // heading that was never going to arrive.
+  await onward.or(destination).first().waitFor({ state: "visible" });
+  if (await onward.count()) await onward.click();
+}
+
+
 /**
  * The way back into an unfinished import (#904).
  *
@@ -38,9 +56,21 @@ test.describe("an import you did not finish", () => {
     // And back out again: an operator told "you have an import in progress" must be able to say
     // "no I do not", or the only way out of that sentence is to wait 24 hours (decision 10).
     await page.goto("/#/menu");
-    await page.getByTestId("open-imports").getByTestId("discard-import").first().click();
+
+    /*
+     * The way out exists in both shapes of the line, and this venue decides which one.
+     *
+     * With exactly one open import the shelf offers "Throw it away" inline; with several it offers
+     * "Show all N" and each row carries its own. This runs against a shared venue that accumulates
+     * sessions, so assuming the single-import shape made the test depend on how many other runs had
+     * left an import behind. It asserts the affordance, not the venue's history.
+     */
+    const inline = page.getByTestId("open-imports").getByTestId("discard-import");
+    if (await inline.count() === 0) await page.getByTestId("toggle-imports").click();
+    await page.getByTestId("open-imports-all").getByRole("button", { name: /throw it away/i }).first()
+      .or(inline.first()).first().click();
+
     await expect(page.getByTestId("shelf-notice")).toContainText("thrown away");
-    await expect(page.getByTestId("open-imports")).toHaveCount(0);
   });
 
   test("a shelf with no unfinished import says nothing about one", async ({ page }) => {

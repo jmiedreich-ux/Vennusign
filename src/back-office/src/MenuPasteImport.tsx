@@ -61,6 +61,10 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
    */
   const latest = useRef<MenuImportSession | null>(null);
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
+  // Set when the operator leaves the review for the destination step, so review is passed through
+  // rather than skipped. Deliberately not persisted: a refresh returns to the review, which is the
+  // screen that says what the parser did.
+  const [movingOn, setMovingOn] = useState(false);
   /*
    * Two answers go over the wire one after the other, so the click is a wait, not an instant. It
    * disabled the buttons and said nothing, which is indistinguishable from a button that does not
@@ -331,7 +335,21 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
     <button type="submit" className="import-primary" data-testid="create-menu" disabled={busy || !menuName.trim()}>{busy ? "Creating…" : "Create menu"}</button>
   </form>;
 
-  if (session.session.status === "resolved") return <main className="paste-import import-destination" data-testid="menu-import-create" aria-labelledby="destination-title">
+  /*
+   * Review is not skipped when there is nothing to answer (owner, 2026-08-28).
+   *
+   * This used to read `if (status === "resolved")`, which is true the moment the last question is
+   * answered - and true immediately for a paste the parser was sure about. So the review screen was
+   * jumped straight past, and `import-review-complete` below ("Nothing left to answer") could never
+   * be reached by any flow: a whole designed state that was dead code. Worse, the operator never
+   * saw what the parser decided for them - decision 41 says every pasted line stays traceable, and
+   * the line inventory is on that screen.
+   *
+   * Review now always renders, and the operator moves on from it deliberately. The destination is
+   * still where a resolved session goes - once they have chosen to go there, once a destination is
+   * already picked, or once the import has completed and this is the receipt.
+   */
+  if (session.session.status === "resolved" && (movingOn || session.session.destination || session.session.completedMenuId)) return <main className="paste-import import-destination" data-testid="menu-import-create" aria-labelledby="destination-title">
     <button className="import-back" onClick={onBack}><ArrowLeft aria-hidden="true" /> Menus</button>
     <section className="destination-card"><h1 id="destination-title">{session.session.destination==="create"?"Create this menu?":session.session.destination==="replace"?`Replace ${session.session.targetMenuName}?`:"Where should these items go?"}</h1>
       {!session.session.destination ? <><p>Your review is saved. Creating is the first step that changes menu working content.</p>{error && <p className="import-error" role="alert">{error}</p>}
@@ -423,7 +441,7 @@ export default function MenuPasteImport({ configuration, accessToken, sessionId,
       {standaloneQuestions.filter(question => !coveredBySuggestion(question)).map(question => <QuestionCard key={question.questionKey} session={session} question={question} busy={busy}
         onAnswer={(choice, itemId) => void mutate(current => answerMenuImport(configuration, accessToken, current, question, choice, itemId))}
         onPromote={() => void mutate(current => setMenuImportLineSection(configuration, accessToken, current, question.lineNumbers[0], true))} />)}
-      {!unresolved.length && <div className="review-complete" data-testid="import-review-complete"><span><Check aria-hidden="true" /></span><div><h2>Nothing left to answer</h2><p>Choose where these items go next. Nothing reaches a screen until you publish.</p></div></div>}
+      {!unresolved.length && <div className="review-complete" data-testid="import-review-complete"><span><Check aria-hidden="true" /></span><div><h2>Nothing left to answer</h2><p>Choose where these items go next. Nothing reaches a screen until you publish.</p></div><button type="button" className="import-primary" data-testid="go-to-destination" onClick={() => setMovingOn(true)}>Choose where these go</button></div>}
     </section>
     <section className="inventory-panel"><button aria-expanded={inventoryOpen} onClick={() => setInventoryOpen(value => !value)}>{inventoryOpen ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />} Review all {session.session.lineCount} pasted lines</button>
       {inventoryOpen && <ol>{session.lines.map(line => <li key={line.lineNumber}><span>{line.lineNumber}</span><code>{line.rawText || "(blank line)"}</code><em>{line.disposition}</em>{line.disposition === "section" && !isNaturalHeading(line.rawText) && <button disabled={busy} onClick={() => void mutate(current => setMenuImportLineSection(configuration, accessToken, current, line.lineNumber, false))}><RotateCcw aria-hidden="true" /> Undo section</button>}</li>)}</ol>}
