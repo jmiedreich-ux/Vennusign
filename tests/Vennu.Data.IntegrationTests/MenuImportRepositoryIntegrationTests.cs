@@ -270,16 +270,19 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         /*
          * The venue moves underneath the open import.
          *
-         * The library is one of the parse's dependencies (SameDependencies compares the questions,
-         * and a question's candidates come from the library), so a second "Soup" arriving - from
-         * another import, another operator, or the builder - is enough to make the next refresh
-         * re-read the paste. It is the same class of event as the ceiling change the owner caused
-         * by putting a menu back, and it needs no organization to set up.
+         * The library is one of the parse's dependencies: SameDependencies compares the questions,
+         * and a question's candidate carries the library item's DisplayPrice. So repricing the dish
+         * this paste matches is enough to make the next refresh re-read it - the same class of
+         * event as the ceiling change the owner caused by putting a menu back.
+         *
+         * This used to add a SECOND "Soup" instead. A venue's library holds a dish once now
+         * (migration 082), so that insert is refused by UX_Items_VenueId_CanonicalName - the test's
+         * own mechanism became illegal, which is the rule working.
          */
         await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
             """
-            INSERT dbo.Items(Id,VenueId,Name,Description,Price,Source,IsActive,CreatedUtc,UpdatedUtc)
-            VALUES(NEWID(),@VenueId,N'Soup',NULL,N'13.00',N'manual',1,SYSUTCDATETIME(),SYSUTCDATETIME());
+            UPDATE dbo.Items SET Price = N'13.00', UpdatedUtc = SYSUTCDATETIME()
+            WHERE VenueId = @VenueId AND Name = N'Soup';
             SELECT 1 AS Value;
             """, new { VenueId = venueId });
 
@@ -338,6 +341,68 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
         public T CurrentValue => value;
         public T Get(string? name) => value;
         public IDisposable? OnChange(Action<T, string?> listener) => null;
+    }
+
+    [Fact]
+    public async Task An_import_links_to_the_dish_the_library_already_holds()
+    {
+        /*
+         * A venue's library holds a dish once - owner ruling, 2026-08-28, enforced by
+         * UX_Items_VenueId_CanonicalName in migration 082.
+         *
+         * So a confirm cannot mint a second "Pad Thai": it would be refused by the index, on an
+         * ordinary import of an ordinary menu. It links to the row already there instead, and the
+         * pasted price becomes that PLACEMENT's price (A19) rather than rewriting the library's.
+         *
+         * The second half is one paste naming the dish twice. The parser stops asking about it
+         * twice (#938); this is what stops the confirm WRITING it twice.
+         */
+        var (repository, venueId) = await CreateRepositoryAndVenue();
+        var dataAccess = fixture.CreateDataAccess();
+        var now = DateTime.UtcNow;
+        var id = Guid.NewGuid();
+
+        await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            INSERT dbo.Items(Id,VenueId,Name,Description,Price,Source,IsActive,CreatedUtc,UpdatedUtc)
+            VALUES(NEWID(),@VenueId,N'Pad Thai',NULL,N'11.95',N'manual',1,SYSUTCDATETIME(),SYSUTCDATETIME());
+            SELECT 1 AS Value;
+            """, new { VenueId = venueId });
+
+        // Canonically the same dish, written the way a menu prints it, and named twice.
+        var heading = new MenuImportSourceLine(id, venueId, 1, 0, "MAINS", "section", "MAINS", null, null, null, 1);
+        var first = new MenuImportSourceLine(id, venueId, 2, 0, "PAD THAI  13.50", "item", "PAD THAI", null, "13.50", null, 1);
+        var again = new MenuImportSourceLine(id, venueId, 3, 0, "Pad Thai  14.50", "item", "Pad Thai", null, "14.50", null, 1);
+
+        var started = await repository.CreateAsync(new(new(id, venueId, "MAINS\nPAD THAI  13.50\nPad Thai  14.50", 1,
+            MenuImportStatuses.Resolved, 3, 2, now.AddHours(1), now, now, null, []), [heading, first, again], []));
+        var named = await repository.SetCreateDestinationAsync(venueId, id, started.Session.Revision,
+            fixture.UniqueValue("links-to-library"), now, "owner");
+
+        var confirmed = await Confirm(repository, venueId, id, named.Aggregate!.Session.Revision, now, "owner");
+        Assert.Equal(MenuImportCreateOutcome.Created, confirmed.Result);
+
+        // Still ONE Pad Thai in the library, and it is the one that was already there.
+        var items = await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            "SELECT COUNT(*) AS Value FROM dbo.Items WHERE VenueId=@VenueId AND dbo.CanonicalItemName(Name)=dbo.CanonicalItemName(N'Pad Thai');",
+            new { VenueId = venueId });
+        Assert.Equal(1, items.Single().Value);
+
+        // The library's own price is untouched: a pasted price belongs to the placement (A19).
+        var libraryPrice = await dataAccess.ExecuteSqlQueryAsync<ValueRow, object>(
+            "SELECT TOP 1 Price AS Value FROM dbo.Items WHERE VenueId=@VenueId AND dbo.CanonicalItemName(Name)=dbo.CanonicalItemName(N'Pad Thai');",
+            new { VenueId = venueId });
+        Assert.Equal("11.95", libraryPrice.Single().Value);
+
+        // And it is on the board once - an item appears at most once on a page (062).
+        var placements = await dataAccess.ExecuteSqlQueryAsync<CountRow, object>(
+            """
+            SELECT COUNT(*) AS Value FROM dbo.Placements p
+            JOIN dbo.Items i ON i.Id = p.ItemId
+            WHERE p.VenueId=@VenueId AND p.MenuId=@MenuId
+              AND dbo.CanonicalItemName(i.Name)=dbo.CanonicalItemName(N'Pad Thai');
+            """, new { VenueId = venueId, MenuId = confirmed.Aggregate!.Session.CompletedMenuId });
+        Assert.Equal(1, placements.Single().Value);
     }
 
     [Fact]
@@ -609,6 +674,9 @@ public sealed class MenuImportRepositoryIntegrationTests(DatabaseFixture fixture
     private static Task<MenuImportCreateOutcome> Confirm(MenuImportRepository repository, Guid venueId, Guid sessionId,
         byte[] revision, DateTime now, string actor) => repository.ConfirmCreateAsync(venueId, sessionId, revision,
         Guid.NewGuid(), ["organization_administrator"], now, actor);
+
+    /// A single text column, for asserting on a stored value rather than a count.
+    private sealed class ValueRow { public string? Value { get; set; } }
 
     private sealed class CountRow { public int Value { get; set; } }
     private sealed class GuidRow { public Guid Value { get; set; } }

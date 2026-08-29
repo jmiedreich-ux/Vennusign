@@ -929,8 +929,14 @@ public sealed class BackOfficeContentController(
 
         return created.Outcome switch
         {
+            // created.ItemId, not the id proposed above: naming a dish the venue already has places
+            // THAT row (migration 082), and answering with an id nothing was written under leaves
+            // the caller holding a phantom - which is exactly how the scale seed's next request
+            // came back "That item is not one of this venue's items."
             ItemPlacementOutcomes.Created => Ok(new PlaceResponse(
-                PlaceExistingOutcomes.Placed, itemId, sectionId, created.SortOrder, created.ItemCountOnMenu)),
+                PlaceExistingOutcomes.Placed,
+                created.ItemId == Guid.Empty ? itemId : created.ItemId,
+                sectionId, created.SortOrder, created.ItemCountOnMenu)),
 
             ItemPlacementOutcomes.OverCeiling => Problem(
                 await content.DescribeCeilingRefusalAsync(

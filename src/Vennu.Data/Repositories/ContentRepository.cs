@@ -467,7 +467,7 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             WHERE Id = @SectionId AND MenuId = @MenuId AND VenueId = @VenueId)
         BEGIN
             ROLLBACK TRANSACTION;
-            SELECT N'section_missing' AS Outcome, 0 AS ItemCountOnMenu, 0 AS SortOrder;
+            SELECT N'section_missing' AS Outcome, 0 AS ItemCountOnMenu, 0 AS SortOrder, @ItemId AS ItemId;
         END
         ELSE
         BEGIN
@@ -480,15 +480,34 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             IF @OnMenu + 1 > @Limit
             BEGIN
                 ROLLBACK TRANSACTION;
-                SELECT N'over_ceiling' AS Outcome, @OnMenu AS ItemCountOnMenu, 0 AS SortOrder;
+                SELECT N'over_ceiling' AS Outcome, @OnMenu AS ItemCountOnMenu, 0 AS SortOrder, @ItemId AS ItemId;
             END
             ELSE
             BEGIN
                 DECLARE @SortOrder INT =
                     ISNULL((SELECT MAX(SortOrder) + 1 FROM dbo.Placements WHERE MenuSectionId = @SectionId), 0);
 
-                INSERT dbo.Items (Id, VenueId, Name, Description, Price, ImageUrl, Source, IsActive, CreatedUtc, UpdatedUtc)
-                VALUES (@ItemId, @VenueId, @Name, @Description, @Price, NULL, @Source, 1, @Now, @Now);
+                /*
+                 * The library holds a dish once (migration 082, owner 2026-08-28).
+                 *
+                 * "Create as new" on a name the venue already has is not a second dish - it is the
+                 * dish, being put on this board. Inserting would be refused by
+                 * UX_Items_VenueId_CanonicalName and surface as a 500 on a perfectly ordinary
+                 * action, so the existing row is placed instead. Q112's rule is unchanged: picking
+                 * an existing item jumps to it; this is the same answer for someone who typed the
+                 * name rather than picked it from the list.
+                 */
+                DECLARE @Existing UNIQUEIDENTIFIER = (
+                    SELECT TOP 1 i.Id FROM dbo.Items i
+                    WHERE i.VenueId = @VenueId AND i.IsActive = 1
+                      AND i.CanonicalName = dbo.CanonicalItemName(@Name)
+                    ORDER BY i.CreatedUtc, i.Id);
+
+                IF @Existing IS NOT NULL
+                    SET @ItemId = @Existing;
+                ELSE
+                    INSERT dbo.Items (Id, VenueId, Name, Description, Price, ImageUrl, Source, IsActive, CreatedUtc, UpdatedUtc)
+                    VALUES (@ItemId, @VenueId, @Name, @Description, @Price, NULL, @Source, 1, @Now, @Now);
 
                 INSERT dbo.Placements (Id, VenueId, MenuId, MenuSectionId, PageId, ItemId, SortOrder, CreatedUtc, UpdatedUtc)
                 SELECT @PlacementId, @VenueId, @MenuId, @SectionId, PageId, @ItemId, @SortOrder, @Now, @Now
@@ -503,7 +522,11 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
                 WHERE s.Id=@SectionId AND s.MenuId=@MenuId AND s.VenueId=@VenueId;
 
                 COMMIT TRANSACTION;
-                SELECT N'created' AS Outcome, @OnMenu + 1 AS ItemCountOnMenu, @SortOrder AS SortOrder;
+                -- The id the row ACTUALLY has. When the venue already held this dish the insert
+                -- above was skipped and @ItemId now names that row, so a caller that kept the id it
+                -- sent would be holding one that was never written. The scale seed did exactly that
+                -- and its next request 404'd.
+                SELECT N'created' AS Outcome, @OnMenu + 1 AS ItemCountOnMenu, @SortOrder AS SortOrder, @ItemId AS ItemId;
             END;
         END;
         """;
@@ -2209,7 +2232,11 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
             },
             cancellationToken).ConfigureAwait(false)).Single();
 
-        return new ItemPlacementOutcome(row.Outcome, row.ItemCountOnMenu, row.SortOrder);
+        // The caller reads item.Id back. If the venue already held this dish, the row it got is
+        // that one, and saying otherwise hands back an id that does not exist.
+        if (row.ItemId != Guid.Empty) item.Id = row.ItemId;
+
+        return new ItemPlacementOutcome(row.Outcome, row.ItemCountOnMenu, row.SortOrder, item.Id);
     }
 
     public async Task<int> ReorderPlacementsAsync(
@@ -3383,6 +3410,9 @@ public sealed class ContentRepository(ISqlDataAccess dataAccess) : IContentRepos
         public int ItemCountOnMenu { get; set; }
 
         public int SortOrder { get; set; }
+
+        /// Which item the write actually used - not always the one the caller proposed.
+        public Guid ItemId { get; set; }
     }
 
     private sealed class PutAwayRow

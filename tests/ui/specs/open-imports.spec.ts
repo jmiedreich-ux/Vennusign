@@ -65,10 +65,20 @@ test.describe("an import you did not finish", () => {
      * sessions, so assuming the single-import shape made the test depend on how many other runs had
      * left an import behind. It asserts the affordance, not the venue's history.
      */
-    const inline = page.getByTestId("open-imports").getByTestId("discard-import");
-    if (await inline.count() === 0) await page.getByTestId("toggle-imports").click();
-    await page.getByTestId("open-imports-all").getByRole("button", { name: /throw it away/i }).first()
-      .or(inline.first()).first().click();
+    await expect(banner).toBeVisible();
+
+    // count() answers immediately, so deciding on it before the shelf has drawn asks about an
+    // element that is not there yet. Wait for one shape or the other first.
+    const inline = banner.getByTestId("discard-import");
+    const toggle = page.getByTestId("toggle-imports");
+    await inline.or(toggle).first().waitFor({ state: "visible" });
+
+    if (await inline.count() === 0) {
+      await toggle.click();
+      await page.getByTestId("open-imports-all").getByRole("button", { name: /throw it away/i }).first().click();
+    } else {
+      await inline.first().click();
+    }
 
     await expect(page.getByTestId("shelf-notice")).toContainText("thrown away");
   });
