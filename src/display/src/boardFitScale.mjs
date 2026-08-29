@@ -103,9 +103,28 @@ export function computeBoardFit(natural, probe, viewportWidth, viewportHeight, m
 // shrinks it toward the left edge, leaving the freed space entirely on the right - only invisible
 // when scale is exactly 1 (the identity transform). Once scale can be < 1 here too (the #790
 // height-only fallback), 'top center' is required to keep the board visually centered.
+/*
+ * Two different situations both arrive here as `width: null`, and they must NOT be handled the
+ * same way.
+ *
+ * scale === 1 is the untouched, already-fits case (the `naturalFit` constant). It left the
+ * container with no width instruction at all - not "keep your natural width", but nothing. Every
+ * layout in the folder sets min-height on its own root and trusts THIS container for width, so
+ * "nothing" meant whatever a CSS grid's content happened to size itself to: a page with few items
+ * shrank to a narrow column instead of stretching, invisible until rotation put a wide page and a
+ * narrow one on the same screen seconds apart. scale(1) on 100% is a no-op, so this case now gets
+ * an explicit full width, costing it nothing.
+ *
+ * scale < 1 with width: null is the DIFFERENT, #802 case: solveFitWidth could not solve a fill
+ * width for a multi-row board, so this falls back to a pure height shrink of whatever the
+ * container's natural (already viewport-filling, per #794's own reasoning) width already is.
+ * Forcing width here would fight that fallback rather than help it - left untouched.
+ */
 export function boardFitContainerStyle({ scale, width }) {
   if (width === null) {
-    return { transform: `scale(${scale})`, transformOrigin: 'top center' };
+    return scale === 1
+      ? { width: '100%', transform: `scale(${scale})`, transformOrigin: 'top center' }
+      : { transform: `scale(${scale})`, transformOrigin: 'top center' };
   }
   return { width: `${width}px`, transform: `scale(${scale})`, transformOrigin: 'top left' };
 }
