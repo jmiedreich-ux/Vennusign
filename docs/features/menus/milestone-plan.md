@@ -870,6 +870,62 @@ oversight. #944 and #945 touch the same rendering path and do **not** unpark it:
 already on screens.
 
 
+### Milestone 10 — Display rendering engine: a full screen fits at natural size, a virtual screen to tune it, lone-page merging on hold
+
+**Planned 2026-08-29** from the owner's live review of Mana-Thai Cuisine after #960/#961. Issue #962.
+All three items live in the same engine — the code that decides what lands on a screen and how big
+it draws (`DisplayController.ComputeFrameStarts`/`SliceSections`, `boardFitScale.mjs`,
+`photoGrid.css`). What #958–#961 fixed was *which items* reach a screen; this is *how they draw*.
+
+##### T1 · A full screen is always shrunk, a short one never is — decided, parked
+
+Measured on the live screen, not reasoned: a full 6-item 3×2 screen renders at `data-board-fit-scale`
+**0.43–0.56**; a 3-item screen at **1.0**. The same dish reads at roughly half the text size depending
+on which screen it lands on. The card boxes are already the same width (~580–610px) — the #960 row
+packing is **not** the cause; the #790 shrink-to-fit safety net is, because a 3×2 board cannot hold six
+16:10 cards at natural size on a 1080p screen, so a full screen is *always* shrunk.
+
+**Decided (owner, 2026-08-29): Option A.** Size cards from the viewport height so a full screen fits
+at scale 1.0 with no shrink; every screen then renders identically. Cost, accepted: card photos crop
+to a wider strip (~2.5:1). Option B — lock every screen to the fullest screen's shrink — was rejected:
+consistent, but everything at ~0.45 and a one-item page becomes a small card in a black corner.
+
+##### T2 · A virtual screen to tune the engine
+
+Every packing decision in #958–#961 was verified by hand-building a throwaway harness (`main.tsx` swap
++ a screenshot script), reading the images, then deleting it. That is a permanent tool: give it a
+hypothetical menu shape (sections, item counts, density, viewport) and it renders the screens the
+engine would produce, so the engine is tuned against endless combinations before anything is
+published, and a regression in packing is a failed screenshot rather than a restaurant's complaint.
+
+**Constraint, named because it was already violated once:** the harness must call the **real
+server-side packing** — never a JavaScript reimplementation. The #961 harness reimplemented
+`ComputeFrameStarts` client-side to drive its rotation; a copy drifts, then lies, and defeats the
+purpose. The shape is an endpoint (or a test-only host) that takes a menu shape and returns the
+frames, with the display rendering them.
+
+The same capability later surfaces to operators in Back Office as a layout preview — *"this page
+takes three screens; Salads is on its own"* — so they see it before publishing, not on the wall.
+That is a follow-on slice, not T2.
+
+##### T3 · Auto-merge of lone pages — on hold
+
+Fish (1 item, its own page) sits alone on a mostly black screen. Folding it into a neighbour was
+discussed and **deliberately deferred** by the owner until T1 and T2 are done. A page is something
+the operator named and separated on purpose; silently combining pages changes their structure,
+and what merges with what would shift if they reorder. If it ever ships it is an explicit setting
+or a Back Office nudge — never silent display-side behaviour. Not started without a fresh decision.
+
+##### Order
+
+T1 first (decided and self-contained). T2 second — it is how T1 and everything after it gets
+verified, and it retires the throwaway-harness pattern. T3 only on a fresh decision.
+
+**Verification bar**, inherited from #958–#961: a change to this engine is not done until it has
+been read from real screenshots of the deployed screen, not sampled as text and not trusted from
+a passing test. The Done Records for #958–#961 record why.
+
+
 ## After this build (not planned, just named)
 Spreadsheet import; photo import (needs OCR provider + cost decision); POS import route; item library UI; multi-venue build; upgrade/marketing rework; Schedules-owned time pricing (returns happy-hour display); fallback-card authoring; plus the register's backlog issues #670–#683.
 
