@@ -51,6 +51,29 @@ public class DisplayContentResponse
     public DisplayThemeResponse Theme { get; set; } = new();
 
     public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];
+
+    /*
+     * Every page this screen is assigned, in order, so a screen holding more than one can rotate
+     * between them - which the back office has promised on the assignment page all along.
+     *
+     * `Sections` above stays what it was: the first assigned page. A player that knows nothing of
+     * pages keeps working, and one that does uses this instead. That is why this is added beside
+     * the old field rather than replacing it.
+     */
+    public IReadOnlyCollection<DisplayMenuPageResponse> Pages { get; set; } = [];
+
+    /// How long each page holds the screen before the next one, from the menu (Menus.DwellSeconds).
+    public int PageDwellSeconds { get; set; } = 12;
+}
+
+/// <summary>One assigned page and what it draws.</summary>
+public sealed class DisplayMenuPageResponse
+{
+    public Guid PageId { get; set; }
+
+    public string? Name { get; set; }
+
+    public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];
 }
 
 public sealed class DisplayPromotionResponse

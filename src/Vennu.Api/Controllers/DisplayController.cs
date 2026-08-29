@@ -156,10 +156,23 @@ public class DisplayController : ControllerBase
         // assigning it. Reading "the venue's first active menu and all of its
         // sections" instead meant every screen in a venue showed the same thing
         // and a second menu could never be reached.
-        var assignment = contentRepository is null
-            ? null
+        /*
+         * EVERY page this screen is assigned, not just the first one found.
+         *
+         * FirstOrDefault was here, so a screen holding five pages was sent one and the other four
+         * never reached the player at all - while the back office told the operator, on the
+         * assignment page, that "a screen holding more than one page rotates between them". The
+         * player could not rotate what it was never given.
+         */
+        var assignments = contentRepository is null
+            ? []
             : (await contentRepository.GetAssignmentsAsync(venueId, cancellationToken))
-                .FirstOrDefault(candidate => candidate.ScreenId == screen.Id);
+                .Where(candidate => candidate.ScreenId == screen.Id)
+                .ToArray();
+
+        // The first is still what the single-page fields below describe, so nothing that reads
+        // them changes meaning.
+        var assignment = assignments.FirstOrDefault();
 
         var menus = await menuRepository.GetMenusAsync(venueId, cancellationToken);
         var menu = assignment is null
@@ -203,6 +216,25 @@ public class DisplayController : ControllerBase
             .ThenBy(section => section.SectionId)
             .ToArray();
 
+        /*
+         * Sections for one page, built the same way for every page this screen holds.
+         *
+         * The body below was written for a single page and is unchanged; it is a local function
+         * now so each assigned page can be drawn with it rather than the first one being special.
+         */
+        async Task<List<DisplayMenuSectionResponse>> SectionsForAsync(Guid? pageId)
+        {
+            var forPage = (publishedSnapshot.Sections ?? [])
+                .Where(section => pageId is not Guid wanted || section.PageId == wanted)
+                .OrderBy(section => section.SortOrder)
+                .ThenBy(section => section.SectionId)
+                .ToArray();
+            return await BuildSectionsAsync(forPage);
+        }
+
+        async Task<List<DisplayMenuSectionResponse>> BuildSectionsAsync(
+            IReadOnlyCollection<Vennu.Api.Services.SnapshotSection> publishedSections)
+        {
         var displaySections = new List<DisplayMenuSectionResponse>();
         foreach (var section in publishedSections)
         {
@@ -250,6 +282,39 @@ public class DisplayController : ControllerBase
                         };
                     }).ToArray()
             });
+        }
+            return displaySections;
+        }
+
+        // The page this screen was assigned first - what Sections has always meant.
+        var displaySections = await SectionsForAsync(assignment?.PageId);
+
+        /*
+         * And every page it holds, in the order the menu prints them, so the player can cycle.
+         *
+         * Only when there is more than one: a single-page screen has nothing to rotate to, and
+         * sending a one-entry list would invite a player to draw a cycle that never turns.
+         */
+        if (assignments.Length > 1)
+        {
+            var pageOrder = (publishedSnapshot.Pages ?? [])
+                .OrderBy(page => page.SortOrder)
+                .ThenBy(page => page.PageId)
+                .ToArray();
+
+            var pages = new List<DisplayMenuPageResponse>();
+            foreach (var page in pageOrder.Where(page => assignments.Any(a => a.PageId == page.PageId)))
+            {
+                pages.Add(new DisplayMenuPageResponse
+                {
+                    PageId = page.PageId,
+                    Name = page.Name,
+                    Sections = await SectionsForAsync(page.PageId)
+                });
+            }
+
+            response.Pages = pages;
+            response.PageDwellSeconds = publishedSnapshot.DwellSeconds > 0 ? publishedSnapshot.DwellSeconds : 12;
         }
 
         if (!string.Equals(response.Layout, ScreenLayout.Default, StringComparison.Ordinal))
