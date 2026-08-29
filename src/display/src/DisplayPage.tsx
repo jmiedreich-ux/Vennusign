@@ -22,11 +22,11 @@ import PlaylistRotation from './PlaylistRotation';
 import EmergencyBroadcastOverlay from './EmergencyBroadcastOverlay';
 import PlayerStateScreen from './PlayerStateScreen';
 import {
-import { useRotatedContent } from './usePageRotation';
   describeCachedContent,
   getConnectionPresentation,
   getDisplayStatePresentation
 } from './displayPresentation.mjs';
+import { useRotatedContent } from './usePageRotation';
 
 type DisplayPageProps = {
   screenId: string;
