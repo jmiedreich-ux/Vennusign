@@ -232,6 +232,14 @@ public class DisplayController : ControllerBase
             return await BuildSectionsAsync(forPage);
         }
 
+        static decimal ParsePrice(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return 0m;
+            var cleaned = new string(raw.Where(c => char.IsDigit(c) || c == '.' || c == ',' || c == '-').ToArray())
+                .Replace(",", string.Empty);
+            return decimal.TryParse(cleaned, NumberStyles.Number, CultureInfo.InvariantCulture, out var price) ? price : 0m;
+        }
+
         async Task<List<DisplayMenuSectionResponse>> BuildSectionsAsync(
             IReadOnlyCollection<Vennu.Api.Services.SnapshotSection> publishedSections)
         {
@@ -261,15 +269,21 @@ public class DisplayController : ControllerBase
                             Id = item.ItemId,
                             Name = item.Name ?? string.Empty,
                             Description = item.Description,
-                            // A snapshot keeps the price exactly as it was typed. The
-                            // display contract carries a decimal, so a market price or
-                            // a dash lands as 0 - the same conversion BoardItemsSql did
-                            // with TRY_CONVERT. See the note on this in issue #739.
-                            Price = decimal.TryParse(
-                                item.Price,
-                                NumberStyles.Number,
-                                CultureInfo.InvariantCulture,
-                                out var price) ? price : 0m,
+                            /*
+                             * A second instance of the currency-symbol bug fixed in MenuRepository.
+                             *
+                             * A published SNAPSHOT is what a real screen actually shows - not the
+                             * live board query BoardItemsSql feeds. Every printed price carries the
+                             * symbol it was typed with ("$7.00"), and decimal.TryParse with
+                             * NumberStyles.Number rejects that exactly the way TRY_CONVERT did, so
+                             * every price on a published, on-screen board rendered $0.00. Fixing the
+                             * live-board path alone left the thing an actual guest sees untouched -
+                             * caught only by looking at a real screenshot, not by reading code.
+                             *
+                             * A genuinely non-numeric price (MP, Market) still lands as 0 and still
+                             * needs its own answer; this fixes the case that is simply arithmetic.
+                             */
+                            Price = ParsePrice(item.Price),
                             HappyHourPrice = current?.HappyHourPrice,
                             // An item published and since deleted from the builder is
                             // still on the wall, so a missing live row means available
@@ -331,13 +345,38 @@ public class DisplayController : ControllerBase
             .Sum(candidate => PhotoGridDensity.Capacity(candidate.PhotoGridDensity));
         var screenCapacity = PhotoGridDensity.Capacity(screen.PhotoGridDensity);
         var wallCapacity = wallScreens.Sum(candidate => PhotoGridDensity.Capacity(candidate.PhotoGridDensity));
-        var totalItems = displaySections.Sum(section => section.Items.Count);
+        var isLastOnWall = screenIndex == wallScreens.Length - 1;
+
+        /*
+         * Fit ONE page's sections to this screen's slot in the wall, and say what did not fit.
+         *
+         * Shared by the top-level Sections (first assigned page, for a player that knows nothing
+         * of rotation) and by every entry in Pages (one call per rotated page), so the two can
+         * never say something different about the same page.
+         */
+        (IReadOnlyCollection<DisplayMenuSectionResponse> Sections, int Overflow) FitToScreen(
+            IReadOnlyCollection<DisplayMenuSectionResponse> pageSections)
+        {
+            var totalItems = pageSections.Sum(section => section.Items.Count);
+            var overflow = isLastOnWall ? Math.Max(0, totalItems - wallCapacity) : 0;
+            return (SliceSections(pageSections, itemOffset, screenCapacity), overflow);
+        }
 
         response.PhotoGridDensity = PhotoGridDensity.Normalize(screen.PhotoGridDensity);
-        response.PhotoGridOverflowItems = screenIndex == wallScreens.Length - 1
-            ? Math.Max(0, totalItems - wallCapacity)
-            : 0;
-        response.Sections = SliceSections(displaySections, itemOffset, screenCapacity);
+        var (firstPageSections, firstPageOverflow) = FitToScreen(displaySections);
+        response.Sections = firstPageSections;
+        response.PhotoGridOverflowItems = firstPageOverflow;
+
+        // Re-fit every rotated page too - each was built with its own full section list above,
+        // sliced here exactly like the single-page response is.
+        response.Pages = response.Pages
+            .Select(page =>
+            {
+                var (sliced, overflow) = FitToScreen(page.Sections);
+                return new DisplayMenuPageResponse { PageId = page.PageId, Name = page.Name, Sections = sliced, PhotoGridOverflowItems = overflow };
+            })
+            .ToArray();
+
         return Ok(response);
     }
 

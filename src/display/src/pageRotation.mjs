@@ -45,7 +45,20 @@ export function contentForPage(content, index) {
   const pages = content.pages ?? [];
   if (!shouldRotate(pages)) return content;
   const active = pageAt(pages, index);
-  return active ? { ...content, sections: active.sections } : content;
+  if (!active) return content;
+  /*
+   * The overflow count travels WITH the page, not just its sections.
+   *
+   * A screen previously kept photoGridOverflowItems fixed at whatever the first page computed,
+   * so a later page with one item still showed the earlier page's leftover count - verified on a
+   * real screen: "Fish" (one item) reading "7 more items" that belonged to Appetizers. Each page
+   * now carries its own count (DisplayController.FitToScreen), and this is where it takes over.
+   */
+  return {
+    ...content,
+    sections: active.sections,
+    photoGridOverflowItems: active.photoGridOverflowItems ?? 0
+  };
 }
 
 /** Seconds a page holds the screen. Zero or missing means the menu never said; twelve is the default. */
