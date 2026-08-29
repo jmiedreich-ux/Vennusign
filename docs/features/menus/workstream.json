@@ -408,6 +408,21 @@
         "record": null
       },
       "note": "Planned 2026-08-28. Absorbs M6.6 and M8; Q213-Q215 are settled, so what remains is build order behind 6-B."
+    },
+    {
+      "id": "10",
+      "label": "M10",
+      "depth": 26,
+      "title": "Display rendering engine — a full screen fits at natural size, a virtual screen to tune it, lone-page merging on hold",
+      "plan": "milestone-plan.md",
+      "issue": 962,
+      "pr": null,
+      "status": "blocked",
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      },
+      "note": "Planned 2026-08-29 from the owner's live review after #960/#961. T1 is decided (Option A); T2 is how T1 and everything after it gets verified; T3 is on hold pending a fresh decision."
     }
   ]
 }
