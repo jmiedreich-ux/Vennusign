@@ -43,3 +43,11 @@ test('renders the payload density and bounded overflow count', () => {
   assert.match(layoutSource, /content\.photoGridOverflowItems/);
   assert.match(layoutSource, /photo-grid__overflow/);
 });
+
+test('a section shorter than the grid shares its row instead of forcing a new one', () => {
+  assert.match(layoutSource, /Math\.min\(section\.items\.length, columns\)/);
+  assert.match(layoutSource, /--section-span/);
+  assert.match(styleSource, /photo-grid__sections\s*\{[^}]*display:\s*grid/);
+  assert.match(styleSource, /grid-column:\s*span var\(--section-span/);
+  assert.match(styleSource, /photo-grid__cards\s*\{[^}]*grid-template-columns:\s*repeat\(var\(--section-span/);
+});

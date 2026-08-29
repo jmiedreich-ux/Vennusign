@@ -49,8 +49,28 @@ body {
   text-transform: uppercase;
 }
 
-.photo-grid__section + .photo-grid__section {
-  margin-top: 2.5rem;
+.photo-grid--density-2x2 { --grid-columns: 2; }
+.photo-grid--density-3x2,
+.photo-grid--density-3x3 { --grid-columns: 3; }
+.photo-grid--density-4x2 { --grid-columns: 4; }
+
+/*
+ * A section narrower than a full row (fewer items than --grid-columns) only claims the
+ * columns it needs, via --section-span (set per section from its own item count), so the
+ * next section can share the rest of that row instead of every section forcing a new one.
+ * Found on Mana-Thai Cuisine's Soups page: three short sections stacked full-width, one under
+ * the other, left most of the screen empty. A section with items.length >= --grid-columns
+ * still spans the full row and wraps internally exactly as before.
+ */
+.photo-grid__sections {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns, 3), minmax(0, 1fr));
+  gap: clamp(1.75rem, 3vw, 3rem) clamp(1.5rem, 3vw, 2rem);
+}
+
+.photo-grid__section {
+  grid-column: span var(--section-span, var(--grid-columns, 3));
+  min-width: 0;
 }
 
 .photo-grid__section h2 {
@@ -61,20 +81,8 @@ body {
 
 .photo-grid__cards {
   display: grid;
+  grid-template-columns: repeat(var(--section-span, 1), minmax(0, 1fr));
   gap: clamp(1rem, 2vw, 2rem);
-}
-
-.photo-grid--density-2x2 .photo-grid__cards {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.photo-grid--density-3x2 .photo-grid__cards,
-.photo-grid--density-3x3 .photo-grid__cards {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.photo-grid--density-4x2 .photo-grid__cards {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .photo-grid__card {
