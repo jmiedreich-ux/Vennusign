@@ -186,6 +186,96 @@ public class DisplayControllerTests
         Assert.Equal(2, response.PhotoGridOverflowItems);
     }
 
+    /// <summary>
+    /// #960: Mana-Thai Cuisine's Appetizers page had 13 items on a 6-item (3x2) screen. Only
+    /// the first 6 ever reached a guest; the other 7 - and the page's other section, had it had
+    /// one - were permanently unreachable behind a "7 more items" footer nothing ever advanced.
+    /// A page too big for one screen now becomes more than one screen, shown in turn.
+    /// </summary>
+    [Fact]
+    public async Task GetContent_SplitsAnOversizedPageIntoVirtualPagesInsteadOfTruncating()
+    {
+        var venueId = Guid.NewGuid();
+        var menuId = Guid.NewGuid();
+        var pageId = Guid.NewGuid();
+        var sectionId = Guid.NewGuid();
+        var screen = new Screen { Id = Guid.NewGuid(), VenueId = venueId, PhotoGridDensity = "3x2" };
+        var screenRepository = new FakeScreenRepository
+        {
+            GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(screen)
+        };
+        var menuRepository = new FakeMenuRepository
+        {
+            Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Mana-Thai Cuisine", IsActive = true }],
+            Sections = [new MenuSection { Id = sectionId, VenueId = venueId, MenuId = menuId, PageId = pageId, Name = "Appetizers" }],
+            Items = Enumerable.Range(1, 13)
+                .Select(index => new MenuItem
+                {
+                    Id = Guid.NewGuid(), VenueId = venueId, MenuSectionId = sectionId,
+                    Name = $"Item {index}", SortOrder = index
+                })
+                .ToArray()
+        };
+
+        var snapshot = new MenuSnapshot
+        {
+            DwellSeconds = 12,
+            Pages = [new SnapshotPage { PageId = pageId, Name = "Appetizers", SortOrder = 1 }],
+            Sections = menuRepository.Sections.Select(section => new SnapshotSection
+            {
+                SectionId = section.Id,
+                PageId = section.PageId,
+                Name = section.Name,
+                SortOrder = section.SortOrder,
+                Items = menuRepository.Items
+                    .Where(item => item.MenuSectionId == section.Id)
+                    .Select(item => new SnapshotItem
+                    {
+                        ItemId = item.Id,
+                        Name = item.Name,
+                        Description = item.Description,
+                        Price = item.Price.ToString(CultureInfo.InvariantCulture),
+                        SortOrder = item.SortOrder
+                    }).ToList()
+            }).ToList()
+        };
+        var content = new FakeContentRepository();
+        content.PublishEvents.Add(new MenuPublishEvent
+        {
+            Id = Guid.NewGuid(), VenueId = venueId, MenuId = menuId, Version = 1,
+            PublishedUtc = DateTime.UtcNow, Snapshot = MenuSnapshot.Serialize(snapshot)
+        });
+        content.Assignments.Add(new MenuScreenAssignment
+        {
+            Id = Guid.NewGuid(), VenueId = venueId, ScreenId = screen.Id, MenuId = menuId, PageId = pageId
+        });
+
+        var sut = new DisplayController(screenRepository, new FakeVenueRepository(), menuRepository, contentRepository: content);
+
+        var result = await sut.GetContent(screen.Id, CancellationToken.None);
+
+        var response = Assert.IsType<DisplayContentResponse>(
+            Assert.IsType<OkObjectResult>(result.Result).Value);
+
+        // The legacy single-screen fields still only ever show screenful one - a player old
+        // enough to ignore Pages truly cannot show anything past this, so it deserves to be
+        // told the truth about what it is not showing, exactly as before this fix.
+        Assert.Equal(6, Assert.Single(response.Sections).Items.Count);
+        Assert.Equal(7, response.PhotoGridOverflowItems);
+
+        // A rotation-aware player gets every item across three virtual screens, none of them
+        // reporting a stale or borrowed overflow count.
+        Assert.Equal(3, response.Pages.Count);
+        Assert.All(response.Pages, page => Assert.Equal(0, page.PhotoGridOverflowItems));
+        Assert.Equal(
+            new[] { 6, 6, 1 },
+            response.Pages.Select(page => Assert.Single(page.Sections).Items.Count));
+        Assert.Equal(
+            Enumerable.Range(1, 13).Select(index => $"Item {index}"),
+            response.Pages.SelectMany(page => page.Sections).SelectMany(section => section.Items).Select(item => item.Name));
+        Assert.Equal(12, response.PageDwellSeconds);
+    }
+
     [Fact]
     public async Task GetContent_ReturnsScreenContent_WhenScreenExists()
     {

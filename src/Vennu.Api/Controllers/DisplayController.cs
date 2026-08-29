@@ -350,9 +350,9 @@ public class DisplayController : ControllerBase
         /*
          * Fit ONE page's sections to this screen's slot in the wall, and say what did not fit.
          *
-         * Shared by the top-level Sections (first assigned page, for a player that knows nothing
-         * of rotation) and by every entry in Pages (one call per rotated page), so the two can
-         * never say something different about the same page.
+         * Used only for the legacy top-level Sections/PhotoGridOverflowItems (first assigned
+         * page, screenful one) - a player that does not know about Pages can never be shown
+         * anything past this slice, so "N more items" is still the honest answer for it.
          */
         (IReadOnlyCollection<DisplayMenuSectionResponse> Sections, int Overflow) FitToScreen(
             IReadOnlyCollection<DisplayMenuSectionResponse> pageSections)
@@ -367,15 +367,53 @@ public class DisplayController : ControllerBase
         response.Sections = firstPageSections;
         response.PhotoGridOverflowItems = firstPageOverflow;
 
-        // Re-fit every rotated page too - each was built with its own full section list above,
-        // sliced here exactly like the single-page response is.
-        response.Pages = response.Pages
-            .Select(page =>
+        /*
+         * A page that does not fit one screen gets more than one, shown in turn on the same
+         * dwell timer that already rotates between real pages - instead of a "N more items"
+         * footer nothing ever scrolls to. Found on Mana-Thai Cuisine's Appetizers page: 13
+         * items on a 6-item screen, only 6 ever shown, and Salads - the page's other section -
+         * never appeared at all.
+         *
+         * Every real page is expanded this way, whether the screen has one page or several, so
+         * a single-page screen with too much content is treated the same as a multi-page one.
+         * Pages stays empty only when the expansion still adds up to a single screen overall -
+         * the existing "nothing to rotate to" rule, measured after expansion instead of before.
+         */
+        IEnumerable<DisplayMenuPageResponse> ExpandVirtualPages(
+            Guid pageId, string? name, IReadOnlyCollection<DisplayMenuSectionResponse> sections)
+        {
+            var totalItems = sections.Sum(section => section.Items.Count);
+            var virtualCount = wallCapacity > 0
+                ? Math.Max(1, (int)Math.Ceiling(totalItems / (double)wallCapacity))
+                : 1;
+            for (var slide = 0; slide < virtualCount; slide++)
             {
-                var (sliced, overflow) = FitToScreen(page.Sections);
-                return new DisplayMenuPageResponse { PageId = page.PageId, Name = page.Name, Sections = sliced, PhotoGridOverflowItems = overflow };
-            })
+                yield return new DisplayMenuPageResponse
+                {
+                    PageId = pageId,
+                    Name = name,
+                    Sections = SliceSections(sections, itemOffset + (slide * wallCapacity), screenCapacity),
+                    PhotoGridOverflowItems = 0
+                };
+            }
+        }
+
+        var realPages = response.Pages.Count > 0
+            ? response.Pages
+            : [new DisplayMenuPageResponse { PageId = assignment?.PageId ?? Guid.Empty, Sections = displaySections }];
+
+        var expandedPages = realPages
+            .SelectMany(page => ExpandVirtualPages(page.PageId, page.Name, page.Sections))
             .ToArray();
+
+        if (expandedPages.Length > 1)
+        {
+            // Reset here too: a single real page that only needed sub-paging never went
+            // through the assignments.Length > 1 branch above, so this is its only chance
+            // to pick up the menu's dwell time instead of the response's bare default.
+            response.PageDwellSeconds = publishedSnapshot.DwellSeconds > 0 ? publishedSnapshot.DwellSeconds : 12;
+        }
+        response.Pages = expandedPages.Length > 1 ? expandedPages : [];
 
         return Ok(response);
     }
