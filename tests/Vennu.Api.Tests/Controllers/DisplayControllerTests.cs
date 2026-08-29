@@ -276,6 +276,107 @@ public class DisplayControllerTests
         Assert.Equal(12, response.PageDwellSeconds);
     }
 
+    /// <summary>
+    /// #961: the flat "every screen holds exactly `capacity` items" cut fragmented a section
+    /// that would have fit a screen easily. On the real Soups page (Soups 3, Noodle Soups 2,
+    /// Noodles 3; capacity 6) it put one Noodles item on the tail of screen one and stranded
+    /// the other two alone on screen two. Sections should only split when a section itself is
+    /// too big for one screen - never just because it doesn't fit what's left of the current one.
+    /// </summary>
+    [Fact]
+    public async Task GetContent_DefersASectionToItsOwnScreenRatherThanFragmentingIt()
+    {
+        var venueId = Guid.NewGuid();
+        var menuId = Guid.NewGuid();
+        var pageId = Guid.NewGuid();
+        var soupsId = Guid.NewGuid();
+        var noodleSoupsId = Guid.NewGuid();
+        var noodlesId = Guid.NewGuid();
+        var screen = new Screen { Id = Guid.NewGuid(), VenueId = venueId, PhotoGridDensity = "3x2" };
+        var screenRepository = new FakeScreenRepository
+        {
+            GetByIdAsyncHandler = (_, _) => Task.FromResult<Screen?>(screen)
+        };
+
+        MenuItem[] ItemsFor(Guid sectionId, string prefix, int count) => Enumerable.Range(1, count)
+            .Select(index => new MenuItem
+            {
+                Id = Guid.NewGuid(), VenueId = venueId, MenuSectionId = sectionId,
+                Name = $"{prefix} {index}", SortOrder = index
+            })
+            .ToArray();
+
+        var menuRepository = new FakeMenuRepository
+        {
+            Menus = [new Menu { Id = menuId, VenueId = venueId, Name = "Mana-Thai Cuisine", IsActive = true }],
+            Sections =
+            [
+                new MenuSection { Id = soupsId, VenueId = venueId, MenuId = menuId, PageId = pageId, Name = "Soups", SortOrder = 1 },
+                new MenuSection { Id = noodleSoupsId, VenueId = venueId, MenuId = menuId, PageId = pageId, Name = "Noodle Soups", SortOrder = 2 },
+                new MenuSection { Id = noodlesId, VenueId = venueId, MenuId = menuId, PageId = pageId, Name = "Noodles", SortOrder = 3 }
+            ],
+            Items =
+            [
+                .. ItemsFor(soupsId, "Soup", 3),
+                .. ItemsFor(noodleSoupsId, "Noodle Soup", 2),
+                .. ItemsFor(noodlesId, "Noodle", 3)
+            ]
+        };
+
+        var snapshot = new MenuSnapshot
+        {
+            DwellSeconds = 12,
+            Pages = [new SnapshotPage { PageId = pageId, Name = "My Bar", SortOrder = 1 }],
+            Sections = menuRepository.Sections.Select(section => new SnapshotSection
+            {
+                SectionId = section.Id,
+                PageId = section.PageId,
+                Name = section.Name,
+                SortOrder = section.SortOrder,
+                Items = menuRepository.Items
+                    .Where(item => item.MenuSectionId == section.Id)
+                    .Select(item => new SnapshotItem
+                    {
+                        ItemId = item.Id,
+                        Name = item.Name,
+                        Description = item.Description,
+                        Price = item.Price.ToString(CultureInfo.InvariantCulture),
+                        SortOrder = item.SortOrder
+                    }).ToList()
+            }).ToList()
+        };
+        var content = new FakeContentRepository();
+        content.PublishEvents.Add(new MenuPublishEvent
+        {
+            Id = Guid.NewGuid(), VenueId = venueId, MenuId = menuId, Version = 1,
+            PublishedUtc = DateTime.UtcNow, Snapshot = MenuSnapshot.Serialize(snapshot)
+        });
+        content.Assignments.Add(new MenuScreenAssignment
+        {
+            Id = Guid.NewGuid(), VenueId = venueId, ScreenId = screen.Id, MenuId = menuId, PageId = pageId
+        });
+
+        var sut = new DisplayController(screenRepository, new FakeVenueRepository(), menuRepository, contentRepository: content);
+
+        var result = await sut.GetContent(screen.Id, CancellationToken.None);
+
+        var response = Assert.IsType<DisplayContentResponse>(
+            Assert.IsType<OkObjectResult>(result.Result).Value);
+
+        // Two screens, not three: Soups + Noodle Soups (5 items, one slot unused) together,
+        // then Noodles whole on its own screen - never split 1-then-2 across a page turn.
+        var pages = response.Pages.ToArray();
+        Assert.Equal(2, pages.Length);
+        Assert.Equal(
+            new[] { "Soups", "Noodle Soups" },
+            pages[0].Sections.Select(section => section.Name));
+        Assert.Equal(3, pages[0].Sections.First(s => s.Name == "Soups").Items.Count);
+        Assert.Equal(2, pages[0].Sections.First(s => s.Name == "Noodle Soups").Items.Count);
+        var lastPageSection = Assert.Single(pages[1].Sections);
+        Assert.Equal("Noodles", lastPageSection.Name);
+        Assert.Equal(3, lastPageSection.Items.Count);
+    }
+
     [Fact]
     public async Task GetContent_ReturnsScreenContent_WhenScreenExists()
     {

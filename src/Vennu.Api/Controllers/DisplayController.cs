@@ -383,16 +383,21 @@ public class DisplayController : ControllerBase
             Guid pageId, string? name, IReadOnlyCollection<DisplayMenuSectionResponse> sections)
         {
             var totalItems = sections.Sum(section => section.Items.Count);
-            var virtualCount = wallCapacity > 0
-                ? Math.Max(1, (int)Math.Ceiling(totalItems / (double)wallCapacity))
-                : 1;
-            for (var slide = 0; slide < virtualCount; slide++)
+            var frameStarts = ComputeFrameStarts(sections, wallCapacity);
+            for (var index = 0; index < frameStarts.Count; index++)
             {
+                var frameStart = frameStarts[index];
+                var frameEnd = index + 1 < frameStarts.Count ? frameStarts[index + 1] : totalItems;
+                // Bounded by the frame's own size, not just this screen's capacity - otherwise a
+                // frame ComputeFrameStarts deliberately ended early (to avoid fragmenting the
+                // next section) would have SliceSections walk straight past that boundary and
+                // pull in the section it was just deferred to keep off this screen.
+                var frameCapacity = Math.Min(screenCapacity, frameEnd - frameStart);
                 yield return new DisplayMenuPageResponse
                 {
                     PageId = pageId,
                     Name = name,
-                    Sections = SliceSections(sections, itemOffset + (slide * wallCapacity), screenCapacity),
+                    Sections = SliceSections(sections, itemOffset + frameStart, frameCapacity),
                     PhotoGridOverflowItems = 0
                 };
             }
@@ -470,6 +475,64 @@ public class DisplayController : ControllerBase
             remainingCapacity -= available.Length;
         }
         return result;
+    }
+
+    /*
+     * #961: rotation-watch found the flat "every screen holds exactly `capacity` items"
+     * cut (the original ExpandVirtualPages) starting a section it couldn't finish - Noodles
+     * (3 items, fits a screen easily) had its first item tacked onto the tail of the Soups
+     * screen and its other two stranded alone on the next; Salads (4 items, also an easy fit)
+     * got split the same way instead of ever getting a screen of its own.
+     *
+     * Returns the flat item-index each virtual screen starts at (always beginning with 0).
+     * A section joins the current screen if it fits there; if not but it would fit a fresh
+     * one, the current screen closes early (even under capacity) rather than fragment it;
+     * only a section bigger than a whole screen is actually split, and only by as much as it
+     * has to be.
+     */
+    private static IReadOnlyList<int> ComputeFrameStarts(
+        IReadOnlyCollection<DisplayMenuSectionResponse> sections,
+        int capacity)
+    {
+        var starts = new List<int> { 0 };
+        if (capacity <= 0)
+        {
+            return starts;
+        }
+
+        var remaining = capacity;
+        var consumed = 0;
+        foreach (var section in sections)
+        {
+            var left = section.Items.Count;
+            while (left > 0)
+            {
+                if (remaining == 0)
+                {
+                    starts.Add(consumed);
+                    remaining = capacity;
+                }
+
+                if (left <= remaining)
+                {
+                    consumed += left;
+                    remaining -= left;
+                    left = 0;
+                }
+                else if (left <= capacity)
+                {
+                    starts.Add(consumed);
+                    remaining = capacity;
+                }
+                else
+                {
+                    consumed += remaining;
+                    left -= remaining;
+                    remaining = 0;
+                }
+            }
+        }
+        return starts;
     }
 
     private static IReadOnlyCollection<string> ParseTags(string? tags) =>
