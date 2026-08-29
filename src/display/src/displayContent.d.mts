@@ -52,6 +52,23 @@ export type DisplayContent = {
     itemFont: string;
   };
   sections?: DisplayMenuSection[];
+
+  /**
+   * Every page this screen is assigned, in the order the menu prints them.
+   *
+   * Present only when a screen holds more than one - a single-page screen has nothing to rotate
+   * to. `sections` above remains the first page, so a player that ignores this keeps working.
+   */
+  pages?: DisplayMenuPage[];
+
+  /** Seconds each page holds the screen before the next one. */
+  pageDwellSeconds?: number;
+};
+
+export type DisplayMenuPage = {
+  pageId: string;
+  name?: string | null;
+  sections: DisplayMenuSection[];
 };
 
 export type DisplayMenuSection = {
