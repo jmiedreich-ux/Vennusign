@@ -22,6 +22,7 @@ import './promotion.css';
 import './classicChalkboard.css';
 import './tapStrips.css';
 import './digitalTapBoard.css';
+import './pageTransition.css';
 
 export type DisplayLayoutProps = {
   content: DisplayContent;
@@ -275,6 +276,10 @@ const layoutRegistry = createLayoutRegistry<ComponentType<DisplayLayoutProps>>([
 export function DisplayLayout({ content }: DisplayLayoutProps) {
   const resolved = layoutRegistry.resolve(content.layout);
   const Layout = resolved.registration.renderer;
+  // Changes only when the set of sections actually on screen changes - a real page turn or a
+  // virtual sub-page turn - not on every content poll that happens to return the same page, so
+  // the fade doesn't retrigger on ordinary refreshes.
+  const pageSignature = (content.sections ?? []).map((section) => section.id).join('|');
 
   return (
     <DisplayFrame
@@ -283,7 +288,9 @@ export function DisplayLayout({ content }: DisplayLayoutProps) {
       requestedLayoutKey={resolved.requestedKey}
       usedFallback={resolved.isFallback}
     >
-      <Layout content={content} />
+      <div className="display-frame__page" key={pageSignature}>
+        <Layout content={content} />
+      </div>
     </DisplayFrame>
   );
 }

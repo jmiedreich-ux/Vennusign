@@ -1,0 +1,23 @@
+/*
+ * Rotating to a new real page or virtual sub-page used to swap content instantly - the DOM
+ * unmounting old cards and mounting new ones in the same frame reads as a hard cut, not a
+ * transition. This fades the new page in without touching how any individual layout renders.
+ */
+.display-frame__page {
+  animation: vennu-page-fade 420ms ease;
+}
+
+@keyframes vennu-page-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .display-frame__page {
+    animation: none;
+  }
+}
