@@ -60,6 +60,25 @@ test('the layout is handed the showing page as plain sections', () => {
   assert.equal(contentForPage(content, 1).menuName, 'Dinner');
 });
 
+test('overflow travels with the page, not the first page it happened to build from', () => {
+  // The owner watched a real screen show "Fish" (one item) still saying "7 more items" that
+  // belonged to Appetizers, because the overflow count was fixed at whatever the first page
+  // computed. Verified fixed here: switching pages switches the count.
+  const withOverflow = (id, name, overflow) => ({ ...page(id, name), photoGridOverflowItems: overflow });
+  const content = {
+    sections: [],
+    pages: [withOverflow('a', 'Appetizers', 7), withOverflow('b', 'Fish', 0)]
+  };
+
+  assert.equal(contentForPage(content, 0).photoGridOverflowItems, 7);
+  assert.equal(contentForPage(content, 1).photoGridOverflowItems, 0);
+});
+
+test('a page with no overflow count reports none, not the last one seen', () => {
+  const content = { sections: [], pages: [page('a', 'Apps'), page('b', 'Mains')] };
+  assert.equal(contentForPage(content, 1).photoGridOverflowItems, 0);
+});
+
 test('content with nothing to rotate is handed back untouched', () => {
   const single = { sections: [{ id: 'only', name: 'Apps', items: [] }], pages: [page('a', 'Apps')] };
   assert.equal(contentForPage(single, 3), single);

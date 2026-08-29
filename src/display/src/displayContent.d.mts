@@ -69,6 +69,8 @@ export type DisplayMenuPage = {
   pageId: string;
   name?: string | null;
   sections: DisplayMenuSection[];
+  /** Items THIS page could not fit on the screen, distinct from any other page's count. */
+  photoGridOverflowItems?: number;
 };
 
 export type DisplayMenuSection = {

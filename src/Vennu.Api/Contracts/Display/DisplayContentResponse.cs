@@ -74,6 +74,17 @@ public sealed class DisplayMenuPageResponse
     public string? Name { get; set; }
 
     public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];
+
+    /*
+     * Items this PAGE could not fit, not the page that happened to build first.
+     *
+     * The single top-level PhotoGridOverflowItems field predates rotation and is computed once,
+     * for whichever page fills Sections. A rotated player was swapping sections per page while
+     * that one number stayed fixed - so a page with one item still showed the count from wherever
+     * page one had overflowed. Verified on a real screen: "Fish" (1 item) reading "7 more items"
+     * that belonged to Appetizers. Each page now carries its own.
+     */
+    public int PhotoGridOverflowItems { get; set; }
 }
 
 public sealed class DisplayPromotionResponse
