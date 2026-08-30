@@ -1948,3 +1948,52 @@ invalidate that approval.
 M0 planning sessions—current-source map; `menu.v1`; record library/provider authority;
 theme/release contract; and refactor sequencing—before selecting a bounded M1 implementation.
 Data Model Studio follows the proven model engine and `menu.v1` proof.
+
+## 2026-08-30 — Mosaic V1 joins the Architecture Renewal
+
+Owner direction is recorded in issue **#965** and in
+`docs/architecture/content-platform-architecture-renewal.md`.
+
+The renewal stages and product versions are separate but connected axes:
+
+- **M0–M5** remain the Architecture Renewal's work structure.
+- **Mosaic V1, V1.x, and V2+** describe coherent product releases.
+- The Mosaic capability/dependency map connects each release capability to the renewal-stage work it
+  requires.
+
+This corrects two bad planning extremes. VennueSign will not perform a whole-product code audit
+before choosing work, and it will not take a token slice from every Core, Connect, Runtime, and
+Platform family merely to make Mosaic look complete. Existing code is uneven in maturity and is
+treated as foundation: each selected capability is classified **reuse**, **reshape**, **build**, or
+**defer** after bounded, just-in-time investigation.
+
+The initial Mosaic dependency hypothesis is:
+
+```
+existing sign-in and venue context
+-> menu.v1 Data Model
+-> Content
+-> Theme / Presentation
+-> Publish immutable Release
+-> Assign to Wall / Screen
+-> Runtime displays it
+-> Runtime proves actual Showing State
+```
+
+This spine does not assume sign-in must be rebuilt first. It asks whether the existing capability
+already satisfies the Mosaic contract. The same rule applies to Menu behavior, themes, publishing,
+assignments, rendering, and display delivery.
+
+Parallel cloud coordinators are derived from the dependency graph. Each lane receives owned
+capabilities/files, inputs, outputs, verification, and queue blockers. A free coordinator does not
+start a package whose upstream contract is unsettled, and work touching the same invariant or
+controlled record remains serialized.
+
+No implementation, endpoint, schema, service split, or Mosaic work package is approved by this
+record.
+
+**Exact next action:** create and review the **Mosaic V1 Capability and Dependency Map**. For each
+selected capability, record blueprint home, renewal stage, observable V1 outcome, current evidence,
+reuse/reshape/build/defer disposition, dependencies, contract, verification, coordinator lane,
+queue blockers, and what remains for V1.1, V1.2, V2, or later. Use that reviewed map—not a full code
+audit—to create the first Mosaic milestones and work packages.
