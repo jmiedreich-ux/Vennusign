@@ -630,7 +630,7 @@ A publish operation preserves the full controlled workflow:
 2. validate required fields and screen fit;
 3. create an immutable release snapshot;
 4. record assignments;
-5. notify players;
+5. emit the desired-state change so Runtime can notify and reconcile the affected players;
 6. preserve the previous release for rollback.
 
 Operational state is a separate path:
@@ -1004,9 +1004,12 @@ No endpoint is approved, discarded, renamed, or moved merely because its origina
 
 1. The content-entry state route must not conflate the immediate 86/restore operational contract with an authored **Not available** change that requires publish.
 2. Presentation-list responses that say what screens show may compose Core presentation data with Runtime Showing State; the contract must preserve the distinction.
-3. Screen responses, including assignment views, that mix Core desired configuration with Runtime actual state may remain composed reads only if ownership stays explicit.
-4. Wall delivery state is Runtime-owned even when surfaced in a Core wall view.
-5. Stripe billing webhook ownership is not part of the customer-data Connect domain.
+3. The screen-list response mixes Core desired configuration with Runtime actual state and device-reported output geometry; the composed contract must preserve ownership.
+4. The screen-assignment response says what each screen is showing; assignment intent remains Core-owned while actual Showing State remains Runtime-owned.
+5. Wall delivery state is Runtime-owned even when surfaced in a Core wall view.
+6. The candidate Runtime display route is keyed by logical `{screenId}` even though delivery is authorized and resolved per authenticated Player Output; that key must be corrected or its translation proven safe.
+7. The candidate diagnostics route cannot provide a centralized unauthenticated Runtime surface; it must be strictly local and non-sensitive or appropriately authenticated.
+8. Stripe billing webhook ownership is not part of the customer-data Connect domain.
 
 The inventory is a use-case and candidate-contract register beneath this architecture. It cannot redefine the four surfaces or their families.
 
