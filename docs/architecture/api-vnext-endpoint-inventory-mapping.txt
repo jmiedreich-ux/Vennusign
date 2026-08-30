@@ -1,0 +1,556 @@
+MAPPING NOTE — Canonical vNext ownership (added 2026-08-30)
+This endpoint inventory is preserved in its original order and wording.
+Every route group below is annotated as:
+  MAP → primary Surface → Family → Area
+  INTERACTION → another owner involved without transferring primary ownership
+  REVIEW → a boundary issue that must remain visible until explicitly decided
+
+The canonical four-surface architecture is not altered by this inventory.
+
+VENUE API vNEXT — projected surface (2026-08-30)
+Model: Collection (typed entries) x Theme (zones/repeaters/fields) = Presentation -> render -> Wall Planner (deal across the group) -> Package -> Screens, flipping on one clock
+
+## Access /api/auth · /api/session · /api/onboarding — 23
+GET     /api/auth/external/{provider}
+        MAP → Vennue Core API → Account and Business Structure → Authentication
+        Google / Apple / Entra sign-in, returns to the app (+ the three OIDC callback paths)
+POST    /api/auth/email-links
+        MAP → Vennue Core API → Account and Business Structure → Authentication
+        email a one-time sign-in link
+POST    /api/auth/email-links/redeem
+        MAP → Vennue Core API → Account and Business Structure → Authentication
+        turn the code into a session cookie
+GET     /api/auth/strong/passkeys
+        MAP → Vennue Core API → Account and Business Structure → Authentication
+        list passkeys on the account
+PUT     /api/auth/strong/passkeys/{id}
+        MAP → Vennue Core API → Account and Business Structure → Authentication
+        rename a passkey
+DELETE  /api/auth/strong/passkeys/{id}
+        MAP → Vennue Core API → Account and Business Structure → Authentication
+        remove a passkey (guarded if it's the last factor)
+POST    /api/auth/strong/passkeys/registration/options · /complete
+        MAP → Vennue Core API → Account and Business Structure → Authentication
+        add a passkey (challenge → verify)
+POST    /api/auth/strong/passkeys/assertion/options · /complete
+        MAP → Vennue Core API → Account and Business Structure → Authentication
+        sign in with a passkey → strong session
+POST    /api/auth/strong/totp/enrollment · /complete
+        MAP → Vennue Core API → Account and Business Structure → Authentication
+        set up an authenticator app, get recovery codes
+POST    /api/auth/strong/step-up/totp · /recovery-code
+        MAP → Vennue Core API → Account and Business Structure → Authentication
+        upgrade the current session to MFA-satisfied
+GET     /api/session
+        MAP → Vennue Core API → Account and Business Structure → Sessions
+        INTERACTION → Vennue Core API → Account and Business Structure → Authorization
+        the envelope: who, which org/venue, which capabilities resolve allowed / denied / unavailable / temporarily-blocked
+DELETE  /api/session
+        MAP → Vennue Core API → Account and Business Structure → Sessions
+        sign out, revoke, clear cookie
+GET     /api/onboarding
+        MAP → Vennue Core API → Account and Business Structure → Onboarding
+        setup progress: organization → plan → venue → first screen live
+POST    /api/onboarding/organization · /venue
+        MAP → Vennue Core API → Account and Business Structure → Onboarding
+        INTERACTION → Vennue Core API → Account and Business Structure → Organizations
+        create the business, then the first venue — thin calls into the owning slices
+GET     /api/onboarding/plans
+        MAP → Vennue Core API → Account and Business Structure → Subscriptions and Billing
+        public plan list
+POST    /api/onboarding/trial · /checkout
+        MAP → Vennue Core API → Account and Business Structure → Subscriptions and Billing
+        start a trial, or get a Stripe payment link
+POST    /api/onboarding/first-screen
+        MAP → Vennue Core API → Account and Business Structure → Onboarding
+        INTERACTION → Vennue Core API → Display Planning → Player Administration; Vennue Runtime API → Player Identity and Topology → Pairing Status
+        claim the first display by its pairing code — a thin call into Players
+
+## Organizations /api/organizations/{orgId} — 12
+GET     …/billing/presentation
+        MAP → Vennue Core API → Account and Business Structure → Subscriptions and Billing
+        current plan, usage vs limits, available moves and what they'd cost in features
+POST    …/billing/portal-session · /tier-portal-session · /checkout-session
+        MAP → Vennue Core API → Account and Business Structure → Subscriptions and Billing
+        Stripe portal, validated tier change, plan purchase
+POST    …/billing/haas-checkout-session
+        MAP → Vennue Core API → Account and Business Structure → Subscriptions and Billing
+        rent screen hardware on a fixed-term bundle
+GET     …/group/presentations new
+        MAP → Vennue Core API → Content and Design → Presentations
+        the group's shared presentations and each venue's state on them
+POST    …/group/presentations
+        MAP → Vennue Core API → Content and Design → Presentations
+        create a group presentation (one object — venues hold state, never copies)
+POST    …/group/presentations/{id}/push
+        MAP → Vennue Core API → Content and Design → Presentations
+        INTERACTION → Vennue Core API → Change Control → Publishing
+        push a version to venues as pending changes
+GET     …/group/presentations/{id}/venue-states
+        MAP → Vennue Core API → Content and Design → Presentations
+        running · pending · behind · not-running, days behind, local overrides
+GET     …/group/collections new
+        MAP → Vennue Core API → Content and Design → Content
+        shared entry pools (the chain's dish list) venues subscribe to
+POST    …/group/collections/{id}/push
+        MAP → Vennue Core API → Content and Design → Content
+        INTERACTION → Vennue Core API → Change Control → Publishing
+        push collection updates to subscribed venues, same accept model
+
+## Content /api/venues/{venueId}/content — 24
+GET     …/content/collections
+        MAP → Vennue Core API → Content and Design → Content
+        the venue's collections, with type, entry count, and which presentations use them
+POST    …/content/collections
+        MAP → Vennue Core API → Content and Design → Content
+        create a collection of a registered type (its type sets the entry schema)
+PUT     …/content/collections/{id}
+        MAP → Vennue Core API → Content and Design → Content
+        rename, retag, archive/restore
+DELETE  …/content/collections/{id}
+        MAP → Vennue Core API → Content and Design → Content
+        remove an empty collection; refused while entries or bindings remain
+GET     …/content/collections/{id}/entries?q=
+        MAP → Vennue Core API → Content and Design → Content
+        search entries; says which presentations each already appears on
+POST    …/content/collections/{id}/entries
+        MAP → Vennue Core API → Content and Design → Content
+        add an entry per the type schema (name, description, default price, attributes, photo, source)
+PUT     …/content/entries/{id}
+        MAP → Vennue Core API → Content and Design → Content
+        edit an entry — shared fields change everywhere it's bound; binding-level overrides stay put
+DELETE  …/content/entries/{id}
+        MAP → Vennue Core API → Content and Design → Content
+        remove from the library once no binding references it
+PUT     …/content/entries/{id}/state the 86 contract
+        MAP → Vennue Core API → Change Control → Operational Overrides
+        INTERACTION → Vennue Runtime API → Desired State and Delivery → Override Delivery
+        available / sold-out / featured / hidden — instant, never draftable, survives publish, triggers the render fast path
+GET     …/content/state
+        MAP → Vennue Core API → Change Control → Operational Overrides
+        INTERACTION → Vennue Runtime API → Desired State and Delivery → Override Delivery
+        everything currently marked, who and when — the quick-update view
+POST    …/content/state/restore-all
+        MAP → Vennue Core API → Change Control → Operational Overrides
+        INTERACTION → Vennue Runtime API → Desired State and Delivery → Override Delivery
+        put everything back on, in one go
+POST    …/content/collections/{id}/imports
+        MAP → Vennue Connect API → Data Movement → Imports
+        INTERACTION → Vennue Core API → Content and Design → Content
+        paste or upload → an import session: parsed lines, match questions
+GET     …/content/imports
+        MAP → Vennue Connect API → Data Movement → Imports
+        INTERACTION → Vennue Core API → Content and Design → Content
+        unfinished import sessions
+GET     …/content/imports/{sessionId}
+        MAP → Vennue Connect API → Data Movement → Imports
+        INTERACTION → Vennue Core API → Content and Design → Content
+        the session: lines, questions, answers so far
+PUT     …/content/imports/{sessionId}/answers/{questionKey}
+        MAP → Vennue Connect API → Data Movement → Imports
+        INTERACTION → Vennue Core API → Content and Design → Content
+        answer one match question (new entry vs same as existing)
+POST    …/content/imports/{sessionId}/accept-safe-matches
+        MAP → Vennue Connect API → Data Movement → Imports
+        INTERACTION → Vennue Core API → Content and Design → Content
+        accept every confident match at once
+POST    …/content/imports/{sessionId}/confirm
+        MAP → Vennue Connect API → Data Movement → Imports
+        INTERACTION → Vennue Core API → Content and Design → Content
+        atomic, idempotent: create or replace the target — never carries availability
+DELETE  …/content/imports/{sessionId}
+        MAP → Vennue Connect API → Data Movement → Imports
+        INTERACTION → Vennue Core API → Content and Design → Content
+        abandon the session
+POST    …/content/imports/snapshots/{id}/restore
+        MAP → Vennue Connect API → Data Movement → Imports
+        INTERACTION → Vennue Core API → Content and Design → Content
+        put replaced content back from the saved copy
+
+## Presentations /api/venues/{venueId}/presentations — 20
+GET     …/presentations
+        MAP → Vennue Core API → Content and Design → Presentations
+        the shelf: every presentation, what its screens show, unpublished change count, allowance vs limit
+POST    …/presentations?template=
+        MAP → Vennue Core API → Content and Design → Presentations
+        create from a template (menu-board, tap-board, directory, …) or blank
+GET     …/presentation-templates
+        MAP → Vennue Core API → Content and Design → Presentations
+        the template gallery, by industry
+PUT     …/presentations/{id}
+        MAP → Vennue Core API → Content and Design → Presentations
+        rename
+POST    …/presentations/{id}/duplicate
+        MAP → Vennue Core API → Content and Design → Presentations
+        copy — shares entries by reference, starts unpublished
+PUT     …/presentations/{id}/lifecycle
+        MAP → Vennue Core API → Content and Design → Presentations
+        put away / bring back; refused while still on screens
+GET     …/presentations/{id}
+        MAP → Vennue Core API → Content and Design → Presentations
+        open in the builder: working version, theme, bindings, what changed since publish
+GET     …/presentations/{id}/bindings new
+        MAP → Vennue Core API → Content and Design → Presentations
+        the bindings: repeater ← collection query + order · field ← entry attribute · per-binding overrides (price lives here — A19 generalized)
+PUT     …/presentations/{id}/bindings
+        MAP → Vennue Core API → Content and Design → Presentations
+        edit bindings as a set, optimistic-concurrency guarded — the builder's save endpoint
+PUT     …/presentations/{id}/bindings/{bindingId}/override
+        MAP → Vennue Core API → Content and Design → Presentations
+        set or clear one override — “here only, or everywhere?” asked only when it's bound in more than one place (A20)
+GET     …/presentations/{id}/draft
+        MAP → Vennue Core API → Change Control → Drafts
+        the queued changes since last publish
+DELETE  …/presentations/{id}/draft
+        MAP → Vennue Core API → Change Control → Drafts
+        throw the queue away, back to published state
+POST    …/presentations/{id}/publish
+        MAP → Vennue Core API → Change Control → Publishing
+        ship the whole queue — all or nothing; stores the review summary; kicks the compiler
+GET     …/presentations/{id}/revisions
+        MAP → Vennue Core API → Change Control → Releases
+        publish history, retention per tier
+POST    …/presentations/{id}/revert-to/{version}
+        MAP → Vennue Core API → Change Control → Releases
+        INTERACTION → Vennue Core API → Change Control → Drafts
+        restore an earlier revision as unpublished changes
+GET     …/presentations/{id}/preview?geometry=
+        MAP → Vennue Core API → Content and Design → Presentations
+        INTERACTION → Vennue Platform API → Fleet and Delivery Operations → Rendering Operations
+        honest preview — the same compiler that makes the screen artifact, draft state included
+GET     …/presentations/{id}/fit?geometry=
+        MAP → Vennue Core API → Content and Design → Presentations
+        INTERACTION → Vennue Platform API → Fleet and Delivery Operations → Rendering Operations
+        what overflows at a given geometry, and onto how many pages — pages are computed, not authored
+
+## Themes /api/venues/{venueId}/themes — 12 shaped by Theme Studio, in design
+GET     …/themes
+        MAP → Vennue Core API → Content and Design → Themes
+        the venue's themes and which presentations use each
+POST    …/themes?preset=
+        MAP → Vennue Core API → Content and Design → Themes
+        create from a preset (Bar Classic, Violet Lounge, …) or blank
+GET     …/theme-presets
+        MAP → Vennue Core API → Content and Design → Themes
+        the ready-made designs — now starting points, not the ceiling
+GET     …/themes/{id}
+        MAP → Vennue Core API → Content and Design → Themes
+        the full definition: structure + look + behavior
+PUT     …/themes/{id}/structure
+        MAP → Vennue Core API → Content and Design → Themes
+        zones, repeaters and their fields — what the Studio's guided authoring writes
+PUT     …/themes/{id}/style
+        MAP → Vennue Core API → Content and Design → Themes
+        colors, fonts, glow, section palette — the old basic+advanced endpoints, unified
+PUT     …/themes/{id}/behavior
+        MAP → Vennue Core API → Content and Design → Themes
+        rotation interval, transitions, dwell defaults (A13: the theme owns these)
+GET     …/themes/{id}/draft
+        MAP → Vennue Core API → Change Control → Drafts
+        unpublished theme changes, separate from content drafts
+POST    …/themes/{id}/publish
+        MAP → Vennue Core API → Change Control → Publishing
+        INTERACTION → Vennue Platform API → Fleet and Delivery Operations → Rendering Operations
+        publish the theme — recompiles every presentation using it
+GET     …/themes/{id}/revisions
+        MAP → Vennue Core API → Change Control → Releases
+        theme history
+DELETE  …/themes/{id}
+        MAP → Vennue Core API → Content and Design → Themes
+        remove an unused theme; presentations still on it block deletion
+PUT     …/presentations/{id}/theme
+        MAP → Vennue Core API → Content and Design → Presentations
+        switch a presentation to another theme — a draft change like any other
+
+## Screens /api/venues/{venueId}/screens — 12
+GET     …/screens
+        MAP → Vennue Core API → Display Planning → Screens
+        INTERACTION → Vennue Runtime API → Health and Lifecycle → Health Reports; Vennue Runtime API → Convergence and Evidence → Package Status
+        REVIEW → Response mixes Core desired configuration with Runtime actual state; preserve as a composed read contract only.
+        every screen: status, geometry (device-reported, never typed), settings, delivery state
+POST    …/screens
+        MAP → Vennue Core API → Display Planning → Screens
+        add a logical screen, ready to bind a player output later
+PUT     …/screens/{id}
+        MAP → Vennue Core API → Display Planning → Screens
+        name, location, layout settings
+PUT     …/screens/{id}/lifecycle
+        MAP → Vennue Core API → Display Planning → Screens
+        archive / restore
+POST    …/screens/{id}/refresh · /screens/refresh-all
+        MAP → Vennue Core API → Display Planning → Screens
+        INTERACTION → Vennue Runtime API → Convergence and Evidence → Reconciliation Notifications
+        tell one screen or all to reconcile now (convergence is the contract; this just hurries it)
+GET     …/screens/assignments
+        MAP → Vennue Core API → Display Planning → Assignments
+        the room at a glance: which wall each screen belongs to, what it is showing, who put it there
+GET     …/screens/{id}/playlist
+        MAP → Vennue Core API → Display Planning → Scheduling
+        the slide rotation beyond presentations: media slides, their dwell and day/time windows
+POST    …/screens/{id}/playlist
+        MAP → Vennue Core API → Display Planning → Scheduling
+        add a slide
+PUT     …/screens/{id}/playlist/{slideId} · /playlist/order
+        MAP → Vennue Core API → Display Planning → Scheduling
+        edit a slide, reorder the rotation
+DELETE  …/screens/{id}/playlist/{slideId}
+        MAP → Vennue Core API → Display Planning → Scheduling
+        remove a slide
+
+## Walls /api/venues/{venueId}/walls — 9 the Wall Planner's API
+GET     …/walls
+        MAP → Vennue Core API → Display Planning → Walls
+        every wall — including walls of one — with screen order, canvas format, and what's assigned
+POST    …/walls
+        MAP → Vennue Core API → Display Planning → Walls
+        make a wall: name it, pick the ordered screens left→right (WP-1); mixed geometry refused at edit time (WP-8)
+PUT     …/walls/{id}
+        MAP → Vennue Core API → Display Planning → Walls
+        rename or reorder; any change bumps groupRevision and re-plans
+DELETE  …/walls/{id}
+        MAP → Vennue Core API → Display Planning → Walls
+        break a wall up — each screen becomes a wall of one again
+PUT     …/walls/{id}/assignment
+        MAP → Vennue Core API → Display Planning → Assignments
+        assign a presentation release to the wall — the one assignment verb in the product; queues render → plan → package
+DELETE  …/walls/{id}/assignment/{releaseId}
+        MAP → Vennue Core API → Display Planning → Assignments
+        take a release off the wall
+GET     …/walls/{id}/plan?releaseId=
+        MAP → Vennue Core API → Display Planning → Walls
+        INTERACTION → Vennue Platform API → Fleet and Delivery Operations → Rendering Operations
+        the dealt wall, precomputed: every slot's cell per screen (page · hold · filler · mirror) — the Theme Studio preview, the back-office layout view and the fixture lab all call this same pure planner
+GET     …/walls/{id}/delivery
+        MAP → Vennue Runtime API → Convergence and Evidence → Package Status
+        INTERACTION → Vennue Core API → Display Planning → Walls
+        REVIEW → Actual delivery state is Runtime-owned even when shown inside a Core wall view.
+        the rollout converging: per-screen package states (WP-12), who is excluded and why, the startAt the server chose, showing vs stale (WP-10)
+POST    …/walls/{id}/replan
+        MAP → Vennue Core API → Display Planning → Walls
+        INTERACTION → Vennue Platform API → Fleet and Delivery Operations → Rendering Operations
+        force a re-plan after a planner or renderer upgrade, without touching content
+
+## Players /api/players — 11
+POST    /api/players
+        MAP → Vennue Runtime API → Player Identity and Topology → Player Enrollment
+        a new device registers itself → player id + key, before any venue
+POST    /api/players/pairing-codes
+        MAP → Vennue Runtime API → Player Identity and Topology → Pairing Status
+        device asks for a short code (10 min) to show on the glass
+GET     /api/players/pairing-codes/{code}/status
+        MAP → Vennue Runtime API → Player Identity and Topology → Pairing Status
+        device polls: claimed yet, and as which screen?
+POST    /api/players/pairing-codes/{code}/claim
+        MAP → Vennue Core API → Display Planning → Player Administration
+        INTERACTION → Vennue Runtime API → Player Identity and Topology → Pairing Status
+        staff type the code → bind this player's output to a venue screen
+POST    /api/players/pre-registrations
+        MAP → Vennue Core API → Display Planning → Player Administration
+        INTERACTION → Vennue Runtime API → Player Identity and Topology → Player Enrollment
+        register ahead of shipping; returns the one-time bootstrap token (HaaS)
+POST    /api/players/pre-registrations/claim
+        MAP → Vennue Runtime API → Player Identity and Topology → Player Enrollment
+        shipped device wakes up and claims its identity with the token
+GET     /api/players/{id}/outputs new
+        MAP → Vennue Runtime API → Player Identity and Topology → Output Discovery
+        INTERACTION → Vennue Core API → Display Planning → Player Administration
+        the device's outputs — connector identity + EDID, and which screen each drives
+PUT     /api/players/{id}/outputs/{outputId}/screen
+        MAP → Vennue Core API → Display Planning → Player Administration
+        INTERACTION → Vennue Runtime API → Player Identity and Topology → Output Discovery
+        bind or rebind an output to a logical screen
+POST    /api/players/replacement/preview
+        MAP → Vennue Core API → Display Planning → Player Administration
+        what carries over before anything changes — name, settings, history, wall spot
+POST    /api/players/replacement
+        MAP → Vennue Core API → Display Planning → Player Administration
+        swap the broken box; the screen never notices
+DELETE  /api/players/{id}/pairing
+        MAP → Vennue Core API → Display Planning → Player Administration
+        unpair a device so it can go elsewhere
+
+## Schedule /api/venues/{venueId}/schedule — 15
+GET     …/schedule/meal-periods
+        MAP → Vennue Core API → Display Planning → Scheduling
+        day parts with overlap warnings, what's on now and next
+POST    …/schedule/meal-periods
+        MAP → Vennue Core API → Display Planning → Scheduling
+        add a day part: window, days, and the presentation/theme it selects
+PUT     …/schedule/meal-periods/{id} · /order
+        MAP → Vennue Core API → Display Planning → Scheduling
+        edit, reorder
+DELETE  …/schedule/meal-periods/{id}
+        MAP → Vennue Core API → Display Planning → Scheduling
+        remove
+GET     …/schedule/happy-hour
+        MAP → Vennue Core API → Display Planning → Scheduling
+        the schedule and whether it's on right now
+PUT     …/schedule/happy-hour
+        MAP → Vennue Core API → Display Planning → Scheduling
+        times, days, on/off, force override
+GET     …/schedule/promotions
+        MAP → Vennue Core API → Display Planning → Scheduling
+        date-range promotions, including retired ones
+POST    …/schedule/promotions
+        MAP → Vennue Core API → Display Planning → Scheduling
+        add one — dates, wording, layout, priority; screens update immediately
+PUT     …/schedule/promotions/{id}
+        MAP → Vennue Core API → Display Planning → Scheduling
+        edit dates, wording, priority, on/off
+DELETE  …/schedule/promotions/{id}
+        MAP → Vennue Core API → Display Planning → Scheduling
+        retire — record kept
+GET     …/schedule/broadcasts
+        MAP → Vennue Core API → Change Control → Operational Overrides
+        INTERACTION → Vennue Runtime API → Desired State and Delivery → Override Delivery
+        every urgent message ever sent, expired and pulled included
+POST    …/schedule/broadcasts
+        MAP → Vennue Core API → Change Control → Operational Overrides
+        INTERACTION → Vennue Runtime API → Desired State and Delivery → Override Delivery
+        take over one screen or all for N minutes — highest precedence, delivered as a dynamic layer, no recompile
+DELETE  …/schedule/broadcasts/{id}
+        MAP → Vennue Core API → Change Control → Operational Overrides
+        INTERACTION → Vennue Runtime API → Desired State and Delivery → Override Delivery
+        take it down early
+
+## Display /api/display/{screenId} — 8 manifest + artifacts per render concept
+GET     …/manifest
+        MAP → Vennue Runtime API → Desired State and Delivery → Desired State
+        the package: published release · artifact refs with integrity hashes · the WallSchedule (per-screen pre-resolved slots — the player decides nothing) · dwell · dynamic layers · fallback rules; startAt arrives by push once every screen in the group reports received (WP-10)
+GET     …/artifacts/{hash}
+        MAP → Vennue Runtime API → Desired State and Delivery → Asset Delivery
+        the compiled image — immutable, content-addressed, shared across identical geometry + state, keyed by renderer version
+POST    …/heartbeat
+        MAP → Vennue Runtime API → Health and Lifecycle → Health Reports
+        alive, platform, app version — feeds stale detection and the legacy-removal gates
+POST    …/evidence
+        MAP → Vennue Runtime API → Convergence and Evidence → Package Status
+        INTERACTION → Vennue Runtime API → Convergence and Evidence → Showing State
+        requested / sent / downloading / received / applied / recovered / superseded / failed + showing · stale flags (WP-12) — applied only for a complete, checksum-verified package (WP-9), keyed on package identity
+GET     …/diagnostics
+        MAP → Vennue Runtime API → Health and Lifecycle → Diagnostics
+        the no-sign-in health page for a technician at the venue
+HUB     /hubs/vennusign
+        MAP → Vennue Runtime API → Convergence and Evidence → Reconciliation Notifications
+        notify + reconcile — JoinScreen / JoinVideoWall; never the authority, reconnect always converges
+
+## Connectors /api/venues/{venueId}/connectors + /api/webhooks — 8
+POST    …/connectors/{provider}/connect
+        MAP → Vennue Connect API → Connections and Sources → Connections
+        start the link — OAuth for Clover/Square, credentials for Toast
+GET     …/connectors/{provider}/status
+        MAP → Vennue Connect API → Reliability and Visibility → Connection Status
+        INTERACTION → Vennue Connect API → Connections and Sources → Connections
+        connected, last sync, failure streak, what still needs manual registration
+GET     …/connectors/{provider}/callback
+        MAP → Vennue Connect API → Connections and Sources → Connections
+        the provider's return path; finishes the link
+POST    …/connectors/{provider}/import
+        MAP → Vennue Connect API → Data Movement → Imports
+        INTERACTION → Vennue Core API → Content and Design → Content
+        pull the catalog into collections — entries marked source: pos, read-only
+DELETE  …/connectors/{provider}/connection
+        MAP → Vennue Connect API → Connections and Sources → Connections
+        unlink
+POST    /api/webhooks/pos/{provider}
+        MAP → Vennue Connect API → Connections and Sources → Webhooks
+        INTERACTION → Vennue Connect API → Data Movement → Sync Runs
+        provider pushes a change → queued, idempotent, raw input kept immutable
+POST    /api/webhooks/stripe
+        MAP → Vennue Core API → Account and Business Structure → Subscriptions and Billing
+        INTERACTION → Vennue Platform API → Customer and Commercial Operations → Subscription Support
+        REVIEW → Billing-provider webhook is not part of the customer-data Connect domain.
+        billing events keep plan and hardware contract in step
+
+## Platform /api/platform — 27
+GET     …/venues
+        MAP → Vennue Platform API → Customer and Commercial Operations → Customer Support
+        browse and filter every venue: tier, subscription, screen health
+POST    …/venues
+        MAP → Vennue Platform API → Customer and Commercial Operations → Venue Administration
+        INTERACTION → Vennue Core API → Account and Business Structure → Venues
+        create a venue (starts on a Starter trial)
+GET     …/venues/{id}
+        MAP → Vennue Platform API → Customer and Commercial Operations → Customer Support
+        the support view: details, plan, screens, features, overrides
+PUT     …/venues/{id}/tier
+        MAP → Vennue Platform API → Customer and Commercial Operations → Plan and Tier Administration
+        INTERACTION → Vennue Platform API → Customer and Commercial Operations → Subscription Support
+        move a venue's tier, Stripe kept in step, rollback on failure
+PUT     …/venues/{id}/overrides/{featureId}
+        MAP → Vennue Platform API → Entitlements and Configuration → Customer Exceptions
+        INTERACTION → Vennue Platform API → Governance and Safety → Privileged Actions
+        hand-unlock or block a feature, with reason and expiry
+DELETE  …/venues/{id}/overrides/{featureId}
+        MAP → Vennue Platform API → Entitlements and Configuration → Customer Exceptions
+        INTERACTION → Vennue Platform API → Governance and Safety → Privileged Actions
+        back to what the tier allows
+GET     …/onboarding
+        MAP → Vennue Platform API → Customer and Commercial Operations → Customer Support
+        recent signups and how far each got
+GET     …/tiers
+        MAP → Vennue Platform API → Customer and Commercial Operations → Plan and Tier Administration
+        every tier, archived included
+POST    …/tiers · /tiers/{id}/clone · /tiers/{id}/archive
+        MAP → Vennue Platform API → Customer and Commercial Operations → Plan and Tier Administration
+        create, draft-copy, retire
+PUT     …/tiers/{id}
+        MAP → Vennue Platform API → Customer and Commercial Operations → Plan and Tier Administration
+        price, limits, trial, Stripe links
+GET     …/features
+        MAP → Vennue Platform API → Entitlements and Configuration → Feature Management
+        INTERACTION → Vennue Platform API → Entitlements and Configuration → Entitlement Policies
+        the tier × feature matrix and its last 50 changes
+PUT     …/features
+        MAP → Vennue Platform API → Entitlements and Configuration → Feature Management
+        INTERACTION → Vennue Platform API → Entitlements and Configuration → Entitlement Policies
+        bulk feature switches — refreshes every affected venue's capability set
+GET     …/configuration · /configuration/health · /{definitionId}/revisions
+        MAP → Vennue Platform API → Entitlements and Configuration → Configuration History
+        INTERACTION → Vennue Platform API → Entitlements and Configuration → Platform Configuration
+        settings per environment, loader health, change history
+PUT     …/configuration/{definitionId}
+        MAP → Vennue Platform API → Entitlements and Configuration → Platform Configuration
+        change one setting, concurrency-guarded; secrets never shown
+DELETE  …/configuration/{definitionId}
+        MAP → Vennue Platform API → Entitlements and Configuration → Platform Configuration
+        back to default
+POST    …/configuration/{definitionId}/rollback
+        MAP → Vennue Platform API → Entitlements and Configuration → Configuration History
+        INTERACTION → Vennue Platform API → Entitlements and Configuration → Platform Configuration
+        restore an earlier value
+GET     …/configuration-transfer/export
+        MAP → Vennue Platform API → Entitlements and Configuration → Environment Configuration
+        INTERACTION → Vennue Platform API → Governance and Safety → Privileged Actions
+        bundle an environment's non-secret settings
+POST    …/configuration-transfer/preview · /apply
+        MAP → Vennue Platform API → Entitlements and Configuration → Environment Configuration
+        INTERACTION → Vennue Platform API → Governance and Safety → Privileged Actions
+        diff first, then apply — refused if anything moved since preview
+GET     …/dashboard · /dashboard/events
+        MAP → Vennue Platform API → Fleet and Delivery Operations → Fleet Monitoring
+        fleet health, screens online/offline/outdated, notable changes
+GET     …/dashboard/revenue · /revenue/trend
+        MAP → Vennue Platform API → Customer and Commercial Operations → Revenue Reporting
+        MRR/ARR by tier, two-year trend, orphaned Stripe prices
+GET     …/rendering new
+        MAP → Vennue Platform API → Fleet and Delivery Operations → Rendering Operations
+        compiler health: queue depth, failed compiles, artifact cache size, renderer versions in the field
+POST    …/rendering/recompile
+        MAP → Vennue Platform API → Fleet and Delivery Operations → Rendering Operations
+        force-recompile a venue or presentation after a renderer upgrade
+
+## Utilities — 7
+GET     /
+        MAP → Vennue Platform API → Entitlements and Configuration → Platform Configuration
+        the service is up
+GET     /health/version
+        MAP → Vennue Platform API → Entitlements and Configuration → Platform Configuration
+        build, API contract major, schema version, renderer version
+POST    /api/test-automation/venues/reset · /headroom
+        MAP → Vennue Platform API → Governance and Safety → Test Automation
+        wipe a test venue clean; lift its limits for big runs
+POST    /api/test-automation/state/backdate · /history/write-at
+        MAP → Vennue Platform API → Governance and Safety → Test Automation
+        backdate an entry-state change or a history record for display tests
+
