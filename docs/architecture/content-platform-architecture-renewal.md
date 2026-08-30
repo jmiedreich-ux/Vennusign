@@ -359,11 +359,12 @@ can begin.
 #### M0 — architecture reconciliation and Mosaic dependency map
 
 1. Maintain the Architecture Bible, Roadmap, API blueprint, and affected feature decisions.
-2. Define the observable Mosaic V1 outcome.
-3. Map the capabilities and dependencies required for that outcome.
-4. Inspect existing source, data, contracts, behavior, and tests only for the selected dependency path.
-5. Classify each selected capability as **reuse**, **reshape**, **build**, or **defer**.
-6. Identify contract gates, coordinator lanes, queue blockers, and later-version boundaries.
+2. Run the Mosaic V1 Renewal Reconciliation Session.
+3. Define the observable Mosaic V1 outcome.
+4. Map the capabilities and dependencies required for that outcome.
+5. Inspect existing source, data, contracts, behavior, and tests only for the selected dependency path.
+6. Classify each selected capability as **reuse**, **reshape**, **build**, or **defer**.
+7. Identify contract gates, coordinator lanes, queue blockers, and later-version boundaries.
 
 **Exit:** one reviewed map identifies the smallest coherent Mosaic release and its first bounded work
 packages. M0 changes no product behavior.
@@ -404,7 +405,28 @@ Attach Connect, additional content types, Screens/player evolution, Onboarding, 
 Keystone, and other blueprint areas through individually planned version capabilities. A capability
 may enter Mosaic earlier when the dependency map proves the Mosaic outcome needs it.
 
-### 11.2 Version rule
+### 11.2 Mosaic V1 Renewal Reconciliation Session
+
+One additional owner/architect reconciliation session occurs before the capability/dependency map.
+It reconciles planning authority, not the entire source tree.
+
+The session must:
+
+- align the Architecture Renewal M0–M5 stages with the four API surfaces and their families;
+- reconcile the Mosaic release intent with current Menu, Theme Studio, Screens/player, Connect,
+  Platform Operations, Keystone, onboarding, and other relevant feature records;
+- distinguish current built behavior, approved design, proposed design, active work, blocked work,
+  and unplanned ideas;
+- identify decisions already settled, contradictions between controlled records, genuine open
+  owner questions, and assumptions that must not enter the map as facts;
+- agree on the observable Mosaic V1 outcome and the first dependency hypothesis;
+- decide which records the Mosaic map will treat as authority and which are evidence only;
+- name areas that require bounded source inspection after the session.
+
+The output is a reconciliation record and a clean input set for the Mosaic map. It does not approve
+implementation and must not expand into a whole-product code audit.
+
+### 11.3 Version rule
 
 A product version is a coherent outcome, not a token checklist slice from every blueprint family.
 
@@ -417,7 +439,7 @@ A product version is a coherent outcome, not a token checklist slice from every 
   selected dependency path.
 - Every later version names the blueprint capability it completes, deepens, replaces, or adds.
 
-### 11.3 Mosaic V1
+### 11.4 Mosaic V1
 
 **Mosaic V1** is VennueSign's first coherent release of the renewed blueprint.
 
@@ -444,7 +466,7 @@ verifiable. Connect and Platform capabilities enter Mosaic only where the outcom
 security, tenancy, authorization, release truth, rollback, and runtime evidence remain mandatory
 where the path crosses them.
 
-### 11.4 Mosaic V1 Capability and Dependency Map
+### 11.5 Mosaic V1 Capability and Dependency Map
 
 The next renewal artifact is the **Mosaic V1 Capability and Dependency Map**. It is completed before
 implementation work packages.
@@ -467,7 +489,7 @@ For every selected capability, record:
 The source investigation follows this map far enough to make a sound disposition decision; it does
 not inventory unrelated product code.
 
-### 11.5 Version evolution
+### 11.6 Version evolution
 
 - **Mosaic V1** delivers the first coherent vertical path through the renewed blueprint.
 - **V1.1, V1.2, and later V1.x releases** deepen or attach specifically named capabilities.
@@ -477,7 +499,7 @@ not inventory unrelated product code.
 - Reusing a mature capability unchanged still appears in the map so its contract and evidence are
   explicit.
 
-### 11.6 Parallel cloud-coordinator model
+### 11.7 Parallel cloud-coordinator model
 
 Parallelism follows the dependency graph, not the number of available agents.
 
@@ -493,15 +515,16 @@ Parallelism follows the dependency graph, not the number of available agents.
   Runtime package/evidence, and bounded characterization of the existing path. The reviewed map,
   not this example list, authorizes their order.
 
-### 11.7 Planning order and exit
+### 11.8 Planning order and exit
 
-1. Define the observable Mosaic V1 product outcome and acceptance boundary.
-2. Build the capability/dependency map and connect each capability to its renewal stage.
-3. Inspect only the existing implementation needed to classify those capabilities.
-4. Mark each capability reuse, reshape, build, or defer.
-5. Identify shared contract gates and safe parallel coordinator lanes.
-6. Place incomplete blueprint facts into V1.1, V1.2, V2, or later.
-7. Create renewal milestones and bounded work packages from the reviewed map.
+1. Run the Mosaic V1 Renewal Reconciliation Session and settle the authoritative input set.
+2. Define the observable Mosaic V1 product outcome and acceptance boundary.
+3. Build the capability/dependency map and connect each capability to its renewal stage.
+4. Inspect only the existing implementation needed to classify those capabilities.
+5. Mark each capability reuse, reshape, build, or defer.
+6. Identify shared contract gates and safe parallel coordinator lanes.
+7. Place incomplete blueprint facts into V1.1, V1.2, V2, or later.
+8. Create renewal milestones and bounded work packages from the reviewed map.
 
 **Planning exit:** the architect can explain why each Mosaic capability is needed, which renewal work
 it requires, what existing foundation it uses, what precedes it, how it is verified, what can run in
