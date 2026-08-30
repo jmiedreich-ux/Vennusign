@@ -1989,11 +1989,16 @@ capabilities/files, inputs, outputs, verification, and queue blockers. A free co
 start a package whose upstream contract is unsettled, and work touching the same invariant or
 controlled record remains serialized.
 
+One additional **Mosaic V1 Renewal Reconciliation Session** is required before the dependency map.
+It aligns the M0–M5 renewal stages, four API surfaces, current feature/milestone records, built
+foundations, settled decisions, contradictions, genuine owner questions, and Mosaic release intent.
+Its job is to produce a trustworthy planning input set, not to inspect the entire codebase.
+
 No implementation, endpoint, schema, service split, or Mosaic work package is approved by this
 record.
 
-**Exact next action:** create and review the **Mosaic V1 Capability and Dependency Map**. For each
-selected capability, record blueprint home, renewal stage, observable V1 outcome, current evidence,
-reuse/reshape/build/defer disposition, dependencies, contract, verification, coordinator lane,
-queue blockers, and what remains for V1.1, V1.2, V2, or later. Use that reviewed map—not a full code
-audit—to create the first Mosaic milestones and work packages.
+**Exact next action:** run the **Mosaic V1 Renewal Reconciliation Session**. Produce its
+reconciliation record, including authoritative inputs, superseded/conflicting records, settled
+facts, open owner decisions, initial Mosaic outcome, and areas needing bounded inspection. Then
+create and review the **Mosaic V1 Capability and Dependency Map** and use it—not a full code audit—to
+create the first Mosaic milestones and work packages.
