@@ -333,61 +333,202 @@ The new Menu implementation must retain these acceptance rules:
 
 The current Menu schema and APIs are a temporary implementation, not the target contract. Menu-specific cleanup that is needed for correctness may continue; new menu-only foundation expansion must not.
 
-## 11. Program sequence
+## 11. Renewal program and Mosaic version planning
 
-**M0 status: initiated, not complete.** This PR establishes the direction, durable program, and
-first record amendments. It does **not** claim to have finished the source/ownership map or every
-granular workstream reconciliation. Those are the next planning actions and must be completed
-before selecting M1.
+**Status:** The Content Platform Architecture Renewal and API Architecture vNext blueprint are
+approved through #939. The owner added the Mosaic version-planning direction on 2026-08-30 through
+issue #965.
 
-### M0 — architecture reconciliation and source map
+The renewal stages and product versions are two connected planning axes:
 
-1. Amend the Architecture Bible, Roadmap, and affected Menu decisions.
-2. Establish this program as the durable source for the re-foundation.
-3. Reconcile roadmap, project status, feature plans, tracker, and Atlas inputs so agents do not plan from conflicting milestone states.
-4. Map existing source and database ownership; identify mixed-responsibility files, duplicate contracts, legacy tables, and verification gaps.
-5. Classify every active/outstanding item: **stabilize now**, **migrate into the foundation**, **remain compatible for later**, or **defer**.
+| Axis | Meaning |
+|---|---|
+| **Renewal M0–M5** | The kinds of architecture-renewal work: reconciliation, module seams, shared content foundation, Menu migration, Theme/display foundation, and later attachments. |
+| **Mosaic V1, V1.x, V2+** | The coherent product outcomes released to customers and the blueprint capabilities each version completes. |
 
-**Exit:** one reviewed map identifies the next bounded engineering milestone; no code behavior changes in M0.
+Mosaic planning joins the renewal; it does not replace it. The Mosaic capability/dependency map
+selects which renewal-stage outcomes must happen first, which existing capabilities already satisfy
+them, what may run in parallel, and what remains for a later version.
 
-### M1 — engineering base and module seams
+### 11.1 Renewal stages
 
-1. Repair the local verification baseline and capture known exclusions.
-2. Introduce internal module ownership without changing deployment topology.
-3. Move or split only code covered by characterization tests.
-4. Make tenant, provider, and release boundaries explicit.
+The stages remain the program's architectural work structure. They are not a rule that every item in
+one stage must be completed across the whole product before any work associated with another stage
+can begin.
 
-**Exit:** one API host has traceable module seams and a trustworthy local gate for the touched areas.
+#### M0 — architecture reconciliation and Mosaic dependency map
 
-### M2 — shared content foundation
+1. Maintain the Architecture Bible, Roadmap, API blueprint, and affected feature decisions.
+2. Run the Mosaic V1 Renewal Reconciliation Session.
+3. Define the observable Mosaic V1 outcome.
+4. Map the capabilities and dependencies required for that outcome.
+5. Inspect existing source, data, contracts, behavior, and tests only for the selected dependency path.
+6. Classify each selected capability as **reuse**, **reshape**, **build**, or **defer**.
+7. Identify contract gates, coordinator lanes, queue blockers, and later-version boundaries.
 
-1. Implement model registry/version validation.
-2. Implement typed record-library identity, revision, provenance, and source modes.
-3. Implement content instances/revisions/composition and state overlays.
-4. Implement release tuple/package contract and outbox-driven background work.
-5. Prove the foundation with `menu.v1` fixtures and binding validation before moving the live Menu editor.
+**Exit:** one reviewed map identifies the smallest coherent Mosaic release and its first bounded work
+packages. M0 changes no product behavior.
 
-**Exit:** a non-customer-facing vertical proof can validate, compose, release, and render a `menu.v1` package.
+#### M1 — engineering base and module seams
 
-### M3 — Menu reimplementation
+- Repair verification only where Mosaic work depends on it.
+- Introduce internal ownership seams required by the selected capabilities without changing the
+  one-host deployment topology.
+- Move or split only code protected by appropriate characterization evidence.
+- Make tenant, provider, release, and runtime boundaries explicit where the Mosaic path crosses them.
 
-1. Rebuild Menu data/API behavior on `menu.v1`.
-2. Migrate/reseed non-production data deliberately; preserve every accepted behavior through tests and owner workbook.
-3. Retire legacy Menu write paths only after no consumer depends on them.
-4. Do not run two competing sources of truth.
+#### M2 — shared content foundation
 
-**Exit:** Menu is genuinely the first shared content type, not an adapter hiding permanent menu-only storage.
+- Establish the Data Model, typed-record, content-revision, state-overlay, release, and package
+  contracts required by Mosaic.
+- Prove the relevant foundation with `menu.v1`.
+- Reuse existing working behavior where it satisfies the renewed contract; do not rebuild it for
+  architectural symmetry.
 
-### M4 — Theme Studio foundation and display resumption
+#### M3 — Menu on the shared foundation
 
-1. Persist immutable Theme Definitions/Revisions and Model Bindings.
-2. Implement compatibility checking, field/repeater pickers, and state response.
-3. Bind the Theme Studio manual workflow to `menu.v1`.
-4. Resume Menu canvas, Board View, Play, and renderer work only against the real contract.
+- Evolve the existing Menu implementation into the first real shared content type.
+- Preserve accepted Menu behavior and useful existing code.
+- Replace or retire a legacy path only when the selected version requires it and no consumer still
+  depends on it.
+- Never operate two competing sources of truth.
 
-### M5 — follow-on attachment
+#### M4 — Theme, presentation, and display foundation
 
-Bring integrations, cinema/showtimes, screens, player packaging, onboarding, Platform Operations, and Keystone onto the proven contracts through individually planned milestones.
+- Bind Theme revisions and Presentations to the Data Model and Release contract.
+- Establish compatibility and state-response behavior required by the selected release.
+- Resume canvas, Board View, Play, and renderer evolution only against the real shared contract.
+
+#### M5 — follow-on attachment
+
+Attach Connect, additional content types, Screens/player evolution, Onboarding, Platform Operations,
+Keystone, and other blueprint areas through individually planned version capabilities. A capability
+may enter Mosaic earlier when the dependency map proves the Mosaic outcome needs it.
+
+### 11.2 Mosaic V1 Renewal Reconciliation Session
+
+One additional owner/architect reconciliation session occurs before the capability/dependency map.
+It reconciles planning authority, not the entire source tree.
+
+The session must:
+
+- align the Architecture Renewal M0–M5 stages with the four API surfaces and their families;
+- reconcile the Mosaic release intent with current Menu, Theme Studio, Screens/player, Connect,
+  Platform Operations, Keystone, onboarding, and other relevant feature records;
+- distinguish current built behavior, approved design, proposed design, active work, blocked work,
+  and unplanned ideas;
+- identify decisions already settled, contradictions between controlled records, genuine open
+  owner questions, and assumptions that must not enter the map as facts;
+- agree on the observable Mosaic V1 outcome and the first dependency hypothesis;
+- decide which records the Mosaic map will treat as authority and which are evidence only;
+- name areas that require bounded source inspection after the session.
+
+The output is a reconciliation record and a clean input set for the Mosaic map. It does not approve
+implementation and must not expand into a whole-product code audit.
+
+### 11.3 Version rule
+
+A product version is a coherent outcome, not a token checklist slice from every blueprint family.
+
+- Do not add a small piece of Core, Connect, Runtime, and Platform merely for symmetry.
+- Do not rebuild Authentication, Authorization, venue context, Menu behavior, publishing, or
+  delivery merely because they occur early in a conceptual diagram. Reuse them when sufficient.
+- Do not require every future feature to be known before planning Mosaic. New discoveries update the
+  map and are placed into the earliest version that truly needs them.
+- Do not perform a whole-product code audit. Source discovery is just in time and bounded to the
+  selected dependency path.
+- Every later version names the blueprint capability it completes, deepens, replaces, or adds.
+
+### 11.4 Mosaic V1
+
+**Mosaic V1** is VennueSign's first coherent release of the renewed blueprint.
+
+The initial planning spine is:
+
+```
+existing sign-in and venue context
+-> menu.v1 Data Model
+-> Content
+-> Theme / Presentation
+-> Publish immutable Release
+-> Assign to Wall / Screen
+-> Runtime displays it
+-> Runtime proves actual Showing State
+```
+
+This is a dependency hypothesis to evaluate, not an instruction to rebuild every node. Existing
+authentication and venue behavior may already be sufficient. Existing Menu, theme, publishing,
+assignment, rendering, and display-delivery code is evidence and potential foundation, not
+disposable legacy.
+
+Mosaic includes the smallest set of capabilities that makes this path real, safe, supportable, and
+verifiable. Connect and Platform capabilities enter Mosaic only where the outcome needs them;
+security, tenancy, authorization, release truth, rollback, and runtime evidence remain mandatory
+where the path crosses them.
+
+### 11.5 Mosaic V1 Capability and Dependency Map
+
+The next renewal artifact is the **Mosaic V1 Capability and Dependency Map**. It is completed before
+implementation work packages.
+
+For every selected capability, record:
+
+| Field | Required decision |
+|---|---|
+| Blueprint home | Surface, family, and owning area |
+| Renewal stage | M0–M5 work classification involved |
+| Mosaic outcome | What must be observably true for V1 |
+| Current evidence | Existing code, data, behavior, tests, and deployed proof |
+| Disposition | **Reuse**, **reshape**, **build**, or **defer** |
+| Dependencies | Capabilities and decisions that precede or constrain it |
+| Contracts | Inputs, outputs, invariants, ownership, and version boundary |
+| Verification | How the release proves the capability end to end |
+| Work ownership | Coordinator lane, files/modules, shared gates, and queue blockers |
+| Later completion | What remains for V1.1, V1.2, V2, or later |
+
+The source investigation follows this map far enough to make a sound disposition decision; it does
+not inventory unrelated product code.
+
+### 11.6 Version evolution
+
+- **Mosaic V1** delivers the first coherent vertical path through the renewed blueprint.
+- **V1.1, V1.2, and later V1.x releases** deepen or attach specifically named capabilities.
+- **V2 and later major versions** introduce larger outcomes or materially complete new blueprint
+  areas. A second real content type is an important proof, but its exact version is decided from the
+  map rather than assumed here.
+- Reusing a mature capability unchanged still appears in the map so its contract and evidence are
+  explicit.
+
+### 11.7 Parallel cloud-coordinator model
+
+Parallelism follows the dependency graph, not the number of available agents.
+
+- A coordinator receives a bounded capability lane, explicit file/module ownership, inputs,
+  outputs, acceptance evidence, and queue blockers.
+- Independent lanes proceed together only when their shared contract is settled or one lane is
+  explicitly producing the contract the others await.
+- Work changing the same invariant, contract, migration boundary, or controlled record remains
+  serialized through its owning coordinator.
+- Each coordinator queue may contain several work packages, but a blocked package does not start
+  merely because its coordinator is free.
+- Likely early lanes include the `menu.v1`/Core content contract, theme and renderer compatibility,
+  Runtime package/evidence, and bounded characterization of the existing path. The reviewed map,
+  not this example list, authorizes their order.
+
+### 11.8 Planning order and exit
+
+1. Run the Mosaic V1 Renewal Reconciliation Session and settle the authoritative input set.
+2. Define the observable Mosaic V1 product outcome and acceptance boundary.
+3. Build the capability/dependency map and connect each capability to its renewal stage.
+4. Inspect only the existing implementation needed to classify those capabilities.
+5. Mark each capability reuse, reshape, build, or defer.
+6. Identify shared contract gates and safe parallel coordinator lanes.
+7. Place incomplete blueprint facts into V1.1, V1.2, V2, or later.
+8. Create renewal milestones and bounded work packages from the reviewed map.
+
+**Planning exit:** the architect can explain why each Mosaic capability is needed, which renewal work
+it requires, what existing foundation it uses, what precedes it, how it is verified, what can run in
+parallel, and what is deliberately left to the next version.
 
 ## 12. Guardrails and non-goals
 
@@ -399,6 +540,9 @@ Bring integrations, cinema/showtimes, screens, player packaging, onboarding, Pla
 - Do not deploy separate APIs/containers merely because the source gains modules.
 - Do not use chat history as implementation authority after this program is accepted; update the owning records instead.
 - Do not start a product implementation milestone until its source map, boundary, acceptance behavior, migration, and verification plan are explicit.
+- Do not turn Mosaic into a whole-product audit or make it wait for every blueprint family.
+- Do not rebuild a mature capability without a version dependency that its current contract cannot satisfy.
+- Do not distribute one unresolved shared invariant across parallel coordinators.
 
 ## 13. Decisions still required before implementation
 
@@ -411,7 +555,8 @@ The direction is settled; these design details remain intentionally open:
 5. Model migration UX, default migration behavior, and retention policy.
 6. The first internal Data Model Studio workflow and required approval roles.
 7. Final module namespace/folder conventions after the source map identifies current dependencies.
-8. Exact architecture-renewal milestone order after verification-base findings are known.
+8. The exact Mosaic V1 capability set and dependency order after the bounded map evaluates current evidence.
+9. Which incomplete blueprint capabilities belong in V1.1, V1.2, V2, or later.
 
 These questions must be answered in the relevant feature records before the affected implementation milestone starts.
 

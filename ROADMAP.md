@@ -66,16 +66,17 @@ tracking); anything only in Design is by definition not approved.
 | Codename | What it is | Position | Gate |
 |---|---|---|---|
 | **Menus** | Back-office menu feature: library, builder, publish, 86 board, import | **M1–M6-A11 delivered or shipped; lifecycle/acceptance work remains.** It is the first migration target. | Stabilize accepted behavior; do not extend menu-only persistence/theme/rendering architecture. |
-| **Content Platform** | Shared content models, typed record library, revisions, state overlays, releases, and modular API ownership | **M0 architecture renewal approved** — issue #939; no implementation milestone started. | Complete the renewal/source map, then build the foundation before Menu reimplementation. |
+| **Content Platform** | Shared content models, typed record library, revisions, state overlays, releases, and modular API ownership | **Architecture and API vNext blueprint approved** — #939 merged; Mosaic renewal planning is #965. No implementation milestone started. | Run the Mosaic V1 Renewal Reconciliation Session, then create the capability/dependency map; inspect only the selected path before work packages. |
 | **Theme Studio** | Reusable theme authoring: row-level style, state behaviour, validation, assistant, Menu Builder handoff | **Hi-fi in Design** — TS1–TS5, a theme-editor hi-fi, identity and rail options, a 28-state storyboard and a PSA review. Nothing in the repo. | Co-found the Content Platform binding/revision contract; then design authority → question register → milestone plan. |
 | **Keystone** | Progressive-cutover thin layer: TenantContext, VDS, ADS, Product Router, Webhook Receiver | **Designed, not approved.** 49 decisions proposed, 34 questions answered, six milestones planned. | Owner approval of the authority; tier-and-cost before any deployment |
 | **Screens** | Screen fleet management: home, one screen, pairing | **Hi-fi in Design, current** — S1/S2/S3. No developer handoff, no authority, no plan. | Developer handoff "when we return to that area" |
 | **Onboarding** | Sign-up through first live screen, and the tier ladder | **Nine hi-fi frames in Design, not approved.** Keystone decision 48 makes it its own app. | Owner approval; resolving the Free-tier go-live consequence |
 | **Platform Operations** | The operator console: release board, rollouts, cohort health, organizations, versions, windows | **Ten screens exported in Design.** Confirmed as its own app with its own API (Keystone decision 38). | Design authority; depends on Keystone M2 for anything it writes |
-| **Mosaic** | Release codename for v1.0 — the first version that ships through Keystone | **Named only.** | Everything above |
+| **Mosaic** | Release codename for v1.0 — the first coherent release of the renewed VennueSign blueprint | **Planning direction approved** — #965; renewal reconciliation session is next, then the capability/dependency map. | Prove the minimum end-to-end path; do not wait for every workstream or take a token slice of each blueprint family. |
 
 Release codenames are separate from feature codenames: Keystone is a feature, Mosaic is a
-release. The first version is Mosaic.
+release. The first version is Mosaic. Mosaic is not the sum of every workstream above; its scope is
+the smallest safe, supportable, verifiable product outcome selected through the dependency map.
 
 ---
 
@@ -162,8 +163,8 @@ to the back-office/authentication area.
 
 ## Content Platform
 
-**Record:** `docs/architecture/content-platform-architecture-renewal.md` · owner-approved
-planning issue #939.
+**Record:** `docs/architecture/content-platform-architecture-renewal.md` · blueprint issue #939 ·
+Mosaic dependency-planning issue #965.
 
 VennueSign is being re-founded as a controlled content-and-presentation platform. Content Home is
 the catalog and lifecycle surface; Menu is its first content type. A versioned data model defines
@@ -176,18 +177,35 @@ The product stays one deployable API host for now. Its source gains module bound
 Content, Themes, Integrations, Display Delivery, and Operations—so a later physical split is an
 option rather than a rewrite.
 
-| Stage | Outcome | Status |
-|---|---|---|
-| M0 | Architecture reconciliation, workstream disposition, source/ownership map | **approved / planning** |
-| M1 | Verification baseline and internal module seams in one API host | planned after M0 |
-| M2 | Shared model registry, record library, revisions, state overlays, and release contract | planned |
-| M3 | Reimplement Menu as `menu.v1` on the shared foundation | planned |
-| M4 | Theme Studio binds to the real model/revision/rendering contract | planned |
-| M5 | Integrations, screens, box player, onboarding, Platform Operations, and Keystone attach through that foundation | later |
+The renewal work structure remains:
 
-The program explicitly classifies work as **stabilize now**, **migrate into the foundation**,
-**remain compatible for later**, or **defer**. It is not authorization for an unbounded rewrite or
-a microservice deployment split.
+| Renewal stage | Outcome | Status |
+|---|---|---|
+| M0 | Architecture/API blueprint, Mosaic V1 renewal reconciliation, and capability/dependency map | blueprint merged; reconciliation session is next, then the map (#965) |
+| M1 | Verification and internal module seams required by selected Mosaic capabilities | placement pending the map |
+| M2 | Shared Data Model, content, state, Release, and Package foundation required by Mosaic | placement pending the map |
+| M3 | Existing Menu evolves into the first shared content type, `menu.v1` | placement pending the map |
+| M4 | Theme, Presentation, compatibility, and display foundation | placement pending the map |
+| M5 | Later blueprint attachments; a capability may move earlier when Mosaic truly depends on it | later / dependency-led |
+
+Product versions form a second, connected axis:
+
+| Product version | Outcome | Status |
+|---|---|---|
+| Mosaic V1 | Smallest coherent path from existing sign-in/venue context through `menu.v1`, Release, assignment, Runtime display, and actual-state evidence | scope not yet approved |
+| V1.x | Named capability completion or attachment increments derived from the map | unplanned |
+| V2+ | Larger outcomes and materially new blueprint completion; a second content type is an important shared-foundation proof | unplanned |
+
+The Mosaic map connects each product capability to the renewal stage work it requires. Mosaic does
+not replace M0–M5, and M0–M5 do not force Mosaic to wait for every blueprint area.
+
+The Mosaic V1 Renewal Reconciliation Session first aligns controlled records, settled decisions,
+current feature state, real open questions, and the initial release outcome. It is a planning
+reconciliation, not a whole-product code audit. Afterward, each Mosaic capability is classified as
+**reuse**, **reshape**, **build**, or **defer**. Source investigation is just in time and bounded to the selected dependency
+path; it is not a whole-product audit. Version work is not authorized until the map establishes the
+outcome, dependencies, contracts, verification, coordinator lanes, and later-version boundary. This
+remains no authorization for an unbounded rewrite or a microservice deployment split.
 
 The detailed Menu table above is synchronized through M6-A11. `PROJECT_STATUS.md` remains the
 granular current-status record for acceptance, deployment, configuration, and retest evidence;

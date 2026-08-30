@@ -16,6 +16,13 @@
 
 The cancellation above cleared the roadmap deliberately. The reset has since produced the features-and-milestones working model and its first feature.
 
+- **Content Platform Architecture Renewal and API Architecture vNext are approved and merged** — PR #939. The renewal retains stages M0–M5 as architectural work classifications. Owner direction #965 adds a connected product-version axis: Mosaic V1, V1.x, and V2+.
+  - Mosaic V1 is the smallest coherent, safe, supportable, verifiable release through the renewed blueprint; it is not a token slice of every API surface and does not wait for every workstream.
+  - The next action is a **Mosaic V1 Renewal Reconciliation Session**. It aligns the renewal stages, API blueprint, current feature/milestone records, built foundations, settled decisions, contradictions, genuine open questions, and Mosaic release intent.
+  - The reconciliation output becomes the input to the **Mosaic V1 Capability and Dependency Map**. The map connects each selected capability to its renewal stage, current implementation evidence, reuse/reshape/build/defer disposition, dependencies, contracts, verification, coordinator lane, queue blockers, and later-version completion.
+  - The reconciliation is record- and dependency-focused. Later source discovery is bounded and just in time for the selected path. No whole-product code audit or implementation milestone is authorized.
+  - The initial dependency hypothesis runs from existing sign-in and venue context through `menu.v1`, Content, Theme/Presentation, immutable Release, assignment, Runtime display, and actual Showing State. Existing capabilities are reused where sufficient.
+
 - **Menus feature — active. Planning complete; Milestones 1 and 2 merged (PR #685/#684 on 2026-08-09, PR #689/#687 on 2026-08-10).**
   - Design authority approved and merged: `docs/features/menus/` (36 decisions, hi-fi M1/M2/M2c, wireframes, tokens; moved 2026-08-24 from a separate `docs/design/approved/menus/` tree).
   - All 208 open questions resolved across four owner sittings: `docs/features/menus/open-questions.md`.
