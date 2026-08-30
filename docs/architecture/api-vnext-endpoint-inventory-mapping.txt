@@ -268,8 +268,8 @@ PUT     …/presentations/{id}/theme
 ## Screens /api/venues/{venueId}/screens — 12
 GET     …/screens
         MAP → Vennue Core API → Display Planning → Screens
-        INTERACTION → Vennue Runtime API → Health and Lifecycle → Health Reports; Vennue Runtime API → Convergence and Evidence → Package Status
-        REVIEW → Response mixes Core desired configuration with Runtime actual state; preserve as a composed read contract only.
+        INTERACTION → Vennue Runtime API → Health and Lifecycle → Health Reports; Vennue Runtime API → Convergence and Evidence → Package Status; Vennue Runtime API → Player Identity and Topology → Output Discovery
+        REVIEW → Response mixes Core desired configuration with Runtime actual state and device-reported output geometry; preserve as a composed read contract only.
         every screen: status, geometry (device-reported, never typed), settings, delivery state
 POST    …/screens
         MAP → Vennue Core API → Display Planning → Screens
@@ -421,6 +421,8 @@ DELETE  …/schedule/broadcasts/{id}
 ## Display /api/display/{screenId} — 8 manifest + artifacts per render concept
 GET     …/manifest
         MAP → Vennue Runtime API → Desired State and Delivery → Desired State
+        INTERACTION → Vennue Core API → Change Control → Releases; Vennue Core API → Display Planning → Assignments
+        REVIEW → The candidate `{screenId}` route key does not match authenticated Player Output delivery; authorize and resolve by Player Output or explicitly prove a safe screen-to-output translation.
         the package: published release · artifact refs with integrity hashes · the WallSchedule (per-screen pre-resolved slots — the player decides nothing) · dwell · dynamic layers · fallback rules; startAt arrives by push once every screen in the group reports received (WP-10)
 GET     …/artifacts/{hash}
         MAP → Vennue Runtime API → Desired State and Delivery → Asset Delivery
@@ -434,6 +436,7 @@ POST    …/evidence
         requested / sent / downloading / received / applied / recovered / superseded / failed + showing · stale flags (WP-12) — applied only for a complete, checksum-verified package (WP-9), keyed on package identity
 GET     …/diagnostics
         MAP → Vennue Runtime API → Health and Lifecycle → Diagnostics
+        REVIEW → A centralized Runtime API must not expose unauthenticated diagnostics; this must be strictly local and non-sensitive or use appropriately scoped authentication.
         the no-sign-in health page for a technician at the venue
 HUB     /hubs/vennusign
         MAP → Vennue Runtime API → Convergence and Evidence → Reconciliation Notifications
