@@ -1,8 +1,8 @@
 # Content Platform Architecture Renewal Program
 
-**Status:** Owner-approved architecture direction and planning authority  
-**Issue:** #939  
-**Decision date:** 2026-08-28  
+**Status:** Owner-approved architecture direction and planning authority<br>
+**Issue:** #939<br>
+**Decision date:** 2026-08-28<br>
 **Audience:** Product owner, engineers, technical designers, reviewers, and engineering agents
 
 ---
@@ -432,7 +432,7 @@ A future engineer should be able to answer, from repository records alone:
 
 ## 15. API Architecture vNext proposal
 
-**Status:** Proposed API architecture; captured from the owner review on 2026-08-30.  
+**Status:** Proposed API architecture; captured from the owner review on 2026-08-30.<br>
 **Authority boundary:** This section proposes ownership surfaces and vocabulary. It does not approve individual endpoints, route shapes, schemas, migrations, or deployable-service splits. Those require the remaining owner questions and bounded implementation planning.
 
 ### 15.1 The four surfaces
@@ -450,9 +450,9 @@ The rejected surface names are **Management API**, **Integration API**, **Delive
 
 The four short boundary statements are:
 
-> **Core defines and controls desired state.**  
-> **Connect exchanges and synchronizes external data.**  
-> **Runtime applies desired state and reports actual state.**  
+> **Core defines and controls desired state.**<br>
+> **Connect exchanges and synchronizes external data.**<br>
+> **Runtime applies desired state and reports actual state.**<br>
 > **Platform governs and operates the Vennue service.**
 
 Across the surfaces:
@@ -1026,4 +1026,3 @@ The inventory is a use-case and candidate-contract register beneath this archite
 - Do not let Platform bypass owning commands, authorization, invariants, or audit.
 - Do not hard-code restaurant-only scheduling or promotion concepts into the shared model when Data Models can express the durable meaning.
 - Do not expose dynamic customer SQL schema, EAV truth, arbitrary executable mapping, or customer-authored code.
-
