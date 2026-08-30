@@ -429,3 +429,578 @@ A future engineer should be able to answer, from repository records alone:
 - which API module owns the change;
 - how an existing milestone connects to the renewal; and
 - the next bounded action required to move safely.
+
+## 15. API Architecture vNext proposal
+
+**Status:** Proposed API architecture; captured from the owner review on 2026-08-30.  
+**Authority boundary:** This section proposes ownership surfaces and vocabulary. It does not approve individual endpoints, route shapes, schemas, migrations, or deployable-service splits. Those require the remaining owner questions and bounded implementation planning.
+
+### 15.1 The four surfaces
+
+VennueSign vNext exposes four purposeful API surfaces inside the modular monolith:
+
+| Surface | Responsibility |
+|---|---|
+| **Vennue Core API** | Turns organization-level and venue-level customer decisions into controlled, effective desired state for each venue. |
+| **Vennue Connect API** | Turns external data into controlled Core changes and sends approved Vennue data outward. |
+| **Vennue Runtime API** | Delivers resolved output packages and operational overrides, then proves what each player output is actually showing. |
+| **Vennue Platform API** | Lets authorized Vennue staff support, govern, configure, and operate the overall service without bypassing the owning APIs. |
+
+The rejected surface names are **Management API**, **Integration API**, and **Player API**. They were too generic and did not express the boundaries. **Vennue API** was refined to **Vennue Core API** once its role as the business authority became clear.
+
+The four short boundary statements are:
+
+> **Core defines and controls desired state.**  
+> **Connect exchanges and synchronizes external data.**  
+> **Runtime applies desired state and reports actual state.**  
+> **Platform governs and operates the Vennue service.**
+
+Across the surfaces:
+
+> **Connect determines what an external change means. Core determines what Vennue should do with it.**
+
+> **Core decides what each venue should show. Runtime safely delivers the resolved package to each output and proves what is actually showing.**
+
+> **Platform can govern and operate every Vennue surface, but it must never bypass the rules or ownership of Core, Connect, or Runtime.**
+
+### 15.2 Deployment and contract direction
+
+The surfaces are logical ownership and contract boundaries, not an instruction to deploy four services now.
+
+- Keep one deployable ASP.NET Core host/App Service/container initially.
+- Give every surface and family strict internal module ownership.
+- A module owns its use cases, contracts, write paths, persistence boundary, migrations, invariants, tests, and emitted events.
+- Modules interact through named application contracts or versioned events; they do not write one another's tables directly.
+- Split a surface physically only when scaling, failure isolation, security, release cadence, or team ownership proves that the operational cost is justified.
+- Use REST and JSON for public contracts unless a later use case proves another contract is necessary.
+- Generate and maintain OpenAPI contracts.
+- Version public contracts from the beginning; representative paths use an explicit contract version such as `/api/v1`.
+- Prefer business actions over database-shaped CRUD. Examples include validate, publish, rollback, assign, pair, reconcile, and set operational state.
+- Use opaque time-sortable public identifiers such as UUIDv7 rather than exposing sequential database keys.
+- Derive and enforce organization and venue scope on the server; never trust a client-supplied scope without authorization.
+- Use optimistic concurrency through ETags or explicit revision numbers.
+- Require idempotency for publishing, imports, pairing, provider callbacks, and other retryable commands.
+- Use cursor-based pagination for large collections.
+- Return stable error codes, field details, and correlation identifiers.
+- Use a transactional outbox for reliable asynchronous work.
+- Audit meaningful customer, provider, player, and workforce actions.
+- Treat webhooks, events, and realtime messages as versioned contracts.
+- Realtime notifications prompt reconciliation; they never replace the authoritative state read.
+
+The API domain term is **Data Model**, not **Content Model**. Representative top-level Core language is `data-models`, `content`, `themes`, `screens`, `players`, `releases`, `assets`, `organizations`, and `venues`. The existing proposed internal authoring-tool name **Data Model Studio** is not renamed by this API proposal.
+
+### 15.3 Multi-venue foundation
+
+Multi-venue support is not an implementation detail. It governs tenancy, authorization, shared content, publishing, scheduling, and runtime delivery from the beginning.
+
+The public conceptual hierarchy is:
+
+```
+Organization -> Venue -> Wall -> Screen -> Player Output
+```
+
+- An organization may have one or many venues.
+- Organization-level objects are shared objects, not uncontrolled copies at every venue.
+- A venue owns its local configuration, permitted overrides, screens, walls, assignments, schedules, releases, and operational state.
+- Screens and walls are logical targets. A player output is a physical/runtime endpoint bound to a logical screen.
+- Organization-level content, models, themes, assets, presentations, policies, and access rules may be shared where their owning contracts allow it.
+- Each venue retains explicit state for shared material: running, pending, behind, not running, or locally overridden.
+- An organization push may automatically apply, become pending, require venue acceptance, or preserve approved local overrides according to policy. The API must represent the policy rather than silently choosing.
+- Runtime never resolves organization inheritance or venue override precedence.
+
+Core resolves:
+
+```
+Organization content and policy
++ venue configuration
++ permitted local overrides
++ wall/screen assignments and schedule
+= effective desired state for one venue
+```
+
+The foundational multi-venue rule is:
+
+> **Core combines organization-level decisions, venue configuration, and permitted local overrides into effective desired state for each venue.**
+
+### 15.4 Vennue Core API
+
+The Core API is the business brain of Vennue. It owns what the customer intends the system to do.
+
+Its basic model is:
+
+```
+Data Model -> Content ----+
+                          +-> Presentation -> Publish -> Release -> Assignment -> Wall/Screen
+Theme --------------------+
+```
+
+- A **Data Model** defines meaning, fields, relationships, validation, source authority, states, and binding paths.
+- **Content** is the actual operational information: items, prices, descriptions, calories, films, showtimes, and other typed data.
+- A **Theme** defines visual structure, zones, repeaters, fields, style, and behavior.
+- A **Presentation** binds selected Content into a Theme for display.
+- **Publishing** validates the complete intended change.
+- A **Release** is the immutable approved version owned by Core.
+- An **Assignment** says where and when the Release should apply.
+
+Core contains four families and they remain explicit.
+
+#### 15.4.1 Account and Business Structure
+
+- Authentication
+- Authorization
+- Sessions
+- Onboarding
+- Organizations
+- Venues
+- Subscriptions and Billing
+
+This family establishes who the customer is, where they operate, which context they are working in, and what they may use.
+
+- **Authentication** proves human identity through sign-in, identity providers, factors, and token/session establishment.
+- **Authorization** determines roles, permissions, organization scope, venue scope, and allowed actions.
+- **Sessions** expose the signed-in actor's current organization, venue, and resolved capabilities.
+- **Onboarding** coordinates creation of the organization, first venue, and first screen through the owning domains.
+- **Organizations** are the commercial and shared-policy boundary.
+- **Venues** are the operational boundary. The public term is Venue, not Site.
+- **Subscriptions and Billing** expose customer-facing subscription state, usage, checkout, and billing-portal operations. Platform separately owns plan and tier administration.
+
+Authentication and Authorization are intentionally separate. **Access** is not retained as one combined area. Player Authentication also remains separate in Runtime because it proves machine identity, not human identity.
+
+#### 15.4.2 Content and Design
+
+- Data Models
+- Content
+- Presentations
+- Themes
+- Assets
+
+This family establishes what information exists and how it should appear.
+
+Data Models are versioned, validated contracts rather than arbitrary JSON. Content remains purpose-built in the customer experience: a Menu can say Items while a cinema presentation can say Showtimes. Presentations are the displayable composition boundary:
+
+```
+Content + Theme = Presentation
+```
+
+Assets include images, video, fonts, and other reusable media. Themes own visual and behavioral rules; they do not own operational content.
+
+#### 15.4.3 Display Planning
+
+- Screens
+- Walls
+- Player Administration
+- Assignments
+- Scheduling
+
+This family establishes where and when a presentation should appear.
+
+- A **Screen** is a logical destination.
+- A **Wall** is an ordered group of one or more screens. A standalone screen is a wall of one, allowing one consistent assignment model.
+- **Player Administration** covers human decisions such as claiming a code, naming or replacing a player, binding a discovered output to a logical screen, and unpairing it.
+- **Assignments** connect approved releases to logical walls/screens.
+- **Scheduling** resolves time-based desired state on the server in the venue's timezone.
+
+The preferred assignment concept is:
+
+```
+Presentation Release -> Wall
+```
+
+Core may present Runtime health and showing state as read-only composed views, but those facts remain Runtime-owned.
+
+#### 15.4.4 Change Control
+
+- Drafts
+- Publishing
+- Releases
+- Operational Overrides
+- Audit
+
+This family establishes what is approved, what should go live, and who changed it.
+
+The ordinary path is:
+
+```
+Normal authored change -> Draft -> Review -> Publish -> immutable Release
+```
+
+Operational state is a separate path:
+
+```
+Immediate operational fact -> Operational Override -> Runtime delivery
+```
+
+For Menu, an 86 is immediate and venue-wide. A normal authored availability/content change follows publish. An operational overlay remains independent of ordinary publishing until explicitly cleared; exact cancellation behavior must preserve the accepted Menu decisions, including cases where a cancellation is intentionally carried with a publish.
+
+Core records desired state such as:
+
+```
+Lobby Wall should show Breakfast Release 7 at 7:00 AM.
+```
+
+Runtime records actual state such as:
+
+```
+Player 12 downloaded Package 44.
+Output 2 applied it at 7:00 AM and is currently showing it.
+```
+
+Core owns the first statement. Runtime owns the second.
+
+Core does not own provider transport/synchronization, player manifests/downloads/heartbeats, or Vennue's internal cross-tenant administration.
+
+### 15.5 Vennue Connect API
+
+The Connect API is more than provider-specific import endpoints.
+
+Its basic pipeline is:
+
+```
+External system
+-> immutable source input/snapshot
+-> organization and venue resolution
+-> mapping
+-> ownership rules
+-> validation
+-> change set
+-> controlled Core change
+```
+
+Connect never bypasses Core's ownership, validation, or publishing rules.
+
+#### 15.5.1 Connections and Sources
+
+- Connectors
+- Connections
+- Data Sources
+- Transports
+- Webhooks
+
+- A **Connector** is Vennue's provider capability for Toast, Clover, Square, a cinema system, or another integration.
+- A **Connection** is one customer's configured link to that provider.
+- A **Data Source** is a catalog, menu feed, film feed, showtime feed, or other scoped source.
+- **Transports** include pull REST, push REST, webhooks, and SFTP.
+- A **Webhook** signals that work is available. It is not unquestioned business truth.
+
+#### 15.5.2 Mapping and Control
+
+- Venue Mapping
+- Data Mappings
+- Ownership Rules
+- Validation Rules
+
+This family determines where external data belongs, what it means, and which system is authoritative.
+
+Representative mapping:
+
+```
+Provider account/location 1842 -> Downtown Venue
+provider item.name          -> Menu Item Name
+provider item.price         -> Default Price
+provider item.available     -> operational availability
+```
+
+Field or content-area authority may be:
+
+- Vennue controlled;
+- integration controlled;
+- integration default with a permitted local override;
+- integration controlled across selected content/presentations;
+- manually reviewed before acceptance.
+
+An imported price may deliberately control that price across selected menus/presentations when the configured ownership rule says so. It must never gain cross-content reach accidentally. Film and showtime identity is provider-owned where the connector contract declares it.
+
+#### 15.5.3 Data Movement
+
+- Imports
+- Exports
+- Sync Runs
+- Source Snapshots
+- Change Sets
+
+- An **Import** brings external data into the controlled pipeline.
+- An **Export** sends approved Vennue data outward.
+- A **Sync Run** records one bounded execution.
+- A **Source Snapshot** preserves exactly what the provider supplied.
+- A **Change Set** records the proposed difference and resulting Core actions.
+
+A sync run reports records received, matched, created, changed, rejected, held for review, Core changes produced, and final status. Paste/upload imports may use the same controlled concepts without pretending that a human-provided file is a live provider connection.
+
+#### 15.5.4 Reliability and Visibility
+
+- Connection Status
+- Sync History
+- Errors and Alerts
+- Retries
+- Reconciliation
+- Connect Audit
+
+On failure:
+
+- retain the last valid canonical state and display content;
+- never partially corrupt Core;
+- preserve the failed input and correlation evidence;
+- retry idempotently and boundedly;
+- alert the appropriate operator;
+- support investigation and safe replay;
+- fail closed on unknown identity, venue mapping, ownership, or invalid schema.
+
+The established targets remain up to 1,000 locations, urgent updates within seconds, 99.9% monthly availability, and recovery within two hours.
+
+#### 15.5.5 Multi-venue Connect behavior
+
+A connection may be organization-scoped or venue-scoped.
+
+```
+Provider Account
+├── Location 101 -> Venue A
+├── Location 102 -> Venue B
+└── Location 103 -> Venue C
+```
+
+Organization-level mappings and ownership policies may be reused, with explicit permitted venue-specific rules. External locations must resolve to a known venue before a change can reach Core.
+
+The result of a valid external change depends on policy:
+
+- a normal price change may become a Core draft;
+- a trusted showtime feed may produce an automatic managed update;
+- an urgent imported availability fact may become a Core operational override;
+- an ambiguous identity match may wait for human review;
+- a rejected field leaves the last valid value unchanged.
+
+### 15.6 Vennue Runtime API
+
+Runtime turns Core's effective desired state into what each player output actually shows, then reports the result.
+
+Its basic model is:
+
+```
+Core desired state -> approved Release -> output-specific Package
+                   -> Runtime delivery -> Player Output -> actual-state evidence
+```
+
+Runtime does not choose content, resolve organization inheritance, decide assignments, or calculate business precedence.
+
+#### 15.6.1 Player Identity and Topology
+
+- Player Enrollment
+- Player Authentication
+- Pairing Status
+- Output Discovery
+
+- **Player Enrollment** establishes machine identity before or while a player is attached to a venue. Vennue-shipped hardware may use a one-time bootstrap token.
+- **Player Authentication** uses restricted, rotatable, revocable machine credentials. A player can report only its own topology/state and retrieve only its assigned material.
+- **Pairing Status** covers the player requesting and displaying a short code, polling whether it was claimed, and learning its assigned context.
+- **Output Discovery** reports connector identity, EDID corroboration, resolution, geometry, orientation, connection state, and health.
+
+The pairing boundary is split deliberately:
+
+- Runtime: request code, show it, poll status, establish machine identity.
+- Core: staff claims the code, approves the player, binds an output to a logical screen, replaces or unpairs the player.
+
+One player can drive several physical outputs:
+
+```
+Player
+├── Output 1 -> Lobby Screen
+└── Output 2 -> Menu Screen
+```
+
+Port/connector identity and EDID identify the physical output. Neither is the wall position. Core owns the logical binding.
+
+#### 15.6.2 Desired State and Delivery
+
+- Desired State
+- Package Delivery
+- Asset Delivery
+- Override Delivery
+
+The desired-state contract is already resolved per authenticated output and may contain:
+
+- package identity;
+- Core release identity;
+- screen and wall position;
+- required assets and integrity hashes;
+- schedule and activation time;
+- operational overrides;
+- fallback rules;
+- minimum compatible runtime version.
+
+**Release** and **Package** are different:
+
+- A **Release** is the approved immutable presentation version owned by Core.
+- A **Package** is the output-specific material delivered by Runtime.
+
+One Core release can produce several packages because screens can have different geometry or positions within a wall. Players verify complete package integrity before replacing the currently working presentation. Assets are immutable and content-addressed where practical.
+
+#### 15.6.3 Convergence and Evidence
+
+- Package Status
+- Showing State
+- Synchronized Activation
+- Reconciliation Notifications
+
+Package evidence distinguishes:
+
+```
+Requested -> Downloading -> Received -> Verified -> Applied -> Showing
+```
+
+It also records failed, recovered, superseded, and stale. **Assigned**, **downloaded**, **applied**, and **currently showing** are not synonyms.
+
+For a synchronized wall:
+
+1. every required output downloads and verifies its package;
+2. Runtime records readiness;
+3. the server issues a shared activation time;
+4. outputs switch on that clock;
+5. excluded, late, stale, or failed outputs remain visible in evidence.
+
+Push/SignalR notification is only a prompt:
+
+> **Notifications prompt; desired-state reconciliation decides.**
+
+A restart or reconnect performs an authoritative desired-state comparison. Missing a notification can never permanently prevent convergence.
+
+#### 15.6.4 Health and Lifecycle
+
+- Health Reports
+- Diagnostics
+- Runtime Updates
+- Recovery
+
+Health reports include runtime version, operating system, output state, showing package, storage, recent failures, and last successful reconciliation. Diagnostics expose support evidence without secrets or customer-administration authority.
+
+Vennue Platform defines approved runtime versions, rollout rings, canaries, minimum versions, required updates, pause, and rollback policy. Runtime delivers and installs the selected update and reports the outcome.
+
+Recovery retains the current working package, last-known-valid package, required cached assets, machine identity, and output bindings. A network, provider, or service failure must not create a blank screen. The player continues the last valid presentation and reconciles when connectivity returns.
+
+### 15.7 Vennue Platform API
+
+Platform is Vennue's internal operator API. Customers, external integrations, and players do not receive Platform authority.
+
+Platform may observe and administer all surfaces through their supported commands, but it must not silently edit their databases.
+
+#### 15.7.1 Customer and Commercial Operations
+
+- Customer Support
+- Organization Administration
+- Venue Administration
+- Subscription Support
+- Plan and Tier Administration
+- Revenue Reporting
+
+Customer Support composes organization, venue, subscription, screen/wall, player health, publishing/showing, connector, failure, and audit information. Support access is role-restricted, reason-recorded, time-limited when elevated, audited, and read-only by default.
+
+Core exposes customer subscription usage, checkout, and billing portal actions. Platform investigates failures, reconciles provider state, manages the plan/tier catalog, and applies approved commercial exceptions. Vennue retains billing identifiers and commercial state, not payment-card data.
+
+#### 15.7.2 Entitlements and Configuration
+
+- Feature Management
+- Entitlement Policies
+- Customer Exceptions
+- Platform Configuration
+- Environment Configuration
+- Configuration History
+
+Effective capability resolves:
+
+```
+Plan/tier
++ organization allowance
++ venue allowance
++ approved exception
+= effective capability
+```
+
+Customer exceptions require reason, approver, effective time, expiration, and audit evidence. Configuration supports concurrency protection, preview/diff, history, rollback, non-secret export, and reviewed environment application. Secrets are referenced and health-checked; their values are never returned.
+
+#### 15.7.3 Fleet and Delivery Operations
+
+- Fleet Monitoring
+- Runtime Version Management
+- Rendering Operations
+- Package Delivery Monitoring
+- Connector Fleet Monitoring
+- Maintenance and Incidents
+
+Runtime owns individual actual-state reports; Platform aggregates cross-tenant fleet health. Connect owns individual connection/sync records; Platform aggregates provider-wide health.
+
+Rendering Operations observes queue depth, compile/Wall Planner failure, renderer version, artifact-cache health, and package generation. A recompile after renderer change may regenerate packages without inventing a customer content revision.
+
+Maintenance and Incidents cover planned maintenance, cutovers, provider outages, paused deployments, customer-impact evidence, recovery state, and incident timelines.
+
+#### 15.7.4 Governance and Safety
+
+- Workforce Authentication
+- Workforce Authorization
+- Privileged Actions
+- Platform Audit
+- Compliance Evidence
+- Test Automation
+
+Workforce access uses a separate audience and authority from customer authentication even if the identity provider is shared. It requires strong authentication, explicit environment access, short privileged sessions, and no automatic production authority.
+
+Privileged actions require explicit capability, reason, target preview, confirmation where appropriate, and durable audit. Emergency/break-glass authority expires automatically.
+
+Platform Audit records actor, action, target, previous state, new state, reason, time, correlation identity, and result. Core Audit records customer business changes; Platform Audit records Vennue administrative and operational actions.
+
+Test Automation is authenticated, fully logged, test-environment-only, and technically absent or unreachable in production. It cannot mutate real customer information.
+
+### 15.8 Cross-surface ownership rules
+
+| Concern | Authority | Interaction |
+|---|---|---|
+| Human identity and customer permissions | Core | Platform uses separate workforce identity and authority. |
+| Player machine identity | Runtime | Core owns staff approval and logical binding. |
+| Customer desired state | Core | Connect proposes controlled changes; Runtime consumes the resolved result. |
+| Provider meaning and field authority | Connect | Core decides the resulting draft, managed update, or operational override. |
+| Published approval | Core Release | Runtime receives one or more output-specific Packages. |
+| Physical output topology | Runtime | Core binds discovered outputs to logical Screens. |
+| Screen/wall configuration | Core | Runtime reports actual delivery/showing state. |
+| Individual player health | Runtime | Platform aggregates fleet health. |
+| Individual connector health | Connect | Platform aggregates provider/connector fleet health. |
+| Plan purchase/use | Core | Platform defines catalog/policy and supports exceptions. |
+| Runtime rollout policy | Platform | Runtime delivers and reports the update. |
+| Customer audit | Core/Connect/Runtime owner of the action | Platform Audit records Vennue workforce actions. |
+
+A customer-facing composed read may show desired and actual facts together. Composition does not transfer authority: the response must retain enough provenance to distinguish Core desired state from Runtime actual state.
+
+### 15.9 Endpoint-inventory mapping
+
+The earlier projected endpoint inventory remains a separate candidate list. It is not consolidated into this proposal and its wording/order are preserved.
+
+The companion record is:
+
+- `docs/architecture/api-vnext-endpoint-inventory-mapping.txt`
+
+Every candidate route group is annotated:
+
+```
+MAP -> primary Surface -> Family -> Area
+INTERACTION -> another owner involved without transferring primary ownership
+REVIEW -> a boundary issue that remains visible until explicitly decided
+```
+
+No endpoint is approved, discarded, renamed, or moved merely because its original section changes. The current mapping intentionally flags:
+
+1. Screen responses that mix Core desired configuration with Runtime actual state; these may remain composed reads only if ownership stays explicit.
+2. Wall delivery state, which is Runtime-owned even if surfaced in a Core wall view.
+3. Stripe billing webhook ownership, which is not part of the customer-data Connect domain.
+
+The inventory is a use-case and candidate-contract register beneath this architecture. It cannot redefine the four surfaces or their families.
+
+### 15.10 Proposal guardrails
+
+- Do not implement this section merely because it is present in the owner-approved renewal program; it is explicitly a vNext proposal pending the owner's remaining questions.
+- Do not turn the four surfaces into four production services without evidence.
+- Do not collapse Authentication and Authorization back into a generic Access area.
+- Do not replace Venue with Site in public API language.
+- Do not use Device where the established concept is Player.
+- Do not put generic Operations back inside Core; customer desired-state control and Vennue service operation have different authorities.
+- Do not call a Runtime Package a Core Release or claim that publish means showing.
+- Do not let Connect write published Core tables directly.
+- Do not let Platform bypass owning commands, authorization, invariants, or audit.
+- Do not hard-code restaurant-only scheduling or promotion concepts into the shared model when Data Models can express the durable meaning.
+- Do not expose dynamic customer SQL schema, EAV truth, arbitrary executable mapping, or customer-authored code.
+
