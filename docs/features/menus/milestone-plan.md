@@ -908,6 +908,13 @@ The same capability later surfaces to operators in Back Office as a layout previ
 takes three screens; Salads is on its own"* — so they see it before publishing, not on the wall.
 That is a follow-on slice, not T2.
 
+**Re-pointed 2026-08-29 (owner).** T2 is no longer built over `ComputeFrameStarts`. Under the
+Content Platform renewal the packing above is retired at M4, so a harness over it would be
+throwaway. T2 becomes the **fixture lab** in `docs/features/screens/wall-planner-design.md` §10:
+the real shared renderer plus the real Wall Planner, rendering a group of screens side by side.
+The "never a JavaScript copy" constraint survives — there is one packing and it is the TypeScript
+one. T1 is unchanged; T3 stays on hold.
+
 ##### T3 · Auto-merge of lone pages — on hold
 
 Fish (1 item, its own page) sits alone on a mostly black screen. Folding it into a neighbour was

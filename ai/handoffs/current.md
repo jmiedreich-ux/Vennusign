@@ -1,6 +1,88 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-26, after M6.8 measured the parser against a correct reading of a real menu instead of against the previous parser.
+Updated 2026-08-29, after the owner approved the Wall Planner design — the algorithm that spreads a release across a group of screens.
+
+## 2026-08-29 — The Wall Planner: designed and approved, deliberately not built yet
+
+**Landed in `docs/features/screens/wall-planner-design.md`** (branch `design/wall-planner`, docs only).
+Twelve owner decisions (WP-1 … WP-12), the contract, the dealing algorithm with a reference
+implementation and worked examples, the shared-clock rule, always-on-screen rules, delivery states,
+what it needs from the rest of the platform, how it is tested, and what happens to today's code.
+
+### Why this exists
+
+After #958–#961 the owner said the display work had become "endless attempts of possible looks and
+feels", and named the real case: Apps page 1 on screen 1, page 2 on screen 2, page 3 on screen 3 —
+and if there is no screen 3, page 3 rotates back onto screen 1. Six readers mapped what exists
+today, and the honest picture is: the packing is C# in a controller (item counts against a
+hardcoded table, photo grid only), the TV separately shrinks pages in JS, the grid shape is written
+a third time in CSS, every TV runs its own clock, and nothing in the data can say "screen 2 shows
+page 2" — today's `WallGroup` means "split one page's *items* across screens by count". There is
+also a latent arithmetic bug in wall + sub-paging (recorded in the spec §11, untested per Done
+Records #960/#961).
+
+### The three things that changed the design mid-conversation
+
+1. **The architecture reset** — `docs/architecture/content-platform-architecture-renewal.md`,
+   issue #939, owner-approved 2026-08-28, still on branch
+   `feature/content-platform-m0-architecture-renewal`. Display moves to a *render package* from an
+   immutable Content Release; display work resumes at renewal **M4**; "stop extending menu-only
+   rendering".
+2. **Theme Studio** (branch `agent/theme-studio-handoff`): the theme is a JSON *Canvas Render
+   Definition* with capacity per region and ordered overflow rules, and **one shared TypeScript
+   renderer** used everywhere. So "how many fit" is not the planner's job.
+3. Therefore the planner became **small and pure**: pages in → per-screen schedule out. TypeScript,
+   `packages/wall-planner`, beside the renderer. Built with the M4 renderer work, wired into
+   delivery at the renewal's screens / player-packaging milestone (M5). **WP-5: no planner code against
+   `DisplayController` — it would be retired with it.** The owner's words: "no sense working on code
+   we are going to retire."
+
+### Decisions the owner made, in order
+
+Group is operator-made and ordered (WP-1) · structure > same text size > avoid rotation > balance
+(WP-2) · only the spill rotates, the rest holds (WP-3) · same item count per screen, bigger TV =
+bigger text, no correction (WP-4) · build at M4, not now (WP-5) · hold rule (WP-6) · filler/mirror
+for spare first-slot screens (WP-7, owner judgment call, revisit on the first real wall) · one canvas
+format per group (WP-8) · never show a half-downloaded package (WP-9) · a wall switches together,
+with a grace period for offline screens (WP-10) · the last good package never expires (WP-11) ·
+every delivery step timestamped and reportable (WP-12).
+
+### Knock-ons recorded, not acted on
+
+- **Menus M10 T2 re-pointed** (milestone-plan.md): the virtual screen becomes the renewal's fixture
+  lab over the real renderer + planner, not a harness over `ComputeFrameStarts`. T1 unchanged; T3
+  on hold.
+- **Defect against WP-11:** `src/display/src/displayCache.mjs` throws the cached content away after
+  7 days (`displayContentCacheMaxAgeMs`). Small "stabilize now" fix, separate PR — not started.
+- **Constraint handed to Theme Studio (TS-C1):** a state response (86 / sold out) may never change
+  how much space an item takes, or live state would re-paginate a wall.
+- **Inputs to renewal planning session 4 and M2:** stable page ids + `continues` flag + section ids
+  per page; dwell on the release; group = id + canvas format + ordered screen ids; package identity
+  includes `plannerVersion`; delivery states.
+- `docs/features/screens/workstream.json` now lists the design; `stage` stays `designing`.
+
+### Open questions (spec §12, all with defaults)
+
+Q-WP-1 filler vs background · Q-WP-2 grace defaults (proposed 120 s offline / 900 s ceiling) ·
+Q-WP-3 per-page dwell · Q-WP-4 mixed canvas formats in one group.
+
+### Review pass
+
+A four-lens review (algorithm, consistency, fit with the renewal + Theme Studio, claims about
+current code) raised 46 findings; 22 confirmed by refuters, 12 refuted, 12 unverified because the
+subagent session limit was hit — those 12 were checked by hand against the repo and all held.
+All 34 folded in. The ones worth knowing: the start time had been placed *inside* the
+checksummed package but is set afterwards (now a separate `{ packageId, startAt }` message);
+`WallPosition` is 1-based with gaps, so the planner sorts and uses rank; package identity needed
+the group revision; `dbo.ScreenContentDeliveries` already exists and is now the seed for §8;
+`SyncTick` exists server-side but is never emitted; the renewal puts screens/player packaging at
+M5, not M4.
+
+### One exact next action
+
+Merge `design/wall-planner` (docs only). Then, when the renewal branch merges, add the pointer from
+`content-platform-architecture-renewal.md` §10 (Screens / display delivery row) to the spec — that
+file does not exist on master yet, so it could not be edited here.
 
 ## 2026-08-26 — M6.8: the benchmark was wrong, so the result was wrong
 
