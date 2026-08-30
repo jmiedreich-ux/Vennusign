@@ -65,8 +65,9 @@ tracking); anything only in Design is by definition not approved.
 
 | Codename | What it is | Position | Gate |
 |---|---|---|---|
-| **Menus** | Back-office menu feature: library, builder, publish, 86 board, import | **M6-A3 complete.** M5 parked. M7+ unplanned. | Paused — Theme Studio is a prerequisite for further display work |
-| **Theme Studio** | Reusable theme authoring: row-level style, state behaviour, validation, assistant, Menu Builder handoff | **Hi-fi in Design** — TS1–TS5, a theme-editor hi-fi, identity and rail options, a 28-state storyboard and a PSA review. Nothing in the repo. | Design authority → question register → milestone plan |
+| **Menus** | Back-office menu feature: library, builder, publish, 86 board, import | **M1–M6-A11 delivered or shipped; lifecycle/acceptance work remains.** It is the first migration target. | Stabilize accepted behavior; do not extend menu-only persistence/theme/rendering architecture. |
+| **Content Platform** | Shared content models, typed record library, revisions, state overlays, releases, and modular API ownership | **M0 architecture renewal approved** — issue #939; no implementation milestone started. | Complete the renewal/source map, then build the foundation before Menu reimplementation. |
+| **Theme Studio** | Reusable theme authoring: row-level style, state behaviour, validation, assistant, Menu Builder handoff | **Hi-fi in Design** — TS1–TS5, a theme-editor hi-fi, identity and rail options, a 28-state storyboard and a PSA review. Nothing in the repo. | Co-found the Content Platform binding/revision contract; then design authority → question register → milestone plan. |
 | **Keystone** | Progressive-cutover thin layer: TenantContext, VDS, ADS, Product Router, Webhook Receiver | **Designed, not approved.** 49 decisions proposed, 34 questions answered, six milestones planned. | Owner approval of the authority; tier-and-cost before any deployment |
 | **Screens** | Screen fleet management: home, one screen, pairing | **Hi-fi in Design, current** — S1/S2/S3. No developer handoff, no authority, no plan. | Developer handoff "when we return to that area" |
 | **Onboarding** | Sign-up through first live screen, and the tier ladder | **Nine hi-fi frames in Design, not approved.** Keystone decision 48 makes it its own app. | Owner approval; resolving the Free-tier go-live consequence |
@@ -95,12 +96,23 @@ register 209 questions, one open (Q209, provisional).
 | 6-A1 | Paste, parse, review | complete · 2026-08-14 |
 | 6-A2 | Create from import | complete · 2026-08-14 |
 | 6-A3 | Replace from import | complete · 2026-08-14 |
-| 7+ | Spreadsheet import, photo import, POS import, item library UI, multi-venue, Schedules-owned time pricing, fallback-card authoring | **named, not planned** |
+| 6-A4 | Parser reads an ordinary menu | complete · issue #864 |
+| 6-A5 | Import has a reachable entry route | merged/deployed; focused acceptance and browser verification remain recorded in `PROJECT_STATUS.md` |
+| 6-A6 | Shelf filters and lifecycle information architecture | planned; current master record says blocked on Q214/Q215 |
+| 6-A7–6-A10 | Real-menu parsing, line splitting, review clarity | complete / shipped; see `PROJECT_STATUS.md` for exact issue-level status |
+| 6-A11 | Residue suggestion | shipped; current handoff says dev provider configuration and owner check remain |
+| 7 | Mock-fidelity polish round | parked behind Foundry / owner scoping |
+| 8 | Delete and Recently deleted lifecycle | planned; reconcile owner decisions into Content Home foundation before implementation |
+| 9+ | Spreadsheet/photo/POS import, item-library UI, multi-venue, Schedules-owned time pricing, fallback-card authoring | named, not planned |
 
-**Why it is paused.** Further work on the menu's display — the builder's canvas, Board View,
-Play, and anything in `src/display` — depends on how a theme is defined and rendered. Theme
-Studio settles that. Until it does, building more display would build against a theme model that
-is about to change.
+**Architecture renewal.** Owner approved the Content Platform direction on 2026-08-28 (#939).
+Menu is the first migration target, not a permanent menu-only architecture. Preserve the accepted
+customer behavior—including import, placement-specific price, 86, drafts, history, assignment and
+delivery truth—but do not extend the existing menu-only persistence/theme/rendering foundation.
+
+Further display work — the builder's canvas, Board View, Play, and anything in `src/display` —
+depends on both the Content Platform contract and Theme Studio's definition of a bindable,
+versioned theme. Building it earlier would build against a model that is about to change.
 
 **Backlog:** #670–#683 (register out-of-scope decisions, copy debt, accessibility debt), #686,
 #695, #701, #702, #709, #710.
@@ -145,6 +157,41 @@ secrets off Data Protection (decision 37, `Vennu.Api` area).
 **Product changes Keystone surfaced but does not own:** signing in should establish an
 organization rather than a venue, and onboarding should be its own app (decision 48). Both belong
 to the back-office/authentication area.
+
+---
+
+## Content Platform
+
+**Record:** `docs/architecture/content-platform-architecture-renewal.md` · owner-approved
+planning issue #939.
+
+VennueSign is being re-founded as a controlled content-and-presentation platform. Content Home is
+the catalog and lifecycle surface; Menu is its first content type. A versioned data model defines
+the meaning, fields, nested collections, authority, state, and Theme Studio binding paths. A typed
+record library holds reusable and imported facts such as Toast items, films, and showtimes. Content
+releases pin the exact content revision, model version, theme revision, renderer contract, and
+screen targets.
+
+The product stays one deployable API host for now. Its source gains module boundaries—Platform,
+Content, Themes, Integrations, Display Delivery, and Operations—so a later physical split is an
+option rather than a rewrite.
+
+| Stage | Outcome | Status |
+|---|---|---|
+| M0 | Architecture reconciliation, workstream disposition, source/ownership map | **approved / planning** |
+| M1 | Verification baseline and internal module seams in one API host | planned after M0 |
+| M2 | Shared model registry, record library, revisions, state overlays, and release contract | planned |
+| M3 | Reimplement Menu as `menu.v1` on the shared foundation | planned |
+| M4 | Theme Studio binds to the real model/revision/rendering contract | planned |
+| M5 | Integrations, screens, box player, onboarding, Platform Operations, and Keystone attach through that foundation | later |
+
+The program explicitly classifies work as **stabilize now**, **migrate into the foundation**,
+**remain compatible for later**, or **defer**. It is not authorization for an unbounded rewrite or
+a microservice deployment split.
+
+The detailed Menu table above is synchronized through M6-A11. `PROJECT_STATUS.md` remains the
+granular current-status record for acceptance, deployment, configuration, and retest evidence;
+agents must not infer those facts from a condensed roadmap row.
 
 ---
 

@@ -2,6 +2,32 @@
 
 Every decision settled with the owner across the menu work. These govern the wireframes in `Menus.dc.html` (M1–M3), `Menus at Scale.dc.html`, and `Multi-Venue Menus.dc.html` (MV1–MV4b). Wireframe annotations reference these by number.
 
+## Architecture-renewal amendment — 28 August 2026
+
+**Owner ruling.** Menu is the first content type in the shared VennueSign Content Platform. Its
+accepted customer behavior remains binding; its current menu-only persistence and API shape do not
+become permanent architecture.
+
+The successor implementation is `menu.v1`, an immutable versioned model used by Content Builder,
+Theme Studio, publishing, and the renderer. It must preserve these decisions as acceptance
+behavior:
+
+- price belongs to the placement, while an item's library value is only its default;
+- 86/availability is a venue-scoped operational fact, immediate rather than queued;
+- imported/provider data has explicit source authority and never silently changes unrelated menus;
+- drafts, history, assignments, publishing, delivery evidence, and lifecycle actions remain
+  deliberate and truthful.
+
+A typed record library replaces the Menu-only Item Library as the underlying capability. It can
+hold reusable and imported records, including eventual Toast items, films, and showtimes. A model
+declares whether a collection is inline, manually composed, a library reference, or provider-query
+driven. Theme revisions bind to explicit model fields and define how a state responds visually.
+
+This amendment does **not** authorize an unbounded rewrite or change current customer behavior.
+Correctness and closure work may continue. New Menu persistence, theme, render, or API foundations
+must follow `docs/architecture/content-platform-architecture-renewal.md` and start only through
+a bounded implementation milestone.
+
 ## Publishing and state
 
 **1 · Explicit publish, everywhere.** Nothing reaches a screen without a deliberate act. Per-field autosave-to-live is gone at every tier.

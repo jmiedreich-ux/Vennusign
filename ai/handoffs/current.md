@@ -1908,3 +1908,43 @@ Two important limits are recorded in the final report: the visible coding fixtur
 The owner adopted Done Record enforcement. `docs/templates/done-record.md` is the canonical template; `docs/features/menus/done-records/` is created with the first record. `AGENTS.md` now requires a complete record for every milestone or fix PR, requires paths to be recorded and attacked, requires every standing design question to be answered, and makes the Done Record the reviewer's first check.
 
 **Exact next action.** Every milestone or fix PR commits a filled-out Done Record at docs/features/<feature>/done-records/<pr-number>.md, from the template at docs/templates/done-record.md, describing the exact head commit under review.
+
+## 2026-08-30 — Architecture Renewal M0 and API Architecture vNext proposal
+
+Content Platform Architecture Renewal PR **#939** records the owner-approved foundation and the
+API Architecture vNext proposal. VennueSign is re-founded as a controlled content-and-presentation
+platform; Menu becomes the first real shared Data Model, `menu.v1`, rather than a permanent
+menu-only exception.
+
+The durable record is `docs/architecture/content-platform-architecture-renewal.md`. It establishes
+Content Home, Content Builder, immutable Data Model/theme versions, a typed record library for
+manual and imported facts, first-class operational state overlays, immutable Content Releases, and
+a modular-monolith direction with one deployed API host initially.
+
+API vNext keeps four logical surfaces, each with four explicit families:
+
+- **Vennue Core API** — customer business authority and effective desired state.
+- **Vennue Connect API** — controlled external data exchange and synchronization.
+- **Vennue Runtime API** — output-specific delivery, convergence, health, and actual-state evidence.
+- **Vennue Platform API** — Vennue workforce governance and cross-tenant service operations.
+
+Multi-venue ownership, organization sharing and venue-local content/overrides, publishing and
+rollback, imported-field provenance and authority, Release-versus-Package, desired-versus-actual
+state, player-output identity, fleet operations, and privileged-action boundaries are explicit.
+
+The competing endpoint list remains separate at
+`docs/architecture/api-vnext-endpoint-inventory-mapping.txt`. Its original route and description
+text/order are preserved. All **156 route groups** carry a primary `MAP`; `INTERACTION` and
+`REVIEW` annotations expose cross-surface composition and unresolved candidate-contract issues.
+The inventory cannot redefine or consolidate the four surfaces.
+
+No product code, schema, endpoint approval, API behavior, deployment topology, tracker claim, or
+current Menu behavior changes through this planning PR. Independent verification approved exact
+architecture head `c6ecf85f75ecdf5abbf8a4d7276d7601965a6271` before merge preparation. The final
+merge head must receive a fresh independent review because the Done Record and conflict resolution
+invalidate that approval.
+
+**Exact next action:** answer the owner's closing API Architecture vNext questions, then run the five
+M0 planning sessions—current-source map; `menu.v1`; record library/provider authority;
+theme/release contract; and refactor sequencing—before selecting a bounded M1 implementation.
+Data Model Studio follows the proven model engine and `menu.v1` proof.

@@ -2,7 +2,7 @@
 
 **Status:** Canonical engineering orientation document  
 **Repository:** `jmiedreich-ux/Vennusign`  
-**Last consolidated:** 2026-08-25  
+**Last consolidated:** 2026-08-28 (amended)
 **Audience:** Engineers, reviewers, technical designers, and engineering agents
 
 ---
@@ -258,6 +258,28 @@ On a refusal or conflict, the client reconciles from the authoritative response 
 ---
 
 ## 8. Content, menus, themes, and publishing
+
+### 8.0 Content Platform architecture renewal
+
+**Confirmed direction, owner-approved 2026-08-28.** VennueSign is a controlled content-and-presentation platform. A Menu is the first content type, not a permanent menu-only architecture.
+
+The durable model is:
+
+```
+Content type -> immutable data-model version -> content instance/revision
+             -> compatible theme revision -> immutable content release -> screen/player
+```
+
+- **Content Home** is the common catalog and lifecycle surface. Industry makes types relevant; entitlement and permission decide availability; neither changes a model's technical meaning.
+- **Content Builder** is the shared capability behind focused editors. A Menu still speaks of Items; a cinema board may speak of Showtimes.
+- A versioned **data model** defines nested structure, validation, provider authority, editor behavior, state fields, and the paths Themes may bind to.
+- The **record library** is a typed canonical layer for reusable and imported facts. A collection may be inline-owned, manually composed from library records, or provider-query driven.
+- **Operational state** is first class. A state such as sold out is layered over an approved content release; the Theme revision defines its visual response. It is neither an ordinary layout field nor a separate layout variant.
+- **Theme revisions** bind to explicit model versions and field paths. A content release pins the exact content revision, model version, theme revision, renderer contract, and target assignments.
+- Model and Theme versions are immutable once released. A change creates a successor version and deliberate migration; it never silently changes live output.
+- The product remains a **modular monolith** for now: internally owned API modules, one deployed API host/App Service/container. A physical split requires evidence.
+
+The approved program, target persistence shape, source-cleanup rules, workstream disposition, and phased implementation sequence are maintained in `docs/architecture/content-platform-architecture-renewal.md` (#939). That program is planning authority; implementation still requires a bounded feature milestone with schema, API, UI, tests, and owner acceptance.
 
 ### 8.1 Menus
 
@@ -755,6 +777,7 @@ Use this document first to orient. Then read only the source record relevant to 
 ### Cross-system architecture
 
 - `docs/architecture/built-foundations-spec.md`
+- `docs/architecture/content-platform-architecture-renewal.md`
 - `docs/architecture/capability-entitlement-authority.md`
 - `docs/architecture/administrative-identity.md`
 - `docs/architecture/phase-13-identity-tenancy-foundation.md`

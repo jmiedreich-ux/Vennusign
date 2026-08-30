@@ -2,8 +2,8 @@
   "codename": "Theme Studio",
   "what": "The theme editor: how a venue chooses and shapes the look of what its screens show, without touching the menu content underneath",
   "stage": "designing",
-  "position": "Hi-fi in Design — TS1 to TS5, a theme editor, identity and rail options, a 28-state storyboard and a PSA review. Nothing in this repository yet.",
-  "next": "A design authority landed in docs/features/theme-studio/, then a question register, then a milestone plan. None exist yet.",
+  "position": "Hi-fi in Design — TS1 to TS5, a theme editor, identity and rail options, a 28-state storyboard and a PSA review. No implementation authority is landed in this repository yet.",
+  "next": "First reconcile Theme Studio with the Content Platform: bind Themes to explicit immutable model versions, field/repeater paths, operational-state responses, compatibility validation, and a release boundary. Then land design authority in docs/features/theme-studio/, a question register, and a milestone plan.",
   "label": "workstream:theme-studio",
   "design": [
     {
