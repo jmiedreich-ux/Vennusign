@@ -2,7 +2,7 @@
 
 **Status:** Canonical engineering orientation document  
 **Repository:** `jmiedreich-ux/Vennusign`  
-**Last consolidated:** 2026-08-28 (amended)  
+**Last consolidated:** 2026-08-28 (amended)
 **Audience:** Engineers, reviewers, technical designers, and engineering agents
 
 ---
