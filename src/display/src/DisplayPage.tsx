@@ -26,6 +26,7 @@ import {
   getConnectionPresentation,
   getDisplayStatePresentation
 } from './displayPresentation.mjs';
+import { useRotatedContent } from './usePageRotation';
 
 type DisplayPageProps = {
   screenId: string;
@@ -43,6 +44,12 @@ export const DISPLAY_CONTENT_RECOVERY_INTERVAL_MS = 60_000;
 
 export default function DisplayPage({ screenId, platform, appVersion }: DisplayPageProps) {
   const [state, setState] = useState<DisplayState>({ kind: 'loading' });
+
+  /*
+   * The page cycle, computed here because a hook cannot live behind the early returns below.
+   * It gives back the content unchanged until there is more than one page to turn.
+   */
+  const rotated = useRotatedContent(state.kind === 'ready' ? state.content : undefined);
   const [connectionState, setConnectionState] = useState<DisplayConnectionState>('connecting');
   const [loadAttempt, setLoadAttempt] = useState(0);
 
@@ -245,7 +252,8 @@ export default function DisplayPage({ screenId, platform, appVersion }: DisplayP
         </p>
       )}
       <EmergencyBroadcastOverlay content={content}>
-        <PlaylistRotation content={content}><DisplayLayout content={content} /></PlaylistRotation>
+        {/* The pages of this menu turn inside the playlist's own cycle, not instead of it. */}
+        <PlaylistRotation content={content}><DisplayLayout content={rotated ?? content} /></PlaylistRotation>
       </EmergencyBroadcastOverlay>
     </>
   );

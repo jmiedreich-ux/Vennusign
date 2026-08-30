@@ -156,10 +156,23 @@ public class DisplayController : ControllerBase
         // assigning it. Reading "the venue's first active menu and all of its
         // sections" instead meant every screen in a venue showed the same thing
         // and a second menu could never be reached.
-        var assignment = contentRepository is null
-            ? null
+        /*
+         * EVERY page this screen is assigned, not just the first one found.
+         *
+         * FirstOrDefault was here, so a screen holding five pages was sent one and the other four
+         * never reached the player at all - while the back office told the operator, on the
+         * assignment page, that "a screen holding more than one page rotates between them". The
+         * player could not rotate what it was never given.
+         */
+        var assignments = contentRepository is null
+            ? []
             : (await contentRepository.GetAssignmentsAsync(venueId, cancellationToken))
-                .FirstOrDefault(candidate => candidate.ScreenId == screen.Id);
+                .Where(candidate => candidate.ScreenId == screen.Id)
+                .ToArray();
+
+        // The first is still what the single-page fields below describe, so nothing that reads
+        // them changes meaning.
+        var assignment = assignments.FirstOrDefault();
 
         var menus = await menuRepository.GetMenusAsync(venueId, cancellationToken);
         var menu = assignment is null
@@ -203,6 +216,33 @@ public class DisplayController : ControllerBase
             .ThenBy(section => section.SectionId)
             .ToArray();
 
+        /*
+         * Sections for one page, built the same way for every page this screen holds.
+         *
+         * The body below was written for a single page and is unchanged; it is a local function
+         * now so each assigned page can be drawn with it rather than the first one being special.
+         */
+        async Task<List<DisplayMenuSectionResponse>> SectionsForAsync(Guid? pageId)
+        {
+            var forPage = (publishedSnapshot.Sections ?? [])
+                .Where(section => pageId is not Guid wanted || section.PageId == wanted)
+                .OrderBy(section => section.SortOrder)
+                .ThenBy(section => section.SectionId)
+                .ToArray();
+            return await BuildSectionsAsync(forPage);
+        }
+
+        static decimal ParsePrice(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return 0m;
+            var cleaned = new string(raw.Where(c => char.IsDigit(c) || c == '.' || c == ',' || c == '-').ToArray())
+                .Replace(",", string.Empty);
+            return decimal.TryParse(cleaned, NumberStyles.Number, CultureInfo.InvariantCulture, out var price) ? price : 0m;
+        }
+
+        async Task<List<DisplayMenuSectionResponse>> BuildSectionsAsync(
+            IReadOnlyCollection<Vennu.Api.Services.SnapshotSection> publishedSections)
+        {
         var displaySections = new List<DisplayMenuSectionResponse>();
         foreach (var section in publishedSections)
         {
@@ -229,15 +269,21 @@ public class DisplayController : ControllerBase
                             Id = item.ItemId,
                             Name = item.Name ?? string.Empty,
                             Description = item.Description,
-                            // A snapshot keeps the price exactly as it was typed. The
-                            // display contract carries a decimal, so a market price or
-                            // a dash lands as 0 - the same conversion BoardItemsSql did
-                            // with TRY_CONVERT. See the note on this in issue #739.
-                            Price = decimal.TryParse(
-                                item.Price,
-                                NumberStyles.Number,
-                                CultureInfo.InvariantCulture,
-                                out var price) ? price : 0m,
+                            /*
+                             * A second instance of the currency-symbol bug fixed in MenuRepository.
+                             *
+                             * A published SNAPSHOT is what a real screen actually shows - not the
+                             * live board query BoardItemsSql feeds. Every printed price carries the
+                             * symbol it was typed with ("$7.00"), and decimal.TryParse with
+                             * NumberStyles.Number rejects that exactly the way TRY_CONVERT did, so
+                             * every price on a published, on-screen board rendered $0.00. Fixing the
+                             * live-board path alone left the thing an actual guest sees untouched -
+                             * caught only by looking at a real screenshot, not by reading code.
+                             *
+                             * A genuinely non-numeric price (MP, Market) still lands as 0 and still
+                             * needs its own answer; this fixes the case that is simply arithmetic.
+                             */
+                            Price = ParsePrice(item.Price),
                             HappyHourPrice = current?.HappyHourPrice,
                             // An item published and since deleted from the builder is
                             // still on the wall, so a missing live row means available
@@ -250,6 +296,39 @@ public class DisplayController : ControllerBase
                         };
                     }).ToArray()
             });
+        }
+            return displaySections;
+        }
+
+        // The page this screen was assigned first - what Sections has always meant.
+        var displaySections = await SectionsForAsync(assignment?.PageId);
+
+        /*
+         * And every page it holds, in the order the menu prints them, so the player can cycle.
+         *
+         * Only when there is more than one: a single-page screen has nothing to rotate to, and
+         * sending a one-entry list would invite a player to draw a cycle that never turns.
+         */
+        if (assignments.Length > 1)
+        {
+            var pageOrder = (publishedSnapshot.Pages ?? [])
+                .OrderBy(page => page.SortOrder)
+                .ThenBy(page => page.PageId)
+                .ToArray();
+
+            var pages = new List<DisplayMenuPageResponse>();
+            foreach (var page in pageOrder.Where(page => assignments.Any(a => a.PageId == page.PageId)))
+            {
+                pages.Add(new DisplayMenuPageResponse
+                {
+                    PageId = page.PageId,
+                    Name = page.Name,
+                    Sections = await SectionsForAsync(page.PageId)
+                });
+            }
+
+            response.Pages = pages;
+            response.PageDwellSeconds = publishedSnapshot.DwellSeconds > 0 ? publishedSnapshot.DwellSeconds : 12;
         }
 
         if (!string.Equals(response.Layout, ScreenLayout.Default, StringComparison.Ordinal))
@@ -266,13 +345,81 @@ public class DisplayController : ControllerBase
             .Sum(candidate => PhotoGridDensity.Capacity(candidate.PhotoGridDensity));
         var screenCapacity = PhotoGridDensity.Capacity(screen.PhotoGridDensity);
         var wallCapacity = wallScreens.Sum(candidate => PhotoGridDensity.Capacity(candidate.PhotoGridDensity));
-        var totalItems = displaySections.Sum(section => section.Items.Count);
+        var isLastOnWall = screenIndex == wallScreens.Length - 1;
+
+        /*
+         * Fit ONE page's sections to this screen's slot in the wall, and say what did not fit.
+         *
+         * Used only for the legacy top-level Sections/PhotoGridOverflowItems (first assigned
+         * page, screenful one) - a player that does not know about Pages can never be shown
+         * anything past this slice, so "N more items" is still the honest answer for it.
+         */
+        (IReadOnlyCollection<DisplayMenuSectionResponse> Sections, int Overflow) FitToScreen(
+            IReadOnlyCollection<DisplayMenuSectionResponse> pageSections)
+        {
+            var totalItems = pageSections.Sum(section => section.Items.Count);
+            var overflow = isLastOnWall ? Math.Max(0, totalItems - wallCapacity) : 0;
+            return (SliceSections(pageSections, itemOffset, screenCapacity), overflow);
+        }
 
         response.PhotoGridDensity = PhotoGridDensity.Normalize(screen.PhotoGridDensity);
-        response.PhotoGridOverflowItems = screenIndex == wallScreens.Length - 1
-            ? Math.Max(0, totalItems - wallCapacity)
-            : 0;
-        response.Sections = SliceSections(displaySections, itemOffset, screenCapacity);
+        var (firstPageSections, firstPageOverflow) = FitToScreen(displaySections);
+        response.Sections = firstPageSections;
+        response.PhotoGridOverflowItems = firstPageOverflow;
+
+        /*
+         * A page that does not fit one screen gets more than one, shown in turn on the same
+         * dwell timer that already rotates between real pages - instead of a "N more items"
+         * footer nothing ever scrolls to. Found on Mana-Thai Cuisine's Appetizers page: 13
+         * items on a 6-item screen, only 6 ever shown, and Salads - the page's other section -
+         * never appeared at all.
+         *
+         * Every real page is expanded this way, whether the screen has one page or several, so
+         * a single-page screen with too much content is treated the same as a multi-page one.
+         * Pages stays empty only when the expansion still adds up to a single screen overall -
+         * the existing "nothing to rotate to" rule, measured after expansion instead of before.
+         */
+        IEnumerable<DisplayMenuPageResponse> ExpandVirtualPages(
+            Guid pageId, string? name, IReadOnlyCollection<DisplayMenuSectionResponse> sections)
+        {
+            var totalItems = sections.Sum(section => section.Items.Count);
+            var frameStarts = ComputeFrameStarts(sections, wallCapacity);
+            for (var index = 0; index < frameStarts.Count; index++)
+            {
+                var frameStart = frameStarts[index];
+                var frameEnd = index + 1 < frameStarts.Count ? frameStarts[index + 1] : totalItems;
+                // Bounded by the frame's own size, not just this screen's capacity - otherwise a
+                // frame ComputeFrameStarts deliberately ended early (to avoid fragmenting the
+                // next section) would have SliceSections walk straight past that boundary and
+                // pull in the section it was just deferred to keep off this screen.
+                var frameCapacity = Math.Min(screenCapacity, frameEnd - frameStart);
+                yield return new DisplayMenuPageResponse
+                {
+                    PageId = pageId,
+                    Name = name,
+                    Sections = SliceSections(sections, itemOffset + frameStart, frameCapacity),
+                    PhotoGridOverflowItems = 0
+                };
+            }
+        }
+
+        var realPages = response.Pages.Count > 0
+            ? response.Pages
+            : [new DisplayMenuPageResponse { PageId = assignment?.PageId ?? Guid.Empty, Sections = displaySections }];
+
+        var expandedPages = realPages
+            .SelectMany(page => ExpandVirtualPages(page.PageId, page.Name, page.Sections))
+            .ToArray();
+
+        if (expandedPages.Length > 1)
+        {
+            // Reset here too: a single real page that only needed sub-paging never went
+            // through the assignments.Length > 1 branch above, so this is its only chance
+            // to pick up the menu's dwell time instead of the response's bare default.
+            response.PageDwellSeconds = publishedSnapshot.DwellSeconds > 0 ? publishedSnapshot.DwellSeconds : 12;
+        }
+        response.Pages = expandedPages.Length > 1 ? expandedPages : [];
+
         return Ok(response);
     }
 
@@ -328,6 +475,64 @@ public class DisplayController : ControllerBase
             remainingCapacity -= available.Length;
         }
         return result;
+    }
+
+    /*
+     * #961: rotation-watch found the flat "every screen holds exactly `capacity` items"
+     * cut (the original ExpandVirtualPages) starting a section it couldn't finish - Noodles
+     * (3 items, fits a screen easily) had its first item tacked onto the tail of the Soups
+     * screen and its other two stranded alone on the next; Salads (4 items, also an easy fit)
+     * got split the same way instead of ever getting a screen of its own.
+     *
+     * Returns the flat item-index each virtual screen starts at (always beginning with 0).
+     * A section joins the current screen if it fits there; if not but it would fit a fresh
+     * one, the current screen closes early (even under capacity) rather than fragment it;
+     * only a section bigger than a whole screen is actually split, and only by as much as it
+     * has to be.
+     */
+    private static IReadOnlyList<int> ComputeFrameStarts(
+        IReadOnlyCollection<DisplayMenuSectionResponse> sections,
+        int capacity)
+    {
+        var starts = new List<int> { 0 };
+        if (capacity <= 0)
+        {
+            return starts;
+        }
+
+        var remaining = capacity;
+        var consumed = 0;
+        foreach (var section in sections)
+        {
+            var left = section.Items.Count;
+            while (left > 0)
+            {
+                if (remaining == 0)
+                {
+                    starts.Add(consumed);
+                    remaining = capacity;
+                }
+
+                if (left <= remaining)
+                {
+                    consumed += left;
+                    remaining -= left;
+                    left = 0;
+                }
+                else if (left <= capacity)
+                {
+                    starts.Add(consumed);
+                    remaining = capacity;
+                }
+                else
+                {
+                    consumed += remaining;
+                    left -= remaining;
+                    remaining = 0;
+                }
+            }
+        }
+        return starts;
     }
 
     private static IReadOnlyCollection<string> ParseTags(string? tags) =>

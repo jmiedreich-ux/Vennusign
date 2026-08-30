@@ -759,6 +759,173 @@ conversation and now blocks the milestone in their place.
 **Scope.** Schema → API → UI → specs, the full vertical. `Duplicate`, `Put away` and `Take off the screens` are untouched.
 
 
+### Milestone 6-B — Close the shipped import work
+
+**Design ruling, relayed by the owner 2026-08-28:** *"Close or repair already-shipped correctness
+work: M6-A5 acceptance, M6-A7 re-test, M6-A11 configuration, current test failures."*
+
+Six 6-A milestones are marked `done` and **not one has an acceptance record** — every
+`acceptance.record` in `workstream.json` is `null`. Done here has meant merged, which is not the
+same thing, and this milestone is where that is repaid rather than carried further.
+
+##### What this closes
+
+| Task | What it is |
+|---|---|
+| T1 · **M6.5 acceptance** | The import's door on Menus home shipped in #874 with no workbook run. Record it. |
+| T2 · **M6.7 re-test** | *The parser reads a real printed menu* was accepted against a parser that has since changed twice — A22 (#938) and the same-dish rule. The recorded result no longer describes the code. Re-run against the owner's real menu, not a fixture. |
+| T3 · **M6.11 configuration** | Read as the residue suggestion's **provider key**, and settled that way here rather than sent back: it is the only configuration gap in M6.11. `menu-paste-import.spec.ts` skips both suggestion cases with *"the residue pass needs a key on this environment"*, so the feature ships untested by default. Settle where the key lives and make the skip an exception, not the norm. |
+| T4 · **The test failures** | #928–#935 — 58 UI failures triaged on 2026-08-28, with #929 (33 tests) and #928 (9) accounting for most. #929 first: it is one fixture defect and unblocks the rest. |
+| T5 · **The display defects found on a real board** | #943 every imported price renders `$0.00`, #944 five assigned pages never rotate, #945 unused board width, #946 *"7 more items"* on a guest board. Found by the owner on a published menu; none is a menu-authoring bug, all are the import's visible outcome. |
+
+**Why these are one milestone and not five issues.** They share a single cause: the import path was
+merged milestone by milestone and never judged end to end on a real menu. The night of 2026-08-27/28
+did that for the first time and produced thirteen issues. Closing them individually leaves the same
+gap open; closing them as *the shipped work being finished* does not.
+
+**Carried forward into the import contract, not re-litigated:**
+
+- **M6-A12's rule stands as stated** — a price belongs to the placement and the menu it is printed
+  on (A19); availability (86) remains an item-level operational state, venue-wide (decision 3).
+  These are different axes and neither milestone may collapse them.
+- **M6-A13's truthful replacement preview is part of the contract**, not a feature of one screen. A
+  replacement says what changes, in words, before it happens — `MenuSnapshot.Diff` already computes
+  the field-level delta, so any future import route inherits the obligation rather than reinventing
+  a count. *"The new import contract"* names no document that exists in this repo, so the clause
+  lives here until one does; if a contract is drafted elsewhere it should take the clause and this
+  plan should point at it.
+
+**Replace and delete are not two routes to the same outcome, and the plan should not treat them as
+one.** They end in the same *visible* result — new dishes on the screen — and in different
+identities. Replace keeps the menu: its screens, its theme, its history, its 86 state, and a
+restorable snapshot (decision 40). Delete-then-import produces a stranger wearing the same name with
+none of that. The risk is not that an operator cannot tell the outcomes apart; it is that they look
+identical and cost wildly differently.
+
+**Most of the steering already exists.** Q79 limits *Delete forever* to menus on **zero screens**, so
+an operator with a live menu cannot choose delete without first taking it dark in front of guests.
+Replace is already the only sane route for anything on a screen.
+
+**So the two stay apart, deliberately.** Replace is a content act; delete is a lifecycle act.
+Getting new content in never offers to destroy the thing it is updating: **delete is not reachable
+from the import flow**, and the replacement preview says nothing about the bin. Offering *"or bin it
+instead"* mid-import invites the destructive path at the moment the operator is least equipped to
+judge it — they are thinking about dishes, not about losing six months of history. The question an
+operator can actually answer is not *replace or delete*, it is **does this menu still exist?**
+Reprinted the dinner menu, replace. Stopped serving dinner, delete.
+
+##### Out of scope
+
+New import capability of any kind. This milestone finishes what is already merged.
+
+
+### Milestone 9 — Content Home, the first content-lifecycle slice
+
+**Design ruling, relayed by the owner 2026-08-28:** *"Move M6-A6 and M8 into the first Content Home
+/ content lifecycle vertical slice — not more legacy menu-table work."*
+
+**M6-A6 and M8 are withdrawn as standalone milestones** and become the first slice of Content Home.
+Both were shelf work: 6-A6 rebuilds the Menus shelf, M8 adds delete to it. Doing either against the
+current menu table spends the effort twice, because the surface it lands on is being replaced.
+
+**This is not a new concept.** Q23 and the owner's answer of 2026-08-07 already settled it: there is
+no separate purpose-built static-content home — *"the Content area is one surface whose functions
+are tier-gated — each tier sees only the functions necessary for what it can do."* Decision 19 said
+otherwise and was superseded by that answer. This milestone is the first thing actually built on it.
+
+##### The three questions this slice was waiting on, now settled
+
+The design team answered all three on 2026-08-28. They were recommendations in the register; they
+are now requirements.
+
+| Was | Now settled |
+|---|---|
+| **Q213** — a recycle bin, and does it have a surface? | **Yes, visible. *Recently deleted*, thirty-day retention, restore to the shelf.** Q212's destruction moves from delete to purge. Something must actually sweep — nothing in the product does today, and the nearest precedent (import-session expiry, `MenuImportService.cs:40`) sweeps opportunistically inside a request rather than on a timer. That is a real build, not a flag. |
+| **Q214** — filters | **Filters everywhere.** Not a scale affordance revealed at a threshold. |
+| **Q215** — compact count | **Twelve cards before compacting**, not six, so a venue at scale is not expanding the shelf on every visit. |
+
+##### What the slice is
+
+Vertical, not a screen: schema → API → UI → specs.
+
+| Task | Note |
+|---|---|
+| T1 · Content Home surface | One surface, functions tier-gated (Q23). The menus shelf becomes a view of it, not a page of its own. |
+| T2 · Filters everywhere | Q214. Present at every size, not revealed at a count. |
+| T3 · Twelve before compacting | Q215. `MenusHome.tsx:142`. |
+| T4 · Delete → *Recently deleted* | M8's owner-approved behaviour (Q79, 2026-08-07): "Delete forever" in the ⋯ only for menus on zero screens; hard confirmation naming what is destroyed; shared library items survive. Q213 changes *when* destruction happens, not whether. |
+| T5 · Thirty-day retention and restore | The bin needs a surface, a restore action, and a decision about where a restored menu lands — the shelf, per Q213. **The unanswered question is restore-after-thirty-days:** a menu is deleted only when it is on zero screens, but thirty days is long enough that those screens have moved on to something else. Does a restored menu come back assigned and contend for a screen, come back unassigned, or refuse while its old screens are occupied? Q213 settles the bin; it does not settle this. Decide it before T5 ships. |
+| T6 · The sweep | Purge after thirty days. Decide timer vs opportunistic before T5 ships; a bin that never empties is a leak with a screen on it. |
+
+**Still not in this slice, and named so it is not assumed:** the item **library** has no surface at
+all — no route lists library items, and it is reachable only as a search box inside the builder.
+That is A22's open question (#937) and the reason a venue cannot see or merge the duplicate items an
+import leaves behind. It belongs to Content Home eventually; it is not in the first slice.
+
+##### M5 stays parked
+
+*"Keep M5 Board View/Play parked until the real model/theme/rendering contract exists."* No change —
+it is already `parked`. Recorded here so the next planning round does not read the silence as an
+oversight. #944 and #945 touch the same rendering path and do **not** unpark it: they repair what is
+already on screens.
+
+
+### Milestone 10 — Display rendering engine: a full screen fits at natural size, a virtual screen to tune it, lone-page merging on hold
+
+**Planned 2026-08-29** from the owner's live review of Mana-Thai Cuisine after #960/#961. Issue #962.
+All three items live in the same engine — the code that decides what lands on a screen and how big
+it draws (`DisplayController.ComputeFrameStarts`/`SliceSections`, `boardFitScale.mjs`,
+`photoGrid.css`). What #958–#961 fixed was *which items* reach a screen; this is *how they draw*.
+
+##### T1 · A full screen is always shrunk, a short one never is — decided, parked
+
+Measured on the live screen, not reasoned: a full 6-item 3×2 screen renders at `data-board-fit-scale`
+**0.43–0.56**; a 3-item screen at **1.0**. The same dish reads at roughly half the text size depending
+on which screen it lands on. The card boxes are already the same width (~580–610px) — the #960 row
+packing is **not** the cause; the #790 shrink-to-fit safety net is, because a 3×2 board cannot hold six
+16:10 cards at natural size on a 1080p screen, so a full screen is *always* shrunk.
+
+**Decided (owner, 2026-08-29): Option A.** Size cards from the viewport height so a full screen fits
+at scale 1.0 with no shrink; every screen then renders identically. Cost, accepted: card photos crop
+to a wider strip (~2.5:1). Option B — lock every screen to the fullest screen's shrink — was rejected:
+consistent, but everything at ~0.45 and a one-item page becomes a small card in a black corner.
+
+##### T2 · A virtual screen to tune the engine
+
+Every packing decision in #958–#961 was verified by hand-building a throwaway harness (`main.tsx` swap
++ a screenshot script), reading the images, then deleting it. That is a permanent tool: give it a
+hypothetical menu shape (sections, item counts, density, viewport) and it renders the screens the
+engine would produce, so the engine is tuned against endless combinations before anything is
+published, and a regression in packing is a failed screenshot rather than a restaurant's complaint.
+
+**Constraint, named because it was already violated once:** the harness must call the **real
+server-side packing** — never a JavaScript reimplementation. The #961 harness reimplemented
+`ComputeFrameStarts` client-side to drive its rotation; a copy drifts, then lies, and defeats the
+purpose. The shape is an endpoint (or a test-only host) that takes a menu shape and returns the
+frames, with the display rendering them.
+
+The same capability later surfaces to operators in Back Office as a layout preview — *"this page
+takes three screens; Salads is on its own"* — so they see it before publishing, not on the wall.
+That is a follow-on slice, not T2.
+
+##### T3 · Auto-merge of lone pages — on hold
+
+Fish (1 item, its own page) sits alone on a mostly black screen. Folding it into a neighbour was
+discussed and **deliberately deferred** by the owner until T1 and T2 are done. A page is something
+the operator named and separated on purpose; silently combining pages changes their structure,
+and what merges with what would shift if they reorder. If it ever ships it is an explicit setting
+or a Back Office nudge — never silent display-side behaviour. Not started without a fresh decision.
+
+##### Order
+
+T1 first (decided and self-contained). T2 second — it is how T1 and everything after it gets
+verified, and it retires the throwaway-harness pattern. T3 only on a fresh decision.
+
+**Verification bar**, inherited from #958–#961: a change to this engine is not done until it has
+been read from real screenshots of the deployed screen, not sampled as text and not trusted from
+a passing test. The Done Records for #958–#961 record why.
+
+
 ## After this build (not planned, just named)
 Spreadsheet import; photo import (needs OCR provider + cost decision); POS import route; item library UI; multi-venue build; upgrade/marketing rework; Schedules-owned time pricing (returns happy-hour display); fallback-card authoring; plus the register's backlog issues #670–#683.
 

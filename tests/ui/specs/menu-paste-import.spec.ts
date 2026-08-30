@@ -1,6 +1,24 @@
 import { test, expect, openAs } from "../fixtures";
 import { seed } from "../seed";
 
+/*
+ * Review is a step now, not a screen the product jumps past (owner, 2026-08-28).
+ *
+ * A resolved session used to render the destination immediately, so these specs went straight
+ * there. The operator now passes THROUGH the review - which is where the line inventory and
+ * "Nothing left to answer" live - and moves on deliberately.
+ */
+async function onwardToDestination(page: import("@playwright/test").Page) {
+  const onward = page.getByTestId("go-to-destination");
+  const destination = page.getByTestId("menu-import-create");
+  // Wait for whichever screen the flow has reached before deciding. Checking count() straight
+  // away raced the render, found nothing, clicked nothing, and left the caller waiting for a
+  // heading that was never going to arrive.
+  await onward.or(destination).first().waitFor({ state: "visible" });
+  if (await onward.count()) await onward.click();
+}
+
+
 test.describe("paste import review", () => {
   test("reviews, resumes, and creates one truthful unpublished menu", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
@@ -9,7 +27,20 @@ test.describe("paste import review", () => {
     page.on("pageerror", error => pageErrors.push(error.message));
     await openAs(page, "owner", "/menu/import");
 
-    await page.getByLabel("Menu text").fill(`${seeded.itemName.replaceAll(" ", "   ")}  ${seeded.itemPrice}\nChef note`);
+    /*
+     * Two things this paste has to produce, and both had quietly stopped.
+     *
+     * A SAFE MATCH THAT STILL NEEDS A DECISION. The name is the seeded item's with the spaces
+     * tripled, so it matches after normalization - but at a DIFFERENT price. An exact match at the
+     * same price now arrives already answered (the parser names its rule for pre-answering, and
+     * re-importing a menu used to ask forty-four questions with nothing to decide in them), so
+     * there would be no banner to accept. A price that differs is the one thing worth stopping for.
+     *
+     * A NOTE THAT RAISES A QUESTION. "Chef note" sat after the item, and since description lines
+     * landed (076/078) a line following an item attaches as its description instead. Ahead of the
+     * item there is nothing to describe.
+     */
+    await page.getByLabel("Menu text").fill(`Chef note\n\n${seeded.itemName.replaceAll(" ", "   ")}  9.99`);
     await page.getByRole("button", { name: "Read menu" }).click();
     expect(pageErrors, "the import route must not crash after creating its resumable URL").toEqual([]);
     await expect(page.getByTestId("menu-import-review")).toBeVisible();
@@ -26,6 +57,7 @@ test.describe("paste import review", () => {
     await page.getByRole("button", { name: "Accept 1 safe match" }).click();
     await expect(page.getByRole("heading", { name: "1 item needs you" })).toBeVisible();
     await page.getByTestId("answer-dish").click();
+    await onwardToDestination(page);
     await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
     // Choosing is confirming now - the name sits on the choice itself, no second screen.
     const savedName = `Imported ${seeded.menuName}`;
@@ -73,6 +105,7 @@ test.describe("paste import review", () => {
     test.skip(testInfo.project.name!=="desktop","The replacement workflow has a separate below-900 refusal.");
     const seeded=await seed({label:"paste-replace"});await openAs(page,"owner","/menu/import");
     await page.getByLabel("Menu text").fill(`REPLACEMENT\nNew ${seeded.menuName} special  19`);await page.getByRole("button",{name:"Read menu"}).click();
+    await onwardToDestination(page);
     await expect(page.getByRole("heading",{name:"Where should these items go?"})).toBeVisible();
     await page.getByRole("button",{name:new RegExp(seeded.menuName)}).click();
     await expect(page.getByRole("heading",{name:`Replace ${seeded.menuName}?`})).toBeVisible();
@@ -85,7 +118,7 @@ test.describe("paste import review", () => {
     await page.getByRole("button",{name:"Restore previous draft"}).click();await expect(page.getByRole("status")).toContainText("working draft from before this import has been restored");
   });
 
-  test("thirty semantic near misses render as one group with no preselection", async ({ page }, testInfo) => {
+  test("thirty lines of the same dish are one dish, asked once, with no preselection", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "desktop", "The review workflow has a separate below-900 refusal.");
     const seeded = await seed({ label: "near-match-group" });
     const typo = `${seeded.itemName.slice(0, -1)}x`;
@@ -93,12 +126,30 @@ test.describe("paste import review", () => {
     await page.getByLabel("Menu text").fill(Array.from({ length: 30 }, () => `${typo}  ${seeded.itemPrice}`).join("\n"));
     await page.getByRole("button", { name: "Read menu" }).click();
 
+    /*
+     * "Pad Thai is Pad Thai, who cares about the price" - owner, 2026-08-28.
+     *
+     * This used to assert thirty rows inside the group: every line was decided on its own, so one
+     * paste asked the same identity question thirty times and was ready to create the dish thirty
+     * times. That is what filled the owner's library with rows nobody could tell apart. A repeated
+     * name is now one dish and is asked about once.
+     *
+     * Decision 33's rule is unchanged and still covered - near misses are surfaced as ONE grouped
+     * question, never thirty separate ones. What changed is that the one group now holds one row
+     * rather than thirty copies of the same question.
+     */
     const group = page.getByTestId("near-match-group");
     await expect(group).toHaveCount(1);
-    await expect(group).toContainText("30 pasted items have a similar library name");
-    await expect(group.getByRole("button", { name: new RegExp(seeded.itemName, "i") })).toHaveCount(30);
+    await expect(group.getByRole("button", { name: new RegExp(seeded.itemName, "i") })).toHaveCount(1);
     await expect(page.getByTestId("safe-match-banner")).toHaveCount(0);
     await expect(page.getByText("Nothing is selected for you.")).toBeVisible();
+
+    /*
+     * Line traceability (decision 41) is asserted where it can be asserted precisely: the parser
+     * unit test `The_same_dish_named_twice_in_one_paste_is_asked_about_once` checks both lines are
+     * still emitted. The inventory panel here carries no test ids to count, and adding them for
+     * one assertion is not worth the surface.
+     */
   });
 
   test("an unreadable line can be left out, and the choices name outcomes not mechanisms", async ({ page }, testInfo) => {
@@ -106,7 +157,10 @@ test.describe("paste import review", () => {
     await seed({ label: "leave-out" });
     await openAs(page, "owner", "/menu/import");
 
-    await page.getByLabel("Menu text").fill("Ossobuco  24\nA line nobody can read");
+    // The unreadable line comes first: after an item it attaches as that item's DESCRIPTION
+    // (migrations 076/078) and raises no question at all, which is the same trap that made
+    // "one decision is one row" measure an empty screen.
+    await page.getByLabel("Menu text").fill("A line nobody can read\n\nOssobuco  24");
     await page.getByRole("button", { name: "Read menu" }).click();
     await expect(page.getByTestId("menu-import-review")).toBeVisible();
 
@@ -120,6 +174,7 @@ test.describe("paste import review", () => {
 
     // The third answer the design always specified, and the only one never built.
     await row.getByTestId("answer-leave-out").click();
+    await onwardToDestination(page);
     await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
   });
 
@@ -128,7 +183,15 @@ test.describe("paste import review", () => {
     await seed({ label: "row-density" });
     await openAs(page, "owner", "/menu/import");
 
-    await page.getByLabel("Menu text").fill("Ossobuco  24\nfirst unreadable line\nsecond unreadable line\nthird unreadable line");
+    /*
+     * The unreadable lines come FIRST, before any item.
+     *
+     * They used to follow "Ossobuco 24", and since description lines landed (migrations 076/078) a
+     * line after an item attaches as that item's description rather than raising a question - so
+     * this paste produced no questions at all and the test was measuring an empty screen. Ahead of
+     * any item there is nothing to describe, which is what makes them real questions.
+     */
+    await page.getByLabel("Menu text").fill("first unreadable line\n\nsecond unreadable line\n\nthird unreadable line\n\nOssobuco  24");
     await page.getByRole("button", { name: "Read menu" }).click();
 
     const rows = page.getByTestId("question-row");
@@ -194,6 +257,7 @@ test.describe("paste import review", () => {
     const suggested = (await banner.getByRole("heading").innerText()).replace(/^Is this menu called “|”\?$/g, "");
 
     await page.getByTestId("suggestion-accept").click();
+    await onwardToDestination(page);
     await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
     // The whole point of the feature. `suggestedMenuName` and `proposedMenuName` are unrelated
     // server-side, and accepting used to set neither - so the name the banner had just offered went
@@ -209,6 +273,7 @@ test.describe("paste import review", () => {
 
     await page.getByLabel("Menu text").fill(`${seeded.itemName.replaceAll(" ", "   ")}  ${seeded.itemPrice}`);
     await page.getByRole("button", { name: "Read menu" }).click();
+    await onwardToDestination(page);
     await expect(page.getByRole("heading", { name: "Where should these items go?" })).toBeVisible();
     await page.getByRole("button", { name: "Create a new menu" }).click();
 

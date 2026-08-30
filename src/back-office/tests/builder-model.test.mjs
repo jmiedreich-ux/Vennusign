@@ -29,7 +29,8 @@ import {
   screenChipCutover,
   sharedItemLine,
   unavailableNote,
-  venueTime
+  venueTime,
+  screenState
 } from "../src/builderModel.mjs";
 
 const board = {
@@ -503,4 +504,46 @@ test("no two source files differ only by case", () => {
     }
   };
   walk("src");
+});
+
+/*
+ * The owner was shown two identical screen rows, both reading "Online". One was archived and had
+ * never checked in, and the page offered it as a place to put his menu. `screenState` ended with
+ * `return { key: "online" }` for anything it did not recognise, and Archived is not recognised.
+ */
+
+test("an archived screen says so rather than reporting Online", () => {
+  const state = screenState({ status: "Archived", lastSeenUtc: null });
+  assert.equal(state.key, "archived");
+  assert.match(state.text, /Archived/);
+  assert.doesNotMatch(state.text, /Online/);
+});
+
+test("a paired screen that has never reported does not claim to be online", () => {
+  // The owner's dead screen: paired, status says Online, LastSeen is null, never seen once.
+  const state = screenState({ status: "Online", lastSeenUtc: null });
+  assert.equal(state.key, "offline");
+  assert.match(state.text, /Never checked in/);
+});
+
+test("an unknown status is reported, not flattered", () => {
+  // With a last-seen present, so it reaches the unknown-status branch rather than the
+  // never-reported one above it — both are honest, and this asserts the right one.
+  const state = screenState({ status: "Decommissioned", lastSeenUtc: "2026-08-28T05:59:00Z" }, Date.parse("2026-08-28T06:00:00Z"));
+  assert.notEqual(state.key, "online");
+  assert.match(state.text, /Decommissioned/);
+});
+
+test("a screen that really is online still says Online", () => {
+  const now = Date.parse("2026-08-28T06:00:00Z");
+  const state = screenState({ status: "Online", lastSeenUtc: "2026-08-28T05:59:00Z" }, now);
+  assert.equal(state.key, "online");
+  assert.equal(state.text, "Online");
+});
+
+test("an online screen that stopped replying goes stale", () => {
+  const now = Date.parse("2026-08-28T06:00:00Z");
+  const state = screenState({ status: "Online", lastSeenUtc: "2026-08-28T05:30:00Z" }, now);
+  assert.equal(state.key, "stale");
+  assert.match(state.text, /30m/);
 });

@@ -51,6 +51,40 @@ public class DisplayContentResponse
     public DisplayThemeResponse Theme { get; set; } = new();
 
     public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];
+
+    /*
+     * Every page this screen is assigned, in order, so a screen holding more than one can rotate
+     * between them - which the back office has promised on the assignment page all along.
+     *
+     * `Sections` above stays what it was: the first assigned page. A player that knows nothing of
+     * pages keeps working, and one that does uses this instead. That is why this is added beside
+     * the old field rather than replacing it.
+     */
+    public IReadOnlyCollection<DisplayMenuPageResponse> Pages { get; set; } = [];
+
+    /// How long each page holds the screen before the next one, from the menu (Menus.DwellSeconds).
+    public int PageDwellSeconds { get; set; } = 12;
+}
+
+/// <summary>One assigned page and what it draws.</summary>
+public sealed class DisplayMenuPageResponse
+{
+    public Guid PageId { get; set; }
+
+    public string? Name { get; set; }
+
+    public IReadOnlyCollection<DisplayMenuSectionResponse> Sections { get; set; } = [];
+
+    /*
+     * Items this PAGE could not fit, not the page that happened to build first.
+     *
+     * The single top-level PhotoGridOverflowItems field predates rotation and is computed once,
+     * for whichever page fills Sections. A rotated player was swapping sections per page while
+     * that one number stayed fixed - so a page with one item still showed the count from wherever
+     * page one had overflowed. Verified on a real screen: "Fish" (1 item) reading "7 more items"
+     * that belonged to Appetizers. Each page now carries its own.
+     */
+    public int PhotoGridOverflowItems { get; set; }
 }
 
 public sealed class DisplayPromotionResponse

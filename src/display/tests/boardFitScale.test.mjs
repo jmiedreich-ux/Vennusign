@@ -185,9 +185,27 @@ test('boardFitContainerStyle uses top-left for a width-filled board, matching th
   assert.equal(style.width, `${fit.width}px`);
 });
 
-test('boardFitContainerStyle uses top-center for an already-fitting board (scale 1 is the identity transform either way)', () => {
+test('boardFitContainerStyle fills the viewport width for an already-fitting board', () => {
+  /*
+   * This used to assert style.width === undefined, on the reasoning that scale(1) needing no
+   * width instruction at all. It was wrong: with nothing set, a CSS grid's columns size to their
+   * own content rather than the viewport, and a page with few items shrank to a narrow column -
+   * watched directly on a real screen, where a page with one item left most of a 1920px board
+   * black. scale(1) on an explicit 100% is still the identity transform; the width is what fixes
+   * the gap.
+   */
   const style = boardFitContainerStyle({ scale: 1, width: null });
   assert.equal(style.transformOrigin, 'top center');
   assert.equal(style.transform, 'scale(1)');
+  assert.equal(style.width, '100%');
+});
+
+test('boardFitContainerStyle leaves width unset for the #802 height-only fallback (scale < 1, width: null)', () => {
+  // The DIFFERENT width:null case: solveFitWidth could not solve a fill width, so this shrinks
+  // whatever the container's own natural width already is. Forcing a width here would fight that
+  // fallback rather than help it.
+  const style = boardFitContainerStyle({ scale: 0.85, width: null });
+  assert.equal(style.transformOrigin, 'top center');
+  assert.equal(style.transform, 'scale(0.85)');
   assert.equal(style.width, undefined);
 });

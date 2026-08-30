@@ -83,6 +83,40 @@ public sealed class SeedService(ProductApiClient product)
             .Select(name => name.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray() ?? [];
+        /*
+         * Creating a menu already creates a section.
+         *
+         * `ContentRepository` gives every new menu a default `Section 1` (script 001, and
+         * `ContentIntegrationTests` asserts it). The seed used to add its own sections on top and
+         * leave that one in front, empty, at sort order 0 - so every seeded menu had one more
+         * section than the test expected, and the builder, which opens on the top section (Q116),
+         * opened on the empty one. The canvas then drew nothing and thirty-three specs failed
+         * looking for an item that was in the section below.
+         *
+         * Pages were already handled this way a few lines above: read what the product made, and
+         * only create the shortfall. Sections now do the same - the first seeded section renames
+         * the default rather than queueing behind it.
+         */
+        /*
+         * Creating a menu already creates a section.
+         *
+         * `ContentRepository` gives every new menu a default `Section 1`. The seed used to add its
+         * own alongside it and leave the empty one at sort order 0, so the builder - which opens on
+         * the top section (Q116) - opened on nothing, and thirty-three specs failed looking for an
+         * item one section below.
+         *
+         * The first section RENAMES that default rather than queueing behind it. Deleting it was
+         * tried and is worse: the delete endpoint requires a destination for the section's items
+         * ("Choose where the section's items should go"), which an empty section does not have, and
+         * every seed then failed 400.
+         *
+         * Pages a few lines above already work this way - read what the product made, create only
+         * the shortfall.
+         */
+        var existingSections = (await product.SendAsync<BoardSectionsResponse>(HttpMethod.Get,
+            $"/api/back-office/content/menus/{menu.Id}/board", token, null, cancellationToken).ConfigureAwait(false))
+            .Board.Sections.OrderBy(section => section.SortOrder).ToList();
+
         var sections = new List<SeedSection>();
         var items = new List<SeedItem>();
         var knownIndex = 0;
@@ -91,8 +125,21 @@ public sealed class SeedService(ProductApiClient product)
             var sectionName = sectionCount == 1
                 ? $"{label} section {suffix}"
                 : $"{label} section {sectionIndex + 1:00} {suffix}";
-            var section = await product.SendAsync<SectionResponse>(HttpMethod.Post,
-                $"/api/back-office/content/menus/{menu.Id}/sections", token, new { name = sectionName, pageId = pages[sectionIndex % pages.Count].PageId }, cancellationToken).ConfigureAwait(false);
+            var pageId = pages[sectionIndex % pages.Count].PageId;
+            var reuse = sectionIndex < existingSections.Count ? existingSections[sectionIndex] : null;
+            SectionResponse section;
+            if (reuse is null)
+            {
+                section = await product.SendAsync<SectionResponse>(HttpMethod.Post,
+                    $"/api/back-office/content/menus/{menu.Id}/sections", token, new { name = sectionName, pageId }, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                // The rename answers 204, so there is no body to read.
+                await product.SendAsync(HttpMethod.Put,
+                    $"/api/back-office/content/menus/{menu.Id}/sections/{reuse.SectionId}", token, new { name = sectionName }, cancellationToken).ConfigureAwait(false);
+                section = new SectionResponse(reuse.SectionId, sectionName, reuse.SortOrder);
+            }
             sections.Add(new SeedSection(section.SectionId, pages[sectionIndex % pages.Count].PageId, section.Name, section.SortOrder));
             for (var itemIndex = 0; itemIndex < itemsPerSection; itemIndex++)
             {

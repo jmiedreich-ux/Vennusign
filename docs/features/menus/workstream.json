@@ -3,7 +3,7 @@
   "what": "The menu product: item library, draft/publish spine, the builder, the render engine, and the import paths that get a venue's existing menu into it without retyping",
   "stage": "development",
   "position": "The replace confirm now names the dishes a replacement adds, drops and re-prices, with both numbers. Until M6.13 the only change it mentioned was the target's own draft, which the replacement discards.",
-  "next": "M6.13 needs an owner workbook. Q213-Q215 still block M8 (#868) and M6.6 (#871). #914 is a red E2E test on master, and #909 rotates the Anthropic key.",
+  "next": "M6.14 closes the shipped import work: acceptance records for M6.5/M6.7/M6.11, the M6.11 provider key, and the 58 UI failures (#928-#935, #929 first). M6.6 and M8 are folded into M9, Content Home — Q213-Q215 are settled.",
   "label": "workstream:menus",
   "design": [
     {
@@ -201,14 +201,15 @@
       "label": "M6.6",
       "depth": 13,
       "title": "The shelf is a page about menus",
-      "status": "blocked",
+      "status": "parked",
       "plan": "milestone-plan.md",
       "issue": 871,
       "pr": null,
       "acceptance": {
         "kind": "workbook",
         "record": null
-      }
+      },
+      "note": "Withdrawn 2026-08-28 — folded into M9 (#948), the first Content Home slice."
     },
     {
       "id": "6-A7",
@@ -369,14 +370,59 @@
       "label": "M8",
       "depth": 23,
       "title": "Delete a menu",
-      "status": "blocked",
+      "status": "parked",
       "plan": "milestone-plan.md",
       "issue": 868,
       "pr": null,
       "acceptance": {
         "kind": "workbook",
         "record": null
+      },
+      "note": "Withdrawn 2026-08-28 — folded into M9 (#948), the first Content Home slice."
+    },
+    {
+      "id": "6-B",
+      "label": "M6.14",
+      "depth": 24,
+      "title": "Close the shipped import work — acceptance, re-test, configuration, the failures",
+      "plan": "milestone-plan.md",
+      "issue": 947,
+      "pr": null,
+      "status": "next",
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
       }
+    },
+    {
+      "id": "9",
+      "label": "M9",
+      "depth": 25,
+      "title": "Content Home — the first content-lifecycle slice (absorbs M6.6 and M8)",
+      "plan": "milestone-plan.md",
+      "issue": 948,
+      "pr": null,
+      "status": "blocked",
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      },
+      "note": "Planned 2026-08-28. Absorbs M6.6 and M8; Q213-Q215 are settled, so what remains is build order behind 6-B."
+    },
+    {
+      "id": "10",
+      "label": "M10",
+      "depth": 26,
+      "title": "Display rendering engine — a full screen fits at natural size, a virtual screen to tune it, lone-page merging on hold",
+      "plan": "milestone-plan.md",
+      "issue": 962,
+      "pr": null,
+      "status": "blocked",
+      "acceptance": {
+        "kind": "workbook",
+        "record": null
+      },
+      "note": "Planned 2026-08-29 from the owner's live review after #960/#961. T1 is decided (Option A); T2 is how T1 and everything after it gets verified; T3 is on hold pending a fresh decision."
     }
   ]
 }

@@ -31,6 +31,9 @@ These govern every task, not only milestone work.
 - **Fix the behaviour, not the example.** Find everywhere a behaviour exists and fix it everywhere it exists — not only the place the request names. A request that names one location is describing a symptom; the scope is the behaviour.
 - **State the whole behaviour before coding.** Say what complete user behaviour this task is part of, what happens immediately before and after it, and where else that same behaviour lives. Then implement the whole known pattern, not the named example.
 - **Map the paths, then say which are validated.** For whatever is being changed: which path led into this state, which path leads out of it, and what *other* paths exist — the refusal, the conflict, the empty case, the permission denial, the second person arriving mid-way, the retry, the stale actor acting late. Name each path and what validates it. A path with nothing validating it is named as unvalidated; it is never left implied. **A feature is complete when its paths are covered, not when its happy path works.**
+* Paths are recorded, attacked, and reviewed — not just considered. The known paths of a change are written into the PR's Done Record: every legitimate route through the work, not only the happy path — a function usually has several. Each listed path is attacked hard in every way available to break it, and the attack and result are recorded. The list will never be complete; that is accepted. What is not accepted is a known path left silently unattacked. Paths discovered after building are added to the record, not left in someone's head.
+
+* Design questions are asked of every change, at design time and again at done time. The standing set (in the Done Record template): should this be reviewable or skippable given what came before; can the user edit it; can they go back a step; is delete needed, is edit needed; does it need to talk to another function; is every word shown to the user plain and clear; are there paths that should exist because they would make the product easier to use in context; should this be drag-and-drop. Each gets an answer, not a pass-over.
 - **Every area carries its own invariants.** Write down what must always be true of the area being worked on — the states its model says cannot exist — and assert them automatically, after every test in that area, against whatever state the test left behind. When a defect turns out to be "the model was in a state it should never be in", it becomes a new invariant, not only a new test. The Menus content model has such a set in `tests/Vennu.Data.IntegrationTests/Fixtures/ModelInvariants.cs`; it is the pattern, not the exception.
 - **Answer "where else does this apply" with a search, not from memory.** Run an actual search of the codebase and paste the command and its full results into the report. Every location in those results that was not changed is named, with the reason.
 - **Evidence is a command someone else can rerun, and its output** — a test run, a request and its response, a case that failed and then passed. "Verified working" is not evidence. Anything not actually executed is marked **UNTESTED**; that is an acceptable answer, a false "done" is not.
@@ -85,6 +88,12 @@ These govern every task, not only milestone work.
 - Every location the same behaviour lives — searched, listed, all fixed.
 - Every consumer of any shared component touched.
 - Nothing adjacent broken: a quick regression of the surrounding flow.
+
+The Done list is not an instruction — it is a record. Every milestone or fix PR commits a filled-out Done Record at docs/features/<feature>/done-records/<pr-number>.md, from the template at docs/templates/done-record.md, describing the exact head commit under review.
+
+* Every item is answered PASS (with specifics of what was actually done and observed), N/A (with the reason), or UNTESTED (with the reason and residual risk). A blank item is an incomplete record.
+* An answer that restates the checklist item, or says only "tested" or "verified", is not an answer.
+* A PR without a complete Done Record does not merge, regardless of green checks.
 
 ## Architecture
 
@@ -152,6 +161,8 @@ Adopted 2026-08-09 from the Menus Milestone 1 retrospective, after five consecut
 - Resolve required gaps in scope or record an approved exclusion/follow-up. Do not ship necessary actions or states as silent omissions.
 
 ## Review and Merge Gate
+
+* The reviewer's first job is the Done Record. Before reading the diff, read the record: confirm every item is answered, that PASS answers name real specifics, and that the paths listed actually match the change in front of them — a record can be complete and still wrong, and a diff can carry paths the record never names. A missing, incomplete, or box-ticked record is REQUEST_CHANGES on its own, before any code question.
 
 - Every PR gets an independent review — never by its author (Track 1 lesson, issue #659). Review the full diff, acceptance criteria, architecture/security impact, tests, exact-head Actions, artifacts, secrets, debug code, unrelated changes, branch drift, and documentation accuracy.
 - Allowed decisions are `APPROVE`, `REQUEST_CHANGES`, or `COMMENT`. New commits invalidate prior approval. Never merge with unresolved material comments, and — once CI is restored — never with incomplete or failing required checks.

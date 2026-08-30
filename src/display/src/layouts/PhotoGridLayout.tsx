@@ -1,10 +1,14 @@
+import type { CSSProperties } from 'react';
 import type { DisplayLayoutProps } from './DisplayLayout';
 
 const limitedQuantityThreshold = 5;
 
+const densityColumns: Record<string, number> = { '2x2': 2, '3x2': 3, '3x3': 3, '4x2': 4 };
+
 export default function PhotoGridLayout({ content }: DisplayLayoutProps) {
   const sections = content.sections ?? [];
   const density = content.photoGridDensity ?? '3x2';
+  const columns = densityColumns[density] ?? 3;
 
   return (
     <div className={`photo-grid photo-grid--density-${density}`} data-density={density}>
@@ -12,8 +16,13 @@ export default function PhotoGridLayout({ content }: DisplayLayoutProps) {
         <p className="photo-grid__venue">{content.venueName}</p>
         <h1>{content.menuName}</h1>
       </header>
+      <div className="photo-grid__sections">
       {sections.map((section) => (
-        <section className="photo-grid__section" key={section.id}>
+        <section
+          className="photo-grid__section"
+          key={section.id}
+          style={{ '--section-span': Math.max(1, Math.min(section.items.length, columns)) } as CSSProperties}
+        >
           <h2>{section.name}</h2>
           <div className="photo-grid__cards">
             {section.items.map((item) => (
@@ -60,6 +69,7 @@ export default function PhotoGridLayout({ content }: DisplayLayoutProps) {
           </div>
         </section>
       ))}
+      </div>
       {(content.photoGridOverflowItems ?? 0) > 0 && (
         <footer className="photo-grid__overflow">
           {content.photoGridOverflowItems} more item{content.photoGridOverflowItems === 1 ? '' : 's'}

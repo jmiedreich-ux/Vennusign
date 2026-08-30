@@ -51,7 +51,15 @@ test.describe("the ways a menu gets in", () => {
   test("an empty shelf draws the routes at page size, with nothing to dismiss", async ({ page }) => {
     // Decision 17: onboarding is this screen's empty state, not a wizard - there
     // is nothing to fall out of and nothing to re-enter. So no dialog, no scrim.
-    await page.route("**/api/back-office/menus**", async route => {
+    /*
+     * The shelf is served from /api/back-office/CONTENT/menus.
+     *
+     * This mocked /api/back-office/menus, which the app never calls - so it intercepted nothing
+     * and the test ran against the real venue. That venue has 113 menus in it, which is the
+     * opposite of the empty shelf this case exists to check, and the failure said only that the
+     * routes were missing.
+     */
+    await page.route("**/api/back-office/content/menus**", async route => {
       if (route.request().method() !== "GET") return route.fallback();
       await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
     });
