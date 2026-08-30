@@ -446,7 +446,7 @@ VennueSign vNext exposes four purposeful API surfaces inside the modular monolit
 | **Vennue Runtime API** | Delivers resolved output packages and operational overrides, then proves what each player output is actually showing. |
 | **Vennue Platform API** | Lets authorized Vennue staff support, govern, configure, and operate the overall service without bypassing the owning APIs. |
 
-The rejected surface names are **Management API**, **Integration API**, and **Player API**. They were too generic and did not express the boundaries. **Vennue API** was refined to **Vennue Core API** once its role as the business authority became clear.
+The rejected surface names are **Management API**, **Integration API**, **Delivery API**, and **Player API**. They were too generic and did not express the boundaries. **Vennue API** was refined to **Vennue Core API** once its role as the business authority became clear.
 
 The four short boundary statements are:
 
@@ -473,7 +473,7 @@ The surfaces are logical ownership and contract boundaries, not an instruction t
 - Modules interact through named application contracts or versioned events; they do not write one another's tables directly.
 - Split a surface physically only when scaling, failure isolation, security, release cadence, or team ownership proves that the operational cost is justified.
 - Use REST and JSON for public contracts unless a later use case proves another contract is necessary.
-- Generate and maintain OpenAPI contracts.
+- Generate OpenAPI contracts and check the generated contracts into source control so contract changes are explicit and reviewable.
 - Version public contracts from the beginning; representative paths use an explicit contract version such as `/api/v1`.
 - Prefer business actions over database-shaped CRUD. Examples include validate, publish, rollback, assign, pair, reconcile, and set operational state.
 - Use opaque time-sortable public identifiers such as UUIDv7 rather than exposing sequential database keys.
@@ -487,7 +487,7 @@ The surfaces are logical ownership and contract boundaries, not an instruction t
 - Treat webhooks, events, and realtime messages as versioned contracts.
 - Realtime notifications prompt reconciliation; they never replace the authoritative state read.
 
-The API domain term is **Data Model**, not **Content Model**. Representative top-level Core language is `data-models`, `content`, `themes`, `screens`, `players`, `releases`, `assets`, `organizations`, and `venues`. The existing proposed internal authoring-tool name **Data Model Studio** is not renamed by this API proposal.
+The API domain term is **Data Model**. **Content Type**, bare **Model**, and **Content Model** were considered and rejected as the primary domain term before settling on Data Model. Representative top-level Core language is `data-models`, `content`, `themes`, `screens`, `players`, `releases`, `assets`, `organizations`, and `venues`. The existing proposed internal authoring-tool name **Data Model Studio** is not renamed by this API proposal.
 
 ### 15.3 Multi-venue foundation
 
@@ -501,9 +501,9 @@ Organization -> Venue -> Wall -> Screen -> Player Output
 
 - An organization may have one or many venues.
 - Organization-level objects are shared objects, not uncontrolled copies at every venue.
-- A venue owns its local configuration, permitted overrides, screens, walls, assignments, schedules, releases, and operational state.
+- A venue owns its local content, local configuration, permitted overrides, screens, walls, assignments, schedules, releases, and operational state.
 - Screens and walls are logical targets. A player output is a physical/runtime endpoint bound to a logical screen.
-- Organization-level content, models, themes, assets, presentations, policies, and access rules may be shared where their owning contracts allow it.
+- Organization-level content, models, themes, assets, presentations, brand standards, policies, and access rules may be shared where their owning contracts allow it.
 - Each venue retains explicit state for shared material: running, pending, behind, not running, or locally overridden.
 - An organization push may automatically apply, become pending, require venue acceptance, or preserve approved local overrides according to policy. The API must represent the policy rather than silently choosing.
 - Runtime never resolves organization inheritance or venue override precedence.
@@ -624,6 +624,15 @@ The ordinary path is:
 Normal authored change -> Draft -> Review -> Publish -> immutable Release
 ```
 
+A publish operation preserves the full controlled workflow:
+
+1. validate content and theme;
+2. validate required fields and screen fit;
+3. create an immutable release snapshot;
+4. record assignments;
+5. notify players;
+6. preserve the previous release for rollback.
+
 Operational state is a separate path:
 
 ```
@@ -708,6 +717,15 @@ Field or content-area authority may be:
 - integration controlled across selected content/presentations;
 - manually reviewed before acceptance.
 
+Every imported field retains provenance sufficient to explain and reconcile the accepted value:
+
+- source system;
+- external ID;
+- import timestamp;
+- mapping version;
+- ownership rule;
+- last accepted value.
+
 An imported price may deliberately control that price across selected menus/presentations when the configured ownership rule says so. It must never gain cross-content reach accidentally. Film and showtime identity is provider-owned where the connector contract declares it.
 
 #### 15.5.3 Data Movement
@@ -763,7 +781,7 @@ Organization-level mappings and ownership policies may be reused, with explicit 
 The result of a valid external change depends on policy:
 
 - a normal price change may become a Core draft;
-- a trusted showtime feed may produce an automatic managed update;
+- a trusted showtime feed may auto-publish a managed update when policy explicitly permits it;
 - an urgent imported availability fact may become a Core operational override;
 - an ambiguous identity match may wait for human review;
 - a rejected field leaves the last valid value unchanged.
@@ -892,7 +910,7 @@ Platform may observe and administer all surfaces through their supported command
 
 Customer Support composes organization, venue, subscription, screen/wall, player health, publishing/showing, connector, failure, and audit information. Support access is role-restricted, reason-recorded, time-limited when elevated, audited, and read-only by default.
 
-Core exposes customer subscription usage, checkout, and billing portal actions. Platform investigates failures, reconciles provider state, manages the plan/tier catalog, and applies approved commercial exceptions. Vennue retains billing identifiers and commercial state, not payment-card data.
+Core exposes customer subscription usage, checkout, and billing portal actions. Platform investigates failures, reconciles provider state, manages the plan/tier catalog, and applies approved commercial exceptions. Organization and Venue Administration include controlled recovery, suspension/reactivation, and structural correction use cases through the owning Core commands. Revenue Reporting includes trial conversion, subscription movement, and billing reconciliation failures as well as recurring-revenue views. Vennue retains billing identifiers and commercial state, not payment-card data.
 
 #### 15.7.2 Entitlements and Configuration
 
@@ -913,7 +931,7 @@ Plan/tier
 = effective capability
 ```
 
-Customer exceptions require reason, approver, effective time, expiration, and audit evidence. Configuration supports concurrency protection, preview/diff, history, rollback, non-secret export, and reviewed environment application. Secrets are referenced and health-checked; their values are never returned.
+Customer exceptions require reason, approver, effective time, expiration, and audit evidence. Platform Configuration covers safe operational thresholds, provider configuration references, renderer versions, retention rules, and feature defaults. Configuration supports concurrency protection, preview/diff, history, rollback, non-secret export, and reviewed environment application. Secrets are referenced and health-checked; their values are never returned.
 
 #### 15.7.3 Fleet and Delivery Operations
 
@@ -924,7 +942,7 @@ Customer exceptions require reason, approver, effective time, expiration, and au
 - Connector Fleet Monitoring
 - Maintenance and Incidents
 
-Runtime owns individual actual-state reports; Platform aggregates cross-tenant fleet health. Connect owns individual connection/sync records; Platform aggregates provider-wide health.
+Runtime owns individual actual-state reports; Platform aggregates cross-tenant fleet health. Connect owns individual connection/sync records; Platform aggregates provider-wide health. Connector Fleet Monitoring makes provider-wide signals visible, including failure rate, stalled runs, expired credentials, webhook backlog, reconciliation failures, and provider outage.
 
 Rendering Operations observes queue depth, compile/Wall Planner failure, renderer version, artifact-cache health, and package generation. A recompile after renderer change may regenerate packages without inventing a customer content revision.
 
@@ -984,9 +1002,11 @@ REVIEW -> a boundary issue that remains visible until explicitly decided
 
 No endpoint is approved, discarded, renamed, or moved merely because its original section changes. The current mapping intentionally flags:
 
-1. Screen responses that mix Core desired configuration with Runtime actual state; these may remain composed reads only if ownership stays explicit.
-2. Wall delivery state, which is Runtime-owned even if surfaced in a Core wall view.
-3. Stripe billing webhook ownership, which is not part of the customer-data Connect domain.
+1. The content-entry state route must not conflate the immediate 86/restore operational contract with an authored **Not available** change that requires publish.
+2. Presentation-list responses that say what screens show may compose Core presentation data with Runtime Showing State; the contract must preserve the distinction.
+3. Screen responses, including assignment views, that mix Core desired configuration with Runtime actual state may remain composed reads only if ownership stays explicit.
+4. Wall delivery state is Runtime-owned even when surfaced in a Core wall view.
+5. Stripe billing webhook ownership is not part of the customer-data Connect domain.
 
 The inventory is a use-case and candidate-contract register beneath this architecture. It cannot redefine the four surfaces or their families.
 
