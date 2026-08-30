@@ -125,6 +125,7 @@ DELETE  …/content/entries/{id}
 PUT     …/content/entries/{id}/state the 86 contract
         MAP → Vennue Core API → Change Control → Operational Overrides
         INTERACTION → Vennue Runtime API → Desired State and Delivery → Override Delivery
+        REVIEW → The candidate `available` state must not conflate authored **Not available**, which requires publish, with immediate 86/restore operational state.
         available / sold-out / featured / hidden — instant, never draftable, survives publish, triggers the render fast path
 GET     …/content/state
         MAP → Vennue Core API → Change Control → Operational Overrides
@@ -170,6 +171,8 @@ POST    …/content/imports/snapshots/{id}/restore
 ## Presentations /api/venues/{venueId}/presentations — 20
 GET     …/presentations
         MAP → Vennue Core API → Content and Design → Presentations
+        INTERACTION → Vennue Runtime API → Convergence and Evidence → Showing State
+        REVIEW → “What its screens show” may be a composed Core desired/Runtime actual read; keep those facts and their ownership explicit.
         the shelf: every presentation, what its screens show, unpublished change count, allowance vs limit
 POST    …/presentations?template=
         MAP → Vennue Core API → Content and Design → Presentations
@@ -283,6 +286,8 @@ POST    …/screens/{id}/refresh · /screens/refresh-all
         tell one screen or all to reconcile now (convergence is the contract; this just hurries it)
 GET     …/screens/assignments
         MAP → Vennue Core API → Display Planning → Assignments
+        INTERACTION → Vennue Runtime API → Convergence and Evidence → Showing State
+        REVIEW → “What it is showing” composes Core assignment intent with Runtime actual state; preserve both provenance and authority.
         the room at a glance: which wall each screen belongs to, what it is showing, who put it there
 GET     …/screens/{id}/playlist
         MAP → Vennue Core API → Display Planning → Scheduling
@@ -326,8 +331,8 @@ GET     …/walls/{id}/delivery
         REVIEW → Actual delivery state is Runtime-owned even when shown inside a Core wall view.
         the rollout converging: per-screen package states (WP-12), who is excluded and why, the startAt the server chose, showing vs stale (WP-10)
 POST    …/walls/{id}/replan
-        MAP → Vennue Core API → Display Planning → Walls
-        INTERACTION → Vennue Platform API → Fleet and Delivery Operations → Rendering Operations
+        MAP → Vennue Platform API → Fleet and Delivery Operations → Rendering Operations
+        INTERACTION → Vennue Core API → Display Planning → Walls
         force a re-plan after a planner or renderer upgrade, without touching content
 
 ## Players /api/players — 11
@@ -542,10 +547,11 @@ POST    …/rendering/recompile
 
 ## Utilities — 7
 GET     /
-        MAP → Vennue Platform API → Entitlements and Configuration → Platform Configuration
+        MAP → Vennue Platform API → Fleet and Delivery Operations → Fleet Monitoring
         the service is up
 GET     /health/version
-        MAP → Vennue Platform API → Entitlements and Configuration → Platform Configuration
+        MAP → Vennue Platform API → Fleet and Delivery Operations → Fleet Monitoring
+        INTERACTION → Vennue Platform API → Fleet and Delivery Operations → Runtime Version Management
         build, API contract major, schema version, renderer version
 POST    /api/test-automation/venues/reset · /headroom
         MAP → Vennue Platform API → Governance and Safety → Test Automation
