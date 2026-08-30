@@ -163,8 +163,8 @@ to the back-office/authentication area.
 
 ## Content Platform
 
-**Record:** `docs/architecture/content-platform-architecture-renewal.md` · owner-approved
-planning issue #939.
+**Record:** `docs/architecture/content-platform-architecture-renewal.md` · blueprint issue #939 ·
+Mosaic dependency-planning issue #965.
 
 VennueSign is being re-founded as a controlled content-and-presentation platform. Content Home is
 the catalog and lifecycle surface; Menu is its first content type. A versioned data model defines
@@ -177,13 +177,27 @@ The product stays one deployable API host for now. Its source gains module bound
 Content, Themes, Integrations, Display Delivery, and Operations—so a later physical split is an
 option rather than a rewrite.
 
-| Version step | Outcome | Status |
+The renewal work structure remains:
+
+| Renewal stage | Outcome | Status |
 |---|---|---|
-| Blueprint | Content Platform renewal and API Architecture vNext | **approved and merged** — #939 |
-| Mosaic planning | Observable V1 outcome plus capability/dependency map | **next** — #965; documentation/planning only |
-| Mosaic V1 | Smallest coherent path from existing sign-in/venue context through `menu.v1`, release, assignment, Runtime display, and actual-state evidence | scope not yet approved |
+| M0 | Architecture/API blueprint plus Mosaic V1 capability/dependency map | blueprint merged; dependency map is next (#965) |
+| M1 | Verification and internal module seams required by selected Mosaic capabilities | placement pending the map |
+| M2 | Shared Data Model, content, state, Release, and Package foundation required by Mosaic | placement pending the map |
+| M3 | Existing Menu evolves into the first shared content type, `menu.v1` | placement pending the map |
+| M4 | Theme, Presentation, compatibility, and display foundation | placement pending the map |
+| M5 | Later blueprint attachments; a capability may move earlier when Mosaic truly depends on it | later / dependency-led |
+
+Product versions form a second, connected axis:
+
+| Product version | Outcome | Status |
+|---|---|---|
+| Mosaic V1 | Smallest coherent path from existing sign-in/venue context through `menu.v1`, Release, assignment, Runtime display, and actual-state evidence | scope not yet approved |
 | V1.x | Named capability completion or attachment increments derived from the map | unplanned |
-| V2+ | Larger outcomes and materially new blueprint completion; second content type is an important shared-foundation proof | unplanned |
+| V2+ | Larger outcomes and materially new blueprint completion; a second content type is an important shared-foundation proof | unplanned |
+
+The Mosaic map connects each product capability to the renewal stage work it requires. Mosaic does
+not replace M0–M5, and M0–M5 do not force Mosaic to wait for every blueprint area.
 
 For each Mosaic capability, planning classifies the existing foundation as **reuse**, **reshape**,
 **build**, or **defer**. Source investigation is just in time and bounded to the selected dependency
