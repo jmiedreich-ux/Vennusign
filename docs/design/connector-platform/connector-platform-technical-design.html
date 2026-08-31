@@ -1,0 +1,2498 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>VennuSign Connector Platform — Technical Architecture</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+  <style type="text/css">:root {
+--ink: #172033;
+--muted: #5d687a;
+--line: #dce3ec;
+--panel: #f7f9fc;
+--navy: #102a43;
+--blue: #1769aa;
+--blue-soft: #eaf4fb;
+--accent: #d97706;
+--code: #0f172a;
+--max: 1160px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+margin: 0;
+color: var(--ink);
+background: #eef2f7;
+font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+font-size: 16px;
+line-height: 1.68;
+}
+body > header,
+body > nav,
+body > main,
+body > #TOC,
+body > h1,
+body > h2,
+body > h3,
+body > h4,
+body > p,
+body > ul,
+body > ol,
+body > table,
+body > pre,
+body > blockquote,
+body > div.sourceCode {
+max-width: var(--max);
+margin-left: auto;
+margin-right: auto;
+}
+body::before {
+content: "VennuSign Architecture";
+display: block;
+padding: 22px max(28px, calc((100vw - var(--max)) / 2));
+color: #fff;
+background: linear-gradient(115deg, #0b2740, #135d87 68%, #1689ad);
+font-size: 13px;
+font-weight: 800;
+letter-spacing: .13em;
+text-transform: uppercase;
+}
+body > *:not(script):not(style) {
+background: #fff;
+padding-left: 48px;
+padding-right: 48px;
+margin-top: 0;
+margin-bottom: 0;
+}
+body > h1 {
+padding-top: 54px;
+padding-bottom: 14px;
+color: var(--navy);
+font-size: clamp(34px, 5vw, 58px);
+line-height: 1.07;
+letter-spacing: -.035em;
+}
+body > h1 + p { color: var(--muted); }
+h2, h3, h4 {
+color: var(--navy);
+line-height: 1.25;
+scroll-margin-top: 24px;
+}
+h2 {
+padding-top: 50px !important;
+padding-bottom: 13px !important;
+border-top: 1px solid var(--line);
+font-size: 29px;
+letter-spacing: -.02em;
+}
+h3 { padding-top: 30px !important; font-size: 21px; }
+h4 { padding-top: 22px !important; font-size: 17px; }
+p, ul, ol, blockquote { padding-top: 8px; padding-bottom: 8px; }
+ul, ol { padding-left: 76px !important; }
+li + li { margin-top: 5px; }
+a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: #0b4f7a; }
+strong { color: #0f2b46; }
+#TOC {
+position: sticky;
+top: 0;
+z-index: 40;
+display: flex;
+align-items: center;
+gap: 16px;
+min-height: 58px;
+padding: 8px 48px;
+border-top: 0;
+border-bottom: 1px solid var(--line);
+background: rgba(255, 255, 255, .96);
+box-shadow: 0 10px 30px rgba(16, 42, 67, .08);
+backdrop-filter: blur(14px);
+}
+#TOC > ul { display: none; }
+.toc-trigger {
+display: inline-flex;
+align-items: center;
+gap: 10px;
+min-height: 40px;
+padding: 0 14px;
+border: 1px solid #b8c7d8;
+border-radius: 10px;
+color: var(--navy);
+background: #fff;
+font: inherit;
+font-size: 14px;
+font-weight: 750;
+cursor: pointer;
+transition: border-color .18s ease-out, background-color .18s ease-out, box-shadow .18s ease-out;
+}
+.toc-trigger:hover { border-color: var(--blue); background: var(--blue-soft); }
+.toc-trigger:focus-visible,
+.toc-panel a:focus-visible,
+.toc-close:focus-visible {
+outline: 3px solid rgba(23, 105, 170, .28);
+outline-offset: 2px;
+}
+.toc-trigger-icon {
+position: relative;
+width: 16px;
+height: 12px;
+border-top: 2px solid currentColor;
+border-bottom: 2px solid currentColor;
+}
+.toc-trigger-icon::after {
+content: "";
+position: absolute;
+left: 0;
+right: 0;
+top: 4px;
+border-top: 2px solid currentColor;
+}
+.toc-current {
+min-width: 0;
+overflow: hidden;
+color: var(--muted);
+font-size: 14px;
+font-weight: 600;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+.toc-current strong { margin-right: 7px; color: var(--navy); font-weight: 800; }
+.toc-panel {
+position: absolute;
+top: calc(100% + 8px);
+left: 48px;
+right: 48px;
+max-height: min(72vh, 650px);
+padding: 24px;
+overflow-y: auto;
+border: 1px solid #cbd6e2;
+border-radius: 14px;
+background: #fff;
+box-shadow: 0 20px 55px rgba(16, 42, 67, .19);
+}
+.toc-panel[hidden] { display: none; }
+.toc-panel-head {
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+gap: 24px;
+padding-bottom: 18px;
+border-bottom: 1px solid var(--line);
+}
+.toc-panel-title { margin: 0; padding: 0; color: var(--navy); font-size: 20px; font-weight: 820; line-height: 1.25; }
+.toc-panel-copy { margin: 4px 0 0; padding: 0; color: var(--muted); font-size: 13px; }
+.toc-close {
+min-height: 36px;
+padding: 0 12px;
+border: 1px solid var(--line);
+border-radius: 9px;
+color: var(--navy);
+background: #fff;
+font: inherit;
+font-size: 13px;
+font-weight: 750;
+cursor: pointer;
+}
+.toc-close:hover { background: var(--panel); }
+.toc-groups {
+display: grid;
+grid-template-columns: repeat(2, minmax(0, 1fr));
+gap: 24px 34px;
+padding-top: 22px;
+}
+.toc-group { min-width: 0; }
+.toc-group-title {
+margin: 0 0 7px;
+padding: 0 !important;
+border: 0;
+color: #64748b;
+font-size: 11px;
+font-weight: 850;
+letter-spacing: .1em;
+text-transform: uppercase;
+}
+.toc-group-list { display: grid; gap: 2px; margin: 0; padding: 0 !important; list-style: none; }
+.toc-group-list li { margin: 0; }
+.toc-panel a {
+display: block;
+padding: 7px 9px;
+border-radius: 7px;
+color: #31465c;
+font-size: 13px;
+font-weight: 650;
+line-height: 1.35;
+text-decoration: none;
+}
+.toc-panel a:hover { color: var(--navy); background: var(--blue-soft); }
+.toc-panel a[aria-current="location"] { color: #075985; background: #dff2fb; }
+table {
+width: min(var(--max), calc(100% - 40px));
+margin-top: 18px !important;
+margin-bottom: 26px !important;
+padding: 0 !important;
+border-collapse: separate;
+border-spacing: 0;
+overflow: hidden;
+border: 1px solid var(--line);
+border-radius: 10px;
+font-size: 14px;
+}
+th, td { padding: 12px 14px; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { color: #fff; background: var(--navy); text-align: left; font-size: 13px; letter-spacing: .02em; }
+tr:last-child td { border-bottom: 0; }
+tbody tr:nth-child(even) { background: var(--panel); }
+code {
+padding: .15em .34em;
+border-radius: 5px;
+color: #8a3207;
+background: #fff3e8;
+font: .9em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+pre {
+margin-top: 16px !important;
+margin-bottom: 24px !important;
+padding: 20px !important;
+overflow: auto;
+color: #e2e8f0;
+background: var(--code) !important;
+border-radius: 10px;
+}
+pre code { padding: 0; color: inherit; background: transparent; }
+pre.mermaid {
+color: var(--ink);
+background: #fff !important;
+border: 1px solid var(--line);
+text-align: center;
+}
+.mermaid svg { max-width: 100%; height: auto; }
+blockquote {
+margin-top: 16px !important;
+margin-bottom: 18px !important;
+padding-top: 14px !important;
+padding-bottom: 14px !important;
+border-left: 5px solid var(--accent);
+color: #68410d;
+background: #fff8eb !important;
+}
+body > *:last-of-type { padding-bottom: 60px; }
+@media (max-width: 760px) {
+body > *:not(script):not(style) { padding-left: 22px; padding-right: 22px; }
+body::before { padding-left: 22px; }
+#TOC { gap: 12px; min-height: 56px; padding: 8px 14px; }
+.toc-trigger { flex: 0 0 auto; padding: 0 12px; }
+.toc-current strong { display: none; }
+.toc-panel { left: 12px; right: 12px; padding: 19px; }
+.toc-groups { grid-template-columns: 1fr; gap: 22px; }
+table { display: block; overflow-x: auto; width: calc(100% - 20px); }
+ul, ol { padding-left: 48px !important; }
+}
+@media print {
+@page { margin: 17mm; }
+body { background: #fff; font-size: 10pt; }
+body::before { padding: 10px 0; color: var(--navy); background: none; }
+body > *:not(script):not(style) { max-width: none; padding-left: 0; padding-right: 0; }
+#TOC { background: #fff; }
+.toc-trigger, .toc-current { display: none; }
+.toc-panel { position: static; display: block !important; max-height: none; padding: 0; border: 0; box-shadow: none; }
+.toc-close, .toc-panel-copy { display: none; }
+.toc-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+h2 { break-before: page; }
+h3, h4 { break-after: avoid; }
+table, pre, blockquote, .mermaid { break-inside: avoid; }
+a { color: inherit; text-decoration: none; }
+}
+</style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Technical architecture for the VennuSign Connector Platform, including REST pull, REST push, SFTP, shared mapping, security, reliability, and ADRs.">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'strict',
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#eaf4fb',
+        primaryTextColor: '#172033',
+        primaryBorderColor: '#1769aa',
+        lineColor: '#5d687a',
+        secondaryColor: '#fff8eb',
+        tertiaryColor: '#f7f9fc',
+        fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif'
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      document.querySelectorAll('pre.mermaid > code').forEach((code) => {
+        code.parentElement.textContent = code.textContent;
+      });
+      await mermaid.run({ querySelector: 'pre.mermaid' });
+    });
+  </script>
+</head>
+<body>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#vennusign-connector-platform--technical-architecture" id="toc-vennusign-connector-platform--technical-architecture">VennuSign
+Connector Platform — Technical Architecture</a>
+<ul>
+<li><a href="#1-executive-summary" id="toc-1-executive-summary">1.
+Executive summary</a></li>
+<li><a href="#2-confirmed-requirements" id="toc-2-confirmed-requirements">2. Confirmed requirements</a></li>
+<li><a href="#3-scope" id="toc-3-scope">3. Scope</a>
+<ul>
+<li><a href="#31-in-scope" id="toc-31-in-scope">3.1 In scope</a></li>
+<li><a href="#32-out-of-scope" id="toc-32-out-of-scope">3.2 Out of
+scope</a></li>
+</ul></li>
+<li><a href="#4-terminology-and-responsibilities" id="toc-4-terminology-and-responsibilities">4. Terminology and
+responsibilities</a></li>
+<li><a href="#5-non-functional-requirements" id="toc-5-non-functional-requirements">5. Non-functional
+requirements</a>
+<ul>
+<li><a href="#51-service-objectives" id="toc-51-service-objectives">5.1
+Service objectives</a></li>
+<li><a href="#52-the-seconds-level-pull-constraint" id="toc-52-the-seconds-level-pull-constraint">5.2 The seconds-level pull
+constraint</a></li>
+</ul></li>
+<li><a href="#6-architecture-principles" id="toc-6-architecture-principles">6. Architecture principles</a></li>
+<li><a href="#7-c4-system-context" id="toc-7-c4-system-context">7. C4
+system context</a></li>
+<li><a href="#8-c4-container-architecture" id="toc-8-c4-container-architecture">8. C4 container
+architecture</a></li>
+<li><a href="#9-recommended-azure-technology-stack" id="toc-9-recommended-azure-technology-stack">9. Recommended Azure
+technology stack</a></li>
+<li><a href="#10-logical-components" id="toc-10-logical-components">10.
+Logical components</a>
+<ul>
+<li><a href="#101-connector-registry-and-control-plane" id="toc-101-connector-registry-and-control-plane">10.1 Connector
+registry and control plane</a></li>
+<li><a href="#102-pull-scheduler-and-workers" id="toc-102-pull-scheduler-and-workers">10.2 Pull scheduler and
+workers</a></li>
+<li><a href="#103-push-rest-ingestion" id="toc-103-push-rest-ingestion">10.3 Push REST ingestion</a></li>
+<li><a href="#104-sftp-landing-zone" id="toc-104-sftp-landing-zone">10.4
+SFTP landing zone</a></li>
+<li><a href="#105-parser-registry" id="toc-105-parser-registry">10.5
+Parser registry</a></li>
+<li><a href="#106-mapping-engine" id="toc-106-mapping-engine">10.6
+Mapping engine</a></li>
+<li><a href="#107-canonical-schema-registry-and-governance" id="toc-107-canonical-schema-registry-and-governance">10.7 Canonical
+schema registry and governance</a></li>
+<li><a href="#108-validation-diff-and-apply" id="toc-108-validation-diff-and-apply">10.8 Validation, diff, and
+apply</a></li>
+</ul></li>
+<li><a href="#11-data-semantics" id="toc-11-data-semantics">11. Data
+semantics</a>
+<ul>
+<li><a href="#111-snapshots" id="toc-111-snapshots">11.1
+Snapshots</a></li>
+<li><a href="#112-deltas" id="toc-112-deltas">11.2 Deltas</a></li>
+<li><a href="#113-ownership-and-manual-edits" id="toc-113-ownership-and-manual-edits">11.3 Ownership and manual
+edits</a></li>
+</ul></li>
+<li><a href="#12-key-data-entities" id="toc-12-key-data-entities">12.
+Key data entities</a></li>
+<li><a href="#13-state-machine" id="toc-13-state-machine">13. State
+machine</a></li>
+<li><a href="#14-sequence-diagrams" id="toc-14-sequence-diagrams">14.
+Sequence diagrams</a>
+<ul>
+<li><a href="#141-rest-api-pull" id="toc-141-rest-api-pull">14.1 REST
+API pull</a></li>
+<li><a href="#142-inbound-push-api" id="toc-142-inbound-push-api">14.2
+Inbound push API</a></li>
+<li><a href="#143-sftp-push" id="toc-143-sftp-push">14.3 SFTP
+push</a></li>
+<li><a href="#144-failure-and-last-valid-state-behavior" id="toc-144-failure-and-last-valid-state-behavior">14.4 Failure and
+last-valid-state behavior</a></li>
+</ul></li>
+<li><a href="#15-consistency-concurrency-and-idempotency" id="toc-15-consistency-concurrency-and-idempotency">15. Consistency,
+concurrency, and idempotency</a></li>
+<li><a href="#16-security-architecture" id="toc-16-security-architecture">16. Security architecture</a>
+<ul>
+<li><a href="#161-identity-and-access" id="toc-161-identity-and-access">16.1 Identity and access</a></li>
+<li><a href="#162-network-controls" id="toc-162-network-controls">16.2
+Network controls</a></li>
+<li><a href="#163-payload-security" id="toc-163-payload-security">16.3
+Payload security</a></li>
+<li><a href="#164-card-data-prohibition" id="toc-164-card-data-prohibition">16.4 Card-data prohibition</a></li>
+<li><a href="#165-threats-and-mitigations" id="toc-165-threats-and-mitigations">16.5 Threats and
+mitigations</a></li>
+</ul></li>
+<li><a href="#17-reliability-and-failure-handling" id="toc-17-reliability-and-failure-handling">17. Reliability and failure
+handling</a>
+<ul>
+<li><a href="#171-retry-policy" id="toc-171-retry-policy">17.1 Retry
+policy</a></li>
+<li><a href="#172-circuit-breakers-and-bulkheads" id="toc-172-circuit-breakers-and-bulkheads">17.2 Circuit breakers and
+bulkheads</a></li>
+<li><a href="#173-last-valid-data" id="toc-173-last-valid-data">17.3
+Last valid data</a></li>
+<li><a href="#174-dead-letter-and-quarantine" id="toc-174-dead-letter-and-quarantine">17.4 Dead-letter and
+quarantine</a></li>
+</ul></li>
+<li><a href="#18-availability-backup-and-disaster-recovery" id="toc-18-availability-backup-and-disaster-recovery">18. Availability,
+backup, and disaster recovery</a>
+<ul>
+<li><a href="#181-single-region-production-baseline" id="toc-181-single-region-production-baseline">18.1 Single-region
+production baseline</a></li>
+<li><a href="#182-recovery-objectives" id="toc-182-recovery-objectives">18.2 Recovery objectives</a></li>
+<li><a href="#183-regional-disaster-evolution" id="toc-183-regional-disaster-evolution">18.3 Regional disaster
+evolution</a></li>
+</ul></li>
+<li><a href="#19-observability-and-operations" id="toc-19-observability-and-operations">19. Observability and
+operations</a>
+<ul>
+<li><a href="#191-metrics" id="toc-191-metrics">19.1 Metrics</a></li>
+<li><a href="#192-alerts" id="toc-192-alerts">19.2 Alerts</a></li>
+<li><a href="#193-operational-controls" id="toc-193-operational-controls">19.3 Operational controls</a></li>
+</ul></li>
+<li><a href="#20-deployment-topology-and-scaling" id="toc-20-deployment-topology-and-scaling">20. Deployment topology and
+scaling</a></li>
+<li><a href="#21-api-and-event-contracts" id="toc-21-api-and-event-contracts">21. API and event contracts</a>
+<ul>
+<li><a href="#211-push-api-envelope-example" id="toc-211-push-api-envelope-example">21.1 Push API envelope
+example</a></li>
+<li><a href="#212-internal-ingestion-event" id="toc-212-internal-ingestion-event">21.2 Internal ingestion
+event</a></li>
+</ul></li>
+<li><a href="#22-mapping-lifecycle-and-testing" id="toc-22-mapping-lifecycle-and-testing">22. Mapping lifecycle and
+testing</a></li>
+<li><a href="#23-architectural-trade-offs" id="toc-23-architectural-trade-offs">23. Architectural trade-offs</a>
+<ul>
+<li><a href="#231-modular-platform-vs-fine-grained-microservices" id="toc-231-modular-platform-vs-fine-grained-microservices">23.1 Modular
+platform vs. fine-grained microservices</a></li>
+<li><a href="#232-asynchronous-pipeline-vs-synchronous-processing" id="toc-232-asynchronous-pipeline-vs-synchronous-processing">23.2
+Asynchronous pipeline vs. synchronous processing</a></li>
+<li><a href="#233-azure-sql-vs-nosql-for-metadata" id="toc-233-azure-sql-vs-nosql-for-metadata">23.3 Azure SQL vs. NoSQL
+for metadata</a></li>
+<li><a href="#234-service-bus-vs-event-grid-alone" id="toc-234-service-bus-vs-event-grid-alone">23.4 Service Bus vs. Event
+Grid alone</a></li>
+<li><a href="#235-container-apps-vs-functions-vs-aks" id="toc-235-container-apps-vs-functions-vs-aks">23.5 Container Apps vs.
+Functions vs. AKS</a></li>
+<li><a href="#236-declarative-mapper-vs-arbitrary-scripts" id="toc-236-declarative-mapper-vs-arbitrary-scripts">23.6 Declarative
+mapper vs. arbitrary scripts</a></li>
+<li><a href="#237-shared-vs-dedicated-tenant-infrastructure" id="toc-237-shared-vs-dedicated-tenant-infrastructure">23.7 Shared vs.
+dedicated tenant infrastructure</a></li>
+</ul></li>
+<li><a href="#24-architecture-decision-records" id="toc-24-architecture-decision-records">24. Architecture Decision
+Records</a>
+<ul>
+<li><a href="#adr-001-one-connector-platform-for-pull-and-push" id="toc-adr-001-one-connector-platform-for-pull-and-push">ADR-001: One
+Connector Platform for pull and push</a></li>
+<li><a href="#adr-002-canonical-data-types-are-reused-by-default" id="toc-adr-002-canonical-data-types-are-reused-by-default">ADR-002:
+Canonical data types are reused by default</a></li>
+<li><a href="#adr-003-event-driven-asynchronous-processing" id="toc-adr-003-event-driven-asynchronous-processing">ADR-003:
+Event-driven asynchronous processing</a></li>
+<li><a href="#adr-004-azure-managed-services-stack" id="toc-adr-004-azure-managed-services-stack">ADR-004: Azure
+managed-services stack</a></li>
+<li><a href="#adr-005-at-least-once-delivery-with-effectively-once-effects" id="toc-adr-005-at-least-once-delivery-with-effectively-once-effects">ADR-005:
+At-least-once delivery with effectively-once effects</a></li>
+<li><a href="#adr-006-integration-controlled-data-is-read-only" id="toc-adr-006-integration-controlled-data-is-read-only">ADR-006:
+Integration-controlled data is read-only</a></li>
+<li><a href="#adr-007-preserve-last-valid-data-on-failure" id="toc-adr-007-preserve-last-valid-data-on-failure">ADR-007: Preserve
+last valid data on failure</a></li>
+<li><a href="#adr-008-sftp-is-managed-blob-ingress-ftp-is-unsupported" id="toc-adr-008-sftp-is-managed-blob-ingress-ftp-is-unsupported">ADR-008:
+SFTP is managed Blob ingress; FTP is unsupported</a></li>
+<li><a href="#adr-009-mapping-uses-a-safe-dsl" id="toc-adr-009-mapping-uses-a-safe-dsl">ADR-009: Mapping uses a safe
+DSL</a></li>
+<li><a href="#adr-010-no-payment-card-data" id="toc-adr-010-no-payment-card-data">ADR-010: No payment-card
+data</a></li>
+</ul></li>
+<li><a href="#25-phased-implementation-plan" id="toc-25-phased-implementation-plan">25. Phased implementation
+plan</a>
+<ul>
+<li><a href="#phase-0--contract-and-threat-model-foundation" id="toc-phase-0--contract-and-threat-model-foundation">Phase 0 —
+Contract and threat-model foundation</a></li>
+<li><a href="#phase-1--vertical-platform-slice" id="toc-phase-1--vertical-platform-slice">Phase 1 — Vertical platform
+slice</a></li>
+<li><a href="#phase-2--pull-platform" id="toc-phase-2--pull-platform">Phase 2 — Pull platform</a></li>
+<li><a href="#phase-3--file-push-platform" id="toc-phase-3--file-push-platform">Phase 3 — File push
+platform</a></li>
+<li><a href="#phase-4--operations-and-controlled-rollout" id="toc-phase-4--operations-and-controlled-rollout">Phase 4 — Operations
+and controlled rollout</a></li>
+</ul></li>
+<li><a href="#26-acceptance-criteria" id="toc-26-acceptance-criteria">26. Acceptance criteria</a></li>
+<li><a href="#27-risks-and-follow-up-decisions" id="toc-27-risks-and-follow-up-decisions">27. Risks and follow-up
+decisions</a></li>
+<li><a href="#28-final-recommendation" id="toc-28-final-recommendation">28. Final recommendation</a></li>
+<li><a href="#29-primary-implementation-references" id="toc-29-primary-implementation-references">29. Primary implementation
+references</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="vennusign-connector-platform--technical-architecture">VennuSign
+Connector Platform — Technical Architecture</h1>
+<p><strong>Status:</strong> Proposed<br />
+<strong>Date:</strong> 2026-08-13<br />
+<strong>Audience:</strong> Product engineering, platform engineering,
+security, operations, and integration developers<br />
+<strong>Scope:</strong> Reusable platform architecture; no first
+connector is selected by this design</p>
+<h2 id="1-executive-summary">1. Executive summary</h2>
+<p>VennuSign should build one <strong>Connector Platform</strong> that
+supports two ingestion directions:</p>
+<ul>
+<li><strong>Pull connectors</strong> retrieve data from approved
+third-party REST APIs.</li>
+<li><strong>Push connectors</strong> receive data through a VennuSign
+inbound REST API or customer-isolated SFTP folders.</li>
+</ul>
+<p>After transport, both paths converge on the same versioned ingestion
+pipeline: retain the source payload, identify the tenant and connector,
+parse the source format, map it to an existing VennuSign canonical data
+type, validate it, apply it atomically, and notify the downstream
+VennuSign content/publishing pipeline.</p>
+<p>The mapper is the central capability. A new source system normally
+requires a new connector definition and mapping profile—not a new
+VennuSign data type. A new canonical data type is justified only when
+existing types cannot represent the business meaning without loss or
+distortion.</p>
+<p>The recommended implementation is a <strong>modular, event-driven
+.NET platform on Azure</strong>, initially deployed as a small number of
+independently scalable Azure Container Apps rather than many
+fine-grained microservices. Azure API Management protects inbound APIs;
+Azure Blob Storage provides raw payload retention and native SFTP
+ingress; Azure Service Bus decouples pipeline stages; Azure SQL Database
+stores control-plane state, mappings, lineage, and synchronization
+state; Azure Key Vault holds external credentials; and Azure
+Monitor/Application Insights provides end-to-end observability.</p>
+<p>This design targets 1,000 customer locations, 99.9% monthly platform
+availability, recovery within two hours, durable at-least-once
+processing with idempotent effects, and seconds-level processing for
+urgent updates after VennuSign receives a push or completes a pull
+response.</p>
+<h2 id="2-confirmed-requirements">2. Confirmed requirements</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Area</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Capacity</td>
+<td>First architecture supports up to 1,000 customer locations</td>
+</tr>
+<tr class="even">
+<td>Urgent freshness</td>
+<td>Within seconds for both push and API pull</td>
+</tr>
+<tr class="odd">
+<td>Pull transport</td>
+<td>Third-party REST APIs only</td>
+</tr>
+<tr class="even">
+<td>Push transports</td>
+<td>VennuSign inbound REST API and SFTP file delivery</td>
+</tr>
+<tr class="odd">
+<td>Payload styles</td>
+<td>Complete snapshots and incremental/delta updates</td>
+</tr>
+<tr class="even">
+<td>Formats</td>
+<td>JSON, XML, CSV, and connector-defined flat files</td>
+</tr>
+<tr class="odd">
+<td>Mapping</td>
+<td>Both pull and push use the shared mapping platform</td>
+</tr>
+<tr class="even">
+<td>Canonical types</td>
+<td>Reuse existing VennuSign data types unless a genuinely new semantic
+model is required</td>
+</tr>
+<tr class="odd">
+<td>Ownership</td>
+<td>No manual editing of integration-controlled data in VennuSign</td>
+</tr>
+<tr class="even">
+<td>Failure behavior</td>
+<td>Retain the last valid data and alert; never replace it with invalid
+data</td>
+</tr>
+<tr class="odd">
+<td>Permitted data</td>
+<td>Operational display data; customer/order data only when necessary
+for the display use case</td>
+</tr>
+<tr class="even">
+<td>Prohibited data</td>
+<td>Payment-card data must never be accepted, stored, logged, or
+processed</td>
+</tr>
+<tr class="odd">
+<td>Availability</td>
+<td>99.9% monthly</td>
+</tr>
+<tr class="even">
+<td>Recovery</td>
+<td>RTO 2 hours</td>
+</tr>
+<tr class="odd">
+<td>Initial implementation</td>
+<td>Platform-first; no specific cinema or restaurant connector
+chosen</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-scope">3. Scope</h2>
+<h3 id="31-in-scope">3.1 In scope</h3>
+<ul>
+<li>Connector onboarding, configuration, enablement, suspension, and
+health.</li>
+<li>Scheduled and on-demand REST API pull execution.</li>
+<li>Inbound REST API push ingestion.</li>
+<li>Inbound SFTP ingestion backed by managed object storage.</li>
+<li>JSON, XML, CSV, and bounded flat-file parsing.</li>
+<li>Mapping source records into versioned VennuSign canonical
+types.</li>
+<li>Snapshot and delta semantics.</li>
+<li>Validation, preview/dry run, atomic application, lineage, replay,
+quarantine, and alerting.</li>
+<li>Tenant/location isolation and connector credential management.</li>
+<li>Integration events that trigger the existing VennuSign
+content/render/publish workflow.</li>
+<li>Operator controls suitable for later exposure through the VennuSign
+Operations Platform.</li>
+</ul>
+<h3 id="32-out-of-scope">3.2 Out of scope</h3>
+<ul>
+<li>Pulling files from customer FTP/SFTP servers.</li>
+<li>Unencrypted FTP.</li>
+<li>Payment processing or storage of payment-card data.</li>
+<li>A customer-facing general-purpose ETL/data warehouse product.</li>
+<li>Building a specific Toast, cinema, POS, or ticketing connector in
+this document.</li>
+<li>Replacing VennuSign&#39;s canonical domain services or rendering
+engine.</li>
+<li>Arbitrary user-authored code running inside the production
+mapper.</li>
+</ul>
+<h2 id="4-terminology-and-responsibilities">4. Terminology and
+responsibilities</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Connector type</td>
+<td>Versioned implementation describing a source product/protocol,
+authentication, extraction, parsing, and supported canonical
+targets</td>
+</tr>
+<tr class="even">
+<td>Connector instance</td>
+<td>One tenant/location&#39;s configured use of a connector type</td>
+</tr>
+<tr class="odd">
+<td>Pull run</td>
+<td>One scheduled or manually triggered attempt to retrieve source
+data</td>
+</tr>
+<tr class="even">
+<td>Ingestion</td>
+<td>One accepted API request, uploaded file, or completed pull
+response</td>
+</tr>
+<tr class="odd">
+<td>Mapping profile</td>
+<td>Versioned rules translating a source schema into a canonical
+VennuSign type</td>
+</tr>
+<tr class="even">
+<td>Canonical data type</td>
+<td>Stable VennuSign business model such as menu data or cinema showtime
+data</td>
+</tr>
+<tr class="odd">
+<td>Snapshot</td>
+<td>Source-authoritative complete set for a declared scope</td>
+</tr>
+<tr class="even">
+<td>Delta</td>
+<td>A set of explicit upserts/deletes relative to known source
+identifiers</td>
+</tr>
+<tr class="odd">
+<td>Last valid state</td>
+<td>Most recently validated and atomically applied canonical version for
+a scope</td>
+</tr>
+<tr class="even">
+<td>Scope</td>
+<td>The tenant, location, data type, and source-defined partition
+affected by an ingestion</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-non-functional-requirements">5. Non-functional
+requirements</h2>
+<h3 id="51-service-objectives">5.1 Service objectives</h3>
+<table>
+<thead>
+<tr class="header">
+<th>NFR</th>
+<th style="text-align: right;">Target</th>
+<th>Measurement boundary</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Availability</td>
+<td style="text-align: right;">99.9% monthly</td>
+<td>Connector control plane and ingestion acceptance endpoints</td>
+</tr>
+<tr class="even">
+<td>Push API acknowledgement</td>
+<td style="text-align: right;">p95 &lt; 500 ms; p99 &lt; 1 s</td>
+<td>Valid request accepted and durably queued, excluding payload upload
+time</td>
+</tr>
+<tr class="odd">
+<td>Urgent push processing</td>
+<td style="text-align: right;">p95 &lt; 5 s; p99 &lt; 15 s</td>
+<td>Durable acceptance to canonical commit, for payloads within the
+standard size envelope</td>
+</tr>
+<tr class="even">
+<td>Pull response processing</td>
+<td style="text-align: right;">p95 &lt; 5 s; p99 &lt; 15 s</td>
+<td>Complete source HTTP response stored to canonical commit</td>
+</tr>
+<tr class="odd">
+<td>Pull dispatch jitter</td>
+<td style="text-align: right;">p95 &lt; 2 s</td>
+<td>Due time to worker dispatch, when provider quota and platform health
+permit</td>
+</tr>
+<tr class="even">
+<td>Downstream notification</td>
+<td style="text-align: right;">p95 &lt; 2 s</td>
+<td>Canonical commit to durable <code>CanonicalDataChanged</code>
+event</td>
+</tr>
+<tr class="odd">
+<td>Sustained throughput</td>
+<td style="text-align: right;">100 ingestion events/s platform-wide</td>
+<td>Normal operations</td>
+</tr>
+<tr class="even">
+<td>Burst throughput</td>
+<td style="text-align: right;">500 ingestion events/s for 5 minutes</td>
+<td>Buffered without data loss; backlog drains within 10 minutes</td>
+</tr>
+<tr class="odd">
+<td>Payload size</td>
+<td style="text-align: right;">10 MiB API default; 250 MiB SFTP
+default</td>
+<td>Larger files require explicit connector approval and streaming
+tests</td>
+</tr>
+<tr class="even">
+<td>Data durability</td>
+<td style="text-align: right;">No acknowledged payload loss</td>
+<td>Accepted payload must be durably stored before success is
+returned</td>
+</tr>
+<tr class="odd">
+<td>Delivery semantics</td>
+<td style="text-align: right;">At least once, idempotent effects</td>
+<td>Every stage may retry without duplicate domain effects</td>
+</tr>
+<tr class="even">
+<td>Tenant isolation</td>
+<td style="text-align: right;">100% scoped access</td>
+<td>Every operation requires tenant and connector identity; cross-tenant
+access is a security incident</td>
+</tr>
+<tr class="odd">
+<td>RTO</td>
+<td style="text-align: right;">2 hours</td>
+<td>Restore critical ingestion and application capability</td>
+</tr>
+<tr class="even">
+<td>RPO</td>
+<td style="text-align: right;">15 minutes for control/canonical
+metadata; effectively zero for accepted raw payloads in-region</td>
+<td>Subject to Azure service durability and configured replication</td>
+</tr>
+<tr class="odd">
+<td>Audit retention</td>
+<td style="text-align: right;">13 months online</td>
+<td>Configuration, mapping publication, execution, rejection, replay,
+and operator actions</td>
+</tr>
+<tr class="even">
+<td>Raw payload retention</td>
+<td style="text-align: right;">30 days default</td>
+<td>Configurable downward for privacy; longer only by explicit
+policy</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-the-seconds-level-pull-constraint">5.2 The seconds-level pull
+constraint</h3>
+<p>The platform can process a completed pull within seconds, but
+<strong>continuous seconds-level freshness cannot be universally
+guaranteed for pull connectors</strong>. It depends on the provider&#39;s
+API rate limits, data-change visibility, response latency, availability,
+and number of customer credentials.</p>
+<p>Each pull connector must therefore publish a <strong>freshness
+contract</strong>:</p>
+<ul>
+<li>minimum safe polling interval;</li>
+<li>provider rate-limit budget and backoff rules;</li>
+<li>whether conditional requests, cursors, or <code>updated_since</code>
+filters exist;</li>
+<li>expected provider-to-VennuSign detection time;</li>
+<li>VennuSign processing target after receipt;</li>
+<li>whether a manual/urgent refresh is permitted.</li>
+</ul>
+<p>For sources that cannot safely support frequent polling, the UI must
+show the actual expected freshness rather than claiming seconds. Push is
+the preferred mechanism for truly event-like updates.</p>
+<h2 id="6-architecture-principles">6. Architecture principles</h2>
+<ol type="1">
+<li><strong>Transport and semantics are separate.</strong> REST pull,
+REST push, and SFTP are adapters into one pipeline.</li>
+<li><strong>Canonical models remain source-independent.</strong>
+Source-specific fields do not leak into display contracts unless
+formally added through schema governance.</li>
+<li><strong>Validate before replace.</strong> Invalid or incomplete
+input cannot displace last valid data.</li>
+<li><strong>Raw input is immutable.</strong> Every accepted ingestion is
+traceable and replayable.</li>
+<li><strong>Effects are idempotent.</strong> The broker and workers
+provide at-least-once delivery; business state behaves as if applied
+once.</li>
+<li><strong>Snapshots are scoped.</strong> A snapshot replaces only its
+declared scope, never an entire tenant implicitly.</li>
+<li><strong>Integration-owned means read-only.</strong> VennuSign UI and
+ordinary APIs reject direct edits to controlled fields/records.</li>
+<li><strong>No arbitrary production mapping code.</strong> Use a
+constrained declarative mapping DSL and reviewed extension modules.</li>
+<li><strong>Fail closed on identity and schema; fail safe on
+display.</strong> Reject questionable input while screens retain last
+valid content.</li>
+<li><strong>Start modular, split only where scaling or ownership proves
+it necessary.</strong></li>
+</ol>
+<h2 id="7-c4-system-context">7. C4 system context</h2>
+<pre class="mermaid"><code>C4Context
+    title VennuSign Connector Platform - System Context
+    Person(customerAdmin, &quot;Customer Administrator&quot;, &quot;Configures connections and reviews health&quot;)
+    Person(opsUser, &quot;VennuSign Operator&quot;, &quot;Supports connectors, mappings, replay, and incidents&quot;)
+    System_Ext(source, &quot;External Business System&quot;, &quot;Cinema, POS, menu, ticketing, or other provider&quot;)
+    System(connectorPlatform, &quot;VennuSign Connector Platform&quot;, &quot;Securely pulls or receives, maps, validates, and applies external data&quot;)
+    System_Ext(vennusign, &quot;VennuSign Core Platform&quot;, &quot;Owns canonical content, rendering, publishing, and players&quot;)
+
+    Rel(customerAdmin, connectorPlatform, &quot;Configures and monitors&quot;, &quot;HTTPS&quot;)
+    Rel(opsUser, connectorPlatform, &quot;Operates and governs&quot;, &quot;HTTPS&quot;)
+    Rel(source, connectorPlatform, &quot;Pushes API/files or answers pulls&quot;, &quot;HTTPS/SFTP&quot;)
+    Rel(connectorPlatform, vennusign, &quot;Applies canonical updates and publishes change events&quot;, &quot;Private API/events&quot;)</code></pre>
+<h2 id="8-c4-container-architecture">8. C4 container architecture</h2>
+<pre class="mermaid"><code>C4Container
+    title VennuSign Connector Platform - Containers
+    Person(admin, &quot;Administrators and Operators&quot;, &quot;Configure and monitor integrations&quot;)
+    System_Ext(source, &quot;External Systems&quot;, &quot;REST APIs and push clients&quot;)
+    System_Ext(core, &quot;VennuSign Core&quot;, &quot;Canonical domain and publishing services&quot;)
+
+    System_Boundary(platform, &quot;Connector Platform&quot;) {
+        Container(gateway, &quot;API Gateway&quot;, &quot;Azure API Management&quot;, &quot;Authenticates, throttles, validates request envelope, and routes&quot;)
+        Container(control, &quot;Connector Control Plane&quot;, &quot;.NET / Azure Container Apps&quot;, &quot;Configuration, mappings, schedules, status, replay, and audit APIs&quot;)
+        Container(ingress, &quot;Ingestion API&quot;, &quot;.NET / Azure Container Apps&quot;, &quot;Accepts push payloads and durably records ingestion&quot;)
+        Container(sftp, &quot;SFTP Landing Zone&quot;, &quot;Azure Blob Storage SFTP&quot;, &quot;Isolated customer upload folders&quot;)
+        Container(scheduler, &quot;Pull Scheduler and Workers&quot;, &quot;.NET / Azure Container Apps&quot;, &quot;Schedules, rate-limits, calls source APIs, and stores responses&quot;)
+        Container(pipeline, &quot;Mapping Pipeline Workers&quot;, &quot;.NET / Azure Container Apps&quot;, &quot;Parse, map, validate, deduplicate, diff, and apply&quot;)
+        ContainerDb(bus, &quot;Durable Message Broker&quot;, &quot;Azure Service Bus Premium&quot;, &quot;Queues, sessions, retries, and dead-lettering&quot;)
+        ContainerDb(blob, &quot;Payload and Artifact Store&quot;, &quot;Azure Blob Storage&quot;, &quot;Immutable raw payloads, quarantine, mapping artifacts, and reports&quot;)
+        ContainerDb(sql, &quot;Connector Metadata Store&quot;, &quot;Azure SQL Database&quot;, &quot;Configuration, mappings, lineage, locks, watermarks, and audit&quot;)
+        ContainerDb(vault, &quot;Secrets Store&quot;, &quot;Azure Key Vault&quot;, &quot;Provider credentials, keys, and certificates&quot;)
+        Container(obs, &quot;Observability&quot;, &quot;Azure Monitor / Application Insights&quot;, &quot;Metrics, traces, logs, alerts, and dashboards&quot;)
+    }
+
+    Rel(admin, gateway, &quot;Uses&quot;, &quot;HTTPS/OIDC&quot;)
+    Rel(source, gateway, &quot;Pushes&quot;, &quot;HTTPS&quot;)
+    Rel(source, sftp, &quot;Uploads&quot;, &quot;SFTP&quot;)
+    Rel(gateway, control, &quot;Routes control requests&quot;, &quot;HTTPS&quot;)
+    Rel(gateway, ingress, &quot;Routes ingestion requests&quot;, &quot;HTTPS&quot;)
+    Rel(control, sql, &quot;Reads/writes configuration&quot;, &quot;TDS/TLS&quot;)
+    Rel(control, vault, &quot;References credentials&quot;, &quot;Managed identity&quot;)
+    Rel(scheduler, source, &quot;Pulls data&quot;, &quot;HTTPS&quot;)
+    Rel(scheduler, vault, &quot;Gets credentials&quot;, &quot;Managed identity&quot;)
+    Rel(scheduler, blob, &quot;Stores response&quot;, &quot;Managed identity&quot;)
+    Rel(ingress, blob, &quot;Stores payload&quot;, &quot;Managed identity&quot;)
+    Rel(ingress, bus, &quot;Queues ingestion reference&quot;, &quot;AMQP/TLS&quot;)
+    Rel(sftp, bus, &quot;Emits finalized-file event&quot;, &quot;Event routing&quot;)
+    Rel(pipeline, bus, &quot;Consumes and publishes stages&quot;, &quot;AMQP/TLS&quot;)
+    Rel(pipeline, blob, &quot;Reads payload/writes reports&quot;, &quot;Managed identity&quot;)
+    Rel(pipeline, sql, &quot;Reads mappings/writes lineage&quot;, &quot;TDS/TLS&quot;)
+    Rel(pipeline, core, &quot;Applies canonical transaction&quot;, &quot;Private HTTPS&quot;)
+    Rel(pipeline, obs, &quot;Emits telemetry&quot;, &quot;OpenTelemetry&quot;)</code></pre>
+<h2 id="9-recommended-azure-technology-stack">9. Recommended Azure
+technology stack</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Concern</th>
+<th>Recommendation</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Runtime</td>
+<td>.NET 10 LTS (or the VennuSign-supported current LTS at
+implementation time)</td>
+<td>Strong typing, mature HTTP/data libraries, existing VennuSign
+alignment, good Azure integration</td>
+</tr>
+<tr class="even">
+<td>Compute</td>
+<td>Azure Container Apps, minimum one warm replica for latency-sensitive
+workers</td>
+<td>Managed containers, independent scaling, KEDA-based queue/HTTP
+autoscaling, revision support</td>
+</tr>
+<tr class="odd">
+<td>Inbound gateway</td>
+<td>Azure API Management Standard v2 initially</td>
+<td>Authentication policies, per-connector throttling, request limits,
+versioning, analytics, and private backend routing</td>
+</tr>
+<tr class="even">
+<td>Broker</td>
+<td>Azure Service Bus Premium</td>
+<td>Durable queues/topics, sessions for per-scope ordering, duplicate
+detection, DLQs, predictable isolation</td>
+</tr>
+<tr class="odd">
+<td>SFTP</td>
+<td>Azure Blob Storage with hierarchical namespace and SFTP</td>
+<td>Managed SFTP endpoint without operating servers; SSH-key
+authentication and folder isolation</td>
+</tr>
+<tr class="even">
+<td>Raw payloads</td>
+<td>Separate Azure Blob Storage account/containers</td>
+<td>Cheap durable payload retention, quarantine, replay, lifecycle
+policies, soft delete/versioning</td>
+</tr>
+<tr class="odd">
+<td>Metadata/state</td>
+<td>Azure SQL Database, zone redundant where supported</td>
+<td>Transactions, relational configuration, uniqueness constraints,
+lineage queries, existing VennuSign fit</td>
+</tr>
+<tr class="even">
+<td>Credentials</td>
+<td>Azure Key Vault</td>
+<td>Rotation, auditing, RBAC, certificate/secret support; applications
+use managed identity</td>
+</tr>
+<tr class="odd">
+<td>Observability</td>
+<td>Application Insights, Log Analytics, Azure Monitor
+alerts/workbooks</td>
+<td>Distributed tracing, SLOs, dashboards, actionable alerts</td>
+</tr>
+<tr class="even">
+<td>Deployment</td>
+<td>Bicep plus GitHub Actions using workload identity federation</td>
+<td>Repeatable infrastructure and no long-lived Azure deployment
+secrets</td>
+</tr>
+</tbody>
+</table>
+<p>Container Apps supports event-driven scaling through KEDA, including
+Service Bus metrics and managed-identity authentication. Service Bus
+provides duplicate detection, ordered processing through sessions, and
+dead-letter queues. Azure Blob Storage provides managed SFTP support.
+API Management supplies authentication, certificate validation, rate
+limiting, and backend protection. These capabilities make the selected
+stack a practical match without requiring VennuSign to operate
+Kubernetes or SFTP servers.</p>
+<h2 id="10-logical-components">10. Logical components</h2>
+<h3 id="101-connector-registry-and-control-plane">10.1 Connector
+registry and control plane</h3>
+<p>Stores and governs:</p>
+<ul>
+<li>connector type, version, capabilities, supported transports, and
+canonical targets;</li>
+<li>connector instance, tenant, location, status, schedules, source
+scopes, and rate limits;</li>
+<li>credential <strong>references</strong> (never secret values in
+SQL);</li>
+<li>mapping profiles and versions;</li>
+<li>ownership rules and destination bindings;</li>
+<li>execution history, health, watermarks, cursors, and circuit-breaker
+state;</li>
+<li>operator approvals, replays, and mapping promotions.</li>
+</ul>
+<p>Connector instances move through explicit states:
+<code>Draft -&gt; Validating -&gt; Active -&gt; Degraded -&gt; Suspended -&gt; Retired</code>.
+Activation requires a connectivity test, mapping validation,
+sample/dry-run success, and ownership conflict check.</p>
+<h3 id="102-pull-scheduler-and-workers">10.2 Pull scheduler and
+workers</h3>
+<ul>
+<li>Scheduler calculates due work using connector-specific cadence,
+provider quota, time zone, priority, and jitter.</li>
+<li>A distributed lease prevents two schedulers from issuing the same
+logical run.</li>
+<li>Workers obtain credentials from Key Vault, execute HTTPS requests,
+enforce timeouts, honor <code>Retry-After</code>, and use conditional
+GET/cursors when available.</li>
+<li>Retries use exponential backoff with jitter; persistent failures
+open a connector-specific circuit breaker.</li>
+<li>A successful response is stored as an immutable raw payload before
+downstream processing.</li>
+<li>Urgent refresh bypasses ordinary cadence but never bypasses provider
+quotas or safety limits.</li>
+</ul>
+<h3 id="103-push-rest-ingestion">10.3 Push REST ingestion</h3>
+<ul>
+<li>Every connector receives a stable versioned endpoint or connector
+identifier.</li>
+<li>Preferred authentication order: OAuth2 client credentials or mTLS;
+per-connector HMAC/API keys are allowed only when the sender cannot
+support stronger methods.</li>
+<li>Require a request ID/idempotency key, source timestamp, payload mode
+(<code>snapshot</code> or <code>delta</code>), declared schema/version,
+and scope.</li>
+<li>Stream payload to Blob Storage while calculating a SHA-256 digest
+and enforcing compressed/decompressed size limits.</li>
+<li>Return <code>202 Accepted</code> only after durable storage and
+queue publication succeed.</li>
+<li>Return the ingestion ID and status URL. Do not hold the request open
+for mapping or publication.</li>
+</ul>
+<h3 id="104-sftp-landing-zone">10.4 SFTP landing zone</h3>
+<ul>
+<li>Use SFTP, never legacy FTP.</li>
+<li>Prefer one storage account per environment and isolated home
+directories/containers per tenant or connector; high-risk enterprise
+tenants may receive dedicated accounts.</li>
+<li>Authenticate with SSH public keys; passwords are disabled by
+default.</li>
+<li>Upload protocol: source writes a temporary filename, closes it, then
+renames it to a final filename or uploads a small completion marker.
+Processing must never start on a partially written object.</li>
+<li>Storage events enqueue only a payload reference. Workers re-check
+size stability, extension, MIME/content signature, connector ownership,
+and allowed path.</li>
+<li>File names are metadata only and never trusted for tenant identity
+or command execution.</li>
+<li>Rejected files move logically to quarantine; they are not silently
+deleted.</li>
+</ul>
+<h3 id="105-parser-registry">10.5 Parser registry</h3>
+<p>Parsers convert raw bytes into a source-neutral record stream while
+preserving source locations for errors:</p>
+<ul>
+<li>JSON: streaming parser, maximum nesting depth, duplicate-property
+policy.</li>
+<li>XML: streaming reader; DTDs and external entities disabled to
+prevent XXE; maximum depth and expansion limits.</li>
+<li>CSV: explicit encoding, delimiter, quote, header, newline, and
+culture rules per connector.</li>
+<li>Flat file: versioned record layouts with exact length/column
+constraints; no heuristic production parsing.</li>
+</ul>
+<p>Large payloads must be streamed. A parser cannot load an unbounded
+file into memory.</p>
+<h3 id="106-mapping-engine">10.6 Mapping engine</h3>
+<p>The mapping engine accepts a record stream plus an immutable
+mapping-profile version and produces a canonical candidate set. The
+declarative mapping model should support:</p>
+<ul>
+<li>field rename and selection;</li>
+<li>type conversion with explicit locale/time-zone/currency rules;</li>
+<li>constants and defaults;</li>
+<li>concatenation and bounded expressions;</li>
+<li>lookups and reference tables;</li>
+<li>record filtering;</li>
+<li>nested collection construction;</li>
+<li>source ID to canonical external-key mapping;</li>
+<li>explicit delete/tombstone mapping;</li>
+<li>required-field, range, enumeration, and cross-record
+validation;</li>
+<li>warning versus fatal-error severity.</li>
+</ul>
+<p>The expression language must be sandboxed: no filesystem, network,
+reflection, process access, arbitrary SQL, or unbounded loops. Complex
+transformations use signed, reviewed extension modules deployed with the
+platform—not scripts uploaded by customers.</p>
+<p>Each mapping profile contains:</p>
+<ul>
+<li><code>mappingProfileId</code> and semantic version;</li>
+<li>source schema identifier/version;</li>
+<li>target canonical type/version;</li>
+<li>compatible connector type versions;</li>
+<li>transformation rules and lookup versions;</li>
+<li>validation policy;</li>
+<li>test fixtures and expected canonical output;</li>
+<li>author, approver, publication time, and rollback predecessor.</li>
+</ul>
+<h3 id="107-canonical-schema-registry-and-governance">10.7 Canonical
+schema registry and governance</h3>
+<p>Canonical types are owned by VennuSign domain teams, not by
+individual connectors. Types use semantic versions:</p>
+<ul>
+<li>additive optional fields: backward-compatible minor version;</li>
+<li>changed meaning, deletion, or required field: major version;</li>
+<li>mappings declare compatible source and target versions;</li>
+<li>old versions remain readable during a defined migration window.</li>
+</ul>
+<p><strong>New canonical type gate:</strong> approve a new type only if
+all are true:</p>
+<ol type="1">
+<li>No existing type represents the business concept without semantic
+loss.</li>
+<li>The need is expected from more than one connector or is a strategic
+VennuSign domain.</li>
+<li>Domain ownership, validation, rendering behavior, migration, and
+lifecycle are defined.</li>
+<li>An ADR approves the addition.</li>
+</ol>
+<p>Source-specific extra fields may be retained in raw payloads and
+lineage metadata, but are not automatically added to canonical
+models.</p>
+<h3 id="108-validation-diff-and-apply">10.8 Validation, diff, and
+apply</h3>
+<p>Validation occurs at four levels:</p>
+<ol type="1">
+<li><strong>Envelope:</strong> identity, tenant, connector state, schema
+version, size, checksum, and replay protection.</li>
+<li><strong>Syntax:</strong> valid JSON/XML/CSV/flat-file
+structure.</li>
+<li><strong>Mapping:</strong> conversions and required source data.</li>
+<li><strong>Domain:</strong> canonical invariants, references,
+duplicates, time ranges, currency, and scope completeness.</li>
+</ol>
+<p>Only fully valid candidates proceed. Warnings may proceed if the
+mapping policy explicitly permits them.</p>
+<p>The apply path should call a dedicated VennuSign canonical ingestion
+contract, not write directly into domain tables. The domain service
+performs a transaction that:</p>
+<ul>
+<li>verifies connector ownership and expected prior version;</li>
+<li>upserts the candidate state or delta;</li>
+<li>records source lineage and canonical version;</li>
+<li>records the ingestion ID in an idempotency ledger;</li>
+<li>writes a transactional outbox event;</li>
+<li>commits atomically.</li>
+</ul>
+<p>The outbox publisher emits <code>CanonicalDataChanged</code>;
+existing VennuSign processes then rebuild the affected display artifact
+and distribute it to players. The connector platform does not directly
+control player screens.</p>
+<h2 id="11-data-semantics">11. Data semantics</h2>
+<h3 id="111-snapshots">11.1 Snapshots</h3>
+<p>A snapshot is complete only for its declared scope. Required envelope
+fields:</p>
+<ul>
+<li>tenant and connector instance;</li>
+<li>canonical target and scope ID;</li>
+<li>source snapshot ID and generation timestamp;</li>
+<li>source schema version;</li>
+<li>sequence/cursor when supported;</li>
+<li>explicit <code>snapshot</code> mode;</li>
+<li>record count and optional digest.</li>
+</ul>
+<p>Application algorithm:</p>
+<ol type="1">
+<li>Map and validate the entire snapshot into staging.</li>
+<li>Compare with last valid canonical state for the same scope.</li>
+<li>Reject implausible changes using connector policies (for example, a
+sudden 100% deletion) unless explicitly confirmed.</li>
+<li>Atomically apply upserts and remove records absent from the
+<strong>same declared scope</strong>.</li>
+<li>Advance the source watermark only after commit.</li>
+</ol>
+<p>An empty snapshot is not automatically equivalent to &quot;delete
+everything.&quot; Each connector must explicitly declare whether empty is
+valid and may require a two-step safety rule.</p>
+<h3 id="112-deltas">11.2 Deltas</h3>
+<p>Deltas require stable source record IDs and explicit operations:
+<code>upsert</code> or <code>delete</code>. When supported, require
+monotonically increasing sequence numbers or opaque provider cursors.
+Per scope:</p>
+<ul>
+<li>duplicate event ID: acknowledge and ignore;</li>
+<li>lower/previous sequence: ignore and audit;</li>
+<li>sequence gap: pause the scope, alert, and request/retrieve a
+recovery snapshot;</li>
+<li>out-of-order concurrent events: serialize with a Service Bus session
+keyed by tenant + connector + target scope.</li>
+</ul>
+<h3 id="113-ownership-and-manual-edits">11.3 Ownership and manual
+edits</h3>
+<p>When a connector binds to a canonical scope, its controlled
+fields/records become read-only in VennuSign. Enforcement belongs in the
+domain API, not only the UI.</p>
+<ul>
+<li>UI displays source, last synchronization, and a lock indicator.</li>
+<li>Direct writes return a conflict explaining connector ownership.</li>
+<li>Switching connectors or returning to manual control is an explicit,
+audited operation.</li>
+<li>A new connector may not silently take over a scope already owned by
+another connector.</li>
+<li>Optional VennuSign presentation metadata may remain editable only if
+it is outside the connector-owned canonical field set and cannot corrupt
+source meaning.</li>
+</ul>
+<h2 id="12-key-data-entities">12. Key data entities</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Entity</th>
+<th>Key fields and purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>ConnectorType</code></td>
+<td>Type/version, transport capabilities, parser, canonical targets,
+lifecycle status</td>
+</tr>
+<tr class="even">
+<td><code>ConnectorInstance</code></td>
+<td>Tenant/location, connector type version, state, credential
+reference, schedules, policy</td>
+</tr>
+<tr class="odd">
+<td><code>SourceScopeBinding</code></td>
+<td>Connector/source scope to canonical scope; ownership boundary</td>
+</tr>
+<tr class="even">
+<td><code>MappingProfile</code></td>
+<td>Immutable published version, schemas, rules, tests, approvals</td>
+</tr>
+<tr class="odd">
+<td><code>PullSchedule</code></td>
+<td>Cadence, time zone, priority, quota class, next due time</td>
+</tr>
+<tr class="even">
+<td><code>Execution</code></td>
+<td>Pull/push/SFTP run, timestamps, state, correlation IDs,
+diagnostics</td>
+</tr>
+<tr class="odd">
+<td><code>PayloadArtifact</code></td>
+<td>Blob reference, hash, bytes, media type, retention class, scan
+state</td>
+</tr>
+<tr class="even">
+<td><code>Ingestion</code></td>
+<td>Mode, scope, source ID/version/sequence, mapping version,
+status</td>
+</tr>
+<tr class="odd">
+<td><code>SourceWatermark</code></td>
+<td>Cursor/sequence/ETag/last-modified state per connector scope</td>
+</tr>
+<tr class="even">
+<td><code>IdempotencyRecord</code></td>
+<td>Connector + source event/request ID and terminal result</td>
+</tr>
+<tr class="odd">
+<td><code>CanonicalLineage</code></td>
+<td>Source record and payload to canonical entity/version
+association</td>
+</tr>
+<tr class="even">
+<td><code>ValidationReport</code></td>
+<td>Counts, warnings, fatal errors, field/source locations</td>
+</tr>
+<tr class="odd">
+<td><code>AuditEvent</code></td>
+<td>Actor/service, action, before/after reference, reason, correlation
+ID</td>
+</tr>
+</tbody>
+</table>
+<p>Use globally unique IDs internally. Every row includes
+<code>TenantId</code>; primary/unique indexes must include tenant
+boundaries where appropriate. Repository/data-access APIs require a
+tenant context and defense-in-depth row-level security may be added for
+operator-query paths.</p>
+<h2 id="13-state-machine">13. State machine</h2>
+<pre class="mermaid"><code>stateDiagram-v2
+    [*] --&gt; Received
+    Received --&gt; Parsing
+    Parsing --&gt; Mapping
+    Mapping --&gt; Validating
+    Validating --&gt; Applying
+    Applying --&gt; Applied
+    Parsing --&gt; Quarantined: Syntax failure
+    Mapping --&gt; Quarantined: Mapping failure
+    Validating --&gt; Quarantined: Domain failure
+    Applying --&gt; RetryPending: Transient failure
+    RetryPending --&gt; Applying
+    RetryPending --&gt; DeadLettered: Retry exhausted
+    Quarantined --&gt; Received: Approved replay
+    DeadLettered --&gt; Received: Approved replay
+    Applied --&gt; [*]</code></pre>
+<p>Every transition is persisted with a correlation ID and reason.
+Terminal failure never alters last valid canonical state.</p>
+<h2 id="14-sequence-diagrams">14. Sequence diagrams</h2>
+<h3 id="141-rest-api-pull">14.1 REST API pull</h3>
+<pre class="mermaid"><code>sequenceDiagram
+    autonumber
+    participant S as Pull Scheduler
+    participant W as Pull Worker
+    participant E as External REST API
+    participant B as Payload Store
+    participant Q as Service Bus
+    participant M as Mapping Pipeline
+    participant V as VennuSign Domain API
+
+    S-&gt;&gt;Q: Enqueue due pull run
+    Q-&gt;&gt;W: Deliver run
+    W-&gt;&gt;E: GET changes/snapshot with cursor or ETag
+    E--&gt;&gt;W: Response + quota/cursor metadata
+    W-&gt;&gt;B: Store immutable response
+    W-&gt;&gt;Q: Enqueue ingestion reference
+    W--&gt;&gt;Q: Complete pull message
+    Q-&gt;&gt;M: Deliver ingestion
+    M-&gt;&gt;B: Stream raw payload
+    M-&gt;&gt;M: Parse, map, validate, and diff
+    M-&gt;&gt;V: Apply idempotent canonical change
+    V--&gt;&gt;M: Canonical version committed
+    M-&gt;&gt;Q: Publish CanonicalDataChanged</code></pre>
+<h3 id="142-inbound-push-api">14.2 Inbound push API</h3>
+<pre class="mermaid"><code>sequenceDiagram
+    autonumber
+    participant E as External System
+    participant G as API Gateway
+    participant I as Ingestion API
+    participant B as Payload Store
+    participant Q as Service Bus
+    participant M as Mapping Pipeline
+    participant V as VennuSign Domain API
+
+    E-&gt;&gt;G: POST snapshot/delta + idempotency key
+    G-&gt;&gt;G: Authenticate, authorize, throttle
+    G-&gt;&gt;I: Forward validated envelope
+    I-&gt;&gt;B: Stream and store payload + hash
+    I-&gt;&gt;Q: Enqueue ingestion reference
+    I--&gt;&gt;E: 202 Accepted + ingestion ID
+    Q-&gt;&gt;M: Deliver ingestion
+    M-&gt;&gt;M: Parse, map, validate, and diff
+    alt Valid
+        M-&gt;&gt;V: Apply idempotent canonical change
+        V--&gt;&gt;M: Commit version
+        M-&gt;&gt;Q: Publish CanonicalDataChanged
+    else Invalid
+        M-&gt;&gt;B: Store validation report/quarantine
+        M-&gt;&gt;Q: Publish ConnectorIngestionFailed
+    end</code></pre>
+<h3 id="143-sftp-push">14.3 SFTP push</h3>
+<pre class="mermaid"><code>sequenceDiagram
+    autonumber
+    participant E as External SFTP Client
+    participant S as SFTP Landing Zone
+    participant N as Storage Event Router
+    participant Q as Service Bus
+    participant M as Mapping Pipeline
+    participant V as VennuSign Domain API
+
+    E-&gt;&gt;S: Upload temporary file
+    E-&gt;&gt;S: Close and rename/mark complete
+    S-&gt;&gt;N: Finalized-object event
+    N-&gt;&gt;Q: Enqueue connector + object reference
+    Q-&gt;&gt;M: Deliver ingestion
+    M-&gt;&gt;S: Verify identity, stability, size, and signature
+    M-&gt;&gt;M: Parse, map, validate, and diff
+    alt Valid
+        M-&gt;&gt;V: Apply idempotent canonical change
+        V--&gt;&gt;M: Commit version
+        M-&gt;&gt;Q: Publish CanonicalDataChanged
+    else Invalid
+        M-&gt;&gt;M: Quarantine and alert
+    end</code></pre>
+<h3 id="144-failure-and-last-valid-state-behavior">14.4 Failure and
+last-valid-state behavior</h3>
+<pre class="mermaid"><code>sequenceDiagram
+    autonumber
+    participant M as Mapping Pipeline
+    participant C as Canonical Store
+    participant A as Alerting
+    participant O as Operator
+
+    M-&gt;&gt;M: Validation fails
+    M-xC: Do not apply candidate
+    Note over C: Last valid state remains active
+    M-&gt;&gt;A: Emit failure with tenant/connector/scope
+    A--&gt;&gt;O: Alert with runbook and ingestion ID
+    O-&gt;&gt;M: Correct mapping/configuration and replay
+    M-&gt;&gt;C: Apply only after full validation succeeds</code></pre>
+<h2 id="15-consistency-concurrency-and-idempotency">15. Consistency,
+concurrency, and idempotency</h2>
+<p>The platform uses eventual consistency between ingestion and
+displayed content, with strong transactional consistency at each
+canonical scope commit.</p>
+<ul>
+<li><strong>At-least-once transport:</strong> messages may be
+redelivered.</li>
+<li><strong>Inbox/idempotency ledger:</strong> VennuSign domain API
+records ingestion IDs inside the same transaction as changes.</li>
+<li><strong>Outbox:</strong> canonical change event is recorded in the
+same transaction and published asynchronously.</li>
+<li><strong>Per-scope ordering:</strong> Service Bus sessions use a
+stable session key such as
+<code>TenantId:ConnectorInstanceId:CanonicalScopeId</code>.</li>
+<li><strong>Optimistic concurrency:</strong> the apply command includes
+the expected canonical/source version.</li>
+<li><strong>Duplicate detection:</strong> broker duplicate detection is
+enabled, but consumer idempotency remains mandatory.</li>
+<li><strong>Snapshot supersession:</strong> newer completed source
+versions may supersede queued older snapshots before expensive mapping,
+when ordering is provable.</li>
+</ul>
+<p>Exactly-once delivery across external systems is neither realistic
+nor required. The correct guarantee is <strong>at-least-once delivery
+with effectively-once domain effects</strong>.</p>
+<h2 id="16-security-architecture">16. Security architecture</h2>
+<h3 id="161-identity-and-access">16.1 Identity and access</h3>
+<ul>
+<li>Administrators authenticate through VennuSign&#39;s identity provider
+using OIDC; RBAC separates customer admin, support, mapping author,
+mapping approver, replay operator, and security auditor.</li>
+<li>External push callers use tenant/connector-scoped OAuth clients or
+mTLS. HMAC/API keys are connector-specific, hashed or Key-Vault-managed,
+rotateable, and never shared across tenants.</li>
+<li>Azure workloads use managed identities and least-privilege RBAC; no
+Azure secrets are embedded in code or deployment configuration.</li>
+<li>Pull credentials are stored only in Key Vault. SQL stores a Key
+Vault reference and non-secret metadata.</li>
+<li>Production access is just-in-time and audited. Mapping publication
+and high-impact replay require separate privileges.</li>
+</ul>
+<h3 id="162-network-controls">16.2 Network controls</h3>
+<ul>
+<li>Public ingress terminates at API Management; backend services use
+private networking where feasible.</li>
+<li>Storage, SQL, Service Bus, and Key Vault use private endpoints and
+deny public network access except the explicitly public SFTP/API entry
+points.</li>
+<li>Outbound pull traffic uses controlled egress with stable IPs when
+providers require allowlisting.</li>
+<li>Connector destinations are allowlisted to prevent server-side
+request forgery. Redirects are disabled or strictly revalidated;
+private/link-local/metadata IP ranges are blocked.</li>
+</ul>
+<h3 id="163-payload-security">16.3 Payload security</h3>
+<ul>
+<li>TLS 1.2+ for HTTPS; SFTP with current ciphers and SSH keys.</li>
+<li>Enforce compressed and expanded size, record count, nesting depth,
+parse time, and mapping execution limits.</li>
+<li>Disable XML DTD and external entity processing.</li>
+<li>Scan file payloads where supported; content-type sniffing must agree
+with allowed connector format.</li>
+<li>Encrypt all storage at rest; customer-managed keys are optional for
+customers with contractual requirements.</li>
+<li>Raw payload access is more restricted than ordinary application logs
+because it may contain customer/order data.</li>
+<li>Logs contain identifiers and counts, not raw records, credentials,
+tokens, customer names, order details, or full payloads.</li>
+</ul>
+<h3 id="164-card-data-prohibition">16.4 Card-data prohibition</h3>
+<p>The platform must remain outside the payment-card data path:</p>
+<ul>
+<li>contracts and connector documentation state that PAN, CVV, track
+data, PIN data, and equivalent payment credentials are forbidden;</li>
+<li>schema allowlists reject known payment fields before mapping;</li>
+<li>pattern detection flags likely PANs in raw payloads and immediately
+quarantines access;</li>
+<li>prohibited-data incidents trigger a security workflow, restricted
+deletion/retention handling, and credential review;</li>
+<li>no feature may log or echo rejected sensitive values;</li>
+<li>customer/order data is minimized to the fields required for the
+display use case and governed by retention policy.</li>
+</ul>
+<p>Pattern detection is a backstop, not proof of compliance; provider
+agreements and schema-level prevention remain primary.</p>
+<h3 id="165-threats-and-mitigations">16.5 Threats and mitigations</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Threat</th>
+<th>Primary mitigations</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Cross-tenant mapping or apply</td>
+<td>Tenant-bound identity, scoped bindings, composite keys, domain
+authorization, automated isolation tests</td>
+</tr>
+<tr class="even">
+<td>Replay/duplicate updates</td>
+<td>Idempotency keys, timestamp window, payload digest, inbox ledger,
+source sequence</td>
+</tr>
+<tr class="odd">
+<td>Malicious XML/zip bomb</td>
+<td>Streaming parse, DTD/XXE disabled, expansion and resource
+limits</td>
+</tr>
+<tr class="even">
+<td>Credential theft</td>
+<td>Key Vault, managed identity, rotation, least privilege, secret-free
+logs</td>
+</tr>
+<tr class="odd">
+<td>SSRF from pull configuration</td>
+<td>Host allowlists, DNS/IP revalidation, controlled egress, no
+arbitrary URL templates</td>
+</tr>
+<tr class="even">
+<td>Mapping denial of service</td>
+<td>Sandboxed DSL, instruction/time/memory limits, bounded lookups,
+offline validation</td>
+</tr>
+<tr class="odd">
+<td>Partial SFTP upload</td>
+<td>Temporary name + atomic finalize protocol, stability/marker
+verification</td>
+</tr>
+<tr class="even">
+<td>Poison message</td>
+<td>Bounded retries, DLQ, quarantine, runbook-driven replay</td>
+</tr>
+<tr class="odd">
+<td>Mass unintended deletion</td>
+<td>Scoped snapshots, deletion thresholds, empty-snapshot policy, dry
+run, last-valid retention</td>
+</tr>
+<tr class="even">
+<td>Operator abuse/error</td>
+<td>RBAC, separation of duties, immutable audit, approval for
+publish/replay</td>
+</tr>
+</tbody>
+</table>
+<h2 id="17-reliability-and-failure-handling">17. Reliability and failure
+handling</h2>
+<h3 id="171-retry-policy">17.1 Retry policy</h3>
+<ul>
+<li>Retry only transient failures: timeouts, connection resets, HTTP
+408/429/5xx, broker throttling, and temporary database errors.</li>
+<li>Use exponential backoff with jitter and respect provider
+<code>Retry-After</code>.</li>
+<li>Do not automatically retry deterministic parse, schema, mapping,
+authentication, or domain-validation errors.</li>
+<li>Separate retry budgets by connector so one bad provider cannot
+exhaust platform workers.</li>
+</ul>
+<h3 id="172-circuit-breakers-and-bulkheads">17.2 Circuit breakers and
+bulkheads</h3>
+<ul>
+<li>Circuit breaker per connector instance/provider endpoint.</li>
+<li>Separate concurrency pools/queues for pull, API push, file
+ingestion, and canonical apply.</li>
+<li>Per-tenant quotas prevent noisy-neighbor behavior.</li>
+<li>High-priority urgent updates may use a reserved queue/worker
+allocation but still follow fairness and quota rules.</li>
+</ul>
+<h3 id="173-last-valid-data">17.3 Last valid data</h3>
+<p>The currently active canonical version and displayed artifact remain
+unchanged when:</p>
+<ul>
+<li>the provider is unavailable;</li>
+<li>authentication fails;</li>
+<li>a payload is malformed;</li>
+<li>mapping or domain validation fails;</li>
+<li>sequence gaps are detected;</li>
+<li>a snapshot breaches safety thresholds;</li>
+<li>downstream apply fails.</li>
+</ul>
+<p>Staleness is visible and alerted; it is never silently represented as
+fresh. Customer-facing screens continue operating from the
+player/platform&#39;s last valid artifact according to VennuSign&#39;s existing
+offline behavior.</p>
+<h3 id="174-dead-letter-and-quarantine">17.4 Dead-letter and
+quarantine</h3>
+<ul>
+<li><strong>Quarantine:</strong> payload is understood as permanently
+invalid until mapping/config/data changes.</li>
+<li><strong>DLQ:</strong> processing could not complete after transient
+retry budget was exhausted.</li>
+<li>Operator tools show a sanitized error summary, record/field
+locations, mapping version, and correlation ID.</li>
+<li>Replay creates a new execution linked to the original payload; it
+never mutates history.</li>
+<li>Bulk replay is rate limited and requires an impact preview.</li>
+</ul>
+<h2 id="18-availability-backup-and-disaster-recovery">18. Availability,
+backup, and disaster recovery</h2>
+<h3 id="181-single-region-production-baseline">18.1 Single-region
+production baseline</h3>
+<p>For the confirmed 99.9% / two-hour target:</p>
+<ul>
+<li>deploy two or more replicas for API/control/critical worker apps
+across availability zones where supported;</li>
+<li>keep at least one warm replica for ingestion and urgent-processing
+workers;</li>
+<li>use Service Bus Premium with zone redundancy where available;</li>
+<li>use zone-redundant Azure SQL where supported;</li>
+<li>enable Blob soft delete, versioning, lifecycle policies, and
+zone-redundant storage appropriate to the region;</li>
+<li>deploy infrastructure from Bicep and application images from a
+replicated registry;</li>
+<li>maintain tested restore scripts and configuration exports.</li>
+</ul>
+<h3 id="182-recovery-objectives">18.2 Recovery objectives</h3>
+<ul>
+<li><strong>RTO:</strong> restore acceptance, processing, and canonical
+apply within 2 hours.</li>
+<li><strong>RPO:</strong> 15 minutes for mutable control/metadata;
+accepted raw payloads are retained durably and can be replayed, making
+effective ingestion RPO close to zero within the chosen regional storage
+durability.</li>
+<li>Azure SQL point-in-time recovery and geo-redundant backups support
+database restoration; restoration drills must verify the actual two-hour
+objective rather than assume it.</li>
+</ul>
+<h3 id="183-regional-disaster-evolution">18.3 Regional disaster
+evolution</h3>
+<p>Do not pay for active-active multi-region processing initially unless
+business commitments require it. Prepare for warm standby by:</p>
+<ul>
+<li>keeping deployments and configuration fully reproducible;</li>
+<li>using geo-redundant backup/storage options;</li>
+<li>separating globally unique ingestion IDs from regional execution
+IDs;</li>
+<li>documenting DNS/API failover and SFTP endpoint implications;</li>
+<li>preventing both regions from actively polling/applying the same
+scope without a global lease.</li>
+</ul>
+<p>Run a recovery exercise at least twice annually.</p>
+<h2 id="19-observability-and-operations">19. Observability and
+operations</h2>
+<p>Every execution propagates W3C trace context and these identifiers:
+tenant, connector instance, execution, ingestion, payload, mapping
+version, canonical scope, and source event/sequence. Sensitive record
+data must not appear in telemetry.</p>
+<h3 id="191-metrics">19.1 Metrics</h3>
+<ul>
+<li>ingestion acceptance rate and bytes by transport;</li>
+<li>end-to-end and stage latency percentiles;</li>
+<li>queue depth, oldest-message age, retries, DLQ count;</li>
+<li>pull schedule lag, response codes, rate-limit remaining, circuit
+state;</li>
+<li>parse/mapping/validation failure rates by connector and
+version;</li>
+<li>canonical apply conflicts and idempotent duplicates;</li>
+<li>last successful sync and data age by connector/scope;</li>
+<li>downstream change-notification and publishing lag;</li>
+<li>SLO availability and error-budget burn.</li>
+</ul>
+<h3 id="192-alerts">19.2 Alerts</h3>
+<ul>
+<li>urgent pipeline p95/p99 target breach;</li>
+<li>no successful sync beyond connector freshness contract;</li>
+<li>queue oldest age above 30 seconds urgent / 5 minutes standard;</li>
+<li>consecutive failures or circuit open;</li>
+<li>DLQ/quarantine growth;</li>
+<li>sequence gap or mass-deletion guard;</li>
+<li>authentication/credential expiry;</li>
+<li>suspected prohibited card data;</li>
+<li>cross-tenant authorization denial spikes;</li>
+<li>database/storage capacity and regional service health.</li>
+</ul>
+<p>Alerts should route by severity to the Operations Platform and
+incident tooling. A single bad record should not page an engineer;
+repeated connector-wide failure, freshness breach, security signal, or
+customer-impacting backlog should.</p>
+<h3 id="193-operational-controls">19.3 Operational controls</h3>
+<ul>
+<li>test connection without ingesting;</li>
+<li>upload/fetch sample and run mapping preview;</li>
+<li>compare candidate with current canonical state;</li>
+<li>activate/suspend connector;</li>
+<li>trigger refresh within quota;</li>
+<li>view health, freshness, execution timeline, and sanitized
+errors;</li>
+<li>replay one ingestion or an approved range;</li>
+<li>roll back mapping version for future executions and replay affected
+payloads;</li>
+<li>export audit trail.</li>
+</ul>
+<h2 id="20-deployment-topology-and-scaling">20. Deployment topology and
+scaling</h2>
+<p>Begin with five deployable workloads:</p>
+<ol type="1">
+<li>Connector Control Plane API.</li>
+<li>Push Ingestion API.</li>
+<li>Pull Scheduler/Workers.</li>
+<li>Mapping Pipeline Workers.</li>
+<li>Outbox/Event Publisher (or hosted with the domain service if already
+present).</li>
+</ol>
+<p>They may share a repository and common libraries but deploy
+independently. Scale workers on Service Bus queue depth/age; scale APIs
+on HTTP concurrency. Preserve warm replicas for seconds-level paths.</p>
+<p>Suggested initial concurrency controls:</p>
+<ul>
+<li>global worker ceiling protects SQL and VennuSign domain APIs;</li>
+<li>per-provider pull concurrency and requests/second;</li>
+<li>per-connector serial apply through sessions;</li>
+<li>per-tenant concurrent-ingestion quota;</li>
+<li>payload size and records/run limit;</li>
+<li>separate urgent and standard priorities.</li>
+</ul>
+<p>Load tests must validate 1,000 locations under synchronized
+opening-time bursts, provider recovery storms, large snapshots, many
+tiny deltas, and one deliberately noisy tenant.</p>
+<h2 id="21-api-and-event-contracts">21. API and event contracts</h2>
+<h3 id="211-push-api-envelope-example">21.1 Push API envelope
+example</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;schema&quot;</span><span class="fu">:</span> <span class="st">&quot;source.vendor-menu.v2&quot;</span><span class="fu">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mode&quot;</span><span class="fu">:</span> <span class="st">&quot;delta&quot;</span><span class="fu">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;scope&quot;</span><span class="fu">:</span> <span class="st">&quot;location:123/menu:dinner&quot;</span><span class="fu">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;eventId&quot;</span><span class="fu">:</span> <span class="st">&quot;vendor-event-84721&quot;</span><span class="fu">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sequence&quot;</span><span class="fu">:</span> <span class="dv">1042</span><span class="fu">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;generatedAt&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-08-13T07:15:22Z&quot;</span><span class="fu">,</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;data&quot;</span><span class="fu">:</span> <span class="fu">{}</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Required HTTP metadata includes connector identity,
+<code>Idempotency-Key</code>, content type, and optional payload
+signature. The connector identity—not a tenant ID supplied inside the
+payload—determines the authorized tenant.</p>
+<h3 id="212-internal-ingestion-event">21.2 Internal ingestion event</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;eventType&quot;</span><span class="fu">:</span> <span class="st">&quot;ConnectorPayloadAccepted.v1&quot;</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;ingestionId&quot;</span><span class="fu">:</span> <span class="st">&quot;01J...&quot;</span><span class="fu">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;tenantId&quot;</span><span class="fu">:</span> <span class="st">&quot;...&quot;</span><span class="fu">,</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;connectorInstanceId&quot;</span><span class="fu">:</span> <span class="st">&quot;...&quot;</span><span class="fu">,</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;transport&quot;</span><span class="fu">:</span> <span class="st">&quot;PushApi&quot;</span><span class="fu">,</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payloadUri&quot;</span><span class="fu">:</span> <span class="st">&quot;internal-reference-only&quot;</span><span class="fu">,</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payloadSha256&quot;</span><span class="fu">:</span> <span class="st">&quot;...&quot;</span><span class="fu">,</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mappingProfileVersion&quot;</span><span class="fu">:</span> <span class="st">&quot;3.2.0&quot;</span><span class="fu">,</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;receivedAt&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-08-13T07:15:23Z&quot;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Events contain references and non-sensitive metadata, not entire
+business payloads. Schemas are versioned and registered; consumers
+tolerate additive fields.</p>
+<h2 id="22-mapping-lifecycle-and-testing">22. Mapping lifecycle and
+testing</h2>
+<p>A mapping moves through
+<code>Draft -&gt; Tested -&gt; Approved -&gt; Published -&gt; Deprecated -&gt; Retired</code>.</p>
+<p>Publication gates:</p>
+<ul>
+<li>schema validation;</li>
+<li>unit fixtures for normal records;</li>
+<li>snapshot and delta fixtures;</li>
+<li>create, update, delete, empty, duplicate, and sequence-gap
+cases;</li>
+<li>missing/unknown fields and new source schema versions;</li>
+<li>locale, currency, daylight-saving, and time-zone boundaries;</li>
+<li>maximum sizes and pathological nesting/line lengths;</li>
+<li>prohibited card-data fixtures;</li>
+<li>deterministic replay produces identical canonical output;</li>
+<li>comparison against the previous published mapping using
+representative payloads;</li>
+<li>security review for any compiled extension module.</li>
+</ul>
+<p>Production mapping changes use canary rollout by connector instances,
+with automated error-rate comparison and rapid rollback. Because
+mappings are immutable after publication, historical executions remain
+reproducible.</p>
+<h2 id="23-architectural-trade-offs">23. Architectural trade-offs</h2>
+<h3 id="231-modular-platform-vs-fine-grained-microservices">23.1 Modular
+platform vs. fine-grained microservices</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Option</th>
+<th>Pros</th>
+<th>Cons</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Modular services (recommended)</td>
+<td>Lower operational cost; simpler deployment/debugging; clear code
+boundaries; independent scaling of major paths</td>
+<td>Less isolation between parser/mapper modules; requires discipline to
+preserve boundaries</td>
+</tr>
+<tr class="even">
+<td>Many microservices</td>
+<td>Maximum team and failure isolation; fine-grained scaling</td>
+<td>Distributed-transaction complexity, higher latency/cost, many
+deployments, premature for 1,000 locations</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decision:</strong> Use a modular architecture with five
+coarse deployables. Split a component only when measured scale, security
+isolation, or independent ownership requires it.</p>
+<h3 id="232-asynchronous-pipeline-vs-synchronous-processing">23.2
+Asynchronous pipeline vs. synchronous processing</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Option</th>
+<th>Pros</th>
+<th>Cons</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Asynchronous durable pipeline (recommended)</td>
+<td>Absorbs bursts, retries safely, isolates source latency, supports
+replay, fast API acknowledgement</td>
+<td>Eventual consistency; more operational components; requires
+idempotency</td>
+</tr>
+<tr class="even">
+<td>Synchronous end-to-end</td>
+<td>Simple request mental model; immediate final answer</td>
+<td>Fragile under downstream failure, long timeouts, poor file support,
+hard to absorb bursts</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decision:</strong> Acknowledge only after durable acceptance,
+then process asynchronously.</p>
+<h3 id="233-azure-sql-vs-nosql-for-metadata">23.3 Azure SQL vs. NoSQL
+for metadata</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Option</th>
+<th>Pros</th>
+<th>Cons</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Azure SQL (recommended)</td>
+<td>Strong transactions, constraints, relational mappings/lineage,
+familiar tooling, PITR</td>
+<td>Vertical limits eventually; careful indexing/partitioning
+needed</td>
+</tr>
+<tr class="even">
+<td>Cosmos DB</td>
+<td>Elastic distribution, flexible documents, global replication</td>
+<td>Higher conceptual/cost burden; multi-entity transaction limitations;
+weaker fit for relational control data</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decision:</strong> Azure SQL for control and lineage; Blob
+Storage for large/raw artifacts. Revisit only after measured partition
+or global-distribution needs.</p>
+<h3 id="234-service-bus-vs-event-grid-alone">23.4 Service Bus vs. Event
+Grid alone</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Option</th>
+<th>Pros</th>
+<th>Cons</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Service Bus Premium (recommended)</td>
+<td>Durable work queues, sessions, DLQ, duplicate detection,
+backpressure</td>
+<td>Additional cost and broker administration</td>
+</tr>
+<tr class="even">
+<td>Event Grid alone</td>
+<td>Excellent event fanout and storage-event integration;
+serverless</td>
+<td>Not ideal as the sole ordered work queue; weaker workflow
+retry/control semantics</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decision:</strong> Event Grid may capture Blob finalized
+events, but Service Bus owns durable processing workflows.</p>
+<h3 id="235-container-apps-vs-functions-vs-aks">23.5 Container Apps vs.
+Functions vs. AKS</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Option</th>
+<th>Pros</th>
+<th>Cons</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Container Apps (recommended)</td>
+<td>Managed containers, KEDA scaling, revisions, VNet, lower operational
+burden than AKS</td>
+<td>Some platform constraints; warm replicas required for predictable
+seconds-level latency</td>
+</tr>
+<tr class="even">
+<td>Azure Functions</td>
+<td>Very fast event development; consumption economics</td>
+<td>Runtime/timeout/cold-start constraints and less uniform hosting for
+diverse parsers</td>
+</tr>
+<tr class="odd">
+<td>AKS</td>
+<td>Maximum control and ecosystem</td>
+<td>Highest operational/security burden; unjustified at current
+scale</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decision:</strong> Container Apps. Functions-style triggers
+may be used inside containerized workloads where helpful.</p>
+<h3 id="236-declarative-mapper-vs-arbitrary-scripts">23.6 Declarative
+mapper vs. arbitrary scripts</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Option</th>
+<th>Pros</th>
+<th>Cons</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Constrained declarative mapping (recommended)</td>
+<td>Auditable, testable, deterministic, safer multi-tenant
+execution</td>
+<td>Complex edge cases need approved extensions; DSL must be
+designed</td>
+</tr>
+<tr class="even">
+<td>Arbitrary scripts/plugins</td>
+<td>Maximum flexibility and rapid one-offs</td>
+<td>Severe security, determinism, resource, versioning, and support
+risks</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decision:</strong> Declarative mappings plus signed reviewed
+extension modules.</p>
+<h3 id="237-shared-vs-dedicated-tenant-infrastructure">23.7 Shared vs.
+dedicated tenant infrastructure</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Option</th>
+<th>Pros</th>
+<th>Cons</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Shared multi-tenant baseline (recommended)</td>
+<td>Efficient and manageable for 1,000 locations</td>
+<td>Requires rigorous logical isolation and quota enforcement</td>
+</tr>
+<tr class="even">
+<td>Dedicated stack per tenant</td>
+<td>Strong isolation and custom scaling</td>
+<td>High cost and operational sprawl</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decision:</strong> Shared platform with tenant-scoped
+identities, paths, rows, encryption, quotas, and tests. Allow dedicated
+landing zones/stacks only for contractual enterprise needs.</p>
+<h2 id="24-architecture-decision-records">24. Architecture Decision
+Records</h2>
+<h3 id="adr-001-one-connector-platform-for-pull-and-push">ADR-001: One
+Connector Platform for pull and push</h3>
+<ul>
+<li><strong>Status:</strong> Proposed</li>
+<li><strong>Context:</strong> Pull and push differ in transport but
+require identical mapping, validation, lineage, failure handling, and
+canonical application.</li>
+<li><strong>Decision:</strong> Implement common ingestion and mapping
+services behind REST pull, REST push, and SFTP adapters.</li>
+<li><strong>Consequences:</strong> Reduced duplication and consistent
+semantics; shared services become critical infrastructure and require
+strong isolation/observability.</li>
+</ul>
+<h3 id="adr-002-canonical-data-types-are-reused-by-default">ADR-002:
+Canonical data types are reused by default</h3>
+<ul>
+<li><strong>Status:</strong> Proposed</li>
+<li><strong>Context:</strong> Creating a schema per source would couple
+VennuSign to vendors and fragment rendering/business logic.</li>
+<li><strong>Decision:</strong> Map sources into existing versioned
+canonical types; require an ADR/domain review for a new type.</li>
+<li><strong>Consequences:</strong> Connectors remain replaceable and
+themes consume stable data; schema governance becomes a formal
+responsibility.</li>
+</ul>
+<h3 id="adr-003-event-driven-asynchronous-processing">ADR-003:
+Event-driven asynchronous processing</h3>
+<ul>
+<li><strong>Status:</strong> Proposed</li>
+<li><strong>Context:</strong> External systems are bursty and
+unreliable, and file/snapshot processing may outlive an HTTP
+request.</li>
+<li><strong>Decision:</strong> Durably store input and enqueue
+references; process via Service Bus with at-least-once delivery and
+idempotent effects.</li>
+<li><strong>Consequences:</strong> High resilience and replayability;
+eventual consistency and operational queue management are accepted.</li>
+</ul>
+<h3 id="adr-004-azure-managed-services-stack">ADR-004: Azure
+managed-services stack</h3>
+<ul>
+<li><strong>Status:</strong> Proposed</li>
+<li><strong>Context:</strong> VennuSign needs seconds-level paths and
+1,000-location capacity without a large platform-operations team.</li>
+<li><strong>Decision:</strong> Use Azure Container Apps, API Management,
+Service Bus Premium, Blob/SFTP, Azure SQL, Key Vault, and Azure
+Monitor.</li>
+<li><strong>Consequences:</strong> Lower operational burden and strong
+Azure integration; introduces Azure coupling and managed-service
+cost.</li>
+</ul>
+<h3 id="adr-005-at-least-once-delivery-with-effectively-once-effects">ADR-005:
+At-least-once delivery with effectively-once effects</h3>
+<ul>
+<li><strong>Status:</strong> Proposed</li>
+<li><strong>Context:</strong> Network and broker retries make
+exactly-once distributed delivery impractical.</li>
+<li><strong>Decision:</strong> Use source event IDs, hashes, per-scope
+ordering, an inbox/idempotency ledger, optimistic concurrency, and a
+transactional outbox.</li>
+<li><strong>Consequences:</strong> Safe retries and replay; every
+connector must provide or derive stable identifiers.</li>
+</ul>
+<h3 id="adr-006-integration-controlled-data-is-read-only">ADR-006:
+Integration-controlled data is read-only</h3>
+<ul>
+<li><strong>Status:</strong> Accepted from product requirement</li>
+<li><strong>Context:</strong> Manual edits would create ambiguous
+ownership and would be overwritten unpredictably.</li>
+<li><strong>Decision:</strong> Domain APIs reject manual writes to
+connector-owned fields/scopes.</li>
+<li><strong>Consequences:</strong> Clear source of truth; customers must
+change data upstream or disconnect ownership explicitly.</li>
+</ul>
+<h3 id="adr-007-preserve-last-valid-data-on-failure">ADR-007: Preserve
+last valid data on failure</h3>
+<ul>
+<li><strong>Status:</strong> Accepted from product requirement</li>
+<li><strong>Context:</strong> Replacing working signage with
+invalid/empty content is more harmful than temporary staleness.</li>
+<li><strong>Decision:</strong> Candidates are staged and validated fully
+before atomic application; failures alert and retain prior state.</li>
+<li><strong>Consequences:</strong> Displays remain stable; the system
+must prominently track and alert on staleness.</li>
+</ul>
+<h3 id="adr-008-sftp-is-managed-blob-ingress-ftp-is-unsupported">ADR-008:
+SFTP is managed Blob ingress; FTP is unsupported</h3>
+<ul>
+<li><strong>Status:</strong> Proposed</li>
+<li><strong>Context:</strong> Cinema and legacy systems often push
+files, but operating SFTP servers adds security and maintenance burden;
+FTP is unencrypted.</li>
+<li><strong>Decision:</strong> Use Azure Blob Storage SFTP with SSH
+keys, isolated folders, and finalized-file protocol. Do not support
+FTP.</li>
+<li><strong>Consequences:</strong> Secure managed file delivery; Azure
+SFTP feature constraints and costs must be validated during
+implementation.</li>
+</ul>
+<h3 id="adr-009-mapping-uses-a-safe-dsl">ADR-009: Mapping uses a safe
+DSL</h3>
+<ul>
+<li><strong>Status:</strong> Proposed</li>
+<li><strong>Context:</strong> Vendor schemas vary, but arbitrary user
+code creates unacceptable multi-tenant risk.</li>
+<li><strong>Decision:</strong> Build a declarative versioned mapping DSL
+with bounded execution and reviewed extension modules.</li>
+<li><strong>Consequences:</strong> Strong auditability and security;
+initial investment is required and rare transforms may need code
+releases.</li>
+</ul>
+<h3 id="adr-010-no-payment-card-data">ADR-010: No payment-card data</h3>
+<ul>
+<li><strong>Status:</strong> Accepted from product requirement</li>
+<li><strong>Context:</strong> Display integrations do not require
+cardholder data and accepting it would greatly expand risk and
+compliance scope.</li>
+<li><strong>Decision:</strong> Prohibit card data contractually and
+technically; detect, quarantine, and escalate suspected violations.</li>
+<li><strong>Consequences:</strong> Lower risk and narrower compliance
+scope; incompatible source payloads must be filtered upstream or
+rejected.</li>
+</ul>
+<h2 id="25-phased-implementation-plan">25. Phased implementation
+plan</h2>
+<h3 id="phase-0--contract-and-threat-model-foundation">Phase 0 —
+Contract and threat-model foundation</h3>
+<ul>
+<li>Define canonical schema/version governance and new-type
+approval.</li>
+<li>Define ingestion envelope, snapshot/delta semantics, ownership
+contract, and internal events.</li>
+<li>Threat model API push, SFTP, pull SSRF, mapping execution, tenant
+isolation, and prohibited data.</li>
+<li>Create NFR/SLO dashboards and a performance test model before
+implementation.</li>
+</ul>
+<h3 id="phase-1--vertical-platform-slice">Phase 1 — Vertical platform
+slice</h3>
+<ul>
+<li>Control-plane data model and connector lifecycle.</li>
+<li>Push REST ingestion with durable payload storage and
+<code>202</code> acknowledgement.</li>
+<li>JSON parser, mapping DSL minimum viable subset, validation, dry run,
+and one existing canonical target used only as a platform test
+fixture.</li>
+<li>Service Bus pipeline, idempotent apply contract, lineage, outbox,
+quarantine, alerting, and replay.</li>
+<li>No public production connector yet.</li>
+</ul>
+<h3 id="phase-2--pull-platform">Phase 2 — Pull platform</h3>
+<ul>
+<li>Scheduler, distributed leases, conditional requests/cursors, quota
+management, retry/circuit breaker, and urgent refresh.</li>
+<li>OAuth2/API-key/mTLS credential strategies through Key Vault.</li>
+<li>Provider simulator and chaos tests for throttling, timeouts,
+duplicate data, and sequence gaps.</li>
+</ul>
+<h3 id="phase-3--file-push-platform">Phase 3 — File push platform</h3>
+<ul>
+<li>Managed SFTP landing zone, tenant isolation, finalized-file
+protocol, file events, quarantine, and lifecycle cleanup.</li>
+<li>XML/CSV/flat-file streaming parsers and security limits.</li>
+<li>File validation reports accessible to operators/customers without
+exposing sensitive records.</li>
+</ul>
+<h3 id="phase-4--operations-and-controlled-rollout">Phase 4 — Operations
+and controlled rollout</h3>
+<ul>
+<li>Operations Platform views: freshness, runs, errors, mappings,
+replay, credential expiry, and audit.</li>
+<li>Canary mapping publication, rollback, mass-change safety previews,
+and capacity dashboards.</li>
+<li>Load, penetration, tenant-isolation, disaster-recovery, and
+prohibited-data response exercises.</li>
+<li>Select the first production connector only after the platform
+acceptance criteria pass.</li>
+</ul>
+<h2 id="26-acceptance-criteria">26. Acceptance criteria</h2>
+<p>The platform is ready for its first production connector when:</p>
+<ol type="1">
+<li>REST pull, REST push, and SFTP can all produce the same canonical
+result from equivalent fixtures.</li>
+<li>Snapshot/delta, duplicate, replay, out-of-order, gap, and
+empty-snapshot cases behave as specified.</li>
+<li>Invalid input never changes last valid canonical state.</li>
+<li>Manual domain edits are rejected for connector-controlled
+scopes.</li>
+<li>Cross-tenant penetration and automated isolation tests show no data
+or control leakage.</li>
+<li>Suspected card data is quarantined without leaking values into logs
+or responses.</li>
+<li>A 1,000-location load model meets the processing SLOs, including
+synchronized bursts.</li>
+<li>Queue loss, worker termination, database transient faults, and
+provider outages recover without duplicate effects.</li>
+<li>Mapping rollback and payload replay are demonstrated.</li>
+<li>A recovery drill restores the critical service inside two hours and
+meets the RPO target.</li>
+<li>Operators can identify a failed connector, understand the sanitized
+cause, retain last valid content, and safely replay it.</li>
+<li>The true freshness contract is visible for every pull connector and
+reflects provider limitations.</li>
+</ol>
+<h2 id="27-risks-and-follow-up-decisions">27. Risks and follow-up
+decisions</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Risk/open decision</th>
+<th>Required action before production</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Seconds-level pull may violate provider quotas</td>
+<td>Establish freshness contract for each connector; prefer delta
+endpoints/conditional requests/push</td>
+</tr>
+<tr class="even">
+<td>Canonical domain API may not yet support ownership/idempotent
+apply</td>
+<td>Design and implement the domain ingestion contract and transactional
+outbox</td>
+</tr>
+<tr class="odd">
+<td>SFTP feature limits/cost vary by Azure configuration</td>
+<td>Run a focused proof of concept with finalize semantics, isolation,
+events, and lifecycle</td>
+</tr>
+<tr class="even">
+<td>Customer/order data creates privacy obligations</td>
+<td>Define purpose, minimization, retention, access, deletion, and
+incident policies per canonical type</td>
+</tr>
+<tr class="odd">
+<td>Mapping DSL scope can grow into a product</td>
+<td>Keep initial operations minimal; require evidence before adding
+language features</td>
+</tr>
+<tr class="even">
+<td>Downstream screen refresh latency is outside this subsystem</td>
+<td>Define a separate end-to-end VennuSign display freshness SLO across
+canonical apply, render, publish, and player receipt</td>
+</tr>
+<tr class="odd">
+<td>No first connector is selected</td>
+<td>Use provider simulators and representative cinema/menu fixtures, but
+delay vendor-specific decisions until platform contracts stabilize</td>
+</tr>
+</tbody>
+</table>
+<h2 id="28-final-recommendation">28. Final recommendation</h2>
+<p>Build the Connector Platform as a shared, Azure-managed, event-driven
+ingestion capability with coarse-grained .NET services. Treat REST pull,
+REST push, and SFTP as interchangeable transport adapters feeding one
+immutable, versioned mapping and validation pipeline. Keep VennuSign
+canonical types stable and source-independent; enforce integration
+ownership in the domain API; preserve last valid data on every failure;
+and make replay, lineage, freshness, and tenant isolation first-class
+rather than operational afterthoughts.</p>
+<p>The most important product promise should be precise:
+<strong>VennuSign processes urgent data within seconds after it is
+received or retrieved.</strong> For API pull, detection time remains
+connector-specific because the external provider controls rate limits
+and change visibility.</p>
+<h2 id="29-primary-implementation-references">29. Primary implementation
+references</h2>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/azure/container-apps/scale-app">Azure
+Container Apps scaling</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-message-loss-and-duplicates">Azure
+Service Bus duplicate handling and ordered sessions</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dead-letter-queues">Azure
+Service Bus dead-letter queues</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/storage/blobs/secure-file-transfer-protocol-support">SFTP
+support for Azure Blob Storage</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/api-management/api-management-policies">Azure
+API Management policy reference</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/key-vault/general/authentication">Azure
+Key Vault application authentication</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/azure-sql/database/automated-backups-overview">Azure
+SQL automated backups</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/">Azure
+Architecture Center reliability patterns</a></li>
+</ul>
+<script>
+(() => {
+  const toc = document.querySelector('#TOC');
+  if (!toc) return;
+
+  const originalRoot = toc.querySelector(':scope > ul > li > ul');
+  if (!originalRoot) return;
+
+  const sectionLinks = Array.from(originalRoot.children)
+    .map((item) => item.querySelector(':scope > a'))
+    .filter(Boolean)
+    .map((link) => ({ href: link.getAttribute('href'), label: link.textContent.replace(/\s+/g, ' ').trim() }));
+
+  const groups = [
+    { label: 'Foundation', start: 1, end: 6 },
+    { label: 'Platform architecture', start: 7, end: 15 },
+    { label: 'Security and operations', start: 16, end: 22 },
+    { label: 'Decisions', start: 23, end: 24 },
+    { label: 'Delivery', start: 25, end: 29 }
+  ];
+
+  toc.innerHTML = `
+    <button class="toc-trigger" type="button" aria-expanded="false" aria-controls="toc-panel">
+      <span class="toc-trigger-icon" aria-hidden="true"></span>
+      <span>Contents</span>
+    </button>
+    <div class="toc-current" aria-live="polite"><strong>Reading</strong><span>Executive summary</span></div>
+    <div class="toc-panel" id="toc-panel" hidden>
+      <div class="toc-panel-head">
+        <div>
+          <p class="toc-panel-title">Jump to a section</p>
+          <p class="toc-panel-copy">The full document stays on one page.</p>
+        </div>
+        <button class="toc-close" type="button">Close</button>
+      </div>
+      <div class="toc-groups"></div>
+    </div>`;
+
+  const trigger = toc.querySelector('.toc-trigger');
+  const panel = toc.querySelector('.toc-panel');
+  const closeButton = toc.querySelector('.toc-close');
+  const currentLabel = toc.querySelector('.toc-current span');
+  const groupContainer = toc.querySelector('.toc-groups');
+
+  groups.forEach((group) => {
+    const wrapper = document.createElement('section');
+    wrapper.className = 'toc-group';
+    const title = document.createElement('h2');
+    title.className = 'toc-group-title';
+    title.textContent = group.label;
+    const list = document.createElement('ul');
+    list.className = 'toc-group-list';
+
+    sectionLinks.slice(group.start - 1, group.end).forEach((entry) => {
+      const item = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = entry.href;
+      link.textContent = entry.label;
+      item.appendChild(link);
+      list.appendChild(item);
+    });
+
+    wrapper.append(title, list);
+    groupContainer.appendChild(wrapper);
+  });
+
+  const setOpen = (open) => {
+    trigger.setAttribute('aria-expanded', String(open));
+    panel.hidden = !open;
+    if (open) panel.querySelector('a')?.focus();
+  };
+
+  trigger.addEventListener('click', () => setOpen(panel.hidden));
+  closeButton.addEventListener('click', () => {
+    setOpen(false);
+    trigger.focus();
+  });
+  panel.addEventListener('click', (event) => {
+    if (event.target.closest('a')) setOpen(false);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !panel.hidden) {
+      setOpen(false);
+      trigger.focus();
+    }
+  });
+  document.addEventListener('click', (event) => {
+    if (!panel.hidden && !toc.contains(event.target)) setOpen(false);
+  });
+
+  const headings = sectionLinks
+    .map((entry) => document.getElementById(entry.href.slice(1)))
+    .filter(Boolean);
+  const menuLinks = Array.from(panel.querySelectorAll('a'));
+  const setCurrent = (heading) => {
+    const matching = sectionLinks.find((entry) => entry.href === `#${heading.id}`);
+    if (!matching) return;
+    currentLabel.textContent = matching.label.replace(/^\d+\.\s*/, '');
+    menuLinks.forEach((link) => {
+      if (link.getAttribute('href') === matching.href) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    const visible = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+    if (visible) setCurrent(visible.target);
+  }, { rootMargin: '-64px 0px -72% 0px', threshold: [0, 1] });
+
+  headings.forEach((heading) => observer.observe(heading));
+  if (headings[0]) setCurrent(headings[0]);
+})();
+</script>
+</body>
+</html>
