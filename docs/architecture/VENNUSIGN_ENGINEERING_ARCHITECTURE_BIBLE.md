@@ -267,15 +267,15 @@ The durable model is:
 
 ```
 Content type -> immutable data-model version -> content instance/revision
-             -> compatible theme revision -> immutable content release -> screen/player
+             -> compatible theme revision -> immutable Published Presentation -> screen/player
 ```
 
 - **Content Home** is the common catalog and lifecycle surface. Industry makes types relevant; entitlement and permission decide availability; neither changes a model's technical meaning.
 - **Content Builder** is the shared capability behind focused editors. A Menu still speaks of Items; a cinema board may speak of Showtimes.
 - A versioned **data model** defines nested structure, validation, provider authority, editor behavior, state fields, and the paths Themes may bind to.
 - The **record library** is a typed canonical layer for reusable and imported facts. A collection may be inline-owned, manually composed from library records, or provider-query driven.
-- **Operational state** is first class. A state such as sold out is layered over an approved content release; the Theme revision defines its visual response. It is neither an ordinary layout field nor a separate layout variant.
-- **Theme revisions** bind to explicit model versions and field paths. A content release pins the exact content revision, model version, theme revision, renderer contract, and target assignments.
+- **Operational state** is first class. A state such as sold out is layered over an approved Published Presentation; the Theme revision defines its visual response. It is neither an ordinary layout field nor a separate layout variant.
+- **Theme revisions** bind to explicit model versions and field paths. A Published Presentation pins the exact content revision, model version, theme revision, renderer contract, and target assignments.
 - Model and Theme versions are immutable once released. A change creates a successor version and deliberate migration; it never silently changes live output.
 - The product remains a **modular monolith** for now: internally owned API modules, one deployed API host/App Service/container. A physical split requires evidence.
 

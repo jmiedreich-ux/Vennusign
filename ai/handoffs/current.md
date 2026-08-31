@@ -1918,7 +1918,7 @@ menu-only exception.
 
 The durable record is `docs/architecture/content-platform-architecture-renewal.md`. It establishes
 Content Home, Content Builder, immutable Data Model/theme versions, a typed record library for
-manual and imported facts, first-class operational state overlays, immutable Content Releases, and
+manual and imported facts, first-class operational state overlays, immutable Published Presentations, and
 a modular-monolith direction with one deployed API host initially.
 
 API vNext keeps four logical surfaces, each with four explicit families:
@@ -2050,7 +2050,7 @@ Placement owns order and price; only Available, Sold out / 86 (Live), and Not av
 are in the pilot state set. A **Published Presentation** pins validated Menu content, `menu.v1`, an
 exact Theme version, assets, and renderer compatibility. A **Runtime Package** is Player Output-ready
 material. **Showing** is Runtime evidence: received, verified, applied, and currently displaying.
-Do not use “Content Release” in new architecture records.
+Do not reintroduce the retired label in new architecture records.
 
 The renewal also records the four internal API modules (Core, Connect, Runtime, Platform), gradual
 old-to-new API migration with no dual truth, module-adjacent AI guides, parallel-lane entry gates,
