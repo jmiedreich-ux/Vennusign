@@ -605,7 +605,7 @@ generic extra-fields mechanism; material future fields require a successor Data 
 | **Deployment** | A VennueSign software version installed in an environment. |
 | **Default Theme** | VennueSign's product-owned, ready-to-use visual system for one Data Model version. For `menu.v1`, it contains complete visual style, layout, bindings, and state responses. |
 | **Published Presentation** | Frozen approved answer to what a Screen is allowed to show: validated Menu revision, `menu.v1`, exact Theme version, referenced assets, and renderer compatibility. It excludes Live state overlays. |
-| **Runtime Package** | Player Output-ready material created from a Published Presentation. |
+| **Runtime Package** | Player Output-ready result of a Published Presentation, created for a specific Player Output. |
 | **Showing** | Runtime's evidence that a Player Output received, verified, applied, and is currently displaying a Runtime Package. |
 
 The flow is:
