@@ -143,7 +143,7 @@ Names below are conceptual, not a locked schema or migration contract.
 |---|---|---|
 | Model registry | `ContentTypes`, `DataModels`, `DataModelVersions`, generated `DataModelFieldIndex` | Registry of immutable contracts, searchable field paths, validation metadata, and compatibility. |
 | Eligibility | `ContentTypeEligibility`, capability/rollout policy | Makes a type relevant and permitted without altering model meaning. |
-| Record library | `LibraryRecords`, `LibraryRecordRevisions`, provider identity and provenance | Canonical typed facts such as Toast items, films, showtimes, speakers, or reusable promotions. |
+| Record library | `LibraryRecords`, `LibraryRecordRevisions`, provider identity and source history | Canonical typed facts such as Toast items, films, showtimes, speakers, or reusable promotions. |
 | Tenant content | `ContentInstances`, `ContentRevisions`, composition/reference rows | Venue-scoped content identity, authored drafts, immutable validated revisions, composition/order, and allowed overrides. |
 | Operational state | `ContentStateValues` | Venue-scoped state overlays addressed by stable element ID and model state-field key. |
 | Themes | `ThemeDefinitions`, `ThemeRevisions`, `ThemeModelBindings` | Immutable design artifacts that bind only to declared model fields and repeaters. |
@@ -255,7 +255,7 @@ The immediate goal is one deployable API host, not multiple production services.
 | Platform | Account, organization, venue, tenancy, authorization, entitlement, capability. |
 | Content | Content types, data models, records, composition, revisions, state overlays, publishing contract. |
 | Themes | Theme definitions, revisions, model bindings, compatibility validation. |
-| Integrations | Provider connections, raw input, mapping, sync, provenance, retries, last-valid state. |
+| Integrations | Provider connections, raw input, mapping, sync, source history, retries, last-valid state. |
 | Display Delivery | Content releases, package generation, deployment requests, applied evidence and reconciliation. |
 | Operations | Internal support, release/cutover, fleet and operational workflows. |
 
@@ -296,7 +296,7 @@ The outcome is source that a human or agent can navigate without reconstructing 
 |---|---|---|
 | Menus | First migration target | Preserve accepted behavior; stop extending menu-only persistence/theme/rendering architecture. |
 | Theme Studio | Co-foundation | Formalize model bindings, state response, theme revision, compatibility, and renderer contract before display work resumes. |
-| Connector Platform | Foundation proof | Design around typed provider records, source modes, provenance, retries, and last-valid state. |
+| Connector Platform | Foundation proof | Design around typed provider records, source modes, data source and change authority, retries, and last-valid state. |
 | Screens / display delivery | Compatible consumer | Keep lifecycle/security repairs moving; adopt Content Release rather than a menu-specific payload. |
 | Box Player | Later consumer | Must consume render packages and state overlays without assuming a browser-only delivery path. |
 | Onboarding | Compatible later | Industry eligibility and entitlements become shared inputs; do not rebuild the flow now. |
@@ -1018,7 +1018,7 @@ Field or content-area authority may be:
 - integration controlled across selected content/presentations;
 - manually reviewed before acceptance.
 
-Every imported field retains provenance sufficient to explain and reconcile the accepted value:
+Every imported field retains source history sufficient to explain and reconcile the accepted value:
 
 - source system;
 - external ID;
@@ -1283,7 +1283,7 @@ Test Automation is authenticated, fully logged, test-environment-only, and techn
 | Runtime rollout policy | Platform | Runtime delivers and reports the update. |
 | Customer audit | Core/Connect/Runtime owner of the action | Platform Audit records Vennue workforce actions. |
 
-A customer-facing composed read may show desired and actual facts together. Composition does not transfer authority: the response must retain enough provenance to distinguish Core desired state from Runtime actual state.
+A customer-facing composed read may show desired and actual facts together. Composition does not transfer authority: the response must retain enough source-and-ownership detail to distinguish Core desired state from Runtime actual state.
 
 ### 15.9 Endpoint-inventory mapping
 
