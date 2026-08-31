@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VennueSign Mosaic V1 Independent Blueprint Study</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18222f;
+      --muted: #596677;
+      --line: #d9e0e8;
+      --paper: #ffffff;
+      --wash: #f4f7fa;
+      --navy: #183a5a;
+      --blue: #246fa8;
+      --blue-soft: #eaf4fb;
+      --green: #1e6851;
+      --green-soft: #eaf6f1;
+      --amber: #805b10;
+      --amber-soft: #fff6dd;
+      --red: #8b3434;
+      --red-soft: #fceeee;
+      --radius: 14px;
+      --shadow: 0 6px 22px rgba(24, 58, 90, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--wash);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.58;
+    }
+    a { color: var(--blue); }
+    .page { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+    header {
+      background: linear-gradient(135deg, #102b43 0%, #1f5279 100%);
+      color: white;
+      padding: 54px 0 42px;
+    }
+    header .eyebrow { margin: 0 0 8px; color: #b9d9ed; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
+    h1 { margin: 0; max-width: 850px; font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.08; letter-spacing: -.035em; }
+    header .subtitle { max-width: 820px; margin: 18px 0 0; color: #e2eef6; font-size: 1.08rem; }
+    header .meta { margin-top: 22px; color: #c9dce9; font-size: .9rem; }
+    nav { background: #fff; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 3; }
+    nav .page { display: flex; gap: 22px; overflow-x: auto; padding: 12px 0; white-space: nowrap; }
+    nav a { color: var(--navy); text-decoration: none; font-weight: 650; font-size: .9rem; }
+    main { padding: 32px 0 64px; }
+    section { margin: 0 0 42px; scroll-margin-top: 72px; }
+    h2 { margin: 0 0 16px; color: var(--navy); font-size: 1.65rem; letter-spacing: -.02em; }
+    h3 { margin: 24px 0 10px; color: var(--navy); font-size: 1.15rem; }
+    p { margin: 0 0 14px; }
+    ul, ol { margin-top: 8px; padding-left: 1.3rem; }
+    li + li { margin-top: 5px; }
+    .answer {
+      background: var(--paper);
+      border: 1px solid #bcd6e8;
+      border-left: 7px solid var(--blue);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 25px 26px;
+    }
+    .answer .verdict { margin: 0 0 10px; color: var(--navy); font-size: 1.36rem; font-weight: 800; }
+    .callout { border-radius: var(--radius); padding: 20px 22px; margin: 18px 0; border: 1px solid var(--line); background: var(--paper); }
+    .callout strong:first-child { color: var(--navy); }
+    .callout.warning { background: var(--amber-soft); border-color: #ead392; }
+    .callout.safety { background: var(--green-soft); border-color: #afd8c8; }
+    .callout.limit { background: var(--red-soft); border-color: #e5bebe; }
+    .quote { margin: 18px 0; border-left: 4px solid var(--green); padding: 12px 18px; background: var(--green-soft); font-size: 1.08rem; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 19px; box-shadow: 0 3px 14px rgba(24,58,90,.05); }
+    .card h3 { margin-top: 0; }
+    .stat { font-size: 2rem; font-weight: 800; color: var(--blue); line-height: 1.1; }
+    .label { color: var(--muted); font-size: .88rem; }
+    .steps { counter-reset: step; display: grid; gap: 12px; }
+    .step { position: relative; background: white; border: 1px solid var(--line); border-radius: 12px; padding: 17px 18px 17px 58px; }
+    .step::before { counter-increment: step; content: counter(step); position: absolute; left: 17px; top: 16px; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: var(--navy); color: white; font-weight: 800; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: white; }
+    table { width: 100%; border-collapse: collapse; min-width: 720px; }
+    th, td { padding: 12px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+    th { background: #edf3f8; color: var(--navy); font-size: .83rem; text-transform: uppercase; letter-spacing: .035em; }
+    tr:last-child td { border-bottom: 0; }
+    code { padding: .12em .35em; border-radius: 5px; background: #edf1f5; color: #26394b; overflow-wrap: anywhere; }
+    .pill { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: .78rem; font-weight: 750; white-space: nowrap; }
+    .reuse { color: #165a45; background: #dff2e9; }
+    .reshape { color: #18547d; background: #e0f0fa; }
+    .build { color: #694b0a; background: #fff0c6; }
+    .defer { color: #5e6570; background: #eceff2; }
+    .contract { color: #713737; background: #f8dddd; }
+    details { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; margin: 10px 0; }
+    summary { cursor: pointer; padding: 15px 17px; color: var(--navy); font-weight: 750; }
+    details > div { padding: 0 17px 17px; }
+    .ledger { columns: 2; column-gap: 32px; }
+    .ledger li { break-inside: avoid; margin-bottom: 8px; }
+    footer { padding: 26px 0 42px; color: var(--muted); font-size: .9rem; border-top: 1px solid var(--line); }
+    @media (max-width: 820px) {
+      .grid, .grid.three { grid-template-columns: 1fr; }
+      .ledger { columns: 1; }
+      header { padding-top: 40px; }
+      .page { width: min(100% - 22px, 1180px); }
+    }
+    @media print {
+      nav { display: none; }
+      body { background: white; }
+      .page { width: 100%; }
+      .card, .answer, details { box-shadow: none; break-inside: avoid; }
+      details > div { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="page">
+      <p class="eyebrow">Independent roadmap study</p>
+      <h1>VennueSign Mosaic V1 Blueprint Direction</h1>
+      <p class="subtitle">A plain-language test of whether the proposed content and presentation path is truly the right place to build from—and what can safely happen in parallel.</p>
+      <p class="meta">Study date: August 30, 2026 · Evidence base: Vennusign master at <code>40a03e6</code> · Advisory only</p>
+    </div>
+  </header>
+
+  <nav aria-label="Report sections">
+    <div class="page">
+      <a href="#answer">Answer</a>
+      <a href="#outcome">V1 outcome</a>
+      <a href="#bias">Bias test</a>
+      <a href="#alternatives">Alternatives</a>
+      <a href="#sequence">Build order</a>
+      <a href="#coverage">Blueprint coverage</a>
+      <a href="#parallel">Parallel work</a>
+      <a href="#decisions">Owner decisions</a>
+      <a href="#evidence">Evidence</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <section id="answer">
+      <div class="answer">
+        <p class="verdict">Yes—the content-to-presentation-to-display path is the right principal direction for Mosaic V1.</p>
+        <p>It is not right merely because Menu and Theme work came first. It is right because it is the smallest useful customer journey that tests the most important new boundaries: what the content means, how it should look, what was approved, where it should go, what the physical output received, and what is actually showing.</p>
+        <p>The path must not become one long Data Model project. Begin with the observable first-live-screen journey, settle the small set of contracts that are expensive to change, and then build a fixture-backed end-to-end skeleton while the real Core, Theme, Runtime, Connect, and support foundations proceed in parallel.</p>
+      </div>
+
+      <div class="quote">Data Model is an immediate contract gate, but it does not have to be the first production code.</div>
+
+      <div class="grid three" aria-label="Study coverage summary">
+        <div class="card"><div class="stat">4</div><div class="label">API surfaces examined</div></div>
+        <div class="card"><div class="stat">16</div><div class="label">families evaluated</div></div>
+        <div class="card"><div class="stat">82</div><div class="label">named blueprint areas covered</div></div>
+        <div class="card"><div class="stat">156</div><div class="label">mapped route groups accounted for</div></div>
+        <div class="card"><div class="stat">51</div><div class="label">cross-owner interactions considered</div></div>
+        <div class="card"><div class="stat">8</div><div class="label">unresolved route reviews retained</div></div>
+      </div>
+
+      <div class="callout warning">
+        <strong>Route counts are not roadmap weight.</strong> Core has 103 candidate route groups while Runtime has 12, but Runtime delivery, recovery, and Showing State are indispensable. Connect Mapping and Control has zero primary routes, but it is still the safety boundary for imported data.
+      </div>
+    </section>
+
+    <section id="outcome">
+      <h2>What Mosaic V1 should visibly accomplish</h2>
+      <div class="callout safety">
+        <strong>Plain V1 outcome:</strong> An authorized operator at one venue can create or use one Menu presentation, publish an immutable Release, assign it to one logical wall/screen, pair the correct Player Output, see that the Package is applied and showing, perform an immediate 86 without publishing, keep the last valid display through a failure, roll back safely, and use support evidence to tell desired state from actual state.
+      </div>
+      <p>The first acceptance journey can deliberately be small: one organization, one venue, one wall of one screen, one Player Output, one content type, and a basic or fixed Theme. The underlying contracts must still be multi-venue safe and prove cross-organization and cross-venue refusal.</p>
+      <p>This is a supportable release, not just a demo. “Published” must never be treated as “showing.”</p>
+    </section>
+
+    <section id="bias">
+      <h2>Did current Menu work bias the choice?</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Yes, the bias is real</h3>
+          <ul>
+            <li>Menus has the deepest accepted behavior and feature records.</li>
+            <li>Theme Studio has received substantial design attention.</li>
+            <li>The renewal was discovered through Menu-shaped limits.</li>
+            <li>Core owns 103 of 156 route groups; Content and Design owns 35.</li>
+            <li>Tests and acceptance work are concentrated in Menu, Screens, pairing, and display.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Why the path still wins</h3>
+          <ul>
+            <li>It creates visible customer value.</li>
+            <li>It crosses Core, Runtime, and minimum Platform truth.</li>
+            <li>Menu already exercises nested content, placement values, imports, publishing, 86, rollback, assignment, rendering, and offline behavior.</li>
+            <li>It reuses the strongest foundations while exposing the largest missing contracts.</li>
+          </ul>
+        </div>
+      </div>
+      <p>The bias control is to treat Menu as the first adapter—not the universal schema. Use a non-customer-facing cinema/showtimes fixture to challenge field, collection, source, and query assumptions. Do not require a complete second product in V1.</p>
+    </section>
+
+    <section id="alternatives">
+      <h2>Other credible starting directions</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Alternative</th><th>Best argument for it</th><th>Decision</th></tr></thead>
+          <tbody>
+            <tr><td>Identity and onboarding first</td><td>Every action needs safe identity, tenant, venue, and permission context.</td><td><strong>Not the spine.</strong> Reuse and test existing foundations; repair only blockers. Full onboarding enters only if V1 must acquire new customers.</td></tr>
+            <tr><td>First-live-screen walking skeleton</td><td>Finds Screen/Output, Release/Package, Showing State, compatibility, and recovery mistakes early.</td><td><strong>Recommended starting pattern</strong>, with frozen contracts and a disposable fixture/adapter.</td></tr>
+            <tr><td>Connect/showtimes first</td><td>Strongest protection from a Menu-only architecture.</td><td><strong>Later proof.</strong> Good V1.x/V2 direction; too many provider and semantic unknowns for the first release. Use fixtures now.</td></tr>
+            <tr><td>Runtime and Platform first</td><td>Signage is not operable without delivery, recovery, and evidence.</td><td><strong>Major parallel lane</strong>, but not a complete customer outcome by itself.</td></tr>
+            <tr><td>Horizontal module cleanup first</td><td>Clean boundaries might make later work easier.</td><td><strong>Rejected.</strong> Architecture convenience is not a customer release. Change only seams the V1 path crosses.</td></tr>
+            <tr><td>Data Model Studio or Theme Studio first</td><td>The new tools could directly define the future platform.</td><td><strong>Rejected.</strong> Prove the engine and compatibility rules with one real path first.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="sequence">
+      <h2>Recommended way to begin</h2>
+      <div class="steps">
+        <div class="step"><strong>Reconcile authority and define acceptance.</strong> Resolve stale records and claims, decide the release audience, and write the exact first-live-screen journey.</div>
+        <div class="step"><strong>Freeze the smallest shared contracts.</strong> Tenant/venue; <code>menu.v1</code>; Theme binding; Release versus Package; Screen/Wall versus Player Output; desired versus actual evidence; Connect authority.</div>
+        <div class="step"><strong>Build an executable walking skeleton.</strong> Use frozen neutral fixtures or an explicitly disposable adapter to prove Release → assignment → authenticated Output → Package → Showing → recovery → support evidence.</div>
+        <div class="step"><strong>Build the real foundations in parallel.</strong> Core model/content, Theme compatibility, Runtime identity/evidence, Connect provenance, Platform read support, auth sufficiency, and characterization.</div>
+        <div class="step"><strong>Replace every disposable adapter.</strong> Integrate real Presentation, Release, Package, overrides, recovery, and evidence without a second source of truth.</div>
+        <div class="step"><strong>Prove Mosaic.</strong> Test cross-tenant refusal, publish/rollback, 86, authenticated delivery, offline continuity, reconciliation, showing evidence, and support diagnosis.</div>
+      </div>
+
+      <div class="callout limit">
+        <strong>Strongest objection:</strong> a walking skeleton could freeze today's Menu payload into the new Runtime contract. It is safe only if the fixture or adapter is versioned, disposable, has a deletion condition, and cannot become a second truth. Production Package schemas wait for minimum <code>menu.v1</code> and Theme-binding semantics. If those controls cannot be enforced, complete the minimum model/compiler first.
+      </div>
+    </section>
+
+    <section id="coverage">
+      <h2>What V1 does with all 16 blueprint families</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Surface and family</th><th>V1 treatment</th><th>Plain meaning</th></tr></thead>
+          <tbody>
+            <tr><td>Core — Account and Business Structure</td><td><span class="pill reuse">Reuse</span> bounded hardening</td><td>Test existing sign-in, roles, organization, venue, and entitlement on the chosen path. Do not rebuild them first.</td></tr>
+            <tr><td>Core — Content and Design</td><td><span class="pill build">Build</span> <span class="pill reshape">Reshape</span></td><td>Central V1 work: minimum Data Model, Content, Presentation, Theme revisions, and Assets.</td></tr>
+            <tr><td>Core — Display Planning</td><td><span class="pill reuse">Reuse</span> <span class="pill reshape">Reshape</span></td><td>One logical screen/wall, correct output binding, and assignment. Rich scheduling can wait.</td></tr>
+            <tr><td>Core — Change Control</td><td><span class="pill build">Build</span> <span class="pill reshape">Reshape</span></td><td>Draft, validated publish, immutable Release, rollback, 86, and audit.</td></tr>
+            <tr><td>Connect — Connections and Sources</td><td><span class="pill contract">Contract</span> mostly <span class="pill defer">Defer</span></td><td>Keep useful adapters, define source scope, but do not require a live provider by default.</td></tr>
+            <tr><td>Connect — Mapping and Control</td><td><span class="pill contract">Contract now</span></td><td>Imported meaning, venue resolution, field authority, and validation. Critical even with zero primary routes.</td></tr>
+            <tr><td>Connect — Data Movement</td><td><span class="pill reshape">Reshape selected path</span></td><td>Preserve paste/import if V1 needs it; use snapshots and Change Sets. Defer export and broad sync.</td></tr>
+            <tr><td>Connect — Reliability and Visibility</td><td><span class="pill reshape">Minimum only</span></td><td>Honest failure, provenance, retry, and last-valid behavior for whichever import path runs.</td></tr>
+            <tr><td>Runtime — Player Identity and Topology</td><td><span class="pill build">Build</span> <span class="pill reshape">Reshape</span></td><td>Machine identity and Player Output must be distinct from logical Screen.</td></tr>
+            <tr><td>Runtime — Desired State and Delivery</td><td><span class="pill build">Build</span></td><td>Output-specific Package, assets, and operational override delivery are mandatory.</td></tr>
+            <tr><td>Runtime — Convergence and Evidence</td><td><span class="pill reshape">Reshape</span></td><td>Make requested, received, verified, applied, and showing distinct.</td></tr>
+            <tr><td>Runtime — Health and Lifecycle</td><td><span class="pill reuse">Reuse</span> <span class="pill reshape">Reshape</span></td><td>Heartbeat, safe diagnostics, last-known-valid Package, and recovery. Full update rollout can wait.</td></tr>
+            <tr><td>Platform — Customer and Commercial Operations</td><td><span class="pill reuse">Reuse</span> thin support</td><td>Small read-only support view; defer broad revenue and administration renewal.</td></tr>
+            <tr><td>Platform — Entitlements and Configuration</td><td><span class="pill reuse">Reuse</span></td><td>Use mature capability/configuration foundations. Add only values the renderer/package path needs.</td></tr>
+            <tr><td>Platform — Fleet and Delivery Operations</td><td><span class="pill build">Thin build</span></td><td>Enough package, render, health, and showing visibility to operate Mosaic.</td></tr>
+            <tr><td>Platform — Governance and Safety</td><td><span class="pill reuse">Reuse</span> <span class="pill reshape">Repair as crossed</span></td><td>Reuse tests. Keep support read-only unless proper workforce authority and audit are ready.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Customer needs versus architecture convenience</h3>
+      <div class="grid">
+        <div class="card">
+          <h3>Customer V1 needs</h3>
+          <ul>
+            <li>safe identity and venue context;</li>
+            <li>one useful content and presentation path;</li>
+            <li>publish, Release, rollback, and 86;</li>
+            <li>logical assignment and secure physical delivery;</li>
+            <li>cache, recovery, and showing evidence;</li>
+            <li>cross-tenant refusal and support visibility.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Not reasons to expand V1</h3>
+          <ul>
+            <li>four separately deployed APIs;</li>
+            <li>whole-product cleanup;</li>
+            <li>all sign-in and onboarding branches;</li>
+            <li>full Model or Theme Studio;</li>
+            <li>all providers, schedules, walls, and fleet tools;</li>
+            <li>equal slices from every family.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="parallel">
+      <h2>Parallel cloud-coordinator work</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Lane</th><th>When it may start</th><th>Owns</th><th>Blocker</th></tr></thead>
+          <tbody>
+            <tr><td>Contract and migration authority</td><td>After reconciliation</td><td>Shared IDs, contract gates, OpenAPI, migrations, invariants, cutover</td><td>Owner decisions and authoritative records</td></tr>
+            <tr><td>Existing-path characterization</td><td>After reconciliation; plan now</td><td>Evidence for auth, Menu, import, 86, publish, assignment, pairing, delivery, recovery</td><td>Stale file claims; shared harness ownership</td></tr>
+            <tr><td>Core model, content, change control</td><td>Fixtures after reconciliation; code after model/revision gates</td><td><code>menu.v1</code>, records, revisions, state, Presentation, Release, rollback</td><td>Model, migration, Theme, and Release contracts</td></tr>
+            <tr><td>Theme and renderer compatibility</td><td>Design against draft model; code after binding gate</td><td>Theme revisions, bindings, state response, compatibility checks</td><td>Field paths, state, geometry, renderer version</td></tr>
+            <tr><td>Runtime identity, delivery, evidence</td><td>Characterize after reconciliation; code after output/evidence gates</td><td>Machine identity, Output discovery, Package/assets, Showing State, recovery</td><td>Release, Player Output, Package, and evidence contracts</td></tr>
+            <tr><td>Connect provenance/import</td><td>Characterize sources after reconciliation; code after model/Connect gate</td><td>Snapshots, mappings, ownership, provenance, Change Sets, retained import</td><td>Model paths and controlled Core command</td></tr>
+            <tr><td>Platform support/fleet/tests</td><td>Design after reconciliation; code after evidence/read gates</td><td>Read-only support, fleet/package/render views, needed test operations</td><td>Evidence vocabulary and desired/actual provenance</td></tr>
+            <tr><td>Account and tenant sufficiency</td><td>After reconciliation</td><td>Prove current identity, roles, session, organization, venue; smallest repairs</td><td>Chosen acceptance path</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Safe to run together after gates</h3>
+          <ul>
+            <li>Core storage and Runtime topology/evidence</li>
+            <li>Theme compatibility and Connect provenance</li>
+            <li>Runtime evidence fixtures and Platform read-view design</li>
+            <li>Auth sufficiency and domain characterization</li>
+            <li>Lane-local tests that do not change shared harnesses</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Must stay serialized</h3>
+          <ul>
+            <li>shared IDs, field paths, states, revisions, and evidence meanings</li>
+            <li>Release/Package manifest and Theme binding contracts</li>
+            <li>Screen/Player/Output binding and 86 semantics</li>
+            <li>migrations, OpenAPI, <code>Program.cs</code>, project and DI files</li>
+            <li>controlled records, cutover, and overlapping legacy/new tables</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout"><strong>Queue rule:</strong> a free coordinator is not permission to start a package whose contract gate is still blocked.</div>
+    </section>
+
+    <section id="decisions">
+      <h2>Owner decisions that can change the V1 boundary</h2>
+      <ol>
+        <li>Is Mosaic a private pilot, limited production release, or general availability?</li>
+        <li>Must it onboard a new customer, or may it begin with existing/seeded organizations?</li>
+        <li>Must it prove physical hardware, and which player environment is authoritative?</li>
+        <li>Is one output enough, or must multi-output and synchronized activation ship?</li>
+        <li>Is a basic preset Theme enough, or is customer Theme authoring part of the promise?</li>
+        <li>Is paste/import required? Is any live POS or showtime feed required?</li>
+        <li>Must multi-venue behavior be demonstrated end to end, or structurally enforced and refusal-tested?</li>
+        <li>What offline duration, rollback, recovery, and retention targets are promised?</li>
+        <li>Which scheduling behavior is required beyond always-on or already reusable scheduling?</li>
+        <li>What minimum support/fleet evidence is required to operate the release?</li>
+        <li>Which Menu behaviors remain unchanged, and which are deliberately redesigned?</li>
+        <li>What exact model, Release, Package, Theme compatibility, and Player Output contracts are approved?</li>
+        <li>What migration window and adapter-retirement rule apply to existing data?</li>
+        <li>Will Platform perform writes in V1, requiring full workforce authority and privileged-action audit?</li>
+      </ol>
+      <p>These are focused reconciliation questions. They are not a reason to audit the whole product.</p>
+    </section>
+
+    <section id="evidence">
+      <h2>Evidence, confidence, and limits</h2>
+      <div class="grid three">
+        <div class="card"><div class="stat">253/253</div><div class="label">Back Office deterministic tests reported passing</div></div>
+        <div class="card"><div class="stat">98/98</div><div class="label">Platform Operations deterministic tests reported passing</div></div>
+        <div class="card"><div class="stat">190/190</div><div class="label">applicable Display deterministic tests reported passing</div></div>
+      </div>
+      <p>Four Display workflow-file inspections were excluded because the sparse study checkout did not contain the referenced workflow file. .NET was unavailable, so API tests were inspected but not run. Live OIDC, Stripe, POS, Azure SQL, physical players, and cross-system behavior remain unproven.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Evidence</th><th>Exact revision</th></tr></thead>
+          <tbody>
+            <tr><td>Vennusign master</td><td><code>40a03e677a6aa8316614e77922b57c95b56822ad</code></td></tr>
+            <tr><td>Architecture Renewal blob</td><td><code>eedc732ccdc90bc72d6d7bad4ff4800ee4e9e27e</code></td></tr>
+            <tr><td>Endpoint inventory blob</td><td><code>09430888193c87f00fc79eb7cfeeb9bd566569e3</code></td></tr>
+            <tr><td>Project Status blob</td><td><code>34b2c3a3399af82f79cb17d9d01249cefd056651</code></td></tr>
+            <tr><td>Current handoff blob</td><td><code>5bf3fc857bcefe56f36940fd62e37f644ab6d405</code></td></tr>
+            <tr><td>Assignment tracker blob</td><td><code>cf7c59728f54ea7a1b2157d367a114d3d51f52fd</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Foundation route classification</h3>
+      <p>The bounded evidence lens classified all 156 mapped route groups as 88 with a meaningful proven/reusable nucleus, 42 requiring reshape, 16 absent, and 10 uncertain. That does not approve any route or imply equal effort.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Surface</th><th>Routes</th><th>Proven nucleus</th><th>Reshape</th><th>Absent</th><th>Uncertain</th></tr></thead>
+          <tbody>
+            <tr><td>Core</td><td>103</td><td>52</td><td>36</td><td>10</td><td>5</td></tr>
+            <tr><td>Connect</td><td>14</td><td>10</td><td>0</td><td>0</td><td>4</td></tr>
+            <tr><td>Runtime</td><td>12</td><td>3</td><td>5</td><td>3</td><td>1</td></tr>
+            <tr><td>Platform</td><td>27</td><td>23</td><td>1</td><td>3</td><td>0</td></tr>
+            <tr><td><strong>Total</strong></td><td><strong>156</strong></td><td><strong>88</strong></td><td><strong>42</strong></td><td><strong>16</strong></td><td><strong>10</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <strong>Do not assume these are equivalent:</strong> Menu publish event and complete Core Release; Content revision and Runtime Package; Screen and Player Output; current venue theme and versioned Theme; POS catalog mapping and general field provenance; existing POS import and the full Connect pipeline; Platform API key and workforce governance; passing deterministic tests and live hardware proof.
+      </div>
+
+      <p><strong>Confidence: 0.83, high but conditional.</strong> The roadmap direction is well supported. Exact work packages depend on owner decisions, reconciliation, bounded exact-head inspection, and any live or physical claims V1 intends to make.</p>
+    </section>
+
+    <section id="appendix">
+      <h2>Appendix: all 82 named blueprint areas</h2>
+      <p>This compact ledger demonstrates complete blueprint coverage. “Contract” means settle the boundary now even when full implementation is deferred.</p>
+
+      <details open><summary>Core — Account and Business Structure (7)</summary><div><ol class="ledger">
+        <li><strong>Authentication:</strong> reuse and characterize; no first rebuild.</li><li><strong>Authorization:</strong> reuse/reshape for organization and venue refusal.</li><li><strong>Sessions:</strong> reuse actor/org/venue/capabilities.</li><li><strong>Onboarding:</strong> defer unless new-customer V1.</li><li><strong>Organizations:</strong> reuse; reshape only shared/effective state crossed by V1.</li><li><strong>Venues:</strong> reuse as mandatory operational boundary.</li><li><strong>Subscriptions and Billing:</strong> reuse needed entitlement; defer expansion.</li>
+      </ol></div></details>
+      <details><summary>Core — Content and Design (5)</summary><div><ol class="ledger" start="8">
+        <li><strong>Data Models:</strong> build/reshape minimum immutable <code>menu.v1</code>.</li><li><strong>Content:</strong> reshape typed records, revisions, composition, state.</li><li><strong>Presentations:</strong> build/reshape Content plus Theme.</li><li><strong>Themes:</strong> build/reshape immutable revisions, bindings, state responses.</li><li><strong>Assets:</strong> build/reshape minimum immutable hashed assets.</li>
+      </ol></div></details>
+      <details><summary>Core — Display Planning (5)</summary><div><ol class="ledger" start="13">
+        <li><strong>Screens:</strong> reuse/reshape logical lifecycle.</li><li><strong>Walls:</strong> wall-of-one now; advanced planner later.</li><li><strong>Player Administration:</strong> reshape staff claim and binding.</li><li><strong>Assignments:</strong> reshape to Release → Wall/Screen.</li><li><strong>Scheduling:</strong> reuse minimum; defer broad suite.</li>
+      </ol></div></details>
+      <details><summary>Core — Change Control (5)</summary><div><ol class="ledger" start="18">
+        <li><strong>Drafts:</strong> reshape around immutable revisions.</li><li><strong>Publishing:</strong> build/reshape controlled validation and idempotency.</li><li><strong>Releases:</strong> build immutable Release, prior version, rollback.</li><li><strong>Operational Overrides:</strong> preserve immediate 86/restore.</li><li><strong>Audit:</strong> reuse/reshape meaningful action evidence.</li>
+      </ol></div></details>
+      <details><summary>Connect — Connections and Sources (5)</summary><div><ol class="ledger" start="23">
+        <li><strong>Connectors:</strong> preserve current adapters; broad renewal later.</li><li><strong>Connections:</strong> contract scope; build for selected provider only.</li><li><strong>Data Sources:</strong> contract source identity.</li><li><strong>Transports:</strong> reuse selected behavior; defer expansion.</li><li><strong>Webhooks:</strong> reuse safely; never treat as business truth.</li>
+      </ol></div></details>
+      <details><summary>Connect — Mapping and Control (4)</summary><div><ol class="ledger" start="28">
+        <li><strong>Venue Mapping:</strong> contract now; build for live provider.</li><li><strong>Data Mappings:</strong> contract against Data Model paths.</li><li><strong>Ownership Rules:</strong> mandatory imported-field authority contract.</li><li><strong>Validation Rules:</strong> contract/build before Core Change Set.</li>
+      </ol></div></details>
+      <details><summary>Connect — Data Movement (5)</summary><div><ol class="ledger" start="32">
+        <li><strong>Imports:</strong> reshape selected paste/import path.</li><li><strong>Exports:</strong> defer.</li><li><strong>Sync Runs:</strong> minimum selected-path envelope.</li><li><strong>Source Snapshots:</strong> immutable selected-path preservation.</li><li><strong>Change Sets:</strong> build controlled boundary into Core.</li>
+      </ol></div></details>
+      <details><summary>Connect — Reliability and Visibility (6)</summary><div><ol class="ledger" start="37">
+        <li><strong>Connection Status:</strong> reuse only for selected live connection.</li><li><strong>Sync History:</strong> minimum selected-path history.</li><li><strong>Errors and Alerts:</strong> honest selected-path failure state.</li><li><strong>Retries:</strong> bounded/idempotent where asynchronous.</li><li><strong>Reconciliation:</strong> contract last-valid and replay; broad system later.</li><li><strong>Connect Audit:</strong> provenance and outcome evidence.</li>
+      </ol></div></details>
+      <details><summary>Runtime — Player Identity and Topology (4)</summary><div><ol class="ledger" start="43">
+        <li><strong>Player Enrollment:</strong> reuse/reshape current nucleus.</li><li><strong>Player Authentication:</strong> build/reshape restricted machine identity.</li><li><strong>Pairing Status:</strong> separate machine status from Core staff claim.</li><li><strong>Output Discovery:</strong> build Player Output identity.</li>
+      </ol></div></details>
+      <details><summary>Runtime — Desired State and Delivery (4)</summary><div><ol class="ledger" start="47">
+        <li><strong>Desired State:</strong> build per authenticated Output.</li><li><strong>Package Delivery:</strong> build immutable output-specific delivery.</li><li><strong>Asset Delivery:</strong> build/reshape integrity delivery.</li><li><strong>Override Delivery:</strong> build/reshape 86/restore path.</li>
+      </ol></div></details>
+      <details><summary>Runtime — Convergence and Evidence (4)</summary><div><ol class="ledger" start="51">
+        <li><strong>Package Status:</strong> explicit state machine.</li><li><strong>Showing State:</strong> authoritative actual-state proof.</li><li><strong>Synchronized Activation:</strong> defer unless multi-output is required.</li><li><strong>Reconciliation Notifications:</strong> notification as prompt; reread authoritative state.</li>
+      </ol></div></details>
+      <details><summary>Runtime — Health and Lifecycle (4)</summary><div><ol class="ledger" start="55">
+        <li><strong>Health Reports:</strong> package/output-aware evidence.</li><li><strong>Diagnostics:</strong> authenticated or strictly local boundary.</li><li><strong>Runtime Updates:</strong> defer full rollout; preserve compatibility.</li><li><strong>Recovery:</strong> last-known-valid Package and reconciliation.</li>
+      </ol></div></details>
+      <details><summary>Platform — Customer and Commercial Operations (6)</summary><div><ol class="ledger" start="59">
+        <li><strong>Customer Support:</strong> small read-only Mosaic view.</li><li><strong>Organization Administration:</strong> reuse; broad recovery later.</li><li><strong>Venue Administration:</strong> reuse minimum.</li><li><strong>Subscription Support:</strong> defer beyond necessary existing support.</li><li><strong>Plan and Tier Administration:</strong> reuse current entitlement input.</li><li><strong>Revenue Reporting:</strong> defer.</li>
+      </ol></div></details>
+      <details><summary>Platform — Entitlements and Configuration (6)</summary><div><ol class="ledger" start="65">
+        <li><strong>Feature Management:</strong> reuse current capability system.</li><li><strong>Entitlement Policies:</strong> reuse/characterize.</li><li><strong>Customer Exceptions:</strong> reuse only if acceptance needs one.</li><li><strong>Platform Configuration:</strong> add only Package/renderer values needed.</li><li><strong>Environment Configuration:</strong> defer renewed workflow.</li><li><strong>Configuration History:</strong> preserve existing safety; expansion later.</li>
+      </ol></div></details>
+      <details><summary>Platform — Fleet and Delivery Operations (6)</summary><div><ol class="ledger" start="71">
+        <li><strong>Fleet Monitoring:</strong> narrow health/showing view.</li><li><strong>Runtime Version Management:</strong> full rings/canaries later.</li><li><strong>Rendering Operations:</strong> enough queue/failure evidence.</li><li><strong>Package Delivery Monitoring:</strong> desired-to-showing aggregation.</li><li><strong>Connector Fleet Monitoring:</strong> defer unless live provider required.</li><li><strong>Maintenance and Incidents:</strong> broad workflow later.</li>
+      </ol></div></details>
+      <details><summary>Platform — Governance and Safety (6)</summary><div><ol class="ledger" start="77">
+        <li><strong>Workforce Authentication:</strong> reshape before Platform writes.</li><li><strong>Workforce Authorization:</strong> attributable, scoped authority as crossed.</li><li><strong>Privileged Actions:</strong> defer for read-only support; otherwise explicit controls.</li><li><strong>Platform Audit:</strong> required for workforce mutations.</li><li><strong>Compliance Evidence:</strong> defer formal expansion.</li><li><strong>Test Automation:</strong> reuse/repair where Mosaic verification needs it.</li>
+      </ol></div></details>
+    </section>
+
+    <section>
+      <div class="callout">
+        <strong>Status of this report:</strong> This is the independently requested blueprint study. Earlier records correctly said the separately mentioned future study had not yet been defined; this request supplied that scope. The report recommends a planning direction. It does not authorize implementation.
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="page">VennueSign Mosaic V1 Independent Blueprint Study · Standalone owner-readable report · August 30, 2026</div>
+  </footer>
+</body>
+</html>
