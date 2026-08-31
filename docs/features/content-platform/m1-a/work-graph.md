@@ -1,6 +1,6 @@
 # M1-A Work Graph — API Module Foundation
 
-**Status:** Proposed. No implementation packet is dispatchable until the owner approves the complete Mosaic V1 wave graph and this M1-A graph, and the Decision Fidelity Review passes.
+**Status:** Approved on 2026-08-31 after Decision Fidelity Review. No implementation packet is dispatchable until `G-MAESTRO-REG` opens.
 **Parent boundary:** `../m1-a-api-module-foundation.md`
 **Tracking issue:** #970
 
@@ -8,7 +8,7 @@
 
 | Packet | One bounded outcome | Worker / model | Depends on | Writable paths | Expected size | Reviewer |
 |---|---|---|---|---|---:|---|
-| M1-A.0 | Confirm the exact source and test homes | Local Qwen | approved Mosaic V1 wave graph + approved M1-A + Decision Fidelity Review | no repository files; structured issue comment only | no code | ChatGPT Terra |
+| M1-A.0 | Confirm the exact source and test homes | Local Qwen | `G-V1-PLAN` + `G-MAESTRO-REG` | no repository files; structured issue comment only | no code | ChatGPT Terra |
 | M1-A.1 | Add the Core fixture identity and frozen-presentation contract | ChatGPT CLI / Sol | reviewed PASS from M1-A.0 | one named Core file and one named test file | 100–160 code-bearing lines | Claude Opus |
 | M1-A.2 | Add output-specific Runtime Package creation | ChatGPT CLI / Terra | M1-A.1 accepted | one named Runtime file and one named test file | 90–140 code-bearing lines | Claude Sonnet |
 | M1-A.3 | Add Live overlay and Showing evidence | ChatGPT CLI / Sol | M1-A.2 accepted | two named Runtime files and one named test file | 120–180 code-bearing lines | Claude Opus |

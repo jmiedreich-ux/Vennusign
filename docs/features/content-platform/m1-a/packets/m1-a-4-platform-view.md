@@ -1,6 +1,6 @@
 # M1-A.4 — Read-Only Platform Support View
 
-**Status:** Proposed implementation packet
+**Status:** Approved implementation packet; waiting for accepted M1-A.3
 **Worker:** Local Qwen
 **Reviewer:** Claude Sonnet
 **Base:** `<accepted-base-sha>` from accepted M1-A.3

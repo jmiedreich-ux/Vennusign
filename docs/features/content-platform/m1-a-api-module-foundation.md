@@ -1,6 +1,6 @@
 # M1-A — API Module Foundation and Fixture Skeleton
 
-**Status:** Proposed implementation packet; owner approval required before implementation  
+**Status:** Approved implementation boundary; waiting for Maestro registration before dispatch
 **Tracking issue:** #970  
 **Base:** `master` at packet creation  
 **Authority:** `docs/architecture/content-platform-architecture-renewal.md` §11.10; `docs/architecture/mosaic-v1-independent-blueprint-study.md`; `AGENTS.md`
@@ -157,8 +157,8 @@ Before a Runtime production Package is accepted, the following must be frozen: `
 - **Independent reviewers:** Claude Sonnet reviews the bounded Runtime Package, Platform, and guide packets; Claude Opus reviews the Core, Live/Showing, integration, and Decision Fidelity gates. A reviewer does not author the packet it reviews.
 - **Packet sizing:** M1-A is eight packets, M1-A.0 through M1-A.7. Each implementation packet owns one outcome, one to three code/test files, an estimated size ceiling, observable assertions, exact command gates, a required commit, and a fixed completion-report format.
 - **Targeted correction review:** the same independent reviewer checks only any identified corrections.
-- **No implementation starts** until the owner accepts the complete Mosaic V1 wave graph and this packet, and the Decision Fidelity Review approves them—or every finding is corrected and approved by the targeted correction review.
+- **No implementation starts** until Maestro registration completes read-only discovery, an owner-reviewed thin binding, and a no-dispatch dry run against approved graph revision `mosaic-v1.approved.1`. Approval and review are complete; registration remains the dispatch gate.
 
-## 11. Owner decision requested
+## 11. Owner decision
 
-Approve the complete Mosaic V1 wave graph and this packet as the implementation boundary for the Foundation Wave's first milestone, or name the part that should change. Approval authorizes M1-A.0 only; every later packet still waits for its declared accepted dependency and does not inherit permission to expand scope.
+The owner approved the complete Mosaic V1 wave graph, UX/Foundry lane, and this packet on 2026-08-31 after passing Decision Fidelity Review. This opens `G-V1-PLAN`, not dispatch. Maestro may authorize M1-A.0 only after `G-MAESTRO-REG`; every later packet still waits for its declared accepted dependency and does not inherit permission to expand scope.

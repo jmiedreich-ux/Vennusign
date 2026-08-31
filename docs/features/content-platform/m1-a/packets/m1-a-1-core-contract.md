@@ -1,6 +1,6 @@
 # M1-A.1 — Core Fixture Contract
 
-**Status:** Proposed implementation packet
+**Status:** Approved implementation packet; waiting for reviewed M1-A.0 PASS
 **Worker:** ChatGPT CLI — Sol
 **Reviewer:** Claude Opus
 **Base:** `<accepted-base-sha>` from reviewed M1-A.0

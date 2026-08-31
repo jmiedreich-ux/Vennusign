@@ -1,6 +1,6 @@
 # M1-A.5 — AI-Friendly Module Guides
 
-**Status:** Proposed documentation packet
+**Status:** Approved documentation packet; waiting for accepted M1-A.3
 **Worker:** Local Qwen
 **Reviewer:** Claude Sonnet
 **Base:** `<accepted-base-sha>` from accepted M1-A.3

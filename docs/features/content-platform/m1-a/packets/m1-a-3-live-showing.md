@@ -1,6 +1,6 @@
 # M1-A.3 — Live Overlay and Showing Evidence
 
-**Status:** Proposed implementation packet
+**Status:** Approved implementation packet; waiting for accepted M1-A.2
 **Worker:** ChatGPT CLI — Sol
 **Reviewer:** Claude Opus
 **Base:** `<accepted-base-sha>` from accepted M1-A.2

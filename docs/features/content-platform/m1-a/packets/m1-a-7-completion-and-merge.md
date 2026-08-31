@@ -1,6 +1,6 @@
 # M1-A.7 — Completion, Targeted Correction, and Merge
 
-**Status:** Proposed coordinator packet
+**Status:** Approved coordinator packet; waiting for clean M1-A.6 review
 **Owner:** VennueSign Architect Lead
 **Depends on:** clean M1-A.6 independent review
 

@@ -1,6 +1,6 @@
 # M1-A.6 — Complete Fixture Journey Proof
 
-**Status:** Proposed integration packet
+**Status:** Approved integration packet; waiting for accepted M1-A.4 and M1-A.5
 **Worker:** ChatGPT CLI — Terra
 **Reviewer:** Claude Opus
 **Base:** `<accepted-assembled-sha>` containing accepted M1-A.4 and M1-A.5

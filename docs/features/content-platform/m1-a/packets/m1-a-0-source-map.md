@@ -1,9 +1,9 @@
 # M1-A.0 — Exact-Head Source Map
 
-**Status:** Proposed discovery packet
+**Status:** Approved discovery packet; waiting for Maestro registration
 **Worker:** Local Qwen
 **Reviewer:** ChatGPT Terra
-**Depends on:** owner-approved Mosaic V1 wave graph, owner-approved M1-A graph, and passing Decision Fidelity Review
+**Depends on:** open `G-V1-PLAN` and open `G-MAESTRO-REG`
 **Repository writes:** none
 
 ## One outcome

@@ -1,6 +1,6 @@
 # M1-A.2 — Output-Specific Runtime Package
 
-**Status:** Proposed implementation packet
+**Status:** Approved implementation packet; waiting for accepted M1-A.1
 **Worker:** ChatGPT CLI — Terra
 **Reviewer:** Claude Sonnet
 **Base:** `<accepted-base-sha>` from accepted M1-A.1
