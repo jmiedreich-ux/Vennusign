@@ -81,7 +81,7 @@ M1-A must not:
 - move legacy code just to make the new folders look complete;
 - use the retired content-object label in new architecture material.
 
-These exclusions keep M1-A small; they are not exclusions from Mosaic V1. The full V1 wave graph in `docs/architecture/content-platform-architecture-renewal.md` assigns the real Menu, Default Theme, publishing, Player Output delivery, support/recovery, and pilot acceptance work to later waves.
+These exclusions keep M1-A small; they are not exclusions from Mosaic V1. The full V1 wave graph in `docs/architecture/content-platform-architecture-renewal.md` assigns the real Menu, Default Theme, publishing, Player Output delivery, support/recovery, pilot acceptance, and the separate UX-A/UX-B/UX-C pathway, wireframe, presentation-separation, and Foundry-adoption work to later nodes. No Back Office UI implementation begins from M1-A.
 
 Connect exists in this milestone only as an ownership seam and guide. It does not parse, import, map, or write data.
 
