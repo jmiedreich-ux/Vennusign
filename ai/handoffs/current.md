@@ -2002,3 +2002,33 @@ reconciliation record, including authoritative inputs, superseded/conflicting re
 facts, open owner decisions, initial Mosaic outcome, and areas needing bounded inspection. Then
 create and review the **Mosaic V1 Capability and Dependency Map** and use it—not a full code audit—to
 create the first Mosaic milestones and work packages.
+
+## 2026-08-31 — Independent Mosaic V1 blueprint study joins the renewal
+
+PR **#967** adds the owner-requested independent roadmap study as two companion records under
+`docs/architecture/`:
+
+- `mosaic-v1-independent-blueprint-study.md` is the detailed engineering and future-agent record;
+- `mosaic-v1-independent-blueprint-study.html` is the plain-language, self-contained owner report.
+
+Four isolated reviewers mechanically covered all four API surfaces, 16 families, 82 named blueprint
+areas, and 156 mapped route groups. The study tested the current early-content hypothesis against
+identity/onboarding-first, Connect/showtimes-first, Runtime/Platform-first, horizontal renewal,
+equal-slice, and Studio-first alternatives.
+
+The conclusion retains content → presentation → display as Mosaic V1's integration spine for
+software-building reasons, not merely because Menu work is furthest along. Its sequencing correction
+is important: first define the observable first-live-screen acceptance journey and settle the small
+set of irreversible boundary contracts. Data Model is the first semantic contract gate, but it need
+not be the first production code. A guarded fixture-backed walking skeleton can expose cross-surface
+risks while Core, Theme, Runtime, Connect provenance, Platform read support, authentication/tenant
+sufficiency, and characterization proceed in parallel. Shared contracts, migrations,
+Release/Package integration, and cutover remain serialized.
+
+The study is advisory. It does not approve implementation, endpoints, schemas, service splits,
+migrations, or a final Mosaic capability set. Its open owner decisions and evidence limits must be
+resolved through the renewal process.
+
+**Exact next action:** run the **Mosaic V1 Renewal Reconciliation Session**, using the independent
+study as planning evidence. Reconcile its unresolved owner decisions and contract gates with the
+controlled renewal records before creating the Mosaic V1 Capability and Dependency Map.
