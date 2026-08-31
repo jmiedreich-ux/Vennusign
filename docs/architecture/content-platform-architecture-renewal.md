@@ -182,7 +182,7 @@ Changing a library record does not silently alter a live manual composition. The
 
 Publishing is a deliberate content action. A successful publish does not claim that a physical screen applied it.
 
-A release pins at least:
+A Published Presentation pins at least:
 
 ```
 content instance
@@ -195,7 +195,7 @@ content instance
 = immutable Published Presentation
 ```
 
-The display runtime receives a safe render package or manifest derived from that release, retains the last valid package, applies valid operational state overlays, and reports requested/received/applied evidence. A state update may advance independently where the model declares it operational; an authored price, description, or structure change follows the normal draft-to-publish boundary.
+The display runtime receives a safe render package or manifest derived from that Published Presentation, retains the last valid package, applies valid operational state overlays, and reports requested/received/applied evidence. A state update may advance independently where the model declares it operational; an authored price, description, or structure change follows the normal draft-to-publish boundary.
 
 ## 7. Internal tool evolution
 
