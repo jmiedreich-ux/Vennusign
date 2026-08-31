@@ -20,6 +20,26 @@ Core: Published Presentation
 
 The fixture represents one organization, one venue, one logical Screen, and one Player Output. It is test material only—not a customer record, a public API response, or a new system of record.
 
+### Plain-language delivery
+
+At the end of M1-A, VennueSign has working internal C# code and automated tests that use fixed fake data to prove it can keep these facts separate and consistent:
+
+1. the Menu and Theme combination approved for a logical Screen;
+2. the Runtime Package prepared for one exact physical Player Output;
+3. the immediate venue-scoped 86/Sold Out state applied without republishing; and
+4. Runtime evidence that the output received, verified, applied, and is Showing that Package.
+
+It also has a read-only support projection that separates what should be showing from what is actually showing, plus four module guides defining Core, Connect, Runtime, and Platform ownership.
+
+M1-A does **not** make a real television show customer content. It supplies the tested internal plumbing pattern that later waves replace with real `menu.v1` content, the real Default Theme, persistence, public APIs, Player Output delivery, and support UI.
+
+M1-A is the first milestone of the **Foundation Wave**, not the complete Mosaic V1 plan and not a pre-wave activity. Its completion creates a mandatory checkpoint with two results:
+
+- **architecture evidence:** whether the Core → Runtime → Showing boundaries work without conflicting truth; and
+- **development-system evidence:** whether packet size, model routing, review, integration, and correction limits worked as intended for Qwen, ChatGPT CLI, Claude CLI, and the coordinator.
+
+That checkpoint may refine routing or later packet size from evidence. It may not silently redefine the approved Mosaic outcome or shared contracts.
+
 ## 2. Why this is first
 
 The current Menu and import work is useful and mature, but it is Menu-shaped. Building `menu.v1` first in production code would leave the highest-risk seams unexercised: frozen presentation versus output-specific package, desired versus actual state, Screen versus Player Output, and support evidence.
@@ -48,7 +68,7 @@ M1-A exposes those seams early while the real model and Theme contracts are prep
    - a Live state overlay is distinct from the frozen Published Presentation.
 5. State the fixture deletion condition in code and tests: replace it when the minimum `menu.v1` compiler plus Default Theme binding path is accepted, before Mosaic acceptance.
 
-## 4. Explicit exclusions
+## 4. What M1-A deliberately does not deliver
 
 M1-A must not:
 
@@ -60,6 +80,8 @@ M1-A must not:
 - generalize the current Menu persistence schema;
 - move legacy code just to make the new folders look complete;
 - use the retired content-object label in new architecture material.
+
+These exclusions keep M1-A small; they are not exclusions from Mosaic V1. The full V1 wave graph in `docs/architecture/content-platform-architecture-renewal.md` assigns the real Menu, Default Theme, publishing, Player Output delivery, support/recovery, and pilot acceptance work to later waves.
 
 Connect exists in this milestone only as an ownership seam and guide. It does not parse, import, map, or write data.
 
@@ -135,8 +157,8 @@ Before a Runtime production Package is accepted, the following must be frozen: `
 - **Independent reviewers:** Claude Sonnet reviews the bounded Runtime Package, Platform, and guide packets; Claude Opus reviews the Core, Live/Showing, integration, and Decision Fidelity gates. A reviewer does not author the packet it reviews.
 - **Packet sizing:** M1-A is eight packets, M1-A.0 through M1-A.7. Each implementation packet owns one outcome, one to three code/test files, an estimated size ceiling, observable assertions, exact command gates, a required commit, and a fixed completion-report format.
 - **Targeted correction review:** the same independent reviewer checks only any identified corrections.
-- **No implementation starts** until the owner accepts this packet and the Decision Fidelity Review approves it—or every finding is corrected and approved by the targeted correction review.
+- **No implementation starts** until the owner accepts the complete Mosaic V1 wave graph and this packet, and the Decision Fidelity Review approves them—or every finding is corrected and approved by the targeted correction review.
 
 ## 11. Owner decision requested
 
-Approve this packet as the implementation boundary for M1-A, or name the part that should change. Approval authorizes the assigned specialist to prepare the implementation PR; it does not pre-approve any expansion beyond this packet.
+Approve the complete Mosaic V1 wave graph and this packet as the implementation boundary for the Foundation Wave's first milestone, or name the part that should change. Approval authorizes M1-A.0 only; every later packet still waits for its declared accepted dependency and does not inherit permission to expand scope.

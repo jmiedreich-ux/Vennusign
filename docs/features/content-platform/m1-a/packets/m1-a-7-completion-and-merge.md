@@ -11,6 +11,7 @@ Assemble the exact accepted commits, complete the controlled records, obtain exa
 ## Required inputs
 
 - owner approval of the M1-A graph;
+- owner approval of the complete Mosaic V1 wave graph;
 - reviewed M1-A.0 PASS comment;
 - accepted commits and review decisions for M1-A.1 through M1-A.6;
 - exact changed-file lists and command evidence from every packet;
@@ -89,6 +90,9 @@ Merge SHA: <sha>
 Validation: PASS | <residual UNTESTED items>
 Review: <decision>; targeted corrections: <0 or 1>
 Fixture deletion condition: CONFIRMED
+Architecture result: <plain technical outcome>
+Development-system result: <packet sizing, routing, review, and integration outcome>
+Foundation checkpoint G-M1A-CHECK: PROCEED | HOLD — <reason>
 Newly unblocked nodes: <exact nodes or NONE>
 Still blocked nodes: <exact nodes or NONE>
 Next action: <one exact action>

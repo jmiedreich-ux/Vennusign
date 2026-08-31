@@ -3,7 +3,7 @@
 **Status:** Proposed discovery packet
 **Worker:** Local Qwen
 **Reviewer:** ChatGPT Terra
-**Depends on:** owner-approved M1-A graph and passing Decision Fidelity Review
+**Depends on:** owner-approved Mosaic V1 wave graph, owner-approved M1-A graph, and passing Decision Fidelity Review
 **Repository writes:** none
 
 ## One outcome

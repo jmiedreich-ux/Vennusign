@@ -1,6 +1,6 @@
 # M1-A Work Graph — API Module Foundation
 
-**Status:** Proposed. No implementation packet is dispatchable until the owner approves this graph and the Decision Fidelity Review passes.
+**Status:** Proposed. No implementation packet is dispatchable until the owner approves the complete Mosaic V1 wave graph and this M1-A graph, and the Decision Fidelity Review passes.
 **Parent boundary:** `../m1-a-api-module-foundation.md`
 **Tracking issue:** #970
 
@@ -8,7 +8,7 @@
 
 | Packet | One bounded outcome | Worker / model | Depends on | Writable paths | Expected size | Reviewer |
 |---|---|---|---|---|---:|---|
-| M1-A.0 | Confirm the exact source and test homes | Local Qwen | owner approval + Decision Fidelity Review | no repository files; structured issue comment only | no code | ChatGPT Terra |
+| M1-A.0 | Confirm the exact source and test homes | Local Qwen | approved Mosaic V1 wave graph + approved M1-A + Decision Fidelity Review | no repository files; structured issue comment only | no code | ChatGPT Terra |
 | M1-A.1 | Add the Core fixture identity and frozen-presentation contract | ChatGPT CLI / Sol | reviewed PASS from M1-A.0 | one named Core file and one named test file | 100–160 code-bearing lines | Claude Opus |
 | M1-A.2 | Add output-specific Runtime Package creation | ChatGPT CLI / Terra | M1-A.1 accepted | one named Runtime file and one named test file | 90–140 code-bearing lines | Claude Sonnet |
 | M1-A.3 | Add Live overlay and Showing evidence | ChatGPT CLI / Sol | M1-A.2 accepted | two named Runtime files and one named test file | 120–180 code-bearing lines | Claude Opus |
@@ -49,3 +49,14 @@ Every packet receives independent review by a reviewer who did not author it. A 
 ## Milestone ceiling
 
 M1-A remains a disposable in-process skeleton. It creates no endpoint, migration, persistence, customer record, Theme, real Player Output delivery, or production Runtime contract. Passing M1-A does not claim that a live screen exists.
+
+## Foundation Wave checkpoint — G-M1A-CHECK
+
+After M1-A.7 merges, the architect verifies that its post-merge issue comment is complete and records one gate decision: **PROCEED** or **HOLD**. Only **PROCEED** opens `G-M1A-CHECK` and makes M1-B eligible for its own planning/dispatch gates.
+
+The checkpoint records two separate outcomes:
+
+1. **Technical:** which boundary assertions passed, failed, or remain UNTESTED.
+2. **Process:** packet elapsed time, actual model route, correction count, review impact, retained work, scope violations, integration friction, and whether each packet was appropriately sized.
+
+Evidence may change future eligible routes, size ceilings, or packet splits through a reviewed graph revision. It does not retroactively change an accepted packet or allow Maestro to author new project scope. A missing result, unresolved material review finding, or **HOLD** decision keeps the gate closed.
