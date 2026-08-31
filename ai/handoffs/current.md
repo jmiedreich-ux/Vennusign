@@ -2061,3 +2061,63 @@ later perform read-only discovery and bind to the approved graph rather than rec
 decisions and controlled records. If there are findings, correct only those findings and request a
 targeted verification of the correction. After merge, design—not implement—M1-A as a bounded,
 Maestro-compatible packet and send it through Decision Fidelity Review.
+
+## 2026-08-31 — Mosaic V1 graph approved and merged; handoff to Maestro registration
+
+PR **#971** merged to `master` as **`c246080f0ba97e5fd020c936e9ca580e39e8f532`**.
+The owner approved the complete delivery boundary after independent review and targeted-only
+correction reviews. The immutable VennueSign graph revision is **`mosaic-v1.approved.1`**, based on
+approval-time source SHA **`bd5e141ccaf02b8684c0db91b5d8c053e0bb95f9`**. M1-A.0 will record
+the separate exact dispatch SHA after registration.
+
+The approved plan contains five delivery waves:
+
+1. Foundation proof, exact-head characterization, production contract authority, and UX-A.
+2. Real `menu.v1`, Default Theme, paste/publish, UX-B, and the Foundry operator workflow.
+3. Real Player Output Package, Showing, Live 86, recovery, and physical proof.
+4. UX-C, the Foundry support view, operational recovery, migration/retirement, and the full journey.
+5. Private-pilot readiness, acceptance, bounded correction, and owner closeout.
+
+M1-A is now eight approved executable packets, M1-A.0 through M1-A.7. It delivers only the
+disposable fixture-backed internal proof through Published Presentation → exact Player Output
+Runtime Package → Live overlay/Showing → read-only support projection. Qwen owns the exact-source
+map, bounded Platform projection, and module guides; ChatGPT CLI Sol/Terra own the shared-boundary
+and integration packets; Claude supplies independent review; the architect coordinates assembly and
+merge. No packet has been dispatched.
+
+The UI omission found during owner review is closed in the graph:
+
+- UX-A reconciles the current rendered/source UI and accepted decisions, hi-fi designs, and
+  wireframes against every target V1 pathway before Back Office UI work.
+- UX-B and UX-C produce complete operator/support path and state matrices, reuse valid designs, and
+  create or amend only necessary wireframes. Each requires independent accessibility/design review
+  and owner acceptance.
+- `G-PRESENTATION-SEAMS` fixes explicit import directions: Foundry imports no VennueSign code;
+  presentational components consume Foundry/skin plus typed view state and emit typed intents;
+  orchestration composes presentation and adapters; adapters own transport mapping; Core, Connect,
+  Runtime, and Platform import no UI layer and remain business authority.
+- `G-FOUNDRY-READY` requires an exact accepted Foundry version/control set and VennueSign skin,
+  package, accessibility, browser, and upgrade contracts. Missing controls remain Foundry work;
+  VennueSign cannot create private substitutes.
+- Foundry Bridge may inventory, map, and assist approved mechanical migration. It cannot choose
+  product pathways, resolve product intent, or create/approve wireframes.
+- The guest-facing Default Theme is separate from Foundry Back Office controls.
+
+Gate state at close:
+
+- **OPEN — `G-V1-PLAN`:** owner approval and Decision Fidelity Review are complete.
+- **CLOSED — `G-MAESTRO-REG`:** Maestro has not yet completed VennueSign read-only discovery, the
+  owner-reviewed thin `maestro.project.yaml` binding, or the no-dispatch dry run.
+- **CLOSED — `G-M1A-CHECK`:** opens only after M1-A.7 records technical and development-system
+  evidence and the architect chooses PROCEED rather than HOLD.
+- **LATER OWNER DECISIONS:** `D-RUNTIME-01` selects pilot hardware/runtime, geometry, and renderer;
+  `D-RECOVERY-01` approves offline duration, last-valid retention, reconnect, stale/failure, and
+  recovery behavior. Neither blocks registration or M1-A.
+
+No endpoint, schema, migration, product UI, Foundry integration, device delivery, customer data, or
+Mosaic implementation was started in this session.
+
+**Exact next action:** in the Maestro repository, begin VennueSign's required **read-only registration
+discovery** against VennueSign `master` at `c246080f0ba97e5fd020c936e9ca580e39e8f532` and graph
+revision `mosaic-v1.approved.1`. Produce the discovery report only; do not create the thin binding,
+project queues, or dispatch M1-A.0 until that report is reviewed under Maestro's registration process.
