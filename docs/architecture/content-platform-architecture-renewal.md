@@ -28,7 +28,7 @@ Industry profile + entitlements + permissions
     -> content records and content instance
     -> focused Content Builder experience
     -> compatible Theme revision
-    -> immutable Content Release
+    -> immutable Published Presentation
     -> assigned logical screens / players
 ```
 
@@ -42,7 +42,7 @@ The roles are deliberately distinct:
 | **Content instance** | A venue's composed object, such as “Downtown Lunch Menu.” |
 | **Content Builder** | The focused editing workflow appropriate to that type. |
 | **Theme Studio** | The reusable visual structure and the response to model state. |
-| **Content Release** | The exact, immutable combination approved for delivery. |
+| **Published Presentation** | The exact, immutable combination of approved content and Theme that a Screen may use. |
 | **Display runtime** | Safe rendering, cached continuity, and applied-revision evidence. |
 
 **Content Home** is the customer-facing catalog and lifecycle surface. A Menu appears there as one eligible content type; it is not the definition of the entire product.
@@ -107,7 +107,7 @@ For Menu:
 This preserves the accepted rule that 86 is immediate and does not wait for a content publish. A player resolves:
 
 ```
-last valid published content release
+last valid Published Presentation
 + current valid state overlay
 + approved theme state response
 = displayed presentation
@@ -143,11 +143,11 @@ Names below are conceptual, not a locked schema or migration contract.
 |---|---|---|
 | Model registry | `ContentTypes`, `DataModels`, `DataModelVersions`, generated `DataModelFieldIndex` | Registry of immutable contracts, searchable field paths, validation metadata, and compatibility. |
 | Eligibility | `ContentTypeEligibility`, capability/rollout policy | Makes a type relevant and permitted without altering model meaning. |
-| Record library | `LibraryRecords`, `LibraryRecordRevisions`, provider identity and provenance | Canonical typed facts such as Toast items, films, showtimes, speakers, or reusable promotions. |
+| Record library | `LibraryRecords`, `LibraryRecordRevisions`, provider identity and source history | Canonical typed facts such as Toast items, films, showtimes, speakers, or reusable promotions. |
 | Tenant content | `ContentInstances`, `ContentRevisions`, composition/reference rows | Venue-scoped content identity, authored drafts, immutable validated revisions, composition/order, and allowed overrides. |
 | Operational state | `ContentStateValues` | Venue-scoped state overlays addressed by stable element ID and model state-field key. |
 | Themes | `ThemeDefinitions`, `ThemeRevisions`, `ThemeModelBindings` | Immutable design artifacts that bind only to declared model fields and repeaters. |
-| Delivery | `ContentReleases`, `RenderPackages`, `ContentDeployments` | Exact release tuple, package evidence, screen targets, requested/received/applied truth. |
+| Delivery | `PublishedPresentations`, `RenderPackages`, `ContentDeployments` | Exact approved presentation, package evidence, screen targets, requested/received/applied truth. |
 | Shared infrastructure | `AuditEvents`, `OutboxMessages`, `MediaAssets` | Auditability, reliable workers, and media ownership. |
 
 A `ContentRevision` can hold validated model JSON because collections are naturally nested. Its relational envelope owns organization, venue, instance identity, revision number, status, model version, actor, timestamps, checksum, and relationships. Searchable or operationally significant values gain an approved projection/index only after a real need appears.
@@ -174,7 +174,7 @@ Late Night Menu / Sandwiches placement
 
 The model defines which fields are shared, placement-overridable, provider-owned, or stateful. The current accepted rule remains intact: price belongs to the placement; availability is a venue-scoped operational fact.
 
-Toast imports create or update typed menu-item records with provider provenance. Cinema integrations create films and showtimes as provider-owned records. A showtimes board can then query “active showtimes for this venue today, grouped by film” instead of manually placing every performance.
+Toast imports create or update typed menu-item records with explicit data source and change authority. Cinema integrations create films and showtimes as provider-owned records. A showtimes board can then query “active showtimes for this venue today, grouped by film” instead of manually placing every performance.
 
 Changing a library record does not silently alter a live manual composition. The content model decides whether a dependent instance receives a draft refresh, an automatic managed update, or an explicit reconciliation task. Invalid provider input never replaces the last known valid canonical record.
 
@@ -255,7 +255,7 @@ The immediate goal is one deployable API host, not multiple production services.
 | Platform | Account, organization, venue, tenancy, authorization, entitlement, capability. |
 | Content | Content types, data models, records, composition, revisions, state overlays, publishing contract. |
 | Themes | Theme definitions, revisions, model bindings, compatibility validation. |
-| Integrations | Provider connections, raw input, mapping, sync, provenance, retries, last-valid state. |
+| Integrations | Provider connections, raw input, mapping, sync, source history, retries, last-valid state. |
 | Display Delivery | Content releases, package generation, deployment requests, applied evidence and reconciliation. |
 | Operations | Internal support, release/cutover, fleet and operational workflows. |
 
@@ -296,7 +296,7 @@ The outcome is source that a human or agent can navigate without reconstructing 
 |---|---|---|
 | Menus | First migration target | Preserve accepted behavior; stop extending menu-only persistence/theme/rendering architecture. |
 | Theme Studio | Co-foundation | Formalize model bindings, state response, theme revision, compatibility, and renderer contract before display work resumes. |
-| Connector Platform | Foundation proof | Design around typed provider records, source modes, provenance, retries, and last-valid state. |
+| Connector Platform | Foundation proof | Design around typed provider records, source modes, data source and change authority, retries, and last-valid state. |
 | Screens / display delivery | Compatible consumer | Keep lifecycle/security repairs moving; adopt Content Release rather than a menu-specific payload. |
 | Box Player | Later consumer | Must consume render packages and state overlays without assuming a browser-only delivery path. |
 | Onboarding | Compatible later | Industry eligibility and entitlements become shared inputs; do not rebuild the flow now. |
@@ -507,9 +507,9 @@ Its sequencing correction is authoritative planning input for the coming reconci
 begin with the observable first-live-screen acceptance journey and the smallest irreversible
 boundary contracts. Data Model is the first semantic contract gate, but it need not be the first
 production code. A guarded fixture-backed walking skeleton may expose cross-surface risks while
-Core, Theme, Runtime, Connect provenance, Platform read support, authentication/tenant sufficiency,
-and existing-path characterization proceed in parallel. Shared contracts, migrations,
-Release/Package integration, and cutover remain serialized.
+Core, Theme, Runtime, Connect data-source/change-authority work, Platform read support,
+authentication/tenant sufficiency, and existing-path characterization proceed in parallel. Shared
+contracts, migrations, Published-Presentation/Package integration, and cutover remain serialized.
 
 The study is advisory. It does not approve implementation, endpoint shapes, schemas, service
 splits, migration work, or a final Mosaic capability set. Its unresolved owner decisions and
@@ -555,6 +555,136 @@ Parallelism follows the dependency graph, not the number of available agents.
 **Planning exit:** the architect can explain why each Mosaic capability is needed, which renewal work
 it requires, what existing foundation it uses, what precedes it, how it is verified, what can run in
 parallel, and what is deliberately left to the next version.
+
+### 11.10 Final Mosaic V1 Renewal Reconciliation — 2026-08-31
+
+**Status:** Owner-approved planning authority. This section completes the M0 reconciliation
+session. It supersedes earlier Mosaic wording in this document where the terms or planning order
+conflict. It authorizes no endpoint, schema, migration, service split, implementation packet, or
+Maestro operational state.
+
+#### Product boundary
+
+Mosaic V1 is a **private pilot**, not a public launch. It starts with an existing authorized
+customer and an existing venue. The pilot proves one logical Screen (a wall of one), one paired
+Player Output, one VennueSign-owned Default Theme, manual or paste-imported Menu content, and an
+always-on assignment. Multi-venue safety is enforced underneath but does not need a visible
+multi-venue demonstration.
+
+> An existing authorized operator at one existing venue can create or paste-import a Menu, use the
+> VennueSign Default Theme, publish an immutable Published Presentation, assign it always-on to one
+> logical Screen, pair one Player Output, and prove the correct Runtime Package is actually showing.
+> They can immediately 86 an item without republishing, recover through a failure using the last
+> valid display, roll back safely, and see support evidence that separates desired state from actual
+> state.
+
+#### Frozen `menu.v1` meaning for the pilot
+
+`menu.v1` is a centrally controlled, versioned Data Model. A customer, venue, Theme, or import
+cannot redefine its meaning. A future breaking change is `menu.v2`.
+
+| Element | Pilot meaning |
+|---|---|
+| Menu | Named container for ordered Sections. |
+| Section | Name, optional description, and order. |
+| Item | Reusable identity: name, optional description, optional image/media reference. |
+| Placement | The Item's occurrence in a Menu/Section. It owns order and price. Any size label belongs with its price entry. |
+| Stable identity | State targets stable Item ID plus venue; display position is never an identity. |
+| States | **Available**; **Sold out / 86** (Live); **Not available** (Published). No speculative state catalogue belongs in `menu.v1`. |
+| Paste import | One-time creation or replacement of ordinary draft content. Ambiguous material is asked about; a later paste never silently changes live content. Existing active 86 state remains active. Source history is retained. |
+
+An Item may appear in many places. A price never belongs to the reusable Item: it belongs to its
+Placement. `featured` remains a compatibility question, not an automatic V1 field. There is no
+generic extra-fields mechanism; material future fields require a successor Data Model.
+
+#### Theme, publication, and runtime vocabulary
+
+| Name | Meaning |
+|---|---|
+| **Mosaic V1** | The product version: this private pilot. |
+| **Deployment** | A VennueSign software version installed in an environment. |
+| **Default Theme** | VennueSign's product-owned, ready-to-use visual system for one Data Model version. For `menu.v1`, it contains complete visual style, layout, bindings, and state responses. |
+| **Published Presentation** | Frozen approved answer to what a Screen is allowed to show: validated Menu revision, `menu.v1`, exact Theme version, referenced assets, and renderer compatibility. It excludes Live state overlays. |
+| **Runtime Package** | Player Output-ready result of a Published Presentation, created for a specific Player Output. |
+| **Showing** | Runtime's evidence that a Player Output received, verified, applied, and is currently displaying a Runtime Package. |
+
+The flow is:
+
+```
+Draft Menu + Default Theme -> Publish -> Published Presentation
+-> assign to Screen -> Runtime Package -> actually Showing
+```
+
+The Default Theme is designed once the minimum `menu.v1` fields, state semantics, and bindings are
+stable. Its design and renderer work may proceed in parallel with Core and Runtime, but the exact
+version is compatibility-checked and pinned before the pilot leaves fixtures. A newer Default Theme
+never silently changes a live Published Presentation.
+
+Publishing creates a new immutable Published Presentation; the previous one is preserved for
+rollback. Assignment is separate and states where it applies. Live 86/Sold Out is not republished:
+it is a venue-level Runtime-applied overlay. A Player Output keeps its last known valid Runtime
+Package during a connection failure and reconciles safely after recovery.
+
+#### API transition and ownership
+
+VennueSign remains one deployed application while it gains strict internal modules:
+
+| Module | Owns for Mosaic |
+|---|---|
+| Core | Customer/venue scope, `menu.v1`, draft content, Published Presentation, and desired assignment state. |
+| Connect | Paste/import boundary and data-source/change-authority rules. |
+| Runtime | Player Output identity, Runtime Package delivery, Live state application, and Showing evidence. |
+| Platform | Read-only support views composed from owned facts. |
+
+New API paths are introduced capability by capability. An old path remains only until each consumer
+has moved to its named new home, then it is removed. There is never a second writable truth or a
+permanent adapter. Each meaningful module has a concise Markdown guide beside its source describing
+ownership, public contracts and terms, allowed calls, data and tests, legacy replacement, and exact
+retirement condition.
+
+#### Approved work graph and safe parallelism
+
+The first graph node is **M1-A — API module foundation and fixture-backed first-live-screen
+skeleton**. It is not an implementation packet yet. Its purpose is to establish the module seams,
+neutral fixtures, and observable path without claiming that fixtures are production authority.
+
+| Lane | Entry gate | Must prove before it can join the pilot |
+|---|---|---|
+| Core | Shared IDs, `menu.v1`, state, and Published Presentation definitions | Validated draft-to-publish desired state. |
+| Runtime | Shared Player Output and Runtime Package definitions | Received, verified, applied, Showing evidence and last-valid recovery. |
+| Default Theme / renderer | Stable `menu.v1` bindings | Normal, long-content, Sold Out, and Not Available rendering. |
+| Paste import | Core's controlled draft boundary | Reviewed one-time input with no live-link side effect. |
+| Platform support | Runtime evidence vocabulary | Desired and actual facts visibly separated. |
+| API migration | Each module's replacement contract | Consumer move and old-path retirement condition. |
+
+The architect owns shared IDs, field paths, state names, Screen/Player Output meaning, data-source
+and change-authority rules, Published Presentation, Runtime Package, and Showing vocabulary. A lane
+may be queued before its gate opens, but remains Blocked until its named contract is ready. Core plus
+Theme create a Published Presentation; Runtime then proves Showing; paste import and support evidence
+join after those meanings are stable.
+
+#### Maestro registration readiness
+
+VennueSign and Maestro are independent projects. VennueSign remains authoritative for product
+architecture, code, decisions, plans, engineering rules, and GitHub history. When Maestro is ready,
+it will first perform its required **read-only discovery** and propose a thin
+`maestro.project.yaml` binding. That binding will point to this Renewal, the current handoff, project
+rules, branch/PR/review policy, validation commands, specialist overlays, environments, and declared
+exceptions. It will not duplicate the Renewal, create a second project plan, or grant Maestro product
+authority.
+
+Before any graph becomes dispatchable through Maestro, VennueSign must commit an owner-approved graph
+revision with source base, authority references, node outcomes and non-goals, dependencies, shared
+boundary locks, specialist/reviewer routes, acceptance proof, and bounded quality contracts. Maestro
+then projects that graph into operational queues; it does not edit it. No manifest, queue state, or
+implementation packet is created by this reconciliation.
+
+#### Immediate next controlled action
+
+Independently review this reconciliation against the accepted decisions and current controlled
+records. After any required correction has targeted verification, merge the documentation update.
+Only then design M1-A as a bounded, Maestro-compatible implementation packet; its Decision Fidelity
+Review must precede dispatch.
 
 ## 12. Guardrails and non-goals
 
@@ -888,7 +1018,7 @@ Field or content-area authority may be:
 - integration controlled across selected content/presentations;
 - manually reviewed before acceptance.
 
-Every imported field retains provenance sufficient to explain and reconcile the accepted value:
+Every imported field retains source history sufficient to explain and reconcile the accepted value:
 
 - source system;
 - external ID;
@@ -1153,7 +1283,7 @@ Test Automation is authenticated, fully logged, test-environment-only, and techn
 | Runtime rollout policy | Platform | Runtime delivers and reports the update. |
 | Customer audit | Core/Connect/Runtime owner of the action | Platform Audit records Vennue workforce actions. |
 
-A customer-facing composed read may show desired and actual facts together. Composition does not transfer authority: the response must retain enough provenance to distinguish Core desired state from Runtime actual state.
+A customer-facing composed read may show desired and actual facts together. Composition does not transfer authority: the response must retain enough source-and-ownership detail to distinguish Core desired state from Runtime actual state.
 
 ### 15.9 Endpoint-inventory mapping
 
