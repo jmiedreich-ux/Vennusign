@@ -4,6 +4,37 @@ export type PlatformOperationsSession = {
   displayName: string;
   capabilities: string[];
 };
+export type TestAgentEvent = { occurredUtc: string; kind: string; summary: string; screenshotBase64?: string };
+export type TestAgentRun = {
+  id: string; mission: string; startUrl: string; status: "queued" | "running" | "completed" | "failed" | "cancelled";
+  maxActions: number; actionsCompleted: number; createdUtc: string; startedUtc?: string; completedUtc?: string;
+  assessment?: string; error?: string; events: TestAgentEvent[];
+};
+
+async function testAgentRequest(configuration: PlatformOperationsConfiguration, apiKey: string, path = "", init?: RequestInit) {
+  const response = await fetch(`${configuration.apiBaseUrl}/api/platform-operations/test-agent/runs${path}`, {
+    ...init,
+    headers: { "Content-Type": "application/json", "X-Vennusign-Platform-Operations-Key": apiKey, ...init?.headers }
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => undefined) as { detail?: string; title?: string } | undefined;
+    throw new PlatformOperationsApiError(response.status, detail?.detail ?? detail?.title ?? "The AI Test Agent request failed.");
+  }
+  return response;
+}
+
+export async function loadTestAgentRuns(configuration: PlatformOperationsConfiguration, apiKey: string, signal?: AbortSignal): Promise<TestAgentRun[]> {
+  return (await testAgentRequest(configuration, apiKey, "", { signal })).json() as Promise<TestAgentRun[]>;
+}
+export async function loadTestAgentRun(configuration: PlatformOperationsConfiguration, apiKey: string, id: string, signal?: AbortSignal): Promise<TestAgentRun> {
+  return (await testAgentRequest(configuration, apiKey, `/${id}`, { signal })).json() as Promise<TestAgentRun>;
+}
+export async function startTestAgentRun(configuration: PlatformOperationsConfiguration, apiKey: string, mission: string, startUrl: string, maxActions: number): Promise<TestAgentRun> {
+  return (await testAgentRequest(configuration, apiKey, "", { method: "POST", body: JSON.stringify({ mission, startUrl, maxActions }) })).json() as Promise<TestAgentRun>;
+}
+export async function cancelTestAgentRun(configuration: PlatformOperationsConfiguration, apiKey: string, id: string): Promise<void> {
+  await testAgentRequest(configuration, apiKey, `/${id}/cancel`, { method: "POST" });
+}
 export type SystemConfigurationHealth = { enabled: boolean; healthy: boolean; lastSuccessfulLoadUtc?: string; lastFailureUtc?: string; lastFailure?: string };
 export type SystemConfigurationRevision = { revisionNumber: number; valueFingerprint: string; isSecret: boolean; isClear: boolean; changedBy: string; changeSource: string; createdUtc: string };
 export type SystemConfigurationManifest = {
