@@ -489,7 +489,33 @@ For every selected capability, record:
 The source investigation follows this map far enough to make a sound disposition decision; it does
 not inventory unrelated product code.
 
-### 11.6 Version evolution
+### 11.6 Independent Mosaic V1 blueprint study
+
+The independent roadmap study requested by the owner is a companion to this renewal:
+
+- [`mosaic-v1-independent-blueprint-study.md`](mosaic-v1-independent-blueprint-study.md) — the
+  detailed engineering and future-agent record;
+- [`mosaic-v1-independent-blueprint-study.html`](mosaic-v1-independent-blueprint-study.html) — the
+  same findings in a plain-language, self-contained owner report.
+
+The study accounts for all four API surfaces, 16 families, 82 named blueprint areas, and 156 mapped
+candidate route groups. It independently tested the current dependency hypothesis against credible
+alternatives and retained the content-to-presentation-to-display path as the Mosaic V1 integration
+spine for software-building reasons, not merely because current work is concentrated in Menu.
+
+Its sequencing correction is authoritative planning input for the coming reconciliation and map:
+begin with the observable first-live-screen acceptance journey and the smallest irreversible
+boundary contracts. Data Model is the first semantic contract gate, but it need not be the first
+production code. A guarded fixture-backed walking skeleton may expose cross-surface risks while
+Core, Theme, Runtime, Connect provenance, Platform read support, authentication/tenant sufficiency,
+and existing-path characterization proceed in parallel. Shared contracts, migrations,
+Release/Package integration, and cutover remain serialized.
+
+The study is advisory. It does not approve implementation, endpoint shapes, schemas, service
+splits, migration work, or a final Mosaic capability set. Its unresolved owner decisions and
+evidence limits must be reconciled before the capability/dependency map authorizes work packages.
+
+### 11.7 Version evolution
 
 - **Mosaic V1** delivers the first coherent vertical path through the renewed blueprint.
 - **V1.1, V1.2, and later V1.x releases** deepen or attach specifically named capabilities.
@@ -499,7 +525,7 @@ not inventory unrelated product code.
 - Reusing a mature capability unchanged still appears in the map so its contract and evidence are
   explicit.
 
-### 11.7 Parallel cloud-coordinator model
+### 11.8 Parallel cloud-coordinator model
 
 Parallelism follows the dependency graph, not the number of available agents.
 
@@ -515,7 +541,7 @@ Parallelism follows the dependency graph, not the number of available agents.
   Runtime package/evidence, and bounded characterization of the existing path. The reviewed map,
   not this example list, authorizes their order.
 
-### 11.8 Planning order and exit
+### 11.9 Planning order and exit
 
 1. Run the Mosaic V1 Renewal Reconciliation Session and settle the authoritative input set.
 2. Define the observable Mosaic V1 product outcome and acceptance boundary.
