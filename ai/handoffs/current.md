@@ -771,7 +771,7 @@ Executed evidence: Release API build passed with seven existing warnings; focuse
 
 Behavior search: `rg -n "MenuImportDestinations|ConfirmReplaceAsync|SetReplaceDestinationAsync|RestoreReplacementAsync|CompletedSnapshotId|ImportedPriceOverride" src tests --glob "*.cs" --glob "*.ts" --glob "*.tsx" --glob "*.sql"`. Changed consumers are the import aggregate/repository/service/controller, Back Office API/surface, migration/invariants, UI fixture cleanup and focused tests. Existing builder duplication/history/publish price consumers remain unchanged because they already preserve `ImportedPriceOverride`; publishing and non-paste import routes remain out of scope.
 
-**6-A3 review result.** Independent engineering review and the Impeccable finish review approve exact product head `58e8258`. Review fixes add migration 071 and complete deterministic working-menu fingerprints under transaction locks, real child-edit conflict regressions for confirm and restore, immutable completed-session provenance, exact nullable price-override restoration, refreshed conflict facts, and plain-language added/removed/changed confirmation detail. Focused API/migration tests pass 51/51; MenuImport LocalDB passes 12/12 with Azure unset; Back Office build/static pass 204/204; focused desktop replacement Playwright passes 1/1. CI and Azure/external integration remain skipped by owner policy. Residual non-blocking risk: the working projection is duplicated in three SQL paths and future fields must update all three.
+**6-A3 review result.** Independent engineering review and the Impeccable finish review approve exact product head `58e8258`. Review fixes add migration 071 and complete deterministic working-menu fingerprints under transaction locks, real child-edit conflict regressions for confirm and restore, immutable completed-session source history, exact nullable price-override restoration, refreshed conflict facts, and plain-language added/removed/changed confirmation detail. Focused API/migration tests pass 51/51; MenuImport LocalDB passes 12/12 with Azure unset; Back Office build/static pass 204/204; focused desktop replacement Playwright passes 1/1. CI and Azure/external integration remain skipped by owner policy. Residual non-blocking risk: the working projection is duplicated in three SQL paths and future fields must update all three.
 
 **6-A3 owner acceptance.** The owner accepted all 7/7 workbook cases against product `58e8258` at `2026-08-14T05:40:26.942Z`; durable evidence is `docs/features/menus/m6a3-acceptance-record.json`.
 
@@ -1929,7 +1929,7 @@ API vNext keeps four logical surfaces, each with four explicit families:
 - **Vennue Platform API** — Vennue workforce governance and cross-tenant service operations.
 
 Multi-venue ownership, organization sharing and venue-local content/overrides, publishing and
-rollback, imported-field provenance and authority, Release-versus-Package, desired-versus-actual
+rollback, imported-field data source and change authority, Release-versus-Package, desired-versus-actual
 state, player-output identity, fleet operations, and privileged-action boundaries are explicit.
 
 The competing endpoint list remains separate at
@@ -2021,7 +2021,7 @@ software-building reasons, not merely because Menu work is furthest along. Its s
 is important: first define the observable first-live-screen acceptance journey and settle the small
 set of irreversible boundary contracts. Data Model is the first semantic contract gate, but it need
 not be the first production code. A guarded fixture-backed walking skeleton can expose cross-surface
-risks while Core, Theme, Runtime, Connect provenance, Platform read support, authentication/tenant
+risks while Core, Theme, Runtime, Connect data-source/change-authority work, Platform read support, authentication/tenant
 sufficiency, and characterization proceed in parallel. Shared contracts, migrations,
 Release/Package integration, and cutover remain serialized.
 
