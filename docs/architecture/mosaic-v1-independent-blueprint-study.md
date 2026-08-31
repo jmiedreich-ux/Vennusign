@@ -1,8 +1,8 @@
 # VennueSign Mosaic V1 Independent Blueprint Study
 
-**Study date:** 2026-08-30  
-**Repository evidence:** Vennusign `master` at `40a03e677a6aa8316614e77922b57c95b56822ad`  
-**Purpose:** Test the proposed Mosaic V1 direction against the complete API vNext blueprint, independently of the earlier recommendation.  
+**Study date:** 2026-08-30<br>
+**Repository evidence:** Vennusign `master` at `40a03e677a6aa8316614e77922b57c95b56822ad`<br>
+**Purpose:** Test the proposed Mosaic V1 direction against the complete API vNext blueprint, independently of the earlier recommendation.<br>
 **Decision status:** Study recommendation only. This report does not authorize implementation, endpoint shapes, schemas, migrations, deployable-service splits, or work packages.
 
 ## Direct answer
