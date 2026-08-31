@@ -192,7 +192,7 @@ content instance
 + resolved composition/query criteria
 + renderer contract version
 + target assignments
-= immutable content release
+= immutable Published Presentation
 ```
 
 The display runtime receives a safe render package or manifest derived from that release, retains the last valid package, applies valid operational state overlays, and reports requested/received/applied evidence. A state update may advance independently where the model declares it operational; an authored price, description, or structure change follows the normal draft-to-publish boundary.
@@ -256,7 +256,7 @@ The immediate goal is one deployable API host, not multiple production services.
 | Content | Content types, data models, records, composition, revisions, state overlays, publishing contract. |
 | Themes | Theme definitions, revisions, model bindings, compatibility validation. |
 | Integrations | Provider connections, raw input, mapping, sync, source history, retries, last-valid state. |
-| Display Delivery | Content releases, package generation, deployment requests, applied evidence and reconciliation. |
+| Display Delivery | Published Presentations, package generation, deployment requests, applied evidence and reconciliation. |
 | Operations | Internal support, release/cutover, fleet and operational workflows. |
 
 A module owns its application services, public contracts, write paths, persistence boundary, migrations, invariants, and tests. Other modules use named application contracts or domain events; they do not reach across the database casually.
@@ -297,7 +297,7 @@ The outcome is source that a human or agent can navigate without reconstructing 
 | Menus | First migration target | Preserve accepted behavior; stop extending menu-only persistence/theme/rendering architecture. |
 | Theme Studio | Co-foundation | Formalize model bindings, state response, theme revision, compatibility, and renderer contract before display work resumes. |
 | Connector Platform | Foundation proof | Design around typed provider records, source modes, data source and change authority, retries, and last-valid state. |
-| Screens / display delivery | Compatible consumer | Keep lifecycle/security repairs moving; adopt Content Release rather than a menu-specific payload. |
+| Screens / display delivery | Compatible consumer | Keep lifecycle/security repairs moving; adopt Published Presentation rather than a menu-specific payload. |
 | Box Player | Later consumer | Must consume render packages and state overlays without assuming a browser-only delivery path. |
 | Onboarding | Compatible later | Industry eligibility and entitlements become shared inputs; do not rebuild the flow now. |
 | Platform Operations / Keystone | Compatible later | Release/version work remains needed, but PO and cutover are not a reason to split the content API physically. |
@@ -309,11 +309,11 @@ The outcome is source that a human or agent can navigate without reconstructing 
 
 | Workstream or candidate | Renewal position | Immediate consequence |
 |---|---|---|
-| Release versioning | Stabilize now; align with Content Release | Keep the existing manifest/version work independent, but ensure it can identify the exact API, renderer, package, model, and theme contract later. |
+| Release versioning | Stabilize now; align with Published Presentation | Keep the existing manifest/version work independent, but ensure it can identify the exact API, renderer, package, model, and theme contract later. |
 | Legacy retirement and environment hygiene | Stabilize now, then defer destructive retirement | Inventory dependency and data-retention consequences first; no table/App Service cleanup is assumed safe merely because it looks unused. |
 | Test harness integrity | Stabilize now | Local verification is the current gate. Repair trustworthy targeted verification before broad source moves rely on it. |
 | Authentication hardening | Stabilize now, separate feature | Security and identity defects do not wait for the content refoundation; preserve its approved authority and module boundary. |
-| Display diagnostics | Remain compatible for later | Design it around Content Release/requested/received/applied evidence, not a menu-specific current-state view. |
+| Display diagnostics | Remain compatible for later | Design it around Published-Presentation/requested/received/applied evidence, not a menu-specific current-state view. |
 | Mosaic release | Remain compatible for later | Mosaic is a release codename, not a module. It inherits the Content Platform contract but begins no implementation milestone here. |
 | Public site | Defer / unaffected | It is out of the version equation and does not block this foundation. |
 | Foundry | Remain separate | Its component system informs future UI composition but is not part of the data/API renewal. |
