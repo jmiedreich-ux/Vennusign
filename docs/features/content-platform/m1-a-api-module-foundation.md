@@ -41,7 +41,8 @@ M1-A exposes those seams early while the real model and Theme contracts are prep
    - one Runtime Package that names exactly one Player Output;
    - Showing evidence with received, verified, applied, and currently-showing facts.
 4. Add a small in-process composition test that proves:
-   - a package cannot be produced for a different Player Output;
+   - a package cannot be produced for a different Player Output, organization, or venue;
+   - a Live overlay and a composed Platform view refuse a different organization or venue scope;
    - Platform reads composed facts and owns no copy;
    - Showing records actual Runtime facts, never desired Core assignment;
    - a Live state overlay is distinct from the frozen Published Presentation.
@@ -95,7 +96,7 @@ The implementation PR must contain a Done Record and show:
 1. the four module guides exist and agree with this packet;
 2. the fixture data is deterministic, clearly non-production, and contains one organization/venue/Screen/Player Output;
 3. the Core → Runtime → Showing path passes;
-4. changing the Player Output causes the package contract test to refuse it;
+4. changing the Player Output, organization, or venue causes the Package, Live overlay, and composed Platform-view contract tests to refuse the request;
 5. the Live overlay can change while the fixture's Published Presentation identity remains unchanged;
 6. the Platform view is built from Core and Runtime facts and has no writable store;
 7. existing affected API tests and local build pass, or each unavailable check is honestly marked UNTESTED with reason;
@@ -130,7 +131,7 @@ Before a Runtime production Package is accepted, the following must be frozen: `
 - **Implementation specialist:** ChatGPT CLI using **Sol**. This is a shared-boundary first move where careful integration matters more than raw volume.
 - **Independent Decision Fidelity Review:** Claude CLI using **Opus 5**. It reviews only whether the packet preserves accepted decisions and respects its limits; it does not redesign the system.
 - **Targeted correction review:** the same independent reviewer checks only any identified corrections.
-- **No implementation starts** until the owner accepts this packet and the Decision Fidelity Review records either approval or concrete corrections.
+- **No implementation starts** until the owner accepts this packet and the Decision Fidelity Review approves it—or every finding is corrected and approved by the targeted correction review.
 
 Local Qwen is not assigned to this first shared-boundary packet. It becomes suitable for later bounded mechanical work after the contracts and test pattern are established.
 
