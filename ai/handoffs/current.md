@@ -2032,3 +2032,32 @@ resolved through the renewal process.
 **Exact next action:** run the **Mosaic V1 Renewal Reconciliation Session**, using the independent
 study as planning evidence. Reconcile its unresolved owner decisions and contract gates with the
 controlled renewal records before creating the Mosaic V1 Capability and Dependency Map.
+
+
+## 2026-08-31 — Mosaic V1 Renewal Reconciliation complete; awaiting review
+
+The owner and architect completed the fixed 28-part Mosaic reconciliation. The authoritative result
+is `docs/architecture/content-platform-architecture-renewal.md` §11.10. It is a planning-only
+documentation update awaiting independent review and merge.
+
+Settled Mosaic private-pilot boundary: existing authorized customer/venue, one logical Screen, one
+paired Player Output, VennueSign Default Theme, manual/paste Menu input, always-on assignment, and
+enforced-but-not-demonstrated multi-venue safety. It must prove immediate 86, rollback, last-valid
+display recovery, and support evidence separating Core desired state from Runtime actual state.
+
+Settled vocabulary: `menu.v1` is the controlled Data Model; an Item is reusable identity; a
+Placement owns order and price; only Available, Sold out / 86 (Live), and Not available (Published)
+are in the pilot state set. A **Published Presentation** pins validated Menu content, `menu.v1`, an
+exact Theme version, assets, and renderer compatibility. A **Runtime Package** is Player Output-ready
+material. **Showing** is Runtime evidence: received, verified, applied, and currently displaying.
+Do not use “Content Release” in new architecture records.
+
+The renewal also records the four internal API modules (Core, Connect, Runtime, Platform), gradual
+old-to-new API migration with no dual truth, module-adjacent AI guides, parallel-lane entry gates,
+and future Maestro registration readiness. VennueSign remains the project authority; Maestro will
+later perform read-only discovery and bind to the approved graph rather than recreate it.
+
+**Exact next action:** independently review this documentation update against the accepted Mosaic
+decisions and controlled records. If there are findings, correct only those findings and request a
+targeted verification of the correction. After merge, design—not implement—M1-A as a bounded,
+Maestro-compatible packet and send it through Decision Fidelity Review.
