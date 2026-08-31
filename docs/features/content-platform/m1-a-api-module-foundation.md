@@ -128,12 +128,13 @@ Before a Runtime production Package is accepted, the following must be frozen: `
 ## 10. Routing and review
 
 - **Packet author / boundary owner:** VennueSign Architect Lead.
-- **Implementation specialist:** ChatGPT CLI using **Sol**. This is a shared-boundary first move where careful integration matters more than raw volume.
-- **Independent Decision Fidelity Review:** Claude CLI using **Opus 5**. It reviews only whether the packet preserves accepted decisions and respects its limits; it does not redesign the system.
+- **Execution shape:** M1-A is a coordinated packet set, defined in `m1-a/work-graph.md`; it is not one worker’s assignment.
+- **Local Qwen:** M1-A.0 exact-head source map and M1-A.1 isolated module guides/static guard. It does not alter shared-boundary contracts.
+- **ChatGPT CLI using Sol:** M1-A.2 fixture contracts and seam tests—the high-judgment shared-boundary work.
+- **ChatGPT CLI using Terra:** M1-A.3 integration and acceptance proof after the Qwen and Sol inputs independently pass review.
+- **Independent reviewers:** Claude Sonnet reviews the bounded guide packet; Claude Opus reviews the contract, integration, and Decision Fidelity gates. A reviewer does not author the packet it reviews.
 - **Targeted correction review:** the same independent reviewer checks only any identified corrections.
 - **No implementation starts** until the owner accepts this packet and the Decision Fidelity Review approves it—or every finding is corrected and approved by the targeted correction review.
-
-Local Qwen is not assigned to this first shared-boundary packet. It becomes suitable for later bounded mechanical work after the contracts and test pattern are established.
 
 ## 11. Owner decision requested
 
