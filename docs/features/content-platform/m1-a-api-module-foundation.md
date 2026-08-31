@@ -78,16 +78,16 @@ No module may import another module's storage representation. M1-A uses only int
 
 ## 6. Required implementation shape
 
-Exact filenames remain the implementer's choice after a short source-base confirmation, but all new production source must live beneath:
+The work graph fixes every implementation filename before dispatch. All new production source remains beneath:
 
 - `src/Vennu.Api/Core/`
 - `src/Vennu.Api/Connect/`
 - `src/Vennu.Api/Runtime/`
 - `src/Vennu.Api/Platform/`
 
-M1-A may add one narrowly named test location beside the existing applicable API tests. It must not create a new deployable service or project merely to express these boundaries.
+Focused tests live only under `tests/Vennu.Api.Tests/ContentPlatform/M1A/`. M1-A must not create a new deployable service or project merely to express these boundaries.
 
-Existing `Menus`, `PlatformOperations`, `Release`, `Controllers`, `Hubs`, and `Services` remain untouched unless the implementation proof shows a minimal composition registration is unavoidable. If so, it must be called out in the PR before merge and cannot add an endpoint.
+Existing `Program.cs`, `Menus`, `PlatformOperations`, `Release`, `Controllers`, `Hubs`, and `Services` remain untouched. If the proof requires any composition-root or existing-path edit, M1-A is blocked and returns to architecture.
 
 ## 7. Acceptance proof
 
@@ -98,7 +98,7 @@ The implementation PR must contain a Done Record and show:
 3. the Core → Runtime → Showing path passes;
 4. changing the Player Output, organization, or venue causes the Package, Live overlay, and composed Platform-view contract tests to refuse the request;
 5. the Live overlay can change while the fixture's Published Presentation identity remains unchanged;
-6. the Platform view is built from Core and Runtime facts and has no writable store;
+6. the Platform view is built from Core and Runtime facts and has no independently stored or writable copy of truth;
 7. existing affected API tests and local build pass, or each unavailable check is honestly marked UNTESTED with reason;
 8. a source search in the changed paths finds no new public endpoint mapping, migration, or persisted fixture.
 
@@ -129,10 +129,11 @@ Before a Runtime production Package is accepted, the following must be frozen: `
 
 - **Packet author / boundary owner:** VennueSign Architect Lead.
 - **Execution shape:** M1-A is a coordinated packet set, defined in `m1-a/work-graph.md`; it is not one worker’s assignment.
-- **Local Qwen:** M1-A.0 exact-head source map and M1-A.1 isolated module guides/static guard. It does not alter shared-boundary contracts.
-- **ChatGPT CLI using Sol:** M1-A.2 fixture contracts and seam tests—the high-judgment shared-boundary work.
-- **ChatGPT CLI using Terra:** M1-A.3 integration and acceptance proof after the Qwen and Sol inputs independently pass review.
-- **Independent reviewers:** Claude Sonnet reviews the bounded guide packet; Claude Opus reviews the contract, integration, and Decision Fidelity gates. A reviewer does not author the packet it reviews.
+- **Local Qwen:** M1-A.0 exact-head source map, M1-A.4 bounded read-only Platform composition, and M1-A.5 isolated module guides. It does not define the shared Core or Runtime contracts.
+- **ChatGPT CLI using Sol:** M1-A.1 Core fixture contract and M1-A.3 Live-overlay/Showing contract—the high-judgment shared-boundary work.
+- **ChatGPT CLI using Terra:** M1-A.2 output-specific Runtime Package and M1-A.6 complete journey proof.
+- **Independent reviewers:** Claude Sonnet reviews the bounded Runtime Package, Platform, and guide packets; Claude Opus reviews the Core, Live/Showing, integration, and Decision Fidelity gates. A reviewer does not author the packet it reviews.
+- **Packet sizing:** M1-A is eight packets, M1-A.0 through M1-A.7. Each implementation packet owns one outcome, one to three code/test files, an estimated size ceiling, observable assertions, exact command gates, a required commit, and a fixed completion-report format.
 - **Targeted correction review:** the same independent reviewer checks only any identified corrections.
 - **No implementation starts** until the owner accepts this packet and the Decision Fidelity Review approves it—or every finding is corrected and approved by the targeted correction review.
 

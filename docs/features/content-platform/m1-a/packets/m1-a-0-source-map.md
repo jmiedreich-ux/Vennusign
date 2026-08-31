@@ -1,39 +1,66 @@
 # M1-A.0 — Exact-Head Source Map
 
-**Status:** Proposed execution packet  
-**Worker:** Local Qwen  
-**Planned worktree:** `m1a-0-source-map`  
-**Reviewer:** ChatGPT Terra  
-**Depends on:** owner-approved M1-A packet and passing Decision Fidelity Review  
-**Changes allowed:** one evidence document only
+**Status:** Proposed discovery packet
+**Worker:** Local Qwen
+**Reviewer:** ChatGPT Terra
+**Depends on:** owner-approved M1-A graph and passing Decision Fidelity Review
+**Repository writes:** none
 
-## Job
+## One outcome
 
-Inspect the exact current `master` source. Produce an evidence map that tells later packets where to add their work without guessing or moving legacy code.
+Confirm that the exact current `master` can support M1-A in the already named source and test homes without changing a project file, public composition root, legacy module, or build configuration.
 
 ## Required inspection
 
-- `src/Vennu.Api/Program.cs`: composition and registration points.
-- `src/Vennu.Api/Menus/`: existing Menu/import seam; list only relevant touchpoints.
-- `src/Vennu.Api/PlatformOperations/`: existing support boundary; list only relevant touchpoints.
-- `src/Vennu.Api/Release/`: distinguish product-version code from the renewed presentation terms.
-- the existing applicable API test projects and their test discovery/fixture patterns.
-- existing solution/project references needed to compile a focused internal-contract test.
+- `src/Vennu.Api/Vennu.Api.csproj`
+- `src/Vennu.Api/Properties/AssemblyInfo.cs`
+- `src/Vennu.Api/Program.cs`
+- `src/Vennu.Api/Menus/`
+- `src/Vennu.Api/PlatformOperations/`
+- `src/Vennu.Api/Release/`
+- `tests/Vennu.Api.Tests/Vennu.Api.Tests.csproj`
+- two representative focused unit-test files under `tests/Vennu.Api.Tests/`
 
-## Deliverable
+Search the repository for `Core`, `Connect`, `Runtime`, `PublishedPresentation`, `RuntimePackage`, `ShowingEvidence`, and `M1A`. Account for every collision that could affect the named packet paths.
 
-Create only:
+## Required output
 
-`docs/features/content-platform/m1-a/evidence/source-base-map.md`
+Post one issue #970 comment using exactly these headings:
 
-It must name the exact base SHA, inspected paths, likely test home, candidate composition point, conflicts to avoid, and a **PASS / BLOCKED** recommendation for M1-A.1, M1-A.2, and M1-A.3.
+```text
+M1-A.0 SOURCE MAP
+Base SHA: <40-character master SHA>
+Inspected paths:
+- <path> — <relevant fact>
+Search command: <exact command>
+Search results:
+<unedited output or NONE>
+Confirmed test command: <exact command>
+Packet path verdicts:
+- M1-A.1: PASS | BLOCKED — <reason>
+- M1-A.2: PASS | BLOCKED — <reason>
+- M1-A.3: PASS | BLOCKED — <reason>
+- M1-A.4: PASS | BLOCKED — <reason>
+- M1-A.5: PASS | BLOCKED — <reason>
+- M1-A.6: PASS | BLOCKED — <reason>
+Conflicts to avoid:
+- <path and reason, or NONE>
+Overall: PASS | BLOCKED
+```
+
+Do not summarize command output as “clean.” Include it. This packet has no commit because it is a read-only preflight; the issue comment is its sole deliverable.
+
+## Acceptance assertions
+
+1. The comment names the exact 40-character base SHA.
+2. Every required path is inspected and every search term is run.
+3. The existing `Vennu.Api.Tests` reference and internal-access pattern are identified from source rather than assumed.
+4. Every later packet receives a separate PASS/BLOCKED verdict against its exact file lock.
 
 ## Hard stops
 
-Do not create production source, rename existing code, edit the parent packet, add an endpoint, migration, fixture database row, or client change. If the map finds that M1-A needs one of those, mark **BLOCKED** and explain why.
+Return **BLOCKED** if any named file already exists with another meaning, if the tests cannot access the proposed internal contracts without a project/configuration change, or if M1-A would require `Program.cs`, a public endpoint, persistence, migration, legacy move, or new dependency. Do not propose or make the repair.
 
-## Validation and review
+## Review
 
-- Confirm the report is based on its recorded exact SHA.
-- Reviewer independently samples every claimed path and checks that no conclusions were invented.
-- A reviewed PASS unblocks M1-A.1 and M1-A.2. A BLOCKED result returns to the architect.
+Terra samples every claimed path and reruns the search at the same SHA. A reviewed overall PASS unblocks M1-A.1. Any inaccurate claim receives one comment-only correction; a second defect returns to architecture.

@@ -1,30 +1,51 @@
 # M1-A Work Graph — API Module Foundation
 
-**Status:** Proposed. This graph becomes executable only after the owner approves the M1-A packet and the Decision Fidelity Review gate has passed.  
-**Parent packet:** `../m1-a-api-module-foundation.md`  
-**Issue:** #970
+**Status:** Proposed. No implementation packet is dispatchable until the owner approves this graph and the Decision Fidelity Review passes.
+**Parent boundary:** `../m1-a-api-module-foundation.md`
+**Tracking issue:** #970
 
-## The work, at a glance
+## Ordered packets
 
-| Packet | Work | Agent / model | Depends on | Output | Independent review |
-|---|---|---|---|---|---|
-| M1-A.0 | Exact-head source map | Local Qwen | owner approval + DFR gate | Evidence map; no production edit | ChatGPT Terra |
-| M1-A.1 | Module guides and static boundary check | Local Qwen | M1-A.0 | Four guides + one narrow guard | Claude Sonnet |
-| M1-A.2 | Fixture contracts and seam tests | ChatGPT Sol | M1-A.0 | Internal Core/Runtime/Platform contracts and tests | Claude Opus |
-| M1-A.3 | Integration and acceptance proof | ChatGPT Terra | M1-A.1 + M1-A.2 | One assembled implementation PR and Done Record | Claude Opus |
-| M1-A.4 | Completion decision | Architect coordinator | M1-A.3 review pass | merge or one bounded correction cycle | Targeted Claude Opus review |
+| Packet | One bounded outcome | Worker / model | Depends on | Writable paths | Expected size | Reviewer |
+|---|---|---|---|---|---:|---|
+| M1-A.0 | Confirm the exact source and test homes | Local Qwen | owner approval + Decision Fidelity Review | no repository files; structured issue comment only | no code | ChatGPT Terra |
+| M1-A.1 | Add the Core fixture identity and frozen-presentation contract | ChatGPT CLI / Sol | reviewed PASS from M1-A.0 | one named Core file and one named test file | 100–160 code-bearing lines | Claude Opus |
+| M1-A.2 | Add output-specific Runtime Package creation | ChatGPT CLI / Terra | M1-A.1 accepted | one named Runtime file and one named test file | 90–140 code-bearing lines | Claude Sonnet |
+| M1-A.3 | Add Live overlay and Showing evidence | ChatGPT CLI / Sol | M1-A.2 accepted | two named Runtime files and one named test file | 120–180 code-bearing lines | Claude Opus |
+| M1-A.4 | Compose the read-only Platform support view | Local Qwen | M1-A.3 accepted | one named Platform file and one named test file | 80–130 code-bearing lines | Claude Sonnet |
+| M1-A.5 | Write the four module guides from accepted contracts | Local Qwen | M1-A.3 accepted | four named README files only | 80–140 documentation lines | Claude Sonnet |
+| M1-A.6 | Prove the complete fixture journey and exclusions | ChatGPT CLI / Terra | M1-A.4 + M1-A.5 accepted | one named end-to-end test file only | 70–120 code-bearing lines | Claude Opus |
+| M1-A.7 | Complete records and merge the reviewed implementation | Architect coordinator | M1-A.6 approved | Done Record, tracker, status, handoff, issue/PR state | no product code | targeted reviewer if corrected |
 
-M1-A.1 and M1-A.2 run in parallel, in separate worktrees and with no shared files. M1-A.3 is the only packet allowed to combine their work.
+M1-A.4 and M1-A.5 may run in parallel because their file locks do not overlap. All other implementation packets are sequential. A packet may be queued early, but it remains **Blocked** until every dependency is accepted.
 
-## Execution rules
+## Packet completeness rule
 
-- Every packet runs through the local wrapper lifecycle: isolated worktree, durable evidence, exact commit, validation result, independent review, one targeted correction cycle, and hard stop.
-- A review failure blocks its successor. It does not authorize a workaround or a wider rewrite.
-- The worker never merges. M1-A.4 is the only merge path.
-- A packet cannot silently change its listed files, public contracts, migrations, or customer behavior. Any such need returns to the architect.
-- Branch and worktree names are reserved by packet ID; no two packets may claim the same file.
-- The fixture is test-only. It never becomes a temporary source of customer truth.
+The packet file is the complete prompt delivered to the worker. No worker receives a shortened restatement. Every implementation packet fixes:
 
-## What this fixes
+- exact prerequisites and base commit;
+- exact writable paths and an estimated code-bearing range;
+- one outcome and explicit non-goals;
+- three to five observable assertions;
+- exact command gates;
+- one required scoped commit;
+- an exact completion report format;
+- one targeted correction limit and a stop condition.
 
-The M1-A definition is the architectural guardrail. These records are the executable instructions. The graph makes the waiting explicit: Sol and Qwen cannot begin until M1-A.0 is reviewed; Terra cannot begin until both parallel packets are independently approved.
+At dispatch, the coordinator replaces each packet's `<accepted-base-sha>` placeholder with the actual accepted dependency commit. No other packet wording may be silently changed. A required path or behavior change returns to architecture.
+
+## Branch and assembly model
+
+- Each implementation packet starts from its accepted dependency commit in an isolated worktree.
+- M1-A.1 through M1-A.3 form the shared contract chain.
+- M1-A.4 and M1-A.5 branch from the accepted M1-A.3 head. The coordinator assembles both accepted commits before dispatching M1-A.6.
+- Workers never merge and never update controlled project records.
+- M1-A.7 is the sole merge and controlled-record path.
+
+## Correction and review rule
+
+Every packet receives independent review by a reviewer who did not author it. A review finding produces one correction prompt containing only the named defects, affected assertions, and permitted files. The same reviewer then checks only those corrections. An unchanged return, a second implementation defect, a new scope need, or any edit outside the file lock stops the packet and returns it to the architect.
+
+## Milestone ceiling
+
+M1-A remains a disposable in-process skeleton. It creates no endpoint, migration, persistence, customer record, Theme, real Player Output delivery, or production Runtime contract. Passing M1-A does not claim that a live screen exists.
