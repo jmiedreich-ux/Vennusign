@@ -2121,3 +2121,23 @@ Mosaic implementation was started in this session.
 discovery** against VennueSign `master` at `c246080f0ba97e5fd020c936e9ca580e39e8f532` and graph
 revision `mosaic-v1.approved.1`. Produce the discovery report only; do not create the thin binding,
 project queues, or dispatch M1-A.0 until that report is reviewed under Maestro's registration process.
+
+## 2026-08-31 — VennueSign authority indexed for Maestro discovery
+
+The project-side pre-registration source map now lives at
+`docs/features/content-platform/maestro-registration-source-map.md`. It does not register VennueSign
+or create `maestro.project.yaml`; it gives Maestro's later read-only discovery one durable index into
+the existing project authority instead of making the discovery infer authority from scattered records.
+
+The map covers Maestro's required identity, authority, delivery, verification, roles, operations,
+exceptions, graph revision, packet, gate, and lock facts. It explicitly records three material
+discovery findings: the tracker is stale and unrelated to the Mosaic graph; CI is owner-suspended even
+though workflow comments still describe checks as merge gates; and dev deployment is documented while
+complete stage/production rollback authority is not identified. Missing binding/process versions and
+Maestro operational identifiers remain deliberately unset for the later reviewed binding step.
+
+No implementation, binding, Maestro state, queue, issue, PR, environment, or secret changed.
+
+**Exact next action:** perform Maestro's read-only discovery using the source map against the then-current
+VennueSign `master`. Produce and review the discovery report only; do not create a binding, operational
+projection, or dispatch until the subsequent gates explicitly open.
