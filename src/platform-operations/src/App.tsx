@@ -12,6 +12,7 @@ import FeatureMatrix from "./FeatureMatrix";
 import OperationalDashboard from "./OperationalDashboard";
 import OnboardingSupport from "./OnboardingSupport";
 import SystemConfiguration from "./SystemConfiguration";
+import TestAgent from "./TestAgent";
 
 const routes = [
   { path: "dashboard", label: "Dashboard", description: "Revenue and operational health" },
@@ -20,6 +21,7 @@ const routes = [
   { path: "tiers", label: "Tiers", description: "Tier catalogue and billing mapping" },
   { path: "features", label: "Features", description: "Feature access matrix" },
   { path: "configuration", label: "Configuration", description: "Environment and application settings" }
+  ,{ path: "test-agent", label: "AI Test Agent", description: "Autonomous product testing experiment" }
 ] as const;
 
 function currentRoute() {
@@ -123,6 +125,8 @@ export default function App() {
             ? <FeatureMatrix configuration={configuration} apiKey={apiKey} />
           : route.path === "configuration"
             ? <SystemConfiguration configuration={configuration} apiKey={apiKey} />
+          : route.path === "test-agent"
+            ? <TestAgent configuration={configuration} apiKey={apiKey} />
           : null}
       </main>
     </div>
