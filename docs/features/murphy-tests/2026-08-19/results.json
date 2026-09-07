@@ -1,0 +1,352 @@
+[
+  {
+    "section": "www-fresh-nav",
+    "msg": "/ -> status 200",
+    "extra": {
+      "title": "Vennusign",
+      "h1": "Vennusign runs your screens. And proves it.",
+      "bodyPreview": "\n    VennusignProductRestaurants & QSRsCorporate CommsPricingSign inSign upEnterprise digital signage CMSVennusign runs your screens. And proves it.Stop guessing if your content updated. Publish menus",
+      "consoleErrors": [
+        "Access to fetch at 'https://vennusign-dev-api.azurewebsites.net/api/customer-onboarding/plans' from origin 'https://dev.vennusign.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET https://vennusign-dev-api.azurewebsites.net/api/customer-onboarding/plans :: net::ERR_FAILED"
+      ]
+    },
+    "t": "2026-08-19T17:33:19.583Z"
+  },
+  {
+    "section": "www-fresh-nav",
+    "msg": "/restaurants -> status 200",
+    "extra": {
+      "title": "Vennusign for Restaurants & QSRs",
+      "h1": "Stop losing sales to dark screens and outdated menus.",
+      "bodyPreview": "\n    VennusignHomeRestaurants & QSRsCorporate CommsPricingSign inSign upVennusign for Restaurants & QSRsStop losing sales to dark screens and outdated menus.Update prices instantly, 86 sold-out items,",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    "t": "2026-08-19T17:33:22.044Z"
+  },
+  {
+    "section": "www-fresh-nav",
+    "msg": "/corporate-comms -> status 200",
+    "extra": {
+      "title": "Vennusign for Corporate Communications",
+      "h1": "Keep your workforce informed, not your IT helpdesk busy.",
+      "bodyPreview": "\n    VennusignHomeRestaurants & QSRsCorporate CommsPricingSign inSign upVennusign for Corporate CommunicationsKeep your workforce informed, not your IT helpdesk busy.Deliver critical company updates, ",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    "t": "2026-08-19T17:33:24.291Z"
+  },
+  {
+    "section": "www-fresh-nav",
+    "msg": "/this-page-does-not-exist-12345 -> status 200",
+    "extra": {
+      "title": "Vennusign",
+      "h1": "Vennusign runs your screens. And proves it.",
+      "bodyPreview": "\n    VennusignProductRestaurants & QSRsCorporate CommsPricingSign inSign upEnterprise digital signage CMSVennusign runs your screens. And proves it.Stop guessing if your content updated. Publish menus",
+      "consoleErrors": [
+        "Access to fetch at 'https://vennusign-dev-api.azurewebsites.net/api/customer-onboarding/plans' from origin 'https://dev.vennusign.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET https://vennusign-dev-api.azurewebsites.net/api/customer-onboarding/plans :: net::ERR_FAILED"
+      ]
+    },
+    "t": "2026-08-19T17:33:27.201Z"
+  },
+  {
+    "section": "www-responsive",
+    "msg": "home @ 320px",
+    "extra": {
+      "scrollWidth": 469,
+      "clientWidth": 320,
+      "horizontalOverflow": true,
+      "consoleErrors": [
+        "Access to fetch at 'https://vennusign-dev-api.azurewebsites.net/api/customer-onboarding/plans' from origin 'https://dev.vennusign.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+        "Failed to load resource: net::ERR_FAILED"
+      ]
+    },
+    "t": "2026-08-19T17:33:29.757Z"
+  },
+  {
+    "section": "www-responsive",
+    "msg": "home @ 2560px",
+    "extra": {
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "horizontalOverflow": false,
+      "consoleErrors": [
+        "Access to fetch at 'https://vennusign-dev-api.azurewebsites.net/api/customer-onboarding/plans' from origin 'https://dev.vennusign.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+        "Failed to load resource: net::ERR_FAILED"
+      ]
+    },
+    "t": "2026-08-19T17:33:33.173Z"
+  },
+  {
+    "section": "www-links",
+    "msg": "collected anchors on home",
+    "extra": {
+      "uniq": [
+        "#home-loop-heading",
+        "/restaurants",
+        "/corporate-comms",
+        "#home-pricing-heading",
+        "https://dev.back-office.vennusign.com/signin",
+        "https://dev.back-office.vennusign.com/signup",
+        "#home-faq",
+        "#"
+      ]
+    },
+    "t": "2026-08-19T17:33:35.109Z"
+  },
+  {
+    "section": "www-link-check",
+    "msg": "/restaurants -> 200",
+    "extra": null,
+    "t": "2026-08-19T17:33:35.447Z"
+  },
+  {
+    "section": "www-link-check",
+    "msg": "/corporate-comms -> 200",
+    "extra": null,
+    "t": "2026-08-19T17:33:35.503Z"
+  },
+  {
+    "section": "www-link-check",
+    "msg": "https://dev.back-office.vennusign.com/signin -> 200",
+    "extra": null,
+    "t": "2026-08-19T17:33:35.807Z"
+  },
+  {
+    "section": "www-link-check",
+    "msg": "https://dev.back-office.vennusign.com/signup -> 200",
+    "extra": null,
+    "t": "2026-08-19T17:33:35.863Z"
+  },
+  {
+    "section": "www-images",
+    "msg": "/ broken image count 0",
+    "extra": {
+      "broken": []
+    },
+    "t": "2026-08-19T17:33:38.492Z"
+  },
+  {
+    "section": "www-images",
+    "msg": "/restaurants broken image count 0",
+    "extra": {
+      "broken": []
+    },
+    "t": "2026-08-19T17:33:40.688Z"
+  },
+  {
+    "section": "www-images",
+    "msg": "/corporate-comms broken image count 0",
+    "extra": {
+      "broken": []
+    },
+    "t": "2026-08-19T17:33:42.888Z"
+  },
+  {
+    "section": "bo-fresh-nav",
+    "msg": "/signup -> status 200",
+    "extra": {
+      "providerLinks": [
+        {
+          "text": "Continue with Vennusign",
+          "href": "https://vennusign-dev-api.azurewebsites.net/api/customer-auth/external/vennusign?returnPath=%2Fonboarding"
+        },
+        {
+          "text": "Continue with Google",
+          "href": "https://vennusign-dev-api.azurewebsites.net/api/customer-auth/external/google?returnPath=%2Fonboarding"
+        }
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    "t": "2026-08-19T17:33:45.887Z"
+  },
+  {
+    "section": "bo-fresh-nav",
+    "msg": "/signin -> status 200",
+    "extra": {
+      "providerLinks": [
+        {
+          "text": "Continue with Vennusign",
+          "href": "https://vennusign-dev-api.azurewebsites.net/api/customer-auth/external/vennusign?returnPath=%2Fonboarding"
+        },
+        {
+          "text": "Continue with Google",
+          "href": "https://vennusign-dev-api.azurewebsites.net/api/customer-auth/external/google?returnPath=%2Fonboarding"
+        }
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    "t": "2026-08-19T17:33:48.189Z"
+  },
+  {
+    "section": "bo-fresh-nav",
+    "msg": "/onboarding -> status 200",
+    "extra": {
+      "providerLinks": [
+        {
+          "text": "Continue with Vennusign",
+          "href": "https://vennusign-dev-api.azurewebsites.net/api/customer-auth/external/vennusign?returnPath=%2Fonboarding"
+        },
+        {
+          "text": "Continue with Google",
+          "href": "https://vennusign-dev-api.azurewebsites.net/api/customer-auth/external/google?returnPath=%2Fonboarding"
+        }
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    "t": "2026-08-19T17:33:50.773Z"
+  },
+  {
+    "section": "bo-open-redirect-probe",
+    "msg": "returnPath=https://evil.example.com",
+    "extra": {
+      "providerLinks": [
+        {
+          "text": "Continue with Vennusign",
+          "href": "https://vennusign-dev-api.azurewebsites.net/api/customer-auth/external/vennusign?returnPath=%2Fonboarding"
+        },
+        {
+          "text": "Continue with Google",
+          "href": "https://vennusign-dev-api.azurewebsites.net/api/customer-auth/external/google?returnPath=%2Fonboarding"
+        }
+      ]
+    },
+    "t": "2026-08-19T17:33:53.754Z"
+  },
+  {
+    "section": "bo-open-redirect-probe",
+    "msg": "returnPath=//evil.example.com",
+    "extra": {
+      "providerLinks": [
+        {
+          "text": "Continue with Vennusign",
+          "href": "https://vennusign-dev-api.azurewebsites.net/api/customer-auth/external/vennusign?returnPath=%2Fonboarding"
+        },
+        {
+          "text": "Continue with Google",
+          "href": "https://vennusign-dev-api.azurewebsites.net/api/customer-auth/external/google?returnPath=%2Fonboarding"
+        }
+      ]
+    },
+    "t": "2026-08-19T17:33:55.710Z"
+  },
+  {
+    "section": "bo-remembered-method",
+    "msg": "stale localStorage value 'Passkey' (removed provider) after reload",
+    "extra": {
+      "providerLinks": [
+        {
+          "text": "Continue with Vennusign"
+        },
+        {
+          "text": "Continue with Google"
+        }
+      ],
+      "rememberedTagShown": false
+    },
+    "t": "2026-08-19T17:34:00.297Z"
+  },
+  {
+    "section": "bo-remembered-method",
+    "msg": "remembered 'Google' after reload (should single-button to a now-disabled provider)",
+    "extra": {
+      "providerLinks": [
+        {
+          "text": "Continue with Google"
+        }
+      ],
+      "rememberedTagShown": true
+    },
+    "t": "2026-08-19T17:34:04.264Z"
+  },
+  {
+    "section": "bo-google-click",
+    "msg": "GET the Continue-with-Google href directly",
+    "extra": {
+      "href": "https://vennusign-dev-api.azurewebsites.net/api/customer-auth/external/google?returnPath=%2Fonboarding",
+      "status": 503,
+      "respBody": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.6.4\",\"title\":\"Service Unavailable\",\"status\":503,\"detail\":\"The requested identity provider is not configured.\",\"traceId\":\"00-6cb395de75d75efc55b00b77866e7819-c7211e3df6d38ee7-00\"}"
+    },
+    "t": "2026-08-19T17:34:07.848Z"
+  },
+  {
+    "section": "bo-google-click",
+    "msg": "after real click",
+    "extra": {
+      "finalUrl": "https://vennusign-dev-api.azurewebsites.net/api/customer-auth/external/google?returnPath=%2Fonboarding",
+      "visibleText": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.6.4\",\"title\":\"Service Unavailable\",\"status\":503,\"detail\":\"The requested identity provider is not configured.\",\"traceId\":\"00-793abdcda6738b7778bdbb075cbe6f06-3d348ea26cbc8acb-00\"}"
+    },
+    "t": "2026-08-19T17:34:09.046Z"
+  },
+  {
+    "section": "bo-back-refresh",
+    "msg": "root -> /signup -> back -> forward -> refresh",
+    "extra": {
+      "afterBackUrl": "https://dev.back-office.vennusign.com/",
+      "finalTitle": "Vennusign Back Office"
+    },
+    "t": "2026-08-19T17:34:16.588Z"
+  },
+  {
+    "section": "bo-responsive",
+    "msg": "/signup @ 320px",
+    "extra": {
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "horizontalOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    "t": "2026-08-19T17:34:19.875Z"
+  },
+  {
+    "section": "bo-responsive",
+    "msg": "/signup @ 2560px",
+    "extra": {
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "horizontalOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ]
+    },
+    "t": "2026-08-19T17:34:23.082Z"
+  },
+  {
+    "section": "bo-double-click",
+    "msg": "after dblclick on Continue with Vennusign",
+    "extra": {
+      "finalUrl": "https://vennusign.ciamlogin.com/329feaa1-088f-4d4c-b602-9274db8c85e8/oauth2/v2.0/authorize?client_id=9cf572dc-db8e-44c5-acdf-d4dd258ccd6f&redirect_uri=https%3A%2F%2Fvennusign-dev-api.azurewebsites.net%2Fsignin-customer-entra&response_type=code&scope=openid%20email%20profile&code_challenge=gWTlnRzY3XsK6HACp6CnTnmHoE-3udBzQbYJcafZr3Y&code_challenge_method=S256&nonce=639227576662850573.YWVjMjBkOTEtM2MyMi00M2E4LTg3ODEtYzU2YjQxM2IyNDRlYzE2ZTJkYjEtMDJjOS00MjFjLWJmODItN2JlMDQ3ZTU4ZjAx&state=CfDJ8JlbQsCb0wdOlVrkGM3efaFJvJKIRKO8UeMEx7snMxS1cLu7KGoYjXfg2LbeJb-sFmkI_ZFq2AI-F6ldEjpw9F7sGtx4ArEkeHhr4cjMvf_It-XJgjxxrcF0E1O9rqxBOkr-6Oi_6fkxRIM5H_p4wwmgXp9BqIkjlPIH6HJKkGaehR4V7LaaXXkZkhyt4buHsR6W3-v6LxNcm-03KBJxta9aSjvbn6vWu-Au2cGPcbO8wO3OJNIeqQaJiAqmrliao73IQoZx7qGez5QBTyzgOT7OzJtX6i9YAZtbdAFckkqIEuflNWySA3hkPMBciYpcysLf5qFJUuK0tRF-RxaHRD8X75ev6Dyx1Ro-9uMOkCkaTIkWOS5Ly_7QsvSSl1E2ZDCJg5TuLaI0tD_fXW_fVAKzLba7APhanysBs8VCgLYujq8MH-IjYJsfccpNu08r0tEHluxMXAwc3cwRd9FZiJZvPAPM7WGVPCthJaeDT7go&x-client-SKU=ID_NET9_0&x-client-ver=8.0.1.0&sso_reload=true",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "pageErrors": []
+    },
+    "t": "2026-08-19T17:34:27.588Z"
+  }
+]

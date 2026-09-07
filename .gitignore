@@ -387,3 +387,7 @@ vennu-api-*.txt
 
 # Impeccable skill run logs and state (machine-specific)
 .impeccable/
+
+# Murphy QA run scratch output (local working files; committed copies live under
+# docs/features/murphy-tests/<date>/)
+/output/
