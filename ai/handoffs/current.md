@@ -1,6 +1,31 @@
 # Vennusign Session Handoff
 
-Updated 2026-08-29, after the owner approved the Wall Planner design — the algorithm that spreads a release across a group of screens.
+Updated 2026-09-09, after the Theme Studio working conversation was reconciled with the Content Platform architecture and preserved as a dated engineering guide.
+
+## 2026-09-09 — Theme Studio conversation and wireframes preserved; still not implementation authority
+
+Issue #974 records the documentation task. The new
+`docs/features/theme-studio/theme-studio-engineering-guide-2026-09-09.md` contains the architecture
+reconciliation, 12 invariants, accepted interaction sequence, 32-decision ledger, all 67 available
+owner messages, a status register for all 19 generated wireframes, the complete visual appendix,
+18 missing screens, and ten open owner decisions. The historical working bundle remains under
+`docs/design/theme-studio/`; its README points to the new reconciliation.
+
+What is established: Theme Studio binds one explicit immutable data-model version and stable model
+paths; Content Builder owns records and their library/provider sources; Repeater is the neutral
+visual component; the first compatible field derives its repeating record type; `state` is a normal
+model field type; State appearance belongs in Style; operational state cannot change record geometry
+or repaginate a wall; released Theme revisions are immutable; and all render consumers share the same
+semantics. The accepted guided drag-and-drop sequence is preserved.
+
+What is deliberately left for later: the guide is a working draft, not approved design authority and
+not permission to implement. The exact Rules actions, State appearance controls, `When empty`
+ownership, stored contract names, presets, output modes, and non-Repeater component panels remain
+open. The exact assistant prose from the original chat was unavailable; the guide says so rather than
+inventing it, and preserves the decisions plus every available visual response.
+
+**One exact next action:** resolve the ten open owner decisions in a Theme Studio question register,
+then draw the corrected panel-only inspector summary before any clickable prototype or implementation.
 
 ## 2026-08-29 — The Wall Planner: designed and approved, deliberately not built yet
 
