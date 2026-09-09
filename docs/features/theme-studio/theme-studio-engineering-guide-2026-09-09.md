@@ -525,3 +525,58 @@ Before implementation:
 6. Produce a bounded milestone plan where schema, API, editor, renderer, tests, and owner acceptance ship together.
 
 No Theme Studio implementation should begin from the pictures alone.
+
+
+## 16. Buildability contract and Foundry alignment
+
+Theme Studio wireframes are not standalone instructions for AI agents. Each approved storyboard screen must be accompanied by a screen-and-behavior contract and a Foundry mapping. Together, these three artifacts are the implementation authority for that screen:
+
+| Artifact | Answers |
+| --- | --- |
+| Wireframe | What is visible, where it appears, and the intended interaction sequence |
+| Screen-and-behavior contract | What happens, what is stored, validation, non-happy paths, and acceptance evidence |
+| Foundry mapping | Which established design-system primitives, tokens, states, and accessibility behavior must be used |
+
+### 16.1 Foundry status
+
+Foundry is VennueSign’s shared design system. It is being established and is not yet a complete catalogue. Theme Studio must therefore use the following status labels in every work packet:
+
+| Status | Meaning | Implementation rule |
+| --- | --- | --- |
+| Existing Foundry pattern | The required primitive and states already exist in Foundry | Use it as-is; do not restyle or recreate it in Theme Studio |
+| Foundry addition | A reusable primitive or interaction is required but not yet defined in Foundry | Specify it as a Foundry addition before implementation; do not create a Theme Studio one-off |
+| Theme Studio composition | A Theme Studio-specific arrangement of existing Foundry primitives | Build the composition using the stated Foundry parts; preserve the product-specific behavior contract |
+
+A missing Foundry part does not block Theme Studio design. It becomes a named dependency in the work packet. An implementation agent may not silently substitute a new control, interaction, token, or state treatment.
+
+### 16.2 Required mapping for the current Repeater interaction
+
+The first binding flow in the current storyboard must be mapped as follows. The named Foundry primitive identifiers are placeholders until Foundry publishes its canonical names; they are not permission to invent substitutes.
+
+| Theme Studio part | Required status | Foundry responsibility | Theme Studio responsibility |
+| --- | --- | --- | --- |
+| Editor shell, left rail, inspector shell | Existing pattern or Foundry addition | Shell layout, responsive behavior, focus and panel states | Rail ownership and selected-context content |
+| Tabs, buttons, selects, number inputs | Existing pattern | Control anatomy, keyboard behavior, disabled/error states | Labels, values, validation meaning |
+| Field row in Fields rail | Existing pattern or Foundry addition | Search/list-row anatomy, focus state, drag affordance | Model label, type, compatible/incompatible state |
+| Empty Repeater drop target | Foundry addition | Valid/invalid/active drop-state treatment and accessible feedback | Compatibility from the pinned model and derived record type |
+| Drag preview and target indicators | Foundry addition | Held-source, target, cancel, valid/invalid visual and keyboard/touch conventions | Field identity and explicit right/below placement semantics |
+| Inspector Properties / Style / Rules panels | Existing pattern or Foundry addition | Panel layout, tab behavior, controls, focus management | Binding details, panel ownership, model-aware choices |
+| Row-spacing slider and color/font controls | Existing pattern | Control interaction, value presentation, input validation | Repeater or field-specific style mapping |
+| Inline warnings and save failure | Existing pattern | Warning/error treatment, announcement, retry affordance | Domain message and non-live-save semantics |
+
+### 16.3 Work-packet minimum
+
+Every Theme Studio implementation packet must contain:
+
+1. A link or identifier for the latest non-superseded wireframe only.
+2. The visible controls and their panel/rail placement.
+3. The user behavior, stored data, model/version/path constraints, and error/cancel states.
+4. A Foundry mapping table using the status labels above.
+5. Explicit open decisions marked **Do not implement or infer**.
+6. Acceptance checks that prove both UI behavior and stored-contract behavior.
+
+The packet must never say merely “match the wireframe.” It must name the relevant Foundry dependency or composition and state what an agent must do when the dependency is not available.
+
+### 16.4 Explicitly carried-forward decisions
+
+The following remain open and are deliberately carried forward rather than left for an implementation agent to decide: Repeater Rules action set, empty-preview policy, undo semantics, and touch/keyboard drag behavior. They remain subject to Section 14 and must be marked **Do not implement or infer** in any packet that reaches them.
