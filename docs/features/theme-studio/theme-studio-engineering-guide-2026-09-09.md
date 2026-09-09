@@ -423,8 +423,8 @@ All images made in the conversation are retained below. Rejected and superseded 
 | 14 | [Item Properties with Visible and accessible label](wireframes/2026-09-09/14-item-properties-visible-accessible-superseded.webp) | Superseded | Both controls were subsequently removed |
 | 15 | [Item Properties without Visible](wireframes/2026-09-09/15-item-properties-accessible-superseded.webp) | Superseded | Accessible label was subsequently removed |
 | 16 | [Item Properties current](wireframes/2026-09-09/16-item-properties-current.webp) | Current draft | Read-only binding plus When empty; location of When empty remains open |
-| 17 | [Whole-shell inspector storyboard](wireframes/2026-09-09/17-whole-shell-inspector-grid-rejected.webp) | Rejected | Too much shell; not the requested summary form |
-| 18 | [Panel reference first draft](wireframes/2026-09-09/18-panel-reference-first-draft-rejected.webp) | Rejected | Grouped by option type instead of the existing panels |
+| 17 | [Panel reference first draft](wireframes/2026-09-09/17-panel-reference-first-draft-rejected.webp) | Rejected | Grouped by option type instead of the existing panels |
+| 18 | [Whole-shell inspector storyboard](wireframes/2026-09-09/18-whole-shell-inspector-grid-rejected.webp) | Rejected | Too much shell; not the requested summary form |
 | 19 | [Panel-only reference format](wireframes/2026-09-09/19-panel-reference-current-format.webp) | Current format, content corrections required | Correct summary format; next revision must remove Layout Style/Rules, add State appearance, and retain only confirmed Rules actions |
 
 ## 12. Full visual appendix
@@ -471,9 +471,9 @@ All images made in the conversation are retained below. Rejected and superseded 
 
 ### 12.5 Inspector-summary iterations
 
-![Rejected whole-shell summary](wireframes/2026-09-09/17-whole-shell-inspector-grid-rejected.webp)
+![Rejected first panel summary](wireframes/2026-09-09/17-panel-reference-first-draft-rejected.webp)
 
-![Rejected first panel summary](wireframes/2026-09-09/18-panel-reference-first-draft-rejected.webp)
+![Rejected whole-shell summary](wireframes/2026-09-09/18-whole-shell-inspector-grid-rejected.webp)
 
 ![Current panel-only summary format](wireframes/2026-09-09/19-panel-reference-current-format.webp)
 
