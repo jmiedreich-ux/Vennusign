@@ -1,8 +1,8 @@
 # VennueSign Theme Studio engineering guide
 
-**Date:** 2026-09-09  
-**Status:** Working engineering and wireframe guide; owner review remains in progress  
-**Source baseline:** `master` at `36977cc` plus the owner conversation and wireframes recorded on 2026-09-07 through 2026-09-09  
+**Date:** 2026-09-09
+**Status:** Working engineering and wireframe guide; owner review remains in progress
+**Source baseline:** `master` at `36977cc` plus the owner conversation and wireframes recorded on 2026-09-07 through 2026-09-09
 **Audience:** Theme Studio product design, Content Platform, renderer, API, persistence, and implementation reviewers
 
 ## 1. Purpose and authority
