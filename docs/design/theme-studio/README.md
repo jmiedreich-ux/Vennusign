@@ -5,6 +5,13 @@
 **Live workflow mock:** https://vennue-theme-studio-draft.jmiedreich.chatgpt.site  
 **Published mock revision:** Sites version 13; source checkpoint `35c33d1`
 
+## 2026-09-09 engineering reconciliation
+
+The follow-on owner conversation, architecture reconciliation, complete wireframe register, and all
+current/superseded images are preserved in
+[`docs/features/theme-studio/theme-studio-engineering-guide-2026-09-09.md`](../../features/theme-studio/theme-studio-engineering-guide-2026-09-09.md).
+The guide remains a working draft and does not authorize implementation.
+
 ## Purpose
 
 This folder preserves the current Theme Studio design decisions, mock reference, complete source, and owner-testing handoff. It is the restart point for continuing the design without reconstructing prior conversations.
