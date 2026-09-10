@@ -512,6 +512,9 @@ The following screens remain to be designed or corrected. Their absence is expli
 8. What are the exact Canvas Render Definition field names and compatibility policy?
 9. Which supplied layout presets ship first?
 10. What are the final Properties, Style, and Rules controls for Title, Image, and Content block?
+11. What is the empty-preview policy before a field has been successfully bound to a Repeater? **Do not implement or infer.**
+12. What undo behavior applies to valid drops, invalid drops, and later placement changes? **Do not implement or infer.**
+13. What are the touch and keyboard equivalents for drag, target selection, cancel, and feedback? **Do not implement or infer.**
 
 ## 15. Engineering handoff
 
@@ -555,14 +558,16 @@ The first binding flow in the current storyboard must be mapped as follows. The 
 
 | Theme Studio part | Required status | Foundry responsibility | Theme Studio responsibility |
 | --- | --- | --- | --- |
-| Editor shell, left rail, inspector shell | Existing pattern or Foundry addition | Shell layout, responsive behavior, focus and panel states | Rail ownership and selected-context content |
+| Editor shell, left rail, inspector shell | Theme Studio composition | Application shell, navigation rail, and panel primitives; responsive and focus states | Rail ownership and selected-context content |
 | Tabs, buttons, selects, number inputs | Existing pattern | Control anatomy, keyboard behavior, disabled/error states | Labels, values, validation meaning |
-| Field row in Fields rail | Existing pattern or Foundry addition | Search/list-row anatomy, focus state, drag affordance | Model label, type, compatible/incompatible state |
+| Field row in Fields rail | Theme Studio composition | Search/list-row and draggable-item primitives; focus state and drag affordance | Model label, type, compatible/incompatible state |
 | Empty Repeater drop target | Foundry addition | Valid/invalid/active drop-state treatment and accessible feedback | Compatibility from the pinned model and derived record type |
 | Drag preview and target indicators | Foundry addition | Held-source, target, cancel, valid/invalid visual and keyboard/touch conventions | Field identity and explicit right/below placement semantics |
-| Inspector Properties / Style / Rules panels | Existing pattern or Foundry addition | Panel layout, tab behavior, controls, focus management | Binding details, panel ownership, model-aware choices |
+| Inspector Properties / Style / Rules panels | Theme Studio composition | Panel, tab, and form-control primitives; focus management | Binding details, panel ownership, model-aware choices |
 | Row-spacing slider and color/font controls | Existing pattern | Control interaction, value presentation, input validation | Repeater or field-specific style mapping |
 | Inline warnings and save failure | Existing pattern | Warning/error treatment, announcement, retry affordance | Domain message and non-live-save semantics |
+
+**Foundry delivery gate:** The composition status above classifies what Theme Studio is building; it does not claim that every named Foundry dependency is already complete. Before an implementation packet is buildable, the Foundry owner must mark every named dependency **Existing Foundry pattern** or **Foundry addition**. Until that inventory record exists, the packet is blocked and marked **Do not implement or infer**; an implementation agent may not make that classification.
 
 ### 16.3 Work-packet minimum
 
@@ -579,4 +584,4 @@ The packet must never say merely “match the wireframe.” It must name the rel
 
 ### 16.4 Explicitly carried-forward decisions
 
-The following remain open and are deliberately carried forward rather than left for an implementation agent to decide: Repeater Rules action set, empty-preview policy, undo semantics, and touch/keyboard drag behavior. They remain subject to Section 14 and must be marked **Do not implement or infer** in any packet that reaches them.
+The following remain open and are deliberately carried forward rather than left for an implementation agent to decide: the Repeater Rules action set (Section 14.2), empty-preview policy (Section 14.11), undo semantics (Section 14.12), and touch/keyboard drag behavior (Section 14.13). They must be marked **Do not implement or infer** in any packet that reaches them.
