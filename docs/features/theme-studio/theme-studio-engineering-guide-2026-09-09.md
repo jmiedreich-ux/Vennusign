@@ -122,7 +122,7 @@ The correct responsibilities are:
 - **Rules:** may use a compatible state value as a condition for another element’s conditional behavior.
 - **Renderer:** applies the mapping without changing the reserved record footprint.
 
-The sidebar caption “State treatment · no row slot” in several wireframes is therefore not final. The next pass must present the field normally while preserving the operational-state geometry invariant in the render contract.
+The sidebar caption “State treatment · no row slot” is retired. A field whose model type is `state` appears in the Fields rail and is draggable to compatible Repeater positions exactly like any other model field. Its type makes Style and Rules state-aware after placement; it does not make a separate component or remove its canvas position. State treatment must still preserve the operational-state geometry invariant in the render contract.
 
 ## 6. Editor information architecture
 
@@ -324,6 +324,12 @@ This is the engineering record of the full follow-on conversation, in order.
 | 30 | Availability | Corrected: Availability is a normal model field of type `state`, not a special component or rule type |
 | 31 | State conditional formatting | State-value appearance belongs in Style; Rules may use state as a condition for another element |
 | 32 | Inspector summary | Use the actual panel visual language; omit the whole editor shell; organize Layouts, Components, and Fields by Properties, Style, and Rules |
+| 33 | Foundry relationship | Foundry is the emerging shared design system; existing patterns are used, reusable gaps become Foundry additions, and Theme Studio-specific arrangements remain compositions |
+| 34 | Buildability | Every eventual packet needs a wireframe, behavior/data contract, Foundry mapping, acceptance checks, and explicit no-inference decisions |
+| 35 | Journey status | Foundry mapping is parallel build-readiness work; it does not end the Theme Studio storyboard journey |
+| 36 | State fields | A field is normal; when its declared model type is `state`, its normal Style and Rules panels become state-aware |
+| 37 | State placement | A state field is draggable from Fields to compatible canvas/Repeater positions like every other field; its type does not remove its row slot |
+| 38 | State screens | Record the existing Price-drag visual language as the base, then show Availability drag and bound/Style states; discarded alternate shells are not storyboard authority |
 
 ## 10. Verbatim owner-message transcript
 
@@ -426,6 +432,8 @@ All images made in the conversation are retained below. Rejected and superseded 
 | 17 | [Panel reference first draft](wireframes/2026-09-09/17-panel-reference-first-draft-rejected.webp) | Rejected | Grouped by option type instead of the existing panels |
 | 18 | [Whole-shell inspector storyboard](wireframes/2026-09-09/18-whole-shell-inspector-grid-rejected.webp) | Rejected | Too much shell; not the requested summary form |
 | 19 | [Panel-only reference format](wireframes/2026-09-09/19-panel-reference-current-format.webp) | Current format, content corrections required | Correct summary format; next revision must remove Layout Style/Rules, add State appearance, and retain only confirmed Rules actions |
+| 20 | [Availability drag into Repeater](wireframes/2026-09-09/20-availability-drag-into-repeater.webp) | Current interaction draft | A normal field of type `state` is dragged into the selected Repeater; it has the same placement behavior as any compatible model field |
+| 21 | [Availability bound and styled](wireframes/2026-09-09/21-availability-bound-and-styled.webp) | Current interaction draft | Availability is positioned below the Item name/Price row, selected, and shown with normal text Style plus declared state-value treatments |
 
 ## 12. Full visual appendix
 
@@ -477,6 +485,12 @@ All images made in the conversation are retained below. Rejected and superseded 
 
 ![Current panel-only summary format](wireframes/2026-09-09/19-panel-reference-current-format.webp)
 
+### 12.6 State-field placement and Style
+
+![Availability drag into Repeater](wireframes/2026-09-09/20-availability-drag-into-repeater.webp)
+
+![Availability bound and styled](wireframes/2026-09-09/21-availability-bound-and-styled.webp)
+
 ## 13. Screens still required before a clickable prototype
 
 The following screens remain to be designed or corrected. Their absence is explicit; do not infer their behavior from the mock.
@@ -484,7 +498,7 @@ The following screens remain to be designed or corrected. Their absence is expli
 1. Corrected panel-only inspector summary.
 2. Field Rules full-size screen.
 3. State-field Properties screen showing a normal field with type `state`.
-4. State appearance Style screen with model-defined values.
+4. State-field Rules screen with model-defined values as compatible conditions; do not infer the action set.
 5. Repeater Rules full-size screen after the exact action set is approved.
 6. Title Properties, Style, and Rules.
 7. Image Properties, Style, Rules, and missing-image behavior.
